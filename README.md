@@ -9,6 +9,7 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [product/vision.md](product/vision.md) | The living vision: what is decided, proposed and still open | Both; every line names who said it |
 | [product/features.md](product/features.md) | Every feature with its status and owner | Both |
 | [product/decisions.md](product/decisions.md) | Dated log of what Ben and Nate agreed | Both |
+| [product/pitch.md](product/pitch.md) | How secondhand is pitched: the problem in numbers, five narratives, the recommended order | Both; *agent proposal* until picked |
 | [product/words.md](product/words.md) | Ben's and Nate's exact product words, the source everything else cites | Append only |
 | [features/](features/) | One living page per feature | Whoever owns the feature |
 | [research/](research/README.md) | Raw research: `research/<slug>/ben/` and `research/<slug>/nate/` | Each person's subfolder: only that person and their agents |
