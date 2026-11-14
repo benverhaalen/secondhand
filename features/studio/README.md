@@ -18,3 +18,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/studio/](../../research/studio/)
 - Ben: [research/studio/ben/](../../research/studio/ben/)
 - Nate: [research/studio/nate/](../../research/studio/nate/)
+- Ben, tech stack: [seedream-relighting.md](../../research/studio/ben/seedream-relighting.md). Color-correct real photos first, render with Seedream 5.5 from up to 10 references, reject any render that drifts; real photos stay as evidence (eBay picture policy).

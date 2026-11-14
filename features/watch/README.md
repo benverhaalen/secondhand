@@ -18,3 +18,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/watch/](../../research/watch/)
 - Ben: [research/watch/ben/](../../research/watch/ben/)
 - Nate: [research/watch/nate/](../../research/watch/nate/)
+- Ben, tech stack: [exa-alerts.md](../../research/watch/ben/exa-alerts.md). Exa Monitors find new listings at most hourly; price thresholds are our code; marketplace coverage untested, eBay Browse API as fallback.

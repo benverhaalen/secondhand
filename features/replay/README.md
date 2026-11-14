@@ -19,3 +19,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/replay/](../../research/replay/)
 - Ben: [research/replay/ben/](../../research/replay/ben/)
 - Nate: [research/replay/nate/](../../research/replay/nate/)
+- Ben, tech stack: [pavlo-marketplace-harnesses.md](../../research/replay/ben/pavlo-marketplace-harnesses.md). Browser Use explores each marketplace once, Pavlo replays it as signed sub-second calls; conflicts with Pavlo's on-device principle if run in Browser Use Cloud.

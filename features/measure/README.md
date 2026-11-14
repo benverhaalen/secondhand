@@ -18,3 +18,5 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/measure/](../../research/measure/)
 - Ben: [research/measure/ben/](../../research/measure/ben/)
 - Nate: [research/measure/nate/](../../research/measure/nate/)
+- Ben, tech stack: [measuring-garments.md](../../research/measure/ben/measuring-garments.md). Scale from LiDAR or a credit card, points from the garment mask plus a vision model, user drags to confirm; Size AI already claims about 5 mm with LiDAR.
+- Ben, tech stack: [object-capture.md](../../research/measure/ben/object-capture.md). Apple Object Capture gives metric 3D for rigid items (shoes, bags, electronics) but not clothes.

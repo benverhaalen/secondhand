@@ -29,3 +29,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/capture/](../../research/capture/)
 - Ben: [research/capture/ben/](../../research/capture/ben/)
 - Nate: [research/capture/nate/](../../research/capture/nate/)
+- Ben, tech stack: [guided-shot-list.md](../../research/capture/ben/guided-shot-list.md). Per-category shot list with live checks before each shot counts; defects proposed by the model and confirmed by the user.
