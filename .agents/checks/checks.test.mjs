@@ -8,6 +8,7 @@ import { provenance } from './provenance.mjs';
 import { research } from './research.mjs';
 import { secrets } from './secrets.mjs';
 import { ui } from './ui.mjs';
+import { code } from './code.mjs';
 
 // Each check is shown catching a real failure and passing the fixed version.
 function repo(files) {
@@ -129,4 +130,35 @@ test('logging: a print in app code, a committed raw log and a log fixture that b
     'ios/Printer.swift': 'func print(_ doc: Doc) { controller.print(doc) }\n', 'app/screens/logs/index.tsx': 'export const Logs = () => null;\n',
     'app/fixtures/session.jsonl': start, 'scripts/tool.mjs': 'console.log("tools may print");\n', 'app/upload.test.ts': 'console.log("tests may print");\n', 'data/comps.jsonl': '{"title":"not a log"}\n' });
   assert.deepEqual(good, []);
+});
+
+// The samples are joined from parts so this file does not trip the rules it tests.
+const j = (...parts) => parts.join('');
+test('code: a grab-bag file name, a type escape, a swallowed error, history in a comment and a test switched off fail; the fixed versions pass', () => {
+  const bad = errors(run(code, {
+    'app/utils/helpers.ts': 'export const a = 1;\n',
+    'app/listing/price.ts': j('const p = x as ', 'any;\nfunction f(v: ', 'any) {}\n// @ts-', 'ignore\ntry { post(); } catch (e) { }\nsend().catch(() => {', '});\n// changed from a loop to a map, as ', 'discussed\n'),
+    'jobs/relight.py': j('try:\n    render()\nexcept Exception:\n    pa', 'ss\nx = load()  # type: ig', 'nore\n'),
+    'ios/Capture.swift': j('do { try shoot() } catch {', ' }\n'),
+    'app/listing/price.test.ts': j("it.sk", "ip('posts', () => {});\ndescribe.on", "ly('x', () => {});\nxi", "t('y', () => {});\n"),
+    'jobs/test_relight.py': j('@pytest.mark.sk', 'ip\ndef test_x(): ...\n'),
+  }));
+  for (const want of [/app\/utils\/helpers\.ts .*name the file/, /price\.ts:1 .*as any/, /price\.ts:2 .*: any/, /price\.ts:3 .*@ts-ignore/, /price\.ts:4 .*swallowed/, /price\.ts:5 .*swallowed/,
+    /price\.ts:6 .*conversation/, /relight\.py:3 .*swallowed/, /relight\.py:5 .*type: ignore/, /Capture\.swift:1 .*swallowed/,
+    /price\.test\.ts:1 .*switched off/, /price\.test\.ts:2 .*switched off/, /price\.test\.ts:3 .*switched off/, /test_relight\.py:1 .*switched off/]) assert.match(bad, want);
+  assert.equal(errors(run(code, {
+    'app/listing/price/floor.ts': "// eBay rounds a Best Offer down to the cent, so the floor is compared in cents.\nexport function floor(v: number, label = 'size: any') { try { return post(v); } catch (e) { log.error('floor', e); throw e; } }\n",
+    'app/listing/price/floor.test.ts': "import { test } from 'node:test';\ntest('a floor holds', { skip: !process.env.SITE && 'needs a live site' }, () => {});\n// @ts-expect-error the floor rejects a string\nfloor('x');\n",
+    'jobs/relight.py': "try:\n    render()\nexcept RenderError as e:\n    log.error('relight', e)\n    raise\nx = load()  # type: ignore[attr-defined]\n",
+    'scripts/utils.mjs': j('const a = b as ', 'any;\n'),
+  })), '');
+});
+
+test('code: a long file and code that changed with no test are questions, not failures', () => {
+  const long = Array.from({ length: 450 }, (_, i) => `export const v${i} = ${i};`).join('\n');
+  const out = run(code, { 'server/everything.ts': long }, { changed: ['server/everything.ts'] });
+  assert.equal(errors(out), '');
+  assert.match(out.map(o => `${o.level} ${o.where} ${o.msg}`).join('\n'), /warn server\/everything\.ts .*450 lines[\s\S]*warn server\/everything\.ts .*no test changed/);
+  assert.deepEqual(run(code, { 'server/post.ts': 'export const a = 1;\n', 'server/post.test.ts': '' }, { changed: ['server/post.ts', 'server/post.test.ts'] }), []);
+  assert.deepEqual(run(code, { 'server/post.ts': 'export const a = 1;\n' }, { changed: ['README.md'] }), []);
 });
