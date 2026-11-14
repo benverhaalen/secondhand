@@ -13,6 +13,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Ben, [18:32](words.md#2026-11-14-tools-and-capture).
 - Studio photos: relight the item in a studio, a garage or a house with Seedream 5.5, built from all the captured photos with color correction. Ben, [18:32](words.md#2026-11-14-tools-and-capture).
 - Measuring comes first for clothes ("the mechanism is measuring more than anything"). Ben, [18:32](words.md#2026-11-14-tools-and-capture).
+- Appraise anything, for example at a garage sale: its value by platform, after defects and hidden demand. Ben, [18:36](words.md#2026-11-14-pavlo-and-appraise).
+- Post once with Browser Use, then replay with Pavlo. Ben, [18:36](words.md#2026-11-14-pavlo-and-appraise).
 - Center everything on one item card: a single measured record of the item that every platform listing is built from. *Agent proposal*, from the [concept brief](https://claude.ai/artifact/HCk31xVRxnrrcy5AL2Ff6U).
 
 ## Open
