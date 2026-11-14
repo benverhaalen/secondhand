@@ -1,6 +1,6 @@
 # Treg rebuilt on Databricks
 
-Nate's idea, as Ben put it at 23:06: "nate is thinking of doing a sort of refactoring treg into databricks platform. that if we get to it would be so cool but we need the product first before we optimize yk." ([words](../product/words.md#2026-11-14-ideas-board-and-treg-on-databricks-after-the-product)). Nate's own words point the same way: "Look at https://treg.to/" ([words](../product/words.md#2026-11-14-nate-verify-the-gap-outperform-departments)) and "Developing a feature for our app, and making it a thing for databricks" ([words](../product/words.md#2026-11-14-nate-provable-and-features-for-databricks)).
+Nate's idea, as Ben put it at 23:06: "nate is thinking of doing a sort of refactoring treg into databricks platform. that if we get to it would be so cool but we need the product first before we optimize yk." ([words](../product/words.md#2026-11-14-ideas-board-and-treg-on-databricks-after-the-product)). Nate's own words: "explore technologies existing, open source, that we can utilize and refactor to fit databricks [...] Treg shows alot of cool stuff" ([words](../product/words.md#2026-11-14-nate-open-source-onto-databricks-and-open-internet-sources)), and "Developing a feature for our app, and making it a thing for databricks" ([words](../product/words.md#2026-11-14-nate-provable-and-features-for-databricks)).
 
 **Waits on:** price and watch working through Treg.
 
