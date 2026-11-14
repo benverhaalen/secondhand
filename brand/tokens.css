@@ -17,6 +17,14 @@
   --coral:       #EF956E;               /* category */
   --lilac:       #B08DF1;               /* category */
   --brick:       #C52B17;               /* alerts only; white text on it 5.6:1 */
+  /* states and interaction (Art. 5, States) */
+  --brick-tint:  #F8D7D1;               /* failed fill; black text 14.7:1 */
+  --sky-ink:     #1F86C7;               /* the unread dot only; 4.0:1 on white */
+  --ink-press:   #2E2E2E;               /* black pill pressed or hovered */
+  --gray-press:  #E2E5E7;               /* gray button pressed or hovered */
+  --ink-disabled: rgb(10 10 10 / .3);   /* disabled labels; never the only sign */
+  --scrim:       rgb(10 10 10 / .4);
+  --focus-ring:  0 0 0 2px var(--page), 0 0 0 4px var(--ink);
   /* the field (C2): one per view, always textured, black text only */
   --field: linear-gradient(160deg, var(--sky) 0%, #C9E6D8 50%, var(--lime) 100%);
   --field-lines: repeating-radial-gradient(circle at 115% -30%, #ffffff00 0 9px, #ffffffb3 9px 10px);

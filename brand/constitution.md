@@ -132,6 +132,39 @@ Rules:
 3. **State colors keep their familiar meanings.** Mint is live, lime is sold or paid, marigold needs you, brick failed, gray ended. Sky is new. A color means one thing everywhere.
 4. **Photos bring their own color.** When a view has item photos, the field shrinks or moves away from them; it never sits behind a photo.
 
+#### States (agent decision 2026-11-14, Ben can veto on round 6 board D1)
+
+Every state a screen can show, decided once so no worker invents one. Fills take black text (contrast is black on the fill). Tokens are in [tokens.css](tokens.css).
+
+| State | Shows as | Token | Contrast |
+|---|---|---|---|
+| Draft | White pill, hairline outline, gray text | `--rule`, `--ink-2` | 4.1:1 |
+| Live | Mint fill | `--mint` | 12.2:1 |
+| Needs you (an offer, a question, a deadline) | Marigold fill | `--marigold` | 12.7:1 |
+| Sold | Lime fill | `--lime` | 15.4:1 |
+| Shipping | Sky fill | `--sky` | 11.8:1 |
+| Paid | Lime fill with a check | `--lime` | 15.4:1 |
+| Failed | Pale brick fill, brick icon | `--brick-tint`, `--brick` | 14.7:1; icon 4.2:1 |
+| Ended, expired, unsold | Gray fill, gray text | `--gray`, `--ink-2` | 3.6:1 (13 px and up only) |
+| Unread | 8 px dot | `--sky-ink` | 4.0:1 on white |
+
+| Interaction | Black pill | Outline button | Gray button | Other |
+|---|---|---|---|---|
+| Pressed | `--ink-press` | `--gray` fill | `--gray-press` | Scale 0.98, `--t-feedback` |
+| Hover (web) | `--ink-press` | `--gray` fill | `--gray-press` | |
+| Focus | 2 px ink ring, 2 px white gap | same | same | Every control; never removed |
+| Selected | | | | Chips and segments: ink fill, white text (19.8:1). Tabs: ink, weight 500. Grid photos: 2 px ink ring and a check |
+| Disabled | `--gray` fill, `--ink-disabled` text | same | same | Never the only sign; say why nearby |
+| Loading | Spinner in place of the label, width kept | | | Skeletons are `--gray` |
+
+Fields: hairline at rest, 1.5 px ink when focused, 1.5 px brick with a 13 px brick line under it when wrong. Nothing marks a field as right.
+Overlays: scrim `--scrim`; sheets white at `--r-sheet`; toasts ink with white text, one at a time.
+Destructive: the confirm in a destructive sheet is a brick pill with white text (5.6:1). Nowhere else is brick a button.
+Tab badge: a marigold dot. No numbers.
+Dark mode: out of scope until the app ships light.
+
+The unread dot is the one colored mark allowed on white besides logos and brick, because the blue unread dot is what people already know from Mail and Messages ([words.md: familiar](../product/words.md)).
+
 ### Article 6. Type
 
 Ben, 20:17: "im still not set on the fonts. i think you need to justify all text." So every type choice below carries its reason, and the open choices are in the kit.

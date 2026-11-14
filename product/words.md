@@ -141,6 +141,18 @@ Ben, in the thread "Set the secondhand brand identity", 20:46 UTC.
 Ben, project chat, 20:58 UTC.
 > ensure for all image gen you are using the codex cli with astra and telling it the loop to run and how it should judge rather than exactly what should be in it.
 
+## 2026-11-14 dynamic workflows
+Ben, project chat, 20:47 UTC.
+> try and use dynamic workflows for the load bearing design stuff
+
+## 2026-11-14 brand decision boards
+Ben, project chat, 20:56 UTC.
+> no so essentially i want one type of photo generated that should clearly define everything actually useful for me when creating something. like it isnt specific to a webpage at all. it is like a brand kit. but it also shows how it looks in practice - think spacing, components, and its annotated kind of like ux only look. you could generate a few standard photos for each - keep it to 2, one ui and one ux. so the look and then the more experience side of things. keep explanation words minimal. give me options for each. so like for a color palette i want to see how the color pallete is in use. for the layout and spacing i want to see side by side the options i have. maybe generate one big image that you use tools to stitch together. actually hold on, what i want is an easy way to make decisions about the brand and see everything in use. i can pick and choose. it uses the decisions i made already but gives me even more specific decisions. like i liked that gradient. the colors should probably revolve around that roughly. but then think of all the colors that are used in all states in a ui. make those decisions now and everything else should be really easy for workers to make. so what i want is using gpt image and all the references i gave you for what i approved and liked and if there are any images that i gave you that are similar to what i approved - say the certain buttons i approved or gradients etc. and then possibly using those but helping refine exactly what i want through iteration. knowing what i set in stone already and letting me choose where things currently stand ambiguous
+
+## 2026-11-14 expert critique of images
+Ben, project chat, 20:57 UTC.
+> also ensure when creating images you know how an expert using the constitution would end up critiquing it
+
 ## 2026-11-14 app first, website if time
 Ben, in the thread "Plan the build for capture and measuring", 20:59 UTC, answering a card that offered a Swift camera with everything else on the web, an Expo app with a Swift camera module, or web only.
 > app first, website if we have time
