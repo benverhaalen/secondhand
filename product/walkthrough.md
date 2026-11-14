@@ -9,10 +9,10 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 3 | The always-there bottom bar | **decided: Today · Sell · ＋ · Buy · You, ＋ is the only way in** ([log](decisions.md)) |
 | 4 | Selling home: drafts, live and past, interest per item | — |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
-| 6 | Shipping and pickup (Google Calendar, approved time windows) | — |
+| 6 | Shipping and pickup (Google Calendar, approved time windows) | asking |
 | 7 | Buying home: search, wants, watch, deal check, appraise | — |
 | 8 | You: money, insights per site, accounts, automation | — |
-| 9 | Human in the loop: what runs on its own, and what always needs a tap | asking next (it decides what Today holds) |
+| 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
 | 10 | Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
 | 11 | First launch and onboarding | — |
 
@@ -153,3 +153,27 @@ All of these are collected in the pitch thread's [pitch-evidence](../research/cr
 | **D. Draft only** | It drafts every reply and action, and you send each one | Gmail Smart Reply | Full control | Most taps; the "second hand" does little |
 
 **Agent view: B.** It starts as A, so the demo is predictable. Today shrinks as the user teaches it. The Never alone tier answers Muse and eBay's rule directly.
+
+**Picked: B, tiers that learn** (Ben, 19:29).
+
+---
+
+## 6. Pickup and shipping
+
+**Shipping is mostly an established pattern.** eBay, Depop, Poshmark and Mercari issue their own labels (*asserted*, from the platforms' seller flows; not re-checked here). Our job is to:
+- pick the box size and weight from the measured item
+- show which platform's label to use
+- put a "ship by" card in Today
+- show the nearest drop-off point
+
+That needs no choice from Ben.
+
+**Pickup is the decision.** It is the local half (Marketplace, OfferUp), and it is where Muse sent a stranger to a seller's home. Address and pickup time are already Never alone ([decisions](decisions.md)).
+
+| Option | How it works | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. Your windows** | You set windows once (for example, weekdays 5–7 pm). The agent offers only those times to buyers. A buyer's pick becomes a Today card, and Confirm adds a Google Calendar event. | Calendly booking windows (UNOPENED); Airbnb's Calendar tab | Few taps; buyers get answers fast | You have to set windows first |
+| **B. Every time asks** | The agent collects what the buyer proposes, and you approve or suggest another time each time | Today's canvas pickup card | Nothing to set up | Slow back-and-forth; buyers go cold |
+| **C. Windows plus a saved meetup spot** | A, plus a default public meetup spot you save (a campus union, or a police station's safe-exchange zone). Your home address goes out only on a separate Never alone tap. | Police safe-exchange zones (*asserted*, common in US cities) | Safest default; the address is never the first thing sent | One more thing to set at first use |
+
+**Agent view: C.** It keeps A's speed, and it makes a public spot the default, which removes the Muse failure from the normal path.

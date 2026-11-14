@@ -2,6 +2,18 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: automation runs in tiers that learn
+Agreed by: Ben, on the human-in-the-loop card in the concept thread at 19:29 ([walkthrough §9](walkthrough.md#9-asked-next-human-in-the-loop-what-runs-on-its-own-and-what-always-needs-a-tap)).
+
+Decided: three tiers.
+- **Auto**, logged and undoable: availability and size answers, delisting after a sale (paced on Poshmark), and markdowns above your floor.
+- **Ask**, waiting in Today: counter-offers, any price below your floor, and the first post of an item.
+- **Never alone**: address, pickup time, payment, and off-platform deals.
+
+After you approve the same kind of Ask 3 times, its card offers "Always do this". Never alone can never be promoted.
+
+Changed: Today holds Ask and Never alone cards. You > Automation lists each Rule with its log.
+
 ## 2026-11-14: the bottom bar is Today · Sell · ＋ · Buy · You
 Agreed by: Ben, on the bar card in the concept thread at 19:27 ([walkthrough §3](walkthrough.md#3-second-pass-what-does--do-that-sell-and-buy-dont)). Decided:
 - Tabs are places; ＋ is the only way a physical thing gets in. The camera or a dropped folder then offers Sell this, What's it worth, or Find this.
