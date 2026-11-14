@@ -57,7 +57,7 @@ The table shows the JS calls. Python has the same methods with the extras as key
 | The server receives a request or a webhook | `app.use(requestLogger(log))` after the body parser, then `req.log` in the handler. The query and body are logged as the input. | `request.start`, `request.end` |
 | Anything leaves the process: HTTP, a model, a tool, a browser run, the database, a native module | `await log.call(kind, name, input, fn, describe)` | `call.start`, `call.end` |
 | An agent loop runs | `run = log.agent(name, { goal })`, `run.step({ action, why })`, `run.call(...)`, `run.end({ ok })` | `agent.start`, `agent.step`, `agent.end` |
-| A Job changes state or makes progress | `log.job(job, kind, state)`, `log.stage(job, stage)` | `job.state`, `job.stage` |
+| A Job changes state or makes progress | `log.job(job, kind, state)`, `log.stage(job, stage, { state })` | `job.state`, `job.stage` |
 | Something needs the person, and they answer or it lapses | `log.ask(decision, kind, tier)`, `log.answer(decision, option, { edited, card_ms })`, `log.close(decision, reason)` | `decision.open`, `decision.answer`, `decision.close` |
 | A step in an item's life (names from [lifecycle.mjs](../spec/lifecycle.mjs)) | `log.action(item, action, actor, { site, price, floor })` | `item.action` |
 | Another primitive changes state | `log.change(entity, id, to, { was })` | `state.change` |
@@ -117,7 +117,7 @@ create index on events (item, ts);
 create index on events (event, ts);
 ```
 
-**E. Cloud jobs and agent loops (Python or Node).** One `create_log` per job process, with `origin` set to the `from` of the line that queued it. Log `log.job(job, kind, 'running')`, a `log.stage(job, stage)` for each loading stage the app shows, and `log.job(job, kind, 'done')` or `log.job(job, kind, 'failed', error=...)`. Threads in one process can share one log. An agent loop is one `agent` run with a `step` per turn. A Browser Use harness function (post, delist, read the inbox) is one `call('browser', 'depop.post', ...)`; keep the Browser Use run id and live view URL in its result.
+**E. Cloud jobs and agent loops (Python or Node).** One `create_log` per job process, with `origin` set to the `from` of the line that queued it. Log `log.job(job, kind, 'running')`, a `log.stage(job, stage, state=...)` each time a loading stage the app shows changes state (`started`, `running`, `arrived`, `failed`, the four in the [frontend standard](../product/frontend-standard.md)), and `log.job(job, kind, 'done')` or `log.job(job, kind, 'failed', error=...)`. Threads in one process can share one log. An agent loop is one `agent` run with a `step` per turn. A Browser Use harness function (post, delist, read the inbox) is one `call('browser', 'depop.post', ...)`; keep the Browser Use run id and live view URL in its result.
 
 **F. MLflow.** Put the trace id on the logger once per request or job with `log.child({ trace })`. The packages are named in the [build plan](../research/cross-cutting/ben/build-plan-posting-messages-ui.md#2-what-runs-where). How to read the active trace id in each language was not checked for this note; look it up in the MLflow tracing docs when wiring.
 

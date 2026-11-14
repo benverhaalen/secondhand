@@ -1,0 +1,1291 @@
+{
+ "about": "Which marketplaces fit which product types, and each marketplace's listing profile. Agent proposal, built 2026-11-14 from the notes in this folder. Evidence marks are in the notes; a profile's unconfirmed list names what was not read at the source.",
+ "verdicts": {
+  "best": "a top place for it; post by default",
+  "good": "sells well; post by default",
+  "ok": "will sell but not a strength; post only when the person asks for more reach",
+  "avoid": "allowed but a poor fit; do not post, say why, let the person override",
+  "blocked": "not allowed or no category; never post"
+ },
+ "touchup_levels": {
+  "0": "true color: white balance and exposure only, no model",
+  "1": "light: even soft daylight",
+  "2": "pressed: off everywhere until Ben decides"
+ },
+ "types": {
+  "vintage_clothing": "Vintage and Y2K clothing",
+  "streetwear": "Streetwear and hype brands",
+  "designer_clothing": "Designer and luxury clothing",
+  "womens_mall_brands": "Women's mainstream brands",
+  "mens_mainstream": "Men's mainstream clothing",
+  "fast_fashion": "Fast fashion and low-value basics",
+  "kids_baby_clothing": "Kids and baby clothing",
+  "sneakers": "Sneakers",
+  "shoes_other": "Boots, heels, dress shoes, sandals",
+  "luxury_handbags": "Luxury handbags and small leather goods",
+  "jewelry_watches": "Jewelry and watches",
+  "accessories": "Hats, belts, sunglasses, scarves",
+  "outdoor_apparel": "Outdoor and technical apparel",
+  "fan_apparel": "Sports fan apparel and jerseys",
+  "beauty": "Makeup, skincare, fragrance",
+  "phones_computers": "Phones, laptops, tablets",
+  "cameras_audio_gaming": "Cameras, headphones, speakers, game consoles",
+  "media": "Video games, books, vinyl, DVDs",
+  "collectibles_cards_toys": "Trading cards, collectibles, LEGO, toys",
+  "home_decor": "Home decor and small housewares",
+  "small_appliances": "Small kitchen and home appliances",
+  "furniture": "Furniture",
+  "large_appliances": "Washers, fridges, other large appliances",
+  "tools": "Hand and power tools",
+  "sporting_goods": "Sporting goods, bikes, fitness equipment",
+  "instruments": "Musical instruments and pro audio",
+  "auto_parts_vehicles": "Auto parts and vehicles",
+  "baby_gear": "Strollers, car seats, cribs",
+  "antiques_art": "Antiques and art",
+  "handmade": "Handmade and custom items",
+  "bulk_lots": "Bundles and low-value lots"
+ },
+ "platforms": {
+  "ebay": {
+   "name": "eBay",
+   "role": "post",
+   "note": "ebay.md",
+   "sells": "shipped, plus local pickup through checkout",
+   "title": {
+    "max": 80,
+    "template": "Brand Line/Model Type ModelNo Size Color Attribute"
+   },
+   "description": {
+    "max": null,
+    "style": "spec sheet: what it is, condition and every flaw, measurements, what is included"
+   },
+   "tags": {
+    "max": 0,
+    "instead": "category, item specifics, condition, catalog match"
+   },
+   "photos": {
+    "min": 4,
+    "default": "8 to 12",
+    "max": 24,
+    "cover_ratio": "1:1",
+    "cover_px": "1600x1600",
+    "other_ratio": "1:1 or 4:3",
+    "touchup_default": 1
+   },
+   "price": {
+    "list_at": "target x 1.10",
+    "offers": "Best Offer on; auto-accept at target; auto-decline under 80% of list"
+   },
+   "fee": "13.6% of the total sale plus $0.40 in most categories; 8% for sneakers at $150 and up",
+   "net_40": 32.91,
+   "net_200": 169.04,
+   "free_lever": "offers to watchers; 30-day returns and 1-day handling rank",
+   "paid_lever": "Promoted Listings general, off by default",
+   "refresh": "revise the price 5 to 10% every 21 days; no end-and-relist before 60 days",
+   "unconfirmed": [
+    "condition ids",
+    "seller-level thresholds",
+    "new-seller selling limits",
+    "Authenticity Guarantee thresholds"
+   ]
+  },
+  "facebook": {
+   "name": "Facebook Marketplace",
+   "role": "post",
+   "note": "facebook-marketplace.md",
+   "sells": "local pickup; shipping off by default",
+   "title": {
+    "max": 99,
+    "aim": 60,
+    "template": "Brand Item Key-detail Size-or-dimensions"
+   },
+   "description": {
+    "max": null,
+    "style": "six short lines: what, condition, dimensions, flaws, what is included, pickup area"
+   },
+   "tags": {
+    "max": 20,
+    "default": "8 to 12 synonyms"
+   },
+   "photos": {
+    "min": 4,
+    "default": "6 to 10",
+    "max": 10,
+    "cover_ratio": "1:1",
+    "cover_px": "2048x2048",
+    "other_ratio": "native 4:3 or 3:4",
+    "touchup_default": 0
+   },
+   "price": {
+    "list_at": "target x 1.10 at $50 and up; next $5 up from $20 to $50; target under $20",
+    "offers": "chat only; nothing binds until the handoff"
+   },
+   "fee": "local sale: none; shipped with checkout: 10%, $0.80 minimum",
+   "net_40": 40.0,
+   "net_200": 200.0,
+   "free_lever": "renew at day 7; reply within minutes",
+   "paid_lever": "boost, off; never Cost per Sale",
+   "refresh": "day 7 renew; day 14 cut 10% and renew; day 21 cut again; day 30 with no saves, delete and relist",
+   "unconfirmed": [
+    "title limit (sources say 99, 100 or 150)",
+    "10 photos",
+    "20 tags",
+    "renew rules",
+    "whether a generative touch-up gets an AI info label"
+   ]
+  },
+  "depop": {
+   "name": "Depop",
+   "role": "post",
+   "note": "depop.md",
+   "sells": "shipped only",
+   "title": {
+    "max": null,
+    "aim": 65,
+    "template": "first line of the description: Brand Item Detail Size"
+   },
+   "description": {
+    "max": 1000,
+    "style": "five short lines in a casual voice, flaws always stated, measurements"
+   },
+   "tags": {
+    "max": 5,
+    "default": "0 to 5 true hashtags at the end, at most one brand"
+   },
+   "photos": {
+    "min": 4,
+    "default": "5 to 8",
+    "max": 8,
+    "cover_ratio": "1:1",
+    "cover_px": "1280x1280",
+    "other_ratio": "1:1",
+    "touchup_default": 1
+   },
+   "price": {
+    "list_at": "target / 0.85",
+    "offers": "auto-send an offer to likers 10% under list; auto-negotiate at the user's floor"
+   },
+   "fee": "0% selling fee; 3.3% plus $0.45 processing on item, shipping and tax",
+   "net_40": 37.91,
+   "net_200": 192.1,
+   "free_lever": "offers to likers through the partner API; complete every structured field",
+   "paid_lever": "Boost at 12%, never without a tap",
+   "refresh": "edit in place; after 21 days propose a 10% cut; relist only a listing with no likes",
+   "unconfirmed": [
+    "video in the app",
+    "days to payout",
+    "AI price suggestion"
+   ]
+  },
+  "poshmark": {
+   "name": "Poshmark",
+   "role": "post",
+   "note": "poshmark.md",
+   "sells": "shipped only, 15 lb cap",
+   "title": {
+    "max": 80,
+    "template": "Brand Style Item Detail Color Size"
+   },
+   "description": {
+    "max": 1500,
+    "style": "five-line template, measurements always, flaws always"
+   },
+   "tags": {
+    "max": 3,
+    "default": "up to 3 style tags"
+   },
+   "photos": {
+    "min": 4,
+    "default": "8",
+    "max": 16,
+    "cover_ratio": "3:4",
+    "cover_px": "1200x1600",
+    "other_ratio": "3:4",
+    "touchup_default": 1
+   },
+   "price": {
+    "list_at": "target / 0.85, whole dollars, never under $15 for a single item",
+    "offers": "Smart Sell with the floor as minimum, or one Offer to Likers at 10% off"
+   },
+   "fee": "20% at $15 and over; flat $2.95 under $15",
+   "net_40": 32.0,
+   "net_200": 160.0,
+   "free_lever": "Offer to Likers with a shipping discount; ship within 2 days",
+   "paid_lever": "Promoted Closet, off",
+   "refresh": "day 14 rewrite the title; day 21 new cover or 10% drop; day 45 with zero likes, delete and relist",
+   "unconfirmed": [
+    "fee on Poshmark's own page",
+    "title 80",
+    "description 1,500",
+    "16 photos",
+    "$3 minimum",
+    "category list behind each blocked verdict"
+   ]
+  },
+  "mercari": {
+   "name": "Mercari",
+   "role": "post",
+   "note": "mercari.md",
+   "sells": "shipped only",
+   "title": {
+    "max": 80,
+    "template": "Brand Item Model/Character/Style Size Color New/NWT"
+   },
+   "description": {
+    "max": 1000,
+    "style": "3 to 6 lines, flaws named with the photo number, then 3 hashtags"
+   },
+   "tags": {
+    "max": 3,
+    "default": "exactly 3 related hashtags"
+   },
+   "photos": {
+    "min": 4,
+    "default": "8 to 12",
+    "max": 12,
+    "cover_ratio": "1:1",
+    "cover_px": "1600x1600",
+    "other_ratio": "1:1",
+    "touchup_default": 1
+   },
+   "price": {
+    "list_at": "target x 1.18, $1 to $2,000",
+    "offers": "Smart Offers minimum at target; Offer to Likers at 10% off"
+   },
+   "fee": "10% of item price plus buyer-paid shipping",
+   "net_40": 35.2,
+   "net_200": 179.15,
+   "free_lever": "price cuts are the boost: Offer to Likers 10%, Time-limited Sale 10%, Promote 5%",
+   "paid_lever": "none",
+   "refresh": "one real edit every 7 days; no routine delete and relist",
+   "unconfirmed": [
+    "title 80",
+    "description 1,000",
+    "3 hashtags",
+    "condition values",
+    "whether Smart Offers still exists"
+   ]
+  },
+  "offerup": {
+   "name": "OfferUp",
+   "role": "search",
+   "note": "offerup.md",
+   "sells": "local pickup only since October 2025",
+   "title": {
+    "max": 50,
+    "template": "Brand Item Key-detail"
+   },
+   "description": {
+    "max": 1000,
+    "style": "plain facts, dimensions, flaws, pickup area"
+   },
+   "tags": {
+    "max": 0,
+    "instead": "category"
+   },
+   "photos": {
+    "min": 1,
+    "default": "8",
+    "max": 10,
+    "cover_ratio": "1:1",
+    "cover_px": "1600x1600",
+    "other_ratio": "4:3",
+    "touchup_default": 0
+   },
+   "price": {
+    "list_at": "target x 1.10 to 1.15",
+    "offers": "chat only; nothing binds"
+   },
+   "fee": "none; free listing caps per category per month",
+   "net_40": 40.0,
+   "net_200": 200.0,
+   "free_lever": "reply fast; stay inside the free listing caps",
+   "paid_lever": "Promote and Promote Plus",
+   "refresh": "no duplicates; freshness is weak",
+   "unconfirmed": [
+    "photo maximum",
+    "title and description limits (50 and 1,000 are safe caps, not published limits)",
+    "Promote prices",
+    "whether a generative touch-up counts as a photo of the actual item"
+   ]
+  },
+  "grailed": {
+   "name": "Grailed",
+   "role": "search",
+   "note": "grailed.md",
+   "sells": "shipped only, fashion only",
+   "title": {
+    "max": 60,
+    "aim_words": 7,
+    "template": "Brand-or-line Model Season-or-year Color Size"
+   },
+   "description": {
+    "max": null,
+    "style": "20 to 60 words, measurements, every flaw, 3 to 6 hashtags"
+   },
+   "tags": {
+    "max": 10,
+    "default": "3 to 6 hashtags"
+   },
+   "photos": {
+    "min": 4,
+    "default": "6 to 9",
+    "max": 25,
+    "cover_ratio": "4:5",
+    "cover_px": "1600x2000",
+    "other_ratio": "4:5",
+    "touchup_default": 0
+   },
+   "price": {
+    "list_at": "target / 0.85; keep the floor at $119 if the sale would land between $120 and $123",
+    "offers": "offers bind on acceptance; decline under 70% of asking"
+   },
+   "fee": "6% under $120 ($1.99 minimum), 9% from $120, plus 3.49% and $0.49 processing",
+   "net_40": 35.71,
+   "net_200": 174.53,
+   "free_lever": "a 10% price drop tops the feed and notifies everyone who favorited; free bump every 7 days for 30 days",
+   "paid_lever": "none",
+   "refresh": "bump every 7 days; from day 30 a bump needs a 10% drop; never relist a listing with favorites",
+   "unconfirmed": [
+    "photo maximum",
+    "4:5 cover ratio",
+    "title limit",
+    "hashtag maximum",
+    "category tree behind each blocked verdict",
+    "terms ban third-party tools without written consent, so posting needs a hand-off or consent"
+   ]
+  }
+ },
+ "fit": {
+  "vintage_clothing": {
+   "ebay": [
+    "good",
+    "strong search by tag, era and team; slower than Depop for trend pieces"
+   ],
+   "facebook": [
+    "ok",
+    "local buyers pay less for vintage"
+   ],
+   "depop": [
+    "best",
+    "Depop's core; tees, denim and outerwear are its named top sellers"
+   ],
+   "poshmark": [
+    "good",
+    "search is brand-led, so unbranded vintage is slower"
+   ],
+   "mercari": [
+    "ok",
+    "buyers search by brand, not era"
+   ],
+   "offerup": [
+    "avoid",
+    "needs a national buyer"
+   ],
+   "grailed": [
+    "good",
+    "steady vintage and workwear buyers"
+   ]
+  },
+  "streetwear": {
+   "ebay": [
+    "good",
+    "brand and season searches; authentication on pricier pieces"
+   ],
+   "facebook": [
+    "ok",
+    "city meetups work; watch for fakes claims"
+   ],
+   "depop": [
+    "best",
+    "the core under-34 buyer"
+   ],
+   "poshmark": [
+    "ok",
+    "hype buyers are elsewhere"
+   ],
+   "mercari": [
+    "ok",
+    "no clothing authentication"
+   ],
+   "offerup": [
+    "ok",
+    "big-metro meetups; authenticity checks"
+   ],
+   "grailed": [
+    "best",
+    "core market"
+   ]
+  },
+  "designer_clothing": {
+   "ebay": [
+    "good",
+    "national reach for rare sizes and archive pieces"
+   ],
+   "facebook": [
+    "avoid",
+    "no authentication, lowball offers"
+   ],
+   "depop": [
+    "good",
+    "archive pieces sell; no authentication, so trust caps the price"
+   ],
+   "poshmark": [
+    "good",
+    "women's designer sells; free authentication at $500 and up"
+   ],
+   "mercari": [
+    "ok",
+    "$2,000 price cap; Authenticate excludes clothing"
+   ],
+   "offerup": [
+    "avoid",
+    "wrong buyers, authenticity removals"
+   ],
+   "grailed": [
+    "best",
+    "core market, archive menswear"
+   ]
+  },
+  "womens_mall_brands": {
+   "ebay": [
+    "ok",
+    "sells by style name, but Poshmark's buyers are closer"
+   ],
+   "facebook": [
+    "ok",
+    "sells as bundles"
+   ],
+   "depop": [
+    "good",
+    "dresses, tops and leggings are named top sellers"
+   ],
+   "poshmark": [
+    "best",
+    "the core of the platform"
+   ],
+   "mercari": [
+    "good",
+    "fashion is Mercari's named focus"
+   ],
+   "offerup": [
+    "avoid",
+    "low local demand"
+   ],
+   "grailed": [
+    "avoid",
+    "mall brands can be removed"
+   ]
+  },
+  "mens_mainstream": {
+   "ebay": [
+    "good",
+    "buyers lean male; Patagonia, Levi's and Nike search well"
+   ],
+   "facebook": [
+    "ok",
+    "fine locally at low prices"
+   ],
+   "depop": [
+    "good",
+    "menswear is a main category"
+   ],
+   "poshmark": [
+    "good",
+    "smaller men's side, but top brands move"
+   ],
+   "mercari": [
+    "ok",
+    "smaller men's audience"
+   ],
+   "offerup": [
+    "avoid",
+    "a meetup is not worth the low price"
+   ],
+   "grailed": [
+    "ok",
+    "low prices; the $1.99 minimum fee hurts under $33"
+   ]
+  },
+  "fast_fashion": {
+   "ebay": [
+    "avoid",
+    "$0.40 plus 13.6% plus postage leaves little under $15"
+   ],
+   "facebook": [
+    "avoid",
+    "single pieces are not worth a meetup; make a lot"
+   ],
+   "depop": [
+    "ok",
+    "0% fee helps; $0.45 plus shipping hurts under $8"
+   ],
+   "poshmark": [
+    "ok",
+    "$2.95 fee plus $6.49 shipping; bundle it"
+   ],
+   "mercari": [
+    "ok",
+    "only as lots; labels start at $5.39"
+   ],
+   "offerup": [
+    "avoid",
+    "value too low"
+   ],
+   "grailed": [
+    "avoid",
+    "basics get removed; fees near 20% at $15"
+   ]
+  },
+  "kids_baby_clothing": {
+   "ebay": [
+    "ok",
+    "works as lots, not single pieces"
+   ],
+   "facebook": [
+    "good",
+    "parents buy lots by size"
+   ],
+   "depop": [
+    "ok",
+    "a kidswear category exists, but few buyers are parents"
+   ],
+   "poshmark": [
+    "good",
+    "bundle buyers; price lots at $15 or more"
+   ],
+   "mercari": [
+    "good",
+    "lots suit parent buyers"
+   ],
+   "offerup": [
+    "ok",
+    "only as bagged lots"
+   ],
+   "grailed": [
+    "blocked",
+    "no kids department"
+   ]
+  },
+  "sneakers": {
+   "ebay": [
+    "best",
+    "8% fee and no per-order fee at $150 and up; authentication"
+   ],
+   "facebook": [
+    "ok",
+    "cash meetups in cities; buyers fear fakes"
+   ],
+   "depop": [
+    "good",
+    "trainers are named in top shoes"
+   ],
+   "poshmark": [
+    "good",
+    "Nike is a top brand; no authentication under $500"
+   ],
+   "mercari": [
+    "good",
+    "designer shoes can be authenticated"
+   ],
+   "offerup": [
+    "good",
+    "buyers check them in person in large metros"
+   ],
+   "grailed": [
+    "good",
+    "used and designer pairs"
+   ]
+  },
+  "shoes_other": {
+   "ebay": [
+    "good",
+    "boots and dress shoes search by model and size"
+   ],
+   "facebook": [
+    "ok",
+    "work boots move"
+   ],
+   "depop": [
+    "good",
+    "boots, heels, platforms and sandals are named"
+   ],
+   "poshmark": [
+    "best",
+    "a top category; heavy boots can pass 5 lb"
+   ],
+   "mercari": [
+    "ok",
+    "heavier to ship, weaker demand"
+   ],
+   "offerup": [
+    "ok",
+    "work boots yes, heels no"
+   ],
+   "grailed": [
+    "good",
+    "boots and designer footwear"
+   ]
+  },
+  "luxury_handbags": {
+   "ebay": [
+    "best",
+    "authentication builds trust; the fee is 15%"
+   ],
+   "facebook": [
+    "avoid",
+    "counterfeit rule and scam traffic"
+   ],
+   "depop": [
+    "ok",
+    "bags sell; counterfeit rule and no authentication"
+   ],
+   "poshmark": [
+    "best",
+    "home turf; the 20% fee hurts above about $1,000"
+   ],
+   "mercari": [
+    "good",
+    "Authenticate program; cap $5,000"
+   ],
+   "offerup": [
+    "avoid",
+    "counterfeit checks and cash-meetup risk"
+   ],
+   "grailed": [
+    "ok",
+    "the category exists, the buyers are elsewhere"
+   ]
+  },
+  "jewelry_watches": {
+   "ebay": [
+    "best",
+    "watch fee falls above $1,000; authentication"
+   ],
+   "facebook": [
+    "avoid",
+    "a buyer cannot verify it at a meetup"
+   ],
+   "depop": [
+    "good",
+    "jewelry is a main category; smartwatches are banned"
+   ],
+   "poshmark": [
+    "good",
+    "fashion jewelry sells"
+   ],
+   "mercari": [
+    "ok",
+    "no authentication; $2,000 cap"
+   ],
+   "offerup": [
+    "avoid",
+    "same risks; 25 free listings a month"
+   ],
+   "grailed": [
+    "ok",
+    "designer jewelry yes; major watch brands are blocked"
+   ]
+  },
+  "accessories": {
+   "ebay": [
+    "good",
+    "sunglasses and hats search by model; cheap to post"
+   ],
+   "facebook": [
+    "ok",
+    "low value; bundle them"
+   ],
+   "depop": [
+    "good",
+    "hats, scarves, sunglasses and belts are named"
+   ],
+   "poshmark": [
+    "good",
+    "light, branded, bundles well"
+   ],
+   "mercari": [
+    "ok",
+    "light and cheap to ship"
+   ],
+   "offerup": [
+    "avoid",
+    "low value"
+   ],
+   "grailed": [
+    "good",
+    "designer hats, belts, sunglasses"
+   ]
+  },
+  "outdoor_apparel": {
+   "ebay": [
+    "good",
+    "model names and specs suit search"
+   ],
+   "facebook": [
+    "ok",
+    "seasonal local demand"
+   ],
+   "depop": [
+    "good",
+    "fleeces, windbreakers and puffers are named; gorpcore is a style value"
+   ],
+   "poshmark": [
+    "good",
+    "sells to brand searchers"
+   ],
+   "mercari": [
+    "ok",
+    "better buyers elsewhere"
+   ],
+   "offerup": [
+    "ok",
+    "seasonal, in outdoor metros"
+   ],
+   "grailed": [
+    "good",
+    "Arc'teryx, vintage Patagonia"
+   ]
+  },
+  "fan_apparel": {
+   "ebay": [
+    "best",
+    "sports memorabilia and fan gear is core eBay"
+   ],
+   "facebook": [
+    "ok",
+    "home-team buyers"
+   ],
+   "depop": [
+    "good",
+    "jerseys are named under tops"
+   ],
+   "poshmark": [
+    "ok",
+    "eBay has the fan buyer"
+   ],
+   "mercari": [
+    "ok",
+    "seasonal"
+   ],
+   "offerup": [
+    "ok",
+    "local team demand"
+   ],
+   "grailed": [
+    "ok",
+    "vintage jerseys only"
+   ]
+  },
+  "beauty": {
+   "ebay": [
+    "ok",
+    "new and sealed only; used cosmetics are banned"
+   ],
+   "facebook": [
+    "avoid",
+    "used cosmetics are prohibited; sealed only"
+   ],
+   "depop": [
+    "ok",
+    "a Beauty category exists; used makeup is a hard sell"
+   ],
+   "poshmark": [
+    "ok",
+    "new only; fragrance, nail polish and aerosols cannot ship"
+   ],
+   "mercari": [
+    "good",
+    "strong category; declare hazmat"
+   ],
+   "offerup": [
+    "avoid",
+    "used cosmetics are prohibited"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "phones_computers": {
+   "ebay": [
+    "best",
+    "model-number search, national demand, parts market"
+   ],
+   "facebook": [
+    "good",
+    "no fee and cash; expect scam messages"
+   ],
+   "depop": [
+    "blocked",
+    "Depop has banned consumer electronics since July 2020"
+   ],
+   "poshmark": [
+    "avoid",
+    "20% fee and no device checks"
+   ],
+   "mercari": [
+    "ok",
+    "$200 label protection is thin"
+   ],
+   "offerup": [
+    "good",
+    "high local demand; locked phones are banned"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "cameras_audio_gaming": {
+   "ebay": [
+    "best",
+    "model-number search; for-parts units still sell"
+   ],
+   "facebook": [
+    "good",
+    "consoles sell fast"
+   ],
+   "depop": [
+    "blocked",
+    "headphones, speakers and consoles are banned; cameras, film and lenses are allowed"
+   ],
+   "poshmark": [
+    "ok",
+    "small cameras and headphones only"
+   ],
+   "mercari": [
+    "good",
+    "core hobby category"
+   ],
+   "offerup": [
+    "good",
+    "consoles sell fast"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "media": {
+   "ebay": [
+    "good",
+    "games and vinyl sell; books and DVDs pay 15.3% but ship by Media Mail"
+   ],
+   "facebook": [
+    "ok",
+    "lots only"
+   ],
+   "depop": [
+    "ok",
+    "Music and Books categories exist; records are named"
+   ],
+   "poshmark": [
+    "avoid",
+    "low prices against a flat fee and shipping"
+   ],
+   "mercari": [
+    "good",
+    "video games; Media Mail from $4.47"
+   ],
+   "offerup": [
+    "ok",
+    "game lots only"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "collectibles_cards_toys": {
+   "ebay": [
+    "best",
+    "eBay's strongest category; envelope shipping for cards"
+   ],
+   "facebook": [
+    "ok",
+    "toy and LEGO lots; cards do better on eBay"
+   ],
+   "depop": [
+    "ok",
+    "a Toys category exists; a side shelf, not the main draw"
+   ],
+   "poshmark": [
+    "ok",
+    "toys sit under Kids; collectors use eBay"
+   ],
+   "mercari": [
+    "best",
+    "Mercari credits it for growth; card envelopes"
+   ],
+   "offerup": [
+    "ok",
+    "toy lots yes; cards need a national market"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "home_decor": {
+   "ebay": [
+    "good",
+    "small, shippable pieces with a pattern or maker name"
+   ],
+   "facebook": [
+    "best",
+    "the largest US category by listings"
+   ],
+   "depop": [
+    "ok",
+    "small shippable homeware; no lighting, ashtrays or lighters"
+   ],
+   "poshmark": [
+    "ok",
+    "must be under 5 lb and mailable"
+   ],
+   "mercari": [
+    "good",
+    "small housewares sell"
+   ],
+   "offerup": [
+    "good",
+    "bulky to ship, easy to hand over"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "small_appliances": {
+   "ebay": [
+    "good",
+    "model numbers and replacement parts"
+   ],
+   "facebook": [
+    "good",
+    "buyer tests it at pickup; check recalls"
+   ],
+   "depop": [
+    "blocked",
+    "appliances fall under the electronics ban"
+   ],
+   "poshmark": [
+    "avoid",
+    "often over 5 lb, wrong buyers"
+   ],
+   "mercari": [
+    "ok",
+    "a 10 lb label costs $12.49 or more"
+   ],
+   "offerup": [
+    "good",
+    "the buyer can test it"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "furniture": {
+   "ebay": [
+    "avoid",
+    "freight cost; local pickup only, which Facebook does with no fee"
+   ],
+   "facebook": [
+    "best",
+    "no shipping and no fee"
+   ],
+   "depop": [
+    "avoid",
+    "a Home > Furniture category exists, but Depop ships only and its buyers want clothes"
+   ],
+   "poshmark": [
+    "blocked",
+    "over the 15 lb cap, no pickup"
+   ],
+   "mercari": [
+    "avoid",
+    "not eligible for national shipping"
+   ],
+   "offerup": [
+    "best",
+    "cannot ship; 25 free listings a month"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "large_appliances": {
+   "ebay": [
+    "avoid",
+    "local pickup only; sell the parts here instead"
+   ],
+   "facebook": [
+    "best",
+    "cannot ship"
+   ],
+   "depop": [
+    "blocked",
+    "appliances fall under the electronics ban"
+   ],
+   "poshmark": [
+    "blocked",
+    "over the 15 lb cap, no pickup"
+   ],
+   "mercari": [
+    "avoid",
+    "not eligible for national shipping"
+   ],
+   "offerup": [
+    "best",
+    "cannot ship; 15 free listings a month"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "tools": {
+   "ebay": [
+    "best",
+    "brand and model searches; strong used power-tool demand"
+   ],
+   "facebook": [
+    "best",
+    "steady local demand"
+   ],
+   "depop": [
+    "avoid",
+    "blades are banned, power tools are electronics, and no buyers"
+   ],
+   "poshmark": [
+    "blocked",
+    "no category"
+   ],
+   "mercari": [
+    "ok",
+    "heavy kits cost $18 or more to ship"
+   ],
+   "offerup": [
+    "best",
+    "cash and a test at pickup"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "sporting_goods": {
+   "ebay": [
+    "good",
+    "golf, cycling parts, fishing; bulky fitness gear belongs local"
+   ],
+   "facebook": [
+    "best",
+    "bikes and fitness gear"
+   ],
+   "depop": [
+    "ok",
+    "small gear only (skates, boards); bikes and machines cannot ship"
+   ],
+   "poshmark": [
+    "avoid",
+    "apparel only; equipment hits the weight cap"
+   ],
+   "mercari": [
+    "ok",
+    "bicycles cannot ship"
+   ],
+   "offerup": [
+    "best",
+    "bikes, weights, treadmills"
+   ],
+   "grailed": [
+    "blocked",
+    "apparel only"
+   ]
+  },
+  "instruments": {
+   "ebay": [
+    "good",
+    "guitars and basses at 6.7%; pedals search by model"
+   ],
+   "facebook": [
+    "good",
+    "amps, drums, keyboards"
+   ],
+   "depop": [
+    "avoid",
+    "amps and pedals are electronics; no buyers"
+   ],
+   "poshmark": [
+    "blocked",
+    "no category"
+   ],
+   "mercari": [
+    "ok",
+    "small gear only; size limit"
+   ],
+   "offerup": [
+    "good",
+    "bulky amps, drums, keyboards"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "auto_parts_vehicles": {
+   "ebay": [
+    "best",
+    "part numbers and fitment data"
+   ],
+   "facebook": [
+    "best",
+    "has its own vehicle form; airbags are prohibited"
+   ],
+   "depop": [
+    "blocked",
+    "no category and no local handoff"
+   ],
+   "poshmark": [
+    "blocked",
+    "no category"
+   ],
+   "mercari": [
+    "avoid",
+    "motorized items cannot ship"
+   ],
+   "offerup": [
+    "best",
+    "core category; 1 free car a month, title required"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "baby_gear": {
+   "ebay": [
+    "ok",
+    "bulky to ship; cribs and car seats need a recall check"
+   ],
+   "facebook": [
+    "best",
+    "bulky; check recalls and car seat expiry"
+   ],
+   "depop": [
+    "avoid",
+    "cots and car seats must meet safety rules we cannot verify; bulky"
+   ],
+   "poshmark": [
+    "avoid",
+    "small items only; strollers and car seats are over 15 lb"
+   ],
+   "mercari": [
+    "avoid",
+    "bulky; recall rules"
+   ],
+   "offerup": [
+    "good",
+    "strollers sell; recalled items are blocked"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "antiques_art": {
+   "ebay": [
+    "good",
+    "auctions suit uncertain value"
+   ],
+   "facebook": [
+    "good",
+    "heavy antiques sell locally"
+   ],
+   "depop": [
+    "ok",
+    "small prints, not heavy antiques"
+   ],
+   "poshmark": [
+    "avoid",
+    "the antiques buyer is not here"
+   ],
+   "mercari": [
+    "ok",
+    "wrong audience for high prices"
+   ],
+   "offerup": [
+    "ok",
+    "sells as furniture or decor"
+   ],
+   "grailed": [
+    "blocked",
+    "no category"
+   ]
+  },
+  "handmade": {
+   "ebay": [
+    "ok",
+    "allowed, but buyers look on Etsy"
+   ],
+   "facebook": [
+    "ok",
+    "allowed; few people search for it"
+   ],
+   "depop": [
+    "good",
+    "handmade, custom and reworked are source values"
+   ],
+   "poshmark": [
+    "ok",
+    "allowed; sells as boutique accessories"
+   ],
+   "mercari": [
+    "ok",
+    "low search demand"
+   ],
+   "offerup": [
+    "ok",
+    "no prepared food or services"
+   ],
+   "grailed": [
+    "avoid",
+    "custom and unbranded pieces can be removed"
+   ]
+  },
+  "bulk_lots": {
+   "ebay": [
+    "good",
+    "lots are a native format: card lots, LEGO by weight, clothing lots"
+   ],
+   "facebook": [
+    "best",
+    "one pickup, no packing"
+   ],
+   "depop": [
+    "avoid",
+    "buyers pick single pieces"
+   ],
+   "poshmark": [
+    "good",
+    "bundles are native"
+   ],
+   "mercari": [
+    "good",
+    "bundles and lots are native"
+   ],
+   "offerup": [
+    "good",
+    "local lots clear; no mystery boxes"
+   ],
+   "grailed": [
+    "avoid",
+    "one item per listing"
+   ]
+  }
+ }
+}

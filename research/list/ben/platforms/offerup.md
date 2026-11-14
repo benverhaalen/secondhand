@@ -10,7 +10,7 @@ Marks: *observed* = I opened the source today. *asserted* = a source claims it w
 1. **OfferUp is local pickup only.** Nationwide shipping stopped for new listings on 2025-09-23 and was stripped from existing listings on 2025-10-21 *observed*. There is no shipped fee, no label, no checkout and no payout. This is the biggest difference from every other platform we post to: nothing is sold on the platform, so the listing's only job is to start a chat that ends in a meetup.
 2. **Put the right things there.** Furniture, appliances, tools, vehicles, bikes, phones and consoles. Clothing and anything that needs a national buyer belongs elsewhere *inferred*.
 3. **Price against local asking prices and leave room.** Every buyer haggles, offers are just chat messages and bind nobody *observed*. Pad about 10 to 15% *agent proposal*.
-4. **Cover photo and a plain title.** The feed is a photo grid with a price. The photo must be the real item, with no stock shots, no added text and no heavy editing *observed*.
+4. **Cover photo and a plain title.** The feed is a photo grid with a price. The photo must be the real item, with no stock or catalog shots and no added stickers or text *observed*.
 5. **Reply fast and look trustworthy.** The guidelines prohibit posting many listings while "rarely (or never)" answering buyers *observed*. TruYou and ratings are the trust signals *asserted*.
 6. **Stay under the free listing limits.** 1 car, 15 appliances, 15 phones, 25 furniture, 25 tools, 25 jewelry and 200 everything else per calendar month *observed*. A wrong category counts as fee avoidance *observed*.
 7. **Freshness is the only free ranking lever, and it is weak.** Duplicates are banned *observed*. Paid Promote buys placement *asserted*.
@@ -25,7 +25,7 @@ What changed:
 1. **Shipping is gone.** "Starting September 23, 2025, we will no longer offer nationwide shipping." "From this date forward, all newly posted items must be for local pickup only." *observed* ([help](https://help.offerup.com/hc/en-us/articles/41043186552980-Nationwide-shipping-ending)). The 12.9% fee, the size tiers, the 2 day window and the shipped-offer flow in my draft are all dead.
 2. **A second layoff and a reset to local** in 2025. The CEO memo names four moves: phase out shipping, modernize the app, spend much more on marketing, and fold auto dealers, storefronts, service providers, employers and landlords into one local business group *observed* ([GeekWire, 2025](https://www.geekwire.com/2025/offerup-hit-with-new-round-of-layoffs-as-marketplace-plans-to-simplify-its-offerings/)).
 3. **Free listing limits per category per month** exist and are published *observed*. My draft had none.
-4. **Heavily edited photos are a named removal reason**, next to stock and catalog photos *observed* (tool summary of the page; confirm the exact wording). This matters for our touch-up rule.
+4. **The photo rules are about realness, not editing.** "Post a photo of the actual item, not a catalog or stock photo" and "Keep photos clean by not adding extra stickers or text" *observed* (Posting Rules, re-read 2026-11-14). An earlier draft of this note said heavily edited photos were a named removal reason. A second read of the Posting Rules and the removal page found no such sentence: the words "edited" and "altered" do not appear on either. The first read came through a fetch summarizer that added it.
 5. **Authenticity checks** can remove high-value, designer and collectible listings until the seller sends tag, serial or receipt photos *observed*.
 6. **Listings can carry a video**, mobile app only, rolled out gradually *observed*.
 7. **Seller blogs are stale.** A Closo guide dated August 2026 still prints "about 12.9%" for shipped sales *observed* ([Closo](https://closo.co/blogs/platform-specific-guides/selling-on-offerup)). Another 2026 guide is headed "Free to Sell Locally, Shipping Ended" (underpriced.app, headline only). Check any blog's OfferUp fee claim against the help center.
@@ -140,18 +140,19 @@ Rules *observed* (Posting Rules, [Why listings are removed](https://help.offerup
 - Clear and well lit, with no stickers or added text.
 - No phone numbers, emails or addresses in the picture.
 - Your own photos only.
-- Stock, catalog or heavily edited photos get listings removed.
+- "Don't use stock or catalog photos of items": they get listings removed *observed* (removal page, re-read 2026-11-14). Editing is not named.
+- "Include high-quality, well-lit photos" *observed*.
 - For video: no stock footage, no edits that hide defects, no bot-generated video, no plugs for other sites.
 
 Norms *asserted*: phone photos in the home, driveway or garage. Nobody expects a white studio background. The cover should show the whole item. Use most of the photo slots for furniture and appliances: every side, the label or model plate, each flaw, and the item powered on.
 
 Platform photo tools: the pages I opened name no OfferUp background remover, AI enhancer or photo-to-listing tool *observed* (an absence in about a dozen pages, which is not proof).
 
-AI stance: none of the Posting Rules, removal reasons, Community Guidelines or Video guidelines mention AI-generated or AI-edited images *observed*. The working rule is the older one: the photo must be the actual item and must not be heavily edited *observed*. A generated or re-staged image fails both *inferred*.
+AI stance: none of the Posting Rules, removal reasons, Community Guidelines or Video guidelines mention AI-generated or AI-edited images *observed*. The working rule is the older one: the photo must be of the actual item *observed*. A generated or re-staged image is no longer a photo of the actual item *inferred*.
 
 ### Under Ben's touch-up rule
 
-Our rule (fix light and color, crop, straighten; never change the scene, the item or the wear) matches OfferUp better than any other platform, because OfferUp's own removal list names heavy editing *inferred*.
+Our rule (fix light and color, crop, straighten; never change the scene, the item or the wear) suits OfferUp well: its rules ask for a real, well-lit photo of the actual item with nothing added, and the buyer inspects the item in person, so an edit that flatters it only produces a failed meetup *inferred*.
 
 - **Met at capture, not by editing:** whole item in frame, daylight or all the room lights on, clutter physically moved out of the shot, a straight-on front view, the item pulled away from the wall for side and back shots, a tape measure laid on the item for scale *agent proposal*.
 - **Crop and order the adapter produces:** cover is a 1:1 square at 1600 x 1600 px with the whole item inside the middle 80%, so a square feed tile never cuts it off. Other photos keep 4:3 at 1600 x 1200 px (or 3:4 for tall items). Produce 8 photos, never more than 10 until the live cap is read. Order: 1 whole item at a three-quarter angle, 2 straight front, 3 side or back, 4 label or model and serial plate, 5 and 6 each flaw close up, 7 item with tape measure or powered on, 8 what is included *agent proposal*. The square tile is from memory, so check it against a live feed *asserted*.
@@ -325,7 +326,7 @@ OfferUp against Facebook Marketplace for the same item:
 | [Nationwide shipping ending](https://help.offerup.com/hc/en-us/articles/41043186552980-Nationwide-shipping-ending) | Proof OfferUp is local only | Dates; adapter never offers shipping |
 | [About free listing limits](https://help.offerup.com/hc/en-us/articles/13072929390228-About-free-listing-limits) | Monthly caps | Cap table; fee-avoidance rule |
 | [Posting Rules](https://help.offerup.com/hc/en-us/articles/360031988292-Posting-Rules) | What a listing may contain | Photo, duplicate, contact and keyword rules |
-| [Why listings are removed](https://help.offerup.com/hc/en-us/articles/360032337011-Why-listings-are-removed) | Enforcement | Heavily edited photos; authenticity checks |
+| [Why listings are removed](https://help.offerup.com/hc/en-us/articles/360032337011-Why-listings-are-removed) | Enforcement | Stock and catalog photos get listings removed; authenticity checks |
 | [Prohibited Items Guidelines](https://help.offerup.com/hc/en-us/articles/360032329711-Prohibited-Items-Guidelines) | Refuse list | Section 13 |
 | [Community Guidelines](https://help.offerup.com/hc/en-us/articles/360031988352-Community-Guidelines) | Behavior | Offers do not bind; reply to buyers |
 | [Video Community Guidelines](https://help.offerup.com/hc/en-us/articles/48174240530708-Video-Community-Guidelines) | Listing video | Mobile only; no defect-hiding edits |

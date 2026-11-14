@@ -28,7 +28,7 @@ Draft: 13.25% fee plus $0.30; title 80; up to 24 photos, min 500 px; offers last
 | AI photo rules unknown | The picture policy does not mention AI. eBay's own app offers AI-generated "Studio, Surface, and Outside" backgrounds *observed* |
 | Nothing on sizes | August 2026: eBay is "standardizing fashion sizes" and asks sellers to update fashion listings *observed* |
 
-The shared fetch budget ran out part way through (section 16). Seller-level thresholds, apparel condition ids, Authenticity Guarantee thresholds, Standard Envelope rates and selling limits are from memory and marked *asserted*.
+The shared fetch budget ran out part way through (section 16). Seller-level thresholds, apparel condition ids, Authenticity Guarantee thresholds, Standard Envelope rates and selling-limit numbers are from memory and marked *asserted*.
 
 ## 3. Who buys here and what sells
 
@@ -215,7 +215,7 @@ Relist versus edit *agent proposal*: a price revision keeps the listing id, watc
 - **AI content.** No rule against AI-written text or AI-edited photos in the picture policy *observed (absence)*. eBay ships its own AI description and photo-to-listing tools *asserted (memory; a Nov 2026 Digital Commerce 360 headline covers a "visual identification" upgrade to the magical listing tool)*. The binding rule is accuracy.
 - **Seller levels** *asserted (memory; [policy page](https://www.ebay.com/help/policies/selling-policies/seller-standards-policy?id=4347) found, not opened)*. Above Standard: defect rate at or under 2%, cases closed without seller resolution at or under 0.3%. Top Rated: 0.5%, 0.3%, late shipments under 3%, 100 sales. Defects are seller cancellations and unresolved cases. Below Standard pays 6% more in fees *observed* and loses search placement *asserted*.
 - **Cancelling because it sold elsewhere is a defect** *asserted*. Require immediate payment and delist within seconds.
-- **Selling limits.** New accounts are often capped near 10 items or $500 a month *asserted (memory; [help page](https://www.ebay.com/help/selling/listings/selling-limits?id=4107) not opened)*. Read the limit and tell the user before queuing 30 items.
+- **Selling limits.** Every account has a monthly limit shown in Seller Hub under "Monthly limits", reviewed by eBay each month, and "if you're new to selling in a particular category, we might limit how much you can sell" *observed* ([help page](https://www.ebay.com/help/selling/listings/selling-limits?id=4107), read 2026-11-14; it gives no numbers). New accounts are often capped near 10 items or $500 a month *asserted (memory)*. Read the limit and tell the user before queuing 30 items.
 - **Duplicates.** One fixed-price listing per identical item *asserted (memory; [policy](https://www.ebay.com/help/policies/listing-policies/duplicate-listings-policy?id=4255) not opened)*. Dedupe by our SKU.
 - **Off-eBay sales.** No phone numbers, emails or links in listings or messages *asserted*.
 - **Returns.** A buyer can open "not as described" within 30 days even on a no-returns listing, and the seller pays return postage *asserted*. A lost payment dispute costs $20 *observed*.
