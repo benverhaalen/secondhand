@@ -196,3 +196,7 @@ Ben, project chat, 21:28 UTC.
 ## 2026-11-14 live video you can talk to
 Ben, project chat, 21:22 UTC.
 > another feature to think about - rather than having in the camera part of listing something only the camera thing you could have an interactive video where you can then talk to the model about the product and it videos it and then from those videos the model could like talk to you 'can i get a better look at the graphic there' 'is there any way you could get better lighting' like in real time it gives super easy hints to the person about how to get it better context on an item and it can listen to what the user is saying and they can talk about say a defect or something and it remembers it and effectively compiles it in creating listings.
+
+## 2026-11-14 logging of everything
+Ben, logging thread, 21:20 UTC.
+> recall in my harness how i want logging of everything ensure either its set up or there are really great instructions on how to set it up possibly use the skill
