@@ -1,171 +1,199 @@
 # Connect
-Status: draft, *agent proposal* except where a line links a decision. Slug: connect. Written 2026-11-14.
 
-The hassle it removes: a seller today keeps five logins, five apps and five copies of the same closet in their head. Connect links each site once, shows plainly what secondhand can and cannot do there, and brings in what the person already has listed and bought, so the app is full on day one.
+Today a seller signs in to five sites, keeps each one signed in, and checks every app by hand for messages, offers and sales. Connect links each site once, inside a cloud browser that keeps the person's own login, and from then on the harness for that site acts and checks for them in the background.
+
+Nate on how it runs ([words](../../product/words.md#2026-11-14-nate-innovate-without-overcomplicating-and-the-agent-framework)): "the agentic frameworks we custom design to cloud based browser use drive the platform actions for the user in the background, and autonmously monitoring and periodically checking, unless fired and hooked with an app event like someone messaging back about a listing".
+
+The whole section below is an *agent proposal* built on the decided harness per marketplace ([decisions](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)) and the runtime in [product.md](../product.md) §6.
 
 ## What the person does and sees
 
-Lives in first-launch setup and in **You > Accounts** ([first launch is setup first](../../product/decisions.md#2026-11-14-first-launch-is-setup-first); [You tab](../../product/decisions.md#2026-11-14-the-you-tab-leads-with-numbers-and-a-by-site-comparison)). Sites: eBay, Facebook Marketplace, Depop, Poshmark, Mercari ([platform list](../../product/decisions.md#2026-11-14-the-platform-list-is-set)).
-
-1. Setup step one shows the five sites as rows: logo, name, a Connect button. Each step can be skipped.
-2. **eBay**: Connect opens eBay's own sign-in sheet (OAuth). The person approves and returns to the app with the row showing Connected.
-3. **Depop**: the same OAuth sheet once Depop grants partner access; until then, the cloud browser route below.
-4. **Poshmark, Mercari, Facebook**: Connect opens a sheet showing the site's real sign-in page running in the cloud browser. The person types their own password and any 2FA code into it. secondhand never sees the password. When sign-in lands, the sheet closes.
-5. Right after a site connects, a row appears under it: "Found 23 listings" and "Found 41 purchases", each with Bring in / Not now.
-6. Bring in fills the Sell grid with the person's live listings. Where the same thing is listed on two sites, it shows as one item with two site badges. When unsure, a card asks "Same item?" with both photos.
-7. Purchases fill Buy > Bought, each with its photo, price paid and date, and a Sell this button that starts an item from it.
-8. Tapping a connected site opens its capability table (below), its health, the last time it worked, and Disconnect.
-9. When a session dies, the row turns amber, a "Sign in to Poshmark again" card lands on Today, and tapping it reopens step 4. Nothing outward runs on that site until it is fixed.
-
-**Capability table the person sees** (one per site, from that account's capability rows; values here are today's reading of the research):
-
-| Can secondhand... | eBay | Depop | Poshmark | Mercari | Facebook |
-|---|---|---|---|---|---|
-| Post a listing | yes, after your tap | yes, after your tap | yes, after your tap | yes, after your tap | yes, after your tap |
-| Change the price | yes | yes | yes | yes | yes |
-| End or relist | yes | yes | yes | yes | yes |
-| See sales | yes, instantly | yes, instantly with partner access | within 2 min | within 2 min | you confirm handover |
-| Read and answer messages | yes | through the cloud browser | through the cloud browser | through the cloud browser | through the cloud browser |
-| Answer offers | yes | through the cloud browser | through the cloud browser | through the cloud browser | not a site feature for local |
-| See views, likes, watchers | views and watchers | likes and bags | from the listing page | from the listing page | from the listing page |
-
-The words come from `product/copy.md`; route names (api, browser, replay) never show. "Linking an account does not imply every capability is available" ([teardown](../../research/cross-cutting/nate/crosslister-teardown.md#5-capability-by-tool), *observed*), so a "no" is shown, never hidden.
-
-**Where Ben's design would make a person stumble.** His posting plan gets the login by Profile Sync from local Chrome ([posting note](../../research/list/ben/posting-browser-use-ebay.md#browser-use-for-sites-without-an-api-poshmark-depop-mercari-facebook-marketplace), *observed*). A phone-first person has no local Chrome to sync from, so sign-in has to happen inside the cloud browser on the phone (step 4). His approval live view is read-only; sign-in needs a live view the person can type into, which is a second, short-lived kind of link.
-
-**What the backend makes possible that the design does not yet use.** Import on connect means the Sell grid, You numbers and Buy history start full, not empty. Health per site lets the system stop every automation on one site the moment that site warns the account (gap G9 in [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#edge-cases--lifecyclemjs)).
-
-## What it reads and writes
-
-| Entity | Fields written here |
-|---|---|
-| `account` | `id`, `user_id`, `site`, `route` (`api`, `browser`), `health`, `capabilities[]` (`{action, available, route, mode_ceiling, note}`), `session_ref` (an id, never the secret), `external_user_id`, `linked_at`, `last_ok_at`, `last_error_code`, `scopes[]`, `token_expires_at` |
-| `listing` | imported live listings: `site`, `external_ids[]`, `state = live`, price, url |
-| `item` | one per distinct imported listing group, `state = live`; photos copied in as a `capture` with `source = marketplace` attributes |
-| `product` | resolved from imported titles and ids where possible |
-| `order` | imported sales and purchases, with the site's order id as the dedupe key |
-| `decision` | `relink`, `same_item`, `site_warning` |
-| `event` | `account.linked`, `account.health`, `account.unlinked`, `import.done` (names proposed, see Needs) |
-
-**What is stored and where:**
-
-| Secret or session | Lives in | Never |
+| # | Moment | What they see |
 |---|---|---|
-| Password | nowhere; typed by the person into the site's own page | seen, logged or stored by us |
-| eBay and Depop OAuth tokens | encrypted at rest on the server, key held in a Databricks secret scope; `account.session_ref` points to it | in Lakebase plaintext, Delta, MLflow traces or logs |
-| Cloud browser session (cookies) | the person's Browser Use profile; we hold the profile id | copied into our database |
-| Live view links | issued per use, short expiry, sent only to the signed-in owner | logged; the link is a credential ([crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#browser-use-cloud-v4-for-posting-and-for-delists-the-replay-layer-cant-do), *observed*) |
+| 1 | First launch is setup ([decisions](../../product/decisions.md#2026-11-14-first-launch-is-setup-first)) | You > Accounts: eBay, Facebook, Depop, Poshmark, Mercari, OfferUp, Grailed and Email, each with a one-line risk for that site and a Link button |
+| 2 | Link eBay | eBay's own sign-in in a sheet (OAuth). Back in the app the row reads ok, with what the harness can do there |
+| 3 | Link Facebook, Depop, Poshmark or Mercari | the site's own sign-in page, shown live from the cloud browser in a sheet. They type their password into the site; we never see or keep it |
+| 4 | Link Email | Gmail read-only sign-in. Without it the row says "email not connected: sale detection off for Poshmark and Mercari" |
+| 5 | Right after a site links | "Found 41 listings" with Bring them in. Each imported listing becomes an item and its live listing; a listing that looks like an item we hold opens a `merge_items` card |
+| 6 | Purchases (*agent proposal*) | "Found 41 purchases" with Bring them in: each becomes an item in `owned` with its cost set, plus an `order` of kind purchase |
+| 7 | Any day | each row: health pill, the verbs that run there and the ones that open the site instead, last checked, and the risk line |
+| 8 | Health changes | `expiring`: a quiet line on the row. `broken`: a `relink` card in Today. The site warned or limited the account: a `site_warning` card and the row goes `paused` |
+| 9 | Unlink | the row's menu; the harness stops acting there; history and orders stay |
 
-**Revoking.** Disconnect asks one thing: end the listings on that site or leave them up. Then it revokes the OAuth grant where the site offers revocation, deletes our token copy, deletes the Browser Use profile, cancels queued jobs for that account and writes `account.unlinked`. Deleting the whole secondhand account does the same for every site and reaches traces and model logs ([privacy §11](../../research/cross-cutting/nate/privacy-and-data.md#11-retention-and-deletion), *inferred*).
+OfferUp and Grailed link as search and price only: posting there is planned, not built ([words](../../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)).
+
+## Design choices
+
+| Choice | Options considered | Picked | Why | What would change it |
+|---|---|---|---|---|
+| How an account links | official OAuth ([platform-access](../../research/connect/nate/platform-access.md)); a cloud browser with a saved login ([posting-browser-use-ebay](../../research/list/ben/posting-browser-use-ebay.md)); a session on the phone; an extension in the person's browser ([crosslister-teardown](../../research/cross-cutting/nate/crosslister-teardown.md#5-capability-by-tool)) | OAuth inside the eBay harness, and Depop's if granted; a Browser Use saved profile on every other site | decided; Facebook has no OAuth for US sellers, Poshmark and Mercari have no API; agents run while the phone is locked | a partner grant on Facebook or Mercari moves that site's verbs to the API inside its harness |
+| Where sessions live | cloud profile; device Keychain; both ([privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md#9-session-tokens-and-cookies-keychain-versus-server-vault)) | the cloud profile; Keychain holds only the app's own session | Keychain `WhenUnlockedThisDeviceOnly` cannot be read while the phone is locked | App Review's reading of guideline 5.1.1(v) on a server-held session (test below) |
+| When the harness looks | a fixed poll per site; events only; one loop with two triggers ([email-and-notification-detection](../../research/sold/nate/email-and-notification-detection.md)) | one loop: events set `next_check_at` to now, sweeps pick rows whose time has passed | Nate's words; a fixed poll is either slow or wasteful; Vendoo polls every 10 min | measured lag of each site's events against the sweep |
+| Sale detection on Poshmark and Mercari | sold-page poll; Gmail push; a forwarding filter ([email-and-notification-detection](../../research/sold/nate/email-and-notification-detection.md)) | both: Gmail push and a sold-page poll every 1 to 2 min (inferred) | Gmail push has no published latency; a forwarding filter can be spoofed | measured email lag per site |
+| One session at a time | parallel jobs on one login; a lease per account ([cloud-browsers-and-detection](../../research/replay/nate/cloud-browsers-and-detection.md#13-replay-relevant-facts)) | a lease: one job drives an account's session, the next waits | a busy session returns 409; one login acting in two places looks like a bot | test accounts that tolerate two sessions without a warning |
+| Browser identity | rotating proxies; one stable US IP per profile ([cloud-browsers-and-detection](../../research/replay/nate/cloud-browsers-and-detection.md#12-comparison-table)) | one profile paired with one stable US IP | a cookie replayed from another IP fails; Poshmark flags server IPs | a site that warns on the stable IP |
+| A verb a site lacks | hide the site; a one-tap handoff that opens the site ([crosslister-teardown](../../research/cross-cutting/nate/crosslister-teardown.md#5-capability-by-tool)) | the handoff | the person still finishes the job in two taps | none |
+
+## Data flow
+
+```mermaid
+flowchart LR
+  P["phone: Link"] -->|"Apps API POST /v1/accounts: job"| S["eBay OAuth or Browser Use cloud profile sign-in"]
+  S -->|"Databricks secret scope: account token_ref, health ok"| A["Lakebase account"]
+  A -->|"import job, harness read_stats and read_orders: item origin import or purchase, listing, order"| I["Lakebase item, listing, order"]
+  T["event or check_due"] -->|"lease, policy in code, harness verb, read-back"| H["harness per site"]
+  H -->|"Delta event, MLflow trace: route, fell_back, ms"| E["next_check_at or decision"]
+```
+
+## Reads and writes with the proof layer
+
+| Entity | Connect writes | Evidence or guard |
+|---|---|---|
+| `account` | site, route (`harness`, `search_only`, `email`), health, capabilities, linked_at, token_ref | capabilities come from the harness probe at link; the probe's `job_id` and trace back each one |
+| `item` | origin `import` or `purchase`; title, category, cost from the site | each `attribute` carries `evidence` of kind `lookup`, `ref` the snapshot of the site page read, `captured_at`, `extractor_version` |
+| `listing` | imported live listings with `external_ids`, `state` live, `next_check_at` | read back from the site at import |
+| `order` | kind purchase, price, site, `external_order_id` | the order page snapshot |
+| `decision` | `relink`, `site_warning`, `merge_items` | `merge_items` shows the matching facts and their evidence |
+| `event` | link, unlink, health change, import, every harness verb | `route`, `fell_back`, `ms`, `trace_id` |
+
+Every number on the screen ("Found 41 listings", last checked) is a guarded number with a `citation` (metric, basis_ids of the rows found). Connect sends nothing a buyer reads, so it runs no `claim_check`; the verbs that do send (`post`, `send_message`) run it inside their jobs.
 
 ## States
 
-`account.health` (*agent proposal*):
-
-| State | Meaning | Enters when | Leaves when |
+| Account health | Means | Moves to | The person sees |
 |---|---|---|---|
-| `linking` | sign-in in progress | Connect tapped | token or session confirmed, or the person leaves |
-| `ok` | every listed capability works | probe or any call succeeds | an error below |
-| `degraded` | a route is down, a fallback works (replay drifted, partner API slow) | adapter falls back | route recovers |
-| `needs_signin` | session or refresh token dead, 2FA asked | 401, sign-in page seen, refresh fails | person signs in again |
-| `paused` | the site warned, limited or suspended the account | warning text, removal notice, listing restrictions | person resumes after reading the notice |
-| `off` | disconnected | Disconnect | Connect again |
+| `ok` | the last verb or probe read back | `expiring`, `broken`, `paused` | a green pill |
+| `expiring` | a token or session near its end (eBay refresh at 18 months) | `ok` on refresh, `broken` on expiry | a quiet line |
+| `broken` | sign-in needed (needsReauth) | `ok` after relink | a `relink` card |
+| `paused` | the site warned or limited the account, or the person paused it | `ok` when the person resumes | a `site_warning` card; no outward verb runs |
 
-Gap G6 (`needsReauth`) is `needs_signin` here, a person-only decision with no auto retry. Imported listings enter `LISTING_STATES` at `live` ([lifecycle.mjs](../lifecycle.mjs)). Imported items enter the item state `live`, skipping `capturing` and `researching`.
+Sign-in in progress is the account job's stage, not a health value. Job stages: `import` runs `read`, `match`, `write`; `unlink` runs `stop`, `revoke`.
 
-## Systems underneath
+## Harness and systems
 
-| Piece | What it does here |
+### Verbs and capability per site
+
+Every harness has the same verbs: `post, revise, end, relist, read_inbox, send_message, read_offers, answer_offer, read_orders, read_stats, search, save` ([product.md](../product.md) §6, Harnesses). What runs underneath:
+
+| Site | Route | Native underneath | Handoff (opens the site) | Detector (asserted) | Risk line shown |
+|---|---|---|---|---|---|
+| eBay | harness, API inside | Inventory and Offer, Fulfillment plus Notification, Message API, Best Offer and Negotiation, Browse | none | Akamai | "eBay bars AI agents from ordering without your review" |
+| Facebook | harness, US cloud browser | every verb in the browser | `read_offers`, `answer_offer` (no offers) | Arkose in some flows; warns before it restricts | "Facebook limits automated use; new listings capped at 20 a month" |
+| Depop | harness, partner API inside if granted | products, mark sold, orders and webhooks, offers to likers | listing offers (none in the API) | Cloudflare | "Depop bans scraping without permission" |
+| Poshmark | harness, paced | every verb in the browser; sale email | none | Cequence and reCAPTCHA | "Poshmark bans automation; accounts were suspended in Nov 2025" |
+| Mercari | harness | every verb in the browser; sale email | none | Cloudflare | "Mercari bans bots and may hold funds" |
+| OfferUp, Grailed | search and price only | `search`, `read_stats` through Firecrawl, Exa, our scrapers, Apify | `post` and the rest | not researched | "search only" |
+
+Detection facts are from [cloud-browsers-and-detection §2](../../research/replay/nate/cloud-browsers-and-detection.md#20-what-the-sources-say-about-detection-layers).
+
+### One loop, two triggers
+
+| Site | Events that fire a job | Sweeps (`check_due`) |
+|---|---|---|
+| eBay | Notification topics (order, offer, message) | rows whose `next_check_at` passed |
+| Depop | order webhooks | inbox and offers by sweep |
+| Poshmark, Mercari | sale email by Gmail push | sold page every 1 to 2 min; inbox by sweep |
+| Facebook | none found | everything by sweep |
+| Every site | the person's tap | |
+
+Each trigger becomes one `job` with an idempotency key; a repeat joins the running job. Then the lease, the policy check in code, the verb, the read-back, the event and trace, and either a decision or a new `next_check_at`. Starting values for `next_check_at`: pending offer or awaiting our reply, minutes; awaiting the buyer, 15 to 60 min; live with views or watchers, 1 to 2 h; quiet, 6 to 24 h; any event, now ([product.md](../product.md) §6, runtime).
+
+### Lease and pacing
+
+| Site | Pace set in the harness | Quiet hours |
+|---|---|---|
+| eBay | API call limits; browser steps 1 per 2 to 5 s | none for API reads |
+| Depop | 200 creates per 10 s in the API; browser steps 1 per 2 to 5 s | local night for browser steps |
+| Poshmark | 1 action per 2 to 5 s (inferred) | local night |
+| Mercari, Facebook | 1 action per 2 to 5 s (starting value) | local night |
+
+A second job for the same account waits for the lease. A `paused` account takes reads only after the person resumes.
+
+### Read-back and reconcile
+
+Every outward verb reads the site back before the event is written. A post with no read-back stays `posting` (postUnknown) until `reconcile` resolves it. `reconcile` runs nightly per account and right after a relink: it compares the site's listings and orders with ours, writes what it finds as events, and raises `site_changed_listing` ([list.md](list.md)) when a listing differs. What happens when a site changes after the person's tap is open in [product.md](../product.md#9-open-for-ben-and-nate).
+
+### Systems
+
+| Piece | Used for |
 |---|---|
-| Public edge | receives the OAuth redirect, holds the PKCE verifier (Depop needs S256), passes the code to the app API |
-| App API on Databricks Apps | exchanges codes, writes `account`, issues live view links, scopes every query by user |
-| Databricks secret scope | holds the key that encrypts OAuth tokens |
-| Lakebase | `account`, imported `listing`, `item`, `order` rows |
-| Lakeflow jobs | token refresh before expiry; a health probe per account every 30 min (a read-only `listLive` page or an API call); the import job |
-| Browser Use cloud | one profile per person per browser-route site; an interactive live view for sign-in |
-| Agents and AI Search | match imported listings across sites into one item (photo and title similarity), resolve `product` |
-| MLflow | a trace per import, so "why are these one item?" has an answer |
+| Browser Use cloud (V4, saved profiles) | sign-in sessions and every browser verb |
+| Databricks secret scope | eBay refresh token, Depop OAuth, Gmail OAuth, by `token_ref` |
+| Lakebase | `account`, `job`, the lease row, `next_check_at` |
+| Delta through the logger, MLflow | events and one trace per job |
+| Lakeflow jobs | `check_due`, `reconcile` |
+| Gmail API push (Pub/Sub, history.list) | sale email, read by `poll_orders` only |
+| Agent framework | open: DurableAgentServer or Flue; a one-site trial on `read_inbox` then `send_message` decides |
 
-## Contract for the frontend
+## Contract
 
-| Call | Returns |
-|---|---|
-| `GET /v1/accounts` | `[{id, site, route, health, capabilities[], linked_at, last_ok_at}]` |
-| `POST /v1/accounts` `{site}` | `{account_id, method: "oauth", authorize_url}` or `{account_id, method: "browser", live_view:{url, expires_at}}` |
-| `GET /v1/accounts/:id` | the account plus `last_error: {code, message, failed_step, retry}` |
-| `POST /v1/accounts/:id/relink` | same shape as `POST /v1/accounts` |
-| `DELETE /v1/accounts/:id` `{end_listings: bool}` | a `job` of kind `unlink` |
-| `POST /v1/accounts/:id/import` `{listings: bool, purchases: bool}` | a `job` of kind `import`, stages `read_site`, `match`, `write`, each `started, running, arrived, failed` |
+| Endpoint | Body | Returns |
+|---|---|---|
+| `POST /v1/accounts` | `{site}` | `201 {account_id, oauth_url}` or `{account_id, signin_session_url}`; `409 stale` if already linked |
+| `GET /v1/accounts` | | each account: site, route, health, capabilities, last checked, risk line |
+| `POST /v1/accounts/:id/import` | `{kind: listings or purchases}` | `202` `import` job |
+| `DELETE /v1/accounts/:id` | | `202` `unlink` job |
+| `POST /v1/decisions/:id/act` | `relink`, `site_warning`, `merge_items` options | `relink` returns a new sign-in session |
 
-Account ids use the prefix `acc_` (see Needs). Decision kinds: `relink` (options: Sign in, Turn off this site), `same_item` (Same item, Different items), `site_warning` (Resume, Keep paused, Open on site). Webhooks from sites reach the edge, never the phone.
+Errors use `{code, message, failed_step, retry}`; a site refusing sign-in is `502 site_failed` with `retry.by: user`. Ids: `acc_`, `job_`, `dec_`.
 
 ## Who may act
 
-| Action | Mode |
+| Action | Who |
 |---|---|
-| Sign in, approve OAuth, type 2FA | the person, always |
-| Refresh a token, probe health, read listings and purchases after the person tapped Bring in | `auto`, read-only, logged |
-| Retry a dead sign-in | never automatic; `needs_signin` waits for the person |
-| Pause all automation on a warned site | `auto`, protective, logged |
-| Resume a paused site | the person (`ask`, never promoted) |
-| Disconnect, end listings on disconnect | the person |
+| Link, relink, unlink, resume a paused account | the person only |
+| Import | the person's tap; merging with a held item is `merge_items`, ask |
+| Probe health, refresh a token, sweep | auto |
+| Any outward verb on a `paused` or `broken` account | nobody until it is `ok` |
 
 ## How it fails
 
-| Failure | What the person sees | Recovery |
-|---|---|---|
-| OAuth refused or closed | the row stays on Connect | tap again |
-| Depop partner access not granted | Depop connects through the cloud browser | switch to OAuth when granted, no re-link if the session holds |
-| Wrong password or 2FA inside the cloud browser | the site's own message, inside the sheet | the person retries on the site's page |
-| Session expires | amber row, `relink` card on Today | sign in again; queued outward actions wait, read-only polls stop |
-| Site warns or restricts the account | `paused` row and a `site_warning` card | automation stays off until the person resumes |
-| Browser Use down | `degraded`; API sites unaffected | jobs queue; health probe clears it |
-| Import finds the same thing twice | one `same_item` card per unsure pair | the person picks; sure matches merge silently and can be split |
-| Live view link leaks | nothing visible | link expiry is minutes and owner-bound |
+| Failure | What happens |
+|---|---|
+| Sign-in abandoned in the sheet | the job fails at its sign-in stage; the row stays unlinked |
+| Captcha or a second factor | the live sheet shows it; the person answers it themselves |
+| Token or cookie expired | `broken`, a `relink` card; jobs for that account wait |
+| The site warns or limits | `paused`, a `site_warning` card with the site's own words |
+| Profile seen from a new IP | the sign-in fails; the harness keeps the stable IP and asks for a relink |
+| Lease held too long | the job times out at its stage and the next job takes the lease |
+| Gmail not linked | the health line, and the sold-page poll carries detection alone |
 
 ## How we will know it works
 
-| Claim | Check |
-|---|---|
-| Linking is quick | median seconds from Connect to `ok`, per site, from `account.linked` events |
-| We never hold a password or log a secret | `node spec/log.mjs` on real logs finds no token or cookie fields; secret-scope access is the only path in the code |
-| Dead sessions never act | zero outward events on an account while `needs_signin` or `paused`, across real logs |
-| Import is complete | imported live listing count equals the site's own count for 10 real accounts |
-| Matching is right | of merged items, share the person split afterwards; of `same_item` cards, share answered "different" |
-| Tokens outlive the user's attention | eBay accounts stay `ok` for 30 days with no sign-in |
-
-## Facts that constrain it
-
-| Fact | Mark | Source |
+| Measure | Bar | Source |
 |---|---|---|
-| eBay links by OAuth auth code; user token about 2 h, refresh about 18 months | *asserted* | [platform-access §2](../../research/connect/nate/platform-access.md#2-ebay) |
-| Depop partner OAuth uses PKCE S256, not self-serve; access 1 h, refresh 1 year rotating | *observed* | [platform-access §4](../../research/connect/nate/platform-access.md#4-depop) |
-| Facebook has no OAuth for individual sellers; its partner program is EU and EEA only | *observed* | [platform-access §3](../../research/connect/nate/platform-access.md#3-facebook-marketplace) |
-| Poshmark has no API; Mercari's is partner only | *not found*; *asserted* | [platform-access §5](../../research/connect/nate/platform-access.md#5-poshmark), [§6](../../research/connect/nate/platform-access.md#6-mercari) |
-| Apple 5.1.1(v): an app may not store credentials or tokens to social networks off the device; whether a marketplace counts is not stated | *observed*; *inferred* | [privacy §2](../../research/cross-cutting/nate/privacy-and-data.md#2-apple-app-store-rules) |
-| Device-only Keychain items block background agents; crosslisters keep cookies on servers | *asserted* | [privacy §9](../../research/cross-cutting/nate/privacy-and-data.md#9-session-tokens-and-cookies-keychain-versus-server-vault) |
-| Browser Use profiles carry cookies, which conflicts with keeping credentials on the device | *observed* | [posting note](../../research/list/ben/posting-browser-use-ebay.md#pavlo-upgrade) |
-| Account deletion must start in the app | *observed* | [privacy §2](../../research/cross-cutting/nate/privacy-and-data.md#2-apple-app-store-rules) |
+| Time from a sale to our knowing on Poshmark and Mercari | under 2 min p95 | Vendoo polls every 10 min ([email-and-notification-detection](../../research/sold/nate/email-and-notification-detection.md)) |
+| Time from an eBay or Depop event to the job starting | under 1 min p95 | our test; no published figure found |
+| Accounts that stay `ok` over 30 days on test accounts | every site, no `site_warning` | test accounts per site |
+| Two jobs on one account at once | never, in the traces | MLflow traces |
+| Secrets in prompts, logs or traces | none | `node spec/log.mjs` and the secrets check |
+| A server-held session under App Store 5.1.1(v) | passes App Review | a TestFlight review build; untested |
 
-What changed: the old feature page planned official APIs for eBay and Depop, a prefilled handoff for Facebook and OfferUp, and browser posting only if opted in ([features/connect](../../features/connect/README.md)). Today's decisions put every site on its own harness on Browser Use cloud, with the API used where faster ([harness decision](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud); [it's a demo, so build it](../../product/decisions.md#2026-11-14-its-a-demo-so-build-it)). OfferUp is search only.
+## Facts to know
 
-## Demo path
+| Fact | Mark | Source | At public launch |
+|---|---|---|---|
+| eBay OAuth: access 2 h, refresh 18 months | observed | [platform-access §2](../../research/connect/nate/platform-access.md#2-ebay) | unchanged |
+| eBay User Agreement bars LLM bots and buy-for-me agents ordering without human review; effective 2026-06-28 on the live page, 2026-02-20 in Ben's note | observed | [platform-access §2](../../research/connect/nate/platform-access.md#2-ebay) | opening the page again settles the date; buying stays the person's tap |
+| eBay API licence bars storing user IDs and passwords | observed | [platform-access §2](../../research/connect/nate/platform-access.md#2-ebay) | unchanged: passwords are never held |
+| Facebook has no OAuth for US sellers; the partner API is EU and EEA only; the Automated Data Collection Terms apply | observed | [platform-access §3](../../research/connect/nate/platform-access.md#3-facebook-marketplace) | needs written permission or a partner route |
+| Depop partner access is gated; PKCE tokens 1 h and 1 year; scraping banned unless authorised | observed | [platform-access §4](../../research/connect/nate/platform-access.md#4-depop) | a granted partner key |
+| Poshmark has no API and bans automation, likes, shares, follows and delete-and-repost; suspensions in Nov 2025 were lifted within 24 h | observed, the lift asserted | [platform-access §5](../../research/connect/nate/platform-access.md#5-poshmark) | a written allowance, or the risk line stays |
+| Mercari has no public API, bans bots and may suspend and hold funds; it stays in the set | asserted | [platform-access §6](../../research/connect/nate/platform-access.md#6-mercari), [decisions](../../product/decisions.md#2026-11-14-mercari-stays-in-the-platform-set) | a written allowance, or the risk line stays |
+| Terms side by side | observed | [platform-access §7](../../research/connect/nate/platform-access.md#7-cross-marketplace-comparison-of-terms) | each term becomes a `rights` tag that is enforced |
+| Gmail read scopes are restricted and need a yearly security assessment ($540 to $1,800) | asserted | [email-and-notification-detection](../../research/sold/nate/email-and-notification-detection.md) | the assessment is passed |
+| App Store rules on account deletion and data | observed | [privacy-and-data §2](../../research/cross-cutting/nate/privacy-and-data.md#2-apple-app-store-rules) | unchanged |
+| Deletion removes sessions and tokens | observed | [privacy-and-data §11](../../research/cross-cutting/nate/privacy-and-data.md#11-retention-and-deletion) | unchanged |
+| Browser Use profiles keep a login across sessions | observed | [posting-browser-use-ebay](../../research/list/ben/posting-browser-use-ebay.md#browser-use-for-sites-without-an-api-poshmark-depop-mercari-facebook-marketplace) | unchanged |
 
-For Ben and Nate to mark.
+Rules that protect people, unchanged: a home address goes out only on the person's tap; buyers' data is handled as in [privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md); a recalled product is not listed; the risk to each real account is shown on its row.
 
 ## Open for Ben and Nate
 
-| Question | Quotes | Recommendation | What depends on it |
-|---|---|---|---|
-| Where do sessions live: on our servers (needed for delists while the phone sleeps) or on the device (Apple 5.1.1(v))? | Ben: Browser Use storing cookies "conflicts with keeping credentials on the user's device" ([posting note](../../research/list/ben/posting-browser-use-ebay.md#pavlo-upgrade)). Nate: "a cloud based browser use system where login auth is persisted" ([words](../../product/words.md#2026-11-14-nate-frameworks-and-goals)) | server side, encrypted, disclosed at Connect, revocable per site | background delists, App Store review, the replay feature |
-| Is Mercari in? | Ben lists it; Nate named "ebay, depop, poshmark, fb marketplace" ([vision Open](../../product/vision.md#open)) | keep it in; it costs one harness | setup rows, harness count |
-| Apply for Depop partner access now? | none differ | yes, today; browser route until granted | Depop sale speed, its API terms |
-| Business: is the number of linked sites something a plan could price on? | none | one line only; no model picked | pricing page, if any |
+None. The framework choice and the after-the-tap conflict are open in [product.md](../product.md#9-open-for-ben-and-nate).
 
 ## Needs from the shared model
 
-- `account` fields above, the `health` enum, capability rows, and the id prefix `acc_`.
-- Where session secrets live (secret scope plus encrypted column, never Lakebase plaintext) as a shared rule.
-- Event names `account.linked`, `account.health`, `account.unlinked`, `import.done` in [events.json](../events.json) and `log/example.mjs`, per [log/README.md](../../log/README.md).
-- A purchase `order` without an `item` until the person taps Sell this; or an item state for "owned, not for sale".
-- Decision kinds `relink`, `same_item`, `site_warning`.
+- A verb, or a named use of `read_stats`, that reads the seller's own active listings for `import`.
+- The risk line's text per site as a field on `account.capabilities`.
+- `reconcile`'s cadence (nightly per account and after relink) in the job table.
