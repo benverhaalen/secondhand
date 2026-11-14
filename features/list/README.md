@@ -17,5 +17,5 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/list/](../../research/list/)
 - Ben: [research/list/ben/](../../research/list/ben/)
-- Nate: [research/list/nate/](../../research/list/nate/)
+- Nate: `research/list/nate/` (none yet)
 - Ben, tech stack: [posting-browser-use-ebay.md](../../research/list/ben/posting-browser-use-ebay.md). eBay through its Listing/Inventory API with a dry-run mode; Browser Use V4 for sites without an API, stopped before Post until the user approves.

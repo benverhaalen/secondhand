@@ -17,4 +17,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/today/](../../research/today/)
 - Ben: [research/today/ben/](../../research/today/ben/)
-- Nate: [research/today/nate/](../../research/today/nate/)
+- Nate: `research/today/nate/` (none yet)

@@ -1,4 +1,5 @@
 # Adjacent-field references for secondhand
+Researched 2026-11-14 by Ben (Claude Code agent, concept thread). Feature: cross-cutting.
 
 Researched 2026-11-14. Goal: find apps outside resale whose shipped UX already solves the same underlying problems as secondhand, and name the concrete pattern to borrow.
 

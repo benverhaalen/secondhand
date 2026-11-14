@@ -17,5 +17,5 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/identify/](../../research/identify/)
 - Ben: [research/identify/ben/](../../research/identify/ben/)
-- Nate: [research/identify/nate/](../../research/identify/nate/)
+- Nate: `research/identify/nate/` (none yet)
 - Ben, tech stack: [openai-decisions-api.md](../../research/identify/ben/openai-decisions-api.md). OpenAI Decisions API returns probabilities but no reasons and no review queue, so we set thresholds and route low confidence to the user.

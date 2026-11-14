@@ -1,4 +1,5 @@
 # secondhand: direct references by flow
+Researched 2026-11-14 by Ben (Claude Code agent, concept thread). Feature: cross-cutting.
 
 Researched 2026-11-14. These notes cover what shipped resale, identification, measuring, pricing, crosslisting, messaging and alert products already do, so each screen of secondhand can point to a precedent.
 

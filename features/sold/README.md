@@ -15,6 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - How fast must a delist land, platform by platform, before a second buyer can pay?
 
 ## Research
-All research for this feature: [research/sold/](../../research/sold/)
-- Ben: [research/sold/ben/](../../research/sold/ben/)
-- Nate: [research/sold/nate/](../../research/sold/nate/)
+All research for this feature: `research/sold/` (none yet)
+- Ben: `research/sold/ben/` (none yet)
+- Nate: `research/sold/nate/` (none yet)

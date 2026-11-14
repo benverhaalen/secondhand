@@ -1,4 +1,5 @@
 # secondhand: psychology, behavioral economics and HCI grounding
+Researched 2026-11-14 by Ben (Claude Code agent, concept thread). Feature: cross-cutting.
 
 Research notes, 14 Nov 2026. Scope: which UX choices for secondhand (multi-marketplace selling with AI help and per-action approval, plus fuzzy-want buying with tap questions, matches and alerts) are backed by robust findings, and which popular "principles" are shaky.
 

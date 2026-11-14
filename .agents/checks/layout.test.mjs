@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { problems } from './check-layout.mjs';
+import { problems } from './layout.mjs';
 
 function repo(build) {
   const root = mkdtempSync(join(tmpdir(), 'layout-'));

@@ -17,6 +17,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/watch/](../../research/watch/)
 - Ben: [research/watch/ben/](../../research/watch/ben/)
-- Nate: [research/watch/nate/](../../research/watch/nate/)
+- Nate: `research/watch/nate/` (none yet)
 - *Agent proposal:* the search box ranks listings by price against fair value for that identity and condition, using the pricing engine, with an own index plus live fan-out and cross-listing dedupe. [one-search-box.md](../../research/watch/ben/one-search-box.md)
 - Ben, tech stack: [exa-alerts.md](../../research/watch/ben/exa-alerts.md). Exa Monitors find new listings at most hourly; price thresholds are our code; marketplace coverage untested, eBay Browse API as fallback.
