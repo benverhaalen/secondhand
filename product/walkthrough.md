@@ -17,7 +17,7 @@ Order runs from the biggest choice to the smallest, because each answer narrows 
 | 9 | First launch and onboarding | — |
 | 10 | The everyday app open | — |
 
-Ben, 19:03: "ensure its like thinking about everything from the biggest functions. the goal is to hit all the features." So every step asks **how all the features work together**, never which ones to keep, and there is no single hero user. The order runs from the biggest function to the smallest.
+Ben, 19:03 ([words](words.md#2026-11-14-biggest-functions-first)): "ensure its like thinking about everything from the biggest functions. the goal is to hit all the features." So every step asks **how all the features work together**, never which ones to keep, and there is no single hero user. The order runs from the biggest function to the smallest.
 
 ---|---|---|
 | 1 | What the app is at its core (its spine) | **decided: A, seller's crosslister** ([log](decisions.md)) |
