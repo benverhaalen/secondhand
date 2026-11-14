@@ -36,7 +36,7 @@ Every step writes an MLflow trace and a Delta row, so the "why?" sheet can show 
 
 ## Demo mode: build it, don't drop it
 
-Ben, 21:08: "this is a product demo, getting something that works for a hackathon is different from writing a production app ... we can also just build things" ([words](../../../product/words.md#2026-11-14-hackathon-demo-just-build-it)). So everything the three notes demoted for production reasons goes back in. A risk only matters if it would break the demo on stage, and then the answer is a backup path, not a cut.
+Ben, 21:08: "this is a product demo, getting something that works for a hackathon is different from writing a production app ... we can also just build things" ([words](../../../product/words.md#2026-11-14-demo-not-production)). So everything the three notes demoted for production reasons goes back in. A risk only matters if it would break the demo on stage, and then the answer is a backup path, not a cut.
 
 | Idea | The notes said | Now |
 |---|---|---|
