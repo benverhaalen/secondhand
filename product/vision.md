@@ -35,6 +35,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - The agent books a pickup itself inside your hours at your saved public spot; your home address goes out only on your tap. Ben and Nate, decision card ([decisions](decisions.md#2026-11-14-the-agent-books-pickups-inside-your-hours)).
 
+- The first person we build for is someone clearing their own things, who also buys used; resellers can use it but do not shape the design. Ben and Nate, decision card ([decisions](decisions.md#2026-11-14-the-first-person-we-build-for-is-someone-clearing-their-own-things)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).
@@ -51,16 +53,16 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 - Where a site has no official connection, we build our own: a cloud browser with the user's login kept, behind one API across sites; and many more outside sources for price data. Nate, [words](words.md#2026-11-14-nate-frameworks-and-goals). Fits Ben's [harness per app](decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud).
 - Goals: a money goal for the month, a count of sales, progress shown. Nate, [words](words.md#2026-11-14-nate-frameworks-and-goals).
 
+- How it earns: referral links on the buying side, and possibly selling unified, anonymous market data (what is listed, what sold recently, which ways of marketing worked). Nate, [words](words.md#2026-11-14-nate-referrals-and-market-data). Ben has not answered. *Agent note*: a referral must never decide which listing is called best; eBay's API licence bars reselling or aggregating its data ([platform-access.md](../research/connect/nate/platform-access.md), *observed*), and data from users needs their consent ([privacy-and-data.md](../research/cross-cutting/nate/privacy-and-data.md)).
+
 ## Open
 
-- Who is the main user: students clearing out a dorm, or resellers? Raised in the concept brief.
 - Posting with Browser Use could get users' accounts banned. Should posting be automatic or one tap by the user? *Agent proposal*: opt-in, with a warning.
 - Do studio photos misrepresent the item? Buyers need to see the real defects. *Agent proposal*: always keep the real photos alongside.
-- Platforms: Ben's set is eBay, Facebook Marketplace, Depop, Poshmark and Mercari ([words](words.md#2026-11-14-platforms)); Nate named "ebay, depop, poshmark, fb marketplace" ([words](words.md#2026-11-14-nate-vision)). Is Mercari in? Not yet asked of both.
 - Should buyers be told an assistant is answering? Asked of both on a card; not answered. *Agent proposal*: natural voice in the seller's style, a short note on the first automatic message, always honest if asked ([handled-by-default.md](../research/messages/nate/handled-by-default.md), [privacy-and-data.md](../research/cross-cutting/nate/privacy-and-data.md)).
 - The backend's front door: Databricks Apps takes only Databricks sign-in, so a phone and a marketplace webhook cannot reach it directly ([databricks-platform.md](../research/data/nate/databricks-platform.md), *observed* from docs, not yet tested on our workspace). *Agent proposal*: a thin public edge for sign-in and webhooks, everything else on Databricks; test on the real workspace first.
 - Ben: "it's a demo, so build it" ([words](words.md#2026-11-14-demo-not-production)). Nate: design the whole product, and build our own frameworks where a site offers none ([words](words.md#2026-11-14-nate-frameworks-and-goals)). *Agent proposal*: each feature spec describes the whole product, records each site's rules as facts, and carries a "demo path" line that the two of you mark.
-- Phone app: Ben decided Expo with a Swift camera module ([decisions](decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)); Nate's research imagined "apple native". Not yet asked of both.
+- Phone app: Ben decided Expo with a Swift camera module ([decisions](decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). Nate agrees if everything a native app could do in capture (Object Capture, LiDAR, our own capture systems per product type) works inside it ([words](words.md#2026-11-14-nate-expo-if-capture-is-fully-possible)). What settles it: a build task that runs Object Capture and LiDAR depth from the Swift module inside the Expo app on a real phone.
 
 ## When Ben and Nate disagree
 
