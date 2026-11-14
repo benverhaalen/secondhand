@@ -8,6 +8,14 @@ It is written from Ben's thesis about working with agents. That thesis lives in 
 
 The model is smart enough. What limits the result is what it thinks through. In Ben's words: "Intelligence is not only limited by what it knows. It is limited by the representations, instruments, obligations, and control structures through which it is currently thinking." Left alone, an agent gives "the most common one instead of the right one", and text that sounds right but tells a person nothing ("Sold $36–52 · n=41"). The cure is not more rules about pixels. It is a way of thinking that starts from the person holding the phone: what they want, not what they'd say; what else they might want to do; what they already know from other apps. Every element must then earn its place with a reason a human would accept. Ben directs by reacting, so the work produces cheap things he can react to, early, and says what is unfinished.
 
+## Scope and standing rules
+
+Ben's decisions, in his words ([words](words.md)):
+
+- **App first, web later.** "the app is the primary thing". A website with sign-in and the same features comes later, with photo upload in place of the camera and LiDAR (20:45). Design each screen for the phone, and keep nothing in it that only a camera can do unless that screen is the camera.
+- **Build it, don't rule it out.** "this is a product demo, getting something that works for a hackathon is different from writing a production app" (21:08, [decision](decisions.md)). Research shapes how a thing is built, not whether. Raise a constraint only when it would break the demo.
+- **Pay for the better API.** "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" (21:13). Cost is not a reason to pick the weaker option, and several APIs together are fine.
+
 ## Ends and means
 
 Most bad UI decisions confuse a means with an end. Name which is which before deciding anything.
