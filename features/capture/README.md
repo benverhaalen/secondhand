@@ -19,7 +19,7 @@ Draft, revised after Ben's direction ([words](../../product/words.md#2026-11-14-
 Then [measure](../measure/). The item lies on a white sheet from the first shot, so every image carries a white-balance reference. The list is chosen per item type, and shots capture automatically once they are sharp.
 
 ## Decided
-Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).
+- The app is built with Expo, with the camera, ARKit scale and live checks in one Swift module. Ben, 21:05 ([decision](../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)).
 
 ## Open
 - Should Apple Object Capture (a 3D model from photos) feed measure and studio? Ben asked for it to be researched: [words](../../product/words.md#2026-11-14-pavlo-and-appraise).

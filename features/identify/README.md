@@ -9,7 +9,7 @@ Work out what the item is (brand, model, size, condition) from the photos, using
 Not designed yet. Keep the mechanism here once research picks one, together with the reference it came from and the job that reference does.
 
 ## Decided
-Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).
+- The app is built with Expo, with the camera, ARKit scale and live checks in one Swift module. Ben, 21:05 ([decision](../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)).
 
 ## Open
 - What does the seller see when the model is unsure: confirm, or correct?

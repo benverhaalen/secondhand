@@ -9,7 +9,7 @@ Real dimensions from LiDAR, Apple's measuring tools and similar apps, and garmen
 Not designed yet. Keep the mechanism here once research picks one, together with the reference it came from and the job that reference does.
 
 ## Decided
-Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).
+- The app is built with Expo, with the camera, ARKit scale and live checks in one Swift module. Ben, 21:05 ([decision](../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)).
 
 ## Open
 - Which existing apps or open-source projects already measure garments from photos, and how accurate are they?
