@@ -17,4 +17,8 @@ Ben chose bought services for the demo: Firecrawl monitors, the eBay Browse API 
 - The watch loop on seen-ID sets, site by site: [fanout-and-watch-loop.md](../research/watch/ben/fanout-and-watch-loop.md#the-watch-loop).
 - Calling Firecrawl's scrape through Treg on our own 5-minute job: [openrouter-and-treg.md](../research/price/ben/openrouter-and-treg.md#treg).
 - The services it would replace: [monitor-alternatives.md](../research/watch/ben/monitor-alternatives.md).
-- The "Plan the build for pricing, search and watch" thread is designing it now. Its design goes here.
+- **The design and a working core:** [own-page-monitor.md](../research/watch/ben/own-page-monitor.md) and the prototype in [research/watch/ben/page-monitor/](../research/watch/ben/page-monitor/). It schedules checks, pulls listings out of a page, compares them by listing id with the watch rules built in, and sends a signed webhook with retries. 13 tests pass on made-up pages (`node --test research/watch/ben/page-monitor/monitor.test.mjs`). It has never fetched a real marketplace page.
+
+## First step
+
+Save one real newest-first search page per site as a fixture and make the extract tests pass on them. Then give it a real fetch function (Firecrawl's scrape through Treg, or a browser for Depop and Facebook) and something that calls `tick()` every 30 seconds.
