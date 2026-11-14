@@ -235,3 +235,7 @@ Nate, asking for research in the session "Lay out the whole product and write th
 ## 2026-11-14 nate ranking and classifiers
 Nate, asking for research in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > I understand tik tok when REA'd was discovered to have a beauty classification model or system that detected the users beauty, as well as other features like detecting emotion when scrolling to influence the users feed. I want to research and reverse analyze all found classifiers, algorithm structures and designs that help rank listings, classify a product or value of something over another. And help it empower the way our system calculates and determines marketing, pricing, of course also weighing all found existing listings on that platform, what the alogirthms are putting at the top and why, metrics on similar listings and how they perform
+
+## 2026-11-14 grailed and offerup posting planned, not built
+Ben, project chat, 22:09 UTC, answering a card that asked whether to add Grailed and OfferUp as places to post or keep them for search and price.
+> plan them but dont do anything yet. things if we have time
