@@ -100,3 +100,30 @@ Evidence: Airbnb's host bar is "Today / Inbox / Calendar / Insights / Menu", so 
 In every option, the ＋ camera ends in "Sell this / What's it worth / Find this". Every item and every match also shows its value, so appraising is everywhere. Watching lives in Buy, and new matches arrive in Today as Decisions.
 
 **Agent view: 1.** It is the most familiar and it matches Ben's "integrated, but all messages on purpose" exactly. Keep option 4's "Researching…" progress state and site chips in the Sell tab.
+
+### 3, second pass: what does ＋ do that Sell and Buy don't?
+
+Ben, 19:23: "what would the + button do that sell and buy wouldnt."
+
+**Plainly: if Sell and Buy each have their own add button, ＋ is redundant.** It earns its slot only under a rule: **tabs are places, and ＋ is the one way a physical thing gets in.**
+
+**Evidence**
+- Apple's HIG: "Use a tab bar to support navigation, not to provide actions" (observed, developer.apple.com tab bars, changelog Jun 2026). The page gives no guidance on a center create button.
+- Instagram took ＋ out of the bottom bar in its 2025 redesign and put it top-left. The new bar is Home, Reels, DMs, Search, Profile. The stated reason is that growth comes from DMs, Reels and recommendations, not posting (observed on a vendor blog, inro.social, Jan 2026; not checked against Instagram itself). *Inferred:* a center ＋ is worth it only when creating is the main job.
+- In secondhand, creating is the main job. ThredUp 2026 says "Supply is the New Constraint" ([problem-and-pitch](../research/cross-cutting/ben/problem-and-pitch.md)). Vinted keeps a center "Sell" ＋ (observed, Vinted critique, Sep 2026).
+- Google Lens collapsed its modes so there is one camera, and you choose what to do after the photo ([direct-references](../research/cross-cutting/ben/direct-references.md)). Appraising has no tab, so it needs a front door that doesn't force you to pick buying or selling first.
+
+**Scenarios**
+
+| Scenario | Option 1: ＋ is the only way in | Option 2: no ＋, adding inside each tab |
+|---|---|---|
+| A shirt in your closet to sell | ＋, guided shots, **Sell this**, and a draft appears in Sell with "Researching…" | Sell, then **Add item**, guided shots, and a draft. One extra tap, but you're already in the right place |
+| A whole folder of photos | ＋, then **Drop photos**; the folder splits into drafts in Sell | Sell, then **Add**, then **From photos** |
+| You want a Yelich jersey | Buy, type it in the search box, then **Watch**. Typing is search, not creation, so it stays in Buy | Same |
+| A friend's jacket you want too | ＋, photo, **Find this**: matches plus a watch | Buy, then the camera icon in search |
+| A garage sale lamp at $15 | ＋, photo, **What's it worth**: value per site and "the most to pay". Buy it, then the same card becomes **Sell this** at home | You first pick Buy (then the camera, then value) or Sell. Fine when you know which, awkward when you're deciding whether to flip it |
+| A $32 offer comes in | A card in Today: Accept, Counter or Decline | Same |
+
+**Option 3 (the Airbnb split)** is option 1 with Messages as its own tab, and You behind the avatar.
+
+**Agent view: option 1, with the rule enforced.** Sell and Buy have no add buttons; they are lists you look at and act on. ＋ is the single verb, so nothing is duplicated, and the garage-sale case works. It's also the fastest path, which matches "the second hand of the clock". Option 2 is the cleanest choice by Apple's rules, and is the right answer if appraising mostly happens on things you already own or already want.
