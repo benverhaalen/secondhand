@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: the You tab leads with numbers and a by-site comparison
+Agreed by: Ben, on the You card in the concept thread at 19:40 ([walkthrough §8](walkthrough.md#8-the-you-tab)). Decided: You opens with earned, could earn and sold. A By site card follows, showing how fast each site sells and at what share of the asking price. Below that is a settings list: Accounts (with each site's health), Automation (Rules and their log), Pickups (windows and meetup spot) and Notifications. There is no public profile. Changed: the By site numbers come from the sales data on Databricks.
+
 ## 2026-11-14: the Buy tab mirrors Sell with shelves
 Agreed by: Ben, on the Buy card in the concept thread at 19:38 ([walkthrough §7](walkthrough.md#7-the-buy-tab)). Decided: a search box across every market, then three shelves of photo tiles with pills: New matches, Watching and Bought. Bought items can become "Sell this". Alerts promise "within the hour". Changed: Buy and Sell share one visual habit. Screens are wireframes only until the brand is set (Ben, 19:37).
 

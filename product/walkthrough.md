@@ -11,9 +11,9 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
 | 6 | Shipping and pickup | **decided: your windows plus a saved meetup spot** ([log](decisions.md)) |
 | 7 | Buying home | **decided: shelves like Sell** ([log](decisions.md)) |
-| 8 | You: money, insights per site, accounts, automation | asking |
+| 8 | You | **decided: numbers, by site, settings** ([log](decisions.md)) |
 | 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
-| 10 | Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
+| 10 | (asking) Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
 | 11 | First launch and onboarding | — |
 
 Since 19:08, every option is derived from the [function map](functions.md) ([words](words.md#2026-11-14-function-map)).
@@ -242,3 +242,19 @@ Screens (wireframes): [A](../research/today/ben/you-tab/YouNumbers.png), [B](../
 | **B. Profile first, segments** | Your name and your rating on each site, then Money · Insights · Settings segments with an earnings chart | Depop and Vinted profiles | Feels like a marketplace profile | Ratings belong to each platform, not to us; the most useful numbers sit behind segments |
 
 **Agent view: A.** We aren't a marketplace, so we have no public profile. The By site card is the insight Ben asked for ("how it differentiates by site"), and it is also the Databricks payoff: every sale updates it.
+
+**Picked: A** (Ben, 19:40).
+
+---
+
+## 10. Behind the scenes: how much runs on Databricks
+
+**Judged on** how well and how creatively the platform is used, with no set criteria ([words](words.md#2026-11-14-databricks-judging)). The verified product names and features are in [databricks.md](../research/data/ben/databricks.md) (Lakebase, Databricks Apps, Agent Bricks, Unity Gateway, MLflow 3 tracing and evaluation, AI Search, Genie). The ownership split comes from [primitives-engineering](../research/cross-cutting/ben/primitives-engineering.md).
+
+| Option | What runs where | Strong at | Weak at |
+|---|---|---|---|
+| **A. Data layer only** | The app and agents run elsewhere (for example Vercel and Supabase). Databricks holds the Delta tables for comps and sales, the price model, and Genie. | Fastest to build | Looks like "we also used Databricks"; the platform is decoration |
+| **B. All in on Databricks** | Databricks Apps hosts the backend and webhooks. Agent Bricks runs the agents. Lakebase is the app database, synced to Delta. Unity Gateway calls the models. MLflow traces every step and is shown in the app as a "why?" timeline per item. **Your approvals are evaluation labels**: they recompute the thresholds for the learning tiers. Genie answers "what hasn't sold in 30 days?" | The strongest judging story: the audit trail is the product, and human-in-the-loop measurably trains the system. It ties directly to the learning-tiers decision. | Setup risk: Apps and Lakebase permissions can eat hours; Free Edition may lack Beta features |
+| **C. Hybrid** | The app and its database stay off Databricks for speed. Databricks owns comps, valuation, the price model, traces, evaluation and Genie, joined by one identity id. | Less setup risk; keeps the learning loop and the transparency story | Two stacks to wire together; a weaker "used the platform well" claim |
+
+**Agent view: B, with C as a time-boxed fallback.** The decided learning tiers need somewhere to learn, and MLflow evaluation over approvals is exactly that. The "why?" timeline turns transparency into something the judges can see. If Lakebase or Apps isn't working within the first 2 hours of setup, drop to C without changing the product.

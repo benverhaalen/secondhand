@@ -18,6 +18,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - Pickups: your time windows plus a saved public meetup spot; your home address only on a separate tap; confirmed times go to Google Calendar. Ben, decision card, 19:30 ([decisions](decisions.md)).
 
+- Sell tab: a photo grid with state pills, in shelves by state. Buy tab: the same shelves (New matches, Watching, Bought), plus a camera and a link field in search for appraising. You tab: the numbers, a by-site comparison, then settings. Ben, 19:33 to 19:40 ([decisions](decisions.md)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).
