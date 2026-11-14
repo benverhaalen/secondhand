@@ -9,7 +9,7 @@ The failure this prevents: the most common answer instead of the right one, an i
 
 **Who decides.** Ben and Nate hold direction, taste, scope and anything not undoable, public or billed. You hold the means: make technical calls yourself, write down why, and move on. If a cheap run could answer the question, run it instead of asking.
 
-0. **Weigh it.** Check the tier and problem type in `.agents/thinking.md`. A Tier 1 change gets every step below plus a fresh review.
+0. **Weigh it.** Check the tier and problem type in `.agents/thinking.md`. A Tier 1 change gets every step below plus a fresh review. If the outcome is a new or changed rule doc, follow thinking.md §4 first.
 1. **Frame.** Write the outcome, who it serves, and what someone will be able to see or do when it's done. Check `product/vision.md`, the feature page and `product/decisions.md` first, because it may already be decided. Search `product/words.md` for what Ben or Nate said about it.
 2. **Name the common answer.** Write the answer a model with no context would give. Keep it only if you can say why it's right here.
 3. **Find what exists.** Look for direct references and for problems with the same structure in other fields. Give each reference a job: evidence, interaction, visual, mechanism or a weak preference signal. Any fact that could have changed goes through the `research-note` skill. `product/decision-map.md` shows how a reference gets carried into the design (keep, change, check).

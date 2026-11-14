@@ -132,3 +132,7 @@ Ben, project chat, 20:41 UTC.
 ## 2026-11-14 app first, and ui-factory after the brand
 Ben, in the thread "Set the secondhand brand identity", 20:45 UTC.
 > the app is the primary thing, we will try to eventually build a website with signing in and stuff that does essentially the same features as the app spare the phone native things like the lidar and the camera in the app, but you could still upload photos and such in it. a website and an app, but app comes first. for the second thing, you need to figure this out. how would an expert ui ux designer specific to this context and situation - (use rdd and iae to figure certain things out and ensure you know them in context) think about human ux psychology and the users head and whats intuitive and all that. but you need to figure these things out. another thing in the constitution, when thinking about a user perspective think about what they want not what they think they want. again, rdd and iae stuff could be used there looped and seeded research. that is how you solve that. for the ui factory - yes but tailored to this project. hold on exactly adding it until the brand is settled completely
+
+## 2026-11-14 poteto rules for docs
+Ben, in the thread "Set the secondhand brand identity", 20:46 UTC.
+> ensure that the poteto review is used when effectively creating docs for the future and that any meta thoughts that poteto's stack has - nothing specific to this but general rules of thumb that could be added to whatever constitution could be used

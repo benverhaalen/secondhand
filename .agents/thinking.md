@@ -29,3 +29,18 @@ How much care a change gets depends on how much depends on it downstream.
 ## 3. Go only as deep as the question needs
 
 Answers, then mechanisms, then models, then representations, then instruments. Stop at the first level that settles the question. When a run, a test or a measurement can settle it, use that instead of an argument. When stuck, change the representation (a table, a state machine, a script) or look at another field that has already solved the same structure. Don't patch the same attempt again.
+
+## 4. Before you write or change a rule doc
+
+A rule doc is anything an agent reads as instructions: AGENTS.md, a skill, a constitution, a standard, a feature page. The [poteto-mode review](../research/cross-cutting/ben/poteto-mode-review.md) is the record of what went wrong in this repo's first docs. Read its findings before adding to one. These rules of thumb come from Poteto's pstack (Lauren Tan, MIT), restated generally ([Ben, 20:46](../product/words.md#2026-11-14-poteto-rules-for-docs)):
+
+- **Subtract before you add.** Delete or merge what is stale before writing something new. Git keeps the history.
+- **One fact, one place.** Link to the source of truth; never restate it. A copy drifts within the hour.
+- **Encode lessons in structure.** If a rule can be checked by a script, write the check with a failing test, not another sentence.
+- **Prove it works.** A check, a test or a claim counts only after it has been run against the input it exists to catch.
+- **Attack the premise.** When two fixes share an assumption and both fail, question the assumption before writing a third.
+- **Minimize reader load.** Count what an agent must read before it can act. Shorter beats complete.
+- **Model the domain.** Name a state, a shape or a rule once, in code where you can (`spec/`), and make docs use those names.
+- **Separate before you share.** Give each writer their own file instead of having many agents edit one.
+- **Never block on the human for a reversible step.** Do it and show the result; ask only about taste, direction, scope or what can't be undone.
+- **Every rule says when it retires.** A rule that no longer changes a decision gets deleted.
