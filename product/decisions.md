@@ -2,6 +2,18 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: Databricks runs the whole backend, with a hybrid fallback
+Agreed by: Ben, on the Databricks card in the concept thread at 19:41 ([walkthrough §10](walkthrough.md#10-behind-the-scenes-how-much-runs-on-databricks)).
+
+Decided:
+- **Hosting and agents:** Databricks Apps hosts the backend and webhooks. Agent Bricks runs the agents. Lakebase is the app database, synced to Delta. Unity Gateway calls the models.
+- **Visible traces:** MLflow traces every step and is shown as a "why?" timeline on each item.
+- **Learning from approvals:** your approvals are evaluation labels that move actions between the Ask and Auto tiers.
+- **Questions:** Genie answers questions over your items and sales.
+- **Fallback:** if Lakebase or Apps isn't working within 2 hours of setup, the app and its database move off Databricks (option C). Comps, valuation, traces, evaluation and Genie stay on it. The product does not change.
+
+Changed: features/data is the backbone for item-card, price, today and You > By site.
+
 ## 2026-11-14: the You tab leads with numbers and a by-site comparison
 Agreed by: Ben, on the You card in the concept thread at 19:40 ([walkthrough §8](walkthrough.md#8-the-you-tab)). Decided: You opens with earned, could earn and sold. A By site card follows, showing how fast each site sells and at what share of the asking price. Below that is a settings list: Accounts (with each site's health), Automation (Rules and their log), Pickups (windows and meetup spot) and Notifications. There is no public profile. Changed: the By site numbers come from the sales data on Databricks.
 

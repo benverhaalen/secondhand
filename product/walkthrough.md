@@ -13,8 +13,8 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 7 | Buying home | **decided: shelves like Sell** ([log](decisions.md)) |
 | 8 | You | **decided: numbers, by site, settings** ([log](decisions.md)) |
 | 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
-| 10 | (asking) Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
-| 11 | First launch and onboarding | — |
+| 10 | **decided: all in, hybrid fallback** ([log](decisions.md)) Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
+| 11 | First launch and onboarding | asking |
 
 Since 19:08, every option is derived from the [function map](functions.md) ([words](words.md#2026-11-14-function-map)).
 
@@ -258,3 +258,23 @@ Screens (wireframes): [A](../research/today/ben/you-tab/YouNumbers.png), [B](../
 | **C. Hybrid** | The app and its database stay off Databricks for speed. Databricks owns comps, valuation, the price model, traces, evaluation and Genie, joined by one identity id. | Less setup risk; keeps the learning loop and the transparency story | Two stacks to wire together; a weaker "used the platform well" claim |
 
 **Agent view: B, with C as a time-boxed fallback.** The decided learning tiers need somewhere to learn, and MLflow evaluation over approvals is exactly that. The "why?" timeline turns transparency into something the judges can see. If Lakebase or Apps isn't working within the first 2 hours of setup, drop to C without changing the product.
+
+**Picked: B, falling back to C** (Ben, 19:41).
+
+---
+
+## 11. First launch and onboarding
+
+**Evidence**
+- Plaid's guidance on linking accounts: set expectations before linking, ask for the minimum, and use each site's own sign-in. The canvas Onboard screen already follows it ([adjacent-references](../research/cross-cutting/ben/adjacent-references.md)).
+- Apple asks apps to request permissions at the moment they're needed (*asserted*).
+- Pickup windows are already asked on first use (decided).
+- Only eBay has an official listing API. The other sites post by a prefill and your tap, so connecting them up front buys little.
+
+| Option | First minute | Strong at | Weak at |
+|---|---|---|---|
+| **A. Value first** | Opens on the ＋ camera: "Point at something you own." You see its value on each site within seconds, with zero accounts. Each site is connected the first time you post there. | Value before any setup; nothing to fill in; the strongest demo opening | You meet the connect step later, in the middle of a task |
+| **B. Setup first** | Connect your sites, set pickup windows, choose notifications, then go home (the canvas Onboard screen) | Everything is ready from the start | A form before any value; most people quit setup screens |
+| **C. Guided first item** | A short walkthrough sells one of your own items end to end, connecting a site at the post step, then lands on Today | Teaches every part once | Longer; can feel like a tutorial |
+
+**Agent view: A.** The first thing anyone does is the core loop: photo, value. Every permission (camera, sites, notifications, pickup) is asked at the moment it is needed, so there is nothing to learn up front.
