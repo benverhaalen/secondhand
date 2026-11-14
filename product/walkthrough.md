@@ -7,9 +7,9 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 1 | What the app is at its core | **decided: seller's crosslister** ([log](decisions.md)) |
 | 2 | Selling: how the selling features chain | **decided: item by item, one live draft each, folder drop splits into drafts** ([log](decisions.md)) |
 | 3 | The always-there bottom bar | **decided: Today · Sell · ＋ · Buy · You, ＋ is the only way in** ([log](decisions.md)) |
-| 4 | Selling home: drafts, live and past, interest per item | — |
+| 4 | Selling home: drafts, live and past, interest per item | asking |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
-| 6 | Shipping and pickup (Google Calendar, approved time windows) | asking |
+| 6 | Shipping and pickup | **decided: your windows plus a saved meetup spot** ([log](decisions.md)) |
 | 7 | Buying home: search, wants, watch, deal check, appraise | — |
 | 8 | You: money, insights per site, accounts, automation | — |
 | 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
@@ -177,3 +177,19 @@ That needs no choice from Ben.
 | **C. Windows plus a saved meetup spot** | A, plus a default public meetup spot you save (a campus union, or a police station's safe-exchange zone). Your home address goes out only on a separate Never alone tap. | Police safe-exchange zones (*asserted*, common in US cities) | Safest default; the address is never the first thing sent | One more thing to set at first use |
 
 **Agent view: C.** It keeps A's speed, and it makes a public spot the default, which removes the Muse failure from the normal path.
+
+**Picked: C** (Ben, 19:30).
+
+---
+
+## 4. The Sell tab: how your items are organized
+
+**Holds** ([functions.md](functions.md)): drafts and researching items, live items with interest per site, sold items to ship, past listings, stale items, and the totals Ben named (earned, count, potential earnings). Today already surfaces what needs you, so Sell is where you look things up and manage them.
+
+| Option | Layout | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. State segments** | A totals strip ("Earned $126 · Could earn $340 · 7 live"), then the segments Drafts · Live · Sold. Each live row shows site chips with interest per site and "12 days listed, similar items sell in 9". | eBay's Selling and Depop's Selling hub list state groups (*asserted* for eBay; Depop *observed*: sold "to ship" count, likes per item) | Matches the resale apps people know; each state has a home | Three places to look |
+| **B. One list, sorted by what's next** | One list: researching first, then drafts, then live sorted by how stale they are, then sold. Filter chips sit on top. | Linear-style triage lists | Nothing hidden behind a segment | A long list once you have 40 items; less familiar |
+| **C. Photo grid (closet)** | Your items as a photo grid, each with a state badge. Tapping a tile opens the item. | Poshmark closet, Depop shop grid | Visual and fast to recognize | Interest and status numbers don't fit on a tile |
+
+**Agent view: A, with C's grid as a view toggle inside Live.** It's the familiar resale layout. The totals strip answers Ben's earned, count and potential at a glance, and the per-site chips answer "how does it differ by site". The deeper insights (average time to sell, what things sold for, comparisons by site) live in You > Insights.

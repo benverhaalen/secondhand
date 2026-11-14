@@ -16,6 +16,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - Automation runs in tiers that learn: Auto, Ask, Never alone. An Ask promotes to Auto after 3 approvals; Never alone is locked. Ben, decision card, 19:29 ([decisions](decisions.md)).
 
+- Pickups: your time windows plus a saved public meetup spot; your home address only on a separate tap; confirmed times go to Google Calendar. Ben, decision card, 19:30 ([decisions](decisions.md)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).

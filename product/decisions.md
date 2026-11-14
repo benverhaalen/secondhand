@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: pickups use your windows and a saved meetup spot
+Agreed by: Ben, on the pickup card in the concept thread at 19:30 ([walkthrough §6](walkthrough.md#6-pickup-and-shipping)). Decided: you set pickup windows once, and the agent offers buyers only those times. The default place is a public spot you saved. Your home address goes out only on a separate Never alone tap. A confirmed pickup becomes a Google Calendar event. For shipping, the app picks the box size from the measurements, uses the platform's own label, and puts a "ship by" card in Today. Changed: first use of pickup asks for windows and a spot; the Event primitive carries the place and the calendar link.
+
 ## 2026-11-14: automation runs in tiers that learn
 Agreed by: Ben, on the human-in-the-loop card in the concept thread at 19:29 ([walkthrough §9](walkthrough.md#9-asked-next-human-in-the-loop-what-runs-on-its-own-and-what-always-needs-a-tap)).
 
