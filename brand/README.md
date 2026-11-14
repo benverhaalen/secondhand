@@ -8,4 +8,4 @@ The secondhand brand. Status: in progress. Ben picks by looking at image boards;
 - [coder-card.md](coder-card.md): read before any UI edit.
 - `explore/`: each round's images, inputs and lineage. Round 6 is the decision boards.
 
-Images are made with the [image-gen skill](../.agents/skills/image-gen/SKILL.md). This is a hackathon demo ([Ben](../product/words.md#2026-11-14-demo-not-production)): the font files the app needs ship with the app when it is built.
+Images are made with the [image-gen skill](../.agents/skills/image-gen/SKILL.md). This is a hackathon demo ([Ben](../product/words.md#2026-11-14-demo-not-production)): the app ships Marist and Geist, loaded at build time from a local folder. Font files are gitignored and never committed to this public repo.

@@ -25,14 +25,30 @@ Every step writes an MLflow trace and a Delta row, so the "why?" sheet can show 
 | App shell | Expo SDK 58 app with a Swift `CaptureKit` module | Small SwiftUI capture app; everything after the shutter is web (opened in a web view or handed off) | Either; prefers native for on-device tag reading | **Ben answered "app first, website if we have time" at 20:59** ([words](../../../product/words.md#2026-11-14-app-first-website-if-time)). He then picked an Expo app with a Swift camera module at 21:05 ([decision](../../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). Approval screens render in the app with `@json-render/react-native`. The earlier recommendation was measure's version, because the dynamic UI plan ([generative-ui.md](../../today/ben/generative-ui.md)) builds every approval card in a React 19 web app with json-render and shadcn. An Expo app would need those components twice. A Swift capture screen that uploads and hands off keeps one UI. The decision is Ben's (below). |
 | Who draws flaw boxes | Gemini 3.8 Flash | n/a | Gemini, with per-tile Decisions checks | Agree. Decisions can't return locations [observed in both notes]. |
 | Card in frame | Needed only on web | Native needs nothing extra; card on web only (in FitTag's simulated tests, card-only was off by 22 to 35 cm) | n/a | Agree. The white sheet stays for color. |
-| Object Capture | Not used for clothing | Stretch goal; a forum bug report says it fails on iPhone 17 Pro under iOS 26.x | n/a | Test on the demo phone in the first hour; otherwise the one-frame LiDAR box. |
+| Object Capture | Not used for clothing | Stretch goal; a forum bug report says it fails on iPhone 17 Pro under iOS 26.x | n/a | **Build it** (see Demo mode below). |
 
 ## Changes to Ben's named tools
 
 - **OpenAI Decisions API**: kept for every judgement. It is GA since Oct 22, on `gpt-6-luna` only, and can't name things or place points or boxes (identify note, loop 1, observed). So a generator (Terra, Gemini) proposes and Decisions verifies.
 - **LiDAR and Apple measuring**: kept, but scale now comes from the ARKit floor plane, which works without LiDAR. LiDAR cross-checks it.
-- **Apple Object Capture**: demoted to a stretch goal for rigid items.
+- **Apple Object Capture**: built for rigid items (see Demo mode below).
 - **Added**: Gemini for boxes and points, SAM 3.1 for masks, SerpApi Google Lens and eBay image search for exact identity.
+
+## Demo mode: build it, don't drop it
+
+Ben, 21:08: "this is a product demo, getting something that works for a hackathon is different from writing a production app ... we can also just build things" ([words](../../../product/words.md#2026-11-14-demo-not-production)). So everything the three notes demoted for production reasons goes back in. A risk only matters if it would break the demo on stage, and then the answer is a backup path, not a cut.
+
+| Idea | The notes said | Now |
+|---|---|---|
+| Apple Object Capture | Stretch goal; a forum report of failures on iPhone 17 Pro | **In the demo** for shoes, bags and objects: walk around, get a USDZ and its metric box, show it spinning in the item card (RealityKit view in the Swift module). Backup if it crashes on the demo phone: the one-frame LiDAR box. |
+| 3D for clothes | Single-image 3D (TRELLIS, Hunyuan3D, SAM 3D) has no metric scale, so not used | **In the demo.** Generate a 3D model from the front, back and spin photos, then scale it to the measured lengths, which fixes the scale problem. Shown labelled as a model next to the real photos. |
+| 10 s spin shot | Optional, capped at 6 shots | **In.** It feeds the 3D model, Seedream's angles and a 360 view on the listing. |
+| Constant-color shot (Apple, D65) | Stretch | **In** as one extra tag or fabric shot that gives Seedream true color. |
+| Google Lens through SerpApi | Asked Ben because of a terms gray area | **Use it.** |
+| "Fits like" against brand charts | About 10 charts | Cover every brand on the demo rack plus the common ones (Carhartt, Patagonia, Levi's, Nike, Uniqlo...). |
+| Website with a card for scale | Only if there's time | Unchanged: Ben said app first. |
+
+Kept on purpose, because they are the human in the loop judges want to see: yes or no on each flaw, dragging measure lines, "Looks right".
 
 ## What has to be measured on day one
 
