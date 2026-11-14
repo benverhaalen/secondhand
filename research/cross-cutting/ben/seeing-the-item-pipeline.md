@@ -50,6 +50,20 @@ Ben, 21:08: "this is a product demo, getting something that works for a hackatho
 
 Kept on purpose, because they are the human in the loop judges want to see: yes or no on each flaw, dragging measure lines, "Looks right".
 
+## Best API wins, and several at once where that helps
+
+Ben, 21:13: "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" ([words](../../../product/words.md#2026-11-14-paying-for-better-apis)). The three notes already ignored price, but in a few places they picked one fast model where a stronger one, or several run together, would likely be more accurate. *Agent proposal*, all *inferred* until the day-one run on our own items:
+
+| Step | The notes picked | Now |
+|---|---|---|
+| Flaw boxes | Gemini 3.8 Flash alone | Run the Flash and the strongest Gemini model plus a second vendor's vision model at once, and merge the boxes. Flaws two models agree on are pre-ticked; single-model ones are shown as "maybe". Decisions still scores each crop. |
+| Exact identity | Terra plus Lens plus eBay image search | Add the strongest GPT and Gemini models as extra proposers. More candidates cost nothing in time, because one Decisions call verifies them all. |
+| Seam and shoulder points | One Gemini pointing model, 3 runs | Add a second pointing model; where the two disagree, the line is flagged for the person first. |
+| Masks | Apple Vision plus self-hosted SAM 3.1 | Use a hosted SAM 3 endpoint (fal or Roboflow) so no GPU setup is needed. |
+| Tag reading | On-device text plus Terra | Also send the tag photo to a second model; a mismatch drops the field to one-tap confirm. |
+
+The limit is time on stage, not money: everything extra runs in parallel and must not push the filled card past the 9 s target.
+
 ## What has to be measured on day one
 
 None of the latency or accuracy numbers in the three notes have been run on our own items. First hour: Decisions latency on images, Gemini flaw recall on 10 real garments, tape-measure error on 10 garments, Object Capture on the demo phone.
