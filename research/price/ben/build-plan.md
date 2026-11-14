@@ -105,6 +105,8 @@ The full run, its JSON at each step, and its latency budget are in [appraisal-ru
 
 Selling uses the same run from step 2, with the item's guided shots as input and no max pay.
 
+**Keys.** Ben asked to use OpenRouter and to look at Treg (22:25). OpenRouter serves every model here (the Decisions model, the label reader, Seedream) on one key, and Treg serves Google Lens, eBay search and detail, page scraping and page-change monitors on another. The sold-data actors and Facebook search still need their own keys. Detail in [openrouter-and-treg.md](openrouter-and-treg.md).
+
 **Models.** OpenAI Decisions for every typed judgement (it is GA and takes base64 or public URLs, observed). Its model reads text poorly (59.8% on Roboflow's OCR eval, observed), so a separate vision model reads labels. [appraisal-run.md](../../appraise/ben/appraisal-run.md) proposes Gemini 4 Carbon for that (87.2% on the same eval); it is the one tool here Ben didn't name, so it's listed under Decisions for Ben.
 
 **Hidden drivers default to "unknown", never "absent".** Vision models are much worse at saying an attribute isn't visible than at seeing it when it is (observed, older-model paper). Unknown drivers are exactly what the question card asks about.
