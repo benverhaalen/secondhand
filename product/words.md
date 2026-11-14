@@ -87,3 +87,7 @@ Ben, project chat, 19:45 UTC.
 ## 2026-11-14 familiar and attention
 Ben, project chat, 19:46 UTC.
 > the principle of how can we communicate as much as we can in a familiar way to how users already use similar things and use colors, layout, etc to do attention well and to really use psychology and the principles of ux and ui design that expert designers actually use.
+
+## 2026-11-14 frontend standard
+Ben, project chat, 19:47 UTC.
+> use rdd and iae research to really nail that idea down in how to judge and audit and develop everything on a frontend perspective. animations and everything. its my personal writing skill or maybe hook that stops a lot of typical ai writing tells from happening

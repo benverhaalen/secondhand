@@ -7,6 +7,8 @@ Agreed by: Ben, project chat at 19:45 ([words](words.md#2026-11-14-show-not-say)
 
 Added by Ben at 19:46 ([words](words.md#2026-11-14-familiar-and-attention)): communicate as much as possible through patterns people already know from similar apps, and use color, layout and hierarchy to direct attention, applying the psychology and principles expert designers use. Rules in [copy.md § Familiar patterns and attention](copy.md#familiar-patterns-and-attention).
 
+At 19:47 Ben asked for this to be made rigorous for building, judging and auditing, motion included ([words](words.md#2026-11-14-frontend-standard)). The standard is [frontend-standard.md](frontend-standard.md) (*agent proposal* in its specifics, built on his ui-factory and writing skills). `scripts/copy-lint.mjs` ports the writing skill's product rules.
+
 ## 2026-11-14: first launch is setup first
 Agreed by: Ben, on the onboarding card in the concept thread at 19:43 ([walkthrough §11](walkthrough.md#11-first-launch-and-onboarding)). He picked B over the agent's recommendation, A (value first). Decided: first launch connects your sites, then sets pickup windows and the meetup spot (or "ask me every time"), then notifications, before you reach Today. This is the canvas Onboard screen. Changed: pickup setup moves from first use into onboarding. *Agent proposal, to keep the cost of a form low:* each step can be skipped, and it says why it asks. The canvas Onboard screen already says "you can skip all of them and still scan, price and search".
 

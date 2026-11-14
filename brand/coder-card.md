@@ -10,3 +10,4 @@ Precedence: Ben's direct decisions, then the brand codes (`codes.md`), then the 
 6. Icons: Hugeicons Stroke Rounded (Ben's default) unless a later brand round says otherwise.
 7. Every number shows its source and sample size in a mono label. Every measurement says measured, estimated or "you said".
 8. Copy: follow [product/copy.md](../product/copy.md). Show the state before you write a sentence about it, and run Ben's anti-claudish skill on every string before the screen counts as done.
+9. Build, audit and motion: follow [product/frontend-standard.md](../product/frontend-standard.md). Durations and easing come from the motion tokens only.

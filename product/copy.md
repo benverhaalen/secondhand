@@ -32,7 +32,7 @@ Limits:
 
 ## The anti-claudish skill
 
-Ben's "anti-claudish" skill is the `writing` skill in his harness (`~/.local/share/harness/skills/writing/`, built from oaustegard's declauding skill, MIT). The harness has no git remote, so Nate's agent can't read it; the rules for app copy (its `references/app-copy.md`, surface `product`) are summarized here. On Ben's Mac, run `python3 scripts/lint.py --surface product` on the strings.
+Ben's "anti-claudish" skill is the `writing` skill in his harness (`~/.local/share/harness/skills/writing/`, built from oaustegard's declauding skill, MIT). The harness has no git remote, so Nate's agent can't read it; the rules for app copy (its `references/app-copy.md`, surface `product`) are summarized here. Run `node scripts/copy-lint.mjs <files>`, a port of its product rules. On Ben's Mac the original is `python3 scripts/lint.py --surface product`. His Stop hook (`reply_check.py`) checks agents' replies to him, not screen text.
 
 **The test for every line:** could the user act on it or decide with it, and would a person say it this way across a table? If not, cut it. Ben's reason, which outranks the rules: "what i really dont want is having to waste my brain power and attention". Cut words, not information: a price without its source or a warning without its reason costs more attention, not less.
 
@@ -73,7 +73,7 @@ Principles expert designers use, each turned into a rule for this app. *Agent pr
 - Motion only to show cause and effect: a tile sliding from Live to Sold, a draft filling in. Never as decoration.
 
 **Make choices cheap.**
-- Fewer options decide faster (Hick's law). A card offers at most three actions; more go behind "More".
+- Fewer options decide faster (Hick's law), but choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)). Curate the first view: a card shows up to three actions, and more go behind "More".
 - Recognition over recall: show the photo, price and site badges on every row instead of asking the user to remember which item "Lamp 2" was.
 - Progressive disclosure: the price is visible; the comps behind it are one tap away. Advanced settings live in You.
 - Smart defaults the user can see and change (default effect): pickup windows, floor price and markdown are pre-filled with the reason in a mono label.
@@ -85,7 +85,7 @@ Principles expert designers use, each turned into a rule for this app. *Agent pr
 - Scanning follows the layout: the photo leads on the left, then title, then price on the right edge, like every marketplace row.
 
 **Use psychology honestly.**
-- Show progress toward done (goal gradient): "2 of 7 shots", Today counting down to empty.
+- Show progress toward done (goal gradient, light use per [psychology §9](../research/cross-cutting/ben/psychology.md)): "2 of 7 shots", Today counting down to empty.
 - End on the outcome (peak-end): a sale ends on the amount you keep, not on a form.
 - Losses feel bigger than gains, so show what you keep after fees and what an underpriced item leaves on the table, but never with fake urgency, fake scarcity or guilt. No dark patterns.
 - Trust comes from showing the work: every number shows its source, every automatic action is labelled and undoable.
@@ -96,7 +96,9 @@ Principles expert designers use, each turned into a rule for this app. *Agent pr
 
 - Cover the text: can you still tell the item's state and the next action? If not, the visuals are doing too little.
 - Count sentences: more than one per card needs a reason.
-- Run the anti-claudish pass (table above, or the lint on Ben's Mac) on every string.
+- Run `node scripts/copy-lint.mjs` on every string.
 - No em dashes anywhere in the UI.
 - Squint test: focal point first, next action second.
 - Name the familiar app each pattern borrows from. If there isn't one, the pattern needs a reason.
+
+The full build, judge and audit standard, including motion, is [frontend-standard.md](frontend-standard.md).
