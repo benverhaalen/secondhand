@@ -136,3 +136,7 @@ Ben, in the thread "Set the secondhand brand identity", 20:45 UTC.
 ## 2026-11-14 poteto rules for docs
 Ben, in the thread "Set the secondhand brand identity", 20:46 UTC.
 > ensure that the poteto review is used when effectively creating docs for the future and that any meta thoughts that poteto's stack has - nothing specific to this but general rules of thumb that could be added to whatever constitution could be used
+
+## 2026-11-14 image gen through codex and astra
+Ben, project chat, 20:58 UTC.
+> ensure for all image gen you are using the codex cli with astra and telling it the loop to run and how it should judge rather than exactly what should be in it.

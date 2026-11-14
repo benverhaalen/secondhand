@@ -31,7 +31,7 @@ Ben already has the process: his **ui-factory** skill (harness, on his Mac), bui
 1. **Four screen lines.** Who the user is, how often they come, the main task, and the task with the worst consequence.
 2. **Read the coder card** (`brand/coder-card.md`) and this standard.
 3. **References with jobs.** Use real shipped screens, not AI galleries. One gives navigation, another density, another motion, another recovery. Write a transfer contract per borrowed property (§6).
-4. **Full only: direction images.** Use Codex image gen with the actual reference pixels attached. State the job, the content and the hard constraints; let the image model compose.
+4. **Full only: direction images.** Made with the `image-gen` skill (`.agents/skills/image-gen/SKILL.md`): the Codex CLI with Astra, the reference pixels attached, and a brief that gives the loop and how to judge rather than the content.
 5. **Full only: fresh-context critique.** The critic sees the reference and candidate images but not the builder's rationale. It returns accept, revise or reject. Stop after two rounds with no new accepted finding and show the best candidate, not the latest.
 6. **Full only: the door check, before building.** A fresh helper answers, as an expert designer, what each control does, where Back goes and what each state shows. Those answers become `checks/<screen>.transitions.json`, which a different helper turns into Playwright checks. The builder can't edit the table.
 7. **Build.**

@@ -20,6 +20,7 @@ The map is in [README.md](README.md). Read [product/vision.md](product/vision.md
 | Ben or Nate says something about the product | Quote it verbatim in [product/words.md](product/words.md) (append only), and link to it from where it's used. |
 | A correction you could check with a script | Add it as a check with a failing test in `.agents/checks/`, instead of another line of instructions. |
 | Writing or changing a rule doc (a skill, a constitution, a standard, this file) | [.agents/thinking.md §4](.agents/thinking.md#4-before-you-write-or-change-a-rule-doc): read the [poteto-mode review](research/cross-cutting/ben/poteto-mode-review.md) first, subtract before you add, one fact in one place. |
+| Generating any image | Skill `image-gen`: the Codex CLI with Astra, given the loop to run and how to judge, not the content. |
 | Words a person reads, in the app or out of it | Skill `writing` (Ben's lint and rules). |
 | Before every push | `node .agents/check.mjs` (checks and tests). It must pass. |
 
