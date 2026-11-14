@@ -37,6 +37,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - The first person we build for is someone clearing their own things, who also buys used; resellers can use it but do not shape the design. Ben and Nate, decision card ([decisions](decisions.md#2026-11-14-the-first-person-we-build-for-is-someone-clearing-their-own-things)).
 
+- Licences and site terms are recorded as facts for a public launch and do not shape the build. Ben and Nate ([decisions](decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).
@@ -61,7 +63,6 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 - Do studio photos misrepresent the item? Buyers need to see the real defects. *Agent proposal*: always keep the real photos alongside.
 - Should buyers be told an assistant is answering? Asked of both on a card; not answered. *Agent proposal*: natural voice in the seller's style, a short note on the first automatic message, always honest if asked ([handled-by-default.md](../research/messages/nate/handled-by-default.md), [privacy-and-data.md](../research/cross-cutting/nate/privacy-and-data.md)).
 - The backend's front door: Databricks Apps takes only Databricks sign-in, so a phone and a marketplace webhook cannot reach it directly ([databricks-platform.md](../research/data/nate/databricks-platform.md), *observed* from docs, not yet tested on our workspace). *Agent proposal*: a thin public edge for sign-in and webhooks, everything else on Databricks; test on the real workspace first.
-- Ben: "it's a demo, so build it" ([words](words.md#2026-11-14-demo-not-production)). Nate: design the whole product, and build our own frameworks where a site offers none ([words](words.md#2026-11-14-nate-frameworks-and-goals)). *Agent proposal*: each feature spec describes the whole product, records each site's rules as facts, and carries a "demo path" line that the two of you mark.
 - Phone app: Ben decided Expo with a Swift camera module ([decisions](decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). Nate agrees if everything a native app could do in capture (Object Capture, LiDAR, our own capture systems per product type) works inside it ([words](words.md#2026-11-14-nate-expo-if-capture-is-fully-possible)). What settles it: a build task that runs Object Capture and LiDAR depth from the Swift module inside the Expo app on a real phone.
 
 ## When Ben and Nate disagree

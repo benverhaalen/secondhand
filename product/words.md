@@ -342,3 +342,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 > not simple that doesnt make things impressive, that doesnt add a general feature to analyze and determine and score, financially, algorithmically by quality, or market trends, utilize the reverse analyzed algorithm broad ressearch into how each platform ranks, scores, reverse the software itself in ways if you must to ensure there is no uncertainity. Perhaps we can build something to realtime determine algorithms, or probablisitically rank them, in a way to optimize market stragezied
 
 *Agent note:* the agent advised against taking the marketplaces' apps apart (ranking runs on their servers, so it would not reveal the algorithm, and it breaks each site's terms) and proposed controlled experiments on users' own listings instead. Not decided.
+
+## 2026-11-14 nate licences do not constrain the build
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> We dont worry about such constraints with licenses, this is a hackathon production build designed and fully built to realize a legitmate product. For the sake of showing its potential and presentation, dont worry about such licenses
