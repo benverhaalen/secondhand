@@ -200,3 +200,7 @@ Ben, project chat, 21:22 UTC.
 ## 2026-11-14 logging of everything
 Ben, logging thread, 21:20 UTC.
 > recall in my harness how i want logging of everything ensure either its set up or there are really great instructions on how to set it up possibly use the skill
+
+## 2026-11-14 image decisions and text decisions stay separate
+Ben, project chat, 21:45 UTC, after picking "Both, and the eval picks" on the card "Use Jev itself in the demo, or stay on OpenAI's Decisions API?".
+> keep it relatively open, separate out image decisions and text decisions essentially

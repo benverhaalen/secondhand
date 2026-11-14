@@ -58,6 +58,21 @@ This conflicts with our identify note, which asks when `confidence < 0.6`. Propo
 
 **Cache key.** ai-marketplace-monitor keys a judgement by the want, the listing and whether the seller profile had been read, so an early answer on thin evidence is not reused (`ai.py:30-44`) *observed*.
 
+## Image and text decisions
+
+Ben, 21:45: "keep it relatively open, separate out image decisions and text decisions essentially" ([words](../../../product/words.md#2026-11-14-image-decisions-and-text-decisions-stay-separate), [decision](../../../product/decisions.md#2026-11-14-image-decisions-and-text-decisions-are-separate-and-the-provider-for-each-stays-open)). The split below is an *agent proposal*.
+
+| | Image decisions | Text decisions |
+|---|---|---|
+| Questions | Is the shot usable, what is it, condition, defects, does the render still show the real item | Message intent, scam signals, does a listing match a want, is a comp comparable, which rule applies |
+| Input | Photos, plus facts code already extracted | Text and JSON that code built (§2: the state holds only what bears on the question) |
+| Starts on | OpenAI Decisions API | Jev, with the Decisions API run beside it |
+| Could move to | Jev if its image input tests well; a vision model with structured output | Either one; a small classifier trained on our own rows (smart_importer's lesson) |
+
+Both sides share one contract, so a provider is a setting: a question id, its type (yes/no, choice, score), the options, and an answer with a probability per option. The gate in §2 (picked option's probability, its lead, per-question minimum) lives in our code and reads that answer whoever produced it. Every answer is logged with the provider, the model, the question id and a hash of the input, so the same taps score every provider and a swap is a config change plus a replay. *inferred*
+
+One caution from §2 applies to any swap: thresholds don't carry over between providers. Each provider gets its own band from the labels.
+
 ## 3. The approval and the act route
 
 Our design already signs the option over the input hash and the item version ([build plan §3](build-plan-posting-messages-ui.md#3-the-shared-core)). The repos confirm that and add four things.
