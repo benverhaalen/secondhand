@@ -1,4 +1,4 @@
-# 4 — Build plan for pricing, cross-market search and watch alerts
+# 21 — Build plan for pricing, cross-market search and watch alerts
 
 Updated: November 14, 2026, 20:55 UTC. Owner: Ben. Agent: Claude Code, project thread "Plan the build for pricing, search and watch". Branch: `main`, base `05b447e`. Status: in progress.
 
