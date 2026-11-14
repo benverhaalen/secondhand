@@ -164,3 +164,7 @@ Ben, posting, messages and dynamic UI thread, 21:07 UTC.
 ## 2026-11-14 demo, not production
 Ben, project chat, 21:08 UTC.
 > this is a product demo, getting something that works for a hackathon is different from writing a production app. you seem to be shutting down more ideas from research and dont consider that we can also just build things. so understand that
+
+## 2026-11-14 paid apis are fine
+Ben, project chat, 21:13 UTC.
+> also as another constitution rule if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs
