@@ -1,0 +1,120 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md L3; brand/constitution.md C1 and Part IV B3",
+          "place": "Both phone panels, top navigation wordmark",
+          "issue": "The wordmark is visibly right of the phone center. On the left panel its center is approximately x=348 while the screen center is x=335; the right panel repeats the offset. This exceeds the permitted +/-1 px centering tolerance."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 7.2 and Part IV B18; product/ui-constitution.md Article 7",
+          "place": "Left panel, gap between the offer details and Accept/Counter, compared with the gap from the offer field to Nike Dunks",
+          "issue": "The largest gap inside the offer is larger than the gap to the next item. This reverses the required inside-tighter-than-between grouping. Compact has approximately 34 image pixels from the expiry text to the buttons versus 25 to the next photo; Standard and Airy have approximately 52 versus 42."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 Roles, Part III and Part IV B14",
+          "place": "Both panels, listing titles, including Carhartt Detroit jacket and Nike Dunks",
+          "issue": "At a 390 px phone width, the listing titles read at roughly 20 px instead of the specified 15 px for body/list-row/card-title text. The title treatment is oversized for its assigned role; D3 does not open type size."
+        },
+        {
+          "rule": "brand/constitution.md E3; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "Left Accept $38 action and its arrow to the right-panel You keep $31.40 result",
+          "issue": "The decision presents $38, but the first visible take-home amount is $31.40 after acceptance. Neither state explains the $6.60 difference. The board does not let a first-time seller understand the monetary consequence before committing or say where the resulting amount came from."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md L3; brand/constitution.md C1 and Part IV B3",
+          "place": "Both phone panels, top navigation wordmark",
+          "issue": "The wordmark is visibly right of the phone center. On the left panel its center is approximately x=348 while the screen center is x=335; the right panel repeats the offset. This exceeds the permitted +/-1 px centering tolerance."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 7.2 and Part IV B18; product/ui-constitution.md Article 7",
+          "place": "Left panel, gap between the offer details and Accept/Counter, compared with the gap from the offer field to Nike Dunks",
+          "issue": "The largest gap inside the offer is larger than the gap to the next item. This reverses the required inside-tighter-than-between grouping. Compact has approximately 34 image pixels from the expiry text to the buttons versus 25 to the next photo; Standard and Airy have approximately 52 versus 42."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 Roles, Part III and Part IV B14",
+          "place": "Both panels, listing titles, including Carhartt Detroit jacket and Nike Dunks",
+          "issue": "At a 390 px phone width, the listing titles read at roughly 20 px instead of the specified 15 px for body/list-row/card-title text. The title treatment is oversized for its assigned role; D3 does not open type size."
+        },
+        {
+          "rule": "brand/constitution.md E3; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "Left Accept $38 action and its arrow to the right-panel You keep $31.40 result",
+          "issue": "The decision presents $38, but the first visible take-home amount is $31.40 after acceptance. Neither state explains the $6.60 difference. The board does not let a first-time seller understand the monetary consequence before committing or say where the resulting amount came from."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md L3; brand/constitution.md C1 and Part IV B3",
+          "place": "Both phone panels, top navigation wordmark",
+          "issue": "The wordmark is visibly right of the phone center. On the left panel its center is approximately x=348 while the screen center is x=335; the right panel repeats the offset. This exceeds the permitted +/-1 px centering tolerance."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 7.2 and Part IV B18; product/ui-constitution.md Article 7",
+          "place": "Left panel, gap between the offer details and Accept/Counter, compared with the gap from the offer field to Nike Dunks",
+          "issue": "The largest gap inside the offer is larger than the gap to the next item. This reverses the required inside-tighter-than-between grouping. Compact has approximately 34 image pixels from the expiry text to the buttons versus 25 to the next photo; Standard and Airy have approximately 52 versus 42."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 Roles, Part III and Part IV B14",
+          "place": "Both panels, listing titles, including Carhartt Detroit jacket and Nike Dunks",
+          "issue": "At a 390 px phone width, the listing titles read at roughly 20 px instead of the specified 15 px for body/list-row/card-title text. The title treatment is oversized for its assigned role; D3 does not open type size."
+        },
+        {
+          "rule": "brand/constitution.md E3; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "Left Accept $38 action and its arrow to the right-panel You keep $31.40 result",
+          "issue": "The decision presents $38, but the first visible take-home amount is $31.40 after acceptance. Neither state explains the $6.60 difference. The board does not let a first-time seller understand the monetary consequence before committing or say where the resulting amount came from."
+        },
+        {
+          "rule": "brand/constitution.md Article 14.4; brand/ledger.md Open rows D3 and D4",
+          "place": "Both panels, boundaries above Nike Dunks and between Nike Dunks and Brass lamp",
+          "issue": "The row dividers present in Compact and Standard are removed. This changes the surface treatment assigned to D4, so Airy is not a spacing-only variant."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Airy removes the horizontal item-row rules retained by Compact and Standard. This is a D4 surface-treatment change, not D3 spacing (brand/ledger.md D3/D4; brand/constitution.md Article 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Compact also changes component dimensions: the lower item photos are visibly shorter, and the lower-row buttons are slightly shorter than in Standard/Airy. Photo and control size therefore vary along with the gaps; these are not controlled spacing-only comparisons (brand/constitution.md Article 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The right-panel $31.40 numerals and lime band are visibly taller in Standard/Airy than in Compact. This changes the peak-money treatment while D3 is the decision under review (brand/ledger.md A3 and D6; brand/constitution.md Article 14.4)."
+    },
+    {
+      "files": [
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Standard and Airy retain effectively the same field height, content positions, and item spacing. Their most evident distinction is the removed dividers, so they do not demonstrate distinct standard and airy spacing choices (brand/ledger.md D3; brand/constitution.md Article 14.4)."
+    }
+  ]
+}

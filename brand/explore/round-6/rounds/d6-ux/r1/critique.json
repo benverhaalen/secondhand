@@ -1,0 +1,62 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what a first-time user will misread), Article 7 (familiar patterns); brand/constitution.md, E3 (honest claims).",
+          "place": "Arrow from the middle screen\u2019s Print label button to the right-hand Shipping / On its way screen.",
+          "issue": "The depicted transition makes printing a label appear to put the parcel on its way. No handoff or shipment event is shown between those states. As an annotated experience board, it communicates a misleading consequence for the action."
+        },
+        {
+          "rule": "brand/ledger.md, D6 (all options specify 50) and A3 (sizes by role); brand/constitution.md, Article 6.2, Part IV B14 and B28.",
+          "place": "Middle and right screens, $31.40.",
+          "issue": "At a screen width of 390, the visible amount glyphs are roughly 55\u201360 px tall, already taller than the specified 50 px type size. The peak amount is oversized in all three options. This is a raster-scale observation; exact font metrics cannot be verified without source."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what a first-time user will misread), Article 7 (familiar patterns); brand/constitution.md, E3 (honest claims).",
+          "place": "Arrow from the middle screen\u2019s Print label button to the right-hand Shipping / On its way screen.",
+          "issue": "The depicted transition makes printing a label appear to put the parcel on its way. No handoff or shipment event is shown between those states. As an annotated experience board, it communicates a misleading consequence for the action."
+        },
+        {
+          "rule": "brand/ledger.md, D6 (all options specify 50) and A3 (sizes by role); brand/constitution.md, Article 6.2, Part IV B14 and B28.",
+          "place": "Middle and right screens, $31.40.",
+          "issue": "At a screen width of 390, the visible amount glyphs are roughly 55\u201360 px tall, already taller than the specified 50 px type size. The peak amount is oversized in all three options. This is a raster-scale observation; exact font metrics cannot be verified without source."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what a first-time user will misread), Article 7 (familiar patterns); brand/constitution.md, E3 (honest claims).",
+          "place": "Arrow from the middle screen\u2019s Print label button to the right-hand Shipping / On its way screen.",
+          "issue": "The depicted transition makes printing a label appear to put the parcel on its way. No handoff or shipment event is shown between those states. As an annotated experience board, it communicates a misleading consequence for the action."
+        },
+        {
+          "rule": "brand/ledger.md, D6 (all options specify 50) and A3 (sizes by role); brand/constitution.md, Article 6.2, Part IV B14 and B28.",
+          "place": "Middle and right screens, $31.40.",
+          "issue": "At a screen width of 390, the visible amount glyphs are roughly 55\u201360 px tall, already taller than the specified 50 px type size. The peak amount is oversized in all three options. This is a raster-scale observation; exact font metrics cannot be verified without source."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Small raster variations occur outside the two peak-amount regions, including text edges, photo texture and the field. A full pixel comparison confirms the boards are not identical outside D6. Visual inspection finds no material change to wording, action set, photo subject, annotation paths or layout; the meaningful variation remains the amount face and lime band."
+    }
+  ]
+}

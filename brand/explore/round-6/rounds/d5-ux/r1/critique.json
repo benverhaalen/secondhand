@@ -1,0 +1,178 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III App canvas",
+          "place": "Both phone frames, in every board",
+          "issue": "The phone frame is approximately 487 x 1024 image pixels. At 390 wide it is approximately 820 high, not the required 844. These boards do not preserve the required phone proportions."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table and Part IV B14",
+          "place": "Both phones: item titles, button labels, and Offered $38 / Sold headings",
+          "issue": "At 390-wide inspection, the list titles and button labels read at roughly 18 rather than their 15-point roles; the offer and Sold headings read at roughly 24 rather than the 18-point card-headline role. This is a visible hierarchy/scale mismatch; exact font sizes cannot be recovered from a raster."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Part IV B17",
+          "place": "Both phones: outer left and right edges of the item cards",
+          "issue": "Card margins are approximately 10 points at 390-wide scale, versus the specified 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States, Draft row",
+          "place": "Both phones: Draft pill on the Brass lamp row",
+          "issue": "Draft uses black label text rather than the decided secondary gray text. Its label has essentially the same ink strength as Live."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III App canvas",
+          "place": "Both phone frames, in every board",
+          "issue": "The phone frame is approximately 487 x 1024 image pixels. At 390 wide it is approximately 820 high, not the required 844. These boards do not preserve the required phone proportions."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table and Part IV B14",
+          "place": "Both phones: item titles, button labels, and Offered $38 / Sold headings",
+          "issue": "At 390-wide inspection, the list titles and button labels read at roughly 18 rather than their 15-point roles; the offer and Sold headings read at roughly 24 rather than the 18-point card-headline role. This is a visible hierarchy/scale mismatch; exact font sizes cannot be recovered from a raster."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Part IV B17",
+          "place": "Both phones: outer left and right edges of the item cards",
+          "issue": "Card margins are approximately 10 points at 390-wide scale, versus the specified 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States, Draft row",
+          "place": "Both phones: Draft pill on the Brass lamp row",
+          "issue": "Draft uses black label text rather than the decided secondary gray text. Its label has essentially the same ink strength as Live."
+        },
+        {
+          "rule": "brand/constitution.md E1 and Article 1.4; product/ui-constitution.md Article 7",
+          "place": "Both phones: colored header above the offer or sale card",
+          "issue": "The only broad color emphasis is spent on the wordmark and status-bar area. The actionable item sits in an ordinary white card below it. The header becomes a separate competing focal region without carrying the seller decision or money. D5 permits trying this location, but the result still has to satisfy the attention hierarchy."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III App canvas",
+          "place": "Both phone frames, in every board",
+          "issue": "The phone frame is approximately 487 x 1024 image pixels. At 390 wide it is approximately 820 high, not the required 844. These boards do not preserve the required phone proportions."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table and Part IV B14",
+          "place": "Both phones: item titles, button labels, and Offered $38 / Sold headings",
+          "issue": "At 390-wide inspection, the list titles and button labels read at roughly 18 rather than their 15-point roles; the offer and Sold headings read at roughly 24 rather than the 18-point card-headline role. This is a visible hierarchy/scale mismatch; exact font sizes cannot be recovered from a raster."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Part IV B17",
+          "place": "Both phones: outer left and right edges of the item cards",
+          "issue": "Card margins are approximately 10 points at 390-wide scale, versus the specified 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States, Draft row",
+          "place": "Both phones: Draft pill on the Brass lamp row",
+          "issue": "Draft uses black label text rather than the decided secondary gray text. Its label has essentially the same ink strength as Live."
+        },
+        {
+          "rule": "brand/constitution.md E1, E2 and Part IV B2; product/ui-constitution.md Article 7",
+          "place": "Right phone: Sold state, from status bar through bottom navigation",
+          "issue": "At 390-wide inspection and with an 8-pixel blur, the field reads as the whole screen, including the navigation, rather than emphasis on the jacket or payout. The unrelated rows and controls participate in the sale color event. D5 expressly permits testing coverage beyond one-third; this failure is the resulting loss of focused emphasis, not the coverage limit itself."
+        },
+        {
+          "rule": "brand/ledger.md A2; brand/constitution.md Article 5.1 and Part IV B6",
+          "place": "Right phone: inactive Sell, Buy and You labels and icons over the field",
+          "issue": "The gray inactive navigation treatment is carried onto the colored field. Field text must use ink, not secondary gray; the secondary ink role is restricted to white and gray grounds."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III App canvas",
+          "place": "Both phone frames, in every board",
+          "issue": "The phone frame is approximately 487 x 1024 image pixels. At 390 wide it is approximately 820 high, not the required 844. These boards do not preserve the required phone proportions."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table and Part IV B14",
+          "place": "Both phones: item titles, button labels, and Offered $38 / Sold headings",
+          "issue": "At 390-wide inspection, the list titles and button labels read at roughly 18 rather than their 15-point roles; the offer and Sold headings read at roughly 24 rather than the 18-point card-headline role. This is a visible hierarchy/scale mismatch; exact font sizes cannot be recovered from a raster."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Part IV B17",
+          "place": "Both phones: outer left and right edges of the item cards",
+          "issue": "Card margins are approximately 10 points at 390-wide scale, versus the specified 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States, Draft row",
+          "place": "Both phones: Draft pill on the Brass lamp row",
+          "issue": "Draft uses black label text rather than the decided secondary gray text. Its label has essentially the same ink strength as Live."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III App canvas",
+          "place": "Both phone frames, in every board",
+          "issue": "The phone frame is approximately 487 x 1024 image pixels. At 390 wide it is approximately 820 high, not the required 844. These boards do not preserve the required phone proportions."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table and Part IV B14",
+          "place": "Both phones: item titles, button labels, and Offered $38 / Sold headings",
+          "issue": "At 390-wide inspection, the list titles and button labels read at roughly 18 rather than their 15-point roles; the offer and Sold headings read at roughly 24 rather than the 18-point card-headline role. This is a visible hierarchy/scale mismatch; exact font sizes cannot be recovered from a raster."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Part IV B17",
+          "place": "Both phones: outer left and right edges of the item cards",
+          "issue": "Card margins are approximately 10 points at 390-wide scale, versus the specified 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States, Draft row",
+          "place": "Both phones: Draft pill on the Brass lamp row",
+          "issue": "Draft uses black label text rather than the decided secondary gray text. Its label has essentially the same ink strength as Live."
+        },
+        {
+          "rule": "brand/constitution.md E1, E2 and Article 1.4; product/ui-constitution.md Article 7",
+          "place": "Both phones: white curves behind the card title, amount, deadline and outlined action",
+          "issue": "The thick, high-contrast curves form a competing graphic foreground. They run through the text and the transparent secondary button, making the seller scan patterned content to find the amount and next action. Strong texture is an allowed D5 candidate, but here its prominence defeats the required calm, item-first hierarchy."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png"
+      ],
+      "issue": "Header band also adds a visible outline around the top card and makes it the same white outlined surface as the lower cards. Moving the field necessarily changes its ground, but the added border changes D4 surface treatment as well as D5 location."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-C.png"
+      ],
+      "issue": "On the Sold screen, Whole moment removes the top card boundary and changes the lower rows from outlined cards on white to opaque white cards on color. This changes D4 grouping and surface hierarchy alongside field placement. The Offer screen stays in the original treatment."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "The texture variants do not only increase line strength. Strong lines changes the curves to a tighter fan with near-vertical strokes at the upper left and near-horizontal strokes at the lower right; the underlying lower-right lime also appears brighter. Medium lines changes the visible curve spacing and trajectory relative to the faint base. The comparison therefore mixes texture strength, pattern geometry and apparent color intensity."
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UI board. The options in use, side by side, so the only thing that differs between them is the decision. Spacing, components and color as they would really look in the app.
+
+Decision D4: Surfaces and small parts.
+Cards: A = cards as ruled rows (hairline rules between items, no card outline); B = cards as hairline-outlined cards.
+Platform marks: A = platform marks bare (logo alone, no bubble); B = platform marks in a small white bubble.
+Photo state: A = state shown on the photo as a small pill; B = state shown on the photo as a small dot; C = state shown on the photo as a corner tag.
+The leaning option (from the ledger) is: ruled rows, bare platform marks, state as a pill on the photo.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a portrait canvas of 1024x1536 pixels. Inside it, one phone screen of the app drawn at exactly the 390 x 844 point proportions of an iPhone: 710 pixels wide and 1536 pixels tall (1 point = 1.82 pixels), centered, with plain light gray outside it. Every size follows that scale (13 point text is about 24 pixels tall, a 44 point button is 80 pixels tall, the 20 point margin is 36 pixels). App content only, no device frame, a real iOS status bar and home indicator. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 4. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-base.png
+- opt-cards-B.png
+- opt-marks-B.png
+- opt-state-B.png
+- opt-state-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-base.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+     "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+     "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #DAEC6D and #80E9C5. D4 opens the shape and enclosure, not the A1 state colors."
+    }
+   ]
+  },
+  {
+   "file": "opt-cards-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+     "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+     "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D5EF67 and #64EBC7. D4 opens the shape and enclosure, not the A1 state colors."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.3 and Part IV B19; Article 13 nested-box tell",
+     "place": "Offer card: outlined outer card enclosing the rounded gradient action panel",
+     "issue": "The field becomes a filled panel inside a bordered card. It is an additional container around the buttons, not one of B19\u2019s exceptions for photos, buttons, state pills or money highlights. The hairline card option does not itself fail; this nested panel does."
+    }
+   ]
+  },
+  {
+   "file": "opt-marks-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+     "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+     "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D6EC64 and #76E9C2. D4 opens the shape and enclosure, not the A1 state colors."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+     "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+     "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D3FB45 and #38F5BD. D4 opens the shape and enclosure, not the A1 state colors."
+    },
+    {
+     "rule": "brand/constitution.md Article 4 C2; Part IV B5; Article 13 flat-gradient tell",
+     "place": "Sky-to-lime band behind Accept $38 and Counter",
+     "issue": "At phone scale the field reads as a smooth gradient; the visible mesh carried by the base image has disappeared. The required perceptible grain or mesh is missing. Texture is a D5 choice and was not the axis opened here."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+     "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+     "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D8F960 and #77EFD1. D4 opens the shape and enclosure, not the A1 state colors."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png",
+    "opt-marks-B.png",
+    "opt-state-B.png",
+    "opt-state-C.png"
+   ],
+   "issue": "State hue and saturation vary as well as state shape. The Dot and Corner tag versions are especially fluorescent compared with the base. This changes the decided A1 palette during a D4 comparison."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png",
+    "opt-state-B.png",
+    "opt-state-C.png"
+   ],
+   "issue": "The offer field changes independently of the named option: the base has clear crossing mesh lines, Hairline cards and Corner tag have weaker texture, and Dot reads smooth. The lime end also becomes brighter. These are D5 texture/palette differences."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png"
+   ],
+   "issue": "The product images are not held fixed. The shoes change in their crop, proportions and visible arrangement; the lamp photo also changes its framing. These changes affect the item-led comparison independently of the new card outlines."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png"
+   ],
+   "issue": "Content spacing changes within the lower items. The Nike image starts around y=665 rather than y=659, and the lamp around y=1019 rather than y=1006, while their action rows stay almost at the original heights. Card internal padding is also visibly inconsistent: the first card has much more space above its photo than the other two. This is more than adding outlines to otherwise fixed rows (brand/ledger.md D3 remains separate). Coordinates refer to the supplied 1024 x 1536 images."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-state-B.png",
+    "opt-state-C.png"
+   ],
+   "issue": "The bottom navigation shifts upward: its top divider is around y=1378 in the base, y=1375 in Dot, and y=1371 in Corner tag. The icons, labels and home indicator move with it. State shape does not require this shell change."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

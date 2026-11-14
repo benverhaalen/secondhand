@@ -1,0 +1,115 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III, App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The visible screen is approximately 762 by 1536 pixels. At 390 pt wide it is about 786 pt tall, rather than the required 844 pt. The board therefore does not show the required phone canvas at true scale."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B14; Article 6, Roles; brand/ledger.md A3",
+          "place": "Sold card, the $31.40 peak amount",
+          "issue": "At a 390 pt screen width the peak amount reads at roughly 38 to 40 pt, not the specified 50 pt. This is a size-role failure shared by the options, independent of the selected typeface."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B17; Article 7.1; Part III, App margins; brand/ledger.md A3",
+          "place": "Left and right edges of both cards, and the left edge of Today",
+          "issue": "The outer inset is about 14 pt at a 390 pt screen width, rather than the required 20 pt app margin."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B18; Article 7.2",
+          "place": "Gap between the two cards versus the gap from the offer expiry line to its buttons",
+          "issue": "The cards are separated by about 14 pt, while the empty gap between the expiry text and the action row within the offer card is about 18 pt. Internal spacing exceeds the separation between sibling cards, reversing the required grouping hierarchy."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3; Article 5, Page",
+          "place": "White page background and white interiors of both cards",
+          "issue": "A faint mottled paper texture extends across the white surfaces. Texture is allowed only on the brand field; the page and card grounds visibly carry it too."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III, App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The visible screen is approximately 762 by 1536 pixels. At 390 pt wide it is about 786 pt tall, rather than the required 844 pt. The board therefore does not show the required phone canvas at true scale."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B14; Article 6, Roles; brand/ledger.md A3",
+          "place": "Sold card, the $31.40 peak amount",
+          "issue": "At a 390 pt screen width the peak amount reads at roughly 38 to 40 pt, not the specified 50 pt. This is a size-role failure shared by the options, independent of the selected typeface."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B17; Article 7.1; Part III, App margins; brand/ledger.md A3",
+          "place": "Left and right edges of both cards, and the left edge of Today",
+          "issue": "The outer inset is about 14 pt at a 390 pt screen width, rather than the required 20 pt app margin."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B18; Article 7.2",
+          "place": "Gap between the two cards versus the gap from the offer expiry line to its buttons",
+          "issue": "The cards are separated by about 14 pt, while the empty gap between the expiry text and the action row within the offer card is about 18 pt. Internal spacing exceeds the separation between sibling cards, reversing the required grouping hierarchy."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3; Article 5, Page",
+          "place": "White page background and white interiors of both cards",
+          "issue": "A faint mottled paper texture extends across the white surfaces. Texture is allowed only on the brand field; the page and card grounds visibly carry it too."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B28; Article 7.6; Part III, App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The visible screen is approximately 762 by 1536 pixels. At 390 pt wide it is about 786 pt tall, rather than the required 844 pt. The board therefore does not show the required phone canvas at true scale."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B14; Article 6, Roles; brand/ledger.md A3",
+          "place": "Sold card, the $31.40 peak amount",
+          "issue": "At a 390 pt screen width the peak amount reads at roughly 38 to 40 pt, not the specified 50 pt. This is a size-role failure shared by the options, independent of the selected typeface."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B17; Article 7.1; Part III, App margins; brand/ledger.md A3",
+          "place": "Left and right edges of both cards, and the left edge of Today",
+          "issue": "The outer inset is about 14 pt at a 390 pt screen width, rather than the required 20 pt app margin."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B18; Article 7.2",
+          "place": "Gap between the two cards versus the gap from the offer expiry line to its buttons",
+          "issue": "The cards are separated by about 14 pt, while the empty gap between the expiry text and the action row within the offer card is about 18 pt. Internal spacing exceeds the separation between sibling cards, reversing the required grouping hierarchy."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3; Article 5, Page",
+          "place": "White page background and white interiors of both cards",
+          "issue": "A faint mottled paper texture extends across the white surfaces. Texture is allowed only on the brand field; the page and card grounds visibly carry it too."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The fine lines in the offer field vary in visibility: they are more pronounced in A and C and softer in B. Field texture is D5, not the D2 typeface decision (brand/ledger.md D2 and D5; brand/constitution.md Article 14.4). No material change to content, card arrangement, actions, photos or navigation is apparent."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Review limits: exact font identity, weights, tabular figures, icon provenance and locale implementation cannot be established from these rasters. B13, B15, B22 and B27 are not applicable under Part IV. Hidden More-menu actions cannot be verified. Article 13 does not justify rejecting B merely for using one sans family: that is an explicit D2 option, and a cluster of its listed AI tells is not established here. B25 is unverified because no no-brand comparison was supplied; B29 remains Ben\u2019s judgment."
+    }
+  ]
+}

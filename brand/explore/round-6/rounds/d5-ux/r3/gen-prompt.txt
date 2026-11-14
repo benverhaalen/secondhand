@@ -1,0 +1,244 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UX board. The same options seen as experience: what a person notices first, where the thumb goes, what each state tells them, how it reads in motion from one state to the next. Annotated, like a designer's markup, with as few words as possible.
+
+Decision D5: The field.
+Where: A = the field behind the top card only; B = the field as a header band; C = the field as the whole ground of a moment like Sold (past the one-third color limit).
+Texture: A = field texture: faint fine curved white lines; B = field texture: medium curved white lines; C = field texture: strong curved white lines.
+The leaning option (from the ledger) is: the field behind the top card, with faint fine curved white lines.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a landscape canvas of 1536x1024 pixels. The phone screen(s) drawn at exactly the 390 x 844 point proportions of an iPhone at 1 point = 1.21 pixels (473 x 1024 pixels each, full height), with a designer's markup in the space around them (arrows, numbered order of attention, thumb reach, the state before and after), with as few words as possible. No device frame. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 3. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-base.png
+- opt-where-B.png
+- opt-where-C.png
+- opt-texture-B.png
+- opt-texture-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-base.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5.4",
+     "place": "Both screens, jacket photo in the top card",
+     "issue": "The field runs behind and surrounds the item photo. Article 5.4 explicitly says the field never sits behind a photo. D5 opens field placement but does not explicitly waive this restriction."
+    },
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States and Article 4 C2",
+     "place": "Top card in both screens: Offered $38 and Sold",
+     "issue": "The decision and sale states are plain text on the same multicolor field. Neither has the prescribed state treatment, including C2's white state pill with a black label on a field. The field itself cannot distinguish needs-you from sold."
+    },
+    {
+     "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table, Part IV B14",
+     "place": "Right screen, You keep $31.40",
+     "issue": "The sale's peak amount is approximately headline size, with no size distinction from Sold. The role table specifies 50 for the peak sale amount; every D6 option also retains 50. This board suppresses that hierarchy while testing D5."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6, Part III Canvas, Part IV B28",
+     "place": "Both phone canvases",
+     "issue": "The phone outlines are approximately 485\u2013490 pixels wide by 1024 high. At 390 wide they are approximately 815\u2013823 high, rather than the required 844. The board does not supply the required true-scale anchor."
+    }
+   ]
+  },
+  {
+   "file": "opt-where-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5.4",
+     "place": "Both screens, jacket photo inside the header band",
+     "issue": "The field still runs behind the item photo, contrary to the explicit no-field-behind-photos rule."
+    },
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States and Article 4 C2",
+     "place": "Both header bands, Offered $38 and Sold",
+     "issue": "Both states use plain text on the same field instead of the prescribed state treatment. The white state pill required on the field is absent."
+    },
+    {
+     "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table, Part IV B14",
+     "place": "Right screen, You keep $31.40",
+     "issue": "The peak sale amount remains approximately headline size instead of the specified 50."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6, Part III Canvas, Part IV B28",
+     "place": "Both phone canvases",
+     "issue": "The phone proportions do not resolve to 390 \u00d7 844. No true-scale anchor is supplied."
+    }
+   ]
+  },
+  {
+   "file": "opt-where-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5.4",
+     "place": "Left top card and right Sold ground, behind the jacket photo",
+     "issue": "The field sits behind the item photo in both states. D5 expressly opens the color-area limit, but not this separate photo restriction."
+    },
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States and Article 4 C2",
+     "place": "Both screens, Offered $38 and Sold",
+     "issue": "The states are plain text on a shared multicolor ground, without the prescribed state treatment or white field state pill."
+    },
+    {
+     "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table, Part IV B14",
+     "place": "Right screen, You keep $31.40",
+     "issue": "The peak sale amount is approximately headline size instead of the specified 50."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.2, Part IV B18; product/ui-constitution.md Article 7",
+     "place": "Right screen, lower edge of Sold ground and top of Nike Dunks card",
+     "issue": "Only about 6 image pixels separate the Sold ground from the next item, while much larger gaps separate content within Sold. The between-item gap is smaller than the internal gaps, weakening the grouping."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6, Part III Canvas, Part IV B28",
+     "place": "Both phone canvases",
+     "issue": "The phone proportions do not resolve to 390 \u00d7 844. No true-scale anchor is supplied."
+    }
+   ]
+  },
+  {
+   "file": "opt-texture-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5.4",
+     "place": "Both screens, jacket photo in the top card",
+     "issue": "The field sits behind the item photo, contrary to the explicit photo restriction."
+    },
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States and Article 4 C2",
+     "place": "Both top cards, Offered $38 and Sold",
+     "issue": "The prescribed state treatment is absent. Neither state has the white pill with black text required on the field."
+    },
+    {
+     "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table, Part IV B14",
+     "place": "Right screen, You keep $31.40",
+     "issue": "The peak sale amount remains approximately headline size instead of the specified 50."
+    },
+    {
+     "rule": "brand/constitution.md E1 and E2; product/ui-constitution.md Article 7",
+     "place": "Both top cards, white curves behind money, deadlines and outlined buttons",
+     "issue": "At phone width the repeated bright curves remain conspicuous across the reading and action areas. The texture competes with the item information rather than staying subordinate to it. This is an attention judgment, not a ban on the medium-lines option."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6, Part III Canvas, Part IV B28",
+     "place": "Both phone canvases",
+     "issue": "The phone proportions do not resolve to 390 \u00d7 844. No true-scale anchor is supplied."
+    }
+   ]
+  },
+  {
+   "file": "opt-texture-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5.4",
+     "place": "Both screens, jacket photo in the top card",
+     "issue": "The field sits behind the item photo, contrary to the explicit photo restriction."
+    },
+    {
+     "rule": "brand/ledger.md A1; brand/constitution.md Article 5 States and Article 4 C2",
+     "place": "Both top cards, Offered $38 and Sold",
+     "issue": "The prescribed state treatment is absent. Neither state has the white pill with black text required on the field."
+    },
+    {
+     "rule": "brand/ledger.md A3; brand/constitution.md Article 6 role table, Part IV B14",
+     "place": "Right screen, You keep $31.40",
+     "issue": "The peak sale amount remains approximately headline size instead of the specified 50."
+    },
+    {
+     "rule": "brand/constitution.md E1 and E2; product/ui-constitution.md Article 7",
+     "place": "Both top cards, strong white curves across text and outlined secondary actions",
+     "issue": "The bright line pattern competes strongly with the money and deadlines and remains visible through Counter and Drop-off spots. It spends attention across the entire card instead of concentrating it on the item and decision. This is an attention judgment, not an automatic rejection of strong texture."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6, Part III Canvas, Part IV B28",
+     "place": "Both phone canvases",
+     "issue": "The phone proportions do not resolve to 390 \u00d7 844. No true-scale anchor is supplied."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-base.png",
+    "opt-where-B.png"
+   ],
+   "issue": "Beyond field placement, Header band enlarges Offered $38 and Listed at $45 relative to the base. Counter is also slightly wider, shifting the More control. These change type hierarchy and control geometry while D5 is being compared (ledger A3; constitution Article 14.4). Moving the action row onto white is an intended placement consequence, not separate drift."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-where-C.png"
+   ],
+   "issue": "Whole moment also changes texture: the faint curves visible in the base become effectively invisible, including on the unchanged left offer card. This does not isolate the Where choice from the Texture choice (ledger D5; constitution Article 14.4). The larger right field and square outer edges belong to the intended placement change."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-texture-B.png",
+    "opt-texture-C.png"
+   ],
+   "issue": "The texture variants also change the field's color distribution, especially the stronger yellow lower-right corner in Strong lines. Curve direction and spacing change alongside line strength. The card edges, phone outlines and lower row contents shift slightly between renders. These are not pure changes of texture strength (constitution Article 14.4)."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-where-B.png",
+    "opt-where-C.png",
+    "opt-texture-B.png",
+    "opt-texture-C.png"
+   ],
+   "issue": "The visible item identities, prices, deadlines, action labels, Live and Draft pills, wordmark placement and navigation remain consistent. These are Today screens, so the list rows do not violate ledger L12's Sell-grid requirement. The More glyph supplies a visible third action; its contents cannot be assessed from these boards."
+  },
+  {
+   "files": [
+    "opt-where-C.png"
+   ],
+   "issue": "D5 explicitly permits the whole ground to exceed one third. B8 is therefore not used to fail this option. The permission does not waive the other brand ends or grouping rules."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-where-B.png",
+    "opt-where-C.png",
+    "opt-texture-B.png",
+    "opt-texture-C.png"
+   ],
+   "issue": "Article 13 review: meaningful state pills, actual item subjects, plain copy and the specified palette do not establish an AI-tell cluster. Generic rounded cards alone are insufficient to fail B25. No supplied no-brand comparison establishes three matching axes. Per Part IV, source-dependent B13, B15, B22 and B27 are not applicable to these raster-only boards; font identity, exact weights, icon provenance and locale code are not inferred. Motion, menu behavior, photo provenance and exact token compliance remain unverified. The numbered callouts, connecting arrow and dotted connector are treated as review annotations, not app UI."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

@@ -1,0 +1,112 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+          "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #DAEC6D and #80E9C5. D4 opens the shape and enclosure, not the A1 state colors."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+          "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D5EF67 and #64EBC7. D4 opens the shape and enclosure, not the A1 state colors."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.3 and Part IV B19; Article 13 nested-box tell",
+          "place": "Offer card: outlined outer card enclosing the rounded gradient action panel",
+          "issue": "The field becomes a filled panel inside a bordered card. It is an additional container around the buttons, not one of B19\u2019s exceptions for photos, buttons, state pills or money highlights. The hairline card option does not itself fail; this nested panel does."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+          "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D6EC64 and #76E9C2. D4 opens the shape and enclosure, not the A1 state colors."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+          "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D3FB45 and #38F5BD. D4 opens the shape and enclosure, not the A1 state colors."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C2; Part IV B5; Article 13 flat-gradient tell",
+          "place": "Sky-to-lime band behind Accept $38 and Counter",
+          "issue": "At phone scale the field reads as a smooth gradient; the visible mesh carried by the base image has disappeared. The required perceptible grain or mesh is missing. Texture is a D5 choice and was not the axis opened here."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Colored state marks at the upper left of the Nike Dunks and brass lamp photos",
+          "issue": "The decided state fills have drifted. Sold is a brighter yellow-green and Live a brighter turquoise than the specified lime #E6EA6A and mint #88DCB9. Representative interior pixel medians are #D8F960 and #77EFD1. D4 opens the shape and enclosure, not the A1 state colors."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png",
+        "opt-marks-B.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "State hue and saturation vary as well as state shape. The Dot and Corner tag versions are especially fluorescent compared with the base. This changes the decided A1 palette during a D4 comparison."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "The offer field changes independently of the named option: the base has clear crossing mesh lines, Hairline cards and Corner tag have weaker texture, and Dot reads smooth. The lime end also becomes brighter. These are D5 texture/palette differences."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "The product images are not held fixed. The shoes change in their crop, proportions and visible arrangement; the lamp photo also changes its framing. These changes affect the item-led comparison independently of the new card outlines."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "Content spacing changes within the lower items. The Nike image starts around y=665 rather than y=659, and the lamp around y=1019 rather than y=1006, while their action rows stay almost at the original heights. Card internal padding is also visibly inconsistent: the first card has much more space above its photo than the other two. This is more than adding outlines to otherwise fixed rows (brand/ledger.md D3 remains separate). Coordinates refer to the supplied 1024 x 1536 images."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "The bottom navigation shifts upward: its top divider is around y=1378 in the base, y=1375 in Dot, and y=1371 in Corner tag. The icons, labels and home indicator move with it. State shape does not require this shell change."
+    }
+  ]
+}

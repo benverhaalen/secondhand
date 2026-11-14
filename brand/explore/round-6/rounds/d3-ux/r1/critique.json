@@ -1,0 +1,106 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5, Ink second and rule 1; Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, offer field: 'Listed at $45' and 'Offer ends tomorrow, 6 pm'.",
+          "issue": "Both lines use gray secondary text on the colored field. Secondary ink is restricted to white and gray grounds; text on the field must be black. This fails regardless of whether the gray happens to meet a minimum contrast ratio."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C1; Part IV B3; brand/ledger.md L3",
+          "place": "Both screen headers, 'secondhand'.",
+          "issue": "The wordmarks sit visibly right of the screen centers. The left screen spans approximately x102–618, with center x360, while its wordmark centers near x374; the right screen repeats the offset. This exceeds B3's ±1 px centering tolerance."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6; Part III App canvas; Part IV B28",
+          "place": "Both complete phone views, from status bar through home indicator.",
+          "issue": "Each phone view occupies approximately 516 × 1024 pixels. At 390 pixels wide it is about 774 pixels high, rather than the required 844. This board therefore cannot establish the requested density at the prescribed phone size."
+        },
+        {
+          "rule": "brand/constitution.md Article 6.2 and Roles; Part IV B14; brand/ledger.md A3 and D6",
+          "place": "Right screen, '$31.40'.",
+          "issue": "The peak amount is visibly undersized for the required 50-point role. At the depicted screen width, its apparent text size is around the 36-point step. Every listed D6 option retains size 50; D3 does not reopen that size. This is a visual size finding, not a claim about a source font declaration."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5, Ink second and rule 1; Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, offer field: 'Listed at $45' and the expiry line.",
+          "issue": "Both lines are gray on the colored field. The rules require black text on field fills and restrict secondary gray ink to white or gray grounds."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C1; Part IV B3; brand/ledger.md L3",
+          "place": "Both screen headers, 'secondhand'.",
+          "issue": "Both wordmarks are approximately 14 board pixels right of their respective screen centers, outside the ±1 px tolerance."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6; Part III App canvas; Part IV B28",
+          "place": "Both complete phone views.",
+          "issue": "The approximately 516 × 1024 phone views become 390 × 774 when scaled uniformly to the required width. They do not preserve the required 390 × 844 canvas, so the visible content fit is not a valid true-scale spacing comparison."
+        },
+        {
+          "rule": "brand/constitution.md Article 6.2 and Roles; Part IV B14; brand/ledger.md A3 and D6",
+          "place": "Right screen, '$31.40'.",
+          "issue": "The peak amount appears around the 36-point step when judged relative to the screen width, rather than the 50-point size retained by all D6 options. Exact font metrics cannot be recovered from this raster, but the displayed role is visibly too small."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2; Part IV B18",
+          "place": "Left screen, gap between the offer expiry line and Accept/Counter controls.",
+          "issue": "The roughly 44-pixel gap within the offer exceeds the roughly 40-pixel separation between the field's bottom and the next item's photo. The offer's internal separation is larger than its separation from the neighboring item, reversing the required grouping hierarchy."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5, Ink second and rule 1; Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, offer field: 'Listed at $45' and the expiry line.",
+          "issue": "The secondary lines use gray ink on a field fill, where black text is required."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C1; Part IV B3; brand/ledger.md L3",
+          "place": "Both screen headers, 'secondhand'.",
+          "issue": "Both wordmarks sit approximately 14 board pixels right of the screen centers, exceeding the ±1 px centering tolerance."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6; Part III App canvas; Part IV B28",
+          "place": "Both complete phone views.",
+          "issue": "The phone views are approximately 516 × 1024 pixels, equivalent to 390 × 774 at the prescribed width, not 390 × 844. The apparent fit and crowding are therefore shown on the wrong canvas proportions."
+        },
+        {
+          "rule": "brand/constitution.md Article 6.2 and Roles; Part IV B14; brand/ledger.md A3 and D6",
+          "place": "Right screen, '$31.40'.",
+          "issue": "Relative to screen width, the peak amount appears near the 36-point step rather than the required 50-point sale amount. D3 permits spacing changes; none of the D6 choices permits this smaller peak amount. Exact font declarations are not available from the image."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2; product/ui-constitution.md Article 7",
+          "place": "Both screens, Brass lamp row directly above the fixed bottom navigation.",
+          "issue": "The lamp photo and Continue/Edit/More controls reach the navigation's top boundary with essentially no separation. The airy gaps higher on the screen end in a collision between the final item's controls and a different navigation group. The static board does not demonstrate that scrolling can restore clearance."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "Photo dimensions and aspect ratios change, beyond D3 spacing (brand/ledger.md D3; brand/constitution.md Article 14.4). The Nike image is approximately 144 × 116 pixels in A versus 144 × 132 in B and C. The lamp image is approximately 144 × 118 in A versus 144 × 138 in B and 144 × 134 in C. This changes image prominence and content fit independently of gaps."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The item photography is not held constant (brand/constitution.md Article 14.4; brand/ledger.md D3). The jacket's drape and hem, the shoe arrangement/crop, and the lamp's framing visibly differ. These are image-content changes, not spacing changes, and affect the comparison's visual balance."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The offer field's mesh-line pattern and color distribution change with its dimensions (brand/ledger.md D3 versus D5; brand/constitution.md Article 14.4). A has a denser, shallower fan of curves; B and C show a taller, more vertical sweep. Field texture is a separate open decision, so these boards also vary the field's visual treatment."
+    }
+  ]
+}

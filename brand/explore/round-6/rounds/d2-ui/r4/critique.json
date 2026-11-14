@@ -1,0 +1,138 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part I E1; Part IV B2; product/ui-constitution.md Article 7",
+          "place": "The sky-to-lime offer panel across the middle of the screen.",
+          "issue": "At a 390 px screen width with an 8 px blur, the full-width bright field is the strongest visible mass. The item photos and amounts are subordinate to the gradient, failing the requirement that the item or money lead."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White background around Today, the item rows, and the open space above the tab bar.",
+          "issue": "A fine mottled/diagonal texture is visible across the white page, outside the offer field. The white ground is not clean."
+        },
+        {
+          "rule": "brand/constitution.md Article 5.1 and Article 9.2; Part IV B7",
+          "place": "Horizontal divider above Nike Dunks and the top border of the bottom navigation.",
+          "issue": "The hairlines are visibly pale blue rather than neutral black at 8% opacity. These are colored lines on white and do not fall under the logo, brick, or unread-dot exceptions."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, Sold state and Lime color row",
+          "place": "Sold pill beside Nike Dunks and lime band beneath $31.40.",
+          "issue": "The lime is a vivid yellow-green rather than the specified muted #E6EA6A. The state and money fills are already decided; D2 does not open their color for variation."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Article 7.5; Part IV B17",
+          "place": "Left edges of Today, the offer field, item photos, and the sale amount.",
+          "issue": "With the phone content normalized to 390 px wide, Today and the offer field begin about 14\u201315 px from the edge rather than the required 20 px. Photos and the You keep label begin about 23 px in, while the amount and its band start farther left. The primary content does not hold one start edge."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C6",
+          "place": "Lime highlight under $31.40.",
+          "issue": "The band begins near the bottom of the figures and extends substantially below their baseline, leaving a conspicuous empty colored strip. It is not confined behind the lower 40% of the figures as specified."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part I E1; Part IV B2; product/ui-constitution.md Article 7",
+          "place": "The sky-to-lime offer panel across the middle of the screen.",
+          "issue": "At a 390 px screen width with an 8 px blur, the full-width bright field is the strongest visible mass. The item photos and amounts are subordinate to the gradient, failing the requirement that the item or money lead."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White background around Today, the item rows, and the open space above the tab bar.",
+          "issue": "A fine mottled/diagonal texture is visible across the white page, outside the offer field. The white ground is not clean."
+        },
+        {
+          "rule": "brand/constitution.md Article 5.1 and Article 9.2; Part IV B7",
+          "place": "Horizontal divider above Nike Dunks and the top border of the bottom navigation.",
+          "issue": "The hairlines are visibly pale blue rather than neutral black at 8% opacity. These are colored lines on white and do not fall under the logo, brick, or unread-dot exceptions."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, Sold state and Lime color row",
+          "place": "Sold pill beside Nike Dunks and lime band beneath $31.40.",
+          "issue": "The lime is a vivid yellow-green rather than the specified muted #E6EA6A. The state and money fills are already decided; D2 does not open their color for variation."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Article 7.5; Part IV B17",
+          "place": "Left edges of Today, the offer field, item photos, and the sale amount.",
+          "issue": "With the phone content normalized to 390 px wide, Today and the offer field begin about 14\u201315 px from the edge rather than the required 20 px. Photos and the You keep label begin about 23 px in, while the amount and its band start farther left. The primary content does not hold one start edge."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C6",
+          "place": "Lime highlight under $31.40.",
+          "issue": "The band begins near the bottom of the figures and extends substantially below their baseline, leaving a conspicuous empty colored strip. It is not confined behind the lower 40% of the figures as specified."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part I E1; Part IV B2; product/ui-constitution.md Article 7",
+          "place": "The sky-to-lime offer panel across the middle of the screen.",
+          "issue": "At a 390 px screen width with an 8 px blur, the full-width bright field is the strongest visible mass. The item photos and amounts are subordinate to the gradient, failing the requirement that the item or money lead."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White background around Today, the item rows, and the open space above the tab bar.",
+          "issue": "A fine mottled/diagonal texture is visible across the white page, outside the offer field. The white ground is not clean."
+        },
+        {
+          "rule": "brand/constitution.md Article 5.1 and Article 9.2; Part IV B7",
+          "place": "Horizontal divider above Nike Dunks and the top border of the bottom navigation.",
+          "issue": "The hairlines are visibly pale blue rather than neutral black at 8% opacity. These are colored lines on white and do not fall under the logo, brick, or unread-dot exceptions."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, Sold state and Lime color row",
+          "place": "Sold pill beside Nike Dunks and lime band beneath $31.40.",
+          "issue": "The lime is a vivid yellow-green rather than the specified muted #E6EA6A. The state and money fills are already decided; D2 does not open their color for variation."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins; Article 7.5; Part IV B17",
+          "place": "Left edges of Today, the offer field, item photos, and the sale amount.",
+          "issue": "With the phone content normalized to 390 px wide, Today and the offer field begin about 14\u201315 px from the edge rather than the required 20 px. Photos and the You keep label begin about 23 px in, while the amount and its band start farther left. The primary content does not hold one start edge."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C6",
+          "place": "Lime highlight under $31.40.",
+          "issue": "The band begins near the bottom of the figures and extends substantially below their baseline, leaving a conspicuous empty colored strip. It is not confined behind the lower 40% of the figures as specified."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The offer-field texture changes independently of typeface: A has more pronounced curved mesh lines; B and C have finer, fainter diagonal lines. Texture strength is the separate open decision D5 (brand/ledger.md), not D2; brand/constitution.md Article 14.4 calls for variants on one named axis."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The field, Sold pill, and money-highlight colors vary. B has a brighter, more yellow lime than A, while C has another yellow-green treatment. For example, a corresponding interior Sold-pill pixel at normalized (160,505) is RGB (222,234,67) in A, (222,243,69) in B, and (219,235,55) in C. These fill changes are unrelated to D2; see brand/ledger.md A1 and brand/constitution.md Article 14.4."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Divider strength/color also drifts: the rule above Nike Dunks is stronger/bluer in A and C and fainter in B. This is a surface-treatment change, not a consequence of the selected typeface (brand/constitution.md Article 14.4)."
+    }
+  ]
+}

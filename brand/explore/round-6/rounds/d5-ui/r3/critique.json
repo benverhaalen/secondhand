@@ -1,0 +1,139 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Entire phone viewport, excluding the gray side gutters (approximately x=148 to 876, y=0 to 1536).",
+          "issue": "The visible app viewport has a 728:1536 aspect ratio. At 390 px wide it is approximately 823 px tall, not the required 844. These boards do not provide the required 390 \u00d7 844 true-scale anchor."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III App margins (20)",
+          "place": "Main content rail and action row: Print label begins around x=179; the app starts around x=148.",
+          "issue": "The main outer inset is about 31 image pixels, or 17 px at a 390 px app width, rather than the specified 20 px. This affects all options, independently of field placement or texture."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 (one start edge per column)",
+          "place": "Listed at, Offered and Ship by Tuesday versus the action row underneath.",
+          "issue": "The labels begin around x=210 while the action row begins around x=179. These sibling sections of the same transaction have different start edges without a separate column. The other options move the labels to the action rail."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Entire phone viewport, excluding the gray side gutters (approximately x=148 to 876, y=0 to 1536).",
+          "issue": "The visible app viewport has a 728:1536 aspect ratio. At 390 px wide it is approximately 823 px tall, not the required 844. These boards do not provide the required 390 \u00d7 844 true-scale anchor."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III App margins (20)",
+          "place": "Main content rail and action row: Print label begins around x=179; the app starts around x=148.",
+          "issue": "The main outer inset is about 31 image pixels, or 17 px at a 390 px app width, rather than the specified 20 px. This affects all options, independently of field placement or texture."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Entire phone viewport, excluding the gray side gutters (approximately x=148 to 876, y=0 to 1536).",
+          "issue": "The visible app viewport has a 728:1536 aspect ratio. At 390 px wide it is approximately 823 px tall, not the required 844. These boards do not provide the required 390 \u00d7 844 true-scale anchor."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III App margins (20)",
+          "place": "Main content rail and action row: Print label begins around x=179; the app starts around x=148.",
+          "issue": "The main outer inset is about 31 image pixels, or 17 px at a 390 px app width, rather than the specified 20 px. This affects all options, independently of field placement or texture."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Entire phone viewport, excluding the gray side gutters (approximately x=148 to 876, y=0 to 1536).",
+          "issue": "The visible app viewport has a 728:1536 aspect ratio. At 390 px wide it is approximately 823 px tall, not the required 844. These boards do not provide the required 390 \u00d7 844 true-scale anchor."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III App margins (20)",
+          "place": "Main content rail and action row: Print label begins around x=179; the app starts around x=148.",
+          "issue": "The main outer inset is about 31 image pixels, or 17 px at a 390 px app width, rather than the specified 20 px. This affects all options, independently of field placement or texture."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Entire phone viewport, excluding the gray side gutters (approximately x=148 to 876, y=0 to 1536).",
+          "issue": "The visible app viewport has a 728:1536 aspect ratio. At 390 px wide it is approximately 823 px tall, not the required 844. These boards do not provide the required 390 \u00d7 844 true-scale anchor."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III App margins (20)",
+          "place": "Main content rail and action row: Print label begins around x=179; the app starts around x=148.",
+          "issue": "The main outer inset is about 31 image pixels, or 17 px at a 390 px app width, rather than the specified 20 px. This affects all options, independently of field placement or texture."
+        },
+        {
+          "rule": "brand/constitution.md E1, E2 and Article 4 C2; product/ui-constitution.md Article 7 (attention on purpose)",
+          "place": "Dense white arcs across the You keep label and $31.40.",
+          "issue": "The high-contrast repeated lines run directly through both text areas and become a competing foreground pattern. The field asks for attention independently of the money it is meant to support; the amount remains readable, but the texture fails the calm, subordinate role."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "The jacket photograph is not held fixed: fold details, collar shape, highlights and the floor change between renders. This is unrelated to D5 and weakens a controlled comparison of the field."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "In opt-base.png, Listed at, Offered and Ship by Tuesday begin around x=210. In the other four images they begin around x=179. The price values and action row stay approximately fixed. This changes alignment independently of D5."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png"
+      ],
+      "issue": "The payout text moves from approximately x=221 in the base to x=194 in both placement variants; the amount also varies slightly in width. Field placement is therefore accompanied by changed text inset and typography geometry."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-C.png"
+      ],
+      "issue": "Whole moment also makes the gradient substantially paler and fades it toward white. The comparison changes color strength as well as coverage. Its greater-than-one-third coverage is the explicit ledger D5 proposal, so it is not counted as a failure of the existing ceiling."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "Strong lines changes the gradient itself toward brighter cyan and more saturated yellow-green, in addition to changing line density and contrast. Medium lines also shifts the curve placement. The texture comparison does not hold the underlying color field fixed."
+    }
+  ]
+}

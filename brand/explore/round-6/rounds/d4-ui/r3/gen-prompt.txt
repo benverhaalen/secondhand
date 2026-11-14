@@ -1,0 +1,179 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UI board. The options in use, side by side, so the only thing that differs between them is the decision. Spacing, components and color as they would really look in the app.
+
+Decision D4: Surfaces and small parts.
+Cards: A = cards as ruled rows (hairline rules between items, no card outline); B = cards as hairline-outlined cards.
+Platform marks: A = platform marks bare (logo alone, no bubble); B = platform marks in a small white bubble.
+Photo state: A = state shown on the photo as a small pill; B = state shown on the photo as a small dot; C = state shown on the photo as a corner tag.
+The leaning option (from the ledger) is: ruled rows, bare platform marks, state as a pill on the photo.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a portrait canvas of 1024x1536 pixels. Inside it, one phone screen of the app drawn at exactly the 390 x 844 point proportions of an iPhone: 710 pixels wide and 1536 pixels tall (1 point = 1.82 pixels), centered, with plain light gray outside it. Every size follows that scale (13 point text is about 24 pixels tall, a 44 point button is 80 pixels tall, the 20 point margin is 36 pixels). App content only, no device frame, a real iOS status bar and home indicator. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 3. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-base.png
+- opt-cards-B.png
+- opt-marks-B.png
+- opt-state-B.png
+- opt-state-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-base.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+     "place": "Nike Dunks row, lime highlight behind $31.40",
+     "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+     "place": "Left and right edges of the item rows and action groups",
+     "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+    },
+    {
+     "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+     "place": "Horizontal separators below the offer and sold rows",
+     "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+    }
+   ]
+  },
+  {
+   "file": "opt-cards-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+     "place": "Nike Dunks row, lime highlight behind $31.40",
+     "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+     "place": "Left and right edges of the item rows and action groups",
+     "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+    },
+    {
+     "rule": "brand/constitution.md, Article 7.2; Part IV B18; Article 13, spacing without grouping",
+     "place": "Gap between the Nike Dunks card and Brass lamp card, compared with photo-to-action spacing inside the lamp card",
+     "issue": "The inter-card gap is approximately 21 image pixels, while the gap between the lamp photo and its buttons is approximately 27 pixels. Parts within a card are farther apart than the cards themselves, reversing the required grouping hierarchy."
+    }
+   ]
+  },
+  {
+   "file": "opt-marks-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+     "place": "Nike Dunks row, lime highlight behind $31.40",
+     "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+     "place": "Left and right edges of the item rows and action groups",
+     "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+    },
+    {
+     "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+     "place": "Horizontal separators below the offer and sold rows",
+     "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+     "place": "Nike Dunks row, lime highlight behind $31.40",
+     "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+     "place": "Left and right edges of the item rows and action groups",
+     "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+    },
+    {
+     "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+     "place": "Horizontal separators below the offer and sold rows",
+     "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+     "place": "Nike Dunks row, lime highlight behind $31.40",
+     "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+     "place": "Left and right edges of the item rows and action groups",
+     "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+    },
+    {
+     "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+     "place": "Horizontal separators below the offer and sold rows",
+     "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png"
+   ],
+   "issue": "The hairline-card option also widens the gradient action band: approximately x=164\u2013859 instead of x=180\u2013845. Its left and right edges and lower corners now belong to the outer card. The buttons remain essentially in place, so the field padding and amount of color change along with the surface treatment."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-state-B.png",
+    "opt-state-C.png"
+   ],
+   "issue": "Both state variants move the bottom navigation divider from approximately y=1378 to y=1346, with the tab icons, labels, central plus and home indicator also moving upward by about 32 image pixels. This changes lower-screen spacing independently of the photo state treatment."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-state-C.png"
+   ],
+   "issue": "The corner-tag variant also changes the photo silhouette: each rounded upper-left photo corner becomes square beneath the tag. This is a visible geometry change in addition to the badge shape."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

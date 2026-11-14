@@ -1,0 +1,106 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 6.1; brand/ledger.md A3; product/ui-constitution.md Art. 7",
+          "place": "Nike Dunks row, the highlighted $31.40",
+          "issue": "The amount is visibly bold relative to \u201cYou keep\u201d. Text must be Regular; Medium is reserved for buttons and the selected tab. The highlight does not authorize a heavier weight. This is a visual finding; source-dependent B13 is not applicable."
+        },
+        {
+          "rule": "brand/constitution.md Art. 5, States; brand/ledger.md A1",
+          "place": "Sold pill and the lime highlight beneath $31.40",
+          "issue": "The lime is fluorescent yellow-green rather than the specified muted #E6EA6A. Sampled interior Sold pixels have blue values near 4\u201335 rather than the specified 106. D3 opens spacing only; it does not open the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Part I E1 and Part IV B2; product/ui-constitution.md Art. 7",
+          "place": "Full-width offer field below the jacket",
+          "issue": "The broad, saturated gradient is the dominant visual mass ahead of the item or an amount. The field correctly identifies the urgent decision, but its prominence fails the stricter item-or-money-first squint test."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 6.1; brand/ledger.md A3; product/ui-constitution.md Art. 7",
+          "place": "Nike Dunks row, the highlighted $31.40",
+          "issue": "The amount is visibly bold relative to \u201cYou keep\u201d. Text must be Regular; Medium is reserved for buttons and the selected tab. The highlight does not authorize a heavier weight. This is a visual finding; source-dependent B13 is not applicable."
+        },
+        {
+          "rule": "brand/constitution.md Art. 5, States; brand/ledger.md A1",
+          "place": "Sold pill and the lime highlight beneath $31.40",
+          "issue": "The lime is fluorescent yellow-green rather than the specified muted #E6EA6A. Sampled interior Sold pixels have blue values near 4\u201335 rather than the specified 106. D3 opens spacing only; it does not open the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Part I E1 and Part IV B2; product/ui-constitution.md Art. 7",
+          "place": "Full-width offer field below the jacket",
+          "issue": "The broad, saturated gradient is the dominant visual mass ahead of the item or an amount. The field correctly identifies the urgent decision, but its prominence fails the stricter item-or-money-first squint test."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 6.1; brand/ledger.md A3; product/ui-constitution.md Art. 7",
+          "place": "Nike Dunks row, the highlighted $31.40",
+          "issue": "The amount is visibly bold relative to \u201cYou keep\u201d. Text must be Regular; Medium is reserved for buttons and the selected tab. The highlight does not authorize a heavier weight. This is a visual finding; source-dependent B13 is not applicable."
+        },
+        {
+          "rule": "brand/constitution.md Art. 5, States; brand/ledger.md A1",
+          "place": "Sold pill and the lime highlight beneath $31.40",
+          "issue": "The lime is fluorescent yellow-green rather than the specified muted #E6EA6A. Sampled interior Sold pixels have blue values near 4\u201335 rather than the specified 106. D3 opens spacing only; it does not open the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Part I E1 and Part IV B2; product/ui-constitution.md Art. 7",
+          "place": "Full-width offer field below the jacket",
+          "issue": "The broad, saturated gradient is the dominant visual mass ahead of the item or an amount. The field correctly identifies the urgent decision, but its prominence fails the stricter item-or-money-first squint test."
+        },
+        {
+          "rule": "brand/constitution.md Art. 6.1; brand/ledger.md A3; product/ui-constitution.md Art. 7",
+          "place": "Jacket row, \u201cCarhartt Detroit jacket\u201d and \u201cOffered $38\u201d",
+          "issue": "Both lines use a visibly heavier weight than the other item titles and regular body text. Neither is a button or selected tab, so the type rule does not permit this emphasis."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Type weight changes: C makes the jacket title and offered amount heavier than A and B. This is a typography change beyond D3 spacing (brand/ledger.md D3; brand/constitution.md Art. 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The item photos are not held constant. The jacket folds, hanger and crop change; the shoes change arrangement and crop; the lamp framing changes. These alter visual salience independently of spacing (brand/constitution.md Art. 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "State-fill hue and saturation change, especially the Live pill: A is vivid turquoise-green, while B and C are softer greens. Sold and the money highlight also vary. These are color changes beyond D3 (brand/ledger.md A1 and D3)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The field artwork changes in color distribution and mesh-line pattern. C also widens the field relative to the item rows and changes the Accept/Counter width proportions; A and B keep the field on the photo column\u2019s start edge. Gap changes belong to D3, but the artwork and control proportions introduce additional variables (brand/constitution.md Art. 14.4)."
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Part IV B1 (elements must have a rule-backed reason)",
+          "place": "White app background, especially around the wordmark and between the grid and offer panel; state pills and action buttons",
+          "issue": "Visible grain/mottling extends across the neutral UI and controls. This is outside a brand field, the only surface where the constitution allows texture."
+        },
+        {
+          "rule": "brand/ledger.md Decided A1; brand/constitution.md Article 5 color values and States table",
+          "place": "Needs you, Live, Sold and Shipping state indicators",
+          "issue": "The state hues retain the correct meanings, but their rendering drifts from the specified palette: the marigold is orange, the mint is a more saturated turquoise, the lime is brighter yellow-green, and the sky is a more saturated cyan. D1 changes fill versus dot treatment, not the underlying color values."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Part IV B1 (elements must have a rule-backed reason)",
+          "place": "White app background, especially around the wordmark and between the grid and offer panel; state pills and action buttons",
+          "issue": "Visible grain/mottling extends across the neutral UI and controls. This is outside a brand field, the only surface where the constitution allows texture."
+        },
+        {
+          "rule": "brand/ledger.md Decided A1; brand/constitution.md Article 5 color values and States table",
+          "place": "Needs you, Live, Sold and Shipping state indicators",
+          "issue": "The state hues retain the correct meanings, but their rendering drifts from the specified palette: the marigold is orange, the mint is a more saturated turquoise, the lime is brighter yellow-green, and the sky is a more saturated cyan. D1 changes fill versus dot treatment, not the underlying color values."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "Beyond the state-pill treatment, B shifts the Nike Dunks title and its money line slightly upward and the lower photo row slightly upward. These are small positioning differences, not content changes. Photos, wording, amounts, platform marks, offer actions and navigation otherwise appear unchanged."
+    }
+  ]
+}

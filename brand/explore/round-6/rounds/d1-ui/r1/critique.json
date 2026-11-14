@@ -1,0 +1,47 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 6: Name the escape",
+          "place": "Bottom Carhartt Detroit jacket offer panel, beside Accept $38 / Counter / more",
+          "issue": "The panel asks for a sale decision but never says what happens if the offer is ignored. No expiry or other consequence is visible."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III App canvas, Part IV B28",
+          "place": "Entire phone viewport, excluding the gray outer gutters",
+          "issue": "The visible app is approximately 764 pixels wide by 1536 high. At 390 points wide this is about 784 points high, rather than the required 844. The board therefore does not show the required true-scale app canvas."
+        },
+        {
+          "rule": "brand/constitution.md, Part III App margins and Part IV B17; brand/ledger.md, A3",
+          "place": "Left and right outer edges of the item grid",
+          "issue": "The white app starts near x=130 and ends near x=894, while the grid starts near x=157 and ends near x=870. Those insets are about 12\u201314 points at a 390-point app width, below the specified 20-point app margins."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 6: Name the escape",
+          "place": "Bottom Carhartt Detroit jacket offer panel, beside Accept $38 / Counter / more",
+          "issue": "The panel asks for a sale decision but never says what happens if the offer is ignored. No expiry or other consequence is visible."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III App canvas, Part IV B28",
+          "place": "Entire phone viewport, excluding the gray outer gutters",
+          "issue": "The visible app is approximately 764 pixels wide by 1536 high. At 390 points wide this is about 784 points high, rather than the required 844. The board therefore does not show the required true-scale app canvas."
+        },
+        {
+          "rule": "brand/constitution.md, Part III App margins and Part IV B17; brand/ledger.md, A3",
+          "place": "Left and right outer edges of the item grid",
+          "issue": "The white app starts near x=130 and ends near x=894, while the grid starts near x=157 and ends near x=870. Those insets are about 12\u201314 points at a 390-point app width, below the specified 20-point app margins."
+        }
+      ]
+    }
+  ],
+  "across_options": []
+}

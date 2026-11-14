@@ -1,0 +1,182 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Listing title, $31.40, and Ship by Tuesday",
+          "issue": "These three elements visibly use heavy weight to establish hierarchy, against the decided rule that hierarchy comes from size and ink level, with medium reserved for buttons and the selected tab. This is a visual weight finding, not a claim about computed font-weight; source-only check B13 is not applicable to these rasters."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "You keep $31.40 and the Offered $38 row",
+          "issue": "The sold screen labels $38 as an offer without saying whether it became the sale price, and gives no explanation for the $6.60 difference from the amount kept. A first-time seller cannot account for the payout from the information shown. The numbers are legible but their relationship is unexplained."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III Canvas, and Part IV B28",
+          "place": "Entire phone canvas, excluding gray presentation gutters",
+          "issue": "The visible phone is approximately 728 by 1536 pixels. At 390 pixels wide it is about 823 pixels tall, rather than the required 844. The presentation therefore does not preserve the required app canvas proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III Margins and Part IV B17",
+          "place": "Field card, price rows, shipping section and action row",
+          "issue": "The principal content starts about 56 pixels inside the 728-pixel phone, approximately 30 points at 390-point width, rather than the specified 20-point app margin."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Listing title, $31.40, and Ship by Tuesday",
+          "issue": "These three elements visibly use heavy weight to establish hierarchy, against the decided rule that hierarchy comes from size and ink level, with medium reserved for buttons and the selected tab. This is a visual weight finding, not a claim about computed font-weight; source-only check B13 is not applicable to these rasters."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "You keep $31.40 and the Offered $38 row",
+          "issue": "The sold screen labels $38 as an offer without saying whether it became the sale price, and gives no explanation for the $6.60 difference from the amount kept. A first-time seller cannot account for the payout from the information shown. The numbers are legible but their relationship is unexplained."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III Canvas, and Part IV B28",
+          "place": "Entire phone canvas, excluding gray presentation gutters",
+          "issue": "The visible phone is approximately 728 by 1536 pixels. At 390 pixels wide it is about 823 pixels tall, rather than the required 844. The presentation therefore does not preserve the required app canvas proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III Margins and Part IV B17",
+          "place": "Price rows, divider, shipping heading and action row",
+          "issue": "These sections sit approximately 31 to 33 pixels inside the 728-pixel phone, about 17 points at 390-point width, rather than the specified 20-point margin. The item photo still starts about 61 pixels inside the phone, creating a separate outer content edge."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Listing title, $31.40, and Ship by Tuesday",
+          "issue": "These three elements visibly use heavy weight to establish hierarchy, against the decided rule that hierarchy comes from size and ink level, with medium reserved for buttons and the selected tab. This is a visual weight finding, not a claim about computed font-weight; source-only check B13 is not applicable to these rasters."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "You keep $31.40 and the Offered $38 row",
+          "issue": "The sold screen labels $38 as an offer without saying whether it became the sale price, and gives no explanation for the $6.60 difference from the amount kept. A first-time seller cannot account for the payout from the information shown. The numbers are legible but their relationship is unexplained."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III Canvas, and Part IV B28",
+          "place": "Entire phone canvas, excluding gray presentation gutters",
+          "issue": "The visible phone is approximately 728 by 1536 pixels. At 390 pixels wide it is about 823 pixels tall, rather than the required 844. The presentation therefore does not preserve the required app canvas proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III Margins and Part IV B17",
+          "place": "Price rows, divider, shipping heading and action row",
+          "issue": "These sections sit approximately 31 to 33 pixels inside the 728-pixel phone, about 17 points at 390-point width, rather than the specified 20-point margin. The item photo still starts about 61 pixels inside the phone, creating a separate outer content edge."
+        },
+        {
+          "rule": "brand/constitution.md E1, E2, Article 7.4 and Part IV B2; product/ui-constitution.md Article 7",
+          "place": "Gradient ground from below the item to the bottom navigation, particularly the empty area below the buttons",
+          "issue": "The large saturated field becomes the dominant visual mass, extending far beyond the amount and actions. It competes with the item and payout for first attention. D5 explicitly permits testing coverage beyond one third, so exceeding B8 alone is not counted as a failure; the failure is the resulting attention hierarchy."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Listing title, $31.40, and Ship by Tuesday",
+          "issue": "These three elements visibly use heavy weight to establish hierarchy, against the decided rule that hierarchy comes from size and ink level, with medium reserved for buttons and the selected tab. This is a visual weight finding, not a claim about computed font-weight; source-only check B13 is not applicable to these rasters."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "You keep $31.40 and the Offered $38 row",
+          "issue": "The sold screen labels $38 as an offer without saying whether it became the sale price, and gives no explanation for the $6.60 difference from the amount kept. A first-time seller cannot account for the payout from the information shown. The numbers are legible but their relationship is unexplained."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III Canvas, and Part IV B28",
+          "place": "Entire phone canvas, excluding gray presentation gutters",
+          "issue": "The visible phone is approximately 728 by 1536 pixels. At 390 pixels wide it is about 823 pixels tall, rather than the required 844. The presentation therefore does not preserve the required app canvas proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III Margins and Part IV B17",
+          "place": "Price rows, divider, shipping heading and action row",
+          "issue": "These sections sit approximately 31 to 33 pixels inside the 728-pixel phone, about 17 points at 390-point width, rather than the specified 20-point margin. The item photo still starts about 61 pixels inside the phone, creating a separate outer content edge."
+        },
+        {
+          "rule": "brand/constitution.md E1, E2 and Article 4 C2; product/ui-constitution.md Article 7",
+          "place": "White curves running through and immediately behind $31.40",
+          "issue": "The high-contrast repeated curves cross the payout area and form a competing pattern behind the main information. Texture is required, but here its visual emphasis competes with the amount it should support."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Listing title, $31.40, and Ship by Tuesday",
+          "issue": "These three elements visibly use heavy weight to establish hierarchy, against the decided rule that hierarchy comes from size and ink level, with medium reserved for buttons and the selected tab. This is a visual weight finding, not a claim about computed font-weight; source-only check B13 is not applicable to these rasters."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "You keep $31.40 and the Offered $38 row",
+          "issue": "The sold screen labels $38 as an offer without saying whether it became the sale price, and gives no explanation for the $6.60 difference from the amount kept. A first-time seller cannot account for the payout from the information shown. The numbers are legible but their relationship is unexplained."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III Canvas, and Part IV B28",
+          "place": "Entire phone canvas, excluding gray presentation gutters",
+          "issue": "The visible phone is approximately 728 by 1536 pixels. At 390 pixels wide it is about 823 pixels tall, rather than the required 844. The presentation therefore does not preserve the required app canvas proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III Margins and Part IV B17",
+          "place": "Price rows, divider, shipping heading and action row",
+          "issue": "These sections sit approximately 31 to 33 pixels inside the 728-pixel phone, about 17 points at 390-point width, rather than the specified 20-point margin. The item photo still starts about 61 pixels inside the phone, creating a separate outer content edge."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "Unrelated layout drift: the base field spans approximately x205\u2013823, while both texture cards span x178\u2013846. The price rows, divider and actions also widen and move left in all four alternatives. D5 changes field placement or texture, not the width of the financial and shipping content (brand/constitution.md Article 14.4; brand/ledger.md D5)."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "The payout text moves horizontally: approximately x246 in base, x195 in Header band, and x220 in Whole moment and both texture alternatives. The item photo remains around x209. This changes alignment and internal padding as well as the named field decision (brand/constitution.md Articles 7.5 and 14.4; brand/ledger.md D5)."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "The texture options change curve geometry and where contrast is concentrated, not just line strength. Medium lines has stronger lines crossing the left-hand amount; Strong lines fades them behind the amount and emphasizes the right edge. Their labels therefore do not describe a controlled faint-to-medium-to-strong progression (brand/constitution.md Article 14.4; brand/ledger.md D5)."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png"
+      ],
+      "issue": "The placement comparison also changes the gradient distribution and texture visibility. Header band has a more conspicuous cyan-to-yellow sweep than base; Whole moment stretches the transition vertically and retains cyan behind the payout where the short fields already reach mint/lime. Some change follows the new extent, but the comparison also changes the color behind the same content (brand/constitution.md Article 14.4; brand/ledger.md D5)."
+    }
+  ]
+}

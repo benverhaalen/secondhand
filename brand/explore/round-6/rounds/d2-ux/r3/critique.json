@@ -1,0 +1,77 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4, C5; Article 10.4; Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, the red outlined platform mark beneath 'Listed at $45'.",
+          "issue": "The mark is a line-drawn substitute, not an unaltered official platform logo. It matches the Depop stand-in documented in assets/platforms/README.md as an Arcticons drawing awaiting an official file. Having a logo-shaped mark instead of a platform name does not satisfy C5's requirement for the real logo."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2 (the costly mistake and what a distracted first-time user will misread); brand/constitution.md E3 and Part IV B24",
+          "place": "Today: 'Jamie offered $38' and 'Accept $38'; the arrow leads to Sold: 'You keep $31.40' and 'View fees'.",
+          "issue": "The decision presents $38 without showing what the seller will keep. The $6.60 difference and the route to inspect fees appear only after the acceptance shown by the arrow. A first-time seller cannot tell from the decision screen whether accepting $38 means receiving $38; the board reveals the financial consequence after commitment."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Article 14.6, Part III App canvas, and Part IV B28",
+          "place": "The two phone screens within the 1536 × 1024 board.",
+          "issue": "Each phone is shown approximately 475 pixels wide and 1024 pixels tall, rather than at the required 390 × 844 viewing size. No separate true-scale anchor accompanies the board. This is a presentation failure for a typeface comparison: the supplied enlarged screens do not demonstrate text readability at the mandated phone size."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4, C5; Article 10.4; Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, the red outlined platform mark beneath 'Listed at $45'.",
+          "issue": "The mark is a line-drawn substitute, not an unaltered official platform logo. It matches the Depop stand-in documented in assets/platforms/README.md as an Arcticons drawing awaiting an official file. Having a logo-shaped mark instead of a platform name does not satisfy C5's requirement for the real logo."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2 (the costly mistake and what a distracted first-time user will misread); brand/constitution.md E3 and Part IV B24",
+          "place": "Today: 'Jamie offered $38' and 'Accept $38'; the arrow leads to Sold: 'You keep $31.40' and 'View fees'.",
+          "issue": "The decision presents $38 without showing what the seller will keep. The $6.60 difference and the route to inspect fees appear only after the acceptance shown by the arrow. A first-time seller cannot tell from the decision screen whether accepting $38 means receiving $38; the board reveals the financial consequence after commitment."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Article 14.6, Part III App canvas, and Part IV B28",
+          "place": "The two phone screens within the 1536 × 1024 board.",
+          "issue": "Each phone is shown approximately 475 pixels wide and 1024 pixels tall, rather than at the required 390 × 844 viewing size. No separate true-scale anchor accompanies the board. This is a presentation failure for a typeface comparison: the supplied enlarged screens do not demonstrate text readability at the mandated phone size."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4, C5; Article 10.4; Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, the red outlined platform mark beneath 'Listed at $45'.",
+          "issue": "The mark is a line-drawn substitute, not an unaltered official platform logo. It matches the Depop stand-in documented in assets/platforms/README.md as an Arcticons drawing awaiting an official file. Having a logo-shaped mark instead of a platform name does not satisfy C5's requirement for the real logo."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2 (the costly mistake and what a distracted first-time user will misread); brand/constitution.md E3 and Part IV B24",
+          "place": "Today: 'Jamie offered $38' and 'Accept $38'; the arrow leads to Sold: 'You keep $31.40' and 'View fees'.",
+          "issue": "The decision presents $38 without showing what the seller will keep. The $6.60 difference and the route to inspect fees appear only after the acceptance shown by the arrow. A first-time seller cannot tell from the decision screen whether accepting $38 means receiving $38; the board reveals the financial consequence after commitment."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Article 14.6, Part III App canvas, and Part IV B28",
+          "place": "The two phone screens within the 1536 × 1024 board.",
+          "issue": "Each phone is shown approximately 475 pixels wide and 1024 pixels tall, rather than at the required 390 × 844 viewing size. No separate true-scale anchor accompanies the board. This is a presentation failure for a typeface comparison: the supplied enlarged screens do not demonstrate text readability at the mandated phone size."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The item imagery is not held constant. In C, the jacket's folds, seam detail and wood-floor texture differ visibly from A and B in both photos. This changes the photographic rendering as well as D2 (typefaces), contrary to brand/constitution.md Article 14.4's one-axis comparison. The wording, amounts, actions and overall layout remain the same; differences in text width alone are expected from changing faces."
+    }
+  ]
+}

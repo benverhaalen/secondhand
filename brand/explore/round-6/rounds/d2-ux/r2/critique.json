@@ -1,0 +1,101 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Both screens: Carhartt Detroit jacket; additional affected text identified below.",
+          "issue": "The listing title, offer headline, You keep and $31.40 carry visibly heavier weight than regular supporting text. Weight is establishing hierarchy outside buttons and the selected tab. This is a visual weight assessment; the source-only computed-weight check B13 is not applicable to these raster images."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.2 and role table, Part IV B14; product/ui-constitution.md Article 7",
+          "place": "Both screens: listing title, Listed at $45, offer expiry, action labels; Today: Jamie offered $38; Sold: You keep and Ship by Tuesday.",
+          "issue": "At 390 px phone width, the text is visibly oversized for its assigned roles. Listing details and button labels read around 18\u201320 px rather than the specified 15; the offer headline reads around 24 rather than 18. These are visual size estimates, not recovered font metrics. The role scale is not preserved."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "Transition from Accept $38 on Today to You keep $31.40 on Sold.",
+          "issue": "The board shows a $6.60 reduction without explaining what was deducted or showing a visible route to that explanation. The seller can name the take-home amount but cannot explain where it came from. This is a failure of the demonstrated journey; unseen menu contents cannot be assessed."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Both screens: Carhartt Detroit jacket; additional affected text identified below.",
+          "issue": "Today and Sold are visibly bold rather than regular display type. The listing title, offer headline, You keep and $31.40 also use weight to establish hierarchy outside buttons and the selected tab. This is a visual weight assessment; the source-only computed-weight check B13 is not applicable to these raster images."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.2 and role table, Part IV B14; product/ui-constitution.md Article 7",
+          "place": "Both screens: listing title, Listed at $45, offer expiry, action labels; Today: Jamie offered $38; Sold: You keep and Ship by Tuesday.",
+          "issue": "At 390 px phone width, the text is visibly oversized for its assigned roles. Listing details and button labels read around 18\u201320 px rather than the specified 15; the offer headline reads around 24 rather than 18. These are visual size estimates, not recovered font metrics. The role scale is not preserved."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "Transition from Accept $38 on Today to You keep $31.40 on Sold.",
+          "issue": "The board shows a $6.60 reduction without explaining what was deducted or showing a visible route to that explanation. The seller can name the take-home amount but cannot explain where it came from. This is a failure of the demonstrated journey; unseen menu contents cannot be assessed."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Both screens: Carhartt Detroit jacket; additional affected text identified below.",
+          "issue": "The listing title is visibly heavier than the supporting listing price. It uses weight for emphasis outside buttons and the selected tab, although the offer headline and payout are lighter than in A and B. This is a visual weight assessment; the source-only computed-weight check B13 is not applicable to these raster images."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.2 and role table, Part IV B14; product/ui-constitution.md Article 7",
+          "place": "Both screens: listing title, Listed at $45, offer expiry, action labels; Today: Jamie offered $38; Sold: You keep and Ship by Tuesday.",
+          "issue": "At 390 px phone width, the text is visibly oversized for its assigned roles. Listing details and button labels read around 18\u201320 px rather than the specified 15; the offer headline reads around 24 rather than 18. These are visual size estimates, not recovered font metrics. The role scale is not preserved."
+        },
+        {
+          "rule": "brand/constitution.md E3 and Part IV B24; product/ui-constitution.md Articles 2.4 and 5.2",
+          "place": "Transition from Accept $38 on Today to You keep $31.40 on Sold.",
+          "issue": "The board shows a $6.60 reduction without explaining what was deducted or showing a visible route to that explanation. The seller can name the take-home amount but cannot explain where it came from. This is a failure of the demonstrated journey; unseen menu contents cannot be assessed."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Weight hierarchy changes along with family. B makes the screen headings bold; C makes Jamie offered $38, You keep, $31.40 and Ship by Tuesday lighter than A/B while its action labels appear heavier. D2 changes families, but ledger A3 and constitution Article 6.1 keep the role weights fixed. The comparison therefore does not isolate D2 (Article 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The field texture is not held constant: the fine curved lines are more pronounced in B, especially at the right of the offer card, and softer in C. Texture is a separate open decision, ledger D5, rather than D2."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "C changes the jacket photo rendering: fabric and floor details appear softer and slightly different from A/B. The product imagery is not an invariant in this typeface comparison."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The endpoint of annotation 3 moves farther inside the Accept button in C. In A/B it sits near the left edge; in C it sits beside the label. The annotation geometry changes independently of typeface."
+    }
+  ]
+}

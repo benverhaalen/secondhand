@@ -1,0 +1,133 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+          "place": "Nike Dunks row, lime highlight behind $31.40",
+          "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+        },
+        {
+          "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+          "place": "Left and right edges of the item rows and action groups",
+          "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+          "place": "Horizontal separators below the offer and sold rows",
+          "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+          "place": "Nike Dunks row, lime highlight behind $31.40",
+          "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+        },
+        {
+          "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+          "place": "Left and right edges of the item rows and action groups",
+          "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2; Part IV B18; Article 13, spacing without grouping",
+          "place": "Gap between the Nike Dunks card and Brass lamp card, compared with photo-to-action spacing inside the lamp card",
+          "issue": "The inter-card gap is approximately 21 image pixels, while the gap between the lamp photo and its buttons is approximately 27 pixels. Parts within a card are farther apart than the cards themselves, reversing the required grouping hierarchy."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+          "place": "Nike Dunks row, lime highlight behind $31.40",
+          "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+        },
+        {
+          "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+          "place": "Left and right edges of the item rows and action groups",
+          "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+          "place": "Horizontal separators below the offer and sold rows",
+          "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+          "place": "Nike Dunks row, lime highlight behind $31.40",
+          "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+        },
+        {
+          "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+          "place": "Left and right edges of the item rows and action groups",
+          "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+          "place": "Horizontal separators below the offer and sold rows",
+          "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 4 C6 (Plain money), Part IV B12",
+          "place": "Nike Dunks row, lime highlight behind $31.40",
+          "issue": "The lime rectangle covers the full height of the figures. C6 specifies a band behind only their lower 40%."
+        },
+        {
+          "rule": "brand/constitution.md, Part III App margins; Article 7.6; Part IV B17 and B28; brand/ledger.md, A3",
+          "place": "Left and right edges of the item rows and action groups",
+          "issue": "At a normalized phone width of 390, the roughly 31-pixel inset within the approximately 724-pixel phone canvas is about 17 points, below the specified 20-point app margin. The gray exterior is not part of the phone canvas."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5.1 and Article 9.2; Part IV B7",
+          "place": "Horizontal separators below the offer and sold rows",
+          "issue": "The hairlines are pale blue on white. Colored rules are prohibited here; the prescribed hairline is black at 8%."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "The hairline-card option also widens the gradient action band: approximately x=164\u2013859 instead of x=180\u2013845. Its left and right edges and lower corners now belong to the outer card. The buttons remain essentially in place, so the field padding and amount of color change along with the surface treatment."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "Both state variants move the bottom navigation divider from approximately y=1378 to y=1346, with the tab icons, labels, central plus and home indicator also moving upward by about 32 image pixels. This changes lower-screen spacing independently of the photo state treatment."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-C.png"
+      ],
+      "issue": "The corner-tag variant also changes the photo silhouette: each rounded upper-left photo corner becomes square beneath the tag. This is a visible geometry change in addition to the badge shape."
+    }
+  ]
+}

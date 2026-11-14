@@ -1,0 +1,143 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, eBay logo beneath Nike Dunks.",
+          "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+        },
+        {
+          "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+          "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+        },
+        {
+          "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+          "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+          "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, eBay logo beneath Nike Dunks.",
+          "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+        },
+        {
+          "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+          "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+        },
+        {
+          "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+          "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+          "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.3, Part IV B19; Article 13 nested-box tell",
+          "place": "Left screen, large offer card.",
+          "issue": "The new outlined outer card encloses a separately rounded, filled gradient panel. The field is not one of B19's exceptions for nested containers. Opening the card treatment in D4 does not waive that rule."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2, Part IV B18",
+          "place": "Both screens, gaps between the Nike Dunks, Brass lamp and Kindle outlined cards.",
+          "issue": "The narrow gaps between card outlines are smaller than the photo-to-text gaps inside the cards. Internal spacing is therefore looser than spacing between sibling cards, reversing the required grouping hierarchy."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, eBay logo beneath Nike Dunks.",
+          "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+        },
+        {
+          "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+          "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+        },
+        {
+          "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+          "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+          "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.3, Part IV B19",
+          "place": "Left screen, white circular platform-logo container inside the gradient offer panel.",
+          "issue": "The logo bubble adds a bordered and filled container inside another filled container. Platform-logo bubbles are not among B19's exceptions."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 1; brand/constitution.md Article 1.1",
+          "place": "Both screens, circular eBay container beneath Nike Dunks.",
+          "issue": "The eBay wordmark extends beyond the circle on its left side. The bubble fails to contain the mark it ostensibly groups, unlike the other logo bubbles; its outline crosses the logo area."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, eBay logo beneath Nike Dunks.",
+          "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+        },
+        {
+          "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+          "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+          "place": "Both screens, eBay logo beneath Nike Dunks.",
+          "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+        },
+        {
+          "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+          "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+          "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+        },
+        {
+          "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+          "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+          "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "The full-width divider above the bottom navigation disappears in Hairline cards. This changes the navigation boundary as well as the item-card treatment opened by D4."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png",
+        "opt-marks-B.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "No other substantive changes outside the named D4 treatments are visible: item content, prices, actions, field placement, wordmark, navigation labels and board annotations remain the same. Changes to photo coverage caused by dots versus pills versus tags are part of the stated decision."
+    }
+  ]
+}

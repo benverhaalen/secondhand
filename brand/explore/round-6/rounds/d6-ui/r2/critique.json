@@ -1,0 +1,96 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3: texture only on the field",
+          "place": "White page ground, especially the empty area below the shipping actions; black Print label button",
+          "issue": "The paper-like grain and mottling extend beyond the gradient field into the page and control fill. The rule confines this treatment to the field."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Sold pill at the left of the gradient band",
+          "issue": "Sold is visibly bold. This is a state label, not a button or selected tab; the setting rule requires regular text here and prohibits bold. This is a visual finding, not a verified computed font weight."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas and margins, Part IV B28 and B17",
+          "place": "Entire phone screen and left/right content margins",
+          "issue": "The phone area occupies approximately x=153 to 871 of the 1024 by 1536 image. At 390 wide, it is about 834 high rather than 844. Its approximately 32-image-pixel content inset becomes about 17.4 rather than the required 20. The surrounding gray board must not be counted as phone width."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1 and Part IV B20",
+          "place": "Four corners of the jacket photo",
+          "issue": "The photo corners are approximately 12 to 14 at a 390-wide phone scale, visibly using a card-like radius rather than the specified photo radius of 8."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3: texture only on the field",
+          "place": "White page ground, especially below the shipping actions; black Print label button",
+          "issue": "Grain and mottling extend onto the white ground and black control instead of remaining confined to the gradient field."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Sold pill and Carhartt Detroit jacket title",
+          "issue": "Sold is visibly bold, and the item title is visibly heavier than the regular supporting text and than the titles in A and C. Neither is a button or selected tab. Hierarchy here uses weight contrary to the regular-text rule. Exact font weights cannot be established from the image."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas and margins, Part IV B28 and B17",
+          "place": "Entire phone screen and left/right content margins",
+          "issue": "The approximately 718 by 1536 phone area scales to 390 by 834 rather than 390 by 844. Its content margins scale to about 17.4 rather than 20."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1 and Part IV B20",
+          "place": "Jacket photo corners",
+          "issue": "The photo uses approximately 12 to 14 corner rounding at a 390-wide phone scale rather than the specified 8."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3: texture only on the field",
+          "place": "White page ground, especially below the shipping actions; black Print label button",
+          "issue": "Grain and mottling extend onto the white ground and black control instead of remaining confined to the gradient field."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Sold pill",
+          "issue": "The state label is visibly bold where the rule calls for regular text. Medium is reserved for buttons and the selected tab; bold is prohibited. Exact font weight cannot be established from the image."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas and margins, Part IV B28 and B17",
+          "place": "Entire phone screen and left/right content margins",
+          "issue": "The approximately 718 by 1536 phone area scales to 390 by 834 rather than 390 by 844. Its content margins scale to about 17.4 rather than 20."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1 and Part IV B20",
+          "place": "Jacket photo corners",
+          "issue": "The photo uses approximately 12 to 14 corner rounding at a 390-wide phone scale rather than the specified 8."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "Outside D6, B's jacket title is heavier than A's and C's. The amount is supposed to be the only changing type treatment. This also conflicts with ledger A3 and constitution Article 6.1."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The jacket photo is not pixel-identical: fine garment detail, floor highlights and local contrast vary within the same composition. This is collateral variation, not part of the peak-amount decision."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "Fine rendering of the divider and button outlines varies. C has a faint extra contour along the upper edge of Drop-off spots. Background grain also varies. The overall layout, copy, photo subject and action set remain the same."
+    }
+  ]
+}

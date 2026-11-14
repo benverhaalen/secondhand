@@ -1,0 +1,57 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C2, Article 13 (flat two-stop gradient tell), Part IV B5",
+          "place": "Left phone, sky-to-lime offer field beside the small jacket photo",
+          "issue": "The field reads as a smooth two-color gradient without visible grain or fine mesh lines. It does not carry the required texture. This is a specific C2 failure; this single tell alone does not establish an Article 13 cluster."
+        },
+        {
+          "rule": "brand/constitution.md Part III (App wordmark: 21 px), Article 7.6 and Part IV B28; brand/ledger.md A3 (sizes by role)",
+          "place": "Both phone screens, centered secondhand wordmark at the top",
+          "issue": "The wordmark is oversized for the specified 21 px app role. Normalizing the approximately 470 px phone width to 390 px leaves roughly 26 px of visible letter height alone, before font ascenders/descenders and line height. It reads closer to a 30 px setting than 21 px. This is a visual size failure; font identity and weight cannot be established from the raster."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1 (buttons use pill radius), Part IV B20",
+          "place": "Right phone, Fee breakdown button beneath Offered $38",
+          "issue": "The button is a rounded rectangle with long straight vertical sides, rather than a pill. Its approximately 50 px height has corners around 16 px, visibly short of the half-height radius required for a pill."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part III (App wordmark: 21 px), Article 7.6 and Part IV B28; brand/ledger.md A3 (sizes by role)",
+          "place": "Both phone screens, centered secondhand wordmark at the top",
+          "issue": "The wordmark is oversized for the specified 21 px app role. Normalizing the approximately 470 px phone width to 390 px leaves roughly 26 px of visible letter height alone, before font ascenders/descenders and line height. It reads closer to a 30 px setting than 21 px. This is a visual size failure; font identity and weight cannot be established from the raster."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1 (buttons use pill radius), Part IV B20",
+          "place": "Right phone, Fee breakdown button beneath Offered $38",
+          "issue": "The button is a rounded rectangle with long straight vertical sides, rather than a pill. Its approximately 50 px height has corners around 16 px, visibly short of the half-height radius required for a pill."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "Left phone offer field: A is smooth; B adds clearly visible curved mesh lines and changes the color blend. Texture belongs to brand/ledger.md D5, not D1, so the state-pill comparison also varies an unrelated open decision."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "Right phone money highlight: B is brighter and greener than A, although this is the amount highlight, not a state pill. Median RGB in the same clear band patch (x1090\u20131110, y637\u2013654) is (229,234,77) in A and (220,245,63) in B. The D1 comparison changes the money treatment as well."
+    }
+  ]
+}

@@ -1,0 +1,161 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UX board. The same options seen as experience: what a person notices first, where the thumb goes, what each state tells them, how it reads in motion from one state to the next. Annotated, like a designer's markup, with as few words as possible.
+
+Decision D3: Spacing.
+Options: A = compact spacing; B = standard spacing; C = airy spacing.
+The leaning option (from the ledger) is: standard spacing.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+- attached image 1: Ben's reference for the sky to lime gradient (the field): a textured mesh held to one band
+- attached image 2: the closest app image so far (not approved): use it for true phone scale (390 points wide) and the card pattern
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a landscape canvas of 1536x1024 pixels. The phone screen(s) drawn at exactly the 390 x 844 point proportions of an iPhone at 1 point = 1.21 pixels (473 x 1024 pixels each, full height), with a designer's markup in the space around them (arrows, numbered order of attention, thumb reach, the state before and after), with as few words as possible. No device frame. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 2. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-A.png
+- opt-B.png
+- opt-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-A.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5, Ink second and rule 1; Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, offer field: 'Listed at $45' and 'Offer ends tomorrow, 6 pm'.",
+     "issue": "Both lines use gray secondary text on the colored field. Secondary ink is restricted to white and gray grounds; text on the field must be black. This fails regardless of whether the gray happens to meet a minimum contrast ratio."
+    },
+    {
+     "rule": "brand/constitution.md Article 4 C1; Part IV B3; brand/ledger.md L3",
+     "place": "Both screen headers, 'secondhand'.",
+     "issue": "The wordmarks sit visibly right of the screen centers. The left screen spans approximately x102\u2013618, with center x360, while its wordmark centers near x374; the right screen repeats the offset. This exceeds B3's \u00b11 px centering tolerance."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6; Part III App canvas; Part IV B28",
+     "place": "Both complete phone views, from status bar through home indicator.",
+     "issue": "Each phone view occupies approximately 516 \u00d7 1024 pixels. At 390 pixels wide it is about 774 pixels high, rather than the required 844. This board therefore cannot establish the requested density at the prescribed phone size."
+    },
+    {
+     "rule": "brand/constitution.md Article 6.2 and Roles; Part IV B14; brand/ledger.md A3 and D6",
+     "place": "Right screen, '$31.40'.",
+     "issue": "The peak amount is visibly undersized for the required 50-point role. At the depicted screen width, its apparent text size is around the 36-point step. Every listed D6 option retains size 50; D3 does not reopen that size. This is a visual size finding, not a claim about a source font declaration."
+    }
+   ]
+  },
+  {
+   "file": "opt-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5, Ink second and rule 1; Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, offer field: 'Listed at $45' and the expiry line.",
+     "issue": "Both lines are gray on the colored field. The rules require black text on field fills and restrict secondary gray ink to white or gray grounds."
+    },
+    {
+     "rule": "brand/constitution.md Article 4 C1; Part IV B3; brand/ledger.md L3",
+     "place": "Both screen headers, 'secondhand'.",
+     "issue": "Both wordmarks are approximately 14 board pixels right of their respective screen centers, outside the \u00b11 px tolerance."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6; Part III App canvas; Part IV B28",
+     "place": "Both complete phone views.",
+     "issue": "The approximately 516 \u00d7 1024 phone views become 390 \u00d7 774 when scaled uniformly to the required width. They do not preserve the required 390 \u00d7 844 canvas, so the visible content fit is not a valid true-scale spacing comparison."
+    },
+    {
+     "rule": "brand/constitution.md Article 6.2 and Roles; Part IV B14; brand/ledger.md A3 and D6",
+     "place": "Right screen, '$31.40'.",
+     "issue": "The peak amount appears around the 36-point step when judged relative to the screen width, rather than the 50-point size retained by all D6 options. Exact font metrics cannot be recovered from this raster, but the displayed role is visibly too small."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.2; Part IV B18",
+     "place": "Left screen, gap between the offer expiry line and Accept/Counter controls.",
+     "issue": "The roughly 44-pixel gap within the offer exceeds the roughly 40-pixel separation between the field's bottom and the next item's photo. The offer's internal separation is larger than its separation from the neighboring item, reversing the required grouping hierarchy."
+    }
+   ]
+  },
+  {
+   "file": "opt-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 5, Ink second and rule 1; Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, offer field: 'Listed at $45' and the expiry line.",
+     "issue": "The secondary lines use gray ink on a field fill, where black text is required."
+    },
+    {
+     "rule": "brand/constitution.md Article 4 C1; Part IV B3; brand/ledger.md L3",
+     "place": "Both screen headers, 'secondhand'.",
+     "issue": "Both wordmarks sit approximately 14 board pixels right of the screen centers, exceeding the \u00b11 px centering tolerance."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.6; Part III App canvas; Part IV B28",
+     "place": "Both complete phone views.",
+     "issue": "The phone views are approximately 516 \u00d7 1024 pixels, equivalent to 390 \u00d7 774 at the prescribed width, not 390 \u00d7 844. The apparent fit and crowding are therefore shown on the wrong canvas proportions."
+    },
+    {
+     "rule": "brand/constitution.md Article 6.2 and Roles; Part IV B14; brand/ledger.md A3 and D6",
+     "place": "Right screen, '$31.40'.",
+     "issue": "Relative to screen width, the peak amount appears near the 36-point step rather than the required 50-point sale amount. D3 permits spacing changes; none of the D6 choices permits this smaller peak amount. Exact font declarations are not available from the image."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.2; product/ui-constitution.md Article 7",
+     "place": "Both screens, Brass lamp row directly above the fixed bottom navigation.",
+     "issue": "The lamp photo and Continue/Edit/More controls reach the navigation's top boundary with essentially no separation. The airy gaps higher on the screen end in a collision between the final item's controls and a different navigation group. The static board does not demonstrate that scrolling can restore clearance."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "Photo dimensions and aspect ratios change, beyond D3 spacing (brand/ledger.md D3; brand/constitution.md Article 14.4). The Nike image is approximately 144 \u00d7 116 pixels in A versus 144 \u00d7 132 in B and C. The lamp image is approximately 144 \u00d7 118 in A versus 144 \u00d7 138 in B and 144 \u00d7 134 in C. This changes image prominence and content fit independently of gaps."
+  },
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "The item photography is not held constant (brand/constitution.md Article 14.4; brand/ledger.md D3). The jacket's drape and hem, the shoe arrangement/crop, and the lamp's framing visibly differ. These are image-content changes, not spacing changes, and affect the comparison's visual balance."
+  },
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "The offer field's mesh-line pattern and color distribution change with its dimensions (brand/ledger.md D3 versus D5; brand/constitution.md Article 14.4). A has a denser, shallower fan of curves; B and C show a taller, more vertical sweep. Field texture is a separate open decision, so these boards also vary the field's visual treatment."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

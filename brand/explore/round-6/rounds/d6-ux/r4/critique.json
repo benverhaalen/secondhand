@@ -1,0 +1,100 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Part IV B28, Article 7.6 and Part III (App canvas and margins); brand/ledger.md, A3",
+          "place": "All three phone panels; outer screen frames and left edges of the photo, title and action row",
+          "issue": "The board does not provide the required 390 \u00d7 844 true-scale anchor. The outer panels are approximately 480 \u00d7 1024 pixels, while the middle panel is approximately 492 \u00d7 1024. At 390 wide those heights become about 832 and 812, not 844. Content begins roughly 30 pixels inside each panel, equivalent to about 24 points rather than the specified 20. The panels therefore do not share a consistent app scale for judging the 50-point amount."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5 color table and States; brand/ledger.md, A1",
+          "place": "Middle panel Sold pill and right panel Shipping pill",
+          "issue": "The state names and color families are correct, but the rendered fills drift from the decided colors. Sold is greener than the specified lime #E6EA6A; Shipping is more saturated than sky #90D1EF. This changes a decided color treatment outside D6."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5 Ink, second and Article 5.1; Part IV B7",
+          "place": "Middle and right panels, Listed at $45 beneath Sold for $38",
+          "issue": "The secondary text is visibly blue-gray rather than neutral black at 65% on white. This introduces colored ink where the rule allows only black or its neutral secondary luminance."
+        },
+        {
+          "rule": "brand/constitution.md, E3 and Part IV B24; product/ui-constitution.md, Articles 2.4 and 5",
+          "place": "Left panel Accept $38 decision, followed by You keep $31.40 in the middle and right panels",
+          "issue": "The seller commits to $38 before the board shows the amount they keep. After acceptance, the $6.60 difference between Sold for $38 and You keep $31.40 is unexplained. The labels explain what each number represents, but the shown experience gives no account of where the retained amount came from."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Part IV B28, Article 7.6 and Part III (App canvas and margins); brand/ledger.md, A3",
+          "place": "All three phone panels; outer screen frames and left edges of the photo, title and action row",
+          "issue": "The board does not provide the required 390 \u00d7 844 true-scale anchor. The outer panels are approximately 480 \u00d7 1024 pixels, while the middle panel is approximately 492 \u00d7 1024. At 390 wide those heights become about 832 and 812, not 844. Content begins roughly 30 pixels inside each panel, equivalent to about 24 points rather than the specified 20. The panels therefore do not share a consistent app scale for judging the 50-point amount."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5 color table and States; brand/ledger.md, A1",
+          "place": "Middle panel Sold pill and right panel Shipping pill",
+          "issue": "The state names and color families are correct, but the rendered fills drift from the decided colors. Sold is greener than the specified lime #E6EA6A; Shipping is more saturated than sky #90D1EF. This changes a decided color treatment outside D6."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5 Ink, second and Article 5.1; Part IV B7",
+          "place": "Middle and right panels, Listed at $45 beneath Sold for $38",
+          "issue": "The secondary text is visibly blue-gray rather than neutral black at 65% on white. This introduces colored ink where the rule allows only black or its neutral secondary luminance."
+        },
+        {
+          "rule": "brand/constitution.md, E3 and Part IV B24; product/ui-constitution.md, Articles 2.4 and 5",
+          "place": "Left panel Accept $38 decision, followed by You keep $31.40 in the middle and right panels",
+          "issue": "The seller commits to $38 before the board shows the amount they keep. After acceptance, the $6.60 difference between Sold for $38 and You keep $31.40 is unexplained. The labels explain what each number represents, but the shown experience gives no account of where the retained amount came from."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Part IV B28, Article 7.6 and Part III (App canvas and margins); brand/ledger.md, A3",
+          "place": "All three phone panels; outer screen frames and left edges of the photo, title and action row",
+          "issue": "The board does not provide the required 390 \u00d7 844 true-scale anchor. The outer panels are approximately 480 \u00d7 1024 pixels, while the middle panel is approximately 492 \u00d7 1024. At 390 wide those heights become about 832 and 812, not 844. Content begins roughly 30 pixels inside each panel, equivalent to about 24 points rather than the specified 20. The panels therefore do not share a consistent app scale for judging the 50-point amount."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5 color table and States; brand/ledger.md, A1",
+          "place": "Middle panel Sold pill and right panel Shipping pill",
+          "issue": "The state names and color families are correct, but the rendered fills drift from the decided colors. Sold is greener than the specified lime #E6EA6A; Shipping is more saturated than sky #90D1EF. This changes a decided color treatment outside D6."
+        },
+        {
+          "rule": "brand/constitution.md, Article 5 Ink, second and Article 5.1; Part IV B7",
+          "place": "Middle and right panels, Listed at $45 beneath Sold for $38",
+          "issue": "The secondary text is visibly blue-gray rather than neutral black at 65% on white. This introduces colored ink where the rule allows only black or its neutral secondary luminance."
+        },
+        {
+          "rule": "brand/constitution.md, E3 and Part IV B24; product/ui-constitution.md, Articles 2.4 and 5",
+          "place": "Left panel Accept $38 decision, followed by You keep $31.40 in the middle and right panels",
+          "issue": "The seller commits to $38 before the board shows the amount they keep. After acceptance, the $6.60 difference between Sold for $38 and You keep $31.40 is unexplained. The labels explain what each number represents, but the shown experience gives no account of where the retained amount came from."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The non-D6 content is the same, but the renders are not identical outside the peak amounts. State-pill hues, photo texture, field lines, text edges and control contours vary slightly. Sold fill samples are approximately RGB (214,227,92), (207,225,82) and (207,224,84) respectively. These are small rendering differences, not additional substantive UX alternatives."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The Look annotation arrow shifts with the amount treatment: its tip is farther left in B than in A or C. Thus annotation placement also varies, although its meaning remains the same."
+    }
+  ]
+}

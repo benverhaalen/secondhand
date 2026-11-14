@@ -1,0 +1,57 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field), Article 5 Page; Part IV B1 (elements must have a permitted reason)",
+          "place": "White page ground, especially the open space around the wordmark and between the grid and offer row",
+          "issue": "A visible fine diagonal/paper texture covers the white UI ground. This is not a sky-to-lime brand field; texture is explicitly restricted to that field."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins (20 pt); Part IV B17; brand/ledger.md A3",
+          "place": "Left and right edges of the photo grid and left edge of the offer thumbnail",
+          "issue": "At a 390 pt app width, the content inset is approximately 17 pt, not the required 20 pt. In A the app spans approximately x=159\u2013865 and the grid x=189\u2013835; in B the app spans x=157\u2013867 with the same grid edges. This is a visible margin failure, not a claim about source CSS."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field), Article 5 Page; Part IV B1 (elements must have a permitted reason)",
+          "place": "White page ground, especially the open space around the wordmark and between the grid and offer row",
+          "issue": "A visible fine diagonal/paper texture covers the white UI ground. This is not a sky-to-lime brand field; texture is explicitly restricted to that field."
+        },
+        {
+          "rule": "brand/constitution.md Part III App margins (20 pt); Part IV B17; brand/ledger.md A3",
+          "place": "Left and right edges of the photo grid and left edge of the offer thumbnail",
+          "issue": "At a 390 pt app width, the content inset is approximately 17 pt, not the required 20 pt. In A the app spans approximately x=159\u2013865 and the grid x=189\u2013835; in B the app spans x=157\u2013867 with the same grid edges. This is a visible margin failure, not a claim about source CSS."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field), Article 8.1 (honest item photography)",
+          "place": "Nike Dunks photo, especially the concrete above and around the shoes",
+          "issue": "A repeating leaf-like mesh is visible across the concrete. It reads as an applied decorative texture rather than the plain photographic ground visible in A, and is outside the permitted brand field."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The Nike Dunks photograph changes beyond D1: A has a relatively plain concrete floor with diagonal seams; B adds a conspicuous repeating texture across the floor and changes its tonal detail. The photography is not held constant."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The app canvas changes slightly: A runs approximately x=159\u2013865, while B runs x=157\u2013867 in the supplied 1024 px boards. The grid stays approximately x=189\u2013835, so the page margins and normalized content scale also change independently of D1."
+    }
+  ]
+}

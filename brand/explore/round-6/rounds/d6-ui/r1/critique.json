@@ -1,0 +1,92 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 6.1 and Roles; brand/ledger.md A3; product/ui-constitution.md Article 7",
+          "place": "Item title, \u201cCarhartt Detroit jacket,\u201d beside the photo (approximately x485\u2013730, y420\u2013485).",
+          "issue": "The title is visibly heavier than the surrounding text. Regular is required for item titles; Medium is reserved for buttons and the selected tab. This uses weight to establish hierarchy. Exact font-weight cannot be established from a raster image; the visual violation is clear."
+        },
+        {
+          "rule": "brand/constitution.md Article 5, States (Sold), and Article 4 C2; brand/ledger.md A1",
+          "place": "The full-width gradient banner labeled \u201cSold\u201d (approximately x185\u2013840, y220\u2013344).",
+          "issue": "Sold has no distinct state marker: its word sits directly on the multicolor brand field. The decided state system assigns Sold a lime fill, while state pills on the field must be white with a black label. The shared sky-to-lime field does not distinguish the Sold state from the brand background."
+        },
+        {
+          "rule": "product/ui-constitution.md Articles 2.4 and 5.2; brand/constitution.md E3 and Part IV B24; brand/ledger.md L8",
+          "place": "\u201cOffered $38\u201d under \u201cListed at $45,\u201d beneath the Sold banner.",
+          "issue": "The screen says the item is sold but labels $38 only as an offer. A first-time reader cannot tell whether $38 was the accepted sale price or an earlier offer, so the relationship between the completed sale and \u201cYou keep $31.40\u201d is unclear."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3",
+          "place": "White page ground, including the large empty area below the action row.",
+          "issue": "A faint mottled, paper-like texture is visible outside the gradient band. Texture is permitted only on the field."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 6.1 and Roles; brand/ledger.md A3; product/ui-constitution.md Article 7",
+          "place": "Item title, \u201cCarhartt Detroit jacket,\u201d beside the photo (approximately x485\u2013730, y420\u2013485).",
+          "issue": "The title is visibly heavier than the surrounding text. Regular is required for item titles; Medium is reserved for buttons and the selected tab. This uses weight to establish hierarchy. Exact font-weight cannot be established from a raster image; the visual violation is clear."
+        },
+        {
+          "rule": "brand/constitution.md Article 5, States (Sold), and Article 4 C2; brand/ledger.md A1",
+          "place": "The full-width gradient banner labeled \u201cSold\u201d (approximately x185\u2013840, y220\u2013344).",
+          "issue": "Sold has no distinct state marker: its word sits directly on the multicolor brand field. The decided state system assigns Sold a lime fill, while state pills on the field must be white with a black label. The shared sky-to-lime field does not distinguish the Sold state from the brand background."
+        },
+        {
+          "rule": "product/ui-constitution.md Articles 2.4 and 5.2; brand/constitution.md E3 and Part IV B24; brand/ledger.md L8",
+          "place": "\u201cOffered $38\u201d under \u201cListed at $45,\u201d beneath the Sold banner.",
+          "issue": "The screen says the item is sold but labels $38 only as an offer. A first-time reader cannot tell whether $38 was the accepted sale price or an earlier offer, so the relationship between the completed sale and \u201cYou keep $31.40\u201d is unclear."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3",
+          "place": "White page ground, including the large empty area below the action row.",
+          "issue": "A faint mottled, paper-like texture is visible outside the gradient band. Texture is permitted only on the field."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 6.1 and Roles; brand/ledger.md A3; product/ui-constitution.md Article 7",
+          "place": "Item title, \u201cCarhartt Detroit jacket,\u201d beside the photo (approximately x485\u2013730, y420\u2013485).",
+          "issue": "The title is visibly heavier than the surrounding text. Regular is required for item titles; Medium is reserved for buttons and the selected tab. This uses weight to establish hierarchy. Exact font-weight cannot be established from a raster image; the visual violation is clear."
+        },
+        {
+          "rule": "brand/constitution.md Article 5, States (Sold), and Article 4 C2; brand/ledger.md A1",
+          "place": "The full-width gradient banner labeled \u201cSold\u201d (approximately x185\u2013840, y220\u2013344).",
+          "issue": "Sold has no distinct state marker: its word sits directly on the multicolor brand field. The decided state system assigns Sold a lime fill, while state pills on the field must be white with a black label. The shared sky-to-lime field does not distinguish the Sold state from the brand background."
+        },
+        {
+          "rule": "product/ui-constitution.md Articles 2.4 and 5.2; brand/constitution.md E3 and Part IV B24; brand/ledger.md L8",
+          "place": "\u201cOffered $38\u201d under \u201cListed at $45,\u201d beneath the Sold banner.",
+          "issue": "The screen says the item is sold but labels $38 only as an offer. A first-time reader cannot tell whether $38 was the accepted sale price or an earlier offer, so the relationship between the completed sale and \u201cYou keep $31.40\u201d is unclear."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3",
+          "place": "White page ground, including the large empty area below the action row.",
+          "issue": "A faint mottled, paper-like texture is visible outside the gradient band. Texture is permitted only on the field."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Outside D6, there are small raster changes in the jacket photo, field texture, white-ground texture, text edges, button outlines and navigation. Pixel differences occur throughout the images, including header, item, actions and navigation. These are rendering variations rather than a material change in content or layout, but the non-decision regions are not held identical. The amount typeface and lime-band changes are authorized D6 differences and are not failures."
+    }
+  ]
+}

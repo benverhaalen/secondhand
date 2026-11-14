@@ -1,0 +1,67 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B2; Part I E1; Article 7.4; product/ui-constitution.md Article 7",
+          "place": "Today screen: colored offer card below the jacket, approximately x196\u2013631, y436\u2013708 on the board.",
+          "issue": "The large bright field is the dominant visual mass, ahead of the item photo and either money amount. The amounts remain ordinary lines within it. The field itself wins the squint test, whereas E1 requires the item or money to lead. This is a visual hierarchy judgment, not a contrast failure."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B17; Article 7.1; Part III App margins; brand/ledger.md A3",
+          "place": "Both phone screens: outer edges of the offer/sale field relative to the phone boundaries.",
+          "issue": "The content does not keep the specified 20 pt app margins. The left phone spans approximately x174\u2013648 (474 px); its field spans x196\u2013631, giving about 18 pt left and 14 pt right when normalized to 390 pt. The right phone similarly has about 16 pt left and 13 pt right. These are visibly unequal and are not the required 20 pt margins; small raster-edge uncertainty does not account for the right-side shortfall."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B5; Article 4 C2; Article 13, flat-gradient tell",
+          "place": "Both colored fields, especially the open area to the right of the offer text and behind the sale amount.",
+          "issue": "The field reads as a smooth gradient without discernible grain or mesh lines. C2 requires visible texture. This is one Article 13 tell, not by itself evidence of an AI-tell cluster."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B2; Part I E1; Article 7.4; product/ui-constitution.md Article 7",
+          "place": "Today screen: colored offer card below the jacket, approximately x196\u2013631, y436\u2013708 on the board.",
+          "issue": "The large bright field is the dominant visual mass, ahead of the item photo and either money amount. The amounts remain ordinary lines within it. The field itself wins the squint test, whereas E1 requires the item or money to lead. This is a visual hierarchy judgment, not a contrast failure."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B17; Article 7.1; Part III App margins; brand/ledger.md A3",
+          "place": "Both phone screens: outer edges of the offer/sale field relative to the phone boundaries.",
+          "issue": "The content does not keep the specified 20 pt app margins. The left phone spans approximately x174\u2013648 (474 px); its field spans x196\u2013631, giving about 18 pt left and 14 pt right when normalized to 390 pt. The right phone similarly has about 16 pt left and 13 pt right. These are visibly unequal and are not the required 20 pt margins; small raster-edge uncertainty does not account for the right-side shortfall."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B2; Part I E1; Article 7.4; product/ui-constitution.md Article 7",
+          "place": "Today screen: colored offer card below the jacket, approximately x196\u2013631, y436\u2013708 on the board.",
+          "issue": "The large bright field is the dominant visual mass, ahead of the item photo and either money amount. The amounts remain ordinary lines within it. The field itself wins the squint test, whereas E1 requires the item or money to lead. This is a visual hierarchy judgment, not a contrast failure."
+        },
+        {
+          "rule": "brand/constitution.md Part IV B17; Article 7.1; Part III App margins; brand/ledger.md A3",
+          "place": "Both phone screens: outer edges of the offer/sale field relative to the phone boundaries.",
+          "issue": "The content does not keep the specified 20 pt app margins. The left phone spans approximately x174\u2013648 (474 px); its field spans x196\u2013631, giving about 18 pt left and 14 pt right when normalized to 390 pt. The right phone similarly has about 16 pt left and 13 pt right. These are visibly unequal and are not the required 20 pt margins; small raster-edge uncertainty does not account for the right-side shortfall."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Field texture changes along with D2: A looks smooth, B has clearly visible fine curved/diagonal lines, and C has subtler lines. This changes the open D5 texture decision during a typeface comparison, contrary to brand/constitution.md Article 14.4 and brand/ledger.md introductory rule that options vary the named open decision. The stronger texture in B is especially visible above and to the right of the offer text."
+    }
+  ]
+}

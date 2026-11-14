@@ -1,0 +1,52 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md L1 (Locked); brand/constitution.md Article 4 C2 and Part III, App field",
+          "place": "Whole screen, especially the Carhartt offer decision above the tab bar",
+          "issue": "The locked sky-to-lime gradient is absent. The offer sits on white; isolated state colors and the lime money highlight do not supply the brand field."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White page ground around the wordmark, between the item cards, and behind the offer actions",
+          "issue": "A fine mottled texture runs across the white interface ground. Texture is allowed only within the brand field, and no field is present."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md L1 (Locked); brand/constitution.md Article 4 C2 and Part III, App field",
+          "place": "Whole screen, especially the Carhartt offer decision above the tab bar",
+          "issue": "The locked sky-to-lime gradient is absent. The offer sits on white; isolated state colors and the lime money highlight do not supply the brand field."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White page ground around the wordmark, between the item cards, and behind the offer actions",
+          "issue": "A fine mottled texture runs across the white interface ground. Texture is allowed only within the brand field, and no field is present."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The item photographs are not held constant. Most visibly, the concrete beneath the Nike Dunks has a stronger repeating, faceted texture in B; shoe shading and fine photo details also change. This is outside D1 state colors."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "There is slight horizontal geometry drift outside the pills: B moves the left photo column and offer thumbnail left and widens the right photo column slightly. The phone ground and tab divider also differ slightly in width. Content, item order, action labels, and overall composition otherwise remain the same."
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6; Part III App canvas (390 \u00d7 844 pt)",
+          "place": "All three phone frames, particularly the narrower middle frame.",
+          "issue": "The frames do not share the required phone proportions. The outer frames are approximately 485 \u00d7 1024 image pixels and the middle frame approximately 470 \u00d7 1024. At 390 wide these imply heights of about 823 and 850, rather than 844. This is not a consistent true-scale comparison of the amount treatments."
+        },
+        {
+          "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The transition labelled \u201cCarrier scan\u201d, between the middle and right screens; its arrowhead lands beside $31.40.",
+          "issue": "The annotation associates the carrier scan with the retained amount instead of clearly connecting the sold state to the shipping state. A separate arrow begins near \u201cYou keep\u201d and points to Shipping. Together these arrows obscure which event changes the status and imply a relationship between shipping and the money label that the board does not explain."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B1 and B24; Article 1; product/ui-constitution.md, Article 5",
+          "place": "Circled 1 beside the middle amount, circled 2 below Print label, and the dashed arrow entering Print label from the bottom.",
+          "issue": "The numbered callouts have no legend or explanatory text, and the dashed arrow has no labelled origin. A reader cannot tell whether 1 and 2 indicate reading order, steps, or review notes, or what event the dashed arrow represents. These annotations do not communicate a complete meaning."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6; Part III App canvas (390 \u00d7 844 pt)",
+          "place": "All three phone frames, particularly the narrower middle frame.",
+          "issue": "The frames do not share the required phone proportions. The outer frames are approximately 485 \u00d7 1024 image pixels and the middle frame approximately 470 \u00d7 1024. At 390 wide these imply heights of about 823 and 850, rather than 844. This is not a consistent true-scale comparison of the amount treatments."
+        },
+        {
+          "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The transition labelled \u201cCarrier scan\u201d, between the middle and right screens; its arrowhead lands beside $31.40.",
+          "issue": "The annotation associates the carrier scan with the retained amount instead of clearly connecting the sold state to the shipping state. A separate arrow begins near \u201cYou keep\u201d and points to Shipping. Together these arrows obscure which event changes the status and imply a relationship between shipping and the money label that the board does not explain."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B1 and B24; Article 1; product/ui-constitution.md, Article 5",
+          "place": "Circled 1 beside the middle amount, circled 2 below Print label, and the dashed arrow entering Print label from the bottom.",
+          "issue": "The numbered callouts have no legend or explanatory text, and the dashed arrow has no labelled origin. A reader cannot tell whether 1 and 2 indicate reading order, steps, or review notes, or what event the dashed arrow represents. These annotations do not communicate a complete meaning."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6; Part III App canvas (390 \u00d7 844 pt)",
+          "place": "All three phone frames, particularly the narrower middle frame.",
+          "issue": "The frames do not share the required phone proportions. The outer frames are approximately 485 \u00d7 1024 image pixels and the middle frame approximately 470 \u00d7 1024. At 390 wide these imply heights of about 823 and 850, rather than 844. This is not a consistent true-scale comparison of the amount treatments."
+        },
+        {
+          "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The transition labelled \u201cCarrier scan\u201d, between the middle and right screens; its arrowhead lands beside $31.40.",
+          "issue": "The annotation associates the carrier scan with the retained amount instead of clearly connecting the sold state to the shipping state. A separate arrow begins near \u201cYou keep\u201d and points to Shipping. Together these arrows obscure which event changes the status and imply a relationship between shipping and the money label that the board does not explain."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B1 and B24; Article 1; product/ui-constitution.md, Article 5",
+          "place": "Circled 1 beside the middle amount, circled 2 below Print label, and the dashed arrow entering Print label from the bottom.",
+          "issue": "The numbered callouts have no legend or explanatory text, and the dashed arrow has no labelled origin. A reader cannot tell whether 1 and 2 indicate reading order, steps, or review notes, or what event the dashed arrow represents. These annotations do not communicate a complete meaning."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Minor raster rendering differences occur across the board outside the two amount regions, including shared text and edges. The visible item, copy, controls, status colors, and overall layout otherwise remain the same; no substantive additional design choice is apparent. The amount typeface and presence of the lime band are the authorized D6 differences."
+    }
+  ]
+}

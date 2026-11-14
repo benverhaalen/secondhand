@@ -1,0 +1,92 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 7.2; brand/ledger.md, L10",
+          "place": "Left screen: Offered $38 / Listed at $45 band and Accept $38 action below the four-item grid.",
+          "issue": "The offer has no item photo, title, or visible selection connecting it to the jacket. Its position directly beneath the lamp and Kindle makes the target ambiguous. The annotation implies a jacket transaction, but the interface does not establish which item Accept $38 will sell."
+        },
+        {
+          "rule": "product/ui-constitution.md, Article 6, Name the escape",
+          "place": "Left screen: offer band and action row.",
+          "issue": "The decision gives no indication of what happens if the seller ignores it. No expiry or other consequence is shown."
+        },
+        {
+          "rule": "brand/constitution.md, E3 and Part IV B24; product/ui-constitution.md, Article 5.2",
+          "place": "Right screen: You keep $31.40, Listed at $45, Offered $38.",
+          "issue": "The visible amounts leave a $6.60 deduction unexplained. The screen does not identify what was deducted or visibly identify a breakdown, so a first-time seller cannot account for the amount they keep from the information shown."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2 and Part IV B18",
+          "place": "Left screen: jacket title-to-state gap versus jacket state-to-lamp photo gap, and the equivalent shoes/Kindle boundary.",
+          "issue": "The gap between a title and its own state is roughly the same as the gap between that state and the next item photo. The rows do not satisfy inside tighter than between; the state rows sit nearly midway between the items they describe and the following photos."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.5",
+          "place": "Right screen: photo and text start near x=934, while Print label starts near x=913 in the supplied board.",
+          "issue": "The primary action begins about 21 board pixels to the left of the content column. This creates a second start edge for the same detail view."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III Canvas, and Part IV B28",
+          "place": "Both phone frames, from the status bar through the bottom home indicator.",
+          "issue": "Each phone viewport is approximately 510 pixels wide by 1024 high. At 390 pixels wide it is approximately 783 high, rather than the required 844. The board therefore does not show the required phone canvas at its correct proportions."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 7.2; brand/ledger.md, L10",
+          "place": "Left screen: Offered $38 / Listed at $45 band and Accept $38 action below the four-item grid.",
+          "issue": "The offer has no item photo, title, or visible selection connecting it to the jacket. Its position directly beneath the lamp and Kindle makes the target ambiguous. The annotation implies a jacket transaction, but the interface does not establish which item Accept $38 will sell."
+        },
+        {
+          "rule": "product/ui-constitution.md, Article 6, Name the escape",
+          "place": "Left screen: offer band and action row.",
+          "issue": "The decision gives no indication of what happens if the seller ignores it. No expiry or other consequence is shown."
+        },
+        {
+          "rule": "brand/constitution.md, E3 and Part IV B24; product/ui-constitution.md, Article 5.2",
+          "place": "Right screen: You keep $31.40, Listed at $45, Offered $38.",
+          "issue": "The visible amounts leave a $6.60 deduction unexplained. The screen does not identify what was deducted or visibly identify a breakdown, so a first-time seller cannot account for the amount they keep from the information shown."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2 and Part IV B18",
+          "place": "Left screen: jacket title-to-state gap versus jacket state-to-lamp photo gap, and the equivalent shoes/Kindle boundary.",
+          "issue": "The gap between a title and its own state is roughly the same as the gap between that state and the next item photo. The rows do not satisfy inside tighter than between; the state rows sit nearly midway between the items they describe and the following photos."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.5",
+          "place": "Right screen: photo and text start near x=934, while Print label starts near x=913 in the supplied board.",
+          "issue": "The primary action begins about 21 board pixels to the left of the content column. This creates a second start edge for the same detail view."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III Canvas, and Part IV B28",
+          "place": "Both phone frames, from the status bar through the bottom home indicator.",
+          "issue": "Each phone viewport is approximately 510 pixels wide by 1024 high. At 390 pixels wide it is approximately 783 high, rather than the required 844. The board therefore does not show the required phone canvas at its correct proportions."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The Mercari mark below Kindle changes outside D1: A has a small tilted outlined quadrilateral above the M; B has a crossed, asterisk-like mark there. The platform asset is not held constant (brand/ledger.md L6; brand/constitution.md C5 and Article 10.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The item photographs have small texture and tonal differences, particularly the large jacket photograph on the right. These are raster-level differences outside the state-pill treatment; the depicted items, framing and overall composition remain substantially the same."
+    }
+  ]
+}

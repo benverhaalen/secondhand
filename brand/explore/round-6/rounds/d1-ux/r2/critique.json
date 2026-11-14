@@ -1,0 +1,72 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5.4 (photos and the field)",
+          "place": "Left screen, gradient offer card above Accept $38",
+          "issue": "The textured field extends behind and around the jacket thumbnail. Article 5.4 explicitly says the field never sits behind a photo."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Left offer card: Carhartt Detroit jacket and Offered $38; right screen: You keep",
+          "issue": "These non-button labels visibly use heavier weight to establish hierarchy. The decided type rule reserves Medium for buttons and the selected tab and requires other text to use Regular. This is a visual finding; exact font weights cannot be certified from the raster (B13 is not applicable)."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2.4 (what a first-time user will misread); brand/constitution.md Article 1 (each element must have a reason)",
+          "place": "Solid curved arrow from the upper-right part of the Kindle tile to the jacket Sold status on the right",
+          "issue": "The annotation associates the Kindle with the jacket sale. It communicates the wrong item-to-result relationship, undermining the board as an explanation of the experience."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28",
+          "place": "Both full phone screens",
+          "issue": "Each phone is approximately 443 pixels wide by 1024 high in this board. At 390 pixels wide that is approximately 901 pixels high, rather than the required 844. The board does not supply the required 390 by 844 true-scale anchor, so its density and spacing cannot be judged at the prescribed phone geometry."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5.4 (photos and the field)",
+          "place": "Left screen, gradient offer card above Accept $38",
+          "issue": "The textured field extends behind and around the jacket thumbnail. Article 5.4 explicitly says the field never sits behind a photo."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Left offer card: Carhartt Detroit jacket and Offered $38; right screen: You keep",
+          "issue": "These non-button labels visibly use heavier weight to establish hierarchy. The decided type rule reserves Medium for buttons and the selected tab and requires other text to use Regular. This is a visual finding; exact font weights cannot be certified from the raster (B13 is not applicable)."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2.4 (what a first-time user will misread); brand/constitution.md Article 1 (each element must have a reason)",
+          "place": "Solid curved arrow from the upper-right part of the Kindle tile to the jacket Sold status on the right",
+          "issue": "The annotation associates the Kindle with the jacket sale. It communicates the wrong item-to-result relationship, undermining the board as an explanation of the experience."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28",
+          "place": "Both full phone screens",
+          "issue": "Each phone is approximately 443 pixels wide by 1024 high in this board. At 390 pixels wide that is approximately 901 pixels high, rather than the required 844. The board does not supply the required 390 by 844 true-scale anchor, so its density and spacing cannot be judged at the prescribed phone geometry."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The product photography changes independently of D1. The large jacket photo has different sleeve folds, hem shape, pocket details and floor lighting; the grid jacket and offer thumbnail also change. The sneakers have different lace and panel details, and the lamp and Kindle photographs vary. These are content changes, not state-pill changes, and prevent a controlled comparison (brand/ledger.md Open D1; brand/constitution.md Article 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "Small non-state geometry changes are visible: the offer thumbnail and adjacent text shift, and the black Accept $38 button is slightly wider in B. These layout differences are outside D1 (brand/ledger.md Open D1; brand/constitution.md Article 14.4)."
+    }
+  ]
+}

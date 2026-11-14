@@ -1,0 +1,71 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md L3; brand/constitution.md Article 4 C1 and Part IV B3",
+          "place": "Left phone, top navigation wordmark in both boards.",
+          "issue": "The wordmark is shifted right. Its visible ink runs approximately x=337–505 (center 421), while the phone spans x=179–646 (center 412.5). The approximately 7 pt offset at 390 pt screen width exceeds B3’s ±1 px centering tolerance."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 color table and Article 4 C6",
+          "place": "Right phone, lime band beneath “$31.40”.",
+          "issue": "The money highlight is a saturated yellow-green rather than the specified lime #E6EA6A. Interior pixels are approximately #D2F043. D1 opens the state-pill treatment, not the money-highlight color; this fixed color must hold in both options."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 state colors",
+          "place": "Left phone, Shipping and Sold pills; right phone, Sold pill.",
+          "issue": "The filled pills drift from the specified state palette. Shipping is visibly more cyan (sample near #6ECFFD versus sky #90D1EF); Sold is a more saturated yellow-green (sample near #D5F25A versus lime #E6EA6A). Choosing field-tint fills does not authorize replacing their decided hues."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md L3; brand/constitution.md Article 4 C1 and Part IV B3",
+          "place": "Left phone, top navigation wordmark in both boards.",
+          "issue": "The wordmark is shifted right. Its visible ink runs approximately x=337–505 (center 421), while the phone spans x=179–646 (center 412.5). The approximately 7 pt offset at 390 pt screen width exceeds B3’s ±1 px centering tolerance."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 color table and Article 4 C6",
+          "place": "Right phone, lime band beneath “$31.40”.",
+          "issue": "The money highlight is a saturated yellow-green rather than the specified lime #E6EA6A. Interior pixels are approximately #D6FB3D. D1 opens the state-pill treatment, not the money-highlight color; this fixed color must hold in both options."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "B makes the state-label lettering visibly heavier than A, especially “Needs you”, “Live”, and the right-hand “Sold”. That changes typographic emphasis in addition to the fill-versus-dot decision. Exact font weights cannot be established from raster images (Part IV excludes source-dependent B13)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The offer-card field changes: B has a brighter, more saturated lime right edge than A. The field is D5, not D1, and its change alters the attention balance against the state pills."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The large jacket photo on the right changes in its lower-body seams, wrinkles, and hem details. This is visible around the horizontal seam and lower center of the jacket. Item imagery is not part of D1."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The money highlight also changes outside D1: A has interior pixels near #D2F043; B is brighter, near #D6FB3D. D6’s amount treatment is not the decision being compared."
+    }
+  ]
+}

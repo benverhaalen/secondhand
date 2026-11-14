@@ -1,0 +1,212 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UI board. The options in use, side by side, so the only thing that differs between them is the decision. Spacing, components and color as they would really look in the app.
+
+Decision D4: Surfaces and small parts.
+Cards: A = cards as ruled rows (hairline rules between items, no card outline); B = cards as hairline-outlined cards.
+Platform marks: A = platform marks bare (logo alone, no bubble); B = platform marks in a small white bubble.
+Photo state: A = state shown on the photo as a small pill; B = state shown on the photo as a small dot; C = state shown on the photo as a corner tag.
+The leaning option (from the ledger) is: ruled rows, bare platform marks, state as a pill on the photo.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a portrait canvas of 1024x1536 pixels. Inside it, one phone screen of the app drawn at exactly the 390 x 844 point proportions of an iPhone: 710 pixels wide and 1536 pixels tall (1 point = 1.82 pixels), centered, with plain light gray outside it. Every size follows that scale (13 point text is about 24 pixels tall, a 44 point button is 80 pixels tall, the 20 point margin is 36 pixels). App content only, no device frame, a real iOS status bar and home indicator. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 2. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-base.png
+- opt-cards-B.png
+- opt-marks-B.png
+- opt-state-B.png
+- opt-state-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-base.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+     "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+     "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+     "place": "Entire phone screen, excluding the gray side gutters",
+     "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+     "place": "Left and right edges of the list and action rows",
+     "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+     "place": "Offer, Sold and Live markers on the three photos",
+     "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FDBD51 for Offer, #DBF14E for Sold and #8EF1C4 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+    }
+   ]
+  },
+  {
+   "file": "opt-cards-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+     "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+     "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+     "place": "Entire phone screen, excluding the gray side gutters",
+     "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+     "place": "Left and right edges of the list and action rows",
+     "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+     "place": "Offer, Sold and Live markers on the three photos",
+     "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FDBD49 for Offer, #D7F14C for Sold and #8AF0C5 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B19; Article 7.3; Article 13 nested-box tell",
+     "place": "First hairline card, around the gradient action strip",
+     "issue": "The outlined outer card contains a separate filled, rounded field panel. The field panel is not one of B19's permitted nested elements (photos, buttons, state pills or money highlights). The individual buttons are permitted; their extra enclosing panel creates the forbidden box inside a box."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B18; Article 7.2",
+     "place": "Gaps between the three outlined cards versus photo-to-text spacing within each card",
+     "issue": "Neighboring card outlines are only about 20\u201322 pixels apart, while the internal photo-to-text gap is about 28 pixels. Inside is therefore not tighter than between, as required."
+    }
+   ]
+  },
+  {
+   "file": "opt-marks-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+     "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+     "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+     "place": "Entire phone screen, excluding the gray side gutters",
+     "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+     "place": "Left and right edges of the list and action rows",
+     "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+     "place": "Offer, Sold and Live markers on the three photos",
+     "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FDBC4A for Offer, #D9F24E for Sold and #89F2C4 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+     "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+     "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+     "place": "Entire phone screen, excluding the gray side gutters",
+     "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+     "place": "Left and right edges of the list and action rows",
+     "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+     "place": "Offer, Sold and Live markers on the three photos",
+     "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FABE55 for Offer, #D8EE4B for Sold and #8AE5BE for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+     "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+     "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+     "place": "Entire phone screen, excluding the gray side gutters",
+     "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+     "place": "Left and right edges of the list and action rows",
+     "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+     "place": "Offer, Sold and Live markers on the three photos",
+     "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #F8C05A for Offer, #D5EB4E for Sold and #8FEDC2 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png",
+    "opt-marks-B.png",
+    "opt-state-B.png",
+    "opt-state-C.png"
+   ],
+   "issue": "The state colors change between variants as well as drifting from the decided palette. Live is visibly less bright in opt-state-B.png than in opt-base.png; representative interior medians are #8AE5BE and #8EF1C4 respectively. D4 does not open state-color changes."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png",
+    "opt-marks-B.png",
+    "opt-state-B.png",
+    "opt-state-C.png"
+   ],
+   "issue": "The item-photo detail and tonal rendering are not held exactly constant: the jacket folds and wood texture, shoe laces and concrete texture, and lamp shading vary subtly. The same items and broad crops remain, but these are additional image changes outside the surface, logo-container and state-marker decision."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

@@ -1,0 +1,131 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 7.6, Part III (App canvas), Part IV B28",
+          "place": "Whole phone screen, excluding the gray side gutters",
+          "issue": "At 390 px wide, the visible phone screen is approximately 805 px high, rather than the required 844. The supplied board does not preserve the required 390 \u00d7 844 app proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III (App margins), Art. 7.1, Part IV B17; brand/ledger.md A3",
+          "place": "Left and right edges of the two cards",
+          "issue": "At 390 px phone width, the outer card inset is approximately 16 px rather than the specified 20 px. This changes the layout independently of the open typeface decision."
+        },
+        {
+          "rule": "brand/constitution.md Art. 5 (Lime and States); brand/ledger.md A1",
+          "place": "Sold pill and the lime band under $31.40",
+          "issue": "The money/state lime is fluorescent yellow-green rather than the specified #E6EA6A. A representative interior pixel in the amount band is #E5F540; this is a visible saturation shift, not edge antialiasing. D2 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md Art. 6 role-size table, Part IV B14; brand/ledger.md A3",
+          "place": "Offered $38 in the first card",
+          "issue": "At true phone width this headline reads around 22\u201324 px, visibly larger than the prescribed 18 px card headline. The typeface comparison also changes or disregards the locked role-size hierarchy."
+        },
+        {
+          "rule": "brand/constitution.md Art. 13 default test, Part IV B25; product/ui-constitution.md Art. 10",
+          "place": "Overall stacked-card composition, both card outlines, and bottom navigation",
+          "issue": "Against an imagined unbranded resale dashboard, three visual axes remain the same default choice: vertically stacked full-width cards, rounded hairline card containers, and generic outline tab icon styling. The distinctive field and item photography do not change those three matching axes. This is a visual default-test judgment, not a claim about which icon library or font files were used."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 7.6, Part III (App canvas), Part IV B28",
+          "place": "Whole phone screen, excluding the gray side gutters",
+          "issue": "At 390 px wide, the visible phone screen is approximately 799 px high, rather than the required 844. The supplied board does not preserve the required 390 \u00d7 844 app proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III (App margins), Art. 7.1, Part IV B17; brand/ledger.md A3",
+          "place": "Left and right edges of the two cards",
+          "issue": "At 390 px phone width, the outer card inset is approximately 17 px rather than the specified 20 px. This changes the layout independently of the open typeface decision."
+        },
+        {
+          "rule": "brand/constitution.md Art. 5 (Lime and States); brand/ledger.md A1",
+          "place": "Sold pill and the lime band under $31.40",
+          "issue": "The money/state lime is fluorescent yellow-green rather than the specified #E6EA6A. A representative interior pixel in the amount band is #E4F93E; this is a visible saturation shift, not edge antialiasing. D2 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md Art. 6 role-size table, Part IV B14; brand/ledger.md A3",
+          "place": "Offered $38 in the first card",
+          "issue": "At true phone width this headline reads around 22\u201324 px, visibly larger than the prescribed 18 px card headline. The typeface comparison also changes or disregards the locked role-size hierarchy."
+        },
+        {
+          "rule": "brand/constitution.md Art. 13 default test, Part IV B25; product/ui-constitution.md Art. 10",
+          "place": "Overall stacked-card composition, both card outlines, and bottom navigation",
+          "issue": "Against an imagined unbranded resale dashboard, three visual axes remain the same default choice: vertically stacked full-width cards, rounded hairline card containers, and generic outline tab icon styling. The distinctive field and item photography do not change those three matching axes. This is a visual default-test judgment, not a claim about which icon library or font files were used."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 7.6, Part III (App canvas), Part IV B28",
+          "place": "Whole phone screen, excluding the gray side gutters",
+          "issue": "At 390 px wide, the visible phone screen is approximately 812 px high, rather than the required 844. The supplied board does not preserve the required 390 \u00d7 844 app proportions."
+        },
+        {
+          "rule": "brand/constitution.md Part III (App margins), Art. 7.1, Part IV B17; brand/ledger.md A3",
+          "place": "Left and right edges of the two cards",
+          "issue": "At 390 px phone width, the outer card inset is approximately 12 px rather than the specified 20 px. This changes the layout independently of the open typeface decision."
+        },
+        {
+          "rule": "brand/constitution.md Art. 5 (Lime and States); brand/ledger.md A1",
+          "place": "Sold pill and the lime band under $31.40",
+          "issue": "The money/state lime is fluorescent yellow-green rather than the specified #E6EA6A. A representative interior pixel in the amount band is #E4F740; this is a visible saturation shift, not edge antialiasing. D2 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md Art. 6 role-size table, Part IV B14; brand/ledger.md A3",
+          "place": "Offered $38 in the first card",
+          "issue": "At true phone width this headline reads around 22\u201324 px, visibly larger than the prescribed 18 px card headline. The typeface comparison also changes or disregards the locked role-size hierarchy."
+        },
+        {
+          "rule": "brand/constitution.md Art. 13 default test, Part IV B25; product/ui-constitution.md Art. 10",
+          "place": "Overall stacked-card composition, both card outlines, and bottom navigation",
+          "issue": "Against an imagined unbranded resale dashboard, three visual axes remain the same default choice: vertically stacked full-width cards, rounded hairline card containers, and generic outline tab icon styling. The distinctive field and item photography do not change those three matching axes. This is a visual default-test judgment, not a claim about which icon library or font files were used."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Phone frame width and aspect ratio vary: approximately 744, 750 and 738 image pixels wide respectively, all at 1536 high. At equal phone width the content therefore has different vertical positions and proportions. This violates the one-axis comparison in brand/constitution.md Art. 14.4."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "C changes spacing and card geometry: card edges are around x166\u2013858 versus A x170\u2013855 and B x169\u2013855; its second card begins around y819 versus y810 in A/B. Its navigation divider rises to about y1392 versus y1403 in A/B. These are layout changes, not D2 typeface changes (brand/constitution.md Art. 14.4; brand/ledger.md D3)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The item photographs are not held fixed. Jacket shape, folds and framing change, particularly in C; the shoes and their crop also differ. This adds an imagery variable to the D2 comparison (brand/constitution.md Art. 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The field coloration/line texture and lime amount-band color vary between boards. The amount band also has different bounds, about x188\u2013491 in A, x186\u2013473 in B and x184\u2013477 in C. A and B share the same declared text face, so their amount/band width change is not explained by the named typeface pairing. These introduce field and money-treatment differences beyond D2 (brand/constitution.md Art. 14.4; brand/ledger.md D5 and D6)."
+    }
+  ]
+}

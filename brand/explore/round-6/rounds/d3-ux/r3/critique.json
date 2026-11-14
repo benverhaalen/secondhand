@@ -1,0 +1,86 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States",
+          "place": "Both screens: Live pills; right screen: Sold pill and money highlight",
+          "issue": "The state fills visibly depart from the decided palette: Live is a bright pale green rather than the specified muted mint, and Sold and the money band are fluorescent yellow-green rather than the specified soft lime (#E6EA6A). D3 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III, App margins; Part IV B17",
+          "place": "Right screen: jacket/photo column, You keep block, and Print label row",
+          "issue": "The money block starts substantially farther right than the photo and primary action, creating a second start edge within the same item. Content also sits much closer to the screen edge than the required 20 pt margin."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2; Part IV B18",
+          "place": "Left screen: jacket photo, offer panel, and following Nike Dunks row",
+          "issue": "The photo-to-offer gap within the jacket item is about 25 board pixels, while the gap from the offer panel to the unrelated shoe row is about 23. The jacket's parts are not closer together than separate items. The hairline does not make this pass the stated spacing check."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas and margins; Part IV B28",
+          "place": "Right screen: right boundary near x=1338, More controls and You tab",
+          "issue": "The right phone is narrower than the left at the same height. More controls cross its right boundary and the tab bar extends beyond it. This is not a coherent 390 x 844 app viewport, so the displayed density cannot be judged at a consistent scale."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States",
+          "place": "Both screens: Live pills; right screen: Sold pill and money highlight",
+          "issue": "Live uses bright pale green and Sold and the money band use fluorescent yellow-green, visibly departing from the decided muted mint and soft lime (#E6EA6A). D3 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III, App margins; Part IV B17",
+          "place": "Right screen: jacket/photo column, You keep block, and Print label row",
+          "issue": "The money block is inset substantially farther than the photo and primary action, creating a second start edge within the same item. The outer content margin is also visibly smaller than the required 20 pt."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas and margins; Part IV B28",
+          "place": "Right screen: right boundary near x=1338, More controls and bottom navigation",
+          "issue": "The phone body is narrower than the left phone at the same height, while the More controls and bottom navigation extend past its edge. The board does not maintain one 390 x 844 viewport geometry for comparing spacing."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States",
+          "place": "Both screens: Live pills; right screen: Sold pill and money highlight",
+          "issue": "Live uses bright pale green and Sold and the money band use fluorescent yellow-green, visibly departing from the decided muted mint and soft lime (#E6EA6A). D3 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.5 and Part III, App margins; Part IV B17",
+          "place": "Right screen: jacket/photo column, You keep block, and Print label row",
+          "issue": "The money block has a different start edge from the photo and primary action within the same item. The content's outer margin is also visibly smaller than the required 20 pt."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2; Part IV B18; product/ui-constitution.md Article 7",
+          "place": "Both screens: Brass lamp photo and Continue/Edit controls immediately above the bottom navigation",
+          "issue": "The draft row runs directly into the tab bar: the photo's lower corners are cut off and the action buttons meet the navigation boundary with no separation. The spacing between this item and a separate navigation region is smaller than gaps inside the item. This is a visible grouping failure; the static board cannot establish whether scrolling makes the full row accessible."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The sale amount changes typography, not just surrounding space: B is visibly lighter and smaller, A is heavier, and C is markedly larger and heavier. Its lime band also changes dimensions and coverage. This varies the separate D6 decision and the hierarchy governed by ledger A3 and UI constitution Article 7. Brand constitution Article 14.4 requires variants on one named axis."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The right-hand viewport changes width: A and B have an apparent right edge near x=1338, while C extends to approximately x=1370. Their bottom navigation does not consistently share the body width. This changes available horizontal space as well as D3 spacing (brand constitution Article 14.4 and B28)."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The wordmark's width and apparent placement vary, most visibly between A and B on the left, despite the same text and nominal screen size. Photo crops and dimensions also vary slightly in the shoe and lamp rows. These are additional variables outside D3, contrary to brand constitution Article 14.4."
+    }
+  ]
+}

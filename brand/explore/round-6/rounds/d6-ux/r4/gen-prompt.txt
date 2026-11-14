@@ -1,0 +1,171 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UX board. The same options seen as experience: what a person notices first, where the thumb goes, what each state tells them, how it reads in motion from one state to the next. Annotated, like a designer's markup, with as few words as possible.
+
+Decision D6: The peak amount on a sale.
+Options: A = the amount you keep in the text face at 50 with the lime band; B = the amount you keep in Marist at 50, no band; C = the amount you keep in the text face at 50, no band, size alone.
+The leaning option (from the ledger) is: the amount you keep in the text face at 50 with the lime band.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+- attached image 1: Ben's reference for the sky to lime gradient (the field): a textured mesh held to one band
+- attached image 2: the closest app image so far (not approved): use it for true phone scale (390 points wide) and the card pattern
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a landscape canvas of 1536x1024 pixels. The phone screen(s) drawn at exactly the 390 x 844 point proportions of an iPhone at 1 point = 1.21 pixels (473 x 1024 pixels each, full height), with a designer's markup in the space around them (arrows, numbered order of attention, thumb reach, the state before and after), with as few words as possible. No device frame. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 4. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-A.png
+- opt-B.png
+- opt-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-A.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 7.6, Part III App canvas, B28",
+     "place": "All three phone frames on each board",
+     "issue": "The board has no 390 \u00d7 844 pt true-scale anchor. The left and right frames are about 485 \u00d7 1024 pixels, which become roughly 390 \u00d7 824 when scaled to the required width; the middle frame is narrower. These are not consistently proportioned 390 \u00d7 844 screens, so the depicted thumb reach and spacing cannot be accepted as true-scale evidence."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A3 and Open D6; brand/constitution.md, Article 6 roles and B14; product/ui-constitution.md, Article 7",
+     "place": "Wordmark, item title, button labels and $31.40 in the Sold and Shipping panels",
+     "issue": "The type roles do not hold at phone scale. Relative to a 390-wide screen, the wordmark appears about 26 rather than 21, and the item title and button labels about 19 rather than 15. Conversely, the peak amount appears about 40 rather than the 50 required by every D6 option. These are visual estimates from the raster, not computed font sizes; the relative scale mismatch is visible across all three options."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 state table and color values",
+     "place": "Lime Sold pill in the middle panel and sky Shipping pill in the right panel; also the money bands in opt-A.png",
+     "issue": "The state fills drift from the decided colors. The Sold fill is a greener chartreuse, with sampled interior pixels around RGB 210\u2013212, 226\u2013228, 85\u201395 rather than lime #E6EA6A (230,234,106). Shipping is a brighter cyan, around RGB 146\u2013160, 216\u2013219, 248 rather than sky #90D1EF (144,209,239). D6 does not open state colors for variation."
+    },
+    {
+     "rule": "brand/constitution.md, Article 9.1 and B20",
+     "place": "Jacket photo corners in every panel",
+     "issue": "The photos have roughly the same broad corner rounding as the offer card, about 14 pt at phone width. The specified photo radius is 8; 14 belongs to cards. The photo/card shape distinction is lost."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins and B17",
+     "place": "Left and right content edges of each phone, including the offer card and action row",
+     "issue": "The content is inset approximately 30 raster pixels in a roughly 480-pixel-wide phone, equivalent to about 24 pt at 390 wide. The app margin is 20 pt. This shared layout change is outside D6."
+    },
+    {
+     "rule": "brand/constitution.md, Article 4 C6 and B12; brand/ledger.md, Open D6 option A",
+     "place": "Lime bands behind $31.40 in the middle and right panels",
+     "issue": "The band sits mostly below the digits: it overlaps only their bottom strip and extends visibly below their baseline. C6 specifies a band behind the lower 40% of the figures. This reads as an underline block rather than that prescribed highlight placement."
+    }
+   ]
+  },
+  {
+   "file": "opt-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 7.6, Part III App canvas, B28",
+     "place": "All three phone frames on each board",
+     "issue": "The board has no 390 \u00d7 844 pt true-scale anchor. The left and right frames are about 485 \u00d7 1024 pixels, which become roughly 390 \u00d7 824 when scaled to the required width; the middle frame is narrower. These are not consistently proportioned 390 \u00d7 844 screens, so the depicted thumb reach and spacing cannot be accepted as true-scale evidence."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A3 and Open D6; brand/constitution.md, Article 6 roles and B14; product/ui-constitution.md, Article 7",
+     "place": "Wordmark, item title, button labels and $31.40 in the Sold and Shipping panels",
+     "issue": "The type roles do not hold at phone scale. Relative to a 390-wide screen, the wordmark appears about 26 rather than 21, and the item title and button labels about 19 rather than 15. Conversely, the peak amount appears about 40 rather than the 50 required by every D6 option. These are visual estimates from the raster, not computed font sizes; the relative scale mismatch is visible across all three options."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 state table and color values",
+     "place": "Lime Sold pill in the middle panel and sky Shipping pill in the right panel; also the money bands in opt-A.png",
+     "issue": "The state fills drift from the decided colors. The Sold fill is a greener chartreuse, with sampled interior pixels around RGB 210\u2013212, 226\u2013228, 85\u201395 rather than lime #E6EA6A (230,234,106). Shipping is a brighter cyan, around RGB 146\u2013160, 216\u2013219, 248 rather than sky #90D1EF (144,209,239). D6 does not open state colors for variation."
+    },
+    {
+     "rule": "brand/constitution.md, Article 9.1 and B20",
+     "place": "Jacket photo corners in every panel",
+     "issue": "The photos have roughly the same broad corner rounding as the offer card, about 14 pt at phone width. The specified photo radius is 8; 14 belongs to cards. The photo/card shape distinction is lost."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins and B17",
+     "place": "Left and right content edges of each phone, including the offer card and action row",
+     "issue": "The content is inset approximately 30 raster pixels in a roughly 480-pixel-wide phone, equivalent to about 24 pt at 390 wide. The app margin is 20 pt. This shared layout change is outside D6."
+    }
+   ]
+  },
+  {
+   "file": "opt-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 7.6, Part III App canvas, B28",
+     "place": "All three phone frames on each board",
+     "issue": "The board has no 390 \u00d7 844 pt true-scale anchor. The left and right frames are about 485 \u00d7 1024 pixels, which become roughly 390 \u00d7 824 when scaled to the required width; the middle frame is narrower. These are not consistently proportioned 390 \u00d7 844 screens, so the depicted thumb reach and spacing cannot be accepted as true-scale evidence."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A3 and Open D6; brand/constitution.md, Article 6 roles and B14; product/ui-constitution.md, Article 7",
+     "place": "Wordmark, item title, button labels and $31.40 in the Sold and Shipping panels",
+     "issue": "The type roles do not hold at phone scale. Relative to a 390-wide screen, the wordmark appears about 26 rather than 21, and the item title and button labels about 19 rather than 15. Conversely, the peak amount appears about 40 rather than the 50 required by every D6 option. These are visual estimates from the raster, not computed font sizes; the relative scale mismatch is visible across all three options."
+    },
+    {
+     "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 state table and color values",
+     "place": "Lime Sold pill in the middle panel and sky Shipping pill in the right panel; also the money bands in opt-A.png",
+     "issue": "The state fills drift from the decided colors. The Sold fill is a greener chartreuse, with sampled interior pixels around RGB 210\u2013212, 226\u2013228, 85\u201395 rather than lime #E6EA6A (230,234,106). Shipping is a brighter cyan, around RGB 146\u2013160, 216\u2013219, 248 rather than sky #90D1EF (144,209,239). D6 does not open state colors for variation."
+    },
+    {
+     "rule": "brand/constitution.md, Article 9.1 and B20",
+     "place": "Jacket photo corners in every panel",
+     "issue": "The photos have roughly the same broad corner rounding as the offer card, about 14 pt at phone width. The specified photo radius is 8; 14 belongs to cards. The photo/card shape distinction is lost."
+    },
+    {
+     "rule": "brand/constitution.md, Part III App margins and B17",
+     "place": "Left and right content edges of each phone, including the offer card and action row",
+     "issue": "The content is inset approximately 30 raster pixels in a roughly 480-pixel-wide phone, equivalent to about 24 pt at 390 wide. The app margin is 20 pt. This shared layout change is outside D6."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "opt-B omits the lower arrow segment from Accept $38 into the offer-to-Sold transition. A and C connect the primary action to the transition; B leaves the upper curve starting at the offer card. This changes the experience annotation independently of D6 (brand/constitution.md Article 14.4: variants differ on one named axis)."
+  },
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "The offer field is not held constant: its texture contrast and line pattern differ, with C visibly fainter than A/B; B also has a slightly wider offer card. These are field and geometry variations, not changes to the sale amount (brand/ledger.md D5 versus D6; brand/constitution.md Article 14.4)."
+  },
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "Sold and Shipping fills vary slightly between renders in addition to their shared palette drift. The thumb arc, transition curves and small text/edge placements also shift slightly. The comparisons are therefore not pixel-stable outside D6; minor raster differences are less consequential than B\u2019s missing action arrow."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

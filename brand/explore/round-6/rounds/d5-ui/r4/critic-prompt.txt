@@ -1,0 +1,17 @@
+You are a senior product designer in a design review. You did not make these images and have not seen how they were made. Judge them as you would in a review.
+
+Read these files first:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+Use Part IV (Checks) and Article 13 of the brand constitution, the UI constitution, and the ledger (the Locked and Decided rows must hold in every image).
+
+The images are options for open decision D5 in the ledger (The field), shown as a UI board (the options in use):
+- attached image 1 = opt-base.png: option "Leaning" (the field behind the top card, with faint fine curved white lines)
+- attached image 2 = opt-where-B.png: option "Header band" (the field as a header band)
+- attached image 3 = opt-where-C.png: option "Whole moment" (the field as the whole ground of a moment like Sold (past the one-third color limit))
+- attached image 4 = opt-texture-B.png: option "Medium lines" (field texture: medium curved white lines)
+- attached image 5 = opt-texture-C.png: option "Strong lines" (field texture: strong curved white lines)
+
+Tie every failure to a rule (file and article or row) and a place in the image. Also report anything that differs between options other than the decision. Do not suggest new designs; say what fails.
+Write critique.json in this folder: {"images": [{"file": "<name>", "verdict": "pass" or "fail", "failures": [{"rule": "...", "place": "...", "issue": "..."}]}], "across_options": [{"files": ["..."], "issue": "..."}]}. Then reply with a short summary.

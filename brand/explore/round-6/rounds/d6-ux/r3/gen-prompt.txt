@@ -1,0 +1,120 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UX board. The same options seen as experience: what a person notices first, where the thumb goes, what each state tells them, how it reads in motion from one state to the next. Annotated, like a designer's markup, with as few words as possible.
+
+Decision D6: The peak amount on a sale.
+Options: A = the amount you keep in the text face at 50 with the lime band; B = the amount you keep in Marist at 50, no band; C = the amount you keep in the text face at 50, no band, size alone.
+The leaning option (from the ledger) is: the amount you keep in the text face at 50 with the lime band.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+- attached image 1: Ben's reference for the sky to lime gradient (the field): a textured mesh held to one band
+- attached image 2: the closest app image so far (not approved): use it for true phone scale (390 points wide) and the card pattern
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a landscape canvas of 1536x1024 pixels. The phone screen(s) drawn at exactly the 390 x 844 point proportions of an iPhone at 1 point = 1.21 pixels (473 x 1024 pixels each, full height), with a designer's markup in the space around them (arrows, numbered order of attention, thumb reach, the state before and after), with as few words as possible. No device frame. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 3. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-A.png
+- opt-B.png
+- opt-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-A.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6; Part III App canvas (390 \u00d7 844 pt)",
+     "place": "All three phone frames, particularly the narrower middle frame.",
+     "issue": "The frames do not share the required phone proportions. The outer frames are approximately 485 \u00d7 1024 image pixels and the middle frame approximately 470 \u00d7 1024. At 390 wide these imply heights of about 823 and 850, rather than 844. This is not a consistent true-scale comparison of the amount treatments."
+    },
+    {
+     "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 11.1 (show cause and effect)",
+     "place": "The transition labelled \u201cCarrier scan\u201d, between the middle and right screens; its arrowhead lands beside $31.40.",
+     "issue": "The annotation associates the carrier scan with the retained amount instead of clearly connecting the sold state to the shipping state. A separate arrow begins near \u201cYou keep\u201d and points to Shipping. Together these arrows obscure which event changes the status and imply a relationship between shipping and the money label that the board does not explain."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B1 and B24; Article 1; product/ui-constitution.md, Article 5",
+     "place": "Circled 1 beside the middle amount, circled 2 below Print label, and the dashed arrow entering Print label from the bottom.",
+     "issue": "The numbered callouts have no legend or explanatory text, and the dashed arrow has no labelled origin. A reader cannot tell whether 1 and 2 indicate reading order, steps, or review notes, or what event the dashed arrow represents. These annotations do not communicate a complete meaning."
+    }
+   ]
+  },
+  {
+   "file": "opt-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6; Part III App canvas (390 \u00d7 844 pt)",
+     "place": "All three phone frames, particularly the narrower middle frame.",
+     "issue": "The frames do not share the required phone proportions. The outer frames are approximately 485 \u00d7 1024 image pixels and the middle frame approximately 470 \u00d7 1024. At 390 wide these imply heights of about 823 and 850, rather than 844. This is not a consistent true-scale comparison of the amount treatments."
+    },
+    {
+     "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 11.1 (show cause and effect)",
+     "place": "The transition labelled \u201cCarrier scan\u201d, between the middle and right screens; its arrowhead lands beside $31.40.",
+     "issue": "The annotation associates the carrier scan with the retained amount instead of clearly connecting the sold state to the shipping state. A separate arrow begins near \u201cYou keep\u201d and points to Shipping. Together these arrows obscure which event changes the status and imply a relationship between shipping and the money label that the board does not explain."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B1 and B24; Article 1; product/ui-constitution.md, Article 5",
+     "place": "Circled 1 beside the middle amount, circled 2 below Print label, and the dashed arrow entering Print label from the bottom.",
+     "issue": "The numbered callouts have no legend or explanatory text, and the dashed arrow has no labelled origin. A reader cannot tell whether 1 and 2 indicate reading order, steps, or review notes, or what event the dashed arrow represents. These annotations do not communicate a complete meaning."
+    }
+   ]
+  },
+  {
+   "file": "opt-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Part IV B28; Article 7.6; Part III App canvas (390 \u00d7 844 pt)",
+     "place": "All three phone frames, particularly the narrower middle frame.",
+     "issue": "The frames do not share the required phone proportions. The outer frames are approximately 485 \u00d7 1024 image pixels and the middle frame approximately 470 \u00d7 1024. At 390 wide these imply heights of about 823 and 850, rather than 844. This is not a consistent true-scale comparison of the amount treatments."
+    },
+    {
+     "rule": "product/ui-constitution.md, Articles 2.4 and 5; brand/constitution.md, Article 11.1 (show cause and effect)",
+     "place": "The transition labelled \u201cCarrier scan\u201d, between the middle and right screens; its arrowhead lands beside $31.40.",
+     "issue": "The annotation associates the carrier scan with the retained amount instead of clearly connecting the sold state to the shipping state. A separate arrow begins near \u201cYou keep\u201d and points to Shipping. Together these arrows obscure which event changes the status and imply a relationship between shipping and the money label that the board does not explain."
+    },
+    {
+     "rule": "brand/constitution.md, Part IV B1 and B24; Article 1; product/ui-constitution.md, Article 5",
+     "place": "Circled 1 beside the middle amount, circled 2 below Print label, and the dashed arrow entering Print label from the bottom.",
+     "issue": "The numbered callouts have no legend or explanatory text, and the dashed arrow has no labelled origin. A reader cannot tell whether 1 and 2 indicate reading order, steps, or review notes, or what event the dashed arrow represents. These annotations do not communicate a complete meaning."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "Minor raster rendering differences occur across the board outside the two amount regions, including shared text and edges. The visible item, copy, controls, status colors, and overall layout otherwise remain the same; no substantive additional design choice is apparent. The amount typeface and presence of the lime band are the authorized D6 differences."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

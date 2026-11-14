@@ -1,0 +1,129 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Both complete phone views, from status bar to bottom navigation.",
+          "issue": "The board does not provide a 390 \u00d7 844 pt screen anchor. The depicted screens are visibly too wide for their height: the navigation spans roughly 540 image pixels while the full screen height is roughly 1000. Scaling that width to 390 gives a height of roughly 720, not 844. Consequently this board cannot establish the required true-size density, type sizes or spacing."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2 and Part IV B18 (Inside tighter than between); product/ui-constitution.md, Article 7 (attention and grouping)",
+          "place": "Both views, the Nike Dunks and Brass lamp rows, between each title and platform logo versus the gap to the next item.",
+          "issue": "The large empty vertical gap between a title and its own platform mark exceeds the separation between neighboring item rows. Internal elements are farther apart than separate items, reversing the required grouping hierarchy. This persists with the outlined cards and with the added status text in the Dot option."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Both complete phone views, from status bar to bottom navigation.",
+          "issue": "The board does not provide a 390 \u00d7 844 pt screen anchor. The depicted screens are visibly too wide for their height: the navigation spans roughly 540 image pixels while the full screen height is roughly 1000. Scaling that width to 390 gives a height of roughly 720, not 844. Consequently this board cannot establish the required true-size density, type sizes or spacing."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2 and Part IV B18 (Inside tighter than between); product/ui-constitution.md, Article 7 (attention and grouping)",
+          "place": "Both views, the Nike Dunks and Brass lamp rows, between each title and platform logo versus the gap to the next item.",
+          "issue": "The large empty vertical gap between a title and its own platform mark exceeds the separation between neighboring item rows. Internal elements are farther apart than separate items, reversing the required grouping hierarchy. This persists with the outlined cards and with the added status text in the Dot option."
+        },
+        {
+          "rule": "brand/constitution.md, Article 14.4 (variants differ on one named axis); brand/ledger.md, D4 versus D5",
+          "place": "Left view, the entire offer field behind the jacket details and action row.",
+          "issue": "The cards variant also replaces the faint field lines with a much stronger, denser, curved mesh. Field texture is D5, not the card-surface choice in D4; the added texture makes this an uncontrolled comparison."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Both complete phone views, from status bar to bottom navigation.",
+          "issue": "The board does not provide a 390 \u00d7 844 pt screen anchor. The depicted screens are visibly too wide for their height: the navigation spans roughly 540 image pixels while the full screen height is roughly 1000. Scaling that width to 390 gives a height of roughly 720, not 844. Consequently this board cannot establish the required true-size density, type sizes or spacing."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2 and Part IV B18 (Inside tighter than between); product/ui-constitution.md, Article 7 (attention and grouping)",
+          "place": "Both views, the Nike Dunks and Brass lamp rows, between each title and platform logo versus the gap to the next item.",
+          "issue": "The large empty vertical gap between a title and its own platform mark exceeds the separation between neighboring item rows. Internal elements are farther apart than separate items, reversing the required grouping hierarchy. This persists with the outlined cards and with the added status text in the Dot option."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Both complete phone views, from status bar to bottom navigation.",
+          "issue": "The board does not provide a 390 \u00d7 844 pt screen anchor. The depicted screens are visibly too wide for their height: the navigation spans roughly 540 image pixels while the full screen height is roughly 1000. Scaling that width to 390 gives a height of roughly 720, not 844. Consequently this board cannot establish the required true-size density, type sizes or spacing."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2 and Part IV B18 (Inside tighter than between); product/ui-constitution.md, Article 7 (attention and grouping)",
+          "place": "Both views, the Nike Dunks and Brass lamp rows, between each title and platform logo versus the gap to the next item.",
+          "issue": "The large empty vertical gap between a title and its own platform mark exceeds the separation between neighboring item rows. Internal elements are farther apart than separate items, reversing the required grouping hierarchy. This persists with the outlined cards and with the added status text in the Dot option."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 7.6, Part III App canvas, Part IV B28 (True scale)",
+          "place": "Both complete phone views, from status bar to bottom navigation.",
+          "issue": "The board does not provide a 390 \u00d7 844 pt screen anchor. The depicted screens are visibly too wide for their height: the navigation spans roughly 540 image pixels while the full screen height is roughly 1000. Scaling that width to 390 gives a height of roughly 720, not 844. Consequently this board cannot establish the required true-size density, type sizes or spacing."
+        },
+        {
+          "rule": "brand/constitution.md, Article 7.2 and Part IV B18 (Inside tighter than between); product/ui-constitution.md, Article 7 (attention and grouping)",
+          "place": "Both views, the Nike Dunks and Brass lamp rows, between each title and platform logo versus the gap to the next item.",
+          "issue": "The large empty vertical gap between a title and its own platform mark exceeds the separation between neighboring item rows. Internal elements are farther apart than separate items, reversing the required grouping hierarchy. This persists with the outlined cards and with the added status text in the Dot option."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "Beyond adding card outlines, Hairline cards changes the left field from faint diagonal lines to dense curved mesh lines, makes its right edge wider, and gives it a straight vertical left edge beside the jacket. The lower item titles shift left, the inter-row spacing changes, and the bottom-navigation rule extends farther sideways. These also change field treatment and D3 spacing."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-marks-B.png"
+      ],
+      "issue": "Beyond enclosing platform marks, In a bubble cuts a white notch into the offer field around the Depop mark. The eBay wordmarks are smaller and move upward within their rows. On the sold view, \u201cYou keep\u201d is larger, lighter and higher. The field silhouette, logo scale/position and text styling therefore change along with the enclosure."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-B.png"
+      ],
+      "issue": "Dot adds Live and Shipping as text beneath the lower item titles and adds Sold beneath the jacket title, while Offer is conveyed by the existing offer text. This is a supporting layout/content change to the state treatment, not a photo-marker-only swap. The supporting words do mean that the colored dots are not the only state indication."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-C.png"
+      ],
+      "issue": "Corner tag also moves \u201cYou keep\u201d upward and changes its gap above the sale amount. That sale-text spacing is unrelated to replacing photo pills with corner tags."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png",
+        "opt-marks-B.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "Review scope: these are Today screens, so ledger L12\u2019s Sell-grid requirement is not a failure here. The visible More controls satisfy the presence of a third action; their menu contents cannot be verified from this board. Article 13 does not establish an AI-tell cluster merely from the authorized pills, cards or bubbles. B25\u2019s side-by-side default comparison was not supplied. Source-only checks B13, B15, B22 and B27 are not applicable to these raster images; exact font, token and logo-asset compliance is not certified."
+    }
+  ]
+}

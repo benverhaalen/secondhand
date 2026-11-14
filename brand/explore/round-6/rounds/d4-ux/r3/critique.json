@@ -1,0 +1,161 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Right screen, lime band beneath $31.40 and Sold badge; both screens, Live badges",
+          "issue": "The lime reads as fluorescent yellow-green and the mint as bright turquoise, rather than the decided muted fills. A pixel inside the money band at board coordinate (1240,244) is RGB (210,245,70), materially different from lime #E6EA6A (230,234,106). D4 does not reopen the decided colors."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2 and Part IV B18",
+          "place": "Both screens, vertical gap between the jacket details and its action row, compared with the gap from that row to Nike Dunks",
+          "issue": "Parts of the jacket group are farther apart than the jacket group is from the next item. On the left, roughly 55 board pixels separate the final detail line from the buttons, while roughly 36 separate the buttons from the next photo. This reverses the required internal-versus-external grouping."
+        },
+        {
+          "rule": "brand/constitution.md E1 and Part IV B2",
+          "place": "Left screen, large sky-to-lime offer field",
+          "issue": "At a squint the large bright field is the dominant mass; the jacket photo and $38 are subordinate. The brand field takes the attention that the item or money is required to lead."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Right screen, money highlight and Sold badge; both screens, Live badges",
+          "issue": "The lime and mint are visibly more saturated than the decided fills. The money-band pixel at (1240,244) is RGB (215,249,47), rather than lime #E6EA6A. The surface choice does not authorize a color change."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2 and Part IV B18",
+          "place": "Both screens, jacket details-to-buttons gap and the narrow gaps between outlined item cards",
+          "issue": "Internal whitespace in the jacket card greatly exceeds the gaps between cards. The lower cards are also separated by narrower gaps than several gaps inside them, reversing the required grouping hierarchy."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.3 and Part IV B19; Article 13, nested-box tell",
+          "place": "Left screen, outer hairline jacket card containing the separately rounded gradient panel",
+          "issue": "A filled rounded panel sits inside a bordered rounded card. The inner panel is not one of B19's exceptions for photos, buttons, state pills or the money highlight. Hairline cards are an allowed D4 option; this additional nesting is the failure."
+        },
+        {
+          "rule": "brand/constitution.md E1 and Part IV B2",
+          "place": "Left screen, large gradient panel inside the jacket card",
+          "issue": "The field remains the dominant visual mass at a squint, ahead of the jacket and offered amount."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Right screen, money highlight and Sold badge; both screens, Live badges",
+          "issue": "The lime and mint are brighter and more saturated than the decided fills. The money-band pixel at (1240,244) is RGB (211,248,72), rather than lime #E6EA6A."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2 and Part IV B18",
+          "place": "Both screens, jacket details-to-buttons gap compared with separation from Nike Dunks",
+          "issue": "The jacket's internal vertical gap is larger than its separation from the next item, weakening the required grouping."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C2 and Part IV B5; Article 13, flat-gradient tell",
+          "place": "Left screen, offer field, especially its upper-right and lower-right areas",
+          "issue": "The fine mesh lines visible in the base are no longer discernible at board viewing size. The field reads as a smooth gradient rather than a visibly textured mesh. This is also an unrelated D5 change."
+        },
+        {
+          "rule": "brand/constitution.md E1 and Part IV B2",
+          "place": "Left screen, large offer field",
+          "issue": "The bright field leads at a squint rather than the jacket or $38."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Right screen, money highlight and lime state dot; both screens, mint state dots",
+          "issue": "The state fills retain the overly bright lime and turquoise seen in the other options. The money-band pixel at (1240,244) is RGB (211,247,66), rather than lime #E6EA6A."
+        },
+        {
+          "rule": "brand/constitution.md Article 10.2; product/ui-constitution.md Articles 2.4 and 5.2; brand/ledger.md L11",
+          "place": "Photo state dots on both screens: speech bubble on the jacket, broadcast symbols on Nike Dunks and Brass lamp, package on Kindle",
+          "issue": "The symbols do not uniquely communicate the states they replace. A speech bubble can mean a message rather than an offer; broadcasting can mean streaming rather than a live listing; a package does not distinguish preparing, shipping or delivered. A first-time seller has to learn these meanings. The presence of an icon satisfies the non-color-only rule, but not the clarity rule."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States rows Sold and Paid",
+          "place": "Right screen, lime check dot on the jacket photo",
+          "issue": "The Sold state is rendered as lime with a check, the combination assigned to Paid. This merges two distinct decided states."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2 and Part IV B18",
+          "place": "Both screens, jacket details-to-buttons gap compared with separation from Nike Dunks",
+          "issue": "The jacket's internal vertical gap is larger than its separation from the next item."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C2 and Part IV B5; Article 13, flat-gradient tell",
+          "place": "Left screen, offer field",
+          "issue": "The base's visible fine mesh lines have disappeared at board viewing size. The field reads as a smooth gradient, introducing a D5 texture change into the state comparison."
+        },
+        {
+          "rule": "brand/constitution.md E1 and Part IV B2",
+          "place": "Left screen, large offer field",
+          "issue": "The field is the dominant mass at a squint, ahead of the jacket photo and offer amount."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, color table and States",
+          "place": "Right screen, money highlight and Sold corner tag; both screens, Live corner tags",
+          "issue": "The lime and mint remain brighter than the decided fills. The money-band pixel at (1240,244) is RGB (214,247,81), rather than lime #E6EA6A."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2 and Part IV B18",
+          "place": "Both screens, jacket details-to-buttons gap compared with separation from Nike Dunks",
+          "issue": "The jacket's internal vertical gap exceeds the space separating it from the next item."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C2 and Part IV B5; Article 13, flat-gradient tell",
+          "place": "Left screen, offer field",
+          "issue": "The base's fine mesh texture is no longer discernible at board viewing size. The field reads as a smooth gradient; corner-tag shape does not require this D5 change."
+        },
+        {
+          "rule": "brand/constitution.md E1 and Part IV B2",
+          "place": "Left screen, large offer field",
+          "issue": "The bright field dominates the first visual impression rather than the item or money."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-base.png", "opt-cards-B.png", "opt-marks-B.png", "opt-state-B.png", "opt-state-C.png"],
+      "issue": "Field texture is not held constant. Base and Hairline cards have visible curved mesh lines; In a bubble, Dot and Corner tag read much smoother. This varies D5 alongside D4 (brand/ledger.md D4 and D5; brand/constitution.md Article 14.4)."
+    },
+    {
+      "files": ["opt-base.png", "opt-cards-B.png", "opt-marks-B.png", "opt-state-B.png", "opt-state-C.png"],
+      "issue": "The image content is not pixel-stable: jacket folds and shoe details, logo contours, annotation endpoints and subtle color values change. The red platform mark gains different inner contours in In a bubble, beyond the intended outer bubble. These are comparison confounds, not additional D4 choices."
+    },
+    {
+      "files": ["opt-base.png", "opt-cards-B.png"],
+      "issue": "Hairline cards also changes grouping geometry. The top card's right edge extends beyond the lower cards on the left screen, whereas it falls approximately in line with them on the right. New outer borders are the intended choice; asymmetric widths and changed surrounding gaps additionally vary alignment and spacing (brand/ledger.md D3; brand/constitution.md Article 7)."
+    },
+    {
+      "files": ["opt-base.png", "opt-state-B.png"],
+      "issue": "Dot changes the information conveyed as well as the badge shape: Offer, Live, Shipping and Sold words become ambiguous symbols, and Sold uses the decided Paid symbol. The comparison therefore tests a change of meaning as well as a small-part treatment."
+    },
+    {
+      "files": ["opt-base.png", "opt-cards-B.png", "opt-marks-B.png", "opt-state-B.png", "opt-state-C.png"],
+      "issue": "Review limits: these are annotated 1536 × 1024 boards with no supplied 390 × 844 screen anchor, so exact point sizes, spacing tokens and target sizes are unverified. B13, B15, B22 and B27 are not applicable to these source-free images, as Part IV specifies. Article 13's individual visible tells were reviewed; B25's three-axis default comparison is unverified because no actual no-brand comparator was supplied. Static images cannot prove overflow-menu contents, accessibility or interaction behavior. These limits are not counted as observed image failures."
+    }
+  ]
+}

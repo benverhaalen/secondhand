@@ -1,0 +1,93 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B3, Article 4 C1; brand/ledger.md Locked L3",
+          "place": "Left screen, top wordmark, in all three boards",
+          "issue": "The wordmark sits left of the screen's center. Its center is around x=319, while the center tab and home indicator establish the screen center around x=337. The right screen does not have the same offset."
+        },
+        {
+          "rule": "brand/ledger.md Decided A1; brand/constitution.md Article 5, States (Draft)",
+          "place": "Both screens, Brass lamp row, Draft pill",
+          "issue": "Draft is rendered with black text. The decided Draft treatment requires gray text on a white pill with a hairline outline."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2.4 (what a first-time user will misread); brand/constitution.md Article 11.1 (cause and effect)",
+          "place": "Arrow connecting the left offer panel to the right Sold state",
+          "issue": "The connecting arrow emerges from the top edge of Counter, although the tap marker is on Accept $38. The board visually connects countering to a completed sale and payout, contradicting the action indicated by the tap marker."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B3, Article 4 C1; brand/ledger.md Locked L3",
+          "place": "Left screen, top wordmark, in all three boards",
+          "issue": "The wordmark sits left of the screen's center. Its center is around x=319, while the center tab and home indicator establish the screen center around x=337. The right screen does not have the same offset."
+        },
+        {
+          "rule": "brand/ledger.md Decided A1; brand/constitution.md Article 5, States (Draft)",
+          "place": "Both screens, Brass lamp row, Draft pill",
+          "issue": "Draft is rendered with black text. The decided Draft treatment requires gray text on a white pill with a hairline outline."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2.4 (what a first-time user will misread); brand/constitution.md Article 11.1 (cause and effect)",
+          "place": "Arrow connecting the left offer panel to the right Sold state",
+          "issue": "The connecting arrow emerges from the top edge of Counter, although the tap marker is on Accept $38. The board visually connects countering to a completed sale and payout, contradicting the action indicated by the tap marker."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Part IV B3, Article 4 C1; brand/ledger.md Locked L3",
+          "place": "Left screen, top wordmark, in all three boards",
+          "issue": "The wordmark sits left of the screen's center. Its center is around x=319, while the center tab and home indicator establish the screen center around x=337. The right screen does not have the same offset."
+        },
+        {
+          "rule": "brand/ledger.md Decided A1; brand/constitution.md Article 5, States (Draft)",
+          "place": "Both screens, Brass lamp row, Draft pill",
+          "issue": "Draft is rendered with black text. The decided Draft treatment requires gray text on a white pill with a hairline outline."
+        },
+        {
+          "rule": "product/ui-constitution.md Article 2.4 (what a first-time user will misread); brand/constitution.md Article 11.1 (cause and effect)",
+          "place": "Arrow connecting the left offer panel to the right Sold state",
+          "issue": "The connecting arrow emerges from the top edge of Counter, although the tap marker is on Accept $38. The board visually connects countering to a completed sale and payout, contradicting the action indicated by the tap marker."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The offer field's texture changes: A is soft and cloudy with little visible linework; B has prominent curved mesh lines; C has much fainter lines. Texture belongs to ledger D5, not D3. This also changes the visual evidence for constitution B5 and Article 13's flat-gradient check."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The item imagery is not held constant. C uses a closer jacket crop with a different visible arrangement of folds, and its Nike shoes appear substantially whiter than the gray shoes in A and B. Lamp framing also changes. These differences affect item prominence independently of spacing (constitution Article 14.4 requires variants on one named axis)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The sale amount is visibly smaller in A than in B and C; its lime band also changes width. The peak amount's size and treatment are not the D3 spacing decision (ledger A3 and D6; constitution Article 14.4)."
+    }
+  ]
+}

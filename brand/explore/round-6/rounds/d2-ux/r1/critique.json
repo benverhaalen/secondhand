@@ -1,0 +1,92 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 7.2; Part IV B18; product/ui-constitution.md Art. 7",
+          "place": "Today screen: gap between offer expiry text and Accept/Counter row, compared with the gap between the jacket photo and offer card.",
+          "issue": "The text-to-action gap inside the offer is visibly larger than the gap separating the offer card from the item above it. This reverses the required inside-tighter-than-between grouping and leaves the decision text detached from its controls."
+        },
+        {
+          "rule": "brand/constitution.md Art. 1.1\u20131.2 and Part IV B1; product/ui-constitution.md Art. 1",
+          "place": "Today screen: faint dashed quarter-circle in the empty lower-left area, below the offer card and above the tab bar.",
+          "issue": "The arc points to nothing, labels nothing and explains no transition. Unlike the numbered callouts and the accept-to-sale arrow, it has no readable review or user-task function; it is unexplained decoration."
+        },
+        {
+          "rule": "brand/constitution.md Part III, App margins; Art. 7.5; Part IV B17",
+          "place": "Both screens: item photo and gradient card against the phone edges; Today/Sold heading above them.",
+          "issue": "The main content is roughly 14\u201316 pt from the screen edges when the phone is normalized to 390 pt wide, rather than the specified 20 pt. The heading also starts farther right than the photo/card, breaking the shared start edge."
+        },
+        {
+          "rule": "brand/constitution.md Art. 4 C2; product/ui-constitution.md Art. 7",
+          "place": "Sold screen: gradient Ship by Tuesday banner below the shipping buttons, versus the You keep amount above.",
+          "issue": "The strongest color field sits behind the shipping deadline while the large highlighted proceeds claim the hero position. These create competing focal points; the field is not behind the declared money hero. This is especially apparent with the banner separated from the shipping controls it describes."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 7.2; Part IV B18; product/ui-constitution.md Art. 7",
+          "place": "Today screen: gap between offer expiry text and Accept/Counter row, compared with the gap between the jacket photo and offer card.",
+          "issue": "The text-to-action gap inside the offer is visibly larger than the gap separating the offer card from the item above it. This reverses the required inside-tighter-than-between grouping and leaves the decision text detached from its controls."
+        },
+        {
+          "rule": "brand/constitution.md Art. 1.1\u20131.2 and Part IV B1; product/ui-constitution.md Art. 1",
+          "place": "Today screen: faint dashed quarter-circle in the empty lower-left area, below the offer card and above the tab bar.",
+          "issue": "The arc points to nothing, labels nothing and explains no transition. Unlike the numbered callouts and the accept-to-sale arrow, it has no readable review or user-task function; it is unexplained decoration."
+        },
+        {
+          "rule": "brand/constitution.md Part III, App margins; Art. 7.5; Part IV B17",
+          "place": "Both screens: item photo and gradient card against the phone edges; Today/Sold heading above them.",
+          "issue": "The main content is roughly 14\u201316 pt from the screen edges when the phone is normalized to 390 pt wide, rather than the specified 20 pt. The heading also starts farther right than the photo/card, breaking the shared start edge."
+        },
+        {
+          "rule": "brand/constitution.md Art. 4 C2; product/ui-constitution.md Art. 7",
+          "place": "Sold screen: gradient Ship by Tuesday banner below the shipping buttons, versus the You keep amount above.",
+          "issue": "The strongest color field sits behind the shipping deadline while the large highlighted proceeds claim the hero position. These create competing focal points; the field is not behind the declared money hero. This is especially apparent with the banner separated from the shipping controls it describes."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Art. 7.2; Part IV B18; product/ui-constitution.md Art. 7",
+          "place": "Today screen: gap between offer expiry text and Accept/Counter row, compared with the gap between the jacket photo and offer card.",
+          "issue": "The text-to-action gap inside the offer is visibly larger than the gap separating the offer card from the item above it. This reverses the required inside-tighter-than-between grouping and leaves the decision text detached from its controls."
+        },
+        {
+          "rule": "brand/constitution.md Art. 1.1\u20131.2 and Part IV B1; product/ui-constitution.md Art. 1",
+          "place": "Today screen: faint dashed quarter-circle in the empty lower-left area, below the offer card and above the tab bar.",
+          "issue": "The arc points to nothing, labels nothing and explains no transition. Unlike the numbered callouts and the accept-to-sale arrow, it has no readable review or user-task function; it is unexplained decoration."
+        },
+        {
+          "rule": "brand/constitution.md Part III, App margins; Art. 7.5; Part IV B17",
+          "place": "Both screens: item photo and gradient card against the phone edges; Today/Sold heading above them.",
+          "issue": "The main content is roughly 14\u201316 pt from the screen edges when the phone is normalized to 390 pt wide, rather than the specified 20 pt. The heading also starts farther right than the photo/card, breaking the shared start edge."
+        },
+        {
+          "rule": "brand/constitution.md Art. 4 C2; product/ui-constitution.md Art. 7",
+          "place": "Sold screen: gradient Ship by Tuesday banner below the shipping buttons, versus the You keep amount above.",
+          "issue": "The strongest color field sits behind the shipping deadline while the large highlighted proceeds claim the hero position. These create competing focal points; the field is not behind the declared money hero. This is especially apparent with the banner separated from the shipping controls it describes."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Option B changes the jacket photograph: the torso folds, sleeve contours and floor detail differ from A and C. This is outside ledger D2 (Typefaces) and brand/constitution.md Art. 14.4, which requires variants on one named axis. The item, copy, layout, controls, colors and annotations otherwise appear held constant; A/C button and tab glyph differences belong to the requested text-face change."
+    }
+  ]
+}

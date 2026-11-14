@@ -1,0 +1,163 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UI board. The options in use, side by side, so the only thing that differs between them is the decision. Spacing, components and color as they would really look in the app.
+
+Decision D6: The peak amount on a sale.
+Options: A = the amount you keep in the text face at 50 with the lime band; B = the amount you keep in Marist at 50, no band; C = the amount you keep in the text face at 50, no band, size alone.
+The leaning option (from the ledger) is: the amount you keep in the text face at 50 with the lime band.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+- attached image 1: Ben's reference for the sky to lime gradient (the field): a textured mesh held to one band
+- attached image 2: the closest app image so far (not approved): use it for true phone scale (390 points wide) and the card pattern
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a portrait canvas of 1024x1536 pixels. Inside it, one phone screen of the app drawn at exactly the 390 x 844 point proportions of an iPhone: 710 pixels wide and 1536 pixels tall (1 point = 1.82 pixels), centered, with plain light gray outside it. Every size follows that scale (13 point text is about 24 pixels tall, a 44 point button is 80 pixels tall, the 20 point margin is 36 pixels). App content only, no device frame, a real iOS status bar and home indicator. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 4. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-A.png
+- opt-B.png
+- opt-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-A.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 6.1 and roles table; brand/ledger.md, A3; product/ui-constitution.md, Article 7",
+     "place": "Item title, \"Carhartt Detroit jacket\", beside the photo",
+     "issue": "The title is visibly heavier than the price lines beside it. It uses weight to establish hierarchy where text must be Regular and Medium is reserved for buttons and the selected tab. This is a visual finding; the numerical font weight cannot be established from the raster."
+    },
+    {
+     "rule": "brand/constitution.md, Article 9.3",
+     "place": "White page ground, especially the large empty area below the action row",
+     "issue": "Visible fine grain and mottling extend over the white page. Texture is permitted only on the field."
+    },
+    {
+     "rule": "brand/constitution.md, E1, Article 4 C2 and Article 7.4; Part IV B2; product/ui-constitution.md, Article 7",
+     "place": "Full-width sky-to-lime band above the item",
+     "issue": "The bright, wide band gives the completed Sold status and platform mark a competing focal point. It contains neither the item, the money nor the shipping decision. Its visual prominence is not attached to the most important content, as C2 requires."
+    },
+    {
+     "rule": "brand/constitution.md, Article 7.6, Part III Canvas and Part IV B28",
+     "place": "Whole phone screen, excluding the gray side gutters",
+     "issue": "The phone area is approximately 719 by 1536 image pixels. At 390 pixels wide it is about 833 pixels high, rather than the required 844. The supplied board therefore does not preserve the specified phone proportions."
+    },
+    {
+     "rule": "brand/constitution.md, Article 7.1, Part III Margins and Part IV B17; brand/ledger.md, A3",
+     "place": "Left and right edges of the field and the main content column",
+     "issue": "The content starts about 32 image pixels inside the approximately 719-pixel-wide phone, equivalent to about 17 points at 390-point width. The app margin is specified as 20 points."
+    }
+   ]
+  },
+  {
+   "file": "opt-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 6.1 and roles table; brand/ledger.md, A3; product/ui-constitution.md, Article 7",
+     "place": "Item title, \"Carhartt Detroit jacket\", beside the photo",
+     "issue": "The title is visibly heavier than the price lines beside it. It uses weight to establish hierarchy where text must be Regular and Medium is reserved for buttons and the selected tab. This is a visual finding; the numerical font weight cannot be established from the raster."
+    },
+    {
+     "rule": "brand/constitution.md, Article 9.3",
+     "place": "White page ground, especially the large empty area below the action row",
+     "issue": "Visible fine grain and mottling extend over the white page. Texture is permitted only on the field."
+    },
+    {
+     "rule": "brand/constitution.md, E1, Article 4 C2 and Article 7.4; Part IV B2; product/ui-constitution.md, Article 7",
+     "place": "Full-width sky-to-lime band above the item",
+     "issue": "The bright, wide band gives the completed Sold status and platform mark a competing focal point. It contains neither the item, the money nor the shipping decision. Its visual prominence is not attached to the most important content, as C2 requires."
+    },
+    {
+     "rule": "brand/constitution.md, Article 7.6, Part III Canvas and Part IV B28",
+     "place": "Whole phone screen, excluding the gray side gutters",
+     "issue": "The phone area is approximately 719 by 1536 image pixels. At 390 pixels wide it is about 833 pixels high, rather than the required 844. The supplied board therefore does not preserve the specified phone proportions."
+    },
+    {
+     "rule": "brand/constitution.md, Article 7.1, Part III Margins and Part IV B17; brand/ledger.md, A3",
+     "place": "Left and right edges of the field and the main content column",
+     "issue": "The content starts about 32 image pixels inside the approximately 719-pixel-wide phone, equivalent to about 17 points at 390-point width. The app margin is specified as 20 points."
+    },
+    {
+     "rule": "brand/constitution.md, Article 6.1; brand/ledger.md, A3 and D6",
+     "place": "Sold label in the white status pill",
+     "issue": "Sold is visibly heavier here than in A and C. A status label is not a button or selected tab, and changing its weight is outside D6."
+    }
+   ]
+  },
+  {
+   "file": "opt-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md, Article 6.1 and roles table; brand/ledger.md, A3; product/ui-constitution.md, Article 7",
+     "place": "Item title, \"Carhartt Detroit jacket\", beside the photo",
+     "issue": "The title is visibly heavier than the price lines beside it. It uses weight to establish hierarchy where text must be Regular and Medium is reserved for buttons and the selected tab. This is a visual finding; the numerical font weight cannot be established from the raster."
+    },
+    {
+     "rule": "brand/constitution.md, Article 9.3",
+     "place": "White page ground, especially the large empty area below the action row",
+     "issue": "Visible fine grain and mottling extend over the white page. Texture is permitted only on the field."
+    },
+    {
+     "rule": "brand/constitution.md, E1, Article 4 C2 and Article 7.4; Part IV B2; product/ui-constitution.md, Article 7",
+     "place": "Full-width sky-to-lime band above the item",
+     "issue": "The bright, wide band gives the completed Sold status and platform mark a competing focal point. It contains neither the item, the money nor the shipping decision. Its visual prominence is not attached to the most important content, as C2 requires."
+    },
+    {
+     "rule": "brand/constitution.md, Article 7.6, Part III Canvas and Part IV B28",
+     "place": "Whole phone screen, excluding the gray side gutters",
+     "issue": "The phone area is approximately 719 by 1536 image pixels. At 390 pixels wide it is about 833 pixels high, rather than the required 844. The supplied board therefore does not preserve the specified phone proportions."
+    },
+    {
+     "rule": "brand/constitution.md, Article 7.1, Part III Margins and Part IV B17; brand/ledger.md, A3",
+     "place": "Left and right edges of the field and the main content column",
+     "issue": "The content starts about 32 image pixels inside the approximately 719-pixel-wide phone, equivalent to about 17 points at 390-point width. The app margin is specified as 20 points."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "Outside the D6 amount treatment, B makes the Sold label heavier and the horizontal rule above Ship by Tuesday lighter than A and C. These alter status emphasis and divider contrast in a comparison meant to vary only the peak amount (brand/constitution.md Article 14.4; brand/ledger.md D6)."
+  },
+  {
+   "files": [
+    "opt-A.png",
+    "opt-B.png",
+    "opt-C.png"
+   ],
+   "issue": "C has a faint additional outer edge around the Drop-off spots outline, most apparent along its top edge. A and B have a cleaner single contour. This is unrelated to D6 (brand/constitution.md Article 14.4; brand/ledger.md D6)."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

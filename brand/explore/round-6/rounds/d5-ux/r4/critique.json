@@ -1,0 +1,119 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States (Live = mint #88DCB9)",
+          "place": "Both phones, green Live pill on the Nike Dunks row.",
+          "issue": "The Live fill is a brighter, yellower green than the decided mint. This is visible in every option; sampled interior pixels in the left pills are around RGB (134\u2013145, 231\u2013242, 157\u2013169), rather than (136, 220, 185). D5 does not reopen state colors."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States (Live = mint #88DCB9)",
+          "place": "Both phones, green Live pill on the Nike Dunks row.",
+          "issue": "The Live fill is a brighter, yellower green than the decided mint. This is visible in every option; sampled interior pixels in the left pills are around RGB (134\u2013145, 231\u2013242, 157\u2013169), rather than (136, 220, 185). D5 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md Article 5.4 (the field never sits behind a photo).",
+          "place": "Both phones, jacket photo inside the full-width gradient header band.",
+          "issue": "The field extends behind the jacket photo, with only a narrow white frame separating them. The top-card options cut the field away from the photo area; this option instead puts the photo within the color event. The D5 header-band option does not explicitly waive the photo separation rule."
+        }
+      ]
+    },
+    {
+      "file": "opt-where-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States (Live = mint #88DCB9)",
+          "place": "Both phones, green Live pill on the Nike Dunks row.",
+          "issue": "The Live fill is a brighter, yellower green than the decided mint. This is visible in every option; sampled interior pixels in the left pills are around RGB (134\u2013145, 231\u2013242, 157\u2013169), rather than (136, 220, 185). D5 does not reopen state colors."
+        },
+        {
+          "rule": "brand/constitution.md E1 and Part IV B2; product/ui-constitution.md Article 7 (one focal point; attention spent on purpose).",
+          "place": "Right phone, Sold state, gradient from below the wordmark to above the tab bar.",
+          "issue": "The large bright ground becomes the dominant visual mass and carries equal color emphasis behind the sold jacket, the live shoes and the draft lamp. It dilutes the focus on the sold item and the amount kept. Exceeding one-third coverage is explicitly part of D5, so the coverage itself is not counted as a failure."
+        },
+        {
+          "rule": "brand/constitution.md Article 5.4 (the field never sits behind a photo).",
+          "place": "Right phone, jacket photo within the full-width Sold field.",
+          "issue": "The field surrounds and runs behind the jacket photo rather than moving away from it; the white photo frame does not create the cutaway used in the left phone."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States (Live = mint #88DCB9)",
+          "place": "Both phones, green Live pill on the Nike Dunks row.",
+          "issue": "The Live fill is a brighter, yellower green than the decided mint. This is visible in every option; sampled interior pixels in the left pills are around RGB (134\u2013145, 231\u2013242, 157\u2013169), rather than (136, 220, 185). D5 does not reopen state colors."
+        }
+      ]
+    },
+    {
+      "file": "opt-texture-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5, States (Live = mint #88DCB9)",
+          "place": "Both phones, green Live pill on the Nike Dunks row.",
+          "issue": "The Live fill is a brighter, yellower green than the decided mint. This is visible in every option; sampled interior pixels in the left pills are around RGB (134\u2013145, 231\u2013242, 157\u2013169), rather than (136, 220, 185). D5 does not reopen state colors."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "Unrelated to D5, the Live pills change green hue and width across options. The left pill is especially vivid in Header band; the texture options also change its color. These are state-color and component changes, not field placement or texture."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png"
+      ],
+      "issue": "The jacket photo crop and white surround change with placement. In Header band and the right Whole moment phone, the jacket has a rounded white frame on all sides; in the base it meets a larger white cutaway above and to its left. Some of that follows field placement, but the photo framing also changes, so placement is not isolated."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "The texture comparisons also change the field color balance, photo/cutaway edges and Live-pill color. Strong lines has a flatter, sharper white shelf under the jacket photo, most visible on the right phone, compared with the more rounded transition in Medium lines. Those changes are outside the texture-strength decision."
+    },
+    {
+      "files": [
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "Medium and Strong are not clearly separated in visible line strength at the supplied scale. Both use prominent white arcs in the same corners; arc placement and count vary more clearly than thickness or contrast. The labels imply a strength comparison that the boards do not clearly show."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-where-B.png",
+        "opt-where-C.png",
+        "opt-texture-B.png",
+        "opt-texture-C.png"
+      ],
+      "issue": "Review limits: these are raster boards. B13, B15, B22 and B27 are not applicable under Part IV because they require source. Hidden More actions, target behavior and content provenance cannot be verified here. Article 13 was checked for visible tell clusters; no separate cluster failure is established. B25 has no supplied no-brand comparison, so its matching-axis threshold is not verified. Today is selected, so the lower item rows are not a violation of the Sell-grid requirement L12. White offer/Sold pills on the field follow C2 and are not state-color failures."
+    }
+  ]
+}

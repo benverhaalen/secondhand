@@ -1,0 +1,83 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Part IV B1 / Article 1",
+          "place": "White page ground around the wordmark, beside the item rows, and in the empty area above the tab bar",
+          "issue": "A visible fine grain/diagonal texture extends across the white page outside the offer field. Texture is expressly confined to the field."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1; Part IV B20",
+          "place": "The four corners of the colored offer panel",
+          "issue": "The panel uses approximately the same small corner radius as the photos (about 8\u20139 pt when the phone content is normalized to 390 pt wide). The card radius is specified as 14 pt; 8 pt is reserved for photos."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Part IV B1 / Article 1",
+          "place": "White page ground around the wordmark, beside the item rows, and in the empty area above the tab bar",
+          "issue": "A visible fine grain/diagonal texture extends across the white page outside the offer field. Texture is expressly confined to the field."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1; Part IV B20",
+          "place": "The four corners of the colored offer panel",
+          "issue": "The panel uses approximately the same small corner radius as the photos (about 8\u20139 pt when the phone content is normalized to 390 pt wide). The card radius is specified as 14 pt; 8 pt is reserved for photos."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Part IV B1 / Article 1",
+          "place": "White page ground around the wordmark, beside the item rows, and in the empty area above the tab bar",
+          "issue": "A visible fine grain/diagonal texture extends across the white page outside the offer field. Texture is expressly confined to the field."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.1; Part IV B20",
+          "place": "The four corners of the colored offer panel",
+          "issue": "The panel uses approximately the same small corner radius as the photos (about 8\u20139 pt when the phone content is normalized to 390 pt wide). The card radius is specified as 14 pt; 8 pt is reserved for photos."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2; Part IV B18; brand/ledger.md A3 (D3 does not suspend the grouping rule)",
+          "place": "Between the jacket photo/details and its offer panel; between the Nike and lamp photos and their respective action rows",
+          "issue": "At 390 pt phone width, the jacket-to-offer gap is approximately 21 pt and the lower photo-to-action gaps are approximately 15\u201316 pt. These are parts of the same item, beyond the specified 4\u201312 pt internal spacing. Airy spacing weakens the association between each item and its actions."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The item photographs are not held constant: the jacket folds and framing, the Nike shoe positions/laces and floor, and the lamp shade/stand details differ. These are content changes beyond D3 spacing (brand/constitution.md Article 14.4; brand/ledger.md D3)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The Live pill is brighter and more saturated green in A than in B/C; the Sold fill and money-highlight tones also vary. State color is fixed for this comparison by brand/ledger.md A1 and brand/constitution.md Article 5, not part of D3."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The colored offer field changes in tint distribution and line-texture visibility, beyond its position: A/B have more apparent diagonal lines toward the right, while C is fainter. Field texture is the separate D5 decision (brand/ledger.md); Article 14.4 calls for variation on one named axis."
+    }
+  ]
+}

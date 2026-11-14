@@ -1,0 +1,166 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+          "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+          "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+          "place": "Left and right edges of the list and action rows",
+          "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+          "place": "Offer, Sold and Live markers on the three photos",
+          "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FDBD51 for Offer, #DBF14E for Sold and #8EF1C4 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+          "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+          "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+          "place": "Left and right edges of the list and action rows",
+          "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+          "place": "Offer, Sold and Live markers on the three photos",
+          "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FDBD49 for Offer, #D7F14C for Sold and #8AF0C5 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B19; Article 7.3; Article 13 nested-box tell",
+          "place": "First hairline card, around the gradient action strip",
+          "issue": "The outlined outer card contains a separate filled, rounded field panel. The field panel is not one of B19's permitted nested elements (photos, buttons, state pills or money highlights). The individual buttons are permitted; their extra enclosing panel creates the forbidden box inside a box."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B18; Article 7.2",
+          "place": "Gaps between the three outlined cards versus photo-to-text spacing within each card",
+          "issue": "Neighboring card outlines are only about 20\u201322 pixels apart, while the internal photo-to-text gap is about 28 pixels. Inside is therefore not tighter than between, as required."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+          "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+          "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+          "place": "Left and right edges of the list and action rows",
+          "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+          "place": "Offer, Sold and Live markers on the three photos",
+          "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FDBC4A for Offer, #D9F24E for Sold and #89F2C4 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+          "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+          "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+          "place": "Left and right edges of the list and action rows",
+          "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+          "place": "Offer, Sold and Live markers on the three photos",
+          "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #FABE55 for Offer, #D8EE4B for Sold and #8AE5BE for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "product/ui-constitution.md, Article 6: Name the escape; Article 2.1: know whether anything will be lost if the app is ignored",
+          "place": "Carhartt offer row, including the area around Accept $38 and Counter",
+          "issue": "The offer asks for a decision but gives no expiry or other explanation of what happens if it is ignored. The seller cannot tell whether waiting risks losing it."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B28; Article 7.6 and Part III App canvas",
+          "place": "Entire phone screen, excluding the gray side gutters",
+          "issue": "The white phone canvas is approximately 810 \u00d7 1536 pixels. At 390 points wide this is approximately 390 \u00d7 740, not the required 390 \u00d7 844. The supplied board therefore does not show the required true-scale app viewport."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B17; Part III App margins; brand/ledger.md, Decided A3",
+          "place": "Left and right edges of the list and action rows",
+          "issue": "Relative to the white phone canvas, the list rules and offer field begin about 25 pixels from the edge, approximately 12 points at 390-point width; photos begin about 34 pixels in, approximately 16 points. These are not the required 20-point app margins."
+        },
+        {
+          "rule": "brand/ledger.md, Decided A1; brand/constitution.md, Article 5 color table and States",
+          "place": "Offer, Sold and Live markers on the three photos",
+          "issue": "The rendered state fills drift from the decided palette. Representative interior patch medians are approximately #F8C05A for Offer, #D5EB4E for Sold and #8FEDC2 for Live, versus marigold #F9C76F, lime #E6EA6A and mint #88DCB9. The brighter lime and mint are visible differences, not merely edge antialiasing. D4 opens marker shape, not state color."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png",
+        "opt-marks-B.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "The state colors change between variants as well as drifting from the decided palette. Live is visibly less bright in opt-state-B.png than in opt-base.png; representative interior medians are #8AE5BE and #8EF1C4 respectively. D4 does not open state-color changes."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png",
+        "opt-marks-B.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "The item-photo detail and tonal rendering are not held exactly constant: the jacket folds and wood texture, shoe laces and concrete texture, and lamp shading vary subtly. The same items and broad crops remain, but these are additional image changes outside the surface, logo-container and state-marker decision."
+    }
+  ]
+}

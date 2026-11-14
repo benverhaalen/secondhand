@@ -1,0 +1,63 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {"rule": "brand/constitution.md Article 4 C5; Part IV B11; brand/ledger.md L6; product/ui-constitution.md Article 5.1", "place": "Both screens: red platform mark below the price or proceeds", "issue": "The mark reads as an a-shaped glyph in a rounded square. Its short ascender and rounded bowl do not preserve the supplied Depop mark in assets/platforms/depop.svg. C5 requires the unaltered platform logo, not a redrawn letterform."},
+        {"rule": "brand/constitution.md Article 5.1, Article 9.2; Part IV B7", "place": "Both screens: Nike Dunks and Brass lamp card outlines, and the divider above the tab bar", "issue": "These hairlines are pale blue on white. The rule requires neutral black hairlines; these are not one of the permitted colored-mark exceptions."},
+        {"rule": "brand/constitution.md Article 6.2 and Roles table; Part IV B14; brand/ledger.md A3", "place": "Both screens: Today, Sell, Buy and You tab labels", "issue": "At a 390-wide phone scale, the tab labels appear roughly 10–11 px rather than the required 13 px. They are visibly smaller than the caption/state-label tier."},
+        {"rule": "brand/constitution.md Part III App margins; Article 7.6", "place": "Both screens: left and right edges of the lower item cards", "issue": "The cards sit about 16–17 pt from the phone edges at 390 pt width, rather than the specified 20 pt app margin."}
+      ]
+    },
+    {
+      "file": "opt-where-B.png",
+      "verdict": "fail",
+      "failures": [
+        {"rule": "brand/constitution.md Article 4 C5; Part IV B11; brand/ledger.md L6; product/ui-constitution.md Article 5.1", "place": "Both screens: red platform mark", "issue": "The a-shaped glyph does not preserve the supplied Depop logo's ascender and bowl. The platform mark is visibly distorted."},
+        {"rule": "brand/constitution.md Article 5.1, Article 9.2; Part IV B7", "place": "Both screens: lower item-card borders and tab-bar divider", "issue": "Pale blue hairlines replace the required neutral hairlines on white."},
+        {"rule": "brand/constitution.md Article 6.2 and Roles table; Part IV B14; brand/ledger.md A3", "place": "Both screens: bottom tab labels", "issue": "At phone scale, labels appear roughly 10–11 px rather than the required 13 px caption/tab-label size."},
+        {"rule": "brand/constitution.md Part III App margins; Article 7.6", "place": "Both screens: lower item-card side margins", "issue": "The margins are about 16–17 pt at 390 pt width, below the specified 20 pt."},
+        {"rule": "brand/constitution.md Article 4 C2; Part IV B5; Article 13 flat-gradient tell", "place": "Both screens: gradient header band", "issue": "No deliberate grain or fine mesh-line texture is discernible. The band reads as a smooth gradient, losing the mandatory field texture. This is a C2 failure; one tell alone does not establish an Article 13 cluster."}
+      ]
+    },
+    {
+      "file": "opt-where-C.png",
+      "verdict": "fail",
+      "failures": [
+        {"rule": "brand/constitution.md Article 4 C5; Part IV B11; brand/ledger.md L6; product/ui-constitution.md Article 5.1", "place": "Both screens: red platform mark", "issue": "The a-shaped glyph does not preserve the supplied Depop logo. The logo's letterform has changed."},
+        {"rule": "brand/constitution.md Article 5.1, Article 9.2; Part IV B7", "place": "Both screens: lower item-card borders and tab-bar divider", "issue": "The outlines are pale blue on white rather than neutral black hairlines."},
+        {"rule": "brand/constitution.md Article 6.2 and Roles table; Part IV B14; brand/ledger.md A3", "place": "Both screens: bottom tab labels", "issue": "At phone scale, labels appear roughly 10–11 px rather than the required 13 px."},
+        {"rule": "brand/constitution.md Part III App margins; Article 7.6", "place": "Both screens: lower item-card side margins", "issue": "The margins remain about 16–17 pt at 390 pt width instead of 20 pt."},
+        {"rule": "brand/ledger.md D5, Where option: whole ground of a moment like Sold, past the one-third color limit", "place": "Right screen: Sold field, ending immediately below the action row", "issue": "This demonstrates an edge-to-edge top band, not the whole ground of the Sold moment. The lower majority remains white. Even the field's enclosing rectangle occupies only about one third of the phone; its large white photo cutout reduces actual color coverage below that. The intended broader-color option is not represented."},
+        {"rule": "brand/constitution.md Article 4 C2; Part IV B5", "place": "Right screen: expanded Sold field", "issue": "The faint curved-line texture visible in the left screen is no longer discernible on the right. Field placement changes, but the mandatory texture disappears with it."}
+      ]
+    },
+    {
+      "file": "opt-texture-B.png",
+      "verdict": "fail",
+      "failures": [
+        {"rule": "brand/constitution.md Article 4 C5; Part IV B11; brand/ledger.md L6; product/ui-constitution.md Article 5.1", "place": "Both screens: red platform mark", "issue": "The a-shaped glyph does not preserve the supplied Depop logo's letterform."},
+        {"rule": "brand/constitution.md Article 5.1, Article 9.2; Part IV B7", "place": "Both screens: lower item-card borders and tab-bar divider", "issue": "Pale blue hairlines appear on white where the rules require neutral hairlines."},
+        {"rule": "brand/constitution.md Article 6.2 and Roles table; Part IV B14; brand/ledger.md A3", "place": "Both screens: bottom tab labels", "issue": "At phone scale, labels appear roughly 10–11 px rather than the required 13 px."},
+        {"rule": "brand/constitution.md Part III App margins; Article 7.6", "place": "Both screens: lower item-card side margins", "issue": "The margins are about 16–17 pt at 390 pt width instead of the specified 20 pt."}
+      ]
+    },
+    {
+      "file": "opt-texture-C.png",
+      "verdict": "fail",
+      "failures": [
+        {"rule": "brand/constitution.md Article 4 C5; Part IV B11; brand/ledger.md L6; product/ui-constitution.md Article 5.1", "place": "Both screens: red platform mark", "issue": "The a-shaped glyph does not preserve the supplied Depop logo's letterform."},
+        {"rule": "brand/constitution.md Article 5.1, Article 9.2; Part IV B7", "place": "Both screens: lower item-card borders and tab-bar divider", "issue": "Pale blue hairlines appear on white instead of the required neutral hairlines."},
+        {"rule": "brand/constitution.md Article 6.2 and Roles table; Part IV B14; brand/ledger.md A3", "place": "Both screens: bottom tab labels", "issue": "At phone scale, labels appear roughly 10–11 px rather than the required 13 px."},
+        {"rule": "brand/constitution.md Part III App margins; Article 7.6", "place": "Both screens: lower item-card side margins", "issue": "The margins are about 16–17 pt at 390 pt width instead of 20 pt."},
+        {"rule": "brand/constitution.md E1, E2 and Article 1.4; product/ui-constitution.md Article 7", "place": "Both screens: thick white arcs in the upper-right corner and beneath the jacket beside the primary action", "issue": "The high-contrast stripes become prominent graphic shapes, competing with the jacket, price and action. Texture is permitted, but this strength gives the brand decoration attention that E1 reserves for the item and money. This is a visual judgment about the shown result, not a ban on the open Strong lines option."}
+      ]
+    }
+  ],
+  "across_options": [
+    {"files": ["opt-base.png", "opt-where-B.png", "opt-where-C.png"], "issue": "The placement comparison also changes texture: the baseline has faint arcs; Header band has no discernible deliberate texture; Whole moment retains faint arcs on the offer but loses them on Sold. This confounds D5's Where comparison with its Texture comparison (brand/constitution.md Article 14.4)."},
+    {"files": ["opt-base.png", "opt-where-B.png", "opt-where-C.png", "opt-texture-B.png", "opt-texture-C.png"], "issue": "The item photographs are not pixel-stable across options. Jacket folds, pocket detail and wood grain subtly change in sharpness and shape, especially in the texture variants. Image content is outside the field decision and should not be treated as evidence for that decision (brand/constitution.md Article 14.4)."},
+    {"files": ["opt-base.png", "opt-where-B.png", "opt-where-C.png", "opt-texture-B.png", "opt-texture-C.png"], "issue": "Review limits: this is a raster-image review. Type-size and margin findings are visual estimates normalized to a 390-wide phone, not computed CSS measurements. Part IV explicitly makes B13, B15, B22 and B27 not applicable without source. Hidden More-menu contents and interactions cannot be verified. Article 13 was checked for visible tells; no three-axis default-test failure is asserted without a comparative default artifact. Board callouts, the connecting arrow and the dotted arc were treated as annotations, not app UI. D5 expressly opens broader color coverage, so exceeding one third would not itself disqualify that option. No new designs are proposed."}
+  ]
+}

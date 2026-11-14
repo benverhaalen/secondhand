@@ -1,0 +1,84 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5.1 and Part IV B7; Article 9.2",
+          "place": "The horizontal separators between the jacket, Nike Dunks and brass lamp rows.",
+          "issue": "The rules are pale blue rather than neutral black at 8%. Sampled separator pixels at x=600 are RGB (223,230,238) in A, (219,227,236) in B and (213,224,237) in C. Colored lines on white are prohibited; these are not logos, alerts or unread dots."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5.1 and Part IV B7; Article 9.2",
+          "place": "The horizontal separators between the jacket, Nike Dunks and brass lamp rows.",
+          "issue": "The rules are pale blue rather than neutral black at 8%. Sampled separator pixels at x=600 are RGB (223,230,238) in A, (219,227,236) in B and (213,224,237) in C. Colored lines on white are prohibited; these are not logos, alerts or unread dots."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 5.1 and Part IV B7; Article 9.2",
+          "place": "The horizontal separators between the jacket, Nike Dunks and brass lamp rows.",
+          "issue": "The rules are pale blue rather than neutral black at 8%. Sampled separator pixels at x=600 are RGB (223,230,238) in A, (219,227,236) in B and (213,224,237) in C. Colored lines on white are prohibited; these are not logos, alerts or unread dots."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2; brand/ledger.md A3; product/ui-constitution.md Article 7",
+          "place": "The gap between the jacket photo/details and its offer panel; the gaps from the shoe and lamp photos to their action rows.",
+          "issue": "Related parts exceed the specified 4\u201312 pt internal spacing. With the 710-pixel-wide phone normalized to 390 pt, the jacket-to-offer gap is about 20 pt (image y=383\u2013419), and the lamp-to-actions gap is about 16 pt (y=1166\u20131195). The controls become detached from the items they act on. D3 permits a density choice but does not suspend the internal-grouping rule."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The product photographs change, not just their placement. The jacket folds and framing, shoe positions and floor detail, and lamp framing differ. This changes the content used to judge density. brand/ledger.md D3 and brand/constitution.md Article 14.4 call for options on the named spacing axis."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The offer field changes texture: B has clearly visible diagonal lines, while A and C have a softer, less distinct texture. Field appearance belongs to ledger D5, not D3 (brand/constitution.md Article 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The state fills vary: A has a more saturated turquoise Live pill and a brighter yellow Sold pill; B and C use quieter fills. The blue separator tint also differs. These are color changes, outside D3; state colors are governed by ledger A1 and constitution Article 5."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "A has a full-width horizontal boundary above the bottom navigation; B and C omit it. This changes the navigation surface treatment, not spacing (ledger D3; constitution Article 14.4)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "C moves the entire bottom navigation and home indicator upward compared with A and B, although the canvas and top system bar remain fixed. The system safe-area framing changes along with content density; it is governed by constitution Article 7.6 and Part III, rather than the D3 component-spacing choice."
+    }
+  ]
+}

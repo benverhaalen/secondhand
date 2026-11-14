@@ -1,0 +1,167 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5 and Article 10.4; Part IV B11; brand/ledger.md L6. Color reference: assets/platforms/README.md, Depop row (#FF2300).",
+          "place": "Offer row, Depop mark immediately left of \u201cExpires tomorrow at 6 pm\u201d.",
+          "issue": "The mark is orange rather than the specified Depop red. The platform-logo exception permits its brand color or black, not an arbitrary recolor. The supplied asset is itself documented as a stand-in; this finding concerns the visible recoloring, not a claim about how the image was made."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 color table and States table.",
+          "place": "Live marker on the brass-lamp photo and lime money highlight beneath $31.40.",
+          "issue": "The Live fill is a bright turquoise rather than the specified muted mint (#88DCB9); the money band is a vivid yellow-green rather than the specified lime (#E6EA6A). D4 opens the marker shape, not the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 1.1.",
+          "place": "Black Accept $38, Print label and Edit listing pills, and the black central plus control.",
+          "issue": "Visible mottling gives these controls a textured surface. Texture is confined to the brand field by the rule; these controls are separate ink surfaces."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table (body, card title and price in a row use ink); product/ui-constitution.md Article 7.",
+          "place": "The three listing titles, and \u201cListed at $45\u201d in the offer and live rows.",
+          "issue": "These role-bearing strings use secondary gray instead of the specified ink. In particular, item names recede behind the large state headings and colored marketplace marks."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5 and Article 10.4; Part IV B11; brand/ledger.md L6. Color reference: assets/platforms/README.md, Depop row (#FF2300).",
+          "place": "Offer row, Depop mark immediately left of \u201cExpires tomorrow at 6 pm\u201d.",
+          "issue": "The mark is orange rather than the specified Depop red. The platform-logo exception permits its brand color or black, not an arbitrary recolor. The supplied asset is itself documented as a stand-in; this finding concerns the visible recoloring, not a claim about how the image was made."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 color table and States table.",
+          "place": "Live marker on the brass-lamp photo and lime money highlight beneath $31.40.",
+          "issue": "The Live fill is a bright turquoise rather than the specified muted mint (#88DCB9); the money band is a vivid yellow-green rather than the specified lime (#E6EA6A). D4 opens the marker shape, not the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 1.1.",
+          "place": "Black Accept $38, Print label and Edit listing pills, and the black central plus control.",
+          "issue": "Visible mottling gives these controls a textured surface. Texture is confined to the brand field by the rule; these controls are separate ink surfaces."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table (body, card title and price in a row use ink); product/ui-constitution.md Article 7.",
+          "place": "The three listing titles, and \u201cListed at $45\u201d in the offer and live rows.",
+          "issue": "These role-bearing strings use secondary gray instead of the specified ink. In particular, item names recede behind the large state headings and colored marketplace marks."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5 and Article 10.4; Part IV B11; brand/ledger.md L6. Color reference: assets/platforms/README.md, Depop row (#FF2300).",
+          "place": "Offer row, Depop mark immediately left of \u201cExpires tomorrow at 6 pm\u201d.",
+          "issue": "The mark is orange rather than the specified Depop red. The platform-logo exception permits its brand color or black, not an arbitrary recolor. The supplied asset is itself documented as a stand-in; this finding concerns the visible recoloring, not a claim about how the image was made."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 color table and States table.",
+          "place": "Live marker on the brass-lamp photo and lime money highlight beneath $31.40.",
+          "issue": "The Live fill is a bright turquoise rather than the specified muted mint (#88DCB9); the money band is a vivid yellow-green rather than the specified lime (#E6EA6A). D4 opens the marker shape, not the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 1.1.",
+          "place": "Black Accept $38, Print label and Edit listing pills, and the black central plus control.",
+          "issue": "Visible mottling gives these controls a textured surface. Texture is confined to the brand field by the rule; these controls are separate ink surfaces."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table (body, card title and price in a row use ink); product/ui-constitution.md Article 7.",
+          "place": "The three listing titles, and \u201cListed at $45\u201d in the offer and live rows.",
+          "issue": "These role-bearing strings use secondary gray instead of the specified ink. In particular, item names recede behind the large state headings and colored marketplace marks."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5 and Article 10.4; Part IV B11; brand/ledger.md L6. Color reference: assets/platforms/README.md, Depop row (#FF2300).",
+          "place": "Offer row, Depop mark immediately left of \u201cExpires tomorrow at 6 pm\u201d.",
+          "issue": "The mark is orange rather than the specified Depop red. The platform-logo exception permits its brand color or black, not an arbitrary recolor. The supplied asset is itself documented as a stand-in; this finding concerns the visible recoloring, not a claim about how the image was made."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 color table and States table.",
+          "place": "Live marker on the brass-lamp photo and lime money highlight beneath $31.40.",
+          "issue": "The Live fill is a bright turquoise rather than the specified muted mint (#88DCB9); the money band is a vivid yellow-green rather than the specified lime (#E6EA6A). D4 opens the marker shape, not the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 1.1.",
+          "place": "Black Accept $38, Print label and Edit listing pills, and the black central plus control.",
+          "issue": "Visible mottling gives these controls a textured surface. Texture is confined to the brand field by the rule; these controls are separate ink surfaces."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table (body, card title and price in a row use ink); product/ui-constitution.md Article 7.",
+          "place": "The three listing titles, and \u201cListed at $45\u201d in the offer and live rows.",
+          "issue": "These role-bearing strings use secondary gray instead of the specified ink. In particular, item names recede behind the large state headings and colored marketplace marks."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 4 C5 and Article 10.4; Part IV B11; brand/ledger.md L6. Color reference: assets/platforms/README.md, Depop row (#FF2300).",
+          "place": "Offer row, Depop mark immediately left of \u201cExpires tomorrow at 6 pm\u201d.",
+          "issue": "The mark is orange rather than the specified Depop red. The platform-logo exception permits its brand color or black, not an arbitrary recolor. The supplied asset is itself documented as a stand-in; this finding concerns the visible recoloring, not a claim about how the image was made."
+        },
+        {
+          "rule": "brand/ledger.md A1; brand/constitution.md Article 5 color table and States table.",
+          "place": "Live marker on the brass-lamp photo and lime money highlight beneath $31.40.",
+          "issue": "The Live fill is a bright turquoise rather than the specified muted mint (#88DCB9); the money band is a vivid yellow-green rather than the specified lime (#E6EA6A). D4 opens the marker shape, not the decided state palette."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 1.1.",
+          "place": "Black Accept $38, Print label and Edit listing pills, and the black central plus control.",
+          "issue": "Visible mottling gives these controls a textured surface. Texture is confined to the brand field by the rule; these controls are separate ink surfaces."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table (body, card title and price in a row use ink); product/ui-constitution.md Article 7.",
+          "place": "The three listing titles, and \u201cListed at $45\u201d in the offer and live rows.",
+          "issue": "These role-bearing strings use secondary gray instead of the specified ink. In particular, item names recede behind the large state headings and colored marketplace marks."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "Beyond adding hairline card boundaries, the offer field expands horizontally from approximately x=194\u2013827 to x=168\u2013856 and extends lower. Its texture/color distribution also changes. This changes the area and expression of the field, an open D5 property, alongside D4."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "The Nike content moves down approximately 6 source-image pixels and the lamp content approximately 13 pixels, while their action rows remain nearly level with the base. This changes internal photo-to-action spacing and row rhythm, not just the enclosing surface. The lamp card also leaves less white space above navigation."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-marks-B.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "The field mesh changes strength: lines are softer in the bubble option and markedly brighter and more conspicuous in the dot and corner-tag options. D5 owns texture strength; platform and state-marker comparisons do not hold it constant."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-B.png",
+        "opt-state-C.png"
+      ],
+      "issue": "The bottom navigation shifts independently of the state marker. Relative to base, its top divider moves from roughly y=1378 to y=1375 in Dot and y=1371 in Corner tag; the icons, plus button and home indicator also shift. Coordinates refer to the supplied 1024\u00d71536 boards."
+    }
+  ]
+}

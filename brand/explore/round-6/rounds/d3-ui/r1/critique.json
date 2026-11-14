@@ -1,0 +1,105 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III (App canvas), Part IV B28",
+          "place": "Entire white phone canvas, approximately x=139\u2013884 and y=0\u20131535 in each 1024 \u00d7 1536 board",
+          "issue": "The phone canvas has a roughly 746:1536 aspect ratio. At 390 pt wide it is about 803 pt high, not the required 844 pt. The gray side gutters are presentation space, not phone content; including them does not produce the required canvas either."
+        },
+        {
+          "rule": "brand/constitution.md Part III (App margins); Part IV B17",
+          "place": "Left edge of every item photo and divider; right edge of the offer field and dividers",
+          "issue": "Content starts about 30 image pixels inside a roughly 746-pixel phone canvas, equivalent to about 16 pt at 390 pt wide. The specified app margin is 20 pt. D3 opens component spacing, not the separately prescribed canvas margin."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table; brand/ledger.md A3",
+          "place": "Carhartt Detroit jacket, Nike Dunks and Brass lamp titles",
+          "issue": "All three card titles use secondary gray. The role table assigns body, list rows and card titles primary ink. Their titles visually recede to the same level as supporting listing information."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White page background and black primary buttons, especially the large empty area below the item rows",
+          "issue": "Visible mottling extends over the white page and black controls. Texture is restricted to the colored field; here the surface treatment spreads beyond it."
+        },
+        {
+          "rule": "brand/constitution.md Article 7.2; Part IV B18; Article 13 (spacing without grouping)",
+          "place": "Offer group: gap between the jacket photo and colored action band versus gap after that band before Nike Dunks",
+          "issue": "The jacket-to-action gap is about 12 image pixels, but the internal gap between the photo and its text column is about 20 pixels. The band-to-next-item gap is only about 30 pixels, roughly 16 pt. The separation between complete sections is below the stated 24\u201348 pt section range, compressing the offer and the next item into nearly the same spacing rhythm."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III (App canvas), Part IV B28",
+          "place": "Entire white phone canvas, approximately x=139\u2013884 and y=0\u20131535 in each 1024 \u00d7 1536 board",
+          "issue": "The phone canvas has a roughly 746:1536 aspect ratio. At 390 pt wide it is about 803 pt high, not the required 844 pt. The gray side gutters are presentation space, not phone content; including them does not produce the required canvas either."
+        },
+        {
+          "rule": "brand/constitution.md Part III (App margins); Part IV B17",
+          "place": "Left edge of every item photo and divider; right edge of the offer field and dividers",
+          "issue": "Content starts about 30 image pixels inside a roughly 746-pixel phone canvas, equivalent to about 16 pt at 390 pt wide. The specified app margin is 20 pt. D3 opens component spacing, not the separately prescribed canvas margin."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table; brand/ledger.md A3",
+          "place": "Carhartt Detroit jacket, Nike Dunks and Brass lamp titles",
+          "issue": "All three card titles use secondary gray. The role table assigns body, list rows and card titles primary ink. Their titles visually recede to the same level as supporting listing information."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White page background and black primary buttons, especially the large empty area below the item rows",
+          "issue": "Visible mottling extends over the white page and black controls. Texture is restricted to the colored field; here the surface treatment spreads beyond it."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III (App canvas), Part IV B28",
+          "place": "Entire white phone canvas, approximately x=139\u2013884 and y=0\u20131535 in each 1024 \u00d7 1536 board",
+          "issue": "The phone canvas has a roughly 746:1536 aspect ratio. At 390 pt wide it is about 803 pt high, not the required 844 pt. The gray side gutters are presentation space, not phone content; including them does not produce the required canvas either."
+        },
+        {
+          "rule": "brand/constitution.md Part III (App margins); Part IV B17",
+          "place": "Left edge of every item photo and divider; right edge of the offer field and dividers",
+          "issue": "Content starts about 30 image pixels inside a roughly 746-pixel phone canvas, equivalent to about 16 pt at 390 pt wide. The specified app margin is 20 pt. D3 opens component spacing, not the separately prescribed canvas margin."
+        },
+        {
+          "rule": "brand/constitution.md Article 6, Roles table; brand/ledger.md A3",
+          "place": "Carhartt Detroit jacket, Nike Dunks and Brass lamp titles",
+          "issue": "All three card titles use secondary gray. The role table assigns body, list rows and card titles primary ink. Their titles visually recede to the same level as supporting listing information."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field)",
+          "place": "White page background and black primary buttons, especially the large empty area below the item rows",
+          "issue": "Visible mottling extends over the white page and black controls. Texture is restricted to the colored field; here the surface treatment spreads beyond it."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Photo geometry changes as well as spacing: photo widths remain about 168 image pixels, but the Nike and lamp tiles are shorter in A (about 160 px high) than B and C (about 168\u2013170 px). The item crops and apparent scale consequently change. This is a change to imagery, beyond D3 Spacing (brand/ledger.md D3; brand/constitution.md Article 14.4, one named axis)."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The offer field artwork varies with the options: the distribution of yellow and mint and the mesh-line curves differ, most visibly in the lower-right corner. Changing padding explains the band height, but the texture and color distribution also change. Field treatment is a separate decision, D5, so the D3 comparison does not hold that variable constant (brand/ledger.md D3/D5; brand/constitution.md Article 14.4)."
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "images": [
+    {
+      "file": "opt-base.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 9.3 (texture only on the field)",
+          "place": "Both screens: white ground around the wordmark and in the large empty area below the item rows.",
+          "issue": "Visible mottling extends across the white ground outside the gradient field. The texture is not confined to the brand field."
+        },
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what will a first-time user misread); brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The curved transition arrow starts immediately below Counter on the left and ends beside Print label on the right.",
+          "issue": "The board visually associates Counter with the Sold outcome. Counter does not communicate accepting the offer, so the annotated experience gives the wrong causal reading of the decision."
+        },
+        {
+          "rule": "brand/ledger.md, A1; brand/constitution.md, Article 5, Lime value and state table",
+          "place": "Right screen: lime highlight behind $31.40 and the Sold marker.",
+          "issue": "The lime is visibly fluorescent yellow-green rather than the specified muted #E6EA6A. D4 opens surface and marker shape, not a change to the decided money/sold color. This is a visual palette assessment, not an exact pixel-color measurement."
+        }
+      ]
+    },
+    {
+      "file": "opt-cards-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 9.3 (texture only on the field)",
+          "place": "Both screens: white ground around the wordmark and in the large empty area below the item rows.",
+          "issue": "Visible mottling extends across the white ground outside the gradient field. The texture is not confined to the brand field."
+        },
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what will a first-time user misread); brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The curved transition arrow starts immediately below Counter on the left and ends beside Print label on the right.",
+          "issue": "The board visually associates Counter with the Sold outcome. Counter does not communicate accepting the offer, so the annotated experience gives the wrong causal reading of the decision."
+        },
+        {
+          "rule": "brand/ledger.md, A1; brand/constitution.md, Article 5, Lime value and state table",
+          "place": "Right screen: lime highlight behind $31.40 and the Sold marker.",
+          "issue": "The lime is visibly fluorescent yellow-green rather than the specified muted #E6EA6A. D4 opens surface and marker shape, not a change to the decided money/sold color. This is a visual palette assessment, not an exact pixel-color measurement."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B19 and Article 7.3; Article 13 (nested boxes)",
+          "place": "Left screen: the rounded gradient information panel inside the outlined jacket card.",
+          "issue": "A filled rounded information box sits inside a bordered rounded card. It is not one of B19's exceptions for photos, buttons, state pills or the money highlight. Opening hairline cards in D4 does not exempt nested information containers."
+        },
+        {
+          "rule": "brand/constitution.md, Part IV B18 and Article 7.2; Article 13 (spacing without grouping)",
+          "place": "Both screens: the three lower outlined item cards.",
+          "issue": "The gaps between separate cards are narrower than the internal gaps between each photo and its title/logo group. The grouping hierarchy is reversed: parts within one card are farther apart than neighboring cards."
+        }
+      ]
+    },
+    {
+      "file": "opt-marks-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 9.3 (texture only on the field)",
+          "place": "Both screens: white ground around the wordmark and in the large empty area below the item rows.",
+          "issue": "Visible mottling extends across the white ground outside the gradient field. The texture is not confined to the brand field."
+        },
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what will a first-time user misread); brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The curved transition arrow starts immediately below Counter on the left and ends beside Print label on the right.",
+          "issue": "The board visually associates Counter with the Sold outcome. Counter does not communicate accepting the offer, so the annotated experience gives the wrong causal reading of the decision."
+        },
+        {
+          "rule": "brand/ledger.md, A1; brand/constitution.md, Article 5, Lime value and state table",
+          "place": "Right screen: lime highlight behind $31.40 and the Sold marker.",
+          "issue": "The lime is visibly fluorescent yellow-green rather than the specified muted #E6EA6A. D4 opens surface and marker shape, not a change to the decided money/sold color. This is a visual palette assessment, not an exact pixel-color measurement."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 9.3 (texture only on the field)",
+          "place": "Both screens: white ground around the wordmark and in the large empty area below the item rows.",
+          "issue": "Visible mottling extends across the white ground outside the gradient field. The texture is not confined to the brand field."
+        },
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what will a first-time user misread); brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The curved transition arrow starts immediately below Counter on the left and ends beside Print label on the right.",
+          "issue": "The board visually associates Counter with the Sold outcome. Counter does not communicate accepting the offer, so the annotated experience gives the wrong causal reading of the decision."
+        },
+        {
+          "rule": "brand/ledger.md, A1; brand/constitution.md, Article 5, Lime value and state table",
+          "place": "Right screen: lime highlight behind $31.40 and the Sold marker.",
+          "issue": "The lime is visibly fluorescent yellow-green rather than the specified muted #E6EA6A. D4 opens surface and marker shape, not a change to the decided money/sold color. This is a visual palette assessment, not an exact pixel-color measurement."
+        }
+      ]
+    },
+    {
+      "file": "opt-state-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md, Article 9.3 (texture only on the field)",
+          "place": "Both screens: white ground around the wordmark and in the large empty area below the item rows.",
+          "issue": "Visible mottling extends across the white ground outside the gradient field. The texture is not confined to the brand field."
+        },
+        {
+          "rule": "product/ui-constitution.md, Article 2.4 (what will a first-time user misread); brand/constitution.md, Article 11.1 (show cause and effect)",
+          "place": "The curved transition arrow starts immediately below Counter on the left and ends beside Print label on the right.",
+          "issue": "The board visually associates Counter with the Sold outcome. Counter does not communicate accepting the offer, so the annotated experience gives the wrong causal reading of the decision."
+        },
+        {
+          "rule": "brand/ledger.md, A1; brand/constitution.md, Article 5, Lime value and state table",
+          "place": "Right screen: lime highlight behind $31.40 and the Sold marker.",
+          "issue": "The lime is visibly fluorescent yellow-green rather than the specified muted #E6EA6A. D4 opens surface and marker shape, not a change to the decided money/sold color. This is a visual palette assessment, not an exact pixel-color measurement."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-base.png",
+        "opt-cards-B.png"
+      ],
+      "issue": "Beyond the card outlines, the offer field changes: its diagonal line texture is much fainter, its lower-right lime is brighter, and its lower edge extends slightly farther down. Field texture belongs to ledger D5 and should remain fixed in this D4 comparison."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-B.png"
+      ],
+      "issue": "The Shipping label becomes visibly smaller and more cramped inside its white badge. The change is not just a dot replacing the colored pill treatment; the label typography also changes (ledger A3)."
+    },
+    {
+      "files": [
+        "opt-base.png",
+        "opt-state-B.png"
+      ],
+      "issue": "The small outlined endpoint at callout 3 on Accept $38 disappears in the Dot board. The board annotation changes independently of the state-marker decision."
+    }
+  ]
+}

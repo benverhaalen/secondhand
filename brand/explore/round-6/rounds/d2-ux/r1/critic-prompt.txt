@@ -1,0 +1,15 @@
+You are a senior product designer in a design review. You did not make these images and have not seen how they were made. Judge them as you would in a review.
+
+Read these files first:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+Use Part IV (Checks) and Article 13 of the brand constitution, the UI constitution, and the ledger (the Locked and Decided rows must hold in every image).
+
+The images are options for open decision D2 in the ledger (Typefaces), shown as a UX board (the options as experience, annotated):
+- attached image 1 = opt-A.png: option "Marist + Geist" (Marist for headings, Geist for text)
+- attached image 2 = opt-B.png: option "Geist only" (Geist for everything)
+- attached image 3 = opt-C.png: option "Marist + SF Pro" (Marist for headings, the iPhone system face (SF Pro) for text)
+
+Tie every failure to a rule (file and article or row) and a place in the image. Also report anything that differs between options other than the decision. Do not suggest new designs; say what fails.
+Write critique.json in this folder: {"images": [{"file": "<name>", "verdict": "pass" or "fail", "failures": [{"rule": "...", "place": "...", "issue": "..."}]}], "across_options": [{"files": ["..."], "issue": "..."}]}. Then reply with a short summary.

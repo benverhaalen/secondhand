@@ -1,0 +1,60 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 5, Page ground",
+          "place": "White page behind the wordmark, item details and payout, and the empty region between the shipping panel and bottom navigation",
+          "issue": "A visible fine grain/mottled texture covers the white page outside the sky-to-lime field. Texture is explicitly confined to the field."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 5, Page ground",
+          "place": "White page behind the wordmark, item details and payout, and the empty region between the shipping panel and bottom navigation",
+          "issue": "A visible fine grain/mottled texture covers the white page outside the sky-to-lime field. Texture is explicitly confined to the field."
+        },
+        {
+          "rule": "brand/ledger.md A3; brand/constitution.md Article 6.1; product/ui-constitution.md Article 7",
+          "place": "Carhartt Detroit jacket title, to the right of the photograph",
+          "issue": "The listing title is visibly heavier than its supporting text and than the same title in A and C. This introduces weight-based hierarchy on a listing title, where the rules require regular text and reserve medium for buttons and the selected tab. This is a visual finding, not a claim about the numeric font weight; source-dependent check B13 is not applicable to these raster images."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 9.3 (texture only on the field); Article 5, Page ground",
+          "place": "White page behind the wordmark, item details and payout, and the empty region between the shipping panel and bottom navigation",
+          "issue": "A visible fine grain/mottled texture covers the white page outside the sky-to-lime field. Texture is explicitly confined to the field."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Beyond D6, B makes the jacket title visibly heavier; A and C retain the lighter title. This violates the one-axis comparison required by brand/constitution.md Article 14.4. The amount face and lime-band changes themselves are authorized by ledger row D6."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Fine raster/grain differences also occur outside the amount, including above and below it; pixel comparison confirms the files are not identical outside D6. No other substantive change in copy, layout, photo composition, controls or navigation is apparent. Exact font identity, computed weights, icon provenance and locale implementation cannot be established from the images (Part IV: B13, B15, B22 and B27 are not applicable)."
+    }
+  ]
+}

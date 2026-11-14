@@ -1,0 +1,189 @@
+Use your built-in image generation tool.
+
+Job: brand decision boards for secondhand, an iPhone app that lists a used item on several marketplaces from one photo. Ben, the founder, picks the brand by looking at these, not by reading. Show this decision where it matters most in the app.
+UX board. The same options seen as experience: what a person notices first, where the thumb goes, what each state tells them, how it reads in motion from one state to the next. Annotated, like a designer's markup, with as few words as possible.
+
+Decision D4: Surfaces and small parts.
+Cards: A = cards as ruled rows (hairline rules between items, no card outline); B = cards as hairline-outlined cards.
+Platform marks: A = platform marks bare (logo alone, no bubble); B = platform marks in a small white bubble.
+Photo state: A = state shown on the photo as a small pill; B = state shown on the photo as a small dot; C = state shown on the photo as a corner tag.
+The leaning option (from the ledger) is: ruled rows, bare platform marks, state as a pill on the photo.
+
+Everything in the Locked and Decided rows of the ledger is fixed in every option. Do not reopen it.
+Read these files before the first image:
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/tokens.css
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md
+- /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/product/ui-constitution.md
+
+Inputs:
+
+
+Numbers, wherever money shows: listed at $45, offered $38, you keep $31.40.
+Each option image: a landscape canvas of 1536x1024 pixels. The phone screen(s) drawn at exactly the 390 x 844 point proportions of an iPhone at 1 point = 1.21 pixels (473 x 1024 pixels each, full height), with a designer's markup in the space around them (arrows, numbered order of attention, thumb reach, the state before and after), with as few words as possible. No device frame. No texture or noise anywhere except on the field.
+Composition, layout and content are yours to choose. Do not add option labels or titles; a script adds them later.
+
+This is round 2. A separate reviewer judged the previous round. The previous images are in this folder under the same names; the ones that failed are also attached after the inputs. Regenerate only these, by editing each failing image (use it as the input image) and changing only what the reviewer failed it for. Keep everything that passed, and keep the options identical except for the decision:
+- opt-base.png
+- opt-cards-B.png
+- opt-marks-B.png
+- opt-state-B.png
+- opt-state-C.png
+The reviewer's findings:
+{
+ "images": [
+  {
+   "file": "opt-base.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+     "place": "Both screens, eBay logo beneath Nike Dunks.",
+     "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+    },
+    {
+     "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+     "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+    },
+    {
+     "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+     "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+     "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+    }
+   ]
+  },
+  {
+   "file": "opt-cards-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+     "place": "Both screens, eBay logo beneath Nike Dunks.",
+     "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+    },
+    {
+     "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+     "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+    },
+    {
+     "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+     "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+     "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.3, Part IV B19; Article 13 nested-box tell",
+     "place": "Left screen, large offer card.",
+     "issue": "The new outlined outer card encloses a separately rounded, filled gradient panel. The field is not one of B19's exceptions for nested containers. Opening the card treatment in D4 does not waive that rule."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.2, Part IV B18",
+     "place": "Both screens, gaps between the Nike Dunks, Brass lamp and Kindle outlined cards.",
+     "issue": "The narrow gaps between card outlines are smaller than the photo-to-text gaps inside the cards. Internal spacing is therefore looser than spacing between sibling cards, reversing the required grouping hierarchy."
+    }
+   ]
+  },
+  {
+   "file": "opt-marks-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+     "place": "Both screens, eBay logo beneath Nike Dunks.",
+     "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+    },
+    {
+     "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+     "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+    },
+    {
+     "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+     "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+     "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+    },
+    {
+     "rule": "brand/constitution.md Article 7.3, Part IV B19",
+     "place": "Left screen, white circular platform-logo container inside the gradient offer panel.",
+     "issue": "The logo bubble adds a bordered and filled container inside another filled container. Platform-logo bubbles are not among B19's exceptions."
+    },
+    {
+     "rule": "product/ui-constitution.md Article 1; brand/constitution.md Article 1.1",
+     "place": "Both screens, circular eBay container beneath Nike Dunks.",
+     "issue": "The eBay wordmark extends beyond the circle on its left side. The bubble fails to contain the mark it ostensibly groups, unlike the other logo bubbles; its outline crosses the logo area."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-B.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+     "place": "Both screens, eBay logo beneath Nike Dunks.",
+     "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+    },
+    {
+     "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+     "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+    }
+   ]
+  },
+  {
+   "file": "opt-state-C.png",
+   "verdict": "fail",
+   "failures": [
+    {
+     "rule": "brand/constitution.md Article 4 C5, Article 10.4, Part IV B11; brand/ledger.md L6",
+     "place": "Both screens, eBay logo beneath Nike Dunks.",
+     "issue": "The eBay wordmark is rendered entirely bright red. This is an altered logo treatment, rather than the unaltered marketplace logo or the permitted black version."
+    },
+    {
+     "rule": "brand/constitution.md Article 5 (Ink, second), Article 5.1, Part IV B6; brand/ledger.md A2",
+     "place": "Left screen, Listed at $45 and Offer ends tomorrow, 6 pm on the colored offer field.",
+     "issue": "These lines use visibly lighter gray ink on the field. Secondary ink is restricted to white and gray grounds; text on the field must be black."
+    },
+    {
+     "rule": "product/ui-constitution.md Articles 1 and 5.1; brand/constitution.md Article 1.4; brand/ledger.md L10",
+     "place": "Both screens, Nike Dunks, Brass lamp and Kindle; right screen, sold jacket.",
+     "issue": "Live, Shipping and Sold are each stated twice: on the photo and again directly beneath the title. The second state label repeats information already carried by the visible badge, adding reading without adding meaning."
+    }
+   ]
+  }
+ ],
+ "across_options": [
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png"
+   ],
+   "issue": "The full-width divider above the bottom navigation disappears in Hairline cards. This changes the navigation boundary as well as the item-card treatment opened by D4."
+  },
+  {
+   "files": [
+    "opt-base.png",
+    "opt-cards-B.png",
+    "opt-marks-B.png",
+    "opt-state-B.png",
+    "opt-state-C.png"
+   ],
+   "issue": "No other substantive changes outside the named D4 treatments are visible: item content, prices, actions, field placement, wordmark, navigation labels and board annotations remain the same. Changes to photo coverage caused by dots versus pills versus tags are part of the stated decision."
+  }
+ ]
+}
+Overwrite those files in this folder. Do not touch the other files.
+
+How the result will be judged.
+A board fails if any of these is true:
+- Anything differs between options besides the decision being shown.
+- A locked or decided ledger row is broken (for example, a platform named in words, the wordmark not centered, an item without its photo, or only two actions on a decision).
+- It contains words nobody wrote: taglines, headlines or labels made up to fill space. The only text allowed is item names, prices, short state words and button labels a person would say.
+- Numbers don't match across boards. Use these everywhere: listed at $45, offered $38, you keep $31.40.
+- It isn't true phone scale (390 points wide). Text you can't read at phone size, or buttons that look 1.5 times too big, both fail.
+- A logo is wrong or generic, for example Facebook drawn as a store icon.
+- It shows any Article 13 tell (brand/constitution.md), or any of these never-candidates: an invented name; purple plus forest green on lavender and cream; Poppins with Lora; spaced uppercase labels; a handwritten script tagline; torn paper edges, sparkle and burst marks; a stock photo of a smiling person; "Used" badges and heart buttons on item cards; a generic icon row or arrows-to-boxes flow diagram.
+- Text is misspelled or garbled.
+
+Do not resize or post-process the images. Reply with the file paths only.

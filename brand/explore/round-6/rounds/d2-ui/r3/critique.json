@@ -1,0 +1,75 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28",
+          "place": "Entire white phone screen, excluding the gray side gutters",
+          "issue": "The phone canvas is approximately 744 pixels wide by 1536 high. At 390 wide that is approximately 805 high, rather than the required 844. This board does not supply the required true-scale phone view."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3",
+          "place": "White page ground, especially the open space below Today and around the sale amount and bottom actions",
+          "issue": "Visible paper-like grain and mottling extend outside the gradient field. Texture is permitted only on the field."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28",
+          "place": "Entire white phone screen, excluding the gray side gutters",
+          "issue": "The phone canvas is approximately 748 pixels wide by 1536 high. At 390 wide that is approximately 801 high, rather than the required 844. This board does not supply the required true-scale phone view."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3",
+          "place": "White page ground, especially the open space below Today and around the sale amount and bottom actions",
+          "issue": "Visible paper-like grain and mottling extend outside the gradient field. Texture is permitted only on the field."
+        },
+        {
+          "rule": "brand/constitution.md Article 4 C2, Part IV B5; Article 13 flat-gradient tell",
+          "place": "Sky-to-lime offer panel",
+          "issue": "The field reads as a smooth color blend, with no distinct grain or mesh-line treatment at phone viewing size. The visible line texture in A and C is absent. This fails the field-texture requirement; the flat-gradient tell alone does not establish an Article 13 cluster."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "brand/constitution.md Article 7.6, Part III App canvas, Part IV B28",
+          "place": "Entire white phone screen, excluding the gray side gutters",
+          "issue": "The phone canvas is approximately 743 pixels wide by 1536 high. At 390 wide that is approximately 806 high, rather than the required 844. This board does not supply the required true-scale phone view."
+        },
+        {
+          "rule": "brand/constitution.md Article 9.3",
+          "place": "White page ground, especially the open space below Today and around the sale amount and bottom actions",
+          "issue": "Visible paper-like grain and mottling extend outside the gradient field. Texture is permitted only on the field."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "brand/constitution.md Article 14.4 and brand/ledger.md D2: the options do not isolate typefaces. B removes the visible curved line texture from the offer field; A and C retain it. Texture is the separate open decision D5."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The surrounding presentation ground changes: A and B have cool blue-gray gutters; C has warmer neutral-gray gutters. The white phone boundaries and content positions also shift slightly. Neither change belongs to D2."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The item photography is not held exactly constant. C changes small details of the jacket folds and shoe laces/crop compared with A and B. These changes are unrelated to typefaces."
+    },
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The lime band below $31.40 is shorter in B than in A and C. This may follow the changed text metrics, but it changes the visible amount of color as well as the typography."
+    }
+  ]
+}
