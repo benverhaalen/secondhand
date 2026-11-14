@@ -5,6 +5,8 @@ Status: idea. Owner: unassigned. Packet topic: `data`.
 ## What and why
 Databricks as the backbone (item data, price history, evaluations, model serving), used creatively where that is warranted. Ben: [words](../../product/words.md#2026-11-14-tools-and-capture).
 
+Judging: Databricks judges on how well and how creatively the platform is used. There are no set criteria. Ben: [words](../../product/words.md#2026-11-14-databricks-judging).
+
 ## How it works
 Not designed yet. Keep the mechanism here once research picks one, together with the reference it came from and the job that reference does.
 
