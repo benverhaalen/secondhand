@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { check, run } from './run.mjs';
 import { createLog, memorySink } from '../../../log/index.js';
 import { checkLog } from '../../../spec/log.mjs';
@@ -57,7 +57,7 @@ test('an edit waits for its base and is handed the base image', async () => {
   const f = fake(), p = plan([job('edit', { after: ['base'], inputs: [of('base'), img('/refs/colors.png', { ref: true, leave: 'its layout.' })] }), job('base')]);
   await go(p, f);
   assert.deepEqual(f.calls.map(c => c.id), ['base', 'edit']);
-  assert.deepEqual(f.calls[1].inputs, [join(p.out, 'base', 'image.png'), '/refs/colors.png']);
+  assert.deepEqual(f.calls[1].inputs, [join(p.out, 'base', 'image.png'), resolve('/refs/colors.png')]);
   assert.match(f.calls[1].prompt, /^make edit\n\nAttached images, in order:\n1\. this screen\. Edit it\.\n2\. the colors\. Do not copy: its layout\.\n\nMake one image\./);
 });
 
