@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: a price below your floor always asks
+Agreed by: Ben, on the decision card "Can 'Always do this' ever cover a price below your floor?" in the repo-structure thread at 20:41. He picked "Never, it always asks". Decided: a price below your floor is an Ask that can never be promoted to Auto, like Never alone. This refines [automation runs in tiers that learn](#2026-11-14-automation-runs-in-tiers-that-learn), where any Ask could be promoted after 3 approvals. Changed: `NEVER_PROMOTED` in [spec/lifecycle.mjs](../spec/lifecycle.mjs) holds Never alone and priceBelowFloor, and the model check proves automation never sets a price below the floor.
+
 ## 2026-11-14: extreme intention, and a UI constitution
 Agreed by: Ben, project chat at 20:17 and 20:20 ([words](words.md#2026-11-14-constitutions), [20:20](words.md#2026-11-14-extreme-intention)). Decided: "everything needs to be done with extreme intention". Every UI element has a stated reason. Ben also asked for a project constitution for how UI decisions are researched and made, grounded in his thesis. Text on screen must be understood by a person: no statistics notation ("Sold $36–52 n=41"), no counters that mean nothing ("3 need you, 11 handled"). Cards offer more than two actions. Items show their photo. The wordmark sits top center. The Needs you / All messages switch goes. Written up as [ui-constitution.md](ui-constitution.md); its articles beyond these are *agent proposals*. Changed: Today is reworked ([research/today/ben/today-rework](../research/today/ben/today-rework/README.md)), and seller features he hadn't named are listed in [missing-features.md](../research/cross-cutting/ben/missing-features.md). The 19:40 Today wireframe with the segments is superseded.
 

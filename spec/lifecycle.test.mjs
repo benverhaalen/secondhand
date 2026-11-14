@@ -59,8 +59,8 @@ test('promoting a Never alone kind is caught', () => {
   assert.equal(explore(initial(3), buggy, invariants).violation?.name, 'never alone stays with the user');
 });
 
-// Ben's tiers say any price below the floor is an Ask, and Asks can be promoted. The model shows the two rules clash.
-test('if "price below your floor" could be promoted, automation would break the floor (open question for Ben)', () => {
+// Why Ben ruled at 20:41 that a price below the floor always asks: if it could be promoted, the floor breaks.
+test('if "price below your floor" could be promoted, automation would break the floor', () => {
   const r = explore(initial(1), [...actions, promote(new Set(NEVER_ALONE))], invariants);
   assert.equal(r.violation?.name, 'price floor');
   assert.ok(r.violation.trace.includes('promote(priceBelowFloor)'), r.violation.trace.join(' '));

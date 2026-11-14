@@ -11,7 +11,7 @@ The rules the app's behavior has to keep, written as code so they can be checked
   - address, pickup time and payment are only ever done by the user, and "Always do this" never covers them
   - every other listing comes down or is flagged after a sale, without a tap
 
-  It plants four bugs and checks that each is caught. One test records a clash in the decided rules: "any price below your floor" is an Ask, Asks can be promoted, and a promoted one breaks the floor. Until Ben settles it, `NEVER_PROMOTED` blocks it (*agent proposal*).
+  It plants four bugs and checks that each is caught. One test shows why a price below your floor can never be promoted (Ben, [20:41](../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)): if it could, automation would break the floor.
 - `replay.mjs` checks a real app log against the same model, using the logged `price` and `floor`: `node spec/replay.mjs app.jsonl ebay,depop`.
 
 ## One name for each state

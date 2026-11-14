@@ -6,8 +6,8 @@
 export const NEVER_ALONE = new Set(['address', 'pickupTime', 'payment']);
 // An Ask the user approved PROMOTE_AFTER times can become Auto ("Always do this").
 export const PROMOTE_AFTER = 3;
-// Kinds that can never be promoted. Never alone is Ben's rule. priceBelowFloor is an *agent proposal*:
-// the floor invariant breaks if it is promotable (see lifecycle.test.mjs), so Ben has to choose.
+// Kinds that can never be promoted: Never alone, and a price below your floor (Ben, 20:41, decisions.md).
+// The floor invariant breaks if priceBelowFloor is promotable (see lifecycle.test.mjs).
 export const NEVER_PROMOTED = new Set([...NEVER_ALONE, 'priceBelowFloor']);
 
 // One listing on one site. delistFailed is still up on the site, so a buyer can still pay for it.
