@@ -35,6 +35,30 @@ Step 4 is prototyped in [prototype/repair.py](prototype/repair.py). On the four 
 
 **Loading the person can read.** Each event is a stage the draft shows as it happens, so the wait looks like work, not a spinner: the real photo appears first and is usable at once; then "color fixed" swaps in the corrected photo; each scene tile fills from a blurred placeholder to its first candidate (about 25 s), and a tile that is being repaired shows the flagged box pulsing before the fixed image replaces it. Stages: `uploaded`, `color_fixed`, `rendering(scene, n of m)`, `checking`, `repairing(box)`, `ready`, `failed(reason, real photo kept)`. Copy and motion go through the `ui-screen` skill before build.
 
+### 0.2 Renders from Ben's real photos (21:18 UTC)
+
+Three items from `depop-plus`, now in [assets/demo-items/real/](../../../assets/demo-items/real/README.md). Eight renders at 2K through Higgsfield: Seedream **5.0 Pro** (5.5 is not on Higgsfield) and Nano Banana 2.1, each with the main shot plus two or three close-ups as references. Every line below is *observed*: I looked at each image, and the numbers are from the gate.
+
+| Item | Render | Model | What it looks like | Gate |
+|---|---|---|---|---|
+| Marquette tee | Studio, in place | Seedream | Same shirt, same folds, grey backdrop with a soft light band. Print and tag intact | frame 0.98, color 4.7, structure 0.94 |
+| Marquette tee | On a hanger, from 4 shots | Seedream | The strongest image of the set. Print the right size and place, Fruit of the Loom tag readable in the collar, cotton still looks worn | new pose, not comparable |
+| Marquette tee | On a hanger, from 4 shots | Nano Banana 2.1 | Good shirt, but the print is tilted and redrawn | n/a |
+| Chico hoodie | Home, in place | Seedream | Oak floor and window light look real, lettering intact. The hoodie came out darker and more maroon than the faded crimson original | frame 0.91, color 7.8, structure 0.44 |
+| Chico hoodie | On a hanger, from 3 shots | Seedream | Listing-ready. Lettering, faded STATE, pocket, hem tag and Russell neck tag all there; color close to the original | n/a |
+| Chico hoodie | On a hanger, from 3 shots | Nano Banana 2.1 | Also listing-ready, slightly cleaner and less faded than the real one | n/a |
+| Carhartt pants | Studio, in place | Seedream | Same pants on grey with a light band; fading kept. The source photo is sideways, so the render is too | frame 0.93, color 4.2, structure 0.81 |
+| Carhartt pants | Hanging on a garage pegboard, from 3 shots | Seedream | The most convincing scene: fading, hammer loop, rivets and leg shape carried over | n/a |
+
+What this changes:
+
+- **The multi-photo restage works on real photos and is the demo's lead image.** Ben's idea holds up: with the close-ups as references the print, the tags and the fading carried into a new pose in four of five restages.
+- **Seedream beat Nano Banana on the print** (tee), and tied on the hoodie. Running both and picking is worth it.
+- **In-place renders kept the frame on real photos too** (0.91 to 0.98), so the masked repair applies.
+- **Strong scene light shifts the item's color** (hoodie at home). Fix in the prompt ("soft, even light; the item's color must match image 1") and keep the color number as the picker between candidates.
+- **Rotate sideways shots upright before rendering** (pants).
+- The restage has no number yet. Next: score it by matching the print, tag and logo crops against the close-up references.
+
 Builds on [seedream-relighting.md](seedream-relighting.md). Where this note changes it, it says so in section 3. Everything here is an *agent proposal* until Ben or Nate decides.
 
 ## 1. The question and Ben's goal
