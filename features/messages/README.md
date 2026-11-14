@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Which messages can be sent without the user's approval?
 
 ## Research
-- Ben: [research/ben/messages/](../../research/ben/messages/)
-- Nate: [research/nate/messages/](../../research/nate/messages/)
+All research for this feature: [research/messages/](../../research/messages/)
+- Ben: [research/messages/ben/](../../research/messages/ben/)
+- Nate: [research/messages/nate/](../../research/messages/nate/)

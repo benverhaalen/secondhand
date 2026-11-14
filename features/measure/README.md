@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Which existing apps or open-source projects already measure garments from photos, and how accurate are they?
 
 ## Research
-- Ben: [research/ben/measure/](../../research/ben/measure/)
-- Nate: [research/nate/measure/](../../research/nate/measure/)
+All research for this feature: [research/measure/](../../research/measure/)
+- Ben: [research/measure/ben/](../../research/measure/ben/)
+- Nate: [research/measure/nate/](../../research/measure/nate/)

@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - How do buyers still see the real condition? (See the vision's Open section.)
 
 ## Research
-- Ben: [research/ben/studio/](../../research/ben/studio/)
-- Nate: [research/nate/studio/](../../research/nate/studio/)
+All research for this feature: [research/studio/](../../research/studio/)
+- Ben: [research/studio/ben/](../../research/studio/ben/)
+- Nate: [research/studio/nate/](../../research/studio/nate/)

@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - What does the seller see when the model is unsure: confirm, or correct?
 
 ## Research
-- Ben: [research/ben/identify/](../../research/ben/identify/)
-- Nate: [research/nate/identify/](../../research/nate/identify/)
+All research for this feature: [research/identify/](../../research/identify/)
+- Ben: [research/identify/ben/](../../research/identify/ben/)
+- Nate: [research/identify/nate/](../../research/identify/nate/)

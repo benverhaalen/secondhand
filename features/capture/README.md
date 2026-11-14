@@ -16,5 +16,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Does the shot list come from presets per category, or is it chosen live from the first photo?
 
 ## Research
-- Ben: [research/ben/capture/](../../research/ben/capture/)
-- Nate: [research/nate/capture/](../../research/nate/capture/)
+All research for this feature: [research/capture/](../../research/capture/)
+- Ben: [research/capture/ben/](../../research/capture/ben/)
+- Nate: [research/capture/nate/](../../research/capture/nate/)

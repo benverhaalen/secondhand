@@ -16,5 +16,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - What price data can we legally get for each platform?
 
 ## Research
-- Ben: [research/ben/price/](../../research/ben/price/)
-- Nate: [research/nate/price/](../../research/nate/price/)
+All research for this feature: [research/price/](../../research/price/)
+- Ben: [research/price/ben/](../../research/price/ben/)
+- Nate: [research/price/nate/](../../research/price/nate/)

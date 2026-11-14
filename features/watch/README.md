@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - How do Exa's monitors work, how fresh are they, and what do they cost?
 
 ## Research
-- Ben: [research/ben/watch/](../../research/ben/watch/)
-- Nate: [research/nate/watch/](../../research/nate/watch/)
+All research for this feature: [research/watch/](../../research/watch/)
+- Ben: [research/watch/ben/](../../research/watch/ben/)
+- Nate: [research/watch/nate/](../../research/watch/nate/)

@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Which fields are required before the item can be listed?
 
 ## Research
-- Ben: [research/ben/item-card/](../../research/ben/item-card/)
-- Nate: [research/nate/item-card/](../../research/nate/item-card/)
+All research for this feature: [research/item-card/](../../research/item-card/)
+- Ben: [research/item-card/ben/](../../research/item-card/ben/)
+- Nate: [research/item-card/nate/](../../research/item-card/nate/)

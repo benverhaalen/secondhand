@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Which platforms allow which kind of connection as of Nov 2026?
 
 ## Research
-- Ben: [research/ben/connect/](../../research/ben/connect/)
-- Nate: [research/nate/connect/](../../research/nate/connect/)
+All research for this feature: [research/connect/](../../research/connect/)
+- Ben: [research/connect/ben/](../../research/connect/ben/)
+- Nate: [research/connect/nate/](../../research/connect/nate/)

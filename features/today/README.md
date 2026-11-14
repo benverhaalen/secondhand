@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Which actions can skip the inbox, and how does the user change that?
 
 ## Research
-- Ben: [research/ben/today/](../../research/ben/today/)
-- Nate: [research/nate/today/](../../research/nate/today/)
+All research for this feature: [research/today/](../../research/today/)
+- Ben: [research/today/ben/](../../research/today/ben/)
+- Nate: [research/today/nate/](../../research/today/nate/)

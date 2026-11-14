@@ -16,5 +16,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - What is the account-ban risk of replaying actions, compared with the user posting in one tap?
 
 ## Research
-- Ben: [research/ben/replay/](../../research/ben/replay/)
-- Nate: [research/nate/replay/](../../research/nate/replay/)
+All research for this feature: [research/replay/](../../research/replay/)
+- Ben: [research/replay/ben/](../../research/replay/ben/)
+- Nate: [research/replay/nate/](../../research/replay/nate/)

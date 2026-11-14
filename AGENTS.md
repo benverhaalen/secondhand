@@ -13,6 +13,6 @@ Use git often, the usual way. Follow the [git rules](.agents/coordination.md#git
 The map is in [README.md](README.md). Read only what your task touches:
 
 - Read [product/vision.md](product/vision.md) and the page for your feature under `features/<slug>/`. Feature slugs are listed in [product/features.md](product/features.md).
-- Write research only in your human's folder, `research/ben/` or `research/nate/`, under the feature slug. The note format is in [research/README.md](research/README.md).
+- Write research only in your human's subfolder of the feature: `research/<slug>/ben/` or `research/<slug>/nate/`. The note format is in [research/README.md](research/README.md).
 - A feature page or the vision gets a one-line summary that links to the research note. Quotes go in [product/words.md](product/words.md), verbatim and append only. Mark your own suggestions as *agent proposal*. Never move one to Decided yourself.
 - A packet's topic is its feature slug. After adding a slug, a research folder or a packet topic, run `node .agents/check-layout.mjs`.

@@ -16,5 +16,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - How should the app show a value that depends on the market: one number, a range for each platform, or "sell here for X"?
 
 ## Research
-- Ben: [research/ben/appraise/](../../research/ben/appraise/)
-- Nate: [research/nate/appraise/](../../research/nate/appraise/)
+All research for this feature: [research/appraise/](../../research/appraise/)
+- Ben: [research/appraise/ben/](../../research/appraise/ben/)
+- Nate: [research/appraise/nate/](../../research/appraise/nate/)

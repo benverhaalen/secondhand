@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Automatic posting or one tap by the user? There is a risk of account bans. (See the vision's Open section.)
 
 ## Research
-- Ben: [research/ben/list/](../../research/ben/list/)
-- Nate: [research/nate/list/](../../research/nate/list/)
+All research for this feature: [research/list/](../../research/list/)
+- Ben: [research/list/ben/](../../research/list/ben/)
+- Nate: [research/list/nate/](../../research/list/nate/)

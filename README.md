@@ -11,7 +11,7 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [product/decisions.md](product/decisions.md) | Dated log of what Ben and Nate agreed | Both |
 | [product/words.md](product/words.md) | Ben's and Nate's exact product words, the source everything else cites | Append only |
 | [features/](features/) | One living page per feature | Whoever owns the feature |
-| [research/ben/](research/ben/), [research/nate/](research/nate/) | Raw research, filed by feature | Only that person and their agents |
+| [research/](research/README.md) | Raw research: `research/<slug>/ben/` and `research/<slug>/nate/` | Each person's subfolder: only that person and their agents |
 | [.agents/](.agents/coordination.md) | Agent handoffs and git rules | Agents |
 
-A feature has one slug everywhere. For example, `measure` is used in `features/measure/`, `research/ben/measure/`, `research/nate/measure/` and the packet topic `.agents/team/packets/measure/`.
+A feature has one slug everywhere. For example, `measure` is used in `features/measure/`, `research/measure/` and the packet topic `.agents/team/packets/measure/`.

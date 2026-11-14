@@ -15,5 +15,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - Which parts of the pipeline should run on Databricks, and which on the device?
 
 ## Research
-- Ben: [research/ben/data/](../../research/ben/data/)
-- Nate: [research/nate/data/](../../research/nate/data/)
+All research for this feature: [research/data/](../../research/data/)
+- Ben: [research/data/ben/](../../research/data/ben/)
+- Nate: [research/data/nate/](../../research/data/nate/)

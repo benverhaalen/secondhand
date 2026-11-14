@@ -1,6 +1,6 @@
 # Research
 
-`research/ben/` and `research/nate/` each belong to one person and that person's agents. Write only in your own folder, so two people or agents never edit the same file. Inside your folder, file each note under a feature slug from [features/](../features/), or under `cross-cutting/` when it spans several. To read everything about one feature: `ls research/*/measure`.
+Research is filed by feature first: `research/<slug>/ben/` and `research/<slug>/nate/`. The slugs come from [features/](../features/), and `cross-cutting/` is for anything that spans several features. Ben's and Nate's subfolders belong to each person and that person's agents. Write only in your own, so two people or agents never edit the same file. To see one person's research across every feature, run `ls research/*/ben`.
 
 ## A note
 
