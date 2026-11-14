@@ -5,16 +5,27 @@
       "verdict": "fail",
       "failures": [
         {
-          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet; the gradient is soft sky to lime.",
-          "place": "Offer card, especially the cyan left edge and yellow lower-right corner.",
-          "issue": "The field reads as bright cyan to electric yellow-green rather than the color sheet's softer sky, mint and lime. The difference is visible across the card, not just a small color-value mismatch."
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Offer card, especially the cyan left edge and luminous lime right edge.",
+          "issue": "The field reads as bright cyan to fluorescent lime rather than the softer sky, mint and lime shown in inputs/colors.png."
+        },
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "Offer card beneath the Carhartt jacket, beside 'Offered $38'.",
+          "issue": "The pending offer is a needs-you state, but its required raised-hand icon is absent; the card contains only text and action controls."
         }
       ]
     },
     {
       "file": "opt-B.png",
-      "verdict": "pass",
-      "failures": []
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "Offer card beneath the Carhartt jacket, beside 'Offered $38'.",
+          "issue": "The pending offer is a needs-you state, but its required raised-hand icon is absent; the card contains only text and action controls."
+        }
+      ]
     }
   ],
   "across_options": []
