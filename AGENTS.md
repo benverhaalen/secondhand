@@ -10,7 +10,7 @@ Use git often, the usual way. Follow the [git rules](.agents/coordination.md#git
 
 ## How to work here
 
-The map is in [README.md](README.md). Read [product/vision.md](product/vision.md) and the page for your feature (`features/<slug>/`), then whatever your situation calls for:
+The map is in [README.md](README.md). Read [product/vision.md](product/vision.md), the page for your feature (`features/<slug>/`) and [.agents/thinking.md](.agents/thinking.md), which sets how much care your change needs and how to think about its type of problem. Then do whatever your situation calls for:
 
 | Situation | Do this |
 |---|---|
