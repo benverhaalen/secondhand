@@ -17,4 +17,5 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/today/](../../research/today/)
 - Ben: [research/today/ben/](../../research/today/ben/)
+- Ben, generative UI: [generative-ui.md](../../research/today/ben/generative-ui.md). Fixed card per Decision kind on AI SDK 6 approvals and json-render, forked from the Databricks chat template; outward actions go through one signed, state-checked route.
 - Nate: `research/today/nate/` (none yet)
