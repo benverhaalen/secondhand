@@ -27,6 +27,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - The phone app comes first. A website with sign-in follows, with the same features except LiDAR and the guided camera (photo upload instead). Ben, [20:45](words.md#2026-11-14-app-first-and-ui-factory-after-the-brand).
 
+- Messages: a chat icon with an unread count at the top right of every main screen; buyer messages that need you also become Today cards. Ben, decision card, 20:55 ([decisions](decisions.md#2026-11-14-all-messages-live-behind-a-chat-icon-with-a-count)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).

@@ -85,7 +85,7 @@ Each moment names its borrowed pattern, its timing and its fallback.
 |---|---|---|---|---|
 | Tap a button or pill | Constant | Press to scale 0.97, `--t-feedback` | iOS system buttons | Opacity dip |
 | Switch tabs | Constant | None; the content swaps | iOS tab bar | Same |
-| Today: Needs you / All messages | Often | Segment indicator slides, `--t-select` | iOS segmented control | Instant |
+| Open all messages (chat icon, top right) | Several per day | Pushes in from the right like any iOS navigation, `--t-panel`; unread count crossfades | iOS navigation push; eBay and Marketplace header icon | Instant |
 | Open ＋ (Sell this / What's it worth / Find this) | Daily | Sheet rises from the bottom, `--t-panel`, drag to dismiss | iOS sheet | Fade |
 | Take a shot in the guided capture | Tens per item | Shutter blink, then the thumbnail flies to its slot in the shot strip (origin-aware), ~250 ms. The next shot's outline appears. Light haptic | iOS Camera thumbnail | Thumbnail appears in place |
 | Researching | Once per item | Fields fill in as each resolves, a 30 to 80 ms stagger, one thin progress line; no spinner after the first second | Skeleton screens (Vercel rule); live build logs | Fields appear |
