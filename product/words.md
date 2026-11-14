@@ -189,6 +189,6 @@ Ben, project chat, 21:18 UTC.
 Ben, UI thread, 21:29 UTC, answering two choices put to him: (1) offer "Always accept $X or more" when the item is listed, not after 3 approvals; (2) count only approvals the person didn't edit toward the 3 that unlock "Always do this".
 > yeah i agree with both.
 
-## 2026-11-14 photos touch up, and each platform gets its own tailoring
+## 2026-11-14 photos touch up, never change the environment
 Ben, project chat, 21:28 UTC.
 > an update to the whole ai generated photos thing. i think a rule thats good is that it shouldnt change the environment or lie. it should touch up. so i want you to do research on each platform and optimizing posting on each. look at the depop-plus it was done there a bit ago. that level of depth for all the platforms and ensure to push it. because we want to tailor for each and every platform individually there are quirks for each and like depop has different levers and things that can be done compared to like ebay and all the other platforms. also like you shouldnt put a couch on depop. open router key is in the github secrets btw. create a set list of products on each. an 'all' works too. or what works good on each. like you can have it recommend to not do certain things on certain platforms.
