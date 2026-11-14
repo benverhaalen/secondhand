@@ -24,5 +24,11 @@ Ben, concept thread, 18:48 UTC.
 
 > dual purpose that should effectively be integrated into one thing.
 
+## 2026-11-14 platforms
+Ben, project chat, 18:49 and 18:50 UTC. The list he agreed to was proposed by an agent and is recorded in [decisions.md](decisions.md).
+> come up with a set platform list. im thinking like facebook marketplace, depop, offerup, ebay, come up with others. or tell me what you think
+
+> ok i agree set those in stone. get it all in the repo
+
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.

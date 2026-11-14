@@ -8,6 +8,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 - The interface must stay intuitive across all features. The user should not have to think. Ben, [18:08](words.md#2026-11-14-ux) and [18:32](words.md#2026-11-14-tools-and-capture).
 - Databricks is used well throughout the project, and creatively where that is warranted. Ben, [18:32](words.md#2026-11-14-tools-and-capture).
 
+- Platforms. The core set, which both lists and searches, is eBay, Facebook Marketplace, Depop, Poshmark and Mercari. OfferUp and Grailed come later and are search and price only. Craigslist, Etsy, Vinted and Swappa are out. Only eBay has an official listing API, so the demo posts to 3 or 4 platforms and searches the rest. Ben, [18:50](words.md#2026-11-14-platforms).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).
