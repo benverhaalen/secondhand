@@ -1,0 +1,76 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options can't be told apart at board size.",
+          "place": "Body text, button labels and the $31.40 amount when comparing opt-A.png with opt-B.png.",
+          "issue": "The Neue Montreal versus SF Pro change is too subtle to distinguish reliably at board size; both retain the same serif Today heading and visually near-identical text."
+        },
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "Offer card beneath the Carhartt Detroit jacket, beside \u201cOffered $38\u201d.",
+          "issue": "The pending offer is a needs-you state, but its required raised-hand icon is missing. The more-actions ellipsis is an action control, not a state icon."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options can't be told apart at board size.",
+          "place": "Body text, button labels and the $31.40 amount when comparing opt-A.png with opt-B.png.",
+          "issue": "The Neue Montreal versus SF Pro change is too subtle to distinguish reliably at board size; both retain the same serif Today heading and visually near-identical text."
+        },
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "Offer card beneath the Carhartt Detroit jacket, beside \u201cOffered $38\u201d.",
+          "issue": "The pending offer is a needs-you state, but its required raised-hand icon is missing. The more-actions ellipsis is an action control, not a state icon."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "Offer card beneath the Carhartt Detroit jacket, beside \u201cOffered $38\u201d.",
+          "issue": "The pending offer is a needs-you state, but its required raised-hand icon is missing. The more-actions ellipsis is an action control, not a state icon."
+        }
+      ]
+    },
+    {
+      "file": "opt-D.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "Offer card beneath the Carhartt Detroit jacket, beside \u201cOffered $38\u201d.",
+          "issue": "The pending offer is a needs-you state, but its required raised-hand icon is missing. The more-actions ellipsis is an action control, not a state icon."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "A and B do not communicate a clearly distinguishable typeface choice at board size."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png",
+        "opt-D.png"
+      ],
+      "issue": "Every offer card omits the required needs-you state icon. The Sold state correctly includes its banknote icon."
+    }
+  ]
+}
