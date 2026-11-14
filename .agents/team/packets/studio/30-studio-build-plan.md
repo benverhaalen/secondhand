@@ -35,3 +35,9 @@ Ben's rule: never change the environment or misrepresent; only touch up. Scene p
 ## Next action
 
 Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5 renders, including the multi-reference prompt.
+
+## Added 21:55 UTC: first touch-ups, and what blocks Seedream 5.5
+
+- Four touch-ups from Ben's real photos ran on Seedream 5.0 Pro as a stand-in. Floor, framing, folds, prints and tags all kept (background agreement 0.89 to 0.94). Color drifts a little on two of four (tee less saturated, hoodie lighter). *Agent proposal:* push the item's color back to the white-balanced photo after the render.
+- `gate.py` gained the background check (`keep_background=True`).
+- Seedream 5.5 has not run: every GitHub Actions job on the repo fails in about 3 seconds with no runner (so does `check.yml`), Ben's Mac has no OpenRouter key, and the cloud environment cannot reach openrouter.ai. Details in the [build plan](../../../../research/studio/ben/build-plan.md#first-look-at-touch-ups-2132-utc-seedream-50-pro-not-55).

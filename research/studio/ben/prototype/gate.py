@@ -22,6 +22,8 @@ THRESH = dict(
                             # benign relights scored 1.5-3.1, an 18 degree hue shift on denim 5.7 (3 items only)
     struct_floor=0.55,      # worst 5% of item tiles: gradient-orientation agreement
     region_floor=0.60,      # each protected box: same measure
+    background_floor=0.75,  # touch-up only: median tile agreement outside the item;
+                            # 4 touch-ups on Seedream 5.0 Pro scored 0.89-0.94 (a proposal, not calibrated on scene swaps)
 )
 
 
@@ -107,7 +109,7 @@ def region_score(src, dst, box):
     return float(np.median([v for _, v in s])) if s else 0.0
 
 
-def gate(src, render, mask, protected, preset_cast=(1.0, 1.0, 1.0)):
+def gate(src, render, mask, protected, preset_cast=(1.0, 1.0, 1.0), keep_background=False):
     """src: color-corrected original (RGB u8). render: generated image (RGB u8),
     resized to src. mask: item mask on src. protected: {name: (x,y,w,h)} on src."""
     out = {}
@@ -129,6 +131,11 @@ def gate(src, render, mask, protected, preset_cast=(1.0, 1.0, 1.0)):
     for name, box in protected.items():
         r = region_score(src, back, box)
         out[f"region:{name}"] = (r, r >= THRESH["region_floor"])
+    if keep_background:  # touch-up rule: the floor or wall the person shot on must still be there
+        bg = ((~mask.astype(bool)) & valid.astype(bool)).astype(np.uint8)
+        bt = tile_structure(src, back, bg)
+        b = float(np.median([v for _, v in bt])) if bt else 0.0
+        out["background"] = (b, b >= THRESH["background_floor"])
     fails = [k for k, v in out.items() if isinstance(v, tuple) and not v[1]]
     out["verdict"] = "pass" if not fails else "reject: " + ", ".join(fails)
     out["_worst_tiles"] = sorted(tiles, key=lambda t: t[1])[:5]
