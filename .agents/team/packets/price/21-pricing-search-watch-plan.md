@@ -1,6 +1,6 @@
 # 21 — Build plan for pricing, cross-market search and watch alerts
 
-Updated: November 14, 2026, 20:55 UTC. Owner: Ben. Agent: Claude Code, project thread "Plan the build for pricing, search and watch". Branch: `main`, base `05b447e`. Status: in progress.
+Updated: November 14, 2026, 21:40 UTC. Owner: Ben. Agent: Claude Code, project thread "Plan the build for pricing, search and watch". Branch: `main`, base `05b447e`. Status: plan written, waiting on Ben.
 
 ## Scope
 
@@ -13,14 +13,15 @@ An implementation plan, not code yet, for three features that share one engine: 
 - The `POST /value` response shape in [valuation-engine.md](../../../../research/price/ben/valuation-engine.md) may change. Anything rendering a Valuation (Sell drafts, Buy matches, the camera's "What's it worth") depends on it.
 - The Comp, Valuation and Want primitives in [primitives.md](../../../../product/primitives.md).
 
-## Under way
+## Done
 
-- Exa tested live on Ben's Mac (this cloud machine can't reach api.exa.ai): marketplace coverage, freshness, sold pages, and the price-alert feature Ben linked. Result lands as `research/watch/ben/exa-empirical.md`.
-- Sold-comps routes per platform: `research/price/ben/comps-sources-live.md`.
-- Cross-market fan-out and the watch loop: `research/watch/ben/fanout-and-watch-loop.md`.
-- One appraisal run step by step: `research/appraise/ben/appraisal-run.md`.
-- Then the plan itself under `research/price/ben/`.
+The plan is [research/price/ben/build-plan.md](../../../../research/price/ben/build-plan.md). It is an *agent proposal*; nothing in it is decided. What other workstreams should know:
 
-## Next action
+- `POST /value` keeps its shape and gains `level`, `price_basis` per comp, and `max_pay` in appraise mode.
+- The `comp` table schema is in the plan's Data model section. Read it before fixing a Comp or Valuation schema.
+- eBay Browse API data is for search and links only. eBay's API licence bars using it to model prices and bars mixing it with other sites' content in one display, so the price engine reads third-party sold rows and eBay results sit in their own group.
+- Exa was tested live: stale on the big marketplaces and no Facebook pages. Watches poll each site themselves; Exa covers the long tail.
 
-If you are building Buy, Sell drafts or the data tables, read the plan before fixing a schema for Comp or Valuation. Tell Ben if your work already assumes a shape.
+## Waiting on Ben
+
+Four choices listed under "Decisions for Ben" in the plan: scraped eBay sold data for the demo, a second vision model for labels, the three demo categories, and Exa's role.
