@@ -23,6 +23,7 @@ export function secrets(root, { files }) {
     if (/\.(png|jpe?g|gif|webp|svg|ico|pdf|woff2?|ttf|otf|m4a|mp4|zip)$/i.test(f)) continue;
     const text = read(root, f) ?? '';
     for (const [name, re] of KEYS) if (re.test(text)) out.push(err(f, `looks like a ${name}; remove it and rotate it`));
+    if (f.startsWith('.agents/vendor/')) continue; // third-party text kept unchanged: keys above still fail, sample emails don't
     for (const m of text.matchAll(/[\w.+-]+@[A-Za-z][\w-]*(?:\.[\w-]+)*\.[A-Za-z]{2,}\b/g))
       if (!EMAIL_OK.test(m[0]) && !/\.(png|jpe?g|svg|webp|gif|js|css|md)$/i.test(m[0])) out.push(warn(f, `email address ${m[0]}: is it personal data?`));
   }

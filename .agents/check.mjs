@@ -28,7 +28,7 @@ const changed = [...new Set([...(git('diff', '--name-only', base) ?? '').split('
 const touched = changed.filter(f => tier1.some(t => f === t || (t.endsWith('/') && f.startsWith(t))));
 
 const results = [
-  ...touched.map(f => ({ level: 'warn', where: f, msg: 'Tier 1 (.agents/thinking.md): full decide, research behind it, owner\'s words for taste, fresh review, dependents updated' })),
+  ...(touched.length ? [{ level: 'warn', where: `${touched.slice(0, 3).join(', ')}${touched.length > 3 ? ` and ${touched.length - 3} more` : ''}`, msg: 'Tier 1 (.agents/thinking.md): full decide, research behind it, owner\'s words for taste, fresh review, dependents updated' }] : []),
   ...layout(root).map(msg => ({ level: 'error', where: 'layout', msg })),
   ...links(root, { files }), ...provenance(root, { wordsBase }), ...research(root, { files }),
   ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }),

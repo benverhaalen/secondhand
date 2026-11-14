@@ -31,4 +31,4 @@ B: <...>
 Recommend: <A> because <...>. Strongest rival: <B>.
 ```
 
-If Ben's harness is installed, `frame`, `research` and `reference-driven-development` are the full versions of these steps. This skill is the contract their output has to meet in this repo.
+Ben's harness has fuller versions of these steps (`frame`, `research`, `reference-driven-development`). In this repo, this skill is the one procedure both Ben's and Nate's agents follow, and UI decisions also run through `ui-factory`.
