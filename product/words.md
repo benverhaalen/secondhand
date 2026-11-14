@@ -346,3 +346,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate licences do not constrain the build
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > We dont worry about such constraints with licenses, this is a hackathon production build designed and fully built to realize a legitmate product. For the sake of showing its potential and presentation, dont worry about such licenses
+
+## 2026-11-14 nate a safety layer and a framework like flue
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> there is alot of research done on evaluating and understanding ai black boxes, we can have some sort of safety feature built to ensure model responses are safe, or correct, any layer we've seen other systems utilize that databricks themselves don't have. Anything to fully capture images and create a framework of listings, extend it to seperate sources, similar to flue perhaps https://github.com/withastro/flue. Something we can add and impressively expand with databricks, while utilizing and connecting everything
