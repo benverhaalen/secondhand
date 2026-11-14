@@ -45,6 +45,42 @@ Studio reads the default and the crop from `platforms.<id>.photos` in [platform-
 - *Trial: asking the model to re-lay the tee into the shirt template* (Seedream 5.0 Pro, one render, observed). It looks good at a glance: straight, sleeves out, smoothed, same kind of floor, print intact and readable. But it **redrew the neck tag** (the real tag hangs outside the collar with its own text; the render shows a different tag tucked inside), and the floor is a new floor that resembles the old one. The gate rejects it (color 6.3 over 4.5, detail fails). So a re-lay by the model invents evidence. *Agent proposal:* the template steers the person at capture and sets the crop; the model only flattens in place (level 2). A model re-lay could come back later only with the real tag and print pixels pasted over the render, which the repair step does for in-place edits and does not yet do after a re-lay.
 - *Content credentials (C2PA).* [c2pa_read.py](prototype/c2pa_read.py) reads them. Observed on two Seedream 5.0 Pro renders: each carries a manifest signed by Byteplus Pte. Ltd., tool `BytePlus_ModelArk`, model `dola-seedream-5-0-pro`, action `c2pa.created`, source type `trainedAlgorithmicMedia`, which means "made by an AI model", not "edited". Re-saving the render as a JPEG drops the manifest (observed). Studio reads it from the file exactly as the model returns it and stores it with the render. Ben decided at 23:18 UTC ([words](../../../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)): the exported photo carries no credential and no AI label, and studio keeps what the model declared in its own record for the item. The export is the cropped JPEG, which has no manifest, so nothing extra is needed.
 
+**Re-lay is in, ironed, and audited** (Ben, 23:31 UTC: "i love that marquette t fix", [words](../../../product/words.md#2026-11-14-re-lay-iron-and-audit-the-measurements)). This replaces the proposal above that the model only flattens in place. Seven renders of the Marquette tee, all observed on 2026-11-14:
+
+| Question | What happened |
+|---|---|
+| Can the invented tag be stopped? | Yes, by tucking it: with "the neck tag is tucked down inside the collar" in the prompt, 4 of 4 re-lays show no tag and invent no text. The real tag is shown in its own untouched photo. Without the line, 2 of 2 drew a fake tag |
+| Does "remove 50%" or "remove 90%" of wrinkles work? | No. On Seedream 5.0 Pro the two looked alike and still creased. Percent wording does not steer it |
+| What does work? | Describing the ironed result ("freshly ironed means: smooth and flat across the body, no fold lines, at most two or three faint lines"). Nano Banana 2.1 with that wording gave the flattest, most believable shirt; Seedream 5.0 Pro stayed crumpled |
+| Does the small print survive? | Mostly. "MARQUETTE 74" is right every time. The tiny "NCAA FINAL FOUR TEAM" line is right in some renders and garbled in others |
+| Does the floor stay? | It is the same kind of concrete, redrawn, not the same marks. A re-lay moves the item, so the floor under it has to be made up |
+| Does "do not move it, only iron it" hold? | No. The model straightened the shirt anyway and drew a tag |
+| Are the proportions kept? | Not reliably. Body width over length came out 0.69, 0.73, 0.74, 0.76 and 0.80 across five re-lays of one shirt, a spread of about 8% either side |
+
+What that means for the build (*agent proposal*):
+
+- The re-lay is offered as its own option on the approval card, one step above "pressed", with the prompt in [relay_prompt.txt](prototype/relay_prompt.txt). Several candidates are rendered and the best is kept.
+- Picking the best is a check, in order: print text read back against the close-up (the decision model), proportions against the real measurement, layout against the template, color against the original.
+- **The measurement audit runs one way only.** The tape or LiDAR measurement from capture is the truth, and a render whose width-to-length is more than 5% off it is thrown away ([lay.py](prototype/lay.py), `audit`). A render cannot be used to work out the flat size: the model decides how long the shirt is, and it decided differently five times.
+- The wrinkle number in `lay.py` is not good enough yet. It rated the two "freshly ironed" renders the same (17% and 18% fewer wrinkles) when one is plainly flatter by eye. Until it agrees with the eye, the decision model judges "how ironed".
+- Nano Banana 2.1 becomes a second candidate maker next to Seedream for the re-lay. Its renders carry no readable content credential (observed: no C2PA in the file).
+
+**Knowing when an item is laid out badly.** `layout()` in [lay.py](prototype/lay.py) squares the outline, matches it to the three templates, and reports the best match, the overlap, the tilt and how even the two sides are. On Ben's covers (observed): pants match the pants template at 0.91, the hoodie matches sweatshirt at 0.80, the tee matches shirt at 0.85. It tells shirt from pants, and it catches a tilt or a folded-under sleeve. It did **not** flag the scrunched tee, because the tee's outline is fine and the problem is inside it. So the outline check handles shape, and the judge's "arranged" line handles bunching. When either fails: at capture the voice coaches the person to the outline; after capture the re-lay is offered.
+
+**Shopify Catalog** (observed from its landing page; the search itself answered 429 and a command-line call was not permitted here). It is an index and API over new retail products, with product photos, prices and checkout links, built for agents. Its photos are retail shots: a clean backdrop, soft even light, one hero angle, nothing wrong with the product. Two uses for us, both *agent proposal* and untested: look up the same product (the Carhartt pants, say) to see how the brand lays it out and pick the template and angle from that; and hand identify the retail photo and price as evidence. What a secondhand photo has to do that a retail photo never does: prove it is this exact item (the real floor, the real tag), show condition (fading, cracks in the print, pilling), show every flaw close up, and show the size as measured, since a worn tee is no longer its label size. So the catalog informs the cover's layout only. Everything after the cover is evidence, and stays untouched.
+
+**True size of a wrinkled garment** (research, handed to the capture thread, which owns measuring):
+
+| Route | What the sources say | Verdict |
+|---|---|---|
+| iPhone LiDAR | "absolute accuracy of ± 1 cm" on objects over 10 cm; precision drops under 10 cm; about 7,225 points per square metre at 25 cm, which is one point every 12 mm ([Luetzenburg et al. 2021](https://pmc.ncbi.nlm.nih.gov/articles/PMC8593014), observed) | Good for the overall size of a flat garment to about 1 cm. Too coarse to see wrinkles, which are millimetres deep |
+| Measure along the surface | A straight tape over a rumpled shirt reads short; the distance along the cloth is the true one. With a depth map, sum the path over the surface, not the straight line (inferred, standard geometry) | Worth building only if a finer depth source than LiDAR is used (the TrueDepth camera or a photo-based 3D scan) |
+| Sewing pattern from one photo | NGL (arXiv [2602.20700](https://arxiv.org/abs/2602.20700)) asks a vision model for a garment spec and turns it into a pattern; the abstract does not claim real-world sizes (observed) | Gives shape, not centimetres |
+| Wrinkle detection in robotics | Gabor filters on a plain camera image find wrinkle direction and strength; the only measure is how much of the frame the cloth covers ([arXiv 2303.04909](https://ar5iv.labs.arxiv.org/html/2303.04909), observed) | A better base for our wrinkle number than what `lay.py` does now |
+| Gaussian splatting | Not read | Open |
+
+The cheapest accurate answer is still the one capture already plans: the person smooths the item by hand, and the phone measures it flat. The coverage idea from the robotics paper gives a simple test for "flat enough to measure": the outline stops growing when you smooth it more.
+
 **Run on Seedream 5.5.** [touchup.py](prototype/touchup.py) calls `bytedance-seed/seedream-5-5` through OpenRouter; the `studio touch-up test` workflow runs it on the three real items with the repo's key and commits the results to [renders/](renders/).
 
 ### First look at touch-ups (21:32 UTC, Seedream 5.0 Pro, not 5.5)

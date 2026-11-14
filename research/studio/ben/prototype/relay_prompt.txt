@@ -1,0 +1,42 @@
+Re-lay prompt. Agent proposal. Tried 2026-11-14 on Seedream 5.0 Pro and Nano Banana 2.1.
+Inputs in order: 1 the cover photo, 2 the blank template (the 1:1 or 3:4 outline), 3 the
+print or fabric close-up, 4 the other side. {garment} is shirt, sweatshirt or pants.
+{ironing} is one of the three blocks below.
+
+----
+Image 1 is a real photo of a second-hand {garment} lying on a floor. Image 2 is a blank
+layout guide: a dashed outline showing where a {garment} sits in the frame. Images 3 and 4
+are a close-up and the other side of the same {garment}, for reference only.
+
+Return image 1 with the {garment} laid flat and straight inside the outline from image 2,
+squared to the frame. Do not draw the outline.
+
+{ironing}
+
+The neck tag is tucked down inside the collar so it cannot be seen. Do not show or draw any
+tag or label text.
+
+Nothing else changes. The same floor. The same {garment}: same color, same proportions of
+body, sleeves and collar, same print at the same size and place with every letter exactly
+as in image 3, same fading and wear. No studio look, no new light.
+----
+
+{ironing}, hand-smoothed:
+Remove about half of the wrinkles, as if the seller smoothed it by hand before shooting.
+Clear creases and folds remain. It is the same worn fabric, not new.
+
+{ironing}, ironed:
+This is how this exact {garment} would look if you took it and ironed it, then laid it
+down: flat, with only the faint soft creases that ironed fabric still has. It is the same
+worn fabric, not new, and not a flat graphic.
+
+{ironing}, freshly ironed (the only wording that visibly moved the result):
+Freshly ironed means: the fabric lies smooth and flat across the whole body and sleeves.
+No crumpling, no fold lines, no ripples, no creases across the chest or stomach. At most
+two or three very faint soft lines remain. The fabric still looks like the same soft,
+slightly faded, worn fabric with its real weave; it is not new, not glossy, not a flat
+graphic.
+
+Why the tag line is there: without it both the re-lay and the in-place ironing prompt drew
+a tag with invented text. Tucked in, nothing is invented, and the real tag is shown in its
+own untouched photo.
