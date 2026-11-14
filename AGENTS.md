@@ -19,4 +19,4 @@ The map is in [README.md](README.md). Read only what your task touches:
 
 ## UI writing
 
-Any agent generating or editing UI follows [product/copy.md](product/copy.md): minimal in-app writing, show rather than say, and Ben's anti-claudish skill applied to every string. This is a decision ([decisions.md](product/decisions.md)), not a style preference.
+Any agent generating or editing UI follows [product/copy.md](product/copy.md): minimal in-app writing, show rather than say, Ben's anti-claudish skill applied to every string, familiar patterns from apps people already use, and color and layout spent only where attention should go. This is a decision ([decisions.md](product/decisions.md)), not a style preference.

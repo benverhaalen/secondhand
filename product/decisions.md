@@ -5,6 +5,8 @@ Newest first. Each entry gives what was decided, who agreed, the words it rests 
 ## 2026-11-14: in-app copy is minimal, and the UI shows rather than says
 Agreed by: Ben, project chat at 19:45 ([words](words.md#2026-11-14-show-not-say)). Decided: writing in the app is kept to the minimum, and state is shown (photos, pills, numbers, icons, motion) instead of explained in sentences. Every UI generation pass, by any agent, applies Ben's **anti-claudish** skill from his harness. The working rules are in [copy.md](copy.md), linked from AGENTS.md and the brand coder card. Changed: every screen gets a copy pass before it counts as done, and existing wireframe copy is cut on the next restyle.
 
+Added by Ben at 19:46 ([words](words.md#2026-11-14-familiar-and-attention)): communicate as much as possible through patterns people already know from similar apps, and use color, layout and hierarchy to direct attention, applying the psychology and principles expert designers use. Rules in [copy.md § Familiar patterns and attention](copy.md#familiar-patterns-and-attention).
+
 ## 2026-11-14: first launch is setup first
 Agreed by: Ben, on the onboarding card in the concept thread at 19:43 ([walkthrough §11](walkthrough.md#11-first-launch-and-onboarding)). He picked B over the agent's recommendation, A (value first). Decided: first launch connects your sites, then sets pickup windows and the meetup spot (or "ask me every time"), then notifications, before you reach Today. This is the canvas Onboard screen. Changed: pickup setup moves from first use into onboarding. *Agent proposal, to keep the cost of a form low:* each step can be skipped, and it says why it asks. The canvas Onboard screen already says "you can skip all of them and still scan, price and search".
 

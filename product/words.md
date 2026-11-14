@@ -83,3 +83,7 @@ Ben, project chat, 19:15 UTC.
 ## 2026-11-14 show not say
 Ben, project chat, 19:45 UTC.
 > i also want to make sure that the writing in the apps is not excessive. there are principles of showing rather than saying. also my anti claudish skill in my harness. those should be used in all ui generation. thats a decision. you can link that to the repo and everything.
+
+## 2026-11-14 familiar and attention
+Ben, project chat, 19:46 UTC.
+> the principle of how can we communicate as much as we can in a familiar way to how users already use similar things and use colors, layout, etc to do attention well and to really use psychology and the principles of ux and ui design that expert designers actually use.
