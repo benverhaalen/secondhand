@@ -1,0 +1,47 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "The gradient offer card headed \u201cOffered $38\u201d.",
+          "issue": "The pending offer is a Needs you state under Article 5, but its required raised-hand icon is absent. The more-actions ellipsis does not identify the state."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "The gradient offer card headed \u201cOffered $38\u201d.",
+          "issue": "The pending offer is a Needs you state under Article 5, but its required raised-hand icon is absent. The more-actions ellipsis does not identify the state."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a state without its icon (L15; constitution Article 5).",
+          "place": "The gradient offer card headed \u201cOffered $38\u201d.",
+          "issue": "The pending offer is a Needs you state under Article 5, but its required raised-hand icon is absent. The more-actions ellipsis does not identify the state."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "All three share the missing offer-state icon. The hairline, gray, and sky-tint notice cards are distinguishable at board size; their differences stay within R9."
+    }
+  ]
+}
