@@ -12,6 +12,7 @@ Not designed yet. Keep the mechanism here once research picks one, together with
 Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).
 
 ## Open
+- Share-sheet deal check: show a typical sold-price band, with a "can't tell" state. It shares this feature's engine with [appraise](../appraise/).
 - What price data can we legally get for each platform?
 
 ## Research

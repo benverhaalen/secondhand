@@ -4,7 +4,7 @@ Updated: November 14, 2026. Owner: Ben. Agent: Claude (project thread "Set up th
 
 ## What changed
 - `product/` holds the living vision (Decided, Proposed, Open), the features table, the decisions log and `words.md`, which keeps Ben's and Nate's exact product words.
-- `features/<slug>/README.md` has one page per feature, for these slugs: item-card, capture, measure, identify, studio, price, list, messages, watch, taste, data.
+- `features/<slug>/README.md` has one page per feature, for these slugs: today, connect, item-card, capture, measure, identify, studio, price, appraise, list, replay, sold, messages, watch, data.
 - `research/ben/` and `research/nate/` are owned by one person each and filed by the same slugs. Ben's concept research from November 14 is in `research/ben/cross-cutting/`.
 - Packet topics are now feature slugs. `node .agents/check-layout.mjs` checks that slugs match everywhere.
 
