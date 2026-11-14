@@ -33,3 +33,4 @@ All research for this feature: [research/data/](../../research/data/)
 - Ben: [research/data/ben/](../../research/data/ben/)
 - Nate: `research/data/nate/` (none yet)
 - Ben, tech stack: [databricks.md](../../research/data/ben/databricks.md). Databricks as system of record and glass box: MLflow traces become the "why?" panel, approvals become labels that tune thresholds.
+- Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#7-learning-from-taps). *Agent proposal:* rules are promoted by arithmetic over tap rows with a decline cap and a fade, and a nightly job replays the taps as an eval (Midday, Actual).

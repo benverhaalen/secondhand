@@ -18,3 +18,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: `research/item-card/` (none yet)
 - Ben: `research/item-card/ben/` (none yet)
 - Nate: `research/item-card/nate/` (none yet)
+- Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#5-listing-text). *Agent proposal:* each field holds its value, the photos that prove it, its source and a typed reason when it is in doubt (thrift-agent, doc-pilot).
