@@ -10,7 +10,7 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 ## Proposed
 
-- Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Ben, [18:32](words.md#2026-11-14-tools-and-capture).
+- Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).
 - Studio photos: relight the item in a studio, a garage or a house with Seedream 5.5, built from all the captured photos with color correction. Ben, [18:32](words.md#2026-11-14-tools-and-capture).
 - Measuring comes first for clothes ("the mechanism is measuring more than anything"). Ben, [18:32](words.md#2026-11-14-tools-and-capture).
 - Appraise anything, for example at a garage sale: its value by platform, after defects and hidden demand. Ben, [18:36](words.md#2026-11-14-pavlo-and-appraise).

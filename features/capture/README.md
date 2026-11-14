@@ -6,7 +6,17 @@ Status: idea. Owner: unassigned. Packet topic: `capture`.
 The app walks the seller through each shot: the whole item, the back, the tag, close-ups and defects. The seller never has to think about what to shoot. Ben: [words](../../product/words.md#2026-11-14-tools-and-capture).
 
 ## How it works
-Draft from the design canvas: a shot list chosen per item type (front, back, tag, logo, seams, flaws), followed by [measure](../measure/) as its own step.
+Draft, revised after Ben's direction ([words](../../product/words.md#2026-11-14-shots-serve-both)). There is one shot list, and every shot serves both the listing and the image model. There are no separate reference shots.
+
+| Shot | For buyers | For the image model |
+|---|---|---|
+| Front, back | Listing photos | Main views |
+| Tag | Size and brand | Exact fabric color |
+| Fabric close-up | Texture | Texture kept when relighting |
+| Flaws | Disclosure | Constraints it must preserve |
+| Spin (10 s walk-around) | 360 view | Shape from every side |
+
+Then [measure](../measure/). The item lies on a white sheet from the first shot, so every image carries a white-balance reference. The list is chosen per item type, and shots capture automatically once they are sharp.
 
 ## Decided
 Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).

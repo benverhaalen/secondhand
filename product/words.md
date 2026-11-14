@@ -18,5 +18,11 @@ Ben, project chat, 18:32 UTC.
 Ben, project chat, 18:36 UTC.
 > pavlo is a folder on my computer. find it on my github. the original pavlo as a way to essentially create an api about any site. also like apple object capture and research it. also fleshing out the feature of like an exa search but for figuring out the market value of a secondhand product. this is a multidimensional problem. continue to parallel and really work on researching each idea and feature and problem like this. pricing something including all the defects and info and things not super apparent to why someone would want it. its definitely market value dependent. like ebay and depop have different values. we also came up with a new use case. can say go to a garage sale and with our tool 'appraise' a product. think of all the context and nuance that is truly needed in this and continue to research according to my harness's principles
 
+## 2026-11-14 shots serve both
+Ben, concept thread, 18:48 UTC.
+> the shot list should not only be the shots to put on the listing but should be shots to inform the generative ai better about the product
+
+> dual purpose that should effectively be integrated into one thing.
+
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.
