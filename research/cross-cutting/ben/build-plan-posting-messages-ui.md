@@ -7,12 +7,12 @@ The build plan for [packet 4](../../../.agents/team/packets/list/4-posting-messa
 - [messages-and-offers.md](../../messages/ben/messages-and-offers.md): buyer messages and offers under the tiers
 - [generative-ui.md](../../today/ben/generative-ui.md): cards composed from a fixed component set, with approvals, on Databricks
 
-Claims keep the marks of the note they come from: *observed* (opened the source), *asserted* (a source says it without showing, or memory), *inferred* (our reasoning). Everything below is an *agent proposal* until Ben picks. Pavlo details stay in the project's shared folder, not here.
+Claims keep the marks of the note they come from: *observed* (opened the source), *asserted* (a source says it without showing, or memory), *inferred* (our reasoning). Everything below is an *agent proposal* until Ben picks. Pavlo details stay in the project's shared folder, not here; as of 21:07 the plan uses our own harness per app instead.
 
 ## 1. The plan in short
 
 1. **One choke point for every outward action.** Agents only read and propose. Posting, delisting, replies, offers, prices, pickup and address run through one server route that checks a signed tap, the item's current version and the tier rules. That route is what makes "never below your floor without a tap" and "address, pickup and payment are never automated" true in code, not in a prompt. *inferred, mirrors `NEVER_PROMOTED` in [spec/lifecycle.mjs](../../../spec/lifecycle.mjs)*
-2. **Each site gets the most official route it has.** eBay through its REST APIs only. Depop through its partner API once Depop grants access, and Browser Use until then. Poshmark and Mercari through the replay layer, with Browser Use as fallback. Facebook Marketplace rides on eBay for shipped items, and only local pickup items get a Browser Use draft the user publishes. *observed routes, inferred choice*
+2. **One harness per marketplace app, run on Browser Use cloud** (Ben, [21:07](../../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)). Each harness maps the app's functions, and every outward function stops for the user's tap, which is how we stay within each site's terms. eBay stays on its REST API, the one route its terms allow; Depop moves to its partner API if access arrives. *observed routes, inferred choice*
 3. **A sale is a paid order, and a delist counts only when we read the listing back and it's gone.** Webhooks where they exist, polls behind them, a reconcile job every 5 minutes, and a red card whenever a listing that should be down is still buyable. *observed (eBay, Depop docs), inferred pipeline*
 4. **Today cards are fixed frames, filled by typed tools; the agent composes the evidence inside them.** AI SDK 6 typed tool parts give one card shape per Decision kind. json-render limits the agent to our catalog of about 40 brand components when it composes evidence, item screens and Ask answers. *observed APIs*
 5. **The phone app is Expo (React Native)**, decided at 21:05 ([decisions](../../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). Cards render with `@json-render/react-native` 0.22.0, whose peers are React 18 or 19 and React Native 0.71 or later *observed (npm)*. The server is Databricks' own chat template, forked and used as an API: Express, AI SDK 6, `@databricks/ai-sdk-provider`, Lakebase, MLflow assessments for every tap. *observed*
@@ -64,26 +64,44 @@ All three workstreams write the same tables and go through the same route. Build
 
 ## 4. Workstream A: cross-posting and delisting
 
-**Adapters**, one per site, same interface: `post(packet)`, `revise(listing, price)`, `delist(listing)`, `readBack(listing)`, `listLive()`, `listOrders(since)`. Routes per site are in [crosspost-and-delist §Per-platform routes](../../list/ben/crosspost-and-delist.md#per-platform-routes).
+**One harness per app** (decided at 21:07). A harness is our own map of what a marketplace app does, written once per site after exploring it on a test account, and run on Browser Use cloud. *inferred design on observed Browser Use features*
 
-| Site | Post | Delist | Sale signal |
+Every site exposes the same functions to the rest of the system, so the sold pipeline, the inbox and Today never care which site they talk to:
+
+| Function | Outward? | Tier | What the harness holds for it |
 |---|---|---|---|
-| eBay | Inventory API (`createOffer` then `publishOffer`) unless the Listing API sandbox works in hour 1; stay on one API per listing *observed* | `withdrawOffer` (Inventory) | `ORDER_CONFIRMATION` webhook plus `getOrders` poll every 60 s *observed* |
-| Depop | Partner API `PUT /products/by-sku/{sku}/` once granted *observed*; Browser Use until then | `DELETE /products/by-sku/{sku}/` | `v1:order.new` webhook, best-effort, plus poll *observed* |
-| Poshmark | Browser Use, stopped before Post; later posts by replay | Replay, void any open offer first *observed (Vendoo)* | Sale email push, plus a sold-list poll every 1 to 2 min *inferred* |
-| Mercari | Same as Poshmark | Replay | Same as Poshmark |
-| Facebook | Shipped items: none, eBay already shows them there *observed*. Local: Browser Use draft, user taps Publish | Browser Use mark sold | The user confirms the handoff |
+| `post(packet)` | yes | Ask (first post) | the sell form's fields mapped from the listing packet, photo upload steps, the checkpoint before Post |
+| `revise(listing, price)` | yes | Auto above the floor, Ask below | the edit path, the price field, the checkpoint before Save |
+| `delist(listing)` | yes | Auto after a sale | delete or mark sold; known blockers (a Poshmark open offer) and their fix |
+| `readBack(listing)` | no | none | the logged-out listing URL and what "gone" looks like |
+| `listLive()`, `listOrders(since)` | no | none | the closet and sold pages, as structured output |
+| `readInbox(since)`, `readOffers(since)` | no | none | the message and offer pages, as structured output (ids, amounts, times) |
+| `reply(thread, text)`, `answerOffer(offer, action, amount)` | yes | from the intent table in §5; always through the send guard | the reply box and offer buttons, the checkpoint before Send |
+
+Each function in a harness file has: a zod input and output schema (the output becomes the run's `outputSchema` *observed: V4 field*), the Browser Use task text, the pages and controls it touches, a checkpoint for outward functions, a read-back that proves it worked, pacing for that site, and the errors we have seen with what to do about each. Read-only functions run without asking. Outward functions run in two phases: run 1 fills and stops, the card shows the read-only live view, the tap starts run 2 on the same session. The session uses the user's own cloud profile (Profile Sync copies their cookies *observed*), so every action is the user's, in their account, after their tap. *inferred*
+
+**Routes per site:**
+
+| Site | Route | Sale signal | Notes |
+|---|---|---|---|
+| eBay | REST API, wrapped in the same functions: Inventory `createOffer`, `publishOffer`, `withdrawOffer`; Message API; `RespondToBestOffer` *observed* | `ORDER_CONFIRMATION` webhook plus `getOrders` every 60 s *observed* | No browser on eBay: its 2026 terms ban automated access without permission *asserted* |
+| Depop | Harness now; partner API (`DELETE /products/by-sku/{sku}/`, `v1:order.new`) if access arrives *observed* | `listOrders` every 1 to 2 min; webhook later | Its staging fake purchase only works on the API |
+| Poshmark | Harness | sale email push, plus `listOrders` every 1 to 2 min *inferred* | delists jump ahead of other actions in the pacing queue; void an open offer before delisting *observed (Vendoo)* |
+| Mercari | Harness | same as Poshmark | read back after posting: double posts happen *observed (Nifty)* |
+| Facebook | Harness for local pickup only; shipped items already show there through eBay *observed* | the user confirms the handoff | highest bot detection *asserted*, so Publish is always the user's tap |
+
+**Speed.** Every harness call is a Browser Use run, so a delist takes about 1 to 4 minutes *asserted*, not seconds. Keep sessions warm with `keepAlive` on sites with a live listing, and start every delist in parallel the moment a sale is confirmed. A replay layer that skips the browser for repeat actions stays a later option if the race window is too long. *inferred*
 
 **First post is two-phase** (decided: first post is Ask). Run 1 fills the form and stops, keeping the session alive. The card shows the read-only live view next to the packet. The tap starts run 2 on the same session, which presses Post *observed*. The live view link works as a credential *observed*, so it only reaches the signed-in owner.
 
-**The sold pipeline** ([crosspost-and-delist §The sold → delist pipeline](../../list/ben/crosspost-and-delist.md#the-sold--delist-pipeline)): signal in, then confirm it's paid, then claim the sale in one transaction, cancel in-flight posts and revises, fan out delists in parallel, verify each by reading it back, retry at 5 s, 15 s, 45 s and 2 min, hand off to Browser Use, and after 3 minutes still buyable go red. A second paid buyer opens a Never alone card naming both buyers and the cost of each cancel. Reconcile every 5 minutes.
+**The sold pipeline** ([crosspost-and-delist §The sold → delist pipeline](../../list/ben/crosspost-and-delist.md#the-sold--delist-pipeline)): signal in, then confirm it's paid, then claim the sale in one transaction, cancel in-flight posts and revises, fan out delists in parallel, verify each by reading it back, retry with backoff, and after 6 minutes still buyable go red. A second paid buyer opens a Never alone card naming both buyers and the cost of each cancel. Reconcile every 5 minutes.
 
-**The number we show.** Log `sold_to_all_down_ms` per site. Incumbents take 2 minutes to a day and mostly need the seller's computer awake *observed*; ours should be under a minute for API sites *inferred*. It is measurable on stage and it goes on You > By site.
+**The number we show.** Log `sold_to_all_down_ms` per site. Incumbents take 2 minutes to a day and mostly need the seller's computer awake *observed*; ours should be seconds on eBay and a few minutes on harness sites, with the server doing it while the phone sleeps *inferred*. It is measurable on stage and it goes on You > By site.
 
 ## 5. Workstream B: buyer messages and offers
 
 **Pipeline**, one durable run per inbound message ([messages §2](../../messages/ben/messages-and-offers.md#2-intent-classification-pipeline)):
-1. Fetch: eBay Message API and `MyMessagesM2MMessage` and `BestOfferPlaced` notifications *observed*; Browser Use or replay polls for the other sites.
+1. Fetch: eBay Message API and `MyMessagesM2MMessage` and `BestOfferPlaced` notifications *observed*; `readInbox` and `readOffers` from each harness, every 1 to 2 minutes, for the other sites.
 2. Classify with one Decisions API call: an `intent` choice plus safety predicates (asks address, proposes a time, off-platform, asks for a code, claims it's paid, third party, overpayment) and a hostility score. Safety predicates use low thresholds, because a false alarm costs one tap.
 3. Parse numbers and times deterministically. Decisions returns probabilities, not values *observed*.
 4. Draft from item facts, each fact with its source.
@@ -160,12 +178,12 @@ Each step ends with something we can run and push. *inferred*
 1. **Hour 0 to 2: core.** Fork the template, deploy it, connect Lakebase, create the tables. Run the hour-1 checks in §2; switch to the fallback at hour 2 if they fail. Write the act route, `policy()`, the double lock and its failing tests. Email Depop for partner access and register eBay developer keys at the start.
 2. **Hour 2 to 6: eBay end to end.** Post (two-phase), sandbox sale webhook, delist, read-back, reconcile, red card. This alone shows the whole loop.
 3. **Hour 4 to 8: Today.** The fixed frames for first post, offer, below floor, failed delist and refund; json-render catalog with 10 evidence modules; MLflow assessment on every tap; the "why?" timeline.
-4. **Hour 6 to 12: second and third site.** Depop by API if granted (its staging purchase endpoint stages a double sale on demand *observed*), else Browser Use; Poshmark or Mercari by Browser Use, then replay.
+4. **Hour 6 to 12: second and third site.** Depop by API if granted (its staging purchase endpoint stages a double sale on demand *observed*), else its harness; then the Poshmark or Mercari harness.
 5. **Hour 8 to 14: inbox.** eBay messages and offers, the classifier, the guard and its tests, Ask and Never alone cards, then Browser Use reading one other site.
 6. **Hour 12 to 18: learning.** Approvals, "Always do this", Undo and demotion, the eval job, spot checks.
 7. **Hour 18 on: demo polish.** The rest of the catalog, the capture components, `sold_to_all_down_ms` on You.
 
-**Demo script.** List the jacket on eBay, Depop and Poshmark from one approval. A buyer offers below the floor: the card asks, and it can't be automated. Sell it on Depop with the staging purchase: eBay and Poshmark come down on screen, with the timer. Fail the Poshmark delist on purpose and let a second buyer pay: the item goes red and the refund card asks. Open "why?" on any card to show the MLflow trace and the tap that approved it.
+**Demo script.** List the jacket on eBay, Depop and Poshmark from one approval. A buyer offers below the floor: the card asks, and it can't be automated. Sell it on eBay with a sandbox purchase: the Depop and Poshmark harnesses take their listings down on screen, live view and timer showing. Fail the Poshmark delist on purpose and let a second buyer pay: the item goes red and the refund card asks. Open "why?" on any card to show the MLflow trace and the tap that approved it.
 
 ## 10. What contradicts earlier notes
 

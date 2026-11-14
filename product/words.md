@@ -156,3 +156,7 @@ Ben, project chat, 20:57 UTC.
 ## 2026-11-14 app first, website if time
 Ben, in the thread "Plan the build for capture and measuring", 20:59 UTC, answering a card that offered a Swift camera with everything else on the web, an Expo app with a Swift camera module, or web only.
 > app first, website if we have time
+
+## 2026-11-14 a harness per app
+Ben, posting, messages and dynamic UI thread, 21:07 UTC.
+> we are going to create our own harness around each app, understanding the function of each. we are going to use the cloud browser use. this is all a product demo so not a sold product. also using human in the loop fits in a nice area where we can do things along with tos
