@@ -1,6 +1,6 @@
 // Every relative link and heading anchor in the docs resolves, so a summary always reaches its source.
 import { existsSync, statSync } from 'node:fs';
-import { join, dirname, normalize } from 'node:path';
+import { join, dirname, normalize } from 'node:path/posix'; // repo paths use forward slashes on every OS
 import { read, err, warn, stripCode, lineOf } from './util.mjs';
 
 export function slug(heading) { // GitHub's anchor rule
