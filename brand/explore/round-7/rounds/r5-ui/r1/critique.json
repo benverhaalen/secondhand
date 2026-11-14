@@ -1,0 +1,41 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a logo that isn't the square site icon (L17).",
+          "place": "Platform logo at the upper right, beside Sold.",
+          "issue": "The platform mark is a circular red badge rather than the square site icon used in B and C."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "pass",
+      "failures": []
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Exposed gradient above the item panel and below the action panel.",
+          "issue": "The conspicuous coarse grain changes the texture treatment from the much smoother A and B. Grain is the separate R4 decision; R5 should vary where color goes while keeping that treatment consistent."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "Gradient placement is distinguishable at board size, but the platform icon changes from circular in A to square in B and C, and C introduces visibly coarser grain. Keep the square site icon and one grain treatment across all three to isolate R5."
+    }
+  ]
+}
