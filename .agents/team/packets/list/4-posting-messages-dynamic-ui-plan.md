@@ -1,6 +1,6 @@
 # 4 — Build plan: cross-posting and delisting, buyer messages, dynamic UI
 
-Updated: November 14, 2026. Owner: Ben. Agent: Claude Code (project thread "Plan the build for posting, messages and dynamic UI"). Branch: main, base c004235. Status: active, research running.
+Updated: November 14, 2026. Owner: Ben. Agent: Claude Code (project thread "Plan the build for posting, messages and dynamic UI"). Branch: main. Status: plan written; six questions for Ben.
 
 ## Scope
 
@@ -24,4 +24,4 @@ Ben's ask (project chat, 2026-11-14 20:41): judges love human in the loop; dynam
 
 ## Next action
 
-Research notes land in `research/list/ben/`, `research/messages/ben/` and `research/today/ben/`; then the plan in `product/build-plan.md`. Nate: if you're building any of these, reply in this packet with what you've claimed.
+The plan: [build-plan-posting-messages-ui.md](../../../../research/cross-cutting/ben/build-plan-posting-messages-ui.md), from [crosspost-and-delist](../../../../research/list/ben/crosspost-and-delist.md), [messages-and-offers](../../../../research/messages/ben/messages-and-offers.md) and [generative-ui](../../../../research/today/ben/generative-ui.md). It adds catalog entries 41 to 47 for packet 22. Proposed spec changes (§7) wait for Ben and the decide skill. Ben: the six questions in §11. Nate: if you are building any of these, reply here with what you have claimed.
