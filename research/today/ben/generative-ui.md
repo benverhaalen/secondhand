@@ -3,6 +3,8 @@ Researched 2026-11-14 by Ben (Claude Code). Feature: today.
 
 Feeds the build plan for workstream 3 in [packet 4](../../../.agents/team/packets/list/4-posting-messages-dynamic-ui-plan.md). Ben's ask (20:41, [words](../../../product/words.md#2026-11-14-human-in-the-loop-and-dynamic-ui)): "judges love human in the loop. i feel like creating dynamic and intelligent ui is really good where you have a huge range of set components." Marks: *observed* (I opened the source or ran it), *asserted* (a source says it without showing it, or memory), *inferred* (my reasoning). Everything recommended here is an *agent proposal* until Ben picks.
 
+**Update 21:10:** Ben picked an Expo app with a Swift camera module ([decisions](../../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). The client below (React 19 + Vite web app, shadcn) is replaced by React Native components and `@json-render/react-native` 0.22.0 (*observed*, npm). The server, approval flow and catalog schemas are unchanged. See the [build plan](../../cross-cutting/ben/build-plan-posting-messages-ui.md#2-what-runs-where).
+
 ## The answer in short
 
 1. **Two layers, not one.** Decision cards (Today) are a fixed frame per Decision kind, filled by a typed tool call whose zod schema *is* the card's props. Inside the frame, one "evidence" slot and the item and Ask screens are composed by the agent from a catalog of about 40 brand components with **json-render**. The model never writes HTML, classes or colors; it picks catalog names and zod-checked props. *inferred design on observed APIs*

@@ -15,13 +15,13 @@ Claims keep the marks of the note they come from: *observed* (opened the source)
 2. **Each site gets the most official route it has.** eBay through its REST APIs only. Depop through its partner API once Depop grants access, and Browser Use until then. Poshmark and Mercari through the replay layer, with Browser Use as fallback. Facebook Marketplace rides on eBay for shipped items, and only local pickup items get a Browser Use draft the user publishes. *observed routes, inferred choice*
 3. **A sale is a paid order, and a delist counts only when we read the listing back and it's gone.** Webhooks where they exist, polls behind them, a reconcile job every 5 minutes, and a red card whenever a listing that should be down is still buyable. *observed (eBay, Depop docs), inferred pipeline*
 4. **Today cards are fixed frames, filled by typed tools; the agent composes the evidence inside them.** AI SDK 6 typed tool parts give one card shape per Decision kind. json-render limits the agent to our catalog of about 40 brand components when it composes evidence, item screens and Ask answers. *observed APIs*
-5. **Built on Databricks' own chat template**, forked: Express + Vite React, AI SDK 6, `@databricks/ai-sdk-provider`, Lakebase, MLflow assessments for every tap. *observed*
+5. **The phone app is Expo (React Native)**, decided at 21:05 ([decisions](../../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). Cards render with `@json-render/react-native` 0.22.0, whose peers are React 18 or 19 and React Native 0.71 or later *observed (npm)*. The server is Databricks' own chat template, forked and used as an API: Express, AI SDK 6, `@databricks/ai-sdk-provider`, Lakebase, MLflow assessments for every tap. *observed*
 
 ## 2. What runs where
 
 | Layer | What runs | Notes |
 |---|---|---|
-| Client | React 19 + Vite PWA, shadcn on Tailwind 4 and [tokens.css](../../../brand/tokens.css), `useChat` for the Ask sheet, fetch and poll for Today | Template ships React 18; json-render needs 19 *observed* |
+| Client | **Expo app** (Expo SDK 58 *observed, npm*) with the Swift camera module; catalog components built as React Native components on [tokens.css](../../../brand/tokens.css) values; `@json-render/react-native` for composed views; `useChat` from `@ai-sdk/react` with `expo/fetch` for streaming in the Ask sheet *asserted, AI SDK has an Expo guide; check in hour 1*; fetch and poll for Today | shadcn is web only; react-native-reusables is a shadcn-style kit for React Native *asserted, not opened*. The template's Vite web client is dropped; a website can reuse the same catalog schemas with `@json-render/react` later |
 | App server | **Databricks App**, Node, Express 5, forked from `databricks/app-templates/e2e-chatbot-app-next` | Requests are cut at 120 s *asserted*, so long work is a Job the client polls |
 | Models | Claude Opus 5.5 and GPT-6 through serving endpoints and Unity Gateway; OpenAI Decisions API (`gpt-6-luna`) for typed judgements | `useRemoteToolCalling: false`, so our tools and approvals run in Node *observed* |
 | Agents | Agent Bricks agents for comps, valuation, identify and the inbox, with **read and propose tools only** | Hosted tools skip any approval gate in our server *observed*, so nothing outward goes there |
@@ -31,7 +31,7 @@ Claims keep the marks of the note they come from: *observed* (opened the source)
 | Webhooks in | `/hooks/ebay`, `/hooks/depop` on the App | **Check in hour 1**: Apps sit behind Databricks sign-in, and eBay can't send a Databricks token *inferred*. If blocked, a small relay verifies the signature and writes to Lakebase |
 | Fallback (decided 19:41) | If Apps or Lakebase isn't up by hour 2: same Express app on Vercel, same schema on Supabase Postgres | Models, traces, comps, eval and Genie stay on Databricks |
 
-**Check in hour 1, before building on them:** eBay webhook reaches the App; judges can open the App link (Apps need a workspace login *asserted*, so the demo may run from our phone or the fallback host); Lakebase connects from Node; the eBay sandbox for the listing API we pick; whether MadHacks workspaces have Apps, Lakebase and Agent Bricks turned on.
+**Check in hour 1, before building on them:** eBay webhook reaches the App; the Expo app can call the App's API (Apps sit behind workspace sign-in *asserted*: try a Databricks OAuth token from the app, else a service principal token for the demo build, else the fallback host); Lakebase connects from Node; the eBay sandbox for the listing API we pick; whether MadHacks workspaces have Apps, Lakebase and Agent Bricks turned on.
 
 ## 3. The shared core
 
@@ -98,7 +98,7 @@ All three workstreams write the same tables and go through the same route. Build
 ## 6. Workstream C: the dynamic UI
 
 **Two layers** ([generative-ui §How a screen is put together](../../today/ben/generative-ui.md#how-a-screen-is-put-together)):
-- Hand-built: navigation, the bottom bar, tab shells, shelves, capture, onboarding and settings. Navigation never moves.
+- Hand-built in the Expo app: navigation, the bottom bar, tab shells, shelves, capture (the Swift module), onboarding and settings. Navigation never moves.
 - Fixed frame per Decision kind: photo, headline, amount, one primary action, two secondaries, More, and what happens if you ignore it ([UI constitution](../../../product/ui-constitution.md)). Filled by a `propose_<kind>` tool whose zod schema is the card's props.
 - Composed by the agent with json-render: the evidence slot inside a card (0 to 3 modules), item screen modules, Ask answers and Buy valuations. The server validates every spec, because the React renderer doesn't re-check props *observed*. Unknown components render nothing.
 - Today's order is a server sort (money or a sale lost soonest, then Never alone, then Ask, then age). The model can set a deadline but never ranks.
@@ -106,11 +106,11 @@ All three workstreams write the same tables and go through the same route. Build
 
 **Catalog.** The 40 components in [generative-ui §The component registry](../../today/ben/generative-ui.md#the-component-registry-agent-proposal), plus these for capture, measure and identify ([packet 22](../../../.agents/team/packets/capture/22-capture-measure-identify-plan.md)), with fields from the "Data contract" sections of their build plans:
 
-| # | Name | Primitive | Builds on | Notes |
+| # | Name | Primitive | Builds on (web names; React Native equivalents in the app) | Notes |
 |---|---|---|---|---|
 | 41 | `ShotReview` | Item photo | Card, Image, Button | Keep · Retake · More; the reason from the capture checks |
 | 42 | `FlawPins` | Item photo | Image, Popover, ToggleGroup | Yes or no per pin; unedited photo only |
-| 43 | `MeasureOverlay` | Item measurements | custom canvas, Slider | Draggable endpoints and a loupe; recomputes live from `endpoints_px` and `scale.mm_per_px`. Hand-built interaction; the agent can place it, not change it |
+| 43 | `MeasureOverlay` | Item measurements | native component in the Expo app | Draggable endpoints and a loupe; recomputes live from `endpoints_px` and `scale.mm_per_px`. Hand-built interaction; the agent can place it, not change it |
 | 44 | `MeasurementRow` | Item measurements | Table row, Badge | `display`, `plus_minus_mm`, `source`, `confidence` |
 | 45 | `IdentityCandidates` | Item identity | Card, RadioGroup, Image | Photo cards to pick from, plus "None of these" |
 | 46 | `ConditionPicker` | Item condition | ToggleGroup | 6 levels; the model's distribution shown as the default, the user picks |
@@ -181,7 +181,7 @@ Each step ends with something we can run and push. *inferred*
 3. Can "decline offers under my floor" ever be promoted? Declining sets no price, but the floor decision says any price below it asks.
 4. Traces need the message text to classify it, and the spec bans text in logs. Redact traces to ids and features, or keep a restricted trace table?
 5. Should the agent compose only the evidence and item modules (recommended), or whole Today cards?
-6. Is a demo from our signed-in phone enough, or do judges need a public link (the fallback host)?
+6. ~~Is a demo from our signed-in phone enough?~~ Settled by the Expo decision: the demo runs in the app on our phone.
 
 Decided here as means, not taste: fork Databricks' Express template rather than start a Next.js app, AI SDK 6 rather than 7, json-render over A2UI. Reasons are in [generative-ui](../../today/ben/generative-ui.md#approach-chosen-and-runner-up).
 
