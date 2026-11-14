@@ -112,15 +112,21 @@ test('brand: a reworded scale row fails closed, and rem, em or % spacing is chec
 import { logging } from './logging.mjs';
 test('logging: a print in app code, a committed raw log and a log fixture that breaks the contract fail; the logger passes', () => {
   const start = '{"ts":"2026-11-14T20:00:00.000Z","session":"s1","seq":0,"src":"app","level":"info","event":"session.start","build":"b","seed":1}\n';
-  const bad = run(logging, { 'app/upload.ts': 'export async function up() {\n  console.log("uploading");\n  return fetch("/api/items");\n}\n',
-    'jobs/relight.py': 'def run():\n    print("rendering")\n', 'ios/CaptureKit.swift': 'func shoot() { NSLog("shot") }\n',
+  const bad = run(logging, { 'app/upload.ts': 'export async function up(handler) {\n  console.log("uploading");\n  handler.call(this);\n  return fetch("/api/items");\n}\n',
+    'app/a.ts': 'console.table(rows);\nprocess.stdout.write("x");\nconst { log } = console;\nconst id = Math.random();\n',
+    'jobs/relight.py': 'def run(x):\n    print("rendering")\n    if x: print(x)\n    logging.info("x")\n    sys.stdout.write("x")\n',
+    'ios/CaptureKit.swift': 'func shoot() { NSLog("shot"); debugPrint(1) }\n',
     'logs/app-s1.jsonl': start, 'server/out.log': 'x', 'app/fixtures/session.jsonl': start + start });
   const e = errors(bad);
-  for (const want of ['app/upload.ts:2 console.log', 'jobs/relight.py:2 print', 'ios/CaptureKit.swift:1 NSLog', 'logs/app-s1.jsonl raw logs', 'server/out.log raw logs', 'seq is 0, expected 1'])
+  for (const want of ['app/upload.ts:2 console.log', 'app/a.ts:1 console.table', 'app/a.ts:2 process.stdout.write', 'app/a.ts:3 console', 'jobs/relight.py:2 print', 'jobs/relight.py:3 print',
+    'jobs/relight.py:4 logging.info', 'jobs/relight.py:5 sys.stdout.write', 'ios/CaptureKit.swift:1 NSLog', 'ios/CaptureKit.swift:1 debugPrint', 'logs/app-s1.jsonl raw logs', 'server/out.log raw logs', 'seq is 0, expected 1'])
     assert.ok(e.includes(want), `${want}\n${e}`);
-  assert.match(bad.filter(o => o.level === 'warn').map(o => `${o.where} ${o.msg}`).join(), /app\/upload\.ts makes an outside call with no log\.call/);
-  const good = run(logging, { 'app/upload.ts': 'export const up = log => log.call("http", "POST /api/items", {}, () => fetch("/api/items"));\n',
-    'jobs/relight.py': 'def run(log):\n    log.stage("jb_1", "rendering")\n', 'app/fixtures/session.jsonl': start,
-    'scripts/tool.mjs': 'console.log("tools may print");\n', 'app/upload.test.ts': 'console.log("tests may print");\n', 'data/comps.jsonl': '{"title":"not a log"}\n' });
+  const warns = bad.filter(o => o.level === 'warn').map(o => `${o.where} ${o.msg}`).join('\n');
+  assert.match(warns, /app\/upload\.ts makes an outside call with no log\.call/, 'a .call( that is not the logger does not count');
+  assert.match(warns, /app\/a\.ts uses its own random numbers/);
+  const good = run(logging, { 'app/upload.ts': '// console.log("old")\nexport const up = log => log.call("http", "POST /api/items", {}, () => fetch("https://api.example/items"));\nconst hit = cache.fetch("k");\n',
+    'jobs/relight.py': '"""Usage:\n    print(run())\n"""\ndef run(log):\n    log.stage("jb_1", "rendering")  # print() is not used\n    return log.random.random()\n',
+    'ios/Printer.swift': 'func print(_ doc: Doc) { controller.print(doc) }\n', 'app/screens/logs/index.tsx': 'export const Logs = () => null;\n',
+    'app/fixtures/session.jsonl': start, 'scripts/tool.mjs': 'console.log("tools may print");\n', 'app/upload.test.ts': 'console.log("tests may print");\n', 'data/comps.jsonl': '{"title":"not a log"}\n' });
   assert.deepEqual(good, []);
 });

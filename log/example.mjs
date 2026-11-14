@@ -7,6 +7,7 @@ import { createLog } from './index.js';
 export async function runExample(sinkFor, build = '0.1.0+example') {
   // The app: what the person saw and tapped.
   const app = createLog({ src: 'app', build, sink: sinkFor('app'), seed: 7, platform: 'ios' });
+  app.event('app.state', { state: 'active' });
   app.show('sell', { state: 'empty' });
   app.input('tabbar', 'plus');
   const native = app.child({}, 'app.capture'); // the Swift camera sends its events to JS, which logs them under its own src
@@ -47,7 +48,7 @@ export async function runExample(sinkFor, build = '0.1.0+example') {
   item.ask('dc_1', 'firstPost', 'ask', { options: ['post', 'edit', 'skip'], why: 'first post of this item', trace: 'tr_abc123' });
   app.show('today', { state: 'card', decision: 'dc_1', item: 'it_1' });
   app.input('today', 'card.option', { decision: 'dc_1', value: 'post' });
-  item.answer('dc_1', 'post', { edited: false, ms_on_card: 4200 });
+  item.answer('dc_1', 'post', { edited: false, card_ms: 4200 });
   for (const site of ['ebay', 'depop']) item.action('it_1', 'post', 'user', { site, price: 60, floor: 50 });
   for (const site of ['ebay', 'depop']) {
     await item.call('browser', `${site}.post`, { item: 'it_1' }, async () => ({ url: `https://${site}.example/listing/1` }));

@@ -19,4 +19,4 @@ Pull, then read `log/README.md` before writing any code that runs. Start one log
 ## Next action
 Whoever starts the app, the server or a job wires it with steps A to F in `log/README.md` and deletes its step once the code is the example.
 
-Evidence: `node .agents/check.mjs` passes with 12 log tests and 1 check test; each was shown failing on a planted bug (masking off, sequence check off, leak scan off, Python drift, a lost error, an event missing from the example).
+Evidence: `node .agents/check.mjs` passes with 14 log tests and 1 check test. The tests were shown failing on planted bugs, and a fresh agent's review found 13 groups of defects (masking gaps and false alarms, the logger throwing into the program, lines stranded in the app sink, Python threads, checker holes, wrong README lines). Each is fixed with a test, except the limits listed in `log/README.md` under "What it cannot catch" and "What the log does not hold".
