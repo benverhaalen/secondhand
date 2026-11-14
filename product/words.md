@@ -106,3 +106,7 @@ Ben, project chat, 19:54 UTC.
 ## 2026-11-14 licences
 Ben, project chat, 19:56 UTC, after the note that Marist is a trial font.
 > dont worry about licenses for now this is all a hackathon demo
+
+## 2026-11-14 platform logos, no mono
+Ben, project chat, 19:59 UTC.
+> also using the platform logos for each. so rather than saying depop having the depop logo in like a bubble or something or without a bubble. im also completely fine not doing a mono font

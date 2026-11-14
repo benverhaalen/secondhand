@@ -20,7 +20,7 @@ Ben's spec, 2026-11-14 (verbatim in [product/words.md](../../../product/words.md
 --type-feature: clamp(21px, 19.55px + 0.371vw, 24.9px);   /* lh 1.10, ls -0.2px */
 ```
 
-- The spec gives display roles only. Body, labels and UI text still need a face; the round-2 Field report pairing (serif display, mono caps labels, sans body) would put Marist in the serif slot.
+- The spec gives display roles only. Body, labels and UI text still need a face. Ben, 19:59 UTC: "completely fine not doing a mono font", so labels can use the body sans instead of the round-2 Field report's mono caps.
 - Ben's brief says hierarchy comes from luminance, not bold. Using Book (weight 350) for every heading fits that.
 
 ## Font files
