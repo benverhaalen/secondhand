@@ -7,6 +7,8 @@ Spec (agent proposal): [spec/features/list.md](../../spec/features/list.md).
 ## What and why
 Post to every marketplace, then delist everywhere once the item sells, using Browser Use's cloud computer use where no API exists. Ben: [words](../../product/words.md#2026-11-14-tools-and-capture).
 
+Posting to Grailed and OfferUp is for later: [ideas board](../../ideas/post-to-grailed-and-offerup.md).
+
 ## How it works
 Not designed yet. Keep the mechanism here once research picks one, together with the reference it came from and the job that reference does.
 

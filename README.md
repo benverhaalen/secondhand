@@ -12,6 +12,7 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [product/pitch.md](product/pitch.md) | How secondhand is pitched: the problem in numbers, five narratives, the recommended order | Both; *agent proposal* until picked |
 | [product/words.md](product/words.md) | Ben's and Nate's exact product words, the source everything else cites | Append only |
 | [features/](features/) | One living page per feature | Whoever owns the feature |
+| [ideas/](ideas/README.md) | Ideas for after the product works, one file each, sorted | Both |
 | [research/](research/README.md) | Raw research: `research/<slug>/ben/` and `research/<slug>/nate/` | Each person's subfolder: only that person and their agents |
 | [log/](log/README.md) | The logger every program writes through, the steps to wire each one, and how to read a log | Agents |
 | [AGENTS.md](AGENTS.md) | How agents decide, research and build here, by situation | Both |

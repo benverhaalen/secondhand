@@ -52,7 +52,7 @@ Ben, 21:08: "this is a product demo, getting something that works for a hackatho
 | Constant-color shot (Apple, D65) | Stretch | **In** as one extra tag or fabric shot that gives Seedream true color. |
 | Google Lens through SerpApi | Asked Ben because of a terms gray area | **Use it.** |
 | "Fits like" against brand charts | About 10 charts | Cover every brand on the demo rack plus the common ones (Carhartt, Patagonia, Levi's, Nike, Uniqlo...). |
-| Website with a card for scale | Only if there's time | Unchanged: Ben said app first. |
+| Website with a card for scale | Only if there's time | Unchanged: Ben said app first. Now on the [ideas board](../../../ideas/website.md). |
 
 Kept on purpose, because they are the human in the loop judges want to see: yes or no on each flaw, dragging measure lines, "Looks right".
 

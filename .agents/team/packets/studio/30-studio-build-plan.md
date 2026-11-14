@@ -48,3 +48,12 @@ Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5
 - Built: `research/studio/ben/prototype/photo_score.py` (score, brightness-only tweaks, per-platform crop, search loop with a truth limit) and `judge_prompt.txt` for the decision model. Write-up: [photo-score.md](../../../../research/studio/ben/photo-score.md).
 - Finding: no platform publishes how photos affect ranking, so the score is a quality measure and is not fitted to sales. Ben's careful photos gain about one point; deliberately dimmed copies recover from the mid 70s to about 90.
 - Open, *agent proposal*: fit the weights to depop-plus listings if they carry views, likes or days to sell.
+
+## Added 23:20 UTC: templates, reference set, C2PA
+
+- Ben's words: [garment templates, a reference set, and reading c2pa](../../../../product/words.md#2026-11-14-garment-templates-a-reference-set-and-reading-c2pa). He also settled level 2: flattening is allowed.
+- Built: `research/studio/ben/templates/` (shirt, sweatshirt, pants outlines), `prototype/templates.py`, `prototype/refset.py`, `prototype/c2pa_read.py`.
+- For capture: the template outline is the overlay to line the item up with, and `templates.json` has the shot list per garment type.
+- Found: asking the model to re-lay a tee into the template redrew the neck tag. *Agent proposal:* templates steer capture and crop; the model only flattens in place.
+- Found: Seedream renders carry C2PA that says "made by an AI model", signed by BytePlus. A crop or JPEG save drops it.
+- Open for Ben: keep a credential on the exported photo, or let it drop. *Agent proposal:* keep our record either way and never claim a touched-up photo is unedited.

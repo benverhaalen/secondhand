@@ -370,3 +370,23 @@ Ben, pricing, search and watch thread, 22:25 UTC.
 ## 2026-11-14 our own monitor, and a packet for nate
 Ben, pricing, search and watch thread, 23:03 UTC.
 > is there no way to get that from github? the openrouter key? also ensure to send a packet to nates agents about all this all this is super big. also see if theres any way to create our own firecrawl monitor for our product. this is something that could be out of scope for the hackathon. but it could be something to get into the repo.
+
+## 2026-11-14 code rules from the harness
+Ben, project chat, 23:01 UTC.
+> also try to get some codebase rules into our codebase from my harness so nate's code is written well.
+
+## 2026-11-14 nate open source onto databricks, and open-internet sources
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, in three messages.
+> I wonder if we can collect deep research subagent driven to explore technologies existing, open source, that we can utilize and refactor to fit databricks, in the areas where we don't already have a databricks version, and building it onto databricks is impressive. Treg shows alot of cool stuff. we can build a fully databricks powered version of this too https://github.com/NVIDIA/auto-ontology
+
+> Also look at the way information is found and aggregated https://github.com/666ghj/MiroFish
+
+> wait, do not limit from only licensd sources, if its open internet, its licenses
+
+## 2026-11-14 ideas board, and treg on databricks after the product
+Ben, project chat, 23:06 UTC. Excerpt; the first sentence is about running his Mac through the Codex CLI.
+> also create a spot in the repo and have it sort of refactor some things that ive explicitly said could be out of scope in other docs and decisions. where its like an ideas board. each md is a different idea. you could sort them. like nate is thinking of doing a sort of refactoring treg into databricks platform. that if we get to it would be so cool but we need the product first before we optimize yk.
+
+## 2026-11-14 garment templates, a reference set, and reading c2pa
+Ben, project chat, 23:01 UTC, inside a longer message.
+> but essentially the video type thing should frame photos super similar to my depop ones. like we should have templates that are there to give to the image model and have some way to screenshot the best most useful things to get a 'character' like how those ai influencers give seedance 2.5 a photo of a person far away, close up, at different angles etc to try to get it to conceptualize a person well. similar principle with images. have blank templates that work for any pants, shirt, sweatshirt. that present the clothes super well and flattering without changing anything about them. also scraping c2pa from the image if that image model has any is good. it shouldnt change anything in reality except maybe how things are flattened etc.
