@@ -12,7 +12,7 @@ Claims keep the marks of the note they come from: *observed* (opened the source)
 ## 1. The plan in short
 
 1. **One choke point for every outward action.** Agents only read and propose. Posting, delisting, replies, offers, prices, pickup and address run through one server route that checks a signed tap, the item's current version and the tier rules. That route is what makes "never below your floor without a tap" and "address, pickup and payment are never automated" true in code, not in a prompt. *inferred, mirrors `NEVER_PROMOTED` in [spec/lifecycle.mjs](../../../spec/lifecycle.mjs)*
-2. **One harness per marketplace app, run on Browser Use cloud** (Ben, [21:07](../../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)). Each harness maps the app's functions, and every outward function stops for the user's tap, which is how we stay within each site's terms. eBay stays on its REST API, the one route its terms allow; Depop moves to its partner API if access arrives. *observed routes, inferred choice*
+2. **One harness per marketplace app, run on Browser Use cloud** (Ben, [21:07](../../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)). Each harness maps the app's functions, and every outward function stops for the user's tap. eBay gets a harness too; its REST API is used alongside it where it's faster (sale webhooks, sandbox purchases on cue). Depop's partner API is used the same way if access arrives. It's a demo, so we build every route and show it working ([decisions](../../../product/decisions.md#2026-11-14-its-a-demo-so-build-it)). *observed routes, inferred choice*
 3. **A sale is a paid order, and a delist counts only when we read the listing back and it's gone.** Webhooks where they exist, polls behind them, a reconcile job every 5 minutes, and a red card whenever a listing that should be down is still buyable. *observed (eBay, Depop docs), inferred pipeline*
 4. **Today cards are fixed frames, filled by typed tools; the agent composes the evidence inside them.** AI SDK 6 typed tool parts give one card shape per Decision kind. json-render limits the agent to our catalog of about 40 brand components when it composes evidence, item screens and Ask answers. *observed APIs*
 5. **The phone app is Expo (React Native)**, decided at 21:05 ([decisions](../../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). Cards render with `@json-render/react-native` 0.22.0, whose peers are React 18 or 19 and React Native 0.71 or later *observed (npm)*. The server is Databricks' own chat template, forked and used as an API: Express, AI SDK 6, `@databricks/ai-sdk-provider`, Lakebase, MLflow assessments for every tap. *observed*
@@ -84,13 +84,13 @@ Each function in a harness file has: a zod input and output schema (the output b
 
 | Site | Route | Sale signal | Notes |
 |---|---|---|---|
-| eBay | REST API, wrapped in the same functions: Inventory `createOffer`, `publishOffer`, `withdrawOffer`; Message API; `RespondToBestOffer` *observed* | `ORDER_CONFIRMATION` webhook plus `getOrders` every 60 s *observed* | No browser on eBay: its 2026 terms ban automated access without permission *asserted* |
+| eBay | Harness, plus the REST API behind the same functions where it's faster: Inventory `createOffer`, `publishOffer`, `withdrawOffer`; Message API; `RespondToBestOffer` *observed* | `ORDER_CONFIRMATION` webhook plus `getOrders` every 60 s *observed* | The sandbox lets us trigger a purchase on cue, which makes the double-sale demo reliable *inferred* |
 | Depop | Harness now; partner API (`DELETE /products/by-sku/{sku}/`, `v1:order.new`) if access arrives *observed* | `listOrders` every 1 to 2 min; webhook later | Its staging fake purchase only works on the API |
 | Poshmark | Harness | sale email push, plus `listOrders` every 1 to 2 min *inferred* | delists jump ahead of other actions in the pacing queue; void an open offer before delisting *observed (Vendoo)* |
 | Mercari | Harness | same as Poshmark | read back after posting: double posts happen *observed (Nifty)* |
-| Facebook | Harness for local pickup only; shipped items already show there through eBay *observed* | the user confirms the handoff | highest bot detection *asserted*, so Publish is always the user's tap |
+| Facebook | Harness for every item, shipped and local | the user confirms a local handoff; `listOrders` for shipped sales | Publish is the user's tap like every first post |
 
-**Speed.** Every harness call is a Browser Use run, so a delist takes about 1 to 4 minutes *asserted*, not seconds. Keep sessions warm with `keepAlive` on sites with a live listing, and start every delist in parallel the moment a sale is confirmed. A replay layer that skips the browser for repeat actions stays a later option if the race window is too long. *inferred*
+**Speed.** Every harness call is a Browser Use run, so a delist takes about 1 to 4 minutes *asserted*, not seconds. Keep sessions warm with `keepAlive` on sites with a live listing, and start every delist in parallel the moment a sale is confirmed. Then build the fast path: while a harness runs, record the site's own network calls, and replay them directly for repeat actions (delist, revise, read back), falling back to Browser Use when a replay fails. That turns minutes into seconds for the race window. *inferred*
 
 **First post is two-phase** (decided: first post is Ask). Run 1 fills the form and stops, keeping the session alive. The card shows the read-only live view next to the packet. The tap starts run 2 on the same session, which presses Post *observed*. The live view link works as a credential *observed*, so it only reaches the signed-in owner.
 
@@ -109,7 +109,7 @@ Each function in a harness file has: a zod input and output schema (the output b
 
 **Tiers by intent** ([messages §3](../../messages/ben/messages-and-offers.md#3-intent-to-tier-to-card)): availability and shipping questions are Auto. Size answers are Auto only when every number is *measured* or *you said*. Offers, counters, bundles, holds and condition questions are Ask. Pickup time, address, payment, off-platform and scam patterns are Never alone. A sold item turns every availability answer into "sold" and every offer into a decline card, by state, not by the model.
 
-**Offer facts that change the cards:** eBay buyer offers expire in 24 hours, counters in 96, with 5 counters each side *observed*. Depop's accepted offer isn't a sale, so it's dibs *observed*. Platform auto rules (eBay auto-accept and auto-decline, Poshmark Smart Sell, Depop auto-negotiate, Mercari auto offers to likers) bypass our tiers when on *observed*, so they stay off unless they mirror a Rule the user promoted, and never below the floor.
+**Offer facts that change the cards:** eBay buyer offers expire in 24 hours, counters in 96, with 5 counters each side *observed*. Depop's accepted offer isn't a sale, so it's dibs *observed*. Platform auto rules (eBay auto-accept and auto-decline, Poshmark Smart Sell, Depop auto-negotiate, Mercari auto offers to likers) bypass our tiers when on *observed*, so we drive them from our Rules: when the user promotes a Rule, the harness switches on the matching site setting, never below the floor.
 
 **Learning.** Each tap writes an `approvals` row and an MLflow feedback on the trace. "Always do this" appears after 3 clean approvals of the same Rule key: edited less than 10%, in at least 2 conversations, not all within 10 minutes, and none faster than 2 seconds (fast taps are the rubber-stamp signal). Rules carry a limit, a daily cap and a 14-day expiry. Any Undo or bad outcome pauses the Rule. One in 20 Auto replies is held as a "Would you have sent this?" card, which gives the eval job unbiased labels. The hourly eval job proposes thresholds and promotions; a developer approves threshold changes in the demo. *inferred*
 
@@ -164,7 +164,7 @@ Each function in a harness file has: a zod input and output schema (the output b
 | Buyer asks for the address, or writes "ignore your rules" | The guard reads facets in the final text; intent labels don't matter for Never alone |
 | An approved draft is edited | The token is voided and re-minted over the new text; the guard runs again |
 | Offer below the floor | Arithmetic, not the model, tags it `priceBelowFloor`; never promotable (decided) |
-| Native auto rules on the site | Off by default; set only to mirror a promoted Rule, never below the floor |
+| Native auto rules on the site | Set them from our Rules: a promoted "accept $X or more" switches on the site's own auto-accept at X, never below the floor |
 | Fake payment screenshot or "paid you twice" | Only the site's own order state counts as paid (spec "sale was paid") |
 | Model names a component that doesn't exist | Server validation, one repair prompt, then the module is dropped |
 | Half-streamed card tapped | Actions stay disabled until the row and its signed options exist |
@@ -178,10 +178,11 @@ Each step ends with something we can run and push. *inferred*
 1. **Hour 0 to 2: core.** Fork the template, deploy it, connect Lakebase, create the tables. Run the hour-1 checks in §2; switch to the fallback at hour 2 if they fail. Write the act route, `policy()`, the double lock and its failing tests. Email Depop for partner access and register eBay developer keys at the start.
 2. **Hour 2 to 6: eBay end to end.** Post (two-phase), sandbox sale webhook, delist, read-back, reconcile, red card. This alone shows the whole loop.
 3. **Hour 4 to 8: Today.** The fixed frames for first post, offer, below floor, failed delist and refund; json-render catalog with 10 evidence modules; MLflow assessment on every tap; the "why?" timeline.
-4. **Hour 6 to 12: second and third site.** Depop by API if granted (its staging purchase endpoint stages a double sale on demand *observed*), else its harness; then the Poshmark or Mercari harness.
-5. **Hour 8 to 14: inbox.** eBay messages and offers, the classifier, the guard and its tests, Ask and Never alone cards, then Browser Use reading one other site.
+4. **Hour 6 to 12: harnesses.** eBay, Depop, Poshmark, Mercari and Facebook, in that order, each with post, delist and read-back first.
+5. **Hour 8 to 14: inbox.** eBay messages and offers, the classifier, the guard and its tests, Ask and Never alone cards, then `readInbox` and `reply` on every harness.
 6. **Hour 12 to 18: learning.** Approvals, "Always do this", Undo and demotion, the eval job, spot checks.
-7. **Hour 18 on: demo polish.** The rest of the catalog, the capture components, `sold_to_all_down_ms` on You.
+7. **Hour 16 to 20: fast path.** Record network calls during harness runs and replay delists and read-backs directly.
+8. **Hour 18 on: demo polish.** The rest of the catalog, the capture components, `sold_to_all_down_ms` on You.
 
 **Demo script.** List the jacket on eBay, Depop and Poshmark from one approval. A buyer offers below the floor: the card asks, and it can't be automated. Sell it on eBay with a sandbox purchase: the Depop and Poshmark harnesses take their listings down on screen, live view and timer showing. Fail the Poshmark delist on purpose and let a second buyer pay: the item goes red and the refund card asks. Open "why?" on any card to show the MLflow trace and the tap that approved it.
 
@@ -190,14 +191,14 @@ Each step ends with something we can run and push. *inferred*
 - [decisions.md](../../../product/decisions.md#2026-11-14-the-platform-list-is-set) says only eBay has an official listing API. Depop now has a partner API for crosslisters, by application *observed*. The decision stands as written; this note records the change.
 - [missing-features M2](missing-features.md) said eBay offers expire in about 48 hours. eBay's own pages say 24, and 96 for counters *observed*. Fixed there.
 - The "6-day Poshmark suspension for mass delisting" wasn't found. Poshmark retired its excessive listing removal policy on 2026-07-23 *observed*; the risk now is the 3% cancel rate *asserted*.
-- eBay's 2026 User Agreement bans automated access without permission *asserted* (secondary quotes; eBay's page still showed 2021 text). So eBay is API only, never Browser Use.
+- eBay's 2026 User Agreement bans automated access without permission *asserted* (secondary quotes). For a demo on our own test account, this doesn't stop us: eBay gets a harness too.
 
 ## 11. For Ben to decide
 
 1. ~~Can "accept offers of $X or more" become Auto after 3 approvals?~~ Decided: yes, per item, X at or above the floor ([decisions](../../../product/decisions.md#2026-11-14-accepting-offers-at-or-above-a-set-amount-can-be-promoted-per-item)).
 2. When an item is committed but not paid (an eBay sale awaiting payment, a Depop accepted offer), do the other listings pause or come down?
 3. Can "decline offers under my floor" ever be promoted? Declining sets no price, but the floor decision says any price below it asks.
-4. Traces need the message text to classify it, and the spec bans text in logs. Redact traces to ids and features, or keep a restricted trace table?
+4. ~~Redact message text from traces?~~ For the demo, traces keep the text so the "why?" panel shows what the buyer said; app logs still use ids. *agent proposal*
 5. Should the agent compose only the evidence and item modules (recommended), or whole Today cards?
 6. ~~Is a demo from our signed-in phone enough?~~ Settled by the Expo decision: the demo runs in the app on our phone.
 

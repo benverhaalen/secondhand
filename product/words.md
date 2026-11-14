@@ -160,3 +160,7 @@ Ben, in the thread "Plan the build for capture and measuring", 20:59 UTC, answer
 ## 2026-11-14 a harness per app
 Ben, posting, messages and dynamic UI thread, 21:07 UTC.
 > we are going to create our own harness around each app, understanding the function of each. we are going to use the cloud browser use. this is all a product demo so not a sold product. also using human in the loop fits in a nice area where we can do things along with tos
+
+## 2026-11-14 build it, it's a demo
+Ben, project chat, 21:08 UTC.
+> this is a product demo, getting something that works for a hackathon is different from writing a production app. you seem to be shutting down more ideas from research and dont consider that we can also just build things. so understand that
