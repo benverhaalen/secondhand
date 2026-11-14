@@ -174,7 +174,7 @@ Ben's rule: the app touches up and never changes the environment or lies. The le
 | Depop | all 1:1, 1280 x 1280 | 5 to 8 | 1 | Depop's own background remover | none found; only the seller's own photos are allowed *observed* |
 | Poshmark | all 3:4, 1200 x 1600, item inside the centered square | 8 | 1 | "NWT" banner covers, collages | covers are cropped to 3:4 since March 2026 *observed* |
 | Mercari | all 1:1, 1600 x 1600 | 8 to 12 | 1 | stock photos | "only photos you took" *observed* |
-| OfferUp | 1:1, 1600 x 1600; others 4:3 | 8 | 0 | nothing | heavily edited photos are a removal reason *observed* (wording to confirm) |
+| OfferUp | 1:1, 1600 x 1600; others 4:3 | 8 | 0 | nothing | "a photo of the actual item, not a catalog or stock photo", and no added stickers or text *observed*; the buyer inspects in person |
 | Grailed | 4:5, 1600 x 2000 (ratio unconfirmed) | 6 to 9 | 0 | nothing; a real wall or floor is the house style | listings are reviewed for authenticity; keep blacks true |
 
 Level 2 ("pressed", which relaxes creases and removes lint) should stay off on every platform until Ben decides. If it is kept, limit it to the cover on Depop, Poshmark and Mercari, and never use it on eBay, OfferUp or Grailed, where the photo is checked against the item.
@@ -203,6 +203,7 @@ No platform we read bans AI-edited photos by name. eBay and Depop both ship tool
 ## Limits
 
 - The helpers shared a budget of about 100 page reads an hour, and it ran out during every platform's second or third loop. Each note lists what was read at the source and what is from memory or from seller blogs. Facebook's and Poshmark's help centers refused automated readers, so their form limits and Poshmark's fee wording are *asserted*.
+- A recheck of load-bearing quotes after the helpers finished found one false claim: the OfferUp note said "heavily edited photos" were a named removal reason. A second read of both OfferUp pages found no such sentence, and the note is corrected. The helpers read pages through a fetch summarizer, so an *observed* mark means "the summarizer reported it", and exact wording should be re-read before it is quoted in the pitch or in the app. Rechecked and confirmed: OfferUp's shipping end dates, and that eBay's selling-limits page gives no numbers. Not reachable at the source: Poshmark's fee page (its help center refuses automated readers).
 - Field limits marked unconfirmed in the JSON (`unconfirmed`) should be overwritten the first time the adapter opens each live form. Every adapter's first rule is to read the form's own counters.
 - Verdicts are judgments from fees, rules, shipping limits and each platform's own statements about what sells. None is backed by sell-through data of ours. The data loop should record where each product type sells and how fast, and correct this table.
 
