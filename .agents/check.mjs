@@ -32,7 +32,7 @@ const touched = changed.filter(f => tier1.some(t => f === t || (t.endsWith('/') 
 const results = [
   ...(touched.length ? [{ level: 'warn', where: `${touched.slice(0, 3).join(', ')}${touched.length > 3 ? ` and ${touched.length - 3} more` : ''}`, msg: 'Tier 1 (.agents/thinking.md): full decide, research behind it, owner\'s words for taste, fresh review, dependents updated' }] : []),
   ...layout(root).map(msg => ({ level: 'error', where: 'layout', msg })),
-  ...links(root, { files }), ...provenance(root, { wordsBase }), ...research(root, { files }),
+  ...links(root, { files, awaited: JSON.parse(read('.agents/awaited.json') || '[]') }), ...provenance(root, { wordsBase }), ...research(root, { files }),
   ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }), ...logging(root, { files }), ...code(root, { files, changed }),
 ];
 // Keep each human in the loop on the other's work: research and packets that landed in the last day.

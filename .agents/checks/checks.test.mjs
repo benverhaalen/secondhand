@@ -158,7 +158,81 @@ test('code: a long file and code that changed with no test are questions, not fa
   const long = Array.from({ length: 450 }, (_, i) => `export const v${i} = ${i};`).join('\n');
   const out = run(code, { 'server/everything.ts': long }, { changed: ['server/everything.ts'] });
   assert.equal(errors(out), '');
-  assert.match(out.map(o => `${o.level} ${o.where} ${o.msg}`).join('\n'), /warn server\/everything\.ts .*450 lines[\s\S]*warn server\/everything\.ts .*no test changed/);
+  assert.match(out.map(o => `${o.level} ${o.where} ${o.msg}`).join('\n'), /warn server\/everything\.ts .*450 lines[\s\S]*warn server\/everything\.ts .*has no test/);
   assert.deepEqual(run(code, { 'server/post.ts': 'export const a = 1;\n', 'server/post.test.ts': '' }, { changed: ['server/post.ts', 'server/post.test.ts'] }), []);
   assert.deepEqual(run(code, { 'server/post.ts': 'export const a = 1;\n' }, { changed: ['README.md'] }), []);
+});
+
+const whereOf = out => out.filter(o => o.level === 'error').map(o => o.where).sort().join(' ');
+const check = (path, text, ctx) => run(code, { [path]: text }, ctx);
+test('code: a string that looks like a comment hides nothing, and a prompt is not a comment', () => {
+  const hidden = j("const opts = { type: 'image/*' };\nconst p = x as ", "any;\ntry { f(); } catch (e) {", "}\n/** Picks a photo. */\n");
+  assert.equal(whereOf(check('app/pick.ts', hidden)), 'app/pick.ts:2 app/pick.ts:3');
+  assert.equal(whereOf(check('app/url.ts', j('const u = `${proto}//${host}`; const q = y as ', 'any;\n'))), 'app/url.ts:1');
+  assert.equal(whereOf(check('app/label.ts', j("const label = 'Price ch", "anged per the review';\nconst t = `size: a", "ny`;\n"))), '');
+  assert.equal(whereOf(check('jobs/prompt.py', j('SYSTEM = """If you as', 'ked a question, as we disc', 'ussed, answer it."""\nGLOB = "jobs/*.py"  # fine\n'))), '');
+  assert.equal(whereOf(check('jobs/doc.py', j('def f():\n    """Does it, as we disc', 'ussed."""\n'))), 'jobs/doc.py:2');
+  assert.equal(errors(run(logging, { 'app/pick.ts': j("const opts = { type: 'image/*' };\ncons", "ole.log(opts);\n") })).includes('app/pick.ts:2'), true);
+});
+
+test('code: every common way to switch a test off fails, and a skip on a named condition passes', () => {
+  const off = ["it.sk", "ip.each([1])('x', () => {});", "test.describe.on", "ly('x', () => {});", "test.fi", "xme('x', () => {});", "test('x', { sk", "ip: true }, () => {});", "fi", "t('x', () => {});"];
+  for (let i = 0; i < off.length; i += 2) assert.equal(whereOf(check('app/a.test.ts', off[i] + off[i + 1] + '\n')), 'app/a.test.ts:1', off[i] + off[i + 1]);
+  for (const py of [j('pytestmark = pytest.mark.sk', 'ip\n'), j('@unittest.sk', 'ip("later")\ndef test_x(): ...\n'), j('@sk', 'ip("later")\ndef test_x(): ...\n')]) assert.equal(whereOf(check('jobs/test_a.py', py)), 'jobs/test_a.py:1', py);
+  assert.equal(whereOf(check('ios/CaptureTests/ShotTests.swift', j('@Test(.dis', 'abled("later")) func shot() {}\n'))), 'ios/CaptureTests/ShotTests.swift:1');
+  const fine = "expect(fit(box, frame)).toBe(1);\ntest.skip(browserName === 'webkit', 'no camera in webkit');\ntest('describe.skip( is banned', () => {});\nit.todo('posts to depop');\ntest('x', { skip: !site && 'needs a live site' }, () => {});\n";
+  assert.equal(whereOf(check('app/crop.test.ts', fine)), '');
+  assert.equal(whereOf(check('jobs/test_b.py', "@pytest.mark.skipif(not SITE, reason='needs a live site')\ndef test_x(): ...\n")), '');
+});
+
+test('code: a broad handler that drops the error fails in every form, and a narrow one passes', () => {
+  const drops = ["try { f(); } catch (e) { return null; }", "send().catch(noop);", "send().catch(() => false);", "send().catch(() => []);", "send().catch((e: Error) => {});", "send().catch(async () => {});"];
+  for (const d of drops) assert.equal(whereOf(check('server/send.ts', d.replace('catch', j('cat', 'ch')) + '\n')), 'server/send.ts:1', d);
+  for (const body of ['return None', 'continue', 'pass']) assert.equal(whereOf(check('jobs/run.py', `for x in xs:\n    try:\n        go(x)\n    except Exception as e:\r\n        ${body}\r\n`)), 'jobs/run.py:4', body);
+  assert.equal(whereOf(check('ios/Shot.swift', j('do { try shoot() } cat', 'ch let e { }\ndo { try shoot() } cat', 'ch _ { }\n'))), 'ios/Shot.swift:1 ios/Shot.swift:2');
+  assert.match(errors(check('ios/Shot.swift', j('do { try shoot() } cat', 'ch { }\n'))), /pass it to JS to log/);
+  assert.equal(whereOf(check('jobs/clean.py', 'try:\n    os.remove(p)\nexcept FileNotFoundError:\n    pass\n')), '');
+  assert.equal(whereOf(check('server/send.ts', "try { f(); } catch (e) { log.error('send', e); return null; }\nsend().catch(e => { log.error('send', e); return null; });\n")), '');
+});
+
+test('code: history is caught in the forms agents write, and domain language passes', () => {
+  for (const c of ['This used to be a loop', 'Fixed bug where the price was zero', 'Updated per review', 'Ben asked for this', 'as we discussed']) assert.equal(whereOf(check('app/a.ts', `// ${c}\n`)), 'app/a.ts:1', c);
+  const domain = '// Fires when the status changed from draft to live.\n// eBay shows this dialog when the user requested a refund.\n// Returns pages of 50, as requested by the limit param, at most 5 calls per request.\n// The token is used to call the API. Previously sold items are skipped.\n';
+  assert.equal(whereOf(check('app/b.ts', domain)), '');
+});
+
+test('code: every any, every grab-bag name, and the paths that are tests or config', () => {
+  for (const t of ['Array<any>', 'Record<string, any>', 'Promise<any>', 'string | any']) assert.equal(whereOf(check('app/t.ts', `let v: ${t.replace('any', j('an', 'y'))};\n`)), 'app/t.ts:1', t);
+  assert.equal(whereOf(check('app/t.ts', j('type T = an', 'y;\nconst l = x as unknown ', 'as Listing;\n'))), 'app/t.ts:1 app/t.ts:2');
+  assert.equal(whereOf(check('app/t.ts', 'const company = many ? all : anyOf(xs);\nconst s = "if any, say so";\n')), '');
+  for (const p of ['ios/Utils.swift', 'ios/Helpers/Foo.swift', 'app/StringUtils.ts', 'app/string-utils.ts', 'app/utils.native.ts', 'jobs/util_funcs.py', 'app/misc/a.ts']) assert.equal(whereOf(check(p, '')), p, p);
+  for (const p of ['app/components/common/Button.tsx', 'app/listing/futile.ts', 'server/src/build/plan.ts', 'jobs/conftest.py', 'ios/CaptureUITests/Launch.swift', 'e2e/flows/login.ts', '.eslintrc.js', 'jest.setup.ts']) assert.equal(whereOf(check(p, '')), '', p);
+  assert.equal(whereOf(check('server/src/build/plan.ts', j('const a = b as an', 'y;\n'))), 'server/src/build/plan.ts:1');
+  assert.equal(whereOf(check('jobs/conftest.py', j('try:\n    x()\nexcept:\n    pa', 'ss\n'))), '');
+});
+
+test('code: the questions fire where a look is worth it', () => {
+  const warns = (files, changed) => run(code, files, { changed }).filter(o => o.level === 'warn').map(o => o.msg).join('\n');
+  const long = Array.from({ length: 450 }, (_, i) => `export const v${i} = ${i};`).join('\n') + '\n';
+  assert.match(warns({ 'server/all.ts': long, 'server/all.test.ts': '' }, ['server/all.ts']), /^450 lines/);
+  assert.equal(warns({ 'server/all.ts': long, 'server/all.test.ts': '' }, ['README.md']), '');
+  assert.equal(warns({ 'server/db.types.ts': '// @generated\n' + long, 'server/db.test.ts': '' }, ['server/db.types.ts']), '');
+  assert.equal(warns({ 'server/all.ts': Array.from({ length: 400 }, () => 'x;').join('\n') + '\n', 'server/all.test.ts': '' }, ['server/all.ts']), '');
+  assert.match(warns({ 'server/post.ts': 'x;\n' }, ['server/post.ts', 'server/post.test.ts']), /has no test/);
+  assert.equal(warns({ 'server/post.ts': 'x;\n', 'server/post.test.ts': '' }, ['server/post.ts']), '');
+  assert.equal(warns({ 'app/login.tsx': 'x;\n', 'e2e/login.yaml': '' }, ['app/login.tsx', 'e2e/login.yaml']), '');
+  assert.match(warns({ 'app/login.tsx': 'x;\n', 'jobs/test_relight.py': '' }, ['app/login.tsx']), /app\/login\.tsx has no test/);
+});
+
+test('links: a link to a file someone has not pushed yet is a question until its date, then a failure again', () => {
+  const doc = { 'spec/a.md': '[d](databricks.md) [e](databricks.md)', 'spec/b.md': '[d](databricks.md) [gone](gone.md)' };
+  const awaited = [{ path: 'spec/databricks.md', owner: 'Nate', until: '2026-11-15T12:00:00Z', why: 'a draft not pushed yet' }];
+  const before = run(links, doc, { awaited, now: Date.parse('2026-11-14T23:30:00Z') });
+  assert.equal(errors(before), 'spec/b.md:1 link to gone.md: spec/gone.md does not exist');
+  assert.deepEqual(before.filter(o => o.level === 'warn').map(o => o.where), ['spec/databricks.md']);
+  assert.match(before.find(o => o.level === 'warn').msg, /3 links wait for this file from Nate until 2026-11-15T12:00:00Z/);
+  assert.match(errors(run(links, doc, { awaited, now: Date.parse('2026-11-15T12:00:01Z') })), /spec\/a\.md:1 link to databricks\.md: spec\/databricks\.md does not exist/);
+  assert.match(errors(run(links, doc, { awaited: [{ path: 'spec/databricks.md', owner: 'Nate' }], now: 0 })), /spec\/a\.md:1/);
+  const landed = run(links, { ...doc, 'spec/databricks.md': '# d' }, { awaited, now: 0 });
+  assert.match(landed.find(o => o.level === 'warn').msg, /has landed: delete its entry/);
 });
