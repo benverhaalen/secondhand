@@ -374,3 +374,7 @@ Ben, pricing, search and watch thread, 23:03 UTC.
 ## 2026-11-14 code rules from the harness
 Ben, project chat, 23:01 UTC.
 > also try to get some codebase rules into our codebase from my harness so nate's code is written well.
+
+## 2026-11-14 ideas board, and treg on databricks after the product
+Ben, project chat, 23:06 UTC. Excerpt; the first sentence is about running his Mac through the Codex CLI.
+> also create a spot in the repo and have it sort of refactor some things that ive explicitly said could be out of scope in other docs and decisions. where its like an ideas board. each md is a different idea. you could sort them. like nate is thinking of doing a sort of refactoring treg into databricks platform. that if we get to it would be so cool but we need the product first before we optimize yk.

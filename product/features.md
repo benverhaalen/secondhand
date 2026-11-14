@@ -19,3 +19,5 @@ Status moves: idea → researching → designing → building → demo-ready. Ch
 | [messages](../features/messages/) | Buyer chats, offers, meetups | idea | — |
 | [watch](../features/watch/) | Fuzzy wants, Exa alerts, deal check | idea | — |
 | [data](../features/data/) | Databricks backbone | idea | — |
+
+Ideas that wait until the product works are on the [ideas board](../ideas/README.md).
