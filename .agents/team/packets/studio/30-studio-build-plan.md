@@ -41,3 +41,10 @@ Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5
 - Four touch-ups from Ben's real photos ran on Seedream 5.0 Pro as a stand-in. Floor, framing, folds, prints and tags all kept (background agreement 0.89 to 0.94). Color drifts a little on two of four (tee less saturated, hoodie lighter). *Agent proposal:* push the item's color back to the white-balanced photo after the render.
 - `gate.py` gained the background check (`keep_background=True`).
 - Seedream 5.5 has not run: every GitHub Actions job on the repo fails in about 3 seconds with no runner (so does `check.yml`), Ben's Mac has no OpenRouter key, and the cloud environment cannot reach openrouter.ai. Details in the [build plan](../../../../research/studio/ben/build-plan.md#first-look-at-touch-ups-2132-utc-seedream-50-pro-not-55).
+
+## Added 22:55 UTC: photo score and tweaks without a model
+
+- Ben asked for non-generative tweaks and a rough photo score ([words](../../../../product/words.md#2026-11-14-photo-tweaks-without-generation-and-a-photo-score)).
+- Built: `research/studio/ben/prototype/photo_score.py` (score, brightness-only tweaks, per-platform crop, search loop with a truth limit) and `judge_prompt.txt` for the decision model. Write-up: [photo-score.md](../../../../research/studio/ben/photo-score.md).
+- Finding: no platform publishes how photos affect ranking, so the score is a quality measure and is not fitted to sales. Ben's careful photos gain about one point; deliberately dimmed copies recover from the mid 70s to about 90.
+- Open, *agent proposal*: fit the weights to depop-plus listings if they carry views, likes or days to sell.

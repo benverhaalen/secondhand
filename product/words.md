@@ -264,6 +264,10 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > I want you to apply the ingenious product design perspectives but also account for what would be impressive. All data on the product and the markets to determine everything we can, as well as save information the user just wants to learn about and see. Even users who dont expect to use secondhand for selling can still gain so much value from an all in one search of products both on the official markets and second hand stores to see price changes, the ways industries evolve, products release and how hype is established, what fashion trends are out, everything
 
+## 2026-11-14 photo tweaks without generation and a photo score
+Ben, project chat, 22:23 UTC, inside a longer message about the UI loop.
+> also another note about the automated post creation type thing, there are ways to tweak images that dont require generation. brightness, contrast, etc. it should be able to tweak these. think about a general criteria about how posts can be optimized photo wise for engagement and the algorithms on these apps you know. and then through that research you end up being able to give our own rough score probably with a decision model to a photo and then can tweak until its optimal you just kind of need to again prompt it super well.
+
 ## 2026-11-14 nate visitors and full users
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether a person who never sells is a full user or a visitor through search.
 > They can establish themslevs as a full user, or just use the visitor search, visitors can just search, but not sell, they can get linked with our referral though
