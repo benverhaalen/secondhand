@@ -25,7 +25,16 @@ Ben: "it shouldnt change the environment or lie. it should touch up" ([words](..
 
 Never touched at any level: the background, the item's shape and position, color beyond white balance, prints, tags, and every sign of wear, fading, stain or damage. Wrinkle relaxing is the one judgment call: it is what a seller does with a steamer before shooting, so it is offered, but as a separate level the person picks, and the confirmed-defect boxes are protected through it. Whether level 2 is in or out is Ben's call.
 
-**Per platform.** Which level to default to on each site (and what not to do there) comes from the platform research in the posting thread; studio exposes the levels and the crop, and takes a per-platform default from that research.
+**Per platform** (from the [platform fit research](../../list/ben/platform-fit.md), section "Photos under the touch-up rule"; all of it *agent proposal*):
+
+| Platform | Default level | Cover crop |
+|---|---|---|
+| eBay, Depop, Mercari | 1. Light | 1:1 |
+| Poshmark | 1. Light | 3:4 portrait, item inside the centered square |
+| Facebook, OfferUp | 0. True color | 1:1 |
+| Grailed | 0. True color | about 4:5 (unconfirmed) |
+
+Studio reads the default and the crop from `platforms.<id>.photos` in [platform-fit.json](../../list/ben/platforms/platform-fit.json). One 3:4 portrait capture with the item inside the centered square serves every crop, and studio never pads a photo (eBay bans added borders). Tag, label, serial and flaw photos stay at level 0 everywhere. Level 2 stays off until Ben decides.
 
 **Run on Seedream 5.5.** [touchup.py](prototype/touchup.py) calls `bytedance-seed/seedream-5-5` through OpenRouter; the `studio touch-up test` workflow runs it on the three real items with the repo's key and commits the results to [renders/](renders/).
 
