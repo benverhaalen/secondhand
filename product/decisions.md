@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: extreme intention, and a UI constitution
+Agreed by: Ben, project chat at 20:17 and 20:20 ([words](words.md#2026-11-14-constitutions), [20:20](words.md#2026-11-14-extreme-intention)). Decided: "everything needs to be done with extreme intention". Every UI element has a stated reason. Ben also asked for a project constitution for how UI decisions are researched and made, grounded in his thesis. Text on screen must be understood by a person: no statistics notation ("Sold $36–52 n=41"), no counters that mean nothing ("3 need you, 11 handled"). Cards offer more than two actions. Items show their photo. The wordmark sits top center. The Needs you / All messages switch goes. Written up as [ui-constitution.md](ui-constitution.md); its articles beyond these are *agent proposals*. Changed: Today is reworked ([research/today/ben/today-rework](../research/today/ben/today-rework/README.md)), and seller features he hadn't named are listed in [missing-features.md](../research/cross-cutting/ben/missing-features.md). The 19:40 Today wireframe with the segments is superseded.
+
 ## 2026-11-14: in-app copy is minimal, and the UI shows rather than says
 Agreed by: Ben, project chat at 19:45 ([words](words.md#2026-11-14-show-not-say)). Decided: writing in the app is kept to the minimum, and state is shown (photos, pills, numbers, icons, motion) instead of explained in sentences. Every UI generation pass, by any agent, applies Ben's **anti-claudish** skill from his harness. The working rules are in [copy.md](copy.md), linked from AGENTS.md and the brand coder card. Changed: every screen gets a copy pass before it counts as done, and existing wireframe copy is cut on the next restyle.
 

@@ -1,6 +1,6 @@
 # Frontend standard: how every screen is built, judged and audited
 
-Asked for by Ben on 2026-11-14 at 19:47 ([words](words.md#2026-11-14-frontend-standard)). It extends the decided UI principles in [copy.md](copy.md): show, don't say; the anti-claudish writing pass; familiar patterns; attention on purpose. The references behind each rule, with their evidence marks, are in [research/cross-cutting/ben/frontend-references.md](../research/cross-cutting/ben/frontend-references.md). Values live in [brand/tokens.css](../brand/tokens.css); this file says when and why to use them.
+Asked for by Ben on 2026-11-14 at 19:47 ([words](words.md#2026-11-14-frontend-standard)). It sits under the [UI constitution](ui-constitution.md) and extends the decided UI principles in [copy.md](copy.md): show, don't say; the anti-claudish writing pass; familiar patterns; attention on purpose. The references behind each rule, with their evidence marks, are in [research/cross-cutting/ben/frontend-references.md](../research/cross-cutting/ben/frontend-references.md). Values live in [brand/tokens.css](../brand/tokens.css); this file says when and why to use them.
 
 Status: the four principles are Decided. Every concrete rule below is an *agent proposal* until Ben or Nate changes or accepts it. Where a source gives a number, the number is the source's, not ours.
 
@@ -133,7 +133,10 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 
 ### Honesty
-- [ ] Block: every number carries its source and sample size in a small source label.
+- [ ] Block: every number is said in plain words a first-time user understands ("Similar jackets sold for $36 to $52 lately"), with the source one tap away. No `n=`, no unexplained terms such as "floor" or "comps".
+- [ ] Block: every element has a row in the screen's reason table ([ui-constitution.md Article 1](ui-constitution.md#article-1-extreme-intention-every-element-has-a-stated-reason)).
+- [ ] Block: every item shown has its photo.
+- [ ] Block: each decision card names its full action set (primary, secondary, and More for the rest) and what happens if ignored.
 - [ ] Block: platforms appear as their real logos (in a white bubble on photos, bare elsewhere), never as written names or letter badges like e / D / M. Use `assets/platforms/`. Logos follow each brand's guidelines: unaltered colors and proportions, minimum size.
 - [ ] Block: every automatic action is labelled `AUTO` and can be undone.
 - [ ] Block: no fake scarcity, countdowns, guilt copy, confirmshaming or variable rewards ([psychology §9](../research/cross-cutting/ben/psychology.md)).
