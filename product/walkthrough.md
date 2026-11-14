@@ -6,6 +6,20 @@ Order runs from the biggest choice to the smallest, because each answer narrows 
 
 | # | Decision | Status |
 |---|---|---|
+| 1 | What the app is at its core | **decided: A, seller's crosslister** ([log](decisions.md)) |
+| 2 | Selling: how capture, measure, identify, studio, price, list, messages and sold chain into one flow | asking |
+| 3 | Buying: how wants, watch, Exa alerts, the deal check and the search box connect to selling | — |
+| 4 | Appraising: where it lives relative to selling and buying | — |
+| 5 | Accounts: your secondhand account, and how each platform is linked | — |
+| 6 | Human in the loop: what runs on its own, and what always needs a tap | — |
+| 7 | Behind the scenes: the shared record, agents, posting and replay, Databricks | — |
+| 8 | App shell: the navigation that holds all of it | — |
+| 9 | First launch and onboarding | — |
+| 10 | The everyday app open | — |
+
+Ben, 19:03: "ensure its like thinking about everything from the biggest functions. the goal is to hit all the features." So every step asks **how all the features work together**, never which ones to keep, and there is no single hero user. The order runs from the biggest function to the smallest.
+
+---|---|---|
 | 1 | What the app is at its core (its spine) | **decided: A, seller's crosslister** ([log](decisions.md)) |
 | 2 | Who the hero user is, and the demo story | asking |
 | 3 | What you see when you open the app on a normal day | — |
@@ -46,14 +60,17 @@ A and B are features of C, and D is how C behaves. Choosing C does not drop the 
 
 ---
 
-## 2. Who the hero user is, and the demo story
+## 2. Selling: how the features chain into one flow
 
-**Why it matters.** With selling at the core, the hero is a kind of seller. It sets what onboarding asks for, how many items the app expects at once, and the one story told to the judges. MadHacks is at UW–Madison, so the judges and most of the room are students. The Databricks track's criteria are not in the repo; a quick search did not find them (*not checked against a primary source*).
+**Features in play:** capture (guided shots, each serving the listing and the image model), measure, identify, studio, price, list, messages, sold.
 
-| Option | Who | Demo story | Strong at | Weak at |
+**Common answer, and why it is not kept.** A step-by-step wizard, one screen per feature, like eBay's magical listing ("photo, then draft, then review"). It works for one item, but eBay's reviews complain that editing goes "section by section, with a new screen for each one", and fixes take about 3x longer than entering by hand (*asserted*, [direct-references](../research/cross-cutting/ben/direct-references.md)). With 8 features, a wizard means 8 screens.
+
+| Option | How it chains | References | Strong at | Weak at |
 |---|---|---|---|---|
-| **A. Student moving out** | A student with a room of stuff and a deadline (break, lease end) | "Clear my room before break": scan 6 things, listed by lunch, messages handled, delisted when sold | The room relates instantly; volume shows off batch capture, the inbox and delisting | Low-value items; the price story is small dollars |
-| **B. Casual declutterer** | Anyone with a closet of things they mean to sell "someday" | "Sell the jacket you haven't worn in a year": one item, done in 2 minutes | Widest market; the "no thinking" interface fits | Low urgency; one item makes a thin demo |
-| **C. Part-time flipper** | Someone who buys at garage sales and thrift stores to resell | Garage sale: appraise a jersey, buy it, measure, relight, list, sell, delist | One item runs through every feature, including appraise | The crowded market (Vendoo, List Perfectly, FlipTip); power users pull the interface toward complexity |
+| **A. Wizard** | One screen per feature, in order | eBay magical listing, Vendoo | Easy to build and to follow | 8 screens per item; every feature is a wait |
+| **B. One live draft** | You shoot. Then one draft screen fills itself in as measure, identify, studio and price finish in the background. You fix anything in place and post. Messages and sold run on their own afterwards. | Edit in place (Dietvorst 2018); eBay's 50% fewer steps; Google Docs-style progressive fill | One screen holds every feature; nothing waits on the slowest step; mistakes are fixed where they are | The draft screen has to show which parts are still working, measured, estimated or yours |
+| **C. Batch queue** | You shoot many items in one go. The agent drafts all of them, and you approve them in a queue. | Vendoo bulk listing, Monarch's review inbox | Volume: a whole room in one session | A slower first result; a weaker one-item demo |
+| **D. Hand-off** | You shoot and walk away. It lists, and only interrupts to confirm price and condition. | Pixel Call Screen | Least effort | People rubber-stamp AI output (Parasuraman and Manzey 2010; Bansal 2021); this is the eBay backlash case |
 
-**Agent view: A.** It is the seller with the most items, the hardest deadline and the least patience, so it stresses exactly what a crosslister must do better: batch capture, messages handled for you, and reliable delisting. It is also the room. C's garage-sale appraisal can be one beat inside A's story (the student checks a find before buying it) instead of the hero.
+**Agent view: B, with C as the same draft repeated.** One item is one live draft; a batch is a queue of those same drafts, so the single item and the whole room use one screen and one habit. D's hand-off becomes a setting inside it (decision 6), not the default.
