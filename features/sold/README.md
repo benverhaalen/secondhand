@@ -18,3 +18,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: `research/sold/` (none yet)
 - Ben: `research/sold/ben/` (none yet)
 - Nate: `research/sold/nate/` (none yet)
+- Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#4-posting-delisting-and-jobs). *Agent proposal:* "gone" needs two absent reads some minutes apart, and buying a shipping label is Never alone ([Money](../../research/cross-cutting/ben/ai-harness-from-repos.md#money)).

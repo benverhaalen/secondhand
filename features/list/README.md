@@ -20,3 +20,4 @@ All research for this feature: [research/list/](../../research/list/)
 - Nate: `research/list/nate/` (none yet)
 - Ben, cross-posting and delisting: [crosspost-and-delist.md](../../research/list/ben/crosspost-and-delist.md). eBay stays API only; Depop has a partner API; Browser Use and the replay layer cover Poshmark, Mercari and Facebook; sales come from orders and webhooks, and a delist counts only after a read-back.
 - Ben, tech stack: [posting-browser-use-ebay.md](../../research/list/ben/posting-browser-use-ebay.md). eBay through its Listing/Inventory API with a dry-run mode; Browser Use V4 for sites without an API, stopped before Post until the user approves.
+- Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#4-posting-delisting-and-jobs). *Agent proposal:* a posting click is never retried; the listing sits in `verifying` while a reconciler reads back (thrift-agent).

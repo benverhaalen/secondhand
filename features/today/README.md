@@ -19,3 +19,4 @@ All research for this feature: [research/today/](../../research/today/)
 - Ben: [research/today/ben/](../../research/today/ben/)
 - Ben, generative UI: [generative-ui.md](../../research/today/ben/generative-ui.md). Fixed card per Decision kind on AI SDK 6 approvals and json-render, forked from the Databricks chat template; outward actions go through one signed, state-checked route.
 - Nate: `research/today/nate/` (none yet)
+- Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#3-the-approval-and-the-act-route). *Agent proposal:* every Decision expires, deciding and running are two guarded steps, and the world is re-checked when it runs (Paperclip, OpenClaw, Chatwoot). Repos by job: [business-pieces-and-repos.md](../../research/cross-cutting/ben/business-pieces-and-repos.md).
