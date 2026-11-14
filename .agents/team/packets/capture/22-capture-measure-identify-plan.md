@@ -15,6 +15,10 @@ Ben's ask (project chat, 2026-11-14 20:41 UTC): "judges love human in the loop. 
 - **Item and Photo primitives** gain per-field source and confidence, and Photo gains camera intrinsics and the floor plane. Field lists are in each note's "Data contract".
 - **Comps for price**: verified identity matches feed [packet 21](../price/21-pricing-search-watch-plan.md).
 
+## Demo mode
+
+Ben, 21:08: build ideas instead of dropping them for production reasons. Object Capture, generated 3D for clothes (scaled to measured lengths), the 10 s spin, the constant-color shot and SerpApi Lens are all back in. See "Demo mode" in [seeing-the-item-pipeline.md](../../../../research/cross-cutting/ben/seeing-the-item-pipeline.md).
+
 ## Next action
 
 Day one, first hour: measure Decisions latency on images, Gemini flaw recall and tape-measure error on 10 real garments, and Object Capture on the demo phone.
