@@ -273,3 +273,27 @@ From the critic run on each board's final images, plus my own look at the boards
 - opt-C.png: The offer gradient is paler than A and has a more yellow right edge than B; R9 changes only the notice card.
 - across opt-A.png, opt-B.png, opt-C.png: The hairline, gray and sky-tint notices are distinguishable, but the offer gradient also visibly changes across the boards, including the notice-dismissed screens. Keep that gradient identical so the comparison isolates R9.
 
+## R10 redo through the runner
+
+Made after the timing above, with [run.mjs](../../../.agents/skills/image-gen/run.mjs) and [r10-dark-button.plan.json](r10-dark-button.plan.json): the filled button on the dark page becomes a white pill. All numbers were measured on Ben's Mac (M3, 8 cores, 16 GB) unless marked.
+
+Codex's fixed cost, from a call that only replies "ok":
+
+| Codex home | Tokens | Seconds | Ben's hooks ran |
+|---|---|---|---|
+| Default | 9,030 | 6.9 | yes |
+| Clean: only a link to the sign-in | 4,089 | 4.5 | no |
+| Default with project docs off | 9,030 | 6.2 | yes |
+
+Starting 24 one-line calls under the clean home:
+
+| How they started | Most at once | Load at its peak | Memory at its peak | Median seconds per call |
+|---|---|---|---|---|
+| All in the same second | 24 | 54.4 | 3.2 GB | 99 |
+| Two every 2 seconds, 75 seconds after the first run | 8 | 22.1 | 1.4 GB | 8 |
+
+The second run began on load left by the first (guessed), so it was held back more than a quiet Mac would be.
+
+The image run: 3 calls (A, B, critic), then one fix round of 3. Median 48 and 56 seconds per call. Tokens: A 25,009 and 32,168, B 22,450 and 24,955, critic 18,348 and 20,844. The Mac was at load 66 from other work when it began, so that version of the runner made the calls one at a time; the runner now slows down under load instead of stopping.
+
+What still fails on [boards/r10-ui.png](boards/r10-ui.png), from the second critic: the jacket photo differs slightly between A and B, because each was an edit of its own earlier image, not of one base. A's gradient is brighter than the color sheet.

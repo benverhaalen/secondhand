@@ -1,9 +1,11 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { chmodSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { check, run } from './run.mjs';
+import { delimiter, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { check, machine, run } from './run.mjs';
 import { createLog, memorySink } from '../../../log/index.js';
 import { checkLog } from '../../../spec/log.mjs';
 
@@ -15,7 +17,7 @@ const of = (id, more = {}) => ({ job: id, take: 'this screen. Edit it.', ...more
 function fake({ ms = 15, files = () => ['image.png'] } = {}) {
   const calls = []; let now = 0, peak = 0;
   const exec = async call => {
-    calls.push({ ...call, found: readdirSync(call.folder) });
+    calls.push({ ...call, at: Date.now(), found: readdirSync(call.folder) });
     peak = Math.max(peak, ++now);
     await new Promise(r => setTimeout(r, ms));
     for (const f of files(call)) writeFileSync(join(call.folder, f), 'x');
@@ -61,12 +63,16 @@ test('an edit waits for its base and is handed the base image', async () => {
   assert.match(f.calls[1].prompt, /^make edit\n\nAttached images, in order:\n1\. this screen\. Edit it\.\n2\. the colors\. Do not copy: its layout\.\n\nMake one image\./);
 });
 
-test('a busy machine holds new calls back to one at a time', async () => {
-  const f = fake(), p = plan(['a', 'b', 'c'].map(id => job(id)), { max: 3, ramp: 9 });
-  const done = await go(p, f, { probe: () => ({ load1: 99, cpu: 0, mem: 0 }) });
-  assert.equal(f.peak(), 1);
-  assert.equal(done.failed, 0);
+test('a busy machine gets one new call every few ticks, not a burst', async () => {
+  const starts = p => p.calls.map(c => c.at);
+  const calm = fake({ ms: 150 }), busy = fake({ ms: 150 }), jobs = () => plan(['a', 'b', 'c'].map(id => job(id)), { max: 3, ramp: 9 });
+  await go(jobs(), calm);
+  const done = await go(jobs(), busy, { probe: () => ({ load1: 99, cpu: 0, mem: 0 }) });
+  assert.ok(starts(calm)[2] - starts(calm)[0] < 15, 'a calm machine starts all three on one tick');
+  assert.ok(starts(busy)[1] - starts(busy)[0] >= 20 && starts(busy)[2] - starts(busy)[1] >= 20, `starts were ${starts(busy)}`);
+  assert.equal(busy.peak(), 3, 'calls that are waiting on the server still overlap');
   assert.ok(done.held > 0);
+  assert.equal(done.failed, 0);
 });
 
 test('a call that leaves two images fails, and what waited for it is skipped', async () => {
@@ -99,4 +105,39 @@ test('a call is not fresh in a folder that holds files or sits in a repo, so nei
   const repo = mkdtempSync(join(tmpdir(), 'image-repo-'));
   writeFileSync(join(repo, 'AGENTS.md'), 'rules');
   await assert.rejects(go({ out: join(repo, 'runs'), jobs: [job('a')] }, f), /inside .*AGENTS\.md/s);
+});
+
+const posixOnly = { skip: process.platform === 'win32' && 'the stand-in codex is a shebang script, and Windows has no ps' };
+
+test('from the command line: a clean Codex home, one image per call, and a whole log', posixOnly, () => {
+  const dir = mkdtempSync(join(tmpdir(), 'image-cli-')), home = join(dir, 'home'), bin = join(dir, 'bin'), out = join(dir, 'out');
+  mkdirSync(join(home, '.codex'), { recursive: true }); mkdirSync(bin);
+  writeFileSync(join(home, '.codex', 'auth.json'), '{}');
+  writeFileSync(join(home, '.codex', 'AGENTS.md'), 'rules of the person who owns the machine');
+  // Stands in for the codex binary: fails unless it was started in the clean home, then leaves one image.
+  writeFileSync(join(bin, 'codex'), `#!/usr/bin/env node
+const { existsSync, writeFileSync } = require('node:fs'), { join } = require('node:path');
+const home = process.env.CODEX_HOME ?? '';
+if (!existsSync(join(home, 'auth.json')) || existsSync(join(home, 'AGENTS.md'))) { console.error('not a clean home: ' + home); process.exit(1); }
+writeFileSync(join(process.argv[process.argv.indexOf('-C') + 1], 'image.png'), 'x');
+console.log('tokens used: 4,089');
+`);
+  chmodSync(join(bin, 'codex'), 0o755);
+  writeFileSync(join(dir, 'plan.json'), JSON.stringify({ jobs: [job('a'), job('b')] }));
+  const env = { ...process.env, HOME: home, PATH: bin + delimiter + process.env.PATH };
+  delete env.CODEX_HOME;
+  const ran = spawnSync(process.execPath, [fileURLToPath(new URL('./run.mjs', import.meta.url)), join(dir, 'plan.json'), out], { env, encoding: 'utf8' });
+  assert.equal(ran.status, 0, ran.stdout + ran.stderr);
+  assert.match(ran.stdout, /2 of 2 done/);
+  assert.ok(lstatSync(join(out, '.codex-home', 'auth.json')).isSymbolicLink());
+  const { problems, events } = checkLog(readFileSync(join(out, 'logs', readdirSync(join(out, 'logs'))[0]), 'utf8'));
+  assert.deepEqual(problems, []);
+  assert.equal(events[0].event, 'session.start');
+  assert.deepEqual(JSON.parse(readFileSync(join(out, 'run.json'), 'utf8')).jobs.map(j => j.tokens), [4089, 4089]);
+});
+
+test('the machine probe counts a call and what it started, and nothing else', posixOnly, () => {
+  const none = machine(new Set()), self = machine(new Set([process.pid]));
+  assert.equal(none.cpu, 0); assert.equal(none.mem, 0);
+  assert.ok(self.mem > 10, `this process holds more than 10 MB, got ${self.mem}`);
 });
