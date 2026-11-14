@@ -7,10 +7,10 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 1 | What the app is at its core | **decided: seller's crosslister** ([log](decisions.md)) |
 | 2 | Selling: how the selling features chain | **decided: item by item, one live draft each, folder drop splits into drafts** ([log](decisions.md)) |
 | 3 | The always-there bottom bar | **decided: Today · Sell · ＋ · Buy · You, ＋ is the only way in** ([log](decisions.md)) |
-| 4 | Selling home | **decided: photo grid with state pills, numbers in You**; grouping asking ([log](decisions.md)) |
+| 4 | Selling home | **decided: photo grid with state pills in shelves by state; numbers in You** ([log](decisions.md)) |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
 | 6 | Shipping and pickup | **decided: your windows plus a saved meetup spot** ([log](decisions.md)) |
-| 7 | Buying home: search, wants, watch, deal check, appraise | — |
+| 7 | Buying home: search, wants, watch, deal check, appraise | asking |
 | 8 | You: money, insights per site, accounts, automation | — |
 | 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
 | 10 | Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
@@ -207,3 +207,21 @@ Screens: [A](../research/today/ben/sell-grid/SellGridA.png), [B](../research/tod
 | **C. Grouped by kind** | Sections for Clothes, Room and Tech, with state pills on each tile | Closet and inventory apps | Matches how you think about your stuff | State is scattered across sections |
 
 **Agent view: B.** It reads "sorted into items" as sorted by where each item is in its life. The pills say what to do, and the shelves say where you are. A's filter pills can also sit inside B as a "see all" view.
+
+**Picked: B, shelves by state** (Ben, 19:35).
+
+---
+
+## 7. The Buy tab
+
+**Holds** ([functions.md](functions.md) #25 to #30): one search box across every market, fuzzy wants, watching with alerts (when something is available, or under a price), matches, the deal check, and things you bought, which can become "Sell this". Exa refreshes at most hourly, so alerts promise "within the hour" ([exa-alerts](../research/watch/ben/exa-alerts.md)).
+
+Screens: [A](../research/watch/ben/buy-tab/BuySearch.png), [B](../research/watch/ben/buy-tab/BuyShelves.png), [C](../research/watch/ben/buy-tab/BuyFeed.png).
+
+| Option | Layout | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. Search first, wants as a list** | A big search box with recent searches, then a list of the wants you're watching, each with a "2 new" chip | Amazon or eBay search, Google Flights tracked prices | Fastest to type a new search | Text-heavy; matches are hidden one tap down |
+| **B. Shelves, mirroring Sell** | Search box, then shelves for New matches, Watching and Bought, with photo tiles and pills ("Fits · $34", "Under $100", "2 new", "Waiting") | The decided Sell tab | The same habit as Sell, so nothing new to learn; matches show without a tap | Three shelves to scan |
+| **C. One feed of matches** | Search box, a chip per want, then a 2-column feed of every match | Pinterest, Depop's explore | Best for browsing | Wants become filters, and watching is less visible |
+
+**Agent view: B.** The same visual language as Sell means nothing new to learn. New matches lead because they are what you came for. "Bought" closes the loop back to selling.
