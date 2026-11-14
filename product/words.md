@@ -73,6 +73,12 @@ Ben, concept thread, 19:33 UTC, on the Sell tab card.
 Ben, project chat, 19:38 UTC, after picking shelves for Buy.
 > but also say youre buying something and you want to appraise it well. that option seems intuitive to put there. what are your thoughts on my thoughts
 
+## 2026-11-14 extreme intention
+Ben, project chat, 20:20 and 20:21 UTC.
+> everything needs to be done with extreme intention.
+
+> ensure you construct the repo and tests and checks and the meta system for building and how you direct both me and nates agents to think about problems and work to give them all the tools to create the best decision that is informed by research and how a professional would do things.
+
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.
 

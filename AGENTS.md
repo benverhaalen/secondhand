@@ -8,14 +8,20 @@ Keep building the current task while staying current with relevant team changes.
 
 Use git often, the usual way. Follow the [git rules](.agents/coordination.md#git-rules): pull when you start and before you push, commit each piece that works, push after every working commit, work directly on `main` and push often so teammates' agents pick it up (no long-lived branches; helpers never make their own), small commits of explicit paths with `type(scope): plain words` messages, never auto-reset/stash/rebase a shared or dirty checkout, never force-push shared branches, and never commit secrets or personal data.
 
-## Where things are
+## How to work here
 
-The map is in [README.md](README.md). Read only what your task touches:
+The map is in [README.md](README.md). Read [product/vision.md](product/vision.md) and the page for your feature (`features/<slug>/`), then whatever your situation calls for:
 
-- Read [product/vision.md](product/vision.md) and the page for your feature under `features/<slug>/`. Feature slugs are listed in [product/features.md](product/features.md).
-- Write research only in your human's subfolder of the feature: `research/<slug>/ben/` or `research/<slug>/nate/`. The note format is in [research/README.md](research/README.md).
-- A feature page or the vision gets a one-line summary that links to the research note. Quotes go in [product/words.md](product/words.md), verbatim and append only. Mark your own suggestions as *agent proposal*. Never move one to Decided yourself.
-- A packet's topic is its feature slug. After adding a slug, a research folder or a packet topic, run `node .agents/check-layout.mjs`.
+| Situation | Do this |
+|---|---|
+| A choice that shapes what gets built, or is hard to undo | Skill `decide`: options, evidence, a recommendation. Taste, direction and scope go to Ben or Nate. |
+| You need a fact that could have changed, or a reference | Skill `research-note`: rawest sources, every claim marked. File it in `research/<slug>/<your human>/`. |
+| Any screen, copy or visual work | Skill `ui-screen`: [brand/coder-card.md](brand/coder-card.md), [product/frontend-standard.md](product/frontend-standard.md), [product/copy.md](product/copy.md). |
+| Ben or Nate says something about the product | Quote it verbatim in [product/words.md](product/words.md) (append only), and link to it from where it's used. |
+| A correction you could check with a script | Add it as a check with a failing test in `.agents/checks/`, instead of another line of instructions. |
+| Before every push | `node .agents/check.mjs` (checks and tests). It must pass. |
+
+The skills live in `.agents/skills/` (Codex) and `.claude/skills/` (a link to the same files). Mark your own suggestions as *agent proposal*, and never move one to Decided yourself.
 
 ## UI writing
 
