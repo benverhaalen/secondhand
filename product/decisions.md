@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: listing goes item by item, in a drafting area
+Agreed by: Ben, in words at 19:08 ([words](words.md#2026-11-14-function-map)). This answered walkthrough step 2, and the card was closed as option B. Decided: each item gets its own live draft. The draft shows a researching state while identify, measure, studio and price run. Dropping a whole folder of photos splits it into one draft per item. Changed: the selling flow is one draft screen per item. The [function map](functions.md) is now the source for every later option.
+
 ## 2026-11-14: secondhand is a seller's crosslister at its core
 Agreed by: Ben, on decision card 1 of the [walkthrough](walkthrough.md#1-what-the-app-is-at-its-core) in the concept thread (19:02 UTC). He picked A over the agent's recommendation, C (item ledger). Decided: selling leads. Appraise and buy stay in scope ([keep every feature](#2026-11-14-keep-every-feature-in-scope)) as add-ons to the selling flow. Changed: decisions 2 to 10 are framed around a seller first. The edge has to come from how well it sells (measured fit, honest relit photos, net proceeds, messages handled), not from posting to more places, since only eBay has an official listing API.
 

@@ -50,5 +50,9 @@ Ben, project chat, 19:03 UTC.
 Ben, project chat, 19:04 UTC.
 > databricks is judging based on how well you use databricks platform / creativity sort of. its super general no clear criteria.
 
+## 2026-11-14 function map
+Ben, project chat, 19:08 UTC.
+> like think from a ui perspective what the main functions of it are to build what are the buttons on the bottom always there, etc. thinking of it as a scaffold and trying to create familiar ui. listing should happen item by item. one at a time. i could just drop a huge folder of photos too and it would do that too. there should be like a drafting area. could have a state when it researching. all the functions a super deeply thought out product should have. my active listings, past listing, total amount earned, total count, total potential earnings, messages, automation, buying. how much interest each has like how long the average took to sell. what they sell at. how it differentiates by site. shipping. pickup scheduling ie you can add events to google calendar or approve times for it to message people to pick things up. think more of the functions of the user and think of everything from users perspective and think super deeply and like audit it heavily. like all decisions from ui and product and ux should all come from that whe you give me options to choose from. scaffold out the core functionalities of everything yk.
+
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.

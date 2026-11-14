@@ -2,34 +2,24 @@
 
 Ben asked to work through the whole app one decision at a time, starting wide and narrowing ([words](words.md#2026-11-14-decision-walkthrough)). Each step lists distinct options, the agent's view, the tradeoffs and the research behind it. Ben picks on a card in the project thread, and the pick is logged in [decisions.md](decisions.md). Everything below a pick is *agent proposal* until it is picked.
 
-Order runs from the biggest choice to the smallest, because each answer narrows the next.
-
 | # | Decision | Status |
 |---|---|---|
-| 1 | What the app is at its core | **decided: A, seller's crosslister** ([log](decisions.md)) |
-| 2 | Selling: how capture, measure, identify, studio, price, list, messages and sold chain into one flow | asking |
-| 3 | Buying: how wants, watch, Exa alerts, the deal check and the search box connect to selling | — |
-| 4 | Appraising: where it lives relative to selling and buying | — |
-| 5 | Accounts: your secondhand account, and how each platform is linked | — |
-| 6 | Human in the loop: what runs on its own, and what always needs a tap | — |
-| 7 | Behind the scenes: the shared record, agents, posting and replay, Databricks | — (Databricks is judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) |
-| 8 | App shell: the navigation that holds all of it | — |
-| 9 | First launch and onboarding | — |
-| 10 | The everyday app open | — |
+| 1 | What the app is at its core | **decided: seller's crosslister** ([log](decisions.md)) |
+| 2 | Selling: how the selling features chain | **decided: item by item, one live draft each, folder drop splits into drafts** ([log](decisions.md)) |
+| 3 | The always-there bottom bar | asking |
+| 4 | Selling home: drafts, live and past, interest per item | — |
+| 5 | Inbox: messages, offers, pickups and approvals in one place | — |
+| 6 | Shipping and pickup (Google Calendar, approved time windows) | — |
+| 7 | Buying home: search, wants, watch, deal check, appraise | — |
+| 8 | You: money, insights per site, accounts, automation | — |
+| 9 | Human in the loop: what runs on its own, and what always needs a tap | — |
+| 10 | Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
+| 11 | First launch and onboarding | — |
+
+Since 19:08, every option is derived from the [function map](functions.md) ([words](words.md#2026-11-14-function-map)).
 
 Ben, 19:03 ([words](words.md#2026-11-14-biggest-functions-first)): "ensure its like thinking about everything from the biggest functions. the goal is to hit all the features." So every step asks **how all the features work together**, never which ones to keep, and there is no single hero user. The order runs from the biggest function to the smallest.
 
----|---|---|
-| 1 | What the app is at its core (its spine) | **decided: A, seller's crosslister** ([log](decisions.md)) |
-| 2 | Who the hero user is, and the demo story | asking |
-| 3 | What you see when you open the app on a normal day | — |
-| 4 | First launch and onboarding | — |
-| 5 | Accounts: your secondhand account, and how each platform is linked | — |
-| 6 | Human in the loop: what runs on its own, and what always needs a tap | — |
-| 7 | Selling flow shape | — |
-| 8 | Buying flow shape (wants, watch, deal check) | — |
-| 9 | Appraising (the garage-sale use) | — |
-| 10 | Behind the scenes: the item card, agents, posting, Databricks | — |
 
 ---
 
@@ -74,3 +64,22 @@ A and B are features of C, and D is how C behaves. Choosing C does not drop the 
 | **D. Hand-off** | You shoot and walk away. It lists, and only interrupts to confirm price and condition. | Pixel Call Screen | Least effort | People rubber-stamp AI output (Parasuraman and Manzey 2010; Bansal 2021); this is the eBay backlash case |
 
 **Agent view: B, with C as the same draft repeated.** One item is one live draft; a batch is a queue of those same drafts, so the single item and the whole room use one screen and one habit. D's hand-off becomes a setting inside it (decision 6), not the default.
+
+**Picked:** item by item, in a drafting area with a researching state. A dropped folder becomes one draft per item (Ben, 19:08).
+
+---
+
+## 3. The always-there bottom bar
+
+**Derived from** [functions.md §4](functions.md#4-what-the-scaffold-has-to-hold): five homes, which are Add, Selling, Inbox, Buying and You.
+
+**Familiar pattern.** Depop, Vinted and Mercari each put five tabs along the bottom, with Sell in the center slot and Inbox and Profile on the right. eBay puts Selling and Inbox in its bar. (*asserted*, from memory of the apps; not re-checked this session.)
+
+| Option | Bar, left to right | Strong at | Weak at |
+|---|---|---|---|
+| **A. The resale-app bar as is** | Home · Search · **＋** · Inbox · Profile | Zero learning, since it matches Depop and Vinted slot for slot | "Home" and "Profile" don't say what's in them: drafts and money end up hidden |
+| **B. The same slots, named for what's in them** | Selling · Buying · **＋** · Inbox · You | Same positions as A, so it is still familiar, and each name says what's inside. All five homes are covered | Has no single "what needs me" screen; that lives as a badge on Inbox |
+| **C. Today first** | Today · Selling · **＋** · Inbox · You, with Buying inside Today and search | One summary screen of decisions; strongest human-in-the-loop focus | Buying, one of Ben's main functions, has no tab |
+| **D. Four tabs, inbox up top** | Selling · **＋** · Buying · You, with Inbox as an icon at the top right (Instagram's pattern) | A calmer bar | Messages are the most-used function, and they end up hidden |
+
+**Agent view: B.** The slots sit where Depop and Vinted have taught people to look, and the names remove the guessing. The decisions that need you show as a count on Inbox, and at the top of Selling.
