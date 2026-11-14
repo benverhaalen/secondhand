@@ -1,6 +1,6 @@
 # 30 — Build plan for studio photos
 
-Updated: November 14, 2026. Owner: Ben. Agent: Claude Code, project thread "Plan the build for studio photo generation". Branch: `main`. Status: plan and prototype written; one decision waiting on Ben.
+Updated: November 14, 2026. Owner: Ben. Agent: Claude Code, project thread "Plan the build for studio photo generation". Branch: `main`. Status: plan and prototype written; revised to demo-first; real-photo renders next.
 
 ## Scope
 
@@ -20,9 +20,9 @@ Updated: November 14, 2026. Owner: Ben. Agent: Claude Code, project thread "Plan
 - **List**: photo order is evidence photo first, approved renders next, real close-ups last; no text or badge in the pixels.
 - **Data**: one Delta row per render with every check's number and the person's choice.
 
-## Decision for Ben
+## Changed after Ben's steer (21:11 UTC)
 
-In-place renders (verifiable) as the default for every preset, with restaging as a labelled extra. Asked in the project thread.
+Both routes are built and the multi-photo restage leads the demo. The gate ranks several candidates (Seedream seeds plus Nano Banana 2.1) and feeds the approval card; it no longer blocks. Testing moves to Ben's real listing photos in `depop-plus`. See section 0 of the plan.
 
 ## Next action
 
