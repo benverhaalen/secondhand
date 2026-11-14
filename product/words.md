@@ -362,3 +362,11 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 > Look at https://treg.to/, this can be a great help in showing just some of the ways agent systems are built.
 
 *Agent note:* "[...]" marks where Nate quoted the agent's own sentence about gateway filters and an evidence check.
+
+## 2026-11-14 openrouter and treg
+Ben, pricing, search and watch thread, 22:25 UTC.
+> are you able to use openrouter for it. also investigate treg if you havent already.
+
+## 2026-11-14 our own monitor, and a packet for nate
+Ben, pricing, search and watch thread, 23:03 UTC.
+> is there no way to get that from github? the openrouter key? also ensure to send a packet to nates agents about all this all this is super big. also see if theres any way to create our own firecrawl monitor for our product. this is something that could be out of scope for the hackathon. but it could be something to get into the repo.
