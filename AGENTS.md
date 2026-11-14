@@ -16,7 +16,7 @@ The map is in [README.md](README.md). Read [product/vision.md](product/vision.md
 |---|---|
 | A choice that shapes what gets built, or is hard to undo | Skill `decide`: options, evidence, a recommendation. Taste, direction and scope go to Ben or Nate. |
 | You need a fact that could have changed, or a reference | Skill `research-note`: rawest sources, every claim marked. File it in `research/<slug>/<your human>/`. |
-| Any screen, copy or visual work | Skill `ui-factory` (Ben's UI procedure, for every agent), then `ui-screen` for what it must meet: [product/ui-constitution.md](product/ui-constitution.md), [brand/constitution.md](brand/constitution.md), [brand/coder-card.md](brand/coder-card.md), [product/frontend-standard.md](product/frontend-standard.md), [product/copy.md](product/copy.md). |
+| Any screen, copy or visual work | Skill `ui-screen`: [product/ui-constitution.md](product/ui-constitution.md), [brand/constitution.md](brand/constitution.md), [brand/coder-card.md](brand/coder-card.md), [product/frontend-standard.md](product/frontend-standard.md), [product/copy.md](product/copy.md). |
 | Ben or Nate says something about the product | Quote it verbatim in [product/words.md](product/words.md) (append only), and link to it from where it's used. |
 | A correction you could check with a script | Add it as a check with a failing test in `.agents/checks/`, instead of another line of instructions. |
 | Words a person reads, in the app or out of it | Skill `writing` (Ben's lint and rules). |
