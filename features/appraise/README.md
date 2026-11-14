@@ -2,6 +2,8 @@
 
 Status: idea. Owner: unassigned. Packet topic: `appraise`.
 
+Spec (agent proposal): [spec/features/appraise.md](../../spec/features/appraise.md).
+
 ## What and why
 Point the app at something, for example at a garage sale, and get what it is worth: by platform (eBay and Depop value the same item differently), after its defects, and including the less obvious reasons someone would want it. This is "Exa search, but for the market value of a secondhand product". It shares its engine with [price](../price/), but the entry point is buying rather than selling. Ben: [words](../../product/words.md#2026-11-14-pavlo-and-appraise).
 

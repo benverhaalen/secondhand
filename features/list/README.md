@@ -2,6 +2,8 @@
 
 Status: idea. Owner: unassigned. Packet topic: `list`.
 
+Spec (agent proposal): [spec/features/list.md](../../spec/features/list.md).
+
 ## What and why
 Post to every marketplace, then delist everywhere once the item sells, using Browser Use's cloud computer use where no API exists. Ben: [words](../../product/words.md#2026-11-14-tools-and-capture).
 
@@ -17,7 +19,11 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/list/](../../research/list/)
 - Ben: [research/list/ben/](../../research/list/ben/)
-- Nate: `research/list/nate/` (none yet)
+- Nate: [research/list/nate/](../../research/list/nate/)
+- Nate: [listing-fields-by-platform.md](../../research/list/nate/listing-fields-by-platform.md). Exactly which fields each of the five sites needs or accepts to create a listing, per kind of item, from API specs and help pages.
+- Nate: [observing-rank-and-performance.md](../../research/list/nate/observing-rank-and-performance.md). How to measure from outside which listings rank on top and why, and turn it into honest choices for title, photos, price and timing.
+- Nate: [platform-levers.md](../../research/list/nate/platform-levers.md). Seller and buyer levers on seven sites that software could pull, what each already automates, and corrections to earlier notes.
+- Nate: [ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md). What nine marketplaces have disclosed about search and feed ranking; only Meta, Vinted and eBay publish staged structure; recency boosts are small.
 - Ben, cross-posting and delisting: [crosspost-and-delist.md](../../research/list/ben/crosspost-and-delist.md). eBay stays API only; Depop has a partner API; Browser Use and the replay layer cover Poshmark, Mercari and Facebook; sales come from orders and webhooks, and a delist counts only after a read-back.
 - Ben, tech stack: [posting-browser-use-ebay.md](../../research/list/ben/posting-browser-use-ebay.md). eBay through its Listing/Inventory API with a dry-run mode; Browser Use V4 for sites without an API, stopped before Post until the user approves.
 - Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#4-posting-delisting-and-jobs). *Agent proposal:* a posting click is never retried; the listing sits in `verifying` while a reconciler reads back (thrift-agent).

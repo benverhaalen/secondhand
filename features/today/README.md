@@ -2,6 +2,8 @@
 
 Status: designing. Owner: unassigned. Packet topic: `today`.
 
+Spec (agent proposal): [spec/features/today.md](../../spec/features/today.md).
+
 ## What and why
 The home screen: a short stack of decision cards. Only the exceptions reach the user, and price, address and pickup always need a tap. This is the main place where a human stays in the loop. *Agent proposal* from the [design canvas](https://claude.ai/artifact/X7UbT6gqeiAMGPDyDiL6fg).
 
@@ -18,5 +20,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/today/](../../research/today/)
 - Ben: [research/today/ben/](../../research/today/ben/)
 - Ben, generative UI: [generative-ui.md](../../research/today/ben/generative-ui.md). Fixed card per Decision kind on AI SDK 6 approvals and json-render, forked from the Databricks chat template; outward actions go through one signed, state-checked route.
-- Nate: `research/today/nate/` (none yet)
+- Nate: [research/today/nate/](../../research/today/nate/)
+- Nate: [seller-metrics-and-notifications.md](../../research/today/nate/seller-metrics-and-notifications.md). What seller tools show about earnings, profit and goals, when they notify, and what evidence says about batching notifications into digests.
 - Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#3-the-approval-and-the-act-route). *Agent proposal:* every Decision expires, deciding and running are two guarded steps, and the world is re-checked when it runs (Paperclip, OpenClaw, Chatwoot). Repos by job: [business-pieces-and-repos.md](../../research/cross-cutting/ben/business-pieces-and-repos.md).

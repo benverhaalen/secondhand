@@ -2,6 +2,8 @@
 
 Status: idea. Owner: unassigned. Packet topic: `capture`.
 
+Spec (agent proposal): [spec/features/capture.md](../../spec/features/capture.md).
+
 ## What and why
 The app walks the seller through each shot: the whole item, the back, the tag, close-ups and defects. The seller never has to think about what to shoot. Ben: [words](../../product/words.md#2026-11-14-tools-and-capture).
 
@@ -29,7 +31,9 @@ Then [measure](../measure/). The item lies on a white sheet from the first shot,
 ## Research
 All research for this feature: [research/capture/](../../research/capture/)
 - Ben: [research/capture/ben/](../../research/capture/ben/)
-- Nate: `research/capture/nate/` (none yet)
+- Nate: [research/capture/nate/](../../research/capture/nate/)
+- Nate: [adaptive-capture.md](../../research/capture/nate/adaptive-capture.md). Evidence on one adaptive capture session versus a fixed shot list, with ARKit depth facts: 256 x 192 depth map, accurate to about 1 cm on small objects.
+- Nate: [scan-to-images.md](../../research/capture/nate/scan-to-images.md). How a LiDAR scan or Object Capture model can become listing and identification images, compared with using the captured photographs themselves.
 - Ben, tech stack: [guided-shot-list.md](../../research/capture/ben/guided-shot-list.md). Per-category shot list with live checks before each shot counts; defects proposed by the model and confirmed by the user.
 - Ben, build plan: [build-plan.md](../../research/capture/ben/build-plan.md). One ARKit session with live checks and auto-shutter; one Decisions call per shot; Gemini proposes flaw boxes, the person confirms each; folder drop groups photos into items. Joined with measure and identify in [seeing-the-item-pipeline.md](../../research/cross-cutting/ben/seeing-the-item-pipeline.md).
 - Ben, build plan: [live-video-capture.md](../../research/capture/ben/live-video-capture.md). Talk mode ([Ben's words](../../product/words.md#2026-11-14-live-video-you-can-talk-to)): a live voice and video session directs the same shot list. The model asks for a better look, takes the stills itself through tools, and saves what the seller says as "you said" facts; a Heard / Saw screen is the approval. Gemini 3.8 Live first, OpenAI Realtime as backup. *Agent proposal.*
