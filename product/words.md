@@ -374,3 +374,11 @@ Ben, pricing, search and watch thread, 23:03 UTC.
 ## 2026-11-14 code rules from the harness
 Ben, project chat, 23:01 UTC.
 > also try to get some codebase rules into our codebase from my harness so nate's code is written well.
+
+## 2026-11-14 nate open source onto databricks, and open-internet sources
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, in three messages.
+> I wonder if we can collect deep research subagent driven to explore technologies existing, open source, that we can utilize and refactor to fit databricks, in the areas where we don't already have a databricks version, and building it onto databricks is impressive. Treg shows alot of cool stuff. we can build a fully databricks powered version of this too https://github.com/NVIDIA/auto-ontology
+
+> Also look at the way information is found and aggregated https://github.com/666ghj/MiroFish
+
+> wait, do not limit from only licensd sources, if its open internet, its licenses
