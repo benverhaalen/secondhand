@@ -124,3 +124,7 @@ Ben, project chat, 20:17 UTC.
 ## 2026-11-14 extreme intention
 Ben, project chat, 20:20 UTC.
 > everything needs to be done with extreme intention.
+
+## 2026-11-14 human in the loop and dynamic ui
+Ben, project chat, 20:41 UTC.
+> also so some principles to think of to try to guide a lot - judges love human in the loop. i feel like creating dynamic and intelligent ui is really good where you have a huge range of set components. obviously i already told you about decision api, exa search and the exa feature where you go and it notifies you from a text prompt about when something is below a certain price, heres an x link to it. https://x.com/ExaAILabs/status/2117321911491564006?a=ptpPI0Y7Aq00egwhmqw&s=20 for this whole project i dont care about api costs for the time being its all demos. think of all the other features that have been planned and ensure for each you delegate great agents to do amazing rdd and iae and do looped seeded research (those are defined in the respective repos) and get an incredible idea on how you are actually going to perform everything in practice. the measuring, the image generation. if i gave you the name of a tool assume thats the one in use unless you find a better one. im not sure what nates findings are but continue to use those packet systems to keep me in the loop there
