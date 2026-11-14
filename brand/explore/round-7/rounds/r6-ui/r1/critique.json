@@ -1,0 +1,38 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "Locked row L17: platform logos must be square, 1:1, from each site's own icon.",
+          "place": "Upper right, opposite the Sold state pill.",
+          "issue": "The platform logo is shown in a red circle instead of the required square site icon."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "Locked row L17: platform logos must be square, 1:1, from each site's own icon.",
+          "place": "Upper right, opposite the Sold state pill.",
+          "issue": "The platform logo is shown in a red circle instead of the required square site icon."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "Locked row L17: platform logos must be square, 1:1, from each site's own icon.",
+          "place": "Upper right, opposite the Sold state pill.",
+          "issue": "The platform logo is shown in a red circle instead of the required square site icon."
+        }
+      ]
+    }
+  ],
+  "across_options": []
+}
