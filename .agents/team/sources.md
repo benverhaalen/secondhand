@@ -51,3 +51,11 @@ Speaker: Ben Verhaalen. Sources: Magic UW Codex sessions, September 26–27, 202
 > make sure to continually commit and push code once you hit a good checkpoint. dont just commit everything together in the whole repo. (Doppler, July 10, 2026)
 
 Rules 6 and 8 (no automatic merge/reset/stash/switch/rebase of a dirty or shared checkout; commit/push only what was authorized) come from Magic UW's `.agents/coordination.md` and `AGENTS.md`, not a direct quote.
+
+## Git cadence — November 14, 2026
+
+Speaker: Ben Verhaalen. Source: Claude Code session in this repository.
+
+> set rules for using git often and usually
+
+Interpretation: turn the git rules into concrete moments to commit, push, pull and merge, plus the usual conventions (branch names, commit messages, PR merges) Magic UW used at the end (e.g. `perf/fewer-first-cards`, `fix(desktop): ...`). The rules act as standing permission for agents to commit and push their own work.

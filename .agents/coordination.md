@@ -34,13 +34,25 @@ The packet tree is on `main`; a handoff is shared when pushed/merged there. Loca
 
 ## Git rules
 
-These carry over from Magic UW. Ben's exact words are in [team/sources.md](team/sources.md#git-rules).
+These carry over from Magic UW. Ben's exact words are in [team/sources.md](team/sources.md#git-rules). They are standing permission: commit, push and merge your own workstream's work as described here without asking each time. Anything that rewrites or deletes shared history still needs your human.
 
-1. Pull at every natural work boundary and before integrating. Read what teammates pushed, and tell your human about anything that conflicts with your work.
-2. One branch per workstream. Subagents and helpers work on that same branch; they do not each make a new one. If branches multiplied, consolidate them onto one and push it.
-3. Commit at good checkpoints, in small coherent commits. Stage only your explicit paths or hunks; never `git add -A` the whole repo into one commit.
-4. Push often once work is good enough for someone else to build on. Push docs and packet updates on their own so other agents get them quickly.
-5. Keep `main` current: merge finished work to `main` continuously. Resolve conflicts by reading both sides; when the conflict is between people's decisions, ask those people.
-6. Never automatically merge, reset, stash, switch or rebase a dirty or shared checkout. Never force-push a shared branch.
-7. Never commit credentials, keys, personal data, private captures or raw logs.
-8. Commit and push only what your human authorized.
+### When: use git often
+
+| Moment | Do this |
+|---|---|
+| Starting or resuming work | `git pull` on `main`, then branch or update your branch from `main` |
+| A piece works (a test passes, a screen renders, a step of the plan is done) | Commit it |
+| After every commit that works | Push your branch |
+| Before you push, and at every natural work boundary | Pull `main` into your branch; read what teammates pushed |
+| Docs or a packet changed | Commit and push them on their own, right away |
+| A workstream is finished and checks pass | Open a PR and merge it to `main`, then delete the branch |
+| Before stopping or handing off | Everything committed and pushed; nothing left only on your machine |
+
+### How: the usual way
+
+1. **Branches.** One branch per workstream, named `type/short-name` (e.g. `feat/listing-page`, `fix/upload-crash`, `docs/team-rules`). Subagents and helpers work on that same branch; they never make their own. If branches multiplied, consolidate them onto one and push it.
+2. **Commits.** Small and coherent: one idea per commit. Stage only your explicit paths or hunks; never `git add -A` the whole repo into one commit.
+3. **Messages.** `type(scope): what changed, in plain words` where type is `feat`, `fix`, `docs`, `test`, `perf`, `refactor` or `chore` and scope is optional, e.g. `fix(upload): photos over 10 MB no longer fail silently`. Say what is different for the user, not which files moved.
+4. **Merging.** Finished work goes to `main` through a PR and lands quickly; keep `main` working and current. Resolve conflicts by reading both sides; when the conflict is between people's decisions, ask those people.
+5. **Never** automatically merge, reset, stash, switch or rebase a dirty or shared checkout. Never force-push `main` or a branch someone else uses.
+6. **Never commit** credentials, keys, `.env` files, personal data, private captures or raw logs.
