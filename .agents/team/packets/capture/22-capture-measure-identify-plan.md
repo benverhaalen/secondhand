@@ -27,6 +27,10 @@ Ben asked at 21:22 for a live video capture you can talk to. Plan: [live-video-c
 
 Ben redirected talk mode at 22:24 ([words](../../../../product/words.md#2026-11-14-video-capture-as-a-decision-tree)): a decision tree run through the Decisions API with set spoken lines, no live language model. Plan: [decision-tree-capture.md](../../../../research/capture/ben/decision-tree-capture.md). The runner is TypeScript in the Expo app; trees are JSON served by the backend; every tick is logged to Databricks. `LiveDirector` keeps only the frame tap and audio. The catalog components for talk mode are unchanged. It uses the question-wording rules in [ai-harness-from-repos.md](../../../../research/cross-cutting/ben/ai-harness-from-repos.md) section 2.
 
+## Coaching, framing and storage (23:30)
+
+Ben's 23:01 follow-ups are planned in [capture-coaching-and-frames.md](../../../../research/capture/ben/capture-coaching-and-frames.md). Shared interfaces: the capture overlay is studio's `research/studio/ben/templates/` (capture draws none of its own); capture hands studio an item sheet (cover, other side, sharp close-ups, untouched originals; layout in the note's section 6); the caption component now carries full sentences, not a 4-word pill; a skipped step writes a gap with a reason onto the Item.
+
 ## Next action
 
 Day one, first hour: measure Decisions latency on images, Gemini flaw recall and tape-measure error on 10 real garments, and Object Capture on the demo phone.

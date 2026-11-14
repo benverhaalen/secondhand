@@ -408,3 +408,9 @@ Ben, project chat, 23:17 UTC, on the proposal to save app tests as Maestro files
 ## 2026-11-14 no ai tag on exported photos, track it on our end
 Ben, project chat, 23:18 UTC, answering the studio card on what the exported listing photo says about AI editing.
 > dont say it was made with ai. track on our end but for demo purposes we want it to just work before tinkering. worst case scenario is everything works beautifully but we cant post because we added an ai tag.
+
+## 2026-11-14 capture voice, frame quality, measuring, skipping and video storage
+Ben, project chat, 23:01 UTC, inside a longer message. The framing and template part of the same message is quoted under [garment templates, a reference set, and reading c2pa](#2026-11-14-garment-templates-a-reference-set-and-reading-c2pa).
+> the sentences should be said on screen as well with a voice. not super short. they should sound human and friendly. Better lighting, better video quality, figure out the different levers that affect how an image is ingested by our decision api. to improve it. like you know how someone in good lighting at the gym looks way different and better than not.
+
+> also the measurement part could be a part of this. also ensure the human could skip some parts. also consider the cost of storing big videos like that too.
