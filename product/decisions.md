@@ -2,6 +2,30 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: pickups use your windows and a saved meetup spot
+Agreed by: Ben, on the pickup card in the concept thread at 19:30 ([walkthrough §6](walkthrough.md#6-pickup-and-shipping)). Decided: you set pickup windows once, and the agent offers buyers only those times. The default place is a public spot you saved. Your home address goes out only on a separate Never alone tap. A confirmed pickup becomes a Google Calendar event. For shipping, the app picks the box size from the measurements, uses the platform's own label, and puts a "ship by" card in Today. Ben added at 19:31: "keeping an option for B's functionality is good". So a setting, **Ask me every time**, switches off the windows. The agent then relays each time the buyer proposes, and you approve it or suggest another. Changed: when you first use pickup, it asks for your windows and a meetup spot, or you choose "ask me every time". The Event primitive carries the place and the calendar link.
+
+## 2026-11-14: automation runs in tiers that learn
+Agreed by: Ben, on the human-in-the-loop card in the concept thread at 19:29 ([walkthrough §9](walkthrough.md#9-asked-next-human-in-the-loop-what-runs-on-its-own-and-what-always-needs-a-tap)).
+
+Decided: three tiers.
+- **Auto**, logged and undoable: availability and size answers, delisting after a sale (paced on Poshmark), and markdowns above your floor.
+- **Ask**, waiting in Today: counter-offers, any price below your floor, and the first post of an item.
+- **Never alone**: address, pickup time, payment, and off-platform deals.
+
+After you approve the same kind of Ask 3 times, its card offers "Always do this". Never alone can never be promoted.
+
+Changed: Today holds Ask and Never alone cards. You > Automation lists each Rule with its log.
+
+## 2026-11-14: the bottom bar is Today · Sell · ＋ · Buy · You
+Agreed by: Ben, on the bar card in the concept thread at 19:27 ([walkthrough §3](walkthrough.md#3-second-pass-what-does--do-that-sell-and-buy-dont)). Decided:
+- Tabs are places; ＋ is the only way a physical thing gets in. The camera or a dropped folder then offers Sell this, What's it worth, or Find this.
+- Sell and Buy are lists with no add buttons. Typing a want stays as search in Buy.
+- Today opens on "Needs you"; "All messages" is a segment at its top.
+- Appraise shows as a value on every item and match.
+
+Changed: [functions.md §4](functions.md#4-what-the-scaffold-has-to-hold) homes map to these tabs. The canvas's Today, Closet, Wants and You bar is replaced.
+
 ## 2026-11-14: listing goes item by item, in a drafting area
 Agreed by: Ben, in words at 19:08 ([words](words.md#2026-11-14-function-map)). This answered walkthrough step 2, and the card was closed as option B. Decided: each item gets its own live draft. The draft shows a researching state while identify, measure, studio and price run. Dropping a whole folder of photos splits it into one draft per item. Changed: the selling flow is one draft screen per item. The [function map](functions.md) is now the source for every later option.
 

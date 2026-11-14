@@ -6,7 +6,7 @@ Keep building the current task while staying current with relevant team changes.
 
 ## Git
 
-Use git often, the usual way. Follow the [git rules](.agents/coordination.md#git-rules): pull when you start and before you push, commit each piece that works, push after every working commit, one `type/short-name` branch per workstream (helpers do not make their own), small commits of explicit paths with `type(scope): plain words` messages, merge finished work to `main` through a PR, never auto-reset/stash/rebase a shared or dirty checkout, never force-push shared branches, and never commit secrets or personal data.
+Use git often, the usual way. Follow the [git rules](.agents/coordination.md#git-rules): pull when you start and before you push, commit each piece that works, push after every working commit, work directly on `main` and push often so teammates' agents pick it up (no long-lived branches; helpers never make their own), small commits of explicit paths with `type(scope): plain words` messages, never auto-reset/stash/rebase a shared or dirty checkout, never force-push shared branches, and never commit secrets or personal data.
 
 ## Where things are
 

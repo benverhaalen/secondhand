@@ -61,6 +61,10 @@ Ben, project chat, 19:15 UTC.
 Ben, project chat, 19:16 UTC.
 > also can look at depop plus repo i gave you too as i sorta attempted this sorta there could be some little things to learn
 
+## 2026-11-14 pickup option b
+Ben, project chat, 19:31 UTC, after picking C on the pickup card.
+> keeping an option for B's functionality is good
+
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.
 

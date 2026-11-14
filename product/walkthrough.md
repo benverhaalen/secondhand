@@ -6,13 +6,13 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 |---|---|---|
 | 1 | What the app is at its core | **decided: seller's crosslister** ([log](decisions.md)) |
 | 2 | Selling: how the selling features chain | **decided: item by item, one live draft each, folder drop splits into drafts** ([log](decisions.md)) |
-| 3 | The always-there bottom bar | asking |
-| 4 | Selling home: drafts, live and past, interest per item | — |
+| 3 | The always-there bottom bar | **decided: Today · Sell · ＋ · Buy · You, ＋ is the only way in** ([log](decisions.md)) |
+| 4 | Selling home: drafts, live and past, interest per item | asking |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
-| 6 | Shipping and pickup (Google Calendar, approved time windows) | — |
+| 6 | Shipping and pickup | **decided: your windows plus a saved meetup spot** ([log](decisions.md)) |
 | 7 | Buying home: search, wants, watch, deal check, appraise | — |
 | 8 | You: money, insights per site, accounts, automation | — |
-| 9 | Human in the loop: what runs on its own, and what always needs a tap | — |
+| 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
 | 10 | Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
 | 11 | First launch and onboarding | — |
 
@@ -83,3 +83,113 @@ A and B are features of C, and D is how C behaves. Choosing C does not drop the 
 | **D. Four tabs, inbox up top** | Selling · **＋** · Buying · You, with Inbox as an icon at the top right (Instagram's pattern) | A calmer bar | Messages are the most-used function, and they end up hidden |
 
 **Agent view: B.** The slots sit where Depop and Vinted have taught people to look, and the names remove the guessing. The decisions that need you show as a count on Inbox, and at the top of Selling.
+
+### 3, revised after Ben's 19:15 note
+
+Ben's constraints: Sell and Buy are the core. Appraise sits inside both. Today and the inbox are "relatively integrated", but "all messages" is somewhere you go on purpose. Watching for items is key.
+
+Evidence: Airbnb's host bar is "Today / Inbox / Calendar / Insights / Menu", so a decisions home and a full inbox already sit side by side in a familiar app. Depop gives Selling its own tab. Vinted hides listings in Profile and lets offers clutter the inbox, and a critic flagged both. ([structure-references](../research/today/ben/structure-references.md)). Codex image ideation of options 1, 2 and 4 is in `research/today/ben/nav-ideation/` once it is pushed.
+
+| Option | Bar | Messages | Strong at | Weak at |
+|---|---|---|---|---|
+| **1. Today first, two segments** | Today · Sell · ＋ · Buy · You | A segment at the top of Today: "Needs you" / "All messages" | Lands on decisions; all messages is one deliberate tap; familiar home on the left | Messages have no tab of their own |
+| **2. Sell first** | Sell · Buy · ＋ · Today · You | Same segments inside Today | Sell and Buy lead, as Ben listed them | Lands on a list, not on what needs you |
+| **3. Airbnb split** | Today · Sell · ＋ · Buy · Messages, with You behind the avatar | Its own tab | Closest to Airbnb; messages are always one tap away | You, money and settings are hidden behind the avatar |
+| **4. Mode switch** | A Selling/Buying toggle; bar is Today · Items · ＋ · Messages · You | Its own tab | Each mode is focused | A concept you have to learn; mixed tasks need switching |
+
+In every option, the ＋ camera ends in "Sell this / What's it worth / Find this". Every item and every match also shows its value, so appraising is everywhere. Watching lives in Buy, and new matches arrive in Today as Decisions.
+
+**Agent view: 1.** It is the most familiar and it matches Ben's "integrated, but all messages on purpose" exactly. Keep option 4's "Researching…" progress state and site chips in the Sell tab.
+
+### 3, second pass: what does ＋ do that Sell and Buy don't?
+
+Ben, 19:23: "what would the + button do that sell and buy wouldnt."
+
+**Plainly: if Sell and Buy each have their own add button, ＋ is redundant.** It earns its slot only under a rule: **tabs are places, and ＋ is the one way a physical thing gets in.**
+
+**Evidence**
+- Apple's HIG: "Use a tab bar to support navigation, not to provide actions" (observed, developer.apple.com tab bars, changelog Jun 2026). The page gives no guidance on a center create button.
+- Instagram took ＋ out of the bottom bar in its 2025 redesign and put it top-left. The new bar is Home, Reels, DMs, Search, Profile. The stated reason is that growth comes from DMs, Reels and recommendations, not posting (observed on a vendor blog, inro.social, Jan 2026; not checked against Instagram itself). *Inferred:* a center ＋ is worth it only when creating is the main job.
+- In secondhand, creating is the main job. ThredUp 2026 says "Supply is the New Constraint" ([problem-and-pitch](../research/cross-cutting/ben/problem-and-pitch.md)). Vinted keeps a center "Sell" ＋ (observed, Vinted critique, Sep 2026).
+- Google Lens collapsed its modes so there is one camera, and you choose what to do after the photo ([direct-references](../research/cross-cutting/ben/direct-references.md)). Appraising has no tab, so it needs a front door that doesn't force you to pick buying or selling first.
+
+**Scenarios**
+
+| Scenario | Option 1: ＋ is the only way in | Option 2: no ＋, adding inside each tab |
+|---|---|---|
+| A shirt in your closet to sell | ＋, guided shots, **Sell this**, and a draft appears in Sell with "Researching…" | Sell, then **Add item**, guided shots, and a draft. One extra tap, but you're already in the right place |
+| A whole folder of photos | ＋, then **Drop photos**; the folder splits into drafts in Sell | Sell, then **Add**, then **From photos** |
+| You want a Yelich jersey | Buy, type it in the search box, then **Watch**. Typing is search, not creation, so it stays in Buy | Same |
+| A friend's jacket you want too | ＋, photo, **Find this**: matches plus a watch | Buy, then the camera icon in search |
+| A garage sale lamp at $15 | ＋, photo, **What's it worth**: value per site and "the most to pay". Buy it, then the same card becomes **Sell this** at home | You first pick Buy (then the camera, then value) or Sell. Fine when you know which, awkward when you're deciding whether to flip it |
+| A $32 offer comes in | A card in Today: Accept, Counter or Decline | Same |
+
+**Option 3 (the Airbnb split)** is option 1 with Messages as its own tab, and You behind the avatar.
+
+**Agent view: option 1, with the rule enforced.** Sell and Buy have no add buttons; they are lists you look at and act on. ＋ is the single verb, so nothing is duplicated, and the garage-sale case works. It's also the fastest path, which matches "the second hand of the clock". Option 2 is the cleanest choice by Apple's rules, and is the right answer if appraising mostly happens on things you already own or already want.
+
+**Picked: option 1** (Ben, 19:27).
+
+---
+
+## 9 (asked next). Human in the loop: what runs on its own, and what always needs a tap
+
+**Why next:** this decides what lands in Today, the tab the app opens on.
+
+**Evidence**
+- People rubber-stamp automated output (Parasuraman and Manzey 2010; Bansal 2021) ([psychology](../research/cross-cutting/ben/psychology.md)).
+- Meta's Muse, set to "Allow Always", accepted a lowball offer and sent a stranger to a seller's home address (Proton, 30 Sep 2026).
+- eBay's User Agreement, from 20 Feb 2026, bans "any end-to-end flow that attempts to place orders without human review".
+- Poshmark suspends listing for 6 days after repeated delisting or mass removals, "manual or automation" (May 2025). Even delist-on-sale needs pacing there.
+- 31% of US shoppers would let AI spend $0 on its own; the median limit is $50.
+
+All of these are collected in the pitch thread's [pitch-evidence](../research/cross-cutting/ben/pitch-evidence.md) and [primitives-engineering](../research/cross-cutting/ben/primitives-engineering.md).
+
+| Option | How it works | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. Three fixed tiers** | **Auto:** logged and undoable ("still available", size answers, delist after a sale, markdown above your floor). **Ask:** waits in Today (counter-offers, price below your floor, first post). **Never alone:** address, pickup time, payment, off-platform deals. | Pixel Call Screen, Monarch review | Predictable; easy to explain to judges | Fixed, so it can't learn that you always accept offers over 90% |
+| **B. Tiers that learn** | Same as A, but an Ask card can offer "Always do this" once you've approved the same kind 3 times. Never alone can never be promoted. | iOS "Allow once / Always", Gmail filters; Muse is the counterexample, so Never alone stays locked | Today gets shorter over time; trust is earned | Approving 3 times can itself be rubber-stamping |
+| **C. Autopilot with a digest** | It does everything except Never alone, with a 1-hour undo and an evening summary | Robo-advisors | Fewest taps | Conflicts with eBay's human-review rule; rubber-stamp risk; Muse |
+| **D. Draft only** | It drafts every reply and action, and you send each one | Gmail Smart Reply | Full control | Most taps; the "second hand" does little |
+
+**Agent view: B.** It starts as A, so the demo is predictable. Today shrinks as the user teaches it. The Never alone tier answers Muse and eBay's rule directly.
+
+**Picked: B, tiers that learn** (Ben, 19:29).
+
+---
+
+## 6. Pickup and shipping
+
+**Shipping is mostly an established pattern.** eBay, Depop, Poshmark and Mercari issue their own labels (*asserted*, from the platforms' seller flows; not re-checked here). Our job is to:
+- pick the box size and weight from the measured item
+- show which platform's label to use
+- put a "ship by" card in Today
+- show the nearest drop-off point
+
+That needs no choice from Ben.
+
+**Pickup is the decision.** It is the local half (Marketplace, OfferUp), and it is where Muse sent a stranger to a seller's home. Address and pickup time are already Never alone ([decisions](decisions.md)).
+
+| Option | How it works | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. Your windows** | You set windows once (for example, weekdays 5–7 pm). The agent offers only those times to buyers. A buyer's pick becomes a Today card, and Confirm adds a Google Calendar event. | Calendly booking windows (UNOPENED); Airbnb's Calendar tab | Few taps; buyers get answers fast | You have to set windows first |
+| **B. Every time asks** | The agent collects what the buyer proposes, and you approve or suggest another time each time | Today's canvas pickup card | Nothing to set up | Slow back-and-forth; buyers go cold |
+| **C. Windows plus a saved meetup spot** | A, plus a default public meetup spot you save (a campus union, or a police station's safe-exchange zone). Your home address goes out only on a separate Never alone tap. | Police safe-exchange zones (*asserted*, common in US cities) | Safest default; the address is never the first thing sent | One more thing to set at first use |
+
+**Agent view: C.** It keeps A's speed, and it makes a public spot the default, which removes the Muse failure from the normal path.
+
+**Picked: C** (Ben, 19:30).
+
+---
+
+## 4. The Sell tab: how your items are organized
+
+**Holds** ([functions.md](functions.md)): drafts and researching items, live items with interest per site, sold items to ship, past listings, stale items, and the totals Ben named (earned, count, potential earnings). Today already surfaces what needs you, so Sell is where you look things up and manage them.
+
+| Option | Layout | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. State segments** | A totals strip ("Earned $126 · Could earn $340 · 7 live"), then the segments Drafts · Live · Sold. Each live row shows site chips with interest per site and "12 days listed, similar items sell in 9". | eBay's Selling and Depop's Selling hub list state groups (*asserted* for eBay; Depop *observed*: sold "to ship" count, likes per item) | Matches the resale apps people know; each state has a home | Three places to look |
+| **B. One list, sorted by what's next** | One list: researching first, then drafts, then live sorted by how stale they are, then sold. Filter chips sit on top. | Linear-style triage lists | Nothing hidden behind a segment | A long list once you have 40 items; less familiar |
+| **C. Photo grid (closet)** | Your items as a photo grid, each with a state badge. Tapping a tile opens the item. | Poshmark closet, Depop shop grid | Visual and fast to recognize | Interest and status numbers don't fit on a tile |
+
+**Agent view: A, with C's grid as a view toggle inside Live.** It's the familiar resale layout. The totals strip answers Ben's earned, count and potential at a glance, and the per-site chips answer "how does it differ by site". The deeper insights (average time to sell, what things sold for, comparisons by site) live in You > Insights.

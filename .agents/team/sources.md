@@ -59,3 +59,13 @@ Speaker: Ben Verhaalen. Source: Claude Code session in this repository.
 > set rules for using git often and usually
 
 Interpretation: turn the git rules into concrete moments to commit, push, pull and merge, plus the usual conventions (branch names, commit messages, PR merges) Magic UW used at the end (e.g. `perf/fewer-first-cards`, `fix(desktop): ...`). The rules act as standing permission for agents to commit and push their own work.
+
+## Work on main — November 14, 2026
+
+Speaker: Ben Verhaalen. Source: secondhand project chat, 19:15 and 19:30 UTC.
+
+> also merge all prs to main. just work on main.
+
+> continue to merge and push often. getting things to main as fast as possible for nate's agent to pick them up is what we want
+
+Interpretation: commit and push straight to `main`; any branch or PR that exists gets merged right away. This replaces the earlier rule of one branch per workstream merged through a PR.

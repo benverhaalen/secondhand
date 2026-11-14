@@ -1,0 +1,37 @@
+/* secondhand brand tokens. Status: provisional until Ben picks a direction (round 1, 2026-11-14).
+   Write var(--name) only; never raw values in components. */
+:root {
+  /* color: Ben's four, by name */
+  --flower-yellow: #FED734; /* grounds and highlights behind black text; never text or lines on white (1.40:1) */
+  --center-red:    #E63339; /* dots, alerts, the second hand; text only at 24px+ (4.29:1 on white) */
+  --text-black:    #000000;
+  --background-white: #FFFFFF;
+  /* derived neutrals: alphas of black, never new hues */
+  --text-secondary: rgb(0 0 0 / .65);
+  --text-quiet:     rgb(0 0 0 / .45);  /* second phrase of a headline (QOVES luminance move), 24px+ only */
+  --line:           #E8E8E8;
+  --fill-quiet:     #F2F2F2;          /* secondary button */
+
+  /* type */
+  --font-display: "Clofie", ui-sans-serif, system-ui, sans-serif;      /* wordmark + headlines >= 20px only */
+  --font-text:    "PP Neue Montreal", "Neue Montreal", system-ui, sans-serif; /* everything users read */
+  --font-mono:    "Geist Mono", ui-monospace, Menlo, monospace;         /* uppercase labels, money */
+  --display-1: 400 32px/36px var(--font-display); --display-1-track: -0.025em;
+  --display-2: 400 28px/32px var(--font-display); --display-2-track: -0.025em;
+  --title:     400 20px/24px var(--font-display); --title-track: -0.015em;
+  --body:      400 15px/20px var(--font-text);
+  --button:    500 16px/24px var(--font-text);
+  --label:     400 11px/12px var(--font-mono);  --label-track: -0.005em; /* uppercase */
+  --money:     400 14px/20px var(--font-mono);  /* tabular-nums */
+
+  /* space (QOVES steps) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px;
+  --gutter: 20px;
+  /* radius */
+  --r-thumb: 8px; --r-card: 12px; --r-sheet: 20px; --r-pill: 999px;
+  /* size */
+  --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px;
+  /* motion */
+  --t-feedback: 150ms; --t-select: 200ms; --t-panel: 300ms; --ease-out: cubic-bezier(0, 0, .2, 1);
+}
+@media (prefers-reduced-motion: reduce) { :root { --t-feedback: 0ms; --t-select: 0ms; --t-panel: 0ms; } }

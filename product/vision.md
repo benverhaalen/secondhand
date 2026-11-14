@@ -12,6 +12,12 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - secondhand is a seller's crosslister at its core: selling leads, appraise and buy are add-ons. Ben, decision card, 19:02 ([decisions](decisions.md)).
 
+- Bottom bar: Today · Sell · ＋ · Buy · You. ＋ is the only way in (Sell this, What's it worth, Find this). Ben, decision card, 19:27 ([decisions](decisions.md)).
+
+- Automation runs in tiers that learn: Auto, Ask, Never alone. An Ask promotes to Auto after 3 approvals; Never alone is locked. Ben, decision card, 19:29 ([decisions](decisions.md)).
+
+- Pickups: your time windows plus a saved public meetup spot; your home address only on a separate tap; confirmed times go to Google Calendar. Ben, decision card, 19:30 ([decisions](decisions.md)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).
@@ -20,6 +26,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 - Appraise anything, for example at a garage sale: its value by platform, after defects and hidden demand. Ben, [18:36](words.md#2026-11-14-pavlo-and-appraise).
 - Post once with Browser Use, then replay with Pavlo. Ben, [18:36](words.md#2026-11-14-pavlo-and-appraise).
 - Center everything on one item card: a single measured record of the item that every platform listing is built from. *Agent proposal*, from the [concept brief](https://claude.ai/artifact/HCk31xVRxnrrcy5AL2Ff6U).
+
+- Pitch: open on the economics of cheap items (consignment pays $3 of a $20 sale; doing it yourself keeps about $17 but rarely finishes), then "your second hand" as the product and a live clock as the demo. *Agent proposal*, [pitch.md](pitch.md), evidence in [pitch-evidence.md](../research/cross-cutting/ben/pitch-evidence.md).
 
 ## Open
 

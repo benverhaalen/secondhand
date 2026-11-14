@@ -40,19 +40,19 @@ These carry over from Magic UW. Ben's exact words are in [team/sources.md](team/
 
 | Moment | Do this |
 |---|---|
-| Starting or resuming work | `git pull` on `main`, then branch or update your branch from `main` |
+| Starting or resuming work | `git pull` on `main` and work on `main` |
 | A piece works (a test passes, a screen renders, a step of the plan is done) | Commit it |
-| After every commit that works | Push your branch |
-| Before you push, and at every natural work boundary | Pull `main` into your branch; read what teammates pushed |
+| After every commit that works | Pull, then push to `main` right away so Nate's and Ben's agents pick it up |
+| Before you push, and at every natural work boundary | Pull `main`; read what teammates pushed |
 | Docs or a packet changed | Commit and push them on their own, right away |
-| A workstream is finished and checks pass | Open a PR and merge it to `main`, then delete the branch |
+| You are on a branch or have an open PR | Merge it to `main` now, then delete the branch |
 | Before stopping or handing off | Everything committed and pushed; nothing left only on your machine |
 
 ### How: the usual way
 
-1. **Branches.** One branch per workstream, named `type/short-name` (e.g. `feat/listing-page`, `fix/upload-crash`, `docs/team-rules`). Subagents and helpers work on that same branch; they never make their own. If branches multiplied, consolidate them onto one and push it.
+1. **Main, not branches.** Since November 14, 2026, work directly on `main` and push often ([Ben's words](team/sources.md#work-on-main--november-14-2026)). Use a short-lived `type/short-name` branch only when your environment cannot push to `main`, and merge it the same session. Subagents and helpers never make their own branches.
 2. **Commits.** Small and coherent: one idea per commit. Stage only your explicit paths or hunks; never `git add -A` the whole repo into one commit.
 3. **Messages.** `type(scope): what changed, in plain words` where type is `feat`, `fix`, `docs`, `test`, `perf`, `refactor` or `chore` and scope is optional, e.g. `fix(upload): photos over 10 MB no longer fail silently`. Say what is different for the user, not which files moved.
-4. **Merging.** Finished work goes to `main` through a PR and lands quickly; keep `main` working and current. Resolve conflicts by reading both sides; when the conflict is between people's decisions, ask those people.
+4. **Merging.** Everything lands on `main` as fast as possible; keep `main` working and current. Run `node .agents/check-layout.mjs` and `node --test .agents/*.test.mjs` before pushing. Resolve conflicts by reading both sides; when the conflict is between people's decisions, ask those people.
 5. **Never** automatically merge, reset, stash, switch or rebase a dirty or shared checkout. Never force-push `main` or a branch someone else uses.
 6. **Never commit** credentials, keys, `.env` files, personal data, private captures or raw logs.
