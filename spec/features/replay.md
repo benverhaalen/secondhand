@@ -1,130 +1,136 @@
 # Replay (recorded calls)
-Status: draft, *agent proposal* except where a line links a decision. Slug: replay. Written 2026-11-14.
+Status: draft, *agent proposal* throughout: replay is the fast path inside each harness, not a layer of its own. Slug: replay. Written 2026-11-14, second pass.
 
-The hassle it removes: when an item sells on Depop, the person needs the Poshmark copy gone in seconds, not after a cloud browser spends minutes clicking. Replay records what a browser run did once and repeats the same calls without a browser, so the actions that must be fast and frequent (delists, price changes, read-backs) are fast and cheap, and fall back to the browser the moment a site changes.
+The hassle it removes: when an item sells on Depop, the person needs the Poshmark copy gone in seconds, not after a cloud browser spends minutes clicking. Inside each site's harness, replay records the site's own web calls once, while a browser run does the task, and repeats them in the same signed-in session, so delists, price changes and read-backs are fast and cheap, and the harness drives the browser again the moment a site changes.
 
-The name: [spec/replay.mjs](../replay.mjs) is an unrelated piece in the shared spec, and the old feature page calls this "Replay (Pavlo)" ([features/replay](../../features/replay/README.md)). Ben has his own private replay tool; this spec describes the role the product needs and takes nothing from that tool.
+The name: [spec/replay.mjs](../replay.mjs) is an unrelated piece in the shared spec, and the old feature page calls this "Replay (Pavlo)" ([features/replay](../../features/replay/README.md)). Ben has his own private replay tool; this spec describes the role the product needs and takes nothing from it.
 
 ## What the person does and sees
 
 Replay has no tab and no button. The person sees its effect:
 
 1. In **Sell**, after a sale, the other sites' pills go from Ending to Ended in seconds.
-2. In the "why?" timeline of any action, one line says how it ran: "Ran directly", or "Ran in the browser, the site had changed".
-3. In **You > Accounts**, a site whose replay broke shows no warning, because the browser takes over; only if the browser also fails does the account go amber ([connect](connect.md)).
+2. In an item's events, one line says how a step ran: "Ran directly", or "Ran in the browser, the site had changed" ([copy](../../product/copy.md)).
+3. Nothing in **You > Accounts**: when replay drifts the harness drives the browser, and the account stays `ok`. Only a failure of the verb itself reaches the person ([connect](connect.md)).
+4. A live view of a step exists only when it ran in the browser.
 
-**Where Ben's design would make a person stumble.** None visible: replay is invisible by design. The stumble is in timing: if the person watches a live view of a delist, a replayed delist has no browser to watch. The live view button hides for replayed runs.
+## Design choices
 
-**What the backend makes possible that the design does not yet use.** Because a replayed read is cheap, read-back after every outward action and reconcile every few minutes stop costing a browser session each, so the "Live everywhere" claim on an item can be checked often instead of trusted.
+| Choice | Options considered | Picked | Why | What would change it |
+|---|---|---|---|---|
+| How calls are captured | Browser Use V4 run logs; a HAR export; a CDP attach to the session ([cloud-browsers-and-detection §1.1](../../research/replay/nate/cloud-browsers-and-detection.md#11-does-browser-use-cloud-expose-the-network-log-or-har)) | CDP attach: read `cdpUrl` from `GET /api/v4/browsers/{id}`, attach first, then drive the task in that session and record `Network.*` events | V4 has no network log or HAR; CDP events exist only from the moment of attach (observed) | the capture check below failing; then the harness-only path, every verb in the browser |
+| Where a replay runs | from our server with copied cookies; inside the same cloud session by in-page `fetch` ([§1.3](../../research/replay/nate/cloud-browsers-and-detection.md#13-replay-relevant-facts)) | in-page `fetch` in the person's own session | cookies never leave the profile; a cookie replayed from another IP fails; Depop's Cloudflare needs `__cf_bm`, which the page holds | none found |
+| Which verbs replay | all; only small frequent ones ([crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#the-sold--delist-pipeline)) | `end`, `revise` (price), `read_stats`, `read_offers`, `read_orders`, `read_inbox`, and the release step of `post` | frequent and time-critical; photo upload and form shape change most | drift rate per verb |
+| What a recording holds | the raw capture; a scrubbed template | a template: method, URL with slots, allowed header names, body with slots, the expected status and response shape hash | no cookies, `Authorization`, buyer text or addresses ever stored; Kernel's telemetry shows such headers do appear in captures | none |
+| Drift detection | wait for a person to notice; check each call's `expect` and read back | `expect` on every call, then read-back | a call can be accepted and change nothing | none |
+| Which provider | Browser Use; Browserbase (Session Logs `GET /v1/sessions/{id}/logs`); Kernel (`POST /browsers/{id}/curl`) ([§1.2](../../research/replay/nate/cloud-browsers-and-detection.md#12-comparison-table)) | Browser Use, decided for every harness ([decisions](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)) | one provider, one profile per account | the capture check failing on Browser Use while another passes |
 
-## What it reads and writes
+## Data flow
+
+```mermaid
+flowchart LR
+  J["harness verb, first run"] -->|"Browser Use V4 cdpUrl, CDP attach: Network events"| C["capture"]
+  C -->|"scrub and template in plain code: recording rec_, Lakebase plus Volume"| R["recording"]
+  K["harness verb, next run"] -->|"lease, then in-page fetch in the same session: listing write"| S["marketplace"]
+  S -->|"expect and read-back: event route replay or browser, fell_back, ms"| E["Delta event, MLflow trace"]
+```
+
+## Reads and writes with the proof layer
 
 | Entity | Fields |
 |---|---|
-| `recipe` (new, see Needs) | `id` (`rcp_`), `site`, `action`, `version`, `steps[{method, url_template, headers_allowlist[], body_template, expect{status, shape_hash}}]`, `recorded_from_job`, `state`, `success_count`, `fail_count`, `last_ok_at`, `drift_reason` |
-| `account` | reads `session_ref` and `route`; writes `health = degraded` when replay is down and the browser works |
-| `listing` | the same writes the action would make through any route ([list](list.md)) |
-| `job` | result gains `{route, fell_back, ms}` |
-| `event` | `replay.recorded`, `replay.drift`, `replay.fallback` (proposed, see Needs) |
+| `recording` | `id` (`rec_`), site, task (the verb), steps_ref (the template file in a Volume), recorded_at, last_ok_at, fail_count |
+| `account` | reads the profile and route; never writes health for a drift |
+| `listing` | the same writes the verb makes through any route ([list](list.md)) |
+| `job` | stages and result with `{route, fell_back, ms}` |
+| `event` | recorded, drift, fallback, each with `trace_id` |
 
-A recipe is per site and action, never per person: it holds templates and allowed header names, never cookies, tokens, buyer text or addresses. Values that differ per call (listing id, price, CSRF token read from the page) are filled at run time.
+A recording is per site and verb, never per person. Values that differ per call (listing id, price, the CSRF token read from the page) fill slots at run time. Replay writes no fact of its own, so it carries no `evidence`; the read-back that confirms a write is the evidence the listing's event points to. It sends no text a person reads; a replayed `send_message` would pass the same `claim_check` stage inside the verb.
 
 ## States
 
-`recipe.state` (*agent proposal*):
+Recordings have no state machine; their fields say enough:
 
-| State | Enters when | Leaves when |
+| Condition | Means | What runs |
 |---|---|---|
-| `candidate` | a harness run of that action succeeded and its calls were captured | it replays correctly on a test account and passes read-back 3 times |
-| `active` | promoted from candidate | any drift signal |
-| `drifted` | drift seen in a live call or the daily canary | a new recording passes, then the old version is `retired` |
-| `retired` | replaced by a newer version | never |
+| no recording for the verb | never captured | the browser; capture runs on the next test-account run |
+| `last_ok_at` set, `fail_count` 0 | good | replay |
+| a drift | `fail_count` up | the browser under the same idempotency key, and a re-record on a test account |
+| `fail_count` at 3 | stale | the browser only until a new recording passes |
 
 The listing moves through the same [lifecycle.mjs](../lifecycle.mjs) states whatever the route.
 
-## Systems underneath
+## Harness and systems
 
 | Piece | What it does here |
 |---|---|
-| Browser Use cloud harness | the exploring run; its network calls during a successful action are the recording |
-| Recorder | strips cookies and personal values, turns ids and prices into template slots, hashes the response shape |
-| Replay runner | makes the recorded calls with the person's session and checks each `expect` |
-| Marketplace layer | picks the route per call: official API, then an `active` recipe, then the harness ([list](list.md)) |
-| Lakebase | `recipe` rows, the outward queue, idempotency keys |
-| Lakeflow jobs | the daily canary per recipe on a test account; reconcile reads through replay |
-| MLflow | the route and any fallback as spans in the action's trace |
+| Harness per site | owns its recordings; picks replay or browser per verb |
+| Browser Use cloud V4 | the session, `cdpUrl`, the saved profile on a stable US IP |
+| CDP client | attaches first, records `Network.requestWillBeSent` and responses for the task |
+| Scrub and template (plain code) | strips cookies, `Authorization`, personal values; turns ids and prices into slots; hashes response shape |
+| Runner | `Runtime.evaluate` of `fetch` in the page; checks each `expect` |
+| Lakebase plus a Volume | recording rows plus template files |
+| Lakeflow jobs | the daily canary per recording on a test account |
+| MLflow | route and fallback as spans in the job's trace |
 
-**Where recording comes from.** Browser Use's own docs show a raw browser reached over CDP, which exposes the network log (*observed*); whether a V4 task run exposes its network log was not found. Run fields and limits are in [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#browser-use-cloud-v4-for-posting-and-for-delists-the-replay-layer-cant-do).
+The lease from [connect](connect.md) holds: replay runs inside the job that holds the account's session, and a busy session returns 409, so a recorder and a verb never share one. Pacing is per account and verb across routes: a replayed Poshmark delist waits like a browser one.
 
-**What replay covers** (*agent proposal*):
+## Contract
 
-| Action | Replay? | Why |
-|---|---|---|
-| delist, revise price, pause | yes | frequent, time-critical, small calls |
-| readBack, listLive, listOrders, readInterest, readInbox | yes | frequent reads; cheap reconcile |
-| post | the release step only, after the person's tap | photo upload and form shape change most often |
-| sign-in, 2FA, anything with a challenge page | never | the person does it in the browser ([connect](connect.md)) |
-
-## Contract for the frontend
-
-No endpoints of its own. Every job result that ran an outward action carries `{route: "api" | "replay" | "browser", fell_back: bool, ms}`. The "why?" timeline shows `route` as one line from [copy](../../product/copy.md). Live view links come back only when `route` is `browser`.
+No endpoints of its own. Every job and event for an outward verb carries `{route: "api" | "replay" | "browser", fell_back: bool, ms}` ([product.md](../product.md#harnesses)). The item's events show `route` as one line. Live view links come back only when `route` is `browser`.
 
 ## Who may act
 
-Replay is a route, not an actor. An action replayed keeps exactly the mode it had: a delist after a sale stays `auto`, a first post stays `ask`, the locked kinds stay locked. The policy check runs before the route is picked, so replay cannot widen what is allowed. Pacing is per account and action, shared across routes, so a replayed Poshmark delist waits like a browser one. Recording and canary runs act only on test accounts.
+Replay is a route, not an actor. A replayed verb keeps the mode it had: a delist after a sale stays auto, a first post stays ask, locked kinds stay locked. The policy check runs before the route is picked, so replay cannot widen what is allowed. Recording and canary runs act only on test accounts.
 
 ## How it fails
 
 | Failure | Signal | What happens |
 |---|---|---|
-| Site changed a field or endpoint | status not expected, or response shape hash differs | `replay.drift`; read back first, then rerun on the harness under the same idempotency key; recipe `drifted`, re-record queued |
-| Call accepted but nothing changed | read-back does not match | as above; never counted as success |
-| Challenge or sign-in page returned | HTML where JSON was expected, or a known challenge marker | stop; no fallback retry; account `needs_signin` or `paused` |
-| Session expired | 401 or 403 | account `needs_signin`; outward actions wait |
-| Fallback also fails | harness error | the listing's own failure path in [list](list.md) |
-| Recording captured a personal value | the recorder's scrub check | recipe rejected, never stored |
+| Site changed a field or endpoint | status or shape hash differs | drift event; read back first, then the browser under the same idempotency key; `fail_count` up; re-record queued |
+| Call accepted, nothing changed | read-back does not match | as above; never a success |
+| Challenge or sign-in page | HTML where JSON was expected, or a challenge marker | stop, no retry; the account goes `broken` or `paused` ([connect](connect.md)) |
+| Session expired | 401 or 403 | `broken`, a `relink` card; outward verbs wait |
+| Session busy | 409 | wait for the lease |
+| Browser also fails | harness error | the listing's own failure path in [list](list.md) |
+| Capture holds a personal value | the scrub check | recording rejected, never stored |
 
 Read-back before any retry matters most: a delist that reached the site but timed out must not be sent twice ([harness lessons](../../research/cross-cutting/ben/ai-harness-from-repos.md#4-posting-delisting-and-jobs)).
 
 ## How we will know it works
 
-| Claim | Check |
-|---|---|
-| Replay is fast | p50 and p95 `ms` per site and action, replay against browser, from job results |
-| Drift is caught | share of drifted runs found by `expect` or read-back, not by a person or the next reconcile; target all |
-| Fallback is safe | zero double actions (two delists, two price changes) under one idempotency key, from read-backs |
-| Replay pays | share of outward actions on `replay`, per site, per week |
-| Recipes stay clean | the recorder's scrub check and `node spec/log.mjs` find no cookies or personal values in `recipe` rows |
-
-## Facts that constrain it
-
-| Fact | Mark | Source |
+| Measure | Bar | Source |
 |---|---|---|
-| Ben's plan: the browser explores once, following runs call the site's own web endpoints, and on drift fall back | *agent proposal* in Ben's note | [CD](../../research/list/ben/crosspost-and-delist.md#browser-use-cloud-v4-for-posting-and-for-delists-the-replay-layer-cant-do) |
-| Delist speed about 1 to 3 s by replay against 1 to 4 min in the browser | *asserted* | [CD pipeline](../../research/list/ben/crosspost-and-delist.md#the-sold--delist-pipeline) |
-| Browser Use V4 has no webhook; a busy session returns 409; the live view link is a credential | *observed* | [CD](../../research/list/ben/crosspost-and-delist.md#browser-use-cloud-v4-for-posting-and-for-delists-the-replay-layer-cant-do) |
-| Poshmark, Mercari and the eBay User Agreement ban automated means whatever the route; replay is automation | *observed* | [platform-access §7](../../research/connect/nate/platform-access.md#7-cross-marketplace-comparison-of-terms) |
-| Browser automation is not proof of permission | *inferred* | [teardown §6](../../research/cross-cutting/nate/crosslister-teardown.md#6-things-no-tool-does-well-inferred-from-the-gaps-above) |
-| Replay needs the session outside the cloud browser, which is where Apple 5.1.1(v) applies | *inferred* | [privacy §9](../../research/cross-cutting/nate/privacy-and-data.md#9-session-tokens-and-cookies-keychain-versus-server-vault) |
+| CDP capture on Browser Use V4 | the first build task: attach, run `end` on a test listing, see its calls | [§1.1](../../research/replay/nate/cloud-browsers-and-detection.md#11-does-browser-use-cloud-expose-the-network-log-or-har); fallback is the harness-only path |
+| Delist speed | under 3 s p95 by replay; 1 to 4 min in the browser | asserted in [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#the-sold--delist-pipeline); timed replays decide |
+| In-page calls only | no replay from outside the session in any trace | MLflow traces |
+| Ban risk | no warning on test accounts over weeks of replays | test accounts per site |
+| Drift caught | every drift found by `expect` or read-back | events |
+| Double actions | none under one idempotency key | read-backs |
+| Scrub | no cookie, token or personal value in any recording | the scrub check and `node spec/log.mjs` |
 
-What changed: today every site gets its own harness on Browser Use cloud ([harness decision](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)); replay sits under each harness as its fast path rather than as a separate system.
+## Facts to know
 
-## Demo path
+| Fact | Mark | Source | At public launch |
+|---|---|---|---|
+| Browser Use V4 has no network log or HAR; `cdpUrl` from `GET /api/v4/browsers/{id}`; CDP events only from attach | observed | [§1.1](../../research/replay/nate/cloud-browsers-and-detection.md#11-does-browser-use-cloud-expose-the-network-log-or-har) | unchanged |
+| A busy session returns 409; a profile pairs with a stable IP; a cookie from another IP fails | observed | [§1.3](../../research/replay/nate/cloud-browsers-and-detection.md#13-replay-relevant-facts) | unchanged |
+| Detection per site: eBay Akamai, Depop Cloudflare (`__cf_bm`), Mercari Cloudflare, Poshmark Cequence and reCAPTCHA, Facebook Arkose | asserted | [§2](../../research/replay/nate/cloud-browsers-and-detection.md#20-what-the-sources-say-about-detection-layers) | unchanged |
+| Ben's plan: the browser explores once, later runs call the site's own endpoints, drift falls back | Ben's note | [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#browser-use-cloud-v4-for-posting-and-for-delists-the-replay-layer-cant-do) | unchanged |
+| Poshmark, Mercari and eBay terms ban automated means whatever the route | observed | [platform-access §7](../../research/connect/nate/platform-access.md#7-cross-marketplace-comparison-of-terms) | a written allowance per site, or the risk line stays |
+| A session kept on the server, which is where App Store 5.1.1(v) applies | inferred | [privacy §9](../../research/cross-cutting/nate/privacy-and-data.md#9-session-tokens-and-cookies-keychain-versus-server-vault) | App Review on a TestFlight build |
 
-For Ben and Nate to mark.
+Rules that protect people, unchanged: a home address only on the person's tap; no buyer data in any recording; a recalled product is not listed whatever the route; account risk shown per site in [connect](connect.md).
 
 ## Open for Ben and Nate
 
-| Question | Quotes | Recommendation | What depends on it |
-|---|---|---|---|
-| Where does replay run, and may the session leave the cloud browser to do it? | Ben's posting note: cloud cookies "conflict with keeping credentials on the user's device"; Nate: login "persisted" in the cloud browser ([words](../../product/words.md#2026-11-14-nate-frameworks-and-goals)) | run replay inside the same Browser Use session (calls from the page), so cookies never leave it | speed gain, App Store review |
-| Does replay change ban risk compared with the browser? | [vision Open](../../product/vision.md#open) | treat it as the same automation under the same pacing; say so at Connect | which actions replay |
-| Use Ben's private tool behind this role, or build the role here? | none | Ben decides; the role and contract above hold either way | recorder and runner |
+| Question | Recommendation | What depends on it |
+|---|---|---|
+| Keep recorded replays inside each harness? | yes: one harness per site owns its fast path | whether replay keeps a spec of its own |
+| Use Ben's private tool behind this role, or build the role here? | Ben's say; the role and contract hold either way | recorder and runner |
 
 ## Needs from the shared model
 
-- A `recipe` entity with prefix `rcp_`, owned by the marketplace layer.
-- A name for this feature that does not collide with [spec/replay.mjs](../replay.mjs).
-- `route` (`api | replay | browser`), `fell_back` and `ms` on job results and events.
-- Event names `replay.recorded`, `replay.drift`, `replay.fallback` in [events.json](../events.json).
+- product.md says replay is not a layer of its own; this spec stays as the design of the fast path until Ben answers the first question.
+- Event names recorded, drift and fallback in [events.json](../events.json).
 - Test accounts per site for recording and the daily canary.

@@ -1,167 +1,200 @@
 # List
-Status: draft, *agent proposal* except where a line links a decision. Slug: list. Written 2026-11-14.
+Status: draft, *agent proposal* except where a line links a decision. Slug: list. Written 2026-11-14, second pass.
 
-The hassle it removes: today a seller rewrites the same title five ways, crops the same photos five times, guesses each site's price, then has to remember to pull every copy when one sells. List turns one item card into one listing per site, each fitted to that site, posts them on one tap, keeps them in step, and ends the others when one sells.
+The hassle it removes: today a seller rewrites the same title five ways, crops the same photos five times, guesses each site's price and timing, then has to remember to pull every copy when one sells. List turns one item card into one listing per site, each built from that site's best plan, posts them on one tap, keeps them in step, and ends the others when one sells.
+
+Nate on the plan ([words](../../product/words.md)): "we in real time based on similar listings, determine the best marketing strategy for each platform, that is a determined calculation and feature. The user can also influence other marketing strategies, but likely goes for the best option."
 
 ## What the person does and sees
 
-Lives in **Sell**, in the drafting area ([listing goes item by item in a drafting area](../../product/decisions.md#2026-11-14-listing-goes-item-by-item-in-a-drafting-area)); the first-post card also lands on Today. Each item shows as a photo with a state pill in the Sell grid ([Sell tab](../../product/decisions.md#2026-11-14-the-sell-tab-is-a-photo-grid-with-state-pills-numbers-live-in-you)).
+Lives in **Sell**, in the drafting area ([decisions](../../product/decisions.md#2026-11-14-listing-goes-item-by-item-in-a-drafting-area)); the `first_post` card also lands on Today.
 
-1. After review, the item opens in the drafting area with one tab per suggested site. The suggestion comes from the item's `strategy`: which sites suit it, and why in one line ("Depop sells this brand faster").
-2. Each tab shows that site's draft as the site will show it: title at its length limit, description, the site's own attributes (size, condition, brand from its list), photos in that site's order and count, price, shipping or pickup.
-3. An edit on the shared fields (photos, condition, measurements) reaches every tab unless that tab overrode it; an overridden field shows a small dot and Undo override.
-4. Under the price, "Always accept offers at or above $X" is offered ([always accept](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)).
-5. **Post to 4 sites** fills every site in the cloud browser or API at once and stops before the final button. The person sees one stack of previews, then taps **Post** once to release all of them. This first post of an item is always asked ([automation tiers](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)).
-6. Each site's pill moves from Posting to Live with a link. A failed site shows Retry on that site only.
-7. On a live item: change price, pause, end or relist per site or on all sites, from the item page.
-8. Interest shows per site: views, likes, watchers, bags, messages and offers, with a blank and "not shown by this site" where a site does not give a number.
-9. When the item sells anywhere, the other listings end on their own and the item page shows each one coming down ([delist after sale is auto](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)).
+1. After review, the item opens in the drafting area with one tab per site the plan picked, each with one line on why ("Depop sells this brand in 6 days").
+2. Each tab shows that site's best plan, preselected: objective (Sell this week, Typical, Get the most), start price, the drops and their days, offers on or off, when it goes live. Under it, the two other objectives as one-tap chips with their expected days to sell and net, each a guarded number.
+3. Each tab shows the draft as the site will show it: title in that site's form and length, the site's own attributes, photos in that site's order and count, price, shipping or pickup.
+4. Tapping a field adjusts it inside the plan (price, a drop day, offers off). An edit on shared fields (photos, condition, measurements) reaches every tab unless that tab overrode it; an override shows a dot and Undo override.
+5. Under the price: "Always accept offers at or above $X" and "lowest you'd take" ([decisions](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)).
+6. Before the post: a recall check against CPSC runs; a match blocks the post and says why, with the recall link.
+7. **Post to 4 sites** fills every site and stops before the final button. One stack of previews, then **Post** once. The first post of an item is always asked unless promoted ([decisions](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)).
+8. Each site's pill moves Posting to Live with a link; a failed site shows Retry, Edit or Skip on that site only.
+9. On a live item: interest per site (views, likes, watchers, offers; "not shown by this site" where a site gives none), and the plan's next step ("drops to $42 on day 10").
+10. When the plan is recomputed, changes inside limits happen and show in the item's events with Undo; the rest arrive as a card (table below).
+11. When it sells anywhere, the other listings end on their own and the item page shows each one coming down.
 
-**Where Ben's design would make a person stumble.** His two-step post shows a live view per site before the tap ([posting note](../../research/list/ben/posting-browser-use-ebay.md#recommended-architecture)). For five sites that is five live views to watch. One preview stack with one tap removes that, and the live view stays one tap away per site for anyone who wants to watch.
+## Design choices
 
-**What the backend makes possible that the design does not yet use.** Every interest number lands as an event, so the system can tell which site is drawing attention for this item and suggest moving the price or adding a site, which no single site can show. The item id goes in as each listing's SKU or custom label, so a lost post can be found again without double posting.
+| Choice | Options considered | Picked | Why | What would change it |
+|---|---|---|---|---|
+| Who sets the plan | the person per site; one plan for all sites; one computed plan per site, preselected ([observing-rank-and-performance](../../research/list/nate/observing-rank-and-performance.md)) | one plan per site from that site's comparable listings now, in plain code, preselected, alternatives one tap away | Nate's words; sites differ in buyers, fees and ranking | people changing the preselected plan on more than half of items |
+| Price path | fixed price; the site's own tools ([platform-levers](../../research/list/nate/platform-levers.md)); our path by objective (price.md) | our path: quick p25 with drops of 10% on day 3 and 5; balanced p50, 7% on day 10 and 20; max_return p75, 5% on day 21 and relist on day 45 | one rule across sites; the floor stays ours | no study on price or timing exists, so sell-through per objective on our own sales decides |
+| Title form | one title; per-site form from the site's guidance ([listing-fields-by-platform](../../research/list/nate/listing-fields-by-platform.md)) | per site: brand, product type, key attributes, inside each site's limit | Poshmark and Mercari say this form drives search; Depop has no title | rank before and after on test listings (`score` job `observe_rank`) |
+| Photo order and count | one order; per site from the visibility and quality `score`s ([ranking-algorithms](../../research/list/nate/ranking-algorithms.md), [observing-rank-and-performance](../../research/list/nate/observing-rank-and-performance.md)) | per site: the strongest photo first, then every photo the site allows | Tise: each extra image raises sale odds, coefficient 0.049; eBay first-photo quality odds ratios 1.17 and 1.25 | a `ranker_model` that finds count has no effect on a site |
+| Offers and shipping | off by default; on where the site supports them ([platform-levers](../../research/list/nate/platform-levers.md)) | Best Offer on for eBay balanced and quick; free shipping where net allows | Best Offer +3.17% sale probability at the same price; free shipping +14% sale likelihood | our own sell-through per lever |
+| Which sites get the item | every site; by fit ([platform-fit](../../research/list/ben/platform-fit.md)) | by fit: bulky to Facebook local only, clothes and accessories to Depop, eBay for most | each site's buyers | sell-through by site |
+| Recall check | none; CPSC lookup at review; CPSC lookup before first post ([autonomous-features](../../research/cross-cutting/nate/autonomous-features.md)) | before every first post; `post` refuses a match | the rule that protects people | none |
 
-## What it reads and writes
+## How each site's listing is built from its plan
+
+| Site | Title form | Photo order | Attributes to fill | Price path | Timing | Offers |
+|---|---|---|---|---|---|---|
+| eBay | brand, model, key aspects, 80 chars (asserted) | strongest first, up to 24 | every required and recommended aspect from Taxonomy, condition id and descriptors | price path; markdown by `revise`; relist on day 45 for max_return (new id) | `list_at` from the plan; scheduled listing where needed | Best Offer on for quick and balanced; offer to watchers by `answer_offer` |
+| Facebook | brand, item, size or model | strongest first, up to 10 (asserted) | condition, brand, category; size and colour where offered | price path by `revise` | `list_at`; counts against 20 new a month (asserted) | none on the site; messages carry offers |
+| Depop | no title; first line of the description | strongest first, up to 8 | department, product type, brand, size set, condition | price path by `revise` | `list_at` | offer to likers by `answer_offer` |
+| Poshmark | "Brand + Product Type + Key Attributes", 80 (asserted) | cover in 3:4, up to 16 | department, category, subcategory, size from the list, brand, NWT | price path by `revise`, paced | `list_at`; never relisted | offer to likers, paced |
+| Mercari | brand, item, key attribute, 80 (asserted) | strongest first, up to 12 | category three levels, brand, condition, size | price path by `revise` (edits over relists) | `list_at` | offer to likers |
+
+Fields from [listing-fields-by-platform](../../research/list/nate/listing-fields-by-platform.md) and levers from [platform-levers](../../research/list/nate/platform-levers.md). The visibility and quality `score`s from `spec/features/score.md` set the title words and photo order; the comparable listings and their prices come from `spec/features/market.md`. When a site's `ranker_model` changes, a `ranker_changed` notice hides the visibility `score` and trend until it is learned again.
+
+## Revising a live listing when the plan is recomputed
+
+The plan is recomputed when its `comp_set` goes stale (quick 7, balanced 30, max_return 90 days), when interest moves, or when the person edits the item.
+
+| Change | Auto or asks | Decision kind |
+|---|---|---|
+| A drop on the chosen path, above the floor | auto | `markdown` |
+| A price below the floor | always asks, never promoted; copy "lowest you'd take" | `price_below_floor` |
+| Title words or photo order inside the chosen plan | asks until promoted, then auto | `agent_revision` |
+| A new objective or a new path | asks | `agent_revision` |
+| Relist | asks, auto if promoted; never on Poshmark | `relist` |
+| The person's own edit on the item card | auto, to every tab not overridden | `push_my_edit` |
+| A trial across consenting users' listings | asks, never promoted | `join_experiment` |
+
+Every revision is `revise` through the harness, read back, and logged with the plan's `citation_id`, so Undo restores the previous draft.
+
+## Data flow
+
+```mermaid
+flowchart LR
+  I["item review"] -->|"draft job, Unity Gateway: listing draft, strategy suggested"| D["drafting area"]
+  D -->|"recall check, CPSC: requirement flag"| R["claim_check on the draft"]
+  R -->|"first_post card in Today: decision answered, strategy chosen"| P["post job on Apps API"]
+  P -->|"Browser Use harness per site, eBay API inside its harness: listing posting"| S["marketplace"]
+  S -->|"read-back in the harness: listing live, external_ids, event, strategy running"| L["Lakebase listing"]
+```
+
+`claim_check` on hold opens `unbacked_claim` in Today (send without the claim, edit, or confirm, which writes `owner` evidence); abstain opens a decision with the draft ([product.md](../product.md#list-across-sites)).
+
+## Reads and writes with the proof layer
 
 | Entity | Read | Written |
 |---|---|---|
-| `item`, `attribute`, `photo` | title facts, attributes with `source`, photos | nothing; drafts never change the item's facts |
-| `strategy` | sites, price path, lowest price, ship or pickup | `sites[]` when the person adds or drops one |
-| `valuation` | per-site range | nothing |
-| `listing` | | `id`, `item_id`, `account_id`, `site`, `state`, `draft{title, description, attributes{}, photo_order[], price, shipping}`, `overrides[]`, `external_ids[{id, url, from, to}]`, `interest{views, likes, watchers, bags, at}`, `last_read_back_at` |
-| `rule`, `limits` | lowest price, always-accept amount | always-accept amount from step 4 |
-| `decision` | | `first_post`, `pick_sale`, `below_lowest` |
-| `event` | | `listing.posted`, `listing.revised`, `listing.delisted`, `listing.relisted`, `listing.interest` (proposed, see Needs) |
+| `item`, `attribute`, `photo` | facts with their `evidence` | nothing; drafts never change the item's facts |
+| `strategy` | objective, price_path, comp_set, citation_id | `chosen_at`, objective, per-site edits |
+| `score` | visibility and quality per site | nothing |
+| `listing` | | item_id, site, state, price_cents, url, external_ids[] {id, url, from, to}, sku, draft {title, body, photo_ids[]}, overrides, interest, posted_at, last_read_back_at, next_check_at |
+| `claim_check` | | every claim in the title and body, `backed` by an attribute or evidence id |
+| `decision` | | `first_post`, `agent_revision`, `relist`, `markdown`, `price_below_floor`, `unbacked_claim`, `failed_post`, `failed_delist`, `site_changed_listing`, `delist_after_sale` |
+| `event` | | each verb with route, fell_back, ms |
 
-A relist that mints a new external id closes the old entry (`to` set) and appends a new one; the `listing` id and the item id never change.
+Every number in the plan (price, days to sell, net, interest) is a guarded number: a sold range on fewer than 5 sales is hidden, an asking range on fewer than 6 listings is hidden ([product.md](../product.md#the-proof-layer-agent-proposal)). A relist closes the old external id (`to` set) and appends a new one; the listing id never changes.
 
 ## States
 
-Listing states come from [lifecycle.mjs](../lifecycle.mjs): `none, posting, live, postFailed, delisting, delisted, delistFailed`.
+From [lifecycle.mjs](../lifecycle.mjs): `none, posting, live, postFailed, delisting, delisted, delistFailed`.
 
 | Move | Trigger | Actor |
 |---|---|---|
-| none to posting | `post`, after the `first_post` decision | user |
-| posting to live | `postOk`, confirmed by read-back | site |
-| posting to postFailed | `postFail` | site |
+| none to posting | `post`, after `first_post` | user, or auto if promoted |
+| posting to live | `postOk` from read-back | site |
+| posting with no read-back | postUnknown, resolved by `reconcile` by SKU | auto |
+| posting to postFailed | `postFail`; `failed_post` card | site |
 | postFailed to posting | `retry` | user |
-| live to delisting | `delist` after a sale elsewhere | auto |
-| delisting to delisted, delistFailed | `delistOk`, `delistFail` | site |
-| delistFailed to delisting | `retryDelist` | auto |
-| live price change | `markdown` inside limits; `belowFloor` asks | auto; user |
+| live price change | `markdown` on the path; below floor asks | auto; user |
+| live, offer in | `offerIn`; `counter` never below floor_cents; `acceptOffer` auto at or above always_accept_cents; `declineOffer` | auto or user |
+| live, offer to watchers | `offerToWatchers` (eBay, Depop) | auto inside limits |
+| live to delisting | a sale elsewhere holds the others, then `delist` | auto, paced on Poshmark |
+| delisting to delisted | `delistOk` only from a read-back | site |
+| delisting to delistFailed | `delistFail`; `failed_delist` card | site |
+| delisted to posting | `relist`; appends an external id; never on Poshmark | user, or auto if promoted |
 
-Proposed additions (*agent proposal*, not in lifecycle.mjs): `postUnknown` (the click went out, no answer; reconcile by SKU before anything else, gap G4), `paused` (hidden but kept, where the site allows), `relisting`, `delistUnverified` (gap G2), `committed` (a sale is in progress on that site, gap G1). Gaps are in [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#edge-cases--lifecyclemjs). The item moves `review` to `live` on the first site live, and `live` to `sold` on a paid order.
+Strategy moves suggested to chosen on the person's pick, chosen to running when the first listing goes live, running to ended on sale or end.
 
-## Systems underneath
+## Harness and systems
+
+Jobs: `draft`, `post` (runs `post`, `revise`, `relist`), `delist` (runs `end`), `score_fit` and `rank_panel` (`read_stats`, `search`). Each runs in the one loop with the lease and pacing set in [connect.md](connect.md); the fast path for repeat tasks is [replay.md](replay.md).
 
 | Piece | What it does here |
 |---|---|
-| Agents on the model gateway | write each site's title and description from attributes and the site's levers; Sonnet writes, Haiku checks length and banned words |
-| Plain code | site field maps, photo count and order, price in cents, the policy check before every outward call |
-| Marketplace layer | one internal API, `market.<fn>(account, input, {idempotency_key})`, with functions `post`, `revise`, `pause`, `end`, `relist`, `readBack`, `listLive`, `readInterest`. Route order per call: official API, then [replay](replay.md), then the cloud browser harness |
-| eBay API | `createListing` with a validate dry run before the tap ([posting note](../../research/list/ben/posting-browser-use-ebay.md#official-route-first-ebay)); Inventory-made listings stay on the Inventory API |
-| Browser Use cloud | one harness per site ([harness decision](../../product/decisions.md#2026-11-14-each-marketplace-gets-its-own-harness-run-on-browser-use-cloud)); fills, stops before Post, posts on release |
-| Lakebase | `listing` rows, idempotency keys, the outward queue (delists jump the queue, E12) |
-| Lakeflow jobs | reconcile every 5 min per account; interest poll per listing; order poll |
-| MLflow | a trace per post and delist, shown as "why?" |
+| Agents on Unity Gateway | write each site's title and body from attributes and the plan; checked by `claim_check` |
+| Plain code | the plan, site field maps, photo count and order, price in cents, the policy check before every outward verb |
+| Harness per site | the verbs above with read-back |
+| CPSC recall lookup | before the first post; result as a `requirement` legal flag |
 
-Idempotency key: `post:{item}:{site}:{n}`, `revise:{listing}:{version}`, `delist:{item}:{site}`. A post click is never retried blind; it goes to `verifying` and the reconciler reads back first ([harness lessons](../../research/cross-cutting/ben/ai-harness-from-repos.md#4-posting-delisting-and-jobs)).
+Idempotency keys: `post:{item}:{site}:{n}`, `revise:{listing}:{version}`, `delist:{item}:{site}`. The item id goes in as each listing's SKU or custom label, so a lost post can be found without double posting.
 
-**Interest each site exposes** (the fallback when not exposed: the harness reads the number off the listing page if the page shows it; messages and offers always come from our own `conversation` and `offer` rows):
+## Contract
 
-| Site | Views | Likes or watchers | Bags | Source |
-|---|---|---|---|---|
-| eBay | yes, traffic report | watchers | n/a | [platform-access §2](../../research/connect/nate/platform-access.md#2-ebay), *asserted* |
-| Depop | not found | likes | bags | [platform-access §4](../../research/connect/nate/platform-access.md#4-depop), *observed* |
-| Poshmark | not found | likes, from the page | n/a | [platform-access §5](../../research/connect/nate/platform-access.md#5-poshmark) |
-| Mercari | from the page | likes, from the page | n/a | [platform-access §6](../../research/connect/nate/platform-access.md#6-mercari) |
-| Facebook | from the page | saves, from the page | n/a | [platform-access §3](../../research/connect/nate/platform-access.md#3-facebook-marketplace) |
+| Endpoint | Body | Returns |
+|---|---|---|
+| `POST /v1/items/:id/strategy` | `{version, objective, per_site[] edits, floor_cents, always_accept_cents}` | `200`; `409 stale`; `422 outside_limits` |
+| `POST /v1/items/:id/listings` | `{sites[]}` | `202` post job; the first post opens `first_post` unless promoted |
+| `POST /v1/decisions/:id/act` | `{option_id, signature, version, edit?}` | `200` |
+| `GET /v1/jobs/:id`, `/events` | | stages and result |
+| `GET /v1/scores?subject_type=listing&subject_id=` | | visibility and quality per site |
+| `GET /v1/citations/:id` | | how a plan number was computed |
 
-Ben's note says Depop's API "cannot view likes"; Nate's reading of the partner docs found `likes_count` and `bag_count` in insights (*observed*). Both are linked in the Facts table.
-
-## Contract for the frontend
-
-| Call | Returns |
-|---|---|
-| `POST /v1/items/:id/drafts` `{sites[]}` | a `job` of kind `draft`, stages `write`, `check`, `arrived` per site |
-| `GET /v1/items/:id/drafts` | `[{site, draft, overrides[], warnings[]}]` |
-| `PATCH /v1/items/:id/drafts/:site` | the draft; `{override: false}` on a field rejoins the shared value |
-| `POST /v1/items/:id/post` `{sites[]}` | a `job` of kind `post`, stages `fill`, `preview`, `release`, `read_back`, and a `first_post` decision once previews arrive |
-| `GET /v1/listings?item_id=` | `[{id, site, state, external_ids[], url, price, interest, last_read_back_at}]` |
-| `POST /v1/listings/:id/revise` `{price?, fields?}` | a `job`; header `Idempotency-Key` |
-| `POST /v1/listings/:id/pause`, `/end`, `/relist` | a `job`; header `Idempotency-Key` |
-
-Decision kinds: `first_post` (options Post all, Post some, Not yet), `pick_sale` (two sales landed together: which buyer to keep, gap G7), `below_lowest`. Job result: `{per_site:[{site, state, external_id?, url?, route, error?}]}`. Money is cents plus currency.
+Errors as in [product.md](../product.md#errors): a site refusing the post is `502 site_failed`; the recall match is `403 locked`.
 
 ## Who may act
 
-| Action | Mode |
+| Action | Who |
 |---|---|
-| First post of an item | `ask`, one tap for all sites ([tiers](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)) |
-| Post a revised draft of an already-live item | `ask`; promotable after 3 unedited approvals |
-| Price change at or above the lowest price | `auto` inside limits |
-| Price below the lowest price | locked to the person ([below your floor](../../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)) |
-| Delist after a sale elsewhere | `auto`, paced on Poshmark |
-| Pause, end, relist by choice | `ask`; relist promotable |
-| Turning on a site's own auto rules (auto-accept, Smart Sell, auto-negotiate) | never on its own; these bypass our tiers, so our `rule` drives them ([build plan §4](../../research/cross-cutting/ben/build-plan-posting-messages-ui.md#4-workstream-a-cross-posting-and-delisting)) |
+| First post of an item | person; auto once promoted |
+| Markdown on the path above the floor | auto |
+| Below the floor | person, always |
+| Accept at or above always-accept | auto |
+| Delist after a sale | auto |
+| Relist | person; auto if promoted; never on Poshmark |
+| Post a recalled product | nobody |
 
 ## How it fails
 
-| Failure | What the person sees | Recovery |
-|---|---|---|
-| A site rejects the draft | that tab red with the site's reason | fix and retry that site |
-| Click sent, no answer | pill shows Checking | reconcile by SKU; live if found, else `postFailed` with Retry |
-| Double post | nothing; the reconciler ends the copy | read-back by SKU after every post |
-| Delist fails | pill Ending, then a card if it fails twice | `retryDelist`; on Poshmark an open offer blocks delist, so void it then retry |
-| Sold on two sites at once | `pick_sale` card | the other sale is cancelled on that site, with a reason |
-| Sale cancelled | item back to `live` | relist on the ended sites (gap G8) |
-| Account `needs_signin` | posts and revisions wait; card from [connect](connect.md) | sign in again |
-| Site warns the account | every action on that site stops | see connect, `paused` |
+| Failure | What happens |
+|---|---|
+| A site rejects a field | `failed_post` with the site's words; Retry, Edit, Skip |
+| Post sent, no answer | postUnknown; `reconcile` finds it by SKU before any retry |
+| The site changed our listing | `site_changed_listing` with both versions |
+| Delist fails | `failed_delist`; retried auto, then the card |
+| Comparable listings too few | the plan shows the price as hidden with why; the person sets it |
+| Facebook cap reached | Facebook skipped this month, with why |
 
 ## How we will know it works
 
-| Claim | Check |
-|---|---|
-| Sold means down everywhere | `sold_to_all_down_ms` p95 per site from events; target under the incumbents' 2 min to a day |
-| No double posts | count of listings with two live external ids at once, from read-backs, is zero |
-| Drafts fit each site | share of first-post approvals unedited, per site |
-| Posts land | share of `post` jobs `arrived` with read-back, per site and route |
-| Interest is right | our numbers match the site's own page on 20 sampled listings |
-
-## Facts that constrain it
-
-| Fact | Mark | Source |
+| Measure | Bar | Source |
 |---|---|---|
-| eBay's User Agreement bars LLM bots and buy-for-me agents; Nate read it as effective 2026-06-28 for existing users, Ben's note dates it 2026-02-20 | *observed*; *asserted* | [platform-access §2](../../research/connect/nate/platform-access.md#2-ebay), [CD eBay](../../research/list/ben/crosspost-and-delist.md#ebay-details) |
-| eBay's API licence bars seller arbitrage such as automatic repricing | *observed* | [platform-access §7](../../research/connect/nate/platform-access.md#7-cross-marketplace-comparison-of-terms) |
-| Poshmark's rules ban automated deleting and reposting, liking and sharing; accounts were suspended in Nov 2025 | *observed* | [platform-access §5](../../research/connect/nate/platform-access.md#5-poshmark) |
-| Poshmark pacing about one action per 2 to 5 s; a 3% cancel rate brings a freeze | *inferred*; *asserted* | [CD Poshmark](../../research/list/ben/crosspost-and-delist.md#poshmark-details) |
-| Mercari bans robots and may suspend and hold funds | *observed* | [platform-access §6](../../research/connect/nate/platform-access.md#6-mercari) |
-| Depop API: 1 to 8 pictures; 200 creates or updates per 10 s; webhooks best effort | *observed* | [platform-access §4](../../research/connect/nate/platform-access.md#4-depop), [CD Depop](../../research/list/ben/crosspost-and-delist.md#depop-details) |
-| Depop API cannot view likes (Ben) versus insights give likes and bags (Nate) | *asserted*; *observed* | [CD Depop](../../research/list/ben/crosspost-and-delist.md#depop-details), [platform-access §4](../../research/connect/nate/platform-access.md#4-depop) |
-| A sold eBay item can show Active at quantity 0; read sales from orders | *observed* | [CD eBay](../../research/list/ben/crosspost-and-delist.md#ebay-details) |
-| Relisting is not proven to improve ranking; browser automation is not proof of permission | *inferred* | [teardown §6](../../research/cross-cutting/nate/crosslister-teardown.md#6-things-no-tool-does-well-inferred-from-the-gaps-above) |
-| Fees per site | see note | [fees and taxes](../../research/price/nate/fees-and-taxes.md) |
+| Photos per listing | every photo the site allows; sale rate rises with count | Tise coefficient 0.049 per extra image; eBay first-photo quality odds ratios 1.17 (shoes) and 1.25 (handbags) ([observing-rank-and-performance](../../research/list/nate/observing-rank-and-performance.md)) |
+| Best Offer on eBay | sale probability at least +3.17% against off, price unchanged | the same note (eBay claims 5%) |
+| Free shipping | sale likelihood +14% against $1 shipping | the same note |
+| Delist after a sale | under 2 min p95 | delist by replay 1 to 3 s against 1 to 4 min in the browser (asserted) |
+| Double sales | none | events |
+| Preselected plan kept | more than half of items | our events |
+| Price and timing per objective | days to sell inside the plan's range | no study exists; our own sales decide |
+| One tap then paced auto | no warning on test accounts over weeks | relists on test accounts |
+| Relisting helps rank | rank before and after on test listings | `observe_rank` |
+| Sites per item | sell-through by site beats every-site posting | our sales |
+| Guarded numbers | 20 shown numbers recomputed a week later match | the kill test |
 
-What changed: Ben's earlier plan kept eBay on its API only and never in a browser. Today eBay gets a harness too, with the API where faster or more reliable ([it's a demo, so build it](../../product/decisions.md#2026-11-14-its-a-demo-so-build-it)).
+## Facts to know
 
-## Demo path
+| Fact | Mark | Source | At public launch |
+|---|---|---|---|
+| eBay bans LLM bots and buy-for-me agents ordering without human review; date 2026-06-28 on the live page, 2026-02-20 in Ben's note | observed | [platform-access](../../research/connect/nate/platform-access.md#2-ebay) | opening the page again settles the date |
+| eBay API licence: no AI training, no Restricted API output in other AI without consent, no auto-repricing against other sites | observed | [platform-access](../../research/connect/nate/platform-access.md#2-ebay) | comps carry `may_model:false` and the tag is enforced |
+| Poshmark bans automation and delete-and-repost; a 3% cancel rate brings a freeze; pace 1 action per 2 to 5 s | asserted, pace inferred | [crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md#poshmark-details) | a written allowance, or the risk line stays |
+| Facebook: 20 new Marketplace listings a month | asserted | [platform-levers](../../research/list/nate/platform-levers.md) | unchanged |
+| Depop API terms ban metric manipulation | observed | [platform-levers](../../research/list/nate/platform-levers.md) | a granted partner key |
+| Mercari favours edits over relists | asserted | [ranking-algorithms](../../research/list/nate/ranking-algorithms.md) | unchanged |
+| Field limits and counts per site | as marked in the table above | [listing-fields-by-platform](../../research/list/nate/listing-fields-by-platform.md) | unchanged |
+| Licences and terms are recorded as facts | decided | [decisions](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build) | each becomes an enforced `rights` tag |
 
-For Ben and Nate to mark.
+Rules that protect people, unchanged: a home address goes out only on the person's tap; buyers' data is kept as `buyer_ref_hash`; a recalled product is not listed; the risk to each account is shown on its row in [connect.md](connect.md).
 
 ## Open for Ben and Nate
 
-| Question | Quotes | Recommendation | What depends on it |
-|---|---|---|---|
-| Ban risk: is the one tap at first post enough, or should a person tap each relist and markdown after it on Poshmark and Mercari too? | [vision Open](../../product/vision.md#open): "Should posting be automatic or one tap by the user?" | first post one tap, as decided; paced auto after that, with the site's rules shown at Connect | pacing, relist promotion, warnings |
-| Which eBay route posts when the API and the harness both work? | today: harness for every site, API where faster | API first on eBay, harness as fallback | eBay terms exposure |
-| Is Mercari in? | see [connect](connect.md) | yes | drafting tabs |
-| Business: cross-posting to more sites is the visible value; a plan could price on sites or listings | none | one line only; no model picked | pricing |
+- Should a promoted `agent_revision` change title words on a live listing, or only photo order and price?
 
 ## Needs from the shared model
 
-- `listing` fields `draft`, `overrides[]`, `external_ids[{id, url, from, to}]`, `interest`.
-- Proposed listing states `postUnknown`, `paused`, `relisting`, `delistUnverified`, `committed`.
-- A `route` field (`api | replay | browser`) on job results and events.
-- Event names `listing.posted`, `listing.revised`, `listing.delisted`, `listing.relisted`, `listing.interest` in [events.json](../events.json).
-- Decision kinds `first_post`, `pick_sale`, `below_lowest`.
+- `strategy.per_site[] {site, price_path[], floor_cents, title_form, photo_order[], attributes_to_fill[], list_at, offers_on, citation_id}`: neither product.md nor price.md defines it yet.
+- price.md's strategy states differ from product.md's; product.md's are used here.
+- `listing.interest` as an event kind.
