@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-14: the phone app comes first, a website follows
+Agreed by: Ben, 20:45 ([words](words.md#2026-11-14-app-first-and-ui-factory-after-the-brand)). Decided: the phone app is the primary product and is built first. A website with sign-in comes later and does the same features, except the phone-only ones (LiDAR measuring and the guided camera); on the web you upload photos instead. Changed: screens are designed for the phone first (390 pt wide); the web is a later surface of the same features, not a separate design. Ben's ui-factory skill is added to the repo, tailored to secondhand, only once the brand is settled (same message). *Agent note:* this settles "app first" but not the build technology (native Swift, or a cross-platform app that can share code with the website); that is still open.
+
 ## 2026-11-14: a price below your floor always asks
 Agreed by: Ben, on the decision card "Can 'Always do this' ever cover a price below your floor?" in the repo-structure thread at 20:41. He picked "Never, it always asks". Decided: a price below your floor is an Ask that can never be promoted to Auto, like Never alone. This refines [automation runs in tiers that learn](#2026-11-14-automation-runs-in-tiers-that-learn), where any Ask could be promoted after 3 approvals. Changed: `NEVER_PROMOTED` in [spec/lifecycle.mjs](../spec/lifecycle.mjs) holds Never alone and priceBelowFloor, and the model check proves automation never sets a price below the floor.
 

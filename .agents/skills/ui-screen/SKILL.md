@@ -13,4 +13,4 @@ The failure this prevents: generic AI-looking UI, made-up values, and explaining
 4. Before inventing a pattern, find the screen in a shipped app that already does this job (`product/decision-map.md`). A new screen or navigation level is a `decide` call.
 5. Run `node .agents/check.mjs`. It fails raw colors, literal font names, dashes, and weights, spacing or radii outside the constitution's scales in app code, and lists copy candidates for you to judge. A clean run means little: still look at the screen itself.
 
-If Ben's harness is installed, run `ui-factory`. This skill is the repo's contract its output must meet.
+Ben's `ui-factory` will be added here, tailored to secondhand, once the brand is settled ([Ben, 20:45](../../../product/words.md#2026-11-14-app-first-and-ui-factory-after-the-brand)). Until then this skill is the procedure for every agent. On-screen words also pass `python3 -I .agents/skills/writing/scripts/lint.py --surface product`.
