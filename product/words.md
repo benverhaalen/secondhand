@@ -350,3 +350,15 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate a safety layer and a framework like flue
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > there is alot of research done on evaluating and understanding ai black boxes, we can have some sort of safety feature built to ensure model responses are safe, or correct, any layer we've seen other systems utilize that databricks themselves don't have. Anything to fully capture images and create a framework of listings, extend it to seperate sources, similar to flue perhaps https://github.com/withastro/flue. Something we can add and impressively expand with databricks, while utilizing and connecting everything
+
+## 2026-11-14 nate verify the gap, outperform, departments
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, in four messages.
+> ensure that databricks doesnt have this feature [...] We can create a system that utilizes parts of the other things built on it, like checking its storage, utilizing tags, when presenting we want to understand all of this
+
+> we also want to design our backend, all our features to outperform or at least be at the best they possibly can be. The spec should begin developing everything.
+
+> utilize more parallel subagents for deeper research, or to begin determining the best designs, utilizing skills, expert perspectives, clean up and organize our context to show and establish the full spec and each feature within it. Ask questions if the agents flag things unclear, parallel out opus 5.5 team leads, with sonnet 5.5 workers. Multiple departments working together.
+
+> Look at https://treg.to/, this can be a great help in showing just some of the ways agent systems are built.
+
+*Agent note:* "[...]" marks where Nate quoted the agent's own sentence about gateway filters and an evidence check.
