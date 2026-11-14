@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "about": "The log contract for every secondhand program. Writers: log/index.js and log/secondhand_log.py. Checker: spec/log.mjs. How to use it: log/README.md.",
+  "envelope": ["ts", "session", "seq", "src", "level", "event"],
+  "levels": ["debug", "info", "warn", "error"],
+  "links": ["item", "job", "run", "decision", "call", "req", "trace", "from"],
+  "events": {
+    "session.start": { "needs": ["build", "seed"], "logs": "A program started: one app launch, one server boot, one job or agent process. Carries the build version and the random seed." },
+    "session.end": { "needs": [], "logs": "The program stopped on purpose. A session with no end crashed or is still running." },
+    "ui.show": { "needs": ["screen"], "logs": "What the person now sees: the screen, its state and the ids of what is on it." },
+    "user.input": { "needs": ["screen", "control"], "logs": "Every tap, choice and typed value. A choice goes in value. Typed words go in text, which is masked." },
+    "request.start": { "needs": ["req", "method", "route"], "logs": "A request reached the server: an app call or a site's webhook." },
+    "request.end": { "needs": ["req", "status", "ms"], "logs": "The server answered that request." },
+    "state.change": { "needs": ["entity", "id", "to"], "logs": "A primitive changed state (product/primitives.md), when no more specific event covers it. The state before goes in was." },
+    "item.action": { "needs": ["item", "action", "actor"], "enum": { "actor": ["user", "auto", "site"] }, "logs": "A step in an item's life, named as in spec/lifecycle.mjs. spec/replay.mjs checks these against the model." },
+    "job.state": { "needs": ["job", "kind", "state"], "enum": { "state": ["queued", "running", "done", "failed"] }, "logs": "A Job moved to a new state." },
+    "job.stage": { "needs": ["job", "stage"], "logs": "Progress inside a running Job, the stage the app shows while it waits." },
+    "call.start": { "needs": ["call", "kind", "name"], "enum": { "kind": ["http", "model", "tool", "browser", "db", "native"] }, "logs": "An outside call is about to be made, with its input." },
+    "call.end": { "needs": ["call", "ok", "ms"], "logs": "That call returned or threw, with its result or error. A model call adds model, tokens_in, tokens_out and cost_usd." },
+    "agent.start": { "needs": ["run", "agent"], "logs": "An agent loop started, with its goal." },
+    "agent.step": { "needs": ["run", "n"], "logs": "One turn of the loop: what the agent chose to do and why. Its tool calls are call lines with the same run." },
+    "agent.end": { "needs": ["run", "ok", "steps", "ms"], "logs": "The loop stopped, with its result or error." },
+    "decision.open": { "needs": ["decision", "kind", "tier"], "enum": { "tier": ["ask", "never_alone"] }, "logs": "Something needs the person: a Decision was raised, with its options and why." },
+    "decision.answer": { "needs": ["decision", "option"], "logs": "The person's tap on a Decision. Add edited and ms_on_card when known." },
+    "decision.close": { "needs": ["decision", "reason"], "logs": "A Decision closed without a tap: stale, expired or replaced." },
+    "error": { "needs": ["where", "error"], "logs": "Something failed outside a call: a caught exception, a rejected promise, a crash handler." },
+    "note": { "needs": ["msg"], "logs": "A free line for debugging. Use a named event when one fits." }
+  },
+  "maskWords": ["token", "secret", "password", "authorization", "cookie", "apikey", "address", "email", "phone", "card", "cvv", "text", "body", "content", "message", "username"],
+  "maskPatterns": [
+    ["secret", "\\b(?:sk-[A-Za-z0-9_-]{20,}|dapi[0-9a-f]{32}|gh[pousr]_[A-Za-z0-9]{30,}|github_pat_[A-Za-z0-9_]{40,}|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{30,}|xox[abprs]-[A-Za-z0-9-]{10,}|eyJ[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,}\\.[A-Za-z0-9_-]{8,})"],
+    ["secret", "\\bBearer\\s+[A-Za-z0-9._~+/=-]{16,}"],
+    ["email", "[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\\.[A-Za-z0-9-]+)+"],
+    ["phone", "(?:\\+\\d{10,15}|(?:\\+?1[\\s.-]?)?\\(?\\b\\d{3}\\)?[\\s.-]\\d{3}[\\s.-]\\d{4})\\b"],
+    ["address", "\\b\\d{1,5}\\s+(?:[A-Z][a-z]+\\s+){1,3}(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Dr|Drive|Ln|Lane|Way|Ct|Court|Pl|Place)\\b"]
+  ],
+  "maxInline": 2000
+}

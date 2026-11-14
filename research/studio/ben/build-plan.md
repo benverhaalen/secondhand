@@ -29,6 +29,23 @@ Never touched at any level: the background, the item's shape and position, color
 
 **Run on Seedream 5.5.** [touchup.py](prototype/touchup.py) calls `bytedance-seed/seedream-5-5` through OpenRouter; the `studio touch-up test` workflow runs it on the three real items with the repo's key and commits the results to [renders/](renders/).
 
+### First look at touch-ups (21:32 UTC, Seedream 5.0 Pro, not 5.5)
+
+Seedream 5.5 has not run yet (see "Blocked" below), so the two prompts were tried on Seedream 5.0 Pro through Higgsfield as a stand-in. Four renders from Ben's real photos, scored against the originals (observed):
+
+| Render | Framing kept | Color drift (limit 4.5) | Detail kept | Background kept |
+|---|---|---|---|---|
+| Marquette tee, light | 0.98 | 4.4 | 0.95 | 0.90 |
+| Marquette tee, pressed | 0.98 | 5.9, over | 0.95 | 0.89 |
+| Chico hoodie, light | 0.95 | 4.7, over | 0.94 | 0.94 |
+| Carhartt pants, pressed | 0.98 | 4.2 | 0.95 | 0.92 |
+
+By eye: the same concrete floor, the same framing and folds, prints and tags intact, brighter and more even light. Two faults: the tee comes out a little less saturated and the hoodie a little lighter and pinker, which is the color drift the table shows. "Pressed" barely relaxes the wrinkles, so on this model levels 1 and 2 look nearly the same. Color drift is the thing to fix: either push the item's color back to the level 0 photo after the render (deterministic, real color wins), or show the drift on the approval card. *Agent proposal:* do the first.
+
+The gate now has the background check (`keep_background=True` in [gate.py](prototype/gate.py)).
+
+**Blocked: the Seedream 5.5 run.** Three routes, all closed at 21:50 UTC (observed): every GitHub Actions job on the repo fails in about 3 seconds with no runner and no logs, including `check.yml`, so the repo's key cannot be used; Ben's Mac has no OpenRouter key; and this cloud environment cannot reach openrouter.ai. Any one of them opening is enough.
+
 ## 0. Revised after Ben's steer (21:11 and 21:13 UTC)
 
 Ben: "dont focus on benchmarks that deny a small part. its a product demo" ([words](../../../product/words.md#2026-11-14-studio-is-a-demo-test-on-real-photos)); "this is a product demo ... we can also just build things" ([words](../../../product/words.md#2026-11-14-demo-not-production)); "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" ([words](../../../product/words.md#2026-11-14-paid-apis-are-fine)).

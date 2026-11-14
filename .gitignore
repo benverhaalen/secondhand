@@ -4,3 +4,10 @@
 *.ttf
 *.woff
 *.woff2
+
+# raw logs and agent scratch stay on the machine that made them (log/README.md)
+logs/
+*.log
+.harness/
+__pycache__/
+*.pyc

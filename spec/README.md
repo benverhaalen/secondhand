@@ -13,6 +13,7 @@ The rules the app's behavior has to keep, written as code so they can be checked
 
   It plants four bugs and checks that each is caught. One test shows why a price below your floor can never be promoted (Ben, [20:41](../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)): if it could, automation would break the floor.
 - `replay.mjs` checks a real app log against the same model, using the logged `price` and `floor`: `node spec/replay.mjs app.jsonl ebay,depop`.
+- `events.json` is the log contract and `log.mjs` checks a log against it ([Logging](#logging)).
 
 ## One name for each state
 
@@ -31,14 +32,6 @@ Researching, Offer $X, Ship by and Slow are not modeled yet. They come before po
 
 ## Logging
 
-The app writes one JSON object per line, so agents can grep logs, replay them and hill-climb on them.
+The log contract is [events.json](events.json): every event, the fields it needs, and what gets masked. `log.mjs` checks a log file against it, then runs `replay.mjs` on its `item.action` lines and prints the numbers: `node spec/log.mjs app.jsonl --sites ebay,depop`. The loggers, and how to wire each program to them, are in [log/](../log/README.md).
 
-```
-{"ts":"2026-11-14T20:00:00Z","level":"info","event":"item.action","item":"it_1","action":"buyerPays","site":"ebay","actor":"site","trace":"<mlflow trace id>"}
-```
-
-- `event` is a dotted noun.verb, such as `item.action`, `job.done`, `http.request` or `model.call`.
-- `item.action` uses the action names in `lifecycle.mjs`, and `actor` is `user`, `auto` or `site`.
-- Every job and model call logs its `ms`. A model call also logs its `model` and `cost_usd`, and errors log `error`.
-- `trace` links the line to its MLflow trace on Databricks.
-- Never log tokens, addresses, payment details or message text, only their ids.
+`item.action` uses the action names in `lifecycle.mjs`, and `actor` is `user`, `auto` or `site`. Tokens, addresses, payment details and message text never reach a line, only their ids.

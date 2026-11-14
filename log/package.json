@@ -1,0 +1,9 @@
+{
+  "name": "@secondhand/log",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The one logger for the secondhand app, server and Node jobs. See README.md.",
+  "main": "index.js",
+  "exports": { ".": "./index.js", "./node": "./node.js" }
+}

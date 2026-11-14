@@ -192,3 +192,15 @@ Ben, UI thread, 21:29 UTC, answering two choices put to him: (1) offer "Always a
 ## 2026-11-14 photos touch up, never change the environment
 Ben, project chat, 21:28 UTC.
 > an update to the whole ai generated photos thing. i think a rule thats good is that it shouldnt change the environment or lie. it should touch up. so i want you to do research on each platform and optimizing posting on each. look at the depop-plus it was done there a bit ago. that level of depth for all the platforms and ensure to push it. because we want to tailor for each and every platform individually there are quirks for each and like depop has different levers and things that can be done compared to like ebay and all the other platforms. also like you shouldnt put a couch on depop. open router key is in the github secrets btw. create a set list of products on each. an 'all' works too. or what works good on each. like you can have it recommend to not do certain things on certain platforms.
+
+## 2026-11-14 live video you can talk to
+Ben, project chat, 21:22 UTC.
+> another feature to think about - rather than having in the camera part of listing something only the camera thing you could have an interactive video where you can then talk to the model about the product and it videos it and then from those videos the model could like talk to you 'can i get a better look at the graphic there' 'is there any way you could get better lighting' like in real time it gives super easy hints to the person about how to get it better context on an item and it can listen to what the user is saying and they can talk about say a defect or something and it remembers it and effectively compiles it in creating listings.
+
+## 2026-11-14 logging of everything
+Ben, logging thread, 21:20 UTC.
+> recall in my harness how i want logging of everything ensure either its set up or there are really great instructions on how to set it up possibly use the skill
+
+## 2026-11-14 image decisions and text decisions stay separate
+Ben, project chat, 21:45 UTC, after picking "Both, and the eval picks" on the card "Use Jev itself in the demo, or stay on OpenAI's Decisions API?".
+> keep it relatively open, separate out image decisions and text decisions essentially
