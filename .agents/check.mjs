@@ -15,10 +15,15 @@ import { brand } from './checks/brand.mjs';
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const git = (...a) => { try { return execFileSync('git', a, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
 const files = (git('ls-files', '-co', '--exclude-standard') ?? '').split('\n').filter(Boolean);
-const wordsBase = git('show', 'origin/main:product/words.md') ?? git('show', 'HEAD:product/words.md');
+// What this push is compared with. Locally that is origin/main (what teammates already have).
+// In CI, origin/main is the pushed commit itself, so the workflow passes the commit before the push.
+const ciBase = /^[0-9a-f]{7,40}$/.test(process.env.CHECK_BASE ?? '') && !/^0+$/.test(process.env.CHECK_BASE) ? process.env.CHECK_BASE : null;
+const base = ciBase ?? (process.env.CI ? 'HEAD~1' : 'origin/main');
+const wordsBase = git('show', `${base}:product/words.md`) ?? (process.env.CI ? null : git('show', 'HEAD:product/words.md'));
+if (process.env.CI && wordsBase == null) console.log(`warn  words.md  no base to compare with (${base}); append-only not checked on this run`);
 
 const tier1 = JSON.parse(readFileSync(join(root, '.agents/tiers.json'), 'utf8'))['1'];
-const changed = [...new Set([...(git('diff', '--name-only', 'origin/main') ?? '').split('\n'), ...(git('ls-files', '-o', '--exclude-standard') ?? '').split('\n')])].filter(Boolean);
+const changed = [...new Set([...(git('diff', '--name-only', base) ?? '').split('\n'), ...(git('ls-files', '-o', '--exclude-standard') ?? '').split('\n')])].filter(Boolean);
 const touched = changed.filter(f => tier1.some(t => f === t || (t.endsWith('/') && f.startsWith(t))));
 
 const results = [

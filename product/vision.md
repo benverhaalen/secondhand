@@ -11,19 +11,19 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - Platforms. The core set, which both lists and searches, is eBay, Facebook Marketplace, Depop, Poshmark and Mercari. OfferUp and Grailed come later and are search and price only. Craigslist, Etsy, Vinted and Swappa are out. Only eBay has an official listing API, so the demo posts to 3 or 4 platforms and searches the rest. Ben, [18:50](words.md#2026-11-14-platforms).
 
-- secondhand is a seller's crosslister at its core: selling leads, appraise and buy are add-ons. Ben, decision card, 19:02 ([decisions](decisions.md)).
+- secondhand is a seller's crosslister at its core: selling leads, appraise and buy are add-ons. Ben, decision card, 19:02 ([decisions](decisions.md#2026-11-14-secondhand-is-a-sellers-crosslister-at-its-core)).
 
-- Bottom bar: Today · Sell · ＋ · Buy · You. ＋ is the only way in (Sell this, What's it worth, Find this). Ben, decision card, 19:27 ([decisions](decisions.md)).
+- Bottom bar: Today · Sell · ＋ · Buy · You. ＋ is the only way in (Sell this, What's it worth, Find this). Ben, decision card, 19:27 ([decisions](decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)).
 
-- Automation runs in tiers that learn: Auto, Ask, Never alone. An Ask promotes to Auto after 3 approvals; Never alone is locked. Ben, decision card, 19:29 ([decisions](decisions.md)).
+- Automation runs in tiers that learn: Auto, Ask, Never alone. An Ask promotes to Auto after 3 approvals; Never alone is locked. Ben, decision card, 19:29 ([decisions](decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)).
 
-- Pickups: your time windows plus a saved public meetup spot; your home address only on a separate tap; confirmed times go to Google Calendar. Ben, decision card, 19:30 ([decisions](decisions.md)).
+- Pickups: your time windows plus a saved public meetup spot; your home address only on a separate tap; confirmed times go to Google Calendar. Ben, decision card, 19:30 ([decisions](decisions.md#2026-11-14-pickups-use-your-windows-and-a-saved-meetup-spot)).
 
-- Sell tab: a photo grid with state pills, in shelves by state. Buy tab: the same shelves (New matches, Watching, Bought), plus a camera and a link field in search for appraising. You tab: the numbers, a by-site comparison, then settings. Ben, 19:33 to 19:40 ([decisions](decisions.md)).
+- Sell tab: a photo grid with state pills, in shelves by state. Buy tab: the same shelves (New matches, Watching, Bought), plus a camera and a link field in search for appraising. You tab: the numbers, a by-site comparison, then settings. Ben, 19:33 to 19:40 ([decisions](decisions.md#2026-11-14-the-sell-tab-is-a-photo-grid-with-state-pills-numbers-live-in-you)).
 
-- All in on Databricks: Apps, Agent Bricks, Lakebase, MLflow "why?" timelines, and approvals as labels that train the tiers. Fall back to a hybrid if setup stalls for 2 hours. Ben, decision card, 19:41 ([decisions](decisions.md)).
+- All in on Databricks: Apps, Agent Bricks, Lakebase, MLflow "why?" timelines, and approvals as labels that train the tiers. Fall back to a hybrid if setup stalls for 2 hours. Ben, decision card, 19:41 ([decisions](decisions.md#2026-11-14-databricks-runs-the-whole-backend-with-a-hybrid-fallback)).
 
-- First launch is setup first: connect sites, pickup windows and meetup spot, notifications, then Today. Ben, decision card, 19:43 ([decisions](decisions.md)).
+- First launch is setup first: connect sites, pickup windows and meetup spot, notifications, then Today. Ben, decision card, 19:43 ([decisions](decisions.md#2026-11-14-first-launch-is-setup-first)).
 
 ## Proposed
 

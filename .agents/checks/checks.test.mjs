@@ -84,3 +84,27 @@ test('brand: tokens and app code stay on the constitution scales', () => {
     'app/a.css': '.c { padding: 10px; border-radius: 6px; font-weight: 700; }' }));
   for (const bad of ['--s-9: 56px', '--r-card: 12px', '10 is off the B17', '6 is off the B20', '700 is off the B13']) assert.ok(e.includes(bad), bad);
 });
+
+// From the poteto-mode review (research/cross-cutting/ben/poteto-mode-review.md): inputs the checks used to pass.
+test('secrets: fine-grained GitHub, Stripe live, Google and JWT shapes fail', () => {
+  const vals = { 'GitHub fine-grained': 'github_pat_' + 'A1b2C3d4E5'.repeat(8), Stripe: 'sk_live_' + 'a1B2c3D4'.repeat(3),
+    Google: 'AIza' + 'Sy0123456789abcdefghijklmnopqrstu', 'web token': 'eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIn0.' + 'x'.repeat(43) };
+  for (const [name, v] of Object.entries(vals)) assert.match(errors(run(secrets, { 'app/env.ts': `const k = "${v}";` })), new RegExp(name), name);
+});
+
+test('provenance: a decision only an agent agreed to, and a Decided line without an exact anchor, fail', () => {
+  const e = errors(run(provenance, { 'product/decisions.md': '# Decisions\n\n## 2026-11-14: x\nAgreed by: the agent, on reflection.\n',
+    'product/vision.md': '# V\n\n## Decided\n\n- Anything. Ben ([decisions](decisions.md)).\n' }));
+  assert.match(e, /nobody who can decide/);
+  assert.match(e, /#anchor/);
+});
+
+test('brand: a reworded scale row fails closed, and rem, em or % spacing is checked', () => {
+  const reworded = '| B13 | x | Regular and Medium | Script |\n| B17 | x | Art. 7 | Script |\n| B20 | x | Art. 9.1 | Script |\n';
+  assert.match(errors(run(brand, { 'brand/constitution.md': reworded })), /can't read the B13[\s\S]*B17[\s\S]*B20/);
+  const constitution = '| B13 | x | {400, 500} | S |\n| B17 | x | {0, 4, 8, 16} | S |\n| B20 | x | {0, 8, 999} | S |\n';
+  const e = errors(run(brand, { 'brand/constitution.md': constitution, 'app/a.css': '.c { margin: 0.6rem; gap: 10pt; padding: 1rem; border-radius: 50%; }', 'app/b.tsx': 'const s = { padding: 12, margin: -8 };' }));
+  for (const bad of ['0.6rem', '10pt', '50%', '12 is off the B17']) assert.ok(e.includes(bad), bad);
+  assert.ok(!e.includes('1rem'), '1rem is 16px, on the scale');
+  assert.ok(!e.includes('-8'), 'a negative margin uses its size');
+});

@@ -8,4 +8,7 @@ jobs:
         with: { fetch-depth: 0 }
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
+      # On a push, origin/main already is the pushed commit, so compare with the commit before the push.
       - run: node .agents/check.mjs
+        env:
+          CHECK_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
