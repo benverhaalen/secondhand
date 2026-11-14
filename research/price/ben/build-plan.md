@@ -19,7 +19,7 @@ Everything below is *agent proposal* unless it links to a decision. Facts carry 
 ## What changed since the earlier research
 
 1. **eBay sold data is harder to get than we thought.** eBay's logged-out sold search started redirecting to sign-in in July and August 2026 (asserted by three vendors with dates). SerpApi deprecated its sold filter on 2026-09-28 (observed). The working routes are third-party Apify actors and sold-comps APIs, and a signed-in browser agent as the last resort. Details in [comps-sources-live.md § eBay](comps-sources-live.md#ebay).
-2. **eBay's API licence is stricter than the blog's reading.** Read from the licence text: eBay content may not be used "to suggest or model prices for items listed on eBay Sites", may not be "co-mingled or combined with non-eBay Content" in a display, and must be at most 6 hours old or say how old it is (observed). So eBay data from the Browse API is for search and links, not for the price engine, and it sits in its own group in a mixed grid. The price engine reads eBay sold rows from third-party scrapers, labelled research-grade. That is a demo choice with a production cost (see Decisions for Ben).
+2. **eBay's API licence does not constrain the demo.** Its text bars using API content "to suggest or model prices for items listed on eBay Sites" and mixing it with other sites' content in one display (observed). Ben's rule is that this is a demo and we build with whatever works ([demo, not production](../../../product/words.md#2026-11-14-demo-not-production)), so the demo uses eBay data everywhere: Browse API rows feed the price engine as asking prices and sit in the same grid as every other site. The clauses are recorded in [comps-sources-live.md](comps-sources-live.md#ebay) for whoever takes this to production. They don't matter much in practice anyway, because the Browse API has no sold prices; those come from the routes below.
 3. **Poshmark, Mercari and Grailed sold prices are reachable; Depop's are not.** Depop is priced by translating Poshmark and Grailed sold prices with a wider range, and says so.
 4. **Even a perfect identity misses by about 28%.** In FlipTip's published blind test of 99 eBay sales, the median of other sales of the exact same item was off by $28 on $100 (observed, vendor-published). Ranges, never a point price; max pay reads the 25th percentile.
 5. **Depop, Mercari and Poshmark need a real browser session to search.** Only eBay (official), Facebook (internal GraphQL), OfferUp (anonymous GraphQL) and Grailed (Algolia) answer plain HTTP calls (observed in code). The search box needs hard per-site deadlines and partial results.
@@ -73,8 +73,8 @@ From [comps-sources-live.md § Recommended demo source stack](comps-sources-live
 
 | # | What | Route | Fallback | Label |
 |---|---|---|---|---|
-| 1 | eBay active, and photo search | Browse API `search`, `search_by_image` | SerpApi eBay (active) | own group in search; age stamp over 6 h |
-| 2 | eBay sold | Apify `caffein.dev/ebay-sold-listings` | SoldComps API, then Underpriced, then a signed-in browser agent on a spare account | sold; Best Offer rows flagged and discounted |
+| 1 | eBay active, and photo search | Browse API `search`, `search_by_image` | SerpApi eBay (active) | ask; mixed into the one grid |
+| 2 | eBay sold | Apify `caffein.dev/ebay-sold-listings`, SoldComps API and Underpriced, all three at once, merged by listing ID | a signed-in browser agent on a spare account | sold; Best Offer rows flagged and discounted |
 | 3 | Poshmark sold | Apify `kulqiz/poshmark-sold-comps` | `solidcode/poshmark-scraper` | sold at list price |
 | 4 | Grailed sold | Apify Grailed actor, or Grailed's Algolia index directly | `bovi/grailed-listings` | sold |
 | 5 | Mercari sold | Apify `devilscrapes/mercari-sold-listings`, pre-fetched only (45% run success) | multi-site actor | sold, date approximate |
@@ -82,7 +82,7 @@ From [comps-sources-live.md § Recommended demo source stack](comps-sources-live
 | 7 | Active fan-out | FB GraphQL (secondhand-mcp's path), OfferUp GraphQL, Grailed Algolia, Depop/Poshmark/Mercari through a warm browser | Apify actor per site | ask |
 | 8 | Depop prices | Translate from Poshmark and Grailed sold with a category ratio | none | model, wider range |
 
-Smoke-test #2 tonight: it is the one most likely to have broken under the login wall.
+Smoke-test #2 tonight: it is the one most likely to have broken under the login wall. Running three sold routes at once is the answer to that risk: any one of them working is enough, and where they overlap we can check them against each other.
 
 ## The valuation run
 
@@ -220,7 +220,7 @@ Each step leaves a working demo.
 
 ## Decisions for Ben
 
-1. **eBay sold data for the demo comes from scrapers, not eBay's API.** The licence bars using API data to model prices. Recommended: scrapers for the demo, labelled research-grade on stage, with licensed data as the production path.
+1. **Which paid sold-data services to sign up for.** Ben's rule is that paid APIs and several at once are fine ([words](../../../product/words.md#2026-11-14-paid-apis-are-fine)). Recommended: all three eBay sold routes at once (the Apify actor, SoldComps and Underpriced), merged and deduped by listing ID, plus Apify for Poshmark, Mercari and Grailed and SerpApi for Google Lens. That needs Apify, SoldComps, Underpriced, SerpApi, OpenAI and eBay developer keys; only an Exa key exists on Ben's Mac today.
 2. **A second vision model for reading labels.** Recommended: add one (Gemini 4 Carbon was the strongest on the OCR eval) beside Decisions, since Decisions' model reads text poorly.
 3. **Which three demo categories.** The earlier proposal stands: vintage tees, records or video games, and one local category such as furniture.
 4. **Exa's role.** Recommended: our own polling for the seven marketplaces, Exa for the long tail, Deep research and pasted links. The alternative, Exa monitors alone, would miss every fresh listing in the test.
