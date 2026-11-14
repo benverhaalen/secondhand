@@ -19,6 +19,7 @@ Draft, revised after Ben's direction ([words](../../product/words.md#2026-11-14-
 Then [measure](../measure/). The item lies on a white sheet from the first shot, so every image carries a white-balance reference. The list is chosen per item type, and shots capture automatically once they are sharp.
 
 ## Decided
+- Capture opens on the guided shot list; a voice button starts talk mode. Ben, 21:33 ([decision](../../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)).
 - The app is built with Expo, with the camera, ARKit scale and live checks in one Swift module. Ben, 21:05 ([decision](../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)).
 
 ## Open
