@@ -6,7 +6,7 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 |---|---|---|
 | 1 | What the app is at its core | **decided: seller's crosslister** ([log](decisions.md)) |
 | 2 | Selling: how the selling features chain | **decided: item by item, one live draft each, folder drop splits into drafts** ([log](decisions.md)) |
-| 3 | The always-there bottom bar | asking |
+| 3 | The always-there bottom bar (reworked from Ben's 19:15 note, the [primitives](primitives.md) and [structure references](../research/today/ben/structure-references.md)) | asking |
 | 4 | Selling home: drafts, live and past, interest per item | — |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
 | 6 | Shipping and pickup (Google Calendar, approved time windows) | — |
@@ -83,3 +83,20 @@ A and B are features of C, and D is how C behaves. Choosing C does not drop the 
 | **D. Four tabs, inbox up top** | Selling · **＋** · Buying · You, with Inbox as an icon at the top right (Instagram's pattern) | A calmer bar | Messages are the most-used function, and they end up hidden |
 
 **Agent view: B.** The slots sit where Depop and Vinted have taught people to look, and the names remove the guessing. The decisions that need you show as a count on Inbox, and at the top of Selling.
+
+### 3, revised after Ben's 19:15 note
+
+Ben's constraints: Sell and Buy are the core. Appraise sits inside both. Today and the inbox are "relatively integrated", but "all messages" is somewhere you go on purpose. Watching for items is key.
+
+Evidence: Airbnb's host bar is "Today / Inbox / Calendar / Insights / Menu", so a decisions home and a full inbox already sit side by side in a familiar app. Depop gives Selling its own tab. Vinted hides listings in Profile and lets offers clutter the inbox, and a critic flagged both. ([structure-references](../research/today/ben/structure-references.md)). Codex image ideation of options 1, 2 and 4 is in `research/today/ben/nav-ideation/` once it is pushed.
+
+| Option | Bar | Messages | Strong at | Weak at |
+|---|---|---|---|---|
+| **1. Today first, two segments** | Today · Sell · ＋ · Buy · You | A segment at the top of Today: "Needs you" / "All messages" | Lands on decisions; all messages is one deliberate tap; familiar home on the left | Messages have no tab of their own |
+| **2. Sell first** | Sell · Buy · ＋ · Today · You | Same segments inside Today | Sell and Buy lead, as Ben listed them | Lands on a list, not on what needs you |
+| **3. Airbnb split** | Today · Sell · ＋ · Buy · Messages, with You behind the avatar | Its own tab | Closest to Airbnb; messages are always one tap away | You, money and settings are hidden behind the avatar |
+| **4. Mode switch** | A Selling/Buying toggle; bar is Today · Items · ＋ · Messages · You | Its own tab | Each mode is focused | A concept you have to learn; mixed tasks need switching |
+
+In every option, the ＋ camera ends in "Sell this / What's it worth / Find this". Every item and every match also shows its value, so appraising is everywhere. Watching lives in Buy, and new matches arrive in Today as Decisions.
+
+**Agent view: 1.** It is the most familiar and it matches Ben's "integrated, but all messages on purpose" exactly. Keep option 4's "Researching…" progress state and site chips in the Sell tab.
