@@ -239,3 +239,15 @@ Nate, asking for research in the session "Lay out the whole product and write th
 ## 2026-11-14 grailed and offerup posting planned, not built
 Ben, project chat, 22:09 UTC, answering a card that asked whether to add Grailed and OfferUp as places to post or keep them for search and price.
 > plan them but dont do anything yet. things if we have time
+
+## 2026-11-14 nate validate breadth and an auditable spec
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> We should validate to ensure our reach of research is broad enough to have covered all possibilities, and then intelligently weighed to determine the best design for every feature, which should be /spec built out the way our architecture in the repo describes. The global spec with understood and documented flows of the data, mentions of the technologies used. In a way that can be both understood and potentially audited and changed if better ideas or different ones that align with our vision are found
+
+## 2026-11-14 nate organised development
+Nate, same session, 2026-11-14.
+> I want you to properly manage and plan out for our sessions similar to following the task tracking, parallelism, testing and developkmetn workflows to keep things structured, not abiding completely by github spec kit, but at least achieving the same organized and controlled development, even if more performing and efficient as I hope it is
+
+## 2026-11-14 nate databricks beyond the standard
+Nate, same session, 2026-11-14.
+> Lets also discuss databricks being our backend layer and how to build every feature set to this. The hackathon track we are seperately entering is to develop this on databricks, and we want to exemplify that we expertly can utilize and understand their platform, we don't just achieve the standard but truly go beyond and do what's considered impressive on there. Not because its hard, i mean it could be, but think of the ways that the company databricks, through research, your skills you have established about it, are all going to fit around this product best. If we need to add to the product, we can, if we find even new ideas with this lens attached that would really add something incredible, great
