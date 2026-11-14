@@ -27,14 +27,16 @@ export async function runExample(sinkFor, build = '0.1.0+example') {
   const job = createLog({ src: 'job.relight', build, sink: sinkFor('job'), seed: 9, from: `${server.session}#2` }).child({ item: 'it_1', job: 'jb_1', trace: 'tr_abc123' });
   job.job('jb_1', 'relight', 'running');
   const run = job.agent('studio.relight', { goal: 'a studio render that keeps the real logo and flaws' });
-  job.stage('jb_1', 'rendering', { n: 1, of: 2 });
+  job.stage('jb_1', 'rendering', { state: 'started', n: 1, of: 2 });
   run.step({ action: 'render', why: 'no candidate yet' });
   await run.call('model', 'seedream-5', { scene: 'studio', photos: ['ph_1'] }, async () => ({ image: 'rn_1', usd: 0.04 }),
     out => ({ model: 'seedream-5', cost_usd: out.usd, result: { image: out.image } }));
-  job.stage('jb_1', 'checking');
+  job.stage('jb_1', 'rendering', { state: 'arrived' });
+  job.stage('jb_1', 'checking', { state: 'started' });
   run.step({ action: 'gate', why: 'every render is compared with the real photo' });
   await run.call('tool', 'gate', { image: 'rn_1' }, async () => ({ pass: false, box: [10, 20, 80, 60], reason: 'logo drift' }));
-  job.stage('jb_1', 'repairing', { detail: 'logo' });
+  job.stage('jb_1', 'checking', { state: 'failed' });
+  job.stage('jb_1', 'repairing', { state: 'started', detail: 'logo' });
   run.step({ action: 'repair', why: 'the gate flagged the logo' });
   try { await run.call('tool', 'repair', { image: 'rn_1' }, async () => { throw new Error('mask is empty'); }); }
   catch (e) { job.error('studio.repair', e); }

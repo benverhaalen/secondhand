@@ -10,6 +10,7 @@ Updated: November 14, 2026. Owner: Ben. Agent: Claude Code, project thread "Set 
 
 ## Affected interfaces
 - Every plan that names a log: the build plan's `action_log` table becomes a query over one `events` table (`where event = 'item.action'`), *agent proposal* in [log/README.md step D](../../../../log/README.md#wire-a-new-program).
+- A Job has states (`job.state`: queued, running, done, failed) and its stages have their own (`job.stage` with `state`: started, running, arrived, failed, the four the loading screens use). The stream sends stage states and the log holds both, so [spec/product.md §7](../../../../spec/product.md) needs no mapping table.
 - Studio stages, Job states, Decisions and item actions each have one event name. A new one goes into `spec/events.json` and `log/example.mjs` first.
 - The Swift camera module writes no lines; it sends events to JS, which logs them.
 
