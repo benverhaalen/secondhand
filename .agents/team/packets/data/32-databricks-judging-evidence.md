@@ -8,7 +8,7 @@ All Databricks-judged tracks found (13 events; 6 winner repos read) and how Data
 
 ## What other work should take from it
 
-- **The decision stands, but read the MadHacks rules.** Nothing in the decision is overturned. The rules include "No prewritten code" and "Multiple commits within 24 hours with every member of the team contributing". Ben and Nate should decide what that means for code written before the event, and for scaffolding from Databricks templates.
+- **The decision stands.** Nothing in it is overturned; the proposals below add to it.
 - **Go to the Databricks session.** "Getting Started with Databricks" runs today, 2:00–3:00 PM in B2550. MadHacks posts no Databricks criteria, so someone should attend and write down what the staff say they will judge.
 - **Expect judges to test Genie live** (Queens gave 30% to five unseen questions). Proposal:
   - a public market Genie space over `comp`/`product`/rollups, with no user rows, so Open 2 doesn't block it;
@@ -30,4 +30,4 @@ All Databricks-judged tracks found (13 events; 6 winner repos read) and how Data
 ## Next action
 
 - **Nate:** fold proposals 1–9 into the Databricks explanation you're writing, or reply here with which ones you reject and why.
-- **Ben:** attend the 2 PM session or send someone, and settle what "No prewritten code" means for the repo.
+- **Ben:** attend the 2 PM session or send someone.
