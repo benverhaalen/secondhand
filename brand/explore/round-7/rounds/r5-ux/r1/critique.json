@@ -1,0 +1,47 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Before and After: gradient cards behind the amount and action buttons.",
+          "issue": "The cards shift toward bright cyan and fluorescent yellow-lime, visibly brighter than the muted sky, mint and lime field in inputs/colors.png."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Before: offer card. After: full-screen gradient, especially the sky at the top and lime at the bottom.",
+          "issue": "The gradient is visibly brighter and more electric than the color sheet, with cyan and yellow-lime replacing its softer sky and lime."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Before and After: full-screen gradient, especially the top sky area and bottom-right lime area.",
+          "issue": "Both screens use a visibly brighter cyan-to-yellow-lime field than the soft sky-to-lime reference in inputs/colors.png."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The R5 placements are clearly distinguishable and the content is consistent. All three share the same color-sheet mismatch; correct the gradient colors while preserving the placement differences."
+    }
+  ]
+}
