@@ -41,3 +41,20 @@ Order runs from the biggest choice to the smallest, because each answer narrows 
 A and B are features of C, and D is how C behaves. Choosing C does not drop the others. Decision 3 can still make the home screen the agent's review inbox (D), with the camera (B) as the center button. Those are separate decisions.
 
 **What would change this view.** If the demo has to land in 60 seconds with one wow moment, B is the stronger stage even with C underneath. That is decision 2.
+
+---
+
+## 2. Who the hero user is, and the demo story
+
+*Drafted ahead; it is asked once decision 1 is picked.*
+
+**Why it matters.** Every feature is kept, but the hero user sets which feature appears on the first screen, what onboarding asks for, and the one story told to the judges. MadHacks is at UW–Madison, so the judges and most of the room are students. The Databricks track's criteria are not in the repo yet; a quick search did not find them (*not checked against a primary source*).
+
+| Option | Who | Demo story | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. Student moving out** | A student with a dorm room of stuff and a deadline | "Clear my room before break": scan 6 things, everything listed by lunch, the inbox handles 'is this available?' | The room relates instantly; volume shows off automation and delisting | Mostly selling; appraise and buy are side stories |
+| **B. Casual declutterer** | Anyone with a closet of things they mean to sell "someday" | "Your closet is worth $260 to $340": scan, see value, sell the ones worth it | Shows the item card and value ranges; widest market | Low urgency; weaker story arc |
+| **C. Part-time flipper** | Someone who buys at garage sales and thrift stores to resell | Garage sale: appraise a jersey, buy it, measure, relight, list, sell, delist | One item runs through every feature, buy to sell; appraise is the hook | Resellers already pay for FlipTip and Vendoo, and they are power users, which pulls the interface toward complexity |
+| **D. Fit-first buyer** | Someone who gives up on secondhand clothes because the sizes lie | "Find a Yelich jersey that actually fits me": measured matches across 5 platforms | Measured fit is the edge nobody has | Leaves the selling half out of the story |
+
+**Agent view: A as the person, C's loop as the story.** A student who finds a jersey at a garage sale, checks what it's worth, buys it, then sells their old one, all from the same item cards. The person keeps the interface simple and relatable to the room; the loop shows every feature in one arc. Pure C pulls the design toward power users, the opposite of "shouldn't have to be learned".
