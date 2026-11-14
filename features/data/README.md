@@ -18,3 +18,4 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 All research for this feature: [research/data/](../../research/data/)
 - Ben: [research/data/ben/](../../research/data/ben/)
 - Nate: [research/data/nate/](../../research/data/nate/)
+- Ben, tech stack: [databricks.md](../../research/data/ben/databricks.md). Databricks as system of record and glass box: MLflow traces become the "why?" panel, approvals become labels that tune thresholds.
