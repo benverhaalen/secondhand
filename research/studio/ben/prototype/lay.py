@@ -129,6 +129,15 @@ def audit(render_mask, kind, truth_ratio):
     return {"render_ratio": r["ratio"], "truth_ratio": truth_ratio, "off": round(off, 3), "ok": abs(off) <= BAND["proportion"]}
 
 
+def relay_allowed(manifest_frames):
+    """The re-lay is offered only when capture measured the item: its cover frame carries
+    measured.ratio (research/capture/ben/capture-coaching-and-frames.md, 7.2b). No measurement,
+    no way to audit the render, so no re-lay. Returns (allowed, truth_ratio)."""
+    cover = next((f for f in manifest_frames if f.get("cover")), None)
+    ratio = ((cover or {}).get("measured") or {}).get("ratio")
+    return (ratio is not None), ratio
+
+
 def main():
     src = cv2.cvtColor(cv2.imread(sys.argv[1]), cv2.COLOR_BGR2RGB)
     sm = item_mask(src)

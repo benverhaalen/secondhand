@@ -61,7 +61,7 @@ What that means for the build (*agent proposal*):
 
 - The re-lay is offered as its own option on the approval card, one step above "pressed", with the prompt in [relay_prompt.txt](prototype/relay_prompt.txt). Several candidates are rendered and the best is kept.
 - Picking the best is a check, in order: print text read back against the close-up (the decision model), proportions against the real measurement, layout against the template, color against the original.
-- **The measurement audit runs one way only.** The tape or LiDAR measurement from capture is the truth, and a render whose width-to-length is more than 5% off it is thrown away ([lay.py](prototype/lay.py), `audit`). A render cannot be used to work out the flat size: the model decides how long the shirt is, and it decided differently five times.
+- **The measurement audit runs one way only.** The tape or LiDAR measurement from capture is the truth, and a render whose width-to-length is more than 5% off it is thrown away ([lay.py](prototype/lay.py), `audit`). A render cannot be used to work out the flat size: the model decides how long the shirt is, and it decided differently five times. The truth comes from `measured.ratio` on the cover frame in capture's manifest; when capture skipped measuring, the re-lay option is off for that item (`relay_allowed` in `lay.py`).
 - The wrinkle number in `lay.py` is not good enough yet. It rated the two "freshly ironed" renders the same (17% and 18% fewer wrinkles) when one is plainly flatter by eye. Until it agrees with the eye, the decision model judges "how ironed".
 - Nano Banana 2.1 becomes a second candidate maker next to Seedream for the re-lay. Its renders carry no readable content credential (observed: no C2PA in the file).
 
