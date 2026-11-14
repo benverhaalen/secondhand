@@ -170,14 +170,14 @@ Ben's rule: the app touches up and never changes the environment or lies. The le
 | Platform | Cover and size | Count | Default level | What sellers do there that we skip | Risk to watch |
 |---|---|---|---|---|---|
 | eBay | 1:1, 1600 x 1600 | 8 to 12 | 1 | white cut-out; eBay's AI scene backgrounds | "photos that don't accurately represent the item" are banned *observed* |
-| Facebook | 1:1, 2048 x 2048; others in native shape | 6 to 10 | 0 | virtual staging, erasing the room | a generative edit may earn an "AI info" label *inferred*; test one photo first |
+| Facebook | 1:1, 2048 x 2048; others in native shape | 6 to 10 | 0 | virtual staging, erasing the room | a raw Seedream render carries a signed "made by an AI model" credential (C2PA) *observed* by the studio thread, which Meta can read for its "AI info" label *inferred*; a crop or JPEG re-save drops it *observed*. See the [studio plan](../../studio/ben/build-plan.md) |
 | Depop | all 1:1, 1280 x 1280 | 5 to 8 | 1 | Depop's own background remover | none found; only the seller's own photos are allowed *observed* |
 | Poshmark | all 3:4, 1200 x 1600, item inside the centered square | 8 | 1 | "NWT" banner covers, collages | covers are cropped to 3:4 since March 2026 *observed* |
 | Mercari | all 1:1, 1600 x 1600 | 8 to 12 | 1 | stock photos | "only photos you took" *observed* |
 | OfferUp | 1:1, 1600 x 1600; others 4:3 | 8 | 0 | nothing | "a photo of the actual item, not a catalog or stock photo", and no added stickers or text *observed*; the buyer inspects in person |
 | Grailed | 4:5, 1600 x 2000 (ratio unconfirmed) | 6 to 9 | 0 | nothing; a real wall or floor is the house style | listings are reviewed for authenticity; keep blacks true |
 
-Level 2 ("pressed", which relaxes creases and removes lint) should stay off on every platform until Ben decides. If it is kept, limit it to the cover on Depop, Poshmark and Mercari, and never use it on eBay, OfferUp or Grailed, where the photo is checked against the item.
+Level 2 ("pressed", which flattens creases) is allowed. Ben, 23:01 UTC: "it shouldnt change anything in reality except maybe how things are flattened etc" ([words](../../../product/words.md#2026-11-14-garment-templates-a-reference-set-and-reading-c2pa)). Where to use it is still an *agent proposal*: the cover on Depop, Poshmark and Mercari, and not on eBay, OfferUp or Grailed, where the photo is checked against the item in hand. Evidence photos stay at level 0 either way.
 
 No platform we read bans AI-edited photos by name. eBay and Depop both ship tools that replace backgrounds, which our rule forbids. The binding rule everywhere is accuracy, and the touch-up rule is stricter than any of them.
 
@@ -197,7 +197,6 @@ No platform we read bans AI-edited photos by name. eBay and Depop both ship tool
 ## Open for Ben
 
 - Should "ok" platforms be on or off by default? Proposal: off.
-- Level 2 touch-up: in or out? Proposal: out for now.
 
 ## Planned, not built: posting to Grailed and OfferUp
 

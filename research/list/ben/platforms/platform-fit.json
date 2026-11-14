@@ -10,7 +10,7 @@
  "touchup_levels": {
   "0": "true color: white balance and exposure only, no model",
   "1": "light: even soft daylight",
-  "2": "pressed: off everywhere until Ben decides"
+  "2": "pressed: flattens creases; allowed by Ben; proposed for the cover on Depop, Poshmark and Mercari only"
  },
  "types": {
   "vintage_clothing": "Vintage and Y2K clothing",
@@ -131,7 +131,7 @@
     "10 photos",
     "20 tags",
     "renew rules",
-    "whether a generative touch-up gets an AI info label"
+    "whether Meta labels a touch-up whose C2PA credential survived the upload"
    ]
   },
   "depop": {
