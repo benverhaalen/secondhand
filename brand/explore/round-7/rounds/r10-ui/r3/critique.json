@@ -1,0 +1,36 @@
+{
+  "images": [
+    {
+      "file": "A",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The two differ in anything besides the gradient card.",
+          "place": "Carhartt jacket photo, above the offer card.",
+          "issue": "The jacket folds, collar and surrounding floor details differ from B."
+        },
+        {
+          "rule": "The gradient, the lime block or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Offer card, especially the cyan upper-left and mint lower-left areas.",
+          "issue": "The gradient is visibly brighter and more vivid than the soft sky-to-mint field in the color sheet."
+        }
+      ]
+    },
+    {
+      "file": "B",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The two differ in anything besides the gradient card.",
+          "place": "Carhartt jacket photo, above the offer card.",
+          "issue": "The jacket folds, collar and surrounding floor details differ from A."
+        }
+      ]
+    }
+  ],
+  "across": [
+    {
+      "issue": "The jacket photo changes between options, so the comparison does not isolate the gradient card."
+    }
+  ]
+}
