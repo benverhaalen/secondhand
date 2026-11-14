@@ -1,6 +1,6 @@
 # 31 — Per-platform posting rules and the product fit list
 
-Updated: November 14, 2026. Owner: Ben. Agent: Claude Code (project thread "Tailor listings to each platform"). Branch: main. Status: research written; two questions for Ben.
+Updated: November 14, 2026. Owner: Ben. Agent: Claude Code (project thread "Tailor listings to each platform"). Branch: main. Status: research written; one question for Ben.
 
 ## Scope
 
@@ -20,4 +20,4 @@ Seven helpers ran three search loops each. A shared budget of about 100 page rea
 
 ## Next action
 
-Ben: (1) should "ok" platforms post by default, (2) is touch-up level 2 in or out. Answered at 22:09 UTC: posting to Grailed and OfferUp is planned, not built, "things if we have time" ([words](../../../../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)); the plan is on the [ideas board](../../../../ideas/post-to-grailed-and-offerup.md). Nate: if you are building an adapter, the JSON profile for that site is the starting config; reply here with what you change.
+Ben: should "ok" platforms post by default. Level 2 (flattening creases) is allowed, per Ben at 23:01 UTC ([words](../../../../product/words.md#2026-11-14-garment-templates-a-reference-set-and-reading-c2pa)); where to use it per site stays a proposal in the summary. Answered at 22:09 UTC: posting to Grailed and OfferUp is planned, not built, "things if we have time" ([words](../../../../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)); the plan is on the [ideas board](../../../../ideas/post-to-grailed-and-offerup.md). Nate: if you are building an adapter, the JSON profile for that site is the starting config; reply here with what you change.
