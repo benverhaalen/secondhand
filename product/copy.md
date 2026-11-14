@@ -15,7 +15,7 @@ Decided by Ben on 2026-11-14 at 19:45 ([words](words.md#2026-11-14-show-not-say)
 | "Your item is now live on eBay and Depop" | The photo tile with a green Live pill and the eBay and Depop logos |
 | "We're researching your item, this may take a minute" | The draft filling in field by field, with a thin progress line |
 | "This price was estimated from 14 similar sold items" | "Similar ones sold for $36 to $52 lately", with the sales one tap away. Never `n=14` |
-| "You'll keep $36.40 after fees" | `KEEP $36.40` under the price |
+| "You'll keep $36.40 after fees" | `You keep $36.40` under the price |
 | "This listing failed to delist. Tap to retry" | A red ✕ on the badge and one button: `Retry` |
 | "Great news! Your item sold!" | The tile moves to Sold, with the amount you keep |
 | "Would you like us to answer this automatically?" | The drafted reply with `Send` and `Always` |
@@ -23,13 +23,13 @@ Decided by Ben on 2026-11-14 at 19:45 ([words](words.md#2026-11-14-show-not-say)
 | A tooltip explaining a field | The field marked *measured*, *estimated* or *you said* |
 
 Limits:
-- **Buttons:** one or two words, a verb. `Post`, `Counter $38`, `Retry`.
+- **Buttons:** a verb, plus its object or amount when there is one: `Post`, `Counter $38`, `Retry`.
 - **Labels:** nouns, no sentences. `Live`, `Ship by Tue`, `3 offers`.
 - **Body text:** at most one short sentence per card, and only when a picture or number can't carry it (a scam warning, an address the agent won't share without you).
 - **No** exclamation marks, "Great!", "Oops", "We've…", "Let's…", "Just…", emojis in UI, or narration of what the AI is doing.
 - **Platforms are logos, not words.** "Live on Depop" is a Live pill plus the Depop logo. Ben, [19:59](words.md#2026-11-14-platform-logos-no-mono).
 - **Numbers are said the way a friend would say them** ("Similar jackets sold for $36 to $52 lately"), never in statistics notation (`n=41`, ranges with dots, "floor"). The detail behind a number is one tap away ([ui-constitution.md Article 5](ui-constitution.md#article-5-show-dont-say-and-what-you-do-say-a-person-must-understand)). Ben, [20:17](words.md#2026-11-14-constitutions).
-- **Numbers carry their source** where it matters to the decision, in plain words, never (see the brand [coder card](../brand/coder-card.md) rule 7).
+- **Numbers carry their source** where it matters to the decision, in plain words a person could say back, never as a sample size or a stats term (brand [constitution](../brand/constitution.md) E3).
 - **Safety copy is the exception.** Never-alone actions (address, pickup time, payment) keep one plain sentence saying what will happen.
 
 ## The anti-claudish skill
@@ -56,7 +56,7 @@ Ben's "anti-claudish" skill is the `writing` skill in his harness (`~/.local/sha
 | C12 | Hard-coded year, lorem ipsum, placeholder logos | Compute it, or mark the slot empty |
 | Always | Em dashes | "never use any em dashes in the ui ever." |
 
-One hit is punctuation; a cluster is a tell. Fix clusters first. Visual tells (purple gradients, sparkles, icon-topped cards) are handled by the brand [anti-pillars](../brand/anti-pillars.md), not here.
+One hit is punctuation; a cluster is a tell. Fix clusters first. Visual tells (purple gradients, sparkles, icon-topped cards) are handled by the brand [constitution, Article 13](../brand/constitution.md#article-13-not-ai-made), not here.
 
 ## Familiar patterns and attention
 
@@ -65,12 +65,12 @@ Principles expert designers use, each turned into a rule for this app. *Agent pr
 **Borrow what people already know (Jakob's law: users spend most of their time in other apps).**
 - Bottom tab bar, segmented controls, swipe actions and share sheets behave exactly as in iOS. No custom gestures without a visible fallback.
 - Each surface copies one app people already use for that job: Sell grid ← Depop / Instagram profile grid; Today ← Airbnb host Today and an email inbox; a message thread ← iMessage; an offer ← eBay's Accept / Counter / Decline; Buy search ← Amazon's search box and result rows; the camera ← the iOS camera with a shot strip.
-- Use the meaning icons and colors already have: green for live or paid, red for failed, amber for needs you, grey for ended. A red badge with a count means "needs you" and nothing else.
+- Use the meaning icons and colors already have: the state colors in the brand [constitution, Article 5](../brand/constitution.md#article-5-color). A tab badge is a dot with no number.
 
 **Spend attention deliberately (pre-attentive attributes: color, size, position and motion are seen before anything is read).**
-- One focal point per screen: the item photo or the one number that matters. Everything else steps down in size or to 65% black.
-- Color is a signal, not decoration. Accent color appears only on state pills, the primary action and alerts. If everything is colored, nothing is.
-- One primary button per screen or card (black, full width or rightmost). Secondary actions are quieter. Destructive actions are never primary.
+- One focal point per screen: the item photo or the one number that matters. Everything else steps down in size or to 65% black (`var(--ink-2)`).
+- Color is a signal, not decoration. Color appears only as state fills, the one field (C2), the one money highlight (C6) and the brick alert. If everything is colored, nothing is.
+- One primary button per decision, at most one per card (black, full width or rightmost). Secondary actions are quieter. Destructive actions are never primary.
 - The thing that differs gets noticed (isolation effect), so reserve it: a Failed tile is the only red one in a grid of calm tiles.
 - Motion only to show cause and effect: a tile sliding from Live to Sold, a draft filling in. Never as decoration.
 

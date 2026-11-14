@@ -24,7 +24,7 @@ Feeds [product/frontend-standard.md](../../../product/frontend-standard.md) and 
 | Property | From | Keep | Change (the 3%) | Check |
 |---|---|---|---|---|
 | Motion budget by frequency | Emil, HIG, NN/g | Frequent actions get no custom motion | Mapped to secondhand's frequencies: tabs constant, approvals many per day, a sale rare | Motion table in the standard §3 lists a frequency for each moment |
-| Peak moment | Peak-end; brand anti-pillars | The end of the experience is designed | No confetti. The peak is the amount you keep, a highlight and a haptic | No celebratory particles or counters in the Sold state |
+| Peak moment | Peak-end; brand C6 | The end of the experience is designed | No confetti. The peak is the amount you keep, a highlight and a haptic | No celebratory particles or counters in the Sold state |
 | Undo over confirm | Gmail "Undo"; Vercel guidelines | Fast action with a safe window | Never-alone actions (address, pickup, payment) still need a tap and get no undo shortcut | Each destructive or outward action has a confirm or an undo |
 | Loading as progress | Vercel skeletons; live build logs | Show real structure, not a spinner | The Researching state fills the draft field by field | No spinner visible after 1 s on Researching |
 | Copy lint | Ben's writing skill | Same rules and ids | Added S1 (no exclamation marks) and ported to Node so Nate's agent can run it | `node scripts/copy-lint.mjs` flags the C4/C7/C10/O13 test strings and passes clean labels (run 2026-11-14) |

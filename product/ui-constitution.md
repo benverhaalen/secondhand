@@ -16,7 +16,7 @@ Most bad UI decisions confuse a means with an end. Name which is which before de
 |---|---|
 | The person knows what is happening with their stuff without reading | Pills, badges, logos, photos, color, motion |
 | The person does what they came to do in as few decisions as it really takes | Buttons, cards, tabs, sheets, defaults |
-| The person trusts what the app did for them | Labels like `AUTO`, undo, a "why?" timeline, sources on numbers |
+| The person trusts what the app did for them | Plain labels like "Automatic", undo, a "why?" timeline, sources on numbers |
 | The person gets more money, or a better deal, for less effort | Pricing, crosslisting, automation, watching |
 | Nothing the app shows needs inside knowledge to understand | Plain words, familiar patterns, real photos |
 | Ben recognises his taste in it, and nobody can tell an AI made it | References, image ideation, critique, the brand file |
@@ -106,7 +106,7 @@ Minimal writing does not mean minimal capability. For every screen:
 From [copy.md](copy.md) and [frontend-standard.md](frontend-standard.md):
 
 - Each surface borrows from an app the person already knows, and says which.
-- Each screen has exactly one focal point and one primary action.
+- Each screen has exactly one focal point; each decision on it has one primary action (brand C4).
 - Color, size, weight and position are spent only where attention should go.
 - Bold and size changes follow one scale; weight is never used just to fill space. Ben, 20:17: "the bolding and font sizes feels all janky".
 - No dark patterns: no fake urgency, no guilt, no streaks.

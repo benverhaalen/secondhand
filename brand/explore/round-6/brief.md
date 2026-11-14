@@ -4,7 +4,7 @@ Run with the [image-gen skill](../../../.agents/skills/image-gen/SKILL.md): the 
 
 ## The job
 
-Ben picks the brand by looking, not reading ([his words](../../../product/words.md#2026-11-14-brand-decision-boards)). For each open decision in [ledger.md](../../ledger.md) (D1 to D5), make two boards:
+Ben picks the brand by looking, not reading ([his words](../../../product/words.md#2026-11-14-brand-decision-boards)). For each open decision in [ledger.md](../../ledger.md) (D1 to D6), make two boards:
 
 - **UI board.** The options in use, side by side, so the only thing that differs between them is the decision. Spacing, components and color as they would really look in the app.
 - **UX board.** The same options seen as experience: what a person notices first, where the thumb goes, what each state tells them, how it reads in motion from one state to the next. Annotated, like a designer's markup, with as few words as possible.
@@ -45,7 +45,7 @@ A board fails if any of these is true:
 ## Output
 
 Write everything to `brand/explore/round-6/`:
-- `boards/d1-ui.png`, `boards/d1-ux.png`, and the same for d2 to d5
+- `boards/d1-ui.png`, `boards/d1-ux.png`, and the same for d2 to d6
 - `rounds/`, holding each round's images and critiques
 - `lineage.md`: the commands, the references used, the rounds, and what still fails
 

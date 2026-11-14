@@ -13,7 +13,7 @@ Ask these in order. A later question never rescues an earlier failure.
 1. **Job.** What is the one thing this screen is for, and what is the next action? If you can't say it in one sentence, stop and fix the screen's job, not its look.
 2. **Familiar.** Which app the user already knows does this job, and what do we keep from it? (Jakob's law.) If none, the pattern needs a written reason.
 3. **Shown, not said.** Cover all the text. Can you still tell the item's state and the next action from photos, pills, badges, numbers and position?
-4. **Attention.** Blur or squint. The first thing you see is the thing that matters most; the second is the next action. Exactly one primary action.
+4. **Attention.** Blur or squint. The first thing you see is the thing that matters most; the second is the next action. One primary action per decision.
 5. **Honest.** Every number has a source, every automatic action is labelled and undoable, nothing invented, no fake urgency.
 6. **Motion.** Does anything move? Each movement must explain a cause and effect the user would otherwise miss. Otherwise delete it.
 7. **Words.** Run the anti-claudish pass: `node scripts/copy-lint.mjs` (C1 to C12 in copy.md). Labels 1 to 3 words, no paragraphs, no em dashes.
@@ -91,7 +91,7 @@ Each moment names its borrowed pattern, its timing and its fallback.
 | Researching | Once per item | Fields fill in as each resolves, a 30 to 80 ms stagger, one thin progress line; no spinner after the first second | Skeleton screens (Vercel rule); live build logs | Fields appear |
 | Approve a Today card | Many per day | Card collapses and the list closes the gap, `--t-select`; an Undo toast holds ~5 s | Gmail archive with Undo | Card disappears; toast stays |
 | Item changes state (Draft→Live, Live→Sold) | Several per day | The tile moves to its new shelf (a FLIP via transform) and its pill crossfades | Photos and Reminders reorder | Pill changes; tile appears in the new shelf |
-| It sold | Rare, the peak | Tile settles into Sold, the amount you keep highlights, success haptic. No confetti or counters (brand anti-pillars) | Apple Pay check and haptic | Highlight and haptic only |
+| It sold | Rare, the peak | Tile settles into Sold, the amount you keep highlights, success haptic. No confetti or counters (brand C6) | Apple Pay check and haptic | Highlight and haptic only |
 | Something failed | Rare | Red ✕ badge fades in once, warning haptic. No shaking or looping | iOS failed iMessage "Not Delivered" | Badge only |
 | Auto action done | Many per day | None. A quiet `AUTO` label and Undo in the log | Gmail "Sent. Undo" | Same |
 | Offer arrives (push) | Several per day | System notification; in app the card inserts at the top, `--t-select` | iMessage new message | Instant insert |
@@ -118,7 +118,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 
 ### Job and familiarity
 - [ ] Block: the screen's job and next action fit in one sentence.
-- [ ] Block: exactly one primary action, black and in thumb reach. Destructive actions are never primary.
+- [ ] Block: one primary action per decision (at most one per card), black and in thumb reach. Destructive actions are never primary.
 - [ ] Flag: the borrowed app is named in the screen's contract. Any custom gesture has a visible fallback.
 
 ### Show, don't say
@@ -128,7 +128,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 
 ### Attention
 - [ ] Block: the blur test passes (focal point first, next action second).
-- [ ] Block: accent color appears only on state, the primary action and alerts. At most one yellow highlight and one price dot per screen (brand codes).
+- [ ] Block: color appears only as state fills, one field, one money highlight and the brick alert (brand constitution Art. 5, C2, C6).
 - [ ] Flag: more than three actions visible on a card. Choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)), so justify it rather than ban it.
 - [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 
@@ -156,7 +156,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: no loading flash (show delay and minimum time); skeletons match the final layout.
 
 ### Access
-- [ ] Block: text contrast is at least 4.5:1 (WCAG 2.2 AA), and 3:1 for large text and UI parts. Yellow is never text on white (1.40:1).
+- [ ] Block: text contrast is at least 4.5:1 (WCAG 2.2 AA), and 3:1 for large text and UI parts. Field, state and category colors are never text on white (brand Art. 5.1).
 - [ ] Block: touch targets are at least 44 pt, and main buttons 48.
 - [ ] Block: inputs are at least 16 px, which prevents iOS zoom.
 - [ ] Block: VoiceOver labels exist on icon-only controls and state pills, and a pill reads as "Live on eBay", not "green dot".
@@ -177,6 +177,6 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 
 - **Words in the app:** `node scripts/copy-lint.mjs <files>` (or pipe the screen's strings in). It is a port of the product-surface rules from Ben's `writing` skill, his anti-claudish check, plus a ban on exclamation marks. It flags candidates, not verdicts. First ask of each string "should this exist?", then lint.
 - **Ben's hook:** on his Mac, `writing/hooks/reply_check.py` runs on Stop and UserPromptSubmit. It checks agents' replies to him (the owner surface), not screen text, and it never blocks. Screen text is checked only when ui-factory's check step runs the product lint. Nothing runs it automatically yet. *Agent proposal:* run `copy-lint` in CI on UI string files once the app exists.
-- **Scripted checks (ui-factory step 6):** token membership; Vercel SDK controls; geometry (overflow, clipping, overlap, small targets) at each viewport and state; axe-core `wcag22aa`; brand codes present and anti-pillars absent; and the copy lint.
+- **Scripted checks (ui-factory step 6):** token membership; Vercel SDK controls; geometry (overflow, clipping, overlap, small targets) at each viewport and state; axe-core `wcag22aa`; brand codes present and Article 13 tells absent; and the copy lint.
 - **Motion:** read Emil's `review-animations` and `STANDARDS.md` whenever a screen moves. The §5 motion items are written so Playwright can check most of them: computed `transition-property`, durations and a reduced-motion run.
 - **What scripts can't prove:** that a screen looks good, that a token sits in the right place, or that a first-time user can learn it. Cover-the-text, blur and critique need eyes; brand feel goes to Ben. Record each result in `brand/screens/<screen>.run.md`.

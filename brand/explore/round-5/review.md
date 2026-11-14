@@ -1,6 +1,6 @@
 # Round 5 showcases: review
 
-Stage 1 brand iteration (ui-factory). Six images in [showcase/](showcase/), made from [inputs/prompts.md](inputs/prompts.md); how each was made is in [showcase/lineage.md](showcase/lineage.md). This page is the agent's read against [../../constitution.md](../../constitution.md). Nothing here is approved. Ben picks and marks; his words go to `brand/corrections.md`.
+Stage 1 brand iteration (ui-factory). Six images in [showcase/](showcase/), made from [inputs/prompts.md](inputs/prompts.md); how each was made is in [showcase/lineage.md](showcase/lineage.md). This page is the agent's read against [../../constitution.md](../../constitution.md). Nothing here is approved. Ben picks and marks; his words go to [product/words.md](../../../product/words.md).
 
 ## Read, image by image
 
@@ -25,7 +25,7 @@ Stage 1 brand iteration (ui-factory). Six images in [showcase/](showcase/), made
 8. "Used" badges and heart buttons on item cards.
 9. A generic icon row and an arrows-to-boxes flow diagram.
 
-Every one of these already maps to an Article 13 tell. Ben's marks decide whether they become hard rules in `brand/rules/`.
+Some map to rules already: taglines and invented names (Art. 12), uppercase labels (Art. 6.5), stock people (Art. 13), cream grounds (Art. 5). Script type, marker swipes, torn paper and flow diagrams have no rule yet. Ben's marks decide which become Part IV checks.
 
 ## Next round changes (agent proposal, after Ben reacts)
 

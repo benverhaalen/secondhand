@@ -27,7 +27,8 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 |---|---|---|
 | A1 | Every state and interaction color | [constitution Art. 5, States](constitution.md#states-agent-decision-2026-11-14-ben-can-veto-on-round-6-board-d1) |
 | A2 | Every color takes black text; white text only on brick and ink | constitution Art. 5 |
-| A3 | Two weights, the 13/15/18/22/34/50 size steps, the 4-based space scale | constitution Art. 6 and 7 |
+| A3 | Two weights per face, sizes by role (13, 15, 18, then Ben's 21, 36, 50), the 4-based space scale | constitution Art. 6 and 7 |
+| A4 | Light appearance only for now | constitution Art. 5 |
 
 ## Open (Ben picks; round 6 boards)
 
@@ -36,7 +37,8 @@ Leaning means Ben saved it in the round 4 kit but called it not final.
 | # | Decision | Options | Leaning |
 |---|---|---|---|
 | D1 | State colors | A: field tints (mint, lime, sky, marigold fills). B: quiet (gray pills with a small colored dot) | A (agent) |
-| D2 | Typefaces | A: Marist headings, Geist text. B: Geist only. C: Marist headings, Neue Montreal text | A (round 4 save) |
+| D2 | Typefaces | A: Marist headings, Geist text. B: Geist only. C: Marist headings, the iPhone system face (SF Pro) for text | A (round 4 save) |
 | D3 | Spacing | A: compact. B: standard. C: airy | B (round 4 save) |
 | D4 | Surfaces and small parts | Cards: ruled rows or hairline cards. Platform marks: bare or in a bubble. Photo state: pill, dot or corner tag | Rows, bare (round 4 save) |
-| D5 | The field | Where: top card, header band or only for moments like Sold. Texture: lines, grain or none | Top card, lines (round 4 save) |
+| D5 | The field | Where: the top card, a header band, or the whole ground of a moment like Sold (past the one-third color limit). Texture: faint, medium or strong lines | Top card, lines (round 4 save) |
+| D6 | The peak amount on a sale | A: text face at 50 with the lime band. B: Marist at 50, no band. C: text face at 50, no band, size alone | A (agent) |
