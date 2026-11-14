@@ -1,6 +1,6 @@
 # 31 — Per-platform posting rules and the product fit list
 
-Updated: November 14, 2026. Owner: Ben. Agent: Claude Code (project thread "Tailor listings to each platform"). Branch: main. Status: research written; three questions for Ben.
+Updated: November 14, 2026. Owner: Ben. Agent: Claude Code (project thread "Tailor listings to each platform"). Branch: main. Status: research written; two questions for Ben.
 
 ## Scope
 
@@ -20,4 +20,4 @@ Seven helpers ran three search loops each. A shared budget of about 100 page rea
 
 ## Next action
 
-Ben: (1) should "ok" platforms post by default, (2) is touch-up level 2 in or out, (3) should Grailed and OfferUp become posting targets. Nate: if you are building an adapter, the JSON profile for that site is the starting config; reply here with what you change.
+Ben: (1) should "ok" platforms post by default, (2) is touch-up level 2 in or out. Answered at 22:09 UTC: posting to Grailed and OfferUp is planned, not built, "things if we have time" ([words](../../../../product/words.md#2026-11-14-grailed-and-offerup-posting-planned-not-built)); the plan is in the summary. Nate: if you are building an adapter, the JSON profile for that site is the starting config; reply here with what you change.
