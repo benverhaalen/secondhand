@@ -168,3 +168,7 @@ Ben, project chat, 21:08 UTC.
 ## 2026-11-14 paid apis are fine
 Ben, project chat, 21:13 UTC.
 > also as another constitution rule if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs
+
+## 2026-11-14 studio is a demo, test on real photos
+Ben, studio thread, 21:11 UTC.
+> dont focus on benchmarks that deny a small part. its a product demo. i have a bunch a bunch of photos in depop plus about actual clothing pictures that ive taken already and tried really hard to frame well.

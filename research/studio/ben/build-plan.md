@@ -1,6 +1,18 @@
 # How do we build studio photos for the demo: Seedream relighting from several shots, true color, and a gate that stops any render that changes the item, with a human approving each one?
 Researched 2026-11-14 by Ben (Claude Code). Feature: studio.
 
+## 0. Revised after Ben's steer (21:11 and 21:13 UTC)
+
+Ben: "dont focus on benchmarks that deny a small part. its a product demo" ([words](../../../product/words.md#2026-11-14-studio-is-a-demo-test-on-real-photos)); "this is a product demo ... we can also just build things" ([words](../../../product/words.md#2026-11-14-demo-not-production)); "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" ([words](../../../product/words.md#2026-11-14-paid-apis-are-fine)).
+
+What this changes in the plan below (*agent proposal*):
+
+1. **Build both routes, lead the demo with the impressive one.** The multi-photo restage (Ben's "reference-to-video" idea: all shots in, the item in any scene, on a hanger or a form) is a first-class feature, not an optional extra. In-place relighting stays as the fast, always-works option. Section 7's recommendation to default to in-place only is withdrawn.
+2. **The gate ranks and explains; it does not block.** Its numbers pick the best candidate and light up the chips on the approval card ("logo kept", "scuff kept", "color close"). The person decides. Only a confirmed defect that vanished hides a candidate.
+3. **Spend on candidates.** Per preset, run several in parallel and keep the best: Seedream 5.5 with two or three seeds, plus Nano Banana 2.1 on the same prompt. The gate scores them, the card shows the winner, and "Redo" swaps to the runner-up at once with no wait. This uses the gate as the picker, which is where it earns its place in a demo.
+4. **The benchmark numbers in loops 1 and 2 are background, not a verdict.** They describe raw, single-shot edits of arbitrary products. Our setup differs: well-framed photos, several references, a keep-list in the prompt, several candidates and a picker. Loop 3 showed logos, labels and a scuff surviving in every in-place render.
+5. **Test set: Ben's own listing photos** in `depop-plus/data/intake_photos/listings/` (100 items, 3 to 11 shots each, square 1080 px, flat on concrete, most with a tag close-up). They have no white card, so color is anchored on the tag or the concrete floor for these, and the card is for new captures only.
+
 Builds on [seedream-relighting.md](seedream-relighting.md). Where this note changes it, it says so in section 3. Everything here is an *agent proposal* until Ben or Nate decides.
 
 ## 1. The question and Ben's goal
@@ -223,7 +235,7 @@ The listing order is fixed: evidence photo first, then the person's approved ren
 
 ## 7. Decision for Ben
 
-Ben's words point to Route B (all references, any scene, "like the video model"). The evidence in loops 2 and 3 says restaged renders can't be verified and that most raw edits change product details. *Agent proposal*: Route A (in place, verified) is the default for every preset. Route B is an extra, labelled styled, and always needs a person. This changes what the demo shows, so it is Ben's call, not ours.
+Withdrawn. An earlier draft recommended in-place renders as the only default and restaging as an optional extra. After Ben's steer (section 0) both are built, and restaging leads the demo.
 
 ## 8. Searched, and what I couldn't reach
 
