@@ -36,21 +36,38 @@ def wrinkle(img, mask):
     off = np.hypot(lab[..., 1] - med[1], lab[..., 2] - med[2]) > 14        # print, tag, anything not fabric colored
     off = cv2.dilate(off.astype(np.uint8), np.ones((int(15 * s) | 1,) * 2, np.uint8)).astype(bool)
     L = lab[..., 0]
-    band = cv2.GaussianBlur(L, (0, 0), 3 * s) - cv2.GaussianBlur(L, (0, 0), 16 * s)   # ripples a few mm to a few cm wide
+    band = cv2.GaussianBlur(L, (0, 0), 7 * s) - cv2.GaussianBlur(L, (0, 0), 45 * s)   # folds and creases, not weave or grain
     keep = m & ~off
     return float(np.abs(band[keep]).mean() / max(np.median(L[keep]), 1) * 100)
 
 
+def _mirror_score(m):
+    b = _box(m)
+    return float((b & b[:, ::-1]).sum() / max((b | b[:, ::-1]).sum(), 1))
+
+
 def _deskew(mask):
-    """Rotate so the garment's long axis is upright. Returns (mask, tilt in degrees)."""
+    """Rotate so the garment is square to the frame. Returns (mask, tilt in degrees).
+    A long item (pants) has a clear long axis. A shirt with its sleeves out is nearly as wide
+    as it is long, so its long axis is meaningless; for those, find the angle at which the left
+    half best mirrors the right."""
+    mask = mask.astype(np.uint8)
+    h, w = mask.shape
     ys, xs = np.where(mask > 0)
     pts = np.stack([xs, ys], 1).astype(np.float32)
-    mean, vec = cv2.PCACompute(pts, mean=None)[:2]
-    ang = np.degrees(np.arctan2(vec[0, 1], vec[0, 0]))          # long axis
-    tilt = ((ang + 45) % 90) - 45                               # distance from the nearest frame axis
-    h, w = mask.shape
-    R = cv2.getRotationMatrix2D((float(mean[0, 0]), float(mean[0, 1])), tilt, 1.0)
-    return cv2.warpAffine(mask.astype(np.uint8), R, (w, h), flags=cv2.INTER_NEAREST), float(tilt)
+    mean, vec, val = cv2.PCACompute2(pts, mean=None)
+    c = (float(mean[0, 0]), float(mean[0, 1]))
+    if val[0, 0] / max(val[1, 0], 1e-6) > 2.5:
+        ang = np.degrees(np.arctan2(vec[0, 1], vec[0, 0]))
+        tilt = ((ang + 45) % 90) - 45
+    else:
+        f = 240.0 / max(h, w)
+        small = cv2.resize(mask, None, fx=f, fy=f, interpolation=cv2.INTER_NEAREST)
+        cs = (c[0] * f, c[1] * f)
+        rot = lambda m, a, cc: cv2.warpAffine(m, cv2.getRotationMatrix2D(cc, a, 1.0), (m.shape[1], m.shape[0]), flags=cv2.INTER_NEAREST)
+        tilt = float(max(np.arange(-30, 30.5, 1.0), key=lambda a: _mirror_score(rot(small, a, cs))))
+    R = cv2.getRotationMatrix2D(c, tilt, 1.0)
+    return cv2.warpAffine(mask, R, (w, h), flags=cv2.INTER_NEAREST), float(tilt)
 
 
 def _box(mask):
@@ -76,7 +93,7 @@ def layout(mask):
             best = max(best, float((b & cand).sum() / max((b | cand).sum(), 1)))
         fits[name] = round(best, 2)
     kind = max(fits, key=fits.get)
-    lop = float((b & b[:, ::-1]).sum() / max((b | b[:, ::-1]).sum(), 1)) if kind != "pants" else 1.0
+    lop = _mirror_score(up) if kind != "pants" else 1.0
     problems = []
     if fits[kind] < BAND["overlap"]:
         problems.append("does not fill the template shape: sleeves or legs are folded, bunched or hidden")
