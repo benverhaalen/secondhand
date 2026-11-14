@@ -263,3 +263,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate a market anyone can learn from
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > I want you to apply the ingenious product design perspectives but also account for what would be impressive. All data on the product and the markets to determine everything we can, as well as save information the user just wants to learn about and see. Even users who dont expect to use secondhand for selling can still gain so much value from an all in one search of products both on the official markets and second hand stores to see price changes, the ways industries evolve, products release and how hype is established, what fashion trends are out, everything
+
+## 2026-11-14 nate visitors and full users
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether a person who never sells is a full user or a visitor through search.
+> They can establish themslevs as a full user, or just use the visitor search, visitors can just search, but not sell, they can get linked with our referral though
