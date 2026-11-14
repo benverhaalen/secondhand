@@ -105,6 +105,11 @@ Each screen is audited in all of these (Vercel guidelines; IAE "plausible extrem
 - **Typical.**
 - **Dense:** 40 items from a folder drop.
 - **Loading:** see the rules in §3.
+- **Job in flight** (Ben, 21:14: "since this is an agentic app i expect for you with the ui to be able to understand loading"). Most work here is a cloud job or API call that returns later: pricing, studio photos, posting, a reply being drafted. For every such job design four moments. *Agent proposal* for the details:
+  - **Started:** the thing appears at once in its final place (the tile, the card, the field), marked as working. The tap never waits on the network.
+  - **Running:** say what is running in two or three words ("Pricing on eBay"), and show partial results as they land. The user can leave the screen; the job keeps going and the tile or card carries the state.
+  - **Arrived:** the result fills in where the placeholder was, without moving anything else. If the user was elsewhere, Today or the tile shows it.
+  - **Failed or slow:** past its expected time, say so and keep the rest usable. On failure, name what failed and offer `Retry`. Other jobs on the same item carry on.
 - **Error:** what failed and the one fix.
 - **Offline.**
 - **Long content:** a 90-character title, a $12,450.00 price, a long German brand name.
@@ -153,6 +158,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: durations stay within §3 and nothing in the UI reaches 500 ms.
 - [ ] Block: no `transition: all`, no `scale(0)`, no `ease-in` on UI, and only `transform` and `opacity` are animated.
 - [ ] Block: every animation is interruptible, and the Reduce Motion variant exists and was checked.
+- [ ] Block: every cloud job on the screen has its started, running, arrived and failed moments designed (§4).
 - [ ] Block: no loading flash (show delay and minimum time); skeletons match the final layout.
 
 ### Access

@@ -15,6 +15,7 @@ Ben's decisions, in his words ([words](words.md)):
 - **App first, web later.** "the app is the primary thing". A website with sign-in and the same features comes later, with photo upload in place of the camera and LiDAR (20:45). Design each screen for the phone, and keep nothing in it that only a camera can do unless that screen is the camera.
 - **Build it, don't rule it out.** "this is a product demo, getting something that works for a hackathon is different from writing a production app" (21:08, [decision](decisions.md)). Research shapes how a thing is built, not whether. Raise a constraint only when it would break the demo.
 - **Pay for the better API.** "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" (21:13). Cost is not a reason to pick the weaker option, and several APIs together are fine.
+- **The UI understands waiting.** "since this is an agentic app i expect for you with the ui to be able to understand loading" (21:14). Work runs as cloud jobs that come back later, so every screen shows jobs starting, running, arriving and failing ([frontend-standard §4](frontend-standard.md#4-states-every-screen-must-design)).
 
 ## Ends and means
 
