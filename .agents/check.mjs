@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Run before every push: node .agents/check.mjs  (errors block; warnings are questions to answer)
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
+const read = f => existsSync(join(root, f)) ? readFileSync(join(root, f), 'utf8') : '';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { problems as layout } from './checks/layout.mjs';
@@ -32,6 +33,11 @@ const results = [
   ...links(root, { files }), ...provenance(root, { wordsBase }), ...research(root, { files }),
   ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }),
 ];
+// Keep each human in the loop on the other's work: research and packets that landed in the last day.
+const news = (git('log', '--since=24 hours ago', '--name-only', '--format=@%h %an %ar', '--', 'research/*/nate', 'research/*/ben', '.agents/team/packets') ?? '')
+  .split('\n@').filter(Boolean).map(b => b.replace(/^@/, '').split('\n').filter(Boolean)).filter(([, ...f]) => f.length);
+const nate = news.filter(([, ...f]) => f.some(x => /\/nate\//.test(x) || /packets\//.test(x) && /owner: nate/i.test(read(x))));
+if (nate.length) console.log(`from Nate in the last day (summarize for Ben):\n${nate.map(([h, ...f]) => `  ${h}: ${f.join(', ')}`).join('\n')}`);
 for (const r of results) console.log(`${r.level === 'error' ? 'ERROR' : 'warn '} ${r.where}  ${r.msg}`);
 const n = results.filter(r => r.level === 'error').length;
 console.log(n ? `\n${n} error(s). Fix them before pushing.` : `checks ok${results.length ? ` (${results.length} warning(s) to read)` : ''}`);
