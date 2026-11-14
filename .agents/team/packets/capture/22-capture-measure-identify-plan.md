@@ -19,6 +19,10 @@ Ben's ask (project chat, 2026-11-14 20:41 UTC): "judges love human in the loop. 
 
 Ben, 21:08: build ideas instead of dropping them for production reasons. Object Capture, generated 3D for clothes (scaled to measured lengths), the 10 s spin, the constant-color shot and SerpApi Lens are all back in. See "Demo mode" in [seeing-the-item-pipeline.md](../../../../research/cross-cutting/ben/seeing-the-item-pipeline.md).
 
+## Talk mode (added 21:40)
+
+Ben asked at 21:22 for a live video capture you can talk to. Plan: [live-video-capture.md](../../../../research/capture/ben/live-video-capture.md). It adds a `LiveDirector` class to the Swift camera module, six model tools, new Item fields (transcript, heard facts with source "you said") and new catalog components for the Heard / Saw review screen (listed in the note's step 11). Flaws the model or seller mention go through the same yes or no chips.
+
 ## Next action
 
 Day one, first hour: measure Decisions latency on images, Gemini flaw recall and tape-measure error on 10 real garments, and Object Capture on the demo phone.

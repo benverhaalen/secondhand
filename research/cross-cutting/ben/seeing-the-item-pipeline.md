@@ -18,6 +18,10 @@ This joins three build plans written today with the RDD loop and seeded research
 
 Every step writes an MLflow trace and a Delta row, so the "why?" sheet can show what each field came from.
 
+## Talk mode: a second way into the same shot list
+
+Ben, 21:22, asked for a live video you can talk to ([words](../../../product/words.md#2026-11-14-live-video-you-can-talk-to)). Plan: [live-video-capture.md](../../capture/ben/live-video-capture.md). *Agent proposal.* It replaces steps 1 to 5 above when switched on and joins the same step 6. A live model (Gemini 3.8 Live; OpenAI Realtime as backup) watches 1 frame a second, hears the seller, and calls tools: take a still, ask for a view, note a flaw, note a fact, finish. The Swift camera module still takes the full-size stills, so measure and identify get the same inputs. What the seller says lands on the item as "you said". Afterwards the whole recording goes through a video model to catch what the live pass missed, and one Heard / Saw screen is the approval.
+
 ## Where the plans disagree
 
 | Topic | Capture says | Measure says | Identify says | Proposed resolution |
