@@ -176,7 +176,7 @@ Each step ends with something we can run and push. *inferred*
 
 ## 11. For Ben to decide
 
-1. Can "accept offers of $X or more" become Auto after 3 approvals, with X never below the floor? (Asked on a decision card.)
+1. ~~Can "accept offers of $X or more" become Auto after 3 approvals?~~ Decided: yes, per item, X at or above the floor ([decisions](../../../product/decisions.md#2026-11-14-accepting-offers-at-or-above-a-set-amount-can-be-promoted-per-item)).
 2. When an item is committed but not paid (an eBay sale awaiting payment, a Depop accepted offer), do the other listings pause or come down?
 3. Can "decline offers under my floor" ever be promoted? Declining sets no price, but the floor decision says any price below it asks.
 4. Traces need the message text to classify it, and the spec bans text in logs. Redact traces to ids and features, or keep a restricted trace table?
