@@ -17,5 +17,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/messages/](../../research/messages/)
 - Ben: [research/messages/ben/](../../research/messages/ben/)
+- Ben, messages and offers: [messages-and-offers.md](../../research/messages/ben/messages-and-offers.md). eBay Message API and Best Offer calls, Depop Partner API, intent questions on the Decisions API, a send guard that needs a signed tap, and how approvals promote and demote Rules.
 - Nate: `research/messages/nate/` (none yet)
 - *Agent proposal:* all messages live behind a chat icon with an unread count at the top right of every main screen. Every buyer message that needs you also becomes a Today card with its deadline, so nothing is lost even if the inbox goes unchecked. [messages-home.md](../../research/messages/ben/messages-home.md)

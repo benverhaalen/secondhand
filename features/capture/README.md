@@ -30,3 +30,4 @@ All research for this feature: [research/capture/](../../research/capture/)
 - Ben: [research/capture/ben/](../../research/capture/ben/)
 - Nate: `research/capture/nate/` (none yet)
 - Ben, tech stack: [guided-shot-list.md](../../research/capture/ben/guided-shot-list.md). Per-category shot list with live checks before each shot counts; defects proposed by the model and confirmed by the user.
+- Ben, build plan: [build-plan.md](../../research/capture/ben/build-plan.md). One ARKit session with live checks and auto-shutter; one Decisions call per shot; Gemini proposes flaw boxes, the person confirms each; folder drop groups photos into items. Joined with measure and identify in [seeing-the-item-pipeline.md](../../research/cross-cutting/ben/seeing-the-item-pipeline.md).

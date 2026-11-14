@@ -1,0 +1,39 @@
+# How do capture, measure and identify fit into one pipeline, and where do the three build plans disagree?
+Researched 2026-11-14 by Ben (Claude Code). Feature: cross-cutting.
+
+This joins three build plans written today with the RDD loop and seeded research from `it-already-exists`: [capture](../../capture/ben/build-plan.md), [measure](../../measure/ben/build-plan.md) and [identify](../../identify/ben/build-plan.md). Each claim's evidence mark lives in those notes. This note only adds the joins, so its own claims are *inferred* unless marked. Everything here is an *agent proposal* until Ben or Nate picks.
+
+## One item, start to finish
+
+| # | When | Where it runs | What happens | What the person does | Source note |
+|---|---|---|---|---|---|
+| 1 | Shot 1, "the whole thing" | Phone | One ARKit session. Live checks gate the shutter: tilt and distance from the floor plane, one item in frame, blur, exposure. Auto-shoots when stable. | Points the phone. Manual shutter always there. | capture, steps 0 to 1 |
+| 2 | Right after shot 1 | Backend | Decisions call for the shot's quality questions; a GPT-6.1 Terra structured read gives category and color. The category picks the rest of the shot list. | Picks a category chip only when unsure. | capture step 3, identify 4.1 |
+| 3 | Front and back flat-lay | Phone, then backend | The same frame carries the camera's intrinsics and floor plane, so scale comes for free. Mask from Apple Vision plus SAM 3.1; points from width-profile geometry plus Gemini pointing. | Nothing yet. | measure, scale and points |
+| 4 | Tag shot | Phone | On-device text recognition reads brand, size, RN, materials; Terra cleans it up. | Retakes only if the tag is unreadable. | capture, identify 4.2 |
+| 5 | After front and back | Backend | Gemini proposes flaw boxes; Decisions scores each crop; SAM draws the highlight. | Yes or no on each proposed flaw, then a close-up of each yes. Can add one the model missed. | capture step 4, identify 4.5 |
+| 6 | After the last shot | Backend, in parallel | Lens via SerpApi plus eBay image search plus Terra propose up to 5 exact identities. One Decisions call (about 20 questions) verifies them. Measure lines are checked by Decisions. | | identify 4.3 to 4.4, measure checking |
+| 7 | About 9 s after the last shot (target, unmeasured) | App | One filled item card. Each field is in a band: filled, one-tap confirm, or pick. Measure lines sit on the photo with draggable ends. | Fixes what's flagged, taps "Looks right". Each tap or correction is a Decision row and a label. | identify 4.7 to 4.8, measure approval |
+| 8 | Then | Backend | Verified matches become comps for [price](../../price/); real photos plus the white-sheet reference go to Seedream for [studio](../../studio/). | | identify 4.9, capture dual-purpose table |
+
+Every step writes an MLflow trace and a Delta row, so the "why?" sheet can show what each field came from.
+
+## Where the plans disagree
+
+| Topic | Capture says | Measure says | Identify says | Proposed resolution |
+|---|---|---|---|---|
+| App shell | Expo SDK 58 app with a Swift `CaptureKit` module | Small SwiftUI capture app; everything after the shutter is web (opened in a web view or handed off) | Either; prefers native for on-device tag reading | **Measure's version.** The dynamic UI plan ([generative-ui.md](../../today/ben/generative-ui.md)) builds every approval card in a React 19 web app with json-render and shadcn. An Expo app would need those components twice. A Swift capture screen that uploads and hands off keeps one UI. The decision is Ben's (below). |
+| Who draws flaw boxes | Gemini 3.8 Flash | n/a | Gemini, with per-tile Decisions checks | Agree. Decisions can't return locations [observed in both notes]. |
+| Card in frame | Needed only on web | Native needs nothing extra; card on web only (in FitTag's simulated tests, card-only was off by 22 to 35 cm) | n/a | Agree. The white sheet stays for color. |
+| Object Capture | Not used for clothing | Stretch goal; a forum bug report says it fails on iPhone 17 Pro under iOS 26.x | n/a | Test on the demo phone in the first hour; otherwise the one-frame LiDAR box. |
+
+## Changes to Ben's named tools
+
+- **OpenAI Decisions API**: kept for every judgement. It is GA since Oct 22, on `gpt-6-luna` only, and can't name things or place points or boxes (identify note, loop 1, observed). So a generator (Terra, Gemini) proposes and Decisions verifies.
+- **LiDAR and Apple measuring**: kept, but scale now comes from the ARKit floor plane, which works without LiDAR. LiDAR cross-checks it.
+- **Apple Object Capture**: demoted to a stretch goal for rigid items.
+- **Added**: Gemini for boxes and points, SAM 3.1 for masks, SerpApi Google Lens and eBay image search for exact identity.
+
+## What has to be measured on day one
+
+None of the latency or accuracy numbers in the three notes have been run on our own items. First hour: Decisions latency on images, Gemini flaw recall on 10 real garments, tape-measure error on 10 garments, Object Capture on the demo phone.
