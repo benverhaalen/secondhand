@@ -1,0 +1,47 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Both phone screens: lime end of the Offered $38 gradient and the Sold pill beside Nike Dunks.",
+          "issue": "The lime reads as bright fluorescent yellow-green, visibly more saturated than the soft lime gradient endpoint and Sold fill in brand/explore/round-7/inputs/colors.png."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Both phone screens: lime end of the Offered $38 gradient and the Sold pill beside Nike Dunks.",
+          "issue": "The lime reads as bright fluorescent yellow-green, visibly more saturated than the soft lime gradient endpoint and Sold fill in brand/explore/round-7/inputs/colors.png."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Both phone screens: lime end of the Offered $38 gradient and the Sold pill beside Nike Dunks.",
+          "issue": "The lime reads as bright fluorescent yellow-green, visibly more saturated than the soft lime gradient endpoint and Sold fill in brand/explore/round-7/inputs/colors.png."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "All three share the same excessive lime saturation. The notice treatments themselves are distinguishable at board size, and the options otherwise preserve the same content and layout."
+    }
+  ]
+}
