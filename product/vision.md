@@ -12,6 +12,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - secondhand is a seller's crosslister at its core: selling leads, appraise and buy are add-ons. Ben, decision card, 19:02 ([decisions](decisions.md)).
 
+- Bottom bar: Today · Sell · ＋ · Buy · You. ＋ is the only way in (Sell this, What's it worth, Find this). Ben, decision card, 19:27 ([decisions](decisions.md)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).

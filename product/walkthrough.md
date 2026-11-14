@@ -6,13 +6,13 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 |---|---|---|
 | 1 | What the app is at its core | **decided: seller's crosslister** ([log](decisions.md)) |
 | 2 | Selling: how the selling features chain | **decided: item by item, one live draft each, folder drop splits into drafts** ([log](decisions.md)) |
-| 3 | The always-there bottom bar (reworked from Ben's 19:15 note, the [primitives](primitives.md) and [structure references](../research/today/ben/structure-references.md)) | asking |
+| 3 | The always-there bottom bar | **decided: Today · Sell · ＋ · Buy · You, ＋ is the only way in** ([log](decisions.md)) |
 | 4 | Selling home: drafts, live and past, interest per item | — |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
 | 6 | Shipping and pickup (Google Calendar, approved time windows) | — |
 | 7 | Buying home: search, wants, watch, deal check, appraise | — |
 | 8 | You: money, insights per site, accounts, automation | — |
-| 9 | Human in the loop: what runs on its own, and what always needs a tap | — |
+| 9 | Human in the loop: what runs on its own, and what always needs a tap | asking next (it decides what Today holds) |
 | 10 | Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
 | 11 | First launch and onboarding | — |
 
@@ -127,3 +127,29 @@ Ben, 19:23: "what would the + button do that sell and buy wouldnt."
 **Option 3 (the Airbnb split)** is option 1 with Messages as its own tab, and You behind the avatar.
 
 **Agent view: option 1, with the rule enforced.** Sell and Buy have no add buttons; they are lists you look at and act on. ＋ is the single verb, so nothing is duplicated, and the garage-sale case works. It's also the fastest path, which matches "the second hand of the clock". Option 2 is the cleanest choice by Apple's rules, and is the right answer if appraising mostly happens on things you already own or already want.
+
+**Picked: option 1** (Ben, 19:27).
+
+---
+
+## 9 (asked next). Human in the loop: what runs on its own, and what always needs a tap
+
+**Why next:** this decides what lands in Today, the tab the app opens on.
+
+**Evidence**
+- People rubber-stamp automated output (Parasuraman and Manzey 2010; Bansal 2021) ([psychology](../research/cross-cutting/ben/psychology.md)).
+- Meta's Muse, set to "Allow Always", accepted a lowball offer and sent a stranger to a seller's home address (Proton, 30 Sep 2026).
+- eBay's User Agreement, from 20 Feb 2026, bans "any end-to-end flow that attempts to place orders without human review".
+- Poshmark suspends listing for 6 days after repeated delisting or mass removals, "manual or automation" (May 2025). Even delist-on-sale needs pacing there.
+- 31% of US shoppers would let AI spend $0 on its own; the median limit is $50.
+
+All of these are collected in the pitch thread's [pitch-evidence](../research/cross-cutting/ben/pitch-evidence.md) and [primitives-engineering](../research/cross-cutting/ben/primitives-engineering.md).
+
+| Option | How it works | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. Three fixed tiers** | **Auto:** logged and undoable ("still available", size answers, delist after a sale, markdown above your floor). **Ask:** waits in Today (counter-offers, price below your floor, first post). **Never alone:** address, pickup time, payment, off-platform deals. | Pixel Call Screen, Monarch review | Predictable; easy to explain to judges | Fixed, so it can't learn that you always accept offers over 90% |
+| **B. Tiers that learn** | Same as A, but an Ask card can offer "Always do this" once you've approved the same kind 3 times. Never alone can never be promoted. | iOS "Allow once / Always", Gmail filters; Muse is the counterexample, so Never alone stays locked | Today gets shorter over time; trust is earned | Approving 3 times can itself be rubber-stamping |
+| **C. Autopilot with a digest** | It does everything except Never alone, with a 1-hour undo and an evening summary | Robo-advisors | Fewest taps | Conflicts with eBay's human-review rule; rubber-stamp risk; Muse |
+| **D. Draft only** | It drafts every reply and action, and you send each one | Gmail Smart Reply | Full control | Most taps; the "second hand" does little |
+
+**Agent view: B.** It starts as A, so the demo is predictable. Today shrinks as the user teaches it. The Never alone tier answers Muse and eBay's rule directly.
