@@ -130,10 +130,11 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: the blur test passes (focal point first, next action second).
 - [ ] Block: accent color appears only on state, the primary action and alerts. At most one yellow highlight and one price dot per screen (brand codes).
 - [ ] Flag: more than three actions visible on a card. Choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)), so justify it rather than ban it.
-- [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, money is mono.
+- [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 
 ### Honesty
-- [ ] Block: every number carries its source and sample size in a mono label.
+- [ ] Block: every number carries its source and sample size in a small source label.
+- [ ] Block: platforms appear as their real logos (in a white bubble on photos, bare elsewhere), never as written names or letter badges like e / D / M. Use `assets/platforms/`. Logos follow each brand's guidelines: unaltered colors and proportions, minimum size.
 - [ ] Block: every automatic action is labelled `AUTO` and can be undone.
 - [ ] Block: no fake scarcity, countdowns, guilt copy, confirmshaming or variable rewards ([psychology §9](../research/cross-cutting/ben/psychology.md)).
 - [ ] Block: destructive or outward actions (post, delist, send an address) need a confirmation or an undo window. Never-alone actions always need the tap.

@@ -12,9 +12,9 @@ Decided by Ben on 2026-11-14 at 19:45 ([words](words.md#2026-11-14-show-not-say)
 
 | Instead of saying | Show |
 |---|---|
-| "Your item is now live on eBay and Depop" | The photo tile with a green Live pill and two site badges |
+| "Your item is now live on eBay and Depop" | The photo tile with a green Live pill and the eBay and Depop logos |
 | "We're researching your item, this may take a minute" | The draft filling in field by field, with a thin progress line |
-| "This price was estimated from 14 similar sold items" | `$42` with a mono label `14 SOLD · EBAY` |
+| "This price was estimated from 14 similar sold items" | `$42` with a small source label `14 sold` and the eBay logo |
 | "You'll keep $36.40 after fees" | `KEEP $36.40` under the price |
 | "This listing failed to delist. Tap to retry" | A red ✕ on the badge and one button: `Retry` |
 | "Great news! Your item sold!" | The tile moves to Sold, with the amount you keep |
@@ -27,7 +27,8 @@ Limits:
 - **Labels:** nouns, no sentences. `Live`, `Ship by Tue`, `3 offers`.
 - **Body text:** at most one short sentence per card, and only when a picture or number can't carry it (a scam warning, an address the agent won't share without you).
 - **No** exclamation marks, "Great!", "Oops", "We've…", "Let's…", "Just…", emojis in UI, or narration of what the AI is doing.
-- **Numbers carry their source** in a mono label, never in a sentence (see the brand [coder card](../brand/coder-card.md) rule 7).
+- **Platforms are logos, not words.** "Live on Depop" is a Live pill plus the Depop logo. Ben, [19:59](words.md#2026-11-14-platform-logos-no-mono).
+- **Numbers carry their source** in a small label, never in a sentence (see the brand [coder card](../brand/coder-card.md) rule 7).
 - **Safety copy is the exception.** Never-alone actions (address, pickup time, payment) keep one plain sentence saying what will happen.
 
 ## The anti-claudish skill
@@ -76,12 +77,12 @@ Principles expert designers use, each turned into a rule for this app. *Agent pr
 - Fewer options decide faster (Hick's law), but choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)). Curate the first view: a card shows up to three actions, and more go behind "More".
 - Recognition over recall: show the photo, price and site badges on every row instead of asking the user to remember which item "Lamp 2" was.
 - Progressive disclosure: the price is visible; the comps behind it are one tap away. Advanced settings live in You.
-- Smart defaults the user can see and change (default effect): pickup windows, floor price and markdown are pre-filled with the reason in a mono label.
+- Smart defaults the user can see and change (default effect): pickup windows, floor price and markdown are pre-filled with the reason in a small label.
 - Big targets where thumbs are (Fitts's law): primary actions at the bottom of the screen, 44 px minimum, 48 px for main buttons.
 
 **Group so the eye reads structure, not text (Gestalt proximity and similarity).**
 - Things that belong together sit together with tight spacing; groups are separated by space, not lines or boxes.
-- The same kind of thing looks the same everywhere: an item is always a photo tile, a decision is always a card with buttons, money is always mono.
+- The same kind of thing looks the same everywhere: an item is always a photo tile, a decision is always a card with buttons, a platform is always its logo.
 - Scanning follows the layout: the photo leads on the left, then title, then price on the right edge, like every marketplace row.
 
 **Use psychology honestly.**
