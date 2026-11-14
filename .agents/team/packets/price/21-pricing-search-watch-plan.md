@@ -20,8 +20,8 @@ The plan is [research/price/ben/build-plan.md](../../../../research/price/ben/bu
 - `POST /value` keeps its shape and gains `level`, `price_basis` per comp, and `max_pay` in appraise mode.
 - The `comp` table schema is in the plan's Data model section. Read it before fixing a Comp or Valuation schema.
 - eBay data is used everywhere in the demo, in the price engine and in the mixed search grid. The licence limits are noted for production only, per Ben's [demo, not production](../../../../product/words.md#2026-11-14-demo-not-production). eBay sold prices come from three paid routes run at once.
-- Exa was tested live: stale on the big marketplaces and no Facebook pages. Watches poll each site themselves; Exa covers the long tail.
+- Exa was tested live: stale on the big marketplaces and no Facebook pages. Ben decided at 21:27 that watches run on Firecrawl page monitors, the eBay Browse API and the ScrapeCreators Facebook API, with Exa for the rest of the web ([decisions.md](../../../../product/decisions.md#2026-11-14-watch-alerts-run-on-firecrawl-the-ebay-api-and-a-facebook-search-api)).
 
 ## Waiting on Ben
 
-Four choices listed under "Decisions for Ben" in the plan: which paid sold-data services to sign up for, a second vision model for labels, the three demo categories, and Exa's role.
+Three choices left under "Decisions for Ben" in the plan: which paid sold-data services to sign up for, a second vision model for labels, and the three demo categories. Also keys for Firecrawl and ScrapeCreators, to smoke-test the watch loop.

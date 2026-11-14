@@ -9,7 +9,7 @@ Describe a fuzzy want, answer a few tap questions, and get notified when a match
 Not designed yet. Keep the mechanism here once research picks one, together with the reference it came from and the job that reference does.
 
 ## Decided
-Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).
+- Alerts for the big marketplaces run on Firecrawl page monitors, the eBay Browse API and a Facebook search API, checked every 5 to 10 minutes; Exa covers the rest of the web. Ben, [decisions.md](../../product/decisions.md#2026-11-14-watch-alerts-run-on-firecrawl-the-ebay-api-and-a-facebook-search-api).
 
 ## Open
 - How do Exa's monitors work, how fresh are they, and what do they cost?
