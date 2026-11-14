@@ -1,13 +1,19 @@
 # Coder card (read before any UI edit)
 
-Precedence: Ben's direct decisions, then the brand codes (`codes.md`), then the approved image for composition and hierarchy, then the code as it stands, then agent inference. A rule that conflicts with the code is fixed in one place, not overridden by a second rule.
+The short form of [constitution.md](constitution.md) for anyone building a screen. If this card and the constitution disagree, the constitution wins; fix this card. Values are *agent proposals* until Ben picks in the [brand kit](https://claude.ai/artifact/NdqVRvvD43fFPnhxDFbiFZ).
 
-1. Read `tokens.css` first. Write `var(--name)` only.
-2. Fonts: Clofie for the wordmark and headlines at 20 px and up; never for body text, user content, numbers or anything below 20 px (the licensed file has no accents, ×, °, ″). Neue Montreal for all text people read; Book weight for body and headlines, Medium only on buttons. Geist Mono (Google Fonts) for uppercase labels and money. Font files are licensed and are not in this repo; load them from a local path that is gitignored.
-3. Clofie spacing: −0.035em at 48 px+, −0.025em at 28–40 px, −0.015em at 20–24 px. `font-kerning: normal`. It has no stylistic sets. Leave font smoothing at default on white; `antialiased` only on black or yellow grounds.
-4. Color: see the boundaries in `codes.md`. Secondary text is black at 65%, never a grey hex.
-5. Controls: 44 px minimum target, 48 px main buttons, pill radius. Primary black with white text; secondary #F2F2F2 with black text. Interactive controls from the Vercel UI SDK where they exist.
-6. Icons: Hugeicons Stroke Rounded (Ben's default) unless a later brand round says otherwise.
-7. Every number shows its source and sample size in a mono label. Every measurement says measured, estimated or "you said".
-8. Copy: follow [product/copy.md](../product/copy.md). Show the state before you write a sentence about it, and run Ben's anti-claudish skill on every string before the screen counts as done.
-9. Build, audit and motion: follow [product/frontend-standard.md](../product/frontend-standard.md). Durations and easing come from the motion tokens only.
+Precedence: Ben's direct decisions, then the constitution, then the approved image for composition, then the code as it stands, then agent inference.
+
+1. **Every element has a reason** (Article 1). Before a screen counts as done, write the reason ledger: each element and the end, code or rule it serves. No reason means delete it.
+2. **Tokens only.** Read [tokens.css](tokens.css) first and write `var(--name)`, never raw values.
+3. **Wordmark** "secondhand", lowercase, centered in the nav bar of every main screen (C1).
+4. **Photos lead.** Every item shows its photo, as the largest image in its group (C3). Demo photos are in `assets/demo-items/`.
+5. **One field per view** (C2): the textured sky, mint and lime gradient, behind the one thing that needs the person. Black text on it, nothing else.
+6. **Color is a ground, never ink.** No colored text, lines or icons on white, except platform logos and the brick alert. State fills: mint live, lime sold or paid, marigold needs you, brick failed, gray ended, sky new.
+7. **One black pill per decision** (C4), with the amount in it when there is one ("Accept $38"). The second most likely action is an outline. Everything else is named under More (···). Side actions such as Change and Message are gray fills.
+8. **Type:** two weights (400; 500 only on buttons and the selected tab), sizes 13, 15, 17, 22, 34 and one 50 for a peak number. Sentence case. No mono labels, no uppercase, no bold. Inter is banned.
+9. **Money** in the text face with tabular figures, always with what it is ("You keep $46.95"). One lime highlight per view.
+10. **Space:** 4, 8, 12, 16, 20, 24, 32, 48, 64. Inside a card is tighter than between cards. No box in a box. 20 pt side margins.
+11. **Platforms are logos** from `assets/platforms/`, with the name in the accessibility label (C5).
+12. **Words:** [product/copy.md](../product/copy.md) and the [UI constitution](../product/ui-constitution.md). Plain words a person could say back. No sample sizes or stats jargon.
+13. **Build, audit and motion:** [product/frontend-standard.md](../product/frontend-standard.md). Then run the brand checks in constitution Part IV.

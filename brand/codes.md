@@ -11,7 +11,7 @@ Each code is a signature asset with its exact value and a boundary.
 3. **Flower yellow as a highlight behind the number you keep.** One highlight per screen. Boundary: never as text, lines or icons on white (1.40:1).
 4. **Center red only for dots, alerts and the second hand.** Boundary: no red text under 24 px (4.29:1), no red buttons (white on red fails; black on red is ugly and reads as error).
 5. **Two-luminance headlines** (QOVES): the second phrase at 45% black instead of a weight change. Boundary: 24 px and up.
-6. **Mono uppercase labels for every source, unit and status** ("measured", "estimated", "you said", "SOLD RANGE · N=41").
+6. ~~Mono uppercase labels for every source, unit and status.~~ Withdrawn: Ben, 19:59, no mono needed, and 20:17, statistics notation is unreadable. Numbers are said in plain words ("Similar jackets sold for $36 to $52 lately"); see the constitution, Article 12.
 7. **One round yellow price dot per screen at most** (borrowed from the sticker direction), for the number that matters: a sale, a deal verdict.
 
 Sources: Ben's colors, fonts and QOVES type rules are in his 2026-11-14 18:56 message in the brand thread; the QOVES measurements are in `qoves-ui-reference.md` on his Mac.
