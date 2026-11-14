@@ -1,6 +1,6 @@
 # Studio fidelity gate and color correction prototype
 
-Python, OpenCV and scikit-image. Part of the studio build plan.
+Python, OpenCV and scikit-image. Part of the [studio build plan](../build-plan.md).
 
 | File | What it does |
 |---|---|
