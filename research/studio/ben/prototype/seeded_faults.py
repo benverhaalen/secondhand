@@ -89,7 +89,7 @@ def main():
             if vname == "color_shift":
                 # a hue shift on a grey item is invisible; expect a reject only when
                 # the seeded change is itself visible (truth dE over the threshold)
-                from skimage.color import rgb2lab, deltaE_ciede2000
+                from lab import rgb2lab, deltaE_ciede2000
                 mm = mask.astype(bool)
                 truth = float(np.median(deltaE_ciede2000(rgb2lab(src[mm][None]), rgb2lab(hue_shift(src, mask)[mm][None]))))
                 expect = "reject" if truth > 4.5 else "pass"
@@ -107,7 +107,7 @@ def main():
     truth = src.copy(); truth[card == 1] = (200, 200, 200)
     cast = apply_gain(truth, np.array([1.25, 1.0, 0.7]))
     fixed = apply_gain(cast, white_reference_gain(cast, card, target_lum=float(srgb_to_linear(np.uint8([[200]]))[0, 0])))
-    from skimage.color import rgb2lab, deltaE_ciede2000
+    from lab import rgb2lab, deltaE_ciede2000
     m = card == 0
     de_cast = float(np.median(deltaE_ciede2000(rgb2lab(truth[m][None]), rgb2lab(cast[m][None]))))
     de_fix = float(np.median(deltaE_ciede2000(rgb2lab(truth[m][None]), rgb2lab(fixed[m][None]))))

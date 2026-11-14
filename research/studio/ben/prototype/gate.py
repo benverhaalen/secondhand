@@ -13,7 +13,7 @@ A VLM judge (Decisions API predicates) runs beside this; see the plan.
 """
 import cv2
 import numpy as np
-from skimage.color import rgb2lab, deltaE_ciede2000
+from lab import rgb2lab, deltaE_ciede2000
 from color import srgb_to_linear, linear_to_srgb
 
 THRESH = dict(
