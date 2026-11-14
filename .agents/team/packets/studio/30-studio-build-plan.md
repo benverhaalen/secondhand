@@ -57,3 +57,11 @@ Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5
 - Found: asking the model to re-lay a tee into the template redrew the neck tag. *Agent proposal:* templates steer capture and crop; the model only flattens in place.
 - Found: Seedream renders carry C2PA that says "made by an AI model", signed by BytePlus. A crop or JPEG save drops it.
 - Decided by Ben, 23:18 UTC: exported photos carry no credential and no AI label; studio keeps the model's declaration in its own record ([words](../../../../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)).
+
+## Added 23:50 UTC: re-lay is in, ironing, measurement audit
+
+- Ben's words: [re-lay, iron and audit the measurements](../../../../product/words.md#2026-11-14-re-lay-iron-and-audit-the-measurements). He likes the re-laid tee, so the re-lay is an option on the approval card.
+- Found on seven renders: tucking the tag stops the invented tag; percent wording does not control wrinkles, describing the ironed result does; Nano Banana 2.1 irons best; proportions vary about 8% between renders of one shirt.
+- So the measurement audit runs one way: capture's tape or LiDAR number is the truth and a render more than 5% off is dropped. A render is never used to work out size.
+- Built: `prototype/lay.py` (layout check, proportions, audit, a wrinkle number that is not yet trustworthy), `prototype/relay_prompt.txt`.
+- For capture: LiDAR is good to about 1 cm on a flat garment and cannot see wrinkles; details in the build plan.
