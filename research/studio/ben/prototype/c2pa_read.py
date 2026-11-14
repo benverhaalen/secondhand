@@ -64,7 +64,7 @@ def sniff(data):
     return {"signer": first(rb"\x55\x04\x0a..([A-Za-z0-9 .,&-]{3,60}?)1[\x0b\x09]0") or first(rb"(Byte[Pp]lus[A-Za-z .]*Ltd\.)"),
             "tool": first(rb"softwareAgent.{0,12}?dname.([A-Za-z0-9_.-]{3,40}?)gversion") or first(rb"dname.(BytePlus_[A-Za-z]+)"),
             "model": first(rb"model_name.([a-z0-9.-]{3,40})dtime"),
-            "action": first(rb"action.(c2pa\.[a-z_.]+)"),
+            "action": (first(rb"action.(c2pa\.[a-z_.]+)") or "").replace("dwhen", "") or None,
             "declares": [AI_TYPES.get(src, src)] if src else [], "validation": "not checked (no library)"}
 
 
