@@ -56,3 +56,7 @@ Ben, project chat, 19:08 UTC.
 
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.
+
+## 2026-11-14 pitch and primitives
+Ben, project chat, 19:15 UTC.
+> also as part of pitching it it would be super useful to pitch from databacked research about the problem. there are possible ways to market this. its your 'second hand' for doing actions like ai does things. also a secondhand like with how quick everything is. only have to focus on the secondhand of the clock. but work with me to really hone in the product and the different options you think could be viable to choose from and why. continue to use my harness. i think sell, buy, (should be appraise feature somehow integrated into both. somewhere where the actions are. like a today / inbox could be relatively integrated but also have more manual things. like i might want to look at all messages but id need to specifically select going there. also like the idea of tracking items and waiting for them to kind of be available or waiting for someone to sell something i want. think from an engineering perspective and make sure rdd research and iae research is being done well. but like continue to break things down into the primitives that make a lot of sense. also merge all prs to main. just work on main.
