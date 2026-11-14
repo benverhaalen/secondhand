@@ -3,7 +3,7 @@ Researched 2026-11-14 by Ben (Claude Code agent, concept thread). Feature: cross
 
 Ben, 20:17: "there are definitely features and things i have yet to discuss because im no domain expert in ebay for example. i need your knowledge to figure out what i could be missing. what i want rather than what i say."
 
-Method: domain knowledge of how eBay, Depop, Poshmark, Mercari and Facebook Marketplace work for sellers and buyers, checked against the [function map](../../../product/functions.md) for gaps. Every platform fact here is *asserted* (from knowledge, not re-opened this session) unless marked. Check the ones a build decision rests on against the platform's help pages before building. Each row says what the user actually wants, not the platform's feature name.
+Method: domain knowledge of how eBay, Depop, Poshmark, Mercari and Facebook Marketplace work for sellers and buyers, checked against the [function map](../../../product/functions.md) for gaps. Every platform fact here is *asserted* (from knowledge, not re-opened this session) unless marked. This is a hackathon demo (Ben, 21:08), so build these and fake the platform side where needed; the asserted facts only shape how a card looks. Each row says what the user actually wants, not the platform's feature name.
 
 ## The ones that change Today (highest stakes first)
 
@@ -53,5 +53,5 @@ Today should be the place where nothing gets lost. That means anything with a de
 
 ## Limits
 
-- Platform rules change often. Check M1, M2, M3, M8 and M14 against current help pages before building those cards.
+- Platform rules change often. For the demo, build the cards anyway. Check M1, M2, M3, M8 and M14 only if a real integration ships later.
 - Not covered: VAT and non-US rules, business or bulk sellers (eBay Stores, Shopify sync), and consignment.
