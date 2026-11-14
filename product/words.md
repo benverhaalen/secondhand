@@ -140,3 +140,7 @@ Ben, in the thread "Set the secondhand brand identity", 20:46 UTC.
 ## 2026-11-14 image gen through codex and astra
 Ben, project chat, 20:58 UTC.
 > ensure for all image gen you are using the codex cli with astra and telling it the loop to run and how it should judge rather than exactly what should be in it.
+
+## 2026-11-14 app first, website if time
+Ben, in the thread "Plan the build for capture and measuring", 20:59 UTC, answering a card that offered a Swift camera with everything else on the web, an Expo app with a Swift camera module, or web only.
+> app first, website if we have time
