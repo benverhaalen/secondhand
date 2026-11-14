@@ -145,7 +145,7 @@ Every state a screen can show, decided once so no worker invents one. Fills take
 | Sold | Lime fill | `--lime` | 15.4:1 |
 | Shipping | Sky fill | `--sky` | 11.8:1 |
 | Paid | Lime fill with a check icon | `--lime` | 15.4:1 |
-| Failed | Pale brick fill, brick icon | `--brick-tint`, `--brick` | 14.7:1; icon 4.2:1 |
+| Failed | Pale brick fill, brick icon | `--brick-tint`, `--brick` | 17.2:1; icon 4.9:1 |
 | Ended, expired, unsold | Gray fill, gray text | `--gray`, `--ink-2` | 5.4:1 |
 | Unread | 8 px dot | `--sky-ink` | 4.0:1 on white |
 
@@ -162,8 +162,11 @@ Fields: hairline at rest, 1.5 px ink when focused, 1.5 px brick with a 13 px bri
 Overlays: scrim `--scrim`; sheets white at `--r-sheet`; toasts ink with white text, one at a time.
 Destructive: the confirm in a destructive sheet is a brick pill with white text (5.6:1). Nowhere else is brick a button.
 Tab badge: a marigold dot. No numbers.
-Dark mode: out of scope until the app ships light; tokens declare `color-scheme: light`.
-Every state pill carries a word or an icon. Color is never the only sign.
+Every state carries its icon as well as its color (Ben, [round 6](../product/words.md#2026-11-14-round-6-brand-picks)): live a broadcast signal, needs you a raised hand, sold a banknote, shipping a parcel, paid a check, failed an alert, draft a pencil, ended a clock. Color is never the only sign.
+
+**The family.** Every hue (sky, mint, lime, marigold, lilac, brick) has three steps and no others: a tint, the fill and a deep. They are built the same way in OKLCH (tint at lightness .955, deep at .42, the hue kept), which is what keeps them one family. Tints and fills take black text; deeps take white. A new color is a new hue run through the same three steps, never a hand-picked hex.
+
+**Dark mode** (Ben, round 6: light is standard, dark is offered, the feel stays). Only the page, the surfaces and the ink flip. The field, the fills and black text on color are the same in both modes, so the brand reads the same. Values are in `tokens.css`.
 
 The unread dot is the one colored mark allowed on white besides logos and brick, because the blue unread dot is what people already know from Mail and Messages ([words.md: familiar](../product/words.md)).
 

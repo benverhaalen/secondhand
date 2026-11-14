@@ -283,3 +283,36 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate provable, and features for databricks
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Not just nobody shows this, but fully focus on our app, the aspects of data collection, calculation, how we can turn everything accessible and seen every day, into something provable and show it. What are features to databricks we can build onto it, that can be shown can be used for other projects in the future, Developing a feature for our app, and making it a thing for databricks, something databricks lacks already that we know we can build. Also ensure all of databricks is applied in the areas they work best and already do exist
+
+## 2026-11-14 round 6 brand picks
+Ben, on the [brand picks page](https://claude.ai/artifact/7a98Pc4VWDoarvKACEhvVP), saved 22:40 UTC. Picks: state colors A (color fills); cards A (ruled rows); state on the photo C (corner tag); typefaces, lines on the gradient and the sale amount "Neither"; the rest unpicked. His notes, one per board:
+
+State colors:
+> i think color fills but there could be an icon for each to make it more intutive. so live should be like a livestream. needs you should have an icon. shipping could be something related to that. sold could be money.
+
+Typefaces:
+> use the qoves sans font for everything. or maybe iphone system default. im between those two for the sans font. i kind of am between the qoves font and the clofie semibold or regular.
+
+Spacing:
+> i think it should be more dynamic. probably airy but like if there is a bunch of items, what happens then maybe it should shrink a bit to standard. somewhere in the middle. i think this problem has a ui ux type name. also consider how you use black for the filled in buttons. think about with the color pallete options in the same family as the design we have how it might look. also where should attention go. how do we communicate info well. also any animations, shine, when you scroll what happens. edge cases. also at the bottom it should be a bit clearer to see what's selected.
+
+Cards:
+> ruled rows but more spatious than those say. i think maybe a mix could be good. if its a feed its good to break that up. but say theres a notification esque thing you might want that to be encased in something. maybe an x button too.
+
+Platform logos:
+> they should all be standardized in a 1:1 aspect ratio. look at on their websites their icons at the top bar of the browser those could be useful.
+
+State on the photo:
+> i like the corner tag but maybe making it like gradient like or semi transparent would be really good. instead of solid. while of course adhering to the rules of being able to clearly see something that emil defines. also i think all the action things, like red, green, etc all the range of colors we could use should be clearly defined and the colors should be carefully chosen based on the color family and ways to end up keeping the colors used cohesive. maybe use the soon-improved
+
+Where the gradient goes:
+> not quite sure. on the look page i like the first two. but the C one i kind of like how color is a bigger part of the app. also plan to have light mode be standard but include a dark mode feature too. and ensure the dark mode doesnt change the feel of the app. i want to know your thoughts on all this feedback. like i like all three but there is probably some ui ux principles as to what should go where based on you reasoning over those and my feedback.
+
+Lines on the gradient:
+> i dont like the lines. i want to maybe experiment with a more grainy type gradient approach. there were defintely some reference images that did that.
+
+The amount on a sale:
+> i know definitely not B. i cant decide between A and C. I think for A to work the band under things should be a rough motif for the whole brand and id want to see where you think you would integrate that more before committing.
+
+Anything off on every board:
+> marist. ok now continue the next round. also, i want you to parallelize this way more. way more. it took forever.

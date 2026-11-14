@@ -20,27 +20,40 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L12 | Sell is a photo grid with small state pills or icons, not text lists | [sell grid](../product/words.md#2026-11-14-sell-grid) |
 | L13 | No "3 need you, 11 handled" counter, and no split between Needs you and All messages | [constitutions](../product/words.md#2026-11-14-constitutions) |
 | L14 | The app comes first. The website follows | [app first](../product/words.md#2026-11-14-app-first-and-ui-factory-after-the-brand) |
+| L15 | State colors are fills, and each state has its icon | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L16 | Feeds are ruled rows with more room. A notice sits in a card and can be dismissed | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L17 | Platform logos are square, 1:1, from each site's own icon | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L18 | State on a photo is a corner tag, translucent and still readable | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L19 | No lines on the gradient. Grain instead | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L20 | Marist for the wordmark and headings (agent reading of "marist") | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L21 | The sale amount is never in Marist | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L22 | Light is standard. Dark mode is offered and keeps the feel | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L23 | Spacing adapts: airy with few items, standard with many | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L24 | Every state and action color is defined, from one family | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
 
 ## Decided by agents (means; Ben can veto)
 
 | # | Decision | Where |
 |---|---|---|
-| A1 | Every state and interaction color | [constitution Art. 5, States](constitution.md#states-agent-decision-2026-11-14-ben-can-veto-on-round-6-board-d1) |
-| A2 | Every color takes black text; white text only on brick and ink | constitution Art. 5 |
+| A1 | Every state and interaction color, and an icon for each state | [constitution Art. 5, States](constitution.md#states-agent-decision-2026-11-14-ben-can-veto-on-round-6-board-d1) |
+| A2 | Every color takes black text; white text only on brick, ink and the deep step | constitution Art. 5 |
 | A3 | Two weights per face, sizes by role (13, 15, 18, then Ben's 21, 36, 50), the 4-based space scale | constitution Art. 6 and 7 |
-| A4 | Light appearance only for now | constitution Art. 5 |
+| A4 | The family: every hue has a tint, a fill and a deep, built the same way | constitution Art. 5, The family |
+| A5 | Dark mode flips only the page, the surfaces and the ink | constitution Art. 5, Dark mode |
 
-## Open (Ben picks; round 6 boards)
+## Open (Ben picks; round 7 boards)
 
-Ben picks on the [brand picks page](https://claude.ai/artifact/7a98Pc4VWDoarvKACEhvVP); the boards are in [explore/round-6/boards/](explore/round-6/boards/). D4 and D5 are split into their parts there, so there are nine picks.
-
-Leaning means Ben saved it in the round 4 kit but called it not final.
+Round 6 picks are recorded in [words.md](../product/words.md#2026-11-14-round-6-brand-picks). The round 7 brief is [explore/round-7/brief.md](explore/round-7/brief.md).
 
 | # | Decision | Options | Leaning |
 |---|---|---|---|
-| D1 | State colors | A: field tints (mint, lime, sky, marigold fills). B: quiet (gray pills with a small colored dot) | A (agent) |
-| D2 | Typefaces | A: Marist headings, Geist text. B: Geist only. C: Marist headings, the iPhone system face (SF Pro) for text | A (round 4 save) |
-| D3 | Spacing | A: compact. B: standard. C: airy | B (round 4 save) |
-| D4 | Surfaces and small parts | Cards: ruled rows or hairline cards. Platform marks: bare or in a bubble. Photo state: pill, dot or corner tag | Rows, bare (round 4 save) |
-| D5 | The field | Where: the top card, a header band, or the whole ground of a moment like Sold (past the one-third color limit). Texture: faint, medium or strong lines | Top card, lines (round 4 save) |
-| D6 | The peak amount on a sale | A: text face at 50 with the lime band. B: Marist at 50, no band. C: text face at 50, no band, size alone | A (agent) |
+| R1 | Typefaces | A: Marist headings, Neue Montreal text (the QOVES sans). B: Marist headings, iPhone system text. C: Neue Montreal for everything. D: Clofie semibold headings, Neue Montreal text | A (agent) |
+| R2 | The filled button | A: black. B: a deep step from the family (deep sky). C: lime fill, black label | A (agent) |
+| R3 | The corner tag | A: frosted white, icon and word. B: the state's color at about 85%, icon and word. C: a soft gradient of the state's color | B (agent) |
+| R4 | Grain on the gradient | A: fine grain. B: coarse grain. C: soft, no grain | A (agent) |
+| R5 | Where the gradient goes | A: one card, always. B: one card day to day, the whole screen on a sale. C: color leads everywhere | B (agent) |
+| R6 | The lime band | A: only under the amount you keep. B: a motif (the amount you keep, the selected tab, the price you set). C: no band, size alone | B (agent) |
+| R7 | The selected tab | A: filled icon, medium label. B: a gray pill behind it. C: the lime band under it | open |
+| R8 | Spacing that adapts | A: airy up to 4 items, standard after. B: one in-between spacing always | A (Ben's note) |
+| R9 | The notice card | A: hairline card with an x. B: gray card with an x. C: tint card with an x | A (agent) |
+| R10 | Dark mode | A: near-black page, gradient unchanged. B: near-black page, gradient deepened | A (agent) |

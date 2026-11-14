@@ -6,6 +6,7 @@
   /* color (constitution Art. 5): color is a ground, never ink */
   --page:        #FFFFFF;
   --ink:         #0A0A0A;               /* all text, icons, the black pill (C4) */
+  --on-color:    #0A0A0A;               /* text on any fill or the field, in light and dark */
   --ink-2:       rgb(10 10 10 / .65);   /* secondary text on white (6.1:1) and gray (5.4:1) only; 13px and up */
   --gray:        #EFF1F2;               /* filled secondary buttons, photo tiles (ref-12, ref-15) */
   --rule:        rgb(10 10 10 / .08);   /* hairlines */
@@ -18,8 +19,16 @@
   --coral:       #EF956E;               /* category */
   --lilac:       #B08DF1;               /* category */
   --brick:       #C52B17;               /* failed; destructive confirm; white text on it 5.6:1 */
+  /* the family (Art. 5, The family): every hue has three steps, built in OKLCH from the sampled fill.
+     tint = L .955 C .045 (black text 17:1) · fill = sampled (black text 9:1+) · deep = L .42 (white text 8:1+) */
+  --sky-tint: #DEF4FF;      --sky-deep-ink: #0B556F;
+  --mint-tint: #D5FAE9;     --mint-deep: #035C42;
+  --lime-tint: #F1F4D1;     --lime-deep: #505100;
+  --marigold-tint: #FFEED2; --marigold-deep: #654702;
+  --lilac-tint: #F2EDFE;    --lilac-deep: #563D80;
+  --brick-deep: #892315;
   /* states and interaction (Art. 5, States) */
-  --brick-tint:  #F8D7D1;               /* failed fill; black text 14.7:1 */
+  --brick-tint:  #FEEBE8;               /* failed fill; black text 17.2:1 */
   --sky-ink:     #1F86C7;               /* the unread dot only; 4.0:1 on white */
   --ink-press:   #2E2E2E;               /* black pill pressed or hovered */
   --gray-press:  #E2E5E7;               /* gray button pressed or hovered */
@@ -64,5 +73,14 @@
   --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px; --photo-card: 72px;
   /* motion (frontend-standard §3) */
   --t-feedback: 150ms; --t-select: 200ms; --t-panel: 300ms; --ease-out: cubic-bezier(0, 0, .2, 1);
+}
+/* dark mode (Ben, round 6): the same brand on a dark page. Fills, the field and the black-on-color rule don't change;
+   only the page, the surfaces and the ink flip. Light is the default. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0E0F10; --gray: #26292B; --gray-press: #32363A;
+  --ink: #FFFFFF; --ink-2: rgb(255 255 255 / .65); --ink-disabled: rgb(255 255 255 / .3);
+  --rule: rgb(255 255 255 / .12); --ink-press: #E2E5E7; --scrim: rgb(0 0 0 / .6);
+  --on-color: #0A0A0A;                  /* text on any fill or the field stays black in both modes */
 }
 @media (prefers-reduced-motion: reduce) { :root { --t-feedback: 0ms; --t-select: 0ms; --t-panel: 0ms; } }
