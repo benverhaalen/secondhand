@@ -1,6 +1,8 @@
 # How do we build a live video capture mode where the model watches, talks, asks for better views and remembers what the seller says?
 Researched 2026-11-14 by Ben (Claude Code). Feature: capture.
 
+**Superseded in part.** Ben redirected talk mode at 22:24 ([words](../../../product/words.md#2026-11-14-video-capture-as-a-decision-tree)): no live language model directs the session. A decision tree does, with the Decisions API and set spoken lines. The current plan is [decision-tree-capture.md](decision-tree-capture.md), which lists what is kept from this note (the Swift frame tap, audio setup, shared shot list, Heard / Saw review, the after-pass) and what is replaced.
+
 Extends [build-plan.md](build-plan.md) (the guided shot list) and joins [seeing-the-item-pipeline.md](../../cross-cutting/ben/seeing-the-item-pipeline.md). The app is the Expo app with a Swift camera module ([decision](../../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)). Everything proposed here is an *agent proposal*. Per Ben's standing rules ([demo, not production](../../../product/words.md#2026-11-14-demo-not-production), [paid APIs are fine](../../../product/words.md#2026-11-14-paid-apis-are-fine)) nothing is cut for cost, terms or polish; a risk is listed only when it could break the demo on stage, with a backup path.
 
 ## 1. The question and Ben's goal
