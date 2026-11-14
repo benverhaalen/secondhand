@@ -3,6 +3,7 @@
 Coordination stays inside the product repository. Read the relevant packet, not this whole directory. Keep raw logs and private material local. This folder is separate from the product README and app documentation.
 
 - [1 — activation and current work](packets/team/1-activation-and-current-work.md)
+- [2 — repo layout](packets/team/2-repo-layout.md)
 - [Original source excerpts](sources.md): consult relevant wording before consequential interpretation.
 - [Operating guide](../coordination.md): cadence, scoped helpers, human disagreements, git rules, and checks.
 
