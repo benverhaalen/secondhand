@@ -251,3 +251,7 @@ Nate, same session, 2026-11-14.
 ## 2026-11-14 nate databricks beyond the standard
 Nate, same session, 2026-11-14.
 > Lets also discuss databricks being our backend layer and how to build every feature set to this. The hackathon track we are seperately entering is to develop this on databricks, and we want to exemplify that we expertly can utilize and understand their platform, we don't just achieve the standard but truly go beyond and do what's considered impressive on there. Not because its hard, i mean it could be, but think of the ways that the company databricks, through research, your skills you have established about it, are all going to fit around this product best. If we need to add to the product, we can, if we find even new ideas with this lens attached that would really add something incredible, great
+
+## 2026-11-14 nate the databricks explanation
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> When you've discovered and expertly established in our harness the complete package of databricks experts, designers, innovators, write a complete full explanation of databricks, how it works, where it excels, how every feature of the app that makes sense to build will be built. How we can build databricks to be better, and add something. The ways the company will truly see what we did impressive, not hard, complex perhaps, but understood by us. impressive for the concept, the idea, benchmarking past what others do, professionals, not using databricks or using databricks
