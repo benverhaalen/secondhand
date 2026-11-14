@@ -28,7 +28,7 @@ Researched 2026-11-14 by Ben (Claude Code). Feature: list.
 
 ## Pavlo upgrade
 
-Use each Browser Use run as the exploration that produces a Pavlo harness, then replay the harness for every later post, price change or relist (`research/replay/ben/pavlo-marketplace-harnesses.md`). Browser Use becomes the fallback when the harness drifts. Note the conflict with Pavlo's on-device principle, described in `research/replay/ben/pavlo-marketplace-harnesses.md`: Browser Use Cloud stores cookies and runs the browser server-side.
+Use each Browser Use run as the exploration Pavlo learns from, then let Pavlo replay every later post, price change or relist. Browser Use becomes the fallback when replay breaks. Browser Use Cloud stores cookies and runs the browser on a server, which conflicts with keeping credentials on the user's device. The Pavlo note is kept out of this public repo; it is in the project's shared folder.
 
 ## Risks
 
