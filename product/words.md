@@ -400,3 +400,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate every determination written and credible
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > INtelligentlly understand what each thing we need to conisdered is, and then the best way each should be treated. We will find everything, and then with everyhting, there are so many things we can find out, determine, but it must all be written and proven credible. Not so much through testing, but efficient, like under an hour, session to map out the theory and logically apply, enough to be legitimate. testing of course but we cant expect in this time to see results. When we present, its the way we explain we have this source, weighed with this value and this amount, you should have subagents work to understand and together build out each thing that we need to determine, across selling, creating the listings, managing them, but also just insights into industries markets, both with public sales data from official stores, and the metrics available on these second hand sites.
+
+## 2026-11-14 maestro and callstack for app tests
+Ben, project chat, 23:17 UTC, on the proposal to save app tests as Maestro files and explore with Callstack's agent-device.
+> i love the maestro + callstack thing.
