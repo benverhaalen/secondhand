@@ -6,7 +6,7 @@ Updated: November 14, 2026, 20:55 UTC. Owner: Ben. Agent: Claude Code, project t
 
 An implementation plan, not code yet, for three features that share one engine: [price](../../../../features/price/), [appraise](../../../../features/appraise/) and [watch](../../../../features/watch/). It covers the valuation engine, sold-comps sources, cross-market search, Exa alerts, the garage-sale appraisal run, data flow, failure cases and the human approval points.
 
-[Ben's words](../../../../product/words.md#2026-11-14-hitl-dynamic-ui-exa-alerts) for this pass (project chat, 2026-11-14 20:41 UTC): "judges love human in the loop. i feel like creating dynamic and intelligent ui is really good where you have a huge range of set components." and "for this whole project i dont care about api costs for the time being its all demos." and "if i gave you the name of a tool assume thats the one in use unless you find a better one."
+[Ben's words](../../../../product/words.md#2026-11-14-human-in-the-loop-and-dynamic-ui) for this pass (project chat, 2026-11-14 20:41 UTC): "judges love human in the loop. i feel like creating dynamic and intelligent ui is really good where you have a huge range of set components." and "for this whole project i dont care about api costs for the time being its all demos." and "if i gave you the name of a tool assume thats the one in use unless you find a better one."
 
 ## Affected interfaces
 
