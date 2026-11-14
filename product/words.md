@@ -332,3 +332,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 faster image rounds
 Ben, in the thread "Set the secondhand brand identity", 22:49 UTC.
 > i really want to make this whole process faster. hopefully you have logging in place to make some changes. image gen can be parallelized.
+
+## 2026-11-14 nate innovate without overcomplicating, and the agent framework
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> So we can add someting to analysis, we can innovvate on the analysis part of it, as well as governance, we can really expand and innovate on all things, but understand not to overcomplicate it. Apply what is an expert design and spec of all features we have, including the agentic frameworks we custom design to cloud based browser use drive the platform actions for the user in the background, and autonmously monitoring and periodically checking, unless fired and hooked with an app event like someone messaging back about a listing
