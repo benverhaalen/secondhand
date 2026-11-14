@@ -5,6 +5,8 @@ Newest first. Each entry gives what was decided, who agreed, the words it rests 
 ## 2026-11-14: the Buy tab mirrors Sell with shelves
 Agreed by: Ben, on the Buy card in the concept thread at 19:38 ([walkthrough §7](walkthrough.md#7-the-buy-tab)). Decided: a search box across every market, then three shelves of photo tiles with pills: New matches, Watching and Bought. Bought items can become "Sell this". Alerts promise "within the hour". Changed: Buy and Sell share one visual habit. Screens are wireframes only until the brand is set (Ben, 19:37).
 
+Added at 19:38 ([words](words.md#2026-11-14-appraise-from-buy)): Buy's search bar gets a camera icon and accepts a pasted listing link, the visual-search pattern of Amazon, eBay and Google (*asserted*). Both open the same Valuation card, framed for a buyer: a fair price and the most to pay. A "Bought it" button turns the card into an item you own, ready to sell. This keeps the bar rule, because photo search is still search: ＋ adds things you own, and Buy's camera looks things up.
+
 ## 2026-11-14: the Sell tab is a photo grid with state pills; numbers live in You
 Agreed by: Ben, in words at 19:33 ([words](words.md#2026-11-14-sell-grid)). This replaced the agent's recommendation of segments with a totals strip. Decided: each item is a photo tile carrying a state pill (Researching, Review, Live, Offer $X, Ship by, Sold, Slow) and small badges for the sites where it is live. Earned, count, potential and insights move to You. Grouping (Ben, card at 19:35): **shelves by state**. In progress, Live and Sold rows each scroll sideways with a count; "see all" opens a filtered grid. The variants are in `research/today/ben/sell-grid/`.
 

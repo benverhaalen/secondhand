@@ -69,6 +69,10 @@ Ben, project chat, 19:31 UTC, after picking C on the pickup card.
 Ben, concept thread, 19:33 UTC, on the Sell tab card.
 > think of a different way of thinking. something like the photo grid closet but more sorted into items. then you can have little pills or icons that signal different states like live, sold, etc. intuitive and visual rather than simply in text. i think the numbers can come from like a user or profile page better
 
+## 2026-11-14 appraise from buy
+Ben, project chat, 19:38 UTC, after picking shelves for Buy.
+> but also say youre buying something and you want to appraise it well. that option seems intuitive to put there. what are your thoughts on my thoughts
+
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.
 
