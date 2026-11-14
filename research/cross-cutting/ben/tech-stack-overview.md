@@ -12,20 +12,20 @@ For MadHacks. One note per capability, filed under its feature slug. Each has: w
 | 5 | [list/posting-browser-use-ebay.md](../../list/ben/posting-browser-use-ebay.md) | Posting to marketplaces | eBay through its official API; Browser Use V4 for sites with no API, always behind an approval with live view. |
 | 6 | [watch/exa-alerts.md](../../watch/ben/exa-alerts.md) | Price and availability alerts | Exa Monitors find new listings; our own code applies the price threshold. Test marketplace coverage first. |
 | 7 | [data/databricks.md](../../data/ben/databricks.md) | Databricks | The system of record and the glass box: every agent step is an MLflow trace the user can open. |
-| 8 | [replay/pavlo-marketplace-harnesses.md](../../replay/ben/pavlo-marketplace-harnesses.md) | Pavlo | Browser Use explores each marketplace once; Pavlo replays it as signed, sub-second API calls. |
+| 8 | Not in this repo (private; in the project's shared folder) | Pavlo | Browser Use explores each marketplace once; Pavlo replays it. |
 | 9 | [measure/object-capture.md](../../measure/ben/object-capture.md) | Apple Object Capture | 3D and dimensions for rigid items (shoes, bags, electronics, furniture); not for clothes. |
 
 Pricing and market value (including garage-sale appraisal) moved to its own thread and is not covered here.
 
 ## Principles applied
 
-From Pavlo's principles, summarized (`research/replay/ben/pavlo-marketplace-harnesses.md`) and this repo's `.agents/coordination.md`:
+From Ben's agent principles and this repo's `.agents/coordination.md`:
 
 - **Discover once, replay deterministically**; spend model calls on exploration, not every run.
 - **Every action leaves a verifiable record** that says what it does not prove.
 - **The worker never decides it is done**; a separate checker does (the fidelity gate in `research/studio/ben/seedream-relighting.md`, the Decisions thresholds in `research/identify/ben/openai-decisions-api.md`, the human in the approval inbox).
 - **Budget governance**: cost caps per run (`maxCostUsd` in Browser Use; one render retry).
-- **No masking automation, no server-side credentials** (Pavlo principle), which conflicts with Browser Use Cloud. See `research/replay/ben/pavlo-marketplace-harnesses.md` for the options.
+- **No masking automation, no server-side credentials**, which conflicts with Browser Use Cloud. The Pavlo note is kept out of this public repo; it is in the project's shared folder.
 - **Exact sources, observed vs interpreted, humans decide conflicts** (coordination.md).
 
 Ben mentioned a thesis on AI agents worked on last night. It isn't on GitHub (I checked his repos); if it's on his Mac, the next pass should read it and adjust these.
@@ -52,7 +52,7 @@ Ben mentioned a thesis on AI agents worked on last night. It isn't on GitHub (I 
 1. **Real photos are evidence; renders are presentation.** eBay's picture policy forbids "Photos that don't accurately represent the item" and "Stock photos for used, damaged, or defective items" [observed, https://www.ebay.com/help/policies/listing-policies/picture-policy?id=4370]. It says nothing about AI images, so a regenerated photo of a used item is a policy risk [inferred]. Every listing therefore leads with real photos (corrected only for exposure and white balance) and adds renders as labelled extras, and every defect photo stays unedited. This is also the strongest transparency story for judges.
 2. **Probabilities drive the human loop.** The Decisions API returns `probability`, `probabilities` and `confidence`, with no rationale field and no built-in review queue [observed, via a summary of the official guide]. We set thresholds; below them, the item lands in the approval inbox with the evidence that caused it.
 3. **Official APIs before browser agents.** eBay has a documented Inventory API and a GraphQL Listing API with a `VALIDATE` dry run [observed]. Browser Use is for sites without an API, where it is slower and riskier (terms of service, bot checks).
-4. **Explore with a browser agent, then replay.** Browser Use is the explorer and the fallback; Pavlo harnesses do the repeated work (`research/replay/ben/pavlo-marketplace-harnesses.md`).
+4. **Explore with a browser agent, then replay.** Browser Use is the explorer and the fallback; Pavlo does the repeated work. The Pavlo note is kept out of this public repo; it is in the project's shared folder.
 5. **Nothing public without a human tap.** Posting, price changes, offers and buyer messages all go through one approval inbox. Rules can pre-approve routine items (the Monarch "only exceptions reach the inbox" pattern in `secondhand-concept/research/adjacent-references.md`).
 
 ## Suggested build order for a 24-hour hackathon
