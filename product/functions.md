@@ -98,3 +98,7 @@ Grouping the 35 functions by how often the user reaches for them gives five home
 | **You** (money, insights, accounts, automation, settings) | 22–24, 31–35 | Weekly |
 
 The bottom-bar options in [walkthrough.md](walkthrough.md) step 3 are arrangements of these five homes.
+
+## 5. Gaps found later
+
+[missing-features.md](../research/cross-cutting/ben/missing-features.md) (2026-11-14 20:17 ask) adds 27 reseller and buyer needs not in this map, from shipping deadlines and offer expiry to returns, vacation mode and total delivered price. Agent proposals, marked asserted.

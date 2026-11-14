@@ -14,7 +14,7 @@ Decided by Ben on 2026-11-14 at 19:45 ([words](words.md#2026-11-14-show-not-say)
 |---|---|
 | "Your item is now live on eBay and Depop" | The photo tile with a green Live pill and the eBay and Depop logos |
 | "We're researching your item, this may take a minute" | The draft filling in field by field, with a thin progress line |
-| "This price was estimated from 14 similar sold items" | `$42` with a small source label `14 sold` and the eBay logo |
+| "This price was estimated from 14 similar sold items" | "Similar ones sold for $36 to $52 lately", with the sales one tap away. Never `n=14` |
 | "You'll keep $36.40 after fees" | `KEEP $36.40` under the price |
 | "This listing failed to delist. Tap to retry" | A red ✕ on the badge and one button: `Retry` |
 | "Great news! Your item sold!" | The tile moves to Sold, with the amount you keep |
@@ -28,7 +28,8 @@ Limits:
 - **Body text:** at most one short sentence per card, and only when a picture or number can't carry it (a scam warning, an address the agent won't share without you).
 - **No** exclamation marks, "Great!", "Oops", "We've…", "Let's…", "Just…", emojis in UI, or narration of what the AI is doing.
 - **Platforms are logos, not words.** "Live on Depop" is a Live pill plus the Depop logo. Ben, [19:59](words.md#2026-11-14-platform-logos-no-mono).
-- **Numbers carry their source** in a small label, never in a sentence (see the brand [coder card](../brand/coder-card.md) rule 7).
+- **Numbers are said the way a friend would say them** ("Similar jackets sold for $36 to $52 lately"), never in statistics notation (`n=41`, ranges with dots, "floor"). The detail behind a number is one tap away ([ui-constitution.md Article 5](ui-constitution.md#article-5-show-dont-say-and-what-you-do-say-a-person-must-understand)). Ben, [20:17](words.md#2026-11-14-constitutions).
+- **Numbers carry their source** where it matters to the decision, in plain words, never (see the brand [coder card](../brand/coder-card.md) rule 7).
 - **Safety copy is the exception.** Never-alone actions (address, pickup time, payment) keep one plain sentence saying what will happen.
 
 ## The anti-claudish skill
