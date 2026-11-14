@@ -174,7 +174,7 @@ No repo we read publishes eval numbers for a resale agent. The social-media agen
 
 ## For Ben
 
-1. **Jev or the Decisions API?** The plan uses OpenAI's Decisions API. If you want Jev itself in the demo, the two could run side by side on the same questions and the eval picks. I have not checked Jev's image support beyond one skill that calls it experimental (building-with-jev-skill `references/images-and-box.md`) *asserted*.
+1. **Jev or the Decisions API?** Decided at 21:45: both, and the eval picks ([decision](../../../product/decisions.md#2026-11-14-typed-judgements-run-on-both-the-decisions-api-and-jev-and-our-labels-pick)). The Decisions API judges photos; Jev runs beside it on text questions. One skill calls Jev's image input experimental (building-with-jev-skill `references/images-and-box.md`) *asserted*, so photos stay on the Decisions API until that is tested.
 2. **A third outcome, "done, tap to correct"**, for low-stakes fields, beside Auto and Ask (§7).
 3. **Rule guards**: a decline cap, a fade and a use count on "Always do this" (§7). This adds to the decided 3 approvals and changes none of it.
 

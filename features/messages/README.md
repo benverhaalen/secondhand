@@ -10,6 +10,7 @@ Not designed yet. Keep the mechanism here once research picks one, together with
 
 ## Decided
 - All messages live behind a chat icon with an unread count, top right of every main screen; messages that need you become Today cards ([decision](../../product/decisions.md#2026-11-14-all-messages-live-behind-a-chat-icon-with-a-count)).
+- Message intent runs on both the Decisions API and Jev, and our labels pick which stays. Ben, 21:45 ([decision](../../product/decisions.md#2026-11-14-typed-judgements-run-on-both-the-decisions-api-and-jev-and-our-labels-pick)).
 
 ## Open
 - Which messages can be sent without the user's approval?
