@@ -2,6 +2,8 @@
 
 Status: idea. Owner: unassigned. Packet topic: `replay`.
 
+Spec (agent proposal): [spec/features/replay.md](../../spec/features/replay.md).
+
 ## What and why
 Browser Use performs a site action once, such as posting a listing. Pavlo, Ben's own tool that turns any site into an API, then replays that action without a browser. This makes posting and delisting fast, cheap and repeatable on platforms that have no official API. Works alongside [list](../list/). Ben: [words](../../product/words.md#2026-11-14-pavlo-and-appraise).
 
@@ -18,5 +20,6 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: `research/replay/` (none yet)
 - Ben: `research/replay/ben/` (none yet)
-- Nate: `research/replay/nate/` (none yet)
+- Nate: [research/replay/nate/](../../research/replay/nate/)
+- Nate: [cloud-browsers-and-detection.md](../../research/replay/nate/cloud-browsers-and-detection.md). Which hosted cloud browsers hold a logged-in session and expose network calls, and how the five marketplaces detect automated sessions.
 - Ben, tech stack: kept out of this public repo by Ben's choice; it is in the project's shared folder.

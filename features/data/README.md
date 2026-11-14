@@ -2,6 +2,8 @@
 
 Status: idea. Owner: unassigned. Packet topic: `data`.
 
+Spec (agent proposal): [spec/features/data.md](../../spec/features/data.md).
+
 ## What and why
 Databricks as the backbone (item data, price history, evaluations, model serving), used creatively where that is warranted. Ben: [words](../../product/words.md#2026-11-14-tools-and-capture).
 
@@ -31,6 +33,11 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 ## Research
 All research for this feature: [research/data/](../../research/data/)
 - Ben: [research/data/ben/](../../research/data/ben/)
-- Nate: `research/data/nate/` (none yet)
+- Nate: [research/data/nate/](../../research/data/nate/)
+- Nate: [analytics-and-recommendations.md](../../research/data/nate/analytics-and-recommendations.md). Which demand and performance signals exist, what an app may honestly claim from them, and how a seller's own listings should drive recommendations.
+- Nate: [databricks-dev-tooling.md](../../research/data/nate/databricks-dev-tooling.md). Three layers of tools for building and testing on Databricks: plain pytest locally, Postgres stand-in for Lakebase, then pytester and bundles on the workspace.
+- Nate: [databricks-platform.md](../../research/data/nate/databricks-platform.md). What Lakebase, Apps, Agent Bricks, AI Search, MLflow 3 and others provide, with limits, for a consumer app backend; Free Edition limits listed.
+- Nate: [market-intelligence.md](../../research/data/nate/market-intelligence.md). How price-history and trend products get their data, and what an app could honestly offer someone who neither sells nor buys.
+- Nate: [what-databricks-rewards.md](../../research/data/nate/what-databricks-rewards.md). What Databricks holds up as excellent use and what judged hackathon entries were rewarded for, including citations and uncertainty as a scored criterion.
 - Ben, tech stack: [databricks.md](../../research/data/ben/databricks.md). Databricks as system of record and glass box: MLflow traces become the "why?" panel, approvals become labels that tune thresholds.
 - Ben, harness from repos: [ai-harness-from-repos.md](../../research/cross-cutting/ben/ai-harness-from-repos.md#7-learning-from-taps). *Agent proposal:* rules are promoted by arithmetic over tap rows with a decline cap and a fade, and a nightly job replays the taps as an eval (Midday, Actual).
