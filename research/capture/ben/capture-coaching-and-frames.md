@@ -469,7 +469,7 @@ The stills the tree takes are the first choice for every role they cover. The vi
 
 ### 6.6 The contract with studio
 
-Studio owns templates, rendering, the fidelity gate and reading C2PA from model outputs (Ben mentioned C2PA in the same message; noted here, not designed here). Capture delivers:
+Studio owns templates, rendering, the fidelity gate and content credentials (Ben settled that with studio: exports carry no tag and studio keeps the record). Capture delivers:
 
 ```
 items/<item_id>/capture/<session_id>/
@@ -483,10 +483,11 @@ items/<item_id>/capture/<session_id>/
   video/proxy.mp4               720p copy (section 9)
 ```
 
-`manifest.json`, per frame:
+`manifest.json` is `{"frames": [...]}`, per frame. Studio's `refset.py` reads it and picks by role: cover first, then back, tag, graphic, fabric, flaws; `tape_*` never; only frames whose `feeds` include `image_model` (confirmed by the studio thread, 23:21, *asserted*).
 
 | Field | Value | Source, confidence |
 |---|---|---|
+| `file` | Path relative to the session folder, for example `sheet/01_front.jpg`; `orig` holds the matching original's path | device |
 | `role`, `order`, `cover` | From the tables above; `cover: true` on the whole front | tree (`prompted`), or Decisions when picked from video (its probability) |
 | `source` | `still`, `video_frame`, `manual` | device |
 | `node`, `trigger`, `accept` | Node id and version, how it was taken, the answers at acceptance, verify result | Decisions and device; per-question probabilities, not combined |
@@ -499,7 +500,7 @@ items/<item_id>/capture/<session_id>/
 | `boxes` | Protected regions in 0 to 1 coordinates: label, logo, each confirmed flaw | Vision, identify, the seller (`you_said`) |
 | `mask` | Path to the item mask | Vision (`estimated`) |
 | `feeds` | `listing`, `identify`, `measure`, `image_model` | tree |
-| `template` | Studio's template id and version from `templates.json`, and `outline_fit`: IoU, axis angle, `tight` or `loose` | device (`measured`) |
+| `template` | Studio's template `id` (`shirt`, `sweatshirt`, `pants`) and `version` (1) from `templates.json`, and `outline_fit`: IoU, axis angle, `tight` or `loose` | device (`measured`) |
 
 **The reality rule.** Ben: "it shouldnt change anything in reality except maybe how things are flattened etc." What capture does for it:
 - Originals in `orig/` are written once with their hash and never rewritten. Any fidelity check can go back to them.
