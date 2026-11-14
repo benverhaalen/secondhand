@@ -9,6 +9,7 @@ This is the implementation plan. It rests on four notes written in the same pass
 | [fanout-and-watch-loop.md](../../watch/ben/fanout-and-watch-loop.md) | How live search and the watch loop run, site by site |
 | [appraisal-run.md](../../appraise/ben/appraisal-run.md) | One appraisal run step by step, its checkpoints, components and backtest |
 | [exa-empirical.md](../../watch/ben/exa-empirical.md) | What Exa really covers, how fresh it is, and what its price alert does, run live on Ben's Mac |
+| [monitor-alternatives.md](../../watch/ben/monitor-alternatives.md) | Whether another monitor beats Exa's for fresh listings |
 
 Earlier notes it builds on: [valuation-engine.md](valuation-engine.md), [sold-price-data.md](sold-price-data.md), [pricing-in-context.md](pricing-in-context.md), [one-search-box.md](../../watch/ben/one-search-box.md), [exa-alerts.md](../../watch/ben/exa-alerts.md), [garage-sale.md](../../appraise/ben/garage-sale.md).
 
@@ -126,7 +127,7 @@ A pasted link runs `getItem` for eBay or the site's detail fetch, then `/value` 
 From [fanout-and-watch-loop.md § The watch loop](../../watch/ben/fanout-and-watch-loop.md#the-watch-loop), with Exa's part set by the live test below.
 
 1. **A want becomes a structured query.** Text plus a few tap questions (size, fit by measurement, cap, sites) become `want.parsed`. Ambiguity is a one-tap question, not a guess.
-2. **Poll what someone watches.** eBay and Grailed every 10 minutes; Facebook, OfferUp, Depop, Poshmark and Mercari every 15. Identical wants share one query. This sits well inside the decided "within the hour" ([decision](../../../product/decisions.md#2026-11-14-the-buy-tab-mirrors-sell-with-shelves)).
+2. **Check what someone watches every 5 to 10 minutes, with bought services where they exist** ([monitor-alternatives.md](../../watch/ben/monitor-alternatives.md), untested): a Firecrawl monitor on each site's newest-first search page for Poshmark, Mercari, Depop, Grailed and OfferUp; the eBay Browse API for eBay; the ScrapeCreators API for Facebook. Our own adapters and Apify actors are the fallback. Identical wants share one query. This sits well inside the decided "within the hour" ([decision](../../../product/decisions.md#2026-11-14-the-buy-tab-mirrors-sell-with-shelves)).
 3. **New means unseen.** A listing is new if `(site, site_id)` isn't in the watch's seen set. The first run fills the set silently and shows current matches, not alerts.
 4. **Price drops** come from a known ID reappearing cheaper or from rechecking watched items. With no cap, alert when the price falls at least 10% below the lowest seen, for items of $10 or more (Poshmark's own rule, observed).
 5. **The threshold is our code:** `total_usd <= cap AND match >= 0.8 AND fits AND live`. Exa's monitors have no price threshold of their own (observed in [exa-alerts.md](../../watch/ben/exa-alerts.md); see the live test for its newer feature).
