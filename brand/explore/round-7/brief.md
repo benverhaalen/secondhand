@@ -1,6 +1,6 @@
 # Round 7 brief: boards from Ben's round 6 picks
 
-Run with the [image-gen skill](../../../.agents/skills/image-gen/SKILL.md): the Codex CLI with Astra (`-m gpt-6-astra`), on Ben's Mac. Ben's words for this round: [round 6 picks](../../../product/words.md#2026-11-14-round-6-brand-picks). He said the last round "took forever" and to "parallelize this way more", so speed is part of the job.
+Run with the [image-gen skill](../../../.agents/skills/image-gen/SKILL.md): the Codex CLI with Astra (`-m gpt-6-astra`), on Ben's Mac. Ben's words for this round: [round 6 picks](../../../product/words.md#2026-11-14-round-6-picks). He said the last round "took forever" and to "parallelize this way more", so speed is part of the job.
 
 ## The job
 

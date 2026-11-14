@@ -20,16 +20,16 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L12 | Sell is a photo grid with small state pills or icons, not text lists | [sell grid](../product/words.md#2026-11-14-sell-grid) |
 | L13 | No "3 need you, 11 handled" counter, and no split between Needs you and All messages | [constitutions](../product/words.md#2026-11-14-constitutions) |
 | L14 | The app comes first. The website follows | [app first](../product/words.md#2026-11-14-app-first-and-ui-factory-after-the-brand) |
-| L15 | State colors are fills, and each state has its icon | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L16 | Feeds are ruled rows with more room. A notice sits in a card and can be dismissed | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L17 | Platform logos are square, 1:1, from each site's own icon | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L18 | State on a photo is a corner tag, translucent and still readable | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L19 | No lines on the gradient. Grain instead | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L20 | Marist for the wordmark and headings (agent reading of "marist") | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L21 | The sale amount is never in Marist | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L22 | Light is standard. Dark mode is offered and keeps the feel | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L23 | Spacing adapts: airy with few items, standard with many | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
-| L24 | Every state and action color is defined, from one family | [round 6](../product/words.md#2026-11-14-round-6-brand-picks) |
+| L15 | State colors are fills, and each state has its icon | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L16 | Feeds are ruled rows with more room. A notice sits in a card and can be dismissed | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L17 | Platform logos are square, 1:1, from each site's own icon | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L18 | State on a photo is a corner tag, translucent and still readable | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L19 | No lines on the gradient. Grain instead | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L20 | Marist for the wordmark and headings (agent reading of "marist") | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L21 | The sale amount is never in Marist | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L22 | Light is standard. Dark mode is offered and keeps the feel | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L23 | Spacing adapts: airy with few items, standard with many | [round 6](../product/words.md#2026-11-14-round-6-picks) |
+| L24 | Every state and action color is defined, from one family | [round 6](../product/words.md#2026-11-14-round-6-picks) |
 
 ## Decided by agents (means; Ben can veto)
 
@@ -43,7 +43,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 
 ## Open (Ben picks; round 7 boards)
 
-Round 6 picks are recorded in [words.md](../product/words.md#2026-11-14-round-6-brand-picks). The round 7 brief is [explore/round-7/brief.md](explore/round-7/brief.md).
+Round 6 picks are recorded in [words.md](../product/words.md#2026-11-14-round-6-picks). The round 7 brief is [explore/round-7/brief.md](explore/round-7/brief.md).
 
 | # | Decision | Options | Leaning |
 |---|---|---|---|

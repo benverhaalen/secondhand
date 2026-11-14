@@ -162,7 +162,7 @@ Fields: hairline at rest, 1.5 px ink when focused, 1.5 px brick with a 13 px bri
 Overlays: scrim `--scrim`; sheets white at `--r-sheet`; toasts ink with white text, one at a time.
 Destructive: the confirm in a destructive sheet is a brick pill with white text (5.6:1). Nowhere else is brick a button.
 Tab badge: a marigold dot. No numbers.
-Every state carries its icon as well as its color (Ben, [round 6](../product/words.md#2026-11-14-round-6-brand-picks)): live a broadcast signal, needs you a raised hand, sold a banknote, shipping a parcel, paid a check, failed an alert, draft a pencil, ended a clock. Color is never the only sign.
+Every state carries its icon as well as its color (Ben, [round 6](../product/words.md#2026-11-14-round-6-picks)): live a broadcast signal, needs you a raised hand, sold a banknote, shipping a parcel, paid a check, failed an alert, draft a pencil, ended a clock. Color is never the only sign.
 
 **The family.** Every hue (sky, mint, lime, marigold, lilac, brick) has three steps and no others: a tint, the fill and a deep. They are built the same way in OKLCH (tint at lightness .955, deep at .42, the hue kept), which is what keeps them one family. Tints and fills take black text; deeps take white. A new color is a new hue run through the same three steps, never a hand-picked hex.
 
