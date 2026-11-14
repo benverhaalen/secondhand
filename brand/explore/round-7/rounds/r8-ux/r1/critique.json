@@ -5,9 +5,9 @@
       "verdict": "fail",
       "failures": [
         {
-          "rule": "The options can't be told apart at board size, or they differ in something besides the decision.",
-          "place": "Item captions beneath the photos, comparing the left airy screen with the right standard screen.",
-          "issue": "The airy screen stacks each platform icon above the item title; the standard screen places it beside the title and price. This changes the caption layout as well as spacing, so the board does not isolate R8. Keep the icon-and-text arrangement consistent across both densities and options."
+          "rule": "The options differ in something besides the decision.",
+          "place": "Three-item screen on the left, all three listing cards, compared with opt-B.png.",
+          "issue": "A changes the card composition as well as spacing: photos become large squares instead of shallow landscape crops, and each platform icon sits on its own line above the title instead of beside it. These changes materially affect photo prominence and card height, so the board does not isolate adaptive spacing."
         }
       ]
     },
@@ -19,8 +19,11 @@
   ],
   "across_options": [
     {
-      "files": ["opt-A.png", "opt-B.png"],
-      "issue": "A's airy screen puts platform icons above titles, while B keeps icons beside titles. That additional layout change confounds the spacing comparison."
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The options are visibly distinct, but the three-item comparison also changes photo aspect ratio and logo/title arrangement. Keep those properties consistent across A and B to isolate R8 spacing."
     }
   ]
 }

@@ -1,8 +1,8 @@
 You are a senior product designer in a design review. You did not make these images. Read /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md and /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md (Locked and Decided rows hold on every image).
 
 These are the options for open decision R10 (Dark mode), as a UI board:
-- attached image 1 = opt-A.png: option A, dark mode: near-black page, the gradient unchanged
-- attached image 2 = opt-B.png: option B, dark mode: near-black page, the gradient deepened
+- attached image 1 = opt-A.png: option A, dark mode: near-black page, the gradient unchanged. Text on any color stays black: the amount you keep sits on a full-height lime block with black digits, never a band through white digits
+- attached image 2 = opt-B.png: option B, dark mode: near-black page, the gradient deepened. Text on any color stays black: the amount you keep sits on a full-height lime block with black digits, never a band through white digits
 
 Fail an option only for these. Do not fail it for measurements a few points off.
 - The options can't be told apart at board size, or they differ in something besides the decision.
