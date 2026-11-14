@@ -61,6 +61,16 @@ Then answer, in order:
    - **Loop.** Read one seed closely, write what it shows the person actually does or needs, then update a short frontier: what changed, the next lead, and one lead that argues the other way. Feed that frontier into the next search instead of keeping a reading list. Stop when a loop no longer changes the answer. This is the seeded, adaptive investigation in Ben's [it-already-exists](https://github.com/benverhaalen/it-already-exists/blob/main/skills/reference-driven-development/references/research-improvement.md) method.
    - **Write both sentences** in the screen's lines: "they'd say: …" and "they want: …", with the evidence for the second. If the two match, say so; the research still has to show it.
    - **Check it on the screen.** The design passes when it serves the "wants" sentence even if the user never asks for it.
+   - **Tell the two apart.** A stated want is in the future tense ("I would"), an answer to a question, or a feature request. A want shows in the past tense: what people did, gave up on or worked around. So show a choice and record the pick instead of asking.
+
+   What this found for secondhand's user, and how an expert designer for this app would think about them, is in [user-wants.md](../research/cross-cutting/ben/user-wants.md) (*agent proposal*, twelve principles with sources). In short:
+   - For cheap things they want the stuff gone, so Donate is a finished outcome.
+   - The number that decides is "You keep", not market value.
+   - They want to be needed rarely: one question at listing ("lowest you'd take"), and a push only for money, a deadline or a pickup.
+   - They hand over the writing and keep the facts: what it is, condition, price, shipping.
+   - The crosslisting promise is "never sold twice".
+   - An approve tap is weak evidence. An edit is the signal.
+   - When buying, the agent finds and holds it, and they tap Buy.
 2. **What else might they want to do here?** List every intent a real person could have on this screen before deciding which ones get space. Two buttons is a guess, not a design (Ben, 20:17: "there are only two decisions there like think of what if a user wanted to do something else"). Use the [function map](functions.md) and [missing-features.md](../research/cross-cutting/ben/missing-features.md) as the inventory.
 3. **What do they already know?** Name the apps this person already uses for the same job (eBay Seller Hub, Depop, Marketplace, iMessage, Gmail, the iOS camera) and what those apps taught them. Familiar beats clever (Jakob's law).
 4. **What will they misread?** Read every element as someone who has never seen the app, has one thumb free and is half paying attention.
