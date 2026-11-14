@@ -1,0 +1,52 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Offer card behind “Offered $38”, especially the left blue edge and lower-right lime corner.",
+          "issue": "The field reads as bright cyan to vivid yellow-green, visibly more saturated than the soft sky, mint and lime field in colors.png."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Offer card behind “Offered $38”, especially the left blue edge and lower-right lime corner.",
+          "issue": "The field reads as bright cyan to vivid yellow-green, visibly more saturated than the soft sky, mint and lime field in colors.png."
+        },
+        {
+          "rule": "A locked row is broken: no lines on the gradient (L19).",
+          "place": "Across the offer-card background, most clearly above “Counter” and around the offer heading.",
+          "issue": "The coarse texture forms a visible network of pale branching lines, rather than grain alone."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Offer card behind “Offered $38”, especially the left blue edge and lower-right lime corner.",
+          "issue": "The field reads as bright cyan to vivid yellow-green, visibly more saturated than the soft sky, mint and lime field in colors.png."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "All three retain the same overly saturated offer-card field relative to the color sheet. The fine, coarse and smooth treatments are distinguishable; the surrounding content and layout remain consistent."
+    }
+  ]
+}
