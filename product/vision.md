@@ -21,6 +21,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 - Post once with Browser Use, then replay with Pavlo. Ben, [18:36](words.md#2026-11-14-pavlo-and-appraise).
 - Center everything on one item card: a single measured record of the item that every platform listing is built from. *Agent proposal*, from the [concept brief](https://claude.ai/artifact/HCk31xVRxnrrcy5AL2Ff6U).
 
+- Pitch: open on the economics of cheap items (consignment pays $3 of a $20 sale; doing it yourself keeps about $17 but rarely finishes), then "your second hand" as the product and a live clock as the demo. *Agent proposal*, [pitch.md](pitch.md), evidence in [pitch-evidence.md](../research/cross-cutting/ben/pitch-evidence.md).
+
 ## Open
 
 - Who is the main user: students clearing out a dorm, or resellers? Raised in the concept brief.
