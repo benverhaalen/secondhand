@@ -1,0 +1,76 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options cannot be told apart at board size, or they differ in something besides the decision.",
+          "place": "Raised-hand state icon beside Offered $38 in the gradient offer card.",
+          "issue": "A adds a marigold background behind the hand; B, C and D show the hand directly on the gradient. This changes the state treatment as well as the typeface."
+        },
+        {
+          "rule": "The options cannot be told apart at board size, or they differ in something besides the decision.",
+          "place": "Text throughout A and B, especially the listing title, offer text and action labels.",
+          "issue": "At board size, the text faces read as the same choice. The shared serif heading provides no distinction; the conspicuous difference is the unrelated hand background. These boards do not clearly demonstrate Neue Montreal versus SF Pro."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options cannot be told apart at board size, or they differ in something besides the decision.",
+          "place": "Raised-hand state icon beside Offered $38 in the gradient offer card.",
+          "issue": "The marigold background behind the hand in A is absent here. This changes the state treatment as well as the typeface."
+        },
+        {
+          "rule": "The options cannot be told apart at board size, or they differ in something besides the decision.",
+          "place": "Text throughout A and B, especially the listing title, offer text and action labels.",
+          "issue": "At board size, the text faces read as the same choice. The shared serif heading provides no distinction; the conspicuous difference is the unrelated hand background. These boards do not clearly demonstrate Neue Montreal versus SF Pro."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options cannot be told apart at board size, or they differ in something besides the decision.",
+          "place": "Raised-hand state icon beside Offered $38 in the gradient offer card.",
+          "issue": "The marigold background behind the hand in A is absent here. This changes the state treatment as well as the typeface."
+        }
+      ]
+    },
+    {
+      "file": "opt-D.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options cannot be told apart at board size, or they differ in something besides the decision.",
+          "place": "Raised-hand state icon beside Offered $38 in the gradient offer card.",
+          "issue": "The marigold background behind the hand in A is absent here. This changes the state treatment as well as the typeface."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The intended body-type difference is not discernible at board size."
+    },
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png",
+        "opt-D.png"
+      ],
+      "issue": "The hand background changes between A and B/C/D, so the comparison does not isolate R1. Keep the state treatment constant. C and D visibly change the heading; those heading changes are permitted by the explicit R1 options."
+    }
+  ]
+}

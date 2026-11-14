@@ -1,0 +1,32 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Offer card, especially the blue upper-left and yellow lower-right corners.",
+          "issue": "The gradient reads as bright cyan to lemon yellow rather than the color sheet\u2019s softer sky to lime."
+        },
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Sold pill beside the Nike Dunks photo.",
+          "issue": "The fill reads as fluorescent yellow-green, visibly more saturated than the color sheet\u2019s soft lime Sold fill."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Sold pill beside the Nike Dunks photo.",
+          "issue": "The fill remains fluorescent yellow-green, visibly more saturated than the color sheet\u2019s soft lime Sold fill."
+        }
+      ]
+    }
+  ],
+  "across_options": []
+}

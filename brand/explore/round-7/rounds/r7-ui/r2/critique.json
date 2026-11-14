@@ -1,0 +1,62 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Shipping pill below the Kindle photo; Sold pill below the Nike Dunks photo.",
+          "issue": "Shipping is a more saturated cyan-blue than the soft sky fill on the color sheet; Sold is a more saturated yellow-lime than the sheet\u2019s muted lime."
+        },
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Needs you pill below the jacket photo.",
+          "issue": "A has a pale yellow fill, while B and C have a visibly stronger orange fill. The state fill changes alongside the selected-tab treatment."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Shipping pill below the Kindle photo; Sold pill below the Nike Dunks photo.",
+          "issue": "Shipping is a more saturated cyan-blue than the soft sky fill on the color sheet; Sold is a more saturated yellow-lime than the sheet\u2019s muted lime."
+        },
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Needs you pill below the jacket photo.",
+          "issue": "A has a pale yellow fill, while B and C have a visibly stronger orange fill. The state fill changes alongside the selected-tab treatment."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Shipping pill below the Kindle photo; Sold pill below the Nike Dunks photo.",
+          "issue": "Shipping is a more saturated cyan-blue than the soft sky fill on the color sheet; Sold is a more saturated yellow-lime than the sheet\u2019s muted lime."
+        },
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Needs you pill below the jacket photo.",
+          "issue": "A has a pale yellow fill, while B and C have a visibly stronger orange fill. The state fill changes alongside the selected-tab treatment."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The selected-tab treatments are distinguishable, but the Needs you fill also changes: pale yellow in A versus stronger orange in B and C. Keep that fill identical for an isolated R7 comparison."
+    }
+  ]
+}

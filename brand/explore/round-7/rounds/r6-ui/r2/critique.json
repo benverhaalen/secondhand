@@ -1,0 +1,28 @@
+{
+  "images": [
+    {"file": "opt-A.png", "verdict": "pass", "failures": []},
+    {"file": "opt-B.png", "verdict": "pass", "failures": []},
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a logo that isn't the square site icon (L17).",
+          "place": "Upper right, opposite the Sold pill.",
+          "issue": "The platform mark is a red circle inside a faint outlined square rather than the square site icon. The enclosing square does not restore the required logo."
+        },
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Upper-right platform logo, compared with options A and B.",
+          "issue": "C changes the square red platform icon to a circular red mark while removing the lime band. Logo shape is outside decision R6."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-A.png", "opt-B.png", "opt-C.png"],
+      "issue": "The lime-band choices are distinguishable at board size, but C also changes the platform logo. Keep the same square site icon in all three to isolate R6."
+    }
+  ]
+}

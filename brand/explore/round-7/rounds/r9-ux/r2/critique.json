@@ -1,0 +1,47 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "The Offered $38 gradient panel in both phone screens.",
+          "issue": "The offer gradient has a stronger yellow-lime right edge than B and C; R9 changes only the notice card."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "The Offered $38 gradient panel in both phone screens.",
+          "issue": "The offer gradient has a greener, less yellow right edge than A and C; R9 changes only the notice card."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "The Offered $38 gradient panel in both phone screens.",
+          "issue": "The offer gradient is paler than A and has a more yellow right edge than B; R9 changes only the notice card."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The hairline, gray and sky-tint notices are distinguishable, but the offer gradient also visibly changes across the boards, including the notice-dismissed screens. Keep that gradient identical so the comparison isolates R9."
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "images": [
+    {"file": "opt-A.png", "verdict": "pass", "failures": []},
+    {"file": "opt-B.png", "verdict": "pass", "failures": []},
+    {"file": "opt-C.png", "verdict": "pass", "failures": []}
+  ],
+  "across_options": []
+}

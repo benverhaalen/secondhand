@@ -1,0 +1,32 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Left, three-item screen: jacket, shoes and lamp photos.",
+          "issue": "The airy treatment also changes the photos to nearly square frames, showing substantially more of each item than option B's shallow landscape crops. Photo framing changes alongside spacing, so the comparison does not isolate R8."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Left, three-item screen: jacket, shoes and lamp photos.",
+          "issue": "The fixed-spacing treatment also uses shallow landscape photos instead of option A's nearly square frames. The jacket and lamp are substantially more cropped, introducing a photo-framing choice into the spacing comparison."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-A.png", "opt-B.png"],
+      "issue": "The options are visibly distinguishable, but the three-item screens change photo aspect ratio and crop as well as spacing. Keep photo framing consistent between options so R8 can be judged on spacing alone."
+    }
+  ]
+}

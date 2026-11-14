@@ -1,0 +1,16 @@
+You are a senior product designer in a design review. You did not make these images. Read /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/constitution.md and /private/tmp/claude-501/-Users-benverhaalen-secondhand/340a71b8-2d0c-40d0-aaca-0995e7b8f3d5/scratchpad/clone/brand/ledger.md (Locked and Decided rows hold on every image).
+
+These are the options for open decision R8 (Spacing that adapts), as a UI board:
+- attached image 1 = opt-A.png: option A, two Sell grid screens side by side: one with 3 items at airy spacing, one with 9 items at standard spacing
+- attached image 2 = opt-B.png: option B, two Sell grid screens side by side: one with 3 items and one with 9 items, both at the same in-between spacing
+
+Fail an option only for these. Do not fail it for measurements a few points off.
+- The options can't be told apart at board size, or they differ in something besides the decision.
+- A locked row is broken: a platform named in words, a logo that isn't the square site icon, the wordmark not centered or not Marist, an item without its photo, lines on the gradient, a state without its icon.
+- The gradient or a state fill is visibly brighter or more saturated than the color sheet. Round 6 drew the gradient near cyan and yellow; it is soft sky to lime.
+- Words nobody wrote, or numbers that differ from: listed at $45, offered $38, you keep $31.40.
+- Text too small to read at phone size, or misspelled.
+- R3 only: the tag's word and icon must stay readable over a light photo and a dark one.
+- R10 only: the dark screen must still read as the same brand next to the light one.
+
+Tie each failure to the rule above and a place in the image. Write critique.json in this folder: {"images": [{"file": "opt-X.png", "verdict": "pass" or "fail", "failures": [{"rule": "...", "place": "...", "issue": "..."}]}], "across_options": [{"files": ["..."], "issue": "..."}]}. Then reply with a one-line summary.

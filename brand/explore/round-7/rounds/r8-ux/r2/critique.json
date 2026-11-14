@@ -1,0 +1,35 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Left phone, all three item cards, compared with opt-B.png left phone.",
+          "issue": "A uses shallow landscape photos and places each platform icon beside the item text. B uses much taller, nearly square photos and puts the platform icon on a separate line above the title. The comparison changes photo framing and card structure as well as spacing."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Left phone, jacket, shoes and lamp cards; compare both the right phone and opt-A.png left phone.",
+          "issue": "The three-item screen changes to nearly square photos and platform icons above titles, while the nine-item screen retains shallow photos and icons beside titles. These changes also distinguish B from A, so this does not isolate the same-spacing option."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The options are distinguishable at board size, but photo aspect ratio and platform-icon placement change alongside spacing. Keep photo framing and card structure the same across both boards so R8 compares only spacing."
+    }
+  ]
+}

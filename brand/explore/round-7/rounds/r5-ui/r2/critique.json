@@ -1,0 +1,52 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "A locked row is broken: a logo that is not the square site icon (L17).",
+          "place": "Upper right, opposite the Sold pill.",
+          "issue": "The supplied site icon has a red circle containing the white mark. This version replaces the circle with a solid red square."
+        },
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet; the gradient is soft sky to lime.",
+          "place": "The You keep card, especially its cyan left edge and bright mint center.",
+          "issue": "The field is visibly brighter and more electric than the muted sky and mint in inputs/colors.png."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet; the gradient is soft sky to lime.",
+          "place": "Full-screen gradient, especially the cyan upper left and yellow-lime lower right behind You.",
+          "issue": "The field shifts toward bright cyan and luminous yellow-lime compared with the softer sky-to-lime color sheet."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet; the gradient is soft sky to lime.",
+          "place": "Exposed gradient below the action section, especially the lower-right corner behind You.",
+          "issue": "The mint-to-lime field becomes visibly luminous yellow-green rather than the subdued lime endpoint in the color sheet."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "The platform icon changes independently of R5: A uses a solid red square, while B and C use the circular site mark on a white square. Keep the supplied site icon consistent so only gradient placement varies."
+    }
+  ]
+}
