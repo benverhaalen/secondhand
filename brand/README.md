@@ -4,11 +4,12 @@ The secondhand brand, in the ui-factory form. Status: exploring. Round 1 ([board
 
 Facts that hold whatever direction wins: Clofie (all 18 weights) has only 103 glyphs, no accents or × ° ″ – •, so it can set headlines we write but never listing titles or measurements; the Clofie files are a personal-use demo (commercial use and modification need Dealita Studio's license); red #E63339 on white is 4.29:1 and yellow #FED734 on white is 1.40:1.
 
-- `codes.md`: the signature assets and their boundaries
+- **`constitution.md`: how anything secondhand makes looks and sounds, in any medium and language, with ends, codes, rules and checks. Start here.**
+- `codes.md`: round 1 codes, superseded by the constitution's Article 4
 - `tokens.css`: the only place values live
 - `coder-card.md`: read before any UI edit
 - `image-card.md`: what the image model is given
-- `anti-pillars.md`: banned defaults and what to use instead
+- `anti-pillars.md`: round 1 list, superseded by the constitution's Article 13
 - `explore/round-1/`: GPT Image showcases and their inputs
 
 Fonts are licensed (Clofie: personal-use demo of the full family; commercial license from Dealita Studio. Neue Montreal: Pangram Pangram) and are not committed to this public repo.

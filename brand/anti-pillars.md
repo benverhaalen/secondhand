@@ -1,3 +1,5 @@
+> Superseded on 2026-11-14 by [constitution.md](constitution.md) Article 13. Kept for history.
+
 # Anti-pillars (each banned default paired with what to reach for)
 
 | Instead of | Reach for |

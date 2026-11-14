@@ -1,3 +1,5 @@
+> Superseded on 2026-11-14 by [constitution.md](constitution.md) Article 4. Kept for history.
+
 # Brand codes
 
 Status: round 1 agent proposal, superseded as a direction (Ben parked the logo and widened the color brief at 19:22). Kept for its boundaries, which hold for the yellow and red if they return. Ben picks on the [brand board](https://claude.ai/artifact/95hea28zWVkFy9afpMZfY8). Nothing here is Decided until he does.
