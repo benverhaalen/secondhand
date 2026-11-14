@@ -1,0 +1,7913 @@
+{
+ "method": {
+  "sources": [
+   "~/Downloads/inspiration photos (originals, preferred)",
+   ".transcribe/brand/round-2/refs (re-encoded copies; only files with no original, e.g. crops/)"
+  ],
+  "dedup": "sha256 of file bytes; refs copies of an analysed original are skipped by name",
+  "resize": "200 px wide, Lanczos, aspect kept; GIF first frame",
+  "clustering": "k-means k=8 in CIELAB (D65), k-means++ init, seed 0; cluster centre converted back to sRGB hex",
+  "oklch": "L 0-1, C chroma, h degrees (null when C<0.002)",
+  "top_chromatic": "the 3 clusters with highest OKLCH C among clusters with share >= 0.02",
+  "gradient": "centre vertical, centre horizontal and both corner diagonals; each line median-filtered (window 9 px, per CIELAB channel); keep the line with largest OKLCH chroma range; 5 evenly spaced stops",
+  "directions": "from .transcribe/brand/round-2/step-1-report.md section 3; Color shelf is not one of the four and is flagged separately"
+ },
+ "count": 67,
+ "images": [
+  {
+   "file": "design/211211.jpg",
+   "source": "originals",
+   "original": "design/211211.jpg",
+   "sha256": "1ef8dc575e5c775f",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    246
+   ],
+   "clusters": [
+    {
+     "hex": "#fafbfb",
+     "share": 0.5278,
+     "oklch": {
+      "L": 0.9861,
+      "C": 0.0008,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e6e3e2",
+     "share": 0.2561,
+     "oklch": {
+      "L": 0.9181,
+      "C": 0.004,
+      "h": 43.0
+     }
+    },
+    {
+     "hex": "#cae2ed",
+     "share": 0.1675,
+     "oklch": {
+      "L": 0.898,
+      "C": 0.0293,
+      "h": 229.1
+     }
+    },
+    {
+     "hex": "#bfbbba",
+     "share": 0.0191,
+     "oklch": {
+      "L": 0.7957,
+      "C": 0.004,
+      "h": 46.3
+     }
+    },
+    {
+     "hex": "#938f8e",
+     "share": 0.0134,
+     "oklch": {
+      "L": 0.6535,
+      "C": 0.0042,
+      "h": 42.7
+     }
+    },
+    {
+     "hex": "#5b5653",
+     "share": 0.0059,
+     "oklch": {
+      "L": 0.4565,
+      "C": 0.0087,
+      "h": 47.2
+     }
+    },
+    {
+     "hex": "#231715",
+     "share": 0.0051,
+     "oklch": {
+      "L": 0.2203,
+      "C": 0.0204,
+      "h": 28.6
+     }
+    },
+    {
+     "hex": "#a8392e",
+     "share": 0.0049,
+     "oklch": {
+      "L": 0.5033,
+      "C": 0.1486,
+      "h": 29.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#cae2ed",
+     "share": 0.1675,
+     "C": 0.0293
+    },
+    {
+     "hex": "#e6e3e2",
+     "share": 0.2561,
+     "C": 0.004
+    },
+    {
+     "hex": "#fafbfb",
+     "share": 0.5278,
+     "C": 0.0008
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.1211,
+    "stops": [
+     "#d3e4ee",
+     "#fefefe",
+     "#fefefe",
+     "#f7f8f5",
+     "#eae2e0"
+    ]
+   }
+  },
+  {
+   "file": "design/Editor 2.jpg",
+   "source": "originals",
+   "original": "design/Editor 2.jpg",
+   "sha256": "f44b09fdb428f33d",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    142
+   ],
+   "clusters": [
+    {
+     "hex": "#1b1b1b",
+     "share": 0.6205,
+     "oklch": {
+      "L": 0.2226,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#333433",
+     "share": 0.1077,
+     "oklch": {
+      "L": 0.3237,
+      "C": 0.0022,
+      "h": 156.4
+     }
+    },
+    {
+     "hex": "#565656",
+     "share": 0.0899,
+     "oklch": {
+      "L": 0.4529,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#a9a5a1",
+     "share": 0.0508,
+     "oklch": {
+      "L": 0.7231,
+      "C": 0.0071,
+      "h": 65.7
+     }
+    },
+    {
+     "hex": "#83807f",
+     "share": 0.0462,
+     "oklch": {
+      "L": 0.6026,
+      "C": 0.0038,
+      "h": 55.2
+     }
+    },
+    {
+     "hex": "#2c5f45",
+     "share": 0.0362,
+     "oklch": {
+      "L": 0.4421,
+      "C": 0.0707,
+      "h": 159.6
+     }
+    },
+    {
+     "hex": "#d9d3ca",
+     "share": 0.0322,
+     "oklch": {
+      "L": 0.8692,
+      "C": 0.0142,
+      "h": 77.5
+     }
+    },
+    {
+     "hex": "#cdccd7",
+     "share": 0.0167,
+     "oklch": {
+      "L": 0.8482,
+      "C": 0.0161,
+      "h": 290.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#2c5f45",
+     "share": 0.0362,
+     "C": 0.0707
+    },
+    {
+     "hex": "#d9d3ca",
+     "share": 0.0322,
+     "C": 0.0142
+    },
+    {
+     "hex": "#a9a5a1",
+     "share": 0.0508,
+     "C": 0.0071
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.072,
+    "stops": [
+     "#1a1a1a",
+     "#112d1f",
+     "#837f7e",
+     "#dbd3c8",
+     "#1b1b1b"
+    ]
+   }
+  },
+  {
+   "file": "design/Gradient_ AI for Investors on Landbook - get inspired by landing design and more.jpg",
+   "source": "originals",
+   "original": "design/Gradient_ AI for Investors on Landbook - get inspired by landing design and more.jpg",
+   "sha256": "dc222ec0af7a6c39",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    1033
+   ],
+   "clusters": [
+    {
+     "hex": "#dccfb5",
+     "share": 0.2722,
+     "oklch": {
+      "L": 0.8593,
+      "C": 0.0377,
+      "h": 84.6
+     }
+    },
+    {
+     "hex": "#f4e6ca",
+     "share": 0.2607,
+     "oklch": {
+      "L": 0.9276,
+      "C": 0.0391,
+      "h": 83.9
+     }
+    },
+    {
+     "hex": "#a7512a",
+     "share": 0.1988,
+     "oklch": {
+      "L": 0.5348,
+      "C": 0.1251,
+      "h": 43.0
+     }
+    },
+    {
+     "hex": "#3c2a1b",
+     "share": 0.1068,
+     "oklch": {
+      "L": 0.3023,
+      "C": 0.0373,
+      "h": 59.9
+     }
+    },
+    {
+     "hex": "#d6aa60",
+     "share": 0.0622,
+     "oklch": {
+      "L": 0.7632,
+      "C": 0.1056,
+      "h": 78.9
+     }
+    },
+    {
+     "hex": "#867a5d",
+     "share": 0.0502,
+     "oklch": {
+      "L": 0.5836,
+      "C": 0.0441,
+      "h": 88.0
+     }
+    },
+    {
+     "hex": "#241c1e",
+     "share": 0.0317,
+     "oklch": {
+      "L": 0.236,
+      "C": 0.0132,
+      "h": 1.2
+     }
+    },
+    {
+     "hex": "#d57730",
+     "share": 0.0174,
+     "oklch": {
+      "L": 0.6619,
+      "C": 0.1432,
+      "h": 53.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#a7512a",
+     "share": 0.1988,
+     "C": 0.1251
+    },
+    {
+     "hex": "#d6aa60",
+     "share": 0.0622,
+     "C": 0.1056
+    },
+    {
+     "hex": "#867a5d",
+     "share": 0.0502,
+     "C": 0.0441
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.1355,
+    "stops": [
+     "#ab522a",
+     "#e18633",
+     "#e8d8c1",
+     "#aa522c",
+     "#3a2417"
+    ]
+   }
+  },
+  {
+   "file": "design/Harvey on Landbook - the best landing page website design inspiration.jpg",
+   "source": "originals",
+   "original": "design/Harvey on Landbook - the best landing page website design inspiration.jpg",
+   "sha256": "e807a606d395edb7",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    1323
+   ],
+   "clusters": [
+    {
+     "hex": "#110e0e",
+     "share": 0.4635,
+     "oklch": {
+      "L": 0.1662,
+      "C": 0.005,
+      "h": 21.0
+     }
+    },
+    {
+     "hex": "#211d1e",
+     "share": 0.197,
+     "oklch": {
+      "L": 0.2371,
+      "C": 0.0059,
+      "h": 8.2
+     }
+    },
+    {
+     "hex": "#d0d3d4",
+     "share": 0.1553,
+     "oklch": {
+      "L": 0.8641,
+      "C": 0.0033,
+      "h": 233.1
+     }
+    },
+    {
+     "hex": "#fbfbfb",
+     "share": 0.0695,
+     "oklch": {
+      "L": 0.9888,
+      "C": 0.0003,
+      "h": null
+     }
+    },
+    {
+     "hex": "#080605",
+     "share": 0.035,
+     "oklch": {
+      "L": 0.1227,
+      "C": 0.005,
+      "h": 26.5
+     }
+    },
+    {
+     "hex": "#666467",
+     "share": 0.0333,
+     "oklch": {
+      "L": 0.507,
+      "C": 0.0048,
+      "h": 318.2
+     }
+    },
+    {
+     "hex": "#422817",
+     "share": 0.0329,
+     "oklch": {
+      "L": 0.3047,
+      "C": 0.0485,
+      "h": 52.3
+     }
+    },
+    {
+     "hex": "#aa8963",
+     "share": 0.0136,
+     "oklch": {
+      "L": 0.6523,
+      "C": 0.066,
+      "h": 70.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#422817",
+     "share": 0.0329,
+     "C": 0.0485
+    },
+    {
+     "hex": "#211d1e",
+     "share": 0.197,
+     "C": 0.0059
+    },
+    {
+     "hex": "#110e0e",
+     "share": 0.4635,
+     "C": 0.005
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0722,
+    "stops": [
+     "#0f0e0c",
+     "#201c1d",
+     "#cdcbc9",
+     "#efedee",
+     "#0f0e0c"
+    ]
+   }
+  },
+  {
+   "file": "design/Intelly — HealthCare App Dashboard by Sigma Software Design on Dribbble.jpg",
+   "source": "originals",
+   "original": "design/Intelly — HealthCare App Dashboard by Sigma Software Design on Dribbble.jpg",
+   "sha256": "83b38c1c3383b3ef",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": true,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#faf4e6",
+     "share": 0.6171,
+     "oklch": {
+      "L": 0.9675,
+      "C": 0.0199,
+      "h": 88.3
+     }
+    },
+    {
+     "hex": "#181818",
+     "share": 0.0994,
+     "oklch": {
+      "L": 0.2098,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#eeb4d4",
+     "share": 0.0984,
+     "oklch": {
+      "L": 0.8313,
+      "C": 0.0794,
+      "h": 344.3
+     }
+    },
+    {
+     "hex": "#e6dfd4",
+     "share": 0.0767,
+     "oklch": {
+      "L": 0.9073,
+      "C": 0.0169,
+      "h": 80.0
+     }
+    },
+    {
+     "hex": "#a3a099",
+     "share": 0.0399,
+     "oklch": {
+      "L": 0.707,
+      "C": 0.0108,
+      "h": 88.8
+     }
+    },
+    {
+     "hex": "#f0d365",
+     "share": 0.0275,
+     "oklch": {
+      "L": 0.8709,
+      "C": 0.1332,
+      "h": 94.8
+     }
+    },
+    {
+     "hex": "#97a361",
+     "share": 0.0216,
+     "oklch": {
+      "L": 0.6897,
+      "C": 0.0897,
+      "h": 117.3
+     }
+    },
+    {
+     "hex": "#afc2e2",
+     "share": 0.0195,
+     "oklch": {
+      "L": 0.8109,
+      "C": 0.0491,
+      "h": 260.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f0d365",
+     "share": 0.0275,
+     "C": 0.1332
+    },
+    {
+     "hex": "#97a361",
+     "share": 0.0216,
+     "C": 0.0897
+    },
+    {
+     "hex": "#eeb4d4",
+     "share": 0.0984,
+     "C": 0.0794
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1428,
+    "stops": [
+     "#faf4e6",
+     "#f7f1e4",
+     "#f5b8da",
+     "#ede6db",
+     "#faf4e6"
+    ]
+   }
+  },
+  {
+   "file": "design/Introducing DecisionOS — Dark Mode 🧠⚡.jpg",
+   "source": "originals",
+   "original": "design/Introducing DecisionOS — Dark Mode 🧠⚡.jpg",
+   "sha256": "93248dc4f693b7a0",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    250
+   ],
+   "clusters": [
+    {
+     "hex": "#737373",
+     "share": 0.8158,
+     "oklch": {
+      "L": 0.5549,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#181818",
+     "share": 0.1255,
+     "oklch": {
+      "L": 0.2093,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#636363",
+     "share": 0.0347,
+     "oklch": {
+      "L": 0.5005,
+      "C": 0.0006,
+      "h": null
+     }
+    },
+    {
+     "hex": "#313132",
+     "share": 0.0187,
+     "oklch": {
+      "L": 0.3151,
+      "C": 0.0011,
+      "h": null
+     }
+    },
+    {
+     "hex": "#8892da",
+     "share": 0.0035,
+     "oklch": {
+      "L": 0.6805,
+      "C": 0.1068,
+      "h": 277.4
+     }
+    },
+    {
+     "hex": "#464968",
+     "share": 0.0007,
+     "oklch": {
+      "L": 0.4151,
+      "C": 0.0522,
+      "h": 280.8
+     }
+    },
+    {
+     "hex": "#98852d",
+     "share": 0.0006,
+     "oklch": {
+      "L": 0.6169,
+      "C": 0.1078,
+      "h": 96.8
+     }
+    },
+    {
+     "hex": "#f4d23f",
+     "share": 0.0005,
+     "oklch": {
+      "L": 0.8682,
+      "C": 0.1602,
+      "h": 95.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#636363",
+     "share": 0.0347,
+     "C": 0.0006
+    },
+    {
+     "hex": "#181818",
+     "share": 0.1255,
+     "C": 0.0001
+    },
+    {
+     "hex": "#737373",
+     "share": 0.8158,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0579,
+    "stops": [
+     "#777777",
+     "#3d3c3e",
+     "#2a3954",
+     "#181818",
+     "#777777"
+    ]
+   }
+  },
+  {
+   "file": "design/Land-book_ Inspiring About Us Page Examples.jpg",
+   "source": "originals",
+   "original": "design/Land-book_ Inspiring About Us Page Examples.jpg",
+   "sha256": "c57e4fba6a79ed90",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report",
+    "Warm glow"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    804
+   ],
+   "clusters": [
+    {
+     "hex": "#fcfafc",
+     "share": 0.499,
+     "oklch": {
+      "L": 0.9871,
+      "C": 0.0034,
+      "h": 328.6
+     }
+    },
+    {
+     "hex": "#5d5447",
+     "share": 0.1716,
+     "oklch": {
+      "L": 0.4513,
+      "C": 0.0232,
+      "h": 77.3
+     }
+    },
+    {
+     "hex": "#0f181a",
+     "share": 0.071,
+     "oklch": {
+      "L": 0.1996,
+      "C": 0.0139,
+      "h": 218.5
+     }
+    },
+    {
+     "hex": "#302c28",
+     "share": 0.0612,
+     "oklch": {
+      "L": 0.2962,
+      "C": 0.0092,
+      "h": 65.8
+     }
+    },
+    {
+     "hex": "#bcc6cf",
+     "share": 0.0599,
+     "oklch": {
+      "L": 0.8222,
+      "C": 0.0167,
+      "h": 244.9
+     }
+    },
+    {
+     "hex": "#778080",
+     "share": 0.0595,
+     "oklch": {
+      "L": 0.5928,
+      "C": 0.0106,
+      "h": 192.7
+     }
+    },
+    {
+     "hex": "#5c411c",
+     "share": 0.0421,
+     "oklch": {
+      "L": 0.3965,
+      "C": 0.0641,
+      "h": 71.9
+     }
+    },
+    {
+     "hex": "#a2601f",
+     "share": 0.0357,
+     "oklch": {
+      "L": 0.5526,
+      "C": 0.1144,
+      "h": 60.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#a2601f",
+     "share": 0.0357,
+     "C": 0.1144
+    },
+    {
+     "hex": "#5c411c",
+     "share": 0.0421,
+     "C": 0.0641
+    },
+    {
+     "hex": "#5d5447",
+     "share": 0.1716,
+     "C": 0.0232
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.1493,
+    "stops": [
+     "#6a4b3e",
+     "#fffefe",
+     "#1a272f",
+     "#fefeff",
+     "#fdf8fc"
+    ]
+   }
+  },
+  {
+   "file": "design/OPENINGHOURS Studio.jpg",
+   "source": "originals",
+   "original": "design/OPENINGHOURS Studio.jpg",
+   "sha256": "a96d78dec754b944",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    200
+   ],
+   "clusters": [
+    {
+     "hex": "#e6f1e3",
+     "share": 0.3793,
+     "oklch": {
+      "L": 0.9454,
+      "C": 0.0219,
+      "h": 138.9
+     }
+    },
+    {
+     "hex": "#000000",
+     "share": 0.3564,
+     "oklch": {
+      "L": 0.0314,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#d7e5d4",
+     "share": 0.2086,
+     "oklch": {
+      "L": 0.9068,
+      "C": 0.0269,
+      "h": 140.3
+     }
+    },
+    {
+     "hex": "#f0f9ed",
+     "share": 0.016,
+     "oklch": {
+      "L": 0.9715,
+      "C": 0.0181,
+      "h": 137.9
+     }
+    },
+    {
+     "hex": "#b2bcaf",
+     "share": 0.0155,
+     "oklch": {
+      "L": 0.7842,
+      "C": 0.0221,
+      "h": 139.8
+     }
+    },
+    {
+     "hex": "#40433f",
+     "share": 0.0134,
+     "oklch": {
+      "L": 0.3787,
+      "C": 0.0069,
+      "h": 135.3
+     }
+    },
+    {
+     "hex": "#879185",
+     "share": 0.0103,
+     "oklch": {
+      "L": 0.6448,
+      "C": 0.0207,
+      "h": 140.5
+     }
+    },
+    {
+     "hex": "#162a19",
+     "share": 0.0003,
+     "oklch": {
+      "L": 0.263,
+      "C": 0.042,
+      "h": 148.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#d7e5d4",
+     "share": 0.2086,
+     "C": 0.0269
+    },
+    {
+     "hex": "#e6f1e3",
+     "share": 0.3793,
+     "C": 0.0219
+    },
+    {
+     "hex": "#000000",
+     "share": 0.3564,
+     "C": 0.0001
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.0283,
+    "stops": [
+     "#000000",
+     "#d8e5d6",
+     "#cddbcb",
+     "#cfdccd",
+     "#000000"
+    ]
+   }
+  },
+  {
+   "file": "design/Rhetorich _ Make speaking your firm's most powerful advantage on Landbook - get inspired by landing design and more.jpg",
+   "source": "originals",
+   "original": "design/Rhetorich _ Make speaking your firm's most powerful advantage on Landbook - get inspired by landing design and more.jpg",
+   "sha256": "b39b120cb4674d7e",
+   "duplicates": [
+    "originals/references 4/Rhetorich _ Make speaking your firm's most powerful advantage on Landbook - get inspired by landing design and more.jpg"
+   ],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    1777
+   ],
+   "clusters": [
+    {
+     "hex": "#fcfcfc",
+     "share": 0.5767,
+     "oklch": {
+      "L": 0.9914,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#0c3326",
+     "share": 0.207,
+     "oklch": {
+      "L": 0.2883,
+      "C": 0.0492,
+      "h": 168.2
+     }
+    },
+    {
+     "hex": "#dee2e1",
+     "share": 0.0966,
+     "oklch": {
+      "L": 0.9102,
+      "C": 0.0052,
+      "h": 173.4
+     }
+    },
+    {
+     "hex": "#a5a8a5",
+     "share": 0.0379,
+     "oklch": {
+      "L": 0.727,
+      "C": 0.0052,
+      "h": 146.6
+     }
+    },
+    {
+     "hex": "#201c1a",
+     "share": 0.0296,
+     "oklch": {
+      "L": 0.2295,
+      "C": 0.0079,
+      "h": 47.8
+     }
+    },
+    {
+     "hex": "#495e57",
+     "share": 0.0276,
+     "oklch": {
+      "L": 0.4612,
+      "C": 0.0274,
+      "h": 173.1
+     }
+    },
+    {
+     "hex": "#755f48",
+     "share": 0.0206,
+     "oklch": {
+      "L": 0.5013,
+      "C": 0.0441,
+      "h": 68.1
+     }
+    },
+    {
+     "hex": "#9ecb9d",
+     "share": 0.004,
+     "oklch": {
+      "L": 0.7984,
+      "C": 0.0795,
+      "h": 144.1
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#0c3326",
+     "share": 0.207,
+     "C": 0.0492
+    },
+    {
+     "hex": "#755f48",
+     "share": 0.0206,
+     "C": 0.0441
+    },
+    {
+     "hex": "#495e57",
+     "share": 0.0276,
+     "C": 0.0274
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.105,
+    "stops": [
+     "#042e22",
+     "#f8f8f8",
+     "#062e23",
+     "#ffffff",
+     "#000000"
+    ]
+   }
+  },
+  {
+   "file": "design/SaaS Project Management Onboarding Flow.jpg",
+   "source": "originals",
+   "original": "design/SaaS Project Management Onboarding Flow.jpg",
+   "sha256": "6e3faa479ac10537",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    200
+   ],
+   "clusters": [
+    {
+     "hex": "#222222",
+     "share": 0.4534,
+     "oklch": {
+      "L": 0.2505,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f7f2e7",
+     "share": 0.2413,
+     "oklch": {
+      "L": 0.9624,
+      "C": 0.0157,
+      "h": 88.8
+     }
+    },
+    {
+     "hex": "#f0e7d0",
+     "share": 0.1385,
+     "oklch": {
+      "L": 0.9282,
+      "C": 0.0312,
+      "h": 88.7
+     }
+    },
+    {
+     "hex": "#bab6ab",
+     "share": 0.0493,
+     "oklch": {
+      "L": 0.7769,
+      "C": 0.0157,
+      "h": 88.5
+     }
+    },
+    {
+     "hex": "#706d6b",
+     "share": 0.0326,
+     "oklch": {
+      "L": 0.5364,
+      "C": 0.0042,
+      "h": 48.6
+     }
+    },
+    {
+     "hex": "#a8bfe8",
+     "share": 0.0294,
+     "oklch": {
+      "L": 0.8013,
+      "C": 0.063,
+      "h": 262.3
+     }
+    },
+    {
+     "hex": "#f5b296",
+     "share": 0.0287,
+     "oklch": {
+      "L": 0.8191,
+      "C": 0.0872,
+      "h": 43.8
+     }
+    },
+    {
+     "hex": "#c7a5e7",
+     "share": 0.0267,
+     "oklch": {
+      "L": 0.7736,
+      "C": 0.0988,
+      "h": 307.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c7a5e7",
+     "share": 0.0267,
+     "C": 0.0988
+    },
+    {
+     "hex": "#f5b296",
+     "share": 0.0287,
+     "C": 0.0872
+    },
+    {
+     "hex": "#a8bfe8",
+     "share": 0.0294,
+     "C": 0.063
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1013,
+    "stops": [
+     "#242424",
+     "#f0ece3",
+     "#ece9e5",
+     "#ece5d4",
+     "#252525"
+    ]
+   }
+  },
+  {
+   "file": "design/fo7ccdaxeaimcn9_format=jpg-name=4096x4096 _ Are_na.jpg",
+   "source": "originals",
+   "original": "design/fo7ccdaxeaimcn9_format=jpg-name=4096x4096 _ Are_na.jpg",
+   "sha256": "5b74a81048d5c6c9",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#000000",
+     "share": 0.8823,
+     "oklch": {
+      "L": 0.0496,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#1f1f1f",
+     "share": 0.0364,
+     "oklch": {
+      "L": 0.2402,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#626262",
+     "share": 0.0312,
+     "oklch": {
+      "L": 0.4965,
+      "C": 0.0006,
+      "h": null
+     }
+    },
+    {
+     "hex": "#404141",
+     "share": 0.0251,
+     "oklch": {
+      "L": 0.3735,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#8d8c8b",
+     "share": 0.0168,
+     "oklch": {
+      "L": 0.6393,
+      "C": 0.0015,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cec3b6",
+     "share": 0.0043,
+     "oklch": {
+      "L": 0.823,
+      "C": 0.0221,
+      "h": 75.3
+     }
+    },
+    {
+     "hex": "#ca7f6b",
+     "share": 0.0028,
+     "oklch": {
+      "L": 0.6697,
+      "C": 0.0989,
+      "h": 35.3
+     }
+    },
+    {
+     "hex": "#51352d",
+     "share": 0.0011,
+     "oklch": {
+      "L": 0.3598,
+      "C": 0.0436,
+      "h": 35.4
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#626262",
+     "share": 0.0312,
+     "C": 0.0006
+    },
+    {
+     "hex": "#404141",
+     "share": 0.0251,
+     "C": 0.0002
+    },
+    {
+     "hex": "#000000",
+     "share": 0.8823,
+     "C": 0.0001
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.0,
+    "stops": [
+     "#000000",
+     "#1b1b1b",
+     "#000000",
+     "#0c0c0c",
+     "#000000"
+    ]
+   }
+  },
+  {
+   "file": "design/mathias coudert (@Mcoudert) _ X.jpg",
+   "source": "originals",
+   "original": "design/mathias coudert (@Mcoudert) _ X.jpg",
+   "sha256": "4f5b19342f0b8383",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    230
+   ],
+   "clusters": [
+    {
+     "hex": "#101010",
+     "share": 0.3799,
+     "oklch": {
+      "L": 0.1729,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#1a1a1a",
+     "share": 0.3253,
+     "oklch": {
+      "L": 0.2197,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#171717",
+     "share": 0.2223,
+     "oklch": {
+      "L": 0.204,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#2c2c2b",
+     "share": 0.0335,
+     "oklch": {
+      "L": 0.2916,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#eeeef0",
+     "share": 0.0137,
+     "oklch": {
+      "L": 0.9489,
+      "C": 0.0025,
+      "h": 285.7
+     }
+    },
+    {
+     "hex": "#888787",
+     "share": 0.0125,
+     "oklch": {
+      "L": 0.625,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#5c5958",
+     "share": 0.0094,
+     "oklch": {
+      "L": 0.4656,
+      "C": 0.0043,
+      "h": 31.6
+     }
+    },
+    {
+     "hex": "#dca197",
+     "share": 0.0034,
+     "oklch": {
+      "L": 0.7617,
+      "C": 0.0722,
+      "h": 30.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#2c2c2b",
+     "share": 0.0335,
+     "C": 0.0005
+    },
+    {
+     "hex": "#101010",
+     "share": 0.3799,
+     "C": 0.0
+    },
+    {
+     "hex": "#1a1a1a",
+     "share": 0.3253,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.0,
+    "stops": [
+     "#1b1b1b",
+     "#191919",
+     "#171717",
+     "#171717",
+     "#101010"
+    ]
+   }
+  },
+  {
+   "file": "design/original_ba62b60c23376298fea110dc6d672f97_gif (768×960).gif.jpg",
+   "source": "originals",
+   "original": "design/original_ba62b60c23376298fea110dc6d672f97_gif (768×960).gif",
+   "sha256": "961df02579c92cc2",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": true,
+   "size_sampled": [
+    200,
+    250
+   ],
+   "clusters": [
+    {
+     "hex": "#000000",
+     "share": 0.6127,
+     "oklch": {
+      "L": 0.0483,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f3f1eb",
+     "share": 0.2467,
+     "oklch": {
+      "L": 0.9586,
+      "C": 0.0079,
+      "h": 92.2
+     }
+    },
+    {
+     "hex": "#f07f53",
+     "share": 0.0342,
+     "oklch": {
+      "L": 0.7146,
+      "C": 0.1511,
+      "h": 41.1
+     }
+    },
+    {
+     "hex": "#abaeb0",
+     "share": 0.0278,
+     "oklch": {
+      "L": 0.7496,
+      "C": 0.0045,
+      "h": 237.9
+     }
+    },
+    {
+     "hex": "#b1722f",
+     "share": 0.0231,
+     "oklch": {
+      "L": 0.6059,
+      "C": 0.1135,
+      "h": 63.7
+     }
+    },
+    {
+     "hex": "#295fb1",
+     "share": 0.0195,
+     "oklch": {
+      "L": 0.4942,
+      "C": 0.1432,
+      "h": 258.8
+     }
+    },
+    {
+     "hex": "#facb14",
+     "share": 0.0192,
+     "oklch": {
+      "L": 0.8583,
+      "C": 0.1728,
+      "h": 91.5
+     }
+    },
+    {
+     "hex": "#071d58",
+     "share": 0.0167,
+     "oklch": {
+      "L": 0.2599,
+      "C": 0.1092,
+      "h": 264.1
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f07f53",
+     "share": 0.0342,
+     "C": 0.1511
+    },
+    {
+     "hex": "#b1722f",
+     "share": 0.0231,
+     "C": 0.1135
+    },
+    {
+     "hex": "#f3f1eb",
+     "share": 0.2467,
+     "C": 0.0079
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1771,
+    "stops": [
+     "#000000",
+     "#000000",
+     "#115ab5",
+     "#000000",
+     "#000000"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-10.jpg",
+   "source": "originals",
+   "original": "design/ref-10.jpg",
+   "sha256": "12753e085f1eb671",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#f5f4f4",
+     "share": 0.5382,
+     "oklch": {
+      "L": 0.9677,
+      "C": 0.0016,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f8efea",
+     "share": 0.1527,
+     "oklch": {
+      "L": 0.9579,
+      "C": 0.012,
+      "h": 52.1
+     }
+    },
+    {
+     "hex": "#ebedf4",
+     "share": 0.1496,
+     "oklch": {
+      "L": 0.9457,
+      "C": 0.0095,
+      "h": 274.0
+     }
+    },
+    {
+     "hex": "#d5d1d1",
+     "share": 0.0574,
+     "oklch": {
+      "L": 0.8635,
+      "C": 0.005,
+      "h": 8.7
+     }
+    },
+    {
+     "hex": "#c9d4e8",
+     "share": 0.0553,
+     "oklch": {
+      "L": 0.8668,
+      "C": 0.031,
+      "h": 264.0
+     }
+    },
+    {
+     "hex": "#979494",
+     "share": 0.0273,
+     "oklch": {
+      "L": 0.6678,
+      "C": 0.0037,
+      "h": 14.0
+     }
+    },
+    {
+     "hex": "#eed4c4",
+     "share": 0.014,
+     "oklch": {
+      "L": 0.887,
+      "C": 0.0367,
+      "h": 52.0
+     }
+    },
+    {
+     "hex": "#644542",
+     "share": 0.0055,
+     "oklch": {
+      "L": 0.4253,
+      "C": 0.0433,
+      "h": 26.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c9d4e8",
+     "share": 0.0553,
+     "C": 0.031
+    },
+    {
+     "hex": "#f8efea",
+     "share": 0.1527,
+     "C": 0.012
+    },
+    {
+     "hex": "#ebedf4",
+     "share": 0.1496,
+     "C": 0.0095
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.042,
+    "stops": [
+     "#c9d4ea",
+     "#fafafa",
+     "#ececec",
+     "#f9efed",
+     "#f6dac5"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-11.jpg",
+   "source": "originals",
+   "original": "design/ref-11.jpg",
+   "sha256": "a4c438c75aee0824",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    136
+   ],
+   "clusters": [
+    {
+     "hex": "#edecea",
+     "share": 0.3201,
+     "oklch": {
+      "L": 0.9443,
+      "C": 0.0029,
+      "h": 81.4
+     }
+    },
+    {
+     "hex": "#fdfdfd",
+     "share": 0.3152,
+     "oklch": {
+      "L": 0.9933,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e6e1e0",
+     "share": 0.2346,
+     "oklch": {
+      "L": 0.9142,
+      "C": 0.0047,
+      "h": 34.1
+     }
+    },
+    {
+     "hex": "#d0ccc9",
+     "share": 0.0981,
+     "oklch": {
+      "L": 0.8471,
+      "C": 0.0057,
+      "h": 56.1
+     }
+    },
+    {
+     "hex": "#a0978a",
+     "share": 0.0183,
+     "oklch": {
+      "L": 0.6807,
+      "C": 0.0219,
+      "h": 79.9
+     }
+    },
+    {
+     "hex": "#4c3d3a",
+     "share": 0.0104,
+     "oklch": {
+      "L": 0.3758,
+      "C": 0.0224,
+      "h": 33.2
+     }
+    },
+    {
+     "hex": "#5a51a7",
+     "share": 0.0018,
+     "oklch": {
+      "L": 0.489,
+      "C": 0.133,
+      "h": 285.1
+     }
+    },
+    {
+     "hex": "#7f99cf",
+     "share": 0.0016,
+     "oklch": {
+      "L": 0.6846,
+      "C": 0.0847,
+      "h": 264.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#d0ccc9",
+     "share": 0.0981,
+     "C": 0.0057
+    },
+    {
+     "hex": "#e6e1e0",
+     "share": 0.2346,
+     "C": 0.0047
+    },
+    {
+     "hex": "#edecea",
+     "share": 0.3201,
+     "C": 0.0029
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.1189,
+    "stops": [
+     "#d3cfcc",
+     "#e7e2e0",
+     "#fcfcfb",
+     "#f7f7f5",
+     "#a09895"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-12.jpg",
+   "source": "originals",
+   "original": "design/ref-12.jpg",
+   "sha256": "8f03dae10cc16e88",
+   "duplicates": [
+    "originals/more more reference/jpg(8)",
+    "originals/some more references/jpg(13)"
+   ],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    140
+   ],
+   "clusters": [
+    {
+     "hex": "#eff1f2",
+     "share": 0.7375,
+     "oklch": {
+      "L": 0.9561,
+      "C": 0.0024,
+      "h": 222.3
+     }
+    },
+    {
+     "hex": "#e6ea6a",
+     "share": 0.0601,
+     "oklch": {
+      "L": 0.9088,
+      "C": 0.1496,
+      "h": 110.4
+     }
+    },
+    {
+     "hex": "#cfc9c5",
+     "share": 0.0532,
+     "oklch": {
+      "L": 0.839,
+      "C": 0.0091,
+      "h": 50.1
+     }
+    },
+    {
+     "hex": "#e7d397",
+     "share": 0.0522,
+     "oklch": {
+      "L": 0.8697,
+      "C": 0.0803,
+      "h": 92.0
+     }
+    },
+    {
+     "hex": "#4ebaf7",
+     "share": 0.0438,
+     "oklch": {
+      "L": 0.7513,
+      "C": 0.1316,
+      "h": 237.3
+     }
+    },
+    {
+     "hex": "#88dcb9",
+     "share": 0.0232,
+     "oklch": {
+      "L": 0.8298,
+      "C": 0.0962,
+      "h": 165.6
+     }
+    },
+    {
+     "hex": "#acccea",
+     "share": 0.0197,
+     "oklch": {
+      "L": 0.8311,
+      "C": 0.0549,
+      "h": 247.8
+     }
+    },
+    {
+     "hex": "#55524f",
+     "share": 0.0103,
+     "oklch": {
+      "L": 0.441,
+      "C": 0.0066,
+      "h": 75.4
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#e6ea6a",
+     "share": 0.0601,
+     "C": 0.1496
+    },
+    {
+     "hex": "#4ebaf7",
+     "share": 0.0438,
+     "C": 0.1316
+    },
+    {
+     "hex": "#88dcb9",
+     "share": 0.0232,
+     "C": 0.0962
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.1763,
+    "stops": [
+     "#dedfe1",
+     "#acdda9",
+     "#f9f9f9",
+     "#fdfefe",
+     "#dedfe1"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-13.jpg",
+   "source": "originals",
+   "original": "design/ref-13.jpg",
+   "sha256": "28b32a7e31cdf247",
+   "duplicates": [
+    "originals/more more reference/jpg(9)",
+    "originals/some more references/jpg(14)"
+   ],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#fafafa",
+     "share": 0.8312,
+     "oklch": {
+      "L": 0.9843,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cbedd4",
+     "share": 0.0427,
+     "oklch": {
+      "L": 0.9138,
+      "C": 0.0484,
+      "h": 154.4
+     }
+    },
+    {
+     "hex": "#2ead52",
+     "share": 0.0344,
+     "oklch": {
+      "L": 0.6602,
+      "C": 0.1707,
+      "h": 148.3
+     }
+    },
+    {
+     "hex": "#b234df",
+     "share": 0.029,
+     "oklch": {
+      "L": 0.5899,
+      "C": 0.2497,
+      "h": 315.1
+     }
+    },
+    {
+     "hex": "#cfcaca",
+     "share": 0.0252,
+     "oklch": {
+      "L": 0.8435,
+      "C": 0.0058,
+      "h": 22.0
+     }
+    },
+    {
+     "hex": "#f57516",
+     "share": 0.0153,
+     "oklch": {
+      "L": 0.7022,
+      "C": 0.1818,
+      "h": 49.1
+     }
+    },
+    {
+     "hex": "#f0a339",
+     "share": 0.0116,
+     "oklch": {
+      "L": 0.7741,
+      "C": 0.1467,
+      "h": 70.5
+     }
+    },
+    {
+     "hex": "#6da7e5",
+     "share": 0.0106,
+     "oklch": {
+      "L": 0.7146,
+      "C": 0.1094,
+      "h": 251.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#b234df",
+     "share": 0.029,
+     "C": 0.2497
+    },
+    {
+     "hex": "#2ead52",
+     "share": 0.0344,
+     "C": 0.1707
+    },
+    {
+     "hex": "#cbedd4",
+     "share": 0.0427,
+     "C": 0.0484
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.2757,
+    "stops": [
+     "#ffffff",
+     "#f0eeef",
+     "#ffffff",
+     "#faf2f0",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-14.jpg",
+   "source": "originals",
+   "original": "design/ref-14.jpg",
+   "sha256": "f7934bab7ae5c225",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#161616",
+     "share": 0.5052,
+     "oklch": {
+      "L": 0.1991,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#373839",
+     "share": 0.2026,
+     "oklch": {
+      "L": 0.3389,
+      "C": 0.0025,
+      "h": 263.5
+     }
+    },
+    {
+     "hex": "#030303",
+     "share": 0.1983,
+     "oklch": {
+      "L": 0.0923,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#272728",
+     "share": 0.0509,
+     "oklch": {
+      "L": 0.2726,
+      "C": 0.0015,
+      "h": null
+     }
+    },
+    {
+     "hex": "#4f4f4f",
+     "share": 0.0172,
+     "oklch": {
+      "L": 0.427,
+      "C": 0.0007,
+      "h": null
+     }
+    },
+    {
+     "hex": "#6e6d6d",
+     "share": 0.0135,
+     "oklch": {
+      "L": 0.5364,
+      "C": 0.0008,
+      "h": null
+     }
+    },
+    {
+     "hex": "#919293",
+     "share": 0.0082,
+     "oklch": {
+      "L": 0.66,
+      "C": 0.0019,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e8e7e5",
+     "share": 0.0043,
+     "oklch": {
+      "L": 0.9286,
+      "C": 0.0027,
+      "h": 102.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#373839",
+     "share": 0.2026,
+     "C": 0.0025
+    },
+    {
+     "hex": "#272728",
+     "share": 0.0509,
+     "C": 0.0015
+    },
+    {
+     "hex": "#161616",
+     "share": 0.5052,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0104,
+    "stops": [
+     "#363739",
+     "#161616",
+     "#343c3c",
+     "#38393a",
+     "#363636"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-15.jpg",
+   "source": "originals",
+   "original": "design/ref-15.jpg",
+   "sha256": "5fa717547788a71b",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#fbfbfb",
+     "share": 0.7559,
+     "oklch": {
+      "L": 0.9886,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e8e9ea",
+     "share": 0.1593,
+     "oklch": {
+      "L": 0.9326,
+      "C": 0.0024,
+      "h": 266.7
+     }
+    },
+    {
+     "hex": "#c6c6c6",
+     "share": 0.0342,
+     "oklch": {
+      "L": 0.8255,
+      "C": 0.0009,
+      "h": null
+     }
+    },
+    {
+     "hex": "#9f9f9f",
+     "share": 0.0284,
+     "oklch": {
+      "L": 0.7036,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#7c7b7b",
+     "share": 0.0162,
+     "oklch": {
+      "L": 0.5848,
+      "C": 0.0012,
+      "h": null
+     }
+    },
+    {
+     "hex": "#def5e8",
+     "share": 0.0037,
+     "oklch": {
+      "L": 0.9498,
+      "C": 0.0302,
+      "h": 161.2
+     }
+    },
+    {
+     "hex": "#222121",
+     "share": 0.0016,
+     "oklch": {
+      "L": 0.2496,
+      "C": 0.0012,
+      "h": null
+     }
+    },
+    {
+     "hex": "#c7e8aa",
+     "share": 0.0007,
+     "oklch": {
+      "L": 0.8905,
+      "C": 0.0893,
+      "h": 130.9
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#e8e9ea",
+     "share": 0.1593,
+     "C": 0.0024
+    },
+    {
+     "hex": "#c6c6c6",
+     "share": 0.0342,
+     "C": 0.0009
+    },
+    {
+     "hex": "#fbfbfb",
+     "share": 0.7559,
+     "C": 0.0002
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0029,
+    "stops": [
+     "#e8e9eb",
+     "#f6f6f6",
+     "#ffffff",
+     "#c5c5c5",
+     "#f8f8f8"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-16.jpg",
+   "source": "originals",
+   "original": "design/ref-16.jpg",
+   "sha256": "d71563edfa0596a4",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    164
+   ],
+   "clusters": [
+    {
+     "hex": "#f3f3f3",
+     "share": 0.6709,
+     "oklch": {
+      "L": 0.964,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#020202",
+     "share": 0.1516,
+     "oklch": {
+      "L": 0.0836,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#212121",
+     "share": 0.0656,
+     "oklch": {
+      "L": 0.249,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cdcdcd",
+     "share": 0.0472,
+     "oklch": {
+      "L": 0.8492,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#727272",
+     "share": 0.0472,
+     "oklch": {
+      "L": 0.5523,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#3b80f2",
+     "share": 0.0108,
+     "oklch": {
+      "L": 0.6154,
+      "C": 0.1857,
+      "h": 260.0
+     }
+    },
+    {
+     "hex": "#8ab0ea",
+     "share": 0.0057,
+     "oklch": {
+      "L": 0.7515,
+      "C": 0.0936,
+      "h": 258.5
+     }
+    },
+    {
+     "hex": "#d7281f",
+     "share": 0.001,
+     "oklch": {
+      "L": 0.569,
+      "C": 0.2107,
+      "h": 28.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#cdcdcd",
+     "share": 0.0472,
+     "C": 0.0002
+    },
+    {
+     "hex": "#212121",
+     "share": 0.0656,
+     "C": 0.0001
+    },
+    {
+     "hex": "#f3f3f3",
+     "share": 0.6709,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.0143,
+    "stops": [
+     "#f2f2f2",
+     "#f2f2f2",
+     "#010101",
+     "#000000",
+     "#f6f6f6"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-17.jpg",
+   "source": "originals",
+   "original": "design/ref-17.jpg",
+   "sha256": "a98cc9e6cc1a27e1",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    140
+   ],
+   "clusters": [
+    {
+     "hex": "#0c0c16",
+     "share": 0.4517,
+     "oklch": {
+      "L": 0.1601,
+      "C": 0.0204,
+      "h": 283.8
+     }
+    },
+    {
+     "hex": "#48494f",
+     "share": 0.175,
+     "oklch": {
+      "L": 0.4069,
+      "C": 0.0098,
+      "h": 278.2
+     }
+    },
+    {
+     "hex": "#30313a",
+     "share": 0.1695,
+     "oklch": {
+      "L": 0.3144,
+      "C": 0.0166,
+      "h": 281.5
+     }
+    },
+    {
+     "hex": "#466dad",
+     "share": 0.0794,
+     "oklch": {
+      "L": 0.5351,
+      "C": 0.1108,
+      "h": 260.0
+     }
+    },
+    {
+     "hex": "#2c4b87",
+     "share": 0.0653,
+     "oklch": {
+      "L": 0.4226,
+      "C": 0.1062,
+      "h": 262.2
+     }
+    },
+    {
+     "hex": "#71a0dd",
+     "share": 0.0362,
+     "oklch": {
+      "L": 0.6975,
+      "C": 0.1037,
+      "h": 255.5
+     }
+    },
+    {
+     "hex": "#6e6f76",
+     "share": 0.0163,
+     "oklch": {
+      "L": 0.5432,
+      "C": 0.0104,
+      "h": 278.2
+     }
+    },
+    {
+     "hex": "#9a9a9e",
+     "share": 0.0066,
+     "oklch": {
+      "L": 0.6882,
+      "C": 0.0046,
+      "h": 276.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#466dad",
+     "share": 0.0794,
+     "C": 0.1108
+    },
+    {
+     "hex": "#2c4b87",
+     "share": 0.0653,
+     "C": 0.1062
+    },
+    {
+     "hex": "#71a0dd",
+     "share": 0.0362,
+     "C": 0.1037
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.1108,
+    "stops": [
+     "#1d3b71",
+     "#6191d2",
+     "#32323a",
+     "#0d0d17",
+     "#48494e"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-18.jpg",
+   "source": "originals",
+   "original": "design/ref-18.jpg",
+   "sha256": "e38fe45249a1335a",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    142
+   ],
+   "clusters": [
+    {
+     "hex": "#2f2e2e",
+     "share": 0.3411,
+     "oklch": {
+      "L": 0.3013,
+      "C": 0.0012,
+      "h": null
+     }
+    },
+    {
+     "hex": "#777777",
+     "share": 0.3219,
+     "oklch": {
+      "L": 0.5695,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#0e0e0f",
+     "share": 0.1722,
+     "oklch": {
+      "L": 0.1656,
+      "C": 0.0003,
+      "h": null
+     }
+    },
+    {
+     "hex": "#876b96",
+     "share": 0.0574,
+     "oklch": {
+      "L": 0.5699,
+      "C": 0.0723,
+      "h": 313.4
+     }
+    },
+    {
+     "hex": "#d0919f",
+     "share": 0.0527,
+     "oklch": {
+      "L": 0.7225,
+      "C": 0.0784,
+      "h": 4.7
+     }
+    },
+    {
+     "hex": "#eeefef",
+     "share": 0.024,
+     "oklch": {
+      "L": 0.9513,
+      "C": 0.0008,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e66336",
+     "share": 0.0214,
+     "oklch": {
+      "L": 0.6567,
+      "C": 0.1736,
+      "h": 38.6
+     }
+    },
+    {
+     "hex": "#a65740",
+     "share": 0.0093,
+     "oklch": {
+      "L": 0.5472,
+      "C": 0.1102,
+      "h": 37.6
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#e66336",
+     "share": 0.0214,
+     "C": 0.1736
+    },
+    {
+     "hex": "#d0919f",
+     "share": 0.0527,
+     "C": 0.0784
+    },
+    {
+     "hex": "#876b96",
+     "share": 0.0574,
+     "C": 0.0723
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.179,
+    "stops": [
+     "#7a7a7a",
+     "#494949",
+     "#78bdd5",
+     "#2c2c2c",
+     "#7a7a7a"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-19.jpg",
+   "source": "originals",
+   "original": "design/ref-19.jpg",
+   "sha256": "51686314add7278c",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    160
+   ],
+   "clusters": [
+    {
+     "hex": "#ffffff",
+     "share": 0.8718,
+     "oklch": {
+      "L": 0.9995,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f4f4f4",
+     "share": 0.0401,
+     "oklch": {
+      "L": 0.9668,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#060606",
+     "share": 0.0348,
+     "oklch": {
+      "L": 0.1208,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#bebebe",
+     "share": 0.0197,
+     "oklch": {
+      "L": 0.8029,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#dadbdb",
+     "share": 0.0183,
+     "oklch": {
+      "L": 0.89,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#292828",
+     "share": 0.0062,
+     "oklch": {
+      "L": 0.2787,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#868585",
+     "share": 0.0049,
+     "oklch": {
+      "L": 0.618,
+      "C": 0.0018,
+      "h": null
+     }
+    },
+    {
+     "hex": "#454545",
+     "share": 0.0042,
+     "oklch": {
+      "L": 0.3905,
+      "C": 0.0002,
+      "h": null
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#060606",
+     "share": 0.0348,
+     "C": 0.0001
+    },
+    {
+     "hex": "#ffffff",
+     "share": 0.8718,
+     "C": 0.0
+    },
+    {
+     "hex": "#f4f4f4",
+     "share": 0.0401,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0005,
+    "stops": [
+     "#ffffff",
+     "#070707",
+     "#ffffff",
+     "#ffffff",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-20.jpg",
+   "source": "originals",
+   "original": "design/ref-20.jpg",
+   "sha256": "e72058d47aa293a6",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    72
+   ],
+   "clusters": [
+    {
+     "hex": "#1c1c1c",
+     "share": 0.5714,
+     "oklch": {
+      "L": 0.2255,
+      "C": 0.0004,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f0f0f0",
+     "share": 0.2094,
+     "oklch": {
+      "L": 0.9547,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#b37454",
+     "share": 0.0646,
+     "oklch": {
+      "L": 0.6171,
+      "C": 0.0913,
+      "h": 47.1
+     }
+    },
+    {
+     "hex": "#121335",
+     "share": 0.053,
+     "oklch": {
+      "L": 0.2081,
+      "C": 0.0647,
+      "h": 278.1
+     }
+    },
+    {
+     "hex": "#362f85",
+     "share": 0.051,
+     "oklch": {
+      "L": 0.3696,
+      "C": 0.1385,
+      "h": 280.9
+     }
+    },
+    {
+     "hex": "#bb9ba3",
+     "share": 0.0205,
+     "oklch": {
+      "L": 0.7204,
+      "C": 0.0401,
+      "h": 1.5
+     }
+    },
+    {
+     "hex": "#856eaf",
+     "share": 0.0192,
+     "oklch": {
+      "L": 0.5875,
+      "C": 0.0999,
+      "h": 299.5
+     }
+    },
+    {
+     "hex": "#333232",
+     "share": 0.011,
+     "oklch": {
+      "L": 0.3186,
+      "C": 0.0019,
+      "h": null
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#362f85",
+     "share": 0.051,
+     "C": 0.1385
+    },
+    {
+     "hex": "#b37454",
+     "share": 0.0646,
+     "C": 0.0913
+    },
+    {
+     "hex": "#121335",
+     "share": 0.053,
+     "C": 0.0647
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.1426,
+    "stops": [
+     "#1e1e1e",
+     "#25216b",
+     "#ededed",
+     "#191919",
+     "#1e1e1e"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-21.jpg",
+   "source": "originals",
+   "original": "design/ref-21.jpg",
+   "sha256": "d8e2a43f83c1cc07",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    186
+   ],
+   "clusters": [
+    {
+     "hex": "#f7f7f7",
+     "share": 0.2818,
+     "oklch": {
+      "L": 0.9749,
+      "C": 0.0009,
+      "h": null
+     }
+    },
+    {
+     "hex": "#0b0b0b",
+     "share": 0.2398,
+     "oklch": {
+      "L": 0.1513,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#ebeaf1",
+     "share": 0.1888,
+     "oklch": {
+      "L": 0.9389,
+      "C": 0.0101,
+      "h": 293.8
+     }
+    },
+    {
+     "hex": "#989799",
+     "share": 0.118,
+     "oklch": {
+      "L": 0.6787,
+      "C": 0.0028,
+      "h": 295.0
+     }
+    },
+    {
+     "hex": "#bbbabf",
+     "share": 0.1029,
+     "oklch": {
+      "L": 0.7906,
+      "C": 0.0075,
+      "h": 299.7
+     }
+    },
+    {
+     "hex": "#6e6d6d",
+     "share": 0.0305,
+     "oklch": {
+      "L": 0.5359,
+      "C": 0.0006,
+      "h": null
+     }
+    },
+    {
+     "hex": "#353535",
+     "share": 0.0304,
+     "oklch": {
+      "L": 0.3278,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#dcc1a7",
+     "share": 0.0078,
+     "oklch": {
+      "L": 0.8263,
+      "C": 0.0472,
+      "h": 65.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#ebeaf1",
+     "share": 0.1888,
+     "C": 0.0101
+    },
+    {
+     "hex": "#bbbabf",
+     "share": 0.1029,
+     "C": 0.0075
+    },
+    {
+     "hex": "#989799",
+     "share": 0.118,
+     "C": 0.0028
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.0509,
+    "stops": [
+     "#eeecf7",
+     "#0b0b0b",
+     "#f5f5f5",
+     "#f4f4f4",
+     "#cbb399"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-22.jpg",
+   "source": "originals",
+   "original": "design/ref-22.jpg",
+   "sha256": "3ae902b86174da12",
+   "duplicates": [
+    "originals/some more references/jpg(15)"
+   ],
+   "direction": "Lookbook",
+   "directions": [
+    "Lookbook"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    139
+   ],
+   "clusters": [
+    {
+     "hex": "#fafafa",
+     "share": 0.4651,
+     "oklch": {
+      "L": 0.9861,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#d5d5d4",
+     "share": 0.2461,
+     "oklch": {
+      "L": 0.8721,
+      "C": 0.0014,
+      "h": null
+     }
+    },
+    {
+     "hex": "#766d6c",
+     "share": 0.079,
+     "oklch": {
+      "L": 0.5427,
+      "C": 0.0115,
+      "h": 21.5
+     }
+    },
+    {
+     "hex": "#c64a25",
+     "share": 0.0543,
+     "oklch": {
+      "L": 0.5726,
+      "C": 0.166,
+      "h": 36.7
+     }
+    },
+    {
+     "hex": "#aba19d",
+     "share": 0.0535,
+     "oklch": {
+      "L": 0.7158,
+      "C": 0.0135,
+      "h": 38.7
+     }
+    },
+    {
+     "hex": "#9a6b5b",
+     "share": 0.0467,
+     "oklch": {
+      "L": 0.5728,
+      "C": 0.0658,
+      "h": 40.2
+     }
+    },
+    {
+     "hex": "#d88d52",
+     "share": 0.0281,
+     "oklch": {
+      "L": 0.7074,
+      "C": 0.1181,
+      "h": 57.4
+     }
+    },
+    {
+     "hex": "#b75c44",
+     "share": 0.0273,
+     "oklch": {
+      "L": 0.5794,
+      "C": 0.1245,
+      "h": 35.5
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c64a25",
+     "share": 0.0543,
+     "C": 0.166
+    },
+    {
+     "hex": "#b75c44",
+     "share": 0.0273,
+     "C": 0.1245
+    },
+    {
+     "hex": "#d88d52",
+     "share": 0.0281,
+     "C": 0.1181
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1607,
+    "stops": [
+     "#fcfcfc",
+     "#6b473d",
+     "#ffffff",
+     "#ececec",
+     "#c3c3c3"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-23.jpg",
+   "source": "originals",
+   "original": "design/ref-23.jpg",
+   "sha256": "0ed861ed5a10bc00",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    142
+   ],
+   "clusters": [
+    {
+     "hex": "#603838",
+     "share": 0.2345,
+     "oklch": {
+      "L": 0.39,
+      "C": 0.0563,
+      "h": 21.2
+     }
+    },
+    {
+     "hex": "#441c1b",
+     "share": 0.2047,
+     "oklch": {
+      "L": 0.2839,
+      "C": 0.0622,
+      "h": 23.1
+     }
+    },
+    {
+     "hex": "#350603",
+     "share": 0.1079,
+     "oklch": {
+      "L": 0.2173,
+      "C": 0.0749,
+      "h": 30.2
+     }
+    },
+    {
+     "hex": "#fbfbfb",
+     "share": 0.1039,
+     "oklch": {
+      "L": 0.9884,
+      "C": 0.0003,
+      "h": null
+     }
+    },
+    {
+     "hex": "#685767",
+     "share": 0.1005,
+     "oklch": {
+      "L": 0.4794,
+      "C": 0.0336,
+      "h": 328.8
+     }
+    },
+    {
+     "hex": "#50719d",
+     "share": 0.0998,
+     "oklch": {
+      "L": 0.5419,
+      "C": 0.0799,
+      "h": 255.8
+     }
+    },
+    {
+     "hex": "#85433c",
+     "share": 0.0844,
+     "oklch": {
+      "L": 0.4631,
+      "C": 0.0923,
+      "h": 27.0
+     }
+    },
+    {
+     "hex": "#4d2717",
+     "share": 0.0642,
+     "oklch": {
+      "L": 0.3189,
+      "C": 0.0624,
+      "h": 43.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#85433c",
+     "share": 0.0844,
+     "C": 0.0923
+    },
+    {
+     "hex": "#50719d",
+     "share": 0.0998,
+     "C": 0.0799
+    },
+    {
+     "hex": "#350603",
+     "share": 0.1079,
+     "C": 0.0749
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1176,
+    "stops": [
+     "#ffffff",
+     "#486692",
+     "#6e4a52",
+     "#573331",
+     "#3b1817"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-24.jpg",
+   "source": "originals",
+   "original": "design/ref-24.jpg",
+   "sha256": "775a8961e72cae91",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    225
+   ],
+   "clusters": [
+    {
+     "hex": "#fafafa",
+     "share": 0.5578,
+     "oklch": {
+      "L": 0.9849,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#efefef",
+     "share": 0.3893,
+     "oklch": {
+      "L": 0.9521,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#c2c3c4",
+     "share": 0.0231,
+     "oklch": {
+      "L": 0.8155,
+      "C": 0.0018,
+      "h": null
+     }
+    },
+    {
+     "hex": "#979797",
+     "share": 0.0224,
+     "oklch": {
+      "L": 0.6755,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#686464",
+     "share": 0.0039,
+     "oklch": {
+      "L": 0.5073,
+      "C": 0.0045,
+      "h": 33.8
+     }
+    },
+    {
+     "hex": "#d88657",
+     "share": 0.0013,
+     "oklch": {
+      "L": 0.6966,
+      "C": 0.1182,
+      "h": 50.4
+     }
+    },
+    {
+     "hex": "#72c195",
+     "share": 0.0012,
+     "oklch": {
+      "L": 0.7487,
+      "C": 0.1027,
+      "h": 157.9
+     }
+    },
+    {
+     "hex": "#edd3ab",
+     "share": 0.0011,
+     "oklch": {
+      "L": 0.8787,
+      "C": 0.0605,
+      "h": 78.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c2c3c4",
+     "share": 0.0231,
+     "C": 0.0018
+    },
+    {
+     "hex": "#efefef",
+     "share": 0.3893,
+     "C": 0.0001
+    },
+    {
+     "hex": "#979797",
+     "share": 0.0224,
+     "C": 0.0001
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0249,
+    "stops": [
+     "#efefef",
+     "#f2f2f2",
+     "#fbfbfb",
+     "#f5f5f5",
+     "#eeeeee"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-25.jpg",
+   "source": "originals",
+   "original": "design/ref-25.jpg",
+   "sha256": "466c2bfb3e9424fb",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    157
+   ],
+   "clusters": [
+    {
+     "hex": "#ffffff",
+     "share": 0.6287,
+     "oklch": {
+      "L": 0.9993,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f4f4f4",
+     "share": 0.2745,
+     "oklch": {
+      "L": 0.9666,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e3e3e2",
+     "share": 0.0441,
+     "oklch": {
+      "L": 0.9146,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#c0bfbd",
+     "share": 0.0258,
+     "oklch": {
+      "L": 0.8057,
+      "C": 0.0036,
+      "h": 96.5
+     }
+    },
+    {
+     "hex": "#8f8f8f",
+     "share": 0.0137,
+     "oklch": {
+      "L": 0.6492,
+      "C": 0.0004,
+      "h": null
+     }
+    },
+    {
+     "hex": "#1c1d1c",
+     "share": 0.0088,
+     "oklch": {
+      "L": 0.2293,
+      "C": 0.0016,
+      "h": null
+     }
+    },
+    {
+     "hex": "#4f504f",
+     "share": 0.0033,
+     "oklch": {
+      "L": 0.4311,
+      "C": 0.0026,
+      "h": 156.6
+     }
+    },
+    {
+     "hex": "#7598de",
+     "share": 0.0012,
+     "oklch": {
+      "L": 0.6817,
+      "C": 0.1118,
+      "h": 263.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c0bfbd",
+     "share": 0.0258,
+     "C": 0.0036
+    },
+    {
+     "hex": "#e3e3e2",
+     "share": 0.0441,
+     "C": 0.0005
+    },
+    {
+     "hex": "#ffffff",
+     "share": 0.6287,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.0014,
+    "stops": [
+     "#f4f4f4",
+     "#ffffff",
+     "#ffffff",
+     "#f4f4f4",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-26.jpg",
+   "source": "originals",
+   "original": "design/ref-26.jpg",
+   "sha256": "fb3d8d498e33c15e",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#eeedea",
+     "share": 0.3108,
+     "oklch": {
+      "L": 0.9454,
+      "C": 0.0038,
+      "h": 88.7
+     }
+    },
+    {
+     "hex": "#fafaf9",
+     "share": 0.2453,
+     "oklch": {
+      "L": 0.9839,
+      "C": 0.0015,
+      "h": null
+     }
+    },
+    {
+     "hex": "#d8dbda",
+     "share": 0.2056,
+     "oklch": {
+      "L": 0.8891,
+      "C": 0.0044,
+      "h": 175.6
+     }
+    },
+    {
+     "hex": "#d1d5d4",
+     "share": 0.1148,
+     "oklch": {
+      "L": 0.8705,
+      "C": 0.005,
+      "h": 171.8
+     }
+    },
+    {
+     "hex": "#cacecd",
+     "share": 0.0863,
+     "oklch": {
+      "L": 0.849,
+      "C": 0.005,
+      "h": 174.8
+     }
+    },
+    {
+     "hex": "#aeb4b3",
+     "share": 0.0165,
+     "oklch": {
+      "L": 0.7658,
+      "C": 0.0072,
+      "h": 185.2
+     }
+    },
+    {
+     "hex": "#919e9b",
+     "share": 0.0153,
+     "oklch": {
+      "L": 0.6867,
+      "C": 0.015,
+      "h": 185.6
+     }
+    },
+    {
+     "hex": "#677c7f",
+     "share": 0.0055,
+     "oklch": {
+      "L": 0.5695,
+      "C": 0.0251,
+      "h": 207.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#d1d5d4",
+     "share": 0.1148,
+     "C": 0.005
+    },
+    {
+     "hex": "#cacecd",
+     "share": 0.0863,
+     "C": 0.005
+    },
+    {
+     "hex": "#d8dbda",
+     "share": 0.2056,
+     "C": 0.0044
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0258,
+    "stops": [
+     "#d7dbda",
+     "#748788",
+     "#edecea",
+     "#fbfaf8",
+     "#d2d6d5"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-27.jpg",
+   "source": "originals",
+   "original": "design/ref-27.jpg",
+   "sha256": "df4108e55e13bdd6",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": true,
+   "size_sampled": [
+    200,
+    179
+   ],
+   "clusters": [
+    {
+     "hex": "#2c2c2c",
+     "share": 0.5767,
+     "oklch": {
+      "L": 0.2925,
+      "C": 0.0004,
+      "h": null
+     }
+    },
+    {
+     "hex": "#a69099",
+     "share": 0.1186,
+     "oklch": {
+      "L": 0.6757,
+      "C": 0.0297,
+      "h": 351.3
+     }
+    },
+    {
+     "hex": "#d2dbe3",
+     "share": 0.093,
+     "oklch": {
+      "L": 0.8879,
+      "C": 0.0152,
+      "h": 242.5
+     }
+    },
+    {
+     "hex": "#edc59c",
+     "share": 0.0838,
+     "oklch": {
+      "L": 0.8483,
+      "C": 0.0707,
+      "h": 67.4
+     }
+    },
+    {
+     "hex": "#81a4d3",
+     "share": 0.0468,
+     "oklch": {
+      "L": 0.7105,
+      "C": 0.0796,
+      "h": 256.6
+     }
+    },
+    {
+     "hex": "#c6e365",
+     "share": 0.0415,
+     "oklch": {
+      "L": 0.8703,
+      "C": 0.1557,
+      "h": 120.6
+     }
+    },
+    {
+     "hex": "#6663d3",
+     "share": 0.0208,
+     "oklch": {
+      "L": 0.5603,
+      "C": 0.1682,
+      "h": 280.6
+     }
+    },
+    {
+     "hex": "#793628",
+     "share": 0.0189,
+     "oklch": {
+      "L": 0.4203,
+      "C": 0.0964,
+      "h": 33.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#6663d3",
+     "share": 0.0208,
+     "C": 0.1682
+    },
+    {
+     "hex": "#c6e365",
+     "share": 0.0415,
+     "C": 0.1557
+    },
+    {
+     "hex": "#81a4d3",
+     "share": 0.0468,
+     "C": 0.0796
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1952,
+    "stops": [
+     "#2c2c2c",
+     "#2c2c2c",
+     "#2c2c2c",
+     "#2c2c2c",
+     "#2c2c2c"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-28.jpg",
+   "source": "originals",
+   "original": "design/ref-28.jpg",
+   "sha256": "ec903a27e0f62491",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    158
+   ],
+   "clusters": [
+    {
+     "hex": "#fafaf9",
+     "share": 0.4077,
+     "oklch": {
+      "L": 0.9837,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#474441",
+     "share": 0.234,
+     "oklch": {
+      "L": 0.3902,
+      "C": 0.0064,
+      "h": 66.9
+     }
+    },
+    {
+     "hex": "#111211",
+     "share": 0.1965,
+     "oklch": {
+      "L": 0.1795,
+      "C": 0.0018,
+      "h": null
+     }
+    },
+    {
+     "hex": "#ababa8",
+     "share": 0.0535,
+     "oklch": {
+      "L": 0.7396,
+      "C": 0.0037,
+      "h": 94.2
+     }
+    },
+    {
+     "hex": "#1a2113",
+     "share": 0.0378,
+     "oklch": {
+      "L": 0.2369,
+      "C": 0.0286,
+      "h": 129.6
+     }
+    },
+    {
+     "hex": "#b997f0",
+     "share": 0.0284,
+     "oklch": {
+      "L": 0.7413,
+      "C": 0.1286,
+      "h": 300.8
+     }
+    },
+    {
+     "hex": "#f5cf4f",
+     "share": 0.0246,
+     "oklch": {
+      "L": 0.8646,
+      "C": 0.1484,
+      "h": 92.4
+     }
+    },
+    {
+     "hex": "#8b7754",
+     "share": 0.0176,
+     "oklch": {
+      "L": 0.58,
+      "C": 0.0557,
+      "h": 81.4
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f5cf4f",
+     "share": 0.0246,
+     "C": 0.1484
+    },
+    {
+     "hex": "#b997f0",
+     "share": 0.0284,
+     "C": 0.1286
+    },
+    {
+     "hex": "#1a2113",
+     "share": 0.0378,
+     "C": 0.0286
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1531,
+    "stops": [
+     "#f7f7f7",
+     "#ffffff",
+     "#ffffff",
+     "#ffffff",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-29.jpg",
+   "source": "originals",
+   "original": "design/ref-29.jpg",
+   "sha256": "fc1dfd6fe05fd5ee",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report",
+    "Lookbook"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    260
+   ],
+   "clusters": [
+    {
+     "hex": "#cac7c3",
+     "share": 0.519,
+     "oklch": {
+      "L": 0.8317,
+      "C": 0.0064,
+      "h": 75.7
+     }
+    },
+    {
+     "hex": "#fafafa",
+     "share": 0.2897,
+     "oklch": {
+      "L": 0.9861,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#151414",
+     "share": 0.0755,
+     "oklch": {
+      "L": 0.1921,
+      "C": 0.0013,
+      "h": null
+     }
+    },
+    {
+     "hex": "#78787a",
+     "share": 0.0346,
+     "oklch": {
+      "L": 0.5732,
+      "C": 0.003,
+      "h": 286.2
+     }
+    },
+    {
+     "hex": "#cd55d8",
+     "share": 0.0286,
+     "oklch": {
+      "L": 0.6521,
+      "C": 0.2156,
+      "h": 324.3
+     }
+    },
+    {
+     "hex": "#f6d84b",
+     "share": 0.0279,
+     "oklch": {
+      "L": 0.8837,
+      "C": 0.1572,
+      "h": 97.0
+     }
+    },
+    {
+     "hex": "#865b45",
+     "share": 0.0126,
+     "oklch": {
+      "L": 0.5121,
+      "C": 0.0655,
+      "h": 49.0
+     }
+    },
+    {
+     "hex": "#b95838",
+     "share": 0.012,
+     "oklch": {
+      "L": 0.5751,
+      "C": 0.1342,
+      "h": 38.9
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#cd55d8",
+     "share": 0.0286,
+     "C": 0.2156
+    },
+    {
+     "hex": "#f6d84b",
+     "share": 0.0279,
+     "C": 0.1572
+    },
+    {
+     "hex": "#cac7c3",
+     "share": 0.519,
+     "C": 0.0064
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.2229,
+    "stops": [
+     "#cac7c2",
+     "#1b1b1b",
+     "#fdfdfd",
+     "#fdfdfd",
+     "#cac7c2"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-7.jpg",
+   "source": "originals",
+   "original": "design/ref-7.jpg",
+   "sha256": "23829df2f06d19f3",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report",
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    152
+   ],
+   "clusters": [
+    {
+     "hex": "#f6f6f6",
+     "share": 0.9406,
+     "oklch": {
+      "L": 0.9735,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#d7d7d7",
+     "share": 0.0228,
+     "oklch": {
+      "L": 0.8799,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#bdbdbd",
+     "share": 0.0151,
+     "oklch": {
+      "L": 0.7979,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#8d8d8d",
+     "share": 0.0064,
+     "oklch": {
+      "L": 0.6421,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f0f1dc",
+     "share": 0.0058,
+     "oklch": {
+      "L": 0.9519,
+      "C": 0.0279,
+      "h": 108.3
+     }
+    },
+    {
+     "hex": "#acd49e",
+     "share": 0.004,
+     "oklch": {
+      "L": 0.8279,
+      "C": 0.0845,
+      "h": 137.6
+     }
+    },
+    {
+     "hex": "#f7e9bc",
+     "share": 0.0028,
+     "oklch": {
+      "L": 0.9338,
+      "C": 0.0606,
+      "h": 92.4
+     }
+    },
+    {
+     "hex": "#f9e098",
+     "share": 0.0024,
+     "oklch": {
+      "L": 0.9115,
+      "C": 0.0943,
+      "h": 90.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f6f6f6",
+     "share": 0.9406,
+     "C": 0.0
+    },
+    {
+     "hex": "#d7d7d7",
+     "share": 0.0228,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.0255,
+    "stops": [
+     "#f6f6f6",
+     "#f6f6f6",
+     "#f6f6f6",
+     "#f1f1f1",
+     "#fbfaf9"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-8.jpg",
+   "source": "originals",
+   "original": "design/ref-8.jpg",
+   "sha256": "a33085217135b913",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    146
+   ],
+   "clusters": [
+    {
+     "hex": "#ffffff",
+     "share": 0.6947,
+     "oklch": {
+      "L": 0.9998,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f4f4f4",
+     "share": 0.1359,
+     "oklch": {
+      "L": 0.9665,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e1e1e1",
+     "share": 0.1133,
+     "oklch": {
+      "L": 0.9112,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#fafafa",
+     "share": 0.0315,
+     "oklch": {
+      "L": 0.9847,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cecece",
+     "share": 0.0099,
+     "oklch": {
+      "L": 0.8507,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#b6b6b6",
+     "share": 0.0076,
+     "oklch": {
+      "L": 0.7772,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#a1a1a1",
+     "share": 0.0053,
+     "oklch": {
+      "L": 0.7095,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#858585",
+     "share": 0.0018,
+     "oklch": {
+      "L": 0.6168,
+      "C": 0.0,
+      "h": null
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#ffffff",
+     "share": 0.6947,
+     "C": 0.0
+    },
+    {
+     "hex": "#f4f4f4",
+     "share": 0.1359,
+     "C": 0.0
+    },
+    {
+     "hex": "#e1e1e1",
+     "share": 0.1133,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0,
+    "stops": [
+     "#e1e1e1",
+     "#ffffff",
+     "#ffffff",
+     "#ffffff",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "design/ref-9.jpg",
+   "source": "originals",
+   "original": "design/ref-9.jpg",
+   "sha256": "1f9dc27165e9769e",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": true,
+   "size_sampled": [
+    200,
+    189
+   ],
+   "clusters": [
+    {
+     "hex": "#f8f8f9",
+     "share": 0.7097,
+     "oklch": {
+      "L": 0.9791,
+      "C": 0.0013,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cbd1d5",
+     "share": 0.1556,
+     "oklch": {
+      "L": 0.8567,
+      "C": 0.0084,
+      "h": 242.4
+     }
+    },
+    {
+     "hex": "#6c673a",
+     "share": 0.0504,
+     "oklch": {
+      "L": 0.5079,
+      "C": 0.0643,
+      "h": 102.3
+     }
+    },
+    {
+     "hex": "#e2f5dd",
+     "share": 0.0281,
+     "oklch": {
+      "L": 0.9488,
+      "C": 0.0368,
+      "h": 138.8
+     }
+    },
+    {
+     "hex": "#847b6a",
+     "share": 0.0255,
+     "oklch": {
+      "L": 0.5866,
+      "C": 0.027,
+      "h": 84.2
+     }
+    },
+    {
+     "hex": "#a6a4a5",
+     "share": 0.0242,
+     "oklch": {
+      "L": 0.7197,
+      "C": 0.0033,
+      "h": 347.4
+     }
+    },
+    {
+     "hex": "#aab28d",
+     "share": 0.006,
+     "oklch": {
+      "L": 0.748,
+      "C": 0.052,
+      "h": 118.3
+     }
+    },
+    {
+     "hex": "#edbe56",
+     "share": 0.0004,
+     "oklch": {
+      "L": 0.824,
+      "C": 0.1322,
+      "h": 84.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#6c673a",
+     "share": 0.0504,
+     "C": 0.0643
+    },
+    {
+     "hex": "#e2f5dd",
+     "share": 0.0281,
+     "C": 0.0368
+    },
+    {
+     "hex": "#847b6a",
+     "share": 0.0255,
+     "C": 0.027
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0701,
+    "stops": [
+     "#817c4c",
+     "#fafafa",
+     "#faf9fa",
+     "#afafaf",
+     "#fafafa"
+    ]
+   }
+  },
+  {
+   "file": "design/research (UNMS).jpg",
+   "source": "originals",
+   "original": "design/research (UNMS).jpg",
+   "sha256": "b3a19f654e76dc9e",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": true,
+   "size_sampled": [
+    200,
+    170
+   ],
+   "clusters": [
+    {
+     "hex": "#f2eee5",
+     "share": 0.5661,
+     "oklch": {
+      "L": 0.9488,
+      "C": 0.0118,
+      "h": 84.2
+     }
+    },
+    {
+     "hex": "#e1e7c4",
+     "share": 0.1359,
+     "oklch": {
+      "L": 0.9141,
+      "C": 0.0474,
+      "h": 115.6
+     }
+    },
+    {
+     "hex": "#d5cfc4",
+     "share": 0.0963,
+     "oklch": {
+      "L": 0.8559,
+      "C": 0.0157,
+      "h": 81.6
+     }
+    },
+    {
+     "hex": "#aead9c",
+     "share": 0.0624,
+     "oklch": {
+      "L": 0.7441,
+      "C": 0.0248,
+      "h": 106.8
+     }
+    },
+    {
+     "hex": "#cabce4",
+     "share": 0.0601,
+     "oklch": {
+      "L": 0.8191,
+      "C": 0.0573,
+      "h": 301.0
+     }
+    },
+    {
+     "hex": "#457fb3",
+     "share": 0.0376,
+     "oklch": {
+      "L": 0.579,
+      "C": 0.1012,
+      "h": 248.0
+     }
+    },
+    {
+     "hex": "#e0bfce",
+     "share": 0.0266,
+     "oklch": {
+      "L": 0.8381,
+      "C": 0.0424,
+      "h": 349.6
+     }
+    },
+    {
+     "hex": "#797472",
+     "share": 0.015,
+     "oklch": {
+      "L": 0.5623,
+      "C": 0.0072,
+      "h": 31.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#457fb3",
+     "share": 0.0376,
+     "C": 0.1012
+    },
+    {
+     "hex": "#cabce4",
+     "share": 0.0601,
+     "C": 0.0573
+    },
+    {
+     "hex": "#e1e7c4",
+     "share": 0.1359,
+     "C": 0.0474
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.1066,
+    "stops": [
+     "#3a7bb5",
+     "#f0ede6",
+     "#f1eee6",
+     "#f8f2e6",
+     "#42588a"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/Creative - Lorenzo 🤘 Bocchi Milray.jpg",
+   "source": "originals",
+   "original": "inspirations 2/Creative - Lorenzo 🤘 Bocchi Milray.jpg",
+   "sha256": "26f9b6c4e3afe14c",
+   "duplicates": [],
+   "direction": "Lookbook",
+   "directions": [
+    "Lookbook"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    344
+   ],
+   "clusters": [
+    {
+     "hex": "#f7f6f2",
+     "share": 0.5295,
+     "oklch": {
+      "L": 0.9731,
+      "C": 0.0055,
+      "h": 92.1
+     }
+    },
+    {
+     "hex": "#fffffe",
+     "share": 0.4007,
+     "oklch": {
+      "L": 0.9988,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cecbc9",
+     "share": 0.0484,
+     "oklch": {
+      "L": 0.8437,
+      "C": 0.0044,
+      "h": 69.0
+     }
+    },
+    {
+     "hex": "#8b8685",
+     "share": 0.0109,
+     "oklch": {
+      "L": 0.6237,
+      "C": 0.0062,
+      "h": 24.8
+     }
+    },
+    {
+     "hex": "#282528",
+     "share": 0.0078,
+     "oklch": {
+      "L": 0.2682,
+      "C": 0.0083,
+      "h": 322.8
+     }
+    },
+    {
+     "hex": "#e16f57",
+     "share": 0.0015,
+     "oklch": {
+      "L": 0.6714,
+      "C": 0.1481,
+      "h": 33.3
+     }
+    },
+    {
+     "hex": "#dba841",
+     "share": 0.0009,
+     "oklch": {
+      "L": 0.7599,
+      "C": 0.1313,
+      "h": 81.4
+     }
+    },
+    {
+     "hex": "#4da653",
+     "share": 0.0003,
+     "oklch": {
+      "L": 0.6513,
+      "C": 0.1477,
+      "h": 144.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f7f6f2",
+     "share": 0.5295,
+     "C": 0.0055
+    },
+    {
+     "hex": "#cecbc9",
+     "share": 0.0484,
+     "C": 0.0044
+    },
+    {
+     "hex": "#fffffe",
+     "share": 0.4007,
+     "C": 0.0002
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.0432,
+    "stops": [
+     "#f8f7f3",
+     "#ffffff",
+     "#fefefe",
+     "#f9f9f6",
+     "#f8f7f3"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/Home _ X.jpg",
+   "source": "originals",
+   "original": "inspirations 2/Home _ X.jpg",
+   "sha256": "33422a581d73074f",
+   "duplicates": [],
+   "direction": "Warm glow",
+   "directions": [
+    "Warm glow"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    200
+   ],
+   "clusters": [
+    {
+     "hex": "#f6edd7",
+     "share": 0.2877,
+     "oklch": {
+      "L": 0.9476,
+      "C": 0.0313,
+      "h": 87.8
+     }
+    },
+    {
+     "hex": "#c74531",
+     "share": 0.147,
+     "oklch": {
+      "L": 0.5694,
+      "C": 0.1689,
+      "h": 31.6
+     }
+    },
+    {
+     "hex": "#4a1016",
+     "share": 0.1353,
+     "oklch": {
+      "L": 0.2771,
+      "C": 0.087,
+      "h": 19.3
+     }
+    },
+    {
+     "hex": "#e1662e",
+     "share": 0.1147,
+     "oklch": {
+      "L": 0.6521,
+      "C": 0.1674,
+      "h": 42.7
+     }
+    },
+    {
+     "hex": "#ef8f36",
+     "share": 0.1006,
+     "oklch": {
+      "L": 0.7376,
+      "C": 0.152,
+      "h": 59.1
+     }
+    },
+    {
+     "hex": "#f4d09b",
+     "share": 0.0807,
+     "oklch": {
+      "L": 0.875,
+      "C": 0.079,
+      "h": 76.8
+     }
+    },
+    {
+     "hex": "#f6b762",
+     "share": 0.0725,
+     "oklch": {
+      "L": 0.822,
+      "C": 0.1251,
+      "h": 73.0
+     }
+    },
+    {
+     "hex": "#862d27",
+     "share": 0.0615,
+     "oklch": {
+      "L": 0.4286,
+      "C": 0.1241,
+      "h": 27.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c74531",
+     "share": 0.147,
+     "C": 0.1689
+    },
+    {
+     "hex": "#e1662e",
+     "share": 0.1147,
+     "C": 0.1674
+    },
+    {
+     "hex": "#ef8f36",
+     "share": 0.1006,
+     "C": 0.152
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.1595,
+    "stops": [
+     "#f7f3e8",
+     "#f5eace",
+     "#f7e4bf",
+     "#ea802f",
+     "#f7f3e8"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/Tables list ux _ Table listing ux, Table listing design, User profile dashboard template.jpg",
+   "source": "originals",
+   "original": "inspirations 2/Tables list ux _ Table listing ux, Table listing design, User profile dashboard template.jpg",
+   "sha256": "644d7e56581cd595",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#efedee",
+     "share": 0.3426,
+     "oklch": {
+      "L": 0.9481,
+      "C": 0.0025,
+      "h": 343.7
+     }
+    },
+    {
+     "hex": "#fefefe",
+     "share": 0.3307,
+     "oklch": {
+      "L": 0.9969,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#dadada",
+     "share": 0.2084,
+     "oklch": {
+      "L": 0.8881,
+      "C": 0.0003,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f9f8f8",
+     "share": 0.0576,
+     "oklch": {
+      "L": 0.9797,
+      "C": 0.0007,
+      "h": null
+     }
+    },
+    {
+     "hex": "#c2c2c2",
+     "share": 0.0203,
+     "oklch": {
+      "L": 0.8141,
+      "C": 0.0012,
+      "h": null
+     }
+    },
+    {
+     "hex": "#acacac",
+     "share": 0.019,
+     "oklch": {
+      "L": 0.7441,
+      "C": 0.0009,
+      "h": null
+     }
+    },
+    {
+     "hex": "#929192",
+     "share": 0.015,
+     "oklch": {
+      "L": 0.6588,
+      "C": 0.0016,
+      "h": null
+     }
+    },
+    {
+     "hex": "#757375",
+     "share": 0.0063,
+     "oklch": {
+      "L": 0.5567,
+      "C": 0.0045,
+      "h": 320.2
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#efedee",
+     "share": 0.3426,
+     "C": 0.0025
+    },
+    {
+     "hex": "#c2c2c2",
+     "share": 0.0203,
+     "C": 0.0012
+    },
+    {
+     "hex": "#f9f8f8",
+     "share": 0.0576,
+     "C": 0.0007
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.0035,
+    "stops": [
+     "#dadada",
+     "#f0eeef",
+     "#fdfdfd",
+     "#fdfdfd",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/jpg(10).jpg",
+   "source": "originals",
+   "original": "inspirations 2/jpg(10)",
+   "sha256": "714ac57db510e07b",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    155
+   ],
+   "clusters": [
+    {
+     "hex": "#f5f5f5",
+     "share": 0.7842,
+     "oklch": {
+      "L": 0.9697,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#fefefe",
+     "share": 0.1078,
+     "oklch": {
+      "L": 0.996,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#efefef",
+     "share": 0.0878,
+     "oklch": {
+      "L": 0.9523,
+      "C": 0.0003,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cdced1",
+     "share": 0.0115,
+     "oklch": {
+      "L": 0.8515,
+      "C": 0.0044,
+      "h": 277.6
+     }
+    },
+    {
+     "hex": "#abb7e6",
+     "share": 0.0027,
+     "oklch": {
+      "L": 0.787,
+      "C": 0.0681,
+      "h": 273.4
+     }
+    },
+    {
+     "hex": "#9a9a9b",
+     "share": 0.0025,
+     "oklch": {
+      "L": 0.6874,
+      "C": 0.0008,
+      "h": null
+     }
+    },
+    {
+     "hex": "#3151e3",
+     "share": 0.0024,
+     "oklch": {
+      "L": 0.5097,
+      "C": 0.2238,
+      "h": 267.7
+     }
+    },
+    {
+     "hex": "#647be1",
+     "share": 0.001,
+     "oklch": {
+      "L": 0.6148,
+      "C": 0.1557,
+      "h": 271.6
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#efefef",
+     "share": 0.0878,
+     "C": 0.0003
+    },
+    {
+     "hex": "#fefefe",
+     "share": 0.1078,
+     "C": 0.0002
+    },
+    {
+     "hex": "#f5f5f5",
+     "share": 0.7842,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.2159,
+    "stops": [
+     "#f4f4f4",
+     "#f8f8f9",
+     "#f8f8f8",
+     "#f9f9fa",
+     "#f4f4f4"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/jpg(11).jpg",
+   "source": "originals",
+   "original": "inspirations 2/jpg(11)",
+   "sha256": "edcfeaab1d3babff",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    214
+   ],
+   "clusters": [
+    {
+     "hex": "#f1f1f1",
+     "share": 0.4229,
+     "oklch": {
+      "L": 0.9571,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#fdfdfd",
+     "share": 0.3945,
+     "oklch": {
+      "L": 0.9934,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#282828",
+     "share": 0.1217,
+     "oklch": {
+      "L": 0.2782,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cdcac8",
+     "share": 0.0274,
+     "oklch": {
+      "L": 0.8413,
+      "C": 0.0042,
+      "h": 49.5
+     }
+    },
+    {
+     "hex": "#acacac",
+     "share": 0.0129,
+     "oklch": {
+      "L": 0.7453,
+      "C": 0.0004,
+      "h": null
+     }
+    },
+    {
+     "hex": "#818181",
+     "share": 0.0106,
+     "oklch": {
+      "L": 0.6041,
+      "C": 0.0007,
+      "h": null
+     }
+    },
+    {
+     "hex": "#535353",
+     "share": 0.0065,
+     "oklch": {
+      "L": 0.4412,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#8fd2b1",
+     "share": 0.0035,
+     "oklch": {
+      "L": 0.8085,
+      "C": 0.0824,
+      "h": 162.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#cdcac8",
+     "share": 0.0274,
+     "C": 0.0042
+    },
+    {
+     "hex": "#f1f1f1",
+     "share": 0.4229,
+     "C": 0.0002
+    },
+    {
+     "hex": "#fdfdfd",
+     "share": 0.3945,
+     "C": 0.0001
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0064,
+    "stops": [
+     "#2a2a2a",
+     "#f1f1f1",
+     "#fdfdfd",
+     "#fdfdfd",
+     "#fdfdfd"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/jpg(7).jpg",
+   "source": "originals",
+   "original": "inspirations 2/jpg(7)",
+   "sha256": "94771e6d8430b238",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    133
+   ],
+   "clusters": [
+    {
+     "hex": "#f9f9f7",
+     "share": 0.5174,
+     "oklch": {
+      "L": 0.9822,
+      "C": 0.0026,
+      "h": 105.2
+     }
+    },
+    {
+     "hex": "#dfdbd8",
+     "share": 0.3676,
+     "oklch": {
+      "L": 0.894,
+      "C": 0.0058,
+      "h": 67.4
+     }
+    },
+    {
+     "hex": "#fdfdfc",
+     "share": 0.0444,
+     "oklch": {
+      "L": 0.9944,
+      "C": 0.002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#040404",
+     "share": 0.0348,
+     "oklch": {
+      "L": 0.1091,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#afaeac",
+     "share": 0.0191,
+     "oklch": {
+      "L": 0.7506,
+      "C": 0.0029,
+      "h": 93.6
+     }
+    },
+    {
+     "hex": "#6e6c6b",
+     "share": 0.0094,
+     "oklch": {
+      "L": 0.5334,
+      "C": 0.0031,
+      "h": 61.0
+     }
+    },
+    {
+     "hex": "#393838",
+     "share": 0.0062,
+     "oklch": {
+      "L": 0.3427,
+      "C": 0.0009,
+      "h": null
+     }
+    },
+    {
+     "hex": "#a8c9d1",
+     "share": 0.0011,
+     "oklch": {
+      "L": 0.8135,
+      "C": 0.0371,
+      "h": 214.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#dfdbd8",
+     "share": 0.3676,
+     "C": 0.0058
+    },
+    {
+     "hex": "#f9f9f7",
+     "share": 0.5174,
+     "C": 0.0026
+    },
+    {
+     "hex": "#fdfdfc",
+     "share": 0.0444,
+     "C": 0.002
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.0089,
+    "stops": [
+     "#dfdbd8",
+     "#fbfbf9",
+     "#fafaf8",
+     "#f9f9f7",
+     "#fafaf8"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/jpg(8).jpg",
+   "source": "originals",
+   "original": "inspirations 2/jpg(8)",
+   "sha256": "1f63599937423041",
+   "duplicates": [],
+   "direction": "Warm glow",
+   "directions": [
+    "Warm glow"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    355
+   ],
+   "clusters": [
+    {
+     "hex": "#fefdfd",
+     "share": 0.4963,
+     "oklch": {
+      "L": 0.9952,
+      "C": 0.0004,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e9d3c1",
+     "share": 0.1465,
+     "oklch": {
+      "L": 0.8792,
+      "C": 0.0341,
+      "h": 61.1
+     }
+    },
+    {
+     "hex": "#f19349",
+     "share": 0.1047,
+     "oklch": {
+      "L": 0.7484,
+      "C": 0.1443,
+      "h": 56.2
+     }
+    },
+    {
+     "hex": "#f1b989",
+     "share": 0.0966,
+     "oklch": {
+      "L": 0.8258,
+      "C": 0.0902,
+      "h": 62.5
+     }
+    },
+    {
+     "hex": "#fb6d18",
+     "share": 0.0636,
+     "oklch": {
+      "L": 0.6996,
+      "C": 0.1924,
+      "h": 45.0
+     }
+    },
+    {
+     "hex": "#e96736",
+     "share": 0.0391,
+     "oklch": {
+      "L": 0.6667,
+      "C": 0.1738,
+      "h": 39.8
+     }
+    },
+    {
+     "hex": "#740508",
+     "share": 0.0329,
+     "oklch": {
+      "L": 0.354,
+      "C": 0.1404,
+      "h": 27.5
+     }
+    },
+    {
+     "hex": "#ad1e05",
+     "share": 0.0204,
+     "oklch": {
+      "L": 0.4832,
+      "C": 0.1803,
+      "h": 31.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#fb6d18",
+     "share": 0.0636,
+     "C": 0.1924
+    },
+    {
+     "hex": "#ad1e05",
+     "share": 0.0204,
+     "C": 0.1803
+    },
+    {
+     "hex": "#e96736",
+     "share": 0.0391,
+     "C": 0.1738
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.2145,
+    "stops": [
+     "#fefefe",
+     "#f7660e",
+     "#dfc9bc",
+     "#dfd3c5",
+     "#fefefe"
+    ]
+   }
+  },
+  {
+   "file": "inspirations 2/jpg(9).jpg",
+   "source": "originals",
+   "original": "inspirations 2/jpg(9)",
+   "sha256": "3fce001b03830979",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    227
+   ],
+   "clusters": [
+    {
+     "hex": "#fefefe",
+     "share": 0.7263,
+     "oklch": {
+      "L": 0.9983,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f1f1f1",
+     "share": 0.2098,
+     "oklch": {
+      "L": 0.9579,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cccccc",
+     "share": 0.0387,
+     "oklch": {
+      "L": 0.8444,
+      "C": 0.0008,
+      "h": null
+     }
+    },
+    {
+     "hex": "#a49f9e",
+     "share": 0.0175,
+     "oklch": {
+      "L": 0.7069,
+      "C": 0.0059,
+      "h": 33.9
+     }
+    },
+    {
+     "hex": "#e4be6e",
+     "share": 0.0027,
+     "oklch": {
+      "L": 0.8183,
+      "C": 0.1082,
+      "h": 84.8
+     }
+    },
+    {
+     "hex": "#6e9fda",
+     "share": 0.002,
+     "oklch": {
+      "L": 0.6906,
+      "C": 0.1025,
+      "h": 253.8
+     }
+    },
+    {
+     "hex": "#4a4744",
+     "share": 0.0019,
+     "oklch": {
+      "L": 0.4005,
+      "C": 0.0063,
+      "h": 74.1
+     }
+    },
+    {
+     "hex": "#e26156",
+     "share": 0.0012,
+     "oklch": {
+      "L": 0.6512,
+      "C": 0.163,
+      "h": 27.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#cccccc",
+     "share": 0.0387,
+     "C": 0.0008
+    },
+    {
+     "hex": "#fefefe",
+     "share": 0.7263,
+     "C": 0.0001
+    },
+    {
+     "hex": "#f1f1f1",
+     "share": 0.2098,
+     "C": 0.0001
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.0395,
+    "stops": [
+     "#f2f2f2",
+     "#ffffff",
+     "#ffffff",
+     "#ffffff",
+     "#f2f2f2"
+    ]
+   }
+  },
+  {
+   "file": "more more reference/(1) Home _ X.jpg",
+   "source": "originals",
+   "original": "more more reference/(1) Home _ X.jpg",
+   "sha256": "fbc5854bce5351c6",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    116
+   ],
+   "clusters": [
+    {
+     "hex": "#ffffff",
+     "share": 0.6712,
+     "oklch": {
+      "L": 0.9993,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f1f1f1",
+     "share": 0.2784,
+     "oklch": {
+      "L": 0.9585,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#99c3ea",
+     "share": 0.0167,
+     "oklch": {
+      "L": 0.8,
+      "C": 0.0717,
+      "h": 247.4
+     }
+    },
+    {
+     "hex": "#cdc4c7",
+     "share": 0.0156,
+     "oklch": {
+      "L": 0.8294,
+      "C": 0.0105,
+      "h": 355.1
+     }
+    },
+    {
+     "hex": "#363636",
+     "share": 0.0055,
+     "oklch": {
+      "L": 0.3337,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#1691fa",
+     "share": 0.0054,
+     "oklch": {
+      "L": 0.6508,
+      "C": 0.1839,
+      "h": 251.3
+     }
+    },
+    {
+     "hex": "#c0a6fa",
+     "share": 0.0043,
+     "oklch": {
+      "L": 0.7791,
+      "C": 0.1203,
+      "h": 298.0
+     }
+    },
+    {
+     "hex": "#f3af40",
+     "share": 0.0029,
+     "oklch": {
+      "L": 0.8001,
+      "C": 0.1455,
+      "h": 75.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f1f1f1",
+     "share": 0.2784,
+     "C": 0.0005
+    },
+    {
+     "hex": "#ffffff",
+     "share": 0.6712,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.1574,
+    "stops": [
+     "#f2f2f2",
+     "#ffffff",
+     "#fefefe",
+     "#ffffff",
+     "#f2f2f2"
+    ]
+   }
+  },
+  {
+   "file": "more more reference/History _ X.jpg",
+   "source": "originals",
+   "original": "more more reference/History _ X.jpg",
+   "sha256": "f7018eaabd1f868e",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#ffffff",
+     "share": 0.4036,
+     "oklch": {
+      "L": 0.9992,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f8f9f9",
+     "share": 0.284,
+     "oklch": {
+      "L": 0.9807,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e7e7e7",
+     "share": 0.1974,
+     "oklch": {
+      "L": 0.9279,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#6b6b6b",
+     "share": 0.0547,
+     "oklch": {
+      "L": 0.5276,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#9d9d9d",
+     "share": 0.0275,
+     "oklch": {
+      "L": 0.6956,
+      "C": 0.0004,
+      "h": null
+     }
+    },
+    {
+     "hex": "#c4c4c4",
+     "share": 0.0263,
+     "oklch": {
+      "L": 0.8201,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#4a4c4c",
+     "share": 0.0064,
+     "oklch": {
+      "L": 0.4141,
+      "C": 0.0015,
+      "h": null
+     }
+    },
+    {
+     "hex": "#3875be",
+     "share": 0.0001,
+     "oklch": {
+      "L": 0.5588,
+      "C": 0.1298,
+      "h": 254.2
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c4c4c4",
+     "share": 0.0263,
+     "C": 0.0005
+    },
+    {
+     "hex": "#9d9d9d",
+     "share": 0.0275,
+     "C": 0.0004
+    },
+    {
+     "hex": "#f8f9f9",
+     "share": 0.284,
+     "C": 0.0002
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0053,
+    "stops": [
+     "#e6e6e6",
+     "#ffffff",
+     "#6d6d6c",
+     "#6b696b",
+     "#686868"
+    ]
+   }
+  },
+  {
+   "file": "more more reference/jpg(10).jpg",
+   "source": "originals",
+   "original": "more more reference/jpg(10)",
+   "sha256": "cc2c497ced017598",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    131
+   ],
+   "clusters": [
+    {
+     "hex": "#c1c1c1",
+     "share": 0.5904,
+     "oklch": {
+      "L": 0.8119,
+      "C": 0.0003,
+      "h": null
+     }
+    },
+    {
+     "hex": "#fdfdfd",
+     "share": 0.2133,
+     "oklch": {
+      "L": 0.9947,
+      "C": 0.0007,
+      "h": null
+     }
+    },
+    {
+     "hex": "#b2b2b1",
+     "share": 0.0882,
+     "oklch": {
+      "L": 0.7631,
+      "C": 0.0008,
+      "h": null
+     }
+    },
+    {
+     "hex": "#99d99f",
+     "share": 0.0443,
+     "oklch": {
+      "L": 0.828,
+      "C": 0.104,
+      "h": 147.0
+     }
+    },
+    {
+     "hex": "#d2eed6",
+     "share": 0.0366,
+     "oklch": {
+      "L": 0.9227,
+      "C": 0.0445,
+      "h": 149.4
+     }
+    },
+    {
+     "hex": "#838282",
+     "share": 0.0114,
+     "oklch": {
+      "L": 0.6077,
+      "C": 0.0012,
+      "h": null
+     }
+    },
+    {
+     "hex": "#020202",
+     "share": 0.0108,
+     "oklch": {
+      "L": 0.0845,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#303030",
+     "share": 0.005,
+     "oklch": {
+      "L": 0.3097,
+      "C": 0.0,
+      "h": null
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#99d99f",
+     "share": 0.0443,
+     "C": 0.104
+    },
+    {
+     "hex": "#d2eed6",
+     "share": 0.0366,
+     "C": 0.0445
+    },
+    {
+     "hex": "#b2b2b1",
+     "share": 0.0882,
+     "C": 0.0008
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.1149,
+    "stops": [
+     "#ffffff",
+     "#8bd393",
+     "#f9fcfa",
+     "#505050",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "references 4/Amigo is a clinical AI platform built for healthcare systems and care delivery organizations_ It enables teams to design, validate, and deploy autonomous.jpg",
+   "source": "originals",
+   "original": "references 4/Amigo is a clinical AI platform built for healthcare systems and care delivery organizations_ It enables teams to design, validate, and deploy autonomous.jpg",
+   "sha256": "8a7a691fdae473ff",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    1542
+   ],
+   "clusters": [
+    {
+     "hex": "#fefdfd",
+     "share": 0.4001,
+     "oklch": {
+      "L": 0.9955,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#093444",
+     "share": 0.2033,
+     "oklch": {
+      "L": 0.3051,
+      "C": 0.053,
+      "h": 228.3
+     }
+    },
+    {
+     "hex": "#b63f27",
+     "share": 0.1725,
+     "oklch": {
+      "L": 0.5336,
+      "C": 0.1587,
+      "h": 33.5
+     }
+    },
+    {
+     "hex": "#c2babb",
+     "share": 0.0637,
+     "oklch": {
+      "L": 0.7958,
+      "C": 0.0085,
+      "h": 10.9
+     }
+    },
+    {
+     "hex": "#9e5140",
+     "share": 0.0621,
+     "oklch": {
+      "L": 0.5247,
+      "C": 0.1065,
+      "h": 33.9
+     }
+    },
+    {
+     "hex": "#32251f",
+     "share": 0.0355,
+     "oklch": {
+      "L": 0.2784,
+      "C": 0.0234,
+      "h": 46.6
+     }
+    },
+    {
+     "hex": "#b78171",
+     "share": 0.0314,
+     "oklch": {
+      "L": 0.6536,
+      "C": 0.0711,
+      "h": 37.9
+     }
+    },
+    {
+     "hex": "#65737b",
+     "share": 0.0314,
+     "oklch": {
+      "L": 0.5455,
+      "C": 0.0211,
+      "h": 235.6
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#b63f27",
+     "share": 0.1725,
+     "C": 0.1587
+    },
+    {
+     "hex": "#9e5140",
+     "share": 0.0621,
+     "C": 0.1065
+    },
+    {
+     "hex": "#b78171",
+     "share": 0.0314,
+     "C": 0.0711
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.1711,
+    "stops": [
+     "#fffefe",
+     "#916b4f",
+     "#ffffff",
+     "#ffffff",
+     "#c04734"
+    ]
+   }
+  },
+  {
+   "file": "references 4/Duna - AI-native business identity platform.jpg",
+   "source": "originals",
+   "original": "references 4/Duna - AI-native business identity platform.jpg",
+   "sha256": "e09b466b0205c52a",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    112
+   ],
+   "clusters": [
+    {
+     "hex": "#fcfbfa",
+     "share": 0.3317,
+     "oklch": {
+      "L": 0.9879,
+      "C": 0.0016,
+      "h": null
+     }
+    },
+    {
+     "hex": "#f7c7a3",
+     "share": 0.258,
+     "oklch": {
+      "L": 0.8623,
+      "C": 0.0729,
+      "h": 58.7
+     }
+    },
+    {
+     "hex": "#50453b",
+     "share": 0.1132,
+     "oklch": {
+      "L": 0.4001,
+      "C": 0.023,
+      "h": 66.6
+     }
+    },
+    {
+     "hex": "#e0cec3",
+     "share": 0.0853,
+     "oklch": {
+      "L": 0.8637,
+      "C": 0.0253,
+      "h": 53.1
+     }
+    },
+    {
+     "hex": "#e6a74a",
+     "share": 0.0603,
+     "oklch": {
+      "L": 0.7721,
+      "C": 0.1307,
+      "h": 74.4
+     }
+    },
+    {
+     "hex": "#97955e",
+     "share": 0.0516,
+     "oklch": {
+      "L": 0.657,
+      "C": 0.0753,
+      "h": 106.6
+     }
+    },
+    {
+     "hex": "#a89f3e",
+     "share": 0.051,
+     "oklch": {
+      "L": 0.6916,
+      "C": 0.118,
+      "h": 103.9
+     }
+    },
+    {
+     "hex": "#93867c",
+     "share": 0.0489,
+     "oklch": {
+      "L": 0.6291,
+      "C": 0.021,
+      "h": 62.5
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#e6a74a",
+     "share": 0.0603,
+     "C": 0.1307
+    },
+    {
+     "hex": "#a89f3e",
+     "share": 0.051,
+     "C": 0.118
+    },
+    {
+     "hex": "#97955e",
+     "share": 0.0516,
+     "C": 0.0753
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.1256,
+    "stops": [
+     "#e3ac87",
+     "#f2be9e",
+     "#d8ac4a",
+     "#fcfcfc",
+     "#2f4b4d"
+    ]
+   }
+  },
+  {
+   "file": "references 4/jpg(8).jpg",
+   "source": "originals",
+   "original": "references 4/jpg(8)",
+   "sha256": "aa8dfa5074fc0b43",
+   "duplicates": [],
+   "direction": "Warm glow",
+   "directions": [
+    "Warm glow"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    142
+   ],
+   "clusters": [
+    {
+     "hex": "#fefefe",
+     "share": 0.5584,
+     "oklch": {
+      "L": 0.9983,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#e0e3df",
+     "share": 0.1809,
+     "oklch": {
+      "L": 0.9119,
+      "C": 0.0057,
+      "h": 135.3
+     }
+    },
+    {
+     "hex": "#ccaaf1",
+     "share": 0.0719,
+     "oklch": {
+      "L": 0.7924,
+      "C": 0.105,
+      "h": 306.0
+     }
+    },
+    {
+     "hex": "#b9bcc1",
+     "share": 0.0582,
+     "oklch": {
+      "L": 0.7951,
+      "C": 0.0073,
+      "h": 253.6
+     }
+    },
+    {
+     "hex": "#f780ce",
+     "share": 0.0516,
+     "oklch": {
+      "L": 0.7559,
+      "C": 0.1704,
+      "h": 342.0
+     }
+    },
+    {
+     "hex": "#fabcd6",
+     "share": 0.0344,
+     "oklch": {
+      "L": 0.8588,
+      "C": 0.0788,
+      "h": 352.2
+     }
+    },
+    {
+     "hex": "#86a0bc",
+     "share": 0.0274,
+     "oklch": {
+      "L": 0.6954,
+      "C": 0.0514,
+      "h": 250.7
+     }
+    },
+    {
+     "hex": "#fbb383",
+     "share": 0.0173,
+     "oklch": {
+      "L": 0.8245,
+      "C": 0.1052,
+      "h": 54.1
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f780ce",
+     "share": 0.0516,
+     "C": 0.1704
+    },
+    {
+     "hex": "#ccaaf1",
+     "share": 0.0719,
+     "C": 0.105
+    },
+    {
+     "hex": "#fabcd6",
+     "share": 0.0344,
+     "C": 0.0788
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.2012,
+    "stops": [
+     "#d5dde0",
+     "#fbc4db",
+     "#fefefe",
+     "#ffffff",
+     "#597fad"
+    ]
+   }
+  },
+  {
+   "file": "references 4/jpg(9).jpg",
+   "source": "originals",
+   "original": "references 4/jpg(9)",
+   "sha256": "1847e250c5662a62",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    112
+   ],
+   "clusters": [
+    {
+     "hex": "#fafbf5",
+     "share": 0.904,
+     "oklch": {
+      "L": 0.9853,
+      "C": 0.0079,
+      "h": 114.1
+     }
+    },
+    {
+     "hex": "#fffffe",
+     "share": 0.0321,
+     "oklch": {
+      "L": 0.9986,
+      "C": 0.0011,
+      "h": null
+     }
+    },
+    {
+     "hex": "#13110f",
+     "share": 0.0135,
+     "oklch": {
+      "L": 0.1786,
+      "C": 0.005,
+      "h": 64.9
+     }
+    },
+    {
+     "hex": "#d9d8d5",
+     "share": 0.0123,
+     "oklch": {
+      "L": 0.8825,
+      "C": 0.0047,
+      "h": 102.6
+     }
+    },
+    {
+     "hex": "#555451",
+     "share": 0.0101,
+     "oklch": {
+      "L": 0.4453,
+      "C": 0.0048,
+      "h": 83.0
+     }
+    },
+    {
+     "hex": "#7f7e7b",
+     "share": 0.0096,
+     "oklch": {
+      "L": 0.5931,
+      "C": 0.0049,
+      "h": 96.1
+     }
+    },
+    {
+     "hex": "#afaeab",
+     "share": 0.0092,
+     "oklch": {
+      "L": 0.7513,
+      "C": 0.0045,
+      "h": 98.2
+     }
+    },
+    {
+     "hex": "#33312f",
+     "share": 0.0092,
+     "oklch": {
+      "L": 0.3156,
+      "C": 0.005,
+      "h": 79.9
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#fafbf5",
+     "share": 0.904,
+     "C": 0.0079
+    },
+    {
+     "hex": "#fffffe",
+     "share": 0.0321,
+     "C": 0.0011
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0106,
+    "stops": [
+     "#fafbf5",
+     "#fafbf3",
+     "#fafbf5",
+     "#fafbf4",
+     "#fafbf5"
+    ]
+   }
+  },
+  {
+   "file": "some more references/(21) Home _ X.jpg",
+   "source": "originals",
+   "original": "some more references/(21) Home _ X.jpg",
+   "sha256": "7d2c4ab432e020a1",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    260
+   ],
+   "clusters": [
+    {
+     "hex": "#39352c",
+     "share": 0.3665,
+     "oklch": {
+      "L": 0.329,
+      "C": 0.0166,
+      "h": 85.1
+     }
+    },
+    {
+     "hex": "#29241c",
+     "share": 0.2633,
+     "oklch": {
+      "L": 0.2622,
+      "C": 0.0155,
+      "h": 76.0
+     }
+    },
+    {
+     "hex": "#82745c",
+     "share": 0.0819,
+     "oklch": {
+      "L": 0.5653,
+      "C": 0.0399,
+      "h": 82.0
+     }
+    },
+    {
+     "hex": "#5a5145",
+     "share": 0.0809,
+     "oklch": {
+      "L": 0.4385,
+      "C": 0.0218,
+      "h": 74.0
+     }
+    },
+    {
+     "hex": "#a29887",
+     "share": 0.0806,
+     "oklch": {
+      "L": 0.6844,
+      "C": 0.0269,
+      "h": 80.9
+     }
+    },
+    {
+     "hex": "#cec5ab",
+     "share": 0.0466,
+     "oklch": {
+      "L": 0.8236,
+      "C": 0.037,
+      "h": 92.0
+     }
+    },
+    {
+     "hex": "#583920",
+     "share": 0.042,
+     "oklch": {
+      "L": 0.3746,
+      "C": 0.0588,
+      "h": 58.0
+     }
+    },
+    {
+     "hex": "#967242",
+     "share": 0.0382,
+     "oklch": {
+      "L": 0.5764,
+      "C": 0.079,
+      "h": 73.2
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#967242",
+     "share": 0.0382,
+     "C": 0.079
+    },
+    {
+     "hex": "#583920",
+     "share": 0.042,
+     "C": 0.0588
+    },
+    {
+     "hex": "#82745c",
+     "share": 0.0819,
+     "C": 0.0399
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.0748,
+    "stops": [
+     "#b1a893",
+     "#343025",
+     "#373328",
+     "#3f3b30",
+     "#413d32"
+    ]
+   }
+  },
+  {
+   "file": "some more references/System.jpg",
+   "source": "originals",
+   "original": "some more references/System.jpg",
+   "sha256": "84f2d314836ec17c",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    130
+   ],
+   "clusters": [
+    {
+     "hex": "#f7f7f7",
+     "share": 0.5824,
+     "oklch": {
+      "L": 0.9763,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#0b0b0b",
+     "share": 0.365,
+     "oklch": {
+      "L": 0.1483,
+      "C": 0.0002,
+      "h": null
+     }
+    },
+    {
+     "hex": "#2f2b25",
+     "share": 0.0183,
+     "oklch": {
+      "L": 0.2914,
+      "C": 0.0114,
+      "h": 77.5
+     }
+    },
+    {
+     "hex": "#676462",
+     "share": 0.0177,
+     "oklch": {
+      "L": 0.5045,
+      "C": 0.0049,
+      "h": 39.1
+     }
+    },
+    {
+     "hex": "#a79a99",
+     "share": 0.0107,
+     "oklch": {
+      "L": 0.6973,
+      "C": 0.0151,
+      "h": 23.8
+     }
+    },
+    {
+     "hex": "#3d703b",
+     "share": 0.0029,
+     "oklch": {
+      "L": 0.4951,
+      "C": 0.0988,
+      "h": 143.2
+     }
+    },
+    {
+     "hex": "#213557",
+     "share": 0.0018,
+     "oklch": {
+      "L": 0.3304,
+      "C": 0.065,
+      "h": 260.0
+     }
+    },
+    {
+     "hex": "#538ed9",
+     "share": 0.001,
+     "oklch": {
+      "L": 0.6393,
+      "C": 0.1291,
+      "h": 255.5
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#0b0b0b",
+     "share": 0.365,
+     "C": 0.0002
+    },
+    {
+     "hex": "#f7f7f7",
+     "share": 0.5824,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0796,
+    "stops": [
+     "#f7f7f7",
+     "#0a0a0a",
+     "#151515",
+     "#0a0a0a",
+     "#f7f7f7"
+    ]
+   }
+  },
+  {
+   "file": "some more references/The New Quechua Collection - SS25 Lookbook on Landbook - get inspired by other design and more.jpg",
+   "source": "originals",
+   "original": "some more references/The New Quechua Collection - SS25 Lookbook on Landbook - get inspired by other design and more.jpg",
+   "sha256": "75efbee0fbc8bfff",
+   "duplicates": [],
+   "direction": "Lookbook",
+   "directions": [
+    "Lookbook"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    1930
+   ],
+   "clusters": [
+    {
+     "hex": "#edeae6",
+     "share": 0.5625,
+     "oklch": {
+      "L": 0.9384,
+      "C": 0.0064,
+      "h": 73.6
+     }
+    },
+    {
+     "hex": "#35342d",
+     "share": 0.1504,
+     "oklch": {
+      "L": 0.3244,
+      "C": 0.0122,
+      "h": 100.8
+     }
+    },
+    {
+     "hex": "#b8c1c6",
+     "share": 0.0901,
+     "oklch": {
+      "L": 0.8065,
+      "C": 0.012,
+      "h": 229.8
+     }
+    },
+    {
+     "hex": "#5d613d",
+     "share": 0.0598,
+     "oklch": {
+      "L": 0.4796,
+      "C": 0.0546,
+      "h": 114.2
+     }
+    },
+    {
+     "hex": "#818075",
+     "share": 0.057,
+     "oklch": {
+      "L": 0.5979,
+      "C": 0.0171,
+      "h": 106.1
+     }
+    },
+    {
+     "hex": "#4985ae",
+     "share": 0.0343,
+     "oklch": {
+      "L": 0.5935,
+      "C": 0.0891,
+      "h": 240.4
+     }
+    },
+    {
+     "hex": "#ad9667",
+     "share": 0.0322,
+     "oklch": {
+      "L": 0.6817,
+      "C": 0.0692,
+      "h": 84.5
+     }
+    },
+    {
+     "hex": "#96402c",
+     "share": 0.0137,
+     "oklch": {
+      "L": 0.4824,
+      "C": 0.1199,
+      "h": 34.6
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#4985ae",
+     "share": 0.0343,
+     "C": 0.0891
+    },
+    {
+     "hex": "#ad9667",
+     "share": 0.0322,
+     "C": 0.0692
+    },
+    {
+     "hex": "#5d613d",
+     "share": 0.0598,
+     "C": 0.0546
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.171,
+    "stops": [
+     "#48471c",
+     "#ededef",
+     "#dadee2",
+     "#373538",
+     "#f7f1f1"
+    ]
+   }
+  },
+  {
+   "file": "some more references/UI Design Practice.jpg",
+   "source": "originals",
+   "original": "some more references/UI Design Practice.jpg",
+   "sha256": "c29d4a9cf025464c",
+   "duplicates": [],
+   "direction": "Warm glow",
+   "directions": [
+    "Warm glow"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    200
+   ],
+   "clusters": [
+    {
+     "hex": "#ffffff",
+     "share": 0.8869,
+     "oklch": {
+      "L": 0.9994,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#060302",
+     "share": 0.0366,
+     "oklch": {
+      "L": 0.1045,
+      "C": 0.0084,
+      "h": 42.0
+     }
+    },
+    {
+     "hex": "#fdd3b5",
+     "share": 0.034,
+     "oklch": {
+      "L": 0.8952,
+      "C": 0.0618,
+      "h": 57.7
+     }
+    },
+    {
+     "hex": "#f19860",
+     "share": 0.0194,
+     "oklch": {
+      "L": 0.7604,
+      "C": 0.129,
+      "h": 51.9
+     }
+    },
+    {
+     "hex": "#bb511e",
+     "share": 0.0103,
+     "oklch": {
+      "L": 0.5633,
+      "C": 0.1503,
+      "h": 42.9
+     }
+    },
+    {
+     "hex": "#454343",
+     "share": 0.0052,
+     "oklch": {
+      "L": 0.3846,
+      "C": 0.0027,
+      "h": 24.4
+     }
+    },
+    {
+     "hex": "#a1a09f",
+     "share": 0.0041,
+     "oklch": {
+      "L": 0.7067,
+      "C": 0.0018,
+      "h": null
+     }
+    },
+    {
+     "hex": "#411306",
+     "share": 0.0036,
+     "oklch": {
+      "L": 0.2607,
+      "C": 0.0743,
+      "h": 37.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#fdd3b5",
+     "share": 0.034,
+     "C": 0.0618
+    },
+    {
+     "hex": "#060302",
+     "share": 0.0366,
+     "C": 0.0084
+    },
+    {
+     "hex": "#ffffff",
+     "share": 0.8869,
+     "C": 0.0
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.1591,
+    "stops": [
+     "#ffffff",
+     "#ffffff",
+     "#e88043",
+     "#ffffff",
+     "#ffffff"
+    ]
+   }
+  },
+  {
+   "file": "some more references/jpg(10).jpg",
+   "source": "originals",
+   "original": "some more references/jpg(10)",
+   "sha256": "c7ace21b9293e5a3",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    152
+   ],
+   "clusters": [
+    {
+     "hex": "#f7f7f9",
+     "share": 0.5054,
+     "oklch": {
+      "L": 0.9763,
+      "C": 0.0021,
+      "h": 271.5
+     }
+    },
+    {
+     "hex": "#e3e4e4",
+     "share": 0.1796,
+     "oklch": {
+      "L": 0.9188,
+      "C": 0.0012,
+      "h": null
+     }
+    },
+    {
+     "hex": "#cecfd2",
+     "share": 0.1398,
+     "oklch": {
+      "L": 0.8546,
+      "C": 0.0037,
+      "h": 277.0
+     }
+    },
+    {
+     "hex": "#aba9a1",
+     "share": 0.0601,
+     "oklch": {
+      "L": 0.7351,
+      "C": 0.0117,
+      "h": 94.6
+     }
+    },
+    {
+     "hex": "#838079",
+     "share": 0.0512,
+     "oklch": {
+      "L": 0.6016,
+      "C": 0.011,
+      "h": 90.0
+     }
+    },
+    {
+     "hex": "#59574d",
+     "share": 0.0427,
+     "oklch": {
+      "L": 0.4555,
+      "C": 0.0152,
+      "h": 93.8
+     }
+    },
+    {
+     "hex": "#2f2a22",
+     "share": 0.0149,
+     "oklch": {
+      "L": 0.2891,
+      "C": 0.016,
+      "h": 80.6
+     }
+    },
+    {
+     "hex": "#7e904b",
+     "share": 0.0064,
+     "oklch": {
+      "L": 0.6222,
+      "C": 0.0955,
+      "h": 120.8
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#59574d",
+     "share": 0.0427,
+     "C": 0.0152
+    },
+    {
+     "hex": "#aba9a1",
+     "share": 0.0601,
+     "C": 0.0117
+    },
+    {
+     "hex": "#838079",
+     "share": 0.0512,
+     "C": 0.011
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0322,
+    "stops": [
+     "#969591",
+     "#e6e7e9",
+     "#f7f7f7",
+     "#4d4a38",
+     "#f5f6fa"
+    ]
+   }
+  },
+  {
+   "file": "some more references/jpg(11).jpg",
+   "source": "originals",
+   "original": "some more references/jpg(11)",
+   "sha256": "3660182d33cfa3d0",
+   "duplicates": [],
+   "direction": "Quiet utility",
+   "directions": [
+    "Quiet utility"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    113
+   ],
+   "clusters": [
+    {
+     "hex": "#fbfbfb",
+     "share": 0.6016,
+     "oklch": {
+      "L": 0.9888,
+      "C": 0.0,
+      "h": null
+     }
+    },
+    {
+     "hex": "#fafcfb",
+     "share": 0.2415,
+     "oklch": {
+      "L": 0.9895,
+      "C": 0.0025,
+      "h": 164.8
+     }
+    },
+    {
+     "hex": "#e8e9e9",
+     "share": 0.0644,
+     "oklch": {
+      "L": 0.9343,
+      "C": 0.0011,
+      "h": null
+     }
+    },
+    {
+     "hex": "#0c1c15",
+     "share": 0.0323,
+     "oklch": {
+      "L": 0.2086,
+      "C": 0.025,
+      "h": 166.4
+     }
+    },
+    {
+     "hex": "#f9f7e3",
+     "share": 0.0254,
+     "oklch": {
+      "L": 0.9728,
+      "C": 0.0273,
+      "h": 103.8
+     }
+    },
+    {
+     "hex": "#f5eb92",
+     "share": 0.0156,
+     "oklch": {
+      "L": 0.9278,
+      "C": 0.1106,
+      "h": 102.8
+     }
+    },
+    {
+     "hex": "#bdbeb9",
+     "share": 0.0107,
+     "oklch": {
+      "L": 0.8,
+      "C": 0.0074,
+      "h": 114.8
+     }
+    },
+    {
+     "hex": "#48544d",
+     "share": 0.0087,
+     "oklch": {
+      "L": 0.4327,
+      "C": 0.0197,
+      "h": 158.9
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f9f7e3",
+     "share": 0.0254,
+     "C": 0.0273
+    },
+    {
+     "hex": "#0c1c15",
+     "share": 0.0323,
+     "C": 0.025
+    },
+    {
+     "hex": "#fafcfb",
+     "share": 0.2415,
+     "C": 0.0025
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.116,
+    "stops": [
+     "#f7f7f7",
+     "#fefefe",
+     "#f6f8f7",
+     "#faf8e6",
+     "#fcfcfc"
+    ]
+   }
+  },
+  {
+   "file": "some more references/jpg(12).jpg",
+   "source": "originals",
+   "original": "some more references/jpg(12)",
+   "sha256": "599dde571a4a7b73",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": true,
+   "size_sampled": [
+    200,
+    150
+   ],
+   "clusters": [
+    {
+     "hex": "#fefdfb",
+     "share": 0.4601,
+     "oklch": {
+      "L": 0.9946,
+      "C": 0.0034,
+      "h": 99.5
+     }
+    },
+    {
+     "hex": "#e2e8f2",
+     "share": 0.1905,
+     "oklch": {
+      "L": 0.9288,
+      "C": 0.0149,
+      "h": 263.9
+     }
+    },
+    {
+     "hex": "#d9e488",
+     "share": 0.1026,
+     "oklch": {
+      "L": 0.8912,
+      "C": 0.1166,
+      "h": 114.3
+     }
+    },
+    {
+     "hex": "#ef956e",
+     "share": 0.082,
+     "oklch": {
+      "L": 0.7546,
+      "C": 0.121,
+      "h": 43.9
+     }
+    },
+    {
+     "hex": "#f9c76f",
+     "share": 0.0754,
+     "oklch": {
+      "L": 0.8555,
+      "C": 0.1203,
+      "h": 80.2
+     }
+    },
+    {
+     "hex": "#b08df1",
+     "share": 0.0463,
+     "oklch": {
+      "L": 0.7161,
+      "C": 0.1453,
+      "h": 298.5
+     }
+    },
+    {
+     "hex": "#0bcaf1",
+     "share": 0.0328,
+     "oklch": {
+      "L": 0.7753,
+      "C": 0.1386,
+      "h": 218.5
+     }
+    },
+    {
+     "hex": "#2e2b29",
+     "share": 0.0103,
+     "oklch": {
+      "L": 0.291,
+      "C": 0.006,
+      "h": 52.0
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#b08df1",
+     "share": 0.0463,
+     "C": 0.1453
+    },
+    {
+     "hex": "#0bcaf1",
+     "share": 0.0328,
+     "C": 0.1386
+    },
+    {
+     "hex": "#ef956e",
+     "share": 0.082,
+     "C": 0.121
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.153,
+    "stops": [
+     "#e6eaf5",
+     "#fefefc",
+     "#fecb6b",
+     "#fccf7e",
+     "#b692fd"
+    ]
+   }
+  },
+  {
+   "file": "some more references/jpg(16).jpg",
+   "source": "originals",
+   "original": "some more references/jpg(16)",
+   "sha256": "52aab0c8784e8ced",
+   "duplicates": [],
+   "direction": "Warm glow",
+   "directions": [
+    "Warm glow"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    112
+   ],
+   "clusters": [
+    {
+     "hex": "#17190e",
+     "share": 0.6971,
+     "oklch": {
+      "L": 0.2079,
+      "C": 0.0205,
+      "h": 115.0
+     }
+    },
+    {
+     "hex": "#f2810f",
+     "share": 0.0918,
+     "oklch": {
+      "L": 0.7159,
+      "C": 0.1717,
+      "h": 56.0
+     }
+    },
+    {
+     "hex": "#c46310",
+     "share": 0.0682,
+     "oklch": {
+      "L": 0.6044,
+      "C": 0.149,
+      "h": 52.7
+     }
+    },
+    {
+     "hex": "#92490f",
+     "share": 0.0485,
+     "oklch": {
+      "L": 0.4872,
+      "C": 0.1176,
+      "h": 52.1
+     }
+    },
+    {
+     "hex": "#64230f",
+     "share": 0.0366,
+     "oklch": {
+      "L": 0.3511,
+      "C": 0.0997,
+      "h": 37.1
+     }
+    },
+    {
+     "hex": "#3c1a0f",
+     "share": 0.0337,
+     "oklch": {
+      "L": 0.2641,
+      "C": 0.0569,
+      "h": 37.6
+     }
+    },
+    {
+     "hex": "#a02b0e",
+     "share": 0.0177,
+     "oklch": {
+      "L": 0.4697,
+      "C": 0.1581,
+      "h": 34.0
+     }
+    },
+    {
+     "hex": "#56574e",
+     "share": 0.0064,
+     "oklch": {
+      "L": 0.4521,
+      "C": 0.0131,
+      "h": 110.5
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#f2810f",
+     "share": 0.0918,
+     "C": 0.1717
+    },
+    {
+     "hex": "#c46310",
+     "share": 0.0682,
+     "C": 0.149
+    },
+    {
+     "hex": "#92490f",
+     "share": 0.0485,
+     "C": 0.1176
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.163,
+    "stops": [
+     "#17190e",
+     "#ce6a10",
+     "#dd740f",
+     "#fd8e0e",
+     "#1a190d"
+    ]
+   }
+  },
+  {
+   "file": "some more references/jpg(17).jpg",
+   "source": "originals",
+   "original": "some more references/jpg(17)",
+   "sha256": "95193b758f0737b5",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    153
+   ],
+   "clusters": [
+    {
+     "hex": "#fbfbfb",
+     "share": 0.599,
+     "oklch": {
+      "L": 0.9885,
+      "C": 0.0005,
+      "h": null
+     }
+    },
+    {
+     "hex": "#1a1111",
+     "share": 0.1672,
+     "oklch": {
+      "L": 0.1901,
+      "C": 0.014,
+      "h": 17.4
+     }
+    },
+    {
+     "hex": "#90d1ef",
+     "share": 0.0687,
+     "oklch": {
+      "L": 0.8283,
+      "C": 0.078,
+      "h": 228.6
+     }
+    },
+    {
+     "hex": "#fbcc13",
+     "share": 0.0642,
+     "oklch": {
+      "L": 0.8622,
+      "C": 0.1738,
+      "h": 91.8
+     }
+    },
+    {
+     "hex": "#7105df",
+     "share": 0.0607,
+     "oklch": {
+      "L": 0.4821,
+      "C": 0.2634,
+      "h": 294.4
+     }
+    },
+    {
+     "hex": "#594f4e",
+     "share": 0.0345,
+     "oklch": {
+      "L": 0.4381,
+      "C": 0.013,
+      "h": 29.3
+     }
+    },
+    {
+     "hex": "#bb9be7",
+     "share": 0.0036,
+     "oklch": {
+      "L": 0.7451,
+      "C": 0.1125,
+      "h": 303.1
+     }
+    },
+    {
+     "hex": "#8652de",
+     "share": 0.0022,
+     "oklch": {
+      "L": 0.5696,
+      "C": 0.2035,
+      "h": 296.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#7105df",
+     "share": 0.0607,
+     "C": 0.2634
+    },
+    {
+     "hex": "#fbcc13",
+     "share": 0.0642,
+     "C": 0.1738
+    },
+    {
+     "hex": "#90d1ef",
+     "share": 0.0687,
+     "C": 0.078
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.2641,
+    "stops": [
+     "#dcdcdc",
+     "#ffcf0b",
+     "#cfd0d0",
+     "#7002df",
+     "#e5e5e5"
+    ]
+   }
+  },
+  {
+   "file": "some more references/jpg(8).jpg",
+   "source": "originals",
+   "original": "some more references/jpg(8)",
+   "sha256": "d98588118e323057",
+   "duplicates": [],
+   "direction": "Warm glow",
+   "directions": [
+    "Warm glow"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    212
+   ],
+   "clusters": [
+    {
+     "hex": "#f3f3e9",
+     "share": 0.7008,
+     "oklch": {
+      "L": 0.9616,
+      "C": 0.0131,
+      "h": 106.3
+     }
+    },
+    {
+     "hex": "#1c1b1b",
+     "share": 0.2,
+     "oklch": {
+      "L": 0.2246,
+      "C": 0.0012,
+      "h": null
+     }
+    },
+    {
+     "hex": "#c52b17",
+     "share": 0.0288,
+     "oklch": {
+      "L": 0.5374,
+      "C": 0.1929,
+      "h": 31.0
+     }
+    },
+    {
+     "hex": "#baa79f",
+     "share": 0.0171,
+     "oklch": {
+      "L": 0.7434,
+      "C": 0.025,
+      "h": 43.9
+     }
+    },
+    {
+     "hex": "#dc7f66",
+     "share": 0.0148,
+     "oklch": {
+      "L": 0.6929,
+      "C": 0.1216,
+      "h": 36.0
+     }
+    },
+    {
+     "hex": "#5e5a57",
+     "share": 0.0142,
+     "oklch": {
+      "L": 0.47,
+      "C": 0.0072,
+      "h": 46.3
+     }
+    },
+    {
+     "hex": "#7b2217",
+     "share": 0.0131,
+     "oklch": {
+      "L": 0.3926,
+      "C": 0.1252,
+      "h": 30.4
+     }
+    },
+    {
+     "hex": "#f36018",
+     "share": 0.0112,
+     "oklch": {
+      "L": 0.6705,
+      "C": 0.1957,
+      "h": 41.4
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#c52b17",
+     "share": 0.0288,
+     "C": 0.1929
+    },
+    {
+     "hex": "#f3f3e9",
+     "share": 0.7008,
+     "C": 0.0131
+    },
+    {
+     "hex": "#1c1b1b",
+     "share": 0.2,
+     "C": 0.0012
+    }
+   ],
+   "gradient": {
+    "line": "vertical",
+    "chroma_range": 0.2088,
+    "stops": [
+     "#f3f3e9",
+     "#98574f",
+     "#1e1e1e",
+     "#1e1e1e",
+     "#f3f3e9"
+    ]
+   }
+  },
+  {
+   "file": "some more references/jpg(9).jpg",
+   "source": "originals",
+   "original": "some more references/jpg(9)",
+   "sha256": "56c9337e2e1fe4ae",
+   "duplicates": [],
+   "direction": "none",
+   "directions": [
+    "none"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    226
+   ],
+   "clusters": [
+    {
+     "hex": "#413629",
+     "share": 0.3429,
+     "oklch": {
+      "L": 0.3405,
+      "C": 0.0264,
+      "h": 67.9
+     }
+    },
+    {
+     "hex": "#2c2116",
+     "share": 0.2039,
+     "oklch": {
+      "L": 0.2565,
+      "C": 0.0261,
+      "h": 65.7
+     }
+    },
+    {
+     "hex": "#52473b",
+     "share": 0.143,
+     "oklch": {
+      "L": 0.4043,
+      "C": 0.0249,
+      "h": 68.2
+     }
+    },
+    {
+     "hex": "#1a1009",
+     "share": 0.1383,
+     "oklch": {
+      "L": 0.1842,
+      "C": 0.0212,
+      "h": 54.2
+     }
+    },
+    {
+     "hex": "#746b5f",
+     "share": 0.0757,
+     "oklch": {
+      "L": 0.532,
+      "C": 0.0217,
+      "h": 74.2
+     }
+    },
+    {
+     "hex": "#3b523c",
+     "share": 0.05,
+     "oklch": {
+      "L": 0.4135,
+      "C": 0.0472,
+      "h": 145.5
+     }
+    },
+    {
+     "hex": "#9f9189",
+     "share": 0.0452,
+     "oklch": {
+      "L": 0.6675,
+      "C": 0.0208,
+      "h": 51.5
+     }
+    },
+    {
+     "hex": "#e0eb36",
+     "share": 0.0011,
+     "oklch": {
+      "L": 0.9029,
+      "C": 0.1879,
+      "h": 113.2
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#3b523c",
+     "share": 0.05,
+     "C": 0.0472
+    },
+    {
+     "hex": "#413629",
+     "share": 0.3429,
+     "C": 0.0264
+    },
+    {
+     "hex": "#2c2116",
+     "share": 0.2039,
+     "C": 0.0261
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.0298,
+    "stops": [
+     "#241a11",
+     "#271b0f",
+     "#3e3226",
+     "#493d30",
+     "#9d9387"
+    ]
+   }
+  },
+  {
+   "file": "crops/amigo-steps-stats.jpg",
+   "source": "refs",
+   "sha256": "7d3150d25d53f6d8",
+   "duplicates": [],
+   "direction": "Field report",
+   "directions": [
+    "Field report"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    353
+   ],
+   "clusters": [
+    {
+     "hex": "#fefefe",
+     "share": 0.5908,
+     "oklch": {
+      "L": 0.9976,
+      "C": 0.0001,
+      "h": null
+     }
+    },
+    {
+     "hex": "#093646",
+     "share": 0.2575,
+     "oklch": {
+      "L": 0.3111,
+      "C": 0.0548,
+      "h": 228.0
+     }
+    },
+    {
+     "hex": "#d7d2d5",
+     "share": 0.0617,
+     "oklch": {
+      "L": 0.8678,
+      "C": 0.0076,
+      "h": 336.0
+     }
+    },
+    {
+     "hex": "#526876",
+     "share": 0.0442,
+     "oklch": {
+      "L": 0.5051,
+      "C": 0.0347,
+      "h": 235.8
+     }
+    },
+    {
+     "hex": "#9ea0a2",
+     "share": 0.0257,
+     "oklch": {
+      "L": 0.7054,
+      "C": 0.0035,
+      "h": 231.3
+     }
+    },
+    {
+     "hex": "#cd7447",
+     "share": 0.0105,
+     "oklch": {
+      "L": 0.65,
+      "C": 0.1267,
+      "h": 46.3
+     }
+    },
+    {
+     "hex": "#703f29",
+     "share": 0.0053,
+     "oklch": {
+      "L": 0.4229,
+      "C": 0.0769,
+      "h": 44.8
+     }
+    },
+    {
+     "hex": "#23140d",
+     "share": 0.0044,
+     "oklch": {
+      "L": 0.2097,
+      "C": 0.0284,
+      "h": 47.3
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#093646",
+     "share": 0.2575,
+     "C": 0.0548
+    },
+    {
+     "hex": "#526876",
+     "share": 0.0442,
+     "C": 0.0347
+    },
+    {
+     "hex": "#d7d2d5",
+     "share": 0.0617,
+     "C": 0.0076
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.0747,
+    "stops": [
+     "#083343",
+     "#ffffff",
+     "#ffffff",
+     "#04394b",
+     "#0d3745"
+    ]
+   }
+  },
+  {
+   "file": "crops/quechua-backpack.jpg",
+   "source": "refs",
+   "sha256": "2055db55b25a55ee",
+   "duplicates": [],
+   "direction": "Lookbook",
+   "directions": [
+    "Lookbook"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    164
+   ],
+   "clusters": [
+    {
+     "hex": "#d8d5cb",
+     "share": 0.4335,
+     "oklch": {
+      "L": 0.872,
+      "C": 0.0136,
+      "h": 90.0
+     }
+    },
+    {
+     "hex": "#f7f2f0",
+     "share": 0.2419,
+     "oklch": {
+      "L": 0.9651,
+      "C": 0.0059,
+      "h": 46.3
+     }
+    },
+    {
+     "hex": "#38332f",
+     "share": 0.1492,
+     "oklch": {
+      "L": 0.324,
+      "C": 0.0097,
+      "h": 61.1
+     }
+    },
+    {
+     "hex": "#812e23",
+     "share": 0.0554,
+     "oklch": {
+      "L": 0.4213,
+      "C": 0.1168,
+      "h": 30.5
+     }
+    },
+    {
+     "hex": "#a84b38",
+     "share": 0.0465,
+     "oklch": {
+      "L": 0.5283,
+      "C": 0.1269,
+      "h": 33.2
+     }
+    },
+    {
+     "hex": "#e2dfd8",
+     "share": 0.0322,
+     "oklch": {
+      "L": 0.9035,
+      "C": 0.0098,
+      "h": 86.8
+     }
+    },
+    {
+     "hex": "#8b7c73",
+     "share": 0.0281,
+     "oklch": {
+      "L": 0.5962,
+      "C": 0.0227,
+      "h": 53.0
+     }
+    },
+    {
+     "hex": "#241b19",
+     "share": 0.0132,
+     "oklch": {
+      "L": 0.2313,
+      "C": 0.0151,
+      "h": 30.6
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#a84b38",
+     "share": 0.0465,
+     "C": 0.1269
+    },
+    {
+     "hex": "#812e23",
+     "share": 0.0554,
+     "C": 0.1168
+    },
+    {
+     "hex": "#8b7c73",
+     "share": 0.0281,
+     "C": 0.0227
+    }
+   ],
+   "gradient": {
+    "line": "horizontal",
+    "chroma_range": 0.1259,
+    "stops": [
+     "#f4f3f0",
+     "#d8d6cd",
+     "#833226",
+     "#d9d6cd",
+     "#f3f3ee"
+    ]
+   }
+  },
+  {
+   "file": "crops/quechua-cutouts.jpg",
+   "source": "refs",
+   "sha256": "7a2d7a0b674f1d5a",
+   "duplicates": [],
+   "direction": "Lookbook",
+   "directions": [
+    "Lookbook"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    353
+   ],
+   "clusters": [
+    {
+     "hex": "#f5f2f0",
+     "share": 0.3667,
+     "oklch": {
+      "L": 0.9634,
+      "C": 0.0044,
+      "h": 49.4
+     }
+    },
+    {
+     "hex": "#35332c",
+     "share": 0.231,
+     "oklch": {
+      "L": 0.3198,
+      "C": 0.0123,
+      "h": 89.6
+     }
+    },
+    {
+     "hex": "#d0d1d2",
+     "share": 0.1251,
+     "oklch": {
+      "L": 0.8609,
+      "C": 0.0014,
+      "h": null
+     }
+    },
+    {
+     "hex": "#7f7649",
+     "share": 0.0673,
+     "oklch": {
+      "L": 0.5632,
+      "C": 0.0641,
+      "h": 98.0
+     }
+    },
+    {
+     "hex": "#514f3d",
+     "share": 0.0669,
+     "oklch": {
+      "L": 0.424,
+      "C": 0.0288,
+      "h": 101.3
+     }
+    },
+    {
+     "hex": "#8c897a",
+     "share": 0.0548,
+     "oklch": {
+      "L": 0.6287,
+      "C": 0.0221,
+      "h": 97.5
+     }
+    },
+    {
+     "hex": "#a4b0ba",
+     "share": 0.0541,
+     "oklch": {
+      "L": 0.7511,
+      "C": 0.0196,
+      "h": 240.8
+     }
+    },
+    {
+     "hex": "#266d91",
+     "share": 0.0341,
+     "oklch": {
+      "L": 0.5078,
+      "C": 0.0898,
+      "h": 234.7
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#266d91",
+     "share": 0.0341,
+     "C": 0.0898
+    },
+    {
+     "hex": "#7f7649",
+     "share": 0.0673,
+     "C": 0.0641
+    },
+    {
+     "hex": "#514f3d",
+     "share": 0.0669,
+     "C": 0.0288
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tl_br",
+    "chroma_range": 0.0925,
+    "stops": [
+     "#f3f2ed",
+     "#32332f",
+     "#474137",
+     "#d5dee2",
+     "#f8f3f0"
+    ]
+   }
+  },
+  {
+   "file": "crops/quechua-stage.jpg",
+   "source": "refs",
+   "sha256": "eb14e412f76be6c1",
+   "duplicates": [],
+   "direction": "Lookbook",
+   "directions": [
+    "Lookbook"
+   ],
+   "also_color_shelf": false,
+   "size_sampled": [
+    200,
+    353
+   ],
+   "clusters": [
+    {
+     "hex": "#f7f2f0",
+     "share": 0.4456,
+     "oklch": {
+      "L": 0.964,
+      "C": 0.0055,
+      "h": 41.9
+     }
+    },
+    {
+     "hex": "#d9d6cd",
+     "share": 0.2749,
+     "oklch": {
+      "L": 0.8755,
+      "C": 0.013,
+      "h": 93.1
+     }
+    },
+    {
+     "hex": "#343026",
+     "share": 0.1255,
+     "oklch": {
+      "L": 0.309,
+      "C": 0.018,
+      "h": 86.7
+     }
+    },
+    {
+     "hex": "#a8a59a",
+     "share": 0.0506,
+     "oklch": {
+      "L": 0.7213,
+      "C": 0.0166,
+      "h": 96.8
+     }
+    },
+    {
+     "hex": "#434140",
+     "share": 0.0366,
+     "oklch": {
+      "L": 0.3777,
+      "C": 0.0027,
+      "h": 66.4
+     }
+    },
+    {
+     "hex": "#787569",
+     "share": 0.033,
+     "oklch": {
+      "L": 0.5627,
+      "C": 0.0188,
+      "h": 96.6
+     }
+    },
+    {
+     "hex": "#b29e50",
+     "share": 0.0258,
+     "oklch": {
+      "L": 0.701,
+      "C": 0.1015,
+      "h": 95.9
+     }
+    },
+    {
+     "hex": "#a4c8d2",
+     "share": 0.0081,
+     "oklch": {
+      "L": 0.8104,
+      "C": 0.0404,
+      "h": 215.6
+     }
+    }
+   ],
+   "top_chromatic": [
+    {
+     "hex": "#b29e50",
+     "share": 0.0258,
+     "C": 0.1015
+    },
+    {
+     "hex": "#787569",
+     "share": 0.033,
+     "C": 0.0188
+    },
+    {
+     "hex": "#343026",
+     "share": 0.1255,
+     "C": 0.018
+    }
+   ],
+   "gradient": {
+    "line": "diagonal_tr_bl",
+    "chroma_range": 0.1081,
+    "stops": [
+     "#f8f3f0",
+     "#f4f3ef",
+     "#a3a38b",
+     "#988741",
+     "#f3f4ee"
+    ]
+   }
+  }
+ ]
+}
