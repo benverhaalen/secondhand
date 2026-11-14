@@ -10,7 +10,7 @@ Everything we set aside because this is a demo: each marketplace's API licence a
 
 ## What already exists
 
-- Every feature spec lists its licences and terms under "Facts that constrain it", for example [list](../spec/features/list.md#facts-that-constrain-it) and [price](../spec/features/price.md#facts-that-constrain-it).
+- Every feature spec lists its licences and terms under "Facts that constrain it", for example [list](../spec/features/list.md#facts-that-constrain-it) and [price](../spec/features/price.md#facts-to-know).
 - Depop's partner API terms bar browser automation once we hold access ([platform-fit.md](../research/list/ben/platform-fit.md#what-this-research-changed-for-other-work)).
 - Marist is a trial font ([words](../product/words.md#2026-11-14-marist-type)).
 

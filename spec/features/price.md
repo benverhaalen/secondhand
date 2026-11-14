@@ -1,36 +1,45 @@
 # Price
-Status: draft, *agent proposal* except where a line links a decision. Slug: price. Written 2026-11-14.
+Status: draft, second pass. Every design line is an *agent proposal* except where a line links a decision. Slug: price. Written 2026-11-14.
 
-Today a seller searches sold listings on two or three sites, guesses a number, forgets fees and shipping, then drops the price at random when nothing happens. Price takes that off them: one range per site with what it rests on, what they keep on each site, how long it should take, and a plan they pick once. Feature page: [features/price](../../features/price/README.md). Ben asked "how do you price things in context" ([words](../../product/words.md#2026-11-14-pricing-in-context)); Nate asked that users "select the marketing strategy (with a suggested one generated...)" ([words](../../product/words.md#2026-11-14-nate-vision)).
+Today a seller searches sold listings on two or three sites, guesses a number, forgets fees and shipping, then drops the price at random. Price does that work for them. It gives one calibrated range per site, what they keep on each site, how fast each price sells, and one best plan per site, computed from the listings that site shows now. Feature page: [features/price](../../features/price/README.md). Ben asked "how do you price things in context" ([words](../../product/words.md#2026-11-14-pricing-in-context)). Nate: "we in real time based on similar listings, determine the best marketing strategy for each platform, that is a determined calculation and feature. The user can also influence other marketing strategies, but likely goes for the best option."
 
 ## What the person does and sees
 
 | Step | Where | What they see |
 |---|---|---|
-| 1 | Sell, item in `researching` | The Valuation card fills by stage: identified, sales found, range ready. |
-| 2 | Valuation card | One range per site, with "based on 14 sales, last 90 days" ([copy.md](../../product/copy.md) wording, no "n=") and "about 9 days" to sell. Tap a range for the sales under it, each with photo, date and sold or asking. |
-| 3 | Valuation card | "You keep" per site, after that site's fee, shipping and tax. Sites that do not fit are greyed with one reason ("too big to ship", "Depop buyers want clothes"). |
-| 4 | Plan | Three plan cards: **Sell this week**, **Typical**, **Get the most** (Ben's slider labels, [MV](../../research/price/ben/what-market-value-is.md)). One carries a "Suggested" pill. Each shows start price, lowest price, sites, ship or pickup, and the price path as a small step line. |
-| 5 | Plan | The lowest-price field, prefilled from the plan, and "Always accept $X or more", prefilled at the plan's lowest price ([decision](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)). |
-| 6 | Today | Follow-ups the plan scheduled show as done events ("Dropped to $52 on Depop"); undo on each. |
-| 7 | You | Earned, fees and kept per site, derived from orders ([decision](../../product/decisions.md#2026-11-14-the-you-tab-leads-with-numbers-and-a-by-site-comparison)). |
+| 1 | Sell, item in `researching` | The Valuation card fills stage by stage: identified, sales found, range ready. |
+| 2 | Valuation card | One range per site, "based on 14 sales, last 90 days" ([copy.md](../../product/copy.md)). A range not yet proven for this kind of item says "not checked yet for this kind of thing" and is drawn wider. Tap a range to see the sales under it, each with its photo, date, and sold or asking. |
+| 3 | Valuation card | "You keep" per site after fees, shipping and tax, and "most sell in about 9 days at this price". Sites that do not fit are greyed with one reason ("too big to ship"). |
+| 4 | Plan | One best plan per site, preselected: start price, lowest price, the drops as a small step line, title form, photo order, fields to fill, when to post, offers on or off. Tap "why" to see the listings it was computed from. |
+| 5 | Plan | **Sell this week** and **Get the most** sit beside it as alternatives (Ben's labels, [MV](../../research/price/ben/what-market-value-is.md)). Every part of a plan can be changed. The lowest-price field and "Always accept $X or more" are prefilled ([decision](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)). |
+| 6 | Today | Drops show as done events ("Dropped to $52 on Depop"), each with undo. If the comparable set moves, the plan updates and says what moved. |
+| 7 | You | Earned, fees and kept per site, worked out from orders ([decision](../../product/decisions.md#2026-11-14-the-you-tab-leads-with-numbers-and-a-by-site-comparison)). |
 
-When there is too little data the card says "Not enough sales to price this" and offers one question ("Is there a tag with a model number?") or a deep search, never a number ([VE](../../research/price/ben/valuation-engine.md)).
+With too few sales the card says "Not enough sales to price this" and offers one question or a deep search. It never shows a number ([VE](../../research/price/ben/valuation-engine.md)).
 
-Where Ben's design would make a person stumble: a single slider ($45 / $60 / $75) hides that the three positions differ in sites and terms, not just price; the plan cards show that. What the backend makes possible that his design does not yet use: days to sell per price, so each card can say "about 3 days" against "about 25 days".
+## Design choices
+
+| Choice | Options considered | Picked | Why | What would change it |
+|---|---|---|---|---|
+| Comp sources | eBay only; every open source ([market-intelligence](../../research/data/nate/market-intelligence.md), [comps-sources-live](../../research/price/ben/comps-sources-live.md)) | eBay API and sold pages through the harness, other sites' sold and live pages, Firecrawl, mixed in one model | licences do not shape the build ([decision](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)); every comp records its rights | public launch enforces rights tags |
+| Range method | weighted quantiles; quantile regression; CQR; LLM estimate ([range-calibration](../../research/price/nate/range-calibration.md)) | gradient-boosted quantiles, CQR, Mondrian per category with a parent fallback, an ACI tracker | the one public tool measured holds 75.3% of 81 in a stated 80% range, and categories run from 20 to 70%; per-group calibration is the published fix | backtest coverage per category |
+| Predictors | photo quality; photo count; price relative to sold ([quality-and-value-classifiers](../../research/price/nate/quality-and-value-classifiers.md)) | price-to-median-sold ratio with count shrinkage; photo count; condition, drivers, site, age | relative price is the strongest published predictor; photo count is 0.788 against quality 0.032 (WSDM 2014) | feature importance on our own outcomes |
+| Days to sell | queue position; survival; cure model ([range-calibration](../../research/price/nate/range-calibration.md), [pricing-in-context](../../research/price/ben/pricing-in-context.md)) | cure model on censored listings, calibrated against Kaplan-Meier | many listings never sell; a plain survival fit overstates the chance of sale | calibration gap in the backtest |
+| Plan | fixed percent paths; one slider; a calculation per site from the comparable set ([scoring-and-ranker-inference](../../research/price/nate/scoring-and-ranker-inference.md)) | the calculation below, deterministic, cited, preselected | Nate's definition above | none: decided by Nate's words |
+| Floor on the site | our job lowers the price; the site's own tool ([platform-levers](../../research/list/nate/platform-levers.md)) | set the site's own floor where one exists (eBay auto-decline, Depop auto-respond, Mercari Smart Pricing), our `follow_up` job elsewhere | the site acts at once and without a session | a site tool that ignores its floor |
 
 ## What it reads and writes
 
 | Entity | Reads | Writes |
 |---|---|---|
-| `item`, `attribute`, `product` | identity, condition, measured size, defects | nothing (an answered question writes a `you_said` attribute through capture) |
-| `comp` (Delta) | source, price type, date, rights note, adjusted price | new comps from each run, with rights note |
-| `valuation` | | per site: `{low, high, basis_count, as_of, days_to_sell, net_low, net_high, fee_table_version}`, or `abstained` with reason |
-| `strategy` | | the chosen plan: objective, price path, lowest price, sites with reason, ship or pickup, follow-ups, markdown and relist times |
-| `limits` | | lowest price per item, ship or pickup |
-| `rule` | | "Always accept $X or more" for this item |
-| `listing`, `offer`, `order`, `event` | outcomes for learning | `event` per markdown, relist and plan change |
-| `goal` | monthly target and progress | nothing |
+| `item`, `attribute`, `product` | identity, condition, size, defects, photo count | nothing |
+| `comp` (Delta) | | each observation with `evidence {source_url, read_at, snapshot_ref, fingerprint, extractor_version, rights}`; sold, live or ended; days listed; search position when read from `search` |
+| `valuation` | | `per_site[]` of guarded numbers: range, net range, days to sell, each with `citation_id`, `state`, `hide_reason` |
+| `score` | quality, visibility and trend axes from `spec/features/score.md` | the financial axis, per plan and site |
+| `strategy` | | `suggested` per site, then `chosen` |
+| `limits` | | `floor_cents`, `always_accept_cents` per item |
+| `citation` | | one per number shown and one per plan |
+| `listing`, `offer`, `order` | outcomes for learning and the backtest | `event` per drop, relist and plan change |
 
 Fee table: one row per site and version, `{site, fee_pct, fixed_cents, base: item|item+ship|item+ship+tax, min_cents, valid_from, source_note}` ([fees-and-taxes](../../research/price/nate/fees-and-taxes.md)).
 
@@ -38,118 +47,140 @@ Fee table: one row per site and version, `{site, fee_pct, fixed_cents, base: ite
 
 | Move | Trigger |
 |---|---|
-| item `researching` to `review` | valuation job arrives (with a range or an abstain) |
-| item `review` to `live` | person picks a plan and lists |
-| item `live` to `stale` | no sale by the plan's last step and no watchers or likes gained in 14 days |
-| item `stale` to `live` | relist or a new plan |
-| item `stale` to `unsold` or `kept` | person ends it |
-| strategy `active, paused, done, replaced` | *agent proposal*; a manual price edit pauses the path |
+| item `researching` to `review` | the `valuate` job arrives, with a range or an abstain |
+| strategy `suggested` to `chosen` | person confirms a plan (`POST /v1/items/:id/strategy`) |
+| strategy `chosen` to `running` | first listing goes live |
+| item `live` to `stale` | patience runs out, defined once here: no sale by the plan's median days to sell for its objective (quick 7, balanced 30, max_return 90 days at most) and interest (watchers, likes, offers) below the comparable set's median at the same age |
+| item `stale` to `live` | a markdown, relist or new site |
+| item `live` or `stale` to `unsold` | the path reaches the floor and ends, or the person ends it; strategy `running` to `ended` |
 
 ## Systems underneath
 
 | Piece | Role |
 |---|---|
-| Lakeflow job `valuate` | stages: `identify`, `find_sales`, `adjust`, `range`, `net`, `plans`. Each stage `started, running, arrived, failed`. |
-| Site adapters and comp sources | fetch comps (table under Facts) |
-| AI Search | nearest products and comps by text and image embedding, with back-off from exact model to family to category ([VE](../../research/price/ben/valuation-engine.md)) |
-| Model gateway | Sonnet reads listing text into driver attributes; a bounded yes/no check "same product?" per comp ([decision](../../product/decisions.md#2026-11-14-typed-judgements-run-on-both-the-decisions-api-and-jev-and-our-labels-pick)); Opus only for deep search |
-| Plain code (never a model) | adjustment factors, weighted p25/p50/p75, abstain rule, fees, shipping, tax, net, days to sell, price path, lowest price checks, money in cents |
-| Delta | comps, outcomes, training sets; MLflow 3 trace per job is the "why?" timeline |
-| Lakeflow job `follow_up` | runs scheduled markdowns and relists through the posting adapters |
+| Lakeflow job `valuate` | stages `identify`, `find_sales`, `adjust`, `range`, `net`, `plans`, each `started, running, arrived, failed` |
+| Harness `search`, `read_sold` per site, Firecrawl | fetch comps; one job per account session (a lease) |
+| AI Search, pgvector and image vectors | match comps to `product` by text and look, backing off from model to family to category |
+| Claude Haiku 5.5 | turns comp listing text into comparable facts (condition, drivers, title form) |
+| Decisions API and Jev | typed "same product?" per comp ([decision](../../product/decisions.md#2026-11-14-typed-judgements-run-on-both-the-decisions-api-and-jev-and-our-labels-pick)) |
+| Claude Opus 5.5 | deep search only, and the plan's words |
+| Plain code | adjustment, quantile model, calibration, fees, net, days to sell, the plan calculation, floors, money in cents |
+| On-phone comp index | price owns it: recent comps per product in the app, for Glance in appraise |
+| Lakeflow job `follow_up` | runs drops and relists through the harness where a site has no floor tool |
 
-The range: `adjusted = sold x condition x drivers x time`, comps dropped above about 25% adjustment, weighted quantiles per site, a learned site ratio where a site has no sold data ([VE](../../research/price/ben/valuation-engine.md)). Abstain under 6 sales in 12 months or 2 in 90 days. Days to sell = place in the queue of adjusted asks divided by sales per day ([PC](../../research/price/ben/pricing-in-context.md)).
+**Range.** `adjusted = sold x condition x drivers x time`. Comps adjusted by more than about 25% are dropped. A LightGBM quantile model (q10, q50, q90) runs over adjusted comps from every site, with a site feature. CQR calibrates it to 80%, per category (crepes `MondrianCategorizer`), falling back to the parent category below about 1/alpha points, which is 10 at 80% (the fallback is *inferred*). An ACI tracker (gamma 0.005) adjusts each group as sales arrive. Display states:
 
-**You keep** (reconciled): `net = price - fee(base) - fixed - seller_shipping - processing`. Ben's $16.88 (eBay) and about $18.90 (Depop) on a $20 sale ([pitch-evidence](../../research/cross-cutting/ben/pitch-evidence.md)) hold only with no shipping in the fee base; Nate's note puts shipping and tax in the base and gets $16.06 and $18.69 ([fees-and-taxes](../../research/price/nate/fees-and-taxes.md)). Both are right for their inputs; the engine takes shipping and tax as inputs and uses each site's base. The card shows the shipped figure when the plan ships.
+| State | Rule | Shown |
+|---|---|---|
+| checked | the category's backtest coverage, lower 95% bound, is at least 70% at n of 30 or more | the range |
+| not checked yet | below that, parent group used | the parent's wider range, labelled |
+| hidden `too_few_sales` | under 6 sales in 12 months or 2 in 90 days | no number |
+| hidden `too_wide` | width over the point value | no number |
 
-**Plans.** Each card is one `strategy`, chosen as `p = argmax P(sale within T | p) x net(p)` for its objective (Nate's research, [analytics](../../research/data/nate/analytics-and-recommendations.md)):
+**You keep.** `net = price - fee(base) - fixed - seller_shipping - processing`. Ben's $16.88 (eBay) and about $18.90 (Depop) on a $20 sale ([pitch-evidence](../../research/cross-cutting/ben/pitch-evidence.md)) hold with no shipping in the fee base. Nate's note puts shipping and tax in the base and gets $16.06 and $18.69 ([fees-and-taxes](../../research/price/nate/fees-and-taxes.md)). The engine uses each site's own base.
 
-| Plan | Objective | Start, path | Lowest | Sites |
-|---|---|---|---|---|
-| Sell this week | sale within 7 days | p25, drop 10% day 3, day 5 | p25 less 10% | every site that fits |
-| Typical | highest net within 30 days | p50, drop 7% day 10, day 20 | p25 | every site that fits |
-| Get the most | highest net | p75, drop 5% day 21, relist day 45 | p50 | sites with the highest p75 |
+**Financial axis** (the `score` row price owns). For item i, site s, plan k with horizon T_k:
+`value = P(sold within T_k | p, s) x net_s(p)`, where P comes from the calibrated cure model. The range is the product of P's band and the net range. `citation_id` lists the comp ids. The axis is hidden when the range above is hidden or P is uncalibrated for the group. The other axes are defined in `spec/features/score.md`; product pages are in `spec/features/market.md`.
 
-Site fit is a code rule from item size, category and site rules: bulky items go Facebook local only (Mercari will not ship furniture, [fees-and-taxes](../../research/price/nate/fees-and-taxes.md)); Depop is offered for clothes and accessories. Suggested plan: the one whose net by its date best closes the gap to this month's `goal`; with no goal, Typical. Nate's wider choices (repair, bundle, sell separately, consign, keep or donate) appear as a row under the cards when the data supports them. Relist timing is a hypothesis to measure, not a promise: "Do not assume relisting improves ranking" (Nate's research).
+**Best plan per site** (Nate's definition; plain code; a model only extracts facts and writes words). The comparable set is `C_s`: comps on site s for the same `product_id` and condition grade, live now or sold in the last 90 days, backing off to family. The steps:
+1. Ladder: candidate prices `L_s` are the 10th to 90th percentiles of adjusted `C_s` in 5-point steps, rounded to the site's price endings.
+2. Speed: for each rung, `P(sold within d | rung, s)` comes from the cure model with the price-to-median ratio as input. With 10 or more comps in the rung, it is shrunk toward that rung's Kaplan-Meier estimate.
+3. Path: the start is `argmax over L_s of P(sold within T_k) x net_s(p)`. Each next rung follows at the rung's median days to sell, down to the floor. Expected net `E_k = sum over steps of P(sale in step) x net_s(step price)`.
+4. Floor: `floor_s = max(lowest rung reached, item cost + user.target_profit_cents if set, best non-sale route net from appraise)`.
+5. Listing form: the winners are the top 10 by search position plus the fastest quarter of sold comps. For each feature f (title token order, photo count band, attributes filled, free shipping, weekday and hour posted, offers on), `lift_f = share(winners) - share(C_s)`. A feature is adopted when `lift_f > 0` with a two-proportion test p < 0.05 and at least 10 winners; otherwise the site default holds. A visibility factor from a site's `ranker_model` with probability 0.8 or more replaces the local lift.
+6. Other axes: a shown trend axis scales the ladder by its 30-day drift. A shown quality axis enters P through photo count. A hidden axis is left out and the plan says so. There is never a combined score while an axis is hidden.
+7. Best: horizon T = 30 days. Sell this week uses T = 7 and Get the most T = 90. The best plan is preselected. Ties go to higher P, then the lower price.
+
+The same inputs (comp snapshot ids, fee table version, `model_version`, `code_version`) give the same plan. The plan is recomputed when the fingerprint of `C_s` changes or at `next_check_at`. The suggestion toward a monthly `goal` is *agent proposal (Open)*: Nate, "There are incentives like money goals for the month, how many sales you've had, tracks progress" ([words](../../product/words.md#2026-11-14-nate-frameworks-and-goals)).
+
+## Data flow
+
+```mermaid
+flowchart LR
+  S["eBay API, harness sold pages, Firecrawl"] -->|"Lakeflow job: comp with evidence"| C["Delta comp"]
+  C -->|"AI Search and pgvector match to product: comp.product_id"| V["valuate job, plain code"]
+  V -->|"Apps API: valuation per site, citation"| L["Lakebase valuation"]
+  V -->|"plain code: score financial"| F["Lakebase score"]
+  L -->|"plain code from fees and score: strategy suggested"| T["Lakebase strategy"]
+  T -->|"POST /v1/items/:id/strategy: strategy chosen, limits"| U["limits floor_cents, always_accept_cents"]
+  U -->|"harness revise: site floor tool"| W["site listing"]
+```
 
 ## Contract for the frontend
 
-| Call | Returns |
-|---|---|
-| `POST /v1/items/:id/valuation` | `job` kind `valuate` |
-| `GET /v1/items/:id/valuation` | `{per_site:[{site, range:{low, high, basis_count, as_of}, days_to_sell, net:{low, high, currency, shipping_cents, fee_cents}, fits, reason}], abstained?, next_question?}` |
-| `GET /v1/items/:id/valuation/basis?site=` | comps: `{photo_url, price_cents, price_type, date, site, adjusted_cents, why_kept}` |
-| `GET /v1/items/:id/strategies` | 3 plans, `suggested` id |
-| `POST /v1/items/:id/strategy` | `{strategy_id, lowest_price_cents, always_accept_cents?}`; 422 `below_lowest` if always accept is under the lowest price |
-| `PATCH /v1/strategies/:id` | pause, resume, edit a step |
-| `GET /v1/fees?site=&price_cents=&ship_cents=` | `{net_cents, lines[], fee_table_version}`, for live edits |
+| Call | Body | Returns |
+|---|---|---|
+| `POST /v1/valuations` | `{item_id}` | `202 {job_id}`; stage events stream |
+| `GET /v1/items/:id` | | `valuation`, `strategy` per site, each number a guarded number |
+| `GET /v1/citations/:id` | | the citation and its basis listings |
+| `POST /v1/items/:id/strategy` | `{version, objective, per_site[] edits, floor_cents, always_accept_cents}` | `200 strategy`; `409 stale`; `422 outside_limits` |
 
-Decision kinds: `price_below_lowest` (never promoted), `plan_end` (stale item: relist, new plan, or end).
+Every write sends an `Idempotency-Key`. Ids `val_`, `st_`, `cmp_`, `pr_`.
 
 ## Who may act
 
-| Action | Mode |
-|---|---|
-| Markdown on the plan's path, at or above the lowest price | `auto` ([decision](../../product/decisions.md#2026-11-14-buyers-are-handled-inside-limits-you-set-then-it-learns)) |
-| Accept an offer at or above "Always accept" | `auto` once set at listing ([decision](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)) |
-| Relist on schedule | `auto` where the site allows it; a relist that changes the listing id records both ids on the `listing` |
-| Any price below the lowest price | `ask`, never promoted ([decision](../../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)) |
-| Changing the lowest price itself | the person only |
-
-Policy check in code before each executor; idempotency key per markdown; the site is read back to confirm the price.
+| Action | Who | Tier |
+|---|---|---|
+| Run a valuation, compute plans | system | auto |
+| Choose or edit a plan, set the floor | person | user |
+| Drop the price on the path, above the floor | system | `markdown`: auto, promotable ([decision](../../product/decisions.md#2026-11-14-buyers-are-handled-inside-limits-you-set-then-it-learns)) |
+| Any price below the floor | person | `price_below_floor`: ask, never promoted ([decision](../../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)) |
+| Plan words sent to a site (title form) | system | `claim_check` first; a hold raises `unbacked_claim` |
+| Recalled product | nobody | never priced for sale; appraise's recall check sets it |
 
 ## How it fails
 
-| Failure | Person sees | Recovery |
+| Failure | Seen as | Recovery |
 |---|---|---|
-| Too few sales | "Not enough sales to price this" and one question | answer, or deep search job |
-| A source down or blocked | that site's range marked "older" with its date | next run; other sites unaffected |
-| Identity unsure | "Which one is it?" with 2 or 3 product photos | the pick becomes a `you_said` attribute |
-| Fee table out of date | nothing; a check flags rows older than 90 days | owner updates the row |
-| Markdown not confirmed on read-back | Today card "Price change didn't go through" | retry with same key, reconcile job |
+| A source blocks or times out | the stage shows fewer sales | other sources carry it; the citation lists what ran |
+| Too few sales | "Not enough sales to price this" | one question or a deep search |
+| Comparable set shifts | plan updates with "prices on Depop moved down 8%" | the person keeps the old plan in one tap |
+| Site floor tool rejects a value | event `fell_back` | `follow_up` runs the path |
+| Fee table out of date | `fee_table_version` older than 30 days flags the net | weekly fee check job |
 
 ## How we will know it works
 
-| Claim | Check |
-|---|---|
-| Ranges are honest | on 40 to 60 of our own items and a backtest of sold listings, 7 in 10 sale prices fall inside the range; MdAPE reported per category ([VE](../../research/price/ben/valuation-engine.md)) |
-| Abstain is right | share abstained, and error on items just above the threshold |
-| Days to sell holds | median error in days on sold items, with unsold items counted as censored at their end date, not dropped |
-| You keep is right | computed net against payout read from each site's finances or sales report, to the cent |
-| Plans help | sale rate and net per plan; how often the suggested plan is picked and left unedited |
-
-**Learning.** Every outcome is a label: sold price and days, offers received, markdowns that preceded a sale, and unsold items as censored observations ("Do not evaluate only successful sales", Nate's research). These refit the price-to-days curve per category and the site ratios. Our own outcomes are the data no rival has ([CS](../../research/price/ben/comps-sources-live.md)).
-
-## Facts that constrain it
-
-| Source | Route | Rights limit |
+| Bar | Source of the bar | Test |
 |---|---|---|
-| eBay sold | Marketplace Insights (Limited Release), or paid scrapers (Apify, SoldComps, CompsAPI, 130point) | licence bars price modelling from eBay content and comparing eBay to others ([CS](../../research/price/ben/comps-sources-live.md), [platform-access](../../research/connect/nate/platform-access.md)); Best Offer accepted price hidden ([sold-price-data](../../research/price/ben/sold-price-data.md)) |
-| eBay active | Browse API, `watchCount`, image search | 6h / 24h freshness, no co-mingled public display |
-| Poshmark | sold via `availability=sold_out` | terms of use |
-| Mercari | scraper actor, about 45% success; listings purge after about a year | terms of use |
-| Depop | no keyword sold route | ratio from Poshmark and Grailed |
-| Grailed, Facebook, OfferUp | Algolia; GraphQL with days on market; active only | terms of use |
-| Category sources | Discogs, PriceCharting (internal use only), StockX, Reverb, WorthPoint, Exa Websets | per source ([CS](../../research/price/ben/comps-sources-live.md)) |
+| 80% ranges hold at least 70% per category, and 80% overall, beating 75.3% of 81 | Underpriced AI ([range-calibration](../../research/price/nate/range-calibration.md)) | rolling-origin backtest by month with a gap; calibrate on the window before; binomial interval per category; leakage routes 1 to 6 closed |
+| Median absolute miss under 28% of price | FlipTip $28 on $100; ChatGPT $33, Gemini $30, Perplexity $43 (same note) | MdAPE on held-out sales |
+| 7 in 10 sale prices inside the range | `spec/features/score.md` | same backtest on our own sales |
+| P(sold by d) calibrated within 5 points | Kaplan-Meier with censoring (same note) | calibration plot per horizon |
+| Same inputs give the same plan | Nate's definition | replay 100 plans from their citations |
+| Best plan nets more than the fixed-percent plan | the first pass | paired outcomes on consenting users' listings through `experiment` |
 
-Wider sources Nate asks for ([words](../../product/words.md#2026-11-14-nate-frameworks-and-goals)), what each honestly adds: retail price sets a ceiling and depreciation baseline, never a value; price history (PriceCharting, StockX, our own Delta) gives the trend and time factor; finance and sales databases add little for single used items beyond those. "A measured price advantage" from more sources is not established (Nate's research). Fees, fee bases and tax lines: [fees-and-taxes](../../research/price/nate/fees-and-taxes.md); the app shows records, not tax advice.
+## Facts to know
+
+| Fact | Mark | Link | At public launch |
+|---|---|---|---|
+| eBay API licence bans AI training on eBay content and auto-repricing against other sites | *observed* | [product](../product.md), [platform-access](../../research/connect/nate/platform-access.md) | eBay comps leave the model or consent is obtained; rights `may_model` enforced |
+| eBay data held 6 hours, no mixing with other sources | *observed* | [market-intelligence](../../research/data/nate/market-intelligence.md) | eBay comps are stored apart and expire |
+| PriceCharting: internal use on a subscription, no public display | *observed* | same note | its numbers are not shown to visitors |
+| StockX: no storing, no display; WatchCharts under a bounded licence | *observed* | same note | dropped or licensed |
+| Meta bans automated collection without written permission | *observed* | [platform-access](../../research/connect/nate/platform-access.md) | Facebook comps need permission |
+| Depop auto-respond: accepts at or above the floor, counters at it, within 60 s | *asserted* | [platform-levers](../../research/list/nate/platform-levers.md) | none |
+| Mercari Smart Pricing lowers from start to a floor by demand | *observed* | same note | none |
+| Offer floors: Poshmark 10%, eBay 5%, Mercari 10% | *observed* | same note | none |
+| Fees, fee bases and shipping rules per site | marks in the note | [fees-and-taxes](../../research/price/nate/fees-and-taxes.md) | none |
+| Recalled products may not be sold, including resale online (CPSA s19) | *observed* | [autonomous-features](../../research/cross-cutting/nate/autonomous-features.md) | unchanged: it protects people |
+| Account risk differs per site | *observed* | [product](../product.md) | shown per site on every plan |
 
 ## Demo path
 
 For Ben and Nate to mark.
 
+1. A jacket in `researching`. The card fills: 14 sales, a range per site, the Depop range labelled "not checked yet".
+2. The best Depop plan is preselected. Tap "why" and see the 9 listings it came from.
+3. Change the floor below the plan's floor, and the app asks. Confirm, and the site floor tool is set.
+
 ## Open for Ben and Nate
 
-| Question | Recommendation | Depends on it |
-|---|---|---|
-| The eBay licence bars modelling prices from eBay content. Model from non-eBay sources and show eBay sales only as a separate shelf, or apply to eBay for permission? | show eBay separately and apply; the model trains on other sites and our outcomes | the largest sold source, and the range on eBay |
-| Three named plans (Ben: "Sell this week", "Get the most") or Nate's wider list (repair, bundle, consign, keep)? | three cards plus a row of the wider choices when data supports them | Plan screen, `strategy.objective` values |
-| Suggest from the monthly goal? Nate asked for goals; Ben has not answered. | yes, Typical when no goal | `goal` entity, suggested pill |
-| Is Mercari in? ([vision](../../product/vision.md#open)) | keep its fee row; it changes nothing else | site fit table |
-| Business: paid comp sources cost per call; a premium deep search or paid data could earn. | note only | cost per valuation |
+- Is the 30-day horizon the right default "best", or should the best plan follow this month's goal when one is set?
+- Should visitors see the financial axis on product pages when its range is "not checked yet"?
 
 ## Needs from the shared model
 
-- `valuation` per site needs `days_to_sell`, `net`, `fits`, `reason`, `fee_table_version` and an `abstained` reason.
-- A `fee_table` entity (site, version, base, valid dates). The frame has none.
-- `strategy` needs a state (`active, paused, done, replaced`) and a `follow_ups[]` schedule with times.
-- Decision kind `plan_end` for a stale item.
+- `strategy.per_site[] {site, price_path[], floor_cents, title_form, photo_order[], attributes_to_fill[], list_at, offers_on, citation_id}`: product has one `price_path[]` and `sites[]`.
+- `GET /v1/citations/:id` in the endpoint list.
+- `unbacked_claim` in the decision kinds.
+- `comp.days_listed`, `comp.search_position`, `comp.state` (sold, live, ended).

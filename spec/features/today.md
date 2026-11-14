@@ -1,145 +1,151 @@
 # Today
-Status: draft, *agent proposal* except where a line links a decision. Slug: today. Written 2026-11-14.
+Status: draft, second pass. Every section is *agent proposal* except where a line links a decision. Slug: today. Names follow [product.md](../product.md). Written 2026-11-14.
 
-The hassle: a seller on five sites has to open five apps to learn that an offer expires in an hour, a label must be printed by tomorrow, and a buyer is waiting on a pickup time. The costliest misses are a shipping deadline, a return claim, or accepting the wrong offer ([user-wants.md](../../research/cross-cutting/ben/user-wants.md)). Today is one list of what needs the person, soonest deadline first, and a quiet record of what was done for them ([today-rework](../../research/today/ben/today-rework/README.md)).
+The hassle: a seller on five sites gets offers, questions, pickups and sale emails from five apps, each with its own alerts, and still cannot tell what needs them now ([user-wants.md](../../research/cross-cutting/ben/user-wants.md)). Today is the first tab ([decision](../../product/decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)): one list of the things only the person can decide, in the order they expire, each answerable in one tap, and one line for everything the agent already did, with undo.
 
 ## What the person does and sees
 
 | Step | What happens |
 |---|---|
-| 1. Open the app | Today is the first tab ([decision](../../product/decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)). Wordmark top centre, chat icon top right ([decision](../../product/decisions.md#2026-11-14-all-messages-live-behind-a-chat-icon-with-a-count)). |
-| 2. One list | Open decisions in one list, ordered by deadline. No "needs you" and "handled" split: Ben called that count "zero sense" ([today-rework](../../research/today/ben/today-rework/README.md)). |
-| 3. A card | Item photo, one sentence ("Jamie offered $38"), one line of context ("You asked $45. Similar jackets sold for $36 to $52 lately."), site logo and deadline, one primary action, one secondary, and ··· for the rest of the full action set ([structure-references.md](../../research/today/ben/structure-references.md)). |
-| 4. Act | Tapping the primary collapses the card with an Undo toast for about 5 s; the action is sent after the toast or at once if the deadline is under a minute away. |
-| 5. Done for you | Under the list, one quiet line per kind ("Answered 'Is it still available?' for 4 buyers. See replies"). Tapping opens the log, each row with Undo where the site allows. |
-| 6. Money | One quiet line for payouts and sales, and goal progress when a monthly goal is set ([words](../../product/words.md#2026-11-14-nate-frameworks-and-goals)). |
-| 7. Why? | Every card and every log row has "Why?", opening the timeline of what the agent read, judged and checked. |
-| 8. Always do this | After the third unedited approval of the same kind, the card offers "Always do this", with the limit in words ("Accept offers of $40 or more on this jacket"). Locked kinds never offer it. |
-| 9. Empty | The one next step ("Photograph something to sell"), never a celebration screen. |
+| 1. Open | The list of open decisions, soonest deadline first. Each card: photo, one sentence, the number that matters, the deadline, the full action set. Empty: "Nothing needs you" and the handled line. |
+| 2. Answer | One tap acts. The card shows the step running (`job.stage`), then leaves; a failure stays with what failed and a retry. |
+| 3. Edit | Any suggested action opens prefilled (a counter amount, a reply). An edited answer works but does not count toward promotion. |
+| 4. Always do this | Offered on promotable kinds after 3 unedited approvals ([decision](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)). Never on a locked kind, `price_below_floor`, `pickup_outside_hours`, `buy_offer` or `unbacked_claim`. |
+| 5. Handled line | "Handled 14 things today" opens the auto log: every auto action with why, time and Undo while allowed. |
+| 6. Held replies | A card per `unbacked_claim`: the draft with the unbacked claim marked, the reason, and Send without it, Edit, It's true, Don't send. |
+| 7. Rule expiring | A rule unused for 14 days gets one card: "Still accept $40 or more on the jacket?" with Keep it and Let it lapse. |
+| 8. Alerts | A push only for a card whose deadline is within an hour; everything else waits for the batch. |
 
-Where Ben's design stumbles: a 5 s undo toast on an offer that expires in seconds would lose the sale, hence the exception in step 4. An "Accept $38" card shown without what the seller keeps invites accepting the wrong offer; the context line carries `you_keep` when fees differ by site. What the backend allows that the design does not yet use: since every decision carries `item_id`, offers for the same item on several sites can merge into one card ("Two offers on the jacket: keep $34 on eBay, $36 on Depop").
+Goal progress is a You number ([insights.md](insights.md)), never a card. Dibs, lost dibs and watch duplicates are not cards.
 
-## What it reads and writes
+## Design choices
 
-| Entity | Use |
-|---|---|
-| `decision` | Read: open ones for the user. Written: `answered_at, option_id, edited, seconds_on_card, opened_detail` |
-| `rule` | Read for "Always do this" eligibility; written on promotion, expiry, demotion |
-| `event` | Read for the log (actor `auto`), written on every act and undo |
-| `item`, `photo`, `listing`, `offer`, `order`, `appointment`, `match`, `goal` | Read for card payloads, never written here except through the act route |
-| `limits` | Read to word the context line; edited from the card's ··· ("Change lowest price") |
+| Choice | Options considered | Picked | Why | What would change it |
+|---|---|---|---|---|
+| Order | by value; by deadline; a learned rank ([structure-references.md](../../research/today/ben/structure-references.md), [generative-ui.md](../../research/today/ben/generative-ui.md)) | deadline first, then money at stake, then age | a missed offer is the loss sellers name; no study ranks seller tasks | the test: missed deadlines and time to tap per order, over two weeks of use |
+| What becomes a card | every event; only what is outside limits ([handled-by-default.md](../../research/messages/nate/handled-by-default.md)) | only the decision kinds of [§5](../product.md#decision-kinds-the-complete-list) | everything inside limits is already done | none |
+| Alert cadence | each event; hourly; batched ([seller-metrics-and-notifications.md](../../research/today/nate/seller-metrics-and-notifications.md)) | Time Sensitive push only when a deadline is within 1 h; the rest in up to 3 batches a day | Fitz et al. 2019: 3 batches a day beat hourly and none; Apple reserves Time Sensitive for the next hour | opt-outs or missed deadlines above the bars below |
+| Several offers on one item | a card each; one card | one `accept_offer` card per item listing every open offer, best you-keep first | answering one changes the others | none |
+| Undo | a timer on the card; the log ([product.md Undo](../product.md#undo)) | the log, for as long as the site allows, else 24 h | a card timer hides undo after it closes | none |
+| Card copy | generated per card; templates per kind ([copy.md](../../product/copy.md)) | a template per kind, the model fills only names and quotes | numbers must be guarded; templates pass copy-lint | none |
 
-Approvals and edits are written as MLflow labels on the trace ([generative-ui.md](../../research/today/ben/generative-ui.md)).
+## The cards
+
+Every number on a card is a guarded number with a `citation_id`; a hidden one shows "not enough sales yet" (`hide_reason`). Every text the card sends out passes `claim_check` ([messages.md](messages.md)). One list, by owner, from [product.md §5](../product.md#decision-kinds-the-complete-list):
+
+| Owner | Kind | Payload | Actions |
+|---|---|---|---|
+| list | `first_post` | item, sites, price | Post, Edit, Not now |
+| list | `agent_revision` | before and after, why | Use it, Keep mine |
+| list | `relist` | site, days live | Relist, Not now (never Poshmark) |
+| list | `failed_post`, `failed_delist` | site, failed step | Retry, Do it myself |
+| list | `site_changed_listing` | field, before and after | Keep site's, Put mine back |
+| messages | `reply_other` | question, draft | Send, Edit, Not now, Always do this |
+| messages | `accept_offer` | offers, asking, you keep, expires | Accept, Counter $X, Decline, Always accept $X or more |
+| messages | `scam_warning` | reason | Block buyer, Reply with safety line, Ignore |
+| messages | `move_off_site` | request | Decline |
+| messages | `pickup_outside_hours` | time, your hours | Accept, Offer my hours, Decline |
+| messages | `share_address` | appointment | Share address, Keep the spot |
+| messages | `unbacked_claim` | draft, claims with reason | Send without it, Edit, It's true, Don't send |
+| price | `markdown` | new price, range, days live | Lower it, Keep price |
+| price | `price_below_floor` | offer, lowest you'd take | Accept, Counter at lowest, Decline |
+| identify | `clarify` | the question, choices | the choices, Not sure |
+| identify | `identity_claim` | claim, evidence | Confirm, Remove |
+| capture | `retake`, `missing_shot` | view needed | Take it, Skip |
+| capture | `confirm_flaw` | photo region | Yes, No |
+| capture | `approve_groups`, `category_unsure` | groups or candidates | Approve, Fix |
+| measure | `measure_review` | numbers on the photo | Looks right, Fix |
+| studio | `studio_approve` | improved and real | Use improved, Use real, Redo |
+| sold | `ship_by` | buyer, deadline | Ship, Get a label |
+| sold | `buy_label` | carrier, cost | Buy label, Choose another |
+| sold | `cancel_sale` | reason choices | Cancel with reason, Keep sale |
+| sold | `no_show` | appointment | Rebook, Next in line, Relist |
+| sold | `double_sale` | both orders | Keep first, Keep second |
+| sold | `refund` | amount | Refund, Reply first |
+| sold | `return_claim`, `claim_reply`, `dispute` | claim, evidence | Accept, Reply, Send evidence |
+| sold | `leave_review` | buyer | Leave review, Skip |
+| connect | `relink` | site | Reconnect |
+| connect | `site_warning` | site, risk to the account | Pause site, Keep going |
+| connect | `merge_items` | two items | Merge, Keep apart |
+| buy | `buy_offer` | listing, amount, total | Send offer, Change, Skip |
+| buy | `offer_over_ceiling`, `seller_counter` | amount, your max | Raise, Counter, Walk away |
+| buy | `did_you_buy` | listing | Yes, No |
+| buy | `replace_after_sale` | similar listings | Watch these, Stop |
+| buy | `save_match` | listing | Save, Skip (never Poshmark likes) |
+| buy | `complete_purchase` | listing, total | Open on site |
+| data | `rule_expiring` | rule, last used | Keep it, Let it lapse |
+
+Auto kinds (`answer_fact`, `counter_offer`, `decline_offer`, `offer_to_watchers`, `book_pickup`, `delist_after_sale`, `push_my_edit`) appear as cards only when their rule is in `ask`, else as log rows. Locked kinds take the person's tap every time. Exact action labels go through copy-lint and Ben's writing rules; owners may rename them.
+
+## The auto log
+
+One source: `GET /v1/events?item_id=&cursor=` with `actor` `auto`. Each row: what, item photo, why (the rule or limit), time, and Undo while `undo.allowed` and before `undo.until`. Undo calls `POST /v1/events/:id/undo`; `409 site_no_undo` turns the button into "Can't undo on Depop" with what to do instead. A sent message and an accepted offer show no Undo. Any undo demotes the rule that did it, and an undone accept pauses that rule ([product.md §4](../product.md#4-states)).
 
 ## States
 
-Decision (*agent proposal*): `open → acting → done | failed | expired | superseded`. `superseded` when the world changed first (the item sold elsewhere, the buyer withdrew); the card then shows what happened with one action (Decline or Dismiss). `acting → failed` reopens the card with the error.
-
-Rule: `ask → eligible (3 unedited approvals, the gates in [MO](../../research/messages/ben/messages-and-offers.md)) → auto → expired (14 days unused) | demoted (on any undo)`.
-
-## Systems underneath
-
-| Piece | Job here |
-|---|---|
-| App API (FastAPI on Apps) | Ranks and serves the list, the act route, the log |
-| Lakebase | `decision`, `rule`, `event` truth; SSE pushes a new or changed card |
-| Every feature's jobs | Create decisions; Today never polls sites itself |
-| Plain code | Rank: money or sale lost soonest, then locked kinds, then ask, then age. The agent proposes a deadline, never the rank ([generative-ui.md](../../research/today/ben/generative-ui.md)) |
-| Notification service (Expo push) | Sends only what the rule below allows |
-| MLflow 3 | Traces become the "why?" timeline; approvals are labels |
-| Marketplace adapters | Execute the chosen option, read back to confirm |
-
-What arrives, from where:
-
-| Source | Decision kind |
-|---|---|
-| [messages](messages.md) | `offer, below_floor, reply_draft, pickup_time, address_share, scam_warning, dispute` |
-| post, connect | `failed` (a post, delist or login that did not go through) |
-| sold | `ship_by, return_claim, refund, cancellation, no_show, dibs, dibsLost` |
-| capture, item research | `draft_ready, clarifying_question` ("Is the zip original?") |
-| price | `markdown_suggested` when outside limits; inside limits it is a log row |
-| buy | `match, offer_to_seller` |
-| goals | `goal_progress` (no deadline; sorts last) |
+Decision `open, acting, answered, failed, expired, superseded`; rule `ask, eligible, auto, expired, demoted`; job stages `started, running, arrived, failed` ([product.md §4](../product.md#4-states)). A card whose item or offer changed returns `409 stale` and is replaced in place.
 
 ## Contract for the frontend
 
-| Endpoint | Returns |
+From [product.md §7](../product.md#7-contract-conventions):
+
+| Call | Use |
 |---|---|
-| `GET /v1/today` | `{decisions:[...], done_for_you:[{kind, count, label, log_url}], money:{paid_out_cents, currency, goal?}}` under 300 ms |
-| `GET /v1/today/stream` | SSE: `decision.added, decision.changed, decision.removed` |
-| `POST /v1/decisions/:id/act` | `{option_id, signature, item_version, edit?}` → `job`; 409 `{code:"stale"}` returns the fresh card |
-| `GET /v1/log?cursor=` | `[{event_id, item, action, at, undo:{allowed, until}}]` |
-| `POST /v1/actions/:event_id/undo` | `job`, or 409 `{code:"site_no_undo"}` |
-| `POST /v1/rules` | `{from_decision_id}` creates the rule; 403 for locked kinds |
-| `GET /v1/decisions/:id/why` | `[{step, at, read[], judged, checked, result}]` from the trace, no message text |
+| `GET /v1/today` | open decisions in order, with counts |
+| `POST /v1/decisions/:id/act` | `{option_id, signature, version, edit?}` with `Idempotency-Key`; returns `{decision, event_id, job?}` ([act](../product.md#decisions-and-the-act-endpoint)) |
+| `GET /v1/events`, `POST /v1/events/:id/undo` | the log and why |
+| `GET /v1/rules`, `POST /v1/rules {from_decision_id}`, `DELETE /v1/rules/:id` | Always do this, Keep it, Let it lapse; `403 locked` |
+| `GET /v1/stream` | `decision.open`, `decision.answer`, `decision.close`, `job.stage`; polling `GET /v1/today` must work alone |
 
-A card is the frame's decision object plus `card:{photo_url, sentence, context, site, deadline}` and `kind_payload` per kind ([generative-ui.md](../../research/today/ben/generative-ui.md)). An edited option is signed as a new user-authored option and does not count toward promotion ([decision](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)).
-
-Full action set per kind (primary first):
-
-| Kind | Payload | Actions |
-|---|---|---|
-| `offer` | site, buyer, amount, asking, you_keep, expires_at | Accept, Counter $X, Decline, Reply, Always accept $X or more |
-| `below_floor` | amount, lowest, you_keep | Counter at lowest, Accept anyway, Decline |
-| `reply_draft` | question, draft | Send, Edit, Not now, Always do this |
-| `pickup_time`, `address_share` | proposed, hours, spot | Accept, Offer my hours, Decline; Share address, Keep spot |
-| `scam_warning` | reason | Block buyer, Reply with safety line, Ignore |
-| `ship_by` | order, deadline, label | Print label, Mark shipped, Ask for more time |
-| `return_claim`, `dispute`, `refund` | order, claim, deadline | Open on site, Reply, Accept return |
-| `cancellation`, `no_show` | order | Relist, Message buyer, Keep |
-| `failed` | step, error | Retry, Fix, Leave it |
-| `dibs`, `dibsLost` | site, buyer | Hold, Release; Relist |
-| `draft_ready` | item, valuation | Post, Edit, Not now |
-| `clarifying_question` | question, choices | each choice, I don't know |
-| `markdown_suggested` | from, to, reason | Lower to $X, Keep, Change lowest price |
-| `match`, `offer_to_seller` | match, price, ceiling | Open on site, Save, Not this; Send offer, Change, Skip |
-| `goal_progress` | goal, earned | Dismiss, Change goal |
-
-## Who may act
-
-| Action | Mode |
-|---|---|
-| Any option on a card | the person, through the signed act route |
-| Undo of an auto action | the person, where the site allows |
-| Promote to "Always do this" | the person, after 3 unedited approvals; never for home address, payment and refunds, moving off the site, below the lowest price, or completing a purchase ([decision](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)) |
-| "Always accept $X or more" | the person, at listing or from an offer card, no wait for 3 approvals ([decision](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)); what changed: earlier plans required 3 approvals first ([decision](../../product/decisions.md#2026-11-14-accepting-offers-at-or-above-a-set-amount-can-be-promoted-per-item)) |
-| Notification | the system, under the rule below |
-
-Notifications (*agent proposal*): only when there is something to know or decide ([research-session-digest.md](../../research/cross-cutting/nate/research-session-digest.md)). Push at once for an offer at or above the lowest price, a deadline within 2 h, a pickup today, a scam warning; the rest in a digest about 3 times a day, the default offered at setup, untested for sellers ([psychology.md](../../research/cross-cutting/ben/psychology.md)). Approve from the notification for kinds that are not locked. Nothing is pushed for auto actions.
-
-What changed: the feature page asked "which actions can skip the inbox"; today's decisions answer it ([decision](../../product/decisions.md#2026-11-14-buyers-are-handled-inside-limits-you-set-then-it-learns)).
+The signature is valid 15 minutes; an expired one refetches the card. The policy check reruns on act; `422 outside_limits` shows what moved.
 
 ## How it fails
 
 | Failure | What the person sees | Recovery |
 |---|---|---|
-| Act after the world changed | Card refreshes to its new state (409) | One tap on the fresh card |
-| Execution fails on the site | Card reopens: "eBay did not take the counter" | Retry with the same idempotency key |
-| Undo not allowed by the site | Log row says so; no Undo button shown | none |
-| Deadline passes unanswered | Card turns `expired`, one log row | none; an expiry push 2 h before |
-| Today slow or offline | Skeleton under 1 s, then the cached list marked with its time | Poll on reconnect |
-| Push fails | The card is still in Today | none |
+| Stream drops (untested through the Apps proxy) | nothing; the list polls | poll every 30 s while open |
+| Act on a changed card | the new card in its place | `409 stale` |
+| Job fails | card stays: "Couldn't post on Mercari: login expired" | retry, or the `relink` card |
+| App asleep | "Waking up" | `503 waking`, retry after |
+| Deadline passes | card leaves as `expired`; the log says what the site did | none |
+| Undo past the site's limit | "Can't undo" and the way to fix it by hand | `409 site_no_undo` |
 
 ## How we will know it works
 
-| Claim | Check |
-|---|---|
-| Nothing missed | Zero ship-by or return deadlines passed in `event` while the user opened Today in the prior 24 h |
-| Approvals mean something | Share of unedited approvals under 2 s stays low; if high, promotion is rubber-stamping ([handled-by-default.md §7](../../research/messages/nate/handled-by-default.md)) |
-| Learning happens | A third or more of ask kinds reach promotion within 4 weeks |
-| Fast | `GET /v1/today` p95 under 300 ms on real accounts |
-| Quiet | Pushes per active user per day, and the share opened |
-| Undo is safe | Every undo in `event` matched by a site read-back |
+| Claim | Bar | Source |
+|---|---|---|
+| Nothing is done outside limits | zero auto actions outside limits | [product.md §8](../product.md#8-cross-cutting-requirements) |
+| Alerts do not drive opt-out | non-urgent pushes at most 3 a day | Fitz et al. 2019; the top opt-out reason is "too frequently" (Airship 2026), [seller-metrics-and-notifications.md](../../research/today/nate/seller-metrics-and-notifications.md) |
+| Time Sensitive is honest | only for deadlines within 1 h | Apple HIG, same note |
+| The order works | under 5% of offers expire unanswered while the app was opened that day | test decides; no published figure |
+| Cards are quick | median time from open to tap (`card_ms`) under 5 s for one-tap kinds | test decides |
+| Suggestions are right | unedited approval rate per kind rising week on week | labels |
 
-## Facts that constrain it
+## Data flow
 
-| Fact | Source |
-|---|---|
-| Offer windows (24 h on most sites) and acceptance that charges at once on Mercari | [MO](../../research/messages/ben/messages-and-offers.md), *observed* |
-| Return and claim windows per site | [trust-returns-disputes.md](../../research/sold/nate/trust-returns-disputes.md) |
-| Batched notifications for sellers are untested | [psychology.md](../../research/cross-cutting/ben/psychology.md), *inferred* |
-| Lakebase drops LISTEN/NOTIFY; SSE plus polling | [databricks-platform.md](../../research/data/nate/databricks-platform.md), *observed* |
-| Never log message text or addresses | [spec/README.md](../README.md) |
+```mermaid
+flowchart LR
+  P["policy check, plain code"] -->|"outside limits: Lakebase decision open"| D["Lakebase decision"]
+  D -->|"GET /v1/today, GET /v1/stream decision.open"| T["Today card"]
+  T -->|"POST /v1/decisions/:id/act: decision answered, Delta event"| E["Delta event"]
+  E -->|"plain code counts unedited approvals: rule eligible"| R["Always do this, rule auto"]
+  E -->|"MLflow log_feedback HUMAN: label proposed"| L["Delta label"]
+  A["auto job via harness"] -->|"Delta event, undo window"| G["auto log, GET /v1/events"]
+  G -->|"POST /v1/events/:id/undo: event undo_of, rule demoted"| R
+```
+
+## Facts to know
+
+| Fact | Source, mark | For a public launch |
+|---|---|---|
+| 3 batches a day beat hourly and none (Fitz et al. 2019, CHB 101:84-94) | [seller-metrics-and-notifications.md](../../research/today/nate/seller-metrics-and-notifications.md), asserted | |
+| Time Sensitive is for events within the hour, never marketing (Apple HIG) | same note, observed | App Store review checks it |
+| Depop stats arrive the next day | same note, observed | |
+| Poshmark offers last 24 h; Depop offers 14 days | [platform-levers.md](../../research/list/nate/platform-levers.md), observed | |
+| Undo limits differ per site; Poshmark cannot relist | [product.md Undo](../product.md#undo) | |
+| SSE through the Apps proxy is untested | [product.md §7](../product.md#jobs-and-the-event-stream) | |
+| Risk to a real account is shown per site (`site_warning`) | [platform-access.md](../../research/connect/nate/platform-access.md) | binds now |
+| A home address is shared only on the person's tap (`share_address`, locked) | [decision](../../product/decisions.md#2026-11-14-the-agent-books-pickups-inside-your-hours) | binds now |
 
 ## Demo path
 
@@ -147,14 +153,12 @@ For Ben and Nate to mark.
 
 ## Open for Ben and Nate
 
-1. **"Always say first to pay"** for dibs on Depop: Ben raised it ([generative-ui.md](../../research/today/ben/generative-ui.md)). Recommendation: allow, since paying settles it. Depends: the `dibs` kind and the lifecycle "paid beats dibs" line.
-2. **Merge offers across sites into one card?** Recommendation: yes, ordered by what the seller keeps. Depends: the card payload.
-3. **Approve from the notification for money kinds?** Recommendation: yes for accept at or above the lowest price, no for anything locked. Depends: signed options in push payloads.
-4. Earning: a daily digest of what was handled is where a paid tier would be felt; note only.
+1. **Which alerts can the person switch off?** `user.notification_pref` exists; no rule says which kinds may be turned off. Recommendation: every batch alert can be; Time Sensitive ones only per kind, with the cost shown.
+2. **Batch times.** Recommendation: 9:00, 13:00, 19:00 local, moved by when the person opens the app.
+3. **How much a followed price must move before it alerts** (open in [product.md §9](../product.md#9-open-for-ben-and-nate), shared with `spec/features/market.md`). Recommendation there: outside the guarded range, at most one a day per follow; here it joins the batch, never Time Sensitive.
 
 ## Needs from the shared model
 
-- A decision state list (`open, acting, done, failed, expired, superseded`) and the kind names above as one shared list.
-- New kinds `clarifying_question`, `goal_progress`, `markdown_suggested`, `ship_by`, `return_claim`, `cancellation`, `no_show`, `draft_ready`, `match`, `offer_to_seller`, beside lifecycle's `failed, refund, dibs, dibsLost`.
-- A `notification` rule (push now, digest, never) per kind.
-- A log view over `event` (actor `auto`) with an undo window per action and site.
+- `unbacked_claim` in [product.md §5](../product.md#decision-kinds-the-complete-list).
+- A notification rule beside `user.notification_pref`: which kinds push, which batch.
+- A log line for `message.new` in [events.json](../events.json).

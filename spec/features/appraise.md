@@ -1,135 +1,181 @@
 # Appraise
-Status: draft, *agent proposal* except where a line links a decision. Slug: appraise. Written 2026-11-14.
+Status: draft, second pass. Every design line is an *agent proposal* except where a line links a decision. Slug: appraise. Written 2026-11-14.
 
-At a garage sale, on a Facebook listing or holding a card, a buyer today guesses, or searches sold listings on a phone while the seller waits, and still does not know what they would keep after fees if they resold. Appraise answers in seconds: the most to pay, what it is worth on each site after its flaws, cheaper equal options, and the one check that settles the price. It is the same engine as [price](price.md), pointed at a thing you do not own ([decision](../../product/decisions.md#2026-11-14-selling-comes-first-buying-is-a-full-side)). Ben: "Appraise anything" ([words](../../product/words.md#2026-11-14-pavlo-and-appraise)). Nate: "negoitate at a garage sale, or check pokemon card investments... similar in quality... at lower prices" ([words](../../product/words.md#2026-11-14-nate-store-and-buying)). Feature page: [features/appraise](../../features/appraise/README.md).
+At a garage sale, on a Facebook listing, holding a card, or looking at a box of their own things, a person today guesses or scrolls sold listings while the seller waits. Appraise answers in seconds with the most to pay, what the thing is worth on each site after its flaws, whether it is recalled, cheaper equal options, the one check that settles the price, and, for a thing they own, whether to sell, trade in or donate it. It is the [price](price.md) engine pointed at a thing with no item yet: a `valuation` keyed by a capture or a URL ([decision](../../product/decisions.md#2026-11-14-selling-comes-first-buying-is-a-full-side)). Ben: "Appraise anything" ([words](../../product/words.md#2026-11-14-pavlo-and-appraise)). Nate: "negoitate at a garage sale, or check pokemon card investments... similar in quality... at lower prices" ([words](../../product/words.md#2026-11-14-nate-store-and-buying)). Feature page: [features/appraise](../../features/appraise/README.md).
 
 ## What the person does and sees
 
 | Step | Where | What they see |
 |---|---|---|
-| 1 | Buy search: camera icon or pasted link; or ＋, "What's it worth" ([decision](../../product/decisions.md#2026-11-14-the-buy-tab-mirrors-sell-with-shelves), [bar](../../product/decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)) | Camera opens; a link fills in the listing's photos and asking price |
-| 2 | Valuation card, buyer framing | **Glance**, within 2 s: what it likely is and a rough range, marked estimated |
-| 3 | Same card | **Check**, within 10 s: verdict pill (Buy, Offer, Skip, Unsure), "Pay up to $40", "Offer $30", and the range per site after flaws |
-| 4 | Same card | One check: "Check the zipper works" or "Photo of the tag". Answering moves the numbers |
-| 5 | Haggle pad | Type the seller's price; verdict and profit update at once, offline |
-| 6 | Card sections | Cheaper equivalents (match label on each), price history line, recalls if any |
-| 7 | **Deep**, minutes, on tap | full research job; the card updates when it arrives and a Today card says so |
-| 8 | "Bought it" | enter what you paid; the item appears in Sell as `researching`, with photos and purchase cost carried over ([decision](../../product/decisions.md#2026-11-14-the-buy-tab-mirrors-sell-with-shelves)) |
+| 1 | Buy search camera or pasted link, or ＋ "What's it worth" ([decision](../../product/decisions.md#2026-11-14-the-buy-tab-mirrors-sell-with-shelves), [bar](../../product/decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)) | Camera opens; a link fills in the listing's photos and price |
+| 2 | Valuation card | **Glance**, within 2 s, from the on-phone comp index: what it is and a rough range, labelled "rough" |
+| 3 | Same card | **Recall check** before any verdict: nothing shown when clear; "Recalled: do not buy or sell" with the notice when matched |
+| 4 | Same card | **Check**, within 10 s: verdict (Buy, Offer, Skip, Unsure), "Pay up to $40", "Offer $30", range per site after flaws |
+| 5 | Same card | One check: "Check the zipper works" or "Photo of the tag". Answering moves the numbers |
+| 6 | Haggle pad | Type the seller's price; verdict and profit update at once, offline |
+| 7 | Card sections | Cheaper equivalents with a match label each, price history |
+| 8 | "Your options" (a thing they own) | Sell, trade in, donate side by side: what they get, how long, effort |
+| 9 | **Deep**, on tap | the full research job; a Today card says when it lands |
+| 10 | "Bought it" | enter what you paid; an `owned` item with cost appears; "Sell this" moves it to capturing ([product](../product.md)) |
 
-Speed tiers are Ben's ([appraisal-run](../../research/appraise/ben/appraisal-run.md)). Batch: at a sale with many things, several photos in a row rank by profit per minute of effort ([garage-sale](../../research/appraise/ben/garage-sale.md)).
+Casual is the default framing: "fair price", target profit 0 ([decision](../../product/decisions.md#2026-11-14-the-first-person-we-build-for-is-someone-clearing-their-own-things)). A reseller who sets `user.target_profit_cents` sees profit at the asking price. Batch: several photos in a row rank by profit per minute ([garage-sale](../../research/appraise/ben/garage-sale.md)).
 
-Where Ben's design would make a person stumble: "What's it worth" sits under ＋, which otherwise adds things you own, while the Buy camera does the same lookup; a person who taps ＋ for a thing they do not own may expect it to land in Sell. Recommendation: both open the same card, and nothing becomes an item until "Bought it" (or "Sell this" for a thing they already own). What the backend makes possible that the design does not yet use: the result can become a `want` with a watch ("Tell me if one shows up under $30"), and the price history line.
+## Design choices
+
+| Choice | Options considered | Picked | Why | What would change it |
+|---|---|---|---|---|
+| Speed tiers | one slow answer; Glance, Check, Deep ([appraisal-run](../../research/appraise/ben/appraisal-run.md)) | three tiers on one `valuate` job | a seller waiting at a table gives seconds | p95 at a real sale on mobile data |
+| Identity at Glance | AI Search text; image vectors; an LLM ([product](../product.md)) | self-managed image vectors plus the on-phone comp index, Haiku 5.5 to name it | AI Search has no image embeddings; the index works offline | top-1 accuracy on our captures |
+| Recall gate | none; a warning after the verdict; a gate before it ([autonomous-features](../../research/cross-cutting/nate/autonomous-features.md)) | CPSC Recall API before any Buy or Sell verdict | selling a recalled product is illegal, resale included | a match miss rate that needs a person |
+| Most to pay | asking minus a margin; expected net with risks ([appraisal-run](../../research/appraise/ben/appraisal-run.md), [quality-and-value-classifiers](../../research/price/nate/quality-and-value-classifiers.md)) | calibrated probability x value, the qualified-to-price gate | the published objective; an unidentified thing gets no number | resale outcomes against `max_pay` |
+| Which check | a fixed list; value of information ([appraisal-run](../../research/appraise/ben/appraisal-run.md)) | the check that moves `max_pay` most, at most 3 | one question beats a form | VOI against fixed order, in a test |
+| Sell, trade in, donate | sell only; a comparison ([autonomous-features](../../research/cross-cutting/nate/autonomous-features.md), [user-wants](../../research/cross-cutting/ben/user-wants.md)) | three guarded numbers with hand-off links | 60.1% donated against 21.6% resold (Kijiji 2016); trade-in buyers have no quote API | a trade-in partner API |
 
 ## What it reads and writes
 
 | Entity | Reads | Writes |
 |---|---|---|
-| `capture`, `photo` | camera shots or link images | a lightweight capture (no item yet) |
-| `product`, `comp` | identity candidates, comps | new comps with rights notes |
-| `valuation` | | per site range after flaws, `max_pay`, `fair_offer`, `walk_away_above`, verdict |
-| `match` | | the source listing (link case) and cheaper equivalents, each with a match label; can be saved |
-| `want` | | on "Watch for this" |
-| `item`, `attribute`, `event` | | on "Bought it": `item` with purchase cost, observed attributes carried as `inferred` or `you_said` |
-| `limits` | buy ceiling | none |
-| user setting | target profit (casual 0, reseller a set amount or share) | |
+| `capture`, `photo` | shots or link images | a light capture, no item |
+| `product`, `comp` | identity candidates, comps (price owns `comp`) | new comps with `evidence` and rights through the `valuate` job |
+| `attribute` | | on Bought it, observed facts with `evidence {kind, ref, region?, captured_at, extractor_version}`; a recall match as `lookup` evidence |
+| `valuation` | | `capture_id` or `url_ref`; `per_site[]`, `drivers[]`, `max_pay_cents`, `verdict`, `check`, `job_id`; each number a guarded number with `citation_id` |
+| `score` | quality and trend axes (`spec/features/score.md`) | financial axis for a `match`, as price defines it |
+| `match` | | the source listing and cheaper equivalents, `valuation_id` set |
+| `want` | `max_total_cents` | on "Watch for this" |
+| `order`, `item` | | Bought it: `POST /v1/orders` kind purchase; `owned` item with `cost` |
 
 ## States
 
 | Move | Trigger |
 |---|---|
-| appraisal job stages `glance`, `check`, `deep` | each `started, running, arrived, failed` |
-| verdict `unsure` to `buy | offer | skip` | answering the one check, or Deep arriving |
-| new `item` in `researching` | "Bought it" |
-| `match` saved | "Save"; *agent proposal*: also saves or likes it on its site (Nate's proposal, not yet answered by Ben, [vision](../../product/vision.md#proposed)) |
+| `valuate` stages `identify`, `find_sales`, `adjust`, `range`, `net`, `plans`, each `started, running, arrived, failed` | Glance arrives after `identify`, Check after `net`, Deep reruns with wider sources |
+| verdict `unsure` to `buy`, `offer` or `skip` | the one check answered, or Deep arrives |
+| verdict forced `skip` | recall matched |
+| `match` `found` to `saved` | `save_match` answered |
+| `match` to `offered` | `buy_offer` answered |
+| new item `owned` | Bought it, or a `did_you_buy` yes |
+| `owned` to `capturing` | Sell this (`POST /v1/items/:id/sell`) |
 
 ## Systems underneath
 
 | Piece | Role |
 |---|---|
-| App API `appraise` | starts a job; Glance answers from AI Search over products and recent comps by image embedding |
-| Model gateway | Haiku for Glance identity; Sonnet for Check reading listing text and flaws; Opus for Deep; bounded yes/no checks ("same model?", "flaw visible?") |
-| Site adapters | read a pasted listing (eBay API, else cloud browser), search equivalents across the platform list ([decision](../../product/decisions.md#2026-11-14-the-platform-list-is-set)) |
-| Plain code | `max_pay`, offer, walk-away, verdict, net per site, haggle pad (runs on the phone from the returned numbers) |
-| Delta | price history from stored comps and category sources; labels from outcomes |
-| MLflow 3 | trace per appraisal; the "why?" timeline |
+| `POST /v1/valuations` | starts the `valuate` job for a capture or URL |
+| On-phone comp index (price owns it) | Glance offline: nearest products and recent sold medians |
+| Image vectors, pgvector | identity by look |
+| Claude Haiku 5.5 | Glance naming, routing |
+| Claude Opus 5.5 | Check reads listing text and flaws; Deep investigates |
+| Decisions API and Jev | typed "same model?", "flaw visible?" ([decision](../../product/decisions.md#2026-11-14-typed-judgements-run-on-both-the-decisions-api-and-jev-and-our-labels-pick)) |
+| Harness `search`, `read_sold` | read a pasted listing and find equivalents across the set ([decision](../../product/decisions.md#2026-11-14-the-platform-list-is-set)) |
+| CPSC Recall REST API | recall lookup by product name, brand and model (US) |
+| Plain code | `max_pay`, offer, verdict, net, haggle pad, route comparison |
+| MLflow 3 | trace per appraisal, the "why?" timeline |
 
-The most to pay, from Ben's research ([appraisal-run](../../research/appraise/ben/appraisal-run.md)):
+**Recall gate.** Query brand, model and product name. A fuzzy match at or above a set threshold writes `lookup` evidence with the recall URL and forces `skip`, and capture's `requirement` legal flag makes `post` refuse. Below the threshold but above a lower one, the card shows "Possible recall: check the model number" as the one check. Broken or unstable nursery products are never rated Buy. With the API down the card says "Recall check unavailable", and no Buy verdict is given.
+
+**Most to pay**:
 `max_pay = P(identity) x P(condition) x P(authentic) x net(best site, p25) - hassle - risk_margin - target_profit`.
-Net uses the same fee table as [price](price.md). For a casual buyer target profit is 0 and the card frames "fair price"; for a reseller it shows profit at the asking price. Local or bulky things use asking prices only, labelled as asking ([garage-sale](../../research/appraise/ben/garage-sale.md)).
+Each P is calibrated on labelled outcomes. Below the qualified-to-price gate (identity not confirmed) the card has no number and shows the check. Following the certainty principle, identity, variant and size are stated as confirmed once settled. Authenticity and working condition stay probabilities that the card words as ranges. `net` and its range come from [price](price.md), with the same calibration and hide states. `max_pay` is hidden whenever the range is.
 
-The one check is picked by value of information: the question whose answer would move `max_pay` most, at most 3 in a row ([appraisal-run](../../research/appraise/ben/appraisal-run.md)).
+**Equivalents** are ranked by total cost to the door and labelled Exact verified, Likely same model, Same family different variant, Comparable substitute, or Visually similar unverified ([analytics](../../research/data/nate/analytics-and-recommendations.md)). A referral fee never changes the order. Nate's couch ("a scan shows one on ebay of the same type for less") is this section.
 
-Cheaper equivalents: search on the factors Nate lists (identity, variant, condition, completeness, shipping, taxes, returns, authenticity, fit), ranked by total cost to the door, each labelled Exact verified, Likely same model, Same family different variant, Comparable substitute, or Visually similar unverified ([analytics](../../research/data/nate/analytics-and-recommendations.md)). Nate's couch: "A guy offers a couch for 3,000, but a scan shows one on ebay of the same type for less" is this section.
+**Your options** (a thing they own, or a Bought it item):
 
-Price history: median sold price by month from our comps and category sources (PriceCharting, StockX, Discogs, [CS](../../research/price/ben/comps-sources-live.md)), with the dates it rests on; for cards and collectibles it is the main view.
+| Route | Number | Time | Hand-off |
+|---|---|---|---|
+| Sell | net range on the best plan from price | days to sell | Sell this |
+| Trade in | best quote among buy-back sites, read at that time, labelled with its age | about 48 h quote lock (*asserted*) | opens the site |
+| Donate | fair market value range from sold comps, for the receipt | pickup or drop-off | opens ThredUp Clean Out, Goodwill pickup |
+
+Each is a guarded number. A route with no basis is hidden with its reason, never guessed. Effort is shown as steps, not a score.
+
+**Outgoing words.** A drafted offer message passes a `claim_check`; a hold raises `unbacked_claim`. A `buy_offer` asks every time. A price over `want.max_total_cents` raises `offer_over_ceiling`.
+
+## Data flow
+
+```mermaid
+flowchart LR
+  P["camera or pasted URL"] -->|"POST /v1/valuations: capture or url_ref"| J["valuate job, Lakeflow"]
+  J -->|"image vectors and pgvector: product candidates"| I["identify"]
+  I -->|"CPSC Recall API: attribute evidence lookup"| R["recall gate, plain code"]
+  R -->|"harness search, read_sold: comp with evidence"| C["Delta comp"]
+  C -->|"plain code from fees: valuation max_pay, verdict"| L["Lakebase valuation"]
+  L -->|"save_match or buy_offer: decision"| D["Lakebase decision"]
+  L -->|"POST /v1/orders kind purchase: item owned"| O["Lakebase item, order"]
+```
 
 ## Contract for the frontend
 
-| Call | Returns |
-|---|---|
-| `POST /v1/appraisals` `{photo_upload_ids[] | url}` | `job` kind `appraise`, stages `glance, check, deep` (deep only when asked) |
-| `GET /v1/appraisals/:id` | `{identity:{product_id?, label, match_label, confidence}, verdict, max_pay_cents, fair_offer_cents, walk_away_above_cents, per_site:[{site, range, net, days_to_sell}], check?:{id, ask, kind: photo|yes_no}, equivalents:[match], price_history:[{month, median_cents, basis_count}], recalls[], basis}` |
-| `POST /v1/appraisals/:id/answers` | new appraisal result |
-| `POST /v1/appraisals/:id/deep` | job |
-| `POST /v1/appraisals/:id/bought` `{paid_cents, currency}` | `{item_id}` |
-| `POST /v1/appraisals/:id/watch` | `{want_id}` |
+| Call | Body | Returns |
+|---|---|---|
+| `POST /v1/valuations` | `{capture_id}` or `{url_ref}` | `202 {job_id}`; stages stream |
+| `GET /v1/valuations/:id` | | verdict, `max_pay_cents`, `per_site[]`, `check`, routes, each a guarded number |
+| `POST /v1/matches/:id/act` | `{action: save | offer, amount_cents?}` | a `save_match` or `buy_offer` decision; `422 outside_limits` |
+| `POST /v1/orders` | `{kind: purchase, valuation_id, cost}` | order and `owned` item |
+| `POST /v1/items/:id/sell` | | item `capturing` |
 
-All money in cents; ranges in the frame's shape.
+`Idempotency-Key` on every POST. `503 waking` while the warehouse starts; Glance still answers from the phone.
 
 ## Who may act
 
-| Action | Mode |
-|---|---|
-| Appraising, searching, saving a match | `auto`, nothing outward |
-| Save or like on the site | `auto` if the person turned it on (proposal) |
-| Messaging a seller or making an offer under the buy ceiling | `ask`, per Nate's "Also negotiate for me" (Nate, [words](../../product/words.md#2026-11-14-nate-store-and-buying); not decided) |
-| Completing a purchase, paying | locked to the person; they pay on the site |
-
-A verdict is advice, not authorization to buy (Nate's research).
+| Action | Who | Tier |
+|---|---|---|
+| Appraise, recall check, find equivalents | system | auto |
+| Save or like on the site | person | `save_match`: ask, promotable, never Poshmark likes |
+| Make an offer to a seller | person | `buy_offer`: ask every time |
+| Above `max_total_cents` | person | `offer_over_ceiling`: ask |
+| Complete a purchase | person, on the site | `complete_purchase`: locked |
+| List a recalled product | nobody | `post` refuses |
 
 ## How it fails
 
-| Failure | Person sees | Recovery |
+| Failure | Seen as | Recovery |
 |---|---|---|
-| Identity unresolved | "Unsure" pill and 2 or 3 candidates, no price | pick one, or the tag photo check |
-| Too few sales | "Not enough sales to price this" | Deep, or watch |
-| Link site blocked | "Couldn't open that listing" | photos of the screen instead |
-| No signal at the sale | Glance from the cached on-phone index if present, else queued; haggle pad still works on the last numbers | runs when back online |
-| Deep runs long | job card in Today | arrives later |
+| No signal at a sale | Glance from the phone index only, "rough" | Check runs on reconnect |
+| Identity unsettled | no number, one check | the check, then Deep |
+| Recall API down | "Recall check unavailable", no Buy verdict | retry; the person can check the notice link |
+| Link site blocks the read | "Could not read this listing" | paste photos instead |
+| Too few sales | "Not enough sales to price this" | Deep |
 
 ## How we will know it works
 
-| Claim | Check |
-|---|---|
-| Max pay is safe | on 40 to 60 of our own items and a backtest, the share where a buy at `max_pay` would have lost money after fees; target set with Ben and Nate |
-| Verdicts are right | live labels: every "Bought it" and its later sale ([appraisal-run](../../research/appraise/ben/appraisal-run.md)) |
-| Speed tiers hold | p95 time to Glance under 2 s and to Check under 10 s from traces |
-| The check is worth asking | how far the answer moved `max_pay`, per question kind |
-| Equivalents are equal | share of Exact or Likely labels the person accepts |
+| Bar | Source | Test |
+|---|---|---|
+| Glance p95 under 2 s, Check p95 under 10 s on mobile data | Ben's tiers ([appraisal-run](../../research/appraise/ben/appraisal-run.md)) | timed runs at a real garage sale |
+| Range coverage and miss: the same bars as price (at least 70% per category in an 80% range; MdAPE under 28%) | Underpriced AI 75.3% of 81; FlipTip $28 on $100 ([range-calibration](../../research/price/nate/range-calibration.md)) | the price backtest, restricted to appraisals |
+| Bought at or under `max_pay` resold at a profit at least 8 times in 10 | *agent proposal* | resale outcomes of Bought it items |
+| The one check moves the verdict more often than a fixed order | VOI | split test |
+| Recall gate catches every product in a set of known recalled items | CPSA s19 | 50 recalled products from the CPSC list |
 
-## Facts that constrain it
+## Facts to know
 
-- Comp rights and access per site: [price](price.md#facts-that-constrain-it).
-- Existing appraisal apps do not cross-list or learn from outcomes ([existing-tools](../../research/appraise/ben/existing-tools.md)).
-- An estimate is not an offer ([adjacent-valuation](../../research/price/ben/adjacent-valuation.md)).
-
-**It must never claim:** a flaw is absent when it was not seen; an exact model without evidence; a price without the sales under it; that something is authentic; that it will sell; that buying is advised as an investment. These are code checks on the output, not prompt lines ([appraisal-run](../../research/appraise/ben/appraisal-run.md)).
+| Fact | Mark | Link | At public launch |
+|---|---|---|---|
+| CPSC Recall REST API answered with no key on 2026-11-14; matching is fuzzy; US only | *observed* | [autonomous-features](../../research/cross-cutting/nate/autonomous-features.md) | unchanged |
+| Selling recalled products is illegal, resale online included (CPSA s19, 15 U.S.C. 2068) | *observed* | same note | unchanged: it protects people |
+| Trade-in sites have no public quote API; quotes lock about 48 h; Gazelle affiliate up to 8% | *asserted* | same note | an affiliate deal is disclosed; it never ranks |
+| ThredUp Clean Out accepts 60 to 80%, pays in 10 to 14 weeks, $5.99 to reclaim | *asserted* | same note | none |
+| Donations over $500 need Form 8283 | *observed* | same note | none |
+| 60.1% of people donated and 21.6% resold (Kijiji 2016) | *observed* | [user-wants](../../research/cross-cutting/ben/user-wants.md) | none |
+| PriceCharting: internal use on a subscription, no public display | *observed* | [market-intelligence](../../research/data/nate/market-intelligence.md) | its history is not shown to visitors |
+| eBay API licence bans AI training on its content | *observed* | [product](../product.md) | eBay comps leave the model or consent is obtained |
+| Account risk differs per site | *observed* | [product](../product.md) | shown per site on save and offer |
 
 ## Demo path
 
 For Ben and Nate to mark.
 
+1. Photo of a stroller at a table. Glance names it; the recall gate matches, and the card reads "Recalled: do not buy or sell".
+2. Photo of a jacket. Check: "Pay up to $40". Type $35 in the haggle pad and Offer turns to Buy.
+3. A lamp they own: Your options shows sell $28 to $36, trade in hidden (no buyer), donate $15 to $20.
+
 ## Open for Ben and Nate
 
-| Question | Recommendation | Depends on it |
-|---|---|---|
-| Does the agent make offers to sellers under a ceiling (Nate's "Also negotiate for me"), or only appraise? Ben has not answered. | appraise and draft the offer; sending is `ask` | buy-side messaging, `limits.buy_ceiling` |
-| Who is the user: casual buyer or reseller ([vision](../../product/vision.md#open))? It sets target profit and the card's framing. | a setting, default casual | `max_pay`, verdict words |
-| "What's it worth" under ＋ and the Buy camera: one card for both? | yes, nothing becomes an item until "Bought it" | ＋ sheet, Buy search |
-| Business: links out to sites could carry referral fees; they must not decide which equivalent ranks first (Nate's research). | note only | equivalents ranking |
+- Should a recalled item the person owns get a "how to return it to the maker" hand-off from the recall notice?
+- Does the donate route show tax value to everyone, or only to those who say they itemise?
 
 ## Needs from the shared model
 
-- An `appraisal` entity (or a `valuation` with no `item_id`, keyed by capture), with verdict, `max_pay` and the one check.
-- A capture that exists without an item until "Bought it".
-- User setting for target profit; `limits.buy_ceiling` per want.
+- `valuation.routes[] {route: sell | trade_in | donate, value, time, link}` as guarded numbers.
+- `GET /v1/valuations/:id` in the endpoint list.
+- `unbacked_claim` in the decision kinds.
