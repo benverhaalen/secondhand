@@ -24,6 +24,10 @@ Updated: November 14, 2026. Owner: Ben. Agent: Claude Code, project thread "Plan
 
 Both routes are built and the multi-photo restage leads the demo. The gate ranks several candidates (Seedream seeds plus Nano Banana 2.1) and feeds the approval card; it no longer blocks. Testing moves to Ben's real listing photos in `depop-plus`. See section 0 of the plan.
 
+## Added 21:14 UTC
+
+A studio agent loop (render, gate, masked repair with the real pixels, gate again) runs as a cloud job that emits stages; the app shows them as loading states. The component catalog needs a scene tile with stages `uploaded`, `color_fixed`, `rendering`, `checking`, `repairing`, `ready`, `failed`. See section 0.1 of the plan.
+
 ## Next action
 
 Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5 renders, including the multi-reference prompt.

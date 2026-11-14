@@ -13,6 +13,28 @@ What this changes in the plan below (*agent proposal*):
 4. **The benchmark numbers in loops 1 and 2 are background, not a verdict.** They describe raw, single-shot edits of arbitrary products. Our setup differs: well-framed photos, several references, a keep-list in the prompt, several candidates and a picker. Loop 3 showed logos, labels and a scuff surviving in every in-place render.
 5. **Test set: Ben's own listing photos** in `depop-plus/data/intake_photos/listings/` (100 items, 3 to 11 shots each, square 1080 px, flat on concrete, most with a tag close-up). They have no white card, so color is anchored on the tag or the concrete floor for these, and the card is for new captures only.
 
+### 0.1 The studio agent: render, look, mask, fix, repeat (Ben, 21:14 UTC)
+
+Ben: "codex and you have tooling to create like masks and such for images when edits need to be made maybe you could integrate it similar to how codex integrates image gen and editing well"; "send info and jobs to the cloud"; "since this is an agentic app i expect for you with the ui to be able to understand loading" ([words](../../../product/words.md#2026-11-14-studio-edit-loop-cloud-jobs-and-loading)).
+
+Seedream has no mask input (loop 1), so the masks are ours, applied around the model the way Codex wraps image generation with its own image tools. One agent run per item (*agent proposal*):
+
+| Step | Tool the agent calls | What it does |
+|---|---|---|
+| 1. Prepare | `segment`, `color_correct`, `protect` | Item mask, card or tag white balance, boxes for every logo, tag and confirmed defect |
+| 2. Render | `seedream_edit` × candidates, `nano_banana_edit` | Several candidates per scene in parallel |
+| 3. Look | `gate` | Scores each candidate and names the boxes that changed |
+| 4. Fix with a mask | `repair` | Warps the real photo onto the render and blends the real pixels back into each flagged box through a feathered mask, matched to the render's light. Scene and light stay generated; the logo, tag or scuff is the real one |
+| 5. Re-edit when a mask can't fix it | `seedream_edit` with a red box drawn on the reference and "change only the area in the red box" | For scene problems (odd shadow, stray prop), the prompt-side stand-in for a mask (loop 1) |
+| 6. Look again | `gate` | At most two rounds, then show the best one |
+| 7. Hand to the person | approval card | Chips show what was kept and what was repaired |
+
+Step 4 is prototyped in [prototype/repair.py](prototype/repair.py). On the four seeded faults (jacket logo painted out, collar label painted out, toe scuff painted out, swoosh painted out) the loop went "reject" then "pass" after one repair each, and the crops show the real patch and the real scuff back in place [observed, ran it and looked]. It relies on the in-place render keeping the frame, which loop 3 measured at 0.93 to 0.99. For restaged renders (new pose) there is no frame to warp onto, so step 5 and more candidates do the work there.
+
+**Cloud jobs.** The phone uploads the shots and gets a job id back at once. A worker (a Databricks job or a small Python service; the gate and repair need only OpenCV) runs the agent loop and writes each event to a job row. The app subscribes to the row.
+
+**Loading the person can read.** Each event is a stage the draft shows as it happens, so the wait looks like work, not a spinner: the real photo appears first and is usable at once; then "color fixed" swaps in the corrected photo; each scene tile fills from a blurred placeholder to its first candidate (about 25 s), and a tile that is being repaired shows the flagged box pulsing before the fixed image replaces it. Stages: `uploaded`, `color_fixed`, `rendering(scene, n of m)`, `checking`, `repairing(box)`, `ready`, `failed(reason, real photo kept)`. Copy and motion go through the `ui-screen` skill before build.
+
 Builds on [seedream-relighting.md](seedream-relighting.md). Where this note changes it, it says so in section 3. Everything here is an *agent proposal* until Ben or Nate decides.
 
 ## 1. The question and Ben's goal
