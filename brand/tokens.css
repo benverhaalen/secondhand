@@ -1,37 +1,49 @@
-/* secondhand brand tokens. Status: provisional until Ben picks a direction (round 1, 2026-11-14).
+/* secondhand brand tokens. Status: agent proposal, round 4 (2026-11-14), until Ben picks in the brand kit.
+   Every value here matches brand/constitution.md; change both in the same commit (Part V.3).
    Write var(--name) only; never raw values in components. */
 :root {
-  /* color: Ben's four, by name */
-  --flower-yellow: #FED734; /* grounds and highlights behind black text; never text or lines on white (1.40:1) */
-  --center-red:    #E63339; /* dots, alerts, the second hand; text only at 24px+ (4.29:1 on white) */
-  --text-black:    #000000;
-  --background-white: #FFFFFF;
-  /* derived neutrals: alphas of black, never new hues */
-  --text-secondary: rgb(0 0 0 / .65);
-  --text-quiet:     rgb(0 0 0 / .45);  /* second phrase of a headline (QOVES luminance move), 24px+ only */
-  --line:           #E8E8E8;
-  --fill-quiet:     #F2F2F2;          /* secondary button */
+  /* color (constitution Art. 5): color is a ground, never ink */
+  --page:        #FFFFFF;
+  --ink:         #0A0A0A;               /* all text, icons, the black pill (C4) */
+  --ink-2:       rgb(10 10 10 / .55);   /* secondary text, second phrase; 13px and up */
+  --gray:        #EFF1F2;               /* filled secondary buttons, photo tiles (ref-12, ref-15) */
+  --rule:        rgb(10 10 10 / .08);   /* hairlines */
+  --sky:         #90D1EF;               /* field; state "new" */
+  --sky-deep:    #4EBAF7;               /* field only */
+  --mint:        #88DCB9;               /* field; state "live" */
+  --lime:        #E6EA6A;               /* field; money highlight (C6); state "sold" */
+  --peach:       #FBB383;               /* field corner only */
+  --marigold:    #F9C76F;               /* state "needs you"; category */
+  --coral:       #EF956E;               /* category */
+  --lilac:       #B08DF1;               /* category */
+  --brick:       #C52B17;               /* alerts only; white text on it 5.6:1 */
+  /* the field (C2): one per view, always textured, black text only */
+  --field: linear-gradient(160deg, var(--sky) 0%, #C9E6D8 50%, var(--lime) 100%);
+  --field-lines: repeating-radial-gradient(circle at 115% -30%, #ffffff00 0 9px, #ffffffb3 9px 10px);
+  --field-lines-opacity: .55;
 
-  /* type */
-  --font-display: "Clofie", ui-sans-serif, system-ui, sans-serif;      /* wordmark + headlines >= 20px only */
-  --font-text:    "PP Neue Montreal", "Neue Montreal", system-ui, sans-serif; /* everything users read */
-  --font-mono:    "Geist Mono", ui-monospace, Menlo, monospace;         /* uppercase labels, money */
-  --display-1: 400 32px/36px var(--font-display); --display-1-track: -0.025em;
-  --display-2: 400 28px/32px var(--font-display); --display-2-track: -0.025em;
-  --title:     400 20px/24px var(--font-display); --title-track: -0.015em;
-  --body:      400 15px/20px var(--font-text);
-  --button:    500 16px/24px var(--font-text);
-  --label:     400 11px/12px var(--font-mono);  --label-track: -0.005em; /* uppercase */
-  --money:     400 14px/20px var(--font-mono);  /* tabular-nums */
+  /* type (Art. 6). Faces are open: Ben picks in the kit */
+  --font-display: "Marist", Georgia, serif;                       /* wordmark, one heading, one peak number */
+  --font-text:    "Geist", -apple-system, system-ui, sans-serif;  /* everything people read. Never Inter */
+  --w-regular: 400; --w-medium: 500;                              /* medium only on buttons and the selected tab */
+  --t-13: 13px; --lh-13: 18px;
+  --t-15: 15px; --lh-15: 20px;
+  --t-18: 18px; --lh-18: 24px;
+  --t-22: 22px; --lh-22: 26px;  --tr-22: -0.01em;
+  --t-34: 34px; --lh-34: 36px;  --tr-34: -0.015em;
+  --t-50: 50px; --lh-50: 48px;  --tr-50: -0.02em;
 
-  /* space (QOVES steps) */
-  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 40px; --s-9: 56px;
+  /* space (Art. 7) */
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 20px; --s-6: 24px; --s-7: 32px; --s-8: 48px; --s-9: 64px;
   --gutter: 20px;
-  /* radius */
-  --r-thumb: 8px; --r-card: 12px; --r-sheet: 20px; --r-pill: 999px;
+  /* radius (Art. 9) */
+  --r-photo: 8px; --r-card: 14px; --r-sheet: 20px; --r-pill: 999px;
+  /* depth (Art. 9): hairlines by default */
+  --card-border: 1px solid var(--rule);
+  --shadow-soft: 0 1px 2px rgb(0 0 0 / .05), 0 8px 24px rgb(0 0 0 / .06);
   /* size */
-  --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px;
-  /* motion */
+  --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px; --photo-card: 72px;
+  /* motion (frontend-standard §3) */
   --t-feedback: 150ms; --t-select: 200ms; --t-panel: 300ms; --ease-out: cubic-bezier(0, 0, .2, 1);
 }
 @media (prefers-reduced-motion: reduce) { :root { --t-feedback: 0ms; --t-select: 0ms; --t-panel: 0ms; } }

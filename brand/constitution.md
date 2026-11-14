@@ -157,9 +157,9 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 
 **Setting rules (these hold whatever faces win):**
 1. **Two weights.** Regular (or Book) for everything; Medium only for button labels and the selected tab. No bold anywhere. Hierarchy comes from size and the two ink levels, never from weight. (QOVES; Ben's brief. This removes the "janky bolding" of round 3, where a medium item title sat next to regular text of nearly the same size.)
-2. **Few sizes, far apart.** App: 13, 15, 17, 22, 34 (and 50 for one number on a peak moment such as a sale). Adjacent steps differ by at least 15%, so a step reads as intended, not as a mistake. Web and post sizes scale by the medium table in Part III.
-3. **Leading tightens as size grows.** 1.33 at 13 to 17 px, 1.15 at 22 px, 1.05 at 34 px, 0.95 at 50 px and up (Ben's Marist spec).
-4. **Tracking tightens as size grows.** 0 at 13 to 17 px; −0.01em at 22; −0.015em at 34; −0.02em at 50 and up.
+2. **Few sizes, far apart.** App: 13, 15, 18, 22, 34 (and 50 for one number on a peak moment such as a sale). Adjacent steps differ by at least 15%, so a step reads as intended, not as a mistake (15 to 17 is only 13%, which is why the headline is 18). Web and post sizes scale by the medium table in Part III.
+3. **Leading tightens as size grows.** 1.33 at 13 to 18 px, 1.15 at 22 px, 1.05 at 34 px, 0.95 at 50 px and up (Ben's Marist spec).
+4. **Tracking tightens as size grows.** 0 at 13 to 15 px; −0.01em at 18 and 22; −0.015em at 34; −0.02em at 50 and up.
 5. **Sentence case everywhere.** No title case, no all caps except the platform's own logos.
 6. **Second phrase, not bold.** A heading may have a second phrase at black 55% or in the display italic. 22 px and up only.
 7. **Numbers are tabular** wherever they line up or change.
@@ -261,7 +261,7 @@ Each AI tell is paired with what to reach for, because banning one default moves
 | Field (C2) | The one card or band that needs you | The hero band | Background of one panel per carousel, or one band | One scene or the end card | Title slide and one key slide |
 | Item (C3) | Every item row and card | Real items in every example | The item is the post | Real item footage | Real screenshots and photos |
 | Act (C4) | One per decision | One per section | None (posts don't have buttons); a plain line instead | None | None |
-| Text sizes | 13 / 15 / 17 / 22 / 34 / 50 | 15 / 17 / 22 / 36 / 58 / 86 (Ben's Marist spec, fluid) | Body 40, heading 72, one number up to 200 | Captions 48, titles 96 | Body 32, heading 64, one number up to 200 |
+| Text sizes | 13 / 15 / 18 / 22 / 34 / 50 | 15 / 17 / 22 / 36 / 58 / 86 (Ben's Marist spec, fluid) | Body 40, heading 72, one number up to 200 | Captions 48, titles 96 | Body 32, heading 64, one number up to 200 |
 | Longest text | One sentence per card | Two short paragraphs per section | 20 words per slide | 8 words on screen at once | 15 words per slide |
 
 Post and video notes:
