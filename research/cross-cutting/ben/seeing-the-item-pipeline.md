@@ -52,7 +52,7 @@ Kept on purpose, because they are the human in the loop judges want to see: yes 
 
 ## Best API wins, and several at once where that helps
 
-Ben, 21:13: "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" ([words](../../../product/words.md#2026-11-14-paying-for-better-apis)). The three notes already ignored price, but in a few places they picked one fast model where a stronger one, or several run together, would likely be more accurate. *Agent proposal*, all *inferred* until the day-one run on our own items:
+Ben, 21:13: "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" ([words](../../../product/words.md#2026-11-14-paid-apis-are-fine)). The three notes already ignored price, but in a few places they picked one fast model where a stronger one, or several run together, would likely be more accurate. *Agent proposal*, all *inferred* until the day-one run on our own items:
 
 | Step | The notes picked | Now |
 |---|---|---|
