@@ -259,3 +259,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate certainty
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after hearing that a Databricks hackathon scored "evidence and uncertainty".
 > Well when it comes to uncertainty, we try and can easily achieve collecting enough information to become certain. Our system assures management, control, and helpful everything for second hand markets.
+
+## 2026-11-14 nate a market anyone can learn from
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> I want you to apply the ingenious product design perspectives but also account for what would be impressive. All data on the product and the markets to determine everything we can, as well as save information the user just wants to learn about and see. Even users who dont expect to use secondhand for selling can still gain so much value from an all in one search of products both on the official markets and second hand stores to see price changes, the ways industries evolve, products release and how hype is established, what fashion trends are out, everything
