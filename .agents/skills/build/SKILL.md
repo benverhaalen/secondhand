@@ -1,13 +1,13 @@
 ---
 name: build
-description: Use in secondhand before writing or changing code that runs (the app, the server, a cloud job, an agent loop, a site harness, a script others depend on). States done and the command that proves it, writes the failing test first, takes names and states from spec/, logs through log/, and cleans the diff before saying done.
+description: Use in secondhand before writing or changing code that runs (the app, the server, a cloud job, an agent loop, a site harness). States done and the command that proves it, writes the failing test first, takes names and states from spec/, logs through log/, and cleans the diff before saying done.
 ---
 
 # build
 
 The failure this prevents: code that works today and that the next agent can't find, can't trust, or writes a second copy of. These are the code rules from Ben's harness ([his ask](../../../product/words.md#2026-11-14-code-rules-from-the-harness)), cut to the ones that need judgment. The ones a script can check are in [.agents/checks/code.mjs](../../checks/code.mjs) and fail `node .agents/check.mjs`.
 
-**0. State done first.** Before the first edit, write what someone will be able to see or do, and the one command that proves it. Proof is a run of the real thing with its output shown. A mock, a helper's report or "it compiles" is not proof. The first code in a program adds its test command to `.agents/check.mjs`, so one visible command still runs every check.
+**0. State done first.** Before the first edit, write what someone will be able to see or do, and the one command that proves it. Proof is a run of the real thing with its output shown. A mock, a helper's report or "it compiles" is not proof. Each program has one command that runs all of its checks (tests, types, lint), named at the top of its README, and the first code in a program adds it.
 
 **1. Find before you write.** Search for the function, component, state or event before adding one. Item states and actions come from [spec/lifecycle.mjs](../../../spec/lifecycle.mjs), log events from [spec/events.json](../../../spec/events.json), the data model and API from [spec/product.md](../../../spec/product.md), colors and type from `brand/tokens.css`. A second name for a thing that already has one is a bug.
 
@@ -27,14 +27,14 @@ The failure this prevents: code that works today and that the next agent can't f
 - Never weaken, skip or delete a test or a check to get a pass. If a check is wrong, tell its owner.
 - For a bug, reproduce it first. Fix the first place it went wrong, then every other place with the same fault.
 
-**4. Log.** Every input, state change, outside call, approval and error goes through the logger: [log/README.md](../../../log/README.md).
+**4. Log** through the logger: [log/README.md](../../../log/README.md).
 
 **5. Clean the diff before saying done.** Behavior stays the same and the proving command still passes.
 - Remove what a careful person would not have written here: defensive checks and `try`/`catch` on trusted paths, deep nesting an early return would flatten, anything unlike the file around it.
 - Imagine deleting each module you added. If nothing gets harder, it was a pass-through, so merge it into its caller. Add an interface with one implementation only when a second one is real, usually the test's.
 - Keep a comment only for what the code cannot say and we cannot change: a license, a public API's contract, a site's or vendor's quirk, a link to the rule that forces it. A comment explaining a surprise in our own code means rename or reshape the code.
 
-**6. Say which state it is in**, in the packet and to your human: *usable* (they can try it now, here is how, and here is the unfinished list), *unfinished*, or *ready to ship* (the proving command, the tests and the whole user path pass on `main`, and the unfinished list is empty). Unfinished parts carry a visible mark in development builds.
+**6. End with "usable" or "not usable yet" and the unfinished list**, the same words the [UI constitution](../../../product/ui-constitution.md) asks for. Usable means your human can try it now, and you say how. Say "ready to ship" only when the proving command, the tests and the whole user path pass on `main` and the unfinished list is empty. Unfinished parts carry a visible mark in development builds.
 
 When Ben or Nate corrects code, fix it, then turn the correction into a check if a script can find every instance (the row in [AGENTS.md](../../../AGENTS.md)).
 

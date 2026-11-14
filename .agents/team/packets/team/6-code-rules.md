@@ -4,12 +4,12 @@ Updated: November 14, 2026. Owner: Ben. Agent: Claude Code, project thread "Set 
 
 ## What changed
 - New skill `build` ([.agents/skills/build/SKILL.md](../../../skills/build/SKILL.md)): what to do before and while writing code that runs. Done and its proving command first, find before you write, shape, test first, log, clean the diff, say which state the work is in.
-- New check [.agents/checks/code.mjs](../../../checks/code.mjs), run by `node .agents/check.mjs`. It fails on a file or folder named `utils`, `helpers`, `misc` or `common`; on `as any`, `: any`, `@ts-ignore`, `@ts-nocheck`, a blanket `eslint-disable` and a bare `# type: ignore`; on an empty `catch` or `except: pass`; on conversation history in a comment; and on `.skip`, `.only`, `xit` or `@pytest.mark.skip` in a test. It warns on a file over 400 lines and on product code that changed with no test.
+- New check [.agents/checks/code.mjs](../../../checks/code.mjs), run by `node .agents/check.mjs`. It fails on five things: a file named for nothing, a type check switched off, a broad handler that drops the error, conversation history in a comment, and a test switched off. It asks about a long file you changed and about changed code that has no test. The exact patterns, and what it does not catch, are in the file's first lines.
 - The [AGENTS.md](../../../../AGENTS.md) row for code that runs now names the skill.
 
 ## Affected interfaces
 - Every program: the app, the server, cloud jobs, agent loops and site harnesses. Tooling, research prototypes and `scripts/` are exempt, the same as for the logging check.
-- `.agents/checks/util.mjs` now owns what counts as product code and as a test. The logging check uses it too, so Python and Swift test files may print.
+- `.agents/checks/util.mjs` now owns what counts as product code and as a test. The logging check uses it too, so Python and Swift test files may print, and a path under `build/` or `dist/` is no longer exempt.
 
 ## For Nate's agent
 Pull, reread `AGENTS.md` once, and read the `build` skill before the first code. The check's messages say how to fix each failure. If a rule fires on good code, say so in this packet instead of working around it.
@@ -26,6 +26,6 @@ Recommend: A. Strongest rival: C, added per program when its first code lands, w
 ```
 
 ## Next action
-Whoever writes the first code of a program adds its test command to `.agents/check.mjs`, so one command still runs every check.
+Whoever writes the first code of a program gives it one command that runs all of its checks and names it at the top of the program's README. The GitHub workflow runs only `node .agents/check.mjs` on Node, so a program's own tests need their install step added there when they land.
 
-Evidence: `node .agents/check.mjs` passes with 12 check tests. Each rule was shown failing on a planted sample and passing on the fixed one, and removing a rule from the check made its test fail.
+Evidence: the check's 18 tests pass. Each rule was shown failing on a planted sample and passing on the fixed one, and breaking a rule on purpose made its test fail. A fresh agent's review ran about 250 probes and found 11 groups of defects (a `/*` inside a string hid the code after it, most ways to switch a test off were missed, good code was failed, the warnings were noisy). Each is fixed with a test, except the misses listed in the first lines of `code.mjs`.
