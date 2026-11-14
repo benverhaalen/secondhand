@@ -7,7 +7,7 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 1 | What the app is at its core | **decided: seller's crosslister** ([log](decisions.md)) |
 | 2 | Selling: how the selling features chain | **decided: item by item, one live draft each, folder drop splits into drafts** ([log](decisions.md)) |
 | 3 | The always-there bottom bar | **decided: Today · Sell · ＋ · Buy · You, ＋ is the only way in** ([log](decisions.md)) |
-| 4 | Selling home: drafts, live and past, interest per item | asking |
+| 4 | Selling home | **decided: photo grid with state pills, numbers in You**; grouping asking ([log](decisions.md)) |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
 | 6 | Shipping and pickup | **decided: your windows plus a saved meetup spot** ([log](decisions.md)) |
 | 7 | Buying home: search, wants, watch, deal check, appraise | — |
@@ -193,3 +193,17 @@ That needs no choice from Ben.
 | **C. Photo grid (closet)** | Your items as a photo grid, each with a state badge. Tapping a tile opens the item. | Poshmark closet, Depop shop grid | Visual and fast to recognize | Interest and status numbers don't fit on a tile |
 
 **Agent view: A, with C's grid as a view toggle inside Live.** It's the familiar resale layout. The totals strip answers Ben's earned, count and potential at a glance, and the per-site chips answer "how does it differ by site". The deeper insights (average time to sell, what things sold for, comparisons by site) live in You > Insights.
+
+**Picked:** none of A–C as written. Ben (19:33) chose a photo grid with state pills and moved the numbers to You.
+
+### 4b. How the grid is grouped
+
+Screens: [A](../research/today/ben/sell-grid/SellGridA.png), [B](../research/today/ben/sell-grid/SellGridB.png), [C](../research/today/ben/sell-grid/SellGridC.png).
+
+| Option | Layout | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. One grid, filter pills** | All your items in one grid, newest activity first, with All · Needs you · Live · Sold pills on top | Apple Photos, Poshmark closet | Simplest; every item visible; pills do the sorting | Sold items mix in with live ones unless you filter |
+| **B. Shelves by state** | Rows for In progress, Live and Sold, each scrolling sideways | Netflix shelves, App Store | Sorted at a glance, and each shelf shows a count | Sideways scroll hides items past the third |
+| **C. Grouped by kind** | Sections for Clothes, Room and Tech, with state pills on each tile | Closet and inventory apps | Matches how you think about your stuff | State is scattered across sections |
+
+**Agent view: B.** It reads "sorted into items" as sorted by where each item is in its life. The pills say what to do, and the shelves say where you are. A's filter pills can also sit inside B as a "see all" view.
