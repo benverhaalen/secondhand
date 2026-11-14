@@ -11,7 +11,7 @@ Ben's ask (project chat, 2026-11-14 20:41 UTC): "judges love human in the loop. 
 ## Affected interfaces
 
 - **App shell.** The plans recommend a small Swift capture screen (one ARKit session) that uploads the photo plus camera data, then hands off to the web app. This assumes the React 19 web app and json-render catalog in [packet 4](../list/4-posting-messages-dynamic-ui-plan.md). Not decided: Ben picks.
-- **Component catalog** (packet 4) needs these entries for capture, measure and identify: shot review (keep or retake), flaw pins on a photo with yes or no, a measure overlay with draggable endpoints and a loupe, a measurement row with ± and source, candidate cards with photos for identity, a 6-level condition picker, a per-field confidence dot with a "why?" sheet.
+- **Component catalog** (packet 4) needs these entries for capture, measure and identify: shot review (keep or retake), flaw pins on a photo with yes or no, a measure overlay with draggable endpoints and a loupe, a measurement row with ± and source, candidate cards with photos for identity, a 6-level condition picker, a per-field confidence dot with a "why?" sheet. Accepted by packet 4's thread as catalog entries 41 to 47, section 6 of [build-plan-posting-messages-ui.md](../../../../research/cross-cutting/ben/build-plan-posting-messages-ui.md). MeasureOverlay is hand-built: the agent places it but can't change how it behaves.
 - **Item and Photo primitives** gain per-field source and confidence, and Photo gains camera intrinsics and the floor plane. Field lists are in each note's "Data contract".
 - **Comps for price**: verified identity matches feed [packet 21](../price/21-pricing-search-watch-plan.md).
 
