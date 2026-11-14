@@ -95,6 +95,7 @@ def main():
             f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}"><path d="{d}" fill="none" '
             f'stroke="#282828" stroke-width="5" stroke-dasharray="14 10"/></svg>\n')
         spec[name] = {
+            "id": name, "version": 1,
             "frame": [W, H], "ratio": "3:4", "centred_square": [0, (H - W) // 2, W, W],
             "item_box": [int(x), int(y), int(w), int(h)],
             "fill_of_square": round(w * h / (W * W), 2),

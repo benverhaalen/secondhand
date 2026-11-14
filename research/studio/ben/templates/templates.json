@@ -1,5 +1,7 @@
 {
  "shirt": {
+  "id": "shirt",
+  "version": 1,
   "frame": [
    1200,
    1600
@@ -32,6 +34,8 @@
   ]
  },
  "sweatshirt": {
+  "id": "sweatshirt",
+  "version": 1,
   "frame": [
    1200,
    1600
@@ -64,6 +68,8 @@
   ]
  },
  "pants": {
+  "id": "pants",
+  "version": 1,
   "frame": [
    1200,
    1600

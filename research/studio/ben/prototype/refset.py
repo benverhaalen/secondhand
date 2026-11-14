@@ -78,10 +78,29 @@ def pick(paths, k=6, min_unlike=0.18):
     return chosen, d, note
 
 
+def from_manifest(folder, k=6):
+    """Capture's hand-off (research/capture/ben/capture-coaching-and-frames.md, 6.6): when
+    manifest.json names each frame's role, use the roles and skip the guessing. Order: the
+    cover, the back, then the frames the model must not redraw (tag, graphic, fabric, flaws).
+    Tape-measure frames are never references."""
+    frames = json.load(open(f"{folder}/manifest.json"))
+    frames = frames.get("frames", frames) if isinstance(frames, dict) else frames
+    frames = [f for f in frames if "image_model" in f.get("feeds", ["image_model"]) and not str(f.get("role", "")).startswith("tape")]
+    rank = {"front": 0, "back": 1, "tag": 2, "graphic": 3, "fabric": 4, "flaw": 5}
+    def key(f):
+        r = str(f.get("role", ""))
+        return (0 if f.get("cover") else 1, min([v for n, v in rank.items() if r.startswith(n)] or [9]), f.get("order", 99))
+    return [{"file": f.get("file") or f.get("path"), "role": f.get("role")} for f in sorted(frames, key=key)[:k]]
+
+
 def main():
     folder = sys.argv[1]
     k = int(sys.argv[2]) if len(sys.argv) > 2 else 6
-    paths = sorted(glob.glob(f"{folder}/*.jpg"))
+    if os.path.exists(f"{folder}/manifest.json"):
+        chosen = from_manifest(folder, k)
+        print("picked from manifest:", chosen)
+        return chosen
+    paths = [p for p in sorted(glob.glob(f"{folder}/*.jpg")) if os.path.basename(p) != "contact.jpg"]
     chosen, d, note = pick(paths, k)
     for x in d:
         print(f"  {os.path.basename(x['path']):14s} far={x['far']!s:5s} floor at edge={x['edge']} sharp={x['sharp']}")
