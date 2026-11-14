@@ -10,8 +10,8 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 4 | Selling home | **decided: photo grid with state pills in shelves by state; numbers in You** ([log](decisions.md)) |
 | 5 | Inbox: messages, offers, pickups and approvals in one place | — |
 | 6 | Shipping and pickup | **decided: your windows plus a saved meetup spot** ([log](decisions.md)) |
-| 7 | Buying home: search, wants, watch, deal check, appraise | asking |
-| 8 | You: money, insights per site, accounts, automation | — |
+| 7 | Buying home | **decided: shelves like Sell** ([log](decisions.md)) |
+| 8 | You: money, insights per site, accounts, automation | asking |
 | 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
 | 10 | Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
 | 11 | First launch and onboarding | — |
@@ -225,3 +225,20 @@ Screens: [A](../research/watch/ben/buy-tab/BuySearch.png), [B](../research/watch
 | **C. One feed of matches** | Search box, a chip per want, then a 2-column feed of every match | Pinterest, Depop's explore | Best for browsing | Wants become filters, and watching is less visible |
 
 **Agent view: B.** The same visual language as Sell means nothing new to learn. New matches lead because they are what you came for. "Bought" closes the loop back to selling.
+
+**Picked: B, shelves like Sell** (Ben, 19:38).
+
+---
+
+## 8. The You tab
+
+**Holds:** the numbers Ben moved out of Sell (earned, could earn, count) and the insights (average time to sell, sale price compared with asking price, by site). It also holds Accounts with each site's health, Automation (the Rules and their log), Pickups (windows and meetup spot) and Notifications.
+
+Screens (wireframes): [A](../research/today/ben/you-tab/YouNumbers.png), [B](../research/today/ben/you-tab/YouProfile.png).
+
+| Option | Layout | Reference | Strong at | Weak at |
+|---|---|---|---|---|
+| **A. Numbers, then by site, then settings** | Three numbers at the top. A "By site" card shows how fast each site sells and what share of the asking price it gets. Below that, a settings list: Accounts, Automation, Pickups, Notifications. | Airbnb Insights and Menu folded into one screen | Answers "how am I doing" and "which site is better" in one look; settings are one tap away | Gets long as insights grow |
+| **B. Profile first, segments** | Your name and your rating on each site, then Money · Insights · Settings segments with an earnings chart | Depop and Vinted profiles | Feels like a marketplace profile | Ratings belong to each platform, not to us; the most useful numbers sit behind segments |
+
+**Agent view: A.** We aren't a marketplace, so we have no public profile. The By site card is the insight Ben asked for ("how it differentiates by site"), and it is also the Databricks payoff: every sale updates it.
