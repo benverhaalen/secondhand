@@ -3,7 +3,7 @@
 // Each `item.action` event must be a step the spec allows, done by an allowed actor, and keep every invariant.
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { initial, actions, invariants } from './lifecycle.mjs';
+import { initial, allActions as actions, invariants, NEVER_ALONE } from './lifecycle.mjs';
 
 export function replay(text, sites) {
   const items = new Map(), problems = [];
@@ -15,10 +15,15 @@ export function replay(text, sites) {
     if (!a) { problems.push(`line ${n + 1}: ${e.action} is not in spec/lifecycle.mjs`); return; }
     if (!items.has(e.item)) items.set(e.item, initial(sites.length));
     const s = items.get(e.item);
-    if (a.actor === 'user' && e.actor !== 'user') problems.push(`line ${n + 1}: ${label} needs the user but was done by ${e.actor}`);
+    if (typeof e.floor === 'number') s.floor = e.floor; // the real numbers, not the model's
+    const promoted = a.actor === 'user' && e.actor === 'auto' && s.auto.includes(a.kind);
+    if (a.actor === 'user' && e.actor !== 'user' && !promoted) problems.push(`line ${n + 1}: ${label} needs the user but was done by ${e.actor}`);
     if (a.perSite && i < 0) { problems.push(`line ${n + 1}: unknown site ${e.site}`); return; }
-    if (!a.when(s, i)) { problems.push(`line ${n + 1}: ${label} is not allowed in this state`); return; }
-    a.run(s, i);
+    const arg = a.perKind ? e.kind : i;
+    if (!a.when(s, arg)) { problems.push(`line ${n + 1}: ${label} is not allowed in this state`); return; }
+    a.run(s, arg, e.actor);
+    if (typeof e.price === 'number') { s.price = e.price; if (a.kind === 'priceBelowFloor' && e.actor === 'user') s.approvedPrice = e.price; }
+    if (a.kind && e.actor === 'user' && !NEVER_ALONE.has(a.kind)) s.approvals[a.kind] = (s.approvals[a.kind] ?? 0) + 1;
     for (const [name, ok] of invariants) if (!ok(s)) problems.push(`line ${n + 1}: after ${label}, broke "${name}"`);
   });
   return { problems, items };

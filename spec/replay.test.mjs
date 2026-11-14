@@ -17,3 +17,9 @@ test('a log showing a double sale, an impossible step or an automated payment is
   assert.match(p, /line 6: delistOk\(depop\) is not allowed/);
   assert.match(p, /line 7: refund\(depop\).*by auto/);
 });
+
+test('replay uses the logged price and floor, so a real markdown under the real floor is flagged', () => {
+  const at = (action, actor, price, floor) => JSON.stringify({ event: 'item.action', item: 'it_2', action, actor, price, floor });
+  const p = replay([at('markdown', 'auto', 33, 35)].join('\n'), ['ebay']).problems.join('\n');
+  assert.match(p, /line 1: after markdown\(\), broke "price floor"/);
+});
