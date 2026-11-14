@@ -9,3 +9,4 @@ Precedence: Ben's direct decisions, then the brand codes (`codes.md`), then the 
 5. Controls: 44 px minimum target, 48 px main buttons, pill radius. Primary black with white text; secondary #F2F2F2 with black text. Interactive controls from the Vercel UI SDK where they exist.
 6. Icons: Hugeicons Stroke Rounded (Ben's default) unless a later brand round says otherwise.
 7. Every number shows its source and sample size in a mono label. Every measurement says measured, estimated or "you said".
+8. Copy: follow [product/copy.md](../product/copy.md). Show the state before you write a sentence about it, and run Ben's anti-claudish skill on every string before the screen counts as done.

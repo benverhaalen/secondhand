@@ -16,3 +16,7 @@ The map is in [README.md](README.md). Read only what your task touches:
 - Write research only in your human's subfolder of the feature: `research/<slug>/ben/` or `research/<slug>/nate/`. The note format is in [research/README.md](research/README.md).
 - A feature page or the vision gets a one-line summary that links to the research note. Quotes go in [product/words.md](product/words.md), verbatim and append only. Mark your own suggestions as *agent proposal*. Never move one to Decided yourself.
 - A packet's topic is its feature slug. After adding a slug, a research folder or a packet topic, run `node .agents/check-layout.mjs`.
+
+## UI writing
+
+Any agent generating or editing UI follows [product/copy.md](product/copy.md): minimal in-app writing, show rather than say, and Ben's anti-claudish skill applied to every string. This is a decision ([decisions.md](product/decisions.md)), not a style preference.
