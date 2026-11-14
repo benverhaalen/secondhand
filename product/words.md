@@ -184,3 +184,7 @@ Nate, kickoff brief for the session "Lay out the whole product and write the uni
 ## 2026-11-14 running a business with ai
 Ben, project chat, 21:18 UTC.
 > ok also this is kind of like running a business with ai break the purpose of the app and how it helps someone down into pieces that you can then run rdd and iae research into repos doing pieces of it and see how they set up and harness ai effectively especially with jev or something
+
+## 2026-11-14 always accept at listing, unedited approvals
+Ben, UI thread, 21:29 UTC, answering two choices put to him: (1) offer "Always accept $X or more" when the item is listed, not after 3 approvals; (2) count only approvals the person didn't edit toward the 3 that unlock "Always do this".
+> yeah i agree with both.
