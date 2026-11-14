@@ -28,6 +28,10 @@ Both routes are built and the multi-photo restage leads the demo. The gate ranks
 
 A studio agent loop (render, gate, masked repair with the real pixels, gate again) runs as a cloud job that emits stages; the app shows them as loading states. The component catalog needs a scene tile with stages `uploaded`, `color_fixed`, `rendering`, `checking`, `repairing`, `ready`, `failed`. See section 0.1 of the plan.
 
+## Changed 21:28 UTC: touch up only
+
+Ben's rule: never change the environment or misrepresent; only touch up. Scene presets and restaging are dropped. Studio now offers three levels on the same photo (true color, light, pressed). List and posting take a per-platform default level from the posting research. See the top of the plan.
+
 ## Next action
 
 Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5 renders, including the multi-reference prompt.

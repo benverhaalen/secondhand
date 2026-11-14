@@ -1,6 +1,34 @@
 # How do we build studio photos for the demo: Seedream relighting from several shots, true color, and a gate that stops any render that changes the item, with a human approving each one?
 Researched 2026-11-14 by Ben (Claude Code). Feature: studio.
 
+## Current rule: touch up only (Ben, 21:28 UTC)
+
+Ben: "it shouldnt change the environment or lie. it should touch up" ([words](../../../product/words.md#2026-11-14-photos-touch-up-never-change-the-environment)).
+
+**This replaces the scene presets and the restage.** Sections 0 to 0.2 and 4.3 below describe studio, garage and home scenes and new poses; they are kept as the record of what was tried and are no longer the plan. What stays, what goes (*agent proposal* for the details, Ben's rule for the direction):
+
+| Before | Now |
+|---|---|
+| Studio, garage, home scene presets | **Gone.** The floor, wall or bed the person shot on stays |
+| Restage in a new pose from all shots (hanger, pegboard) | **Gone.** It invents a view nobody photographed |
+| In-place edit that keeps the frame | **This is the feature.** Same photo, better light and true color |
+| Close-ups as extra references | Kept, so the model sees the true print, tag and color |
+| Gate, masked repair, cloud job, loading stages, approval card | Kept. The gate gains one check: the background must still match the original |
+
+**Touch-up levels**, each a tap on the approval card:
+
+| Level | What changes | How |
+|---|---|---|
+| 0. True color | White balance and exposure only | Deterministic (`color.py`), no model. Always made first, always available |
+| 1. Light | Even soft daylight, lifted shadows, neutral color | Seedream 5.5, prompt `light` in [touchup.py](prototype/touchup.py) |
+| 2. Pressed | Level 1 plus storage creases relaxed and loose lint gone, as a steamer and lint roller would do | Seedream 5.5, prompt `pressed` |
+
+Never touched at any level: the background, the item's shape and position, color beyond white balance, prints, tags, and every sign of wear, fading, stain or damage. Wrinkle relaxing is the one judgment call: it is what a seller does with a steamer before shooting, so it is offered, but as a separate level the person picks, and the confirmed-defect boxes are protected through it. Whether level 2 is in or out is Ben's call.
+
+**Per platform.** Which level to default to on each site (and what not to do there) comes from the platform research in the posting thread; studio exposes the levels and the crop, and takes a per-platform default from that research.
+
+**Run on Seedream 5.5.** [touchup.py](prototype/touchup.py) calls `bytedance-seed/seedream-5-5` through OpenRouter; the `studio touch-up test` workflow runs it on the three real items with the repo's key and commits the results to [renders/](renders/).
+
 ## 0. Revised after Ben's steer (21:11 and 21:13 UTC)
 
 Ben: "dont focus on benchmarks that deny a small part. its a product demo" ([words](../../../product/words.md#2026-11-14-studio-is-a-demo-test-on-real-photos)); "this is a product demo ... we can also just build things" ([words](../../../product/words.md#2026-11-14-demo-not-production)); "if you think theres an api or multiple possibilties for it that would work better we are fine paying for api costs" ([words](../../../product/words.md#2026-11-14-paid-apis-are-fine)).
