@@ -140,6 +140,8 @@ Tags: up to 20 *asserted*. Use 8 to 12 *agent proposal*: words buyers type that 
 
 Condition, brand, size and color feed buyer filters *asserted*. Fill each one the form shows.
 
+**Search rules as data and a check.** The rules every site shares and this site's differences are in [listing-seo.md](../listing-seo.md). `node scripts/listing-lint.mjs title facebook facts.json` builds this site's title from an item's facts, and the same script checks a draft.
+
 ## 8. Photos
 
 | Point | Finding | Evidence |

@@ -110,14 +110,14 @@ Vintage Carhartt Detroit jacket, brown duck canvas, size L
 Good used condition. Fading on cuffs, small paint mark on left sleeve (photo 5).
 Pit to pit 24 in, length 26 in. Boxy fit.
 Blanket lined, 90s, made in USA tag.
-#carhartt #detroitjacket #workwear #vintage #90s
+#workwear #90s #madeinusa #blanketlined
 ```
 
 ```
 Olympus Stylus Epic 35mm film camera, black, tested
 Shutter, flash and film advance tested with a roll. Light scuffs on the door.
 Comes with strap and case. Takes one CR123A battery (not included).
-#olympus #filmcamera #35mm #pointandshoot
+#pointandshoot
 ```
 
 Leave out: brands the item is not, emoji walls, shop policy text, links, email addresses (the API rejects them) and any contact details.
@@ -127,7 +127,10 @@ Leave out: brands the item is not, emoji walls, shop policy text, links, email a
 - Structured fields decide filter visibility. When buyers filter by colour or condition, "your item will only show up when its listing details match those filters" *observed* (Depop search ranking page, §12). A blank field removes the listing from that filtered search. Mandatory attributes vary by product type *observed*, so the adapter reads the taxonomy before it validates.
 - Spam: the old handbook says "irrelevant tags or brand spamming" reduce relevancy *observed*. The API caps hashtags at 5 *observed*.
 - The recipe of exactly 5 tags (1 brand, 1 era, 1 aesthetic, 2 category) is *asserted (Ben, seller folklore)*. Nothing from Depop gives a recipe.
+- Depop's blog says "Start with a headline that summarises your item" and "Don't include irrelevant or repetitive keywords, hashtags, brands or tags in your item description" *observed* ([How search works](https://blog.depop.com/articles/depop-search-how-search-works-on-depop), undated). So a hashtag should add a word line 1 lacks *inferred*; the examples in section 6 follow that. The same page says recency "will have a significantly lower effect on a listing's ranking than relevance has" *observed*.
 - **Contrary lead, answered in part.** I found no Depop sentence saying hashtags stopped counting. But Depop's two current pages on search ranking never mention hashtags *observed*; they talk about relevance, listing details and filters. Against that, Depop's AI description tool (Sept 2024) writes descriptions that "include relevant hashtags" *observed*. Style, age, source and brand are separate fields, so most classic tags (#vintage, #y2k, #nike) repeat a field *inferred*. Treat hashtags as optional: harmless when true, harmful when stuffed.
+
+**Search rules as data and a check.** The rules every site shares and this site's differences are in [listing-seo.md](../listing-seo.md). `node scripts/listing-lint.mjs title depop facts.json` builds this site's title from an item's facts, and the same script checks a draft.
 
 ## 8. Photos
 

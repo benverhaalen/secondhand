@@ -110,23 +110,26 @@ A $200 pair of sneakers nets more: 8% of $224.70 is $17.98 with no per-order fee
 
 **How search reads them.** Search matches the title and the item specifics. The description is searched only when the buyer ticks "include description" *asserted*. eBay's advice: "Write a clear and concise title with correct spelling and no more than 80 characters" *observed*.
 
-**Formula** *agent proposal*: `Brand + Line or Model + Item type + Model or style number + Size + Color + one or two key attributes + a condition word if it helps (NWT, Tested)`. Front-load the words a buyer would type. Use most of the 80 characters, each word once.
+**Formula** *agent proposal*: `Brand + Line or Model + Item type + Model or style number + Size + Color + one or two key attributes + a condition word if it helps (NWT, Tested)`. Front-load the words a buyer would type (eBay: "Front-load your titles with relevant keywords and organize them in a readable, logical order" *observed*). Use most of the 80 characters ("Remember to use all 80 characters and focus on relevant keywords" *observed*), each word once.
 
 - Clothing (71 characters): `Patagonia Better Sweater 1/4 Zip Fleece Pullover Men's Large Gray 25523`
 - Non-clothing (75 characters): `Sony WH-1000XM4 Wireless Noise Cancelling Headphones Black Tested With Case`
 
-Leave out: ALL CAPS, "L@@K", "WOW", emoji, "rare" without cause, other brands' names ("like Lululemon" is search manipulation) *asserted*, and words the category already implies.
+Leave out: ALL CAPS and "free shipping" (eBay: "Don't include promotional text like 'free shipping,' all capital letters, or gimmicky foreign characters" *observed*), "L@@K", "WOW", emoji, "rare" without cause, other brands' names ("like Lululemon" is search manipulation) *asserted*, and words the category already implies.
 
 **Description.** Plain and short; phone buyers see the first lines. Order: what it is, condition and every flaw, measurements (clothing), what is included, tested or not, smoke or pet exposure. Tone is a spec sheet, where Depop is chatty *inferred*. Use catalog product details where eBay has them *observed*.
 
 ## 7. Tags, categories and structured data
 
 - No tags or hashtags. **Category**, **item specifics**, **condition** and, for known products, a **catalog match** do that job *asserted*.
-- Item specifics feed the left-hand filters (size, color, brand, storage, model). An item with a blank specific drops out when a buyer uses that filter *asserted (memory of Seller Center guidance)*. eBay tells sellers to add "make, model, size, color, and style" *observed*.
+- Item specifics feed the left-hand filters (size, color, brand, storage, model). An item "will only appear in those filtered search results if you've added the matching item specific" *observed* ([Seller Center](https://www.ebay.com/sellercenter/listings/item-specifics)). eBay tells sellers to add "make, model, size, color, and style" *observed*.
 - Rule *agent proposal*: fill every required aspect, and every recommended one we can read from the photos or measure. Unknown values stay blank. Never guess a material or model number.
 - Fashion sizes are being standardized (August 2026) *observed*. Map our measured size to eBay's allowed values and put raw measurements in the description.
 - Catalog match: for phones, consoles, books, games and LEGO sets, a UPC, ISBN or eBay product id fills specifics and groups the listing with the product page *asserted*. The catalog stock photo cannot be the main picture for a used item *observed*.
+- Outside search: specifics also "increase your chances of being found on eBay, Google Shopping, and external search results" *observed* (same page). For clothing, "Google won't display your listings, unless you provide the item specifics for Color, Size, Age Group & Gender" *observed* ([eBay community post](https://community.ebay.com/t5/Announcements/Traffic-Month-How-to-show-up-in-Google-Shopping/ba-p/30999091), undated). Add an MPN, GTIN, ISBN or UPC when the item has one *observed*.
 - Spam: keyword stuffing in title or specifics, wrong category, wrong condition *asserted*.
+
+**Search rules as data and a check.** The rules every site shares and this site's differences are in [listing-seo.md](../listing-seo.md). `node scripts/listing-lint.mjs title ebay facts.json` builds this site's title from an item's facts, and the same script checks a draft.
 
 ## 8. Photos
 

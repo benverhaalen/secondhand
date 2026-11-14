@@ -1,0 +1,8 @@
+[
+  {
+    "path": "spec/databricks.md",
+    "owner": "Nate",
+    "until": "2026-11-15T12:00:00Z",
+    "why": "spec/product.md and the data and insights specs cite it as another author's draft, and it is not pushed yet"
+  }
+]

@@ -101,7 +101,7 @@ The adapter's validation table. Poshmark's help center refuses automated fetches
 
 ## 6. Title and description conventions
 
-**How search reads them.** Poshmark says complete brand, size and condition let search match buyers, and keyword stuffing hurts *observed (via VAR, 2025-10-13 blog)*. Its Q3 2026 advice: low impressions, refresh the title or description; impressions but no clicks, change price or cover; clicks but no offers, add description or sizing detail *observed*. Title and description are both searched *asserted (memory)*.
+**How search reads them.** Poshmark says complete brand, size and condition let search match buyers, and keyword stuffing hurts *observed (via VAR, 2025-10-13 blog)*. Its Q3 2026 advice: low impressions, refresh the title or description; impressions but no clicks, change price or cover; clicks but no offers, add description or sizing detail *observed*. Title and description are both searched: "Write accurate titles and descriptions: Use relevant keywords to make your items more searchable" *observed* ([Poshmark blog](https://blog.poshmark.com/2024/11/26/enhancing-search-discovery/), 2024-11-26). The same post names "enhanced keyword and image matching", spelling correction, and "optimizing how we weigh overly broad or misused keywords in listing descriptions" *observed*, so the cover photo is a search input and a brand list in the description now counts against the listing.
 
 **Title formula** *agent proposal, from seller convention*: `Brand + Style name + Item type + Key detail + Color + Size` and `NWT` at the end only when tags are attached. No emoji, no "L@@K", no brand names that are not the item's brand.
 
@@ -128,6 +128,8 @@ Tone: friendly and plain. Comments are public.
 - **Style tags**: use all 3, real style words only ("Y2K", "Western", "Minimalist") *agent proposal*.
 - **Hashtags in descriptions**: old seller habit, no Poshmark statement found. Skip *inferred*.
 - **Condition**: pick the honest value. Sellers worry it will feed disputes *observed (via VAR)*, so the adapter maps our condition grade down, never up.
+
+**Search rules as data and a check.** The rules every site shares and this site's differences are in [listing-seo.md](../listing-seo.md). `node scripts/listing-lint.mjs title poshmark facts.json` builds this site's title from an item's facts, and the same script checks a draft.
 
 ## 8. Photos
 

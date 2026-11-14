@@ -137,7 +137,7 @@ The listing's shape:
 |---|---|---|---|---|---|
 | Title | 80 characters: brand, model, type, model number, size, color | aim for 60; short and plain | none; the first line of the description | 80: brand, style, item, color, size | 80: brand, item, model or character, size, color |
 | Description | spec sheet, every flaw | six short lines, pickup area | 1,000 characters, casual, five lines | 1,500, measurements always | 1,000, three to six lines |
-| Tags | none; item specifics and category do the work | 8 to 12 product tags | 0 to 5 hashtags, not a ranking factor | up to 3 style tags | 3 hashtags |
+| Tags | none; item specifics and category do the work | 8 to 12 product tags | 0 to 5 hashtags that add words line 1 lacks; not a ranking factor | up to 3 style tags | up to 3 hashtags that add words the title lacks |
 | Photos | 8 to 12 of 24, cover 1:1 | 6 to 10, cover 1:1 | 5 to 8 of 8, all 1:1 | 8 of 16, all 3:4 | 8 to 12 of 12, all 1:1 |
 | What search reads | title, item specifics, category, condition | title, category, distance, recency | description, brand, category, size, color; relevance ranks first | brand, size, condition, category | title, category, brand; seller record |
 
@@ -154,6 +154,8 @@ How it sells:
 | Fee | 13.6% plus $0.40 in most categories | none local; 10% shipped | 0% plus 3.3% and $0.45 processing | 20%, or $2.95 under $15 | 10% of item plus shipping |
 | Seller nets on $40 | about $32.91 | $40.00 local | about $37.91 | $32.00 | about $35.20 |
 | Seller nets on $200 | about $169.04 | $200.00 local | about $192.10 | $160.00 | about $179.15 |
+
+The search rules every site shares (12 of them), each site's differences, and a script that builds a title per site and checks a draft with no model call are in [listing-seo.md](listing-seo.md).
 
 The net figures are worked examples from each note with the buyer paying shipping. They are *inferred* from fee pages, and the tax assumptions differ slightly between notes. Grailed nets about $35.71 and $174.53; its fee steps from 6% to 9% at $120, so a $120 sale nets less than a $119 one. OfferUp is local only and takes no fee.
 

@@ -1,5 +1,5 @@
 {
- "about": "Which marketplaces fit which product types, and each marketplace's listing profile. Agent proposal, built 2026-11-14 from the notes in this folder. Evidence marks are in the notes; a profile's unconfirmed list names what was not read at the source.",
+ "about": "Which marketplaces fit which product types, and each marketplace's listing profile, including what its search reads (title, tags, search). scripts/listing-lint.mjs builds and checks drafts from these numbers. Agent proposal, built 2026-11-14 from the notes in this folder. Evidence marks are in the notes; a profile's unconfirmed list names what was not read at the source.",
  "verdicts": {
   "best": "a top place for it; post by default",
   "good": "sells well; post by default",
@@ -52,14 +52,39 @@
    "note": "ebay.md",
    "sells": "shipped, plus local pickup through checkout",
    "title": {
+    "where": "title",
     "max": 80,
-    "template": "Brand Line/Model Type ModelNo Size Color Attribute"
+    "aim": [
+     55,
+     80
+    ],
+    "lead": 40,
+    "order": [
+     "brand",
+     "line",
+     "model",
+     "detail",
+     "type",
+     "department",
+     "size",
+     "color",
+     "mpn",
+     "extra"
+    ],
+    "fill": [
+     "era",
+     "material",
+     "style",
+     "keywords"
+    ]
    },
    "description": {
     "max": null,
-    "style": "spec sheet: what it is, condition and every flaw, measurements, what is included"
+    "style": "spec sheet: what it is, condition and every flaw, measurements, what is included",
+    "hashtags": false
    },
    "tags": {
+    "kind": "none",
     "max": 0,
     "instead": "category, item specifics, condition, catalog match"
    },
@@ -87,7 +112,22 @@
     "seller-level thresholds",
     "new-seller selling limits",
     "Authenticity Guarantee thresholds"
-   ]
+   ],
+   "search": {
+    "reads": [
+     "title",
+     "item_specifics"
+    ],
+    "filters": [
+     "category",
+     "condition",
+     "brand",
+     "size",
+     "color"
+    ],
+    "offsite": "Google Shopping, free; clothing needs color, size, age group and gender specifics",
+    "top_lever": "item specifics"
+   }
   },
   "facebook": {
    "name": "Facebook Marketplace",
@@ -95,17 +135,40 @@
    "note": "facebook-marketplace.md",
    "sells": "local pickup; shipping off by default",
    "title": {
+    "where": "title",
     "max": 99,
-    "aim": 60,
-    "template": "Brand Item Key-detail Size-or-dimensions"
+    "aim": [
+     25,
+     60
+    ],
+    "lead": 40,
+    "order": [
+     "brand",
+     "line",
+     "model",
+     "detail",
+     "type",
+     "department",
+     "size",
+     "color"
+    ],
+    "fill": [
+     "material",
+     "keywords"
+    ]
    },
    "description": {
     "max": null,
-    "style": "six short lines: what, condition, dimensions, flaws, what is included, pickup area"
+    "style": "six short lines: what, condition, dimensions, flaws, what is included, pickup area",
+    "hashtags": false
    },
    "tags": {
+    "kind": "tags",
+    "where": "field",
+    "min": 8,
     "max": 20,
-    "default": "8 to 12 synonyms"
+    "aim": 12,
+    "repeat_title": false
    },
    "photos": {
     "min": 4,
@@ -132,7 +195,21 @@
     "20 tags",
     "renew rules",
     "whether Meta labels a touch-up whose C2PA credential survived the upload"
-   ]
+   ],
+   "search": {
+    "reads": [
+     "title",
+     "description",
+     "tags",
+     "category"
+    ],
+    "filters": [
+     "category",
+     "condition"
+    ],
+    "offsite": "none found",
+    "top_lever": "category, price and distance"
+   }
   },
   "depop": {
    "name": "Depop",
@@ -140,17 +217,40 @@
    "note": "depop.md",
    "sells": "shipped only",
    "title": {
+    "where": "description_line_1",
     "max": null,
-    "aim": 65,
-    "template": "first line of the description: Brand Item Detail Size"
+    "aim": [
+     30,
+     65
+    ],
+    "lead": 40,
+    "size_label": true,
+    "order": [
+     "era",
+     "brand",
+     "line",
+     "model",
+     "detail",
+     "type",
+     "color",
+     "size"
+    ],
+    "fill": [
+     "material",
+     "style"
+    ]
    },
    "description": {
     "max": 1000,
-    "style": "five short lines in a casual voice, flaws always stated, measurements"
+    "style": "five short lines in a casual voice, flaws always stated, measurements",
+    "hashtags": true
    },
    "tags": {
+    "kind": "hashtags",
+    "where": "description_end",
+    "min": 0,
     "max": 5,
-    "default": "0 to 5 true hashtags at the end, at most one brand"
+    "repeat_title": false
    },
    "photos": {
     "min": 4,
@@ -175,7 +275,22 @@
     "video in the app",
     "days to payout",
     "AI price suggestion"
-   ]
+   ],
+   "search": {
+    "reads": [
+     "description",
+     "attributes"
+    ],
+    "filters": [
+     "category",
+     "brand",
+     "size",
+     "color",
+     "condition"
+    ],
+    "offsite": "none found",
+    "top_lever": "structured fields"
+   }
   },
   "poshmark": {
    "name": "Poshmark",
@@ -183,16 +298,40 @@
    "note": "poshmark.md",
    "sells": "shipped only, 15 lb cap",
    "title": {
+    "where": "title",
     "max": 80,
-    "template": "Brand Style Item Detail Color Size"
+    "aim": [
+     40,
+     80
+    ],
+    "lead": 40,
+    "size_label": true,
+    "order": [
+     "brand",
+     "line",
+     "model",
+     "detail",
+     "type",
+     "color",
+     "size"
+    ],
+    "fill": [
+     "era",
+     "material",
+     "style"
+    ]
    },
    "description": {
     "max": 1500,
-    "style": "five-line template, measurements always, flaws always"
+    "style": "five-line template, measurements always, flaws always",
+    "hashtags": false
    },
    "tags": {
+    "kind": "style_tags",
+    "where": "field",
+    "min": 0,
     "max": 3,
-    "default": "up to 3 style tags"
+    "repeat_title": true
    },
    "photos": {
     "min": 4,
@@ -220,7 +359,23 @@
     "16 photos",
     "$3 minimum",
     "category list behind each blocked verdict"
-   ]
+   ],
+   "search": {
+    "reads": [
+     "title",
+     "description",
+     "cover_photo"
+    ],
+    "filters": [
+     "category",
+     "brand",
+     "size",
+     "color",
+     "condition"
+    ],
+    "offsite": "none found",
+    "top_lever": "brand and size fields"
+   }
   },
   "mercari": {
    "name": "Mercari",
@@ -228,16 +383,40 @@
    "note": "mercari.md",
    "sells": "shipped only",
    "title": {
+    "where": "title",
     "max": 80,
-    "template": "Brand Item Model/Character/Style Size Color New/NWT"
+    "aim": [
+     40,
+     80
+    ],
+    "lead": 40,
+    "size_label": true,
+    "order": [
+     "brand",
+     "line",
+     "model",
+     "detail",
+     "type",
+     "size",
+     "color"
+    ],
+    "fill": [
+     "era",
+     "material",
+     "keywords"
+    ]
    },
    "description": {
     "max": 1000,
-    "style": "3 to 6 lines, flaws named with the photo number, then 3 hashtags"
+    "style": "3 to 6 lines, flaws named with the photo number, then 3 hashtags",
+    "hashtags": true
    },
    "tags": {
+    "kind": "hashtags",
+    "where": "description_end",
+    "min": 0,
     "max": 3,
-    "default": "exactly 3 related hashtags"
+    "repeat_title": false
    },
    "photos": {
     "min": 4,
@@ -259,12 +438,24 @@
    "paid_lever": "none",
    "refresh": "one real edit every 7 days; no routine delete and relist",
    "unconfirmed": [
-    "title 80",
-    "description 1,000",
-    "3 hashtags",
+    "title 80, description 1,000 and 3 hashtags are from a 2022 Mercari blog post, not a current help page",
     "condition values",
     "whether Smart Offers still exists"
-   ]
+   ],
+   "search": {
+    "reads": [
+     "title",
+     "description",
+     "hashtags"
+    ],
+    "filters": [
+     "category",
+     "brand",
+     "condition"
+    ],
+    "offsite": "none found",
+    "top_lever": "title keywords, then a real edit or price cut"
+   }
   },
   "offerup": {
    "name": "OfferUp",
@@ -272,14 +463,30 @@
    "note": "offerup.md",
    "sells": "local pickup only since October 2025",
    "title": {
+    "where": "title",
     "max": 50,
-    "template": "Brand Item Key-detail"
+    "aim": [
+     20,
+     50
+    ],
+    "lead": 40,
+    "order": [
+     "brand",
+     "line",
+     "model",
+     "type",
+     "size",
+     "color"
+    ],
+    "fill": []
    },
    "description": {
     "max": 1000,
-    "style": "plain facts, dimensions, flaws, pickup area"
+    "style": "plain facts, dimensions, flaws, pickup area",
+    "hashtags": false
    },
    "tags": {
+    "kind": "none",
     "max": 0,
     "instead": "category"
    },
@@ -307,7 +514,20 @@
     "title and description limits (50 and 1,000 are safe caps, not published limits)",
     "Promote prices",
     "whether a generative touch-up counts as a photo of the actual item"
-   ]
+   ],
+   "search": {
+    "reads": [
+     "title",
+     "description",
+     "photos"
+    ],
+    "filters": [
+     "category",
+     "condition"
+    ],
+    "offsite": "none found",
+    "top_lever": "title words and the first photo"
+   }
   },
   "grailed": {
    "name": "Grailed",
@@ -315,17 +535,40 @@
    "note": "grailed.md",
    "sells": "shipped only, fashion only",
    "title": {
+    "where": "title",
     "max": 60,
-    "aim_words": 7,
-    "template": "Brand-or-line Model Season-or-year Color Size"
+    "aim": [
+     20,
+     60
+    ],
+    "max_words": 7,
+    "lead": 40,
+    "order": [
+     "brand",
+     "line",
+     "model|type",
+     "era",
+     "color",
+     "size"
+    ],
+    "fill": []
    },
    "description": {
     "max": null,
-    "style": "20 to 60 words, measurements, every flaw, 3 to 6 hashtags"
+    "style": "20 to 60 words, measurements, every flaw, 3 to 6 hashtags",
+    "hashtags": true,
+    "words": [
+     20,
+     60
+    ]
    },
    "tags": {
+    "kind": "hashtags",
+    "where": "description_end",
+    "min": 3,
     "max": 10,
-    "default": "3 to 6 hashtags"
+    "aim": 6,
+    "repeat_title": true
    },
    "photos": {
     "min": 4,
@@ -353,7 +596,24 @@
     "hashtag maximum",
     "category tree behind each blocked verdict",
     "terms ban third-party tools without written consent, so posting needs a hand-off or consent"
-   ]
+   ],
+   "search": {
+    "reads": [
+     "title",
+     "designer",
+     "description",
+     "hashtags"
+    ],
+    "filters": [
+     "category",
+     "brand",
+     "size",
+     "condition",
+     "department"
+    ],
+    "offsite": "none found",
+    "top_lever": "designer field and the 7-day bump"
+   }
   }
  },
  "fit": {

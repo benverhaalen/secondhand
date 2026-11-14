@@ -162,6 +162,8 @@ Length: 20 to 60 words, the range that "historically led to the highest proporti
 
 Spam (*asserted*, memory): wrong designer tags, other brands in the title, duplicate listings of one item.
 
+**Search rules as data and a check.** The rules every site shares and this site's differences are in [listing-seo.md](../listing-seo.md). `node scripts/listing-lint.mjs title grailed facts.json` builds this site's title from an item's facts, and the same script checks a draft.
+
 ## 8. Photos
 
 **What Grailed asks for** (*observed*, HTS): indirect natural light; a simple background such as a nail on a solid wall or a clean floor; fabric, silhouette, collar tag and wash tag; fit photos cropped at the neck.

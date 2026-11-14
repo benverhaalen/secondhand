@@ -132,6 +132,8 @@ Category does three jobs: it places the item in browse, it decides which monthly
 
 Spam on OfferUp means: the same item in more than one listing or category, keyword stuffing, placeholder prices, and mass posting without answering buyers *observed* ([Community Guidelines](https://help.offerup.com/hc/en-us/articles/360031988352-Community-Guidelines)).
 
+**Search rules as data and a check.** The rules every site shares and this site's differences are in [listing-seo.md](../listing-seo.md). `node scripts/listing-lint.mjs title offerup facts.json` builds this site's title from an item's facts, and the same script checks a draft.
+
 ## 8. Photos
 
 Rules *observed* (Posting Rules, [Why listings are removed](https://help.offerup.com/hc/en-us/articles/360032337011-Why-listings-are-removed)):

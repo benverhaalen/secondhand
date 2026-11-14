@@ -1,0 +1,59 @@
+{
+  "max": 24,
+  "load": 0.7,
+  "ramp": 2,
+  "jobs": [
+    {
+      "id": "A",
+      "prompt": "Job: one iPhone screen of secondhand, a resale app, in dark mode. The founder compares two dark modes side by side, and the two must differ only in the gradient card.\nThis image is option A: the gradient card keeps the light app's colors.\nEdit attached image 1. Change one thing: the filled button on the dark page (Print label) becomes a white pill with a near-black label, so it reads as the main action. Leave the black Accept $38 button on the gradient card as it is. Keep every photo, word, number, icon, position and other color identical.\nIt fails if:\n- anything else changed: a photo, a word, a number, the layout, the square red marketplace icon\n- the gradient, the lime block or the Sold fill is brighter or more saturated than the color sheet\n- the white button's label is hard to read, or any text is misspelled\n- money differs from: listed at $45, offered $38, you keep $31.40",
+      "inputs": [
+        {
+          "file": "rounds/r10-ui/r2/opt-A.jpg",
+          "take": "This option's screen as it stands. Edit this image."
+        },
+        {
+          "file": "inputs/colors.png",
+          "take": "The color sheet: the dark page, the gradient, lime and the state fills. Match these colors and never go brighter."
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "prompt": "Job: one iPhone screen of secondhand, a resale app, in dark mode. The founder compares two dark modes side by side, and the two must differ only in the gradient card.\nThis image is option B: the gradient card is deepened for the dark page, as it already is in attached image 1.\nEdit attached image 1. Change one thing: the filled button on the dark page (Print label) becomes a white pill with a near-black label, so it reads as the main action. Leave the black Accept $38 button on the gradient card as it is. Keep every photo, word, number, icon, position and other color identical.\nIt fails if:\n- anything else changed: a photo, a word, a number, the layout, the square red marketplace icon\n- the gradient, the lime block or the Sold fill is brighter or more saturated than the color sheet\n- the white button's label is hard to read, or any text is misspelled\n- money differs from: listed at $45, offered $38, you keep $31.40",
+      "inputs": [
+        {
+          "file": "rounds/r10-ui/r2/opt-B.jpg",
+          "take": "This option's screen as it stands. Edit this image."
+        },
+        {
+          "file": "inputs/colors.png",
+          "take": "The color sheet: the dark page, the gradient, lime and the state fills. Match these colors and never go brighter."
+        }
+      ]
+    },
+    {
+      "id": "critic",
+      "role": "critic",
+      "makes": "critique.json",
+      "after": [
+        "A",
+        "B"
+      ],
+      "prompt": "You are a senior product designer reviewing two dark-mode options for one decision. You did not make them. Images 1 and 2 are options A and B. They should differ only in the gradient card: A keeps the light app's gradient, B deepens it.\nFail an option only for these, and tie each failure to a place in the image:\n- The two differ in anything besides the gradient card.\n- The filled button on the dark page is not a white pill with a dark label, or the Accept $38 button on the gradient card is not black.\n- The gradient, the lime block or a state fill is visibly brighter or more saturated than the color sheet.\n- A marketplace icon is not the square red icon, an item has no photo, or the wordmark is not centered.\n- Words or numbers differ from: listed at $45, offered $38, you keep $31.40. Or text is misspelled or too small to read at phone size.\nWrite critique.json in this folder: {\"images\":[{\"file\":\"A or B\",\"verdict\":\"pass or fail\",\"failures\":[{\"rule\":\"\",\"place\":\"\",\"issue\":\"\"}]}],\"across\":[{\"issue\":\"\"}]}. Reply with one line.",
+      "inputs": [
+        {
+          "job": "A",
+          "take": "Option A."
+        },
+        {
+          "job": "B",
+          "take": "Option B."
+        },
+        {
+          "file": "inputs/colors.png",
+          "take": "The color sheet the colors are judged against."
+        }
+      ]
+    }
+  ]
+}

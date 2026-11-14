@@ -94,7 +94,7 @@ Payout timing *asserted* (memory): money moves to the seller's balance after the
 | Photos | Up to 12. First photo is the main image. Reorder any time | *observed* ([Creating a Listing](https://www.mercari.com/us/help_center/topics/listing/guides/creating-a-listing/)) |
 | Photo size, ratio | No pixel spec found. Grid thumbnails are square | *asserted* (memory) |
 | Video | Not on the help page I read. Treat as unsupported | *inferred* |
-| Hashtags | Up to 3 | *asserted* (memory). Help page gives no count, only "don't add brand names or hashtags that don't relate to the item" *observed* |
+| Hashtags | Up to 3 | *observed* ([Mercari blog](https://blog.mercari.com/us/6-ways-to-optimize-your-listings-for-more-mercari-sales), 2022-03-31: "you've got three to use for every listing"). The help page adds "don't add brand names or hashtags that don't relate to the item" *observed* |
 | Category | Required. Three levels | *asserted* (memory). Help says category improves searchability *observed* |
 | Brand | Optional, picked from a list. "Improves visibility in search" | *observed* |
 | Condition | Required. New, Like new, Good, Fair, Poor | *asserted* (memory) |
@@ -121,8 +121,10 @@ Description: 3 to 6 short lines. What it is, measurements, exact flaws ("small p
 - **Category**: pick the deepest match. It drives browse and filters *asserted*.
 - **Brand**: pick from Mercari's list. If the brand is missing, leave the field blank and put the brand first in the title *agent proposal*.
 - **Condition**: be strict. Returns are for "not as described" *asserted* ([VAR headline](https://valueaddedresource.net/mercari-backtracks-on-new-return-policy)), so an over-rated condition is the main way to lose a sale after it ships *inferred*.
-- **Hashtags**: 3, lower case, real search phrases (`#lululemon #alignleggings #size6`). Unrelated brands or tags are against the listing guide, and the conduct page bans "Listing an excessive amount of search keywords", "Setting unrelated categories" and "Setting a false brand" *observed*.
+- **Hashtags**: up to 3, lower case, words the title does not already carry (`#yogapants #athleisure #highwaisted`). Mercari: "use your three tags to supplement rather than repeat what you've already written" *observed* (2022 blog). An earlier draft of this note repeated the title in the tags. Unrelated brands or tags are against the listing guide, and the conduct page bans "Listing an excessive amount of search keywords", "Setting unrelated categories" and "Setting a false brand" *observed*.
 - **Color and size**: fill both. They are filter fields *asserted*.
+
+**Search rules as data and a check.** The rules every site shares and this site's differences are in [listing-seo.md](../listing-seo.md). `node scripts/listing-lint.mjs title mercari facts.json` builds this site's title from an item's facts, and the same script checks a draft.
 
 ## 8. Photos
 
@@ -296,7 +298,7 @@ How we still build posting under the automation rule *agent proposal*, in order 
 ## 15. Adapter rules (agent proposal)
 
 1. **Title**: `Brand + item type + model/character/style + size + color + New/NWT`. Max 80 characters, search words in the first 40 (section 6).
-2. **Description**: 3 to 6 lines, flaws named with the photo number, max 1,000 characters, then exactly 3 related hashtags (sections 5, 7).
+2. **Description**: 3 to 6 lines, flaws named with the photo number, max 1,000 characters, then up to 3 hashtags that add words the title lacks (sections 5, 7).
 3. **Structured fields**: always set deepest category, brand from the list, condition, color, size (sections 7, 12).
 4. **Photos**: 8 to 12, all 1:1 at 1600 by 1600, order as in section 8. Touch-up note: "light and color corrected, cropped, nothing removed".
 5. **Price**: list at target times 1.18, rounded to a whole dollar. Clamp to $1 to $2,000. Above $2,000, only shoes, handbags and wallets with Authenticate (sections 5, 9).
@@ -333,7 +335,7 @@ The fetch budget shared by all helpers ran out. These pages were found but not r
 
 - Mercari help: buyer offers (327), Prohibited Items, Terms of Service, Returns (6002, 57), Ratings for Sellers, Seller Badges (288), Meetups (beta), manage listings (332), views and clicks (5001), bundles, shipping labels (6000), cancel rules (59, 536), account limits (162), Authenticate terms (480), Fashion Exchange (2513), old listing guide (451, fetch error).
 - VAR: Smart Offers discontinued, return policy rollback, Mercari Local shutdown, AI listing beta, importer, seller tiers, Jumio verification, holiday shipping, Global App.
-- Not found at all: title and description limits on a Mercari page, hashtag count, minimum buyer offer percent, pixel specs, any policy on AI-edited photos, US buyer demographics, average order value, a 2026 trend report for the US.
+- Found only in a 2022 Mercari blog post, not on a current help page: the 80-character title, the 1,000-character description and the three hashtags. Not found at all: minimum buyer offer percent, pixel specs, any policy on AI-edited photos, US buyer demographics, average order value, a 2026 trend report for the US.
 
 None of this shows absence. Re-check order for the parent: the Smart Offers article, Meetups, returns, buyer offers (327), Terms of Service.
 
