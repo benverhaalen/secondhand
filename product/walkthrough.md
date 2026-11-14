@@ -12,7 +12,7 @@ Order runs from the biggest choice to the smallest, because each answer narrows 
 | 4 | Appraising: where it lives relative to selling and buying | — |
 | 5 | Accounts: your secondhand account, and how each platform is linked | — |
 | 6 | Human in the loop: what runs on its own, and what always needs a tap | — |
-| 7 | Behind the scenes: the shared record, agents, posting and replay, Databricks | — |
+| 7 | Behind the scenes: the shared record, agents, posting and replay, Databricks | — (Databricks is judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) |
 | 8 | App shell: the navigation that holds all of it | — |
 | 9 | First launch and onboarding | — |
 | 10 | The everyday app open | — |

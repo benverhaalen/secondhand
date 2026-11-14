@@ -46,5 +46,9 @@ Ben, project chat, 18:59 UTC.
 Ben, project chat, 19:03 UTC.
 > ensure its like thinking about everything from the biggest functions. the goal is to hit all the features.
 
+## 2026-11-14 databricks judging
+Ben, project chat, 19:04 UTC.
+> databricks is judging based on how well you use databricks platform / creativity sort of. its super general no clear criteria.
+
 ## Recording 73 (concept voice memo)
 Ben, about 25 minutes. The transcript is on Ben's Mac and is not committed. Add excerpts here only with Ben's OK.
