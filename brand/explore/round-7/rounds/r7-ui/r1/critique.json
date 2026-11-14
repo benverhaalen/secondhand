@@ -1,0 +1,47 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Needs you pill below the jacket photo, upper-left item.",
+          "issue": "The fill is a saturated orange, visibly stronger than the soft marigold Needs you fill in brand/explore/round-7/inputs/colors.png."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Needs you pill below the jacket photo, upper-left item.",
+          "issue": "The fill is a saturated orange, visibly stronger than the soft marigold Needs you fill in brand/explore/round-7/inputs/colors.png."
+        }
+      ]
+    },
+    {
+      "file": "opt-C.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet.",
+          "place": "Needs you pill below the jacket photo, upper-left item.",
+          "issue": "The fill is a saturated orange, visibly stronger than the soft marigold Needs you fill in brand/explore/round-7/inputs/colors.png."
+        }
+      ]
+    }
+  ],
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png",
+        "opt-C.png"
+      ],
+      "issue": "All three share the oversaturated Needs you fill. The selected-tab treatments are distinguishable at board size and isolate R7."
+    }
+  ]
+}
