@@ -1,0 +1,21 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The gradient or a state fill is visibly brighter or more saturated than the color sheet; the gradient is soft sky to lime.",
+          "place": "Offer card, especially the cyan left edge and yellow lower-right corner.",
+          "issue": "The field reads as bright cyan to electric yellow-green rather than the color sheet's softer sky, mint and lime. The difference is visible across the card, not just a small color-value mismatch."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "pass",
+      "failures": []
+    }
+  ],
+  "across_options": []
+}
