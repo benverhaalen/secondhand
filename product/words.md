@@ -227,3 +227,7 @@ Nate, answering the card "Which app shell stands?" (Expo with a Swift capture mo
 ## 2026-11-14 nate referrals and market data
 Nate, answering the card "How might secondhand earn?" in the same session, 2026-11-14.
 > Buy-side referrals is perfect, with also the potential to collect unified anonymous data on what our systems grab already existing in the marketplaces, and how we determine with users what were the most effective ways to market it, the amount of recent sales (indicating what the public is mainly buying, what they're wearing, all data we can find has potential to be sold and empower businesses)
+
+## 2026-11-14 nate capture then identify process
+Nate, asking for research in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> into all the platforms, also the capture and product serach to identify technologies, ensure we spec out and scaffold the information we'll need to identify with our capture, and the way the process will work is capture the product , either series of images to later be also used for the listing, 3d model from lidar or object capture we turn into multiple images, then identify from the capture or from parallel background searches and fetches all the input needed info, it'll generate intuitive inputs, radio buttons, selecting possible matches, filling in info about the brand and such. Research all of the data we can find on this, all the additional helpful autonomous features that can be developed
