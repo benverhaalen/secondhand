@@ -36,6 +36,8 @@ Never touched at any level: the background, the item's shape and position, color
 
 Studio reads the default and the crop from `platforms.<id>.photos` in [platform-fit.json](../../list/ben/platforms/platform-fit.json). One 3:4 portrait capture with the item inside the centered square serves every crop, and studio never pads a photo (eBay bans added borders). Tag, label, serial and flaw photos stay at level 0 everywhere. Level 2 stays off until Ben decides.
 
+**Tweaks without a model, and a photo score** (Ben, 22:23 UTC). Level 0 now also tunes brightness, contrast, shadows, highlights and sharpening, and crops for each platform, steered by a 0 to 100 photo score and stopped when the score stops rising. It refuses any tweak that moves the item's color. Method, sources, results and limits are in [photo-score.md](photo-score.md); code in [photo_score.py](prototype/photo_score.py); the decision model's judging prompt in [judge_prompt.txt](prototype/judge_prompt.txt).
+
 **Run on Seedream 5.5.** [touchup.py](prototype/touchup.py) calls `bytedance-seed/seedream-5-5` through OpenRouter; the `studio touch-up test` workflow runs it on the three real items with the repo's key and commits the results to [renders/](renders/).
 
 ### First look at touch-ups (21:32 UTC, Seedream 5.0 Pro, not 5.5)
