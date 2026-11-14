@@ -404,3 +404,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 maestro and callstack for app tests
 Ben, project chat, 23:17 UTC, on the proposal to save app tests as Maestro files and explore with Callstack's agent-device.
 > i love the maestro + callstack thing.
+
+## 2026-11-14 no ai tag on exported photos, track it on our end
+Ben, project chat, 23:18 UTC, answering the studio card on what the exported listing photo says about AI editing.
+> dont say it was made with ai. track on our end but for demo purposes we want it to just work before tinkering. worst case scenario is everything works beautifully but we cant post because we added an ai tag.

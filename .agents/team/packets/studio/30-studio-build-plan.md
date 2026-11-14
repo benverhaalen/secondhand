@@ -56,4 +56,4 @@ Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5
 - For capture: the template outline is the overlay to line the item up with, and `templates.json` has the shot list per garment type.
 - Found: asking the model to re-lay a tee into the template redrew the neck tag. *Agent proposal:* templates steer capture and crop; the model only flattens in place.
 - Found: Seedream renders carry C2PA that says "made by an AI model", signed by BytePlus. A crop or JPEG save drops it.
-- Open for Ben: keep a credential on the exported photo, or let it drop. *Agent proposal:* keep our record either way and never claim a touched-up photo is unedited.
+- Decided by Ben, 23:18 UTC: exported photos carry no credential and no AI label; studio keeps the model's declaration in its own record ([words](../../../../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)).
