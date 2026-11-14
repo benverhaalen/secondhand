@@ -279,3 +279,7 @@ Ben, project chat, 22:24 UTC.
 ## 2026-11-14 nate innovation and expanding the platform
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Have we addressed what databricks would find impressive, not just what their criteria is, but what would really show perhaps innovation? at least ensure every aspect of the backend that utilizes databricks well, is decided after taking advantage of third party repos for assistive expansive databricks tooling. What are ways we can expand the platform
+
+## 2026-11-14 nate provable, and features for databricks
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Not just nobody shows this, but fully focus on our app, the aspects of data collection, calculation, how we can turn everything accessible and seen every day, into something provable and show it. What are features to databricks we can build onto it, that can be shown can be used for other projects in the future, Developing a feature for our app, and making it a thing for databricks, something databricks lacks already that we know we can build. Also ensure all of databricks is applied in the areas they work best and already do exist
