@@ -73,3 +73,14 @@ test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass'
   assert.equal(errors(warn), '');
   assert.match(warn.map(o => o.msg).join(), /empty adjective/);
 });
+
+import { brand } from './brand.mjs';
+test('brand: tokens and app code stay on the constitution scales', () => {
+  const constitution = '| B13 | Two weights | values ⊆ {400, 500} | Script |\n| B17 | Spacing | ∈ {0, 4, 8, 16} | Script |\n| B20 | Radius | ⊆ {0, 8, 999} | Script |\n';
+  const good = { 'brand/constitution.md': constitution, 'brand/tokens.css': ':root { --s-1: 4px; --s-2: 8px; --r-pill: 999px; }',
+    'app/a.css': '.c { padding: 8px 16px; gap: 0; border-radius: 999px; font-weight: 500; }' };
+  assert.equal(errors(run(brand, good)), '');
+  const e = errors(run(brand, { ...good, 'brand/tokens.css': ':root { --s-9: 56px; --r-card: 12px; }',
+    'app/a.css': '.c { padding: 10px; border-radius: 6px; font-weight: 700; }' }));
+  for (const bad of ['--s-9: 56px', '--r-card: 12px', '10 is off the B17', '6 is off the B20', '700 is off the B13']) assert.ok(e.includes(bad), bad);
+});
