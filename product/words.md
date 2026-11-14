@@ -324,3 +324,7 @@ Note: the D4 state-on-the-photo note ends mid-sentence as saved.
 ## 2026-11-14 picks done
 Ben, project chat, 22:41 UTC.
 > i picked and typed and all
+
+## 2026-11-14 nate images, proven aggregates and adaptive algorithms
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> I like where you're going, but believe there is more we can do, workflow out our images perhaps, how capture works, how it varies on the product and how every dimension, brand, details, are determined. While not built into databricks, its probably a standard. Assume you work for databricks and there is something about full aggregated research, information, something valuable and adds so much potential, that we can build and demonstrate, but isnt used yet. Images, proven aggrgated data, algorithms designed in realtime depended on analyzed alogirhtms from seperate platforms
