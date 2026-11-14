@@ -200,3 +200,34 @@ Ben, project chat, 21:22 UTC.
 ## 2026-11-14 logging of everything
 Ben, logging thread, 21:20 UTC.
 > recall in my harness how i want logging of everything ensure either its set up or there are really great instructions on how to set it up possibly use the skill
+
+## 2026-11-14 image decisions and text decisions stay separate
+Ben, project chat, 21:45 UTC, after picking "Both, and the eval picks" on the card "Use Jev itself in the demo, or stay on OpenAI's Decisions API?".
+> keep it relatively open, separate out image decisions and text decisions essentially
+
+## 2026-11-14 nate store and buying
+Nate, answering the card "Which do you mean by storefront?" in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> So my secondhand store is the users selling management page for their unified storefront where they can see the product listed on multiple sites, the system picks the best for its price, ease of sending it to the buyer or the buyer picking it up, all preferences the user puts. However, secondhand is also a buying aid, an all in one unified search engine for finding products accross every second hand market, researching how prices and markets have changed, could be someone wanting to negoitate at a garage sale, or check pokemon card investments, It can help them find similar in quality, condition, material clothing to what they searched for, but at lower prices than the name brand
+
+> It makes it easier to buy and sell secondhand, but we dont run a storefront, accept payments, we manage and automate them having to use and manage these sites, but to buy they get linked to go to it. Also for buying, they can add the object to their list, which in turn adds to cart, or likes it, or whatever for each relative platform, indicating a save for later or actual add to cart to save it in that platform. It also can look at past already purcahsed things even before secondhand was linked, if the platform had that saved for the user, and build a great algorithm of recommended listings when they open the buy page
+
+On the card "How far should buying go?" in the same session, Nate picked "Also negotiate for me": the agent messages sellers and makes offers inside a ceiling the user sets, and the user pays on the site.
+
+## 2026-11-14 nate frameworks and goals
+Nate, same session, 2026-11-14, sent while cards on demo scope, the backend's front door, the buying side and disclosure were open. Nate said Ben was beside him.
+> Where there arent official connections, sources of information, harnesses to allow automated actions on each platform, we will build frameworks to allow for perfectly optimized actions and behaviors, a cloud based browser use system where login auth is persisted, the users actions open up their profiles with this cloud, and an api framework is built to allow for everything to work across the needed platforms, and additional sites of information, databases for sales and finance data, fully extend out how the internet serves us as sources of information to strenghten our analytics, accuracy and credibility of calculations on prices. We are in a way a highly intelligent analysis tool of second hand shopping, built to drive the best selling and management experience for users. There are incentives like money goals for the month, how many sales you've had, tracks progress
+||||||| 6693ac2
+
+Note: the line above ("||||||| 6693ac2") is a leftover merge marker from an agent's merge, not anyone's words.
+
+## 2026-11-14 nate expo if capture is fully possible
+Nate, answering the card "Which app shell stands?" (Expo with a Swift capture module, or fully native) in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> If all features are possible on expo as they are building natively, utilizing object capture, lidar, implementing our own specialized systems into the capture methods to ensure all data is determined (depending on product type) then go expo
+
+## 2026-11-14 nate referrals and market data
+Nate, answering the card "How might secondhand earn?" in the same session, 2026-11-14.
+> Buy-side referrals is perfect, with also the potential to collect unified anonymous data on what our systems grab already existing in the marketplaces, and how we determine with users what were the most effective ways to market it, the amount of recent sales (indicating what the public is mainly buying, what they're wearing, all data we can find has potential to be sold and empower businesses)
+
+## 2026-11-14 nate capture then identify process
+Nate, asking for research in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> into all the platforms, also the capture and product serach to identify technologies, ensure we spec out and scaffold the information we'll need to identify with our capture, and the way the process will work is capture the product , either series of images to later be also used for the listing, 3d model from lidar or object capture we turn into multiple images, then identify from the capture or from parallel background searches and fetches all the input needed info, it'll generate intuitive inputs, radio buttons, selecting possible matches, filling in info about the brand and such. Research all of the data we can find on this, all the additional helpful autonomous features that can be developed
