@@ -430,3 +430,19 @@ Ben, project chat, 23:17 UTC. The whole message except one sentence, which is un
 ## 2026-11-14 nate a suite like shopify, and the better official option
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Look at shopify and other existing concepts and products to determine how to build our own suite of features they cover that fit with our app. https://www.shopify.com/catalog https://www.shopify.com/analytics focused on secondhand retail, but considers for buyers everything even whats officially out there. If a buyer is considering buying something from a specific platform, secondhand can help them determine if theres a better official brand sold option that fufills the same purpose. It understands the use behind why the user wants it, and clarifies when it needs to know more, it understands what needs to be clarified. Check the packets ben is sending that system as well
+
+## 2026-11-14 nate create the expo app and connect it to databricks
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> create our expo app as well npm install --global eas-cli && npx create-expo-app secondhand && cd secondhand && eas init --id e95993be-76bb-4e34-8cee-9dd1f306a16e and initialize everything. Get it connected to databricks
+
+## 2026-11-14 nate our own aggregation, more specialized, on databricks
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> https://treg.to/ exemplifies just one way data is aggregated, but we can make our own and even more specialized, all built on data bricks in an impressive way
+
+## 2026-11-14 nate do not limit the product to fit databricks
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Ensure we arent limiting what we do though because we're trying to adhere to databricks so much. and consider all of this with each department, combining and unifying the leads when their workers and researchers and specialists are done. Practice intelligent token spend, considering you are blowing through limits
+
+## 2026-11-14 nate documentation shows how we price and market, and inputs generated from the prompt
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> for the documentation for the people, have we addressed everything we should plan to do. We need to show how we price, market, and i want you to check the packets for what ben has sent over, including an example of a ui that determines what in a user prompt needs clarification, and realtime generates the respective inputs like selects, radios, text, rather than a clunky ui/ux
