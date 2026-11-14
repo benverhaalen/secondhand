@@ -255,3 +255,7 @@ Nate, same session, 2026-11-14.
 ## 2026-11-14 nate the databricks explanation
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > When you've discovered and expertly established in our harness the complete package of databricks experts, designers, innovators, write a complete full explanation of databricks, how it works, where it excels, how every feature of the app that makes sense to build will be built. How we can build databricks to be better, and add something. The ways the company will truly see what we did impressive, not hard, complex perhaps, but understood by us. impressive for the concept, the idea, benchmarking past what others do, professionals, not using databricks or using databricks
+
+## 2026-11-14 nate certainty
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after hearing that a Databricks hackathon scored "evidence and uncertainty".
+> Well when it comes to uncertainty, we try and can easily achieve collecting enough information to become certain. Our system assures management, control, and helpful everything for second hand markets.
