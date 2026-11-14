@@ -500,6 +500,7 @@ items/<item_id>/capture/<session_id>/
 | `boxes` | Protected regions in 0 to 1 coordinates: label, logo, each confirmed flaw | Vision, identify, the seller (`you_said`) |
 | `mask` | Path to the item mask | Vision (`estimated`) |
 | `feeds` | `listing`, `identify`, `measure`, `image_model` | tree |
+| `measured` | On the cover frame only: real width, length and their ratio on the hand-smoothed item (section 7.2b). Studio audits renders against `ratio` | measure (`estimated`, then `measured`) |
 | `template` | Studio's template `id` (`shirt`, `sweatshirt`, `pants`) and `version` (1) from `templates.json`, and `outline_fit`: IoU, axis angle, `tight` or `loose` | device (`measured`) |
 
 **The reality rule.** Ben: "it shouldnt change anything in reality except maybe how things are flattened etc." What capture does for it:
@@ -535,6 +536,15 @@ While the measure gates hold, the phone draws chest and length on the live pictu
 5. When the still is taken the lines freeze on it. When the backend's checked values come back a few seconds later, the ends slide to their final places and the numbers settle. The values on the phone are marked *estimated*; the backend's are *measured*; the review screen is still where the seller approves them.
 
 Components: measure's `MeasureOverlay` drawn in a live mode, plus `CaptionLine`. Edge cases: a hood or folded sleeve breaks the width profile, so the preview shows length only; a dark item on a dark floor gives a poor mask, so no preview and `light.low_contrast`. Backup if the live drawing is unsteady on the demo phone: draw the lines on the frozen still a second after the shutter. The line and the numbers are the same.
+
+### 7.2b Flat enough to measure, and the proportions studio audits against
+
+Added 23:45 after the studio thread's note. Ben, 23:31, wants measurements used to audit renders ([words](../../../product/words.md#2026-11-14-re-lay-iron-and-audit-the-measurements)). Studio drops any render whose width to length is more than 5% off the real item, so capture has to hand over that real ratio, measured on the hand-smoothed item. *Agent proposal.*
+
+- **Flat enough.** Wrinkles pull a garment's outline in, so its outline grows as the seller smooths it. While the seller smooths, the phone tracks the mask's area and its width and length on the floor plane. The item counts as flat when all three have stopped growing: under 1% change across 3 ticks. This is the "coverage" measure from the robotics paper studio found (arXiv 2303.04909, *asserted*, read by studio, not opened here), and it needs no depth. LiDAR is too coarse to see wrinkles (about one point every 12 mm at 25 cm, Luetzenburg 2021, *asserted* via studio), so it stays a cross-check on scale only. The `a_lying_flat` question stays as the second opinion.
+- **Line.** While the outline is still growing the voice stays quiet. If it stops growing but `a_lying_flat` fails, `front.wrinkled` is said once.
+- **What goes in the manifest**, on the cover frame: `measured: { width_mm, length_mm, ratio, basis, flat: { area_settled, ticks }, source }`. `basis` is `chest_x_length` for tops and `waist_x_length` for pants. `source` is *estimated* from the phone's preview until the backend's checked values replace it, then *measured*; a person's drag on the review screen makes it *you said*. Studio reads `ratio` for its audit and never takes size from a render.
+- **If measuring was skipped**, `measured` is absent and studio's audit has nothing to check against, so the re-lay option is off for that item and only flatten-in-place is offered.
 
 ### 7.3 The seller's tape, as a cross-check and a photo
 
