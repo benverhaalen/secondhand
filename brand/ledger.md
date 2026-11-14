@@ -32,6 +32,8 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 
 ## Open (Ben picks; round 6 boards)
 
+Ben picks on the [brand picks page](https://claude.ai/artifact/7a98Pc4VWDoarvKACEhvVP); the boards are in [explore/round-6/boards/](explore/round-6/boards/). D4 and D5 are split into their parts there, so there are nine picks.
+
 Leaning means Ben saved it in the round 4 kit but called it not final.
 
 | # | Decision | Options | Leaning |
