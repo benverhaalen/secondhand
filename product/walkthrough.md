@@ -6,8 +6,8 @@ Order runs from the biggest choice to the smallest, because each answer narrows 
 
 | # | Decision | Status |
 |---|---|---|
-| 1 | What the app is at its core (its spine) | asking |
-| 2 | Who the hero user is, and the demo story | next |
+| 1 | What the app is at its core (its spine) | **decided: A, seller's crosslister** ([log](decisions.md)) |
+| 2 | Who the hero user is, and the demo story | asking |
 | 3 | What you see when you open the app on a normal day | — |
 | 4 | First launch and onboarding | — |
 | 5 | Accounts: your secondhand account, and how each platform is linked | — |
@@ -42,19 +42,18 @@ A and B are features of C, and D is how C behaves. Choosing C does not drop the 
 
 **What would change this view.** If the demo has to land in 60 seconds with one wow moment, B is the stronger stage even with C underneath. That is decision 2.
 
+**Picked: A** (Ben, 19:02). Selling leads; appraise and buy are add-ons. The item card can still be the record under each listing, since a crosslister needs one source to render each platform from; that is decided in step 10, not here.
+
 ---
 
 ## 2. Who the hero user is, and the demo story
 
-*Drafted ahead; it is asked once decision 1 is picked.*
-
-**Why it matters.** Every feature is kept, but the hero user sets which feature appears on the first screen, what onboarding asks for, and the one story told to the judges. MadHacks is at UW–Madison, so the judges and most of the room are students. The Databricks track's criteria are not in the repo yet; a quick search did not find them (*not checked against a primary source*).
+**Why it matters.** With selling at the core, the hero is a kind of seller. It sets what onboarding asks for, how many items the app expects at once, and the one story told to the judges. MadHacks is at UW–Madison, so the judges and most of the room are students. The Databricks track's criteria are not in the repo; a quick search did not find them (*not checked against a primary source*).
 
 | Option | Who | Demo story | Strong at | Weak at |
 |---|---|---|---|---|
-| **A. Student moving out** | A student with a dorm room of stuff and a deadline | "Clear my room before break": scan 6 things, everything listed by lunch, the inbox handles 'is this available?' | The room relates instantly; volume shows off automation and delisting | Mostly selling; appraise and buy are side stories |
-| **B. Casual declutterer** | Anyone with a closet of things they mean to sell "someday" | "Your closet is worth $260 to $340": scan, see value, sell the ones worth it | Shows the item card and value ranges; widest market | Low urgency; weaker story arc |
-| **C. Part-time flipper** | Someone who buys at garage sales and thrift stores to resell | Garage sale: appraise a jersey, buy it, measure, relight, list, sell, delist | One item runs through every feature, buy to sell; appraise is the hook | Resellers already pay for FlipTip and Vendoo, and they are power users, which pulls the interface toward complexity |
-| **D. Fit-first buyer** | Someone who gives up on secondhand clothes because the sizes lie | "Find a Yelich jersey that actually fits me": measured matches across 5 platforms | Measured fit is the edge nobody has | Leaves the selling half out of the story |
+| **A. Student moving out** | A student with a room of stuff and a deadline (break, lease end) | "Clear my room before break": scan 6 things, listed by lunch, messages handled, delisted when sold | The room relates instantly; volume shows off batch capture, the inbox and delisting | Low-value items; the price story is small dollars |
+| **B. Casual declutterer** | Anyone with a closet of things they mean to sell "someday" | "Sell the jacket you haven't worn in a year": one item, done in 2 minutes | Widest market; the "no thinking" interface fits | Low urgency; one item makes a thin demo |
+| **C. Part-time flipper** | Someone who buys at garage sales and thrift stores to resell | Garage sale: appraise a jersey, buy it, measure, relight, list, sell, delist | One item runs through every feature, including appraise | The crowded market (Vendoo, List Perfectly, FlipTip); power users pull the interface toward complexity |
 
-**Agent view: A as the person, C's loop as the story.** A student who finds a jersey at a garage sale, checks what it's worth, buys it, then sells their old one, all from the same item cards. The person keeps the interface simple and relatable to the room; the loop shows every feature in one arc. Pure C pulls the design toward power users, the opposite of "shouldn't have to be learned".
+**Agent view: A.** It is the seller with the most items, the hardest deadline and the least patience, so it stresses exactly what a crosslister must do better: batch capture, messages handled for you, and reliable delisting. It is also the room. C's garage-sale appraisal can be one beat inside A's story (the student checks a find before buying it) instead of the hero.
