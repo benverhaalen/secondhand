@@ -390,3 +390,9 @@ Ben, project chat, 23:06 UTC. Excerpt; the first sentence is about running his M
 ## 2026-11-14 garment templates, a reference set, and reading c2pa
 Ben, project chat, 23:01 UTC, inside a longer message.
 > but essentially the video type thing should frame photos super similar to my depop ones. like we should have templates that are there to give to the image model and have some way to screenshot the best most useful things to get a 'character' like how those ai influencers give seedance 2.5 a photo of a person far away, close up, at different angles etc to try to get it to conceptualize a person well. similar principle with images. have blank templates that work for any pants, shirt, sweatshirt. that present the clothes super well and flattering without changing anything about them. also scraping c2pa from the image if that image model has any is good. it shouldnt change anything in reality except maybe how things are flattened etc.
+
+## 2026-11-14 nate the best strategy per platform, computed
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, in two messages.
+> we in real time based on similar listings, determine the best marketing strategy for each platform, that is a determined calculation and feature. The user can also influence other marketing strategies, but likely goes for the best option.
+
+> It needs to be fast, credible and dynamic, yet transparent
