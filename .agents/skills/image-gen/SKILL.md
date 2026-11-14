@@ -15,5 +15,12 @@ Ben, 20:58: "ensure for all image gen you are using the codex cli with astra and
    - how to judge: the tests a good result passes (the brand's codes, the screen's job, readable at phone size, nothing invented, no text it can't spell) and what counts as failing
    Leave composition, layout and content to it. Hard constraints are only the ones a judge would fail it on.
 3. **Keep the record.** Save the brief, the rounds and the chosen image beside the output, with a `lineage.md` like `brand/explore/round-5/showcase/lineage.md`. Never say an image exists without the file.
+4. **Make it fast** (Ben, 22:49: "image gen can be parallelized", [words](../../../product/words.md#2026-11-14-faster-image-rounds)). Round 6 took over an hour for 12 boards, and nothing recorded where the time went.
+   - Freeze the brief before the first call. A change mid-run means a restart; round 6 restarted twice.
+   - Start every image at once. Make an image's variants at the same time, as edits of one base.
+   - Two critique rounds at most. Tell the critic what to fail for; a critic left open rewords its findings and never finishes.
+   - Make anything exact with a script, not the image model: logos, type samples, color swatches, stitching.
+   - Push each image when it is done, so the person can start looking.
+   - Time every call through [log/](../../../log/README.md) (`log.call`), and put a table in `lineage.md`: calls, seconds per call, wall time per image, time lost to refusals. The next round is tuned from that table.
 
 Retire when: Codex's own image loop judges as well as this brief without being told.

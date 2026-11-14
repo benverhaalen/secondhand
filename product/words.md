@@ -328,3 +328,7 @@ Ben, project chat, 22:41 UTC.
 ## 2026-11-14 nate images, proven aggregates and adaptive algorithms
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > I like where you're going, but believe there is more we can do, workflow out our images perhaps, how capture works, how it varies on the product and how every dimension, brand, details, are determined. While not built into databricks, its probably a standard. Assume you work for databricks and there is something about full aggregated research, information, something valuable and adds so much potential, that we can build and demonstrate, but isnt used yet. Images, proven aggrgated data, algorithms designed in realtime depended on analyzed alogirhtms from seperate platforms
+
+## 2026-11-14 faster image rounds
+Ben, in the thread "Set the secondhand brand identity", 22:49 UTC.
+> i really want to make this whole process faster. hopefully you have logging in place to make some changes. image gen can be parallelized.
