@@ -19,3 +19,4 @@ All research for this feature: [research/identify/](../../research/identify/)
 - Ben: [research/identify/ben/](../../research/identify/ben/)
 - Nate: `research/identify/nate/` (none yet)
 - Ben, tech stack: [openai-decisions-api.md](../../research/identify/ben/openai-decisions-api.md). OpenAI Decisions API returns probabilities but no reasons and no review queue, so we set thresholds and route low confidence to the user.
+- Ben, build plan: [build-plan.md](../../research/identify/ben/build-plan.md). Terra, tag reading and image search propose up to 5 identities; one Decisions call verifies them; each field is filled, one-tap confirm, or picked by the person; corrections become labels that retune thresholds in Databricks.
