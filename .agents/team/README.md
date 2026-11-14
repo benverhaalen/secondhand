@@ -6,6 +6,7 @@ Coordination stays inside the product repository. Read the relevant packet, not 
 - [2 — repo layout](packets/team/2-repo-layout.md)
 - [4 — build plan: posting, messages, dynamic UI](packets/list/4-posting-messages-dynamic-ui-plan.md)
 - [40: the unified spec, research and decisions from Nate's side](packets/team/40-unified-spec-from-nates-side.md)
+- [41: the Expo app shell exists, and what changed on Nate's side since packet 40](packets/team/41-app-shell-and-nates-updates.md)
 - [Original source excerpts](sources.md): consult relevant wording before consequential interpretation.
 - [Operating guide](../coordination.md): cadence, scoped helpers, human disagreements, git rules, and checks.
 
