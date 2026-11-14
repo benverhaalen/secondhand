@@ -25,6 +25,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - First launch is setup first: connect sites, pickup windows and meetup spot, notifications, then Today. Ben, decision card, 19:43 ([decisions](decisions.md#2026-11-14-first-launch-is-setup-first)).
 
+- The phone app comes first. A website with sign-in follows, with the same features except LiDAR and the guided camera (photo upload instead). Ben, [20:45](words.md#2026-11-14-app-first-and-ui-factory-after-the-brand).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).

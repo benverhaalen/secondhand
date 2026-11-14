@@ -45,7 +45,13 @@ Before any layout, write the **four screen lines** (from Ben's ui-factory skill)
 
 Then answer, in order:
 
-1. **What do they want, not what would they say?** A seller opening Today does not want "3 things that need me". They want to know whether anything will be lost if they ignore the app (a sale, an offer, a deadline), and how to make it go away in one tap. Ben: "infer what I want rather than what I say."
+1. **What do they want, not what do they think they want?** A seller opening Today does not want "3 things that need me". They want to know whether anything will be lost if they ignore the app (a sale, an offer, a deadline), and how to make it go away in one tap. Ben: "infer what I want rather than what I say", and at 20:45, "think about what they want not what they think they want" ([words](words.md#2026-11-14-app-first-and-ui-factory-after-the-brand)).
+
+   What people ask for is a guess at a solution. What they do, complain about and give up on is the evidence. So the "wants" sentence is found by research, not by imagining the user:
+   - **Seed** with sources that show behavior, not opinion: app reviews and forum complaints about the job, a product's own changelog when it moved or removed something, sellers' guides written after hundreds of sales, and our own captures. Say why each seed is worth reading.
+   - **Loop.** Read one seed closely, write what it shows the person actually does or needs, then update a short frontier: what changed, the next lead, and one lead that argues the other way. Feed that frontier into the next search instead of keeping a reading list. Stop when a loop no longer changes the answer. This is the seeded, adaptive investigation in Ben's [it-already-exists](https://github.com/benverhaalen/it-already-exists/blob/main/skills/reference-driven-development/references/research-improvement.md) method.
+   - **Write both sentences** in the screen's lines: "they'd say: …" and "they want: …", with the evidence for the second. If the two match, say so; the research still has to show it.
+   - **Check it on the screen.** The design passes when it serves the "wants" sentence even if the user never asks for it.
 2. **What else might they want to do here?** List every intent a real person could have on this screen before deciding which ones get space. Two buttons is a guess, not a design (Ben, 20:17: "there are only two decisions there like think of what if a user wanted to do something else"). Use the [function map](functions.md) and [missing-features.md](../research/cross-cutting/ben/missing-features.md) as the inventory.
 3. **What do they already know?** Name the apps this person already uses for the same job (eBay Seller Hub, Depop, Marketplace, iMessage, Gmail, the iOS camera) and what those apps taught them. Familiar beats clever (Jakob's law).
 4. **What will they misread?** Read every element as someone who has never seen the app, has one thumb free and is half paying attention.

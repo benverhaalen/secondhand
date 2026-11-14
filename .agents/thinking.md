@@ -44,3 +44,11 @@ A rule doc is anything an agent reads as instructions: AGENTS.md, a skill, a con
 - **Separate before you share.** Give each writer their own file instead of having many agents edit one.
 - **Never block on the human for a reversible step.** Do it and show the result; ask only about taste, direction, scope or what can't be undone.
 - **Every rule says when it retires.** A rule that no longer changes a decision gets deleted.
+- **Keep only prose that changes a decision.** Tell the reader to do the thing; give the reason only when the rule is confusing without it. Point to the source (a type, a token file, a spec) instead of restating it.
+- **One document, one job.** A doc is a how-to, a reference, an explanation or a tutorial. Mixing them is how a standard grows into an essay.
+- **Redesign, don't bolt on.** When a new requirement lands, ask what the doc would say if it had been there from the start, and update every place that depends on it in the same change.
+- **Try two or three real alternatives** when there is no precedent, and compare them side by side before committing. A second version of the same idea doesn't count.
+- **Build the lever.** For non-trivial work, write the script that does or proves it; the script is what a reviewer reruns.
+- **Fix the cause, not the symptom.** Trace a wrong doc or a failing check to where it first went wrong, and fix the whole pattern, not the one instance.
+- **Explain any number before trusting it.** Say what limits it and what else it could be measuring.
+- **Label every claim** as measured, inferred or a guess, in the same sentence.
