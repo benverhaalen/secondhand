@@ -21,7 +21,7 @@ Ben, 21:08: build ideas instead of dropping them for production reasons. Object 
 
 ## Talk mode (added 21:40)
 
-Ben asked at 21:22 for a live video capture you can talk to. Plan: [live-video-capture.md](../../../../research/capture/ben/live-video-capture.md). It adds a `LiveDirector` class to the Swift camera module, six model tools, new Item fields (transcript, heard facts with source "you said") and new catalog components for the Heard / Saw review screen (listed in the note's step 11). Flaws the model or seller mention go through the same yes or no chips.
+Ben asked at 21:22 for a live video capture you can talk to. Plan: [live-video-capture.md](../../../../research/capture/ben/live-video-capture.md). It adds a `LiveDirector` class to the Swift camera module, six model tools, new Item fields (transcript, heard facts with source "you said") and new catalog components for the Heard / Saw review screen (listed in the note's step 11). Flaws the model or seller mention go through the same yes or no chips. Ben decided at 21:33 that capture opens on the guided list and talk mode is one tap away ([decision](../../../../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)). Packet 4's thread added the six components as catalog entries 48 to 53; LiveHintPill, VoiceMark, CaptionLine and ModeSwitch are drawn by the capture screen straight from live events, never composed from a json-render spec.
 
 ## Next action
 
