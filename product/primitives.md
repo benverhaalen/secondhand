@@ -25,3 +25,26 @@ The small set of objects that every function in [functions.md](functions.md) is 
 - **Watching is a Want plus a Watch.** "Wait until someone sells the thing I want" and "tell me when it drops under $40" are the same primitive with different alert conditions (Ben, 19:15).
 - **Human in the loop is two primitives: Decision and Rule.** Anything a Rule doesn't cover becomes a Decision. Price, address and pickup time can never be covered by a Rule.
 - **Databricks** holds the Valuations, Listings, Conversations and Ledger entries over time. Every sale feeds back into the price model. That is the data loop the judges see.
+
+## One list, reconciled
+
+*Agent proposal, for Ben to confirm.* This page has 13 primitives and the engineering note ([primitives-engineering.md](../research/cross-cutting/ben/primitives-engineering.md)) has 7. Two lists means the first schema picks one by accident. This is one list, using the engineering note's test: a primitive is used by at least three functions, has one owner table, and removing it would make two features invent their own copy.
+
+| Here | Engineering note | One list | Why |
+|---|---|---|---|
+| Item | Item | **Item** | Same thing. Photos and what it cost you are fields of it |
+| Photo | (a field of Item) | part of Item | No function uses a photo without its item |
+| Job | (none) | **Job** | The researching state and red failures need background work with a state |
+| Valuation | Valuation | **Valuation** | Computed from Comps each time; a Decision keeps the number it showed |
+| (none) | Comp | **Comp** | The market observations Databricks stores. Valuation, deal badges and the by-site numbers all read it |
+| Listing | Listing | **Listing** | Its states are `LISTING_STATES` in [spec/lifecycle.mjs](../spec/lifecycle.mjs) |
+| Conversation | Conversation | **Conversation** | Same thing |
+| Decision | Proposal | **Decision** | One thing under two names. Decision is the name the spec, Today and the tiers already use |
+| Rule | (risk levels) | **Rule** | "Always do this" makes a Rule; the spec models it as a promoted kind |
+| Want | Want | **Want** | Same thing |
+| Watch | (a Want that stays open) | part of Want | A Watch is a Want with a schedule and an alert condition |
+| Event | (inside Conversation) | **Appointment** | A pickup or a ship-by date with its own state. Renamed so it doesn't clash with log events in [spec/README.md](../spec/README.md#logging) |
+| Account | configuration | configuration | One per site, with health; nothing else depends on its rows |
+| Ledger entry | (derived) | derived | Earned and fees come from sold Listings; what it cost you is on the Item |
+
+That leaves ten: Item, Job, Comp, Valuation, Listing, Conversation, Decision, Rule, Want, Appointment. One log of item events (see [spec/README.md](../spec/README.md#logging)) serves the "why?" timeline, undo and the approvals that train the tiers.
