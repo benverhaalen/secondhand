@@ -14,7 +14,7 @@ Ben asked to work through the whole app one decision at a time, starting wide an
 | 8 | You | **decided: numbers, by site, settings** ([log](decisions.md)) |
 | 9 | Human in the loop: what runs on its own, and what always needs a tap | **decided: tiers that learn** ([log](decisions.md)) |
 | 10 | **decided: all in, hybrid fallback** ([log](decisions.md)) Behind the scenes: the shared record, agents, posting and replay, Databricks (judged on how well and how creatively the platform is used, with no set criteria: [words](words.md#2026-11-14-databricks-judging)) | — |
-| 11 | First launch and onboarding | asking |
+| 11 | First launch and onboarding | **decided: setup first** ([log](decisions.md)) |
 
 Since 19:08, every option is derived from the [function map](functions.md) ([words](words.md#2026-11-14-function-map)).
 
@@ -278,3 +278,14 @@ Screens (wireframes): [A](../research/today/ben/you-tab/YouNumbers.png), [B](../
 | **C. Guided first item** | A short walkthrough sells one of your own items end to end, connecting a site at the post step, then lands on Today | Teaches every part once | Longer; can feel like a tutorial |
 
 **Agent view: A.** The first thing anyone does is the core loop: photo, value. Every permission (camera, sites, notifications, pickup) is asked at the moment it is needed, so there is nothing to learn up front.
+
+**Picked: B, setup first** (Ben, 19:43).
+
+---
+
+## Walkthrough complete
+
+Every step has a decision in [decisions.md](decisions.md). What comes next:
+1. The brand thread sets the visual identity. Ben said the brand comes before UI mocks (19:37).
+2. Restyle the wireframes on the canvas with the brand, using the ui-factory skill.
+3. Build. Each feature page links to its decisions.

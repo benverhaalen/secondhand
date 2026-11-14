@@ -22,6 +22,8 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - All in on Databricks: Apps, Agent Bricks, Lakebase, MLflow "why?" timelines, and approvals as labels that train the tiers. Fall back to a hybrid if setup stalls for 2 hours. Ben, decision card, 19:41 ([decisions](decisions.md)).
 
+- First launch is setup first: connect sites, pickup windows and meetup spot, notifications, then Today. Ben, decision card, 19:43 ([decisions](decisions.md)).
+
 ## Proposed
 
 - Guided capture: the app asks for the front, the back, the tag, close-ups and defects, one shot at a time. Each shot serves both the listing and the image model, in one list. Ben, [18:32](words.md#2026-11-14-tools-and-capture) and [18:48](words.md#2026-11-14-shots-serve-both).
