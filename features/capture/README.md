@@ -19,6 +19,7 @@ Draft, revised after Ben's direction ([words](../../product/words.md#2026-11-14-
 Then [measure](../measure/). The item lies on a white sheet from the first shot, so every image carries a white-balance reference. The list is chosen per item type, and shots capture automatically once they are sharp.
 
 ## Decided
+- Capture opens on the guided shot list; a voice button starts talk mode. Ben, 21:33 ([decision](../../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)).
 - The app is built with Expo, with the camera, ARKit scale and live checks in one Swift module. Ben, 21:05 ([decision](../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)).
 
 ## Open
@@ -31,3 +32,4 @@ All research for this feature: [research/capture/](../../research/capture/)
 - Nate: `research/capture/nate/` (none yet)
 - Ben, tech stack: [guided-shot-list.md](../../research/capture/ben/guided-shot-list.md). Per-category shot list with live checks before each shot counts; defects proposed by the model and confirmed by the user.
 - Ben, build plan: [build-plan.md](../../research/capture/ben/build-plan.md). One ARKit session with live checks and auto-shutter; one Decisions call per shot; Gemini proposes flaw boxes, the person confirms each; folder drop groups photos into items. Joined with measure and identify in [seeing-the-item-pipeline.md](../../research/cross-cutting/ben/seeing-the-item-pipeline.md).
+- Ben, build plan: [live-video-capture.md](../../research/capture/ben/live-video-capture.md). Talk mode ([Ben's words](../../product/words.md#2026-11-14-live-video-you-can-talk-to)): a live voice and video session directs the same shot list. The model asks for a better look, takes the stills itself through tools, and saves what the seller says as "you said" facts; a Heard / Saw screen is the approval. Gemini 3.8 Live first, OpenAI Realtime as backup. *Agent proposal.*

@@ -15,7 +15,7 @@ The shared picture of secondhand. It changes as Ben and Nate shape it. Every lin
 
 - Bottom bar: Today · Sell · ＋ · Buy · You. ＋ is the only way in (Sell this, What's it worth, Find this). Ben, decision card, 19:27 ([decisions](decisions.md#2026-11-14-the-bottom-bar-is-today--sell----buy--you)).
 
-- Automation runs in tiers that learn: Auto, Ask, Never alone. An Ask promotes to Auto after 3 approvals; Never alone is locked. Ben, decision card, 19:29 ([decisions](decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)).
+- Automation runs in tiers that learn: Auto, Ask, Never alone. An Ask promotes to Auto after 3 approvals; Never alone is locked. Ben, decision card, 19:29 ([decisions](decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)); at 21:29 he added that only unedited approvals count, and "Always accept $X or more" is offered when an item is listed ([decisions](decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)).
 
 - Pickups: your time windows plus a saved public meetup spot; your home address only on a separate tap; confirmed times go to Google Calendar. Ben, decision card, 19:30 ([decisions](decisions.md#2026-11-14-pickups-use-your-windows-and-a-saved-meetup-spot)).
 

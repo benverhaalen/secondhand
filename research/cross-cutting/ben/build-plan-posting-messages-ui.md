@@ -133,6 +133,12 @@ Each function in a harness file has: a zod input and output schema (the output b
 | 45 | `IdentityCandidates` | Item identity | Card, RadioGroup, Image | Photo cards to pick from, plus "None of these" |
 | 46 | `ConditionPicker` | Item condition | ToggleGroup | 6 levels; the model's distribution shown as the default, the user picks |
 | 47 | `ConfidenceDot` | any field | Badge, Sheet | Opens a "why?" sheet built from the MLflow spans, never from model prose |
+| 48 | `HeardFacts` | Item fields from speech | List, Button | Rows of field, value and quote; each row plays the clip it came from. Actions `edit_fact`, `remove_fact`, `add_fact`, each a Decision row and a label ([live-video-capture step 11](../../capture/ben/live-video-capture.md#step-11-the-review-screen-human-approval-json-render-react-native)) |
+| 49 | `MomentStrip` | Item capture moments | ScrollArea, Image | Thumbnail, time and what the moment produced (photo, fact, flaw). Action `open_moment` |
+| 50 | `LiveHintPill` | capture screen | native component | One at a time, 4 words or fewer. Driven by live model and device events, so the capture screen renders it directly; it is never composed from a spec |
+| 51 | `VoiceMark` | capture screen | native component | listening, speaking, muted, off. Action `toggle_mute`. Rendered directly, like 50 |
+| 52 | `CaptionLine` | capture screen | native component | Speaker and text. Rendered directly, like 50 |
+| 53 | `ModeSwitch` | capture screen | native component | talk or shoot. Action `set_mode`. Rendered directly, like 50 |
 
 ## 7. Changes the spec needs (proposed, not made)
 
