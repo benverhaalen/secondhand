@@ -102,3 +102,7 @@ Ben, project chat, 19:56 UTC, with Marist-Font-Family.zip attached (ABC Marist t
 ## 2026-11-14 secondary buttons
 Ben, project chat, 19:54 UTC.
 > also having a mix of the outline and non outline secondary button would be nice.
+
+## 2026-11-14 licences
+Ben, project chat, 19:56 UTC, after the note that Marist is a trial font.
+> dont worry about licenses for now this is all a hackathon demo

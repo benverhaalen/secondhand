@@ -25,6 +25,6 @@ Ben's spec, 2026-11-14 (verbatim in [product/words.md](../../../product/words.md
 
 ## Font files
 
-ABC Marist by Dinamo. The files Ben sent are the **unlicensed trial** (name table: "ABC Marist Unlicensed Trial"; the licence text forbids redistributing them or storing them on public servers). They are unzipped at `.transcribe/brand/fonts/marist/` on Ben's Mac, which git ignores, and are fine for local mockups. Shipping the app or a public site needs a Dinamo licence.
+ABC Marist by Dinamo, trial files. Ben, 2026-11-14: licences are out of scope because this is a hackathon demo. The files are unzipped at `.transcribe/brand/fonts/marist/` on Ben's Mac (git-ignored), so teammates' checkouts do not have them yet.
 
 Metrics (Book): 1000 UPM, cap height 650, x-height 450, ascent 880, descent −230. The variable font has a wght axis from 350 to 900; italics come as separate files.
