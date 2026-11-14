@@ -1,0 +1,328 @@
+<title>secondhand brand kit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&display=swap">
+<style>
+/*FONTFACES*/
+:root{
+  --bg:#ffffff; --fg:#0a0a0a; --muted:#0a0a0a8c; --line:#e7e7e5; --panel:#f5f6f6; --sel:#0a0a0a; --selfg:#fff;
+  --ui:'Geist',-apple-system,'Helvetica Neue',Arial,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f0f0f;--fg:#f2f2f2;--muted:#ffffff9e;--line:#2a2a2a;--panel:#181818;--sel:#f2f2f2;--selfg:#0a0a0a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f0f0f;--fg:#f2f2f2;--muted:#ffffff9e;--line:#2a2a2a;--panel:#181818;--sel:#f2f2f2;--selfg:#0a0a0a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:14px/20px var(--ui);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;margin:0}
+.kit{max-width:1380px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:40px;align-items:start}
+@media (max-width:980px){.kit{grid-template-columns:minmax(0,1fr)}.side{position:static!important;order:-1}}
+h1{font:500 28px/34px var(--ui);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font:500 16px/22px var(--ui);margin:0}
+h3{font:500 13px/18px var(--ui);color:var(--muted);margin:28px 0 0}
+p{margin:0}
+.intro{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.intro p{color:var(--muted);max-width:68ch}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{font:500 13px/18px var(--ui);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:99px;padding:7px 14px;cursor:pointer}
+.chip:hover{border-color:var(--fg)}
+.chip:focus-visible,.opt:focus-visible,.btnx:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
+.mod{border-top:1px solid var(--line);padding:20px 0;display:flex;flex-direction:column;gap:12px}
+.modhead{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.modhead p{color:var(--muted);font-size:13px;max-width:64ch}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:10px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;min-height:118px;background:var(--bg);position:relative}
+.opt:hover{border-color:var(--muted)}
+.opt[aria-pressed="true"]{border:2px solid var(--fg);padding:9px}
+.opt[aria-pressed="true"]::after{content:"✓";position:absolute;top:8px;right:10px;font:500 12px/1 var(--ui);background:var(--sel);color:var(--selfg);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.opt .name{font:500 13px/18px var(--ui)}
+.opt .note{font-size:12px;line-height:16px;color:var(--muted)}
+.opt .src{font-size:11px;line-height:14px;color:var(--muted)}
+.new{font:500 10px/14px var(--ui);background:var(--fg);color:var(--bg);padding:1px 6px;border-radius:99px;margin-left:6px;vertical-align:1px}
+.demo svg{width:100%;height:100%}.demo{border-radius:8px;background:#fff;color:#000;flex:none;height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border:1px solid #0000000d}
+.side{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:12px}
+.phone{width:390px;max-width:100%;height:844px;border-radius:48px;overflow:hidden;position:relative;box-shadow:0 0 0 1px #00000017,0 30px 60px -30px #0000004d;margin:0 auto;flex:none}
+.picked{font:400 12px/18px var(--ui);color:var(--muted);background:var(--panel);border-radius:10px;padding:12px;white-space:pre-wrap;word-break:break-word}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btnx{font:500 13px/18px var(--ui);border:0;border-radius:99px;padding:9px 16px;cursor:pointer;background:var(--sel);color:var(--selfg)}
+.btnx.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.status{font-size:12px;color:var(--muted)}
+textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px/18px var(--ui);background:var(--bg);color:var(--fg);resize:vertical}
+details.why{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0 4px;max-width:80ch}
+details.why summary{font:500 14px/20px var(--ui);cursor:pointer}
+details.why ul{margin:10px 0 0;padding-left:18px;color:var(--muted);display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:19px}
+details.why b{color:var(--fg);font-weight:500}
+
+/* ---------- Preview phone: constitution values only ---------- */
+.P{--ink:#0a0a0a;--ink2:#0a0a0a8c;--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s8:32px;
+   background:#fff;color:var(--ink);font-family:var(--b-text);height:100%;position:relative;font-kerning:normal;-webkit-font-smoothing:antialiased;overflow:hidden}
+.P .sb{height:54px;display:flex;justify-content:space-between;align-items:center;padding:4px 30px 0 46px;font:600 17px/22px -apple-system,'SF Pro Text',var(--b-text),sans-serif;letter-spacing:-.4px;position:relative;z-index:2}
+.P .sb svg{display:block}
+.P .scroll{position:relative;z-index:1}
+.P .pad{padding:0 var(--s5)}
+.P .nav{height:44px;display:flex;align-items:center;justify-content:center}
+.P .wm{font-family:var(--b-disp);font-weight:var(--b-dispw);font-size:22px;line-height:26px;letter-spacing:var(--b-wmtrack)}
+.P .t13{font-size:13px;line-height:18px}
+.P .t15{font-size:15px;line-height:20px}
+.P .t18{font-size:18px;line-height:24px;letter-spacing:-0.01em}
+.P .hd{font-family:var(--b-headfont);font-weight:var(--b-headw)}
+.P .mut{color:var(--ink2)}
+.P .money{font-variant-numeric:tabular-nums}
+.P .hl{background:linear-gradient(180deg,transparent 58%,var(--b-hl) 58%,var(--b-hl) 94%,transparent 94%);padding:0 3px;margin:0 -3px;color:var(--ink)}
+/* field */
+.P .field{background:var(--b-field);position:relative;isolation:isolate}
+.P .field::before{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:var(--b-lines);opacity:var(--b-linesop);z-index:0}
+.P .field::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:var(--b-grain);mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");z-index:0}
+.P .field > *{position:relative;z-index:1}
+.P .band{position:absolute;left:0;right:0;top:0;height:250px;z-index:0}
+/* cards */
+.P .list{display:flex;flex-direction:column;gap:var(--b-cardgap)}
+.P .card{background:#fff;border-radius:var(--b-r-card);box-shadow:var(--b-shadow);border:var(--b-cardborder);padding:var(--b-cardpad);display:flex;flex-direction:column;gap:var(--s3)}
+.P .card.field{background:var(--b-field);border-color:transparent;box-shadow:var(--b-fieldshadow)}
+.P .list.rows{gap:0}
+.P .list.rows .card{border:0;box-shadow:none;border-radius:0;padding:var(--b-cardpad) 0;border-bottom:1px solid #0a0a0a14}
+.P .list.rows .card.field{border-radius:var(--b-r-card);padding:var(--b-cardpad);border-bottom:0;margin-bottom:var(--s2)}
+.P .top{display:flex;gap:var(--s3);align-items:flex-start}
+.P .ph{width:72px;height:72px;border-radius:calc(var(--b-r-card) * .6);object-fit:cover;flex:none;background:#EFF1F2;display:block}
+.P .col{display:flex;flex-direction:column;min-width:0;gap:2px}
+.P .meta{display:flex;align-items:center;gap:6px;margin-top:4px}
+/* buttons */
+.P .acts{display:flex;gap:var(--s2)}
+.P .b{height:44px;border-radius:var(--b-r-btn);border:0;font:500 15px/20px var(--b-text);letter-spacing:-0.01em;padding:0 var(--s4);display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--ink);background:transparent}
+.P .b.grow{flex:1}
+.P .b1{background:var(--ink);color:#fff;flex:1.4}
+.P .b2{background:var(--b-btn2);box-shadow:var(--b-btn2ring);flex:1}
+.P .bm{width:44px;padding:0;flex:none;background:var(--b-btnm);box-shadow:var(--b-btnmring)}
+.P .field .b2{background:var(--b-btn2field)}
+.P .field .bm{background:#ffffff73;box-shadow:none}
+.P .ic{width:24px;height:24px;display:inline-flex;flex:none}
+.P .ic svg{width:100%;height:100%}
+.P .quiet{padding:var(--s4) 0 var(--s6)}
+.P .quiet a{color:var(--ink);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+/* logos */
+.P .pm{display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--ink)}
+.P .pm svg{display:block}
+.P .pm.app{width:18px;height:18px;border-radius:5px}
+.P .pm.bubble{width:20px;height:20px;border-radius:50%;background:#EFF1F2}
+.P .field .pm.bubble{background:#ffffff8c}
+.P .pmw{font-size:13px;line-height:18px;color:var(--ink2)}
+/* tab bar */
+.P .tab{position:absolute;left:0;right:0;bottom:0;height:84px;background:#ffffffe6;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid #0000001f;display:flex;justify-content:space-around;padding:7px 8px 0;z-index:3}
+.P .tab > span{display:flex;flex-direction:column;align-items:center;gap:3px;font:400 10px/12px var(--b-text);letter-spacing:.01em;color:#0a0a0a80;width:64px}
+.P .tab .on{color:var(--ink);font-weight:500}
+.P .plus{width:48px;height:48px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;margin-top:-4px}
+.P .home{position:absolute;bottom:8px;left:50%;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:#000;z-index:4}
+</style>
+
+<div class="kit">
+<main>
+  <div class="intro">
+    <h1>Build the brand around sky and lime.</h1>
+    <p>Round 4. The phone shows the reworked Today from the UI thread (photos, plain words, every action named) at true iPhone size, in the brand rules from the new constitution. Pick one option per row; what you saved before is loaded where it still applies. Every color is sampled from your references.</p>
+    <div class="presets" id="presets"></div>
+  </div>
+  <details class="why"><summary>What changed since round 3, and why</summary><ul id="whylist"></ul></details>
+  <div id="mods"></div>
+</main>
+<aside class="side">
+  <div class="row"><button class="btnx" id="save" type="button">Save picks</button><button class="btnx ghost" id="copy" type="button">Copy tokens</button><span class="status" id="status" role="status"></span></div>
+  <div class="phone"><div class="P" id="P"></div></div>
+  <label class="h3" for="note" style="font-size:13px;color:var(--muted)">Notes for Claude</label>
+  <textarea id="note" placeholder="Anything to change, mix, or try next"></textarea>
+  <div class="picked" id="picked"></div>
+</aside>
+</div>
+
+<script>
+const ICONS = /*ICONS*/null;
+const LOGOS = /*LOGOS*/{};
+const PHOTOS = /*PHOTOS*/{};
+const WHY = [
+ ['<b>Sky and lime are the brand.</b> One textured field per screen, behind the thing that needs you. Black text only on it (every field color passes 9:1 with black, fails with white).', 'ref-12, your 20:17 note'],
+ ['<b>Wordmark centered at the top</b>, in the nav bar, with no page title under it.', 'your 20:17 note; Instagram'],
+ ['<b>Every item has its photo</b>, and the photo leads the card.', 'your 20:17 note; iOS notifications'],
+ ['<b>Plain words.</b> "Jamie offered $38. You asked $45. Similar jackets sold for $36 to $52 lately." No n=41, no counter, no tabs.', 'your 20:17 note; UI constitution'],
+ ['<b>More than two choices.</b> The likeliest action is black with the amount in it, the next is outlined, and ··· names the rest.', 'your 20:17 note; Gmail, eBay offers'],
+ ['<b>No bold.</b> Two weights: regular everywhere, medium only on buttons and the selected tab. The headline gets its rank from size (18 over 15 over 13) and ink (black over 55%).', 'QOVES; constitution Art. 6'],
+ ['<b>Sizes that read as steps:</b> 13, 15, 18, 22. Each step is at least 15% bigger than the last, so nothing looks almost the same.', 'constitution Art. 6'],
+ ['<b>No mono, no uppercase, no Inter, no Lucide.</b>', 'your 19:59 note; your harness defaults'],
+];
+const FIELD_SKY_LIME = 'linear-gradient(160deg,#90D1EF 0%,#C9E6D8 50%,#E6EA6A 100%)';
+const M = [
+ {id:'field', group:'Color', title:'The field', hint:'The one color event per screen. All sampled from ref-12, the dashboard with the sky and lime mesh, and its neighbours.', opts:[
+  {id:'sky-lime', name:'Sky to lime', note:'The one you said you love.', src:'jpg(12) · ref-12 · jpg(17)', v:{f:FIELD_SKY_LIME, hl:'#E6EA6A', glow:'#4EBAF740'}},
+  {id:'mesh', name:'ref-12 mesh', note:'Four corners: peach, lime, sky, mint. Closest to the reference.', src:'ref-12', fresh:1, v:{f:'radial-gradient(70% 90% at 0% 0%,#FBB383 0%,#FBB38300 70%),radial-gradient(80% 100% at 0% 100%,#E6EA6A 0%,#E6EA6A00 70%),radial-gradient(80% 100% at 100% 0%,#4EBAF7 0%,#4EBAF700 70%),radial-gradient(80% 100% at 100% 100%,#88DCB9 0%,#88DCB900 70%),#EAF3EE', hl:'#E6EA6A', glow:'#4EBAF740'}},
+  {id:'sky-mint-lime', name:'Sky, mint, lime', note:'No peach. Cooler.', src:'ref-12', fresh:1, v:{f:'linear-gradient(135deg,#4EBAF7 0%,#88DCB9 50%,#E6EA6A 100%)', hl:'#E6EA6A', glow:'#4EBAF740'}},
+  {id:'lime-wash', name:'Lime wash', note:'Mostly lime, sky only at the corner.', src:'jpg(12) Docket', fresh:1, v:{f:'radial-gradient(120% 120% at 100% 0%,#90D1EF 0%,#90D1EF00 45%),linear-gradient(180deg,#E6EA6A,#D9E488)', hl:'#90D1EF', glow:'#D9E48860'}},
+  {id:'sky-fade', name:'Sky fading to white', note:'Quietest: sky at the top edge, lime at the bottom.', src:'ref-12 · ref-15', fresh:1, v:{f:'linear-gradient(180deg,#90D1EF 0%,#D7EEF6 45%,#F3F7DA 80%,#E6EA6A 100%)', hl:'#E6EA6A', glow:'#4EBAF730'}},
+ ]},
+ {id:'texture', group:'Color', title:'Texture on the field', hint:'A flat CSS blend reads as AI-made. ref-12 has fine mesh lines; your glow references have grain.', opts:[
+  {id:'lines', name:'Mesh lines', note:'Thin curved lines, like ref-12.', fresh:1, v:{lines:.55, grain:0}},
+  {id:'grain', name:'Grain', note:'Film grain, like the glow refs.', v:{lines:0, grain:.4}},
+  {id:'both', name:'Lines and grain', note:'Both, lighter.', fresh:1, v:{lines:.4, grain:.25}},
+  {id:'none', name:'None', note:'Flat. Fails constitution C2; shown to compare.', v:{lines:0, grain:0}},
+ ]},
+ {id:'place', group:'Color', title:'Where the field sits', hint:'One per screen. It goes behind the thing that matters most.', opts:[
+  {id:'card', name:'Top card', note:'The most urgent decision sits on it.', fresh:1},
+  {id:'band', name:'Header band', note:'Behind the wordmark and the top of the list, like ref-12.', fresh:1},
+  {id:'money', name:'Money only', note:'No field; only the lime highlight under what you keep.', fresh:1},
+ ]},
+ {id:'neutral', group:'Color', title:'Gray', hint:'For filled buttons and photo tiles while they load.', opts:[
+  {id:'cool', name:'Cool gray', note:'Your pick in round 3.', src:'ref-12 · ref-15', v:'#EFF1F2'},
+  {id:'pure', name:'Plain gray', note:'No tint.', src:'ref-24 · ref-25', v:'#F2F2F2'},
+  {id:'stone', name:'Stone', note:'Warm.', src:'Quechua', v:'#EDEAE6'},
+ ]},
+ {id:'display', group:'Type', title:'Wordmark face', hint:'The wordmark, and later one heading per screen and one big number on a sale. Today shows only the wordmark.', opts:[
+  {id:'marist', name:'Marist Book', note:'Serif. Most recognizable; not what every AI app uses.', v:{font:"'Marist'", w:400, tr:'-0.01em'}},
+  {id:'geist', name:'Geist', note:'Same family as the text. Calmest, matches the sans references.', v:{font:"'Geist'", w:400, tr:'-0.03em'}},
+  {id:'nm', name:'Neue Montreal', note:'Your QOVES pick.', v:{font:"'NM'", w:400, tr:'-0.02em'}},
+  {id:'nm-medium', name:'Neue Montreal Medium', note:'A firmer wordmark.', v:{font:"'NM'", w:500, tr:'-0.025em'}},
+  {id:'clofie-light', name:'Clofie Light', note:'Geometric, round. Wordmark only.', v:{font:"'Clofie'", w:300, tr:'-0.02em'}},
+ ]},
+ {id:'text', group:'Type', title:'Text face', hint:'Everything people read. Needs accents for listing titles, tabular figures, and must feel native next to iOS.', opts:[
+  {id:'geist', name:'Geist', note:'Your harness default. Widest language coverage, tabular figures, reads like San Francisco.', v:"'Geist'"},
+  {id:'nm', name:'Neue Montreal', note:'Your QOVES pick. Warmer, fewer languages.', v:"'NM'"},
+ ]},
+ {id:'head', group:'Type', title:'Card headline', hint:'"Jamie offered $38". It needs to rank above the context line without bold.', opts:[
+  {id:'text-18', name:'Text face, 18 regular', note:'Rank from size and black ink only.', fresh:1, v:{f:'var(--b-text)', w:400}},
+  {id:'display-18', name:'Wordmark face, 18', note:'Carries the brand voice into every card.', fresh:1, v:{f:'var(--b-disp)', w:400}},
+  {id:'text-18m', name:'Text face, 18 medium', note:'A touch firmer. Breaks the two-weight rule; shown to compare.', fresh:1, v:{f:'var(--b-text)', w:500}},
+ ]},
+ {id:'buttons', group:'Parts', title:'Buttons', hint:'The likeliest action is always the black pill with the amount. This sets the next one and ···.', opts:[
+  {id:'mixed', name:'Outline + filled ···', note:'Counter outlined, ··· gray. Your round 3 pick.', v:{s:'transparent', sr:'inset 0 0 0 1px #0a0a0a', m:'var(--b-gray)', mr:'none', sf:'transparent'}},
+  {id:'outline', name:'All outline', note:'Counter and ··· outlined.', v:{s:'transparent', sr:'inset 0 0 0 1px #0a0a0a', m:'transparent', mr:'inset 0 0 0 1px #0a0a0a', sf:'transparent'}},
+  {id:'soft', name:'Light outline + filled', note:'Outline at 20% ink.', v:{s:'transparent', sr:'inset 0 0 0 1px #0a0a0a33', m:'var(--b-gray)', mr:'none', sf:'#ffffff59'}},
+  {id:'filled', name:'All filled', note:'Counter and ··· gray.', v:{s:'var(--b-gray)', sr:'none', m:'var(--b-gray)', mr:'none', sf:'#ffffff8c'}},
+ ]},
+ {id:'platform', group:'Parts', title:'Platform marks', hint:'Logos, not names.', opts:[
+  {id:'bare-color', name:'Bare, in color', note:'Logo only, brand color.'},
+  {id:'app', name:'App icon', note:'Tiny rounded square in the brand color.'},
+  {id:'bubble', name:'Gray bubble', note:'Black logo in a circle.'},
+  {id:'bare-ink', name:'Bare, in black', note:'Calmest.'},
+ ]},
+ {id:'surface', group:'Parts', title:'Cards or rows', hint:'How decisions are separated.', opts:[
+  {id:'rules', name:'Cards with a hairline', note:'Round 3 pick.', v:{shadow:'none', border:'1px solid #0a0a0a14', list:''}},
+  {id:'soft', name:'Cards with a soft shadow', note:'Lifted a little.', v:{shadow:'0 1px 2px #0000000d, 0 8px 24px #0000000f', border:'1px solid transparent', list:''}},
+  {id:'rows', name:'Rows, no cards', note:'Like Mail and Messages. Only the field is a card.', fresh:1, v:{shadow:'none', border:'0', list:'rows'}},
+ ]},
+ {id:'shape', group:'Parts', title:'Shape', hint:'Corners.', opts:[
+  {id:'soft', name:'Soft', note:'14 px cards, pill buttons.', v:{card:'14px', btn:'999px'}},
+  {id:'round', name:'Round', note:'20 px cards, pill buttons.', v:{card:'20px', btn:'999px'}},
+  {id:'crisp', name:'Crisp', note:'8 px cards, 10 px buttons.', v:{card:'8px', btn:'10px'}},
+ ]},
+ {id:'density', group:'Parts', title:'Density', hint:'Card padding and the gap between cards.', opts:[
+  {id:'standard', name:'Standard', note:'16 inside, 12 between.', v:{pad:'16px', gap:'12px'}},
+  {id:'compact', name:'Compact', note:'14 inside, 8 between.', v:{pad:'14px', gap:'8px'}},
+  {id:'airy', name:'Airy', note:'20 inside, 16 between.', v:{pad:'20px', gap:'16px'}},
+ ]},
+];
+const SAVED = {field:'sky-lime',texture:'lines',place:'card',neutral:'cool',display:'marist',text:'geist',head:'text-18',buttons:'mixed',platform:'bare-color',surface:'rules',shape:'soft',density:'standard'};
+const PRESETS = {
+ 'Recommended':SAVED,
+ 'Closest to ref-12':Object.assign({},SAVED,{field:'mesh',texture:'lines',place:'band',display:'geist',surface:'soft',shape:'round'}),
+ 'Calm rows':Object.assign({},SAVED,{field:'sky-fade',texture:'grain',surface:'rows',buttons:'soft',platform:'bare-ink'}),
+ 'Neue Montreal':Object.assign({},SAVED,{display:'nm-medium',text:'nm'}),
+};
+const $ = s => document.querySelector(s);
+const opt = (mid,oid) => { const m=M.find(m=>m.id===mid); return m.opts.find(o=>o.id===oid) || m.opts[0]; };
+const icon = (set,n) => (ICONS[set]&&ICONS[set][n]) || '';
+let picks = Object.assign({}, SAVED);
+const LINES = "repeating-radial-gradient(circle at 115% -30%, #ffffff00 0 9px, #ffffffb3 9px 10px)";
+
+function vars(p){
+  const f=opt('field',p.field).v, tx=opt('texture',p.texture).v, d=opt('display',p.display).v, t=opt('text',p.text).v, h=opt('head',p.head).v,
+        b=opt('buttons',p.buttons).v, su=opt('surface',p.surface).v, sp=opt('shape',p.shape).v, den=opt('density',p.density).v, g=opt('neutral',p.neutral).v;
+  return {'--b-field':f.f,'--b-hl':f.hl,'--b-lines':LINES,'--b-linesop':tx.lines,'--b-grain':tx.grain,'--b-fieldshadow':su.shadow==='none'?'none':'0 12px 28px -16px '+f.glow,
+   '--b-gray':g,'--b-disp':d.font+',Georgia,serif','--b-dispw':d.w,'--b-wmtrack':d.tr,'--b-text':t+',-apple-system,system-ui,sans-serif',
+   '--b-headfont':h.f,'--b-headw':h.w,'--b-btn2':b.s,'--b-btn2ring':b.sr,'--b-btnm':b.m,'--b-btnmring':b.mr,'--b-btn2field':b.sf,
+   '--b-shadow':su.shadow,'--b-cardborder':su.border,'--b-r-card':sp.card,'--b-r-btn':sp.btn,'--b-cardpad':den.pad,'--b-cardgap':den.gap};
+}
+function mark(k,style){
+  const L=LOGOS[k]; if(!L) return '';
+  const s = style==='app'||style==='bubble' ? 12 : 16;
+  const col = style==='app' ? (k==='ebay'?null:'#fff') : style==='bare-color' ? (L.multi?null:L.color) : 'currentColor';
+  let g;
+  if(L.path){ const multi=L.multi && col===null; const id='g'+Math.random().toString(36).slice(2,7);
+    const defs = multi ? `<defs><linearGradient id="${id}"><stop offset=".27" stop-color="${L.multi[0]}"/><stop offset=".27" stop-color="${L.multi[1]}"/><stop offset=".5" stop-color="${L.multi[1]}"/><stop offset=".5" stop-color="${L.multi[2]}"/><stop offset=".74" stop-color="${L.multi[2]}"/><stop offset=".74" stop-color="${L.multi[3]}"/></linearGradient></defs>` : '';
+    const w = k==='ebay' ? (style==='app'||style==='bubble'?16:s*2.3) : s, hh = k==='ebay' ? (style==='app'||style==='bubble'?8:s) : s;
+    g = `<svg width="${w}" height="${hh}" viewBox="${k==='ebay'?'0 7 24 10':'0 0 24 24'}">${defs}<path fill="${multi?`url(#${id})`:(col||L.color)}" d="${L.path}"/></svg>`;
+  } else g = L.svg.replace('<svg ', `<svg width="${s}" height="${s}" style="color:${col||L.color}" `);
+  if(style==='app') return `<span class="pm app" role="img" aria-label="${L.name}" style="background:${k==='ebay'?'#fff;box-shadow:inset 0 0 0 .5px #0000002e':L.color}">${g}</span>`;
+  return `<span class="pm ${style}" role="img" aria-label="${L.name}">${g}</span>`;
+}
+const SB = `<span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 2.6c2.2 0 4.2.8 5.7 2.2l1.1-1.1A9.6 9.6 0 0 0 8 1 9.6 9.6 0 0 0 1.2 3.7l1.1 1.1A8 8 0 0 1 8 2.6zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.1-1.1A6.4 6.4 0 0 0 8 4.3a6.4 6.4 0 0 0-4.5 1.8l1.1 1.1c.9-.8 2.1-1.3 3.4-1.3zm0 3.3c.5 0 .9.2 1.2.4L8 10.9 6.8 9.6c.3-.2.7-.4 1.2-.4z"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#000" stroke-opacity=".35"/><rect x="2" y="2" width="20" height="9" rx="2"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" opacity=".4"/></svg></span>`;
+const MORE = '<svg viewBox="0 0 24 24" width="20" height="20"><circle cx="5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="19" cy="12" r="1.6" fill="currentColor"/></svg>';
+// The Today content model from research/today/ben/today-rework/README.md (UI thread)
+const CARDS = [
+ {photo:'jacket', item:'Carhartt Detroit jacket', head:'Jamie offered $38', ctx:'You asked $45. Similar jackets sold for $36 to $52 lately.', site:'depop', when:'Offer ends tomorrow, 6 pm', p:'Accept $38', s:'Counter'},
+ {photo:'jersey-home', item:'Brewers home jersey', head:'Sold. Ship by Tuesday', ctx:'Paid $37.50. You keep <span class="hl money">$31.40</span> after fees.', site:'ebay', when:'Box: medium flat rate', p:'Print label', s:'Drop-off spots'},
+ {photo:'desk', item:'IKEA desk', head:'Maya asked: “Will it fit in a Civic?”', ctx:'Suggested reply: “It’s 47 by 24 inches, measured. The legs come off, so it should.”', site:'facebook', when:'9:12 am', p:'Send', s:'Edit'},
+ {photo:'headphones', item:'Sony WH-1000XM4', head:'Draft ready', ctx:'$140 on 3 sites. Photos, size and condition filled in.', site:null, when:'', p:'Post', s:'Review'},
+];
+function card(c,i,p){
+  const isField = i===0 && p.place==='card';
+  return `<section class="card${isField?' field':''}" aria-label="${c.item}">
+    <div class="top"><img class="ph" src="${PHOTOS[c.photo]||''}" alt="${c.item}">
+     <div class="col"><span class="t13 mut">${c.item}</span><span class="t18 hd">${c.head}</span><span class="t15 mut" style="margin-top:2px">${c.ctx}</span>
+      ${c.site||c.when?`<span class="meta t13 mut">${c.site?mark(c.site,p.platform):''}${c.when?`<span>${c.when}</span>`:''}</span>`:''}</div></div>
+    <div class="acts"><button class="b b1" type="button">${c.p}</button><button class="b b2" type="button">${c.s}</button><button class="b bm" type="button" aria-label="More">${MORE}</button></div>
+  </section>`;
+}
+function preview(p){
+  const I='huge', el=$('#P'), su=opt('surface',p.surface).v;
+  for(const [k,v] of Object.entries(vars(p))) el.style.setProperty(k,v);
+  el.innerHTML=`${p.place==='band'?'<div class="band field"></div>':''}<div class="sb">${SB}</div>
+  <div class="scroll"><div class="pad">
+   <div class="nav"><span class="wm">secondhand</span></div>
+   <div class="list ${su.list}" style="margin-top:var(--s2)">${CARDS.map((c,i)=>card(c,i,p)).join('')}</div>
+   <p class="quiet t13 mut">Answered “Is it still available?” for 4 buyers today. <a href="#">See replies</a></p>
+  </div></div>
+  <div class="tab"><span class="on"><span class="ic">${icon(I,'today')}</span>Today</span><span><span class="ic">${icon(I,'sell')}</span>Sell</span><span><span class="plus"><span class="ic">${icon(I,'plus')}</span></span></span><span><span class="ic">${icon(I,'buy')}</span>Buy</span><span><span class="ic">${icon(I,'user')}</span>You</span></div>
+  <div class="home"></div>`;
+  $('#picked').textContent = M.map(m=>`${m.title}: ${opt(m.id,p[m.id]).name}`).join('\n');
+}
+function demoFor(m,o){
+  const v=o.v;
+  if(m.id==='field') return `<div class="demo P field" style="--b-field:${v.f};--b-lines:${LINES};--b-linesop:.5;--b-grain:0;background:${v.f}"></div>`;
+  if(m.id==='texture') return `<div class="demo P field" style="--b-lines:${LINES};--b-linesop:${v.lines};--b-grain:${v.grain};background:${FIELD_SKY_LIME}"></div>`;
+  if(m.id==='place') return `<div class="demo" style="flex-direction:column;align-items:stretch;justify-content:flex-start;gap:4px;padding:6px 30px;background:${o.id==='band'?'linear-gradient(180deg,#B5DFEF 0 45%,#fff 45%)':'#fff'}"><span style="height:20px;border-radius:5px;background:${o.id==='card'?FIELD_SKY_LIME:'#fff'};box-shadow:inset 0 0 0 1px #0000001a"></span><span style="height:12px;border-radius:4px;box-shadow:inset 0 0 0 1px #0000001a;background:#fff;display:flex;align-items:center;padding-left:6px">${o.id==='money'?'<span style="width:22px;height:5px;background:#E6EA6A"></span>':''}</span><span style="height:12px;border-radius:4px;box-shadow:inset 0 0 0 1px #0000001a"></span></div>`;
+  if(m.id==='neutral') return `<div class="demo" style="background:#fff;gap:6px"><span style="padding:6px 12px;border-radius:99px;background:${v};font-size:12px">Change</span><span style="width:28px;height:28px;border-radius:6px;background:${v}"></span></div>`;
+  if(m.id==='display') return `<div class="demo" style="font-family:${v.font},serif;font-weight:${v.w};letter-spacing:${v.tr};font-size:26px;line-height:30px">secondhand</div>`;
+  if(m.id==='text') return `<div class="demo" style="font-family:${v},sans-serif;font-size:14px;line-height:18px;padding:8px;justify-content:flex-start;text-align:left">Carhartt Detroit jacket, M · $38</div>`;
+  if(m.id==='head') return `<div class="demo" style="font-family:${v.f.includes('disp')?"'Marist',serif":"'Geist',sans-serif"};font-weight:${v.w};font-size:16px;flex-direction:column;align-items:flex-start;padding:0 10px;justify-content:center"><span>Jamie offered $38</span><span style="font-family:'Geist';font-weight:400;font-size:12px;color:#0a0a0a8c">You asked $45.</span></div>`;
+  if(m.id==='buttons'){ const pill='height:24px;display:inline-flex;align-items:center;padding:0 9px;border-radius:99px;font-size:11px;white-space:nowrap'; const f=x=>x.startsWith('var')?'#EFF1F2':x;
+    return `<div class="demo" style="gap:4px;padding:0 4px"><span style="${pill};background:#0a0a0a;color:#fff">Accept $38</span><span style="${pill};background:${f(v.s)};box-shadow:${v.sr}">Counter</span><span style="${pill};background:${f(v.m)};box-shadow:${v.mr}">···</span></div>`; }
+  if(m.id==='platform') return `<div class="demo P" style="gap:8px;background:#fff">${['ebay','depop','poshmark','mercari','facebook'].map(k=>mark(k,o.id)).join('')}</div>`;
+  if(m.id==='surface') return `<div class="demo" style="flex-direction:column;align-items:stretch;gap:${o.id==='rows'?0:5}px;padding:6px 28px;background:#fff">${[0,1].map(()=>`<span style="height:20px;border-radius:${o.id==='rows'?0:6}px;box-shadow:${o.id==='soft'?'0 2px 8px #00000014':'none'};border:${o.id==='rules'?'1px solid #0000001a':'0'};border-bottom:1px solid #0000001a"></span>`).join('')}</div>`;
+  if(m.id==='shape') return `<div class="demo" style="gap:8px;background:#F6F6F5"><span style="width:44px;height:34px;background:#fff;border:1px solid #0000001a;border-radius:${v.card}"></span><span style="padding:6px 12px;background:#0a0a0a;color:#fff;font-size:12px;border-radius:${v.btn}">Accept</span></div>`;
+  if(m.id==='density') return `<div class="demo" style="background:#F6F6F5;flex-direction:column;gap:${parseInt(v.gap)/3}px"><div style="background:#fff;border-radius:6px;padding:${parseInt(v.pad)/3}px;width:70%"><span style="display:block;height:5px;background:#0003;border-radius:3px;width:60%"></span></div><div style="background:#fff;border-radius:6px;padding:${parseInt(v.pad)/3}px;width:70%"><span style="display:block;height:5px;background:#0002;border-radius:3px"></span></div></div>`;
+  return '';
+}
+function render(){
+  let lastGroup='';
+  $('#mods').innerHTML = M.map(m=>{ const gh = m.group!==lastGroup ? `<h3>${m.group}</h3>` : ''; lastGroup=m.group;
+   return gh+`<section class="mod" aria-labelledby="h-${m.id}"><div class="modhead"><h2 id="h-${m.id}">${m.title}</h2><p>${m.hint}</p></div>
+   <div class="opts" role="group" aria-labelledby="h-${m.id}">${m.opts.map(o=>`<button class="opt" type="button" data-m="${m.id}" data-o="${o.id}" aria-pressed="${picks[m.id]===o.id}">${demoFor(m,o)}<span class="name">${o.name}${o.fresh?'<span class="new">New</span>':''}</span><span class="note">${o.note||''}</span>${o.src?`<span class="src">From ${o.src}</span>`:''}</button>`).join('')}</div></section>`; }).join('');
+  preview(picks);
+}
+$('#whylist').innerHTML = WHY.map(([t,s])=>`<li>${t} <span style="opacity:.7">(${s})</span></li>`).join('');
+$('#presets').innerHTML = Object.keys(PRESETS).map(k=>`<button class="chip" type="button" data-p="${k}">${k}</button>`).join('');
+document.addEventListener('click', e=>{
+  const o=e.target.closest('.opt'); if(o){ picks[o.dataset.m]=o.dataset.o; document.querySelectorAll(`.opt[data-m="${o.dataset.m}"]`).forEach(b=>b.setAttribute('aria-pressed', b===o)); preview(picks); dirty(); return; }
+  const p=e.target.closest('[data-p]'); if(p){ picks=Object.assign({},PRESETS[p.dataset.p]); render(); dirty(); }
+  if(e.target.closest('.P a')) e.preventDefault();
+});
+function dirty(){ $('#status').textContent='Not saved yet'; try{localStorage.setItem('sh-picks4',JSON.stringify({picks,note:$('#note').value}))}catch(e){} }
+$('#note').addEventListener('input', dirty);
+function tokensText(){ return ':root {\n'+Object.entries(vars(picks)).map(([k,v])=>`  ${k}: ${v};`).join('\n')+'\n}\n/* '+M.map(m=>`${m.id}=${picks[m.id]}`).join(' ')+' */'; }
+$('#copy').addEventListener('click', async()=>{ try{ await navigator.clipboard.writeText(tokensText()); $('#status').textContent='Tokens copied'; }catch(e){ $('#picked').textContent=tokensText(); $('#status').textContent='Select the tokens below to copy'; } });
+let db=null;
+$('#save').addEventListener('click', async()=>{
+  if(!db){ $('#status').textContent='Saving needs you signed in; picks are kept in this browser'; return; }
+  try{ await db.doc('brand/picks').set({picks, note:$('#note').value, round:4, savedAt:new Date().toISOString()}); $('#status').textContent='Saved. Claude can read these now.'; }
+  catch(e){ $('#status').textContent='Could not save: '+(e && e.code || 'error'); }
+});
+try{ const s=JSON.parse(localStorage.getItem('sh-picks4')||'null'); if(s&&s.picks){ picks=Object.assign(picks,s.picks); $('#note').value=s.note||''; } }catch(e){}
+render();
+(async()=>{ try{ db = await window.claude?.use?.('db'); if(!db) return;
+  const snap = await db.doc('brand/picks').get(); const d = snap && (snap.data ? snap.data() : snap);
+  if(d && d.picks && d.round===4){ picks=Object.assign(picks,d.picks); if(d.note && !$('#note').value) $('#note').value=d.note; render(); $('#status').textContent='Loaded your saved picks'; }
+ }catch(e){} })();
+</script>
