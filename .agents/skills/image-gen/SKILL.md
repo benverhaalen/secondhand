@@ -9,7 +9,7 @@ Ben's words this comes from: [Codex with Astra, the loop and how to judge](../..
 
 1. **Tool.** The Codex CLI with Astra, on Ben's subscription, through the runner: `node .agents/skills/image-gen/run.mjs <plan.json> <out folder>`. If Astra isn't available where you run, stop and tell your human. Don't substitute another image tool.
 
-2. **One image, one fresh call.** The runner starts each job as its own `codex exec --ephemeral` in an empty folder outside any repo, and fails a call that leaves more than one image. An option is another call that edits the base image. The critic is another call. Round 6 asked one call for a base and all of its options, so the options shared the first one's mistakes.
+2. **One image, one fresh call.** The runner starts each job as its own `codex exec --ephemeral`, in an empty folder outside any repo, under a Codex home that holds only the sign-in. A call so starts without the repo's rules and without the person's own Codex instructions, hooks and skills. The runner fails a call that leaves more than one image. To compare one decision, make every option as an edit of the same base image, each in its own call: two images made apart never match (the R10 redo's two jackets differ). The critic is another call. Round 6 asked one call for a base and all of its options, so the options shared the first one's mistakes.
 
 3. **A call gets its prompt and its images, nothing else.** The runner refuses a prompt that is too long, names a rule doc or a path, or attaches more images than a call takes (the limits are at the top of [run.mjs](run.mjs)).
 
@@ -20,7 +20,7 @@ Ben's words this comes from: [Codex with Astra, the loop and how to judge](../..
    | Fix | The failed image and the failures for that image | The whole critique, earlier rounds |
    | Critic | The option images, the color sheet, the fail list | The brief, the prompts, who made what |
 
-   Add a line or an image only after a critic fails a call for something it could not have known. Measured in round 7, before this rule: a generator call used 47,000 tokens (median of 80), with a prompt of 3,200 to 4,500 characters that sent it to three rule docs. The same job as a plan here is 900 characters ([example](../../../brand/explore/round-7/r10-dark-button.plan.json)).
+   Add a line or an image only after a critic fails a call for something it could not have known. Measured: round 7's generator calls used 47,000 tokens (median of 80) and took 76 to 102 seconds, with prompts of 3,200 to 4,500 characters that sent each call to three rule docs. Under these rules the six calls of the [R10 redo](../../../brand/explore/round-7/r10-dark-button.plan.json) had prompts of 900 characters, used 18,000 to 32,000 tokens and took 48 to 56 seconds. The clean home alone took Codex's fixed cost per call from 9,030 tokens to 4,089.
 
 4. **Say how each image is used.** Every input has `take`: the one thing to use from it. A person's finished design (Ben's references, a shipped app's screen) is `ref: true` and also needs `leave`. Take a principle: how soft the gradient is, how much room a row gets, how a tag sits on a photo. Leave the screen: its layout, its words, its logo. Ben: "you aren't recreating the ui."
    Anything exact comes from a script, not from a reference or the image model: logos, type samples, color swatches, labels, stitching.
@@ -41,12 +41,15 @@ Ben's words this comes from: [Codex with Astra, the loop and how to judge](../..
      ] }
    ```
 
+   A fix round is a second plan: one job per failed image, whose inputs are that image and the color sheet, and whose prompt is the first prompt plus that image's failures.
+
 7. **Fast, without overloading the machine.**
    - Freeze the plan before the first call. A change mid-run means a restart; round 6 restarted twice.
-   - Put every image in one plan. The runner starts `ramp` calls every 2 seconds up to `max` at once, and holds new calls while the one-minute load is above `load` of the cores.
-   - Why a ramp: a call's CPU is spent as it starts, about 5 CPU-seconds in its first 8 seconds, and then it waits on the server (measured on one text-only call on Ben's M3, 8 cores). Round 7 started 28 in the same second, four times. Inferred from that one call: each burst filled all 8 cores for about 20 seconds.
-   - Why 24: a call holds about 160 MB (the same one call), so 24 stay under 4 GB of the Mac's 16.
-   - After a run, read its last line: most at once, peak load, Codex CPU and memory, times held back. Raise `max` when the load stayed under the limit and nothing was held. Seconds per call: `node spec/log.mjs <out>/logs/*.jsonl`.
+   - Put every image in one plan. The runner starts `ramp` calls every 2 seconds, up to `max` at once. While the one-minute load is above `load` of the cores, it starts one call every 10 seconds instead.
+   - Why: a call costs CPU as it starts, then waits on the server. Measured on Ben's M3 (8 cores): 24 one-line calls started in the same second took the load to 54, and each took 99 seconds instead of 8. Round 7 started 28 that way, four times. A running image call used 3% of one core or less.
+   - Why 24: at their peak, 24 calls held 3.2 GB of the Mac's 16 (the same run).
+   - After a run, read its last line: most at once, the load at its peak, what the calls used, and how often it slowed. If the load crossed the limit with nothing else running on the machine, lower `ramp`. Seconds per call: `node spec/log.mjs <out>/logs/*.jsonl`.
+   - Not measured yet: the ramp on a quiet Mac. Its one test ran straight after the burst, and the image run met a Mac already at load 66 from other work.
    - Push each image when it is done, so the person can start looking.
 
 8. **Keep the record.** A `lineage.md` beside the output: the plan, the run's last line, the call table, what still fails. Never say an image exists without the file.
