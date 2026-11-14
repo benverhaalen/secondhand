@@ -1,0 +1,98 @@
+{
+ "shirt": {
+  "frame": [
+   1200,
+   1600
+  ],
+  "ratio": "3:4",
+  "centred_square": [
+   0,
+   200,
+   1200,
+   1200
+  ],
+  "item_box": [
+   88,
+   339,
+   1025,
+   953
+  ],
+  "fill_of_square": 0.68,
+  "outline_png": "shirt.png",
+  "outline_svg": "shirt.svg",
+  "sized_from": "marquette-tee/01_cover.jpg",
+  "shots": [
+   "front, whole item",
+   "back, whole item",
+   "neck tag",
+   "print or logo, close",
+   "fabric, close",
+   "hem and cuffs",
+   "any flaw, close"
+  ]
+ },
+ "sweatshirt": {
+  "frame": [
+   1200,
+   1600
+  ],
+  "ratio": "3:4",
+  "centred_square": [
+   0,
+   200,
+   1200,
+   1200
+  ],
+  "item_box": [
+   157,
+   286,
+   886,
+   1031
+  ],
+  "fill_of_square": 0.63,
+  "outline_png": "sweatshirt.png",
+  "outline_svg": "sweatshirt.svg",
+  "sized_from": "chico-hoodie/01_cover.jpg",
+  "shots": [
+   "front, whole item",
+   "back, whole item",
+   "neck tag",
+   "print or logo, close",
+   "fabric and cuff rib, close",
+   "hood and drawstrings",
+   "any flaw, close"
+  ]
+ },
+ "pants": {
+  "frame": [
+   1200,
+   1600
+  ],
+  "ratio": "3:4",
+  "centred_square": [
+   0,
+   200,
+   1200,
+   1200
+  ],
+  "item_box": [
+   84,
+   538,
+   1033,
+   524
+  ],
+  "fill_of_square": 0.38,
+  "outline_png": "pants.png",
+  "outline_svg": "pants.svg",
+  "sized_from": "carhartt-pants/01_cover.jpg",
+  "shots": [
+   "front, whole item",
+   "back, whole item",
+   "waist tag and size",
+   "fly and button, close",
+   "fabric, close",
+   "hems",
+   "any flaw, close"
+  ]
+ }
+}
