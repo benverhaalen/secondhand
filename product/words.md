@@ -91,3 +91,14 @@ Ben, project chat, 19:46 UTC.
 ## 2026-11-14 frontend standard
 Ben, project chat, 19:47 UTC.
 > use rdd and iae research to really nail that idea down in how to judge and audit and develop everything on a frontend perspective. animations and everything. its my personal writing skill or maybe hook that stops a lot of typical ai writing tells from happening
+
+## 2026-11-14 Marist type
+Ben, project chat, 19:56 UTC, with Marist-Font-Family.zip attached (ABC Marist trial fonts; kept out of git).
+> think about using this font too with these specifics: Where it appears	Typeface	390px viewport	1440px viewport	Letter spacing
+> Hero headline	Marist Book + Book Italic	50 / 47.5	86.5 / 82.2	−0.02em
+> Main section headings	Marist Book	36 / 37.8	58.3 / 61.2	−0.01em
+> Feature headings	Marist Book	21 / 23.1	24.9 / 27.4	−0.2px
+
+## 2026-11-14 secondary buttons
+Ben, project chat, 19:54 UTC.
+> also having a mix of the outline and non outline secondary button would be nice.
