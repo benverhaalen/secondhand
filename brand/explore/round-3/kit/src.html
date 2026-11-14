@@ -1,0 +1,394 @@
+<title>secondhand brand kit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500&family=Geist+Mono:wght@400;500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400&family=IBM+Plex+Mono:wght@400&family=DM+Mono:wght@400&family=Newsreader:ital,opsz,wght@0,6..72,300;1,6..72,300&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+/*FONTFACES*/
+/* Page chrome: picker rows left, a sticky true-scale phone right; stacks on phones. */
+:root{
+  --bg:#ffffff; --fg:#0a0a0a; --muted:#00000094; --line:#e7e7e5; --panel:#f6f6f4; --sel:#0a0a0a; --selfg:#fff;
+  --ui:'Geist',-apple-system,'Helvetica Neue',Arial,sans-serif; --mono:'Geist Mono',ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#0f0f0f;--fg:#f2f2f2;--muted:#ffffff9e;--line:#2a2a2a;--panel:#181818;--sel:#f2f2f2;--selfg:#0a0a0a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f0f0f;--fg:#f2f2f2;--muted:#ffffff9e;--line:#2a2a2a;--panel:#181818;--sel:#f2f2f2;--selfg:#0a0a0a;color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:14px/20px var(--ui);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 64px;margin:0}
+.app{max-width:1380px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 410px;gap:40px;align-items:start}
+@media (max-width:980px){.app{grid-template-columns:minmax(0,1fr)}.side{position:static!important;order:-1}}
+h1{font:500 28px/34px var(--ui);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h2{font:500 16px/22px var(--ui);margin:0}
+h3{font:400 11px/14px var(--mono);text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:28px 0 0}
+p{margin:0}
+.lbl{font:400 11px/14px var(--mono);text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.intro{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.intro p{color:var(--muted);max-width:68ch}
+.presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{font:500 13px/18px var(--ui);border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:99px;padding:7px 14px;cursor:pointer}
+.chip:hover{border-color:var(--fg)}
+.chip:focus-visible,.opt:focus-visible,.btnx:focus-visible{outline:2px solid #2f6bff;outline-offset:2px}
+.mod{border-top:1px solid var(--line);padding:20px 0;display:flex;flex-direction:column;gap:12px}
+.modhead{display:flex;justify-content:space-between;gap:12px;align-items:baseline;flex-wrap:wrap}
+.modhead p{color:var(--muted);font-size:13px;max-width:62ch}
+.opts{display:grid;grid-template-columns:repeat(auto-fill,minmax(156px,1fr));gap:10px}
+.opt{all:unset;box-sizing:border-box;cursor:pointer;border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:6px;min-height:118px;background:var(--bg);position:relative}
+.opt:hover{border-color:var(--muted)}
+.opt[aria-pressed="true"]{border:2px solid var(--fg);padding:9px}
+.opt[aria-pressed="true"]::after{content:"✓";position:absolute;top:8px;right:10px;font:500 12px/1 var(--ui);background:var(--sel);color:var(--selfg);width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.opt .name{font:500 13px/18px var(--ui)}
+.opt .note{font-size:12px;line-height:16px;color:var(--muted)}
+.opt .src{font:400 10px/13px var(--mono);text-transform:uppercase;letter-spacing:.02em;color:var(--muted)}
+.new{font:500 10px/14px var(--mono);text-transform:uppercase;background:var(--fg);color:var(--bg);padding:1px 5px;border-radius:4px;margin-left:6px;vertical-align:1px}
+.demo svg{width:100%;height:100%}.demo{border-radius:8px;background:#fff;color:#000;flex:none;height:60px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;border:1px solid #0000000d}
+.sw{display:flex;width:100%;height:60px;border-radius:8px;overflow:hidden;border:1px solid #0000000d}
+.sw span{flex:1}
+.side{position:sticky;top:max(12px,env(safe-area-inset-top,0px));display:flex;flex-direction:column;gap:12px}
+.phone{width:390px;max-width:100%;height:844px;border-radius:48px;overflow:hidden;position:relative;box-shadow:0 0 0 1px #00000017,0 30px 60px -30px #0000004d;margin:0 auto;flex:none}
+.picked{font:400 12px/18px var(--mono);color:var(--muted);background:var(--panel);border-radius:10px;padding:12px;white-space:pre-wrap;word-break:break-word}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btnx{font:500 13px/18px var(--ui);border:0;border-radius:99px;padding:9px 16px;cursor:pointer;background:var(--sel);color:var(--selfg)}
+.btnx.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+.status{font-size:12px;color:var(--muted)}
+textarea{width:100%;min-height:64px;border:1px solid var(--line);border-radius:10px;padding:10px;font:13px/18px var(--ui);background:var(--bg);color:var(--fg);resize:vertical}
+details.why{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:8px 0 4px;max-width:78ch}
+details.why summary{font:500 14px/20px var(--ui);cursor:pointer}
+details.why ul{margin:10px 0 0;padding-left:18px;color:var(--muted);display:flex;flex-direction:column;gap:6px;font-size:13px;line-height:19px}
+details.why b{color:var(--fg);font-weight:500}
+
+/* ---------- Preview phone. Every value comes from --b-* (set from picks) or the 4 pt spacing scale. ---------- */
+.P{--s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:20px;--s6:24px;--s8:32px;
+   background:var(--b-page);color:#000;font-family:var(--b-text);height:100%;position:relative;font-kerning:normal;-webkit-font-smoothing:antialiased}
+.P .sb{height:54px;display:flex;justify-content:space-between;align-items:center;padding:4px 30px 0 46px;font:600 17px/22px -apple-system,'SF Pro Text',var(--b-text),sans-serif;letter-spacing:-.4px}
+.P .sb svg{display:block}
+.P .scroll{height:calc(100% - 54px);overflow:hidden}
+.P .pad{padding:0 var(--s5)}
+.P .nav{height:44px;display:flex;align-items:center;justify-content:space-between}
+.P .wm{font-family:var(--b-disp);font-weight:var(--b-dispw);font-size:22px;line-height:26px;letter-spacing:-0.02em}
+/* type roles */
+.P .t-hero{font-family:var(--b-disp);font-weight:var(--b-dispw);font-size:var(--b-hero);line-height:var(--b-hero-lh);letter-spacing:var(--b-hero-tr);font-feature-settings:"tnum","lnum"}
+.P .t-head{font-family:var(--b-disp);font-weight:var(--b-dispw);font-size:var(--b-head);line-height:var(--b-head-lh);letter-spacing:var(--b-head-tr);margin:0;text-wrap:balance}
+.P .t-title{font-family:var(--b-disp);font-weight:var(--b-dispw);font-size:var(--b-title);line-height:var(--b-title-lh);letter-spacing:var(--b-title-tr)}
+.P .t-body{font-size:15px;line-height:20px;letter-spacing:-0.005em}
+.P .t-strong{font-weight:500}
+.P .lb{font-family:var(--b-mono);font-size:var(--b-lbsize);line-height:var(--b-lblh);display:inline-flex;align-items:center;gap:6px;text-transform:var(--b-monocase);letter-spacing:var(--b-monotrack);color:#0000008c}
+.P .mut{color:#00000094}
+.P em{font-style:var(--b-emphstyle);color:var(--b-emph)}
+.P .t-head em{font-family:var(--b-emphfont)}
+/* surfaces */
+.P .card{background:var(--b-surface);border-radius:var(--b-r-card);box-shadow:var(--b-shadow);border:var(--b-cardborder);padding:var(--b-cardpad);position:relative;overflow:hidden}
+.P .key{background:var(--b-grad);box-shadow:var(--b-keyshadow);border:var(--b-keyborder);color:var(--b-keyfg)}
+.P .key .lb,.P .key .mut{color:inherit;opacity:.72}
+.P .grain::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:var(--b-grain);mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+.P .card > *{position:relative;z-index:1}
+.P .stack{display:flex;flex-direction:column}
+.P .between{display:flex;justify-content:space-between;align-items:center;gap:var(--s3)}
+.P .thumb{width:56px;height:56px;border-radius:calc(var(--b-r-card) * .6);background:var(--b-stage);display:flex;align-items:flex-end;justify-content:center;flex:none;overflow:hidden}
+.P .obj{width:30px;height:38px;border-radius:9px 9px 4px 4px;background:linear-gradient(#7a5434,#5e3f25);box-shadow:var(--b-contact);margin-bottom:6px}
+.P .obj.lamp{width:14px;height:34px;border-radius:2px;background:linear-gradient(#c9a25a,#9b7a3a);position:relative}
+.P .obj.lamp::before{content:"";position:absolute;left:-9px;top:-12px;width:32px;height:16px;border-radius:16px 16px 2px 2px;background:#ede3cf;box-shadow:0 1px 0 #0000001a}
+/* buttons: 48 tall, 15/500, one primary per card */
+.P .acts{display:flex;gap:var(--s2)}
+.P .b{height:48px;border-radius:var(--b-r-btn);border:0;font:500 15px/20px var(--b-text);letter-spacing:-0.01em;padding:0 var(--s5);display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:1;white-space:nowrap;font-variant-numeric:tabular-nums}
+.P .b.fit{flex:none}
+.P .b .ic{width:18px;height:18px}
+.P .b1{background:var(--b-btn);color:var(--b-btnfg)}
+.P .b2{background:var(--b-btn2);color:#000;box-shadow:var(--b-btn2ring)}
+.P .b3{background:var(--b-btn3);color:#000;box-shadow:var(--b-btn3ring)}
+.P .key .b2,.P .key .b3{background:var(--b-btn2key)}
+.P .ic{width:24px;height:24px;display:inline-flex;flex:none}
+.P .ic svg{width:100%;height:100%}
+/* iOS segmented control */
+.P .seg{height:32px;background:#7676801f;border-radius:9px;padding:2px;display:flex}
+.P .seg > span{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font:500 13px/18px var(--b-text);border-radius:7px;color:#000}
+.P .seg .on{background:#fff;box-shadow:0 3px 8px #0000001f,0 3px 1px #0000000a}
+.P .count{min-width:18px;height:18px;border-radius:9px;background:var(--b-alert);color:#fff;font:500 11px/18px var(--b-text);text-align:center;padding:0 5px}
+.P .dot{width:6px;height:6px;border-radius:50%;display:inline-block;background:var(--b-dot)}
+.P .key.dark .b1{background:#fff;color:#000}
+.P .key.dark .b2{box-shadow:inset 0 0 0 1px #ffffffb3;color:#fff;background:transparent}
+.P .key.dark .b3{background:#ffffff26;color:#fff;box-shadow:none}
+.P .pm{display:inline-flex;align-items:center;justify-content:center;flex:none;color:#000}
+.P .pm svg{display:block}
+.P .pm.app{width:18px;height:18px;border-radius:5px}
+.P .pm.bubble{width:20px;height:20px;border-radius:50%;background:var(--b-ground)}
+.P .key .pm.bubble{background:#ffffff8c}
+.P .key.dark .pm.bubble{background:#ffffff26}
+.P .key.dark .pm.bare-ink{color:#fff}
+.P .pmw{font-family:var(--b-text);font-size:13px;line-height:16px;font-weight:500;text-transform:none;letter-spacing:0;color:inherit}
+.P .pms{display:inline-flex;gap:4px;align-items:center}
+.P .hl{background:linear-gradient(180deg,transparent 58%,var(--b-hl) 58%,var(--b-hl) 92%,transparent 92%);padding:0 3px;margin:0 -3px}
+.P .money{font-family:var(--b-moneyfont);font-variant-numeric:tabular-nums}
+/* tab bar: 49 + 35 home indicator area = 84 */
+.P .tab{position:absolute;left:0;right:0;bottom:0;height:84px;background:color-mix(in srgb,var(--b-page) 88%,transparent);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid #0000001f;display:flex;justify-content:space-around;padding:7px 8px 0}
+.P .tab > span{display:flex;flex-direction:column;align-items:center;gap:3px;font:500 10px/12px var(--b-text);letter-spacing:.01em;color:#00000073;width:64px}
+.P .tab .on{color:#000}
+.P .plus{width:44px;height:44px;border-radius:50%;background:var(--b-plus);color:var(--b-plusfg);display:flex;align-items:center;justify-content:center;margin-top:-2px}
+.P .home{position:absolute;bottom:8px;left:50%;width:134px;height:5px;margin-left:-67px;border-radius:3px;background:#000}
+</style>
+
+<div class="app">
+<main>
+  <div class="intro">
+    <span class="lbl">secondhand · brand kit · round 3</span>
+    <h1>Build the brand one piece at a time.</h1>
+    <p>Pick one option per row; the phone is a real iPhone at true size (390 × 844 pt). Your saved picks are loaded, with the new mixed buttons and logo marks. Every color and gradient is sampled from your reference photos, and each option names the photo it came from. New rows and options are marked.</p>
+    <div class="presets" id="presets"></div>
+  </div>
+  <details class="why"><summary>What changed in spacing and weight, and why</summary><ul id="whylist"></ul></details>
+  <div id="mods"></div>
+</main>
+<aside class="side">
+  <div class="row"><button class="btnx" id="save" type="button">Save picks</button><button class="btnx ghost" id="copy" type="button">Copy tokens</button><span class="status" id="status" role="status"></span></div>
+  <div class="phone"><div class="P" id="P"></div></div>
+  <label class="lbl" for="note">Notes for Claude</label>
+  <textarea id="note" placeholder="Anything to change, mix, or try next"></textarea>
+  <div class="picked" id="picked"></div>
+</aside>
+</div>
+
+<script>
+const ICONS = /*ICONS*/null;
+const REFPAL = /*REFPAL*/[];
+const REFGRAD = /*REFGRAD*/[];
+const LOGOS = /*LOGOS*/{};
+const WHY = [
+ ['<b>One spacing scale.</b> Every gap is 4, 8, 12, 16, 20, 24 or 32 pt. Before, the screen used 6, 10, 14 and 18 side by side, which reads as "almost aligned".', 'Refactoring UI; 8 pt grid'],
+ ['<b>Inside is tighter than between.</b> A card\'s parts sit 8 to 12 apart; cards sit 12 apart; sections 24 to 32. Before, the decision buttons floated outside their card, so they looked like they belonged to the next thing.', 'Gestalt proximity'],
+ ['<b>Five sizes, far apart.</b> Hero, heading, title, body 15, label 11. Before there were seven, including 15 and 16 next to each other, which looks like a mistake rather than a step.', 'Refactoring UI; iOS type ramp'],
+ ['<b>Two weights only.</b> Display at Book or Regular, buttons and the selected tab at Medium. Hierarchy comes from size and gray, not bold.', 'QOVES; your Neue Montreal brief'],
+ ['<b>Tight leading for big type, open for small.</b> Headlines at 0.95 to 1.1, body at 1.33. Tracking tightens as size grows.', 'Apple SF tracking table; your Marist spec'],
+ ['<b>Real iOS parts.</b> 54 pt status bar, 44 pt nav row, segmented control, 48 pt buttons, 84 pt tab bar with sans labels. Mono stays for sources and units only.', 'Apple HIG; your frontend standard'],
+ ['<b>Words cut.</b> No date, no "after fees" sentence, no tier jargon. Money you keep is a label and a number.', 'copy.md, anti-claudish C7'],
+];
+const M = [
+ {id:'palette', group:'Color', title:'Accent', hint:'White stays the page. The accent goes only on state dots, counts and the money highlight. Sampled from your photos.', opts:[]},
+ {id:'neutral', group:'Color', title:'Neutral temperature', hint:'The tint of grounds sitting on white, sampled from the quietest areas of your photos.', opts:[]},
+ {id:'gradient', group:'Color', title:'Gradient', hint:'Shown on the top decision card. Stops are pixels pulled along the strongest color run in each photo.', opts:[]},
+ {id:'grain', group:'Color', title:'Grain', hint:'Film grain on gradients only.', opts:[
+  {id:'none', name:'None', note:'Clean.', v:0},
+  {id:'light', name:'Light', note:'Felt more than seen.', v:.22},
+  {id:'film', name:'Film', note:'Like your glow references.', v:.45},
+ ]},
+ {id:'shadow', group:'Color', title:'Shadow', hint:'How things lift off the page.', opts:[
+  {id:'rules', name:'Rules, no shadow', note:'Hairlines separate; nothing floats.', v:{shadow:'none', border:'1px solid #00000014', key:'none', keyborder:'0', contact:'none'}},
+  {id:'hair', name:'Hairline', note:'A 1 px edge and a whisper.', v:{shadow:'0 0 0 1px #00000010, 0 1px 2px #0000000a', border:'0', key:'0 0 0 1px #00000010', keyborder:'0', contact:'0 6px 10px -6px #00000040'}},
+  {id:'soft', name:'Soft layered', note:'1 px plus a wide, faint blur.', v:{shadow:'0 1px 2px #0000000d, 0 8px 24px #0000000f', border:'0', key:'0 1px 2px #0000000d, 0 12px 32px #00000014', keyborder:'0', contact:'0 14px 14px -10px #00000040'}},
+  {id:'tinted', name:'Tinted glow', note:'Gradient color bleeds under the card.', v:{shadow:'0 1px 2px #0000000d, 0 8px 24px #0000000d', border:'0', key:'0 18px 36px -18px var(--b-glowc)', keyborder:'0', contact:'0 12px 18px -10px #00000040'}},
+ ]},
+ {id:'display', group:'Type', title:'Headline face', hint:'Hero number, headings, card titles and the wordmark. Clofie has no accents, so never for listing titles.', opts:[
+  {id:'nm', name:'Neue Montreal', note:'QOVES exactly.', v:{font:"'NM'", w:400, it:"'NM'"}},
+  {id:'nm-light', name:'Neue Montreal Light', note:'Thin and editorial.', v:{font:"'NM'", w:300, it:"'NM'"}},
+  {id:'marist', name:'Marist Book', note:'Your new serif. Book italic for the second phrase.', fresh:1, v:{font:"'Marist'", w:400, it:"'Marist'"}},
+  {id:'clofie-light', name:'Clofie Light', note:'Geometric, airy.', v:{font:"'Clofie'", w:300, it:"'Clofie'"}},
+  {id:'clofie-semi', name:'Clofie SemiBold', note:'Confident, round 1.', v:{font:"'Clofie'", w:600, it:"'Clofie'"}},
+  {id:'newsreader', name:'Newsreader Light', note:'Serif, report-like.', v:{font:"'Newsreader'", w:300, it:"'Newsreader'"}},
+  {id:'instrument', name:'Instrument Serif', note:'Condensed serif, fashion.', v:{font:"'Instrument Serif'", w:400, it:"'Instrument Serif'"}},
+ ]},
+ {id:'scale', group:'Type', title:'Type scale', hint:'Sizes for the three display roles: hero number, screen heading, card title. Body is always 15, labels 11.', opts:[
+  {id:'ios', name:'iOS ramp', note:'Hero 40, heading 28, title 20.', v:{hero:[40,42,'-0.025em'], head:[28,32,'-0.02em'], title:[20,24,'-0.012em']}},
+  {id:'marist', name:'Your Marist spec', note:'Hero 50/47.5, heading 36/37.8, title 21/23.1.', fresh:1, v:{hero:[50,47.5,'-0.02em'], head:[36,37.8,'-0.01em'], title:[21,23.1,'-0.2px']}},
+  {id:'quiet', name:'Quiet', note:'Hero 34, heading 24, title 17. More fits.', v:{hero:[34,36,'-0.02em'], head:[24,28,'-0.015em'], title:[17,22,'-0.01em']}},
+ ]},
+ {id:'emphasis', group:'Type', title:'Emphasis', hint:'How the second phrase of a heading steps back.', opts:[
+  {id:'luminance', name:'Lighter', note:'45% black, like QOVES.', v:{c:'#00000073', s:'normal'}},
+  {id:'italic', name:'Italic', note:'Same ink, italic cut. Best with Marist.', fresh:1, v:{c:'inherit', s:'italic'}},
+  {id:'both', name:'Italic + lighter', note:'Both at once.', fresh:1, v:{c:'#00000073', s:'italic'}},
+  {id:'none', name:'None', note:'One flat line.', v:{c:'inherit', s:'normal'}},
+ ]},
+ {id:'text', group:'Type', title:'Text face', hint:'Everything people read: listing titles, prices, buttons.', opts:[
+  {id:'nm', name:'Neue Montreal', note:'Your pick, set like QOVES.', v:{font:"'NM'"}},
+  {id:'geist', name:'Geist', note:'Your harness default.', v:{font:"'Geist'"}},
+  {id:'inter', name:'Inter', note:'Neutral and safe.', v:{font:"'Inter'"}},
+ ]},
+ {id:'mono', group:'Type', title:'Label face', hint:'Small labels for sources, units and steps. Never in the tab bar.', opts:[
+  {id:'geist-mono', name:'Geist Mono', note:'Closest free match to Zagma.', v:{font:"'Geist Mono'", c:'uppercase', t:'0.02em'}},
+  {id:'jetbrains', name:'JetBrains Mono', note:'Technical.', v:{font:"'JetBrains Mono'", c:'uppercase', t:'0'}},
+  {id:'plex', name:'IBM Plex Mono', note:'Warm, slightly old-school.', v:{font:"'IBM Plex Mono'", c:'uppercase', t:'0'}},
+  {id:'dm', name:'DM Mono', note:'Soft and friendly.', v:{font:"'DM Mono'", c:'uppercase', t:'0'}},
+  {id:'none', name:'No mono', note:'Small sans in sentence case. You said this is fine.', v:{font:'var(--b-text)', c:'none', t:'0', size:'12px', lh:'16px'}},
+ ]},
+ {id:'icons', group:'Parts', title:'Icons', hint:'Tab bar and buttons.', opts:[
+  {id:'huge', name:'Hugeicons', note:'Stroke rounded. Your default.'},
+  {id:'lucide', name:'Lucide', note:'Clean 2 px strokes.'},
+  {id:'tabler', name:'Tabler', note:'Even, slightly technical.'},
+  {id:'hero', name:'Heroicons', note:'Outline 1.5 px.'},
+  {id:'ph-light', name:'Phosphor Light', note:'Thin, elegant.'},
+  {id:'ph-regular', name:'Phosphor', note:'Friendly, rounded.'},
+  {id:'ph-duotone', name:'Phosphor Duotone', note:'Two tones, softer.'},
+  {id:'ph-fill', name:'Phosphor Fill', note:'Solid, bold.'},
+ ]},
+ {id:'platform', group:'Parts', title:'Platform marks', hint:'Each marketplace shown by its logo instead of its name. Logo colors for Mercari are approximate.', opts:[
+  {id:'app', name:'App icon', note:'Tiny rounded square in the brand color, like the home screen.', fresh:1},
+  {id:'bubble', name:'Gray bubble', note:'Black logo in a neutral circle.', fresh:1},
+  {id:'bare-color', name:'Bare, in color', note:'Logo only, brand color.', fresh:1},
+  {id:'bare-ink', name:'Bare, in black', note:'Logo only, black. Calmest.', fresh:1},
+  {id:'word', name:'Name', note:'The word, as before.'},
+ ]},
+ {id:'shape', group:'Parts', title:'Shape', hint:'Corner radius of cards and buttons.', opts:[
+  {id:'crisp', name:'Crisp', note:'6 px cards, 10 px buttons.', v:{card:'6px', btn:'10px'}},
+  {id:'soft', name:'Soft', note:'14 px cards, pill buttons.', v:{card:'14px', btn:'999px'}},
+  {id:'round', name:'Round', note:'22 px cards, pill buttons.', v:{card:'22px', btn:'999px'}},
+  {id:'mixed', name:'Square + pill', note:'0 px cards, pill buttons.', v:{card:'0px', btn:'999px'}},
+ ]},
+ {id:'buttons', group:'Parts', title:'Buttons', hint:'Primary is always black. What changes is how the secondary looks.', opts:[
+  {id:'tint', name:'Black + filled', note:'Secondary is a gray fill.', v:{s:'var(--b-ground)', sr:'none', t:'var(--b-ground)', tr:'none', k:'#0000000f'}},
+  {id:'outline', name:'Black + outline', note:'Secondary is a 1 px outline.', v:{s:'transparent', sr:'inset 0 0 0 1px #000', t:'transparent', tr:'inset 0 0 0 1px #000', k:'transparent'}},
+  {id:'mixed', name:'Black + outline + filled', note:'Outline for the other answer (Counter). Filled for side actions (Change, Message).', fresh:1, v:{s:'transparent', sr:'inset 0 0 0 1px #000', t:'var(--b-ground)', tr:'none', k:'transparent'}},
+  {id:'mixed-soft', name:'Black + light outline + filled', note:'Same split, outline at 20% black.', fresh:1, v:{s:'transparent', sr:'inset 0 0 0 1px #00000033', t:'var(--b-ground)', tr:'none', k:'transparent'}},
+ ]},
+ {id:'density', group:'Parts', title:'Density', hint:'Card padding and gaps between sections. The 4 pt scale stays.', opts:[
+  {id:'compact', name:'Compact', note:'Cards 14, sections 20.', v:{pad:'14px', gap:'20px'}},
+  {id:'standard', name:'Standard', note:'Cards 16, sections 24.', v:{pad:'16px', gap:'24px'}},
+  {id:'airy', name:'Airy', note:'Cards 20, sections 32.', v:{pad:'20px', gap:'32px'}},
+ ]},
+];
+// fill the sampled modules
+M.find(m=>m.id==='palette').opts = REFPAL.filter(o=>o.kind==='accent');
+M.find(m=>m.id==='neutral').opts = REFPAL.filter(o=>o.kind==='neutral');
+M.find(m=>m.id==='gradient').opts = REFGRAD;
+
+const SAVED = {platform:'app',buttons:'mixed',density:'standard',display:'nm',emphasis:'luminance',gradient:'glow',grain:'film',icons:'huge',mono:'geist-mono',neutral:'cool',palette:'stone',shadow:'rules',shape:'soft',text:'nm',scale:'ios'};
+const PRESETS = {
+ 'Your picks':SAVED,
+ 'Your picks + Marist':Object.assign({},SAVED,{display:'marist',scale:'marist',emphasis:'italic',mono:'none',platform:'bare-color'}),
+ 'Field report':{platform:'bare-ink',buttons:'outline',density:'standard',display:'marist',scale:'ios',emphasis:'luminance',gradient:'none',grain:'none',icons:'ph-light',mono:'geist-mono',neutral:'stone',palette:'brick',shadow:'rules',shape:'crisp',text:'nm'},
+ 'Quiet utility':{platform:'bubble',buttons:'tint',density:'airy',display:'nm',scale:'quiet',emphasis:'luminance',gradient:'mist',grain:'none',icons:'huge',mono:'none',neutral:'pure',palette:'ink-teal',shadow:'soft',shape:'round',text:'nm'},
+ 'Warm glow':{platform:'app',buttons:'mixed',density:'standard',display:'nm-light',scale:'marist',emphasis:'luminance',gradient:'glow',grain:'film',icons:'huge',mono:'geist-mono',neutral:'blush',palette:'ember',shadow:'tinted',shape:'soft',text:'nm'},
+ 'Lookbook':{platform:'bare-color',buttons:'mixed-soft',density:'compact',display:'marist',scale:'marist',emphasis:'italic',gradient:'dusk',grain:'light',icons:'ph-regular',mono:'none',neutral:'stone',palette:'quechua-blue',shadow:'hair',shape:'soft',text:'nm'},
+};
+const $ = s => document.querySelector(s);
+const opt = (mid,oid) => { const m=M.find(m=>m.id===mid); return m.opts.find(o=>o.id===oid) || m.opts[0]; };
+const icon = (set,n) => (ICONS[set]&&ICONS[set][n]) || '';
+let picks = Object.assign({}, SAVED);
+
+function vars(p){
+  const pal=opt('palette',p.palette).v, neu=opt('neutral',p.neutral).v, g=opt('gradient',p.gradient).v, gr=opt('grain',p.grain).v, sh=opt('shadow',p.shadow).v,
+        d=opt('display',p.display).v, sc=opt('scale',p.scale).v, t=opt('text',p.text).v, mo=opt('mono',p.mono).v, sp=opt('shape',p.shape).v,
+        em=opt('emphasis',p.emphasis).v, b=opt('buttons',p.buttons).v, den=opt('density',p.density).v;
+  const px = n => typeof n==='number' ? n+'px' : n;
+  return {'--b-page':'#ffffff','--b-surface':neu.surface,'--b-ground':neu.ground,'--b-stage':`radial-gradient(90% 90% at 50% 25%,#fff 0%,${neu.ground} 100%)`,
+   '--b-dot':pal.dot,'--b-dotfg':pal.dotfg,'--b-hl':pal.hl,
+   '--b-grad':g.grad,'--b-keyfg':g.fg||'#000','--b-glowc':g.glow||'#0000002e','--b-grain':g.flat?0:gr,
+   '--b-shadow':sh.shadow,'--b-cardborder':sh.border,'--b-keyshadow':sh.key,'--b-keyborder':g.flat?sh.border:sh.keyborder,'--b-contact':sh.contact,
+   '--b-disp':d.font+',system-ui,serif','--b-dispw':d.w,'--b-emphfont':d.it+',serif',
+   '--b-hero':px(sc.hero[0]),'--b-hero-lh':px(sc.hero[1]),'--b-hero-tr':sc.hero[2],
+   '--b-head':px(sc.head[0]),'--b-head-lh':px(sc.head[1]),'--b-head-tr':sc.head[2],
+   '--b-title':px(sc.title[0]),'--b-title-lh':px(sc.title[1]),'--b-title-tr':sc.title[2],
+   '--b-text':t.font+',system-ui,sans-serif','--b-moneyfont':t.font+',system-ui,sans-serif',
+   '--b-mono':mo.font+',ui-monospace,monospace','--b-monocase':mo.c,'--b-monotrack':mo.t,'--b-lbsize':mo.size||'11px','--b-lblh':mo.lh||'14px','--b-alert':pal.alert,'--b-r-card':sp.card,'--b-r-btn':sp.btn,
+   '--b-emph':em.c,'--b-emphstyle':em.s,'--b-btn':'#0a0a0a','--b-btnfg':'#fff','--b-btn2':b.s,'--b-btn2ring':b.sr,'--b-btn3':b.t,'--b-btn3ring':b.tr,'--b-btn2key':b.k,
+   '--b-cardpad':den.pad,'--b-gap':den.gap,'--b-plus':'#0a0a0a','--b-plusfg':'#fff'};
+}
+function mark(k,style,sz){
+  const L=LOGOS[k]; if(!L) return '';
+  if(style==='word') return `<span class="pmw">${L.name}</span>`;
+  const onTile = style==='app' && k!=='ebay';
+  const col = style==='app' ? (onTile?'#fff':null) : style==='bare-color' ? (L.multi?null:L.color) : 'currentColor';
+  const s = sz || (style==='bubble'?12:style==='app'?12:16);
+  let g;
+  if(L.path){ const multi = L.multi && col===null; const id='g'+Math.random().toString(36).slice(2,7);
+    const fill = multi ? `url(#${id})` : (col||L.color);
+    const defs = multi ? `<defs><linearGradient id="${id}"><stop offset=".27" stop-color="${L.multi[0]}"/><stop offset=".27" stop-color="${L.multi[1]}"/><stop offset=".5" stop-color="${L.multi[1]}"/><stop offset=".5" stop-color="${L.multi[2]}"/><stop offset=".74" stop-color="${L.multi[2]}"/><stop offset=".74" stop-color="${L.multi[3]}"/></linearGradient></defs>` : '';
+    const w = k==='ebay' ? s*2.1 : s;
+    g = `<svg width="${w}" height="${s}" viewBox="${k==='ebay'?'0 7 24 10':'0 0 24 24'}" preserveAspectRatio="xMidYMid meet">${defs}<path fill="${fill}" d="${L.path}"/></svg>`;
+  } else {
+    g = L.svg.replace('<svg ', `<svg width="${s}" height="${s}" style="color:${col||L.color}" `);
+  }
+  if(style==='app'){ const bg = k==='ebay' ? '#fff' : L.color; const ring = k==='ebay' ? 'box-shadow:inset 0 0 0 .5px #0000002e;' : '';
+    if(k==='ebay') g = g.replace(/width="[\d.]+" height="[\d.]+"/, 'width="16" height="8"');
+    return `<span class="pm app" style="background:${bg};${ring}" aria-label="${L.name}">${g}</span>`; }
+  if(style==='bubble'){ if(k==='ebay') g = g.replace(/width="[\d.]+" height="[\d.]+"/, 'width="16" height="8"'); return `<span class="pm bubble" aria-label="${L.name}">${g}</span>`; }
+  return `<span class="pm ${style}" aria-label="${L.name}">${g}</span>`;
+}
+const SB = `<span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1"/></svg><svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 2.6c2.2 0 4.2.8 5.7 2.2l1.1-1.1A9.6 9.6 0 0 0 8 1 9.6 9.6 0 0 0 1.2 3.7l1.1 1.1A8 8 0 0 1 8 2.6zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.1-1.1A6.4 6.4 0 0 0 8 4.3a6.4 6.4 0 0 0-4.5 1.8l1.1 1.1c.9-.8 2.1-1.3 3.4-1.3zm0 3.3c.5 0 .9.2 1.2.4L8 10.9 6.8 9.6c.3-.2.7-.4 1.2-.4z"/></svg><svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#000" stroke-opacity=".35"/><rect x="2" y="2" width="20" height="9" rx="2"/><path d="M25 4.5v4c.8-.3 1.3-1.1 1.3-2s-.5-1.7-1.3-2z" opacity=".4"/></svg></span>`;
+function preview(p){
+  const I=p.icons, el=$('#P');
+  for(const [k,v] of Object.entries(vars(p))) el.style.setProperty(k,v);
+  const g = opt('gradient',p.gradient);
+  el.innerHTML=`<div class="sb">${SB}</div>
+  <div class="scroll"><div class="pad">
+   <div class="nav"><span class="wm">secondhand</span></div>
+   <h2 class="t-head" style="margin-top:var(--s2)">3 need you<em>, 11 handled</em></h2>
+   <div class="seg" style="margin-top:var(--s4)"><span class="on">Needs you <span class="count">3</span></span><span>All messages</span></div>
+
+   <div class="stack" style="gap:var(--s3);margin-top:var(--b-gap)">
+    <section class="card key grain stack${g.v.dark?' dark':''}" style="gap:var(--s3)" aria-label="Offer on Depop">
+     <div class="between"><span class="lb">${mark('depop',p.platform)}<span>Offer</span></span><span class="lb"><span class="dot"></span>2h</span></div>
+     <div class="stack" style="gap:var(--s1)">
+      <span class="t-hero money">$38</span>
+      <span class="t-body t-strong">Carhartt Detroit jacket, M</span>
+      <span class="lb">Sold $36–52 · n=41 · floor $40</span>
+     </div>
+     <div class="acts" style="margin-top:var(--s1)"><button class="b b1" type="button"><span class="ic">${icon(I,'check')}</span>Accept $38</button><button class="b b2" type="button">Counter $42</button></div>
+    </section>
+
+    <section class="card grain0 stack" style="gap:var(--s3)" aria-label="Pickup">
+     <div class="between"><span class="lb">${mark('facebook',p.platform)}<span>Pickup</span></span><span style="display:inline-flex;align-items:baseline;gap:6px"><span class="lb">Keep</span><span class="t-body t-strong money"><span class="hl">$46.95</span></span></span></div>
+     <div style="display:flex;gap:var(--s3);align-items:center">
+      <div class="thumb"><div class="obj"></div></div>
+      <div class="stack" style="gap:2px;min-width:0"><span class="t-title">Sun 2:00 pm</span><span class="t-body mut">Memorial Union, main doors</span></div>
+     </div>
+     <div class="acts"><button class="b b1" type="button">Confirm</button><button class="b b3" type="button">Change</button><button class="b b3 fit" type="button" aria-label="Message"><span class="ic" style="width:20px;height:20px">${icon(I,'chat')}</span></button></div>
+    </section>
+
+    <section class="card stack" style="gap:var(--s3)" aria-label="Price drop">
+     <div class="between"><span class="lb">Price drop · 9 days</span><span class="lb pms">${['ebay','depop','poshmark','mercari'].map(k=>mark(k,p.platform)).join(p.platform==='word'?' · ':'')}</span></div>
+     <div style="display:flex;gap:var(--s3);align-items:center">
+      <div class="thumb"><div class="obj lamp"></div></div>
+      <div class="stack" style="gap:2px"><span class="t-title"><span class="money">$24 → $19</span></span><span class="t-body mut">Brass desk lamp</span></div>
+     </div>
+    </section>
+   </div>
+  </div></div>
+  <div class="tab"><span class="on"><span class="ic">${icon(I,'today')}</span>Today</span><span><span class="ic">${icon(I,'sell')}</span>Sell</span><span><span class="plus"><span class="ic">${icon(I,'plus')}</span></span></span><span><span class="ic">${icon(I,'buy')}</span>Buy</span><span><span class="ic">${icon(I,'user')}</span>You</span></div>
+  <div class="home"></div>`;
+  $('#picked').textContent = M.map(m=>`${m.title}: ${opt(m.id,p[m.id]).name}`).join('\n');
+}
+function demoFor(m,o){
+  const v=o.v;
+  if(m.id==='palette') return `<div class="sw">${v.sw.map(c=>`<span style="background:${c}"></span>`).join('')}</div>`;
+  if(m.id==='neutral') return `<div class="demo" style="background:${v.ground}"><div style="width:70%;height:30px;border-radius:8px;background:#fff;box-shadow:0 1px 2px #0000000d"></div></div>`;
+  if(m.id==='gradient') return `<div class="demo P grain" style="--b-grain:${v.flat?0:.35};background:${v.grad}"></div>`;
+  if(m.id==='grain') return `<div class="demo P grain" style="--b-grain:${v};background:linear-gradient(135deg,#ffd2b0,#ff7a3d)"></div>`;
+  if(m.id==='shadow') return `<div class="demo" style="background:#fff"><div style="width:62%;height:34px;border-radius:10px;background:#fff;box-shadow:${v.shadow.replace('var(--b-glowc)','#ff7a3d88')};border:${v.border}"></div></div>`;
+  if(m.id==='display') return `<div class="demo" style="font-family:${v.font},serif;font-weight:${v.w};letter-spacing:-0.02em;font-size:26px;line-height:30px">secondhand</div>`;
+  if(m.id==='scale') return `<div class="demo" style="justify-content:flex-start;align-items:flex-end;gap:6px;padding:0 8px 8px;font-family:'NM';white-space:nowrap"><span style="font-size:${v.hero[0]*.6}px;line-height:1">$38</span><span style="font-size:${v.head[0]*.6}px;line-height:1">Head</span><span style="font-size:${v.title[0]*.6}px;line-height:1">Title</span></div>`;
+  if(m.id==='text') return `<div class="demo" style="font-family:${v.font},sans-serif;font-size:14px;line-height:18px;padding:8px;text-align:left;justify-content:flex-start">Carhartt Detroit jacket, M</div>`;
+  if(m.id==='mono') return `<div class="demo" style="font-family:${v.font},monospace;font-size:11px;text-transform:${v.c};letter-spacing:${v.t}">Sold $36–52 · n=41</div>`;
+  if(m.id==='icons') return `<div class="demo" style="gap:10px">${['today','sell','plus','buy','user'].map(n=>`<span style="width:18px;height:18px;display:inline-flex">${icon(o.id,n)}</span>`).join('')}</div>`;
+  if(m.id==='platform') return `<div class="demo P" style="gap:8px;--b-ground:#F1F3F4;background:#fff">${['ebay','depop','poshmark','mercari','facebook'].map(k=>mark(k,o.id)).join(o.id==='word'?'<span style="opacity:.4">·</span>':'')}</div>`;
+  if(m.id==='shape') return `<div class="demo" style="gap:8px;background:#F6F6F5"><span style="width:44px;height:34px;background:#fff;border:1px solid #0000001a;border-radius:${v.card}"></span><span style="padding:6px 12px;background:#0a0a0a;color:#fff;font-size:12px;border-radius:${v.btn}">Accept</span></div>`;
+  if(m.id==='emphasis') return `<div class="demo" style="font:400 17px/20px 'Marist',serif;white-space:nowrap">3 need you<span style="color:${v.c};font-style:${v.s}">, 11 handled</span></div>`;
+  if(m.id==='buttons'){ const pill='padding:5px 9px;border-radius:99px;font-size:11px;line-height:14px;white-space:nowrap'; const f=x=>x.startsWith('var')?'#F1F3F4':x;
+    return `<div class="demo" style="gap:4px;padding:0 4px"><span style="${pill};background:#0a0a0a;color:#fff">Accept</span><span style="${pill};background:${f(v.s)};box-shadow:${v.sr}">Counter</span><span style="${pill};background:${f(v.t)};box-shadow:${v.tr}">Change</span></div>`; }
+  if(m.id==='density') return `<div class="demo" style="background:#F6F6F5"><div style="background:#fff;border-radius:8px;padding:${parseInt(v.pad)/2}px;display:flex;flex-direction:column;gap:4px;width:70%"><span style="height:5px;background:#0003;border-radius:3px;width:60%"></span><span style="height:5px;background:#0002;border-radius:3px"></span></div></div>`;
+  return '';
+}
+function render(){
+  let lastGroup='';
+  $('#mods').innerHTML = M.map(m=>{ const gh = m.group!==lastGroup ? `<h3>${m.group}</h3>` : ''; lastGroup=m.group;
+   return gh+`<section class="mod" aria-labelledby="h-${m.id}"><div class="modhead"><h2 id="h-${m.id}">${m.title}</h2><p>${m.hint}</p></div>
+   <div class="opts" role="group" aria-labelledby="h-${m.id}">${m.opts.map(o=>`<button class="opt" type="button" data-m="${m.id}" data-o="${o.id}" aria-pressed="${picks[m.id]===o.id}">${demoFor(m,o)}<span class="name">${o.name}${o.fresh?'<span class="new">New</span>':''}</span><span class="note">${o.note||''}</span>${o.src?`<span class="src">${o.src}</span>`:''}</button>`).join('')}</div></section>`; }).join('');
+  preview(picks);
+}
+$('#whylist').innerHTML = WHY.map(([t,s])=>`<li>${t} <span class="lbl">${s}</span></li>`).join('');
+$('#presets').innerHTML = Object.keys(PRESETS).map(k=>`<button class="chip" type="button" data-p="${k}">${k}</button>`).join('');
+document.addEventListener('click', e=>{
+  const o=e.target.closest('.opt'); if(o){ picks[o.dataset.m]=o.dataset.o; document.querySelectorAll(`.opt[data-m="${o.dataset.m}"]`).forEach(b=>b.setAttribute('aria-pressed', b===o)); preview(picks); dirty(); return; }
+  const p=e.target.closest('[data-p]'); if(p){ picks=Object.assign({},PRESETS[p.dataset.p]); render(); dirty(); }
+});
+function dirty(){ $('#status').textContent='Not saved yet'; try{localStorage.setItem('sh-picks3',JSON.stringify({picks,note:$('#note').value}))}catch(e){} }
+$('#note').addEventListener('input', dirty);
+function tokensText(){ return ':root {\n'+Object.entries(vars(picks)).map(([k,v])=>`  ${k}: ${v};`).join('\n')+'\n}\n/* '+M.map(m=>`${m.id}=${picks[m.id]}`).join(' ')+' */'; }
+$('#copy').addEventListener('click', async()=>{ try{ await navigator.clipboard.writeText(tokensText()); $('#status').textContent='Tokens copied'; }catch(e){ $('#picked').textContent=tokensText(); $('#status').textContent='Select the tokens below to copy'; } });
+let db=null;
+$('#save').addEventListener('click', async()=>{
+  if(!db){ $('#status').textContent='Saving needs you signed in; picks are kept in this browser'; return; }
+  try{ await db.doc('brand/picks').set({picks, note:$('#note').value, round:3, savedAt:new Date().toISOString()}); $('#status').textContent='Saved. Claude can read these now.'; }
+  catch(e){ $('#status').textContent='Could not save: '+(e && e.code || 'error'); }
+});
+try{ const s=JSON.parse(localStorage.getItem('sh-picks3')||'null'); if(s&&s.picks){ picks=Object.assign(picks,s.picks); $('#note').value=s.note||''; } }catch(e){}
+render();
+(async()=>{ try{ db = await window.claude?.use?.('db'); if(!db) return;
+  const snap = await db.doc('brand/picks').get(); const d = snap && (snap.data ? snap.data() : snap);
+  if(d && d.picks && d.round===3){ picks=Object.assign(picks,d.picks); if(d.note && !$('#note').value) $('#note').value=d.note; render(); $('#status').textContent='Loaded your saved picks'; }
+ }catch(e){} })();
+</script>
