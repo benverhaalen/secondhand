@@ -217,3 +217,13 @@ On the card "How far should buying go?" in the same session, Nate picked "Also n
 Nate, same session, 2026-11-14, sent while cards on demo scope, the backend's front door, the buying side and disclosure were open. Nate said Ben was beside him.
 > Where there arent official connections, sources of information, harnesses to allow automated actions on each platform, we will build frameworks to allow for perfectly optimized actions and behaviors, a cloud based browser use system where login auth is persisted, the users actions open up their profiles with this cloud, and an api framework is built to allow for everything to work across the needed platforms, and additional sites of information, databases for sales and finance data, fully extend out how the internet serves us as sources of information to strenghten our analytics, accuracy and credibility of calculations on prices. We are in a way a highly intelligent analysis tool of second hand shopping, built to drive the best selling and management experience for users. There are incentives like money goals for the month, how many sales you've had, tracks progress
 ||||||| 6693ac2
+
+Note: the line above ("||||||| 6693ac2") is a leftover merge marker from an agent's merge, not anyone's words.
+
+## 2026-11-14 nate expo if capture is fully possible
+Nate, answering the card "Which app shell stands?" (Expo with a Swift capture module, or fully native) in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> If all features are possible on expo as they are building natively, utilizing object capture, lidar, implementing our own specialized systems into the capture methods to ensure all data is determined (depending on product type) then go expo
+
+## 2026-11-14 nate referrals and market data
+Nate, answering the card "How might secondhand earn?" in the same session, 2026-11-14.
+> Buy-side referrals is perfect, with also the potential to collect unified anonymous data on what our systems grab already existing in the marketplaces, and how we determine with users what were the most effective ways to market it, the amount of recent sales (indicating what the public is mainly buying, what they're wearing, all data we can find has potential to be sold and empower businesses)
