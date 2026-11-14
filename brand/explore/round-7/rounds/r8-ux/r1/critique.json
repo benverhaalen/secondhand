@@ -1,0 +1,26 @@
+{
+  "images": [
+    {
+      "file": "opt-A.png",
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options can't be told apart at board size, or they differ in something besides the decision.",
+          "place": "Item captions beneath the photos, comparing the left airy screen with the right standard screen.",
+          "issue": "The airy screen stacks each platform icon above the item title; the standard screen places it beside the title and price. This changes the caption layout as well as spacing, so the board does not isolate R8. Keep the icon-and-text arrangement consistent across both densities and options."
+        }
+      ]
+    },
+    {
+      "file": "opt-B.png",
+      "verdict": "pass",
+      "failures": []
+    }
+  ],
+  "across_options": [
+    {
+      "files": ["opt-A.png", "opt-B.png"],
+      "issue": "A's airy screen puts platform icons above titles, while B keeps icons beside titles. That additional layout change confounds the spacing comparison."
+    }
+  ]
+}
