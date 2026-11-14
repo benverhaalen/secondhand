@@ -2,8 +2,14 @@
   "images": [
     {
       "file": "opt-A.png",
-      "verdict": "pass",
-      "failures": []
+      "verdict": "fail",
+      "failures": [
+        {
+          "rule": "The options differ in something besides the decision.",
+          "place": "Left, three-item screen: listing titles and prices, platform icons, and state tags, compared with the right screen and opt-B.png.",
+          "issue": "The airy version enlarges text, platform icons, and state tags as well as changing spacing. The jacket title wraps onto two lines. These visible changes make this a comparison of component scale and typography as well as R8 spacing."
+        }
+      ]
     },
     {
       "file": "opt-B.png",
@@ -11,5 +17,13 @@
       "failures": []
     }
   ],
-  "across_options": []
+  "across_options": [
+    {
+      "files": [
+        "opt-A.png",
+        "opt-B.png"
+      ],
+      "issue": "The options are distinguishable at board size, but A's three-item screen changes text and icon sizes while B keeps them consistent. Hold those sizes fixed to isolate the spacing decision."
+    }
+  ]
 }
