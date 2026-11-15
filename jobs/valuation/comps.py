@@ -417,6 +417,14 @@ DECLARED = [{'name': 'valuation_w_type_sold',
   'guard_lo': 0,
   'scopes': ['kind', 'site', 'segment', 'person'],
   'source': 'spec/determinations/money.md#d12-best-site-or-set-of-sites'},
+ {'name': 'valuation_sales_tax_rate',
+  'path': 'sales_tax_rate',
+  'family': 'scalar',
+  'prior': 0.0753,
+  'guard_lo': 0,
+  'guard_hi': 0.2,
+  'scopes': ['kind', 'site', 'segment', 'person'],
+  'source': 'https://taxfoundation.org/data/all/state/2026-sales-tax-rates-midyear/'},
  {'name': 'valuation_budget_ms',
   'path': 'budget_ms',
   'family': 'scalar',
@@ -469,6 +477,12 @@ def money(value, field):
 
 def rounded(value):
     return money(math.floor(value + .5), 'rounded_cents')
+
+
+def range_cents(cents):
+    dollars = cents / DOLLAR
+    # Match the TypeScript log/exp tie tolerance and round half up.
+    return money(max(DOLLAR, math.floor(dollars + 4 * 2**-52 * max(1, dollars) + .5) * DOLLAR), 'range_cents')
 
 
 def canonical(rows, as_of, params=None):
@@ -703,6 +717,7 @@ def comparables(target, candidates, as_of, params=None):
         if ratio or p['blend_enabled']:
             pool = weighted
     kept, dropped, log_range, basis_level = [], [], None, 'prior'
+    retail_weight = 0
     legacy = not p['anchor_enabled'] and not p['blend_enabled']
     def logs(rows):
         return [math.log(weighted_quantile([c['adjusted_cents'] for c in rows], [c['w'] for c in rows], q)) for q in (.1, .5, .9)]
@@ -710,6 +725,7 @@ def comparables(target, candidates, as_of, params=None):
         if target.get('kind') and target.get('retail_cents') and target.get('depreciation'):
             center = math.log(target['retail_cents'] * target['depreciation'])
             log_range = [center - p['prior_log_spread'], center, center + p['prior_log_spread']]
+            retail_weight = 1
         if target.get('kind_band'):
             band = target['kind_band']
             for key in ('q10', 'q50', 'q90'):
@@ -718,6 +734,7 @@ def comparables(target, candidates, as_of, params=None):
                 raise ValueError('kind_band')
             band_logs = [math.log(band[q]) for q in ('q10', 'q50', 'q90')]
             log_range = [(band['n_eff'] * v + p['blend_k'] * log_range[i]) / (band['n_eff'] + p['blend_k']) for i, v in enumerate(band_logs)] if log_range else band_logs
+            retail_weight *= p['blend_k'] / (band['n_eff'] + p['blend_k'])
             basis_level = 'kind'
         for level in reversed(LEVELS):
             local = trim([c for c in pool if c['level'] == level], p)
@@ -727,6 +744,7 @@ def comparables(target, candidates, as_of, params=None):
             n = n_eff([c['w'] for c in local['kept']])
             local_logs = logs(local['kept'])
             log_range = [(n * v + p['blend_k'] * log_range[i]) / (n + p['blend_k']) for i, v in enumerate(local_logs)] if log_range else local_logs
+            retail_weight *= p['blend_k'] / (n + p['blend_k'])
             basis_level = 'kind' if level == 'category' else level
             kept += local['kept']
     else:
@@ -740,17 +758,18 @@ def comparables(target, candidates, as_of, params=None):
             middle = median([math.log(c['adjusted_cents']) for c in anchor])
             delta = len(anchor) / (len(anchor) + p['anchor_blend_k']) * (middle - log_range[1])
             log_range = [v + delta for v in log_range]
+            retail_weight *= p['anchor_blend_k'] / (len(anchor) + p['anchor_blend_k'])
             basis_level = 'variant'
     def quantile(i, factor):
         if log_range is None:
             return None
         if legacy:
             value = weighted_quantile([c['adjusted_cents'] for c in kept], [c['w'] for c in kept], (.1, .5, .9)[i])
-            return rounded(translate(value, factor) / DOLLAR) * DOLLAR
-        return rounded(math.exp(log_range[i]) * factor / DOLLAR) * DOLLAR
+            return range_cents(translate(value, factor))
+        return range_cents(math.exp(log_range[i]) * factor)
     if not legacy:
         kept.sort(key=lambda c: (ts(c['sold_at']), c['comp_id']))
-    return {'comps': kept, 'n_eff': n_eff([c['w'] for c in kept]) if kept else target.get('kind_band', {}).get('n_eff', 0),
+    return {'retail_weight': retail_weight, 'comps': kept, 'n_eff': n_eff([c['w'] for c in kept]) if kept else target.get('kind_band', {}).get('n_eff', 0),
             'level': selected['level'] if legacy else ('category' if basis_level in ('kind', 'prior') else basis_level), 'basis_level': basis_level,
             'range': dict(zip(('q10', 'q50', 'q90'), [quantile(i, ratio[k] if ratio else 1) for i, k in enumerate(('q25', 'ratio', 'q75'))])),
             'dropped': dropped, 'extrapolated': extrapolated(kept), 'state': 'ok' if sufficient(kept, p) else 'too_few', 'param_versions': p['param_versions']}

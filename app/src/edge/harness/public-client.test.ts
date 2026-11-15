@@ -1,15 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { DOMParser } from '@xmldom/xmldom';
-import { ebayListingSpec } from './sites/ebay/adapter.ts';
+import { ebayListingSpec, ebayPageAdapters, searchRows, PAGE_HOSTS } from './sites/ebay/adapter.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createLog, memorySink } from '../../../../log/index.js';
 import type { Launcher, PoolContext } from '../browser/pool.ts';
 import { EBAY_FIRST_CARD_MS, publicClients, type PublicPage } from './public-client.ts';
-import { API, WWW } from './sites/depop/adapter.ts';
+import { API, WWW, depopAdapters } from './sites/depop/adapter.ts';
+import { createSiteService } from './service.ts';
+import { memoryStore } from '../events/ports.ts';
+import { createReadLedger } from './read-ledger.ts';
+import { memoryStore as paramStore } from '../../engines/param/param.ts';
 
 function isolatedDocument(html: string): Document {
+  // A browser keeps the open ancestors of a streamed document; xmldom needs their end tags.
+  if (/<html[\s>]/i.test(html) && !/<\/html>/i.test(html)) html += '</body></html>';
   const dom = new DOMParser().parseFromString(/<html[\s>]/i.test(html) ? html : `<html><body>${html}</body></html>`, 'text/html');
   type Node = Element;
   const matches = (node: Node, selectors: string): boolean => selectors.split(',').some(selector => {
@@ -53,6 +59,8 @@ class FakePage implements PublicPage {
   selectorNext?: () => Promise<void>;
   evaluateNext?: () => unknown;
   arrival?: { html: string; ms: number };
+  additions: { html?: string; ms: number; readyState?: DocumentReadyState }[] = [];
+  readyState: DocumentReadyState = 'complete';
   observers = 0;
   disconnectedObservers = 0;
   contentReads = 0;
@@ -77,8 +85,14 @@ class FakePage implements PublicPage {
       const tasks = new Map<number, { at: number; fn: () => void }>();
       const schedule = (fn: () => void, ms: number) => { tasks.set(++next, { at: clock + ms, fn }); return next; };
       const page = this;
+      const listeners = new Set<() => void>();
+      let currentHtml: string | undefined, currentDocument: Document;
       const document = new Proxy({} as Document, { get(_target, key) {
-        const doc = isolatedDocument(page.html), value = Reflect.get(doc, key);
+        if (key === 'readyState') return page.readyState;
+        if (key === 'addEventListener') return (_event: string, listener: () => void) => listeners.add(listener);
+        if (key === 'removeEventListener') return (_event: string, listener: () => void) => listeners.delete(listener);
+        if (currentHtml !== page.html) { currentHtml = page.html; currentDocument = isolatedDocument(page.html); }
+        const doc = currentDocument, value = Reflect.get(doc, key);
         return typeof value === 'function' ? value.bind(doc) : value;
       } });
       class MutationObserver {
@@ -89,6 +103,11 @@ class FakePage implements PublicPage {
           assert.equal(target, document); assert.deepEqual({ ...options }, { childList: true, subtree: true });
           this.active = true; page.observers++;
           if (page.arrival) schedule(() => { page.html = page.arrival!.html; if (this.active) this.callback(); }, page.arrival.ms);
+          for (const addition of page.additions) schedule(() => {
+            if (addition.html !== undefined) page.html = addition.html;
+            if (addition.readyState) { page.readyState = addition.readyState; for (const listener of listeners) listener(); }
+            if (this.active) this.callback();
+          }, addition.ms);
         }
         disconnect() { this.active = false; page.disconnectedObservers++; }
       }
@@ -98,7 +117,7 @@ class FakePage implements PublicPage {
       }) as T;
       while (tasks.size) {
         const [id, task] = [...tasks].sort((a, b) => a[1].at - b[1].at)[0]!;
-        tasks.delete(id); clock = task.at; task.fn();
+        tasks.delete(id); clock = task.at; task.fn(); await Promise.resolve();
       }
       return await result;
     }
@@ -446,6 +465,117 @@ test('a rejected idle close remains visible to shutdown and never opens an overl
 });
 
 const recorded = readFileSync(new URL('./sites/ebay/fixtures/page-search.html', import.meta.url), 'utf8');
+const partial = recorded.slice(0, recorded.lastIndexOf('</ul>'));
+const placeholder = recorded.slice(0, recorded.indexOf('<li class="s-card', recorded.indexOf('<li class="s-card') + 1));
+const recordedCard = recorded.split(/(?=<li\b[^>]*class="s-card\s)/)[2]!;
+const largePage = '<html><body><h1 id="srp-results-heading">240 results</h1><ul>' +
+  Array.from({ length: 240 }, (_, i) => recordedCard.replaceAll('387080178732', String(900000000000 + i))).join('') + '</ul></body></html>';
+
+for (const site of ['ebay', 'depop'] as const) test(`${site} service cancellation stops a slow browser read, frees its lane and counts timed_out`, async () => {
+  const f = setup(), ctl = new AbortController(), hold = deferred<void>();
+  const log = createLog({ src: 'cancel.test', build: 'test', sink: memorySink() });
+  const ledger = createReadLedger({ now: Date.now, log, params: paramStore() });
+  const service = createSiteService(site, site === 'ebay' ? ebayPageAdapters(f.clients.ebay) : depopAdapters(f.clients.depop), {
+    log, ledger, concurrency: 1, store: memoryStore(), data: 'synthetic', timeoutMs: 100,
+  });
+  try {
+    if (site === 'ebay') await f.clients.ebay.page(ebayUrl, signal());
+    else await f.clients.depop.doc(depopUrl, signal());
+    f.contexts[0].page.gotoNext = () => hold.promise;
+    const pending = service.call('search', { q: 'synthetic' }, { signal: ctl.signal });
+    await turn();
+    const next = service.call('search', { q: 'synthetic' });
+    const start = performance.now(); ctl.abort();
+    const result = await pending;
+    assert.ok(performance.now() - start < 30, 'cancelled read must release the service without waiting for its deadline');
+    assert.ok(!result.ok);
+    assert.equal(ledger.counts(site)[0]!.classes.timed_out, 1);
+    assert.equal(ledger.counts(site)[0]!.classes.refused, 0);
+    assert.equal(ledger.paused(site), undefined);
+    await next;
+    assert.ok(performance.now() - start < 30, 'the next site read must start without waiting for the abandoned navigation');
+    assert.equal(f.contexts.length, 2);
+    assert.equal(f.contexts[0].closes, 1);
+    assert.equal(service.running(), 0);
+    assert.equal(service.queued(), 0);
+  } finally { hold.resolve(); await f.clients.close(); }
+});
+
+test('warm reports only an open live page on the requested site', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const f = setup({ idleMs: 100 }), ctl = new AbortController(), launch = deferred<void>();
+  try {
+    assert.equal(f.clients.warm('ebay'), false); assert.equal(f.clients.warm('depop'), false);
+    f.launchWith(() => launch.promise);
+    const pending = f.clients.depop.doc(depopUrl, signal()); await turn();
+    assert.equal(f.clients.warm('depop'), false, 'a pending browser launch is not warm');
+    launch.resolve(); await pending;
+    assert.equal(f.clients.warm('depop'), true); assert.equal(f.clients.warm('ebay'), false);
+    f.contexts[0].page.gotoNext = () => new Promise(() => {});
+    const read = f.clients.depop.doc(depopUrl, ctl.signal); await turn(); ctl.abort();
+    await assert.rejects(read, { name: 'AbortError' });
+    assert.equal(f.clients.warm('depop'), false);
+    await f.clients.ebay.page(ebayUrl, signal()); assert.equal(f.clients.warm('ebay'), true);
+    f.contexts[1].disconnect(); assert.equal(f.clients.warm('ebay'), false);
+    await f.clients.ebay.page(ebayUrl, signal());
+    t.mock.timers.tick(100); await turn(); assert.equal(f.clients.warm('ebay'), false);
+    await f.clients.depop.doc(depopUrl, signal()); await f.clients.close();
+    assert.equal(f.clients.warm('depop'), false);
+  } finally { launch.resolve(); await f.clients.close(); }
+});
+
+for (const [name, html] of [['partial list', partial], ['complete list', recorded], ['240-card list', largePage]]) test(`eBay ${name} parses in the page with server parity`, async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal());
+    const p = f.contexts[0].page; p.html = html; p.contentReads = 0;
+    p.readyState = html === partial ? 'loading' : 'complete';
+    const before = p.evaluated.length;
+    const result = await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {});
+    assert.deepEqual(JSON.parse(JSON.stringify(result)), { status: 200, ...searchRows(html, 'live', PAGE_HOSTS[0]) });
+    assert.equal(p.contentReads, 0); assert.equal(p.evaluated.length - before, 1);
+    assert.equal(ends(f.sink).at(-1)?.waited_ms, html === partial ? 150 : 0);
+  } finally { await f.clients.close(); }
+});
+
+for (const end of ['quiet', 'ready', 'cap', 'late_first'] as const) test(`eBay waits past the placeholder for streamed cards until ${end}`, async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal());
+    const p = f.contexts[0].page; p.html = placeholder; p.readyState = 'loading'; p.contentReads = 0;
+    const one = recorded.slice(0, recorded.indexOf('<li class="s-card', recorded.indexOf('data-item-pos="1"')));
+    const first = end === 'late_first' ? 300 : 100;
+    p.additions = [
+      { ms: first, html: one },
+      { ms: first + 120, html: partial },
+      { ms: first + 200, html: partial + '<span>unrelated mutation</span>' },
+      ...(end === 'ready' ? [{ ms: 240, readyState: 'interactive' as const }] : []),
+      ...(end === 'cap' ? Array.from({ length: 50 }, (_, i) => ({ ms: 320 + i * 120,
+        html: partial + '<li class="s-card" data-listingid="999"><span class="s-card__price">$1</span></li>'.repeat(i + 1) })) : []),
+    ];
+    const before = p.evaluated.length;
+    const result = await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {});
+    assert.ok(!('html' in result), 'the placeholder must not trigger zero_cards fallback');
+    assert.ok(result.rows.length >= 3);
+    assert.equal(p.contentReads, 0); assert.equal(p.evaluated.length - before, 1);
+    assert.equal(ends(f.sink).at(-1)?.waited_ms, end === 'cap' ? EBAY_FIRST_CARD_MS : end === 'ready' ? 240 : first + 270);
+    assert.equal(p.observers, p.disconnectedObservers);
+  } finally { await f.clients.close(); }
+});
+
+test('eBay stops waiting when a streaming document becomes interactive without cards and retains fallback', async () => {
+  const f = setup();
+  try {
+    await f.clients.ebay.page(ebayUrl, signal());
+    const p = f.contexts[0].page; p.html = '<title>Changed</title>'; p.readyState = 'loading'; p.contentReads = 0;
+    p.additions = [{ ms: 25, readyState: 'interactive' }];
+    const result = await f.clients.ebay.listings!(ebayUrl, signal(), ebayListingSpec(), {});
+    assert.deepEqual(result, { status: 200, html: p.html });
+    assert.equal(ends(f.sink).at(-1)?.waited_ms, 25);
+    assert.equal(ends(f.sink).at(-1)?.fallback, 'page_state');
+    assert.equal(p.contentReads, 1); assert.equal(p.observers, p.disconnectedObservers);
+  } finally { await f.clients.close(); }
+});
 
 test('eBay returns compact rows from the isolated page and logs pinned fixture sizes in each lane', async () => {
   const f = setup();

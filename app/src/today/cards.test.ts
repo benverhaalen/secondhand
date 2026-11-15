@@ -14,7 +14,7 @@ const ALL = [...WORLD_NAMES.map(n => [n as string, world(n)] as const), ['stops'
 test('today top, rung a: money since the last open, with what sold', () => {
   const t = top(world('clearing'));
   assert.equal(t.rung, 'since');
-  assert.equal(t.caption, 'Since yesterday'); assert.equal(t.figure, '$97.33'); assert.equal(t.line, '2 sold, after fees');
+  assert.equal(t.caption, 'Since yesterday'); assert.equal(t.figure, '$97.27'); // eBay charges its fee on sales tax at valuation_sales_tax_rate (0.0753) assert.equal(t.line, '2 sold, after fees');
   assert.equal(t.things.length, 2); for (const x of t.things) { assert.ok(x.photo); assert.ok(x.site); }
 });
 test('today top, rung b: nothing new since the last open, so this week, else this month', () => {

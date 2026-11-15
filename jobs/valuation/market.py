@@ -63,7 +63,10 @@ def _level(row: dict, f: str) -> str:
 
 
 def _dollars(cents: float) -> int:
-    return int(round(cents / 100.0)) * 100
+    dollars = cents / 100.0
+    # Match the TypeScript log/exp tie tolerance and round half up.
+    rounded = math.floor(dollars + 4 * 2**-52 * max(1, dollars) + .5) * 100
+    return max(100, rounded) if cents > 0 else rounded
 
 
 @dataclass
