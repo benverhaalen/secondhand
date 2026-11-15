@@ -2,12 +2,9 @@
 // spec/engines/protocol-and-adapters.md §1, §9). Server only. Site adapters implement `Adapter`; callers use `harness.call`.
 import type { Log } from '../../../../log/index.js';
 
-export const SITES = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari', 'offerup', 'grailed'] as const;
-export type Site = (typeof SITES)[number];
-
-export const VERBS = ['post', 'revise', 'end', 'relist', 'read_listings', 'read_inbox', 'send_message', 'read_offers',
-  'answer_offer', 'make_offer', 'read_orders', 'read_stats', 'search', 'save'] as const;
-export type Verb = (typeof VERBS)[number];
+import { SITES, VERBS, type Site, type Verb } from './names.ts';
+import { hasVerb } from './platform.ts';
+export { SITES, VERBS, type Site, type Verb };
 
 // A write changes something on the site: it needs operation_id, holds the lease through its read-back, and is never replayed.
 export const WRITE_VERBS = ['post', 'revise', 'end', 'relist', 'send_message', 'answer_offer', 'make_offer', 'save'] as const satisfies readonly Verb[];
@@ -118,6 +115,9 @@ export function createHarness({ adapters, log, timeoutMs = 20_000, now = () => p
     const t0 = now();
     if (!(SITES as readonly string[]).includes(site) || !(VERBS as readonly string[]).includes(verb))
       return { ...fail('no_route', `no route for ${site}.${verb}`, { do: 'handoff', url: '' }), meta: meta(undefined, t0, false) };
+    // A verb the site does not have is a fact of the platform, answered with its reason before any route is tried.
+    const has = hasVerb(site, verb);
+    if (has !== true) return { ...fail('no_route', has.absent, { do: 'handoff', url: siteUrl(site, verb) }), meta: meta(undefined, t0, false) };
     if (isWrite(verb) && !args.operation_id)
       return { ...fail('policy_refused', 'a write needs operation_id', { do: 'raise_decision', kind: 'missing_operation_id' }), meta: meta(undefined, t0, false) };
     const chain = routes.get(`${site}.${verb}`) ?? [];
