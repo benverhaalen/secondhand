@@ -55,13 +55,19 @@ export function clientFromEnv(env: { ANTHROPIC_API_KEY?: string; OPENROUTER_API_
   return null;
 }
 
-function usageOf(message: Message): Usage {
+function missingTokenUsage(usage: Message['usage']): boolean {
+  return !['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'cache_creation_input_tokens']
+    .some(key => typeof Reflect.get(usage, key) === 'number');
+}
+
+function usageOf(message: Message, max_tokens: number): Usage {
   const usage = message.usage as Message['usage'] & { cost?: number };
-  const input_tokens = usage.input_tokens ?? 0, output_tokens = usage.output_tokens ?? 0;
+  const providerCost = typeof usage.cost === 'number' && Number.isFinite(usage.cost) && usage.cost >= 0 ? usage.cost : undefined;
+  const missingTokens = providerCost === undefined && missingTokenUsage(usage);
+  const input_tokens = usage.input_tokens ?? 0, output_tokens = usage.output_tokens ?? (missingTokens ? max_tokens : 0);
   const cache_read_input_tokens = usage.cache_read_input_tokens ?? 0;
   const cache_creation_input_tokens = usage.cache_creation_input_tokens ?? 0;
   const web_searches = usage.server_tool_use?.web_search_requests ?? 0;
-  const providerCost = typeof usage.cost === 'number' && Number.isFinite(usage.cost) && usage.cost >= 0 ? usage.cost : undefined;
   return {
     input_tokens, output_tokens, cache_read_input_tokens, web_searches,
     cost_usd: providerCost ?? (
@@ -77,25 +83,37 @@ function usageOf(message: Message): Usage {
 
 const TAGS = /\[(?:price_range|price_trend|sites|listings|alternatives|table|sources):[^\]\r\n]*\]/g;
 const ISO_DATE = /\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:[Zz]|[+-]\d{2}:?\d{2})?)?/;
-const MONTH = '(?:January|February|March|April|May|June|July|August|September|October|November|December)';
-const WRITTEN_DATE = new RegExp(`(?:${MONTH}\\s+\\d{1,2},\\s+\\d{4}|\\d{1,2}\\s+${MONTH}\\s+\\d{4})`, 'i');
-const MONEY = /US\$|USD|\$|€|£|dollars?\b|bucks?\b/i;
-const NUMBERS = new RegExp(`(?:${ISO_DATE.source}|${WRITTEN_DATE.source}|(?:(?:US\\$|USD|[$€£])\\s*)?-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)(?:\\s*(?:%|percent\\b|per\\s+cent\\b|dollars?\\b|bucks?\\b|USD\\b))?)`, 'gi');
+const MONTH = '(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\\.?';
+const WRITTEN_DATE = new RegExp(`(?:${MONTH}\\s+\\d{1,2},?\\s+\\d{4}|\\d{1,2}\\s+${MONTH}\\s+\\d{4})`, 'i');
+const MONEY_SUFFIX = '(?:dollars?|bucks?|USD|euros?|EUR|pounds?|GBP|cents?)\\b';
+const MONEY = new RegExp(`US\\$|USD|[$€£]|${MONEY_SUFFIX}`, 'i');
+const MONEY_UNITS = [
+  { pattern: /€|EUR|\beuros?\b/i, unit: 'eur', divisor: 1 },
+  { pattern: /£|GBP|\bpounds?\b/i, unit: 'gbp', divisor: 1 },
+  { pattern: /\bcents?\b/i, unit: 'usd', divisor: 100 },
+  { pattern: MONEY, unit: 'usd', divisor: 1 },
+];
+const NUMBERS = new RegExp(`(?:${ISO_DATE.source}|${WRITTEN_DATE.source}|(?:(?:US\\$|USD|EUR|GBP|[$€£])\\s*)?-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)(?:[\\s-]*(?:%|percent\\b|per\\s+cent\\b|${MONEY_SUFFIX}))?)`, 'gi');
 const NUMBER_WORD = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|dozen|half)';
-const MONEY_OR_PERCENT_WORD = '(?:dollars?|bucks?|percent|per\\s+cent|cents)';
-const WORD_FIGURE = new RegExp(`\\b(?:${NUMBER_WORD}[\\s-]+${MONEY_OR_PERCENT_WORD}|${MONEY_OR_PERCENT_WORD}[\\s-]+${NUMBER_WORD})\\b`, 'i');
+const MONEY_OR_PERCENT_WORD = '(?:dollars?|bucks?|euros?|pounds?|cents?|percent(?!\\s+(?:sure|certain)\\b)|per\\s+cent)';
+const WORD_FIGURE = new RegExp(`\\b${NUMBER_WORD}[\\s-]+${MONEY_OR_PERCENT_WORD}\\b`, 'i');
 const DATE_CONTEXT = /\b(?:in|since|by|from|until|of|January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s*$/i;
 const UNIT_WORD = /^\s*(?:cm|mm|km|m|inches?|feet|ft|yards?|miles?|grams?|kg|kilograms?|pounds?|lbs?|oz|ounces?|dollars?|USD|percent|per\s+cent|items?|listings?|rows?|comps?|sales?|units?|pieces?|people|buyers?|sellers?|days?|weeks?|months?|years?|hours?|minutes?|seconds?)\b/i;
 const SENTENCES = new Intl.Segmenter('en', { granularity: 'sentence' });
 export const MAX_TOOL_USES_PER_ROUND = 4;
 
+function sentences(text: string): { segment: string; index: number }[] {
+  const masked = text.replace(new RegExp(WRITTEN_DATE, 'gi'), date => date.replace(/\./g, ' '));
+  return [...SENTENCES.segment(masked)].map(({ segment, index }) => ({ segment: text.slice(index, index + segment.length), index }));
+}
+
 function dateToken(raw: string): string | null {
   if (WRITTEN_DATE.test(raw)) {
     const parts = raw.replace(',', '').split(/\s+/);
-    const month = parts.find(part => /^[a-z]/i.test(part))!;
+    const month = parts.find(part => /^[a-z]/i.test(part))!.slice(0, 3);
     const months = 'January February March April May June July August September October November December'.split(' ');
     const day = parts.find(part => /^\d{1,2}$/.test(part))!;
-    raw = `${parts[2]}-${String(months.findIndex(value => value.toLowerCase() === month.toLowerCase()) + 1).padStart(2, '0')}-${day.padStart(2, '0')}`;
+    raw = `${parts[2]}-${String(months.findIndex(value => value.slice(0, 3).toLowerCase() === month.toLowerCase()) + 1).padStart(2, '0')}-${day.padStart(2, '0')}`;
   }
   if (raw.length > 10 && !/(?:z|[+-]\d{2}:?\d{2})$/i.test(raw)) raw += 'Z';
   const day = new Date(raw.slice(0, 10)), parsed = new Date(raw);
@@ -106,10 +124,12 @@ function dateToken(raw: string): string | null {
 }
 
 function numberToken(raw: string): string | null {
-  const value = Number(raw.replace(/US\$|dollars?|bucks?|USD|percent|per\s+cent|[$€£,%\s]/gi, ''));
+  const value = Number(raw.match(/-?(?:\d+(?:,\d{3})*(?:\.\d+)?|\.\d+)/)![0].replace(/,/g, ''));
   if (!Number.isFinite(value)) return null;
-  const unit = /€/.test(raw) ? 'eur' : /£/.test(raw) ? 'gbp' : MONEY.test(raw) ? 'usd' : /%|percent|per\s+cent/i.test(raw) ? 'pct' : 'n';
-  return `${unit}${String(value).replace('-', 'm').replace('.', 'p')}`;
+  const percent = /%|percent|per\s+cent/i.test(raw);
+  const money = percent ? undefined : MONEY_UNITS.find(({ pattern }) => pattern.test(raw));
+  const unit = percent ? 'pct' : money?.unit ?? 'n';
+  return `${unit}${String(value / (money?.divisor ?? 1)).replace('-', 'm').replace('.', 'p')}`;
 }
 
 function numbers(text: string): string[] {
@@ -124,7 +144,9 @@ function numbers(text: string): string[] {
     const after = prose.slice(match.index + raw.length);
     if (/^\d{4}$/.test(raw) && DATE_CONTEXT.test(prose.slice(0, match.index))
       && !/\w/.test(after[0] ?? '') && !UNIT_WORD.test(after)) return [];
-    let token = numberToken(raw);
+    const sign = raw.search(/-(?=[\d.])/);
+    const signed = sign < 0 || match.index + sign === 0 || /[\s([{]/.test(prose[match.index + sign - 1]);
+    let token = numberToken(signed ? raw : raw.slice(0, sign) + raw.slice(sign + 1));
     const connector = previous ? prose.slice(previous.end, match.index) + (raw.startsWith('-') ? '-' : '') : '';
     if (token?.startsWith('n') && previous && /^(?:usd|eur|gbp)$/.test(previous.unit)
       && /^\s*(?:-|–|to)\s*$/i.test(connector)) {
@@ -144,7 +166,7 @@ function figureFacts(value: unknown, key: string): string[] {
     }
     return tokens;
   }
-  if (typeof value === 'string' && (MONEY.test(value) || /%|\b(?:percent|per\s+cent)\b/i.test(value))) return numbers(value);
+  if (typeof value === 'string') return numbers(value);
   return [];
 }
 
@@ -175,7 +197,7 @@ function toolFacts(results: Answer['results']): string[] {
 
 type CitedSpan = { start: number; end: number; sources: number[] };
 
-async function checkedDraft(message: Message | undefined, answer: Answer, text: string, log: Log, now: number) {
+async function checkedDraft(message: Message | undefined, answer: Answer, text: string, log: Log, now: number, preview = false) {
   let draft = '';
   const spans: CitedSpan[] = [];
   const citedFacts: string[] = [];
@@ -197,8 +219,9 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
     ...[now, now - 12 * 60 * 60 * 1000].map(time => dateToken(new Date(time).toISOString().slice(0, 10))!)])];
   const facts = tokens.map((value, index) => ({ attribute_id: `number${index}`, name: 'number', value }));
   let kept = '';
+  let numberWords = false;
   const keptSpans: CitedSpan[] = [];
-  for (const { segment: sentence, index } of SENTENCES.segment(draft)) {
+  for (const { segment: sentence, index } of sentences(draft)) {
     const claims = numbers(sentence).map(text => ({ text, kind: 'number' }));
     const wordFigure = WORD_FIGURE.test(sentence.replace(TAGS, ''));
     if (claims.length || wordFigure) {
@@ -206,7 +229,7 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
       if (wordFigure) {
         answer.gate.cut++;
         answer.gate.cut_sentences.push(sentence.trim());
-        log.note('assist.gate', { reason: 'number_words' });
+        numberWords = true;
         continue;
       }
       const verdict = await gate({ subject: 'assist', text: claims.map(c => c.text).join(' ') }, facts, [], () => claims, { log });
@@ -220,6 +243,7 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
     keptSpans.push({ start: kept.length, end: kept.length + sentence.length, sources });
     kept += sentence;
   }
+  if (numberWords && !preview) log.note('assist.gate', { reason: 'number_words' });
   const results = { ...answer.results };
   if (answer.sources.length) results.web = {
     tool: 'market_store', ok: true, rows: answer.sources.map(source => ({ url: source.url, title: source.title })),
@@ -299,11 +323,12 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
         break;
       }
       const roundStart = o.now();
+      const max_tokens = Math.max(1024, Math.min(16000,
+        Math.floor((o.max_cost_usd * 1e6 - answer.usage.cost_usd * 1e6) / PRICE_TABLE.output_per_million)));
       const final = await o.log.call('model', o.model, { round: round + 1, effort: o.effort, message_count: messages.length }, async () => {
         try {
           const stream = o.client.messages.stream({
-            model: o.model, max_tokens: Math.max(1024, Math.min(16000,
-              Math.floor((o.max_cost_usd * 1e6 - answer.usage.cost_usd * 1e6) / PRICE_TABLE.output_per_million))),
+            model: o.model, max_tokens,
             system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }], messages,
             tools: [...o.tools.defs, { type: 'web_search_20260209', name: 'web_search', max_uses: 3 }],
             output_config: { effort: o.effort }, thinking: { type: 'adaptive' },
@@ -315,8 +340,8 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
           const streamed: Message = { ...message, content: [{ type: 'text', text: accumulated || message.content.flatMap(block => block.type === 'text' ? [block.text] : []).join(''), citations:
             message.content.flatMap(block => block.type === 'text' ? block.citations ?? [] : []) }] };
           const preview: Answer = { ...answer, blocks: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
-          const visible = stripTags(await checkedDraft(streamed, preview, o.text, o.log, o.now()));
-          for (const { segment } of SENTENCES.segment(visible)) {
+          const visible = stripTags(await checkedDraft(streamed, preview, o.text, o.log, o.now(), true));
+          for (const { segment } of sentences(visible)) {
             if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
             o.onEvent?.({ event: 'assist.text', data: { delta: stripTags(segment) } });
           }
@@ -324,9 +349,15 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
         } catch (error) {
           throw safeError(error, o);
         }
-      }, message => ({ ms: o.now() - roundStart, tokens_in: message.usage.input_tokens,
-        tokens_out: message.usage.output_tokens, ...usageOf(message), stop_reason: message.stop_reason }));
-      const usage = usageOf(final);
+      }, message => {
+        const usage = usageOf(message, max_tokens);
+        return { ms: o.now() - roundStart, ...usage, tokens_in: usage.input_tokens,
+          tokens_out: usage.output_tokens, stop_reason: message.stop_reason };
+      });
+      const usage = usageOf(final, max_tokens);
+      if (usage.cost_source === 'price_table' && missingTokenUsage(final.usage)) {
+        o.log.note('assist.usage', { reason: 'missing_token_usage', round: round + 1, tokens_out: max_tokens });
+      }
       for (const key of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'web_searches', 'cost_usd'] as const) answer.usage[key] += usage[key];
       if (usage.cost_source === 'provider') answer.usage.cost_source = 'provider';
       await collectWeb(final, answer, o, toolEvent, pendingWeb, roundStart);

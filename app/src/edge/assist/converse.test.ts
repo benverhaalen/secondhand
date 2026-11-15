@@ -364,8 +364,8 @@ function textMessage(text: string): Message {
 
 const streamed = (events: AssistEvent[]) => events.flatMap(e => e.event === 'assist.text' ? [e.data.delta] : []).join('');
 
-async function backedText(text: string, returned: ToolResult = result) {
-  const t = setup();
+async function backedText(text: string, returned: ToolResult = result, input = 'Find a wool jacket') {
+  const t = setup('answer', { text: input });
   const recording = replay([fixture('one-tool')[0], textMessage(text)]);
   t.options.client = recording.client;
   t.options.tools.run = async () => returned;
@@ -688,7 +688,8 @@ test('cuts on a continued round stopped by the cap are counted once', async () =
 
 test('number words next to money or percent words are held and the reason is logged', async () => {
   for (const text of ['It sells for four hundred dollars.', 'It sells for a dozen bucks.',
-    'The share is half percent.', 'The share is twenty per cent.', 'It costs dollars five.']) {
+    'The share is half percent.', 'The share is twenty per cent.',
+    'It is a Kennedy half dollar.', 'It is a two-dollar bill.']) {
     const t = setup('answer', { client: replay([textMessage(`${text} Let me check.`)]).client });
     const answer = await t.run();
     assert.equal(answer.gate.checked, 1, text);
@@ -716,3 +717,148 @@ test('a later tool fact cannot erase a streamed cut when the cap ends the turn',
   assert.doesNotMatch(prose(answer), /\$412/);
   for (const event of t.events) assert.ok(!JSON.stringify(event).includes('$412'));
 });
+
+for (const [spelling, amount, other] of [
+  ['400 euros', '€400', '$400'], ['400 euro', '€400', '£400'],
+  ['400 pounds', '£400', '$400'], ['400 pound', '£400', '€400'],
+  ['400 EUR', '€400', '$400'], ['400 GBP', '£400', '$400'],
+  ['a 400-dollar jacket', '$400', '€400'], ['400-dollars', '$400', '£400'],
+  ['400-USD', '$400', '€400'], ['400 - bucks', '$400', '£400'],
+  ['$-400', '$400', '€400'], ['USD-400', '$400', '£400'],
+  ['50 cents', '$0.50', '$50'], ['1 cent', '$0.01', '$1'],
+] as const) {
+  test(`${spelling} needs cited money in its currency, never a count or the person's number`, async () => {
+    const text = `It is ${spelling}.`;
+    const counts = { ...result, rows: [], counts: { sold: 400, listed: 50, items: 1 } };
+    const input = 'I counted 400, 50 and 1 items.';
+    const held = await backedText(text, counts, input);
+    assert.deepEqual(held.answer.gate.cut_sentences, [text], 'counts and person numbers cannot back money');
+    assert.equal(streamed(held.events), '', 'unbacked money must not stream');
+    const cited = { ...counts, rows: [{ price: amount }] };
+    const kept = await backedText(text, cited, input);
+    assert.equal(prose(kept.answer), text, 'same currency and amount backs money');
+    assert.equal(streamed(kept.events), text);
+    assert.equal((await backedText(text, { ...cited, citation_ids: [] }, input)).answer.gate.cut, 1, 'money needs a citation');
+    assert.equal((await backedText(text, { ...cited, rows: [{ price: other }] }, input)).answer.gate.cut, 1, 'units and cents scale must agree');
+    const reverse = await backedText(`It costs ${amount}.`, { ...counts, rows: [{ price: spelling }] });
+    assert.equal(reverse.answer.gate.cut, 0, 'suffixes normalize in result fields too');
+  });
+}
+
+const hyphenCases: [string, Record<string, number>][] = [
+  ['Sizes 8-10 are available.', { low: 8, high: 10 }],
+  ['Delivery takes 2-3 days.', { low: 2, high: 3 }],
+  ['The MA-1 is available.', { model: 1 }],
+  ['COVID-19 affected sales.', { version: 19 }],
+];
+for (const [text, counts] of hyphenCases) {
+  test(`a hyphen in ${text} does not make a negative number`, async () => {
+    const returned = { ...result, rows: [], counts };
+    const kept = await backedText(text, returned);
+    assert.equal(kept.answer.gate.cut, 0);
+    assert.equal(prose(kept.answer), text);
+    assert.equal(streamed(kept.events), text);
+    assert.equal((await backedText(text, { ...returned, counts: {} })).answer.gate.cut, 1, 'positive endpoints still need facts');
+    if ('low' in counts) {
+      assert.equal((await backedText(text, { ...returned, counts: { low: counts.low } })).answer.gate.cut, 1, 'both range endpoints need facts');
+    }
+  });
+}
+
+for (const text of ['-8 items remain.', 'There are -8 items.', 'There are (-8) items.', 'There are [-8] items.', 'There are {-8} items.']) {
+  test(`a sign at an allowed boundary stays negative: ${text}`, async () => {
+    assert.equal((await backedText(text, { ...result, rows: [], counts: { items: 8 } })).answer.gate.cut, 1);
+    assert.equal((await backedText(text, { ...result, rows: [], counts: { items: -8 } })).answer.gate.cut, 0);
+  });
+}
+
+for (const [title, text, money] of [
+  ['MacBook A1466 2017', 'The A1466 is the 2017 model.', '$1466'],
+  ['Jeans W32', 'The size is W32.', '$32'],
+  ['Sony PS5', 'The PS5 is available.', '$5'],
+  ['Y2K', 'The style is Y2K.', '$2'],
+] as const) {
+  test(`an ok string field backs counts in ${title} without backing money`, async () => {
+    for (const citation_ids of [[], ['c1']]) {
+      const returned = { ...result, rows: [{ title }], counts: {}, citation_ids };
+      const kept = await backedText(text, returned);
+      assert.equal(kept.answer.gate.cut, 0, 'plain counts in strings need no citation');
+      assert.equal(prose(kept.answer), text);
+      assert.equal((await backedText(`It costs ${money}.`, returned)).answer.gate.cut, 1);
+      assert.equal((await backedText(text, { ...returned, ok: false })).answer.gate.cut, 1, 'failed results supply no facts');
+    }
+    const topLevel = Object.assign({ ...result, rows: [], counts: {}, citation_ids: [] }, { title });
+    assert.equal((await backedText(text, topLevel)).answer.gate.cut, 0, 'top-level string fields also back counts');
+  });
+}
+
+test('strings without citations supply counts but cannot supply money or percent', async () => {
+  const returned = { ...result, rows: [{ title: 'A1466 costs $400 with 12% sold' }], counts: {}, citation_ids: [] };
+  const { answer } = await backedText('The model is A1466. It costs $400. The share is 12%.', returned);
+  assert.equal(prose(answer), 'The model is A1466.');
+  assert.deepEqual(answer.gate.cut_sentences, ['It costs $400.', 'The share is 12%.']);
+});
+
+test('a round without token fields or provider cost uses max_tokens pricing and logs the estimate once', async () => {
+  const round = continuingRound({});
+  for (const key of Object.keys(round.usage)) Reflect.deleteProperty(round.usage, key);
+  const recording = replay(Array.from({ length: 6 }, () => structuredClone(round)));
+  const t = setup('answer', { client: recording.client, max_cost_usd: 0.001 });
+  const answer = await t.run();
+  assert.equal(recording.requests.length, 1);
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.usage.input_tokens, 0);
+  assert.equal(answer.usage.output_tokens, recording.requests[0].max_tokens);
+  assert.equal(answer.usage.cost_usd, recording.requests[0].max_tokens * PRICE_TABLE.output_per_million / 1e6);
+  const lines = t.sink.lines.map(line => JSON.parse(line));
+  const notes = lines.filter(line => line.event === 'note' && line.reason === 'missing_token_usage');
+  assert.equal(notes.length, 1);
+  assert.equal(notes[0].tokens_out, recording.requests[0].max_tokens);
+  const modelStart = lines.find(line => line.event === 'call.start' && line.kind === 'model');
+  const modelEnd = lines.find(line => line.event === 'call.end' && line.call === modelStart.call);
+  assert.equal(modelEnd.cost_usd, answer.usage.cost_usd, 'call and answer must use the same estimate');
+  const priced = structuredClone(round);
+  Object.assign(priced.usage, { cost: 0 });
+  priced.stop_reason = 'end_turn';
+  const provider = setup('answer', { client: replay([priced]).client });
+  assert.equal((await provider.run()).usage.cost_usd, 0, 'explicit zero provider cost wins');
+  assert.doesNotMatch(provider.sink.text(), /missing_token_usage/);
+});
+
+for (const text of ['It costs dollars five.',
+  'I am one hundred percent sure.', 'I am one hundred percent certain.']) {
+  test(`number words keep ordinary prose: ${text}`, async () => {
+    const t = setup('answer', { client: replay([textMessage(text)]).client });
+    const answer = await t.run();
+    assert.equal(prose(answer), text);
+    assert.equal(streamed(t.events), text);
+    assert.equal(answer.gate.cut, 0);
+    assert.doesNotMatch(t.sink.text(), /number_words/);
+  });
+}
+
+for (const text of ['The share is one percent.', 'The share is one percent surely.', 'It costs two dollars. It costs three dollars.']) {
+  test(`number_words is logged once in a round that cuts: ${text}`, async () => {
+    const rounds = [continuingRound({}), textMessage(text)];
+    rounds[0].content.unshift({ type: 'text', text, citations: null });
+    const t = setup('answer', { client: replay(rounds).client });
+    const answer = await t.run();
+    assert.equal(prose(answer), '');
+    const notes = t.sink.lines.map(line => JSON.parse(line)).filter(line => line.reason === 'number_words');
+    assert.equal(notes.length, 2, 'one note per model round regardless of sentence count or preview');
+  });
+}
+
+for (const date of ['Nov 15, 2026', 'Nov. 15 2026', 'November 15 2026']) {
+  test(`${date} is one date, never independent day and year counts`, async () => {
+    const text = `Sold on ${date}.`;
+    const returned = { ...result, rows: [{ sold_at: '2026-11-15' }], counts: {} };
+    const kept = await backedText(text, returned);
+    assert.equal(kept.answer.gate.checked, 1);
+    assert.equal(kept.answer.gate.cut, 0);
+    assert.equal(prose(kept.answer), text);
+    assert.equal(streamed(kept.events), text);
+    const held = await backedText(text, { ...returned, rows: [], as_of: '', counts: { day: 15, year: 2026 } });
+    assert.deepEqual(held.answer.gate.cut_sentences, [text], 'plain counts cannot back a date');
+  });
+}
