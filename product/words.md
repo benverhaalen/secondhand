@@ -1720,3 +1720,9 @@ Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
 > Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
 
 Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
+
+## 2026-11-15 nate correct the answers that come in, and check the engines' spec makes scientific sense and the real-time gathering works
+Nate, build session (orchestrator), 2026-11-15 about 11:30 Central.
+> Ensure all answers that come in are corrected. assess that the engines and how things are determined and weighted, is written out in a spec that makes research proven and scientific sense, that the realtime gathering of this works
+
+Used in: `spec/plans/sweep/science-audit.md` and `scripts/realtime-proof.mjs` when they land.
