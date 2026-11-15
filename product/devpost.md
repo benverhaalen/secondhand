@@ -18,21 +18,17 @@ Selling a jacket can mean looking up prices, checking fees, rewriting the listin
 
 ## Let's dig in
 
-A listing is easy to draft. The harder work starts when you have to decide what a jacket is worth, where to list it, and what to do if two buyers pay. We started with the jacket in the closet and followed those decisions as far as we could.
+### Dig through your closet
 
-We dug into the sales behind a price so someone can inspect the evidence. We deliberately changed real photos to see what our checks would miss. We modeled what could happen when one item was listed on four marketplaces, then broke the second-payment rule to make sure the test could catch it. The app should bring the important choices back to the person, with enough context to make the call.
+Pull out something you've meant to sell. Before it goes anywhere, you have to work out what it is, what someone would pay and where it belongs. We built secondhand to bring those decisions into one place. Then we turned the same idea around for someone looking to buy.
 
-That is what we took from Dean Remzi Arpaci-Dusseau's [Time to Dig](https://cai.wisc.edu/2026/07/01/time-to-dig-founding-dean-essay/). More capable tools give us more responsibility for what they do. For secondhand, that means showing the evidence and giving the person a clear point of control.
+### How did we do it?
 
-### Other openings to consider
+We dug into the tools underneath a simple price. A sale record has a source, a date and rules about how we can use it. Databricks lets us keep that context as records are checked and versioned. We wrote a SQL function so someone could open a displayed price, see the actual sales behind it and check that the evidence matches. The person can use that evidence to make the decision.
 
-Use one of these angles when it matches the strongest evidence in the final pitch.
+### We dug into what we got wrong
 
-1. **Dig through the closet.** Start with the real object that sat unsold and the decision that kept it there. End by showing the decision becoming easier. This is easiest for a general judge to retell.
-2. **Dig into a number.** Start with a price and follow it back to the sales that supported it. Use the Databricks path and the historical comparison to show why the estimate is inspectable. This gives a data judge a reason to open the technical evidence.
-3. **Dig past the happy path.** Start when two buyers pay for the same item. Show what the model allows, what it catches and what still waits for the person. This turns one scenario into evidence of execution and judgment.
-4. **Dig into who decides.** Put a low offer or buyer reply on screen. Show what the software prepares, what code checks and what the person chooses. This is the closest fit to the essay's question about who directs a powerful tool.
-5. **Dig into what we got wrong.** Start with the photo check that missed a detail or held an honest edit. Explain the tradeoff and the next test. This shows what the team learned from looking for failure.
+Our photo check lined up the original and edited photo before comparing them. We found that lining them up could hide a stretch we needed to catch. We added a stretch check and show both what it caught and how often it held a good edit. That is what we took from Dean Remzi Arpaci-Dusseau's [Time to Dig](https://cai.wisc.edu/2026/07/01/time-to-dig-founding-dean-essay/). If we want people to trust a tool with their decisions, we owe them a way to see how it works and where it fails.
 
 ## What it does
 
@@ -54,9 +50,9 @@ A price is easier to trust when you can see where it came from. Lakeflow checks 
 
 That made it possible to check whether someone else could rebuild the evidence behind a price. One recorded check rebuilt 42,399 of 42,405 bases. Six did not rebuild and remain open in that record. The workspace guide has the queries and the source artifacts. [Databricks guide](../databricks/DEMO.md) · [Recorded handoff](../.agents/team/packets/team/71-databricks-handoff.md)
 
-## Closer to what buyers paid
+## 84% fewer large pricing misses
 
-For every 1,000 past sneaker sales both methods priced, our research model got about 83 more estimates within 20% of the sale price than a 90-day median. On an item that sold for $100, that means an estimate between $80 and $120.
+If a pair sold for $100, a price estimate below $80 or above $120 counted as a large miss. When we tested on past sneaker sales, the 90-day median missed by that much about once in 10 estimates. Our research model missed about once in 65. This is evidence that the model can give someone a starting estimate with fewer large errors in this market.
 
 *Research model, 39,707 paired StockX sales. Test sales from November 2018 through February 2019, limited to new Off-White x Nike and Yeezy 350 sneakers. 98.5% versus 90.2% within 20%. Estimates used earlier sales. See the full population, coverage and other baselines in the [results](../scripts/bench/out/backtest-stockx.json).*
 

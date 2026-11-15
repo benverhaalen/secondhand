@@ -2288,3 +2288,12 @@ Ben, Codex, on what the presentation should convey:
 > but our website (public), the devpost, or any video should all convey these in a different way. oh also, for the website and devpost especially have a section about digging in.
 
 These are the intended selling points. The [pitch evidence map](pitch.md#what-we-want-people-to-remember) records the proof and pending comparisons for each.
+
+
+## 2026-11-15 dig through your closet, how we did it, and what we got wrong
+
+Ben, Codex, refining the theme and the StockX comparison:
+
+> theres got to be a better way to talk about the 98.5 vs 90.2. like what does that difference mean about our product. how about dig through your closet. how did we do it. we dug into complex tooling. this is how:. We also dig into what we got wrong. i like these things
+
+Used in [Let's dig in](devpost.md#lets-dig-in) and [the pitch evidence map](pitch.md#what-we-want-people-to-remember).

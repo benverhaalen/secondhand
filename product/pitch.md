@@ -14,7 +14,7 @@ The brand thread's recommended wordmark already carries both: the o is a clock w
 
 | Point | What to show now | What would support the stronger claim |
 |---|---|---|
-| **Price to the market.** | Show the sale records behind a price. On 39,707 historical StockX sales both methods priced, the research model got within 20% of the sale price about 83 more times per 1,000 than the 90-day median. Put the dataset and coverage beside the result. [Output](../scripts/bench/out/backtest-stockx.json) | Lower errors or better realized outcomes across current categories, using the app engine. An estimation result alone measures neither savings nor sales. |
+| **Price to the market.** | Show the sale records behind a price. On 39,707 historical StockX sales both methods priced, the research model made 84% fewer errors of more than 20% than the 90-day median. Say “about one big miss in 65 estimates instead of one in 10” and define a big miss with a $100 example. Put the dataset and coverage beside the result. [Output](../scripts/bench/out/backtest-stockx.json) | Lower errors or better realized outcomes across current categories, using the app engine. An estimation result alone measures neither savings nor sales. |
 | **Sell sooner across marketplaces.** | One item record, the previews or verified listings it produces, and an action after posting. Name actual support per marketplace. | Time to a confirmed sale on comparable items. Listing reach and time to publish are separate outcomes. |
 | **Make a good listing with less work.** | Show the photo, sourced facts and review-ready listing for the same item. Show the photo comparison as evidence of faithful presentation. | Run the same items to the same reviewed endpoint across tools. Report active time, factual corrections, omissions and completion. |
 | **Find the right used item sooner.** | Show one request, the best verified match that fits, the delivered price and a near miss. | Matched search tasks showing time to an eligible result and successful matches. Time to purchase needs a separate observation. |
@@ -27,7 +27,7 @@ The brand thread's recommended wordmark already carries both: the o is a clock w
 ## How each medium makes the case
 
 - **Public website.** Home shows the problem and leads to real product states. How It Works follows the person's job. Features shows the engineering choices and fair comparisons. Data Use opens prices to source rows and records how we tested them. FAQ answers objections in complete sentences. What's Next explains the appraisal and business direction. Give **How we dug in** a short panel on Features with links to cases on Features and Data Use. Home retains its existing section order.
-- **Devpost.** Lead with the work that keeps someone from selling or finding what they want. Then show one product decision. Put **Let's dig in** after the problem or first worked example. Use it to pair the essay's idea of human judgment with one price, one approval and one failure we tested. Link the artifacts so the reader can verify them after the presentation. [Draft and alternatives](devpost.md#lets-dig-in)
+- **Devpost.** Lead with the work that keeps someone from selling or finding what they want. Then show one product decision. Put **Let's dig in** after the problem or first worked example. Use it to pair the essay's idea of human judgment with one price, one approval and one failure we tested. Link the artifacts so the reader can verify them after the presentation. [Three-part draft](devpost.md#lets-dig-in)
 - **Video.** Open with finding the item, show real product states for capture, price and review, and let one decision visibly come back to the person. Use a labeled recording or simulation where that is the evidence. Give one result a legible caption and link the website for details. Use motion to show the transition or sequence.
 
 ## The problem in one sentence
@@ -118,7 +118,7 @@ The canonical list of every feature worth showing is [features-proof.md](feature
 
 ## How deep we dug
 
-When a judge asks "how much is really here?" or "what did you do with the tech?", the answer, with every count and a link to each file, is the "How deep we dug" section of [devpost.md](devpost.md#how-deep-we-dug). Two halves: how the project was made (44 decisions with their reasons, 314 quotes from Ben and Nate, 227 research notes with every claim marked, 23 checks that fail the build, about 2,900 tests, a backtest designed before any data) and technology used in ways we haven't seen (a model checker for one item on four sites, AI photos measured against the tape, a price that refuses when sales are thin, identification that measures its own doubt, site readers that repair themselves, Databricks as the home of every learned number, Codex as an image pipeline with a judge). Pick one from each half; don't recite the list.
+When a judge asks what we did with the technology, open [Let's dig in](devpost.md#lets-dig-in) and the [tested cases](devpost.md#how-deep-we-dug). Start with an item the judge can picture, trace its price through Databricks, and show the photo check that initially missed a stretch. This gives the judge a concrete example of why the work matters, what the tools enabled, and what changed when the team found an error.
 
 ## Proof without sales
 
