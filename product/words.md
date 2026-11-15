@@ -998,6 +998,14 @@ Nate, build session (orchestrator), 2026-11-14 about 22:50 Central, with a scree
 Nate, build session (orchestrator), 2026-11-14 about 23:00 Central.
 > Run browser use on cloud, testing everything the way the app will be production built so we can validate as we build. Build everything in a way that establishes and finalizes milestones being hit and our app, system, everything being fully realized
 
+## 2026-11-14 nate we run on browser use cloud, with its docs saved as reference and the seats on it versed for speed and cost
+Nate, build session (orchestrator), 2026-11-14 about 23:10 Central, after asking whether Browser Use Cloud is the best option.
+> great, we'll run with browser use cloud, optimize utilizing the docs as saved reference and having the subagents responsible for that technology brilliantly versed to develop it for speed and cost considering
+
+## 2026-11-14 nate combine signed-in actions with public no-login fetches for the fastest searches
+Nate, build session (orchestrator), 2026-11-14 about 23:25 Central, after the Browser Use Cloud reference was saved.
+> well lets take all this into consideration, understand the docs, the ways its built to optimize around this, to maximize the speed of our searches, combining the actions we need to perform on the authenticated platform with public no login needed firecrawls?
+
 ## 2026-11-15 one place makes the ui, every correction becomes a check, emil's skills vet every page, and the system designs any new page
 Ben, project chat and thread "Roll the UI system out everywhere", 2026-11-15, times UTC.
 

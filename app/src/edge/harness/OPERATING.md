@@ -81,6 +81,10 @@ Each table is a recipe outline, not permission. controls[] and policy remain man
 | Read | Actions | Proof |
 | listing ids | open → extract | stats and source refs |
 
+### read_storefront
+| Read | Actions | Proof |
+| the linked account | open the shop's own dashboard or profile → extract | storefront figures, fields_missing[] for what the site does not show |
+
 ### search
 | Read | Actions | Proof |
 | query, cursor | open → extract | results or legitimate empty array |
