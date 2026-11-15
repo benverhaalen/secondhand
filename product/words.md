@@ -547,3 +547,11 @@ Ben, on the round 8 picks page, saved 2026-11-15 00:26 UTC; he wrote "alright th
 
 **The item in a feed** (no pick).
 > definitely B or C, let me know what a better designer would do. im fine possibly amending some decisions earlier. if we could mix B and C. or have some sort of in between of them. also something with the spacing of all the elements and everything seems like slop. it needs to be super intentional.
+
+## 2026-11-14 nate review everything before the build plans
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Before you start the build plans, lets review everyhing. I know you researched and found alot, inclduing how to extend databricks, how it introduces new features, etc
+
+## 2026-11-14 nate do not trust the published price tests, and we replicate thriftx and dupe ourselves
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> beyond just the fact verifying one, there were several other ideas, ones utilized to speed up data.  Also dont trust those tests for prices. Explain and save how they were done, but they defintiely werent done the right way. We will harness agents to utilize connection to sources of information, like the analyzed treg and other sites do. dupe, thriftx, we are applying the reverse analyzed and specced ourselves, geniusly architected to work backend systems to replicate what thriftx and dupe.com do.
