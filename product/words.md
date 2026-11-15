@@ -1622,3 +1622,9 @@ Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the or
 > you havent worked out far enough, ebay does work in cases, I've seen it used
 
 Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+
+## 2026-11-15 every why explained, numbers that help, and a statistic we can defend
+Ben, project chat, 08:59 UTC.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [evidence constitution](constitutions/evidence.md), [price constitution](constitutions/price.md).
