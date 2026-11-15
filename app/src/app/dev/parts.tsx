@@ -10,6 +10,9 @@ import {
   Feed, QueueView, MoneyNews, Pile, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
+import { CardGroup } from '@/ui/parts/card-group';
+import { ConvoRow } from '@/ui/parts/convo-row';
+import { Glance } from '@/ui/parts/glance';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
@@ -20,6 +23,7 @@ import { MoneyBar } from '@/ui/parts/money-bar';
 import { StateBar } from '@/ui/parts/state-bar';
 import { PulseKey, PulseRow } from '@/ui/parts/pulse-row';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
+import { SiteChip } from '@/ui/parts/site-chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
 import { photo } from '@/demo/photos';
@@ -206,6 +210,8 @@ function Sheetful() {
 
       <Section title="Amount">
         <Amount value={46.95} what="You get, after fees" />
+        <Glance value={163.63} what="You got from 4 sales, after fees" stats={[{ value: '$132.33', word: 'On its way' }, { value: '4', word: 'Live' }]} />
+        <CardGroup label="Looking for"><ItemCard id="cg-want" title="Standing desk" photo={null} state="working" word="2 of 3 sites" fact={{ label: 'Nothing yet under', amount: '$150' }} /></CardGroup>
       </Section>
 
       <Section title="Grid tile, shelf, filter row (Sell)">
@@ -213,7 +219,8 @@ function Sheetful() {
           <Chip id="c-sort" icon="sorting-01" label="Latest" onPress={() => {}} />
           <Chip id="c-all" label="All" picked onPress={() => {}} />
           <Chip id="c-need" label="Needs you" count={8} onPress={() => {}} />
-          <Chip id="c-ebay" site="ebay" onPress={() => {}} />
+          <SiteChip id="c-ebay" site="ebay" onPress={() => {}} />
+          <SiteChip id="c-depop" site="depop" picked onPress={() => {}} />
         </FilterRow>
         <Shelf id="p-need" title="Needs you" count={8} onAll={() => {}}>
           <Grid columns={2}>
@@ -264,6 +271,12 @@ function Sheetful() {
         <List>
           <ThreadRow id="tr-need" who="canvasfan" photo="carhartt-jacket" title="Carhartt Detroit jacket" site="depop" need={{ state: 'need', word: 'Offer' }} last="Would you take $85?" time="5m ago" unread={2} />
           <ThreadRow id="tr-did" who="vintage_workwear_collector_and_reseller_since_2009" photo="nike-dunks" title="Nike Dunk Low, 10.5" site="ebay" did="Sent for you" last="Yes, it’s still available. It ships tomorrow." mine time="Yesterday" unread={0} />
+        </List>
+        <List>
+          <ConvoRow id="cr-draft" who="canvasfan" photo="carhartt-jacket" name="Carhartt Detroit jacket" site="depop" note="draft" last="Is the inseam really 36?" time="9h ago" unread={1} />
+          <ConvoRow id="cr-scam" who="Alex" photo="nike-dunks" name="Nike Dunk Low" site="facebook" note="scam" last="Can you text me? I’ll pay by Zelle" time="10h ago" unread={1} />
+          <ConvoRow id="cr-read" who="vintage_workwear_collector_and_reseller_since_2009" photo={null} name="Nike Dunk Low" site="ebay" last="Yes, it’s still available." time="Yesterday" unread={0} />
+          <ConvoRow id="cr-auto" who="workwear_co" photo="carhartt-jacket" name="Carhartt Detroit jacket" site="ebay" note="auto" last="It ships tomorrow." time="5h ago" unread={0} />
         </List>
         <Message side="theirs" meta={<Meta text="canvasfan, 5m ago" />}>What’s the inseam?</Message>
         <Message side="mine" meta={<Meta text="Sent for you, 4m ago" info />}>It’s 32 inches.</Message>

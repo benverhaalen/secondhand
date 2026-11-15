@@ -1935,6 +1935,13 @@ Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
 
 Used in: `spec/engines/adaptation.md` (the brand measure, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
 
+## 2026-11-15 each page has one purpose, and the profile is not a pile of everything
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 10:27 UTC (relayed by the coordinator to the UI builder).
+
+> each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter
+
+Used in: `app/src/app/(tabs)/you.tsx` and `app/behavior/(tabs)/you.json` (the glance and one-line rows; the analytics moved to Insights, `app/src/you/trends.tsx`), `app/src/app/(tabs)/sell.tsx` (a shelf named once).
 Ben, same thread, 10:27 UTC.
 
 > each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter

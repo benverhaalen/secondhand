@@ -1,7 +1,8 @@
 // Each rule in composition.mjs with the smallest render that breaks it, and the approved mock's shape, which passes.
 import assert from 'node:assert/strict';
-import { test } from 'node:test';
-import { compose } from './composition.mjs';
+import { after, before, test } from 'node:test';
+import { playwright } from './brand-check.mjs';
+import { compose, snapshot } from './composition.mjs';
 
 const t = (s, role, y, more = {}) => ({ s, role, color: 'rgb(10, 10, 10)', size: 15, y, bottom: y + 20, seen: true, bar: false, head: false, shelf: null, item: null, cut: false, ...more });
 const ids = f => f.map(x => x.id).sort();
@@ -61,4 +62,39 @@ test('U13: a header and a tag on every item that say the same state fail; tags t
 test('U14: a cut title fails in the typical world', () => {
   const s = approved(); s.texts[3].cut = true;
   assert.deepEqual(ids(compose(s, { route: '(tabs)/index' })), ['U14']);
+});
+
+// The snapshot runs in the page, so these render a page shaped like a main tab and read it as app-check does.
+const pw = playwright(); let browser;
+before(async () => { if (pw) browser = await pw.chromium.launch(); });
+after(async () => { await browser?.close(); });
+const tab = async body => {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  await page.setContent(`<body style="margin:0;font:15px/20px sans-serif"><div style="padding:59px 20px 0">${body}</div></body>`);
+  const snap = await page.evaluate(snapshot, { insetTop: 59 }); await page.close();
+  return compose(snap, { route: '(tabs)/sell' });
+};
+const line = (s, role = 'body') => `<div data-role="${role}" style="height:20px;margin-bottom:12px">${s}</div>`;
+const head = `<div data-part="page-head" style="height:48px;display:flex;justify-content:space-between;align-items:center">
+  <span data-role="heading" style="font-size:36px;line-height:40px">Sell</span><span style="margin-top:20px" data-role="body">Select</span><span data-role="caption">4</span></div>`;
+const grid = '<div data-part="tile" style="height:200px;width:160px"></div>';
+
+// Sell, 11-15 10:20: the title row (TabNav) replaced the nav on the tabs, and its title, its count and Select were counted as
+// lines before the first tile, so every main tab failed U11 for its own name.
+test('U11: a main tab\'s title row (page-head) is the nav, not lines before the first item', { skip: !pw }, async () => {
+  assert.deepEqual(ids(await tab(`${head}${line('Latest All Needs you')}${line('Needs you 8')}${grid}`)), []);
+});
+test('U11: four lines under the title row still fail', { skip: !pw }, async () => {
+  assert.deepEqual(ids(await tab(`${head}${line('Since yesterday')}${line('$96.20', 'amount')}${line('Needs you now')}${line('Due first, today at 3 pm')}${grid}`)), ['U11']);
+});
+
+// Buy, 11-15: Section sets its title at 18 in ink and marks nothing, so "Needs you" over cards titled at 18 passed U10
+// unseen. A line with items after it in its own group is a header, marked or not.
+test('U10: an unmarked section title set like the card titles under it fails; a quiet label over the cards passes', { skip: !pw }, async () => {
+  const card = '<div data-part="card-decision" style="height:156px"><div data-role="headline" style="font-size:18px">Nike Dunk Low</div></div>';
+  const section = title => `<div style="padding-top:59px">${title}${card}${card}</div>`;
+  const read = async body => { const page = await browser.newPage({ viewport: { width: 390, height: 844 } }); await page.setContent(body);
+    const snap = await page.evaluate(snapshot, { insetTop: 59 }); await page.close(); return compose(snap, { route: 'listing/[id]' }); };
+  assert.deepEqual(ids(await read(section('<div data-role="headline" style="font-size:18px">Needs you</div>'))), ['U10']);
+  assert.deepEqual(ids(await read(section('<div data-head="cards"><div data-role="body" style="font-size:15px;color:rgb(10 10 10 / 0.65)">Needs you</div></div>'))), []);
 });
