@@ -29,8 +29,11 @@ export const requestStudio = (capture: Capture) => api.call<Capture>(`PATCH /v1/
   body: { version: capture.version, generate: true },
 });
 
+// A plain loop: a callback per character on a multi-megabyte photo held tens of MB at once, and iOS closed the app (Nate, 2026-11-15).
+const decode = (base64: string) => { const text = atob(base64), out = new Uint8Array(text.length); for (let i = 0; i < text.length; i++) out[i] = text.charCodeAt(i); return out; };
+
 export async function uploadStills(capture: Capture, stills: Still[], uploadFetch: Fetch = fetch): Promise<Capture> {
-  const bytes = stills.map(still => Uint8Array.from(atob(still.base64), character => character.charCodeAt(0)));
+  const bytes = stills.map(still => decode(still.base64));
   const signed = await api.call<{ photos: Upload[]; capture: Capture }>(`POST /v1/captures/${encodeURIComponent(capture.id)}/photos`, {
     body: { photos: stills.map((still, index) => ({ role: still.role, step: still.step, key: still.step, content_type: still.type, bytes: bytes[index].length })) },
   });
