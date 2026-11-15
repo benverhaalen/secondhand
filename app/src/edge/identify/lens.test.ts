@@ -20,6 +20,7 @@ type Image = {
 const Jimp = createRequire(import.meta.url)('jimp-compact') as {
   new(w: number, h: number, color: number): Image;
   read(bytes: Buffer): Promise<Image>;
+  decoders: Record<string, (bytes: Buffer) => Image['bitmap']>;
 };
 const fixture = JSON.parse(readFileSync(new URL('./fixtures/lens-carhartt.json', import.meta.url), 'utf8')) as {organic: {title: string; link: string; source: string; imageUrl: string}[]};
 const front: Photo = {key: 'front_1', role: 'front', file_ref: 'photo_1'};
@@ -146,6 +147,63 @@ test('missing file, HEIC and unknown bytes fail before reserving or fetching', a
   const s = await setup(); await assert.rejects(s.run({key: 'front', role: 'front'}), /file_ref/);
 });
 
+test('PNG dimensions over 40 million pixels or 12000 on either side fail before decode or spend', async t => {
+  const png = (await new Jimp(1, 1, 0xffffffff).getBufferAsync('image/png')).subarray(0, 33);
+  const decode = t.mock.method(Jimp.decoders, 'image/png', () => {throw new Error('PNG decoder must not run');});
+  for (const [width, height] of [[20000, 20000], [9000, 9000], [12001, 1], [1, 12001]]) {
+    const bytes = Buffer.from(png); bytes.writeUInt32BE(width, 16); bytes.writeUInt32BE(height, 20);
+    const s = await setup(bytes);
+    await assert.rejects(s.run(), /Lens image dimensions exceed limit/);
+    assert.equal(decode.mock.callCount(), 0);
+    assert.equal(s.kv.get('spend', 'capture:cap_1'), undefined);
+    assert.equal(s.kv.get('spend', 'day:2026-11-15'), undefined);
+    assert.equal(s.calls(), 0); assert.equal(s.address(), '');
+  }
+});
+
+test('JPEG SOF0, SOF1 and SOF2 dimensions are checked before decode or spend', async t => {
+  const decode = t.mock.method(Jimp.decoders, 'image/jpeg', () => {throw new Error('JPEG decoder must not run');});
+  for (const marker of [0xc0, 0xc1, 0xc2]) for (const [width, height] of [[9000, 9000], [12001, 1], [1, 12001]]) {
+    const frame = Buffer.from([8, 0, 0, 0, 0, 1, 1, 0x11, 0]);
+    frame.writeUInt16BE(height, 1); frame.writeUInt16BE(width, 3);
+    const bytes = Buffer.concat([Buffer.from([255, 0xd8]), segment(0xfe, Buffer.from('example')), segment(marker, frame)]);
+    const s = await setup(bytes);
+    await assert.rejects(s.run(), /Lens image dimensions exceed limit/);
+    assert.equal(decode.mock.callCount(), 0);
+    assert.equal(s.kv.get('spend', 'capture:cap_1'), undefined);
+    assert.equal(s.calls(), 0); assert.equal(s.address(), '');
+  }
+});
+
+test('missing, truncated or zero image dimensions fail before either decoder runs', async t => {
+  const png = await new Jimp(1, 1, 0xffffffff).getBufferAsync('image/png');
+  const zero = Buffer.from(png); zero.writeUInt32BE(0, 16);
+  const badChunk = Buffer.from(png); badChunk.write('IDAT', 12);
+  const zeroFrame = segment(0xc0, Buffer.from([8, 0, 0, 0, 1, 1, 1, 0x11, 0]));
+  const jpeg = (...parts: Buffer[]) => Buffer.concat([Buffer.from([255, 0xd8]), ...parts]);
+  const pngDecode = t.mock.method(Jimp.decoders, 'image/png', () => {throw new Error('PNG decoder must not run');});
+  const jpegDecode = t.mock.method(Jimp.decoders, 'image/jpeg', () => {throw new Error('JPEG decoder must not run');});
+  for (const bytes of [png.subarray(0, 8), png.subarray(0, 23), zero, badChunk,
+    jpeg(Buffer.from([255, 0xd9])), jpeg(Buffer.from([255, 0xc0, 0])), jpeg(segment(0xc1, Buffer.from([8]))),
+    jpeg(Buffer.from([255, 0xe1, 0xff, 0xff])), jpeg(zeroFrame)]) {
+    const s = await setup(bytes);
+    await assert.rejects(s.run(), /Lens image dimensions/);
+    assert.equal(pngDecode.mock.callCount(), 0); assert.equal(jpegDecode.mock.callCount(), 0);
+    assert.equal(s.kv.get('spend', 'capture:cap_1'), undefined); assert.equal(s.calls(), 0);
+  }
+});
+
+test('normal PNG and JPEG photos decode and reach Lens', async t => {
+  for (const mime of ['image/png', 'image/jpeg']) {
+    const bytes = await new Jimp(40, 60, 0x22aa44ff).getBufferAsync(mime);
+    const decode = t.mock.method(Jimp.decoders, mime);
+    const s = await setup(bytes); await s.run();
+    assert.equal(decode.mock.callCount(), 1); assert.equal(s.calls(), 1);
+    assert.equal(s.kv.get('spend', 'capture:cap_1'), 3000);
+    decode.mock.restore();
+  }
+});
+
 test('invalid crop coordinates fail before reserving', async () => {
   const s = await setup();
   for (const crop of [{x: -0.1, y: 0, w: 1, h: 1}, {x: 0.5, y: 0, w: 0.6, h: 1}, {x: 0, y: 0, w: 0, h: 1}, {x: NaN, y: 0, w: 1, h: 1}]) await assert.rejects(s.run({...front, crop}), /crop/);
@@ -187,7 +245,7 @@ for (const status of [402, 500]) test(`treg ${status} deletes an unfetched addre
   await assert.rejects(s.run(), new RegExp(String(status)));
   assert.equal((await s.get(s.address())).status, 404);
   assert.match(s.sink.text(), new RegExp(`"status":${status}`)); assert.doesNotMatch(s.sink.text(), /PRIVATE PROVIDER BODY|test-token/);
-  assert.equal(s.kv.get('spend', 'capture:cap_1'), 2900);
+  assert.equal(s.kv.get('spend', 'capture:cap_1'), 3000);
 });
 
 test('15 second abort deletes an unfetched address without retry or leaking thrown request details', async t => {
@@ -223,6 +281,24 @@ test('missing or non-array organic yields no hits and malformed cost retains the
     assert.equal(s.kv.get('spend', 'capture:cap_1'), 3000); assert.match(s.sink.text(), /cost_header_missing/);
   }
 });
+
+for (const header of [null, '-1', '1.5', 'bad', '9007199254740992'])
+  test(`cost header ${header} keeps the reservation and logs cost_header_missing`, async () => {
+    const s = await setup(); s.header(header); await s.run();
+    assert.equal(s.kv.get('spend', 'capture:cap_1'), 3000);
+    assert.equal(s.kv.get('spend', 'day:2026-11-15'), 3000);
+    assert.match(s.sink.text(), /cost_header_missing/);
+    assert.deepEqual(await s.run(), []); assert.equal(s.calls(), 1);
+  });
+
+for (const [header, counted] of [['0', 3000], ['5000', 5000]] as const)
+  test(`cost header ${header} counts ${counted} and refuses a second Lens call`, async () => {
+    const s = await setup(); s.header(header); await s.run();
+    assert.equal(s.kv.get('spend', 'capture:cap_1'), counted);
+    assert.equal(s.kv.get('spend', 'day:2026-11-15'), counted);
+    assert.doesNotMatch(s.sink.text(), /cost_header_missing/);
+    assert.deepEqual(await s.run(), []); assert.equal(s.calls(), 1);
+  });
 
 test('identify with abstaining code rungs keeps only its Carhartt candidate line and page count', async () => {
   const s = await setup();

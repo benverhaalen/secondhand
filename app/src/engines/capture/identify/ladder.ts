@@ -8,8 +8,8 @@ export const DECLARED = [
   {name: 'identity_rung_4', family: 'scalar', prior: 0.3},
   {name: 'identity_q_kind', family: 'scalar', prior: 0.6},
   {name: 'identity_max_pick', family: 'scalar', prior: 4},
-  {name: 'identify_spend_cap_capture_micro', family: 'scalar', prior: 3000, guard_lo: 0},
-  {name: 'identify_spend_cap_day_micro', family: 'scalar', prior: 100000, guard_lo: 0},
+  {name: 'identify_spend_cap_capture_micro', family: 'scalar', prior: 3000, guard_lo: 0, guard_hi: 3000},
+  {name: 'identify_spend_cap_day_micro', family: 'scalar', prior: 100000, guard_lo: 0, guard_hi: 100000},
   {name: 'identify_lens_crop', family: 'scalar', prior: 0.8, guard_lo: 0, guard_hi: 1},
   {name: 'identify_lens_url_ttl_s', family: 'scalar', prior: 120, guard_lo: 0, guard_hi: 120},
 ] as const;

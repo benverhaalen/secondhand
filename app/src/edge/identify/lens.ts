@@ -95,11 +95,39 @@ function orient(bitmap: Image['bitmap'], value: number): Image['bitmap'] {
   }
   return {width, height, data};
 }
+function checkDimensions(raw: Buffer, jpeg: boolean): void {
+  let width = 0, height = 0;
+  if (!jpeg) {
+    if (raw.length >= 33 && raw.readUInt32BE(8) === 13 && raw.subarray(12, 16).toString() === 'IHDR') {
+      width = raw.readUInt32BE(16); height = raw.readUInt32BE(20);
+    }
+  } else {
+    for (let offset = 2; offset < raw.length;) {
+      if (raw[offset++] !== 255) break;
+      while (raw[offset] === 255) offset++;
+      const marker = raw[offset++];
+      if (marker === 0xda || marker === 0xd9) break;
+      if (marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
+      if (offset + 2 > raw.length) break;
+      const length = raw.readUInt16BE(offset), end = offset + length;
+      if (length < 2 || end > raw.length) break;
+      if (marker === 0xc0 || marker === 0xc1 || marker === 0xc2) {
+        if (length < 8) break;
+        height = raw.readUInt16BE(offset + 3); width = raw.readUInt16BE(offset + 5);
+        break;
+      }
+      offset = end;
+    }
+  }
+  if (!width || !height) throw new TypeError('Lens image dimensions cannot be read');
+  if (width > 12000 || height > 12000 || width * height > 40000000) throw new RangeError('Lens image dimensions exceed limit');
+}
 async function pixels(bytes: Uint8Array, box: Crop): Promise<Buffer> {
   const raw = Buffer.from(bytes);
   const jpeg = raw[0] === 0xff && raw[1] === 0xd8 && raw[2] === 0xff;
   const png = raw.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
   if (!jpeg && !png) throw new TypeError('Lens requires JPEG or PNG bytes');
+  checkDimensions(raw, jpeg);
   // This compact build silently drops EXIF on read; decode raw pixels and apply orientation exactly once.
   const decoded = orient(Jimp.decoders[jpeg ? 'image/jpeg' : 'image/png'](raw), orientation(raw, jpeg)), {width, height} = decoded;
   const x = Math.min(width - 1, Math.round(box.x * width)), y = Math.min(height - 1, Math.round(box.y * height));

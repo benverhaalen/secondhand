@@ -42,13 +42,31 @@ test('UTC midnight starts a new day counter and old day counters expire after tw
   assert.equal(s.kv.get('spend', 'day:2026-11-15'), undefined);
 });
 
-test('settle replaces the reservation with 2900 micro on its original UTC day', () => {
+test('settle with 2900 micro keeps the 3000 reservation on its original UTC day', () => {
   const s = setup(), result = s.reserve('cap_1'); assert.ok(result.ok);
   s.advance(1000); s.spend.settle(result.id, 2900);
-  assert.equal(s.kv.get('spend', 'capture:cap_1'), 2900);
-  assert.equal(s.kv.get('spend', 'day:2026-11-15'), 2900);
+  assert.equal(s.kv.get('spend', 'capture:cap_1'), 3000);
+  assert.equal(s.kv.get('spend', 'day:2026-11-15'), 3000);
   assert.equal(s.kv.get('spend', 'day:2026-11-16'), undefined);
   assert.equal(s.sink.lines.length, 3); // session, reserve, settle
+});
+
+test('settle with zero keeps 3000 counted and refuses another call on the capture', () => {
+  const s = setup(), result = s.reserve('cap_1'); assert.ok(result.ok);
+  s.spend.settle(result.id, 0);
+  assert.equal(s.kv.get('spend', 'capture:cap_1'), 3000);
+  assert.equal(s.kv.get('spend', 'day:2026-11-15'), 3000);
+  assert.match(s.sink.lines.at(-1)!, /"cost_micro":3000/);
+  assert.deepEqual(s.reserve('cap_1'), {ok: false, reason: 'capture_cap'});
+  assert.doesNotMatch(s.sink.text(), /cost_header_missing/);
+});
+
+test('settle with 5000 counts the higher cost against both caps', () => {
+  const s = setup(), result = s.reserve('cap_1'); assert.ok(result.ok);
+  s.spend.settle(result.id, 5000);
+  assert.equal(s.kv.get('spend', 'capture:cap_1'), 5000);
+  assert.equal(s.kv.get('spend', 'day:2026-11-15'), 5000);
+  assert.match(s.sink.text(), /"cost_micro":5000/);
 });
 
 test('missing cost header keeps 3000 counted and logs cost_header_missing', () => {

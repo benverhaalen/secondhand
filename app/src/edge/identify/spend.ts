@@ -54,13 +54,14 @@ export function createSpend({kv, params, log, now}: {kv: SpendKV; params: ParamS
       if (!reservation) throw new Error('unknown spend reservation');
       if (cost_micro !== null) micro(cost_micro);
       const {tool, capture_id, day, expires} = reservation;
+      const counted = Math.max(reservation.micro, cost_micro ?? reservation.micro);
       if (cost_micro !== null) {
-        const delta = cost_micro - reservation.micro, capture = `capture:${capture_id}`;
+        const delta = counted - reservation.micro, capture = `capture:${capture_id}`;
         kv.set('spend', capture, count(capture) + delta);
         if (expires > now()) kv.set('spend', day, count(day) + delta, expires - now());
       }
       pending.delete(id);
-      log.note('spend.settle', {tool, capture_id, cost_micro: cost_micro ?? reservation.micro, ...(cost_micro === null ? {reason: 'cost_header_missing'} : {})});
+      log.note('spend.settle', {tool, capture_id, cost_micro: counted, ...(cost_micro === null ? {reason: 'cost_header_missing'} : {})});
     },
   };
 }
