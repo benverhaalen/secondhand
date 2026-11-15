@@ -1151,3 +1151,7 @@ Used in: [decisions.md](decisions.md#2026-11-15-cross-listing-starts-on-same-tak
 ## 2026-11-15 nate benchmark our intelligence engines against the others in the open
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15, early morning Central.
 > what is thriftx, a repo? I want to find things to benchmark our intelligence engines against, things to really show on our website how we are more reliable, accurate, and credible than these other systems. don't do just because of the eval for fact based pricing and such, but the swath of data that even paid enterprise sources don't. If there aren't things you can find, then list everything every competitor does, and we'll find aspects to what we can beat them on
+
+## 2026-11-15 nate show the benchmark as amounts, not tables of checks and crosses
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> exemplify and take reference from other public benchmarks and products that are of similar nature and compete, what do they show, tables with x's and check marks? we dont want that when it doesnt show enough, we want amount of items compared graphically shown, amount of time, price, accuracy or capability could be the x's and checkmarks
