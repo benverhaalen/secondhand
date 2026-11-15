@@ -24,7 +24,7 @@ function endpointsOf(md: string) {
   return endpoints;
 }
 const product = read('spec/product.md').split('## 7.')[1].split('## 8.')[0];
-const files = readdirSync(new URL('app/src/app/v1/', root), { recursive: true }).map(String).filter(f => f.endsWith('+api.ts'));
+const files = readdirSync(new URL('app/src/app/v1/', root), { recursive: true }).map(f => String(f).split(/[\/]/).join('/')).filter(f => f.endsWith('+api.ts'));
 const sources = files.map(f => ({ file: f, source: read('app/src/app/v1/' + f) }));
 
 test('every section 7 endpoint is in the manifest or explicitly not built', () => {
