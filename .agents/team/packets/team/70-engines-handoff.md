@@ -103,6 +103,7 @@ Mac facts learned: the shared `app/node_modules` is stale (it lacks `@anthropic-
   - purpose `model` = may_model true at both levels and not expired, which fits read;
   - the writer refuses rows whose `may_store` is not true;
   - SV6 is mine.
+  - At the wrap-up SV7 had not landed. Its brief is `srv-obs-1` (packet 86), and the next server lead sends the commit. Until then the route's stand-in port stays. The Apify ruling only flips the rows' `may_model`; the reader does not change.
 - **Data lead (DB4):** the export shape above. On the Apify rule's effect on DB1, I asked which way to set `may_model` for Apify rows; the answer is pending.
 - **App-wiring lead:** `POST /v1/assist`, auth visitor:
   - request `{surface:'buy', text ≤ 2000, history? ≤ 10 turns {role, text ≤ 4000}, search_job_id?, image? (person only), item_id?/want_id?/capture_id? (person only)}`;
