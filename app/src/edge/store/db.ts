@@ -55,7 +55,11 @@ export function tx<T>(handle: DatabaseSync, fn: () => T): T {
     handle.exec(depth === 0 ? 'COMMIT' : `RELEASE ${savepoint}`);
     return result;
   } catch (error) {
-    handle.exec(depth === 0 ? 'ROLLBACK' : `ROLLBACK TO ${savepoint}; RELEASE ${savepoint}`);
+    try {
+      handle.exec(depth === 0 ? 'ROLLBACK' : `ROLLBACK TO ${savepoint}; RELEASE ${savepoint}`);
+    } catch (rollbackError) {
+      log.error('sqlite.tx.rollback', rollbackError);
+    }
     log.error('sqlite.tx', error);
     throw error;
   } finally {

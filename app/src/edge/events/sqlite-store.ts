@@ -27,10 +27,16 @@ function validRow(table: string, row: unknown): boolean {
   return Number.isInteger(row.version) && (row.version as number) >= 1;
 }
 
+function validate(table: string, row: unknown): void {
+  if (!validRow(table, row)) {
+    throw new Error(`invalid Store ${table} ${record(row) ? row.id : ''}`);
+  }
+}
+
 function decode<T>(table: string, stored: Record<string, unknown>): T {
   try {
     const row: unknown = JSON.parse(stored.body as string);
-    if (!validRow(table, row)) throw new Error('invalid Store row');
+    validate(table, row);
     return row as T;
   } catch (cause) {
     throw new Error(`Cannot load Store ${table} ${stored.id}`, { cause });
@@ -70,6 +76,7 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
   const exact = (filter: Record<string, unknown>) => (row: Row) =>
     Object.entries(filter).every(([key, value]) => row[key] === value);
   const writeRow = (table: Table, row: Row) => {
+    validate(table, row);
     db.prepare(`INSERT INTO rows (tbl, user_id, id, version, body) VALUES (?, ?, ?, ?, ?)
       ON CONFLICT(tbl, user_id, id) DO UPDATE SET version = excluded.version, body = excluded.body`
     ).run(table, row.user_id, row.id, row.version!, JSON.stringify(row));
@@ -80,10 +87,10 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
 
   const s: Store & { dump(): StoreState; recover(): number } = {
     dump() {
-      return {
+      return tx(db, () => ({
         events: s.events(), jobs: s.jobs(), decisions: s.decisions(),
         rows: Object.fromEntries(TABLES.map(table => [table, s.systemRows(table)])),
-      };
+      }));
     },
     put(table, row) {
       return tx(db, () => {
@@ -127,6 +134,7 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
         const old = one<EventRow>('events', 'SELECT id, body FROM events WHERE user_id = ? AND dedupe_key = ?', event.user_id, event.dedupe_key);
         if (old) return { row: old, duplicate: true };
         const row = { ...event, id: uid('ev') };
+        validate('events', row);
         db.prepare(`INSERT INTO events (id, user_id, dedupe_key, item_id, account_id, body, seq)
           VALUES (?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM events))`
         ).run(row.id, row.user_id, row.dedupe_key, row.item_id ?? null, row.account_id ?? null, JSON.stringify(row));
@@ -138,6 +146,7 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
         const old = one<JobRow>('jobs', 'SELECT id, body FROM jobs WHERE user_id = ? AND idempotency_key = ?', job.user_id, job.idempotency_key);
         if (old) return { row: old, duplicate: true };
         const row = { ...job, id: uid('job') };
+        validate('jobs', row);
         db.prepare(`INSERT INTO jobs (id, user_id, idempotency_key, kind, state, account_id, item_id, site, paused, body, seq)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM jobs))`).run(...jobValues(row));
         return { row, duplicate: false };
@@ -149,6 +158,7 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
         const old = s.getJob(id);
         if (!old) throw new Error(`no job ${id}`);
         const row = { ...old, ...patch };
+        validate('jobs', row);
         db.prepare(`UPDATE jobs SET id = ?, user_id = ?, idempotency_key = ?, kind = ?, state = ?,
           account_id = ?, item_id = ?, site = ?, paused = ?, body = ? WHERE id = ?`).run(...jobValues(row), id);
         if (row.id !== id) db.prepare('UPDATE claims SET job_id = ? WHERE job_id = ?').run(row.id, id);
@@ -163,6 +173,7 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
           WHERE user_id = ? AND kind = ? AND subject = ? AND state = 'open' ORDER BY seq LIMIT 1`, decision.user_id, decision.kind, decision.subject);
         if (old) return { row: old, duplicate: true };
         const row: DecisionRow = { ...decision, id: uid('dec'), state: 'open' };
+        validate('decisions', row);
         db.prepare(`INSERT INTO decisions (id, user_id, kind, subject, state, body, seq)
           VALUES (?, ?, ?, ?, ?, ?, (SELECT COALESCE(MAX(seq), 0) + 1 FROM decisions))`).run(...decisionValues(row));
         return { row, duplicate: false };
@@ -174,6 +185,7 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
         const old = one<DecisionRow>('decisions', 'SELECT id, body FROM decisions WHERE id = ?', id);
         if (!old) throw new Error(`no decision ${id}`);
         const row = { ...old, ...patch };
+        validate('decisions', row);
         db.prepare('UPDATE decisions SET id = ?, user_id = ?, kind = ?, subject = ?, state = ?, body = ? WHERE id = ?').run(...decisionValues(row), id);
         return row;
       });
@@ -196,10 +208,10 @@ export function sqliteStore(db: DatabaseSync): Store & { dump(): StoreState; rec
       });
     },
     exportUser(user_id) {
-      return {
+      return tx(db, () => ({
         events: s.events({ user_id }), jobs: s.jobs({ user_id }), decisions: s.decisions({ user_id }),
         rows: Object.fromEntries(TABLES.map(table => [table, s.rows(table, { user_id })])),
-      };
+      }));
     },
     deleteUser(user_id) {
       return tx(db, () => {

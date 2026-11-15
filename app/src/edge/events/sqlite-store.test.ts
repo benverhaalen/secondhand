@@ -165,7 +165,10 @@ test('transactions hide partial writes and outer rollback undoes nested writes, 
     s.put('item', { ...item, state: 'changed' });
     s.updateJob(queued.id, { state: 'running' });
     s.deleteUser('u1');
-    assert.deepEqual(observer.exportUser('u1'), before);
+    assert.deepEqual({
+      events: observer.events({ user_id: 'u1' }), jobs: observer.jobs({ user_id: 'u1' }), decisions: observer.decisions({ user_id: 'u1' }),
+      rows: Object.fromEntries(TABLES.map(table => [table, observer.rows(table, { user_id: 'u1' })])),
+    }, before);
     throw new Error('abort');
   }), /abort/);
   assert.deepEqual(reopen().exportUser('u1'), before);
@@ -338,4 +341,53 @@ test('corrupt JSON and invalid row shapes name the table and id without replacin
     }
     handle.prepare(`UPDATE ${entry.table} SET body = ? WHERE id = ?`).run(JSON.stringify(entry.valid), entry.id);
   }
+});
+
+
+test('an invalid job stage update is refused before it can poison later jobs reads or claims', t => {
+  const { reopen } = fixture(t), s = reopen();
+  const saved = s.insertJob(job).row;
+  const other = s.insertJob({ ...job, user_id: 'u2' }).row;
+  const stages = [{ name: 'read', state: 'invalid' }] as unknown as JobRow['stages'];
+  assert.throws(() => s.updateJob(saved.id, { stages }), /invalid Store jobs/);
+  assert.deepEqual(reopen().getJob(saved.id), saved);
+  assert.deepEqual(s.jobs(), [saved, other]);
+  assert.deepEqual(s.claimJobs(2, 'worker'), [saved, other]);
+});
+
+for (const boundary of ['put', 'insertEvent', 'insertJob', 'updateJob', 'raiseDecision', 'updateDecision'] as const) test(`${boundary} rejects invalid rows and rolls back the enclosing transaction`, t => {
+  const { reopen } = fixture(t), s = reopen();
+  const savedJob = s.insertJob(job).row, savedDecision = s.raiseDecision(decision).row;
+  const before = s.dump();
+  const writes = {
+    put: () => s.put('item', { id: 'bad', user_id: null } as unknown as Parameters<typeof s.put>[1]),
+    insertEvent: () => s.insertEvent({ ...ev, action: 'invalid' } as unknown as Parameters<typeof s.insertEvent>[0]),
+    insertJob: () => s.insertJob({ ...job, idempotency_key: 'bad', stages: [{ name: 'read', state: 'invalid' }] } as unknown as Parameters<typeof s.insertJob>[0]),
+    updateJob: () => s.updateJob(savedJob.id, { attempts: -1 }),
+    raiseDecision: () => s.raiseDecision({ ...decision, subject: 'bad', options: [null] } as unknown as Parameters<typeof s.raiseDecision>[0]),
+    updateDecision: () => s.updateDecision(savedDecision.id, { state: 'invalid' } as unknown as Parameters<typeof s.updateDecision>[1]),
+  };
+  assert.throws(() => s.tx(st => { st.put('item', { id: 'undone', user_id: 'u1' }); writes[boundary](); }), /invalid Store/);
+  assert.deepEqual(reopen().dump(), before);
+});
+
+for (const copy of ['dump', 'exportUser'] as const) test(`${copy} holds one transaction across tables so concurrent writes cannot split the copy`, t => {
+  const { connect } = fixture(t), handle = connect(), other = connect();
+  const s = sqliteStore(handle), writer = sqliteStore(other);
+  other.exec('PRAGMA busy_timeout=0');
+  const savedEvent = s.insertEvent(ev).row, savedJob = s.insertJob(job).row;
+  const events = s.events.bind(s);
+  t.mock.method(s, 'events', (filter: Parameters<typeof s.events>[0]) => {
+    const result = events(filter);
+    assert.throws(() => writer.tx(st => {
+      st.insertEvent({ ...ev, dedupe_key: 'concurrent' });
+      st.insertJob({ ...job, idempotency_key: 'concurrent' });
+    }), /locked/, 'the copy must exclude a writer between table reads');
+    return result;
+  });
+  const result = copy === 'dump' ? s.dump() : s.exportUser('u1');
+  assert.deepEqual(result.events, [savedEvent]);
+  assert.deepEqual(result.jobs, [savedJob]);
+  writer.insertJob({ ...job, idempotency_key: 'after-copy' });
+  assert.equal(writer.jobs().length, 2, 'the copy releases its transaction');
 });
