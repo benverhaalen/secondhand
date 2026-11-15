@@ -2,7 +2,7 @@
 
 `/app` uses the same bearer session and `/v1` resources as the mobile application. Today reads open decisions; Sell reads the user's items; Buy searches marketplaces and manages wants; You manages marketplace connections. Settings are in the rail. Every mutation stays on the authenticated API, and marketplace decisions keep their signed option and version checks.
 
-The browser follows `/v1/stream`, refreshes on focus, and reads visible resources every 15 seconds because not every server mutation currently emits a user stream event. Search jobs retain their identifier in the URL so reloading reattaches to the same search. All external listing links use the server-provided HTTP(S) URL.
+Web and mobile follow `/v1/stream`. Successful authenticated API mutations publish a per-user invalidation. The stream replays durable frames and reads other workers' frames each second when they share the same SQLite database. Separate database files on different hosts do not synchronize. Foreground refresh and a 15-second fallback also pick up worker changes that occur outside API requests. Search jobs retain their identifier in the URL so reloading reattaches to the same search. All external listing links use the server-provided HTTP(S) URL.
 
 ## Current server boundaries
 
@@ -10,4 +10,4 @@ The UI does not simulate posting. At the original integration baseline, `POST /v
 
 ## Design
 
-The rail replaces the phone's tab pill; routes preserve Back and refresh. The app's Hugeicons, paired-tag mark, Clofie wordmark, PP Neue Montreal body, gradient wash and theme tokens are shared. Photos lead the inventory; decisions group by urgency; dialogs constrain secondary tasks without losing context. Motion is confined to dialog arrival and pointer feedback, with reduced motion honored. No mobile camera capability is requested.
+The rail replaces the phone's tab pill; routes preserve Back and refresh. The app's Hugeicons, paired-tag mark, Clofie wordmark, PP Neue Montreal for every other text role, gradient wash and theme tokens are shared. Photos lead the inventory; decisions group by urgency; dialogs constrain secondary tasks without losing context. Motion is confined to dialog arrival and pointer feedback, with reduced motion honored. No mobile camera capability is requested.

@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { AppState } from 'react-native';
 import { api, ApiFailure } from '../api/client';
 import type { Message, World } from '../demo';
 import { accountsView, conversationView, decisionView, emptyWorld, eventView, itemView, matchView, object, orderView, rows, text, userView, wantView, type LiveDecision, type Row } from './world';
@@ -100,6 +101,32 @@ export function LiveDataProvider({ children, enabled = true }: { children: React
     if (enabled) void refresh();
     else { controller.current?.abort(); controller.current = null; flight.current = null; decisions.current = []; setSnapshot({ w: emptyWorld(), problems: {}, loading: false }); setRefreshing(false); }
     return () => { controller.current?.abort(); controller.current = null; flight.current = null; };
+  }, [enabled, refresh]);
+  useEffect(() => {
+    if (!enabled) return;
+    let stream: AbortController | undefined, queued: ReturnType<typeof setTimeout> | undefined, stopped = false;
+    const invalidate = () => {
+      clearTimeout(queued);
+      queued = setTimeout(() => {
+        const pending = flight.current ?? Promise.resolve();
+        void pending.then(() => { if (!stopped) return refresh(); });
+      }, 120);
+    };
+    const connect = async () => {
+      stream?.abort();
+      if (AppState.currentState !== 'active' && AppState.currentState !== null) return;
+      await api.ready;
+      if (stopped || !api.session.token || AppState.currentState !== 'active' && AppState.currentState !== null) return;
+      stream?.abort();
+      const current = new AbortController(); stream = current;
+      void api.userFrames({ signal: current.signal, onFrame: invalidate }).catch(() => undefined);
+      invalidate();
+    };
+    void connect();
+    const foreground = AppState.addEventListener('change', state => { if (state === 'active') void connect(); else stream?.abort(); });
+    const session = api.subscribe(() => { void connect(); });
+    const fallback = setInterval(() => { if (AppState.currentState === 'active') invalidate(); }, 15000);
+    return () => { stopped = true; stream?.abort(); clearTimeout(queued); clearInterval(fallback); foreground.remove(); session(); };
   }, [enabled, refresh]);
   const answer = useCallback(async (id: string, option: string, amount?: number) => {
     const decision = decisions.current.find(row => row.id === id), selected = decision?.options.find(row => row.id === option);
