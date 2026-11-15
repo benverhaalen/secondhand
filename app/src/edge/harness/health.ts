@@ -43,7 +43,7 @@ export function createRouter({ store, now, rand = Math.random }: { store: ParamS
     return { success, completeness, score: success * completeness, cost: num(ROUTE_PARAMS.cost, sc), n: store.read(ROUTE_PARAMS.success, sc).n_eff };
   }
 
-  // Forgetting runs on the hour scale here: the registry's observe forgets by exp(-days/30), so elapsed/memory is passed as days*30.
+  // Forgetting runs on the hour scale here: the registry's observe forgets at a 30-day half-life, so elapsed/memory is passed as days*30.
   function record(site: Site, verb: Verb, route_id: string, o: Outcome) {
     const sc = scopeOf(site, verb, route_id), key = `${site}.${verb}.${route_id}`, t = now(), prev = last.get(key);
     const days_since_last = prev ? 30 * (t - prev.at) / num(ROUTE_PARAMS.memory_ms, sc) : 0, at = new Date(t).toISOString();

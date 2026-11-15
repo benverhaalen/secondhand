@@ -72,7 +72,7 @@ export interface ParamStore {
   observe(name: string, scope: Scope, outcome: { success: number; weight: number; days_since_last?: number }, at: string): { applied: boolean; reason: string; read: Read };
 }
 
-// Forgetting of about 30 days (§6): each day keeps exp(-1/30) of the pseudo-counts.
+// Forgetting at a 30-day half-life (marketing-engine §3.5, negotiation §4): after 30 days an old count weighs half.
 export const FORGET_DAYS = 30;
 
 export function memoryStore(): ParamStore {
@@ -140,7 +140,7 @@ export function memoryStore(): ParamStore {
       const base = champion(n, s);
       if (base?.frozen) return { applied: false, reason: 'frozen', read: store.read(n, s) };
       const start = (base?.value_or_hyperparams ?? store.read(n, s).value) as { alpha: number; beta: number };
-      const keep = Math.exp(-(o.days_since_last ?? 0) / FORGET_DAYS);
+      const keep = 0.5 ** ((o.days_since_last ?? 0) / FORGET_DAYS);
       const next = { alpha: start.alpha * keep + o.weight * o.success, beta: start.beta * keep + o.weight * (1 - o.success) };
       const mean = next.alpha / (next.alpha + next.beta);
       const lo = base?.guard_lo ?? d.guard_lo, hi = base?.guard_hi ?? d.guard_hi;
