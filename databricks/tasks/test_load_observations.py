@@ -15,17 +15,28 @@ from tasks import load_observations as loader
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / 'spec/fixtures/observations/landing.jsonl'
+# The frozen SV7 example predates Nate's Facebook-only Apify correction.
 LINES = FIXTURE.read_text().splitlines()
+first = json.loads(LINES[0])
+first.update(site='facebook', data='live:facebook', source_route='com.facebook.apify.search')
+LINES[0] = json.dumps(first)
+TEST_RIGHTS = [dict(source=source, may_store=True, may_model=True, may_show=True,
+                    may_share=True, may_model_scope='product')
+               for source in ('facebook:apify', 'brand')]
 BASE = json.loads(LINES[0])
 
 
+def parse(lines, **kwargs):
+    return loader.parse(lines, source_rights=TEST_RIGHTS, **kwargs)
+
+
 def parsed(row):
-    return loader.parse([json.dumps(row)])
+    return parse([json.dumps(row)])
 
 
 def test_fixture_keeps_rights_prices_and_shared_owners_with_count_by_scope():
     before = datetime.now(timezone.utc)
-    observations, evidence, rejects = loader.parse(LINES)
+    observations, evidence, rejects = parse(LINES)
     after = datetime.now(timezone.utc)
     assert len(observations) == len(evidence) == 2
     assert [r['line'] for r in rejects] == [3, 4, 5]
@@ -79,7 +90,7 @@ def test_fixture_keeps_rights_prices_and_shared_owners_with_count_by_scope():
     *[(json.dumps({**BASE, key: 1}), key) for key in ('may_store', 'may_model', 'may_show', 'may_share')],
 ])
 def test_bad_lines_reject_once_with_a_cause(line, reason):
-    observations, evidence, rejects = loader.parse([line])
+    observations, evidence, rejects = parse([line])
     assert observations == evidence == []
     assert len(rejects) == 1 and rejects[0]['line'] == 1
     assert reason in rejects[0]['reason']
@@ -126,18 +137,18 @@ def test_absent_prices_remain_unknown_and_handles_are_never_lifted():
 
 def test_duplicate_json_keys_cannot_hide_caller_identity():
     line = LINES[0][:-1] + ',"payload":{"session":null},"payload":{}}'
-    assert 'duplicate' in loader.parse([line]).rejects[0]['reason']
+    assert 'duplicate' in parse([line]).rejects[0]['reason']
 
 
 def test_duplicate_ids_refuse_observation_but_shared_evidence_merges_once():
     row = {**BASE, 'id': 'obs_1111111111111111'}
-    result = loader.parse([LINES[0], LINES[0], json.dumps(row)])
+    result = parse([LINES[0], LINES[0], json.dumps(row)])
     assert len(result.observations) == 2 and len(result.evidence) == 1
     assert len(result.rejects) == 1 and 'duplicate id' in result.rejects[0]['reason']
 
 
 def test_one_bad_line_does_not_stop_the_following_public_read():
-    result = loader.parse(['invalid JSON', LINES[0], json.dumps({**BASE, 'may_store': False}), LINES[1]])
+    result = parse(['invalid JSON', LINES[0], json.dumps({**BASE, 'may_store': False}), LINES[1]])
     assert len(result.observations) == len(result.evidence) == 2
     assert [row['line'] for row in result.rejects] == [1, 3]
 
@@ -146,7 +157,7 @@ def test_one_bad_line_does_not_stop_the_following_public_read():
                                   {'may_show': False}, {'may_share': True}, {'ttl': '1d'}])
 def test_same_evidence_cannot_replace_per_row_rights(change):
     other = {**BASE, 'id': 'obs_1111111111111111', **change}
-    result = loader.parse([LINES[0], json.dumps(other)])
+    result = parse([LINES[0], json.dumps(other)])
     assert len(result.observations) == len(result.evidence) == 1
     assert result.rejects == [{'line': 2, 'reason': 'evidence rights conflict'}]
     assert result.evidence[0]['may_model'] is False
@@ -168,6 +179,7 @@ class FakeSpark:
         self.statements, self.views, self.reports, self.events = [], {}, {}, []
         self.columns = {name: ['user_id'] for name in ('observation', 'evidence')}
         self.nullable = {name: False for name in self.columns}
+        self.source_rights = copy.deepcopy(TEST_RIGHTS)
         self.report_exists = False
         self.catalog = SimpleNamespace(tableExists=lambda table: self.report_exists)
         self.fail_table = None
@@ -182,6 +194,8 @@ class FakeSpark:
     def sql(self, statement):
         self.statements.append(statement)
         self.events.append(('sql', statement))
+        if 'FROM demo.governance.source_rights' in statement:
+            return SimpleNamespace(collect=lambda: self.source_rights)
         if statement.startswith('SELECT file FROM '):
             return SimpleNamespace(collect=lambda: [{'file': file} for file in self.reports])
         if statement.startswith('SELECT * FROM demo.core.evidence WHERE id IN '):
@@ -244,9 +258,9 @@ def runtime(monkeypatch):
     monkeypatch.setattr(sys, 'argv', ['load_observations', '--root', str(ROOT), '--catalog', 'demo'])
     original_guard = guard.guard_batch
 
-    def guarded(spark, log, job, table, rows):
+    def guarded(spark, log, job, table, rows, **kwargs):
         spark.events.append(('guard', table.rsplit('.', 1)[-1]))
-        original_guard(spark, log, job, table, rows)
+        original_guard(spark, log, job, table, rows, **kwargs)
 
     monkeypatch.setattr(guard, 'guard_batch', guarded)
     return SimpleNamespace(spark=spark, path=path, downloads=downloads, files=files, entries=entries)
@@ -280,7 +294,7 @@ def test_main_reports_rejections_guards_both_tables_before_writes_and_skips_reru
 def test_guard_failure_prevents_all_loader_writes(runtime, monkeypatch):
     import guard
 
-    def refuse(spark, log, job, table, rows):
+    def refuse(spark, log, job, table, rows, **kwargs):
         if table.endswith('evidence'):
             raise guard.GuardRefused([{'rule': 'evidence_test', 'table_name': 'evidence', 'row_id': rows[0]['id']}])
 
@@ -314,7 +328,9 @@ def test_all_rejected_file_is_counted_without_empty_core_merges(runtime):
 def test_empty_folder_has_no_writes(runtime):
     runtime.files.list_directory_contents = lambda path: []
     assert loader.main() == {'files': 0}
-    assert runtime.spark.views == {} and runtime.spark.statements == []
+    assert runtime.spark.views == {}
+    assert len(runtime.spark.statements) == 1
+    assert 'FROM demo.governance.source_rights' in runtime.spark.statements[0]
 
 
 def test_existing_evidence_conflict_is_rejected_and_counted_on_a_later_file(runtime):
@@ -358,3 +374,77 @@ def test_table_definitions_have_nullable_owners_and_commented_new_columns():
         assert "user_id STRING COMMENT 'Owner; null is a shared public read, never who asked'" in block
         for key, definition in loader.NEW_COLUMNS[name].items():
             assert f'{key} {definition}' in block
+
+
+@pytest.mark.parametrize('right', loader.RIGHTS)
+def test_source_false_refuses_each_true_row_right_for_its_named_reason(right):
+    policy = {**TEST_RIGHTS[0], right: False}
+    row = {**BASE, right: True}
+    result = loader.parse([json.dumps(row)], source_rights=[policy])
+    assert result.observations == result.evidence == []
+    assert result.rejects == [{'line': 1, 'reason': right + ' exceeds source rights'}]
+
+
+@pytest.mark.parametrize('scope,limit', [('hackathon_demo', 'none'), ('product', 'hackathon_demo'), ('product', 'none')])
+def test_wider_scope_is_refused_even_when_line_does_not_model(scope, limit):
+    result = loader.parse([json.dumps({**BASE, 'use_scope': scope})],
+                          source_rights=[{**TEST_RIGHTS[0], 'may_model_scope': limit}])
+    assert result.observations == result.evidence == []
+    assert result.rejects == [{'line': 1, 'reason': 'use_scope exceeds source rights'}]
+
+
+def test_missing_source_rights_fail_closed():
+    result = loader.parse([json.dumps(BASE)])
+    assert result.observations == result.evidence == []
+    assert result.rejects == [{'line': 1, 'reason': 'source has no rights row'}]
+
+
+@pytest.mark.parametrize('site', ['ebay', 'mercari'])
+def test_apify_other_sites_have_no_rights_row_even_when_direct_source_exists(site):
+    row = {**BASE, 'site': site, 'data': 'live:' + site}
+    result = loader.parse([json.dumps(row)], source_rights=[{**TEST_RIGHTS[0], 'source': site}])
+    assert result.rejects == [{'line': 1, 'reason': 'source has no rights row'}]
+    assert result.observations == result.evidence == []
+
+
+@pytest.mark.parametrize('via', ['treg', None, 'another_route'])
+def test_ebay_model_right_is_refused_by_every_route_even_with_overpermissive_source(via):
+    row = {**BASE, 'site': 'ebay', 'data': 'live:ebay', 'via': via, 'may_model': True}
+    policy = {**TEST_RIGHTS[0], 'source': 'ebay' + (':' + via if via else '')}
+    result = loader.parse([json.dumps(row)], source_rights=[policy])
+    assert result.rejects == [{'line': 1, 'reason': 'ebay content never models'}]
+    assert result.observations == result.evidence == []
+
+
+def test_live_source_rows_match_the_loader_and_facebook_model_rights_survive_untouched():
+    from test_guard import rights_rows
+    _, policies = rights_rows()
+    for site, via in [('ebay', 'treg'), ('ebay', None), ('mercari', None),
+                      ('poshmark', None), ('depop', None), ('facebook', 'apify')]:
+        row = {**BASE, 'site': site, 'data': 'live:' + site, 'via': via,
+               'may_model': site == 'facebook', 'use_scope': 'hackathon_demo' if site == 'facebook' else 'none'}
+        result = loader.parse([json.dumps(row)], source_rights=policies)
+        assert not result.rejects, (site, via, result.rejects)
+        assert len(result.observations) == len(result.evidence) == 1
+        for key in loader.RIGHTS:
+            assert result.evidence[0][key] is row[key]
+        for key in ('site', 'via', 'use_scope', 'payload'):
+            value = result.observations[0][key]
+            assert (json.loads(value) if key == 'payload' else value) == row[key]
+
+
+def test_main_reads_source_rights_once_per_run_and_counts_each_refusal_without_core_writes(runtime, capsys):
+    runtime.spark.source_rights = [{**TEST_RIGHTS[0], 'may_show': False}]
+    second_path = runtime.path.replace('search_demo.jsonl', 'search_second.jsonl')
+    runtime.entries[runtime.path.rsplit('/', 1)[0]].append(SimpleNamespace(path=second_path, is_directory=False))
+    row = {**BASE, 'may_show': True}
+    runtime.files.download = lambda file: SimpleNamespace(contents=io.BytesIO((json.dumps(row) + '\n').encode()))
+    loader.main()
+    assert sum('FROM demo.governance.source_rights' in s for s in runtime.spark.statements) == 1
+    assert set(runtime.spark.reports) == {runtime.path, second_path}
+    for report in runtime.spark.reports.values():
+        assert (report['loaded'], report['rejected']) == (0, 1)
+        assert json.loads(report['reasons']) == {'may_show exceeds source rights': 1}
+    assert runtime.spark.rows == {'observation': {}, 'evidence': {}}
+    logs = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    assert any(line.get('reason') == 'may_show exceeds source rights' for line in logs)

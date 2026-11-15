@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import NamedTuple
 
 RIGHTS = ('may_store', 'may_model', 'may_show', 'may_share')
+SCOPES = ('none', 'hackathon_demo', 'product')
 SCOPE_COMMENT = 'hackathon_demo or product: what this row may be used for; shown-only rows are hackathon_demo with may_model false on their evidence'
 NEW_COLUMNS = {
     'observation': {
@@ -95,8 +96,8 @@ def _validate(row):
         raise ValueError('v must be 1')
     if row.get('site') == 'dupe':
         raise ValueError('site dupe is never stored')
-    if row.get('use_scope') not in ('hackathon_demo', 'product'):
-        raise ValueError('use_scope must be hackathon_demo or product')
+    if row.get('use_scope') not in SCOPES:
+        raise ValueError('use_scope must be none, hackathon_demo or product')
     for field in RIGHTS:
         if type(row.get(field)) is not bool:
             raise ValueError(f'{field} must be a boolean')
@@ -144,10 +145,26 @@ def _ttl_days(ttl):
     return days if days < 2**31 else None
 
 
-def parse(lines, *, existing_evidence=()) -> Parsed:
+def _source_rights(row, policies):
+    # site is the product.md id. A provider never borrows the direct page's rights.
+    source = row['site'] + (':' + row['via'] if row['via'] else '')
+    policy = policies.get(source)
+    if policy is None or row['via'] == 'apify' and row['site'] != 'facebook':
+        raise ValueError('source has no rights row')
+    if row['site'] == 'ebay' and row['may_model']:
+        raise ValueError('ebay content never models')
+    for right in RIGHTS:
+        if row[right] and not policy[right]:
+            raise ValueError(right + ' exceeds source rights')
+    if SCOPES.index(row['use_scope']) > SCOPES.index(policy['may_model_scope']):
+        raise ValueError('use_scope exceeds source rights')
+
+
+def parse(lines, *, source_rights=(), existing_evidence=()) -> Parsed:
     observations, evidence, rejects = [], [], []
     seen, sources = set(), {}
     known = {row['id']: row for row in existing_evidence}
+    policies = {row['source']: row for row in source_rights}
     loaded_at = datetime.now(timezone.utc)
     for number, line in enumerate(lines, 1):
         try:
@@ -158,6 +175,7 @@ def parse(lines, *, existing_evidence=()) -> Parsed:
             # Reserve valid ids even if their evidence conflicts: a reparse must
             # never promote a duplicate whose evidence was absent from the lookup.
             seen.add(row['id'])
+            _source_rights(row, policies)
             source = row['evidence']
             evidence_id = 'evd_' + hashlib.sha256((source['fingerprint'] + source['source_url']).encode()).hexdigest()[:16]
             common = {'data': row['data'], 'user_id': None, 'created_at': loaded_at,
@@ -231,6 +249,8 @@ def main():
         report_exists = log.call('db', 'observation_report_exists', {'table': report_table},
                                  lambda: spark.catalog.tableExists(report_table))
         loaded = {row['file'] for row in execute(f'SELECT file FROM {report_table}')} if report_exists else set()
+        source_rights = execute(f'SELECT source, may_store, may_model, may_show, may_share, may_model_scope '
+                                f'FROM {args.catalog}.governance.source_rights')
         paths = sorted(entry.path for day in list_directory(directory)
                        if day.is_directory and re.fullmatch(r'\d{4}-\d{2}-\d{2}', day.path.rsplit('/', 1)[-1])
                        for entry in list_directory(day.path)
@@ -243,17 +263,18 @@ def main():
 
             lines = log.call('tool', 'read_observation_file', {'file': path}, read,
                              describe=lambda rows: {'lines': len(rows)})
-            parsed = parse(lines)
+            parsed = parse(lines, source_rights=source_rights)
             if parsed.evidence:
                 ids = ', '.join("'" + row['id'] + "'" for row in parsed.evidence)
                 existing = execute(f'SELECT * FROM {args.catalog}.core.evidence WHERE id IN ({ids})')
                 if existing:
-                    parsed = parse(lines, existing_evidence=[row.asDict() for row in existing])
+                    parsed = parse(lines, source_rights=source_rights, existing_evidence=[row.asDict() for row in existing])
             for reject in parsed.rejects:
                 log.event('note', {'msg': 'observation line rejected', 'file': path, **reject}, 'warn')
             batches = (('observation', parsed.observations), ('evidence', parsed.evidence))
             for name, rows in batches:
-                guard_batch(spark, log, 'load_observations', f'{args.catalog}.core.{name}', rows)
+                guard_batch(spark, log, 'load_observations', f'{args.catalog}.core.{name}', rows,
+                            evidence_rows=parsed.evidence, observation_rows=parsed.observations)
             if not migrated:
                 for name, _ in batches:
                     table = f'{args.catalog}.core.{name}'
