@@ -112,6 +112,8 @@ type Idempotency = { hash: string; at: number } & (
   { state: 'running' } | { state: 'finished'; status: number; body: string; headers: Record<string, string> }
 );
 
+const MAX_JSON_BYTES = 1024 * 1024;
+
 class BodyTooLarge extends ApiError { get status() { return 413; } }
 
 async function readRaw(req: Request, max_bytes: number, log: Log): Promise<Uint8Array> {
@@ -142,7 +144,7 @@ async function readRaw(req: Request, max_bytes: number, log: Log): Promise<Uint8
   return bytes;
 }
 
-type RouteOptions = { auth?: 'user' | 'visitor' | 'none' } & ({ body: 'raw'; max_bytes: number } | { body?: 'json' });
+type RouteOptions = { auth?: 'user' | 'visitor' | 'none' } & ({ body: 'raw'; max_bytes: number } | { body?: 'json'; max_json_bytes?: number });
 
 export function route(endpoint: string, handler: Handler, opts: RouteOptions = {}) {
   const [method, pattern] = endpoint.split(' ');
@@ -171,7 +173,7 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
       let body: Record<string, unknown> = {};
       let binary: Promise<Uint8Array> | undefined;
       const read = opts.body === 'raw' ? () => binary ??= readRaw(req, opts.max_bytes, log).then(bytes => { rawRead = true; return bytes; }) : undefined;
-      const raw = opts.body === 'raw' || method === 'GET' ? '' : await req.text();
+      const raw = opts.body === 'raw' || method === 'GET' ? '' : new TextDecoder().decode(await readRaw(req, ('max_json_bytes' in opts && opts.max_json_bytes) || MAX_JSON_BYTES, log));
       if (raw) {
         try { body = JSON.parse(raw); } catch { throw new ApiError('invalid', 'body is not JSON', 'parse', { by: 'user' }); }
         if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ApiError('invalid', 'body must be an object', 'parse', { by: 'user' });

@@ -13,17 +13,23 @@ import { memoryStore as eventStore, TABLES, type Store, type StoreState } from '
 import type { Db, Vault } from '../data/data.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { checkLog } from '../../../../spec/log.mjs';
+import { mkdtempSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+import { kv } from '../store/kv.ts';
+import { createBlobs, receiveUpload } from '../store/blobs.ts';
 
 const keys = (o: unknown): unknown => Array.isArray(o) ? (typeof o[0] === 'object' ? keys(o[0]) : 'array') : o && typeof o === 'object' ? Object.fromEntries(Object.keys(o).sort().map((k) => [k, keys((o as Record<string, unknown>)[k])])) : typeof o;
 const shape = (name: string) => keys((example(name) as { response: unknown }).response);
 
-async function world(workspace?: { db: Db; vault: Vault }) {
+async function world(workspace?: { db: Db; vault: Vault }, blobs?: ReturnType<typeof createBlobs>) {
   let t = Date.parse('2026-11-15T03:00:00Z'); const store = memoryStore();
   const sink = memorySink(), log = createLog({ src: 'edge.me.test', build: 'test', sink });
   const runtime = createRuntime(eventStore(), log, { now: () => t, vault: memoryVault() });
   const auth = createAuth({ store, now: () => t, verifyApple: async (k) => ({ subject: k }), verifyGoogle: async () => null, sendCode: () => {} });
   deps.verify = auth.verifyAccess; resetRequestState(); deps.now = () => t; deps.log = log;
-  const a = makeAuthHandlers(auth, store), m = makeMeHandlers({ store, auth, now: () => t, runtime, workspace });
+  const a = makeAuthHandlers(auth, store), m = makeMeHandlers({ store, auth, now: () => t, runtime, workspace, blobs });
   const r = {
     apple: route('POST /v1/auth/apple', a.apple, { auth: 'none' }), get: route('GET /v1/me', m.get), patch: route('PATCH /v1/me', m.patch), del: route('DELETE /v1/me', m.delete),
     exp: route('POST /v1/me/export', m.export), sget: route('GET /v1/me/style', m.styleGet), spatch: route('PATCH /v1/me/style', m.stylePatch),
@@ -54,7 +60,7 @@ test('DELETE removes all owned Store data and vault sign-ins, preserves the othe
   const res = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token);
   assert.equal(res.status, 202);
   const purge = await res.json() as { id: string; kind: string; state: string };
-  assert.equal(purge.kind, 'delete_user'); assert.equal(purge.state, 'queued');
+  assert.equal(purge.kind, 'delete_user'); assert.equal(purge.state, 'done');
   assert.deepEqual(st.exportUser(b.user.id), before, 'every other-person row and count is unchanged');
   assert.equal(await w.runtime.vault.get(`vault/${a.user.id}`), undefined);
   assert.equal(await w.runtime.vault.get(`stale/${a.user.id}`), undefined);
@@ -68,18 +74,35 @@ test('DELETE removes all owned Store data and vault sign-ins, preserves the othe
   assert.ok(!w.sink.text().includes(`vault/${a.user.id}`), 'logs cannot carry vault references');
 });
 
-test('workspace purge stays queued with a visible reason when no Db port is configured', async () => {
+test('with no workspace port the purge job is done, not parked, so nothing waits on a missing port', async () => {
   const w = await world(), a = await w.user('a');
-  const response = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token), job = await response.json() as { id: string };
-  assert.equal(await w.runtime.pipeline.runOnce(100), 0, 'unconfigured purge must not be run by the generic worker');
+  const response = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token), job = await response.json() as { id: string; state: string };
+  assert.equal(job.state, 'done');
   const stored = w.runtime.store.getJob(job.id)!;
-  assert.equal(stored.state, 'queued'); assert.equal(stored.reason, 'workspace port not configured');
-  // The deleted session is gone; inspect the same GET handler with the owner's context.
-  const get = route('GET /v1/jobs/:id', getJob(jobsOn(w.runtime.store)));
-  deps.verify = async () => a.user.id;
-  const res = await w.call(get, 'GET', `/v1/jobs/${job.id}`, 'owner-context');
-  const visible = await res.json() as { state: string; reason: string };
-  assert.equal(res.status, 200); assert.equal(visible.state, 'queued'); assert.equal(visible.reason, 'workspace port not configured');
+  assert.equal(stored.state, 'done'); assert.equal(stored.paused, undefined); assert.equal(stored.reason, undefined);
+});
+
+// A minimal JPEG: SOI, one scan, EOI.
+const tinyJpeg = Buffer.from('ffd8ffda0008010100003f00ffd9', 'hex');
+async function uploadPhoto(blobs: ReturnType<typeof createBlobs>, user_id: string, photo_id: string) {
+  const { url } = blobs.target({ user_id, capture_id: `cap_${photo_id}`, photo_id, content_type: 'image/jpeg', max_bytes: 10000 });
+  await receiveUpload(blobs, url.split('/').pop()!, async () => tinyJpeg);
+}
+
+test('DELETE removes the person photo files and blob rows and leaves the other person photo', async t => {
+  const db = new DatabaseSync(':memory:'), store = kv(db), dir = mkdtempSync(join(tmpdir(), 'me-photos-'));
+  t.after(() => db.close());
+  const blobs = createBlobs({ kv: store, dir, origin: 'http://x', log: createLog({ src: 'test', build: 'test', sink: memorySink() }) });
+  const w = await world(undefined, blobs), a = await w.user('a'), b = await w.user('b');
+  await uploadPhoto(blobs, a.user.id, 'ph_a1'); await uploadPhoto(blobs, a.user.id, 'ph_a2'); await uploadPhoto(blobs, b.user.id, 'ph_b1');
+  assert.ok(await blobs.read(a.user.id, 'ph_a1')); assert.ok(existsSync(join(dir, 'blobs', a.user.id, 'ph_a1')));
+  assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 202);
+  assert.equal(existsSync(join(dir, 'blobs', a.user.id)), false, 'the person photo folder is gone');
+  assert.equal(await blobs.read(a.user.id, 'ph_a1'), undefined);
+  assert.equal(store.get('blobs', JSON.stringify([a.user.id, 'ph_a1'])), undefined, 'blob rows are gone');
+  assert.equal(store.get('blobs', JSON.stringify([a.user.id, 'ph_a2'])), undefined);
+  assert.ok(await blobs.read(b.user.id, 'ph_b1'), 'the other person photo stays');
+  assert.ok(store.get('blobs', JSON.stringify([b.user.id, 'ph_b1'])));
 });
 
 test('configured workspace purge uses data.ts to delete and scan only the deleted person', async () => {
@@ -136,7 +159,7 @@ test('a vault failure still attempts every sign-in, revokes sessions, tracks the
   const error = await res.json() as { job_id: string };
   assert.deepEqual(attempted, [...refs, `push/${a.user.id}`], 'one failure cannot skip the remaining sign-ins or push registration');
   assert.equal(await w.runtime.vault.get(refs[1]), undefined); assert.ok(await w.runtime.vault.get(other));
-  assert.equal(st.getJob(error.job_id)?.kind, 'delete_user'); assert.equal(st.getJob(error.job_id)?.state, 'queued');
+  assert.equal(st.getJob(error.job_id)?.kind, 'delete_user'); assert.equal(st.getJob(error.job_id)?.state, 'failed');
   assert.equal(st.getJob(error.job_id)?.error?.code, 'vault_delete_failed');
   assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 401);
   assert.ok(!w.sink.text().includes(privateDetail)); assert.ok(!JSON.stringify(error).includes(privateDetail));

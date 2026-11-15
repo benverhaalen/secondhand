@@ -400,6 +400,27 @@ test('raw Content-Length above max_bytes is rejected before the stream is read',
   assert.equal((await h(req)).status, 413); assert.equal(pulls, 0);
 });
 
+for (const declared of [true, false]) test(`a 2 MiB JSON body ${declared ? 'with' : 'without'} Content-Length gets 413 invalid and the handler never runs`, async () => {
+  let handled = false;
+  const h = route('POST /v1/json', async () => { handled = true; return { status: 200, body: {} }; }, { auth: 'none' });
+  const text = JSON.stringify({ pad: 'x'.repeat(2 * 1024 * 1024) });
+  const stream = new ReadableStream<Uint8Array>({ start(c) { c.enqueue(new TextEncoder().encode(text)); c.close(); } });
+  const req = new Request('http://edge.test/v1/json', declared
+    ? { method: 'POST', body: text, headers: { 'Content-Type': 'application/json' } }
+    : { method: 'POST', body: stream, duplex: 'half', headers: { 'Content-Type': 'application/json' } } as RequestInit);
+  const response = await h(req);
+  assert.equal(response.status, 413);
+  assert.equal((await response.json()).code, 'invalid');
+  assert.equal(handled, false);
+});
+
+test('a JSON route that declares a larger max_json_bytes accepts a 2 MiB body and still refuses one over it', async () => {
+  const h = route('POST /v1/json', async () => ({ status: 200, body: {} }), { auth: 'none', max_json_bytes: 3 * 1024 * 1024 });
+  const post = (n: number) => h(new Request('http://edge.test/v1/json', { method: 'POST', body: JSON.stringify({ pad: 'x'.repeat(n) }) }));
+  assert.equal((await post(2 * 1024 * 1024)).status, 200);
+  assert.equal((await post(4 * 1024 * 1024)).status, 413);
+});
+
 test('raw POST cannot claim or replay JSON idempotency slots', async () => {
   let calls = 0;
   const h = route('POST /v1/raw', () => ({ status: 200, body: { call: ++calls } }), { auth: 'none', body: 'raw', max_bytes: 4 });
