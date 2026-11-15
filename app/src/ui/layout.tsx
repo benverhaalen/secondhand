@@ -3,6 +3,7 @@ import { Children, createContext, isValidElement, useContext, useRef, useState, 
 import { RefreshControl, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { arrival, ContentOrder, departure, reflow } from './reveal';
 import { Nav, Wash } from './parts/chrome';
 import { TabNav, TabTitle, type TabNavProps } from './parts/tab-nav';
 import { Txt } from './text';
@@ -45,6 +46,7 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
   const top = wash ? inset.top : 0;
   const [pulling, setPulling] = useState(false);
   const pending = useRef(false);
+  const content = Children.toArray(children);
   const refresh = async () => {
     if (!onRefresh || pending.current || refreshing) return;
     pending.current = true; setPulling(true);
@@ -67,7 +69,7 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
           {/* The pinned bar's place in the page, so at rest everything sits where an unpinned nav would put it. */}
           {tab ? <View style={styles.nav}><View style={{ height: size.navH, marginBottom: space.s2 }} /><TabTitle title={tab.title} action={tab.action} /></View>
             : nav ? <View style={styles.nav}>{nav}</View> : null}
-          <View style={[styles.content, center && styles.center]}>{children}</View>
+          <View style={[styles.content, center && styles.center]}>{content.map((child, index) => <ContentOrder.Provider key={isValidElement(child) && child.key != null ? child.key : index} value={index / content.length}>{child}</ContentOrder.Provider>)}</View>
         </Animated.ScrollView>
         {tab ? <TopBar inbox={tab.inbox} top={top} wash={wash} /> : null}
         {foot ? <View style={[styles.foot, { paddingBottom: space.s4 + below }]}>{foot}</View> : null}
@@ -90,11 +92,12 @@ function TopBar({ inbox, top, wash }: { inbox?: TabNavProps['inbox']; top: numbe
 
 // One topic. Sections are told apart by space alone, never a line or a box. Cards in it sit 16 apart (Art. 7.8).
 export function Section({ title, children }: { title?: string; children: ReactNode }) {
+  const order = useContext(ContentOrder);
   return (
-    <View style={styles.section}>
+    <Animated.View entering={arrival(order)} layout={reflow} style={styles.section}>
       {title ? <Txt role="headline">{title}</Txt> : null}
       {children}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -120,11 +123,11 @@ export function Row({ lead, trail, children }: { lead?: ReactNode; trail?: React
 
 // Rows of the same kind: messages, settings, sales. The hairline says "another one of these".
 export function List({ children }: { children: ReactNode }) {
-  const c = useColors();
+  const c = useColors(), rows = Children.toArray(children);
   return (
     <View>
-      {Children.toArray(children).map((child, i) => (
-        <View key={i} style={i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.rule }}>{child}</View>
+      {rows.map((child, i) => (
+        <Animated.View key={isValidElement(child) && child.key != null ? child.key : i} entering={arrival(i / rows.length)} exiting={departure} layout={reflow} style={i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.rule }}>{child}</Animated.View>
       ))}
     </View>
   );
@@ -142,10 +145,11 @@ export function Card({ children }: { children: ReactNode }) {
 
 // Photo tiles, in columns 16 apart (the Sell grid, L12).
 export function Grid({ columns, children }: { columns: number; children: ReactNode }) {
+  const tiles = Children.toArray(children);
   return (
     <View style={styles.grid}>
-      {Children.toArray(children).map((child, i) => (
-        <View key={i} style={{ width: `${100 / columns}%`, paddingHorizontal: space.s2, paddingBottom: space.s4 }}>{child}</View>
+      {tiles.map((child, i) => (
+        <Animated.View key={isValidElement(child) && child.key != null ? child.key : i} entering={arrival(Math.floor(i / columns) / Math.ceil(tiles.length / columns))} exiting={departure} layout={reflow} style={{ width: `${100 / columns}%`, paddingHorizontal: space.s2, paddingBottom: space.s4 }}>{child}</Animated.View>
       ))}
     </View>
   );
