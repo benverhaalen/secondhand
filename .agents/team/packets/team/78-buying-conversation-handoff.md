@@ -35,7 +35,7 @@ Updated: 2026-11-15, about 05:40 Central. Owner: Nate. Agent: the buying-convers
   - There is no sale curve, so "when to list" has no answer and "where" is the keep after fees.
   - The trend has no noise band, so it reads "noise".
   - There is no TypeScript for identify, the attribute record (AD9), A11, AD5 or the stored-rows-first search (MI2), so each tool says what is not built.
-- `buy-web-1` (the Next.js site) was still running at the stop, on its branch on the Mac and not judged.
+- `web/`, the Next.js site, is merged as a draft (3246f194): `next build` passes with `/`, `/buy` and `/states` static, and 24 tests pass, rerun by the lead. It has not been looked at in a browser or had a design-critic pass. It does not poll yet: it uses the event stream with a poll fallback.
 - No API host exists for the site to call (Nate's choice in `spec/plans/hosting.md`).
 
 ## The answer shape for the fashion-trends question
@@ -98,7 +98,10 @@ The briefs are in the side-session notes folder of the orchestrator's group (`bu
    - a design-critic pass on `/states` at 375 and 1280
    - the polling change (below)
    Built from Ben's work in the repo: `brand/tokens.css`, `brand/constitution.md`, `brand/coder-card.md`, `product/ui-constitution.md`, `product/frontend-standard.md`, `product/copy.md`.
-7. DBX-A1 (above). The store tool can call `measures.why`, `why_summary`, `shown_prices` and `price_basis` today (the third Databricks lead, 11:10 UTC).
+7. The cap state on the web: the GitHub widget and links from features/buy. Ask Nate for the LinkedIn addresses.
+8. The photo pass-over (features/assist "Open"): the identify step reads the photo, and the conversation gets only the attributes.
+9. Vercel: after Nate's `vercel login`, `cd web && vercel deploy` makes a preview. He said yes to Vercel, but ask again before production and before setting any env var there.
+10. DBX-A1 (above). The store tool can call `measures.why`, `why_summary`, `shown_prices` and `price_basis` today (the third Databricks lead, 11:10 UTC).
 
 Older notes kept for the next reader:
 
