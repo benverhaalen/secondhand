@@ -2296,4 +2296,18 @@ Used in: the engines lead's answer (engine outputs feed the conversation and our
 Nate, engines lead's session, 2026-11-15, about 07:00 Central, answering "May Apify rows also be used to fit the nightly models?" (buttons "Yes, Apify too" and "Keep fits clean").
 > no keep fits clean
 
-Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1.
+Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1. Changed by Nate minutes later: [Apify rows may fit the models](#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate).
+
+## 2026-11-15 nate apify rows may fit the models; real-time scores per market on each platform, extremely accurate
+Nate, engines lead's session, 2026-11-15, about 07:05 Central. He changes the answer of a few minutes earlier ([apify rows never fit a model](#2026-11-15-nate-apify-rows-never-fit-a-model)), answering the same question, "May Apify rows also be used to fit the nightly models?".
+> Yes, Apify too
+
+> Make it extremly accurate we are benchmarking and showing depth and credibility with our realtime score metrics generated and assigned to each market within a specific platfrom
+
+Read by the engines lead: Apify rows may fit the nightly models. eBay content stays out of fits under eBay's terms ([data use](../spec/data-use.md)), including eBay rows that came through an Apify actor, until Nate says otherwise. The second line asks for real-time accuracy scores for each market (a platform and a kind of item), built in [valuation.md §9](../spec/engines/valuation.md#real-time-market-scores).
+
+## 2026-11-15 nate our own page read; is a website's read driven by the visitor's browser?
+Nate, orchestrator's session, 2026-11-15, about 08:05 Central, after the cross-source benchmark (our eBay page read against the paid actor).
+> lets do our page read, and for websites its driven with something using their browser of some sort?
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the search lead's rows.

@@ -125,7 +125,7 @@ The gate and the type check on every merge; the Python suites (after DB5); the p
 3. One marketplace account linked through the live view (SV9).
 4. His own sign-in on Fly.io, and his yes before anything is deployed.
 5. Whether the served-engine figure stays on the judges' dashboard before Ben has seen it.
-6. Whether a row marked `may_model: false` (Apify rows today, eBay interface rows later) may enter the comps a shown price range is computed from. [The valuation spec](../engines/valuation.md) says such a row can be shown and cited as a comp and never fit a weight; the ruling on Apify says shown and never modelled on. Until he rules, the engines lead keeps those rows out of every price basis and out of the observation store; they are still shown as listings.
+6. Answered 2026-11-15 (Nate, in the engines lead's session: "they can, they are verified real data"): a row marked `may_model: false` may price a shown range and be cited, and is never used in a fit. Recorded in [the valuation spec](../engines/valuation.md).
 7. Real items photographed and measured, eight to ten for the stopwatch and twenty for the benchmark.
 8. The paid visual lookup in capture ([design](../engines/capture.md)): whether a person's photo may go to Google Lens through treg and its provider at all (as designed: only when the tag, label and barcode reads abstain, one crop of the item, pixels only, through a single-use address that expires in 120 s, nothing of the answer kept but our own candidate line); the two spend caps ($0.003 a capture, $0.10 a day); and a top-up before a 20-item run (about $0.06).
 
@@ -147,6 +147,8 @@ Nate ordered it ("Rewrite it", then "After judging": [words](../../product/words
 5. The same rewrite, with the same rules, on the Mac's repository, so parked worker branches keep their work; then the Windows checkout is replaced by a fresh clone. Each lead is told when to resume.
 
 **What it cannot do.** GitHub keeps the old commits reachable through the references of 24 pull requests and by commit id. Only GitHub Support can purge them, on a request from Ben as the repository's owner. Until then the old content is not in any branch and is still fetchable by someone who has an old id.
+
+**Also scrubbed in the same pass:** a Windows user path that reached two committed files by accident (a research note at a643612e and this page at 48988617; both fixed on main since).
 
 **Not in scope unless Nate says so:** the page-reading scripts and notes named "recon", and one line about studying animations in a vendored design skill that is kept as an unchanged copy.
 
