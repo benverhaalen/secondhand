@@ -18,9 +18,9 @@ def break_glass(sql, reason: str, *, catalog: str = 'secondhand'):
     governance = f'{identifier(catalog)}.`governance`'
     grant_id = 'bg_' + uuid4().hex
     try:
-        sql(f"INSERT INTO {governance}.`principal_map` (principal, user_id) VALUES (current_user(), '*')", {})
         sql(f'INSERT INTO {governance}.`break_glass` (id, principal, reason, started_at, ended_at) '
             'VALUES (:id, current_user(), :reason, current_timestamp(), NULL)', {'id': grant_id, 'reason': reason})
+        sql(f"INSERT INTO {governance}.`principal_map` (principal, user_id) VALUES (current_user(), '*')", {})
         yield
     finally:
         sql(f"DELETE FROM {governance}.`principal_map` WHERE principal = current_user() AND user_id = '*'", {})

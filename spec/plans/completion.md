@@ -19,9 +19,9 @@ An area's percent is its share of yes cells.
 |---|---|---|---|---|---|---|---|
 | Capture | 10 | 9 | 5 | 5 | 7 | 26 of 40 | 65% |
 | Engines | 11 | 9 | 7 | 2 | 0 | 18 of 44 | 41% |
-| API, events, search, bench | 16 | 11 | 6 | 6 | 0 | 23 of 64 | 36% |
-| Databricks | 9 | 6 | 3 | 1 | 0 | 10 of 36 | 28% |
-| **All four** | 46 | 35 | 21 | 14 | 7 | **77 of 184** | **42%** |
+| API, events, search, bench | 16 | 11 | 8 | 6 | 0 | 25 of 64 | 39% |
+| Databricks | 9 | 9 | 8 | 6 | 0 | 23 of 36 | 64% |
+| **All four** | 46 | 38 | 26 | 19 | 7 | **90 of 184** | **49%** |
 
 Read across: three quarters of the pieces are built and pass their tests, about a third are joined into the running product, a fifth have touched real data, and an eighth have been freshly reviewed. The site harnesses are the orchestrator's and are not in the table: public reads are proved live on Depop, Poshmark, Mercari and eBay, Dupe's licensed search is built, and no signed-in read or write has run on a real account.
 

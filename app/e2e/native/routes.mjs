@@ -22,6 +22,9 @@ export function routesFromRenders(renders, selected = []) {
 }
 
 export function attachmentToSlug(name) {
+  // xcresulttool names a tree "<slug>_0_<UUID>.tree" (no .txt) or "<slug>.tree_0_<UUID>.txt", depending on its version.
+  const late = /^(.*?)_\d+_[0-9a-f-]+\.tree$/i.exec(name);
+  if (late && safeSlug.test(late[1])) return { slug: late[1], kind: 'tree' };
   const match = /^(.*?)(\.tree)?_\d+_[0-9a-f-]+\.(png|txt)$/i.exec(name);
   if (!match || !safeSlug.test(match[1])) return null;
   if (match[2] && match[3] === 'txt') return { slug: match[1], kind: 'tree' };

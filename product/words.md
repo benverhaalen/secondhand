@@ -1851,3 +1851,8 @@ Ben, same thread, 10:00 UTC.
 Ben, same thread, 10:01 UTC.
 
 > the scale and organization of each page is completely intentional and standard to apple iphone design
+## 2026-11-15 nate how credible and research-proven are our scorers, real time against 2012 to 2013, and proving we beat the other tools
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> So with this prompt, I was focused on you establishing how our engines are credible and accurate. Theres value to realtime vs 2012 to 2013. We research current market data, so I wanted you to assess how credible and research proven our scorers and such deterministic system we had in place were. What are the ways we can. /research  to understand what would make it such. What would help us easily prove or exhibit outperfroming competitors and other tools in our depth of research, and how we aid people.
+
+Used in: `spec/engines/credibility.md`.

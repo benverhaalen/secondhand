@@ -219,7 +219,11 @@ for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule', 'co
     const decisions = r.store.decisions({ user_id: 'usr_offer', state: 'open' });
     assert.ok(decisions.length > 0);
     const why = 'No acceptance model weighed this; the counter is the midpoint inside your limits.';
-    if (setting.endsWith('_without_model') || setting === 'stricter_rule') {
+    if (setting === 'stricter_rule') {
+      assert.equal(decisions[0].kind, 'accept_offer', 'the stricter item rule turns an otherwise automatic acceptance into a person decision');
+      assert.notEqual(decisions[0].why, why, 'the acceptance decision must keep its own reason');
+      assert.equal(job.args.response, 'accept');
+    } else if (setting.endsWith('_without_model')) {
       assert.equal(decisions[0].kind, setting === 'below_floor_without_model' ? 'price_below_floor' : 'counter_offer');
       assert.equal(decisions[0].why, why, 'a midpoint counter must disclose that no acceptance model weighed it');
       assert.equal(job.args.response, 'counter');
@@ -335,8 +339,11 @@ test('pipeline Depop write returns a dry plan and current limits override stale 
   };
   const first = enqueue('dry-write', 8000);
   await r.pipeline.runOnce(1);
-  assert.equal(r.store.getJob(first.id)?.state, 'done');
-  assert.equal((r.store.getJob(first.id)?.result as { dry: boolean }).dry, true);
+  const planned = r.store.getJob(first.id)!;
+  assert.equal(planned.state, 'done');
+  assert.equal(planned.stages.find(stage => stage.name === 'revise')?.state, 'planned');
+  assert.equal((planned.result as { planned: boolean }).planned, true);
+  assert.equal(((planned.result as { plan: { dry: boolean } }).plan).dry, true);
   const second = enqueue('new-floor', 8000);
   const limits = r.store.get('limits', 'usr_8f2k', 'it_7c2m')!;
   r.store.put('limits', { ...limits, floor_cents: { amount_cents: 8500, currency: 'USD' } });
