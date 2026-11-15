@@ -1839,3 +1839,9 @@ Nate, adaptation lead's session, 2026-11-15, evening Central.
 > So with this prompt, I was focused on you establishing how our engines are credible and accurate. Theres value to realtime vs 2012 to 2013. We research current market data, so I wanted you to assess how credible and research proven our scorers and such deterministic system we had in place were. What are the ways we can. /research  to understand what would make it such. What would help us easily prove or exhibit outperfroming competitors and other tools in our depth of research, and how we aid people.
 
 Used in: `spec/engines/credibility.md`.
+
+## 2026-11-15 nate fresh leads replace the ones with heavy context
+Nate, orchestrator's session, 2026-11-15, about 04:30 Central.
+> get all new leads in replacing old ones with very heavy context windows
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills).

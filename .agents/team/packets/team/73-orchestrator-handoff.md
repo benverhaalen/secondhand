@@ -8,13 +8,15 @@ The orchestrator holds the whole backend for Nate: it starts and briefs the team
 
 | Lead | Handoff | State at this writing |
 |---|---|---|
-| Integration (API, events, search, bench) | [69](69-integration-handoff.md) | old session finishing its packet; six placeholders in it were still unfilled |
-| Engines | [70](70-engines-handoff.md) | packet complete; two workers still running (`eng-valuation-1` round three, `eng-valuation-2`) |
-| Databricks | 71, not yet written | finishing four safety pieces (`dbx-gov-2`, `dbx-erase-1`, `dbx-bench-1`, `dbx-learn-1`), then its packet |
-| Capture | [72](72-capture-handoff.md) | old session ended; a fresh one is proposed, not started |
-| Real-time adaptation and metrics | 74, when it hands off | started today; its page will be `spec/engines/adaptation.md` |
+| Integration (API, events, search, bench) | [69](69-integration-handoff.md) | fresh session "Lead 2: integration, every feature joined" started about 10:40 UTC; first job is main green in its area, then the valuation route on the person's own item |
+| Engines | [70](70-engines-handoff.md) | fresh session "Lead 2: engines, valuation first" started; first job is judging `eng-valuation-2` by its ablation, then the `valuate` seam |
+| Databricks | [71](71-databricks-handoff.md) | fresh session "Lead 2: Databricks, the dashboard rebuilt" started; Nate rejected the dashboard, and the deploy is blocked until it is rebuilt or he says yes to force |
+| Capture | [72](72-capture-handoff.md) | fresh session "Lead 2: capture, spec pass then fixes" started by Nate |
+| Real-time adaptation and metrics | 74, when it hands off | started today, light context, kept; its pages are `spec/engines/adaptation.md` and `spec/engines/credibility.md` |
 
-Each fresh lead starts from packet 55 and its own handoff, does the spec pass first (every queue item a named fix on its spec page with its measure), then builds. A fresh session is started only on Nate's word in the orchestrator's own conversation.
+Packet 71 records that judging is at 1 PM Central on 2026-11-15, so what a judge can see working ranks first. Each fresh lead starts from packet 55 and its own handoff, keeps the spec pass short (every queue item a named fix on its spec page with its measure), then builds. The four old lead sessions are idle and can be archived on Nate's word.
+
+Main's check is red at this writing (`node .agents/check.mjs`): the real-time proof (the orchestrator's, in repair), `pool.test.ts` F2 and the planted-site test (fixed on `w/orc-session-1`, not merged), `scripts/walk.test.mjs`, `routes.test.ts` (no manifest in `valuation-sold.ts`), `intel/learn.test.ts`, the param parity test B1, two capture-real tests and the image-gen scheduler tests on Windows. Each fresh lead was given its own.
 
 ## 2. The orchestrator's own work
 
