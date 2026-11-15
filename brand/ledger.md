@@ -61,9 +61,10 @@ Round 8 picks are recorded in [words.md](../product/words.md#2026-11-15-round-8-
 | # | Decision | Options | Leaning |
 |---|---|---|---|
 | R16 | The item in a feed. Ben: "definitely B or C", a mix or an in-between, and "im fine possibly amending some decisions earlier" (L16) | A: white box with a hairline. B: gray box, no line. C: the in-between, a lighter gray with a hairline | B (agent) |
-| R17 | Which gradients are in the set, and how soft, how fast and how deep they are | The eight sets of three neighbors on the ring, adjusted in the lab on the page | open |
+| R17 | Which gradients are in the set, and how soft, how fast and how deep they are | Nine named fields in a loop, and any three ring colors with no two near opposite. Depth, softness and drift are set in the lab on the page, which saves what Ben leaves there | open |
 | R18 | Deeper colors. Ben: "the palette could be lacking deeper colors? i want to know if you agree or disagree" | A: none, as now. B: one stronger point in each gradient and the deep step for small marks. C: deep fills with white text | B (agent) |
 | R19 | Spacing by relationship, and radii that nest | The measured rule on the page, yes or no | yes (agent) |
+| A7 | Where Clofie goes, shown for a veto | A: wordmark only. B: and screen titles. C: and the amount. D: and card headlines | B (agent decision) |
 
 ## Later
 
