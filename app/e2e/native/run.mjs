@@ -88,6 +88,8 @@ async function capture(opts, work, log) {
     os = found.runtime.replace(/^com\.apple\.CoreSimulator\.SimRuntime\./, '').replaceAll('-', '.');
     if (found.state !== 'Booted') await command('xcrun', ['simctl', 'boot', id]);
     await command('xcrun', ['simctl', 'bootstatus', id, '-b']);
+    // Grant what the app asks for, so a system permission alert never sits over a later screen.
+    for (const service of ['camera', 'photos']) await command('xcrun', ['simctl', 'privacy', id, 'grant', service, bundle]).catch(() => {});
     const app = (await command('xcrun', ['simctl', 'get_app_container', id, bundle, 'app'], {}, true)).trim();
     appVersion = (await command('plutil', ['-extract', 'CFBundleShortVersionString', 'raw', '-o', '-', join(app, 'Info.plist')], {}, true)).trim();
   } else {

@@ -1,105 +1,106 @@
-Attributes: Application, 0x1299cbe80, pid: 71162, label: 'secondhand'
+Attributes: Application, 0x1020e6c80, pid: 84851, label: 'secondhand'
 Element subtree:
- →Application, 0x1299cbe80, pid: 71162, label: 'secondhand'
-    Window (Main), 0x1299ca300, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x1299c9a40, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x1299cae40, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x1299ca940, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x1299ca800, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x1299ca080, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x1299c8b40, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x1299c9400, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x1299c97c0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x1299cb480, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x1299c9540, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x1299c83c0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x1299c9900, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x1299cabc0, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x1299cbac0, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x1299cb980, {{0.0, 62.0}, {402.0, 812.0}}
-                                    ScrollView, 0x1299cb5c0, {{0.0, 62.0}, {402.0, 812.0}}
-                                      Other, 0x1299c9cc0, {{0.0, 62.0}, {402.0, 979.3}}
-                                        Other, 0x1299c9040, {{0.0, 62.0}, {402.0, 979.3}}
-                                          Other, 0x1299ca1c0, {{20.0, 62.0}, {362.0, 44.0}}
-                                            Button, 0x1299c9680, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                          Other, 0x1299c9180, {{20.0, 126.0}, {72.0, 72.0}}
-                                            Other, 0x1299cbc00, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                              Image, 0x1299c8f00, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                            Other, 0x1299c8780, {{20.0, 126.0}, {72.0, 72.0}}
-                                          StaticText, 0x1299c92c0, {{104.0, 151.3}, {278.0, 21.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                            StaticText, 0x1299ca580, {{104.0, 151.3}, {278.0, 21.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                          StaticText, 0x1299ca440, {{20.0, 242.0}, {362.0, 50.3}}, label: '$65 to $95'
-                                            StaticText, 0x1299c8dc0, {{20.0, 242.0}, {362.0, 50.3}}, label: '$65 to $95'
-                                          StaticText, 0x1299cb200, {{20.0, 296.3}, {362.0, 17.7}}, label: 'What similar ones sold for lately'
-                                            StaticText, 0x1299c9f40, {{20.0, 296.3}, {362.0, 17.7}}, label: 'What similar ones sold for lately'
-                                          Button, 0x1299c8c80, {{20.0, 330.0}, {362.0, 56.0}}, identifier: 'worth-sources', label: 'Check the sales. Leave out any that aren’t the same'
-                                          StaticText, 0x1299c9b80, {{20.0, 418.0}, {362.0, 21.3}}, label: 'You get'
-                                            StaticText, 0x12d561040, {{20.0, 418.0}, {362.0, 21.3}}, label: 'You get'
-                                          Other, 0x12d561400, {{20.0, 471.3}, {24.0, 24.0}}, label: 'Depop'
-                                          Other, 0x12d562940, {{22.0, 473.3}, {20.0, 20.0}}
-                                            Other, 0x12d561180, {{22.0, 473.3}, {20.0, 20.0}}, label: 'Depop'
-                                              Image, 0x12d562e40, {{22.0, 473.3}, {20.0, 20.0}}, label: 'Depop'
-                                          StaticText, 0x12d562a80, {{56.0, 474.7}, {250.3, 17.7}}, label: 'Sells in about 9 days'
-                                            StaticText, 0x12d5630c0, {{56.0, 474.7}, {250.3, 17.7}}, label: 'Sells in about 9 days'
-                                          StaticText, 0x12d562f80, {{318.3, 474.3}, {63.7, 17.7}}, label: '$67 to $92'
-                                            StaticText, 0x12d563e80, {{318.3, 474.3}, {63.7, 17.7}}, label: '$67 to $92'
-                                          Other, 0x12d563200, {{20.0, 511.3}, {362.0, 56.3}}
-                                          Other, 0x12d563480, {{20.0, 527.7}, {24.0, 24.0}}, label: 'Mercari'
-                                          StaticText, 0x12d563d40, {{56.0, 521.0}, {248.7, 17.7}}, label: 'Sells in about 7 days'
-                                            StaticText, 0x12d560dc0, {{56.0, 521.0}, {248.7, 17.7}}, label: 'Sells in about 7 days'
-                                          Other, 0x12d563c00, {{22.0, 529.7}, {20.0, 20.0}}
-                                            Other, 0x12d560f00, {{22.0, 529.7}, {20.0, 20.0}}, label: 'Mercari'
-                                              Image, 0x12d5635c0, {{22.0, 529.7}, {20.0, 20.0}}, label: 'Mercari'
-                                          StaticText, 0x12d563980, {{316.7, 530.7}, {65.3, 17.7}}, label: '$58 to $80'
-                                            StaticText, 0x12d563840, {{316.7, 530.7}, {65.3, 17.7}}, label: '$58 to $80'
-                                          StaticText, 0x12d563ac0, {{56.0, 542.7}, {248.7, 16.0}}, label: 'Not linked'
-                                            StaticText, 0x12d563340, {{56.0, 542.7}, {248.7, 16.0}}, label: 'Not linked'
-                                          Other, 0x12d563700, {{20.0, 567.7}, {362.0, 56.3}}
-                                          Other, 0x129fc2e40, {{20.0, 584.0}, {24.0, 24.0}}, label: 'eBay'
-                                          Other, 0x129fc2080, {{22.0, 586.0}, {20.0, 20.0}}
-                                            Other, 0x129fc0280, {{22.0, 586.0}, {20.0, 20.0}}, label: 'eBay'
-                                              Image, 0x129fc1cc0, {{22.0, 586.0}, {20.0, 20.0}}, label: 'eBay'
-                                          StaticText, 0x129fc2800, {{56.0, 587.3}, {251.3, 17.7}}, label: 'Sells in about 6 days'
-                                            StaticText, 0x129fc1180, {{56.0, 587.3}, {251.3, 17.7}}, label: 'Sells in about 6 days'
-                                          StaticText, 0x129fc0780, {{319.3, 587.0}, {62.7, 17.7}}, label: '$57 to $79'
-                                            StaticText, 0x129fc0640, {{319.3, 587.0}, {62.7, 17.7}}, label: '$57 to $79'
-                                          Other, 0x129fc2bc0, {{20.0, 624.0}, {362.0, 56.3}}
-                                          Other, 0x129fc3480, {{20.0, 640.3}, {24.0, 24.0}}, label: 'Poshmark'
-                                          StaticText, 0x129fc1400, {{56.0, 633.7}, {326.0, 17.7}}, label: 'Too few sales here'
-                                            StaticText, 0x129fc30c0, {{56.0, 633.7}, {326.0, 17.7}}, label: 'Too few sales here'
-                                          Other, 0x129fc0000, {{22.0, 642.3}, {20.0, 20.0}}
-                                            Other, 0x129fc08c0, {{22.0, 642.3}, {20.0, 20.0}}, label: 'Poshmark'
-                                              Image, 0x129fc2940, {{22.0, 642.3}, {20.0, 20.0}}, label: 'Poshmark'
-                                          StaticText, 0x129fc0dc0, {{56.0, 655.3}, {326.0, 16.0}}, label: 'Not linked'
-                                            StaticText, 0x129fc0b40, {{56.0, 655.3}, {326.0, 16.0}}, label: 'Not linked'
-                                          Other, 0x129fc3700, {{20.0, 680.3}, {362.0, 56.3}}
-                                          Other, 0x129fc2440, {{20.0, 696.7}, {24.0, 24.0}}, label: 'Facebook Marketplace'
-                                          Other, 0x129fc1b80, {{22.0, 698.7}, {20.0, 20.0}}
-                                            Other, 0x129fc2300, {{22.0, 698.7}, {20.0, 20.0}}, label: 'Facebook Marketplace'
-                                              Image, 0x129fc3c00, {{22.0, 698.7}, {20.0, 20.0}}, label: 'Facebook Marketplace'
-                                          StaticText, 0x129fc3200, {{56.0, 700.0}, {326.0, 17.7}}, label: 'Too few sales here'
-                                            StaticText, 0x129fc12c0, {{56.0, 700.0}, {326.0, 17.7}}, label: 'Too few sales here'
-                                          Button, 0x129fc2580, {{20.0, 768.7}, {88.0, 40.0}}, identifier: 'worth-sell', label: 'Sell this'
-                                          Button, 0x129fc21c0, {{116.0, 768.7}, {88.0, 40.0}}, identifier: 'worth-keep', label: 'Keep it'
-                                          Button, 0x129fc0f00, {{20.0, 840.7}, {362.0, 56.0}}, identifier: 'worth-price', label: 'Have a price in mind?'
-                                          Other, 0x129fc1900, {{20.0, 896.7}, {362.0, 56.3}}
-                                          Button, 0x129fc1f40, {{20.0, 897.0}, {362.0, 56.0}}, identifier: 'worth-model', label: 'Not this one? Type the model number'
-                                          Other, 0x129fc3ac0, {{20.0, 953.0}, {362.0, 56.3}}
-                                          Button, 0x129fc1e00, {{20.0, 953.3}, {362.0, 56.0}}, identifier: 'worth-deep', label: 'Look deeper. More sites and older sales. Takes a few minutes.'
-                                      Other, 0x129fc0140, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
-                                        Other, 0x129fc3e80, {{396.0, 65.0}, {3.0, 640.0}}
-                                      Other, 0x129fc1540, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x129fc1680, {{3.0, 834.0}, {393.0, 3.0}}
-                                      Other, 0x129fc2d00, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
-                                        Other, 0x129fc0a00, {{396.0, 65.0}, {3.0, 640.0}}
-                                      Other, 0x129fc17c0, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x129fc3840, {{3.0, 834.0}, {393.0, 3.0}}
-                      Toolbar, 0x129fc26c0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
-                        Other, 0x129fc0500, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x1020e6c80, pid: 84851, label: 'secondhand'
+    Window (Main), 0x102071060, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x102064b90, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x1020951a0, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x102090fb0, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x102071af0, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x1020728c0, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x102094aa0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x102095f70, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x10208c9c0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x1020844b0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10206ec80, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x102249300, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10224f2a0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x102251bb0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x10224ece0, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x1022381e0, {{0.0, 0.0}, {402.0, 874.0}}
+                                    ScrollView, 0x102250170, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x1022535b0, {{0.0, 0.0}, {402.0, 1088.0}}
+                                        Other, 0x102252f70, {{0.0, 0.0}, {402.0, 1088.0}}
+                                          Other, 0x102252b50, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x102252730, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x102252310, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                          Other, 0x102251ef0, {{20.0, 126.0}, {72.0, 72.0}}
+                                            Other, 0x1022508d0, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                              Image, 0x102250cf0, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                            Other, 0x10223f3c0, {{20.0, 126.0}, {72.0, 72.0}}
+                                          StaticText, 0x10222af40, {{104.0, 150.0}, {278.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                            StaticText, 0x102242a00, {{104.0, 150.0}, {278.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                          StaticText, 0x1022385c0, {{20.0, 242.0}, {362.0, 57.3}}, label: '$65 to $95'
+                                            StaticText, 0x10224e6c0, {{20.0, 242.0}, {362.0, 57.3}}, label: '$65 to $95'
+                                          StaticText, 0x10224e7e0, {{20.0, 303.3}, {362.0, 20.3}}, label: 'What similar ones sold for lately'
+                                            StaticText, 0x10224e900, {{20.0, 303.3}, {362.0, 20.3}}, label: 'What similar ones sold for lately'
+                                          Button, 0x1022539d0, {{20.0, 339.7}, {362.0, 56.0}}, identifier: 'worth-sources', label: 'Check the sales. Leave out any that aren’t the same'
+                                          StaticText, 0x102253af0, {{20.0, 427.7}, {362.0, 24.3}}, label: 'You get'
+                                            StaticText, 0x102253c10, {{20.0, 427.7}, {362.0, 24.3}}, label: 'You get'
+                                          Other, 0x102253d30, {{20.0, 484.0}, {24.0, 24.0}}, label: 'Depop'
+                                          Other, 0x102253e50, {{22.0, 486.0}, {20.0, 20.0}}
+                                            Other, 0x102253f70, {{22.0, 486.0}, {20.0, 20.0}}, label: 'Depop'
+                                              Image, 0x102254090, {{22.0, 486.0}, {20.0, 20.0}}, label: 'Depop'
+                                          StaticText, 0x1022541b0, {{56.0, 486.0}, {242.0, 20.3}}, label: 'Sells in about 9 days'
+                                            StaticText, 0x1022542d0, {{56.0, 486.0}, {242.0, 20.3}}, label: 'Sells in about 9 days'
+                                          StaticText, 0x1022543f0, {{310.0, 485.7}, {72.0, 20.3}}, label: '$67 to $92'
+                                            StaticText, 0x102254510, {{310.0, 485.7}, {72.0, 20.3}}, label: '$67 to $92'
+                                          Other, 0x102254630, {{20.0, 524.0}, {362.0, 56.3}}
+                                          StaticText, 0x102254750, {{56.0, 531.0}, {240.0, 20.3}}, label: 'Sells in about 7 days'
+                                            StaticText, 0x102254870, {{56.0, 531.0}, {240.0, 20.3}}, label: 'Sells in about 7 days'
+                                          Other, 0x102254990, {{20.0, 540.3}, {24.0, 24.0}}, label: 'Mercari'
+                                          Other, 0x102254ab0, {{22.0, 542.3}, {20.0, 20.0}}
+                                            Other, 0x102254bd0, {{22.0, 542.3}, {20.0, 20.0}}, label: 'Mercari'
+                                              Image, 0x102254cf0, {{22.0, 542.3}, {20.0, 20.0}}, label: 'Mercari'
+                                          StaticText, 0x102254e10, {{308.0, 542.0}, {74.0, 20.3}}, label: '$58 to $80'
+                                            StaticText, 0x102254f30, {{308.0, 542.0}, {74.0, 20.3}}, label: '$58 to $80'
+                                          StaticText, 0x102255050, {{56.0, 555.3}, {240.0, 18.3}}, label: 'Not linked'
+                                            StaticText, 0x102255170, {{56.0, 555.3}, {240.0, 18.3}}, label: 'Not linked'
+                                          Other, 0x102255290, {{20.0, 580.3}, {362.0, 56.3}}
+                                          Other, 0x1022553b0, {{20.0, 596.7}, {24.0, 24.0}}, label: 'eBay'
+                                          Other, 0x1022554d0, {{22.0, 598.7}, {20.0, 20.0}}
+                                            Other, 0x1022555f0, {{22.0, 598.7}, {20.0, 20.0}}, label: 'eBay'
+                                              Image, 0x102255710, {{22.0, 598.7}, {20.0, 20.0}}, label: 'eBay'
+                                          StaticText, 0x102255830, {{56.0, 598.7}, {243.0, 20.3}}, label: 'Sells in about 6 days'
+                                            StaticText, 0x102255950, {{56.0, 598.7}, {243.0, 20.3}}, label: 'Sells in about 6 days'
+                                          StaticText, 0x102255a70, {{311.0, 598.3}, {71.0, 20.3}}, label: '$57 to $79'
+                                            StaticText, 0x102255b90, {{311.0, 598.3}, {71.0, 20.3}}, label: '$57 to $79'
+                                          Other, 0x102255cb0, {{20.0, 636.7}, {362.0, 56.3}}
+                                          StaticText, 0x102255dd0, {{56.0, 643.7}, {326.0, 20.3}}, label: 'Too few sales here'
+                                            StaticText, 0x102255ef0, {{56.0, 643.7}, {326.0, 20.3}}, label: 'Too few sales here'
+                                          Other, 0x102256010, {{20.0, 653.0}, {24.0, 24.0}}, label: 'Poshmark'
+                                          Other, 0x102256130, {{22.0, 655.0}, {20.0, 20.0}}
+                                            Other, 0x102256250, {{22.0, 655.0}, {20.0, 20.0}}, label: 'Poshmark'
+                                              Image, 0x102256370, {{22.0, 655.0}, {20.0, 20.0}}, label: 'Poshmark'
+                                          StaticText, 0x1022565e0, {{56.0, 668.0}, {326.0, 18.3}}, label: 'Not linked'
+                                            StaticText, 0x102256700, {{56.0, 668.0}, {326.0, 18.3}}, label: 'Not linked'
+                                          Other, 0x102256820, {{20.0, 693.0}, {362.0, 56.3}}
+                                          Other, 0x102256940, {{20.0, 709.3}, {24.0, 24.0}}, label: 'Facebook Marketplace'
+                                          Other, 0x102256a60, {{22.0, 711.3}, {20.0, 20.0}}
+                                            Other, 0x102256b80, {{22.0, 711.3}, {20.0, 20.0}}, label: 'Facebook Marketplace'
+                                              Image, 0x102256ca0, {{22.0, 711.3}, {20.0, 20.0}}, label: 'Facebook Marketplace'
+                                          StaticText, 0x102256dc0, {{56.0, 711.3}, {326.0, 20.3}}, label: 'Too few sales here'
+                                            StaticText, 0x102256ee0, {{56.0, 711.3}, {326.0, 20.3}}, label: 'Too few sales here'
+                                          Button, 0x102257000, {{20.0, 781.3}, {90.7, 40.0}}, identifier: 'worth-sell', label: 'Sell this'
+                                          Button, 0x102257120, {{118.7, 781.3}, {88.0, 40.0}}, identifier: 'worth-keep', label: 'Keep it'
+                                          Button, 0x102351130, {{20.0, 853.3}, {362.0, 56.0}}, identifier: 'worth-price', label: 'Have a price in mind?'
+                                          Other, 0x10236bd00, {{20.0, 909.3}, {362.0, 56.3}}
+                                          Button, 0x102333cb0, {{20.0, 909.7}, {362.0, 56.0}}, identifier: 'worth-model', label: 'Not this one? Type the model number'
+                                          Other, 0x102364f00, {{20.0, 965.7}, {362.0, 56.3}}
+                                          Button, 0x1023478b0, {{20.0, 966.0}, {362.0, 56.0}}, identifier: 'worth-deep', label: 'Look deeper. More sites and older sales. Takes a few minutes.'
+                                      Other, 0x102355af0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                        Other, 0x1023804c0, {{396.0, 65.0}, {3.0, 597.7}}
+                                      Other, 0x102353e90, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x10237a710, {{65.0, 868.0}, {272.0, 3.0}}
+                                      Other, 0x10237a830, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                        Other, 0x10237a950, {{396.0, 65.0}, {3.0, 597.7}}
+                                      Other, 0x10237aa70, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x10237ab90, {{65.0, 868.0}, {272.0, 3.0}}
+                      Other, 0x10237acb0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10237add0, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x1299cbe80, pid: 71162, label: 'secondhand'
+ →Application, 0x1020e6c80, pid: 84851, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x129fc03c0, pid: 71162, label: 'secondhand'
+    Application, 0x1023414c0, pid: 84851, label: 'secondhand'
   }
