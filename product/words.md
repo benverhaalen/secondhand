@@ -1948,3 +1948,14 @@ Ben, same thread, 10:31 UTC.
 > ensuring each checks against what is planned feature wise for each and also noting down what is left to be wired up and such
 
 Used in: [features/app/page-jobs.json](../features/app/page-jobs.json), `scripts/page-jobs.mjs` (J1 to J5).
+## 2026-11-15 nate host the server output on the website's vercel deployment
+Nate, orchestrator's session, 2026-11-15, about 06:15 Central, asked whether the device test should run against a dev client on the LAN or a hosted server.
+> Lets host the server output sure, we can host it on the next.js deployment with vercel the website will live on
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md). The deploy itself is still asked each time.
+
+## 2026-11-15 nate parse more from each read instead of reading one by one
+Nate, orchestrator's session, 2026-11-15, about 06:25 Central, after hearing that eBay is held to one read every ten seconds.
+> well instead of reading one by one, can we build the system to parse and even more effectively ascertain info
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
