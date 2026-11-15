@@ -88,8 +88,8 @@ def test_fresh_guarded_number_schema_declares_nullable_basis_without_check():
     assert 'basis_level STRING NOT NULL' not in body and 'CHECK' not in body
 
 
-GRANT = "INSERT INTO `secondhand`.`governance`.`principal_map` (principal, user_id) VALUES (current_user(), '*')"
-REVOKE = "DELETE FROM `secondhand`.`governance`.`principal_map` WHERE principal = current_user() AND user_id = '*'"
+GRANT = "INSERT INTO `secondhand`.`governance`.`principal_map` (principal, user_id, grant_id) VALUES (current_user(), '*', :id)"
+REVOKE = 'DELETE FROM `secondhand`.`governance`.`principal_map` WHERE grant_id = :id'
 
 
 @pytest.mark.parametrize('failure', [None, 'backfill', 'constraint'])
@@ -113,6 +113,7 @@ def test_break_glass_wraps_plan_and_revokes_once(failure):
     assert statements[0].startswith('INSERT INTO `secondhand`.`governance`.`break_glass` ')
     assert calls[0][1]['reason'] == 'data column backfill (spec/product.md §3)'
     assert calls[0][1]['id'] == calls[-1][1]['id']
+    assert calls[1][1] == {'id': calls[0][1]['id']}
     assert statements[-2] == REVOKE
     assert statements[-1].startswith('UPDATE `secondhand`.`governance`.`break_glass` SET ended_at = current_timestamp()')
 
@@ -196,3 +197,35 @@ def test_guard_setup_plan_adds_reason_closed_once_and_keeps_the_ddl_in_09():
     assert len(alter) == 1
     assert 'reason_closed STRING' in alter[0]
     assert again == [s for s in first if s != alter[0]]
+
+
+@pytest.mark.parametrize('grant_id_exists', [False, True])
+def test_principal_map_grant_id_migration_runs_only_when_missing_and_before_break_glass(monkeypatch, grant_id_exists):
+    import sys
+    from types import SimpleNamespace as NS
+    import migrate_data
+
+    calls = []
+
+    class Spark:
+        def sql(self, statement, args=None):
+            calls.append((statement, args))
+            if 'information_schema.columns' in statement and "table_name = 'principal_map'" in statement:
+                assert "table_schema = 'governance'" in statement and "column_name = 'grant_id'" in statement
+                rows = [{'column_name': 'grant_id'}] if grant_id_exists else []
+            else:
+                rows = []
+            return NS(collect=lambda: rows)
+
+    monkeypatch.setitem(sys.modules, 'pyspark.sql', NS(SparkSession=NS(getActiveSession=lambda: Spark())))
+    monkeypatch.setattr(migrate_data, 'plan', lambda *args, **kwargs: ['backfill'])
+    monkeypatch.setattr(sys, 'argv', ['migrate_data.py'])
+    migrate_data.main()
+    statements = [s for s, _ in calls]
+    alters = [s for s in statements if s.startswith('ALTER TABLE secondhand.governance.principal_map ADD COLUMNS')]
+    assert len(alters) == int(not grant_id_exists)
+    if alters:
+        assert "grant_id STRING COMMENT 'The break_glass.id this wildcard row belongs to.'" in alters[0]
+        assert 'NOT NULL' not in alters[0]
+        assert statements.index(alters[0]) < statements.index(GRANT) - 1
+    assert statements.index(GRANT) < statements.index('backfill') < statements.index(REVOKE)
