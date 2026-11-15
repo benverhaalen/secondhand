@@ -4,7 +4,8 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { words, allCaps, titleCase, EMOJI, sheetAgrees } from './render.mjs';
+import { words, allCaps, titleCase, sheetAgrees } from './render.mjs';
+import { scan } from '../../scripts/copy-lint.mjs';
 import { check, playwright } from '../../scripts/brand-check.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '../..');
@@ -15,7 +16,8 @@ test('render: words count two CJK characters as one, and case is read from the l
   assert.equal(words('古着を売る'), 3);
   assert.ok(allCaps('SOLD TODAY') && !allCaps('Sold today') && !allCaps('$38') && !allCaps('M'));
   assert.ok(titleCase('What You Keep Today') && !titleCase('What you keep today') && !titleCase('Carhartt Detroit'));
-  assert.ok(EMOJI.test('Sold 🎉') && EMOJI.test('ok ✨') && !EMOJI.test('You keep $46.95 © ™ → 3×'));
+  const emoji = s => scan(s).some(h => h.id === 'S2');
+  assert.ok(emoji('Sold 🎉') && emoji('ok ✨') && emoji('🇺🇸') && !emoji('You keep $46.95 © ™ → 3×'));
 });
 
 test('render: brand/media.json holds the same numbers as Part III of the constitution, and a drift fails', () => {
@@ -87,3 +89,34 @@ const CASES = [
   ['B3', 'a wordmark that moves between post panels', '<section class="p" data-view><p class="m" style="font-size:40px;text-align:center">secondhand</p></section><section class="p" data-view><p class="m" style="font-size:40px;text-align:center;margin-top:96px">secondhand</p></section>', /B3 .*moves between views/, 'post'],
 ];
 for (const [id, what, body, re, medium] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium)).join('\n'), re));
+
+// The rule list knows the render checks, the media, and Part IV's "Runs" column.
+import { mkdirSync } from 'node:fs';
+import { rules, judgeBrief } from './rules.mjs';
+import { ui } from './ui.mjs';
+function repo(files) {
+  const r = mkdtempSync(join(tmpdir(), 'rules-'));
+  for (const [p, s] of Object.entries(files)) { mkdirSync(join(r, p, '..'), { recursive: true }); writeFileSync(join(r, p), s); }
+  return r;
+}
+test('rules: a render holder with no check, a medium that does not exist, and a Part IV row that disagrees all fail', () => {
+  const base = { 'brand/media.json': '{"deck":{},"post":{}}', '.agents/checks/render.mjs': "E('B8', '', 'x')", '.agents/checks/render.test.mjs': "['B8', 'too much color', x]",
+    'brand/constitution.md': '| B8 | Color | Pixels | Script |\n| B2 | Squint | Blur | Look |\n| B22 | Icons | One set | Not built |\n' };
+  const run = list => { const r = repo({ ...base, '.agents/ui-rules.json': JSON.stringify(list) }); try { return rules(r).map(o => `${o.where} ${o.msg}`).join('\n'); } finally { rmSync(r, { recursive: true }); } };
+  const good = [{ id: 'B8', kind: 'check', by: 'render:B8', media: ['deck'] }, { id: 'B2', kind: 'judge', fail: 'Fail if the logo is seen first.', media: ['deck', 'post'] }];
+  assert.equal(run(good), '');
+  assert.match(run([{ id: 'B8', kind: 'check', by: 'render:B9' }, good[1]]), /render:B9 needs a check/);
+  assert.match(run([{ ...good[0], media: ['tv'] }, good[1]]), /"media" is a list of the media/);
+  assert.match(run([good[0]]), /B2 runs as "Look" in Part IV and has no row/);
+  assert.match(run([...good, { id: 'B22', kind: 'judge', fail: 'Fail if two icon sets.' }]), /B22 is "Not built" in Part IV and has a row/);
+});
+test('rules: a deck judge gets only the lines that name a deck, and the app gets the lines with no medium', () => {
+  const list = [{ id: 'L9', kind: 'judge', fail: 'Fail if a.' }, { id: 'G2', kind: 'judge', fail: 'Fail if b.', media: ['deck'] }, { id: 'B1', kind: 'judge', fail: 'Fail if c.', media: ['app', 'deck'] }];
+  assert.equal(judgeBrief(list, 'deck'), 'G2: Fail if b.\nB1: Fail if c.');
+  assert.equal(judgeBrief(list), 'L9: Fail if a.\nB1: Fail if c.');
+  assert.equal(judgeBrief(list, 'web'), 'L9: Fail if a.');
+});
+test('ui: an emoji in app copy is an error', () => {
+  const r = repo({ 'app/src/app/x.tsx': '<Txt>Sold 🎉</Txt>' });
+  try { assert.match(ui(r, { files: ['app/src/app/x.tsx'] }).filter(o => o.level === 'error').map(o => o.msg).join('\n'), /emoji/); } finally { rmSync(r, { recursive: true }); }
+});

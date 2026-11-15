@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The UI rule set, from .agents/ui-rules.json.
-//   node scripts/ui-rules.mjs judge                      the fail list to hand a fresh judge, and nothing else
+//   node scripts/ui-rules.mjs judge [medium]             the fail list to hand a fresh judge, and nothing else (app, web, post, story or deck)
 //   node scripts/ui-rules.mjs seen "<finding>" <where>   note a finding from a critique, an audit or a correction
 //   node scripts/ui-rules.mjs tally                      how much of the rule set a script holds
 // A finding noted twice fails node .agents/check.mjs until it becomes a check or a judge line.
@@ -25,7 +25,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const root = join(fileURLToPath(new URL('.', import.meta.url)), '..'), [cmd, finding, ...rest] = process.argv.slice(2), where = rest.join(' ');
   const list = load(root);
   if (!Array.isArray(list)) { process.stderr.write(`${RULES} is missing or not a JSON list\n`); process.exit(1); }
-  if (cmd === 'judge') process.stdout.write(`${judgeBrief(list)}\n`);
+  if (cmd === 'judge') process.stdout.write(`${judgeBrief(list, finding)}\n`);
   else if (cmd === 'tally') process.stdout.write(`${tally(root)}\n`);
   else if (cmd === 'seen' && finding && where) {
     const row = seen(list, finding, where);
