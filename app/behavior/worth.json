@@ -1,16 +1,113 @@
 {
   "screen": "worth",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "The appraisal result for a thing the person owns (spec/pages.md §6.11, spec/features/appraise.md): what it is, what similar ones sold for, what they would keep on each site, and the next step.",
+  "frame": {
+    "who": "Testing the water and clearing out, once per thing, often before they decide to sell at all; the flipper checks many in a row; a new person may arrive here before linking any site.",
+    "came_to": "Know what it is worth in a number they can trust, and whether it is worth selling.",
+    "mistake_costs_most": "A number with no source: the range is only ever from sold comparables, each site's row says when there are too few sales, and the sales are one tap away.",
+    "ways_out": "Keep it (just value it) saves the value and never asks to list it; a typed model number when the photo was not enough (ways-out §6.11); a site with too few sales shows no number instead of a guess.",
+    "in_the_loop": "Keep it only saves a value, so it acts and shows Kept with Undo; Sell this only starts the listing, and the price is set later on Plan where it waits for the person."
+  },
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "glance",
+      "route": "/worth?stage=glance",
+      "shows": "Rough guess"
+    },
+    {
+      "state": "check",
+      "route": "/worth",
+      "shows": "You keep"
+    },
+    {
+      "state": "unsure",
+      "route": "/worth?stage=unsure",
+      "shows": "Which one is it?"
+    },
+    {
+      "state": "kept",
+      "route": "/worth",
+      "shows": "Kept"
     }
   ],
   "controls": [
     {
       "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "on_tap": "goes back to where it came from",
+      "id": "nav-back",
+      "does": "goes back to where it came from",
+      "at": "/worth"
+    },
+    {
+      "control": "What sold",
+      "on_tap": "opens what similar ones sold for, per site",
+      "id": "worth-sources",
+      "does": "opens what similar ones sold for, per site",
+      "at": "/worth"
+    },
+    {
+      "control": "Sell this",
+      "on_tap": "starts selling it: the camera for the rest of the shots",
+      "id": "worth-sell",
+      "does": "starts selling it: the camera for the rest of the shots",
+      "goes": "/camera",
+      "at": "/worth"
+    },
+    {
+      "control": "Keep it",
+      "on_tap": "keeps it and saves its value, with Undo",
+      "id": "worth-keep",
+      "does": "keeps it and saves its value, with Undo",
+      "at": "/worth"
+    },
+    {
+      "control": "Type the model number",
+      "on_tap": "opens a field for the model number",
+      "id": "worth-model",
+      "does": "opens a field for the model number",
+      "at": "/worth"
+    },
+    {
+      "control": "Look deeper",
+      "on_tap": "starts a deeper look that lands on Today",
+      "id": "worth-deep",
+      "does": "starts a deeper look that lands on Today",
+      "at": "/worth"
+    },
+    {
+      "control": "Model number",
+      "on_tap": "types the model number; on enter the value is checked again",
+      "id": "worth-model-field",
+      "does": "types the model number; on enter the value is checked again",
+      "at": "/worth?stage=unsure"
     }
-  ]
+  ],
+  "flows": [
+    {
+      "flow": "keep and undo",
+      "steps": [
+        "worth-keep",
+        "worth-keep-undo"
+      ],
+      "then": "Kept with the range shows, then Undo brings back Sell this and Keep it"
+    },
+    {
+      "flow": "model number",
+      "steps": [
+        "worth-model-field",
+        "type HEG-001",
+        "enter"
+      ],
+      "then": "the range and You keep appear"
+    },
+    {
+      "flow": "sources",
+      "steps": [
+        "worth-sources"
+      ],
+      "then": "a sheet lists each site's sold range, and a site with too few sales says so"
+    }
+  ],
+  "back": "Back returns to the camera or the page that opened it; the value is kept only if Keep it was tapped.",
+  "decisions": []
 }

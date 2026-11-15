@@ -1,0 +1,44 @@
+# The Sell tab (app/behavior/(tabs)/sell.json) on a phone or simulator: the same states and flows as app/e2e/sell.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/sell.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/sell.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+# empty: a new person sees one line and the way to the camera.
+- launchApp
+- openLink: ${URL}/--/sell?world=new
+- extendedWaitUntil:
+    visible: "Nothing for sale"
+    timeout: 30000
+- tapOn: { id: "sell-empty-camera" }
+- back
+# shelves: the clearing person's things in shelves, one row of filters.
+- openLink: ${URL}/--/sell?world=clearing
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "filter-live" }
+- tapOn: { id: "filter-all" }
+- tapOn: { id: "filter-site-ebay" }
+- tapOn: { id: "filter-all" }
+# select: keep the lamp, then undo.
+- tapOn: { id: "sell-select" }
+- assertVisible: "Select items"
+- tapOn: { id: "tile-it_lamp" }
+- tapOn: { id: "select-act" }
+- tapOn: { id: "bulk-keep" }
+- tapOn: { id: "bulk-approve" }
+- tapOn: { id: "bulk-undo" }
+# A tile opens its item.
+- tapOn: { id: "tile-it_jacket" }
+- back
+# filtered: the flipper's live shelf, sorted by price.
+- openLink: ${URL}/--/sell?world=flipper&filter=live
+- extendedWaitUntil:
+    visible: "Live"
+    timeout: 15000
+- tapOn: { id: "filter-sort" }
+- tapOn: { id: "sort-price_high" }
+- assertVisible: "Price, high"

@@ -1,16 +1,176 @@
 {
   "screen": "(tabs)/sell",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "Everything the person sells, as photo tiles in shelves by state (spec/pages.md §6.10), filtered by one row.",
+  "frame": {
+    "who": "Clearing out (primary, 11 things on 3 sites) checks it a few times a day; the flipper (64 things) lives in it; a new person sees it empty once.",
+    "came_to": "See where each thing is (needs me, live, sold) at a glance and open the one they mean; the flipper also narrows by site and sorts.",
+    "mistake_costs_most": "A bulk change that ends listings or deletes items: it is public and slow to undo, so it hands off with exactly what it will do written on the button.",
+    "ways_out": "Select many and change them at once (Keep, Donated, Sold elsewhere, Delete; ways-out §6.10 and §6.6); Pause selling from the foot of the page (ways-out, Everywhere); the empty page leads straight to the camera.",
+    "in_the_loop": "The agent never acts from this page; the tile shows where it is (Researching, Needs you), and a bulk change waits for one tap on a button that says what it does."
+  },
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "empty",
+      "route": "/sell?world=new",
+      "shows": "Nothing for sale"
+    },
+    {
+      "state": "shelves",
+      "route": "/sell?world=clearing",
+      "shows": "Needs you"
+    },
+    {
+      "state": "filtered",
+      "route": "/sell?world=flipper&filter=live",
+      "shows": "Live"
+    },
+    {
+      "state": "select",
+      "route": "/sell?world=clearing",
+      "shows": "Select items"
     }
   ],
   "controls": [
     {
       "control": "Inbox",
-      "on_tap": "opens Messages"
+      "on_tap": "opens Messages",
+      "id": "nav-inbox",
+      "does": "opens Messages",
+      "goes": "/messages",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Select",
+      "on_tap": "turns tiles into checkboxes for a change to many at once",
+      "id": "sell-select",
+      "does": "turns tiles into checkboxes for a change to many at once",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Sort",
+      "on_tap": "opens the sort sheet",
+      "id": "filter-sort",
+      "does": "opens the sort sheet",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "All",
+      "on_tap": "shows every shelf",
+      "id": "filter-all",
+      "does": "shows every shelf",
+      "at": "/sell?world=flipper&filter=live"
+    },
+    {
+      "control": "Needs you",
+      "on_tap": "shows only what needs the person",
+      "id": "filter-needs_you",
+      "does": "shows only what needs the person",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Live",
+      "on_tap": "shows only live things",
+      "id": "filter-live",
+      "does": "shows only live things",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "eBay logo in the filter row",
+      "on_tap": "shows only things listed on that site",
+      "id": "filter-site-ebay",
+      "does": "shows only things listed on that site",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "See all on a shelf",
+      "on_tap": "shows the whole Needs you shelf",
+      "id": "shelf-needs_you-all",
+      "does": "shows the whole Needs you shelf",
+      "at": "/sell?world=flipper"
+    },
+    {
+      "control": "Kept, folded",
+      "on_tap": "opens the folded Kept shelf",
+      "id": "shelf-kept-fold",
+      "does": "opens the folded Kept shelf",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "A tile",
+      "on_tap": "opens the item",
+      "id": "tile-it_jacket",
+      "does": "opens the item",
+      "goes": "/item/it_jacket",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Pause selling",
+      "on_tap": "opens Pause selling",
+      "id": "sell-pause",
+      "does": "opens Pause selling",
+      "goes": "/you/pause",
+      "at": "/sell?world=clearing"
+    },
+    {
+      "control": "Sell something",
+      "on_tap": "opens the camera to sell the first thing",
+      "id": "sell-empty-camera",
+      "does": "opens the camera to sell the first thing",
+      "goes": "/camera",
+      "at": "/sell?world=new"
     }
-  ]
+  ],
+  "flows": [
+    {
+      "flow": "sort",
+      "steps": [
+        "filter-sort",
+        "sort-price_high"
+      ],
+      "then": "tiles are ordered by price, highest first, and the sort button reads its pick"
+    },
+    {
+      "flow": "select and keep",
+      "steps": [
+        "sell-select",
+        "tile-it_lamp",
+        "select-act",
+        "bulk-keep",
+        "bulk-approve"
+      ],
+      "then": "the lamp leaves its shelf for Kept and a toast says Kept with Undo"
+    },
+    {
+      "flow": "undo",
+      "steps": [
+        "sell-select",
+        "tile-it_lamp",
+        "select-act",
+        "bulk-keep",
+        "bulk-approve",
+        "bulk-undo"
+      ],
+      "then": "the lamp is back in its shelf"
+    },
+    {
+      "flow": "delete refused",
+      "steps": [
+        "sell-select",
+        "tile-it_kindle",
+        "select-act",
+        "bulk-delete"
+      ],
+      "then": "the sheet says one has an open order and stays, and the approve button counts none"
+    },
+    {
+      "flow": "cancel select",
+      "steps": [
+        "sell-select",
+        "select-done"
+      ],
+      "then": "tiles open items again"
+    }
+  ],
+  "back": "Sell is a tab: no back. Android back leaves the app from here.",
+  "decisions": []
 }
