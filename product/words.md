@@ -594,3 +594,9 @@ Ben, thread "Set the secondhand brand identity", 00:50 UTC, after being told his
 ## 2026-11-15 use my four round 9 calls in the mocks, lock later
 Ben, thread "Set the secondhand brand identity", 00:59 UTC, on a decision card that asked "Use my calls on the four round 9 things you left untapped?" (the gray item box, the spacing rule with 20 corners, the Home gradient at depth 50, one stronger color step). He tapped:
 > Use them in mocks, lock later
+
+## 2026-11-14 nate how the marketing engine is powered, and weights in real time
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Have we looked at how our marketing engine and optimized way to list each product is powered. How does our system aid in the reselling and buying research included. What doesnt it help with yet
+
+> The engine should be built to weigh things in real time, not hardcode in methodologies, we need realtime collected data to then empower extremely accurate results
