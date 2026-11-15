@@ -112,3 +112,15 @@ test('a rejected Promise callback cannot terminate the process after tx refuses 
   `, new URL('./db.ts', import.meta.url).href], { encoding: 'utf8', timeout: 10000 });
   assert.equal(child.status, 0, child.stderr);
 });
+
+
+test('a rollback failure is logged and never replaces the original transaction error', t => {
+  const handle = new DatabaseSync(':memory:');
+  const sink = memorySink(), stop = observeLogs(sink);
+  t.after(stop);
+  const original = new Error('original callback failure');
+  assert.throws(() => tx(handle, () => { handle.close(); throw original; }), error => error === original);
+  const entries: Record<string, unknown>[] = sink.lines.map(line => JSON.parse(line));
+  assert.ok(entries.some(entry => entry.where === 'sqlite.tx.rollback'));
+  assert.ok(entries.some(entry => entry.where === 'sqlite.tx'));
+});

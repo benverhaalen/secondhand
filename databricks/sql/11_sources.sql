@@ -47,12 +47,12 @@ WHEN NOT MATCHED THEN INSERT (source, may_store, may_model, may_model_scope, may
 VALUES (s.source, s.may_store, s.may_model, s.may_model_scope, s.may_show, s.may_share, s.ttl_hours, s.clause, s.clause_url, s.decided_by, CAST(s.decided_at AS TIMESTAMP), s.note);
 
 CREATE OR REPLACE VIEW secondhand.market.comp_for_product
-COMMENT 'The only table a model the product ships may read. Today no source is cleared for product use.'
+COMMENT 'Rows cleared by both row and source rights for a shipped model. Today no source is cleared for product use.'
 AS
 SELECT c.*
 FROM secondhand.market.comp c
 JOIN secondhand.governance.source_rights r ON c.source = r.source
-WHERE r.may_model AND r.may_model_scope = 'product';
+WHERE c.may_model = true AND r.may_model AND r.may_model_scope = 'product';
 
 CREATE OR REPLACE VIEW secondhand.measures.model_clearance
 COMMENT 'Per-source row counts and separate clearance for the demo backtest and a shipped model, with the clause to inspect.'

@@ -6,12 +6,13 @@ import type { SseFrame } from '../edge/api/jobs.ts';
 
 // Metro needs extensionless imports to select .native.ts; Node's TS runner needs the extension.
 const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
-  if (context.parentURL === new URL('./client.ts', import.meta.url).href && (specifier === './origin' || specifier === './fetch')) {
+  if (context.parentURL === new URL('./client.ts', import.meta.url).href && (specifier === './origin' || specifier === './fetch' || specifier === './vault')) {
     return nextResolve(`${specifier}.ts`, context);
   }
   return nextResolve(specifier, context);
 } });
 const { ApiFailure, createClient } = await import('./client.ts');
+const { memoryVault } = await import('./vault.ts');
 hooks.deregister();
 
 const fixture = JSON.parse(readFileSync(new URL('../buy/fixtures/search-live-levi.json', import.meta.url), 'utf8')) as { start: { id: string }; frames: SseFrame[] };
@@ -210,4 +211,67 @@ test('origin uses EXPO_PUBLIC_API_ORIGIN when set and same-origin when absent', 
     if (before === undefined) delete process.env.EXPO_PUBLIC_API_ORIGIN;
     else process.env.EXPO_PUBLIC_API_ORIGIN = before;
   }
+});
+
+test('a 429 that names the daily cap keeps it, so the chat can say the demo is used up for today', async () => {
+  const client = createClient({ origin: '', fetch: async () => new Response(JSON.stringify({ code: 'rate_limited', message: 'cap', retry: { by: 'auto', after_s: 3600 }, cap: 'daily' }), { status: 429 }) });
+  await assert.rejects(client.call('POST /v1/assist', { body: { text: 'x' } }), (e: unknown) => e instanceof ApiFailure && e.status === 429 && e.cap === 'daily' && e.retry?.after_s === 3600);
+});
+
+// A server that issues one access token per refresh and takes the refresh token it was given, as auth.ts does.
+function tokenServer(start = 'a1') {
+  let access = start, refresh = 'r1', refreshes = 0;
+  const fetch = async (url: string, init: RequestInit = {}) => {
+    const path = new URL(url, 'https://api.example').pathname;
+    if (path === '/v1/auth/refresh') {
+      refreshes++;
+      await new Promise(r => setTimeout(r, 20));
+      const sent = JSON.parse(String(init.body)).refresh_token;
+      if (sent !== refresh) return new Response(JSON.stringify({ code: 'unauthenticated', message: 'reused' }), { status: 401 });
+      access = `a${refreshes + 1}`; refresh = `r${refreshes + 1}`;
+      return new Response(JSON.stringify({ access_token: access, refresh_token: refresh, expires_at: '2026-11-15T12:00:00Z' }));
+    }
+    const ok = new Headers(init.headers).get('Authorization') === `Bearer ${access}`;
+    return ok ? new Response(JSON.stringify({ ok: true })) : new Response(JSON.stringify({ code: 'unauthenticated', message: 'token expired or unknown' }), { status: 401 });
+  };
+  return { fetch, expire: () => { access = `x${Math.random()}`; }, get refreshes() { return refreshes; }, get refresh() { return refresh; } };
+}
+const pair = { access_token: 'a1', refresh_token: 'r1', expires_at: '2026-11-15T11:00:00Z' };
+
+test('the tokens a device kept are sent from the first call after launch', async () => {
+  const srv = tokenServer(), vault = memoryVault();
+  await vault.set(pair);
+  const client = createClient({ origin: '', fetch: srv.fetch, vault });
+  assert.deepEqual(await client.call('GET /v1/me'), { ok: true });
+});
+
+test('an expired access token is refreshed once and the call retried with the new one; the new pair is kept', async () => {
+  const srv = tokenServer(), vault = memoryVault();
+  const client = createClient({ origin: '', fetch: srv.fetch, vault });
+  await client.signIn(pair);
+  srv.expire();
+  assert.deepEqual(await client.call('GET /v1/me'), { ok: true });
+  assert.equal(srv.refreshes, 1);
+  assert.equal((await vault.get())?.refresh_token, srv.refresh);
+});
+
+test('five calls that all meet an expired token share one refresh, since a refresh token works once', async () => {
+  const srv = tokenServer();
+  const client = createClient({ origin: '', fetch: srv.fetch, vault: memoryVault() });
+  await client.signIn(pair);
+  srv.expire();
+  const out = await Promise.all([1, 2, 3, 4, 5].map(() => client.call('GET /v1/today')));
+  assert.equal(out.length, 5);
+  assert.equal(srv.refreshes, 1, 'one refresh for five 401s');
+});
+
+test('a refused refresh signs the device out and the call fails as unauthenticated, without a loop', async () => {
+  const srv = tokenServer(), vault = memoryVault();
+  const client = createClient({ origin: '', fetch: srv.fetch, vault });
+  await client.signIn({ ...pair, refresh_token: 'stale' });
+  srv.expire();
+  await assert.rejects(client.call('GET /v1/me'), (e: unknown) => e instanceof ApiFailure && e.status === 401);
+  assert.equal(srv.refreshes, 1);
+  assert.equal(await vault.get(), null);
+  assert.equal(client.session.token, null);
 });

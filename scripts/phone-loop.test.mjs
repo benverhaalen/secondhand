@@ -40,3 +40,11 @@ test('summary preserves failures and distinguishes unrun checks from clean check
   assert.equal(result.installed, true);
   assert.equal(buildSummary({}).checks.errors, null);
 });
+
+test('a steady stream of pushes still builds after 15 minutes', async () => {
+  const { debounce } = await import('./phone-loop-lib.mjs');
+  let state = {};
+  for (let minute = 0; minute <= 15; minute++) state = debounce(state, { sha: `s${minute}`, relevant: true, now: minute * 60000 });
+  assert.equal(state.ready, true);
+  assert.equal(debounce({}, { sha: 'a', relevant: true, now: 0 }).ready, false);
+});

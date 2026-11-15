@@ -162,9 +162,10 @@ def test_every_source_has_explicit_demo_and_product_clearance_with_the_original_
     assert rights['dupe']['may_store'] == 0 and rights['dupe']['ttl_hours'] == 0
     assert rights['dupe']['note'] == 'not stored past the request'
     assert 'WHEN MATCHED THEN UPDATE SET' in sql and 'WHEN NOT MATCHED THEN INSERT' in sql
-    assert len(sql.split(';')) == 5, 'SQL file tasks split even semicolons inside licence strings; preserve them with chr(59)'
+    literals = re.findall(r"--[^\n]*|('(?:[^']|'')*')", sql)
+    assert all(';' not in literal for literal in literals), 'SQL file tasks split even semicolons inside licence strings; preserve them with chr(59)'
     product = sql.split('CREATE OR REPLACE VIEW secondhand.market.comp_for_product', 1)[1].split(';', 1)[0]
-    assert "r.may_model AND r.may_model_scope = 'product'" in product
+    assert "c.may_model = true AND r.may_model AND r.may_model_scope = 'product'" in product
     assert 'secondhand.governance.source_rights' in product
     clearance = sql.split('CREATE OR REPLACE VIEW secondhand.measures.model_clearance', 1)[1]
     assert 'LEFT JOIN' in clearance and 'count(c.row_id)' in clearance
@@ -206,3 +207,20 @@ def test_platform_findings_keep_the_exact_errors_and_record_the_workarounds():
         assert error in section
     for fact in ('Design (b)', '76 s', 'governance.break_glass', 'Statements API', '__file__', '--root', 'semicolons'):
         assert fact in section
+
+
+@pytest.mark.parametrize('row_right', [None, False, True])
+@pytest.mark.parametrize('source_right', [None, False, True])
+@pytest.mark.parametrize('scope', [None, 'none', 'hackathon_demo', 'product'])
+def test_product_comps_require_row_and_source_product_rights(row_right, source_right, scope):
+    sql, _ = rights_rows()
+    product = sql.split('CREATE OR REPLACE VIEW secondhand.market.comp_for_product', 1)[1].split(';', 1)[0]
+    query = product.split('\nAS\n', 1)[1].replace('secondhand.market.comp', 'comp').replace('secondhand.governance.source_rights', 'source_rights')
+    db = sqlite3.connect(':memory:')
+    db.execute('CREATE TABLE comp (source, may_model)')
+    db.execute('CREATE TABLE source_rights (source, may_model, may_model_scope)')
+    db.execute('INSERT INTO comp VALUES (?, ?)', ('fixture', row_right))
+    db.execute('INSERT INTO source_rights VALUES (?, ?, ?)', ('fixture', source_right, scope))
+    rows = db.execute(query).fetchall()
+    db.close()
+    assert bool(rows) == (row_right is True and source_right is True and scope == 'product')

@@ -11,6 +11,69 @@ import { fileStore } from '../events/file-store.ts';
 import { depopAdapters, PATHS } from '../harness/sites/depop/adapter.ts';
 import { fakeAdapter, fail, WRITE_VERBS, type Adapter, type CallArgs } from '../harness/protocol.ts';
 import { URLS, type PageClient } from '../harness/sites/ebay/adapter.ts';
+import type { composeSources } from '../harness/compose.ts';
+
+for (const site of ['depop', 'ebay'] as const) test(`${site} reads without publicClients stay no_route even when SECONDHAND_LIVE_SITES enables writes`, async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = 'depop,ebay';
+  const network = t.mock.method(globalThis, 'fetch', async () => { assert.fail('a site read reached plain fetch without publicClients'); });
+  const r = createRuntime(memoryStore(), log());
+  const result = await r.harness.call(site, 'search', { q: 'levis 501 jeans' });
+  assert.equal(network.mock.callCount(), 0);
+  assert.ok(!result.ok && result.error.code === 'no_route', JSON.stringify(result));
+  if (site === 'ebay') assert.equal(result.meta.route_id, 'ebay.search.page');
+  const { runtimePorts } = await import('../intel/public/search.ts');
+  assert.equal(runtimePorts.routed(site), false);
+});
+
+test('Mercari linked browser names SECONDHAND_CHROME when that variable is unset', async t => {
+  const before = { SECONDHAND_LIVE_SITES: process.env.SECONDHAND_LIVE_SITES, SECONDHAND_CHROME: process.env.SECONDHAND_CHROME, SECONDHAND_CHROME_PATH: process.env.SECONDHAND_CHROME_PATH };
+  t.after(() => { for (const [key, value] of Object.entries(before)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } });
+  process.env.SECONDHAND_LIVE_SITES = 'mercari';
+  delete process.env.SECONDHAND_CHROME;
+  delete process.env.SECONDHAND_CHROME_PATH;
+  const r = createRuntime(memoryStore(), log(), { adapters: [] });
+  r.store.put('account', { id: 'acc_mc', user_id: 'owner', site: 'mercari', token_ref: 'fixture/mercari' });
+  await r.vault.put('fixture/mercari', { cookies: [], origins: [] });
+  const result = await r.harness.call('mercari', 'search', { q: 'jeans', account_id: 'acc_mc', person_id: 'owner' });
+  assert.ok(!result.ok);
+  assert.match(result.error.message, /needs SECONDHAND_CHROME for its linked browser/);
+});
+
+test('re-evaluating runtime.ts reuses the cached composed sources across two imports', async () => {
+  const shared = globalThis as typeof globalThis & { __secondhandSources?: ReturnType<typeof composeSources> };
+  const sources = shared.__secondhandSources;
+  assert.ok(sources, 'runtime did not cache composeSources on globalThis');
+  await import(new URL('./runtime.ts?source-cache-first', import.meta.url).href);
+  assert.equal(shared.__secondhandSources, sources);
+  await import(new URL('./runtime.ts?source-cache-second', import.meta.url).href);
+  assert.equal(shared.__secondhandSources, sources);
+});
+
+test('runtime.close closes composed sources exactly once when called twice', async t => {
+  const shared = globalThis as typeof globalThis & { __secondhandSources?: ReturnType<typeof composeSources> };
+  assert.ok(shared.__secondhandSources, 'runtime did not compose sources');
+  const close = t.mock.method(shared.__secondhandSources, 'close', async () => {});
+  await Promise.all([runtime.close(), runtime.close()]);
+  assert.equal(close.mock.callCount(), 1);
+});
+
+test('runtime.close does not call shared composed browser cleanup through both publicClients and sources', async t => {
+  const shared = globalThis as typeof globalThis & { __secondhandSources?: ReturnType<typeof composeSources> };
+  const previous = shared.__secondhandSources;
+  t.after(() => { shared.__secondhandSources = previous; });
+  let closes = 0;
+  const close = async () => { closes++; };
+  shared.__secondhandSources = { close, publicClients: {
+    close,
+    depop: { signed_in: false, doc: async () => { assert.fail('unexpected Depop read'); }, json: async () => { assert.fail('unexpected Depop read'); } },
+    ebay: { signed_in: false, page: async () => { assert.fail('unexpected eBay read'); } },
+  } };
+  const { runtime: composed } = await import(new URL('./runtime.ts?shared-browser-cleanup', import.meta.url).href);
+  await Promise.all([composed.close(), composed.close()]);
+  assert.equal(closes, 1);
+});
 
 test('offline eBay search tries endpoint then page, both no_route, without network', async t => {
   const before = process.env.SECONDHAND_LIVE_SITES;
@@ -41,7 +104,7 @@ test('offline eBay does not use a planted page client', async t => {
   assert.equal(loads, 0);
 });
 
-test('enabled eBay falls from the keyless endpoint to the planted page client through its site service', async t => {
+test('eBay publicClients falls from the keyless endpoint to the planted page client through its site service', async t => {
   const before = process.env.SECONDHAND_LIVE_SITES;
   t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
   process.env.SECONDHAND_LIVE_SITES = 'depop,ebay';
@@ -54,7 +117,11 @@ test('enabled eBay falls from the keyless endpoint to the planted page client th
     assert.ok(fixture, 'unexpected page URL');
     return { status: 200, html: readFileSync(new URL(`../harness/sites/ebay/fixtures/${fixture}`, import.meta.url), 'utf8') };
   } };
-  const r = createRuntime(memoryStore(), log(), { ebayPageClient });
+  const r = createRuntime(memoryStore(), log(), { publicClients: {
+    ebay: ebayPageClient,
+    depop: { signed_in: false, doc: async () => { assert.fail('unexpected Depop read'); }, json: async () => { assert.fail('unexpected Depop read'); } },
+    close: async () => {},
+  } });
   const search = await r.harness.call<Record<string, unknown>[]>('ebay', 'search', { q: 'levis 501 jeans' });
   assert.ok(search.ok, JSON.stringify(search));
   assert.equal(search.data.length, 3);
@@ -560,4 +627,18 @@ test('public clients route anonymous Depop and eBay reads with no live write sit
   assert.equal(depopReads, 1, 'a write reached Depop through the public client'); assert.equal(ebayReads, 1, 'a write reached eBay through the public client');
   await Promise.all([r.close(), r.close()]); await r.close();
   assert.equal(closes, 1, 'runtime close did not close the public client exactly once');
+});
+
+
+test('the watcher uses the runtime system account lookup with the owner scope when account ids overlap', async t => {
+  const r = createRuntime(memoryStore(), log());
+  for (const user_id of ['first', 'second']) {
+    r.store.put('account', { id: 'shared', user_id, site: 'depop', token_ref: 'fixture/' + user_id, paused: 'blocked' });
+    await r.vault.put('fixture/' + user_id, { cookies: [], origins: [] });
+  }
+  const linked = t.mock.method(r.accounts, 'linked');
+  await r.watcher.cleared('shared');
+  assert.deepEqual(linked.mock.calls.map(call => call.arguments), [[], ['first']], 'system byId must pass the person to linked');
+  assert.equal(r.store.get('account', 'first', 'shared')?.paused, null);
+  assert.equal(r.store.get('account', 'second', 'shared')?.paused, 'blocked');
 });

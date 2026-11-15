@@ -38,7 +38,7 @@ function sorted(items, key, path) {
 
 // Tokenize strings and comments away before inspecting relation positions. Commas
 // in SELECT lists or function arguments must not be mistaken for table joins.
-function checkSQL(sql, path) {
+function checkSQL(sql, path, attached) {
   const tokens = sql.match(/--[^\n]*|\/\*[\s\S]*?\*\/|'(?:''|[^'])*'|"(?:""|[^"])*"|`[^`]+`|[A-Za-z_][\w]*|[^\s]/g)
     .filter(t => !t.startsWith('--') && !t.startsWith('/*'))
     .map(t => t.startsWith("'") || t.startsWith('"') ? '<literal>' : t.replaceAll('`', '').toLowerCase())
@@ -72,6 +72,10 @@ function checkSQL(sql, path) {
       // A literal id, or under LATERAL one column of the row on its left; never a subquery.
       const column = lateral && /^\w+$/.test(tokens[i + 2]) && tokens[i + 3] === '.' && /^\w+$/.test(tokens[i + 4]) && tokens[i + 5] === ')'
       assert.ok(column || (tokens[i + 2] === '<literal>' && tokens[i + 3] === ')'), `${path}: why() needs a literal id or a LATERAL column; subqueries are not supported`)
+    }
+    if (attached) {
+      assert.notEqual(registry.get(name), 'FUNCTION', `${path}: Genie cannot call table function ${name}`)
+      assert.ok(attached.has(name), `${path}: SQL source is not attached: ${name}`)
     }
   }
 }
@@ -126,12 +130,13 @@ function validate(space) {
       for (const key of fields) assert.ok(Array.isArray(item[key]) && item[key].length, `${path}: missing ${key}`)
     }
   }
-  for (const item of instructions.example_question_sqls) checkSQL(item.sql.join('\n'), `example ${item.id}`)
+  const attached = new Set([...tables, ...(space.data_sources.metric_views ?? [])].map(t => t.identifier))
+  for (const item of instructions.example_question_sqls) checkSQL(item.sql.join('\n'), `example ${item.id}`, attached)
   for (const question of space.benchmarks.questions) {
     for (const answer of question.answer) {
       assert.equal(answer.format, 'SQL', `benchmark ${question.id}: format must be SQL`)
       strings(answer.content, `benchmark ${question.id}.content`, false)
-      if (answer.content.length) checkSQL(answer.content.join('\n'), `benchmark ${question.id}`)
+      if (answer.content.length) checkSQL(answer.content.join('\n'), `benchmark ${question.id}`, attached)
       else strings(question.evaluation_note, `benchmark ${question.id}.evaluation_note`)
     }
   }
@@ -199,6 +204,99 @@ test('SQL relation check handles CTEs, quoted identifiers, nested joins, comment
 
 test('market space follows the serialized-space version 2 contract', () => validate(JSON.parse(read('genie/market.json'))))
 
+test('Genie rejects known but unattached relations and table functions', () => {
+  const attached = new Set(['secondhand.market.comp'])
+  assert.throws(() => checkSQL('SELECT * FROM secondhand.market.product', 'unattached', attached), /not attached/)
+  assert.throws(() => checkSQL("SELECT * FROM secondhand.measures.why('id')", 'function', attached), /cannot call table function/)
+})
+
+// Inspect the result projection, not a dataset/count hidden inside a CTE.
+function resultProjection(sql) {
+  const tokens = sql.match(/'(?:''|[^'])*'|`[^`]+`|\w+|[^\s]/g)
+  let depth = 0
+  let start = -1
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i] === '(') depth++
+    if (tokens[i] === ')') depth--
+    if (depth === 0 && tokens[i].toLowerCase() === 'select') start = i + 1
+    if (depth === 0 && start >= 0 && tokens[i].toLowerCase() === 'from') return tokens.slice(start, i).join(' ')
+  }
+  assert.fail('missing final SELECT projection')
+}
+
+test('judge examples carry dataset, named counts and reading into the result and answer opening', async () => {
+  const { QUESTIONS } = await import('./genie/ask.mjs')
+  const examples = JSON.parse(read('genie/market.json')).instructions.example_question_sqls
+  const counts = ['sales_cited', 'sales_tested', 'sales_tested', 'months_covered', 'sales_contributed', 'sales_counted', 'sales_counted', 'tables_checked']
+  for (const [i, question] of QUESTIONS.entries()) {
+    const matches = examples.filter(e => e.question.includes(question))
+    assert.equal(matches.length, 1, `${question}: needs exactly one matching example`)
+    const example = matches[0]
+    const projection = resultProjection(example.sql.join('\n'))
+    for (const column of ['dataset', counts[i], 'reading']) {
+      assert.match(projection, new RegExp(`\\bAS ${column}\\b`, 'i'), `${question}: result must select ${column}`)
+      assert.match(example.usage_guidance.join(' '), new RegExp(`\\b${column}\\b`), `${question}: guidance must quote ${column}`)
+    }
+    assert.match(example.usage_guidance[0], /^Start the answer with .*dataset.*(?:sales_|months_|tables_)/, `${question}: opening must name dataset and count columns`)
+  }
+  for (const example of examples) assert.match(example.usage_guidance[0], /^Start the answer with /, `example ${example.id}: answer opening`)
+})
+
+test('comparison selects exactly four labelled contestants from the same ablation with paired gaps only for served', () => {
+  const examples = JSON.parse(read('genie/market.json')).instructions.example_question_sqls
+  for (const suffix of ['20d', '20f']) {
+    const example = examples.find(e => e.id.endsWith(suffix))
+    assert.ok(example, `${suffix}: missing comparison example`)
+    const sql = example.sql.join('\n')
+    assert.match(sql, /a\.label AS contestant/i)
+    const filter = sql.match(/a\.contestant IN \(([^)]+)\)/i)
+    assert.ok(filter, `${suffix}: select contestants explicitly`)
+    const contestants = [...filter[1].matchAll(/'([^']+)'/g)].map(m => m[1]).sort()
+    assert.deepEqual(contestants, ['engine_all_on', 'last_sale', 'market_model', 'product_90d_median'])
+    const rows = [...read('sql/14_engine.sql').matchAll(/\('([^']+)', '([^']+)', (true|false), 'dataset:stockx_2019'/g)]
+      .filter(m => contestants.includes(m[1]))
+    assert.equal(rows.length, 4, 'filter must yield four rows in the SQL fixture')
+    assert.equal(new Set(rows.map(m => m[2])).size, 4, 'each contestant must have its own label')
+    assert.doesNotMatch(sql, /UNION|valuation_metrics|backtest_headline/i)
+    for (const [source, column] of [['within_20', 'within_20_percent'], ['median_error', 'median_error'], ['range_held', 'range_held_the_sale'], ['priced', 'share_priced']]) {
+      assert.match(sql, new RegExp(`a\\.${source} AS ${column}\\b`, 'i'), `${suffix}: ${column} must come from this contestant's ${source}`)
+    }
+    for (const column of ['vs_last_sale_points', 'vs_last_sale_lo', 'vs_last_sale_hi', 'vs_last_sale_n']) {
+      assert.match(sql, new RegExp(`CASE WHEN a\\.served THEN a\\.${column} END AS ${column}`, 'i'), `${suffix}: ${column} belongs only to served engine`)
+      assert.match(example.usage_guidance.join(' '), new RegExp(column))
+    }
+  }
+})
+
+test('judge detail answers summarize citations, moves and governance without losing their evidence', () => {
+  const examples = JSON.parse(read('genie/market.json')).instructions.example_question_sqls
+  for (const [suffix, count, details] of [['20c', 'sales_cited', 'cited_sales'], ['205', 'months_covered', 'moves'], ['207', 'tables_checked', 'tables']]) {
+    const sql = examples.find(e => e.id.endsWith(suffix)).sql.join('\n')
+    assert.match(sql, new RegExp(`count\\([\\s\\S]+?AS ${count}`, 'i'), `${suffix}: compute summary count`)
+    assert.match(sql, new RegExp(`collect_list\\(named_struct\\([\\s\\S]+?AS ${details}`, 'i'), `${suffix}: retain evidence in summary`)
+  }
+  const zebra = examples.find(e => e.id.endsWith('20c'))
+  assert.match(zebra.sql.join('\n'), /count_if\(b\.rebuilt_exactly IS NULL\)[\s\S]+bool_and\(b\.rebuilt_exactly\)/i)
+  assert.match(zebra.usage_guidance.join(' '), /never.*verified.*real/i)
+  for (const suffix of ['20b', '210']) {
+    const sql = examples.find(e => e.id.endsWith(suffix)).sql.join('\n')
+    assert.match(sql, /count\(\*\) AS sales_counted/i)
+    assert.match(sql, /CASE WHEN count\(\*\) < 30 THEN concat\('too few: '/i)
+    assert.match(sql, /CASE WHEN count\(\*\) >= 30 THEN percentile_approx/i)
+    assert.match(sql, /price_type = 'sold'/i)
+  }
+})
+
+test('source contributions count sold sales separately from pipeline rows', () => {
+  const example = JSON.parse(read('genie/market.json')).instructions.example_question_sqls.find(e => e.id.endsWith('20e'))
+  const sql = example.sql.join('\n')
+  assert.match(sql, /count\(\*\) AS sales_contributed[\s\S]*FROM secondhand\.market\.comp c[\s\S]*WHERE c\.price_type = 'sold'/i)
+  assert.doesNotMatch(sql, /f\.(?:kept|modelled)\s+AS sales_|'sales_contributed', f\.kept/i)
+  assert.match(sql, /'rows_kept', f\.kept/)
+  assert.match(sql, /'model_eligible_rows', f\.modelled/)
+  assert.match(sql, /collect_list\(named_struct\([\s\S]*AS sources/i)
+})
+
 test('market space attaches the requested tables and limits categorical assistance', () => {
   const space = JSON.parse(read('genie/market.json'))
   assert.deepEqual(space.data_sources.tables.map(t => t.identifier), expectedTables)
@@ -249,7 +347,7 @@ test('examples and benchmarks cover the required judge questions with guarded SQ
     assert.match(q.evaluation_note.join(' '), /too few: N sales/)
     assert.match(q.evaluation_note.join(' '), /SELECT count\(\*\)/i)
     const countSQL = q.evaluation_note.join(' ').match(/Count with (SELECT[\s\S]+?)\. Do not/)[1]
-    checkSQL(countSQL, `refusal count ${q.id}`)
+    checkSQL(countSQL, `refusal count ${q.id}`, new Set(space.data_sources.tables.map(t => t.identifier)))
   }
   const allSQL = [...sqls, ...space.benchmarks.questions.flatMap(q => q.answer.filter(a => a.content.length).map(a => a.content.join('\n')))]
   for (const sql of allSQL.filter(s => /backtest_headline|valuation_accuracy/.test(s))) {

@@ -5,6 +5,9 @@ fonts/
 *.ttf
 *.woff
 *.woff2
+# the open-licensed fallback pair (OFL, each with its OFL.txt) is committed on purpose
+!app/assets/fonts-open/**/*.ttf
+!web/public/fonts-open/*.ttf
 # a stylesheet that names where the font files are on one machine
 fonts.local.css
 
@@ -39,3 +42,6 @@ bench/out/
 
 # Vercel link for the web/ deploy
 .vercel
+
+# Written by scripts/app-check.mjs on a full run; regenerated, never committed (its inline colors fail the token check).
+features/app/gallery.html
