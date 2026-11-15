@@ -9,7 +9,7 @@ const expectedTables = [
   'measures.param_moves', 'measures.param_timeline', 'measures.citation_coverage',
   'measures.hidden_numbers', 'measures.decisions_by_policy', 'measures.never_automated',
   'measures.rights_audit_summary', 'measures.policies_in_force', 'measures.guard_violations',
-  'measures.bench_coverage', 'measures.bench_speed',
+  'measures.bench_coverage', 'measures.bench_speed', 'measures.backtest_estimate', 'measures.governance_coverage',
 ].map(name => `secondhand.${name}`).sort()
 const categorical = ['source', 'site', 'kind', 'brand', 'category', 'condition'].sort()
 const ddl = directory => readdirSync(new URL(directory, import.meta.url))
