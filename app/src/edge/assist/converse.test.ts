@@ -1386,7 +1386,7 @@ test('seed rows reach the first user message, back their price, and keep invente
   const recording = replay(fixture('numbers').slice(1));
   const t = setup('answer', { client: recording.client, seed: [result] });
   const answer = await t.run();
-  assert.equal(prose(answer), 'It costs $45.');
+  assert.equal(prose(answer), 'It costs $45 [r1].');
   assert.equal(answer.gate.cut, 1);
   assert.equal(answer.results.r1.citation_ids[0], 'c1');
   assert.ok(JSON.stringify(recording.requests[0].messages).includes('r1'));
@@ -1395,7 +1395,7 @@ test('seed rows reach the first user message, back their price, and keep invente
 
 test('queued late rows get a new id and one bounded round after end_turn', async () => {
   const messages = [fixture('answer')[0], fixture('numbers')[1]];
-  messages[1].content = [{ type: 'text', text: 'The late listing costs $60. It costs $999.', citations: null }];
+  messages[1].content = [{ type: 'text', text: 'The late listing costs $60 [r2]. It costs $999.', citations: null }];
   const recording = replay(messages);
   let receive: ((u: import('./tools.ts').LateUpdate) => void) | undefined;
   let off = 0;
@@ -1433,4 +1433,42 @@ test('late updates remain bounded by max_rounds and the cost cap', async () => {
     assert.equal(t.requests.length, 1);
     assert.equal(answer.reason, limit === 'rounds' ? 'max_rounds' : 'cost_cap');
   }
+});
+
+for (const [words, value, unscaled] of [
+  ['a grand', 1000, 400], ['grand', 1000, 400], ['two grand', 2000, 2],
+  ['twelve grand', 12000, 12], ['12 grand', 12000, 12], ['1.5 grand', 1500, 1.5],
+  ['minus two grand', -2000, 2000], ['-2 grand', -2000, 2000],
+  ['zero grand', 0, 1000], ['two point five grand', 2500, 2.5],
+] as const) {
+  test(`equal-figure gate reads ${words} as its full thousand-scaled value`, async () => {
+    const text = `It is worth ${words} [r1].`;
+    const returned = { ...result, rows: [{ value: unscaled }], counts: {}, basis: '', as_of: '' };
+    const held = await backedText(text, returned);
+    assert.deepEqual(held.answer.gate.cut_sentences, [text], 'an unscaled figure cannot back grand');
+    assert.equal(streamed(held.events), '', 'unbacked grand must not stream');
+    const kept = await backedText(text, { ...returned, rows: [{ value }] });
+    assert.equal(kept.answer.gate.cut, 0);
+    assert.equal(prose(kept.answer), text);
+    assert.equal(streamed(kept.events), text);
+  });
+}
+
+test('numerals separate adjacent number-word claims instead of joining their values', async () => {
+  const text = 'The sequence is one 2 three [r1].';
+  const returned = { ...result, rows: [{ value: 4, middle: 2 }], counts: {}, basis: '', as_of: '' };
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
+  const kept = await backedText(text, { ...returned, rows: [{ first: 1, middle: 2, last: 3 }] });
+  assert.equal(prose(kept.answer), text);
+  assert.equal(streamed(kept.events), text);
+});
+
+test('decimal number words with grand cannot borrow separate coefficient and scale facts', async () => {
+  const text = 'It is worth two point five grand [r1].';
+  const returned = { ...result, rows: [{ value: 2.5, scale: 1000 }], counts: {}, basis: '', as_of: '' };
+  const held = await backedText(text, returned);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.equal(streamed(held.events), '');
 });

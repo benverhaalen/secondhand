@@ -132,7 +132,7 @@ function normalizeFigures(text: string): string {
 
 const SMALL = 'zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen'.split(' ');
 const TENS = 'twenty thirty forty fifty sixty seventy eighty ninety'.split(' ');
-const SCALES: Record<string, number> = { hundred: 100, thousand: 1e3, million: 1e6, billion: 1e9, trillion: 1e12 };
+const SCALES: Record<string, number> = { hundred: 100, thousand: 1e3, grand: 1e3, million: 1e6, billion: 1e9, trillion: 1e12 };
 const ORDINALS: Record<string, string> = {
   zeroth: 'zero', first: 'one', second: 'two', third: 'three', fourth: 'four', fifth: 'five', sixth: 'six', seventh: 'seven',
   eighth: 'eight', ninth: 'nine', tenth: 'ten', eleventh: 'eleven', twelfth: 'twelve', thirteenth: 'thirteen', fourteenth: 'fourteen',
@@ -143,15 +143,17 @@ const ORDINALS: Record<string, string> = {
 const NUMBER_WORD = [...SMALL, ...TENS, ...Object.keys(SCALES), ...Object.keys(ORDINALS), 'dozen', 'couple', 'half', 'quarter'].join('|');
 const WORD_INTEGER = `(?:a[n]?[\\s-]+)?(?:${NUMBER_WORD})(?:[\\s-]+(?:(?:and|a|an)[\\s-]+)*(?:${NUMBER_WORD}))*`;
 const WORD_DIGITS = `(?:${SMALL.slice(0, 10).join('|')})(?:[\\s-]+(?:${SMALL.slice(0, 10).join('|')}))*`;
-const WORD_DECIMAL = `(?:${WORD_INTEGER}[\\s-]+)?point[\\s-]+${WORD_DIGITS}`;
+const WORD_DECIMAL = `(?:${WORD_INTEGER}[\\s-]+)?point[\\s-]+${WORD_DIGITS}(?:[\\s-]+grand)?`;
 const WORD_FIGURE = new RegExp(`\\b(?:(?:minus|negative)[\\s-]+)?(?:${WORD_DECIMAL}|${WORD_INTEGER})\\b`, 'gi');
-const NUMERAL = '-?(?:\\d{1,3}(?:[, ]\\d{3})+(?:\\.\\d+)?(?!\\d)|\\d+(?:\\.\\d+)?|\\.\\d+)(?:(?:bn|[km])(?![a-z])|st|nd|rd|th)?';
+const NUMERAL = '-?(?:\\d{1,3}(?:[, ]\\d{3})+(?:\\.\\d+)?(?!\\d)|\\d+(?:\\.\\d+)?|\\.\\d+)(?:(?:bn|[km])(?![a-z])|st|nd|rd|th|\\s+grand\\b)?';
 const NUMERALS = new RegExp(`${ISO_DATE.source}|${WRITTEN_DATE.source}|${NUMERAL}`, 'gi');
 type Figure = { value: number; ordinal: boolean; title?: string };
 
 function wordValue(raw: string): number {
   const sign = raw.match(/^(?:minus|negative)[\s-]+/i);
   if (sign) return -wordValue(raw.slice(sign[0].length));
+  const grand = raw.match(/^(.*?)[\s-]+grand$/i);
+  if (grand) return (/^an?$/i.test(grand[1]) ? 1 : wordValue(grand[1])) * SCALES.grand;
   const decimal = raw.toLowerCase().split(/(?:^|[\s-]+)point[\s-]+/);
   if (decimal.length === 2) {
     const fraction = decimal[1].split(/[\s-]+/).map(word => SMALL.indexOf(word)).join('');
@@ -193,16 +195,16 @@ function numbers(raw: string): Figure[] {
       figures.push(...[...raw.matchAll(/\d+(?:\.\d+)?/g)].map(part => ({ value: Number(part[0]), ordinal: false })));
       continue;
     }
-    let value = Number(raw.replace(/[, ]/g, '').replace(/(?:bn|[km]|st|nd|rd|th)$/i, ''));
-    const suffix = raw.match(/(?:bn|[km])$/i)?.[0].toLowerCase();
-    if (suffix) value *= suffix === 'bn' ? 1e9 : suffix === 'k' ? 1e3 : 1e6;
+    let value = Number(raw.replace(/(?:bn|[km]|st|nd|rd|th|\s+grand)$/i, '').replace(/[, ]/g, ''));
+    const suffix = raw.match(/(?:bn|[km]|grand)$/i)?.[0].toLowerCase();
+    if (suffix) value *= suffix === 'bn' ? 1e9 : suffix === 'k' || suffix === 'grand' ? 1e3 : 1e6;
     // A hyphen in a range or identifier separates positive figures.
     if (raw.startsWith('-') && match.index > 0 && /[\p{L}\p{N}]/u.test(text[match.index - 1])) value = Math.abs(value);
     // A sign before a currency prefix still belongs to the figure.
     if (/-[\p{L}\p{Sc}]+$|\b(?:minus|negative)\s*(?:[\p{L}]*\p{Sc}\s*)?$/iu.test(text.slice(0, match.index))) value = -Math.abs(value);
-    figures.push({ value, ordinal: /(?:st|nd|rd|th)$/i.test(raw) });
+    figures.push({ value, ordinal: /\d(?:st|nd|rd|th)$/i.test(raw) });
   }
-  for (const match of text.matchAll(WORD_FIGURE)) {
+  for (const match of text.replace(NUMERALS, '#').matchAll(WORD_FIGURE)) {
     figures.push({ value: wordValue(match[0]), ordinal: match[0].toLowerCase().split(/[\s-]+/).some(word => word in ORDINALS) });
   }
   return figures;
