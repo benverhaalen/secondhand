@@ -47,10 +47,30 @@ try {
     }, { text: s.moment, top: s.top ?? 120 }) : 0;
     if (found === false) throw new Error(`${s.id}: "${s.moment}" is not on ${s.path} any more; the app changed, so choose the moment again in app-screens.json`);
     await page.waitForTimeout(500);
+    // A cut through a line of text reads as a broken screen, which an ad can't afford (10:32): move the cut, never more than 240 px, until
+    // both edges fall between lines. A scrolled screen moves its scroller (its top edge is the scroller's own top); a screen
+    // cut from a tall page moves the cut.
+    const H = s.height ?? 844;
+    const y = s.moment ? await page.evaluate(({ text, y0, H }) => {
+      const el = [...document.querySelectorAll('body *')].find(e => !e.children.length && e.textContent.trim() === text);
+      let sc = el.parentElement; while (sc && !(sc.scrollHeight > sc.clientHeight + 1 && /auto|scroll/.test(getComputedStyle(sc).overflowY))) sc = sc.parentElement;
+      const lines = [], walk = document.createTreeWalker(sc ?? document.body, NodeFilter.SHOW_TEXT);
+      for (let n; (n = walk.nextNode());) if (n.textContent.trim()) { const r = document.createRange(); r.selectNodeContents(n); for (const b of r.getClientRects()) if (b.height) lines.push(b); }
+      const cuts = (edge, d) => lines.some(b => b.top + d < edge + 16 && b.bottom + d > edge - 16);  // a line keeps 16 px from either edge, clear of the card's corner
+      const top = sc ? Math.max(0, sc.getBoundingClientRect().top) : y0, bottom = y0 + H;
+      // d > 0 shows more of what is above: the scroller's content moves down, or the cut moves up.
+      const ok = d => sc ? !cuts(top, d) && !cuts(bottom, d) : !cuts(y0 - d, 0) && !cuts(bottom - d, 0) && y0 - d >= 0;
+      const d = [...Array(241).keys()].flatMap(i => i ? [i, -i] : [0]).find(ok);
+      if (d === undefined) return null;
+      if (sc) { sc.scrollTop -= d; return y0; }
+      return y0 - d;
+    }, { text: s.moment, y0: found, H }) : found;
+    if (y === null) throw new Error(`${s.id}: every cut within 240 px of "${s.moment}" goes through a line of text; choose another moment or height`);
+    await page.waitForTimeout(300);
     // Every scroller at its top unless a moment was named, as the screen opens.
     if (!s.moment) await page.evaluate(() => { for (const e of document.querySelectorAll('body *')) if (e.scrollTop) e.scrollTop = 0; });
     await page.waitForTimeout(300);
-    const png = await page.screenshot({ path: join(out, `${s.id}.png`), clip: { x: 0, y: found, width: 390, height: s.height ?? 844 } });
+    const png = await page.screenshot({ path: join(out, `${s.id}.png`), clip: { x: 0, y, width: 390, height: H } });
     // A shot of one flat color compresses to almost nothing: the screen did not draw, and a blank phone never reaches the site.
     if (png.length < 30000) { blank.push(`${s.id} (${s.path})`); console.log(`${s.id}  ${s.path}  came out blank`); }
     if (full) { await page.setViewportSize({ width: 390, height: 2400 }); await page.waitForTimeout(400); await page.screenshot({ path: join(out, `${s.id}-full.png`), fullPage: true }); }
