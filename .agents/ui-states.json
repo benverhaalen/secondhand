@@ -1,0 +1,128 @@
+{
+  "content": [
+    {
+      "id": "long-title",
+      "fill": "title",
+      "value": "Vintage Carhartt Detroit jacket J97, blanket lined, brown duck canvas, XL tall",
+      "seen": [
+        "eBay lets a title run to 80 characters"
+      ]
+    },
+    {
+      "id": "short-title",
+      "fill": "title",
+      "value": "Tee",
+      "seen": [
+        "product/frontend-standard.md §4, One item"
+      ]
+    },
+    {
+      "id": "one-long-word",
+      "fill": "title",
+      "value": "Supercalifragilisticexpialidocious",
+      "seen": [
+        "a word with nowhere to break"
+      ]
+    },
+    {
+      "id": "other-script",
+      "fill": "title",
+      "value": "リーバイス 501 デニムジャケット 古着",
+      "seen": [
+        "brand/constitution.md Art. 6, Any language"
+      ]
+    },
+    {
+      "id": "long-name",
+      "fill": "name",
+      "value": "Maximiliana Featherstonehaugh-Wolfeschlegelstein",
+      "seen": [
+        "a buyer's name is theirs to choose"
+      ]
+    },
+    {
+      "id": "big-amount",
+      "fill": "amount",
+      "value": "$12,345.67",
+      "seen": [
+        "a watch or a bag sells for five figures"
+      ]
+    },
+    {
+      "id": "small-amount",
+      "fill": "amount",
+      "value": "$0.50",
+      "seen": [
+        "a fee or a low offer"
+      ]
+    },
+    {
+      "id": "big-count",
+      "fill": "count",
+      "value": "1,204",
+      "seen": [
+        "product/frontend-standard.md §4, Dense"
+      ]
+    },
+    {
+      "id": "zero-count",
+      "fill": "count",
+      "value": "0",
+      "seen": [
+        "product/frontend-standard.md §4, Empty"
+      ]
+    },
+    {
+      "id": "long-text",
+      "fill": "text",
+      "value": "Hi, is this still available? I can pick it up on Saturday morning if that works for you, and I would pay a little more if you can hold it until then.",
+      "seen": [
+        "a buyer writes as much as they like"
+      ]
+    },
+    {
+      "id": "no-photo",
+      "fill": "photo",
+      "value": null,
+      "seen": [
+        "brand/constitution.md C3: a photo that has not loaded"
+      ]
+    }
+  ],
+  "states": {
+    "screen": {
+      "required": [
+        "empty",
+        "one",
+        "typical",
+        "dense",
+        "loading",
+        "failed",
+        "offline"
+      ],
+      "known": []
+    },
+    "job": {
+      "required": [
+        "started",
+        "running",
+        "arrived",
+        "failed",
+        "slow"
+      ],
+      "known": []
+    },
+    "control": {
+      "required": [
+        "rest",
+        "pressed",
+        "disabled",
+        "busy",
+        "focused"
+      ],
+      "known": [
+        "selected"
+      ]
+    }
+  }
+}
