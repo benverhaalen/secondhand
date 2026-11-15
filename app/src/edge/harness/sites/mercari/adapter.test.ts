@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { VERBS, type Verb } from '../../protocol.ts';
-import { M, mercariAdapters, ROUTES, readListing, readReviews, stillUp, toWatchSnapshot, type Client, type Page } from './adapter.ts';
+import { M, mercariAdapters, nextData, ROUTES, readListing, readReviews, stillUp, toWatchSnapshot, type Client, type Page } from './adapter.ts';
 
 const fx = (f: string) => JSON.parse(readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8')) as Page & { url: string };
 const s = new AbortController().signal;
@@ -25,6 +25,10 @@ function client(o: { signed_in?: boolean; status?: number; page?: Partial<Page>;
 const run = (verb: Verb, args: Record<string, unknown>, c = client()) => mercariAdapters(c).find(a => a.manifest.verb === verb)!.run(args, s);
 const rows = (r: { ok: boolean; data?: unknown }) => { assert.ok(r.ok, JSON.stringify(r)); return r.data as Record<string, unknown>[]; };
 const code = (r: unknown) => (r as { error: { code: string; hint: { kind?: string } } }).error;
+
+test('malformed Mercari Next data has no parsed page state', () => {
+  assert.equal(nextData('<script id="__NEXT_DATA__" type="application/json">{</script>'), undefined);
+});
 
 test('every kernel verb has one adapter and a manifest that names its session and route', () => {
   const ads = mercariAdapters(client());

@@ -4,6 +4,10 @@ import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest } from './sources.ts';
+import { readLedger } from '../harness/read-ledger.ts';
+import { createSiteService } from '../harness/service.ts';
+import { fail, fakeManifest, type Adapter } from '../harness/protocol.ts';
+import { memoryStore } from '../events/ports.ts';
 
 const prefixes = ["sources"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
@@ -96,4 +100,23 @@ test('source health reads the router engine rather than freezing its success rat
     const response = await call(examples.find(e => e.name === 'sources.health')!);
     assert.equal((await response.json()).routes[0].success, .5);
   } finally { ports.health = health; }
+});
+
+test('source health omits shared service read counts or the active pause and changes the routes contract', async () => {
+  readLedger.record('ebay', 'search', 'empty', 1);
+  const adapter: Adapter = { route_id: 'health.challenge', manifest: fakeManifest('depop', 'search'),
+    run: async () => fail('blocked', 'bot check', { do: 'pause_session', site: 'depop' }) };
+  const service = createSiteService('depop', [adapter], { concurrency: 1, store: memoryStore(), data: 'synthetic', log: deps.log });
+  await service.call('search', { query: 'private-test-query' });
+  const response = await call(examples.find(e => e.name === 'sources.health')!, { path: '/v1/sources/health' });
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.deepEqual(body.routes, (examples.find(e => e.name === 'sources.health')!.response as { routes: unknown[] }).routes);
+  assert.deepEqual(body.reads, readLedger.counts().map(row => ({ ...row,
+    paused_until: readLedger.paused(row.site) ? new Date(readLedger.paused(row.site)!.until_ms).toISOString() : null })));
+  const depop = body.reads.find((row: { site: string }) => row.site === 'depop');
+  assert.equal(depop.day, new Date().toISOString().slice(0, 10));
+  assert.deepEqual(depop.classes, { answered: 0, empty: 0, refused: 0, challenged: 1, shape_changed: 0, timed_out: 0, failed: 0 });
+  assert.equal(depop.paused_until, new Date(readLedger.paused('depop')!.until_ms).toISOString());
+  assert.equal(body.reads.find((row: { site: string }) => row.site === 'ebay').paused_until, null);
 });

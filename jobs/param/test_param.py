@@ -5,7 +5,7 @@ import sys
 import pytest
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-from registry import FIELDS, MemoryStore, VersionConflict, scope_key  # noqa: E402
+from registry import FIELDS, MemoryStore, VersionConflict, scope_key, complete_row  # noqa: E402
 
 ROW = json.loads((pathlib.Path(__file__).parents[2] / "app/src/engines/param/row.json").read_text())
 AT = "2026-11-14T22:00:00-06:00"
@@ -401,3 +401,34 @@ def test_second_rollback_of_fit_v2_over_fit_v1_has_no_earlier_promoted_version(k
         s.rollback('p_min_quick', SCOPE, '2026-01-31', keep_evidence)
     assert s.read('p_min_quick', SCOPE)['version'] == 1
     assert len(s.history('p_min_quick', SCOPE)) == 2
+
+
+@pytest.mark.parametrize("field, default", [
+    ("origin", "fit"), ("previous_version", None), ("keep", None), ("days_since_last", None),
+])
+def test_complete_row_fills_missing_fit_metadata(field, default):
+    row = {k: v for k, v in ROW.items() if k not in {"origin", "previous_version", "keep", "days_since_last"}}
+    result = complete_row(row)
+    assert result[field] == default
+    assert set(result) == set(ROW)
+    assert field not in row
+
+
+def test_complete_row_refuses_unknown_key():
+    with pytest.raises(ValueError, match="unknown param.*extra"):
+        complete_row({**ROW, "extra": 1})
+
+
+def test_complete_row_preserves_explicit_values_and_fills_every_field():
+    result = complete_row({"origin": "event", "keep": 0.5})
+    assert set(result) == set(ROW)
+    assert result["origin"] == "event"
+    assert result["keep"] == 0.5
+    assert result["name"] is None
+
+
+def test_propose_refuses_unknown_row_key_before_storing():
+    store = MemoryStore()
+    with pytest.raises(ValueError, match="unknown param.*extra"):
+        store.propose(fit(extra=1), 0)
+    assert store.history(ROW["name"], ROW["scope"]) == []

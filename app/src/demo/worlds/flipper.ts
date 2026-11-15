@@ -93,5 +93,13 @@ export const flipper: World = {
   limits: { handover: ['ship'], pickup_windows: [], saved_spot: null, ask_every_time: true },
   goal: { month: '2026-11', target_cents: 400000, target_sales: 60 },
   style: [], wants: [], matches: [], products: PRODUCTS, searches: [SEARCH_DUNKS], retail: RETAIL,
+  // A morning of sourcing: what was priced at the bins and passed on, and one thing found out. More than three, so See all shows.
+  lookups: [
+    { capture_id: 'cap_lk_f1', kind: 'worth', product_id: 'pr_kindle', short_name: 'Kindle', at: inMinutes(-25) },
+    { capture_id: 'cap_lk_f2', kind: 'worth', product_id: 'pr_dunk', short_name: 'Nike Dunk Low', at: inHours(-3) },
+    { capture_id: 'cap_lk_f3', kind: 'find', product_id: 'pr_switch', short_name: 'Nintendo console', at: inDays(-1) },
+    { capture_id: 'cap_lk_f4', kind: 'worth', product_id: 'pr_j97', short_name: 'Carhartt jacket', at: inDays(-3) },
+    { capture_id: 'cap_lk_f5', kind: 'find', product_id: 'pr_dunk', short_name: 'Grey sneakers', at: inDays(-120) },
+  ],
 };
 

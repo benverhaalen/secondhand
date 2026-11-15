@@ -2,9 +2,10 @@
 import type { SseFrame } from '../edge/api/jobs.ts';
 import type { OfferView, SearchAnswer, SearchStage } from '../edge/api/search.ts';
 import type { Found } from '../edge/intel/answer.ts';
-import { emptyFound } from '../edge/intel/answer.ts';
 import type { SiteOutcome } from '../edge/intel/public/search.ts';
 import type { Pace } from '../edge/intel/run.ts';
+
+const emptyFound = (): Found => ({ sources_searched: 0, results_found: 0, results_used: 0, dropped_by_reason: {}, sites: {} });
 
 export interface SourceReach {
   id: string;
@@ -68,20 +69,22 @@ function answer(v: unknown): v is Answer {
 }
 
 const money = (v: unknown) => v === null || object(v) && count(v.amount_cents) && typeof v.currency === 'string';
+// Names the server may add to (a new Apify actor, a new kind of seller) are checked as strings, so one new value never
+// drops a whole frame and freezes the screen.
 function offer(v: unknown): v is OfferView {
   if (!object(v)) return false;
   const required = ['id', 'listing_id', 'external_id', 'title', 'url', 'site', 'route_id', 'condition'];
   const optional = ['host', 'image_url', 'source_site', 'keep_until'];
   return required.every(key => typeof v[key] === 'string') && v.data === `live:${v.site}`
     && ['exact', 'likely_same_model', 'same_family_other_variant', 'comparable', 'unresolved'].some(relation => relation === v.relation)
-    && ['marketplace', 'brand_store', 'retailer', 'amazon', 'refurb', 'brand_resale'].some(kind => kind === v.source_kind)
+    && typeof v.source_kind === 'string'
     && money(v.price_cents) && v.shipping_cents === null && money(v.delivered_cents)
     && typeof v.shipping_estimated === 'boolean' && strings(v.also_on)
     && optional.every(key => v[key] === undefined || typeof v[key] === 'string')
     && (v.converted === undefined || v.converted === true) && (v.may_model === undefined || v.may_model === false)
     && (v.via === undefined || v.via === 'apify')
-    && (v.actor === undefined || v.actor === 'automation-lab~ebay-scraper' || v.actor === 'apify~facebook-marketplace-scraper')
-    && (v.use_scope === undefined || v.use_scope === 'hackathon_demo')
+    && (v.actor === undefined || typeof v.actor === 'string')
+    && (v.use_scope === undefined || typeof v.use_scope === 'string')
     && (v.commercial_link === undefined || v.commercial_link === true)
     && (v.attribution === undefined || v.attribution === 'Dupe.com')
     && (v.secondhand === undefined || typeof v.secondhand === 'boolean');
