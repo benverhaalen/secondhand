@@ -1,0 +1,46 @@
+{
+  "route": "sell?world=new",
+  "screen": "sell",
+  "states": [
+    "empty"
+  ],
+  "status": "fail",
+  "findings": [
+    {
+      "level": "error",
+      "id": "B34",
+      "where": "screen \"secondhand\"",
+      "msg": "spills out of [wordmark]: a thing holds what is in it (ledger L37)"
+    },
+    {
+      "level": "error",
+      "id": "B32",
+      "where": "screen",
+      "msg": "the wordmark is transformed: it is never transformed, shadowed, outlined, stroked, filtered, faded or moved (C1)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "screen <div>",
+      "msg": "has a fill of rgb(242, 242, 242), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "U1",
+      "where": "screen <button>",
+      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
+    },
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "screen",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    },
+    {
+      "level": "error",
+      "id": "B35",
+      "where": "screen \"sell\"",
+      "msg": "is not drawn in the states new, one, typical, dense, loading, failed, offline: draw each, or say why it can't happen with data-skip=\"new: why\""
+    }
+  ]
+}
