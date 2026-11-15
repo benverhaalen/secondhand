@@ -2085,3 +2085,9 @@ Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
 > In some way we need to deliver in every search, responsive ui for loading states that shows how broad we reach, how thorough and credible and impressive the search is, technical the computation is. Just a needed feature, there are im sure many examples of this type of ui being practiced with many professional sites now, even as animations on their site for marketing. Ben right now is working on the views and such, but its important we plan to integrate all working technologies and such, like we did for lidar, we can build out and template the needed views and screens, Utilize professional ui and ux skills, and expo skills to send a team lead and codex builder to fully understand and perfectly scaffold with everything integrated, that design can pass over.
 
 Used in: [the audit](../spec/plans/audit-2026-11-15.md), the app-wiring lead's brief.
+
+## 2026-11-15 nate a $5 visitor cap that points to the repo, visitor photos allowed, and yes on vercel
+Nate, buying-conversation lead's session, 2026-11-15, about 07:45 Central.
+> yes $5 a spend cap, but also then indicate they go to the repo, with a responsive github logo widget popping in, we also have github and our linkedin's available. visitor photos can be sent sure, ideally no, maybe the system we built can pass over it. that'd be cool for safety reasons. but then again, isnt our system that checks images read by claude and other things that drive the image classification for capture. Did we confirm hetzner? and yes on vercel. You have vercel cli logged in no?
+
+Used in: `features/assist/README.md` (the cap and photos), `features/buy/README.md` (the cap's repo widget, the deploy).
