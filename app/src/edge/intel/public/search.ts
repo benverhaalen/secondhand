@@ -1,7 +1,7 @@
 // Source rows select the approved lanes; public pages share fetch.ts's limiter and semaphore.
 import { atPace, searchParams, type Pace } from '../run.ts';
 import { classifyRead, type CallError, type Field, type Harness, type Site } from '../../harness/protocol.ts';
-import type { Accounts } from '../../browser/auth.ts';
+import type { Accounts, LinkedAccount } from '../../browser/auth.ts';
 import type { SnapListing } from '../../events/event.ts';
 import { sourcesFor, type Caller, type Source, type SourceSite } from './sources.ts';
 import { detectBlock, fetchPage as sharedFetch } from '../fetch.ts';
@@ -21,13 +21,16 @@ export interface SiteSearched { site: SourceSite; kind: Kind; url: string | null
 export interface Found { site: SourceSite; row: SearchRow }
 export interface SearchOpts {
   paced?: boolean; routed?: (site: SourceSite) => boolean; apify?: Pick<ReturnType<typeof createApify>, 'search'>; visitor_id?: string;
+  apifyRuns?: { reserve(person_id: string, day: string): Promise<{ ok: true } | { ok: false; cap: string }> };
   dupe?: Pick<ReturnType<typeof createDupe>, 'search'>; signal?: AbortSignal;
   caller?: Caller; sources?: readonly Source[]; person_id?: string; accounts?: Accounts; harness?: Harness;
+  // null pins a public read; undefined selects the person's current linked account.
+  account?: LinkedAccount | null;
   sites?: readonly Site[]; kinds?: readonly Kind[]; deadline_ms?: number;
   fetchPage?: (url: string, o: FetchOpts) => Promise<PageResult>; log?: FetchOpts['log']; now?: () => number;
 }
-export const runtimePorts: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe' | 'apify'> & { routed: NonNullable<SearchOpts['routed']> } = {
-  accounts: undefined, harness: undefined, apify: undefined, routed: () => !!runtimePorts.harness,
+export const runtimePorts: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe' | 'apify' | 'apifyRuns'> & { routed: NonNullable<SearchOpts['routed']> } = {
+  accounts: undefined, harness: undefined, apify: undefined, apifyRuns: undefined, routed: () => !!runtimePorts.harness,
 };
 export interface SearchResult { results: Found[]; searched: SiteSearched[] }
 
@@ -47,39 +50,55 @@ const noRoute = (source: Source, kind: Kind): SiteResult => ({ rows: [], searche
 const sourceRouted = (source: Source, o: SearchOpts): boolean =>
   source.lane === 'apify' ? !!o.apify : source.lane !== 'harness' || !!o.harness && (o.routed?.(source.site) ?? true);
 
+async function sourceAccount(source: Source, o: SearchOpts): Promise<LinkedAccount | undefined> {
+  if (o.caller !== 'person' || !o.person_id) return undefined;
+  const account = o.account === undefined ? (await o.accounts?.linked(o.person_id))?.find(a => a.site === source.site && a.person_id === o.person_id) : o.account;
+  return account?.site === source.site && account.person_id === o.person_id ? account : undefined;
+}
+
 // Admission precedes every pace slot, including the outer runPlan in the API.
 export async function sourceUnavailable(source: Source, kind: Kind, o: SearchOpts): Promise<SiteResult | undefined> {
   if (!sourcesFor(o.caller, [source]).length) return { rows: [], searched: {
     site: source.site, kind, url: null, outcome: 'blocked', ms: 0, count: 0, reason: source.reason ?? "requires the person's search",
   } };
-  if (!sourceRouted(source, o)) return noRoute(source, kind);
   if (source.needs_ask || kind === 'sold' && source.site === 'ebay') {
-    const account = o.person_id && o.accounts && (await o.accounts.linked(o.person_id)).find(a => a.site === source.site && a.person_id === o.person_id);
+    const account = await sourceAccount(source, o);
     if (o.caller !== 'person' || !account) return { rows: [], searched: {
-      site: source.site, kind, url: null, outcome: 'needs_account', ms: 0, count: 0, reason: "needs the person's account",
+      site: source.site, kind, url: null, outcome: 'needs_account', ms: 0, count: 0, reason: 'needs your account',
     } };
   }
+  if (!sourceRouted(source, o)) return noRoute(source, kind);
 }
 
-// shortcut: Apify run counts live in process memory and reset on restart; move to the Store when the edge runs more than one instance
-let apifyDay = '', apifyRuns = 0;
-const apifyPeople = new Map<string, number>();
+// Test adapter only. Runtime composition must supply an atomic, durable reservation port.
+export function memoryApifyRuns(): NonNullable<SearchOpts['apifyRuns']> {
+  const days = new Map<string, { total: number; people: Map<string, number> }>();
+  return { async reserve(person_id, day) {
+    const counts = days.get(day) ?? { total: 0, people: new Map<string, number>() };
+    const personRuns = counts.people.get(person_id) ?? 0;
+    if (personRuns >= Number(searchParams.read('search_apify_runs_per_person_day', { person: person_id }).value))
+      return { ok: false, cap: 'search_apify_runs_per_person_day' };
+    if (counts.total >= Number(searchParams.read('search_apify_runs_per_day', {}).value))
+      return { ok: false, cap: 'search_apify_runs_per_day' };
+    counts.total++; counts.people.set(person_id, personRuns + 1); days.set(day, counts);
+    return { ok: true };
+  } };
+}
+
 async function readApify(source: Source, lane: Lane, query: string, o: SearchOpts): Promise<SiteResult> {
-  if (!o.apify) return noRoute(source, 'search');
+  if (o.caller !== 'person' || !o.person_id) return { rows: [], searched: {
+    site: source.site, kind: 'search', url: null, outcome: 'blocked', ms: 0, count: 0, reason: "requires the person's search",
+  } };
+  if (!o.apify || !o.apifyRuns) return noRoute(source, 'search');
   const day = new Date().toISOString().slice(0, 10);
-  if (day !== apifyDay) { apifyDay = day; apifyRuns = 0; apifyPeople.clear(); }
-  const person = o.person_id ?? o.visitor_id;
-  const cap = !person || (apifyPeople.get(person) ?? 0) >= Number(searchParams.read('search_apify_runs_per_person_day', { person }).value)
-    ? 'search_apify_runs_per_person_day'
-    : apifyRuns >= Number(searchParams.read('search_apify_runs_per_day', {}).value) ? 'search_apify_runs_per_day' : undefined;
-  if (cap) {
+  const reserved = await o.apifyRuns.reserve(o.person_id, day);
+  if (!reserved.ok) {
+    const { cap } = reserved;
     o.log?.note('Apify search blocked', { lane, cap });
     return { rows: [], searched: { site: source.site, kind: 'search', url: null, outcome: 'blocked', ms: 0, count: 0,
     error_code: 'rate_limited', reason: cap, route_id: ROUTE_IDS[lane], cost_usd_est: 0 } };
   }
-  // Reserve synchronously, before the outside call, so concurrent Facebook and eBay stages share both caps.
-  apifyRuns++; apifyPeople.set(person!, (apifyPeople.get(person!) ?? 0) + 1);
-  o.log?.note('Apify search admitted', { lane, person_runs: apifyPeople.get(person!), process_runs: apifyRuns });
+  o.log?.note('Apify search admitted', { lane, day });
   const at = performance.now();
   const run = () => o.apify!.search(lane, { q: query, limit: MAX_ITEMS,
     ...(lane === 'facebook' ? { city: searchParams.read('search_facebook_city', {}).value } : {}),
@@ -98,11 +117,6 @@ export async function searchSource(source: Source, query: string, kind: Kind = '
     ? kind === 'search' && source.site === 'facebook' ? readApify(source, 'facebook', query, o) : Promise.resolve(noRoute(source, kind))
     : readSource(source, query, kind, o);
   const result = unavailable ?? await (o.paced || source.lane === 'apify' ? read() : atPace(source.site, source.lane, source.pace, read));
-  if (source.site === 'ebay' && kind === 'search' && o.caller === 'person' && o.apify &&
-    (result.searched.outcome === 'blocked' || result.searched.error_code === 'blocked' || result.searched.error_code === 'no_route')) {
-    const fallback = await readApify(source, 'ebay', query, o);
-    return { ...fallback, searched: { ...fallback.searched, fallback: 'apify' } };
-  }
   return { ...result, searched: { ...result.searched, ...(source.pace && source.lane !== 'apify' ? { pace: source.pace } : {}) } };
 }
 
@@ -120,7 +134,7 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
     return { rows: result.data.rows, searched: { site: 'dupe', kind, url: null, outcome: result.data.rows.length ? 'hit' : 'empty', ms: Math.round(now() - t0), count: result.data.rows.length } };
   }
   if (source.lane === 'public_page') return searchSite(source.site, query, kind, o);
-  const account = o.person_id && o.accounts ? (await o.accounts.linked(o.person_id)).find(a => a.site === source.site && a.person_id === o.person_id) : undefined;
+  const account = await sourceAccount(source, o);
   const site = source.site;
   const run = () => o.harness!.call<(SnapListing & { title?: string; slug?: string; condition?: string; size?: string; listed_at?: string; sold_at?: string; currency: string; url: string; host?: string; converted?: boolean })[]>(site, 'search', {
     q: query, status: kind === 'sold' ? 'sold' : 'active', ...(account ? { account_id: account.account_id, person_id: o.person_id } : {}),

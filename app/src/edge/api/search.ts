@@ -5,7 +5,7 @@ import { searchSource, sourceUnavailable, runtimePorts as searchRuntime, type Se
 import { BASE, searchUrl } from '../intel/public/readers.ts';
 import { fetchPage } from '../intel/fetch.ts';
 import { SOURCES, sourcesFor, routeId, type Caller, type Source, type SourceSite } from '../intel/public/sources.ts';
-import { runPlan, normalize, searchParams } from '../intel/run.ts';
+import { runPlan, searchParams } from '../intel/run.ts';
 import { PROTOCOLS } from '../intel/protocols.ts';
 import { emptyFound, type Answer, type Found } from '../intel/answer.ts';
 import { sameProduct, type Judged, type Result } from '../intel/reconcile.ts';
@@ -19,8 +19,6 @@ export const ports = Object.assign(searchRuntime, {
 });
 // The shared job store owns the promises as well as their rows; nothing is detached without a rejection handler.
 export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string, Promise<void>>() });
-type ActiveRead = { rows?: JudgedRow[]; searched?: SiteSearched };
-const reading = new Map<string, ActiveRead>();
 
 // Exported for the app's search screen (app/src/api), which imports these instead of copying them.
 export type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'site' | 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped' | 'fallback' | 'cost_usd_est'>)[] };
@@ -60,6 +58,10 @@ function candidates(source: Source, rows: SearchRow[], route_id = routeId(source
   return rows.map(row => ({ id: `ls_${site}_${row.id}`, listing_id: `ls_${site}_${row.id}`, site,
     title: row.title!, price_cents: row.price_cents!, url: row.url!, route_id }));
 }
+
+const shownOnly = (source: Source, row: SearchRow): JudgedRow => ({ row, judged: {
+  id: candidates(source, [row])[0].id, match: 'unresolved', keep: 'keep', in_basis: false, by: 'default',
+} });
 
 function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters: Record<string, unknown>): Batch {
   const site = source.site;
@@ -112,7 +114,6 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   const query = String(ctx.body.text ?? ctx.body.url ?? ''), filters = object(ctx.body.filters) ? ctx.body.filters : {};
   const t0 = performance.now(), pending = new Set(sources.map(s => s.id)), batches = new Map<string, Batch>();
   let first: number | null = null;
-  const spent = new Map<string, number>();
   const saveStages = () => jobs.update(job.id, {
     // The brief adds `late` and found{}; the shared Stage type still names the older four states.
     stages: structuredClone(stages) as ApiJobRow['stages'],
@@ -143,11 +144,11 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     ctx.log.event(event, { job: job.id, answer: a });
     jobs.append(job.id, event, { job_id: job.id, ...data, answer: a });
   };
-  const land = (source: Source, batch: Batch, refreshing: boolean) => {
+  const land = (source: Source, batch: Batch) => {
     const site = source.site;
     if (jobs.st.getJob(job.id)?.state !== 'running') return;
     batches.set(source.id, batch);
-    if (!refreshing) pending.delete(source.id);
+    pending.delete(source.id);
     const stage = stages.find(s => s.name === `site:${source.id}`)!;
     stage.state = batch.searched.outcome === 'timeout' ? 'late' : batch.searched.error_code && batch.searched.outcome !== 'empty' ? 'failed' : 'arrived';
     if (stage.state === 'failed') stage.error = { code: batch.searched.error_code!, message: batch.searched.reason ?? 'source failed' };
@@ -163,30 +164,32 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   const sitePlan = async (source: Source, freshness_s: number) => {
     const site = source.site;
     const readOptions: SearchOpts = { paced: true, caller, person_id: ctx.user_id ?? undefined, visitor_id: ctx.visitor_id ?? undefined,
-      accounts: opts.accounts, harness: opts.harness, routed: opts.routed, apify: opts.apify, dupe: opts.dupe, fetchPage: opts.fetchPage, log: ctx.log };
+      accounts: opts.accounts, harness: opts.harness, routed: opts.routed, dupe: opts.dupe, fetchPage: opts.fetchPage, log: ctx.log };
     const unavailable = await sourceUnavailable(source, 'search', readOptions);
-    const fallback = unavailable?.searched.error_code === 'no_route' && site === 'ebay' && caller === 'person' && opts.apify;
-    if (unavailable && !fallback) return { batch: rank(source, [], unavailable.searched, filters), cached: false, live: undefined };
-    const scopedRoute = source.lane === 'harness' || source.lane === 'apify' ? `${routeId(source)}:${ctx.user_id ?? ctx.visitor_id}` : routeId(source);
-    const key = `${scopedRoute}|${normalize(query)}`;
-    let shared = reading.get(key), ran = false, rows: JudgedRow[] = [];
-    // One allowance per search, charged against the same clock on the cached and live reads. The harness owns and reuses its browser.
+    if (unavailable) return rank(source, [], unavailable.searched, filters);
+    const account = source.lane === 'harness' && ctx.user_id && opts.accounts
+      ? (await opts.accounts.linked(ctx.user_id)).find(a => a.site === site && a.person_id === ctx.user_id) : undefined;
+    readOptions.account = account ?? null;
+    const scopedRoute = account ? `${routeId(source)}:${ctx.user_id}` : routeId(source);
+    let ran = false, rows: JudgedRow[] = [];
+    // One browser-start allowance per search. The harness owns and reuses its browser.
     const startup = source.site === 'depop' && opts.harness ? searchParams.read('search_browser_start_ms', {}).value as number : 0;
-    const remaining = Math.max(0, opts.deadline_ms + startup - (spent.get(source.id) ?? 0));
+    const remaining = Math.max(0, opts.deadline_ms + startup);
     // A one-target plan lets empty and blocked sites settle independently too; runPlan only emits partials for hits.
     const a = await runPlan({ kind: 'listings_matching', slots: { text: query }, protocol_version: protocol.version,
       first_ms: protocol.budget.first_ms, settled_ms: remaining,
       targets: [{ target_id: `site:${source.id}`, query, deadline_ms: remaining, freshness_s, routes: [{
-        route_id: scopedRoute, site, lane: source.lane, pace: unavailable || source.lane === 'apify' ? undefined : source.pace, cache: source.lane !== 'mcp' && source.lane !== 'apify' && !(site === 'ebay' && opts.apify), host: site === 'dupe' ? 'mcp.dupe.com' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
+        route_id: scopedRoute, site, lane: source.lane, pace: source.pace, cache: source.lane !== 'mcp', host: site === 'dupe' ? 'mcp.dupe.com' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
         async run(q, { signal, readEnded }) {
           const readAt = performance.now();
-          ran = true; shared = {}; reading.set(key, shared);
+          ran = true;
           try {
             const page = await searchSource(source, q, 'search', { ...readOptions, signal, deadline_ms: remaining }).finally(readEnded);
-            shared.searched = page.searched;
-            const judged = await sameProduct({ title: q }, candidates(source, page.rows), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
-            shared.rows = page.rows.map((row, i) => ({ row, judged: judged[i] }));
-            return { outcome: planOutcome(page.searched.outcome), rows: shared.rows, site, detail: page.searched };
+            const eligible = page.rows.filter(row => row.may_model !== false);
+            const judged = await sameProduct({ title: q }, candidates(source, eligible), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
+            let index = 0;
+            const rows = page.rows.map(row => row.may_model === false ? shownOnly(source, row) : { row, judged: judged[index++] });
+            return { outcome: planOutcome(page.searched.outcome), rows, site, detail: page.searched };
           } catch (e) {
             ctx.log.error(`search.${source.id}`, e);
             const detail: SiteSearched = { site, kind: 'search', url: null, outcome: 'failed', count: 0,
@@ -194,31 +197,21 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
               reason: e instanceof Error ? e.message : 'source failed', ...(source.pace ? { pace: source.pace } : {}) };
             return { outcome: 'blocked', rows: [], site, detail };
           }
-          finally { spent.set(source.id, (spent.get(source.id) ?? 0) + performance.now() - readAt); reading.delete(key); }
         },
       }] }],
       calculate(arrivals) { rows = arrivals.flatMap(a => a.rows as JudgedRow[]); return { facts: [] }; },
     });
-    const sameRead = shared?.rows && rows.length === shared.rows.length && rows.every((r, i) => r === shared!.rows![i]);
-    const searched = sameRead ? shared!.searched : a.searched[0]?.detail as SiteSearched | undefined;
+    const searched = a.searched[0]?.detail as SiteSearched | undefined;
     const outcome = a.searched[0]?.outcome ?? 'timeout';
     const observed: SiteSearched = searched && outcome !== 'timeout' ? searched : {
       site, kind: 'search', url: source.lane === 'public_page' && site !== 'dupe' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
       count: rows.length, ms: a.searched[0]?.ms ?? Math.round(remaining), ...(source.pace ? { pace: source.pace } : {}),
     };
-    const cached = !ran && !sameRead && (outcome === 'hit' || outcome === 'empty');
-    return { batch: rank(source, rows, observed, filters), cached,
-      live: cached && shared?.rows && shared.searched ? rank(source, shared.rows, shared.searched, filters) : undefined };
+    return { ...rank(source, rows, observed, filters), cached: !ran && (outcome === 'hit' || outcome === 'empty') };
   };
   try {
     await Promise.all(sources.map(async source => {
-      const initial = await sitePlan(source, protocol.freshness.listings);
-      land(source, initial.batch, initial.cached);
-      if (initial.cached && jobs.st.getJob(job.id)?.state === 'running') {
-        const live = initial.live ?? (await sitePlan(source, 0)).batch;
-        const batch = ['hit', 'empty'].includes(live.searched.outcome) ? live : { ...initial.batch, searched: live.searched, cached: true };
-        land(source, batch, false);
-      }
+      land(source, await sitePlan(source, protocol.freshness.listings));
     }));
     if (jobs.st.getJob(job.id)?.state !== 'running') return;
     const final = result(); jobs.update(job.id, { result: final });
@@ -226,6 +219,22 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     // finish() would overwrite late stages as arrived; retain each site's actual ending.
     ctx.log.job(job.id, 'search', 'done');
     jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'done', at: new Date().toISOString(), result: final });
+    const facebook = opts.sources.find(source => source.on && source.site === 'facebook' && source.lane === 'apify');
+    if (ctx.user_id && opts.apify && facebook) {
+      void searchSource(facebook, query, 'search', { caller: 'person', person_id: ctx.user_id, apify: opts.apify, apifyRuns: opts.apifyRuns, log: ctx.log })
+        .then(page => {
+          if (page.searched.outcome !== 'hit' && page.searched.outcome !== 'empty') {
+            ctx.log.error('search.facebook.fill', new Error(page.searched.reason ?? page.searched.outcome));
+            return;
+          }
+          const batch = rank(facebook, page.rows.map(row => shownOnly(facebook, row)), page.searched, filters);
+          const late = { job_id: job.id, site: facebook.site, results: batch.ranked.map(offerView), identity: identity(batch.rows),
+            found: batch.found, searched: [page.searched], answer: { ...answer(true), stage: 'late' as const, found: batch.found,
+              searched: [{ site: facebook.site, route_id: routeId(facebook), query, outcome: page.searched.outcome, ms: page.searched.ms }] } };
+          ctx.log.event('answer.late', { job: job.id, ...late });
+          jobs.append(job.id, 'answer.late', late);
+        }).catch(e => { ctx.log.error('search.facebook.fill', e); });
+    }
   } catch (e) {
     ctx.log.error('search', e);
     const error = e instanceof ApiError ? e.toJSON() : new ApiError('site_failed', 'search failed', 'search', { by: 'user' }).toJSON();
@@ -246,7 +255,8 @@ export const handlers: Record<string, Handler> = {
     // jobsOn exposes this fixture owner to every visitor; it cannot own a real search.
     if (ctx.visitor_id === 'vis_example01') throw invalid('use a new visitor session');
     const started_at = new Date().toISOString();
-    const caller: Caller = 'person', sources = sourcesFor(caller, ports.sources);
+    const caller: Caller = ctx.user_id ? 'person' : 'background';
+    const sources = sourcesFor(caller, ports.sources).filter(source => source.lane !== 'apify');
     const stages: SearchStage[] = sources.map(source => ({ name: `site:${source.id}`, state: 'running', started_at, ended_at: null, found: emptyFound() }));
     const job = jobs.put({ kind: 'search', state: 'running', stages: structuredClone(stages) as ApiJobRow['stages'] }, ctx.user_id ?? ctx.visitor_id!);
     ctx.log.job(job.id, 'search', 'running');

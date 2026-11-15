@@ -29,6 +29,22 @@ test('dry by default and unlinked owner never opens or reads a session', async (
   assert.equal((await s.handoff.start({ ...s.input, person_id: 'other' })).state, 'not_linked');
   assert.deepEqual(s.counts(), { launches: 0, closes: 0, loads: 0, phoneReads: 0 });
 });
+test('handoff refuses another person’s account id and finds the owner’s account', async () => {
+  const s = await setup();
+  assert.equal((await s.handoff.start({ ...s.input, person_id: 'usr_2' })).state, 'not_linked');
+  assert.deepEqual(s.counts(), { launches: 0, closes: 0, loads: 0, phoneReads: 0 });
+  assert.equal((await s.handoff.start(s.input)).state, 'ok', 'the owner’s account must be found');
+  assert.deepEqual(s.counts(), { launches: 1, closes: 1, loads: 1, phoneReads: 1 });
+});
+test('live view refuses another person and finds the session owner’s account', async () => {
+  const s = await setup(); s.status('blocked');
+  const result = await s.handoff.start(s.input);
+  assert.equal(result.state, 'paused', 'the owner’s handoff must reach the site challenge');
+  assert.ok(result.session_id);
+  assert.equal(await s.handoff.liveView('usr_2', result.session_id), undefined);
+  assert.equal(await s.handoff.liveView('usr_1', result.session_id), 'https://example.invalid/private-view', 'the paused session’s account must be found');
+  await s.handoff.cancel(s.input);
+});
 test('session moves through Launcher and vault, releases lease, repeated handoff does not relaunch', async () => {
   const s = await setup();
   assert.equal((await s.handoff.start(s.input)).state, 'ok');

@@ -57,12 +57,15 @@ export function createScheduler(o: {
     else if (patch.paused !== undefined) paused.set(account_id, patch.paused);
   }
 
+  async function isLinked(a: Account): Promise<boolean> {
+    if (!o.storefront) return true;
+    const linked = await o.storefront.accounts.byId(a.account_id, a.user_id);
+    return !!linked && linked.person_id === a.user_id && linked.site === a.site;
+  }
+
   async function sweep(a: Account): Promise<'ran' | 'skipped' | 'stale' | 'blocked'> {
     const storefront = o.storefront;
-    if (storefront) {
-      const linked = await storefront.accounts.byId(a.account_id);
-      if (!linked || linked.person_id !== a.user_id || linked.site !== a.site) return 'skipped';
-    }
+    if (!await isLinked(a)) return 'skipped';
     const job = `sweep:${a.account_id}`;
     const leased = await o.leases.withLease(a.account_id, job, ttl, async () => {
       if (o.permitSweep && !o.permitSweep(a)) return null;
@@ -71,8 +74,8 @@ export function createScheduler(o: {
         r = await o.runSweep(a);
         if (r.ok && storefront) {
           // Recheck the link after the watcher read, and restrict the helper to this leased account.
-          const accounts: Accounts = { byId: id => storefront.accounts.byId(id), async linked() {
-            const linked = await storefront.accounts.byId(a.account_id);
+          const accounts: Accounts = { byId: (id, person_id) => storefront.accounts.byId(id, person_id), async linked() {
+            const linked = await storefront.accounts.byId(a.account_id, a.user_id);
             return linked && linked.person_id === a.user_id && linked.site === a.site ? [linked] : [];
           } };
           const result = await sweepStorefronts({ ...storefront, accounts, now: () => new Date(o.now()) });
@@ -105,7 +108,10 @@ export function createScheduler(o: {
   return {
     async tick() {
       const t = o.now();
-      const accounts = o.accounts();
+      const candidates = o.accounts();
+      const allowed = await Promise.all(candidates.map(isLinked));
+      const accounts = candidates.filter((_, i) => allowed[i]);
+      const refused = candidates.filter((_, i) => !allowed[i]).map(a => a.account_id);
       for (const a of accounts) {
         if (!paused.has(a.account_id) && !due.has(a.account_id)) save(a.account_id, { due: t + firstDelay(a.account_id, cadence(a)) });
       }
@@ -113,7 +119,7 @@ export function createScheduler(o: {
       if (o.permitSweep) ready.sort((a, b) => (o.priorityOf ? o.priorityOf(b) - o.priorityOf(a) : cadence(a) - cadence(b)) || a.account_id.localeCompare(b.account_id));
       const out = await Promise.all(ready.map(a => sweep(a).then(r => [a.account_id, r] as const)));
       const by = (k: string) => out.filter(([, r]) => r === k).map(([id]) => id);
-      return { ran: by('ran'), skipped: by('skipped'), stale: by('stale'), blocked: by('blocked') };
+      return { ran: by('ran'), skipped: [...refused, ...by('skipped')], stale: by('stale'), blocked: by('blocked') };
     },
     resume(account_id: string) { save(account_id, { due: o.now(), paused: null }); },
     paused: () => [...paused.keys()],
