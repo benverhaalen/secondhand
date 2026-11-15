@@ -81,6 +81,8 @@ export function standards(snap) {
     if (!a || !b) return;
     if (g < -0.5) out.push(err('U16', `[${a}] and [${b}] overlap by ${-g} in [${st.in}] at ${st.at}: parts never sit on each other`));
     // A run of one part side by side (site logos, chips) is one group and may sit at 4, as iOS sets a row of small icons.
+    // Rows of one kind in a list touch, ruled apart, as an iOS list sets them.
+    else if (!st.row && a === b && /row$/.test(a)) return;
     else if (g < (st.row && a === b ? GRID : ROOM)) out.push(err('U16', `[${a}] and [${b}] are ${g} apart in [${st.in}] at ${st.at}: parts are at least ${ROOM} apart (a row of one small part, ${GRID}), or they read as one thing (crowded)`));
   });
 

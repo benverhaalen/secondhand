@@ -3,6 +3,7 @@
 // Route files under app/src/app/v1/ stay thin: `export const GET = route('GET /v1/items/:id', handler)`.
 import { consoleSink, createLog } from '../../../../log/index.js';
 import { EXAMPLES, exampleFor, type Example } from './examples.ts';
+import { memoryStore } from '../../engines/param/param.ts';
 
 export type Retry = { by: 'auto' | 'user' | 'none'; after_s?: number };
 export type Reply = { status: number; body?: unknown; headers?: Record<string, string> } | Response;
@@ -15,7 +16,7 @@ type Log = ReturnType<typeof createLog>;
 
 const STATUS: Record<string, number> = {
   invalid: 400, unauthenticated: 401, locked: 403, not_found: 404, stale: 409, idempotency_mismatch: 409, site_no_undo: 409,
-  outside_limits: 422, rate_limited: 429, site_failed: 502, waking: 503,
+  outside_limits: 422, rate_limited: 429, site_failed: 502, waking: 503, unavailable: 503,
 };
 export type Code = keyof typeof STATUS;
 
@@ -35,16 +36,27 @@ export type Deps = {
   idem: Map<string, { hash: string; status: number; body: string; headers: Record<string, string>; at: number }>;
   visits: Map<string, { window: number; n: number }>;
   visitorPerMinute: number;
+  connectingAddress: (req: Request) => string | null;
+  started: boolean;
 };
 
-// shortcut: idempotency and visitor buckets live in this process's memory; move both to Lakebase when the edge runs more than one instance.
+export const params = memoryStore();
+// Prior from the J2 brief: at most 10000 visitor addresses retained in one process.
+params.declare({ name: 'visitor_max_entries', family: 'scalar', prior: 10000, guard_lo: 1 });
+
+const peerHeader = process.env.SECONDHAND_PEER_HEADER;
+
 export const deps: Deps = {
   verify: async () => null, // set by app/src/edge/auth.ts at import (bindAuth), so tests can swap it
   log: createLog({ src: 'edge.api', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }),
   now: () => Date.now(),
+  // shortcut: process memory until the Store has http_idempotency; lost on restart
   idem: new Map(),
   visits: new Map(),
   visitorPerMinute: 30,
+  // Deployment must name a client-address header that the host overwrites.
+  connectingAddress: (req) => peerHeader ? req.headers.get(peerHeader)?.trim() || null : null,
+  started: false,
 };
 
 const DAY_MS = 24 * 3600 * 1000;
@@ -71,6 +83,24 @@ function toResponse(reply: Reply, requestId: string): Response {
 
 const stripUserId = (o: Record<string, unknown>) => { delete o.user_id; return o; };
 
+function visit(address: string) {
+  const minute = Math.floor(deps.now() / 60000);
+  for (const [key, bucket] of deps.visits) {
+    if (bucket.window === minute) break;
+    deps.visits.delete(key);
+  }
+  const maximum = params.read('visitor_max_entries', {}).value;
+  if (typeof maximum !== 'number' || !Number.isInteger(maximum) || maximum < 1) throw new Error('invalid visitor_max_entries');
+  const bucket = deps.visits.get(address);
+  const n = bucket?.window === minute ? bucket.n + 1 : 1;
+  deps.visits.delete(address);
+  while (deps.visits.size > maximum || (!deps.visits.has(address) && deps.visits.size === maximum)) {
+    deps.visits.delete(deps.visits.keys().next().value!);
+  }
+  deps.visits.set(address, { window: minute, n });
+  if (n > deps.visitorPerMinute) throw new ApiError('rate_limited', 'visitor bucket empty', 'edge', { by: 'auto', after_s: 60 - Math.floor((deps.now() / 1000) % 60) });
+}
+
 export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' | 'visitor' | 'none' } = {}) {
   const [method, pattern] = endpoint.split(' ');
   const mode = opts.auth ?? 'user';
@@ -78,8 +108,8 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
     const t0 = deps.now();
     const request_id = req.headers.get('X-Request-Id') || id('rq_');
     const url = new URL(req.url);
-    const log = deps.log.child({ request: request_id });
-    log.event('request.start', { method, endpoint, path: url.pathname });
+    const log = deps.log.child({ req: request_id, route: pattern });
+    log.event('request.start', { method });
     let res: Response;
     try {
       if (req.method !== method) throw new ApiError('invalid', `${req.method} on ${endpoint}`, 'route');
@@ -99,10 +129,8 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
       if (mode === 'visitor' && !user_id) {
         const given = req.headers.get('X-Visitor-Id');
         visitor_id = given && /^vis_[a-z0-9]{8,32}$/.test(given) ? given : id('vis_');
-        const minute = Math.floor(deps.now() / 60000), b = deps.visits.get(visitor_id);
-        const n = b && b.window === minute ? b.n + 1 : 1;
-        deps.visits.set(visitor_id, { window: minute, n });
-        if (n > deps.visitorPerMinute) throw new ApiError('rate_limited', 'visitor bucket empty', 'edge', { by: 'auto', after_s: 60 - Math.floor((deps.now() / 1000) % 60) });
+        // shortcut: a visitor id is rotatable by the client; set SECONDHAND_PEER_HEADER in deployment so the bucket is the host's client address
+        visit(deps.connectingAddress(req) ?? visitor_id);
       }
       const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
 
@@ -121,11 +149,14 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
       }
       if (visitor_id) res.headers.set('X-Visitor-Id', visitor_id);
     } catch (e) {
-      const err = e instanceof ApiError ? e : new ApiError('waking', 'internal error', 'handler', { by: 'auto', after_s: 2 });
+      const err = e instanceof ApiError
+        ? e.code === 'waking' && deps.started ? new ApiError('unavailable', e.message, e.failed_step, e.retry, e.extra) : e
+        : new ApiError('unavailable', 'internal error', 'handler', { by: 'auto', after_s: 2 });
       if (!(e instanceof ApiError)) log.error('edge.api', e, { endpoint });
       res = Response.json(err.toJSON(), { status: err.status, headers: { 'X-Request-Id': request_id } });
     }
-    log.event('request.end', { endpoint, status: res.status, ms: deps.now() - t0 });
+    deps.started = true;
+    log.event('request.end', { status: res.status, ms: deps.now() - t0 });
     return res;
   };
 }
