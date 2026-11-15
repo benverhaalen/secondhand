@@ -2,6 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { memoryStore } from '../param/param.ts';
+import { resolve } from './params.ts';
 import { declareTrust } from './signals.ts';
 import { nsDecide, resolveSlot, type NsIn } from './noshow.ts';
 import { flagAfterWarning, health, paceAllowed } from './health.ts';
@@ -20,7 +21,7 @@ test('no-show: a vague time confirms; 2 past no-shows ask before booking; paid i
   const two = nsDecide(ns({ pastNoShows: 2 }), p);
   assert.equal(two.askBeforeBooking, true);
   assert.equal(nsDecide(ns({ pastNoShows: 1, paidInApp: true }), p).confirm, false);
-  assert.equal(nsDecide(ns({ pastNoShows: 1, vagueTime: true }), p).shown, 'Missed 1 pickup with you. Confirm sent.');
+  assert.equal(nsDecide(ns({ pastNoShows: 1, vagueTime: true }), p, { rows: [{ id: 'appointment1', source: 'appointment', at: '2026-11-14T00:00:00Z' }], now: '2026-11-14T10:00:00Z', scope: { person: 'fixture' }, code_version: 'fixture', table_versions: [] }, resolve(store, {}).versions).shown, 'Missed 1 pickup with you. Confirm sent.');
 });
 
 test('no-show: "here" at minute 14 is not a no_show; silence for 15 minutes is; "on my way" is read first', () => {
@@ -38,8 +39,8 @@ test('health: flag at 0.8; one more cancel that crosses becomes ask; a site warn
   assert.equal(health(m, p, { next: { metric: 'cancellations', delta: 0.2 } }).action, 'ask');
   assert.equal(health(m, p, { paused: true }).action, 'block');
   assert.equal(flagAfterWarning(0.7), 0.63);
-  assert.equal(paceAllowed(0.005, 0.63, p), true);
-  assert.equal(paceAllowed(0.02, 0.63, p), false);
+  assert.equal(paceAllowed(0.005, 0.63, pa), false);
+  assert.equal(paceAllowed(0.02, 0.63, pa), false);
 });
 
 const recall = (o: Partial<RecallRow> = {}): RecallRow => ({
@@ -91,14 +92,15 @@ test('recall: an exact match is never cleared by a confirmation; the buy side dr
   assert.equal(buyGate({ id: 'y', title: 'Chair' }, [recall()]).draftOffer, true);
 });
 
-test('counterfeit: brand without proof asks; price under 0.6 x q50 warns with both numbers; poshmark floor and young seller', () => {
+test('counterfeit: missing proof asks, unsupported numbers and site floors hide, cheap stock from a young seller asks', () => {
   const base = { proofPhoto: true, site: 'other' as const, shoes: false, stockPhoto: false, priceUsd: 300, q50: 310 };
   assert.equal(counterfeit({ ...base, brand: 'Gucci', proofPhoto: false }, pa).action, 'ask');
   const cheap = counterfeit({ ...base, brand: 'Gucci', priceUsd: 120 }, pa);
   assert.equal(cheap.action, 'warn');
-  assert.match(cheap.reasons.join(' '), /Priced at \$120\. This model usually sells for \$310\./);
-  assert.equal(counterfeit({ ...base, site: 'poshmark', priceUsd: 500, brand: 'Coach' }, pa).action, 'warn');
-  assert.equal(counterfeit({ ...base, site: 'ebay', shoes: true, priceUsd: 75 }, pa).action, 'warn');
+  assert.equal(cheap.price, null);
+  assert.match(cheap.reasons.join(' '), /below comparable/);
+  assert.equal(counterfeit({ ...base, site: 'poshmark', priceUsd: 500, brand: 'Coach' }, pa).action, 'none');
+  assert.equal(counterfeit({ ...base, site: 'ebay', shoes: true, priceUsd: 75 }, pa).action, 'none');
   assert.equal(counterfeit({ ...base, brand: 'Gucci', priceUsd: 120, stockPhoto: true, buy: true, sellerAgeDays: 10 }, pa).action, 'ask');
   assert.equal(counterfeit({ ...base, brand: 'Gucci', priceUsd: 120, stockPhoto: true, buy: true, sellerAgeDays: 400 }, pa).action, 'warn');
   assert.equal(counterfeit(base, pa).action, 'none');

@@ -7,7 +7,8 @@
 // The board page embeds the licensed faces, so it is drawn from a temp folder and never written into the repo.
 // A board with "motion": true is drawn with its animations running and paused at 30 s, and each variant also gets a
 // motion audit (what animates, how fast, the text contrast at its worst moment, how much of the screen shows clothing,
-// whether Reduce Motion stops it) and a 6 s recording, <id>-<w>.mp4, plus board-phone.mp4 with the phones side by side.
+// whether Reduce Motion stops it). With RECORD=1 it also records 6 s of each, <id>-<w>.mp4, and board-phone.mp4 with
+// the phones side by side; recordings are made only when someone asks for them, never on every push.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -55,13 +56,15 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
         const still = await open({ reducedMotion: 'reduce' });
         row[w].moves_under_reduce_motion = await still.page.evaluate(() => document.getAnimations().filter(a => a.playState === 'running').length);
         await still.ctx.close();
-        // 6 s of it moving, at the real speed, from 20 s in.
+        // 6 s of it moving, at the real speed, from 20 s in, when asked for.
+        if (process.env.RECORD === '1') {
         const vdir = mkdtempSync(join(tmpdir(), 'video-')), rec = await open({ deviceScaleFactor: 1, recordVideo: { dir: vdir, size: { width: w, height: h } } });
         await rec.page.evaluate(() => { for (const a of document.getAnimations()) a.currentTime = 20000; }); await rec.page.waitForTimeout(6000);
         await rec.ctx.close();
         const webm = join(vdir, readdirSync(vdir).find(f => f.endsWith('.webm')));
         execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-sseof', '-6', '-i', webm, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '26', '-movflags', '+faststart', '-an', join(out, `${v.id}-${w}.mp4`)]);
         rmSync(vdir, { recursive: true, force: true });
+        }
       }
       await ctx.close();
     }
@@ -92,7 +95,7 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
   await page.goto(pathToFileURL(boardHtml).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
   await page.screenshot({ path: join(out, 'board.png'), fullPage: true }); await page.close();
   rmSync(tmp, { recursive: true, force: true });
-  if (board.motion) {
+  if (board.motion && process.env.RECORD === '1') {
     const ids = board.variants.map(v => v.id), ins = ids.flatMap(id => ['-i', join(out, `${id}-390.mp4`)]);
     execFileSync('ffmpeg', ['-y', '-loglevel', 'error', ...ins, '-filter_complex', `${ids.map((_, i) => `[${i}:v]pad=iw+24:ih:12:0:color=0xE9ECEE[v${i}]`).join(';')};${ids.map((_, i) => `[v${i}]`).join('')}hstack=inputs=${ids.length}`,
       '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '26', '-movflags', '+faststart', join(out, 'board-phone.mp4')]);

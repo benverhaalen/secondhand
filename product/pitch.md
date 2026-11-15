@@ -84,7 +84,7 @@ Ben, 06:40: "pitching about ai impersonation. its always you. also think about h
 
 **Who sends it.** Ben, 06:44: when you read a reply and choose to send it, you sent it, so it carries no label; if a buyer asks whether AI helped, the reply says yes ([words](words.md#2026-11-15-you-send-it-and-if-a-buyer-asks-it-says-so)). So the honest line is "Every reply is one you read and sent. Ask if AI helped, and it'll tell you." Don't say "no AI ever touches your messages".
 
-**AI photos and size.** The AI on its own doesn't keep dimensions: a raw redraw of the Marquette tee came out about 2 inches too narrow. The published photo is right only because our check measures each redraw against the tape, and sets it back or rejects it. Say "every AI photo is measured against your tape before it posts". Never say "the AI is accurate".
+**AI photos and size.** Ben's answer to "doesn't the AI photo lie?" is a measurement (*observed*, [measure proof](../research/studio/ben/measure-proof.md)). The Marquette tee tapes 21.25 in pit to pit. The AI on its own drew it 2.7 in too narrow, and all 15 raw redraws over three runs came out 8 to 21% narrow. The published slide reads 21.1 in, because every redraw is measured against the tape and corrected, or thrown out so the real photo posts; all 3 published slides landed within 1.2%. On screen: the real photo, the AI's draw and the published slide, each with its tape line and no text (`research/studio/ben/slides/proof/20261115-0836/marquette-tee/`, `photo.jpg`, `drawn.jpg`, `final.jpg`). Say: "The AI drew it almost three inches too narrow. We measured it, and fixed it before it posted." Never say "the AI is accurate", and no rate yet: it's one tee.
 
 ## What's new: three things we haven't seen anyone else do
 

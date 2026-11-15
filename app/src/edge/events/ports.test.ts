@@ -127,3 +127,15 @@ for (const key of ['cookie', 'accessToken', 'Authorization', 'password', 'Set-Co
     assert.deepEqual(s.get('operation', 'u1', operation.id), row);
   });
 }
+
+
+test('system rows enumerate all tenants with equality filters without widening tenant reads', () => {
+  const s = memoryStore();
+  const a = s.put('account', { id: 'acc_shared', user_id: 'usr_a', site: 'depop' });
+  const b = s.put('account', { id: 'acc_shared', user_id: 'usr_b', site: 'ebay' });
+  s.put('item', { id: 'it_other', user_id: 'usr_b' });
+  assert.deepEqual(s.systemRows('account'), [a, b]);
+  assert.deepEqual(s.systemRows('account', { site: 'ebay' }), [b]);
+  assert.deepEqual(s.systemRows('account', { user_id: 'usr_a' }), [a]);
+  assert.deepEqual(s.rows('account', { user_id: 'usr_a' }), [a]);
+});

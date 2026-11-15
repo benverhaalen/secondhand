@@ -42,7 +42,7 @@
     },
     "long_sleeve": {
       "family": "apparel", "template": "sweatshirt", "whole_route": "relay", "names": ["long sleeve", "longsleeve", "button up", "flannel", "jersey"],
-      "whole_look": "front up, collar centred at the top, shoulders level, both long sleeves laid out and down at the same angle (about 45 degrees below level) with the full length of each sleeve visible and the cuffs open at the ends, nothing folded under, hem straight across, buttons done up if it has them, no fold lines across the body",
+      "whole_look": "front up, collar centred at the top, shoulders level, both long sleeves laid out and down at the same angle (about 45 degrees below level) with the full length of each sleeve visible, a clear strip of floor between each sleeve and the side of the body from the armpit down, and the cuffs open at the ends, nothing folded under, hem straight across, buttons done up if it has them, no fold lines across the body",
       "tuck": "The neck tag is tucked down inside the collar so it cannot be seen.",
       "graphic_zones": ["chest_centre", "left_chest", "full_front", "back_neck", "full_back", "sleeve", "cuff"],
       "details": ["cuff", "collar", "buttons"],
@@ -51,7 +51,7 @@
     },
     "sweatshirt": {
       "family": "apparel", "template": "sweatshirt", "whole_route": "relay", "names": ["crewneck", "sweatshirt", "sweater", "fleece pullover", "quarter zip"],
-      "whole_look": "front up, neck rib round and centred at the top, shoulders level, both sleeves laid out and down at the same angle (about 45 degrees below level) with the cuff ribs straight and not flipped, the waistband rib straight across and not rolled, the body boxy and flat with no fold lines",
+      "whole_look": "front up, neck rib round and centred at the top, shoulders level, both sleeves laid out and down at the same angle (about 45 degrees below level), a clear strip of floor between each sleeve and the side of the body from the armpit down, with the cuff ribs straight and not flipped, the waistband rib straight across and not rolled, the body boxy and flat with no fold lines",
       "tuck": "The neck tag is tucked down inside the collar so it cannot be seen.",
       "graphic_zones": ["chest_centre", "left_chest", "full_front", "back_neck", "full_back", "sleeve"],
       "details": ["cuff", "waistband"],
@@ -60,7 +60,7 @@
     },
     "hoodie": {
       "family": "apparel", "template": "sweatshirt", "whole_route": "relay", "names": ["hoodie", "hooded sweatshirt", "zip hoodie"],
-      "whole_look": "front up, the hood laid flat above the shoulders with its opening facing up and centred, shoulders level, both sleeves laid out and down at the same angle (about 45 degrees below level) with the cuff ribs straight, the front pocket flat and closed, any drawstrings hanging straight and even, zip closed if it has one, the waistband rib straight across, no fold lines across the body",
+      "whole_look": "front up, the hood laid flat above the shoulders with its opening facing up and centred, shoulders level, both sleeves laid out and down at the same angle (about 45 degrees below level), a clear strip of floor between each sleeve and the side of the body from the armpit down, with the cuff ribs straight, the front pocket flat and closed, any drawstrings hanging straight and even, zip closed if it has one, the waistband rib straight across, no fold lines across the body",
       "tuck": "The neck tag is tucked down inside the hood so it cannot be seen.",
       "graphic_zones": ["chest_centre", "left_chest", "full_front", "hood", "back_neck", "full_back", "sleeve", "pocket"],
       "details": ["hood", "pocket", "cuff"],

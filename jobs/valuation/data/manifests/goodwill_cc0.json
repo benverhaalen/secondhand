@@ -1,8 +1,8 @@
 {
   "source": "goodwill_cc0",
-  "licence": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API, its terms unread",
+  "licence": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API; terms (Ownership, License, Acceptable Use) restrict reuse and automated extraction (read 2026-11-15)",
   "may_model": false,
-  "code_commit": "b40085dc8cbd4e95937435792b156b73c7915d6a",
+  "code_commit": "c60aeb95a5073eb68f19f04371dc5e853812412a",
   "inputs": [
     {
       "file": "goodwill-costume-jewelry-2026-06.csv",
@@ -67,7 +67,7 @@
   ],
   "output": {
     "file": "rows.csv.gz",
-    "sha256": "c5ab5471bdb93c8a6586b254c75268aa1332f385a28df283973de4c19f1ccd99",
+    "sha256": "a7569528996e18db45cccb1c0fd0b91329a86c7bd97c8c1e22f2028e8318a5e5",
     "columns": [
       "row_id",
       "source",
