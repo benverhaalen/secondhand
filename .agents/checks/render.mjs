@@ -112,10 +112,10 @@ function checkView(view, ctx) {
     else if (!TEXT_INK.has(name)) E('B7', q, `is --${name} text: color is a ground, never ink. Text is ink, the second ink, or white on black, brick and the deep steps (Art. 5.1)`);
     // B6 what the text sits on
     if (g.kind === 'photo') E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
-    else if (g.kind === 'field') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
+    else if (g.kind === 'field' || g.kind === 'built') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
       if (ok.length ? !ok.includes(t.color) : !['ink', 'on-color'].includes(name)) E('B6', q, `is --${name ?? 'a raw color'} on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)`); }
     else if (g.kind !== 'fill' || g.name && hueOf(g.name)) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && pal.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'a gradient'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
-    if (name?.startsWith('on-field') && g.kind !== 'field') E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
+    if (name?.startsWith('on-field') && g.kind !== 'field' && g.kind !== 'built') E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
     else if (g.kind === 'fill' && color && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
       if (c < need) E('B6', q, `has ${c.toFixed(1)}:1 contrast with what is behind it; it needs ${need}:1 (Art. 5.1)`); }
     // B16 case, B23 words, B11 site names
@@ -248,6 +248,18 @@ function checkView(view, ctx) {
   for (const el of view.els) { const c = rgba(el.bg); if (!c || c[3] < .99) continue; const o = oklch(hex(c));
     if (o.L < .5 && o.C > .03 && o.H >= 70 && o.H <= 115) E('U4', el.part ? `[${el.part}]` : `<${el.tag}>`, `has a dark ground of ${el.bg} in the yellow to olive band, which reads as brown`);
     if (/tag/.test(el.part ?? '') && hueOf(pal.name(el.bg)) && !el.hasText && !view.els.some(k => k.parent === view.els.indexOf(el) && (k.tag === 'img' || k.tag === 'svg'))) E('U4', `[${el.part}]`, 'shows its state by color alone: a tag carries a word or an icon'); }
+  // U5 nothing sits in a corner's curve: inside a rounded box, content keeps the box's padding from the arc as well as from the straight edges.
+  // A thing with its own corner is measured from that corner, so a photo concentric with its card passes.
+  const padOf = (b, side) => b.space.find(([p]) => p === `padding-${side}`)?.[1] ?? 0, painted = e => e.bg || e.borders.length || e.gradient || e.photo;
+  const boxOf = (id, self) => { for (let k = self ? id : view.els[id]?.parent ?? -1; k >= 0; k = view.els[k].parent) { const b = view.els[k]; if (painted(b) && b.corners?.some(r => r > 0)) return pill(b) ? null : b; } return null; };
+  const inCurve = (rect, own, b) => { for (const [i, sx, sy] of [[0, 'left', 'top'], [1, 'right', 'top'], [2, 'right', 'bottom'], [3, 'left', 'bottom']]) {
+    const r = b.corners[i], p = Math.min(padOf(b, sx), padOf(b, sy)), dx = sx === 'left' ? rect[0] - b.rect[0] : b.rect[2] - rect[2], dy = sy === 'top' ? rect[1] - b.rect[1] : b.rect[3] - rect[3];
+    const e = Math.min(own, r), ax = r - dx - e, ay = r - dy - e; if (!r || !p || dx < 1 || dy < 1 || ax <= 0 || ay <= 0) continue;
+    const d = r - e - Math.hypot(ax, ay); if (d < p - 1) return `sits ${Math.max(0, d).toFixed(0)} px from the curve of the ${sy} ${sx} corner of ${b.part ? `[${b.part}]` : `<${b.tag}>`}: the padding there is ${p} px, so it moves in until the curve is that far too`; } return null; };
+  for (const t of text) { const b = t.el == null ? null : boxOf(t.el, true), h = (t.rect[3] - t.rect[1]) / (t.lines || 1), ink = Math.max(0, (h - t.size * .72) / 2);
+    const bad = b && inCurve([t.rect[0], t.rect[1] + ink, t.rect[2], t.rect[3] - ink], 0, b); if (bad) E('U5', `"${t.text.trim().slice(0, 24)}"`, bad); }
+  view.els.forEach((el, id) => { if (!(painted(el) || el.tag === 'img' || el.tag === 'svg')) return; const b = boxOf(id, false);
+    const bad = b && inCurve(el.rect, Math.max(0, ...(el.corners ?? [0])), b); if (bad) E('U5', el.part ? `[${el.part}]` : `<${el.tag}>`, bad); });
   // U2 a countdown is calm: no seconds, and past a day it is a day and a time
   for (const t of text) { const h = /\b(\d{2,3})\s?h\b/.exec(t.text), part = (() => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].part) return view.els[i].part; return ''; })();
     if (h && Number(h[1]) > 24) E('U2', short(t.text), `counts ${h[1]} hours: past a day, show the day and the time`);
