@@ -17,11 +17,11 @@ const STATES = {
   offline: { path: '/onboarding?state=offline', shows: ['Waiting for signal', 'Continue with Apple'], state: 'offline' },
   email: { taps: ['signin-email'], shows: ['Send code'] },
   code: { taps: ['signin-email', 'signin-email-send'], fill: true, shows: ['Sent to sam@example.com', 'Continue'] },
-  sites: { path: SIGNED, shows: ['1 of 3', 'Your sites', 'Link the ones you sell on. Each one is optional.', 'Not linked', 'Skip for now'], state: 'new' },
+  sites: { path: SIGNED, shows: ['1 of 3', 'Your sites', 'Link the ones you sell on. Each one is optional.', 'Not linked', 'Skip'], state: 'new' },
   'sites-loading': { path: SIGNED, taps: ['link-ebay'], shows: ['Signing in'], state: 'loading' },
-  'sites-typical': { path: SIGNED, taps: ['link-ebay'], wait: 1600, shows: ['Linked', '1 site linked. Add the rest now or later.', 'Continue'], state: 'typical' },
+  'sites-typical': { path: SIGNED, taps: ['link-ebay'], wait: 1600, shows: ['Linked', 'Continue'], state: 'typical' },
   'sites-failed': { path: SIGNED, taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out', 'Retry'], state: 'failed' },
-  'sites-offline': { path: '/onboarding?state=offline&signed=1', shows: ['Waiting for signal', 'Your sites', 'Skip for now'], state: 'offline' },
+  'sites-offline': { path: '/onboarding?state=offline&signed=1', shows: ['Waiting for signal', 'Your sites', 'Skip'], state: 'offline' },
   pickup: { path: SIGNED, taps: ['onboarding-next'], shows: ['2 of 3', 'Pickup spot', 'A public place', 'Skip'] },
   photo: { path: SIGNED, taps: ['onboarding-next', 'onboarding-pickup-next'], shows: ['3 of 3', 'First photo', 'Not now', 'Take a photo'] },
 };
@@ -72,7 +72,7 @@ test('onboarding: a pickup spot is optional, and saved when typed', async () => 
 // Sign-in comes first and cannot be skipped (spec/features/connect.md, "Signing in to secondhand").
 test('onboarding: sign-in has no skip, and the sites step is not reachable without it', async () => {
   const s = await app.open('/onboarding');
-  for (const t of ['Skip', 'Skip for now', 'Your sites']) assert.equal(await s.page.getByText(t, { exact: true }).count(), 0, `no "${t}" before sign-in`);
+  for (const t of ['Skip', 'Your sites']) assert.equal(await s.page.getByText(t, { exact: true }).count(), 0, `no "${t}" before sign-in`);
 });
 
 test('onboarding: Apple signs in, logs it, and opens the sites step', async () => {
