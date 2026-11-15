@@ -13,6 +13,9 @@ Not designed yet. Keep the mechanism here once research picks one, together with
 ## Decided
 Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).
 
+## Built (agent proposal, not yet decided)
+- **Market model** in `jobs/valuation/market.py`, fitted on sold rows only (live asks only cap the range and measure liquidity). A hedonic ridge regression on log price gives each attribute's premium and the time trend, each with a 90% interval. Category residual quantiles give the 80% range, widened by split-conformal scores on the newest sales. The nearest sold comps are moved to the item and to today by the fitted premiums and trend. Segment liquidity gives sell-through, days to sell and the ask-to-sold spread. A range is hidden as `too_few` or `too_wide` (money D5), rounded to whole dollars and labelled Level 1, 2 or 3. `jobs/valuation/fit.py` is the nightly Databricks fold's `valuation` task. Tested on the synthetic market only (`jobs/valuation/synthetic.py`): the range held 82% of the newest 277 sales against an 80% target, and the median error was 20% against 25% for the category median. It has not run on real sales, because there is no `comp` table yet.
+
 ## Open
 - Share-sheet deal check: show a typical sold-price band, with a "can't tell" state. It shares this feature's engine with [appraise](../appraise/).
 - What price data can we legally get for each platform?

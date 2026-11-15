@@ -281,7 +281,7 @@ Modes are `auto`, `ask` and `locked`; `locked` is what [events.json](events.json
 | failed_delist | list | ask | no | | the item may still show as for sale |
 | site_changed_listing | list | ask | no | | the read-back differs from ours |
 | push_my_edit | item-card | auto | n/a | | the person's edit goes to every live listing |
-| answer_fact | messages | auto | n/a | | the answer uses only confirmed attributes |
+| answer_fact | messages | ask | yes, per kind of question | | the answer uses only confirmed attributes; a draft the person approves until promoted ([decision](../product/decisions.md#2026-11-15-replies-to-buyers-start-as-drafts-the-person-approves)) |
 | reply_other | messages | ask | yes | reply_draft | |
 | counter_offer | messages | auto inside limits | yes | | at or above the floor, on the strategy path |
 | accept_offer | messages | auto at or above always_accept, else ask | yes, per item | | |

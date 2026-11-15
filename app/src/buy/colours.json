@@ -1,0 +1,16 @@
+{
+  "_": "The colours listings come in, for the demo's kinds whose colour is a choice (spec/features/watch.md, ColourSwatches). These are content, the item's own colour like a photo's, not brand colours, so they live as data and never as tokens. The demo has no colour on a listing, so these stand in for what a search would read.",
+  "jersey": [
+    { "id": "navy", "name": "Navy", "hex": "#13294B" },
+    { "id": "gold", "name": "Gold", "hex": "#FFC52F" },
+    { "id": "white", "name": "White", "hex": "#FFFFFF" },
+    { "id": "powder", "name": "Powder", "hex": "#9FC3E6" }
+  ],
+  "le creuset|dutch oven": [
+    { "id": "flame", "name": "Flame", "hex": "#E8591C" },
+    { "id": "marseille", "name": "Marseille", "hex": "#2F5FA7" },
+    { "id": "cerise", "name": "Cerise", "hex": "#B5121B" },
+    { "id": "sea-salt", "name": "Sea salt", "hex": "#A8C5B7" },
+    { "id": "white", "name": "White", "hex": "#FFFFFF" }
+  ]
+}

@@ -74,3 +74,9 @@ test('--note needs (a) (b) (c) and a diff list', () => {
 test('--tune runs the walk and the engine tasks', () => {
   const r = run('--tune', 'bad', '--walk', okWalk); assert.notEqual(r.status, 0); assert.match(out(r), /bad-1/);
 });
+
+test('a run started from inside a run refuses, so a check that calls prove.mjs cannot recurse', () => {
+  const r = spawnSync(process.execPath, [prove, '--plan', planPath, '--wave', '0'], { encoding: 'utf8', env: { ...process.env, PROVE_RUNNING: '1' } });
+  assert.equal(r.status, 3);
+  assert.match(r.stderr, /refused/);
+});

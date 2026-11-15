@@ -17,5 +17,23 @@ export { DecisionCard, ItemCard, Notice, useMinute, type Action, type DecisionKi
 export { Nav, TabBar, RouterTabBar, TopSlot, Wash, type TabKey } from './parts/chrome';
 export { Guess, Blank, Approve } from './parts/loop';
 export { Sheet, UndoToast, EmptyState, Skeleton } from './parts/overlays';
+export { ThreadRow, Message, Meta, Draft, Composer, remark, type Span, type DraftStatus } from './parts/thread';
+export { TimeSpan, type SpanValue } from './parts/time-span';
+// The buy side's parts: the search box, a found listing, where a search looked, a price against its range, the history, the photos, one answer of a few.
+export { SearchField } from './parts/search-field';
+export { MatchCard, PriceRead, VERDICT, LIKENESS, type Verdict, type Likeness } from './parts/match';
+export { SiteStrip, type SiteSlot } from './parts/site-strip';
+export { PriceRange } from './parts/price-range';
+export { PriceChart } from './parts/price-chart';
+export { Gallery } from './parts/gallery';
+export { OfferSheet } from './parts/offer-sheet';
+// A want set by touch (watch.md): chips and a three-way toggle, a price range over the sales, colours, a size.
+export { ChoiceChips, type ChipOption } from './parts/choice-chips';
+export { RangeSlider } from './parts/range-slider';
+export { ColourSwatches, type Swatch } from './parts/colour-swatches';
+export { SizePicker, type SizeSystem } from './parts/size-picker';
+export { CamButton, CamNote, CamWord, CameraAct, CameraBar, CameraFoot, CameraOff, Chips, FactChip, FeedLayer, FeedSwatch, FoundPop, Instruction, Modes, PointCloud, Shutter, ShutterRow, StageBubbles, Viewfinder, cue, haptic, onScreen, useBar, useCameraLayout, HOLD, SHUTTER, STAGE, type BarAct, type Bubble, type CloudPhase } from './parts/camera';
+export { BarPill, ChoiceCapsule, ChoiceColumn, CircleStage, PlusClose, TakeoverPlace, WaysOut, usePlus, wellCenter, CHOICE, MODE_ICON, OVER, PLUS, type CirclePhase } from './parts/takeover';
+export { FixChip } from './parts/camera-fix';
 export { Feed } from './parts/feed';
 export { QueueView, type QueueEntry } from './parts/queue';

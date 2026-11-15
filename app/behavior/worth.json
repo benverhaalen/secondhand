@@ -33,6 +33,21 @@
       "state": "unknown",
       "route": "/worth?stage=unknown",
       "shows": "No number yet"
+    },
+    {
+      "state": "loading",
+      "route": "/worth?state=loading",
+      "shows": "Nike Dunk Low, Grey Fog, men’s 10"
+    },
+    {
+      "state": "failed",
+      "route": "/worth?state=failed",
+      "shows": "The sales didn’t load."
+    },
+    {
+      "state": "offline",
+      "route": "/worth?state=offline",
+      "shows": "Waiting for signal"
     }
   ],
   "controls": [
@@ -99,6 +114,13 @@
       "id": "worth-price",
       "does": "opens a field for the person's own price",
       "at": "/worth"
+    },
+    {
+      "control": "Try again",
+      "on_tap": "checks the sales again",
+      "id": "worth-retry",
+      "does": "checks the sales again",
+      "at": "/worth?state=failed"
     }
   ],
   "flows": [
@@ -192,6 +214,14 @@
     {
       "decision": "Look deeper and the model number are plain rows at the end",
       "why": "Art. 7.9: what is not today's decision sits in ruled rows at the end of the page."
+    },
+    {
+      "decision": "Loading holds the range’s place in gray; failed and offline show no number",
+      "why": "appraise: every number from sold comparables; a number the sales did not give is never shown, even an old guess."
+    },
+    {
+      "decision": "Empty, one and dense are skipped on Worth",
+      "why": "Worth is always one thing on one page, so it has no list to be empty, single or crowded (Screen skip)."
     }
   ]
 }

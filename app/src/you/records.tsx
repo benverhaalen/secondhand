@@ -5,10 +5,11 @@ import { Platform } from 'react-native';
 import { day, records } from '@/demo';
 import { EmptyState, FootButton, List, Nav, Screen, Section, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
-import { cash, changed, drawn, PAGES, plural, useGo, useWorld } from './state';
+import { cash, changed, drawn, PAGES, plural, useGo, usePage } from './state';
+import { PageStatus } from './page-status';
 
 export function Records() {
-  const w = useWorld(), go = useGo();
+  const { w, asked } = usePage(), go = useGo();
   const rows = records(w);
   const year = w.now.slice(0, 4);
   const sold = rows.reduce((a, r) => a + r.price_cents, 0), fees = rows.reduce((a, r) => a + r.fees_cents + r.shipping_cents, 0);
@@ -30,9 +31,10 @@ export function Records() {
   };
 
   return (
-    <Screen name="you-records" state={drawn(w, rows.length)} nav={<Nav back={() => go.back()} />}
+    <Screen name="you-records" state={drawn(w, rows.length, asked)} nav={<Nav back={() => go.back()} />}
       foot={rows.length ? <FootButton id="records-csv" label={saved ? 'Downloaded' : 'Download CSV'} kind={saved ? 'second' : 'primary'} icon={saved ? 'checkmark-circle-02' : undefined} onPress={download} /> : undefined}>
       <Txt role="heading">{PAGES.records.title}</Txt>
+      <PageStatus asked={asked} what="your records">
       {rows.length ? (
         <>
           <Section title={year}>
@@ -57,6 +59,7 @@ export function Records() {
       ) : (
         <EmptyState title="No sales this year" line="Each sale shows here with its fees, ready for tax time." />
       )}
+      </PageStatus>
     </Screen>
   );
 }

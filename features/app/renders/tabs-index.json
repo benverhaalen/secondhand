@@ -12,14 +12,9 @@
     "offline"
   ],
   "skip": "",
-  "status": "fail",
+  "catalog": false,
+  "status": "clean",
   "findings": [
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 <button>",
-      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
-    },
     {
       "level": "warn",
       "id": "B3",

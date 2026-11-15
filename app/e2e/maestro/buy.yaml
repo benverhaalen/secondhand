@@ -1,0 +1,228 @@
+# The buy screen (app/behavior/(tabs)/buy.json) on a phone or simulator: the same states and controls as app/e2e/buy.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/buy.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/buy.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081/--
+---
+- launchApp
+# State: typical
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- assertVisible: "New matches"
+- assertVisible: "Looking for"
+- assertVisible: "Bought"
+- assertVisible: "3 of 4 sites"
+- assertVisible: "Send \\$65"
+# nav-inbox: opens Messages
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "nav-inbox" }
+# buy-search: opens the search box for typing
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "buy-search" }
+- assertVisible: { id: "buy-search-input" }
+# buy-search-camera: opens the camera to search with a photo
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "buy-search-camera" }
+# dec_bo-send: sends the agent's $65 offer after a 5 s Undo
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-send" }
+- extendedWaitUntil:
+    visible: "Offer of \\$65 sent"
+    timeout: 5000
+# undo-dec_bo: takes the offer back before it goes
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-send" }
+- tapOn: { id: "undo-dec_bo" }
+- extendedWaitUntil:
+    visible: "Send \\$65"
+    timeout: 5000
+# dec_bo-change: opens the offer picker with three amounts and Something else
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-change" }
+- extendedWaitUntil:
+    visible: "Something else"
+    timeout: 5000
+# buy-offer-amount-other: chooses Something else and shows a blank amount
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-change" }
+- tapOn: { id: "buy-offer-amount-other" }
+- assertVisible: { id: "buy-offer-other" }
+# buy-offer-send: sends the picked amount
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-change" }
+- tapOn: { id: "buy-offer-send" }
+- extendedWaitUntil:
+    visible: "Offer of \\$65 sent"
+    timeout: 5000
+# dec_bo-more: opens the rest of the card's acts
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-more" }
+- assertVisible: { id: "buy-more-skip" }
+# buy-more-skip: skips this offer, with Undo
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-more" }
+- tapOn: { id: "buy-more-skip" }
+- extendedWaitUntil:
+    visible: "Skipped"
+    timeout: 5000
+# buy-more-open: opens the listing
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-more" }
+- tapOn: { id: "buy-more-open" }
+# dec_bo-open: opens the listing the offer is for
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_bo-open" }
+# dec_ceil-walk: hides the listing over the most, with Undo
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_ceil-walk" }
+- extendedWaitUntil:
+    visible: "Hidden"
+    timeout: 5000
+# dec_ceil-raise: raises the most to $97, with Undo
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_ceil-raise" }
+- extendedWaitUntil:
+    visible: "Your most is \\$97"
+    timeout: 5000
+# dec_ceil-more: opens the rest of the card's acts
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_ceil-more" }
+- assertVisible: { id: "buy-more-skip" }
+# dec_ceil-open: opens that listing
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "dec_ceil-open" }
+# match-mt_d1: opens the new match
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "match-mt_d1" }
+# match-mt_d3: opens the pickup match
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "match-mt_d3" }
+# want-want_dunk: opens the want
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "want-want_dunk" }
+# want-want_kin: opens the paused want
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "want-want_kin" }
+# want-want_oven: opens the want with one site still answering
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "want-want_oven" }
+# bought-ord_bfl: opens the thing they bought
+- openLink: ${URL}/buy?world=buyer
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- tapOn: { id: "bought-ord_bfl" }
+# State: one
+- openLink: ${URL}/buy
+- extendedWaitUntil:
+    visible: "Looking for"
+    timeout: 15000
+- assertVisible: "Nothing yet under \\$150"
+- assertVisible: "2 of 3 sites"
+# want-want_desk: opens the want that found nothing yet
+- openLink: ${URL}/buy
+- extendedWaitUntil:
+    visible: "Looking for"
+    timeout: 15000
+- tapOn: { id: "want-want_desk" }
+# State: empty
+- openLink: ${URL}/buy?state=empty
+- extendedWaitUntil:
+    visible: "Nothing on your list"
+    timeout: 15000
+# State: new
+- openLink: ${URL}/buy?state=new
+- extendedWaitUntil:
+    visible: "Search five sites at once"
+    timeout: 15000
+# State: dense
+- openLink: ${URL}/buy?state=dense
+- extendedWaitUntil:
+    visible: "Needs you"
+    timeout: 15000
+- assertVisible: "New matches"
+- assertVisible: "Looking for"
+# State: failed
+- openLink: ${URL}/buy?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load your list"
+    timeout: 15000
+- assertVisible: "Try again"
+# buy-retry: loads the page afresh
+- openLink: ${URL}/buy?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load your list"
+    timeout: 15000
+- tapOn: { id: "buy-retry" }
+# State: offline
+- openLink: ${URL}/buy?state=offline
+- extendedWaitUntil:
+    visible: "Waiting for signal\\. This is the last copy\\."
+    timeout: 15000

@@ -1,0 +1,22 @@
+{
+  "route": "messages/[id]",
+  "screen": "message",
+  "states": [
+    "typical",
+    "one",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "new: a thread exists only once a buyer writes, so a person who has done nothing has none to open; empty: a thread with no messages is never listed; dense: no world holds a thread longer than six messages",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

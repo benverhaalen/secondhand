@@ -11,9 +11,12 @@ after(async () => { await app?.stop(); });
 
 // What each state must show, read from the table's "shows", in the world it names.
 const SHOWS = {
-  typical: ['You', 'A site signed you out', '$163.63', 'Earned after fees, from 4 sales', 'On its way', 'Ready on the site about Tuesday', '$132.33', '4 live, could earn', '1 kept, worth', 'November goal', 'By site', 'Records', 'Your sites', '3 of 5', 'Rules and limits', '3 on their own', 'Activity', 'Settings'],
+  typical: ['You', 'A site signed you out', '$163.63', 'Earned after fees, from 4 sales', 'On its way', 'Ready on the site about Tuesday', '$132.33', '4 live, could earn', '1 kept, worth', 'November goal', 'By site', 'Records', 'Your sites', '3 of 5', 'Rules and limits', '3 on their own', 'Activity', 'Notifications', 'Settings'],
   dense: ['You', 'Earned after fees, from 8 sales', 'On its way', 'November goal', 'Your sites', '5 of 5'],
   one: ['Nothing sold yet', '1 live, could earn', 'November goal', 'Your sites', 'Settings'],
+  loading: ['You'],
+  failed: ['Couldn’t load your numbers', 'The site didn’t answer. Nothing changed.', 'Try again'],
+  offline: ['Waiting for signal', 'Earned after fees, from 4 sales'],
   new: ['Nothing sold yet', 'Sell something', 'Your sites', '0 of 5', 'Rules and limits', 'Settings'],
 };
 const HIDDEN = { new: ['On its way', 'By site', 'Records', 'Activity', 'November goal'], one: ['Sell something', 'Records'], dense: ['A site signed you out'] };
@@ -23,7 +26,7 @@ test('you: every state in the behavior table has a test here', () => {
 });
 
 for (const st of table.states) test(`you: ${st.state} (${st.world}) shows ${st.shows.slice(0, 80)}`, async () => {
-  const s = await app.open(at('/you', st.world));
+  const s = await app.open(st.path ?? at('/you', st.world));
   for (const t of SHOWS[st.state]) await s.shows(t);
   for (const t of HIDDEN[st.state] ?? []) assert.equal(await s.page.getByText(t, { exact: true }).count(), 0, `${st.state} should not show "${t}"`);
   assert.equal(await s.page.locator(`[data-screen="you"]`).getAttribute('data-state'), st.state);

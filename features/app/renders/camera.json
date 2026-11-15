@@ -1,0 +1,20 @@
+{
+  "route": "camera",
+  "screen": "camera",
+  "states": [
+    "typical",
+    "loading",
+    "offline"
+  ],
+  "skip": "new: the camera is the same for a new person; empty: there is always a feed; one: one thing per session; dense: one thing per session, a pile is one session each; failed: a fact the camera cannot read stays a Blank, drawn in every state",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

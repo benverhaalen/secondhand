@@ -1,0 +1,25 @@
+{
+  "route": "(tabs)/buy",
+  "screen": "buy",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "one",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "screen",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    }
+  ]
+}

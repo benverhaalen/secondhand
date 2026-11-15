@@ -14,4 +14,13 @@ export const MOTIONS: Record<string, { why: Why; ms: number | 'spring' }> = {
   fieldsFill: { why: 'progress', ms: motion.feedback },
   sold: { why: 'recognition', ms: 'spring' },
   drift: { why: 'recognition', ms: 'spring' },
+  // New and the camera (spec/pages.md §6.4, §6.5; frontend-standard §3 "Open New", "The camera reads the item").
+  newOpen: { why: 'origin', ms: motion.panel },       // the ＋ grows into the circle that covers the screen
+  newChoice: { why: 'origin', ms: motion.select },    // each choice rises out of the button, 30 ms after the one before
+  cameraOpen: { why: 'origin', ms: motion.panel },    // the camera opens out of the choice that was touched
+  stageDone: { why: 'state', ms: motion.select },     // a stage bubble fills to a check
+  foundDrop: { why: 'progress', ms: 250 },            // what the camera read drops in from above the feed (Ben's 03:17 ask, the brief's 250)
+  foundFly: { why: 'origin', ms: motion.panel },      // and flies to the bubble of the stage it settles
+  cloudPoint: { why: 'progress', ms: motion.select }, // a point lands where a feature was found
+  shutter: { why: 'feedback', ms: motion.feedback },  // the feed blinks when a still is taken
 };
