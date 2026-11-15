@@ -142,7 +142,7 @@ As the slider moves, the card shows for that point: the ask per site, what the p
 
 How the new signals enter: sold comps still set the value (asks never do). The top listings place the ask among what a buyer sees today on that site. An official price after a credible discount is a ceiling: a used item is not suggested above what the new one costs now, unless the new one is out of stock, and the card says which. A discount that ends raises the ceiling again on its end date, as a `value_moved` notice.
 
-`posture` is stored on the listing and as the person's default (`param` rows learn nothing from it; it is a preference). Open for Ben and Nate: is the default 0.5, or the person's last choice?
+`posture` is stored on the listing (`param` rows learn nothing from it; it is a preference). The slider opens at the middle, 0.5, as the suggested option ([Nate](../../product/words.md#2026-11-14-nate-the-price-slider-defaults-to-the-middle); Ben's agreement not recorded).
 
 ## 7. How it beats what exists
 
