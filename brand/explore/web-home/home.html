@@ -6,7 +6,7 @@
 <title>secondhand</title>
 <!-- The signed-out Home, round 2 of the website proposal: seven sections, Cleo's spatial layout, our field for its sky.
      A mock built from brand tokens to judge the structure, not the build (the build is the Expo web app).
-     The scene panel holds the demo item photos (assets/demo-items, generated, Art. 8.4) until the scene photos exist.
+     The scene is a generated mock photo (research/web/ben/photos, Seedream, Art. 8.4), never a real customer or listing.
      Every amount is from spec/examples or research/cross-cutting/ben/pitch-evidence.md; the proof numbers are empty
      slots until the benchmark thread measures them (Art. 12.6).
      Check: node scripts/brand-check.mjs brand/explore/web-home/home.html --medium web -->
@@ -51,30 +51,24 @@
   <!-- 2. The scene: one wide photo of a move, the product's cards inside it, one per state color. -->
   <section class="scene" aria-label="What it looks like">
     <div class="wrap">
-      <div class="panel reveal">
-        <div class="spot" data-item>
-          <img src="../../../assets/demo-items/brass-lamp.jpg" alt="Brass desk lamp with a cream shade on a wooden desk">
-          <div class="float card" data-part="scene-card">
+      <figure class="panel scene-photo reveal" data-item>
+        <img src="../../../research/web/ben/photos/move__empty.jpg" alt="A hallway mid-move with a brass lamp, a brown work jacket and a wooden chair set out to sell" width="2000" height="1333">
+        <div class="stack">
+          <div class="card" data-part="scene-card">
             <div class="row"><span class="tag live">Live</span><span class="logos"><img src="../../../assets/platforms/square/ebay.png" alt="eBay"><img src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace"><img src="../../../assets/platforms/square/mercari.png" alt="Mercari"></span></div>
             <p class="why" data-fill="text">Brass desk lamp, posted on 3 sites</p>
           </div>
-        </div>
-        <div class="spot" data-item>
-          <img src="../../../assets/demo-items/carhartt-jacket.jpg" alt="Worn brown Carhartt Detroit jacket laid flat on a wood floor">
-          <div class="float card need" data-part="scene-card">
+          <div class="card need" data-part="scene-card">
             <div class="row"><span class="tag need">Offer</span><img src="../../../assets/platforms/square/depop.png" alt="Depop" width="20" height="20"><span class="keep" data-fill="amount">You keep $77.35</span></div>
             <p class="why" data-fill="text">A buyer offered $85. Your lowest is $70.</p>
             <div class="acts"><button class="pill small" type="button">Accept $85</button><button class="ghost" type="button">Counter $92</button></div>
           </div>
-        </div>
-        <div class="spot" data-item>
-          <img src="../../../assets/demo-items/ikea-chair.jpg" alt="Light wood chair in the corner of a dorm room">
-          <div class="float card" data-part="scene-card">
-            <div class="row"><span class="tag sold">Sold</span><img class="logo-s" src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace" width="20" height="20"></div>
+          <div class="card" data-part="scene-card">
+            <div class="row"><span class="tag sold">Sold</span><img src="../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace" width="20" height="20"></div>
             <p class="why" data-fill="text">Wood chair. Pickup today at 6.</p>
           </div>
         </div>
-      </div>
+      </figure>
     </div>
   </section>
 
@@ -133,10 +127,10 @@
     <div class="wrap reveal">
       <h2 class="section-t" id="proof-t">Measured, not promised.</h2>
       <div class="proof" style="text-align:left">
-        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>From photo to live</p></div>
-        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>Taken down everywhere after a sale</p></div>
-        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>Sold prices checked for each price</p></div>
-        <div class="num" data-part="proof"><p class="v" data-fill="amount">–</p><p>Buyer messages answered for you</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>From photo to live</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>Taken down everywhere after a sale</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>Sold prices checked for each price</p></div>
+        <div class="num" data-part="proof"><p class="v" data-fill="amount" aria-label="Not measured yet"><span class="slot"></span></p><p>Buyer messages answered for you</p></div>
       </div>
       <p style="margin-top:var(--s-7)"><a class="more" href="#">How we measure, and the data behind it</a></p>
     </div>
