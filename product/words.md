@@ -1140,3 +1140,10 @@ Ben, project chat, 06:53 UTC.
 > like the user should in plain language be able to understand the reasoning and can then see numbers if need be
 
 Used in: [research/list/ben/crosslist-pricing.md](../research/list/ben/crosslist-pricing.md), `SPREADS` in app/src/engines/listing/crosslist.ts.
+
+## 2026-11-15 a new seller starts on same take-home
+
+Ben, thread "Cross-list Depop listings and price with quant", 07:00 UTC, tapped on a decision card. The question: "Which cross-listing price rule should a new seller start on?" The option he chose:
+> Same take-home: Default is same money everywhere; seller can switch rule once for the account and override per item.
+
+Used in: [decisions.md](decisions.md#2026-11-15-cross-listing-starts-on-same-take-home), `SPREADS` in app/src/engines/listing/crosslist.ts.
