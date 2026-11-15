@@ -78,7 +78,7 @@ test('one global champion reader parses the JSON scalar and falls back to prior 
   assert.match(body, /RETURNS INT/);
   assert.match(body, /coalesce\(\(SELECT cast\(get_json_object\(value_or_hyperparams, '\$'\) AS INT\)/);
   for (const clause of ["name = 'market_min_n'", "scope = '{}'", "status = 'champion'", 'ORDER BY version DESC', 'LIMIT 1), 8)']) assert.ok(body.includes(clause), clause);
-  assert.equal((sql().match(/FROM secondhand\.core\.param\b/g) ?? []).length, 1);
+  assert.equal((sql().match(/FROM secondhand\.core\.param\b/g) ?? []).length, 2);
 });
 
 test('all figures are suppressed below the count guard while counts and as_of survive', () => {
@@ -170,4 +170,54 @@ test('governance market SQL task waits for sources and uses the existing workspa
 test('unknown API principal is called out without inventing broad EXECUTE grants', () => {
   assert.match(sql(), /-- Missing: API principal for GRANT EXECUTE ON FUNCTION/);
   assert.doesNotMatch(sql(), /^GRANT /m);
+});
+
+test('similar group filters kind and brand, counts distinct shared terms, guards and orders matches', async () => {
+  const { DatabaseSync } = await import('node:sqlite');
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec('CREATE TABLE listing_obs (site TEXT, kind TEXT, brand_norm TEXT, title_terms TEXT, read_at TEXT, observation_id TEXT)');
+    let minimum = 2, countMinimum = 2;
+    db.function('similar_min_shared_terms', () => minimum);
+    db.function('market_min_n', () => countMinimum);
+    db.function('array_intersect', (a, b) => a === null || b === null ? null : JSON.stringify([...new Set(JSON.parse(a))].filter(t => JSON.parse(b).includes(t))));
+    db.function('size', a => a === null ? null : JSON.parse(a).length);
+    const insert = db.prepare('INSERT INTO listing_obs VALUES (?, ?, ?, ?, ?, ?)');
+    for (const [id, kind, brand, terms] of [
+      ['off_two', 'clothes', 'beta', ['denim', 'jacket']], ['off_three', 'clothes', 'gamma', ['denim', 'jacket', 'blue']],
+      ['same', 'clothes', ' ALPHA ', ['denim', 'jacket', 'blue']], ['other_kind', 'shoes', 'beta', ['denim', 'jacket', 'blue']],
+      ['repeated', 'clothes', 'beta', ['denim', 'denim']], ['unknown', 'clothes', null, ['denim', 'jacket']],
+      ['blank', 'clothes', ' ', ['denim', 'jacket']], ['no_title', 'clothes', 'beta', null],
+    ]) insert.run('A', kind, brand, terms === null ? null : JSON.stringify(terms), '2026-11-15 00:00:00', id);
+    const body = definition('FUNCTION', 'similar_group');
+    assert.match(body, /COMMENT '[^']+may_model[^']+Dupe[^']+live:/);
+    assert.doesNotMatch(body, /secondhand\.core\./);
+    const query = body.split('\nRETURN\n')[1].replaceAll('secondhand.market.', '')
+      .replaceAll('similar_group.kind', '$kind').replaceAll('similar_group.brand', '$brand').replaceAll('similar_group.title_terms', '$terms');
+    const run = (brand = 'Alpha', terms = ['denim', 'jacket', 'blue', 'denim']) => db.prepare(query).all({ kind: 'clothes', brand, terms: terms === null ? null : JSON.stringify(terms) });
+    assert.deepEqual(run().map(row => [row.observation_id, row.shared_terms, row.n, row.as_of]), [
+      ['off_three', 3, 2, '2026-11-15 00:00:00'], ['off_two', 2, 2, '2026-11-15 00:00:00'],
+    ]);
+    assert.deepEqual(run(null), []);
+    assert.deepEqual(run(' '), []);
+    assert.deepEqual(run('Alpha', []), []);
+    assert.deepEqual(run('Alpha', null), []);
+    minimum = 3;
+    assert.deepEqual(run(), [], 'the group of one is below market_min_n');
+    countMinimum = 1;
+    assert.deepEqual(run().map(row => row.observation_id), ['off_three'], 'shared-term champion changes membership');
+  } finally { db.close(); }
+});
+
+test('term-list tokenizer is generated from the listing tokenizer and shared-term param uses global champions', () => {
+  const tokenizer = definition('FUNCTION', 'title_terms');
+  const expression = tokenizer.split('\nRETURN ')[1];
+  assert.ok(definition('VIEW', 'listing_obs').includes(expression.replace('title_terms.title', "get_json_object(o.payload, '$.title')")));
+  const minimum = definition('FUNCTION', 'similar_min_shared_terms');
+  for (const clause of ["name = 'similar_min_shared_terms'", "scope = '{}'", "status = 'champion'", 'ORDER BY version DESC', 'LIMIT 1), 2)']) assert.ok(minimum.includes(clause), clause);
+});
+
+test('seeded similar-group proof admits off-brand rows and refuses same-brand and other-kind rows', () => {
+  const check = read('databricks/sql/15_market_check.sql');
+  for (const clause of ["similar_group('clothes', 'test', array('vintage', 'denim', 'denim'))", "'off_brand_'", "'same_brand'", "'other_kind'", 'shared_terms = 2 AND n = 8', "name = 'similar_min_shared_terms'", 'similar group shared-term champion']) assert.ok(check.includes(clause), clause);
 });

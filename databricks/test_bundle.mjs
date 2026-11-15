@@ -291,3 +291,17 @@ test('public observation loader runs on demand with serverless version 3 and the
   assert.match(job, /python_file: \s*\.\.\/\.\.\/databricks\/tasks\/load_observations\.py/);
   assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]'));
 });
+
+test('term list is an on-demand serverless job with the synced root and explicit output columns', () => {
+  const resource = read('deploy/resources/term_list.yml');
+  const job = block(block(resource, 'jobs', 2), 'term_list', 4);
+  assert.ok(job, 'term_list job must exist');
+  assert.doesNotMatch(job, /\bschedule:|\btrigger:/);
+  assert.match(job, /environment_version: "3"/);
+  assert.match(job, /spark_python_task:/);
+  assert.match(job, /python_file: \s*\.\.\/\.\.\/databricks\/tasks\/term_list\.py/);
+  assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]'));
+  const task = read('databricks/tasks/term_list.py');
+  assert.match(task, /INSERT OVERWRITE \{catalog\}\.measures\.term_list \(\{', '\.join\(COLUMNS\)\}\)/);
+  assert.doesNotMatch(task, /INSERT \*|SELECT \*/i);
+});
