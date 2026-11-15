@@ -21,7 +21,7 @@ export function seedExamples(st: Store) {
   const seed = (table: Table, data: Record<string, unknown> & { id: string }) => {
     if (st.get(table, EXAMPLE_USER, data.id)) return;
     const { version, ...fields } = data;
-    let row = st.put(table, { ...fields, user_id: EXAMPLE_USER });
+    let row = st.put(table, { ...fields, user_id: EXAMPLE_USER, data: 'example' });
     while (row.version! < Number(version ?? 1)) row = st.put(table, row);
   };
   st.tx(() => {
@@ -42,7 +42,7 @@ export function seedExamples(st: Store) {
     for (const rule of response('rules.list').data as Row[]) seed('rule', rule);
     if (!st.decisions({ user_id: EXAMPLE_USER }).some(row => row.id === 'dec_lb1')) {
       const d = (response('today.get').decisions as Record<string, unknown>[]).find(row => row.id === 'dec_lb1')!;
-      const saved = st.raiseDecision({ user_id: EXAMPLE_USER, kind: String(d.kind), subject: String(d.item_id ?? 'dec_lb1'), item_id: typeof d.item_id === 'string' ? d.item_id : undefined, why: String(d.why), options: d.options as { id: string; label: string }[] }).row;
+      const saved = st.raiseDecision({ user_id: EXAMPLE_USER, data: 'example', kind: String(d.kind), subject: String(d.item_id ?? 'dec_lb1'), item_id: typeof d.item_id === 'string' ? d.item_id : undefined, why: String(d.why), options: d.options as { id: string; label: string }[] }).row;
       st.updateDecision(saved.id, { id: 'dec_lb1' });
     }
   });
@@ -52,12 +52,9 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   seedExamples(st);
   // shortcut: session state is process-local until the Databricks secret-scope AuthVault joins.
   const vault = memoryVault();
-  // Store reads require a tenant. The demo tenant is known at startup; tenant-scoped enumeration registers other owners.
-  const owners = new Set([EXAMPLE_USER]);
   const accounts: Accounts = {
     async linked(person_id) {
-      if (person_id) owners.add(person_id);
-      const rows = [...(person_id ? [person_id] : owners)].flatMap(user_id => st.rows('account', { user_id }));
+      const rows = person_id ? st.rows('account', { user_id: person_id }) : st.systemRows('account');
       const linked = await Promise.all(rows.map(async row => {
         if (row.deleted || typeof row.token_ref !== 'string' || !(SITES as readonly unknown[]).includes(row.site) || !await vault.get(row.token_ref)) return undefined;
         return { account_id: row.id, person_id: row.user_id, site: row.site, token_ref: row.token_ref } as LinkedAccount;
@@ -105,7 +102,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
             const source = st.get('listing', job.user_id, id);
             if (!source || source.account_id !== job.account_id) throw new Error('import listing is outside this account');
             const item_id = typeof source.matches_item_id === 'string' ? source.matches_item_id : `it_${crypto.randomUUID().replaceAll('-', '')}`;
-            if (!st.get('item', job.user_id, item_id)) st.put('item', { id: item_id, user_id: job.user_id, title: source.title ?? '', state: 'live', origin: 'import', quantity: 1, attributes: [], photos: [], created_at: source.read_at, updated_at: source.read_at });
+            if (!st.get('item', job.user_id, item_id)) st.put('item', { id: item_id, user_id: job.user_id, title: source.title ?? '', state: 'live', origin: 'import', data: source.data, quantity: 1, attributes: [], photos: [], created_at: source.read_at, updated_at: source.read_at });
             const prior = st.rows('listing', { user_id: job.user_id, account_id: job.account_id, external_id: source.external_id }).find(row => !row.import_preview);
             const listing_id = prior?.id ?? `ls_${crypto.randomUUID().replaceAll('-', '')}`;
             if (!prior) st.put('listing', { ...source, version: undefined, id: listing_id, item_id, import_preview: false });
@@ -151,12 +148,11 @@ export function checkVersion(row: Row, expected: unknown) {
   if (expected !== row.version) throw new ApiError('stale', 'the resource changed', 'version_check', { by: 'user' }, { current: { version: row.version } });
 }
 export function publicRow(row: Row, includeVersion = false) {
-  const { user_id, version, deleted, pending, token_ref, read_at, purchases, import_preview, account_id, item_id, required_fields, ...view } = row;
+  const { user_id, version, data, deleted, pending, token_ref, read_at, purchases, import_preview, account_id, item_id, required_fields, ...view } = row;
   return { ...view, ...(includeVersion ? { version } : {}) };
 }
 export function engine(handler: Handler): Handler {
   return fromEngine((ctx, req) => {
-    owned('limits', ctx, ctx.user_id!);
     pagination(ctx);
     ctx.log.input('api', req.method, { fields: Object.keys(ctx.body), query_fields: [...ctx.query.keys()] });
     return handler(ctx, req);

@@ -1,6 +1,6 @@
 // Rests-on: spec/product.md §5, §7; spec/examples/sell.json.
 import type { Ctx, Handler } from './http.ts';
-import { manifestFor, fields, text, bool, version, money, object, invalid, oneOf } from './captures.ts';
+import { manifestFor, fields, text, bool, money, object, invalid, oneOf, integer } from './captures.ts';
 import { ApiError, deps } from './http.ts';
 import { MODE_FOR, NEVER_PROMOTED } from '../events/policy.ts';
 import { runtime, engine, owned, checkVersion, publicRow, list } from './runtime.ts';
@@ -24,27 +24,31 @@ export function itemLimits(ctx: Ctx, id: string, patch: Record<string, unknown>)
   return runtime.store.put('limits', { always_accept_cents: null, gone_by: null, fallback: 'ask', markdown_on: true, review_at: null, accept_mode: 'ask_all', ...current, ...edits, ...(reserve ? { markdown_on: false, review_at } : {}), id, item_id: id, user_id: ctx.user_id! });
 }
 export function limitsView(row: Row) {
-  const { id, user_id, version, item_id, ...view } = row;
+  const { id, user_id, version, item_id, data, ...view } = row;
   return view;
 }
+const userLimits = (ctx: Ctx): Row => runtime.store.get('limits', ctx.user_id!, ctx.user_id!) ?? {
+  id: ctx.user_id!, user_id: ctx.user_id!, version: 0,
+  handover: [], pickup_windows: [], saved_spot: null, ask_every_time: false,
+};
 const limits = (ctx: Ctx) => ({
-  ...limitsView(owned('limits', ctx, ctx.user_id!)),
+  ...limitsView(userLimits(ctx)),
   items: runtime.store.rows('limits', { user_id: ctx.user_id! }).filter(row => row.item_id).map(row => ({ item_id: row.item_id, ...limitsView(row) })),
-  version: owned('limits', ctx, ctx.user_id!).version,
+  version: userLimits(ctx).version,
 });
 const locked = (kind: string) => { if (MODE_FOR[kind] === 'locked' || NEVER_PROMOTED.has(kind)) throw new ApiError('locked', kind + ' is never automatic', 'policy_check'); };
 
 export const handlers: Record<string, Handler> = {
   'GET /v1/limits': engine(ctx => ({ status: 200, body: limits(ctx) })),
   'PUT /v1/limits': engine(ctx => {
-    fields(ctx.body, { version }, { handover: v => Array.isArray(v) && v.length > 0 && v.every(oneOf('ship', 'pickup')), saved_spot: v => object(v) && text(v.label), pickup_windows: v => Array.isArray(v) && v.every(w => object(w) && oneOf('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')(w.weekday) && typeof w.from === 'string' && typeof w.to === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(w.from) && /^([01]\d|2[0-3]):[0-5]\d$/.test(w.to) && w.from < w.to), ask_every_time: bool, items: v => Array.isArray(v) && v.every(i => object(i) && text(i.item_id) && money(i.floor_cents)) });
+    fields(ctx.body, { version: integer }, { handover: v => Array.isArray(v) && v.length > 0 && v.every(oneOf('ship', 'pickup')), saved_spot: v => object(v) && text(v.label), pickup_windows: v => Array.isArray(v) && v.every(w => object(w) && oneOf('mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun')(w.weekday) && typeof w.from === 'string' && typeof w.to === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(w.from) && /^([01]\d|2[0-3]):[0-5]\d$/.test(w.to) && w.from < w.to), ask_every_time: bool, items: v => Array.isArray(v) && v.every(i => object(i) && text(i.item_id) && money(i.floor_cents)) });
     if (!['ask_every_time', 'items', 'handover', 'pickup_windows', 'saved_spot'].some(key => ctx.body[key] !== undefined)) throw invalid('no limits edits');
-    const current = owned('limits', ctx, ctx.user_id!);
+    const current = userLimits(ctx);
     for (const item of (ctx.body.items ?? []) as Record<string, unknown>[]) { owned('item', ctx, String(item.item_id)); validateLimits(item, runtime.store.get('limits', ctx.user_id!, String(item.item_id))); }
     checkVersion(current, ctx.body.version);
     runtime.store.tx(() => {
       for (const item of (ctx.body.items ?? []) as Record<string, unknown>[]) itemLimits(ctx, String(item.item_id), item);
-      runtime.store.put('limits', { ...current, ...Object.fromEntries(['ask_every_time', 'handover', 'pickup_windows', 'saved_spot'].filter(key => ctx.body[key] !== undefined).map(key => [key, ctx.body[key]])) });
+      runtime.store.put('limits', { ...current, version: current.version === 0 ? undefined : current.version, ...Object.fromEntries(['ask_every_time', 'handover', 'pickup_windows', 'saved_spot'].filter(key => ctx.body[key] !== undefined).map(key => [key, ctx.body[key]])) });
     });
     ctx.log.event('state.change', { entity: 'limits', id: current.id, to: 'updated' });
     const next = limits(ctx);
