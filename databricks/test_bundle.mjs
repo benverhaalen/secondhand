@@ -90,10 +90,19 @@ test('setup runs layout, tables, provenance migration, then governance', () => {
   const setup = read('deploy/resources/setup.yml');
   const tasks = [...setup.matchAll(/- task_key: (\w+)([\s\S]*?)(?=\n        - task_key:|$)/g)];
   assert.equal(tasks.length, 4);
+  assert.match(setup, /environment_key: migration\s+spec:\s+environment_version: "3"/);
+  assert.ok(!existsSync(join(root, 'databricks/sql/01b_data.sql')));
   tasks.forEach((t, i) => {
-    assert.ok(t[2].includes(['00_layout.sql', '01_tables.sql', '01b_data.sql', '02_governance.sql'][i]));
-    assert.match(t[2], /warehouse_id: \$\{var.warehouse_id\}/);
-    assert.match(t[2], /source: WORKSPACE/);
+    assert.ok(t[2].includes(['00_layout.sql', '01_tables.sql', 'migrate_data.py', '02_governance.sql'][i]));
+    if (i === 2) {
+      assert.match(t[2], /spark_python_task:/);
+      assert.match(t[2], /environment_key: migration/);
+      assert.ok(t[2].includes('parameters: ["--root", "${workspace.file_path}"]'));
+      assert.doesNotMatch(t[2], /sql_task:|warehouse_id:/);
+    } else {
+      assert.match(t[2], /warehouse_id: \$\{var.warehouse_id\}/);
+      assert.match(t[2], /source: WORKSPACE/);
+    }
     if (i) assert.ok(t[2].includes(`task_key: ${tasks[i - 1][1]}`));
   });
 });
@@ -185,29 +194,18 @@ test('every proof Python task gets the synced repository root', () => {
 
 const provenanceTables = ['observation', 'evidence', 'citation', 'guarded_number', 'claim_check', 'decision', 'event', 'job', 'storefront_snapshot', 'log_event'];
 
-test('fresh core tables and existing example rows carry non-null provenance', () => {
+test('fresh core tables and the migration cover the same provenance tables', () => {
   const fresh = read('databricks/sql/01_tables.sql');
-  const migration = read('databricks/sql/01b_data.sql');
+  const migration = read('databricks/tasks/migrate_data.py');
+  const tables = migration.match(/TABLES = \(([\s\S]*?)\)/)?.[1];
+  assert.deepEqual([...tables.matchAll(/'([^']+)'/g)].map(m => m[1]), provenanceTables);
   for (const table of provenanceTables) {
     const ddl = fresh.split(`CREATE TABLE IF NOT EXISTS secondhand.core.${table} (`)[1]?.split(') COMMENT')[0];
     assert.match(ddl ?? '', /data STRING NOT NULL COMMENT '[^']+'/i, table);
-    const start = migration.indexOf(`table_name = '${table}'`);
-    assert.ok(start >= 0, `${table}: metadata guard`);
-    const section = migration.slice(migration.lastIndexOf('BEGIN', start), migration.indexOf('SET NOT NULL;', start) + 'SET NOT NULL;'.length);
-    assert.match(section, /IF NOT EXISTS \(SELECT 1 FROM secondhand\.information_schema\.columns/);
-    assert.match(section, /table_catalog = 'secondhand' AND table_schema = 'core'/);
-    assert.match(section, /column_name = 'data'/);
-    assert.ok(section.includes(`ALTER TABLE secondhand.core.${table} ADD COLUMNS (data STRING COMMENT`));
-    assert.ok(section.includes(`UPDATE secondhand.core.${table} SET data = 'example' WHERE data IS NULL;`));
-    assert.ok(section.includes(`ALTER TABLE secondhand.core.${table} ALTER COLUMN data SET NOT NULL;`));
-    assert.ok(section.indexOf('ADD COLUMNS') < section.indexOf('UPDATE secondhand'));
-    if (table === 'observation') {
-      assert.ok(section.indexOf("'delta.appendOnly' = 'false'") < section.indexOf('UPDATE secondhand'));
-      assert.ok(section.indexOf("'delta.appendOnly' = 'true'") > section.indexOf('UPDATE secondhand'));
-      assert.match(section, /SET TBLPROPERTIES \('delta.appendOnly' = 'false'\);/);
-      assert.match(section, /SET TBLPROPERTIES \('delta.appendOnly' = 'true'\);/);
-    }
   }
+  assert.match(migration, /FROM secondhand\.information_schema\.columns/);
+  assert.match(migration, /table_schema = 'core' AND column_name = 'data'/);
+  assert.match(migration, /SELECT table_name, is_nullable/);
 });
 
 test('market comps fail the update if dataset provenance is missing', () => {
