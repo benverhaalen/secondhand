@@ -2569,3 +2569,11 @@ After the agent reported the absent backend join and asked which result flow to 
 > double check it should work if not, nate is working on it
 
 Used in: [Find UI and Lens integration status](../.agents/team/packets/team/20261115-lens-ui.md). Backend work stays with Nate; client integration is verified with controlled responses until his join lands.
+
+## 2026-11-15 ben wire the main selling flows
+
+Ben, Codex, 2026-11-15.
+
+> check the main flows of selling on the app and try to wire up as much as possible and create new ui screens that adhere to the brand constitution as well as being designed by an expert ui ux designer who also considers composition and user intent and familiarity too.
+
+Used in: [selling integration](../.agents/team/packets/team/20261115-selling-ui.md).

@@ -78,6 +78,8 @@ export const handlers: Record<string, Handler> = {
     const body = selectFields(row, [view]);
     const limits = runtime.store.get('limits', ctx.user_id!, row.id);
     return { status: 200, body: { ...body, title: card.item.title, state: card.item.state, quantity: card.item.quantity,
+      ...(row.price_cents ? { price_cents: row.price_cents } : {}),
+      ...(typeof row.description === 'string' ? { description: row.description } : {}),
       attributes: card.attributes.map(a => selectFields(a, view.attributes)),
       missing_fields: [...new Set(card.listings.flatMap(l => l.missing_fields))],
       photos: card.photos.map(p => { const { file_ref, ...photo } = p; return photo; }),

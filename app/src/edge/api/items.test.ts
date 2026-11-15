@@ -279,3 +279,16 @@ test('an edited example collection ends without advertising a removed example ro
   assert.equal(response.status, 200);
   assert.equal((await response.json()).next_cursor, null);
 });
+
+test('owned draft detail returns the persisted asking price and description after editing', async () => {
+  const { runtime } = await import('./runtime.ts');
+  runtime.store.put('item', { id: 'it_draft_review', user_id: 'usr_other', title: 'Canvas jacket', state: 'review', quantity: 1, attributes: [], photos: [], description: 'Brown canvas, worn cuffs.' });
+  const original = runtime.store.get('item', 'usr_other', 'it_draft_review');
+  assert.ok(original);
+  const changed = await call(examples.find(e => e.name === 'items.patch')!, { path: '/v1/items/it_draft_review', token: 'other', body: { version: original.version, price_cents: { amount_cents: 5250, currency: 'USD' } } });
+  assert.equal(changed.status, 200);
+  const response = await call(examples.find(e => e.name === 'items.get')!, { path: '/v1/items/it_draft_review', token: 'other' });
+  const body = await response.json();
+  assert.deepEqual(body.price_cents, { amount_cents: 5250, currency: 'USD' });
+  assert.equal(body.description, 'Brown canvas, worn cuffs.');
+});

@@ -28,7 +28,7 @@ const CloseCtx = createContext<() => void>(() => {});
 // Inside the sheet: closes it the way it came, then leaves the route.
 export const useCloseSheet = () => useContext(CloseCtx);
 
-export function RouteSheet({ name, state, skip, title, foot, onClosed, children, flow = false }: {
+export function RouteSheet({ name, state, skip, title, foot, onClosed, beforeClose, children, flow = false }: {
   // data-screen and data-state, as Screen sets them, for the tests and the render check.
   name: string;
   state: string;
@@ -40,6 +40,7 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children,
   foot?: ReactNode;
   // After it has slid away: leave the route (router.back()).
   onClosed: () => void;
+  beforeClose?: () => boolean;
   children: ReactNode;
 }) {
   const c = useColors(), insets = useSafeAreaInsets(), { height } = useWindow(), screen = usePathname();
@@ -49,7 +50,9 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children,
   const closing = useRef(false);
   useEffect(() => { y.set(withTiming(0, { duration: enter, easing: EASE_OUT, reduceMotion: ReduceMotion.System })); }, [enter, y]);
   const close = () => {
-    if (closing.current) return; closing.current = true;
+    if (closing.current) return;
+    if (beforeClose && !beforeClose()) { y.set(withTiming(0, { duration: enter, reduceMotion: ReduceMotion.System })); return; }
+    closing.current = true;
     y.set(withTiming(height, { duration: leave, easing: EASE_OUT, reduceMotion: ReduceMotion.System }, done => { if (done) scheduleOnRN(onClosed); }));
   };
   // The handle and the title follow the finger down, 1:1 (a fifth of the way up, as a rubber band). Let go past a quarter
