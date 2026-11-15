@@ -1,5 +1,6 @@
 // Rests-on: spec/product.md §7 Resources; spec/examples/README.md.
 import { manifest as uploads } from './uploads.ts';
+import { manifest as lens } from './lens.ts';
 import { manifest as connections } from './connections.ts';
 import type { Handler } from './http.ts';
 import { manifest as captures } from './captures.ts';
@@ -34,7 +35,7 @@ export const handlers: Record<string, Handler> = {
 };
 
 export const manifest = [
-  ...[uploads, connections, captures, market, sources, items, valuations, conversations, orders, records, rules, wants, buy, assist, search, genie, scores, accounts, insights, auth, me, jobs, decisions, events, today, lookups].flat(),
+  ...[uploads, lens, connections, captures, market, sources, items, valuations, conversations, orders, records, rules, wants, buy, assist, search, genie, scores, accounts, insights, auth, me, jobs, decisions, events, today, lookups].flat(),
   ...Object.keys(handlers).map(endpoint => ({ endpoint, auth: 'user' as const, source: 'engine' as const })),
 ].map(row => ({ ...row, method: row.endpoint.split(' ')[0], needs_session: row.auth === 'user' })).sort((a, b) => a.endpoint.localeCompare(b.endpoint));
 

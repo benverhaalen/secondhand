@@ -11,7 +11,7 @@ const config = JSON.parse(read('app/app.json')).expo;
 assert.equal(config.ios.icon, './assets/images/icon.png', 'iOS must not override the tags with Expo artwork');
 for (const p of [config.icon, config.ios.icon, config.android.adaptiveIcon.foregroundImage, config.web.favicon]) assert.ok(existsSync(resolve(root, 'app', p)));
 const chrome = read('app/src/ui/parts/chrome.tsx');
-assert.ok(chrome.indexOf('<BrandMark') < chrome.indexOf('<Txt role="title">secondhand'));
+assert.ok(chrome.indexOf('<BrandMark') < chrome.indexOf('<Txt role="wordmark">secondhand'));
 assert.ok(!chrome.includes("mark('hand'"));
 assert.ok(read('web/components/chrome.tsx').includes('BrandMark'));
 console.log('Paired tag asset and integration checks passed');

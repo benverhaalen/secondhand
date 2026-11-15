@@ -1,3 +1,4 @@
+import Head from 'expo-router/head';
 import { SessionProvider, useSession } from '@/account/session';
 import { AccountGate } from '@/account/gate';
 import { LiveDataProvider } from '@/data/live';
@@ -10,7 +11,7 @@ import { PhoneInsets } from '@/ui/insets';
 import { useColors, useScheme } from '@/ui/theme';
 
 export default function RootLayout() {
-  return <SessionProvider><RootNavigator /></SessionProvider>;
+  return <SessionProvider><Head><title>secondhand</title></Head><RootNavigator /></SessionProvider>;
 }
 
 function RootNavigator() {

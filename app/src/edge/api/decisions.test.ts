@@ -171,3 +171,19 @@ test('decision signing reads the environment lazily after import and signs the p
     else process.env.DECISION_SIGNING_KEY = previous;
   }
 });
+
+test('decisions: fresh real people have no contract decisions and cannot replay each other’s act', async () => {
+  const owner = 'usr_' + crypto.randomUUID(), other = 'usr_' + crypto.randomUUID();
+  deps.verify = async token => token === 'good' ? owner : token === 'other' ? other : null;
+  for (const token of ['good', 'other']) assert.deepEqual((await (await LIST(req('/v1/decisions', token))).json()).data, []);
+  const d = raise(owner, 'accept_offer');
+  const body = { option_id: 'opt_yes', signature: sign(d, 'opt_yes'), version: 1 }, key = crypto.randomUUID();
+  const first = await ACT(req(`/v1/decisions/${d.id}/act`, 'good', body, key)); assert.equal(first.status, 200);
+  const answer = await first.json();
+  const foreign = await ACT(req(`/v1/decisions/${d.id}/act`, 'other', body, key));
+  assert.equal(foreign.status, 404); assert.equal((await foreign.json()).code, 'not_found');
+  const again = await ACT(req(`/v1/decisions/${d.id}/act`, 'good', body, key)); assert.deepEqual(await again.json(), answer);
+  const changed = await ACT(req(`/v1/decisions/${d.id}/act`, 'good', { ...body, option_id: 'opt_no' }, key));
+  assert.equal(changed.status, 409); assert.equal((await changed.json()).code, 'idempotency_mismatch');
+  assert.deepEqual((await (await LIST(req('/v1/decisions', 'other'))).json()).data, []);
+});

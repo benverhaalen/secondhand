@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
 import Link from 'next/link';
+import { Icon } from '../../components/icon';
 import itemPhoto from './carhartt-jacket.jpg';
 import styles from './page.module.css';
 
@@ -34,7 +34,7 @@ const businessOptions = [
 ];
 
 function Arrow({ down = false }: { down?: boolean }) {
-  return <span aria-hidden="true">{down ? '↓' : '→'}</span>;
+  return <Icon name={down ? "arrow-down-01" : "arrow-right-01"} size={16} />;
 }
 
 export default function WhatsNextPage() {
@@ -43,16 +43,15 @@ export default function WhatsNextPage() {
       <div className={`${styles.wrap} ${styles.intro}`}>
         <div className={styles.introCopy}>
           <p className={styles.label}>What’s Next</p>
-          <h1>What else could a photo tell you?</h1>
+          <h1 className="marketing-page-title">What else could a photo tell you?</h1>
           <p className={styles.lead}>We want you to be able to photograph a garage-sale find and get a price estimate before you buy it.</p>
           <a className={`marketing-pill ${styles.heroAction}`} href="#next-steps">What we need to prove <Arrow down /></a>
         </div>
         <div className={styles.appraisalGroup}>
           <figure className={styles.appraisal}>
             <div className={styles.photoGround}>
-              <Image className={styles.itemPhoto} src={itemPhoto} alt="A sample brown Carhartt jacket laid flat." sizes="(max-width: 760px) calc(100vw - 48px), (max-width: 1100px) 50vw, 480px" preload />
+              <img className={styles.itemPhoto} src={itemPhoto.src} alt="Brown Carhartt jacket laid flat." width={itemPhoto.width} height={itemPhoto.height} fetchPriority="high" decoding="sync" />
             </div>
-            <figcaption>Sample Carhartt jacket.</figcaption>
           </figure>
           <div className={styles.photoQuestions}>
             <p>What would help price this?</p>
@@ -65,7 +64,7 @@ export default function WhatsNextPage() {
     <section id="next-steps" className={`${styles.wrap} ${styles.nextSteps}`} aria-labelledby="next-steps-title">
       <div className={styles.sectionIntro}>
         <p className={styles.label}>The next tests</p>
-        <h2 id="next-steps-title">More kinds of items. Evidence for each.</h2>
+        <h2 id="next-steps-title">More kinds of items. Evidence for each</h2>
         <p className={styles.body}>Appraise anything is the ambition. We need to show where estimates hold up, and when to ask for more information.</p>
       </div>
       <div className={styles.steps}>
@@ -79,7 +78,7 @@ export default function WhatsNextPage() {
     <section className={styles.business} aria-labelledby="business-title">
       <div className={styles.wrap}>
         <div className={styles.businessIntro}>
-          <div><p className={styles.label}>The business we’re exploring</p><h2 id="business-title">How the core product could stay free.</h2></div>
+          <div><p className={styles.label}>The business we’re exploring</p><h2 id="business-title">How the core product could stay free</h2></div>
           <p className={styles.body}>Someone clearing out a closet may only sell a few things. We want the core product to work for them without a monthly subscription.</p>
         </div>
         <div className={styles.options}>
@@ -98,7 +97,7 @@ export default function WhatsNextPage() {
     </section>
 
     <section className={`${styles.wrap} ${styles.deeper}`} aria-labelledby="deeper-title">
-      <h2 id="deeper-title">See what these plans build on.</h2>
+      <h2 id="deeper-title">See what these plans build on</h2>
       <div><Link className={styles.textLink} href="/features">Explore Features <Arrow /></Link><Link className={styles.textLink} href="/data-use">Read about Data Use <Arrow /></Link></div>
     </section>
   </main>;

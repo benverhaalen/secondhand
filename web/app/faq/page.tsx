@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Icon } from '../../components/icon';
 import styles from './faq.module.css';
 
 export const metadata: Metadata = {
@@ -57,18 +58,18 @@ export default function FAQ() {
     <header className={`${styles.hero} marketing-atmosphere`} data-tone="questions">
       <div className={styles.wrap}>
         <p className={styles.eyebrow}>FAQ</p>
-        <h1>Before you start.</h1>
+        <h1 className="marketing-page-title">Before you start</h1>
         <p className={styles.intro}>Answers about accounts, listings, payments and photos.</p>
         <nav className={styles.topIndex} aria-label="Question groups">
-          {groups.map(group => <a key={group.id} href={`#${group.id}`}>{group.label}<span aria-hidden="true"> ↓</span></a>)}
+          {groups.map(group => <a key={group.id} href={`#${group.id}`}>{group.label}<Icon name="arrow-down-01" size={16} /></a>)}
         </nav>
       </div>
     </header>
 
     <div className={`${styles.wrap} ${styles.readingWrap}`}>
-      <QuestionGroup group={groups[0]} title="Your decisions.">
+      <QuestionGroup group={groups[0]} title="Your decisions">
           <Answer id="who-can-post" question="Who can post from my account?">
-            <p>You review the photos, title and price for each marketplace before you approve a listing. Replies to buyers start as drafts, with the exact words waiting for you to send or edit.</p>
+            <p>You review the photos, title and price in secondhand and finish posting on the marketplace you choose. In the messaging design, replies start as drafts you can edit and send.</p>
             <p>The design keeps permission for a listing separate from permission to send a message.</p>
             <Source path="spec/features/list.md">See the listing design</Source>
             <Source path="product/decisions.md#2026-11-15-replies-to-buyers-start-as-drafts-the-person-approves">Why replies start as drafts</Source>
@@ -85,11 +86,11 @@ export default function FAQ() {
           </Answer>
       </QuestionGroup>
 
-      <QuestionGroup group={groups[1]} title="Prices and photos.">
+      <QuestionGroup group={groups[1]} title="Prices and photos">
           <Answer id="price-evidence" question="How do I know the price fits my item?">
             <p>A useful estimate needs comparable items, their condition and what buyers actually paid. An asking price only tells you what a seller wants.</p>
             <p>Our pricing design keeps the source sales behind an estimate so you can inspect the evidence.</p>
-            <Link className={styles.textLink} href="/data-use">Explore Data Use <span aria-hidden="true">→</span></Link>
+            <Link className={styles.textLink} href="/data-use">Explore Data Use <Icon name="arrow-right-01" size={16} /></Link>
           </Answer>
           <Answer id="sparse-evidence" question="What if there are too few comparable sales?">
             <p>An exact match is not always available. The pricing design can use related products or categories and widen the range as the evidence gets weaker. It records which level of comparison it used.</p>
@@ -103,7 +104,7 @@ export default function FAQ() {
           </Answer>
       </QuestionGroup>
 
-      <QuestionGroup group={groups[2]} title="Accounts and cost.">
+      <QuestionGroup group={groups[2]} title="Accounts and cost">
           <Answer id="marketplace-rules" question="Could a marketplace limit my account?">
             <p>Yes. Each marketplace sets its own rules for account access and automation. Your approval does not remove those rules, and support for an action does not mean the marketplace has approved our integration.</p>
             <p>Our connection design uses eBay’s official sign-in and signed-in sessions for sites where we do not have partner access. The site’s restrictions and the actions that have been verified need to be checked separately.</p>
@@ -113,21 +114,21 @@ export default function FAQ() {
             <p>The disconnection flow is designed to stop jobs for that account and revoke its connection. To take down a live listing, remove it separately.</p>
             <p>Account deletion and the data kept for a marketplace connection also need separate controls.</p>
             <Source path="spec/features/connect.md">Read the disconnection design</Source>
-            <Link className={styles.textLink} href="/data-use">See how data is used <span aria-hidden="true">→</span></Link>
+            <Link className={styles.textLink} href="/data-use">See how data is used <Icon name="arrow-right-01" size={16} /></Link>
           </Answer>
           <Answer id="cost" question="What does secondhand cost?">
             <p>Our goal is to keep the core buying and selling tools free. The proposed business model uses buying referrals, optional paid tools and a plan for higher-volume sellers. Customer pricing is still being worked out.</p>
             <p>Marketplace fees still apply. We are measuring the cost of preparing listings and monitoring them so the plan can be judged against real usage.</p>
-            <Link className={styles.textLink} href="/whats-next">See the business plan <span aria-hidden="true">→</span></Link>
+            <Link className={styles.textLink} href="/whats-next">See the business plan <Icon name="arrow-right-01" size={16} /></Link>
           </Answer>
       </QuestionGroup>
     </div>
 
     <section className={styles.next} aria-labelledby="next-title">
       <div className={styles.wrap}>
-        <h2 id="next-title">see what happens next.</h2>
+        <h2 id="next-title">see what happens next</h2>
         <p>From your first photo to the listing you approve.</p>
-        <Link className={`${styles.pill} marketing-pill`} href="/how-it-works">See how it works <span aria-hidden="true">→</span></Link>
+        <Link className={`${styles.pill} marketing-pill`} href="/how-it-works">See how it works <Icon name="arrow-right-01" size={16} /></Link>
       </div>
     </section>
   </main>;

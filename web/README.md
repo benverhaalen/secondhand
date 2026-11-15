@@ -2,7 +2,7 @@
 
 Check from the repository root: `node web/scripts/check.mjs`. This runs the production build, static output checks, each web test file in turn, and copy lint on the app and components.
 
-`/` opens the buying conversation in the hero. `/buy` is the full conversation. `/states` draws empty, typing, photo attached, running, answered, thin data, refused, rate limited, offline, failed, and a long answer with every widget. The header switches light and dark without changing layout.
+`/` opens the public homepage. `/buy` opens search and conversation. In development, `/states` draws empty, typing, photo attached, running, answered, thin data, refused, rate limited, offline, failed, and a long answer with every widget. The header switches light and dark without changing layout.
 
 Recordings work without an API:
 
@@ -78,4 +78,4 @@ For Google, set `NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID` in the web build and i
 
 ### Brand fonts
 
-Both licensed faces are optional local files. Set `SECONDHAND_FONTS` to their folder or put them in `fonts/` at the repository root before building. Browser clients load fonts from the website, including on Windows. When the licensed files are absent, the bundled Hanken Grotesk and Outfit supply the text and wordmark respectively.
+Both licensed faces are optional local files. Set `SECONDHAND_FONTS` to their folder or put them in `fonts/` at the repository root before building. For a build that has only the web directory, set the same folder variable or place the files in `web/public/fonts/` before packaging. Git excludes the licensed files. A deployment built without them serves the open fallbacks on every operating system. Windows browsers request the files from the website. When the licensed files are absent, the bundled Hanken Grotesk and Outfit supply the text and wordmark respectively.

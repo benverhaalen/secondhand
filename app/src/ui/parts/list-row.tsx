@@ -23,9 +23,11 @@ import { Image } from 'expo-image';
 // 56 = the notice height; 76 = 56 and one more caption line (18) plus the 2 between them, rounded to the 4 grid.
 const ONE = size.noticeH, TWO = size.noticeH + space.s5;
 
-export function ListRow({ id, label, detail, lead, site, photo, value, tabular = false, trail, onPress, tone = 'ink' }: {
+export function ListRow({ id, label, accessibilityLabel, detail, lead, site, photo, value, tabular = false, trail, onPress, wrap = false, tone = 'ink' }: {
   id: string;
   label: string;
+  wrap?: boolean;
+  accessibilityLabel?: string;
   detail?: string;
   lead?: IconName;
   site?: Site;
@@ -43,20 +45,21 @@ export function ListRow({ id, label, detail, lead, site, photo, value, tabular =
   const body = (pressed: boolean) => (
     <View
       {...mark(detail ? 'list-row-two' : 'list-row', photo === undefined ? {} : { item: '' })}
-      style={{ height: detail ? TWO : ONE, flexDirection: 'row', alignItems: 'center', gap: space.s3, backgroundColor: pressed ? c.gray : undefined, ...(onPress ? {} : FLAT) }}>
+      style={{ ...(wrap ? { minHeight: detail ? TWO : ONE, paddingVertical: space.s4 } : { height: detail ? TWO : ONE }), flexDirection: 'row', alignItems: 'center', gap: space.s3, backgroundColor: pressed ? c.gray : undefined, ...(onPress ? {} : FLAT) }}>
       {photo !== undefined ? <Photo src={photo} label={label} fit="row" /> : site ? <Logo site={site} /> : lead ? <Icon name={lead} tone={tone === 'brick' ? 'brick' : 'ink'} /> : null}
-      <View style={{ flex: 1 }}>
-        <Txt role="body" lines={1}>{label}</Txt>
-        {detail ? <Txt role="caption" lines={2}>{detail}</Txt> : null}
+      <View style={{ flex: 1, gap: wrap ? space.s1 : 0 }}>
+        <Txt role="body" lines={wrap ? undefined : 1}>{label}</Txt>
+        {detail ? <Txt role="caption" lines={wrap ? undefined : 2}>{detail}</Txt> : null}
+        {wrap && value ? <Txt role="body" tone="ink-2" tabular={tabular}>{value}</Txt> : null}
       </View>
-      {value ? <Txt role="body" tone="ink-2" tabular={tabular} lines={1}>{value}</Txt> : null}
+      {!wrap && value ? <Txt role="body" tone="ink-2" tabular={tabular} lines={1}>{value}</Txt> : null}
       {trail}
       {onPress ? <Icon name="arrow-right-01" size={20} tone="ink-2" /> : null}
     </View>
   );
   if (!onPress) return body(false);
   return (
-    <Press id={id} label={[label, value, detail].filter(Boolean).join(', ')} onPress={onPress} round={false}>
+    <Press id={id} label={accessibilityLabel ?? [label, value, detail].filter(Boolean).join(', ')} onPress={onPress} round={false}>
       {({ pressed }) => body(pressed)}
     </Press>
   );

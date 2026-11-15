@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { valuate, basisOf, saleCurve, type ValuateCtx, type ValuationItem, type ObservationPort } from './valuate.ts';
@@ -259,7 +260,7 @@ test('an empty basis with a promoted zero sample threshold still requests fresh 
 
 async function fitted(ctx: ValuateCtx, scopes: string[] = ['hackathon_demo']) {
   let pending: Promise<unknown> = Promise.resolve(); const notes: unknown[] = [];
-  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-latest.json', import.meta.url).pathname, scopes,
+  ctx.fitted = fittedReader({ path: fileURLToPath(new URL('../param/fixtures/export-latest.json', import.meta.url)), scopes,
     log: { ...ctx.log, timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; },
       note: (...args) => { notes.push(args); } } });
   ctx.fitted.loaded(); await pending; return notes;
@@ -380,7 +381,7 @@ test('a price-blind curve ignores price and returns exported t25, t50 and t75 be
 test('valuate preserves measured days past 90 and a not-reached share from a DB4 price-blind row', async () => {
   const { ctx, errors } = setup(sales(8));
   let pending: Promise<unknown> = Promise.resolve();
-  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-db4-shape.json', import.meta.url).pathname,
+  ctx.fitted = fittedReader({ path: fileURLToPath(new URL('../param/fixtures/export-db4-shape.json', import.meta.url)),
     scopes: ['hackathon_demo'], log: { ...ctx.log, note: () => {},
       timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; } } });
   ctx.fitted.loaded(); await pending;
@@ -475,7 +476,7 @@ test('our exact group takes over only at conformal_parent_min; parent and other 
 
 test('a refresh in flight does not delay valuate or discard the previous calibration', async t => {
   const { ctx } = setup(mercariSales()); let now = 0, pending: Promise<unknown> = Promise.resolve();
-  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-latest.json', import.meta.url).pathname,
+  ctx.fitted = fittedReader({ path: fileURLToPath(new URL('../param/fixtures/export-latest.json', import.meta.url)),
     scopes: ['hackathon_demo'], now: () => now, every_ms: 10,
     log: { ...ctx.log, note: () => {}, timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; } } });
   ctx.fitted.loaded(); await pending; const baseline = await valuate(sneakers, ctx);

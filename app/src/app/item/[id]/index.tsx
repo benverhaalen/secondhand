@@ -98,6 +98,10 @@ function LiveItemPage({ id }: { id: string }) {
         <Txt role="headline">{item.title}</Txt>
       </Stack>
     </Stack>
+    {!sold ? <Stack gap="cards">
+      <FootButton id="seller-edit" label={live ? 'Edit saved details' : 'Review item'} onPress={() => router.push(`/item/${id}/edit` as Href)} />
+      {!live ? <FootButton id="seller-plan" kind="second" label="Choose a price" onPress={() => router.push(`/item/${id}/plan` as Href)} /> : null}
+    </Stack> : <FootButton id="seller-manage-sale" label="Manage sale" onPress={() => router.push(`/item/${id}/ship` as Href)} />}
     {description ? <Section title="Description"><Txt role="body">{description}</Txt></Section> : null}
     {attributes.length || item.location.label ? <Section title="Details"><List>
       {attributes.map(attribute => <Row key={attribute.id}><Txt role="caption">{attribute.name}</Txt><Txt role="body">{String(attribute.value)}</Txt></Row>)}

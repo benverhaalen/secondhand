@@ -15,11 +15,11 @@
 .label { font-size: var(--t-15); line-height: 1.4; margin-bottom: var(--s-5); }
 .lead { margin-top: var(--s-6); font-size: var(--t-18); line-height: 1.55; max-width: 43ch; color: var(--ink-2); }
 .textLink { display: inline-flex; align-items: center; gap: var(--s-2); min-height: var(--control-min); font-size: var(--t-18); line-height: 1.4; text-decoration: underline; text-underline-offset: var(--s-1); }
-.textLink span { transition: transform var(--t-feedback) var(--ease-out); }
-@media (hover: hover) {
+.textLink svg { transition: transform var(--t-feedback) var(--ease-out); }
+@media (hover: hover) and (pointer: fine) {
   .textLink:hover { color: var(--ink-2); }
-  .textLink:hover span { transform: translateX(var(--s-1)); }
-  .introCopy > .textLink:hover span { transform: translateY(var(--s-1)); }
+  .textLink:hover svg { transform: translateX(var(--s-1)); }
+  .introCopy > .textLink:hover svg { transform: translateY(var(--s-1)); }
 }
 .textLink:active { opacity: .8; }
 .heroAction { margin-top: var(--s-8); }
@@ -31,7 +31,6 @@
 .photoQuestions li:last-child { border-bottom: 0; }
 .photoGround { overflow: hidden; border-radius: var(--r-photo); }
 .itemPhoto { display: block; width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; }
-.appraisal figcaption { color: var(--ink-2); font-size: var(--t-13); line-height: 1.5; margin-top: var(--s-4); }
 .nextSteps { padding-block: calc(var(--s-9) + var(--s-7)); scroll-margin-top: var(--s-8); }
 .sectionIntro { max-width: 1000px; margin-bottom: var(--s-9); }
 .sectionIntro h2 { max-width: 26ch; }
@@ -49,7 +48,7 @@
 .options article + article { border-left: 1px solid var(--rule); padding-left: var(--s-7); }
 .options .body { font-size: var(--t-18); margin-top: var(--s-4); }
 .cost { display: grid; grid-template-columns: .85fr 1.15fr; gap: var(--s-9); align-items: center; margin-top: calc(var(--s-9) + var(--s-7)); padding-bottom: var(--s-8); border-bottom: 1px solid var(--rule); }
-.amount { font-size: var(--t-hero); line-height: 1; letter-spacing: var(--tr-50); }
+.amount { font-size: var(--t-50); line-height: 1; letter-spacing: var(--tr-50); }
 .costAmount > p:last-child { font-size: var(--t-18); line-height: 1.5; margin-top: var(--s-4); }
 .costContext { padding-left: var(--s-7); border-left: 1px solid var(--rule); }
 .costContext > p { color: var(--ink-2); font-size: var(--t-18); line-height: 1.55; }
@@ -90,9 +89,9 @@
   .options article + article { padding-left: 0; padding-top: var(--s-7); border-left: 0; border-top: 1px solid var(--rule); }
   .cost { margin-top: var(--s-9); gap: var(--s-7); }
   .costContext { padding-left: 0; border-left: 0; }
-  .amount { font-size: var(--t-hero); }
+  .amount { font-size: var(--t-50); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .textLink span { transition: none; }
-  .textLink:hover span, .introCopy > .textLink:hover span { transform: none; }
+  .textLink svg { transition: none; }
+  .textLink:hover svg, .introCopy > .textLink:hover svg { transform: none; }
 }

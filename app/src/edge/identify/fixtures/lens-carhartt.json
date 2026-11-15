@@ -1,0 +1,8 @@
+{
+  "data": "example, not a recorded answer",
+  "organic": [
+    {"title": "Carhartt duck work jacket", "link": "https://market.example/carhartt-one", "source": "Example Seller Name", "imageUrl": "https://images.example/carhartt-one.jpg"},
+    {"title": "Carhartt brown canvas coat", "link": "https://market.example/carhartt-two", "source": "Example Seller Name", "imageUrl": "https://images.example/carhartt-two.jpg"},
+    {"title": "Brown workwear jacket", "link": "https://market.example/workwear", "source": "Example Seller Name", "imageUrl": "https://images.example/workwear.jpg"}
+  ]
+}

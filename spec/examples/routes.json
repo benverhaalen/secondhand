@@ -199,6 +199,13 @@
             "needs_session": false
           },
           {
+            "endpoint": "GET /v1/lens/:token",
+            "auth": "none",
+            "source": "engine",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
             "endpoint": "GET /v1/limits",
             "source": "engine",
             "auth": "user",
@@ -246,6 +253,13 @@
             "auth": "visitor",
             "method": "GET",
             "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/photos/:id",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
           },
           {
             "endpoint": "GET /v1/products/:id",

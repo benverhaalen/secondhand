@@ -42,6 +42,12 @@ const ended = (id: string) => bounded(new Promise<void>(resolve => {
   const check = () => { if (['done', 'failed'].includes(jobs.st.getJob(id)!.state)) { off(); resolve(); } };
   const off = jobs.listen(id, check); check();
 }));
+const lateArrival = (id: string, site: string) => bounded(new Promise<void>(resolve => {
+  const check = () => {
+    if (jobs.framesAfter(id, 0).some(f => f.event === 'answer.late' && f.data.site === site)) { off(); resolve(); }
+  };
+  const off = jobs.listen(id, check); check();
+}));
 let searchVisitor: string;
 const poll = (id: string, visitor = searchVisitor, events = false, after = 0) => route(
   events ? 'GET /v1/jobs/:id/events' : 'GET /v1/jobs/:id', events ? jobEvents() : getJob(), { auth: 'visitor' },
@@ -1008,13 +1014,18 @@ describe('SR2, SR3 and SR5 route proofs', () => {
     assert.equal(result.results.find(r => r.title === 'shown only')!.relation, 'unresolved');
   });
 
-  test('ten visitors share one eBay and Depop read; the eleventh uses the fresh cache', async () => {
+  test('ten visitors share one eBay and Depop read, including late eBay rows; the eleventh uses the fresh cache', async () => {
     ports.sources = sources('ebay', 'depop'); ports.routed = () => true;
     const calls = { ebay: 0, depop: 0 };
     ports.harness = createHarness({ adapters: (['ebay', 'depop'] as const).map(site => ({ ...fakeAdapter(site, 'search'), run: async () => {
       calls[site]++; await tick(); return { ok: true as const, data: [{ external_id: `${site}-row`, title: site, price_cents: 1500, currency: 'USD', url: `https://${site}.com/item` }] };
     } })) });
-    const answers = await Promise.all(Array.from({ length: 10 }, async () => finish(await start('one query'))));
+    const answers = await Promise.all(Array.from({ length: 10 }, async () => {
+      const job = await start('one query');
+      const answer = await finish(job);
+      if (answer.result.results.length < 2) await lateArrival(job.id, 'ebay');
+      return finish(job);
+    }));
     assert.deepEqual(calls, { ebay: 1, depop: 1 });
     assert.ok(answers.every(a => a.result.results.length === 2));
     const cached = await finish(await start('  ONE   query  '));
@@ -1269,6 +1280,144 @@ describe('eBay bounded late reads', () => {
   });
   afterEach(() => { searchParams.declare({ name: 'search_late_window_ms', family: 'scalar', prior: 30000, guard_lo: 0 }); });
 
+  test('queued eBay cannot hold settled after the last ordinary arrival with rows; its rows land late exactly once', async t => {
+    ports.deadline_ms = 10000;
+    ports.sources = ports.sources.map(s => ({ ...s, pace: { per_minute: 1e12, min_gap_ms: 8000 } }));
+    const starts: number[] = [];
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => {
+      starts.push(Date.now()); return { ok: true, data: [row] };
+    } }] });
+    const prior = await start({ text: 'prior eBay read' }); await flush(); await ended(prior.id);
+    ports.sources = [...ports.sources, ...SOURCES.filter(s => ['poshmark', 'dupe'].includes(s.id))];
+    ports.fetchPage = async () => { await new Promise(resolve => setTimeout(resolve, 300)); return page(fixture('poshmark')); };
+    ports.dupe = { search: async () => {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return { ok: true, data: { rows: [], dropped: 0, total: 0, keep_until: new Date().toISOString() } };
+    } };
+    const job = await start({ text: 'eBay queued eight seconds' }); await flush();
+    t.mock.timers.tick(200); await flush();
+    assert.ok(!jobs.framesAfter(job.id, 0).some(f => f.event === 'answer.settled'), 'settled before Poshmark landed');
+    t.mock.timers.tick(100); await flush();
+    const early = jobs.framesAfter(job.id, 0), earlyJob = structuredClone(saved(job.id));
+    t.mock.timers.tick(7700); await flush(); await ended(job.id);
+    const settled = early.find(f => f.event === 'answer.settled');
+    assert.ok(settled, 'queued eBay delayed answer.settled after the last ordinary arrival');
+    const ms = (settled.data.answer as { ms: { settled: number } }).ms.settled;
+    const arrival = early.findLast(f => f.event === 'answer.partial' && f.data.site === 'poshmark')!;
+    const stage = earlyJob.stages.find(s => s.name === 'site:poshmark')!;
+    const lastArrivalMs = Date.parse(stage.ended_at!) - Date.parse(stage.started_at);
+    assert.ok(ms >= lastArrivalMs && ms - lastArrivalMs <= 150, 'settled waited over 150 ms after the last ordinary arrival');
+    assert.ok(early.indexOf(settled) > early.indexOf(arrival));
+    assert.equal(earlyJob.state, 'done');
+    assert.equal(earlyJob.stages.find(s => s.name === 'site:ebay')!.state, 'late');
+    assert.equal(earlyJob.fill_until, new Date(14000).toISOString());
+    assert.deepEqual(starts, [1000, 9000], 'the eBay read did not wait in its own lane for eight seconds');
+    const frames = jobs.framesAfter(job.id, 0), late = frames.filter(f => f.event === 'answer.late');
+    assert.equal(late.length, 1);
+    assert.deepEqual((late[0].data.results as { external_id: string }[]).map(r => r.external_id), ['late-ebay']);
+    assert.equal((late[0].data.answer as { ms: { settled: number } }).ms.settled, ms);
+    assert.ok(frames.indexOf(late[0]) > frames.findIndex(f => f.event === 'job.state' && f.data.state === 'done'));
+    for (const frame of frames) {
+      const answer = frame.data.answer as { found: Found } | undefined;
+      if (answer) assert.deepEqual(checkSearchCounts(answer.found), [], frame.event);
+      if (frame.event === 'job.stage') assert.deepEqual(checkSearchCounts(frame.data.found as Found), [], 'job.stage');
+    }
+  });
+
+  test('only eBay selected must wait for its ordinary arrival before settling', async t => {
+    ports.deadline_ms = 5000;
+    ports.sources = SOURCES.filter(s => ['ebay', 'poshmark'].includes(s.id));
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => {
+      await new Promise(resolve => setTimeout(resolve, 2000)); return { ok: true, data: [row] };
+    } }] });
+    const job = await start({ text: 'only eBay', sources: ['ebay'] }); await flush();
+    t.mock.timers.tick(300); await flush();
+    assert.ok(!jobs.framesAfter(job.id, 0).some(f => f.event === 'answer.settled'));
+    t.mock.timers.tick(1700); await flush(); await ended(job.id);
+    const frames = jobs.framesAfter(job.id, 0);
+    assert.equal(frames.filter(f => f.event === 'answer.partial' && f.data.site === 'ebay').length, 1);
+    assert.equal(frames.filter(f => f.event === 'answer.late').length, 0);
+    assert.equal((frames.find(f => f.event === 'answer.settled')!.data.answer as { ms: { settled: number } }).ms.settled, 2000);
+    assert.equal(saved(job.id).fill_until, undefined);
+  });
+
+  for (const outcome of ['empty', 'failed', 'no_route', 'blocked', 'all rows dropped'] as const)
+    test(`no used ordinary rows (${outcome}) must keep eBay ordinary when it lands at two seconds`, async t => {
+      ports.deadline_ms = 5000;
+      ports.sources = SOURCES.filter(s => ['ebay', 'depop', 'dupe'].includes(s.id));
+      ports.routed = site => outcome !== 'no_route' || site === 'ebay';
+      ports.harness = createHarness({ adapters: [
+        { ...fakeAdapter('ebay', 'search'), run: async () => {
+          await new Promise(resolve => setTimeout(resolve, 2000)); return { ok: true, data: [row] };
+        } },
+        { ...fakeAdapter('depop', 'search'), run: async () => {
+          if (outcome === 'failed') throw new Error('ordinary source failed');
+          if (outcome === 'blocked') return fail('blocked', 'ordinary source blocked', { do: 'pause_session', site: 'depop' });
+          return { ok: true, data: outcome === 'all rows dropped' ? [{ ...row, state: 'sold' }] : [] };
+        } },
+      ] });
+      const job = await start({ text: `no ordinary rows ${outcome}` }); await flush();
+      t.mock.timers.tick(300); await flush();
+      const early = jobs.framesAfter(job.id, 0);
+      assert.ok(!early.some(f => f.event === 'answer.settled'), 'an empty ordinary answer stopped waiting for eBay');
+      assert.ok(early.filter(f => f.event === 'answer.partial').every(f => (f.data.answer as { found: Found }).found.results_used === 0));
+      t.mock.timers.tick(1700); await flush(); await ended(job.id);
+      const frames = jobs.framesAfter(job.id, 0);
+      assert.equal(frames.filter(f => f.event === 'answer.partial' && f.data.site === 'ebay').length, 1);
+      assert.equal(frames.filter(f => f.event === 'answer.late').length, 0);
+      const answer = frames.find(f => f.event === 'answer.settled')!.data.answer as { ms: { settled: number }; found: Found };
+      assert.equal(answer.ms.settled, 2000); assert.equal(answer.found.results_used, 1);
+      assert.equal(saved(job.id).fill_until, undefined);
+    });
+
+  test('no used ordinary rows must still settle at the deadline while eBay reads on', async t => {
+    ports.sources = SOURCES.filter(s => ['ebay', 'dupe'].includes(s.id));
+    const read = Promise.withResolvers<void>();
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => {
+      await read.promise; return { ok: true, data: [row] };
+    } }] });
+    const job = await start(); await flush(); t.mock.timers.tick(999); await flush();
+    assert.ok(!jobs.framesAfter(job.id, 0).some(f => f.event === 'answer.settled'));
+    t.mock.timers.tick(1); await flush(); await ended(job.id);
+    const answer = jobs.framesAfter(job.id, 0).find(f => f.event === 'answer.settled')!.data.answer as { ms: { settled: number }; found: Found };
+    assert.equal(answer.ms.settled, 1000); assert.equal(answer.found.results_used, 0);
+    read.resolve(); await flush();
+    assert.equal(jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.late').length, 1);
+  });
+
+  test('eBay arriving before ordinary sources must remain a partial and leave the settle at the last ordinary arrival', async t => {
+    ports.sources = SOURCES.filter(s => ['ebay', 'poshmark'].includes(s.id));
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => {
+      await new Promise(resolve => setTimeout(resolve, 100)); return { ok: true, data: [row] };
+    } }] });
+    ports.fetchPage = async () => { await new Promise(resolve => setTimeout(resolve, 300)); return page(fixture('poshmark')); };
+    const job = await start(); await flush(); t.mock.timers.tick(100); await flush();
+    assert.equal(jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial' && f.data.site === 'ebay').length, 1);
+    assert.ok(!jobs.framesAfter(job.id, 0).some(f => f.event === 'answer.settled'));
+    t.mock.timers.tick(200); await flush(); await ended(job.id);
+    const frames = jobs.framesAfter(job.id, 0);
+    assert.equal(frames.filter(f => f.event === 'answer.late').length, 0);
+    assert.equal((frames.find(f => f.event === 'answer.settled')!.data.answer as { ms: { settled: number } }).ms.settled, 300);
+  });
+
+  test('a hanging ordinary source must hold settled to the deadline even with usable rows and pending eBay', async t => {
+    ports.sources = SOURCES.filter(s => ['ebay', 'poshmark', 'depop'].includes(s.id));
+    const read = Promise.withResolvers<void>();
+    ports.fetchPage = async () => new Promise(() => {});
+    ports.harness = createHarness({ adapters: [
+      { ...fakeAdapter('ebay', 'search'), run: async () => { await read.promise; return { ok: true, data: [row] }; } },
+      { ...fakeAdapter('depop', 'search'), run: async () => ({ ok: true, data: [{ ...row, url: 'https://depop.com/products/ordinary' }] }) },
+    ] });
+    const job = await start(); await flush(); t.mock.timers.tick(999); await flush();
+    assert.ok(saved(job.id).result.found.results_used > 0);
+    assert.ok(!jobs.framesAfter(job.id, 0).some(f => f.event === 'answer.settled'));
+    t.mock.timers.tick(1); await flush(); await ended(job.id);
+    const frame = jobs.framesAfter(job.id, 0).find(f => f.event === 'answer.settled')!;
+    assert.equal((frame.data.answer as { ms: { settled: number } }).ms.settled, 1000);
+    assert.equal(saved(job.id).result.searched.find(s => s.site === 'poshmark')!.outcome, 'timeout');
+    read.resolve(); await flush();
+  });
+
   test('a slow eBay read two seconds after settle emits one late frame and persists its rows with balanced counts', async t => {
     ports.sources = SOURCES.filter(s => ['ebay', 'dupe'].includes(s.id));
     ports.dupe = { search: async () => ({ ok: true, data: { rows: [{ id: 'restricted', title: 'jeans', price_cents: 2000,
@@ -1452,7 +1601,7 @@ test('SR6 wholly unreadable pages still count the cards returned and balance the
   assert.deepEqual(result.found.dropped_by_reason, { unreadable_card: 12 });
 });
 
-test('SR11 Dupe copies give way to the direct listing with the read_directly reason', async () => {
+test('SR11 Dupe copies give way to the late direct eBay listing with the read_directly reason', async () => {
   ports.sources = SOURCES.filter(s => ['dupe', 'ebay'].includes(s.id));
   ports.dupe = { search: async () => ({ ok: true, data: { rows: [{ id: 'expensive-copy', title: 'jeans', price_cents: 9000, currency: 'USD', url: 'https://EBAY.COM/itm/same/?track=1',
     commercial_link: true, attribution: 'Dupe.com', source_site: 'eBay', secondhand: true, keep_until: '2040-01-01T00:00:00.000Z' }], dropped: 0, total: 1, keep_until: '2040-01-01T00:00:00.000Z' } }) };
@@ -1461,6 +1610,7 @@ test('SR11 Dupe copies give way to the direct listing with the read_directly rea
     return { ok: true, data: [{ external_id: 'cheaper-native', title: 'jeans', price_cents: 1000, currency: 'USD', url: 'https://ebay.com/itm/same' }] };
   } }] });
   const job = await start(); await ended(job.id);
+  await lateArrival(job.id, 'ebay');
   const result = jobs.st.getJob(job.id)!.result as { results: { external_id: string }[]; found: Found };
   assert.deepEqual(result.results.map(row => row.external_id), ['cheaper-native']);
   assert.deepEqual(result.found.dropped_by_reason, { read_directly: 1 });

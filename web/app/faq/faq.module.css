@@ -18,7 +18,7 @@
   margin-bottom: var(--s-5);
 }
 .page h1 {
-  font-size: var(--t-section);
+  font-size: var(--t-50);
   line-height: 1.12;
   letter-spacing: var(--tr-50);
 }
@@ -98,7 +98,7 @@
 .answer h3 {
   font-family: var(--font-text);
   font-weight: var(--w-text);
-  font-size: var(--t-feature);
+  font-size: var(--t-21);
   line-height: 1.25;
   letter-spacing: -.015em;
 }
@@ -123,7 +123,7 @@
   background: var(--surface);
   padding-block: calc(var(--s-9) + var(--s-7));
 }
-.next h2 { font-size: var(--t-section); line-height: 1.15; letter-spacing: var(--tr-50); }
+.next h2 { font-size: var(--t-36); line-height: 1.15; letter-spacing: var(--tr-50); }
 .next p { margin-top: var(--s-5); font-size: var(--t-18); color: var(--on-field-2); line-height: 1.5; }
 .pill { margin-top: var(--s-7); }
 @media (max-width: 1100px) {
@@ -134,10 +134,11 @@
 @media (max-width: 760px) {
   .wrap { width: calc(100% - var(--gutter) * 2); }
   .hero { padding-top: calc(var(--s-9) * 2 + var(--s-7)); padding-bottom: var(--s-8); }
+  .page h1 { font-size: var(--t-36); }
   .intro { max-width: 30ch; margin-inline: auto; }
   .topIndex { column-gap: var(--s-6); margin-top: var(--s-6); }
   .topIndex a { font-size: var(--t-13); }
-  .topIndex a span { display: none; }
+  .topIndex a svg { display: none; }
   .readingLayout { display: block; }
   .readingWrap { padding-top: var(--s-6); padding-bottom: var(--s-9); }
   .sidebar { display: none; }

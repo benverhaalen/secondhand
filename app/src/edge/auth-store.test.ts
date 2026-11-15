@@ -27,14 +27,14 @@ async function signIn(w: ReturnType<typeof service>, address = email) {
 const unauthenticated = (p: Promise<unknown>) => assert.rejects(p, e => e instanceof ApiError && e.status === 401);
 
 function file(t: { after(fn: () => void): void }) {
-  const dir = mkdtempSync(join(tmpdir(), 'secondhand-auth-'));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return join(dir, 'auth.db');
+  const dir = mkdtempSync(join(tmpdir(), 'secondhand-auth-')), path = join(dir, 'auth.db'), opened: DatabaseSync[] = [];
+  // Windows cannot remove a directory holding an open database, so every handle closes before the removal.
+  t.after(() => { for (const db of opened) if (db.isOpen) db.close(); rmSync(dir, { recursive: true, force: true }); });
+  return () => { const db = new DatabaseSync(path); opened.push(db); return db; };
 }
 
 test('separate SQLite route bundles share sessions, users, identities and pending codes', async t => {
-  const path = file(t), a = new DatabaseSync(path), b = new DatabaseSync(path);
-  t.after(() => { a.close(); b.close(); });
+  const open = file(t), a = open(), b = open();
   const storeA = authModule.sqliteAuthStore(a), storeB = authModule.sqliteAuthStore(b);
   const first = service(storeA), second = service(storeB);
   await first.auth.startEmail({ email });
@@ -49,12 +49,12 @@ test('separate SQLite route bundles share sessions, users, identities and pendin
 });
 
 test('SQLite reopen after restart preserves sign-in, pending codes and refresh rotation', async t => {
-  const path = file(t), a = new DatabaseSync(path);
+  const open = file(t), a = open();
   const first = service(authModule.sqliteAuthStore(a)), issued = await signIn(first);
   await first.auth.startEmail({ email: 'pending@example.com' });
   const pendingCode = first.code();
   a.close();
-  const b = new DatabaseSync(path); t.after(() => b.close());
+  const b = open();
   const second = service(authModule.sqliteAuthStore(b));
   assert.equal(await second.auth.verifyAccess(issued.access_token), issued.user_id);
   assert.equal((await second.auth.verifyEmail({ email: 'pending@example.com', code: pendingCode })).created, true);
@@ -120,8 +120,10 @@ for (const kind of ['memory', 'sqlite'] as const) {
     assert.equal(await store.putUser({ ...u, version: 2 }, 1), true);
     assert.equal(await store.putUser({ ...u, locale: 'de', version: 2 }, 1), false);
     const style = await store.getStyle(u.id);
+    assert.equal(style.facets.length, 0, 'a new person starts with no example taste facets');
+    style.facets.push({ name: 'brand', value: 'mutated', weight: 1, from: 'edited' as const, pinned: false, removed_at: null });
+    assert.deepEqual((await store.getStyle(u.id)).facets, [], 'a read is detached from the stored style');
     style.facets.length = 0;
-    assert.ok((await store.getStyle(u.id)).facets.length > 0);
     assert.equal(await store.putStyle(u.id, { ...style, version: 2 }, 1), true);
     assert.equal(await store.putStyle(u.id, { ...style, version: 3 }, 1), false);
     const identity = (await store.identitiesOf(u.id))[0];
@@ -137,8 +139,7 @@ for (const kind of ['memory', 'sqlite'] as const) {
 
 
 test('replay during rotation in another SQLite bundle cannot resurrect the revoked family', async t => {
-  const path = file(t), a = new DatabaseSync(path), b = new DatabaseSync(path);
-  t.after(() => { a.close(); b.close(); });
+  const open = file(t), a = open(), b = open();
   const first = service(authModule.sqliteAuthStore(a)), second = service(authModule.sqliteAuthStore(b));
   const issued = await signIn(first);
   const results = await Promise.allSettled([first.auth.refresh({ refresh_token: issued.refresh_token }), second.auth.refresh({ refresh_token: issued.refresh_token })]);

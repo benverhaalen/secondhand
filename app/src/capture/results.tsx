@@ -2,11 +2,11 @@ import { openMarketplace } from '@/navigation/open-marketplace';
 import { useEffect, useState } from 'react';
 import { api } from '@/api/client';
 import type { ApiJobRow } from '@/edge/api/jobs';
-import { FootButton, List, Photo, Section, Stack, Txt, log } from '@/ui';
+import { Line, List, Photo, Pill, Section, Stack, Txt, log } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
-import { captureMessage, readCapture, type Capture } from './client';
+import { captureMessage, type Capture } from './client';
 
-export type CaptureJob = Pick<ApiJobRow, 'id' | 'state'> & { kind: ApiJobRow['kind'] | 'studio' } & Partial<Pick<ApiJobRow, 'item_id' | 'result' | 'error' | 'stages'>>;
+export type CaptureJob = Pick<ApiJobRow, 'id'> & { state: ApiJobRow['state'] | 'cancelled'; kind: ApiJobRow['kind'] | 'studio' } & Partial<Pick<ApiJobRow, 'item_id' | 'result' | 'error' | 'stages'>>;
 const record = (value: unknown): Record<string, unknown> => value && typeof value === 'object' ? value as Record<string, unknown> : {};
 const dollars = (cents: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(cents / 100);
 const words = (value: string) => value.replaceAll('_', ' ');
@@ -17,11 +17,11 @@ function JobResult({ job }: { job: CaptureJob }) {
   const candidates = Array.isArray(result.candidates) ? result.candidates : Array.isArray(result.set) ? result.set : [];
   const [linkError, setLinkError] = useState<string | null>(null);
   const open = (url: string) => { setLinkError(null); openMarketplace(url).catch(error => { log.error('capture.open_match', error); setLinkError('The listing did not open. Try again.'); }); };
-  if (job.kind === 'valuate') return <Stack>
+  if (job.kind === 'valuate') return <Stack gap="tight">
     {typeof range.q10 === 'number' && typeof range.q90 === 'number' ? <Txt role="headline">{`${dollars(range.q10)} to ${dollars(range.q90)}`}</Txt> : <Txt role="body">There is not enough evidence to show an appraisal yet.</Txt>}
-    <Section title="Why"><Txt role="body">{typeof basis.count === 'number' && basis.count > 0
+    <Txt role="body" tone="ink-2">{typeof basis.count === 'number' && basis.count > 0
       ? `Based on ${basis.count} comparable sales${typeof result.condition === 'string' ? ` in ${words(result.condition)} condition` : ''}.`
-      : 'Comparable sales have not been returned.'}</Txt></Section>
+      : 'Comparable sales have not been returned.'}</Txt>
   </Stack>;
   if (job.kind === 'identify') return <Stack>
     <List>{candidates.map((value, index) => {
@@ -50,17 +50,29 @@ export function CaptureResults({ capture, initial, photo }: { capture: Capture; 
     const read = async (id: string) => {
       const job = await api.call<CaptureJob>(`GET /v1/jobs/${encodeURIComponent(id)}`, { signal: controller.signal });
       if (job.item_id && job.item_id !== capture.item_id) throw new Error('The service returned a result for a different item.');
-      update(job); return job;
+      update(job);
+      if (!controller.signal.aborted) setErrors(all => { const next = { ...all }; delete next[id]; return next; });
+      return job;
+    };
+    const failed = (id: string, error: unknown) => {
+      if (!controller.signal.aborted) { log.error('capture.result', error, { job: id }); setErrors(all => ({ ...all, [id]: captureMessage(error) })); }
     };
     initial.forEach(async initialJob => {
       try {
         const current = await read(initialJob.id);
-        if (current.state !== 'done' && current.state !== 'failed') await api.jobFrames(current.id, { signal: controller.signal, onFrame: frame => {
-          if (frame.event === 'job.state' && typeof frame.data.state === 'string') update({ ...current, state: frame.data.state as CaptureJob['state'] });
+        if (current.state === 'done' || current.state === 'failed' || current.state === 'cancelled') return;
+        let completion: Promise<CaptureJob> | undefined;
+        await api.jobFrames(current.id, { signal: controller.signal, onFrame: frame => {
+          if (frame.event !== 'job.state') return;
+          if (frame.data.state === 'done' || frame.data.state === 'failed' || frame.data.state === 'cancelled') {
+            completion ??= read(current.id);
+            void completion.catch(error => failed(current.id, error));
+          }
+          else if (frame.data.state === 'queued' || frame.data.state === 'running') update({ ...current, state: frame.data.state });
         } });
-        if (!controller.signal.aborted) { await read(initialJob.id); await readCapture(capture.id); }
+        if (!controller.signal.aborted) await (completion ?? read(initialJob.id));
       } catch (error) {
-        if (!controller.signal.aborted) { log.error('capture.result', error, { job: initialJob.id }); setErrors(all => ({ ...all, [initialJob.id]: captureMessage(error) })); }
+        failed(initialJob.id, error);
       }
     });
     return () => controller.abort();
@@ -69,8 +81,8 @@ export function CaptureResults({ capture, initial, photo }: { capture: Capture; 
     {photo ? <Photo src={photo} label="Your captured item" /> : null}
     {!jobs.length ? <Txt role="body">Your item was saved, but the service has not started processing it yet.</Txt> : null}
     {jobs.map(job => <Section key={job.id} title={job.kind === 'identify' ? 'Matches' : job.kind === 'valuate' ? 'Appraisal' : job.kind === 'studio' ? 'Photos' : words(job.kind)}>
-      {errors[job.id] ? <Txt role="body">{errors[job.id]}</Txt> : job.state === 'failed' ? <Txt role="body">{job.error?.message ?? 'This step failed.'}</Txt> : job.state !== 'done' ? <Txt role="body">{job.state === 'queued' ? 'Waiting to start' : 'Working'}</Txt> : <JobResult job={job} />}
+      {errors[job.id] ? <Txt role="body">{errors[job.id]}</Txt> : job.state === 'cancelled' ? <Txt role="body">Cancelled</Txt> : job.state === 'failed' ? <Txt role="body">{job.error?.message ?? 'This step failed.'}</Txt> : job.state !== 'done' ? <Txt role="body">{job.state === 'queued' ? 'Waiting to start' : 'Working'}</Txt> : <JobResult job={job} />}
     </Section>)}
-    <FootButton id="capture-results-refresh" kind="second" label="Refresh results" onPress={() => { setErrors({}); setAttempt(value => value + 1); }} />
+    <Line><Pill id="capture-results-refresh" kind="second" label="Refresh results" onPress={() => { setErrors({}); setAttempt(value => value + 1); }} /></Line>
   </Stack>;
 }

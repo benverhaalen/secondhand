@@ -1,3 +1,4 @@
+import { SellerPublish } from '@/selling/publish';
 // The Post preview sheet (spec/pages.md §6.8): the listing as each site will show it, a blank where a site still needs a
 // field, and one Approve that says exactly what it will post ("Post at $235 on 2 sites"). Posting is the first public
 // act in the person's name, so it waits for that tap (the hand-off rule); once posted, Undo takes the listings down.
@@ -39,7 +40,8 @@ const skip = (drawn: string) => [
 export default function ItemPost() {
   // ?fail=ebay makes that site fail when it posts; ?case=recall draws an item whose recall check failed.
   const { id, world, price, flip, fail, case: kase } = useLocalSearchParams<{ id: string; world?: string; price?: string; flip?: string; fail?: string; case?: string }>();
-  const { state } = useScreen();
+  const { state, demo } = useScreen();
+  if (!demo) return <SellerPublish id={String(id)} />;
   const found = state === 'failed' ? null : M.find(String(id), world);
   if (state === 'loading') {
     return (

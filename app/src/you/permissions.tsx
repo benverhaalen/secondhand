@@ -53,14 +53,14 @@ export function Permissions() {
       <PageStatus asked={asked} what="what the agent may do">
         <Section>
           <List>
-            {KINDS.map(k => <ListRow key={k.kind} id={`perm-${k.kind}`} label={k.label} value={WORD[mode[k.kind]]} onPress={() => setOpen(k)} />)}
-            {FIXED.map(k => <ListRow key={k.kind} id={`perm-${k.kind}`} label={k.label} detail={k.why} value={k.value} />)}
+            {KINDS.map(k => <ListRow wrap key={k.kind} id={`perm-${k.kind}`} label={k.label} value={WORD[mode[k.kind]]} onPress={() => setOpen(k)} />)}
+            {FIXED.map(k => <ListRow wrap key={k.kind} id={`perm-${k.kind}`} label={k.label} detail={k.why} value={k.value} />)}
           </List>
           <Txt role="caption">Shown in Activity, with Undo where the site allows.</Txt>
         </Section>
 
         <Section title="Always asks you">
-          <List>{LOCKED.map(k => <ListRow key={k.kind} id={`perm-${k.kind}`} label={k.label} />)}</List>
+          <List>{LOCKED.map(k => <ListRow wrap key={k.kind} id={`perm-${k.kind}`} label={k.label} />)}</List>
         </Section>
 
         <Section title="Never">

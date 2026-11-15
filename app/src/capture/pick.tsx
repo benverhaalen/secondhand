@@ -5,29 +5,12 @@
 // left-set heading are onboarding's, so the two read as one kind of page.
 import { View } from 'react-native';
 import Animated, { ReduceMotion, ZoomIn } from 'react-native-reanimated';
-import { Icon, type IconName } from '@/ui/icon';
+import { Icon } from '@/ui/icon';
 import { Nav, Screen, Stack, Txt } from '@/ui';
 import { Press } from '@/ui/press';
 import { useColors } from '@/ui/theme';
 import { motion, radius, space } from '@/ui/tokens.generated';
-
-export const TYPES: readonly { type: string; label: string; icon: IconName }[] = [
-  { type: 'apparel', label: 'Clothing', icon: 't-shirt' },
-  { type: 'shoes', label: 'Shoes', icon: 'running-shoes' },
-  { type: 'bags', label: 'Bags', icon: 'handbag' },
-  { type: 'jewellery_watches', label: 'Jewelry and watches', icon: 'watch-01' },
-  { type: 'electronics', label: 'Electronics', icon: 'laptop' },
-  { type: 'furniture', label: 'Furniture', icon: 'sofa-01' },
-  { type: 'lighting_home', label: 'Lamps and home', icon: 'lamp' },
-  { type: 'appliances_tools', label: 'Appliances and tools', icon: 'wrench-01' },
-  { type: 'media', label: 'Books, music, film', icon: 'book-02' },
-  { type: 'cards_collectibles', label: 'Cards and collectibles', icon: 'cards-01' },
-  { type: 'toys_lego', label: 'Toys and LEGO', icon: 'toy-brick' },
-  { type: 'bikes_sports', label: 'Bikes and sports', icon: 'bicycle-01' },
-  { type: 'baby_gear', label: 'Baby gear', icon: 'baby-bottle' },
-  { type: 'other', label: 'Something else', icon: 'help-circle' },
-];
-
+import { TYPES } from './shots';
 const HEADING: Record<string, string> = { worth: 'What are you appraising?', sell: 'What are you selling?', track: 'What are you watching for?', find: 'What are you looking for?' };
 
 export function PickType({ mode, busy, error, onPick, onClose }: { mode: string; busy: boolean; error: string | null; onPick: (type: string) => void; onClose: () => void }) {
