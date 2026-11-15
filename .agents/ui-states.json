@@ -108,7 +108,15 @@
         "check",
         "unsure",
         "kept",
-        "unknown"
+        "unknown",
+        "found",
+        "same",
+        "done",
+        "denied",
+        "link",
+        "describe",
+        "ask",
+        "valuable"
       ]
     },
     "job": {
@@ -135,6 +143,30 @@
     }
   },
   "seen": {
+    "screen found": [
+      "camera: what a still was read as, the pop-up on the feed (camera?state=found)"
+    ],
+    "screen same": [
+      "camera: a still matches a thing already held and asks Same thing? (camera?state=same)"
+    ],
+    "screen done": [
+      "camera: every stage settled, the real comparison and the one act (camera?state=done)"
+    ],
+    "screen denied": [
+      "camera: camera access refused, Settings and the library offered (camera?state=denied)"
+    ],
+    "screen link": [
+      "new: the Paste a link sheet (new?sheet=link)"
+    ],
+    "screen describe": [
+      "new: the Describe it sheet (new?sheet=describe)"
+    ],
+    "screen ask": [
+      "app/behavior/new.json: a typed price far outside the sold range asks once (edge-cases §3)"
+    ],
+    "screen valuable": [
+      "app/behavior/camera.json: a maker's mark stops the quick path (edge-cases §4)"
+    ],
     "screen filtered": [
       "Sell, one shelf or one site (app/behavior/(tabs)/sell.json)"
     ],
@@ -148,7 +180,8 @@
       "What's it worth, the settled answer"
     ],
     "screen unsure": [
-      "What's it worth, the photo was not enough to name it"
+      "What's it worth, the photo was not enough to name it",
+      "app/behavior/camera.json: two things look alike; I don't know is an answer (edge-cases §4)"
     ],
     "screen kept": [
       "What's it worth, kept and valued"
