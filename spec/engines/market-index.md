@@ -100,6 +100,24 @@ What a judge can watch, from one wide read of the [benchmark's](../benchmark.md)
 
 Labelled a development reading: one day, asking prices. Dupe's rows are read and shown live but not kept, so they are not in it. Apify's rows (Facebook Marketplace matters most for furniture, where Poshmark returned 4 to 5 rows per query this morning) are shown beside the slice with `may_model: false` and are not counted in A11; whether Nate's "we read everything" also lifts that flag is a question sent to the orchestrator.
 
+### The reading, 2026-11-15 (development reading)
+
+Asking prices on public search rows read once on 2026-11-15, nobody signed in; one day; not sales. Produced by `python -m measures.index_slice` (`jobs/measures/`, merged 3139e86e; tests `jobs/measures/test_attributes.py`, `test_brand_premium.py`, `test_index_slice.py`); every figure, count and interval is in [index-slice-2026-11-15.md](../../scripts/bench/out/index-slice-2026-11-15.md) and its JSON.
+
+- **Rows:** 7,623 kept: eBay page 6,327, Poshmark 700, Depop 470, Apify (eBay and Facebook, shown only) 126. Dupe's 586 rows were read live and not kept. 213 parts and accessories excluded; rows without a condition grade sit in each site's `unknown` cell and are never measured.
+- **Code decides, no model in the path.** Code coverage of the required attributes: shoes 41%, clothes 43%, furniture 36%, small goods 60% (electronics 100% only because a headphone needs no material). Depop search gives a slug for a title, so Depop coverage is 0 to 14%: the parser, not a model, is the fix. Parsing takes 0.014 to 0.036 ms a row at the median, under 0.05 ms at p95. A warm in-memory lookup of an item's three groups takes 0.08 µs at the median (a microbenchmark: no disk, no live read, not a product latency). Code-model agreement is not measured yet: the model fallback is not built.
+- **A11, the model against its attribute set, by kind** (precision-weighted over item-cells; `τ` is the spread between items in log ask):
+
+| Kind | Asks, named brand against the same attributes from other brands | Item-cells | `τ` | What it says |
+|---|---|---:|---:|---|
+| shoes | 1.24× [1.09, 1.40] | 5 | 0.26 | the brand moves the ask least here: Nike Air Force 1 sits at 0.86 to 1.25×, every interval crossing 1 |
+| clothes | 2.39× [2.15, 2.67] | 2 | 0.73 | not one fact: Levi's 501 used on eBay 1.07× [0.90, 1.25] against Carhartt Detroit J97 used 4.62× [4.00, 5.36] |
+| electronics (headphones only) | 2.47× [2.12, 2.86] | 3 | 0.24 | Sony WH-1000XM4 used: 2.27× on eBay and 2.81× on Poshmark, two sites agreeing |
+| furniture | 2.67× [1.85, 3.85] | 2 | 0.64 | Steelcase Leap new 4.68×; the Aeron new cell (1.29×) is suspect, see below |
+| small goods | 4.21× [3.79, 4.67] | 3 | 0.21 | Le Creuset new 4.53×, Dyson V8 new 4.36× and used 2.24× |
+
+The kind interval comes from the item-cells' own precision and does not include `τ`, so where `τ` is large (clothes, furniture) the kind figure is not a single fact and the item rows are the answer. Faults known in this reading: the furniture accessory list lacks arm pads, casters and cylinders, so the Aeron cell likely holds parts; a headphone "new" cell reads 7× with an interval of 3.1 to 12.5; one query (Birkenstock Boston, eBay, branded side) timed out. Brand-locked, as designed: iPhone 13, Switch OLED, Kindle Paperwhite; the LEGO set is excluded.
+
 ## 7. Named fixes
 
 | Fix | Owner | Change | Test |

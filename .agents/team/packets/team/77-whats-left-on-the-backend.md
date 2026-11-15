@@ -4,6 +4,10 @@ Updated: November 15, 2026, about 05:15 Central. Owner: Nate. From: Ben's thread
 
 Ben asked for every planned feature to be marked done, partial or not done, with what's left. The merged list is [spec/plans/whats-left.md](../../../../spec/plans/whats-left.md), and the rows with file and line evidence are in [spec/plans/scope/](../../../../spec/plans/scope/). Checked against main at `22ef056`. The Python tests in `jobs/` and `databricks/` did not run (no `.venv` on Ben's Mac), so those marks rest on reading the code. Rerun them on your side before trusting a mark there.
 
+## Build priority
+
+Pick work from the [ranked plan](../../../../spec/plans/whats-left.md#build-priority). Start the signed-in marketplace proof and the durable records it needs alongside phone capture, the saved-want alert, and the Databricks connection. Join each through the app as its inputs become available. The rows below retain the audit snapshot and its scope.
+
 ## Why most rows are "partial"
 
 A row was done only with code, a test or phone capture, and live inputs behind it. Four of the five gaps that keep rows partial are on your side:

@@ -4,6 +4,36 @@ Updated: November 15, 2026, about 10:15 UTC. Owner: Nate. Agent: Claude Code, th
 
 The orchestrator holds the whole backend for Nate: it starts and briefs the team leads, takes the problems that change what was imagined, owns the site harnesses and the cloud browser (`app/src/edge/harness/`, `app/src/edge/browser/`), and records what Nate says in [words](../../../../product/words.md). Read first: [packet 55](55-team-leads-and-mac-workers.md), [completion](../../../../spec/plans/completion.md), [where the backend is not optimized](../../../../spec/plans/optimization-gaps.md), then the lead handoffs below.
 
+## 0. Read this first: the wrap-up of 2026-11-15, about 11:45 Central
+
+**What happens next, in Nate's order** ([words](../../../../product/words.md), the entries from 10:00 on): the lead sessions are wrapped up and archived; then "first fully audit and review through the codebase", forming our own opinion of the code as it stands; only after that, read Ben's session's new plan called "whats left" and compare; then write `spec/plans/finalization.md` (what works, what does not, what is left, and the decisions), and start new leads to see it through. The website is ours to build once the system and every feature work. Judging is science-fair style.
+
+**Ben's plan, not to be opened before our own audit is written** (Nate: "But only after we get our own opinion of the fresh codebase"): [77-whats-left-on-the-backend](77-whats-left-on-the-backend.md) and [79-redesign-left-to-wire](79-redesign-left-to-wire.md). Found by file name only; unread at this writing. The audit is its own page first (`spec/plans/audit-2026-11-15.md`: per area, what the code does, proved by rerunning it, with no reference to either plan), then the comparison.
+
+**Where each area's three lists are** (works, does not, left): integration [69](69-integration-handoff.md), engines [70](70-engines-handoff.md), Databricks [71](71-databricks-handoff.md), capture [72](72-capture-handoff.md), adaptation and the product index [74](74-adaptation-handoff.md), the buying conversation 78. A packet is its lead's report, not proof: the audit reruns what it quotes.
+
+**Decided by Nate today, each in his words in `product/words.md`:**
+- The system does not post listings for a person. It monitors: messages, offers, alerts, how many people are interested, sales. Posting is a guided handoff.
+- Sources: our own reads stay primary where they work (Dupe, Poshmark, eBay pages, Depop). Apify fills Facebook Marketplace and stands behind eBay; it is never in the path an answer waits on, and its rows are stored as shown-only. Mercari is read on a person's own ask. Sold prices need a person's own sign-in.
+- Depop's own web data endpoint called from its page is acceptable while it works; every read is classified and counted so we know how often and why it fails. A refusal or bot check makes the site back off; nothing is built to get around one.
+- Hosting: one always-on machine on Fly.io (his Hetzner box is the alternative); device tests run against the dev server meanwhile. No Vercel functions until the store moves to a hosted database.
+- No paid Vector Search. The guard alert stays hourly until after judging, then daily. The Mercari dataset stays and feeds word lists and structure, not current-price claims.
+- The buying side is a conversation (Sonnet 5.5 at low or medium effort) over tools; Genie is a tool behind it, not the front; a Databricks supervisor agent is a trial to measure, not the default.
+- Parsing and deciding are done by code wherever code can; a model only where code abstains.
+- A shared public store for listings read from public pages (the orchestrator's decision, his to reverse): nothing from a signed-in session, never who asked.
+- Technology is valued by its parts too; the LiDAR module comes before a TestFlight build.
+
+**Still open with Nate:** whether Apify rows may be counted in measures (today: shown only); the cover photo pick, ranks or raw values; which rivals the benchmark names; the sender for sign-in emails; whether the posture line's counter-before-accept stays; linking his eBay and other accounts through the live view; real items photographed and measured; roles for the site and for device testing.
+
+**Databricks at the close (the third lead's stop, 27c3a65c and 771c19b9):** Genie and the dashboard name the 98.5% as the nightly market model the app does not serve, and show the served engine (96.0% within 20% against last sale at 97.4%) from `measures.engine_ablation`; the recorded Genie answers are in `databricks/genie-answers.md`; deployed without `--force`, warehouse stopped. That lead stopped before reading Nate's two spend answers, so packet 71 may still list them as open. They are answered: no Vector Search endpoint; the guard alert stays hourly until after judging and **must be moved to daily at 4 AM after 1 PM Central on 2026-11-15** (about $0.60 to $1.54 a run, up to $37 a day hourly). Nobody has made that change yet. Still not arrived there: a benchmark run in the landing volume, and the buying conversation's named fix DBX-A1 (packet 78).
+
+**The orchestrator's own open items:**
+- The in-page listing parser is on main (64121ba4) and cuts bytes out of the page to about a thirty-fifth, but eBay reads still take 4.7 to 5.4 s: `public-client.ts` waits for DOM ready and then 0.9 to 1.5 s for a card that is already present. Fix: end navigation at the first byte, find why the card wait is slow, target a 3 s median over 32 reads. One 32-read run measured a 10.35 s median with no log kept: rerun with the log before quoting anything ([the run](../../../../research/cross-cutting/nate/runs/public-client-live.md)).
+- `publicClients` is not composed in `runtime.ts`, so a signed-out search still draws on two sources; the Facebook row shows a failed stage on every search until its fill exists (packet 69).
+- `.agents/check.mjs` flags swallowed errors in harness and browser files: fix at the cause.
+- `memoryAccounts.byId(id)` without a person still finds anyone's account in `protocol.ts:125` and `storefront.ts:45`; the fix is parked on `w/int-byid-2`.
+- A research sweep of open-source storefront aggregators and market-research tools was running; its output is in the session scratchpad as `oss-aggregators.md` and belongs in `research/` as a note once read.
+
 ## 1. The leads
 
 | Lead | Handoff | State at this writing |

@@ -2,9 +2,45 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { plan } from './plan.ts';
 import type { State } from './select.ts';
+import { SITES } from '../../../../spec/sites.mjs';
+const allSites = [...SITES] as State['sites'];
 const state = (patch: Partial<State> = {}): State => ({capture_id:'c',item_id:'i',purpose:'sell',confirm_mode:'tap',has_lidar:true,sites:['ebay'],type:null,kept:[],retakes:{},facts:{},lookups:'none',refused:[],...patch});
 import { memoryStore } from '../param/param.ts';
 const run=(patch: Parameters<typeof state>[0])=>plan(state(patch),memoryStore());
+test('F18: a required field waiting on lookups keeps asking with zero questions', () => {
+ const p=run({type:'furniture',kept:['scan'],lookups:'running',profile:{handover:'pickup'},refused:['colour','material'],facts:{condition:{value:'good',source:'you_said',confidence:1}}});
+ assert.deepEqual(p.questions,[]);
+ assert.equal(p.fields.find(field=>field.field==='dimensions')!.state,'waiting');
+ assert.equal(p.status,'asking','waiting required dimensions must prevent done');
+});
+test('F18: only required waiting fields hold status and shooting still takes priority', () => {
+ const s={type:'bags' as const,kept:['scan','inside_tab'],lookups:'running' as const,refused:['accessories'],facts:{condition:{value:'good',source:'you_said' as const,confidence:1}}};
+ const p=run(s);
+ assert.deepEqual(p.questions,[]);
+ assert.ok(p.fields.some(field=>field.state==='waiting'));
+ assert.equal(p.status,'done','optional lookup fields must not hold done');
+ assert.equal(run({...s,kept:[]}).status,'shooting');
+});
+test('F19: no linked sites asks type first and uses all sites consistently after the pick under the cap', () => {
+ for(const purpose of ['sell','appraise','find'] as const) {
+  const s=state({purpose,sites:[]});
+  const before=structuredClone(s);
+  const p=plan(s,memoryStore());
+  assert.equal(p.questions[0]?.field,'type','no-site capture must still ask type first');
+  assert.deepEqual(p,plan({...s,sites:allSites},memoryStore()));
+  assert.deepEqual(s,before,'fallback sites must not mutate the capture');
+  const picked={...s,type:'furniture' as const,kept:['scan'],lookups:'done' as const};
+  const after=plan(picked,memoryStore());
+  assert.deepEqual(after,plan({...picked,sites:allSites},memoryStore()));
+  assert.deepEqual(Object.keys(after.complete),SITES);
+  for(const field of ['brand','dimensions']) assert.ok(after.questions.some(q=>q.field===field && q.required_by.length>0),`${field} required by a site must be asked`);
+  assert.ok(after.questions.filter(q=>q.unlocks.required===0).length<=3);
+  const params=memoryStore();
+  const zero={...params,read:(name:string,scope:Parameters<typeof params.read>[1])=>({...params.read(name,scope),...(name==='capture_question_cap'?{value:0}:{})})};
+  const capped=plan(picked,zero);
+  assert.deepEqual(capped.questions,after.questions.filter(q=>q.unlocks.required>0),'zero optional cap must preserve every required question');
+ }
+});
 test('type first and suggestion proposal requires margin',()=>{const p=run({suggestion:{family:'apparel',p:.86,second_p:.05},lookups:'running',kept:['front']});assert.equal(p.questions[0].field,'type');assert.deepEqual(p.questions[0].options[0],{value:'apparel',proposed:true});assert.ok(!run({suggestion:{family:'apparel',p:.45,second_p:.4}}).questions[0].options.some(o=>o.proposed));});
 test('function from asked only never has a proposal',()=>{const q=run({type:'electronics',kept:['scan','model_plate']}).questions.find(q=>q.field==='function')!;assert.ok(q);assert.ok(q.options.every(o=>!o.proposed));});
 test('find skips condition and refused fields never reappear',()=>assert.ok(run({type:'shoes',purpose:'find',kept:['scan','size_label','soles'],refused:['size']}).questions.every(q=>!['condition','size'].includes(q.field))));
@@ -245,4 +281,10 @@ test('zone-less graphic and flaw asks each collapse into one shot by type', () =
   assert.equal(settled.complete.studio!.ready,true);
   assert.ok(!settled.questions.some(q=>q.kind==='shot'));
  }
+});
+
+// Recorded from e2eaf9b before the F18/F19 implementation.
+test('F19: a linked ebay plan stays deep-equal to the recorded old plan', () => {
+  const before = {"family":"other","kind":null,"dimension_class":"soft_goods","inner_class":null,"fallback":null,"process":[{"step":"front","kind":"instant","role":"front","needs_lidar":false,"seconds":5,"key":"front","state":"kept"},{"step":"back","kind":"series","role":"back","needs_lidar":false,"seconds":5,"key":"back","state":"kept"}],"checks":["stains","holes","fading"],"fields":[{"field":"brand","state":"missing","value":null,"source":null,"required_by":[],"recommended_by":["ebay"]},{"field":"colour","state":"missing","value":null,"source":null,"required_by":[],"recommended_by":["ebay"]},{"field":"condition","state":"known","value":"good","source":"you_said","required_by":["ebay"],"recommended_by":[]},{"field":"dimensions","state":"missing","value":null,"source":null,"required_by":[],"recommended_by":["ebay"]},{"field":"type","state":"known","value":"other","source":"you_said","required_by":["ebay"],"recommended_by":[]}],"questions":[{"id":"q_c_colour","field":"colour","kind":"pick_many","options":[{"value":"black","proposed":false},{"value":"white","proposed":false},{"value":"grey","proposed":false},{"value":"blue","proposed":false},{"value":"red","proposed":false},{"value":"green","proposed":false},{"value":"yellow","proposed":false},{"value":"orange","proposed":false},{"value":"pink","proposed":false},{"value":"purple","proposed":false},{"value":"brown","proposed":false},{"value":"beige","proposed":false},{"value":"multi","proposed":false},{"value":"silver","proposed":false},{"value":"gold","proposed":false}],"other":false,"why":"value","required_by":[],"unlocks":{"required":0,"ready_after":[]},"words":"Colour?","answer":{"method":"PATCH","path":"/v1/captures/c"}},{"id":"q_c_brand","field":"brand","kind":"text","options":[],"other":true,"why":"value","required_by":[],"unlocks":{"required":0,"ready_after":[]},"words":"Brand?","answer":{"method":"PATCH","path":"/v1/captures/c"}},{"id":"q_c_dimensions","field":"dimensions","kind":"number_with_unit","options":[],"other":false,"unit":"cm","units":["cm","in"],"parts":["width","height"],"why":"only_you_know","required_by":[],"unlocks":{"required":0,"ready_after":[]},"words":"Dimensions?","answer":{"method":"PATCH","path":"/v1/captures/c"}}],"complete":{"ebay":{"ready":true,"missing":[]}},"status":"asking"};
+  assert.deepEqual(run({type:'other',kept:['front','back'],lookups:'done',facts:{condition:{value:'good',source:'you_said',confidence:1}}}),before);
 });
