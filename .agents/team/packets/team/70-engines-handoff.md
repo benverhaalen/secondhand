@@ -65,6 +65,7 @@ Data on the Mac: `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (th
   - `503 unavailable` when there is no key, `429 rate_limited` with `extra.cap: 'daily'` at the $5 visitor cap, `422` for bad input.
 
   Their client already sends this.
+- **Capture lead (the clarifying-question block, `Ask`):** shape in [capture.md §4, "The question block, shared with the buying chat"](../../../../spec/engines/capture.md) (789eb9f1), type exported from `app/src/engines/capture/plan.ts`: {id, field, kind, words, options [{value, label?, proposed, rests_on?}], other, max_length?, unit?, units?, parts?, why, answer {method, path}}; one drawn part in `app/src/ui/parts/` (Ben's). I agreed it with three additions for the chat: the answer goes as `POST /v1/assist` with `answer: {ask_id, field, value}` and text = the chosen label, with ids stable per question; `replaces?` names an earlier Ask it supersedes (a superseded answer gets 409); in the chat `rests_on` (or a separate `cites`, the capture lead's pick) is result ids, and labels pass the number gate. Their reply was pending at this handoff.
 - **Search lead:** frames in-process through `jobs.listen` and `framesAfter` (the shared note `eng-bc3-search-frames.md`); `group` ('platform' | 'osint') per source is coming; Google Shopping through treg was asked of them, with `may_model` false until a research note on Serper's and Google's terms.
 
 ## Learned the hard way

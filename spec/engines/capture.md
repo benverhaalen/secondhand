@@ -271,11 +271,16 @@ The screen never decides what to ask or when to stop. Layout, motion and the wor
 
 **The question block, shared with the buying chat.** Nate ([via the orchestrator](../../.agents/team/packets/team/92-reply-to-80-four-jobs-storage.md)): "I think we can add those clarifying question widgest to the intelligent ui too." So a clarifying question has one shape and one drawn part wherever it appears. The shape is `Ask`, exported from `app/src/engines/capture/plan.ts`:
 
-`{id, field, kind ('pick_one'|'pick_many'|'number_with_unit'|'yes_no'|'text'), words, options: [{value, label?, proposed, rests_on?}], other, max_length?, unit?, units?, parts?, why, answer: {method, path}}`
+`{id, field, kind ('pick_one'|'pick_many'|'number_with_unit'|'yes_no'|'text'), words, options: [{value, label?, proposed, rests_on?, cites?}], other, max_length?, unit?, units?, parts?, why, replaces?, answer: {method, path}}`
+
+Agreed with the engines lead (2026-11-15), with their three additions for the chat:
+- `id` is stable per question within its capture or conversation (capture's is `q_<capture_id>_<field>`), and the answer carries it as `ask_id`.
+- `replaces?` is the id of an earlier `Ask` this one supersedes (the chat narrows as rows arrive); the app hides the replaced one, and an answer to a superseded `Ask` is refused with 409.
+- `rests_on` stays short reasons in words everywhere; `cites?` is the result ids a proposed option rests on, which the chat's number gate checks. Labels and words pass the same number gate as the chat's text: no figure in a label unless a cited row backs it.
 
 - Capture's `Question` is `Ask` plus what only capture has: `shot`, `fields`, `required_by`, `unlocks`. A chat answer emits `Ask` with no capture field.
 - `proposed: true` on at most one option of a `pick_one` (any number of a `pick_many`) means the system is fairly sure: the drawn part preselects it, and `rests_on` says why in a few words ("RN 14806 on the tag").
-- The answer is `{answer: {field, value}}` sent with `answer.method` to `answer.path` (capture: `PATCH /v1/captures/:id` with `version`; the chat: the conversation route the engines lead names). The value is what the person picked: an option's `value`, an array of them, a boolean, a trimmed string, or for `number_with_unit` a bare number, or an object of `parts` when `parts` is set.
+- The answer is `{answer: {ask_id, field, value}}` sent with `answer.method` to `answer.path`. Capture: `PATCH /v1/captures/:id` with `version` (`ask_id` optional there). The chat: `POST /v1/assist` as a new turn, `{surface, text, history, answer: {ask_id, field, value}}`, where `text` is the chosen option's label so the history reads naturally. The value is what the person picked: an option's `value`, an array of them, a boolean, a trimmed string, or for `number_with_unit` a bare number, or an object of `parts` when `parts` is set.
 - The drawn part is one part in `app/src/ui/parts/` (Ben's), taking an `Ask` and `onAnswer(value)`; capture's sheet and the chat both use it. Its first version is the `Answer` in Ben's `app/src/capture/live.tsx`, which already draws every kind.
 
 **What ends the demo.** The first TestFlight build is the demo. The capture screen stops being the demo when it calls steps 1 to 5 against the live API instead of rendering `spec/examples/captures.json`. It also needs the phone to send real `device` flags and `reads[]` (section 7). Until then every capture in the build is the example capture.
