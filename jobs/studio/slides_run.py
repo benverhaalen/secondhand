@@ -25,6 +25,8 @@ from studio import check as C  # noqa: E402
 from studio import look as L  # noqa: E402
 from studio import openrouter  # noqa: E402
 from studio import plan as P  # noqa: E402
+from studio import measure as M  # noqa: E402
+from lay import wrinkle  # noqa: E402  (research/studio/ben/prototype, on the path through check.py)
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 TEMPLATES = os.path.join(ROOT, "research", "studio", "ben", "templates")
@@ -34,11 +36,15 @@ VISION = ["google/gemini-4-carbon", "google/gemini-4-hydrogen", "google/gemini-2
 CANDIDATES = [("google/gemini-nano-banana-2.1", 1), ("google/gemini-nano-banana-2.1", 2), ("google/gemini-nano-banana-2.1", 3),
               ("google/gemini-nano-banana-2.1", 4), ("google/gemini-3-pro-image", 1)]
 SIDE = 1080
+STEAM_TOP = 2  # the two smoothest redraws that passed get a second pressing
+STEAM_WITH = [("google/gemini-nano-banana-2.1", 1), ("google/gemini-nano-banana-2.1", 2)]
 
-IRONED = ("Freshly ironed means: the fabric lies smooth and flat across the whole body and sleeves. No crumpling, no fold "
-          "lines, no ripples, no creases across the chest or stomach. At most two or three very faint soft lines remain. "
-          "The fabric still looks like the same soft, worn fabric with its real weave and fading; it is not new, not glossy, "
-          "not a flat graphic.")
+IRONED = ("Freshly steamed and pressed: the fabric lies taut, smooth and flat across the whole body and every sleeve or leg, "
+          "as if it was just ironed on a board. Remove every crumple, fold line, ripple, pucker and crease, and the soft "
+          "shadows they cast; the light falls evenly across the cloth. Only seams, hems, ribbing and pockets keep their "
+          "shape. Wear is not a wrinkle: fading, discoloration, pilling, stains and thinning stay exactly where they are, at "
+          "the same strength. The fabric is the same worn fabric with its real weave; it is not new, not glossy, not a flat "
+          "graphic.")
 
 RELAY = """Image 1 is a real phone photo of this exact second-hand {name}, lying on the floor. Image 2 is a blank layout guide:
 a dashed outline showing where a {template} sits in a square frame. {refs}
@@ -54,6 +60,12 @@ Nothing else about the item changes: the same color, the same fabric and fading,
 every print and logo at the same size and the same place with every letter exactly as in the photos{flaws}.
 Keep the same floor surface and the same soft daylight as image 1. No studio backdrop, no props, no added text, labels,
 tags, buttons or logos."""
+
+# a second pass on a redraw that passed: models editing a photo keep most of its shading, so one more pressing helps
+STEAM = """This is a listing photo of a second-hand {name}. Press it: remove the remaining wrinkles, creases, puckers and
+crumple shadows so the fabric lies taut and smooth, as if just steamed. Change nothing else at all: the same outline,
+size, position and lay, the same color, every print, letter and logo exactly as it is, the same fading, stains and wear
+in the same places, the same floor and light. No added text, tags, labels or logos."""
 
 LIGHT = """Touch up image 1. This is a real photo of a used {name} for a resale listing. Keep everything where it is: the same
 surface, the same framing, the same position, size and shape of the {name}, its true color, texture, every print and logo,
@@ -145,10 +157,13 @@ def make_whole(slide: dict, look: dict, ks: dict, photos_by_id: dict, log: list)
     with ThreadPoolExecutor(5) as ex:
         cands = list(ex.map(one, CANDIDATES))
     real_bytes = [jpeg(C.fit(src, 1024))] + [jpeg(C.fit(r["img"], 768)) for r in refs[:2]]
-    for c in cands:
+    s_fit = C.fit(src)
+    w_src = wrinkle(s_fit, C.mask_of(s_fit))
+
+    def grade(c):
         if not c["raw"]:
             c.update(ok=False, reasons=["no image came back: " + json.dumps(c["info"])[:160]])
-            continue
+            return
         ren = rgb(c["raw"])
         if slide["route"] == "relay":
             laid = next((p.get("laid_well") for p in look["photos"] if p["id"] == slide["photo"]), True)
@@ -163,20 +178,55 @@ def make_whole(slide: dict, look: dict, ks: dict, photos_by_id: dict, log: list)
         c["judge"] = j
         c["reasons"] = r["reasons"] + C.judge_blocks(j)
         c["numbers"] = r["numbers"]
+        w = wrinkle(C.fit(r["image"]), C.mask_of(C.fit(r["image"])))
+        c["numbers"]["wrinkle"] = {"photo": round(w_src, 2), "render": round(w, 2), "left": round(w / max(w_src, 1e-6), 3)}
         c["repairs"] = r.get("repairs", [])
         c["ok"] = not c["reasons"]
         c["image"] = r["image"]
-    passed = [c for c in cands if c.get("ok")]
-    passed.sort(key=lambda c: (-(c["judge"] or {}).get("flat", 0) - (c["judge"] or {}).get("laid", 0), c["numbers"].get("color", 9)))
+
     for c in cands:
-        log.append({"slide": slide["type"], "model": c["model"], "seed": c["seed"], "ok": c.get("ok"), "reasons": c.get("reasons"),
+        grade(c)
+    if slide["route"] == "relay":
+        first = sorted((c for c in cands if c.get("ok")), key=lambda c: c["numbers"]["wrinkle"]["left"])[:STEAM_TOP]
+        steam = [(c, m, sd) for c in first for m, sd in STEAM_WITH]
+        with ThreadPoolExecutor(5) as ex:
+            more = list(ex.map(lambda t: steam_one(t[0], t[1], t[2], name), steam))
+        for c in more:
+            grade(c)
+        cands += more
+    passed = [c for c in cands if c.get("ok")]
+    # smoothest first: the checks already hold the item to the real one, so among what passed, fewer wrinkles wins
+    passed.sort(key=lambda c: (round(c["numbers"].get("wrinkle", {}).get("left", 1), 2), c["numbers"].get("color", 9)))
+    for c in cands:
+        log.append({"slide": slide["type"], "model": c["model"], "seed": c["seed"], "pass": c.get("pass", 1), "from": c.get("from"), "ok": c.get("ok"), "reasons": c.get("reasons"),
                     "numbers": c.get("numbers"), "repairs": c.get("repairs"), "judge": c.get("judge"), "cost": c.get("cost"), "seconds": c["info"].get("seconds")})
     if passed:
         win = passed[0]
         return {"image": square(win["image"]), "how": slide["route"], "ai_marked": True, "model": win["model"], "seed": win["seed"],
-                "cands": cands, "src": src}
+                "pass": win.get("pass", 1), "from": win.get("from"), "cand": cands.index(win), "cands": cands, "src": src}
     return {"image": square(level0(src)), "how": "level0", "ai_marked": False, "fallback": "every redraw was dropped; the real photo is used",
             "cands": cands, "src": src}
+
+
+def steam_one(c: dict, model: str, seed: int, name: str) -> dict:
+    """Press a redraw that passed once more. The result is a new candidate, checked again against the real photos from
+    scratch: the first pass passing proves nothing about the second."""
+    raw, info = openrouter.render(model, STEAM.format(name=name), [jpeg(C.fit(c["image"], 1280))], seed=seed)
+    return {"model": model, "seed": seed, "pass": 2, "from": f"{c['model'].split('/')[1]} seed {c['seed']}", "raw": raw,
+            "info": {k: v for k, v in info.items() if k != "usage"}, "cost": (info.get("usage") or {}).get("cost")}
+
+
+def measure_audit(src: np.ndarray, cands: list, win: int | None, final: np.ndarray, tape: dict) -> dict:
+    """The tape against three pictures of the same item: the phone photo, the redraw as the model drew it, and the slide
+    as published. Each is calibrated on its length and tested on its pit to pit (measure.py)."""
+    rows = {"photo": C.fit(src), "final": C.fit(final)}
+    if win is not None and cands[win].get("raw"):
+        rows["drawn"] = C.fit(rgb(cands[win]["raw"]))
+    out = {}
+    for k, im in rows.items():
+        mx = M.measure(C.mask_of(im), tape.get("length"))
+        out[k] = {**M.against_tape(mx, tape), **{a: mx.get(a) for a in ("length_px", "pit_px", "note")}}
+    return out
 
 
 def in_place_check(src, ren):
@@ -233,6 +283,11 @@ def run_item(folder: str, out: str) -> dict:
     for p in look["photos"]:
         p["sharp"] = sharp(imgs[p["id"]])
     meas = {(p.get("measure") or {}).get("name"): (p.get("measure") or {}).get("value_in") for p in look["photos"] if p.get("measure")}
+    meas_from = "read off the tape photos"
+    if os.path.exists(os.path.join(folder, "tape.json")):  # the seller's own numbers win over what the model read off a photo
+        with open(os.path.join(folder, "tape.json")) as f:
+            meas = {**meas, **{k: v for k, v in json.load(f).items() if isinstance(v, (int, float))}}
+        meas_from = "tape.json"
     kind = P.kind_of(look["kind"])
     ks = P.SPEC["kinds"][kind]
     if ks["template"] in ("shirt", "sweatshirt") and meas.get("pit_to_pit") and meas.get("length"):
@@ -240,6 +295,7 @@ def run_item(folder: str, out: str) -> dict:
     pl = P.plan(look)
     os.makedirs(out, exist_ok=True)
     log, made = [], []
+    audit = None
     for s in pl["slides"]:
         src = imgs[s["photo"]]
         if s["type"] in ("cover", "back") and s["route"] in ("relay", "light"):
@@ -253,7 +309,7 @@ def run_item(folder: str, out: str) -> dict:
                     whole_tiles.append(tile(c["image"], f"{tag} {c['model'].split('/')[1]} seed {c['seed']}\n" + "; ".join(c.get("reasons") or ["passed every check"]),
                                             color=(0, 110, 0) if c.get("ok") else (170, 0, 0)))
             sheet(whole_tiles, len(whole_tiles)).save(os.path.join(out, f"whole_{s['type']}.jpg"), quality=86)
-            img, how, ai, extra = r["image"], r["how"], r["ai_marked"], {k: r[k] for k in ("model", "seed", "fallback") if k in r}
+            img, how, ai, extra = r["image"], r["how"], r["ai_marked"], {k: r[k] for k in ("model", "seed", "pass", "from", "cand", "fallback") if k in r}
         elif s["route"] == "as_shot":
             img, how, ai, extra = square(src, s["crop"]), "as_shot", False, {}
         else:
@@ -261,6 +317,8 @@ def run_item(folder: str, out: str) -> dict:
         fn = f"slide_{s['slot']:02d}_{s['type']}.jpg"
         Image.fromarray(img).save(os.path.join(out, fn), quality=90)
         made.append({**s, "file": fn, "how": how, "ai_marked": ai, **extra})
+        if s["type"] == "cover" and ks["template"] in ("shirt", "sweatshirt") and s["route"] in ("relay", "light"):
+            audit = measure_audit(src, r.get("cands", []), extra.get("cand"), img, meas)
     before = sheet([tile(imgs[i], f"as taken: {i}") for i in ids], max(4, len(ids)))
     after = sheet([tile(np.asarray(Image.open(os.path.join(out, m["file"]))), f"{m['slot']}. {m['type']}" + (f" ({m['zone']})" if m.get('zone') else "")
                         + ("\nredrawn, checked" if m["ai_marked"] else "\nreal photo" + (", cut" if m.get("crop") else "")))
@@ -271,7 +329,7 @@ def run_item(folder: str, out: str) -> dict:
     both.save(os.path.join(out, "before_after.jpg"), quality=86)
     sites = {site: P.for_site({"slides": made}, cap) for site, cap in (("depop", 8), ("mercari", 12), ("ebay", 24), ("facebook", 10))}
     man = {"item": os.path.basename(folder), "kind": kind, "read": ans, "read_model": info.get("model"), "plan": pl, "slides": made,
-           "sites": sites, "candidates": log, "seconds": round(time.time() - t0, 1),
+           "sites": sites, "tape": {"inches": meas, "from": meas_from}, "measure_audit": audit, "candidates": log, "seconds": round(time.time() - t0, 1),
            "cost": round(sum(c.get("cost") or 0 for c in log), 4)}
     with open(os.path.join(out, "manifest.json"), "w") as f:
         json.dump(man, f, indent=1, default=str)

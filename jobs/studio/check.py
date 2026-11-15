@@ -278,6 +278,7 @@ Compare the last image with the real photos and answer one JSON object:
  "text_seen": the printed text you can read in the last image,
  "invented": anything in the last image that is not on the real item (a tag, label, text, logo, button, pocket, pattern), or [],
  "lost": anything on the real item missing from the last image (a print, a logo, a patch, a stain or other flaw: {flaws}), or [],
+ "wear_kept": true if the fading, discoloration, pilling, thinning and stains on the real item are still there in the same places and at the same strength, false if the item looks newer, darker or more evenly colored than the real one,
  "color": "same", "lighter", "darker" or "different hue",
  "flat": 0 still crumpled to 3 smooth and flat like an ironed garment,
  "laid": 0 messy to 3 straight, symmetric and complete like a catalog flat lay,
@@ -304,6 +305,8 @@ def judge_blocks(j: dict | None) -> list[str]:
         r.append("judge: invented " + ", ".join(map(str, j["invented"]))[:120])
     if j.get("lost"):
         r.append("judge: lost " + ", ".join(map(str, j["lost"]))[:120])
+    if j.get("wear_kept") is False:
+        r.append("judge: wear or fading removed")
     if j.get("color") == "different hue":
         r.append("judge: different hue")
     return r
