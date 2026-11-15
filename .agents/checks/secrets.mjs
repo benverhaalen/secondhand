@@ -16,6 +16,23 @@ const KEYS = [
 ];
 const EMAIL_OK = /noreply|@example\.|@users\.noreply\.github\.com/i;
 
+// Anyone can unzip the shipped app and read it, so a secret must never reach the bundle.
+// Expo compiles EXPO_PUBLIC_ values and app.json `extra` into the app; server routes (+api) and src/edge/ stay on the server.
+const SECRET_NAME = /KEY|TOKEN|SECRET|PASSWORD|PRIVATE|CREDENTIAL/i;
+const serverSide = f => /\+api\.[tj]sx?$/.test(f) || f.startsWith('app/src/edge/');
+function shipped(f, text) {
+  const out = [];
+  for (const m of text.matchAll(/\bEXPO_PUBLIC_\w+/g))
+    if (SECRET_NAME.test(m[0].slice(12))) out.push(err(f, `${m[0]} is compiled into the app, where anyone can read it: keep the secret on the server and call a /v1 route`));
+  if (f.startsWith('app/src/') && /\.[tj]sx?$/.test(f) && !serverSide(f) && /\bfrom\s+['"][^'"]*\/edge\//.test(text))
+    out.push(err(f, 'a screen imports from edge/, which holds server credentials: call the /v1 route instead'));
+  if (f === 'app/app.json') {
+    const walk = (o, path) => Object.entries(o ?? {}).forEach(([k, v]) => { if (SECRET_NAME.test(k)) out.push(err(f, `extra.${[...path, k].join('.')} ships inside the app, where anyone can read it`)); else if (v && typeof v === 'object') walk(v, [...path, k]); });
+    try { walk(JSON.parse(text).expo?.extra, []); } catch (e) { out.push(err(f, `app.json does not parse: ${e.message}`)); }
+  }
+  return out;
+}
+
 export function secrets(root, { files }) {
   const out = [];
   for (const f of files) {
@@ -23,6 +40,7 @@ export function secrets(root, { files }) {
     if (/\.(png|jpe?g|gif|webp|svg|ico|pdf|woff2?|ttf|otf|m4a|mp4|zip)$/i.test(f)) continue;
     const text = read(root, f) ?? '';
     for (const [name, re] of KEYS) if (re.test(text)) out.push(err(f, `looks like a ${name}; remove it and rotate it`));
+    if (f.startsWith('app/')) out.push(...shipped(f, text));
     if (f.startsWith('.agents/vendor/')) continue; // third-party text kept unchanged: keys above still fail, sample emails don't
     for (const m of text.matchAll(/[\w.+-]+@[A-Za-z][\w-]*(?:\.[\w-]+)*\.[A-Za-z]{2,}\b/g))
       if (!EMAIL_OK.test(m[0]) && !/\.(png|jpe?g|svg|webp|gif|js|css|md)$/i.test(m[0])) out.push(warn(f, `email address ${m[0]}: is it personal data?`));
