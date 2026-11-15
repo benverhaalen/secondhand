@@ -18,6 +18,10 @@ Most of what people own and don't use never gets sold. There are two options, an
 
 AI can already write a listing in seconds. That was never the hard part. The hard part is everything after you post, so that's what we built.
 
+## Let's dig in
+
+We read the theme three ways. **Dig through what's buried:** the closet, the basement, the things worth money that nobody uses (eBay found its sellers had 36 sellable items at home on average). **Dig deep:** we didn't stop at the happy path. We checked every order of events for two buyers paying at once, 931,406 of them on four sites, and planted 174 lies in our own photos to test the photo check. **And keep judgment in charge:** secondhand does the work for you, but code checks your money and your address, and anything over your line waits for your tap. [If an organizer confirms the theme comes from the CAI dean's essay "Time to Dig", add one line linking it: a tool that is for you, not done to you.]
+
 ## What it does
 
 **Selling.** You take a few guided photos. secondhand works out what the thing is, measures it, and finds what it really sells for. Then it:

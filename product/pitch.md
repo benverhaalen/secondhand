@@ -39,6 +39,10 @@ Not five pitches: one, with each narrative doing the job it is best at.
 
 **Why this order:** C is the only problem statement backed by numbers we opened ourselves, and it sets up A without the word "agent" doing the work. **What would change it:** if the judging rubric for the main track rewards technical depth over problem framing, lead with B's live demo and move C to 15 seconds.
 
+## The theme: "Let's dig in"
+
+The readings, the likely source and the lines to say are in [theme.md](theme.md). Open with: "The theme says start digging. Most of us already have: there's a closet or a basement full of things worth money that never get sold. secondhand is the tool that digs in for you, and leaves the decisions to you." Don't name the essay until an organizer confirms it.
+
 ## The simplest pitch
 
 Added 2026-11-15 from Ben's ask ([words](words.md#2026-11-15-who-judges-it-guarantees-the-buyer-side-messages-you-approve-meetups-audit-every-site-and-no-fixed-pickup-schedule)). The hard questions behind every line are in [qa.md](qa.md); check its honesty gate before saying any "it does".

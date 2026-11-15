@@ -1158,3 +1158,9 @@ Ben, thread "Roll the UI system out everywhere", 06:19 UTC, on the first gallery
 
 Ben, same thread, 06:21 UTC.
 > also sometimes the gradient at the top of the screen is there or isnt there yk
+
+## 2026-11-15 the theme: let's dig in
+Ben, project chat (relayed), 2026-11-15 06:35 UTC.
+> also idk if anyone said this: but the theme is "Let's dig in" inspired by the book or essay from the uw madison person. but they talk about different ways to interpret this. so read it and think about the different ways to really tailor to this prompt. brainstorm the different ways where what we are doing is special. we should really have a section on whatever we do about this and tailor our presentation or pitch to judges using it.
+
+Used in: [theme.md](theme.md), [pitch.md](pitch.md#the-theme-lets-dig-in), [devpost.md](devpost.md).
