@@ -34,7 +34,7 @@ export async function weekRig(noLimits = false, options: {
   const now = () => start + minute * 60_000;
   let store = options.store ?? (options.path ? fileStore(options.path) : memoryStore());
   const sink = memorySink();
-  const log = options.log ?? createLog({ src: 'test', build: 'test', seed: 1, sink, now: () => new Date(now()) });
+  const log = options.log ?? createLog({ src: 'test', build: 'test', seed: 1, sink });
   const vault = memoryVault();
   const sites = ['depop', 'poshmark', 'ebay'] as const;
   const rows = sites.map(site => ({ account_id: `acc_${site}`, person_id: 'usr_walk', site, token_ref: `test_${site}` }));
@@ -136,7 +136,7 @@ export async function week(noLimits = false, path?: string) {
 export async function hazardWeek(adaptive: boolean, options: { days?: number; restart?: boolean; budget?: number } = {}) {
   let minute = 0;
   const now = () => start + minute * 60000;
-  const store = memoryStore(), log = createLog({ src: 'test', build: 'test', sink: memorySink(), now: () => new Date(now()) });
+  const store = memoryStore(), log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   const accounts = ['z_hot', 'a_stale', 'new'].map(id => ({ account_id: id, person_id: 'usr_budget', site: 'depop' as const, token_ref: 'fixture' }));
   const listings = accounts.map(a => ({ listing_id: `listing_${a.account_id}`, account_id: a.account_id, item_id: `it_${a.account_id}`,
     site: a.site, external_id: a.account_id, state: 'live', kind: 'jacket' }));
@@ -173,7 +173,7 @@ export async function hazardWeek(adaptive: boolean, options: { days?: number; re
       if (verb === 'read_listings') calls.push({ account_id, minute });
       const data = verb === 'read_listings' ? [{ external_id: account_id, state: 'live', price_cents: 6000, views: minute >= 1440 ? 1 : 0 }]
         : verb === 'read_offers' && account_id === 'z_hot' ? [{ external_id: 'offer_hot', listing_external_id: 'z_hot', amount_cents: 5900, state: 'open' }] : [];
-      return { ok: true, data: data as T, meta: { route_id: `fake.depop.${verb}`, ms: 0, fell_back: false } };
+      return { ok: true, data: data as T, meta: { route_id: `fake.depop.${verb}`, adapter_version: 'fixture', ms: 0, fell_back: false, observation_ids: [] } };
     } },
   };
   let watcher = createWatcher(deps);

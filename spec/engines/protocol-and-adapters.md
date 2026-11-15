@@ -247,6 +247,37 @@ A verb with no route shows a one-tap button that opens the site at the right pag
 - Learning only slows the pace on a warning and never raises it past the manifest cap.
 - Buyer data in fixtures and observations follows [privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md): `buyer_ref_hash` only.
 
+### Where a read runs (*agent proposal*, 2026-11-15)
+
+Nate ([words](../../product/words.md#2026-11-15-nate-build-on-firecrawl-or-a-substrate-that-reads-the-dom-we-only-need-to-read-and-it-cannot-run-on-the-phone)): "we only really need to read right? we can't have the dom substrate run on the ios phone can we? understand and engineer around this". Most of what the product needs from a marketplace is a read. A read can run in five places, and which one is chosen depends on whether the person is in the app. The facts under this table are in [reading on the person's device](../../research/cross-cutting/nate/reading-on-the-persons-device.md), each marked there as observed or asserted.
+
+| Lane | Runs | Good for | Limit |
+|---|---|---|---|
+| A plain request | our server | a site that serves one; the cheapest read where it works | Depop, eBay and Mercari refuse it with a 403, so in practice few marketplace pages are read this way |
+| An official or licensed interface | our server | eBay's API once approved; Dupe's published search, which returns Poshmark, Depop and eBay listings | needs the provider's approval or its conditions kept |
+| A cloud browser | Browser Use Cloud, anonymous or on the person's linked profile | background reads on the person's own account over days and weeks; a site that needs a real browser (Depop search in 1.8 s once the browser is open) | seconds per read and browser and proxy cost; a site may refuse it; nothing is intercepted on eBay |
+| The person's own browser (new) | the app's web view on their phone, on their connection and sign-in; on a computer, a browser extension | everything they do while the app is open: a search, a listing, eBay's sold listings under their own sign-in | only while the app is open |
+| The marketplace's own message to the person (new) | their inbox | events when the app is closed: a sale, an offer, a buyer's message, a saved-search match | needs the person to forward those emails; coverage differs by site |
+
+What the phone can do, checked against Apple's and Expo's pages:
+
+- An app's web view can load a page and hand its content to the app: `react-native-webview` injects a script and receives strings back through `onMessage`; Expo SDK 58 documents it. The app has only `expo-web-browser` today, which shows a page the app cannot read, so the device lane needs `react-native-webview` added. That is Ben's side of the app.
+- The web view keeps its own sign-in between launches (its data store is persistent by default) and does not share Safari's. Google refuses sign-in inside an embedded web view, so a marketplace account that signs in with Google needs its password route. Which sign-in options eBay, Mercari and Depop show was not readable (their sign-in pages refused the check); Poshmark's was.
+- With the app closed, iOS gives it about 30 seconds at times the system chooses, a background push is throttled and not guaranteed, and a suspended web view does not run its script. Expo's background task runs no more often than every 15 minutes and by default every 12 hours. So the phone cannot watch a marketplace.
+- Apple's review guidelines, as read on 2026-11-15, have no text naming this kind of reading; 5.2.2 asks that an app using a third-party service's content be permitted to. How review treats it is not known.
+- A Safari extension on iOS can read a page the person grants it, but its page script cannot message the app, so it is not a route into the app.
+- On a computer, the crosslisting tools work this way: Vendoo connects through its extension to marketplaces the person is already signed in to, and List Perfectly says its extension does the importing and crosslisting and does not run on phones.
+
+So the design is: **in the app, read through the person's own browser; out of the app, let the marketplace's own messages be the signal, and confirm with one cloud read on their linked account.**
+
+- A sale on one site has to end the listing on the others quickly. The sale email is the trigger; one read of the person's orders through the cloud lane confirms it before anything is ended. The timed sweep stays as the net for a missed email, at the per-listing cadence.
+- A want becomes a saved search on the person's own account where the site offers alerts (eBay lists saved-search notifications by email; Depop's are a weekly push and capped at ten; none was found for Poshmark or Mercari), and a cloud or licensed-interface search where it does not.
+- The emails reach us by a forwarding rule the person sets once in their mail, limited by a filter to the marketplaces' senders, to an address that is theirs alone; an inbound mail service turns each into a call to us. Reading the mailbox directly through Gmail's API needs Google's restricted-scope review with a yearly outside security assessment, so it is not the first route.
+- The device lane returns the same envelope and uses the same parsers as the cloud lane: the web view sends the page's content, never a parsed guess, and the server parses it. Its route kind is `device`. A page that shows a challenge is the person's to answer, since it is their browser.
+- An email is evidence like any other: an `observation` with its source and time, never acted on alone for anything that ends a listing or answers an offer.
+
+Open, for Nate and Ben: whether the app adds the web view; whether people are asked to forward marketplace emails, and when in onboarding; and a desktop extension, which is a second product surface.
+
 ## 9. Proof
 
 | Test | Runnable in a day as | Passes when |
