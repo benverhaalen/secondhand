@@ -91,7 +91,7 @@ Each moment names its borrowed pattern, its timing and its fallback.
 | Researching | Once per item | Fields fill in as each resolves, a 30 to 80 ms stagger, one thin progress line; no spinner after the first second | Skeleton screens (Vercel rule); live build logs | Fields appear |
 | Approve a Today card | Many per day | Card collapses and the list closes the gap, `--t-select`; an Undo toast holds ~5 s | Gmail archive with Undo | Card disappears; toast stays |
 | Item changes state (Draft→Live, Live→Sold) | Several per day | The tile moves to its new shelf (a FLIP via transform) and its pill crossfades | Photos and Reminders reorder | Pill changes; tile appears in the new shelf |
-| It sold | Rare, the peak | Tile settles into Sold, the amount you keep highlights, success haptic. No confetti or counters (brand C6) | Apple Pay check and haptic | Highlight and haptic only |
+| It sold | Rare, the peak | Tile settles into Sold, the field fills the screen once, success haptic and sound. No confetti or counters (brand C2, C6) | Apple Pay check and haptic | Haptic only |
 | Something failed | Rare | Red ✕ badge fades in once, warning haptic. No shaking or looping | iOS failed iMessage "Not Delivered" | Badge only |
 | Auto action done | Many per day | None. A quiet `AUTO` label and Undo in the log | Gmail "Sent. Undo" | Same |
 | Offer arrives (push) | Several per day | System notification; in app the card inserts at the top, `--t-select` | iMessage new message | Instant insert |
@@ -133,7 +133,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 
 ### Attention
 - [ ] Block: the blur test passes (focal point first, next action second).
-- [ ] Block: color appears only as state fills, one field, one money highlight and the brick alert (brand constitution Art. 5, C2, C6).
+- [ ] Block: color appears only as state fills, one field and the brick alert (brand constitution Art. 5, C2, C6).
 - [ ] Flag: more than three actions visible on a card. Choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)), so justify it rather than ban it.
 - [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 

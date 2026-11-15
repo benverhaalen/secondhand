@@ -13,7 +13,7 @@
   --sky:         #90D1EF;               /* field; state "shipping" */
   --sky-deep:    #4EBAF7;               /* the field's deep corner only */
   --mint:        #88DCB9;               /* field; state "live" */
-  --lime:        #E6EA6A;               /* field; money: highlight (C6), states "sold" and "paid" */
+  --lime:        #E6EA6A;               /* field; money: states "sold" and "paid" */
   --peach:       #FBB383;               /* field corner only */
   --marigold:    #F9C76F;               /* state "needs you" only */
   --coral:       #EF956E;               /* category */
@@ -35,12 +35,11 @@
   --ink-disabled: rgb(10 10 10 / .3);   /* disabled labels; never the only sign */
   --scrim:       rgb(10 10 10 / .4);
   --focus-ring:  0 0 0 2px var(--page), 0 0 0 4px var(--ink);
-  /* the field (C2): one per view, always textured, black text only. Use background: var(--field); never rebuild it.
-     A mesh of sky, mint and lime from ref-12; positions are provisional until board D5. */
-  --field-lines: repeating-radial-gradient(circle at 115% -30%, #ffffff00 0 9px, #ffffff99 9px 10px);
+  /* the field (C2): one per view, soft, no lines and no grain, black text only. Use background: var(--field); never rebuild it.
+     A mesh of sky, mint and lime from ref-12; the colors and positions are open in the ledger. */
   --field-mesh: radial-gradient(at 0% 0%, var(--sky-deep), transparent 55%), radial-gradient(at 30% 100%, var(--mint), transparent 60%), radial-gradient(at 100% 100%, var(--lime), transparent 65%);
   --field-peach: radial-gradient(at 100% 0%, var(--peach), transparent 30%);   /* optional corner layer */
-  --field: var(--field-lines), var(--field-mesh), var(--sky);
+  --field: var(--field-mesh), var(--sky);
 
   /* type (Art. 6). Faces are open: Ben picks in the kit */
   /* never system-ui: it can resolve to an Inter-derived face. Scripts a face lacks fall to Noto */
