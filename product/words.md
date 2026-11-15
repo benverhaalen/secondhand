@@ -809,3 +809,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate the person signs off, so it is their own agent acting
 Nate, same session, 2026-11-14, on the Depop design calling it automated access.
 > its not automated access, since the user is technically signing off on it, its like if they called Claude in chrome themselves
+
+## 2026-11-14 nate we do not pay for apify; priced tools prove it can be done, and ours is free
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the Apify findings.
+> we arent paying for apify, but we are understanding that even then, there are already existing and priced ways to search these platforms, ours is free
