@@ -49,13 +49,15 @@ To know whether the prices are any good, we backtested the pricing code. A backt
 
 The median error was 3.89%, and 96.0% of estimates landed within 20% of the sale price, against 89.1% for the 90-day median price. In plain terms, on a $100 pair the typical estimate is off by about $4. It misses by more than $20 about once in 25 tries, where the 90-day median misses about once in 9.
 
+One simpler guess still beat us. The last sale of the same shoe landed within 20% about one point more often than our estimate did. We publish that beside our own figure, and our Genie space says it when you ask.
+
 We haven't run a backtest that size on clothes yet. Clothes are priced the same way, from sold listings.
 
 ## Why that price?
 
 A seller's next question is "why that number?", and we wanted a real answer. This is where we used Databricks.
 
-Unity Catalog can tell you which tables and columns a number came from. A seller is asking about rows: which sales? So we wrote a SQL table function, `why(id)`. Give it any price or figure the app shows, and it returns the exact sales behind it and rebuilds the number from them. We ran that rebuild on all 42,405 figures in the workspace. 42,399 came back exactly. The other six are five asking-price figures and one sold-price figure, and the workspace lists them.
+Unity Catalog can tell you which tables and columns a number came from. A seller is asking about rows: which sales? So we wrote a SQL table function, `why(id)`. Give it any price or figure the workspace holds, and it returns the exact sales behind it and rebuilds the number from them. Today those are the figures from our backtests on public sales. A price made on your phone shows its sold listings in the app, and those listings don't land in the workspace yet. We ran the rebuild on all 42,405 figures in the workspace. 42,399 came back exactly. The other six are five asking-price figures and one sold-price figure, and the workspace lists them.
 
 ```mermaid
 flowchart LR
@@ -68,15 +70,29 @@ flowchart LR
 
 Here is the path one sale record takes to make that possible.
 
-It arrives in a Unity Catalog volume, one of six public datasets of sold items we loaded. A Lakeflow Declarative Pipeline checks it and drops it if it's bad. A Unity Catalog tag records which dataset it came from and what that dataset's terms let us do with it.
+It arrives in a Unity Catalog volume, one of six public datasets of sold items we loaded, 1,688,603 sales in all. A Lakeflow Declarative Pipeline checks it and drops it if it's bad. Every row keeps the name of its dataset, and a rights table holds one row per dataset saying what its terms let us do: store it, show it, train on it. We read each dataset's terms, and only two of the six allow training. The pricing code reads through one view that leaves the other four out.
 
-Delta Lake keeps every version of the table, so the backtest above can name the exact data it ran on. MLflow stores that backtest as a run.
+The workspace also backtests a second pricing model that runs nightly, on the same sales. Each of those backtests is an MLflow run, and the run records the Delta version of the table it read, so it can name its exact data. The app doesn't serve that model yet, and the dashboard and Genie name the two apart.
 
-A metric view defines each measure once. The AI/BI dashboard and Genie both read it, so anyone with the workspace can ask a question in plain words and see the SQL behind the answer. When there are too few sales to say, Genie answers "too few" and gives the count.
+One weight in the pricing code says how fast an old sale stops counting. Each month a job fits a new value on the past and scores it on the next month. The new value replaces the old one only if it wins by more than the noise. It moved once, from 90 days to 7, and every later challenger lost and was held. Delta's change data feed keeps each move, so the history is a query.
 
-Row filters and column masks are set up so one person's rows are visible only to that person, and buyer and seller handles are hidden.
+A metric view defines each measure once. The AI/BI dashboard and Genie both read it, so anyone with the workspace can ask a question in plain words and see the SQL behind the answer. When there are too few sales to say, Genie answers "too few" and gives the count. We wrote eight questions a judge might ask and a script that asks all eight and saves each answer with its SQL. The app's server reaches Genie through its Conversation API and returns an answer only with its SQL and row count attached. That route is built and tested, and no screen uses it yet.
 
-Two things didn't work the way we expected. Delta wouldn't accept a CHECK constraint on a row-filtered table. So our rule that every figure has its sales behind it is held another way: a Lakeflow job checks 18 rules on a schedule, and a SQL alert is set to fire if one breaks. On the last run, none had. Genie can't call a table function, so the rows behind `why(id)` are also a view it can read.
+Two Unity Catalog policies, driven by governed tags, lock all 11 core tables to the person who owns each row and mask buyer and seller handles. They hide those rows from the workspace owner's own jobs too. Maintenance goes through a logged, time-limited window, and the rule check flags any window that wasn't logged.
+
+Databricks publishes an Open Retail Data Model for stores. Resale doesn't fit it as is: every item is one of a kind, it has a condition, and the store is a marketplace. We put our tables under its product and sales names and added those fields, with the rights on every row. On top of that, `ai_forecast` projects 28 days of sneaker prices past the end of the 2019 data.
+
+All of it deploys from one bundle with one command: the pipeline, the jobs, the dashboard, the Genie space and the alert. The code that builds a figure from its sales exists in TypeScript for the app and Python for the jobs, and one of those jobs checks that both give the same result.
+
+In five places the platform stopped short of what we needed, and we built the rest:
+
+| What the platform does | What we needed | What we built |
+|---|---|---|
+| Lineage stops at tables and columns | The rows behind one number | `why(id)`, which returns the rows and rebuilds the number |
+| Delta refuses a CHECK constraint on a row-filtered table | "Every figure has its sales behind it" as a rule | A check when a figure is written, a Lakeflow job that checks 18 rules, and a scheduled SQL alert. On the last run none had broken |
+| Genie can't call a table function | Genie answering "which sales?" | The rows behind `why(id)` as a view it can read |
+| Time travel is refused on a view | A backtest that names its exact data | Each MLflow run records the Delta version of the table under the view |
+| A row filter hides rows from the owner's jobs too | Maintenance and the rule check seeing every row | The logged, time-limited window above |
 
 ## Where should it go?
 
@@ -115,6 +131,24 @@ You can ask a follow-up question about the results. The app answers in the shape
 *For these two screenshots we loaded Ben's own Depop listings in as the results, so the data here is sample data and the screens are the app's. Left: one search. Right: a follow-up answer drawn as a table and a range, with the app's note that these are asking prices.*
 
 If the thing you want isn't there at your price, you can track it. The app keeps the search and shows you new matches when you open it.
+
+## How it fits together
+
+```mermaid
+flowchart LR
+    P["Phone<br/>Expo app, Swift camera"] --> S["Our server<br/>TypeScript: identify, price, list, search"]
+    S --> M["Marketplaces<br/>eBay API, or a real browser"]
+    S --> A["Models<br/>read photos, match products, answer questions"]
+    S -.->|"Genie, built, no screen yet"| D
+    J["Python twins of the pricing code"] --> D["Databricks<br/>public sales, backtests, why(id), Genie"]
+    S ---|"compared on the same inputs"| J
+```
+
+The phone talks to one server. The pricing, fee, listing and search code lives there as plain TypeScript, each part with its own tests. A model is called in three places: reading photos, deciding whether two results are the same product, and answering a follow-up question. Each time, code checks what came back before you see it.
+
+Everything the server does goes through one logger: every input, outside call, approval and error. A script reads a run's log and fails it if a step is missing or a secret appears.
+
+Databricks holds the history and the proof. The pricing code on the server has a Python twin that runs there as jobs, and tests compare the two on the same inputs. A job on the workspace does the same for the code that builds a figure from its sales.
 
 ## Challenges
 
@@ -156,6 +190,6 @@ We'd start small. We'd list 100 real items with students during move-out week an
 
 ## Built with
 
-Expo and React Native, Swift, TypeScript, Python, Databricks (Lakeflow Declarative Pipelines, Delta Lake, Unity Catalog, Databricks SQL, MLflow, metric views, AI/BI dashboards, Genie, Lakeflow Jobs), Browser Use Cloud, Playwright, Treg, OpenRouter, the eBay API.
+Expo and React Native, Swift, TypeScript, Python, Databricks (Lakeflow Declarative Pipelines, Delta Lake, Unity Catalog, Databricks SQL, MLflow, metric views, AI/BI dashboards, Genie, Lakeflow Jobs, AI Functions, SQL alerts, Declarative Automation Bundles), Browser Use Cloud, Playwright, Treg, OpenRouter, the eBay API.
 
 Built by Ben Verhaalen and Nate Garelik at MadHacks 2026.
