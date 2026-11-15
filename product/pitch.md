@@ -86,6 +86,10 @@ Ben, 06:40: "pitching about ai impersonation. its always you. also think about h
 
 After the demo, say these three, each with its 5-second proof ([unique.md](unique.md), with what we checked for each): we proved a double sale can't go unnoticed (931,406 states; the broken version fails in 6 steps); AI photos are checked by math, not more AI, with every flaw protected (173 of 174); a reply can't say what your item doesn't back (the held "smoke-free home"). Say "we haven't seen", never "first ever".
 
+## Proof without sales
+
+We have no month of sales, so we prove the parts of a sale instead, and say so first: "We can't show you a month of sales from a 24-hour hackathon, and we won't pretend to. Here's what we can show." The ranked list of proofs to run before 1 pm, and the comparisons, are in [proof-without-sales.md](proof-without-sales.md).
+
 ## Security and open source
 
 Checked against the code on 2026-11-15. Say "built" for these; nothing here has run against a live account at scale.

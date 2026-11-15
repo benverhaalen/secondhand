@@ -224,6 +224,9 @@ Every sale writes back its real price and days to sell, so the price model impro
 **How do you know your prices are right?**
 A price is a range with its count of comparable sales, and it hides under 6 sales in 12 months or 2 in 90 days. The test: the stated range must cover held-out sales at its stated rate ([score](../spec/databricks.md#52-the-scoring-engine)).
 
+**You built this in 24 hours. How do you know it would get anyone sales?**
+We don't claim it does yet, and anyone who says that after a weekend is guessing. We prove each part of what makes a sale: it gets things listed (the stopwatch), it prices them close to what similar things sold for (a backtest on public sold items, with its n and coverage), it keeps more of the money (fee math), and it doesn't lose the sale (the double-sale check, the photo check). We wrote our price forecasts for tonight's items into the public repo before any of them sold, so you can check us later ([proof without sales](proof-without-sales.md)).
+
 ## 7. The buyer side
 
 Ben: "I haven't talked as closely with you about all that." Buy is one search across the five marketplaces and official stores ([buy](../spec/features/buy.md)).

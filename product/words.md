@@ -1253,3 +1253,9 @@ Ben, project chat (relayed), 2026-11-15 07:14 UTC.
 > ensure all information is continually added to the repo and that nate gets packets that he might need
 
 Used in: [.agents/team/packets/data/54-pitch-claims-that-need-the-workspace.md](../.agents/team/packets/data/54-pitch-claims-that-need-the-workspace.md).
+
+## 2026-11-15 proof without sales
+Ben, project chat (relayed), 2026-11-15 07:15 UTC.
+> theres a problem of how do we show or explain why our thing works and convince someone that it would get them sales effectively if we have no proof of sales or any of this because we are in a 24hr hackthon. brainstorm. see if rdd adjacent research could be helpful at all. how do we do our best to prove logic. and use comparison too.
+
+Used in: [proof-without-sales.md](proof-without-sales.md), [pitch.md](pitch.md#proof-without-sales), [qa.md](qa.md).
