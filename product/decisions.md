@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-15: the UI loop is in the repo, and its rules are held by checks that grow
+Agreed by: Ben, in words at 00:50 UTC ([words](words.md#2026-11-15-the-ui-system-learns-with-checks-for-its-rules)), which lifts his hold in [the phone app comes first](#2026-11-14-the-phone-app-comes-first-a-website-follows) on adding the UI factory before the brand was settled. Decided: his loop ([words](words.md#2026-11-14-the-ui-loop)) is the build procedure, and every pick he locks must say what holds it: a script, a judge line or his eye. Changed: [frontend-standard §2](frontend-standard.md#2-build-the-loop) is the loop and [§7](frontend-standard.md#7-enforcement-and-how-the-rule-set-learns) is how a rule gets in; the `ui-screen` skill runs it; [.agents/ui-rules.json](../.agents/ui-rules.json) lists every rule and `node .agents/check.mjs` fails a locked pick with no row. *Agent proposal* in its specifics: the sizes, the twelve states, which rule is a script and which a judge line, and the fill and icon of each pill in `app/src/ui/states.ts`.
+
 ## 2026-11-15: one of Ben or Nate can decide; the other can reopen
 Agreed by: Ben, on the decision card "Can a line be Decided on your word alone while Nate is away?" in the repo-structure thread at 00:14 UTC. He picked "Ben decides, Nate can reopen". Decided: a line is Decided when Ben or Nate decides it. Nate can reopen any line, and his agreement is added when he gives it. Agents never decide. This replaces the vision's earlier rule that both must agree. Changed: every current decision stays, and `DECIDERS_NEEDED` in `.agents/checks/provenance.mjs` is 1.
 
