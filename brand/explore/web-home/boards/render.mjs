@@ -48,7 +48,7 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
         if (faces) await routeFaces(ctx);
         const page = await ctx.newPage();
         if (faces) await page.addInitScript(css => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = css; document.head.append(s); }); }, faces);
-        await page.goto(pathToFileURL(file).href); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
+        await page.goto(pathToFileURL(file).href); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(300);
         return { ctx, page };
       };
       const { ctx, page } = await open();
