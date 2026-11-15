@@ -216,7 +216,6 @@ On the card "How far should buying go?" in the same session, Nate picked "Also n
 ## 2026-11-14 nate frameworks and goals
 Nate, same session, 2026-11-14, sent while cards on demo scope, the backend's front door, the buying side and disclosure were open. Nate said Ben was beside him.
 > Where there arent official connections, sources of information, harnesses to allow automated actions on each platform, we will build frameworks to allow for perfectly optimized actions and behaviors, a cloud based browser use system where login auth is persisted, the users actions open up their profiles with this cloud, and an api framework is built to allow for everything to work across the needed platforms, and additional sites of information, databases for sales and finance data, fully extend out how the internet serves us as sources of information to strenghten our analytics, accuracy and credibility of calculations on prices. We are in a way a highly intelligent analysis tool of second hand shopping, built to drive the best selling and management experience for users. There are incentives like money goals for the month, how many sales you've had, tracks progress
-||||||| 6693ac2
 
 Note: the line above ("||||||| 6693ac2") is a leftover merge marker from an agent's merge, not anyone's words.
 
@@ -889,6 +888,10 @@ Nate, build session (orchestrator), 2026-11-14 about 21:45 Central, after the ei
 ## 2026-11-14 nate do not cut steps that add to the result, be efficient, focus on the app, the hackathon and the experience
 Nate, build session (orchestrator), 2026-11-14 about 21:50 Central.
 > well dont cut things that add processes, just be the best at understanding and being efficient at building. sometimes you redudndently check things you are already skilled enough to know. Focus on the app, the hackathon, the user experience
+
+## 2026-11-14 nate the Databricks profile for the build is Nate
+Nate, build session (orchestrator), 2026-11-14 about 22:00 Central, asked "Which Databricks CLI profile is the event workspace?" with the choices DEFAULT and Nate.
+> Nate
 
 ## 2026-11-15 the text weight is 500
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a side by side of Book, Medium on titles and a weight near 450. Recorded by the brand thread, which owns Article 6.
