@@ -271,7 +271,7 @@ test('a different visitor cannot poll or stream a new job; SSE resumes strictly 
   assert.equal(await (await poll(job.id, 'vis_search01', true, frames.at(-1)!.id)).text(), '');
 });
 
-test('sameProduct receives the query, a look-alike is not same_product, and drops balance counts', async () => {
+test('sameProduct receives the query, labels a look-alike comparable, and drops balance counts', async () => {
   ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
   ports.ask = async (state, questions) => {
     assert.equal((state as { target: string }).target, 'levi 501');
@@ -282,10 +282,89 @@ test('sameProduct receives the query, a look-alike is not same_product, and drop
   const job = await start({ text: 'levi 501', filters: { max_delivered_cents: { amount_cents: 4000, currency: 'USD' } } });
   await ended(job.id);
   const saved = await (await poll(job.id)).json();
-  assert.equal(saved.result.results.find((r: { external_id: string }) => r.external_id === '6af924447625b11bb42ec837').relation, 'functional_equivalent');
+  assert.equal(saved.result.results.find((r: { external_id: string }) => r.external_id === '6af924447625b11bb42ec837').relation, 'comparable');
   assert.equal(saved.result.found.results_found, 12);
   assert.equal(saved.result.found.results_used, 8);
   assert.deepEqual(saved.result.found.dropped_by_reason, { wrong_item: 1, max_delivered_cents: 3 });
+});
+
+test('Jev without a key keeps every landed row unresolved and reports default identity on partials and the result', async () => {
+  ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
+  ports.ask = async () => ({ ok: false, reason: 'no_key', ms: 0 });
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.state, 'done');
+  assert.equal(saved.result.results.length, 12, 'missing Jev key must not discard the landed rows');
+  assert.ok(saved.result.results.every((r: { relation: string }) => r.relation === 'unresolved'));
+  assert.equal(saved.result.found.results_used, saved.result.results.length);
+  assert.deepEqual(saved.result.found.dropped_by_reason, {});
+  assert.deepEqual(saved.result.identity, { by: 'default', model_ok: false });
+  const partials = jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial');
+  for (const f of partials) assert.deepEqual(f.data.identity, { by: 'default', model_ok: false });
+  const landed = partials.find(f => f.data.site === 'poshmark')!;
+  assert.deepEqual(landed.data.results, saved.result.results);
+  assert.deepEqual((landed.data.answer as { found: Found }).found, saved.result.found);
+  const totals = saved.result.results.map((r: { delivered_cents: { amount_cents: number } }) => r.delivered_cents.amount_cents);
+  assert.deepEqual(totals, [...totals].sort((a, b) => a - b));
+});
+
+test('judged match certainty precedes price in partial and merged results, and only keep verdicts exclude identity rows', async () => {
+  ports.fetchPage = async u => ['poshmark', 'depop'].includes(siteOf(u)) ? page(fixture(siteOf(u))) : blocked();
+  const matches: Record<string, string> = { m0: 'unresolved', m1: 'likely_same_model', m11: 'exact', m2: 'same_family_other_variant' };
+  ports.ask = async (_state, questions) => ({ ok: true, ms: 0,
+    answers: Object.fromEntries(Object.keys(questions).map(k => [k, { choice: k.startsWith('m')
+      ? (matches[k] ?? 'unresolved')
+      : k === 'k3' ? 'spam' : 'keep' }])) });
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.deepEqual(saved.result.identity, { by: 'model', model_ok: true });
+  assert.equal(saved.result.found.results_found, 24);
+  assert.equal(saved.result.found.results_used, 22);
+  assert.deepEqual(saved.result.found.dropped_by_reason, { spam: 2 });
+  const rows = saved.result.results as { relation: string; delivered_cents: { amount_cents: number } }[];
+  assert.deepEqual(rows.slice(0, 4).map(r => r.relation), ['exact', 'exact', 'likely_same_model', 'likely_same_model']);
+  assert.equal(rows.filter(r => r.relation === 'same_family_other_variant').length, 2);
+  for (const relation of new Set(rows.map(r => r.relation))) {
+    const totals = rows.filter(r => r.relation === relation).map(r => r.delivered_cents.amount_cents);
+    assert.deepEqual(totals, [...totals].sort((a, b) => a - b));
+  }
+  for (const f of jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial' && (f.data.results as unknown[]).length)) {
+    assert.deepEqual(f.data.identity, { by: 'model', model_ok: true });
+    assert.equal((f.data.results as { relation: string }[])[0].relation, 'exact');
+  }
+});
+
+test('an invalid model answer reports default identity alongside exact matches, including cached partials', async () => {
+  ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
+  ports.ask = async (_state, questions) => ({ ok: true, ms: 0,
+    answers: Object.fromEntries(Object.keys(questions).map(k => [k, { choice: k.startsWith('m')
+      ? k === 'm11' ? 'exact' : 'invalid match'
+      : 'keep' }])) });
+  for (let i = 0; i < 2; i++) {
+    const job = await start(); await ended(job.id);
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.result.results.length, 12, 'invalid judgements retain the default keep verdict');
+    assert.equal(saved.result.results[0].relation, 'exact', 'the exact row outranks cheaper unresolved rows');
+    assert.ok(saved.result.results.slice(1).every((r: { relation: string }) => r.relation === 'unresolved'));
+    assert.deepEqual(saved.result.identity, { by: 'default', model_ok: false }, 'a partial model answer must disclose default fallback');
+    assert.deepEqual(saved.result.found.dropped_by_reason, {});
+    for (const f of jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial' && f.data.site === 'poshmark')) {
+      assert.deepEqual(f.data.identity, saved.result.identity);
+      assert.deepEqual(f.data.results, saved.result.results);
+    }
+  }
+});
+
+test('merged found counts returned listings once when two sources land the same site rows', async () => {
+  const source = SOURCES.find(s => s.id === 'poshmark')!;
+  ports.sources = [source, { ...source, id: 'poshmark_repeat' }];
+  ports.fetchPage = async () => page(fixture('poshmark'));
+  ports.ask = async () => ({ ok: false, reason: 'no_key', ms: 0 });
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.result.results.length, 12);
+  assert.deepEqual(saved.result.found, { sources_searched: 2, results_found: 24, results_used: 12,
+    dropped_by_reason: { unavailable_or_duplicate: 12 }, sites: { poshmark: 12 } });
 });
 
 test('background reconciliation failure ends the job as failed with the contract error', async () => {
