@@ -198,3 +198,15 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | 07:18 | Every decision to the project chat; merge to main | Done (standing) | project instructions |
 | 08:18 | Save Opus: fewer steps and tokens in the build | Ben | the coordinator's four cuts are waiting on his yes |
 | 08:43 | Research runs on Codex from now on, with nothing lost or redone | Assigned | Each thread hands off its remaining research at its next breakpoint ([words](../product/words.md#2026-11-15-research-moves-to-codex)) |
+
+## Constitution reasons still needed
+
+These rules are preserved. Their missing reasons are open questions, not evidence that the choices are wrong. Asked here following [Ben's 08:59 instruction](../product/words.md#2026-11-15-every-why-explained-numbers-that-help-and-a-statistic-we-can-defend).
+
+| Rule | Question | Status | Evidence |
+|---|---|---|---|
+| D2 | Why exactly three clean rehearsals before a beat runs live? What failure or readiness decision does that count resolve? | Why not yet stated; asked in this ledger | [Demo rules](../product/constitutions/demo.md#rules); rehearsals expose failures, but the exact count has no stated basis |
+| W1 | Why no period, the second word in the wordmark face, and hands sized to the wordmark? What does each choice help a visitor see or do? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); the cited instructions settle the choices, not their individual causes |
+| W8 | Why Cleo's spatial layout, shorter, and dark by default for this visitor and story? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); the cited preferences do not state those causes |
+| W10 | Why should the store logos be rounded like the app on this surface? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); responsive access has a reason, this exact visual choice does not |
+| W13 | Why this OpenRouter image route and the exclusion of GPT image for the site's non-product imagery? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); the instruction specifies the route without its reason |
