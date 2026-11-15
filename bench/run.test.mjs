@@ -24,6 +24,34 @@ test('unfinished job times out with no full time', async () => {
   const records=await run({set:'owned',manifestPath:path,outRoot:dir,timeoutS:0,ask:async endpoint=>endpoint==='/v1/search'?reply({id:'job_1',kind:'search',state:'running',stages:[]} ,202):reply({code:'unauthenticated'},401)});
   assert.equal(records[0].error,'timeout'); assert.equal(records[0].full_at,null);
 });
+test('job stage clocks give first and full times independent of polling', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-clock-')); const path=join(dir,'manifest.json'); await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]}));
+  let start; const waits=[];
+  const records=await run({manifestPath:path,outRoot:dir,sleep:async ms=>waits.push(ms),ask:async endpoint=>{
+    if(endpoint==='/v1/search') { start=Date.now(); return reply({id:'job',kind:'search',state:'running',stages:[]}); }
+    if(endpoint==='/v1/jobs/job') return reply({id:'job',kind:'search',state:'done',stages:[{ended_at:new Date(start+1200).toISOString(),found:{results_used:0}},{ended_at:new Date(start+600).toISOString(),found:{results_used:1}}],result:{results:[{site:'poshmark'}]}});
+    return reply({code:'unauthenticated'},401);
+  }});
+  assert.equal(records[0].first_at,new Date(start+600).toISOString());
+  assert.equal(records[0].full_at,new Date(start+1200).toISOString());
+  assert.equal(records[0].time_source,'job'); assert.deepEqual(waits,[2000]);
+});
+test('job without stage times records poll times', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-poll-')); const path=join(dir,'manifest.json'); await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]}));
+  const records=await run({manifestPath:path,outRoot:dir,sleep:async()=>{},ask:async endpoint=>endpoint==='/v1/search'?reply({id:'job',kind:'search',state:'running'}):endpoint==='/v1/jobs/job'?reply({id:'job',kind:'search',state:'done',result:{results:[{site:'poshmark'}]}}):reply({code:'unauthenticated'},401)});
+  assert.ok(records[0].first_at); assert.ok(records[0].full_at); assert.equal(records[0].time_source,'poll');
+});
+test('in-process transport follows the event stream before reading the completed job', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-stream-')); const path=join(dir,'manifest.json'); await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]})); const calls=[];
+  const ask=makeAsk({dispatch:async req=>{const path=new URL(req.url).pathname; calls.push(path);
+    if(path==='/v1/search') return reply({id:'job',kind:'search',state:'running'});
+    if(path==='/v1/jobs/job/events') return new Response('event: job.state\ndata: {"state":"done"}\n\n',{headers:{'Content-Type':'text/event-stream'}});
+    if(path==='/v1/jobs/job') return reply({id:'job',kind:'search',state:'done',stages:[],result:{results:[]}});
+    return reply({code:'unauthenticated'},401);
+  }});
+  const records=await run({manifestPath:path,outRoot:dir,ask,sleep:async()=>assert.fail('stream must not poll')});
+  assert.equal(records[0].error,null); assert.deepEqual(calls.slice(0,3),['/v1/search','/v1/jobs/job/events','/v1/jobs/job']);
+});
 test('429 retries once after the stated delay then records error', async () => {
   const dir=await mkdtemp(join(tmpdir(),'bench-')); const path=join(dir,'manifest.json'); await writeFile(path, JSON.stringify({items:[{id:'one',query:'coat'}]})); let calls=0; const waits=[];
   const records=await run({set:'owned',manifestPath:path,outRoot:dir,sleep:async ms=>waits.push(ms),ask:async endpoint=>{if(endpoint==='/v1/search'){calls++;return reply({code:'rate_limited',retry:{after_s:3}},429)} return reply({code:'unauthenticated'},401)}});

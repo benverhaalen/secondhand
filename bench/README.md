@@ -22,6 +22,7 @@ One JSON object per line, one per answer. Fixed 2026-11-15; ours and every rival
 | `item_id`, `manifest_sha256` | the item, and the hash of the manifest bytes at run time: a record whose hash differs is refused |
 | `question` | `search`, `product`, `value` or `delist` |
 | `asked_at`, `first_at`, `full_at` | ISO UTC: asked, first results, done (null when it never came) |
+| `time_source` | `job` when times come from job stages; `poll` when measured by the runner because stage times are unavailable, or for direct answers |
 | `ok`, `error` | no answer is a result: `ok: false` with the reason (`no_query`, `needs_user`, `timeout`, a §7 error code) |
 | `sites[]` | the marketplaces the answer drew on |
 | `facts[]` | `{kind, count}` for the twelve kinds of row 2: `sold_prices, live_listings, official_price, discounts, product_reviews, seller_reviews, demand_trend, time_to_sell, fees_per_site, you_keep, same_item_elsewhere, price_history` |
