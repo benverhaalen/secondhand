@@ -3,8 +3,9 @@
 // spec/engines/valuation.md §3–4; spec/determinations/money.md D1; spec/plans/joins.md.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync, readdirSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, resolve, relative } from 'node:path';
+import { readFileSync, readdirSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve, relative } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { Worker, isMainThread, parentPort, workerData } from 'node:worker_threads';
 
@@ -58,7 +59,9 @@ function importers(target) {
 
 async function runOnce() {
   // Each worker has fresh module state and stores. Only clock inputs are fixed; no outputs are rounded or masked for equality.
-  delete process.env.SECONDHAND_DATA_DIR;
+  // An offline development run (56e985fd: production refusals hold unless development is stated), on a fresh store per run.
+  process.env.NODE_ENV = 'development';
+  process.env.SECONDHAND_DATA_DIR = mkdtempSync(join(tmpdir(), 'realtime-proof-'));
   delete process.env.SECONDHAND_LIVE_SITES;
   const NativeDate = Date;
   globalThis.Date = class extends NativeDate {

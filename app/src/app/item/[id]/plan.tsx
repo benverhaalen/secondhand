@@ -227,7 +227,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
         <Txt role="caption">Sites</Txt>
         <List>
           {sites.map(s => (
-            <Row key={s.site} lead={<SiteBadge site={s.site} />}
+            <Row key={s.site} lead={<SiteBadge site={s.site} prominent />}
               trail={<Switch id={`site-${s.site}`} label={`Post on ${SITE_LABEL[s.site]}`} on={s.on} disabled={!s.can}
                 onChange={() => { setFlipped(k => (k.includes(s.site) ? k.filter(x => x !== s.site) : [...k, s.site])); edit(); }} />}>
               <Txt role="body" tone={s.on ? 'ink' : 'ink-2'} lines={3}>{s.why}</Txt>
@@ -271,7 +271,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
         numbers={
           <List>
             {on.map(s => { const f = M.feeLine(s.site, s.price); return (
-              <KeepRow key={s.site} site={s.site} line={`Lists at ${usd(f.price)}`} note={`${usd(f.fee)} in fees, on ${f.on}`} keep={`You get ${usd(f.get)}`} />
+              <KeepRow key={s.site} site={s.site} prominentSite line={`Lists at ${usd(f.price)}`} note={`${usd(f.fee)} in fees, on ${f.on}`} keep={`You get ${usd(f.get)}`} />
             ); })}
           </List>
         } />
