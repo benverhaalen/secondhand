@@ -13,6 +13,7 @@ export interface Log {
   child(ids: Record<string, string>, src?: string): Log;
   error(where: string, e: unknown, fields?: Record<string, unknown>): void;
   event(name: string, fields?: Record<string, unknown>, level?: string): unknown;
+  timed<T>(name: string, fn: () => T, fields?: Record<string, unknown>): T;
 }
 
 export function createLog(options: { src: string; build: string; sink: Sink; seed?: number; session?: string; from?: string; config?: Record<string, unknown> }): Log;
