@@ -59,7 +59,7 @@ Scale of the pool: US secondhand apparel is projected at $78.8B by 2030, and Thr
 ## What has to be true for it to work
 
 1. **Access holds.** The sites keep allowing a person's own signed-in agent, or offer official access. eBay has an API; Depop has a partner program we haven't joined; the others have neither.
-2. **Watching stays cheap.** Public-page checks keep working, so a browser opens only to confirm (a browser kept open would cost about $170 a month per person on four sites, [numbers](numbers.md#what-a-listing-costs-us)).
+2. **Watching stays cheap.** Public-page checks keep working, so a browser opens only to confirm (a browser kept open would cost about $170 a month per person on four sites, [numbers](numbers.md#what-it-costs-us)).
 3. **Referral programs accept us.** eBay's Partner Network needs approval for production Buy API access; Facebook and OfferUp have no consumer program we found.
 4. **People trust it with their accounts.** The approval-first design and the record of every action are what earn that.
 5. **The App Store accepts it.** Server-held site sessions may raise App Review guideline 5.1.1(v); a TestFlight review is the first test ([connect](../spec/features/connect.md)).
