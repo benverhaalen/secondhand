@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en" data-medium="story">
+<head>
+<meta charset="utf-8">
+<title>secondhand story template</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../media.css">
+<link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+<!-- A story or a reel is 1080 by 1920. Every frame is one of three layouts: item, number, close.
+     Nothing sits in the top 250 or the bottom 340, where the app draws its own controls. The wordmark is on the end card only.
+     Check it: node scripts/brand-check.mjs brand/templates/story.html --medium story -->
+
+<!-- item: the photo or the footage, with one caption of eight words at most under it. -->
+<section data-view data-layout="item">
+  <div class="content">
+    <figure class="item" data-part="item-hero">
+      <img data-photo src="../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Russell Athletic Chico State hoodie, faded crimson, XXL, flat on concrete">
+    </figure>
+    <p class="body">One photo. Listed in a minute.</p>
+  </div>
+</section>
+
+<!-- number on the field: the one frame that carries the gradient. Source: pitch-evidence.md, the $20 shirt. -->
+<section data-view data-layout="number" data-field>
+  <div class="content">
+    <p class="body second">You keep about</p>
+    <p class="amount">$17</p>
+  </div>
+</section>
+
+<!-- close: the end card, the wordmark alone in the middle. -->
+<section data-view data-layout="close">
+  <p class="wordmark">secondhand</p>
+</section>
+</body>
+</html>

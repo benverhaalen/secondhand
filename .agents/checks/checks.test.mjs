@@ -484,10 +484,12 @@ test('picks D5: a straight apostrophe or three dots on a screen fails; the real 
 // Ben, 2026-11-15: the constitution leaves "little wiggle room". A word of degree needs a number, a token or an id on its line.
 test('vague: a word of degree with nothing to pin it down fails in a scoped article; a number, a token, an id or a quotation passes', async () => {
   const { vague } = await import('./vague.mjs');
-  const doc = body => ({ 'brand/constitution.md': `# C\n\n## Part II. Articles\n\n### Article 3. References\n\nIt is usually fine.\n\n### Article 5. Color\n\n${body}\n\n## Part III. Media\n\nKeep it fairly short.\n` });
+  const doc = body => ({ 'brand/constitution.md': `# C\n\n## Part II. Articles\n\n### Article 3. References\n\nIt is usually fine.\n\n### Article 5. Color\n\n${body}\n\n## Part IV. Checks\n\nKeep it fairly short.\n` });
   const bad = errors(run(vague, doc('The field drifts slowly.\nThe glow is faint.\n- Use color sparingly.')));
   for (const w of ['"slowly"', '"faint"', '"sparingly"']) assert.ok(bad.includes(w), w);
   assert.ok(!bad.includes('usually') && !bad.includes('fairly'), 'articles outside the scope are not read');
   assert.match(bad, /constitution\.md:11 /);
+  // Part III, the media, is read too: Ben asked for a section per medium with little wiggle room.
+  assert.match(errors(run(vague, { 'brand/constitution.md': '# C\n\n## Part III. Media\n\n### Each medium\n\nKeep a caption fairly short.\n\n## Part IV. Checks\n\nIt is usually fine.\n' })), /^[^\n]*"fairly"[^\n]*Part III[^\n]*$/);
   assert.equal(errors(run(vague, doc('The field drifts slowly: one pass takes 26 s.\nThe glow is faint, as `--pill-glow` sets it.\nBen: "a little more depth or a slight shadow".\nIt drifts slowly (C2).'))), '');
 });

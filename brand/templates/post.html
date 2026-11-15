@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en" data-medium="post">
+<head>
+<meta charset="utf-8">
+<title>secondhand post template</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../media.css">
+<link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+<!-- A post is 1080 by 1350, one panel or a carousel. Every panel is one of four layouts: item, number, list, statement.
+     The wordmark sits bottom center on every panel. The field is the ground of one panel at most.
+     Check it: node scripts/brand-check.mjs brand/templates/post.html --medium post
+     The numbers here are from research/cross-cutting/ben/pitch-evidence.md. Replace them with yours and keep the source in a comment. -->
+
+<!-- item: the photo is the post, with one heading under it. -->
+<section data-view data-layout="item">
+  <div class="content">
+    <figure class="item" data-part="item-hero">
+      <img data-photo src="../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Russell Athletic Chico State hoodie, faded crimson, XXL, flat on concrete">
+    </figure>
+    <h2 class="heading">Sell it in seconds</h2>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- number: what it is, the one number, what follows. Source: pitch-evidence.md, the $20 shirt. -->
+<section data-view data-layout="number">
+  <div class="content">
+    <p class="body second">Consignment pays you</p>
+    <p class="peak">$3</p>
+    <p class="body">for a $20 shirt.</p>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- list: a heading and six rows at most, each one line. -->
+<section data-view data-layout="list">
+  <div class="content">
+    <h2 class="heading">What it does</h2>
+    <ul class="rows">
+      <li data-part="row"><p class="body">Shoots and measures</p></li>
+      <li data-part="row"><p class="body">Prices from what sold</p></li>
+      <li data-part="row">
+        <p class="body">Posts</p>
+        <div class="logos">
+          <img data-part="logo" src="../../assets/platforms/ebay.svg" alt="eBay">
+          <img data-part="logo" src="../../assets/platforms/depop.svg" alt="Depop">
+          <img data-part="logo" src="../../assets/platforms/mercari.svg" alt="Mercari">
+        </div>
+      </li>
+      <li data-part="row"><p class="body">Answers buyers</p></li>
+    </ul>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- number on the field: the one panel that carries the gradient. -->
+<section data-view data-layout="number" data-field>
+  <div class="content">
+    <p class="body second">You keep about</p>
+    <p class="peak">$17</p>
+    <p class="body">of a $20 shirt.</p>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+</body>
+</html>

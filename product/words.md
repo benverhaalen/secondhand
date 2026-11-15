@@ -878,6 +878,14 @@ Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:22 UTC, on the v5
 Nate, build session (orchestrator), 2026-11-14 about 21:35 Central, as the stream sessions were being launched.
 > These should be made fast, efficient, utilize the databricks skills, create custom platform harnesses that utilize browser use, jev ultrafast, to target and wrap around each platform efficiently and instantly, creating pipelines and actions for each app action, engine search, requested information, to be automatically sent out for the proper instant background cloud hosted browser session. Even parallel launching multiple at the same time for efficiency. All built around every platform to find everything and act on everything too, populate listings for the user, delist, relist, delete, confirm trade, works in real time to automate all as stated
 
+## 2026-11-15 compose screens from the brand system and layer ai photos
+Ben, thread "Shape the app one decision at a time", 2026-11-15 03:24 UTC, on the image loop's camera round, relayed to the thread "Roll the UI system out everywhere".
+> no i dont like this you should combine the brand system created with ai photo gens and layer it rather than telling the photo gen to actually generate the ui. you should piece them together yourself. generate an ai image to be a placeholder for camera feed.
+
+## 2026-11-14 nate the orchestrator understands how things are built and old standard practice does not slow it
+Nate, build session (orchestrator), 2026-11-14 about 21:45 Central, after the eight stream sessions were launched.
+> Well you as fable 5.2 can understand how things should be built, of course given the direction, and not have to strictly go off of example, pull documentation, utilize professional software engineering agentic expert skills, dont let standard practices before agents get in the way and make things longer of a process. Understand that you can be incredible and orchestrate everything to work perfectly
+
 ## 2026-11-15 the text weight is 500
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a side by side of Book, Medium on titles and a weight near 450. Recorded by the brand thread, which owns Article 6.
 > i think with font weights i like 500 unless you have a researched back reason to choose 450. what do you think
