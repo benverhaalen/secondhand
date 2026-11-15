@@ -15,6 +15,7 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [product/showcase.md](product/showcase.md) | What each audience looks for, how we use Databricks with the status of each piece, the full demo script for buying and selling, pricing anything, and what "hot" means | Agents; *agent proposal* |
 | [product/demo-reel.md](product/demo-reel.md) | The feature clips and the basement demos, how to show how it works, and faster demo loops for the website and app | Agents; *agent proposal* |
 | [product/theme.md](product/theme.md) | The MadHacks theme "Let's dig in": its likely source, each way to read it, where secondhand fits, and the lines to say | Agents; *agent proposal* |
+| [product/unique.md](product/unique.md) | What we did that we haven't seen elsewhere, ranked, with what others do and how to show each in five seconds | Agents; *agent proposal* |
 | [product/devpost.md](product/devpost.md) | The Devpost write-up draft | Agents; *agent proposal* |
 | [product/pitch-video.md](product/pitch-video.md) | The submission video: script, shot list, how to make it fast | Agents |
 | [product/words.md](product/words.md) | Ben's and Nate's exact product words, the source everything else cites | Append only |

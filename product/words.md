@@ -1179,3 +1179,9 @@ Ben, project chat (relayed), 2026-11-15 06:44 UTC, answering "Should automatic r
 > no i mean if the user manually reads and chooses to send, the user then sends it. if the buyer asks then it can say
 
 Used in: [pitch.md](pitch.md#its-always-you-ai-that-helps-you-not-ai-that-is-you), [spec/features/messages.md](../spec/features/messages.md).
+
+## 2026-11-15 what did we do that nobody else has
+Ben, project chat (relayed), 2026-11-15 06:44 UTC.
+> also did you figure out any super unique ways that we ended up solving problems. ways that nobody really has done things before or a super unique way and why and how to exemplify that in the pitch or website etc
+
+Used in: [unique.md](unique.md), [pitch.md](pitch.md#whats-new-three-things-we-havent-seen-anyone-else-do), [devpost.md](devpost.md).

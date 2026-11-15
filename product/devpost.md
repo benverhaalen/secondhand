@@ -50,6 +50,13 @@ You see one short list of decisions. Anything that touches your money, your addr
 - **Databricks** [only what's deployed]: live state in Lakebase, every event and comparable sale in Delta tables, photos in a Unity Catalog volume, every model call through one gateway, and every agent step as an MLflow trace that the app shows when you tap Why?.
 - **The phone app** is Expo with a native Swift camera module; the website is the same app on the web.
 
+## What's new here
+
+Three things we haven't seen another tool do (we checked the crosslisters, the price-check apps and the photo tools first; [details](https://github.com/benverhaalen/secondhand/blob/main/product/unique.md)):
+- **We proved a double sale can't go unnoticed.** Every order of events for one item on four sites, 931,406 of them, ends with you seeing it. Break the refund rule on purpose and the check fails in 6 steps.
+- **AI photos are checked by something that isn't AI.** Other photo tools grade AI edits with another model. Ours compares the edit to your photo with plain image math, protects every logo, tag and stain one by one, and shows your real photo when in doubt: 173 of 174 planted lies caught.
+- **A reply can't say what your item doesn't back.** Every claim in a draft is matched to a fact on the item before it can be sent; "smoke-free home" with nothing behind it is held for you.
+
 ## Keeping a human in the loop, on purpose
 
 We didn't want an agent that acts alone. In September, an assistant on another platform, set to "Allow Always", accepted a lowball offer and sent a stranger to a seller's home. So:

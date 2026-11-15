@@ -80,6 +80,10 @@ Ben, 06:40: "pitching about ai impersonation. its always you. also think about h
 - Replies start as drafts: you read them and you send them ([Ben, 06:40](words.md#2026-11-15-a-sale-and-a-match-ping-at-once-replies-start-as-drafts-and-agents-build-the-better-way)). Every draft is built from your item's facts; a claim it can't back is held and shown to you.
 - It earns "Always do this" after you approve the same**Who sends it.** Ben, 06:44: when you read a reply and choose to send it, you sent it, so it carries no label; if a buyer asks whether AI helped, the reply says yes ([words](words.md#2026-11-15-you-send-it-and-if-a-buyer-asks-it-says-so)). So the honest line is "Every reply is one you read and sent. Ask if AI helped, and it'll tell you." Don't say "no AI ever touches your messages".nt.md)). Until it's decided, say "it speaks for you only in words you approved or by rules you set", not "it never impersonates you".
 
+## What's new: three things we haven't seen anyone else do
+
+After the demo, say these three, each with its 5-second proof ([unique.md](unique.md), with what we checked for each): we proved a double sale can't go unnoticed (931,406 states; the broken version fails in 6 steps); AI photos are checked by math, not more AI, with every flaw protected (173 of 174); a reply can't say what your item doesn't back (the held "smoke-free home"). Say "we haven't seen", never "first ever".
+
 ## Security and open source
 
 Checked against the code on 2026-11-15. Say "built" for these; nothing here has run against a live account at scale.
