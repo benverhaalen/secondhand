@@ -35,7 +35,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     } catch (error) {
       if (request !== generation.current) return;
       log.error('account.read', error);
-      if (error instanceof ApiFailure && error.status === 401) {
+      // Sign out only when the server rejected the tokens (the client dropped them); a refresh lost to a bad connection keeps them for Try again.
+      if (error instanceof ApiFailure && error.status === 401 && (!api.session.token || !api.session.refresh)) {
         await api.signOut().catch(e => log.error('account.signout', e));
       } else setState({ status: 'failed', user: null, error: accountError(error) });
     }

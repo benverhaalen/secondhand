@@ -260,7 +260,17 @@ export function sessionClient(o: {
     async liveView(user_id: string, handle: string): Promise<string | undefined> {
       const link = await find(user_id, handle);
       if (!link) return;
-      const viewer = link.viewer; link.viewer = undefined; return viewer;
+      // Kept while the link lives, so the phone can reopen the page after closing it mid-sign-in (only the owner reaches this).
+      return link.viewer;
+    },
+    // True while the cloud browser still shows the service's sign-in page: a code is pending or Done was tapped early.
+    // The page is only read, never navigated, so a half-finished sign-in survives.
+    async stillSigningIn(user_id: string, handle: string): Promise<boolean> {
+      const link = await find(user_id, handle); if (!link) return false;
+      try {
+        const here = new URL(link.page.url());
+        return PROFILES[link.site].sign_in_markers.some(marker => { const login = new URL(marker); return here.origin === login.origin && here.pathname.startsWith(login.pathname); });
+      } catch { return false; }
     },
     async finishLink(user_id: string, handle: string): Promise<AdapterResult | undefined> {
       const link = await find(user_id, handle); if (!link || !links.delete(handle)) return;
