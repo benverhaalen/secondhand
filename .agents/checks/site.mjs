@@ -1,6 +1,7 @@
 // The website is the app's family (Ben, 09:24: "for each of those problems can you ensure they are enforced in website
 // mocks"). On every site page and board, held here on the source:
 //   S1  a color comes from tokens.css, never written in place (a mask's alpha is not a color)
+//   S3  an app screen is one app-shots.mjs draws from the app's build, never a saved copy (L61)
 //   S2  a device the app doesn't use (a shadow on text, a filter, a mask, a gradient, a keyframe animation, glass) cites
 //       the Locked ledger row where Ben said yes to it, in a comment in the same rule: "/* L56 */"
 // The spacing, radius and weight scales are brand.mjs's, which reads these files too. The rendered checks (B and U rules,
@@ -8,9 +9,9 @@
 import { read, err, warn, lineOf } from './util.mjs';
 
 // The first screen being rebuilt with Ben now, the shared stylesheet and every new board are held to it. The older pages
-// and the boards of rounds already picked (01 to 03) are told what to fix until their turn comes.
+// and the boards of rounds already picked (01 to 04) are told what to fix until their turn comes.
 export const SITE = /^brand\/explore\/web-home\/(?!.*\/(?:out|renders|photos)\/).*\.(?:css|html)$/;
-export const HELD = /^brand\/explore\/web-home\/(?:hero\/|boards\/(?!0[1-3]-)|site\.css$)/;
+export const HELD = /^brand\/explore\/web-home\/(?:hero\/|boards\/(?!0[1-4]-)|site\.css$)/;
 
 const RAW_COLOR = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|oklch|oklab|lab|lch|hwb)\(/i;
 // The brand's own depth: the pill's glow, the focus ring, the card shadows, and the one soft shadow Art. 9.2 lets a medium pick.
@@ -47,11 +48,25 @@ function declarations(css) {
 // The CSS in a page: its <style> blocks and style attributes, each kept at its place so lines still count.
 const cssOf = (f, t) => f.endsWith('.css') ? t : t.replace(/<style[^>]*>([\s\S]*?)<\/style>|style="([^"]*)"|[^]/g, (m, a, b) => a != null ? m.replace(/<\/?style[^>]*>/g, s => ' '.repeat(s.length)) : b != null ? ' '.repeat(7) + `{${b}}` : m === '\n' ? '\n' : ' ');
 
+// S3: the site shows the app only as app-shots.mjs draws it from the app's build (L61; Ben, 10:24). A saved render from
+// features/app/renders or a shot app-screens.json doesn't list is a copy that drifts from the app.
+const SHOTS = 'brand/explore/web-home/app-screens.json';
+function shots(root, f, t, say) {
+  const listed = new Set((JSON.parse(read(root, SHOTS) ?? '{"shots":[]}').shots ?? []).map(s => s.id)), out = [];
+  for (const m of t.matchAll(/<img[^>]*\bsrc="([^"]+)"/g)) {
+    const src = m[1], where = `${f}:${lineOf(t, m.index)}`, shot = src.match(/(?:^|\/)web-home\/app\/([\w-]+)\.png$|^(?:\.\.\/)+app\/([\w-]+)\.png$/);
+    if (/features\/app\/renders\//.test(src)) out.push(say(where, `${src} is a saved app render: list the screen in ${SHOTS} and use app/<id>.png, which app-shots.mjs redraws from the app on every build (S3, L61)`));
+    else if (shot && !listed.has(shot[1] ?? shot[2])) out.push(say(where, `${src} is not a shot ${SHOTS} lists, so no build redraws it (S3, L61)`));
+  }
+  return out;
+}
+
 export function site(root, { files }) {
   const ok = locked(read(root, 'brand/ledger.md') ?? ''), out = [];
   for (const f of files.filter(f => SITE.test(f))) {
     const t = read(root, f); if (t == null) continue;
     const css = cssOf(f, t), say = HELD.test(f) ? err : warn;
+    if (f.endsWith('.html')) out.push(...shots(root, f, t, say));
     for (const d of declarations(css)) {
       const where = `${f}:${lineOf(css, d.at)}`;
       if (d.prop !== '@keyframes' && !/^(?:-webkit-)?mask/.test(d.prop) && !d.prop.startsWith('--') && RAW_COLOR.test(d.value.replace(/var\([^)]*\)/g, '')))

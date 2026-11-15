@@ -1,0 +1,21 @@
+{
+  "commit": "0a5208ab3d27159b648c5db4f7ed69924ea4f6ff",
+  "faces": false,
+  "shots": [
+    {
+      "id": "step-1-photo",
+      "path": "/camera",
+      "moment": null
+    },
+    {
+      "id": "step-2-price",
+      "path": "/item/it_tee/plan?world=clearing",
+      "moment": "What do you want?"
+    },
+    {
+      "id": "step-3-sold",
+      "path": "/item/it_tee?world=clearing",
+      "moment": "$36.21"
+    }
+  ]
+}

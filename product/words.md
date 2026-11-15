@@ -1966,4 +1966,7 @@ Ben, website thread, 2026-11-15 10:23 and 10:24 UTC.
 
 > C is better than A and B but it isnt exact. also the website should update screenshots from the respective parts of the app according to the app code itself. rerender on each build because the app updates a lot. also think of the best ways to convey it using screenshots. everything super intentional.
 
+Ben, same thread, 10:32 UTC.
+> as far as the website goes on the public pages they are all essentially advertising so they hold a different purpose than something like an app screen
+
 Used in: [ledger L60 and L61](../brand/ledger.md), [the first screen's actions](../brand/explore/web-home/hero/actions.md), [web.md W3](constitutions/web.md).

@@ -83,7 +83,7 @@ for (const dir of process.argv.slice(2).map(d => resolve(d))) {
       (board.motion ? `, contrast floor ${row[390].contrast_floor}:1 phone and ${row[1440].contrast_floor}:1 desktop, ${Math.round(row[390].clothing_share * 100)}% clothing on a phone` : ''));
   }
   audit.faces = audit.variants.every(r => r[1440].faces && r[390].faces);
-  // Only a held board fails the run; a round already picked (01 to 03) is told what to fix until its turn (web.md W14).
+  // Only a held board fails the run; a round already picked (01 to 04) is told what to fix until its turn (web.md W14).
   const held = HELD.test(relative(root, dir).split(sep).join('/') + '/');
   if (!held) { if (!audit.faces || audit.variants.some(r => r.brand_errors.length)) console.warn(`warn: ${board.title}: an older board with findings; it is told, not held`); }
   else if (!audit.faces) failed.push(`${board.title}: drawn in a fallback face`);

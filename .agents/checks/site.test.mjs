@@ -39,7 +39,7 @@ test('site S2: the app\'s own depth and the field token pass without a citation'
 });
 
 test('site: a page inside an <style> block and a style attribute is read, with its line', () => {
-  assert.match(errs({ 'brand/explore/web-home/boards/04-hover/a.html': '<!doctype html>\n<style>\n.a { color: #fff; }\n</style>\n<p style="color: rgb(1 2 3)">x</p>' }), /a\.html:3 color: #fff[\s\S]*a\.html:5 color: rgb/);
+  assert.match(errs({ 'brand/explore/web-home/boards/05-hover/a.html': '<!doctype html>\n<style>\n.a { color: #fff; }\n</style>\n<p style="color: rgb(1 2 3)">x</p>' }), /a\.html:3 color: #fff[\s\S]*a\.html:5 color: rgb/);
 });
 
 test('site: an older page is told, not blocked, and renders and photos are not read', () => {
@@ -49,10 +49,17 @@ test('site: an older page is told, not blocked, and renders and photos are not r
 
 test('site: a board from a round already picked is told; a new board is held', () => {
   const css = '<style>.a { color: #fff; }</style>';
-  assert.deepEqual(findings({ 'brand/explore/web-home/boards/02-ambient/a.html': css, 'brand/explore/web-home/boards/04-hover/a.html': css }).map(o => o.level), ['warn', 'error']);
+  assert.deepEqual(findings({ 'brand/explore/web-home/boards/02-ambient/a.html': css, 'brand/explore/web-home/boards/05-hover/a.html': css }).map(o => o.level), ['warn', 'error']);
 });
 
 test('site S2: motion the website row names may cite Art. 11, and a soft shadow or animation: none needs nothing', () => {
   assert.equal(errs({ [HERO]: '/* sections reveal once (Art. 11) */\n.reveal { animation: arrive linear both; }\n.c { box-shadow: var(--shadow-soft); animation: none !important; }' }), '');
   assert.match(errs({ [HERO]: '/* Art. 11 */ .t { text-shadow: 0 1px 2px var(--page); }' }), /a shadow on text/);
+});
+
+test('site S3: an app screen is a listed shot app-shots.mjs draws, never a saved render', () => {
+  const list = { 'brand/explore/web-home/app-screens.json': '{"shots":[{"id":"step-1-photo"}]}' };
+  assert.match(errs({ ...list, [`${'brand/explore/web-home/hero/index.html'}`]: '<img src="../../../../features/app/renders/camera-dark.png" alt="x">' }), /index\.html:1 .*saved app render.*S3/);
+  assert.match(errs({ ...list, 'brand/explore/web-home/hero/index.html': '<p>x</p>\n<img src="../app/step-9-gone.png" alt="x">' }), /index\.html:2 .*not a shot .*lists/);
+  assert.equal(errs({ ...list, 'brand/explore/web-home/hero/index.html': '<img src="../app/step-1-photo.png" alt="x">' }), '');
 });
