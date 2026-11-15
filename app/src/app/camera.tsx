@@ -49,7 +49,7 @@ const NONE = 'None of these';
 const SIZED: FactKey[] = ['chest', 'length', 'sleeve'];
 const scannedBy = (lidar: boolean) => (f: { fact: FactKey }) => lidar || !SIZED.includes(f.fact);
 const MODES = CHOICES.map(c => ({ mode: c.mode, icon: MODE_ICON[c.mode], label: c.mode === 'sell' ? 'Sell' : c.mode === 'worth' ? 'Worth' : 'Find' }));
-const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat('en-US').format(n)} ${new Intl.PluralRules('en-US').select(n) === 'one' ? one : many}`;
+const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat('en-US').format(n)} ${n === 1 ? one : many}`;
 
 // Where a drawn moment starts: which stages are done, what is known, how many stills.
 function start(drawn: Drawn | null, mode: Mode, lidar: boolean) {

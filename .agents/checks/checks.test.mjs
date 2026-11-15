@@ -347,7 +347,7 @@ test('picks L47: a state gradient led by another color, or with colors that are 
   assert.equal(await pick('L47', css('mint', 'aqua', 'lime')), '');
   assert.match(await pick('L47', css('sky', 'aqua', 'lime')), /led by its own fill, --mint/);
   assert.match(await pick('L47', css('mint', 'sky', 'lime')), /two neighbors on the ring/);
-  assert.match(await pick('L47', css('mint', 'aqua', 'lime', ' :root[data-theme="dark"] { --field-sold-1: #03523B; }')), /stays light/);
+  assert.match(await pick('L47', css('mint', 'aqua', 'lime', ' :root[data-theme="dark"] { --field-sold-1: #03523B; }')), /the state colors are light only/);
 });
 
 test('picks L48: a hot red as dark as brick fails, a glow in a state color fails; the fire tokens and a plain shadow pass', async () => {

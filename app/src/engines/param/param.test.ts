@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { regressions } from './regressions.ts';
 import { readFileSync } from 'node:fs';
 import { cached, lineage, memoryStore, VersionConflict, type Param } from './param.ts';
 
@@ -87,10 +88,10 @@ test('a conjugate update moves a beta mean, weighted, and a frozen scope does no
   assert.equal(s.observe('assist_span_open', { site: 'depop' }, { success: 0, weight: 5 }, AT).reason, 'frozen');
 });
 
-test('a conjugate update that would push a beta mean past its guard is not applied', () => {
+test('a conjugate update past its guard keeps counts and clamps the read', () => {
   const s = store();
   const r = s.observe('assist_span_open', {}, { success: 1, weight: 1000 }, AT);
-  assert.deepEqual([r.applied, r.reason], [false, 'guard']);
+  assert.deepEqual([r.applied, r.reason], [true, 'clamped']);
 });
 
 test('the 60 s cache serves a read until its time runs out', () => {
@@ -120,25 +121,25 @@ test('implicit elapsed time halves old counts; explicit elapsed time wins; out-o
   const s = store();
   s.observe('assist_span_open', {}, { success: 1, weight: 2 }, DAY0);
   const r = s.observe('assist_span_open', {}, { success: 0, weight: 1 }, DAY30);
-  assert.deepEqual(r.read.value, { alpha: 5, beta: 2 });
+  assert.deepEqual(r.read.value, { alpha: 9, beta: 3 });
   assert.equal(r.read.n_eff, 2);
-  assert.deepEqual(s.observe('assist_span_open', {}, { success: 1, weight: 1 }, DAY0).read.value, { alpha: 6, beta: 2 });
-  assert.deepEqual(s.observe('assist_span_open', {}, { success: 0, weight: 1, days_since_last: 0 }, DAY30).read.value, { alpha: 6, beta: 3 });
+  assert.deepEqual(s.observe('assist_span_open', {}, { success: 1, weight: 1 }, DAY0).read.value, { alpha: 10, beta: 3 });
+  assert.deepEqual(s.observe('assist_span_open', {}, { success: 0, weight: 1, days_since_last: 0 }, DAY30).read.value, { alpha: 10, beta: 4 });
 });
 
-test('gamma sold comps update shape and exposure, freeze and guards refuse writes', () => {
+test('gamma sold comps with implicit elapsed time decay evidence while retaining the prior', () => {
   const s = memoryStore();
   s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 2 });
-  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
-  assert.deepEqual(s.read('velocity', {}).value, { shape: 2, rate: 1 });
-  assert.equal(s.read('velocity', {}).version, 2, 'third update breaches the rate guard');
+  for (const at of [DAY0, DAY30, '2026-03-02T00:00:00Z']) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1 }, at);
+  assert.deepEqual(s.read('velocity', {}).value, { shape: 3.75, rate: 4 });
+  assert.equal(s.read('velocity', {}).version, 3, 'all three observations are retained');
 });
 
 test('gamma apply and observe share the update path; frozen gamma stays unchanged', () => {
   const s = memoryStore();
   s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 } });
-  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
-  assert.deepEqual(s.read('velocity', {}).value, { shape: 2 * 0.5 ** 3 + 1.75, rate: 0.5 });
+  for (const at of [DAY0, DAY30, '2026-03-02T00:00:00Z']) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1 }, at);
+  assert.deepEqual(s.read('velocity', {}).value, { shape: 3.75, rate: 4 });
   s.freeze('velocity', {}, true);
   assert.equal(s.observe('velocity', {}, { count: 1, exposure: 1, weight: 1 }, DAY30).reason, 'frozen');
   assert.equal(s.read('velocity', {}).version, 3);
@@ -209,3 +210,5 @@ test('pooling recursively weighs every permitted ancestor and the prior, skippin
   assert.ok('mean' in r && Math.abs(r.mean - (3 * 0.9 + 20 * kind) / 23) < 1e-12);
   assert.ok('versions' in r && r.versions.length === 3 && r.n_eff === 3);
 });
+
+for (const [name, check] of Object.entries(regressions)) test(name, () => check(memoryStore()));

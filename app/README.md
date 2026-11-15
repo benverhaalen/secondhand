@@ -10,7 +10,8 @@ npm run check
 
 1. Copy `.env.example` to `.env.local` and fill in the workspace address and the SQL warehouse id. Git ignores `.env.local`.
 2. Sign in once with the Databricks CLI (`databricks auth login --host <workspace address>`). No token is written to a file: on a laptop the server routes ask the CLI for one.
-3. `npm start`, then open the app in Expo Go, a simulator or the browser.
+3. Put the brand font files in `fonts/` at the repo root (or set `SECONDHAND_FONTS` to the folder that holds them). They are licensed and never committed. `npm start`, `npm run ios` and `npm run android` copy them into `assets/fonts/` first (`../scripts/fonts.mjs`); `npm run fonts` fails when one is missing. Without them the phone draws in San Francisco and looks nothing like the mocks.
+4. `npm start`, then open the app in Expo Go, a simulator or the browser.
 
 The first screen is a development placeholder. It calls `GET /v1/health` and shows whether Databricks answered.
 

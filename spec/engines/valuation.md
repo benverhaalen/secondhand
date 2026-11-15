@@ -57,7 +57,7 @@ A row with `may_model: false` (eBay rows, per [data use](../data-use.md)) can be
 |---|---|---|
 | 1. Retrieve candidates: product id match, then embedding nearest neighbours on image and title within the category | D1 | model (the embedding index; deterministic at query) |
 | 2. Extract the variant, condition, size and defects of each candidate | D1 | model (Claude Haiku, structured output, evidence span per field; `w_extract` 0.7 for its fields) |
-| 3. Weight: `w = w_type x w_match x w_age x w_extract`; drop junk; back off one level while `n_eff < 6` | D1 | arithmetic, with learned values (§4) |
+| 3. Weight: `w = w_type x w_match x w_age x w_extract`; drop junk; blend down the fallback order by `n_eff / (n_eff + k)` (§3 "The fallback order") | D1 | arithmetic, with learned values (§4) |
 | 4. Adjust for condition and size, then for time | D2, D3 | arithmetic, with learned values |
 | 5. Drop comps beyond `ln 1.25` of their adjustment, and outliers past `3 x 1.4826 x MAD` on log price | D1 | arithmetic |
 | 6. Quantiles q10, q50, q90, overall and per site | D5 | model (LightGBM quantile heads); before it is trained, weighted quantiles of the comps |
