@@ -1,0 +1,2900 @@
+{
+  "datasets": [
+    {
+      "name": "headline",
+      "displayName": "headline",
+      "queryLines": [
+        "SELECT * FROM headline_latest ORDER BY source, contestant\n"
+      ]
+    },
+    {
+      "name": "claim",
+      "displayName": "claim",
+      "queryLines": [
+        "SELECT DISTINCT claim, data, n_tests FROM headline_latest WHERE run_id = (SELECT run_id FROM headline_latest ORDER BY started_at DESC, run_id DESC LIMIT 1)\n"
+      ]
+    },
+    {
+      "name": "primary_headline",
+      "displayName": "primary headline",
+      "queryLines": [
+        "SELECT within_20, coverage FROM headline_latest WHERE contestant = 'product_90d_median' AND run_id = (SELECT run_id FROM headline_latest ORDER BY started_at DESC, run_id DESC LIMIT 1)\n"
+      ]
+    },
+    {
+      "name": "model_headline",
+      "displayName": "model headline",
+      "queryLines": [
+        "SELECT within_20, coverage FROM headline_latest WHERE contestant = 'model' AND run_id = (SELECT run_id FROM headline_latest ORDER BY started_at DESC, run_id DESC LIMIT 1)\n"
+      ]
+    },
+    {
+      "name": "accuracy",
+      "displayName": "accuracy",
+      "queryLines": [
+        "SELECT source, contestant, kind, price_band, n, priced, within_20, coverage, median_ape,\n",
+        "       concat(source, ' / ', kind, ' / ', price_band) AS cell\n",
+        "FROM valuation_accuracy\n",
+        "WHERE NOT too_few AND within_20 IS NOT NULL\n",
+        "ORDER BY source, kind, price_band, contestant\n"
+      ]
+    },
+    {
+      "name": "timeline",
+      "displayName": "timeline",
+      "queryLines": [
+        "SELECT t.month, max(t.champion_value) AS champion_value,\n",
+        "       CASE WHEN count_if(t.action = 'rollback') > 0 THEN 'rollback'\n",
+        "            WHEN count_if(t.action = 'promote') > 0 THEN 'promote' ELSE 'hold' END AS action\n",
+        "FROM param_timeline t\n",
+        "JOIN (SELECT run_id, name, scope FROM param_moves ORDER BY month DESC, run_id DESC, name, scope LIMIT 1) chosen\n",
+        "  ON t.run_id = chosen.run_id AND t.name = chosen.name AND t.scope = chosen.scope\n",
+        "WHERE t.action IN ('promote', 'hold', 'rollback')\n",
+        "GROUP BY t.month ORDER BY t.month\n"
+      ]
+    },
+    {
+      "name": "moves",
+      "displayName": "moves",
+      "queryLines": [
+        "SELECT run_id, data, name, scope, month, action, version, value, held_out_score, champion_score, diff, noise, reason FROM param_moves ORDER BY month DESC, run_id DESC, version DESC\n"
+      ]
+    },
+    {
+      "name": "history",
+      "displayName": "history",
+      "queryLines": [
+        "SELECT * FROM param_history ORDER BY _commit_version DESC, name, scope, version\n"
+      ]
+    },
+    {
+      "name": "citation",
+      "displayName": "citation",
+      "queryLines": [
+        "SELECT sum(shown_with_citation) * 1.0 / nullif(sum(shown_numbers), 0) AS share FROM citation_coverage WHERE data <> 'synthetic'\n"
+      ]
+    },
+    {
+      "name": "recompute",
+      "displayName": "recompute",
+      "queryLines": [
+        "SELECT sum(CASE WHEN equal THEN 1 ELSE 0 END) * 1.0 / nullif(count(*), 0) AS share, sum(CASE WHEN equal THEN 1 ELSE 0 END) AS equal_cases, count(*) AS cases FROM recompute_check\n"
+      ]
+    },
+    {
+      "name": "parity",
+      "displayName": "parity",
+      "queryLines": [
+        "SELECT sum(CASE WHEN equal THEN 1 ELSE 0 END) * 1.0 / nullif(count(*), 0) AS share, sum(CASE WHEN equal THEN 1 ELSE 0 END) AS equal_cases, count(*) AS cases FROM parity_check\n"
+      ]
+    },
+    {
+      "name": "hidden",
+      "displayName": "hidden",
+      "queryLines": [
+        "SELECT hide_reason, sum(count) AS count FROM hidden_numbers GROUP BY hide_reason ORDER BY count DESC\n"
+      ]
+    },
+    {
+      "name": "why",
+      "displayName": "why",
+      "queryLines": [
+        "SELECT id, number_id, basis_count, missing_basis, equal FROM recent_why ORDER BY created_at DESC, id DESC\n"
+      ]
+    },
+    {
+      "name": "decisions",
+      "displayName": "decisions",
+      "queryLines": [
+        "SELECT policy_mode, sum(count) AS count FROM decisions_by_policy GROUP BY policy_mode ORDER BY count DESC\n"
+      ]
+    },
+    {
+      "name": "never",
+      "displayName": "never",
+      "queryLines": [
+        "SELECT id, kind, action, actor, site, policy_mode, data, allow, policy_version, why, created_at FROM never_automated ORDER BY created_at DESC, id\n"
+      ]
+    },
+    {
+      "name": "guard",
+      "displayName": "guard",
+      "queryLines": [
+        "SELECT count(*) AS violations FROM guard_violations\n"
+      ]
+    },
+    {
+      "name": "policies",
+      "displayName": "policies",
+      "queryLines": [
+        "SELECT catalog_name, schema_name, table_name, has_owner_tag, to_json(masked_columns) AS masked_columns, retention_class, rights_mode FROM policies_in_force ORDER BY table_name\n"
+      ]
+    },
+    {
+      "name": "governance",
+      "displayName": "governance",
+      "queryLines": [
+        "SELECT table_catalog, table_schema, table_name, table_type, has_row_filter, masked_columns, direct_filter_count, direct_masked_columns, has_owner_tag, to_json(tags) AS tags FROM governance_coverage ORDER BY table_schema, table_name\n"
+      ]
+    },
+    {
+      "name": "lineage",
+      "displayName": "lineage",
+      "queryLines": [
+        "SELECT source_table_full_name, target_table_full_name, entity_type, last_seen FROM lineage_edges WHERE length(trim(target_table_full_name)) > 0 ORDER BY last_seen DESC\n"
+      ]
+    },
+    {
+      "name": "break_glass",
+      "displayName": "break glass",
+      "queryLines": [
+        "SELECT id, started_at, ended_at, is_open FROM break_glass_windows ORDER BY started_at DESC\n"
+      ]
+    },
+    {
+      "name": "audit",
+      "displayName": "audit",
+      "queryLines": [
+        "SELECT event_date, sum(events) AS events FROM audit_activity GROUP BY event_date ORDER BY event_date\n"
+      ]
+    },
+    {
+      "name": "rights",
+      "displayName": "rights",
+      "queryLines": [
+        "SELECT citations_checked, basis_rows_checked, violations FROM rights_audit_summary\n"
+      ]
+    },
+    {
+      "name": "pipeline",
+      "displayName": "pipeline",
+      "queryLines": [
+        "SELECT source, data, bronze, dropped, kept, modelled, excluded_from_models, first_at, last_at FROM pipeline_funnel ORDER BY kept DESC\n"
+      ]
+    },
+    {
+      "name": "bench_coverage",
+      "displayName": "bench coverage",
+      "queryLines": [
+        "SELECT data, run_id, tool, question, asked, ok, ok_share FROM bench_coverage ORDER BY run_id, tool, question\n"
+      ]
+    },
+    {
+      "name": "bench_speed",
+      "displayName": "bench speed",
+      "queryLines": [
+        "SELECT data, run_id, tool, question, n, first_p50_ms, first_p95_ms, full_p50_ms, full_p95_ms FROM bench_speed ORDER BY run_id, tool, question\n"
+      ]
+    },
+    {
+      "name": "bench_cited",
+      "displayName": "bench cited",
+      "queryLines": [
+        "SELECT data, run_id, tool, numbers_shown, with_citation, share FROM bench_cited ORDER BY run_id, tool\n"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "valuation",
+      "displayName": "Valuation on real sales",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "valuation_header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Valuation on real sales\n",
+                "\n",
+                "Latest run below: dataset, families and sales dates. Historical backtest; not today\u2019s market.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "valuation_claim",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "claim",
+                  "fields": [
+                    {
+                      "name": "claim",
+                      "expression": "`claim`"
+                    },
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "n_tests",
+                      "expression": "`n_tests`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Latest run"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "claim",
+                    "displayName": "claim"
+                  },
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "n_tests",
+                    "displayName": "n tests"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "primary_within_20",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "primary_headline",
+                  "fields": [
+                    {
+                      "name": "within_20",
+                      "expression": "`within_20`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "90-day median: within 20%"
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "within_20",
+                  "displayName": "90-day median: within 20%",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 5,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "primary_coverage",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "primary_headline",
+                  "fields": [
+                    {
+                      "name": "coverage",
+                      "expression": "`coverage`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "90-day median: range coverage"
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "coverage",
+                  "displayName": "90-day median: range coverage",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 5,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "model_within_20",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "model_headline",
+                  "fields": [
+                    {
+                      "name": "within_20",
+                      "expression": "`within_20`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "Model: within 20%"
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "within_20",
+                  "displayName": "Model: within 20%",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 5,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "model_coverage",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "model_headline",
+                  "fields": [
+                    {
+                      "name": "coverage",
+                      "expression": "`coverage`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "Model: range coverage"
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "coverage",
+                  "displayName": "Model: range coverage",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 5,
+            "width": 3,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "valuation_accuracy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "accuracy",
+                  "fields": [
+                    {
+                      "name": "cell",
+                      "expression": "`cell`"
+                    },
+                    {
+                      "name": "within_20",
+                      "expression": "`within_20`"
+                    },
+                    {
+                      "name": "contestant",
+                      "expression": "`contestant`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {
+                "showTitle": true,
+                "title": "Within 20% by price band",
+                "showDescription": true,
+                "description": "Fewer than 30 priced sales: omitted. Counts, range coverage and median error are in the cell table below."
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "cell",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fieldName": "within_20",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                },
+                "color": {
+                  "fieldName": "contestant",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                }
+              },
+              "mark": {
+                "layout": "group"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "accuracy_cells",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "accuracy",
+                  "fields": [
+                    {
+                      "name": "source",
+                      "expression": "`source`"
+                    },
+                    {
+                      "name": "kind",
+                      "expression": "`kind`"
+                    },
+                    {
+                      "name": "price_band",
+                      "expression": "`price_band`"
+                    },
+                    {
+                      "name": "contestant",
+                      "expression": "`contestant`"
+                    },
+                    {
+                      "name": "n",
+                      "expression": "`n`"
+                    },
+                    {
+                      "name": "priced",
+                      "expression": "`priced`"
+                    },
+                    {
+                      "name": "within_20",
+                      "expression": "`within_20`"
+                    },
+                    {
+                      "name": "coverage",
+                      "expression": "`coverage`"
+                    },
+                    {
+                      "name": "median_ape",
+                      "expression": "`median_ape`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Accuracy by family and price band",
+                "showDescription": true,
+                "description": "Cells with fewer than 30 priced sales are omitted."
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "source",
+                    "displayName": "source"
+                  },
+                  {
+                    "fieldName": "kind",
+                    "displayName": "kind"
+                  },
+                  {
+                    "fieldName": "price_band",
+                    "displayName": "price band"
+                  },
+                  {
+                    "fieldName": "contestant",
+                    "displayName": "contestant"
+                  },
+                  {
+                    "fieldName": "n",
+                    "displayName": "n"
+                  },
+                  {
+                    "fieldName": "priced",
+                    "displayName": "priced"
+                  },
+                  {
+                    "fieldName": "within_20",
+                    "displayName": "within 20",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "coverage",
+                    "displayName": "coverage",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "median_ape",
+                    "displayName": "median ape",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "valuation_headline",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "headline",
+                  "fields": [
+                    {
+                      "name": "source",
+                      "expression": "`source`"
+                    },
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "families",
+                      "expression": "`families`"
+                    },
+                    {
+                      "name": "test_from",
+                      "expression": "`test_from`"
+                    },
+                    {
+                      "name": "test_to",
+                      "expression": "`test_to`"
+                    },
+                    {
+                      "name": "n_tests",
+                      "expression": "`n_tests`"
+                    },
+                    {
+                      "name": "contestant",
+                      "expression": "`contestant`"
+                    },
+                    {
+                      "name": "n",
+                      "expression": "`n`"
+                    },
+                    {
+                      "name": "priced",
+                      "expression": "`priced`"
+                    },
+                    {
+                      "name": "hit_rate",
+                      "expression": "`hit_rate`"
+                    },
+                    {
+                      "name": "within_20",
+                      "expression": "`within_20`"
+                    },
+                    {
+                      "name": "coverage",
+                      "expression": "`coverage`"
+                    },
+                    {
+                      "name": "median_ape",
+                      "expression": "`median_ape`"
+                    },
+                    {
+                      "name": "bias",
+                      "expression": "`bias`"
+                    },
+                    {
+                      "name": "lift_vs_primary",
+                      "expression": "`lift_vs_primary`"
+                    },
+                    {
+                      "name": "claim",
+                      "expression": "`claim`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Latest backtest for each dataset"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "source",
+                    "displayName": "source"
+                  },
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "families",
+                    "displayName": "families"
+                  },
+                  {
+                    "fieldName": "test_from",
+                    "displayName": "test from"
+                  },
+                  {
+                    "fieldName": "test_to",
+                    "displayName": "test to"
+                  },
+                  {
+                    "fieldName": "n_tests",
+                    "displayName": "n tests"
+                  },
+                  {
+                    "fieldName": "contestant",
+                    "displayName": "contestant"
+                  },
+                  {
+                    "fieldName": "n",
+                    "displayName": "n"
+                  },
+                  {
+                    "fieldName": "priced",
+                    "displayName": "priced"
+                  },
+                  {
+                    "fieldName": "hit_rate",
+                    "displayName": "hit rate",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "within_20",
+                    "displayName": "within 20",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "coverage",
+                    "displayName": "coverage",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "median_ape",
+                    "displayName": "median ape",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "bias",
+                    "displayName": "bias",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "lift_vs_primary",
+                    "displayName": "lift vs primary",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "claim",
+                    "displayName": "claim"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 20,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "valuation_gaps",
+            "multilineTextboxSpec": {
+              "lines": [
+                "Released datasets cover only their named families and dates. Depop, Poshmark, Mercari and Facebook sales, furniture, one-off and unbranded items remain gaps unless represented in the results.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 27,
+            "width": 12,
+            "height": 2
+          }
+        }
+      ]
+    },
+    {
+      "name": "weights",
+      "displayName": "Learned weights",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "param_timeline",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "timeline",
+                  "fields": [
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "champion_value",
+                      "expression": "`champion_value`"
+                    },
+                    {
+                      "name": "action",
+                      "expression": "`action`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "frame": {
+                "showTitle": true,
+                "title": "Champion value by month",
+                "showDescription": true,
+                "description": "Walk with the latest held-out month, one parameter scope; half-life in days. Rollback marks any month containing a rollback."
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "month",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fieldName": "champion_value"
+                },
+                "color": {
+                  "fieldName": "action",
+                  "scale": {
+                    "type": "categorical",
+                    "mappings": [
+                      {
+                        "value": "promote",
+                        "color": "#0072B2"
+                      },
+                      {
+                        "value": "hold",
+                        "color": "#777777"
+                      },
+                      {
+                        "value": "rollback",
+                        "color": "#D55E00"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "param_moves",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "moves",
+                  "fields": [
+                    {
+                      "name": "run_id",
+                      "expression": "`run_id`"
+                    },
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "scope",
+                      "expression": "`scope`"
+                    },
+                    {
+                      "name": "month",
+                      "expression": "`month`"
+                    },
+                    {
+                      "name": "action",
+                      "expression": "`action`"
+                    },
+                    {
+                      "name": "version",
+                      "expression": "`version`"
+                    },
+                    {
+                      "name": "value",
+                      "expression": "`value`"
+                    },
+                    {
+                      "name": "held_out_score",
+                      "expression": "`held_out_score`"
+                    },
+                    {
+                      "name": "champion_score",
+                      "expression": "`champion_score`"
+                    },
+                    {
+                      "name": "diff",
+                      "expression": "`diff`"
+                    },
+                    {
+                      "name": "noise",
+                      "expression": "`noise`"
+                    },
+                    {
+                      "name": "reason",
+                      "expression": "`reason`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Held-out decisions"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "run_id",
+                    "displayName": "run id"
+                  },
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "name",
+                    "displayName": "name"
+                  },
+                  {
+                    "fieldName": "scope",
+                    "displayName": "scope"
+                  },
+                  {
+                    "fieldName": "month",
+                    "displayName": "month"
+                  },
+                  {
+                    "fieldName": "action",
+                    "displayName": "action"
+                  },
+                  {
+                    "fieldName": "version",
+                    "displayName": "version"
+                  },
+                  {
+                    "fieldName": "value",
+                    "displayName": "value"
+                  },
+                  {
+                    "fieldName": "held_out_score",
+                    "displayName": "held out score",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "champion_score",
+                    "displayName": "champion score",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "diff",
+                    "displayName": "diff",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "noise",
+                    "displayName": "noise",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "reason",
+                    "displayName": "reason"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "param_history",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "history",
+                  "fields": [
+                    {
+                      "name": "name",
+                      "expression": "`name`"
+                    },
+                    {
+                      "name": "scope",
+                      "expression": "`scope`"
+                    },
+                    {
+                      "name": "version",
+                      "expression": "`version`"
+                    },
+                    {
+                      "name": "status",
+                      "expression": "`status`"
+                    },
+                    {
+                      "name": "value_or_hyperparams",
+                      "expression": "`value_or_hyperparams`"
+                    },
+                    {
+                      "name": "held_out_score",
+                      "expression": "`held_out_score`"
+                    },
+                    {
+                      "name": "moved_by",
+                      "expression": "`moved_by`"
+                    },
+                    {
+                      "name": "_change_type",
+                      "expression": "`_change_type`"
+                    },
+                    {
+                      "name": "_commit_version",
+                      "expression": "`_commit_version`"
+                    },
+                    {
+                      "name": "_commit_timestamp",
+                      "expression": "`_commit_timestamp`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Parameter change history"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "name",
+                    "displayName": "name"
+                  },
+                  {
+                    "fieldName": "scope",
+                    "displayName": "scope"
+                  },
+                  {
+                    "fieldName": "version",
+                    "displayName": "version"
+                  },
+                  {
+                    "fieldName": "status",
+                    "displayName": "status"
+                  },
+                  {
+                    "fieldName": "value_or_hyperparams",
+                    "displayName": "value or hyperparams"
+                  },
+                  {
+                    "fieldName": "held_out_score",
+                    "displayName": "held out score",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  },
+                  {
+                    "fieldName": "moved_by",
+                    "displayName": "moved by"
+                  },
+                  {
+                    "fieldName": "_change_type",
+                    "displayName": " change type"
+                  },
+                  {
+                    "fieldName": "_commit_version",
+                    "displayName": " commit version"
+                  },
+                  {
+                    "fieldName": "_commit_timestamp",
+                    "displayName": " commit timestamp"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 13,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "citations",
+      "displayName": "Every number cited",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "citation_share",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "citation",
+                  "fields": [
+                    {
+                      "name": "share",
+                      "expression": "`share`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "Shown numbers cited",
+                "showDescription": true,
+                "description": "Synthetic data excluded."
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "share",
+                  "displayName": "Shown numbers cited",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "recompute_share",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "recompute",
+                  "fields": [
+                    {
+                      "name": "share",
+                      "expression": "`share`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "Recomputations equal"
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "share",
+                  "displayName": "Recomputations equal",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 4,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "parity_share",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "parity",
+                  "fields": [
+                    {
+                      "name": "share",
+                      "expression": "`share`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "Parity cases equal",
+                "showDescription": true,
+                "description": "Equal cases / all cases; counts below."
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "share",
+                  "displayName": "Parity cases equal",
+                  "format": {
+                    "type": "number-percent",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 1
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 8,
+            "y": 0,
+            "width": 4,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "recompute_counts",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "recompute",
+                  "fields": [
+                    {
+                      "name": "equal_cases",
+                      "expression": "`equal_cases`"
+                    },
+                    {
+                      "name": "cases",
+                      "expression": "`cases`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Recomputation counts"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "equal_cases",
+                    "displayName": "equal cases"
+                  },
+                  {
+                    "fieldName": "cases",
+                    "displayName": "cases"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "parity_counts",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "parity",
+                  "fields": [
+                    {
+                      "name": "equal_cases",
+                      "expression": "`equal_cases`"
+                    },
+                    {
+                      "name": "cases",
+                      "expression": "`cases`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Parity counts"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "equal_cases",
+                    "displayName": "equal cases"
+                  },
+                  {
+                    "fieldName": "cases",
+                    "displayName": "cases"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 3,
+            "width": 6,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "hidden_numbers",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "hidden",
+                  "fields": [
+                    {
+                      "name": "hide_reason",
+                      "expression": "`hide_reason`"
+                    },
+                    {
+                      "name": "count",
+                      "expression": "`count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {
+                "showTitle": true,
+                "title": "Why numbers were hidden"
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "hide_reason",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fieldName": "count"
+                }
+              },
+              "mark": {
+                "layout": "group"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "recent_why",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "why",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "expression": "`id`"
+                    },
+                    {
+                      "name": "number_id",
+                      "expression": "`number_id`"
+                    },
+                    {
+                      "name": "basis_count",
+                      "expression": "`basis_count`"
+                    },
+                    {
+                      "name": "missing_basis",
+                      "expression": "`missing_basis`"
+                    },
+                    {
+                      "name": "equal",
+                      "expression": "`equal`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Five recent shown numbers"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "id",
+                    "displayName": "id"
+                  },
+                  {
+                    "fieldName": "number_id",
+                    "displayName": "number id"
+                  },
+                  {
+                    "fieldName": "basis_count",
+                    "displayName": "basis count"
+                  },
+                  {
+                    "fieldName": "missing_basis",
+                    "displayName": "missing basis"
+                  },
+                  {
+                    "fieldName": "equal",
+                    "displayName": "equal"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 12,
+            "width": 12,
+            "height": 5
+          }
+        }
+      ]
+    },
+    {
+      "name": "never",
+      "displayName": "Never automated",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "guard_violations",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "guard",
+                  "fields": [
+                    {
+                      "name": "violations",
+                      "expression": "`violations`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "counter",
+              "frame": {
+                "showTitle": true,
+                "title": "Guard violations",
+                "showDescription": true,
+                "description": "Must be 0."
+              },
+              "encodings": {
+                "value": {
+                  "fieldName": "violations",
+                  "displayName": "Guard violations",
+                  "format": {
+                    "type": "number",
+                    "decimalPlaces": {
+                      "type": "max",
+                      "places": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "decisions_by_policy",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "decisions",
+                  "fields": [
+                    {
+                      "name": "policy_mode",
+                      "expression": "`policy_mode`"
+                    },
+                    {
+                      "name": "count",
+                      "expression": "`count`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {
+                "showTitle": true,
+                "title": "Decisions by policy"
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "policy_mode",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fieldName": "count"
+                }
+              },
+              "mark": {
+                "layout": "group"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 3,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "never_automated",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "never",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "expression": "`id`"
+                    },
+                    {
+                      "name": "kind",
+                      "expression": "`kind`"
+                    },
+                    {
+                      "name": "action",
+                      "expression": "`action`"
+                    },
+                    {
+                      "name": "actor",
+                      "expression": "`actor`"
+                    },
+                    {
+                      "name": "site",
+                      "expression": "`site`"
+                    },
+                    {
+                      "name": "policy_mode",
+                      "expression": "`policy_mode`"
+                    },
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "allow",
+                      "expression": "`allow`"
+                    },
+                    {
+                      "name": "policy_version",
+                      "expression": "`policy_version`"
+                    },
+                    {
+                      "name": "why",
+                      "expression": "`why`"
+                    },
+                    {
+                      "name": "created_at",
+                      "expression": "`created_at`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Never-automated decisions"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "id",
+                    "displayName": "id"
+                  },
+                  {
+                    "fieldName": "kind",
+                    "displayName": "kind"
+                  },
+                  {
+                    "fieldName": "action",
+                    "displayName": "action"
+                  },
+                  {
+                    "fieldName": "actor",
+                    "displayName": "actor"
+                  },
+                  {
+                    "fieldName": "site",
+                    "displayName": "site"
+                  },
+                  {
+                    "fieldName": "policy_mode",
+                    "displayName": "policy mode"
+                  },
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "allow",
+                    "displayName": "allow"
+                  },
+                  {
+                    "fieldName": "policy_version",
+                    "displayName": "policy version"
+                  },
+                  {
+                    "fieldName": "why",
+                    "displayName": "why"
+                  },
+                  {
+                    "fieldName": "created_at",
+                    "displayName": "created at"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "governance",
+      "displayName": "Governance, ours beside theirs",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "governance_promises",
+            "multilineTextboxSpec": {
+              "lines": [
+                "| Promise | Databricks feature | What we add |\n",
+                "|---|---|---|\n",
+                "| Own rows only | Unity Catalog row filters and ABAC | Caller-to-person mapping; same rule in both stores |\n",
+                "| Handles masked | Column masks and governed tags | One policy covers newly tagged columns |\n",
+                "| Source rights retained | Catalog, table and column tags | Per-row rights and expectations; fits read comp_for_model |\n",
+                "| Shown numbers guarded | Metric views | Guard state and hide reason; thin numbers withheld |\n",
+                "| Numbers recomputable | Delta time travel, CDF and table lineage | Citation basis ids and hash; recomputation job |\n",
+                "| Claims backed by evidence | Unity Gateway policies (Beta) | claim_check; gateway second layer designed, not yet built |\n",
+                "| Some actions never automated | Grants; service-policy ASK for MCP calls | Versioned policy decisions; writes dry by default |\n",
+                "| Changes have a why | System audit | Decision and event reasons, actors and trace ids |\n",
+                "| Weights change on evidence | MLflow and Delta CDF | Held-out promotion beyond noise; rollback |\n",
+                "| Source data verified | Pipeline expectations and quality monitoring | Source hash and extractor version in each row |\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 9
+          }
+        },
+        {
+          "widget": {
+            "name": "policies_in_force",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "policies",
+                  "fields": [
+                    {
+                      "name": "catalog_name",
+                      "expression": "`catalog_name`"
+                    },
+                    {
+                      "name": "schema_name",
+                      "expression": "`schema_name`"
+                    },
+                    {
+                      "name": "table_name",
+                      "expression": "`table_name`"
+                    },
+                    {
+                      "name": "has_owner_tag",
+                      "expression": "`has_owner_tag`"
+                    },
+                    {
+                      "name": "masked_columns",
+                      "expression": "`masked_columns`"
+                    },
+                    {
+                      "name": "retention_class",
+                      "expression": "`retention_class`"
+                    },
+                    {
+                      "name": "rights_mode",
+                      "expression": "`rights_mode`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Policy tags",
+                "showDescription": true,
+                "description": "Tags identify policy matches; they do not prove policy installation."
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "catalog_name",
+                    "displayName": "catalog name"
+                  },
+                  {
+                    "fieldName": "schema_name",
+                    "displayName": "schema name"
+                  },
+                  {
+                    "fieldName": "table_name",
+                    "displayName": "table name"
+                  },
+                  {
+                    "fieldName": "has_owner_tag",
+                    "displayName": "has owner tag"
+                  },
+                  {
+                    "fieldName": "masked_columns",
+                    "displayName": "masked columns"
+                  },
+                  {
+                    "fieldName": "retention_class",
+                    "displayName": "retention class"
+                  },
+                  {
+                    "fieldName": "rights_mode",
+                    "displayName": "rights mode"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 9,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "governance_coverage",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "governance",
+                  "fields": [
+                    {
+                      "name": "table_catalog",
+                      "expression": "`table_catalog`"
+                    },
+                    {
+                      "name": "table_schema",
+                      "expression": "`table_schema`"
+                    },
+                    {
+                      "name": "table_name",
+                      "expression": "`table_name`"
+                    },
+                    {
+                      "name": "table_type",
+                      "expression": "`table_type`"
+                    },
+                    {
+                      "name": "has_row_filter",
+                      "expression": "`has_row_filter`"
+                    },
+                    {
+                      "name": "masked_columns",
+                      "expression": "`masked_columns`"
+                    },
+                    {
+                      "name": "direct_filter_count",
+                      "expression": "`direct_filter_count`"
+                    },
+                    {
+                      "name": "direct_masked_columns",
+                      "expression": "`direct_masked_columns`"
+                    },
+                    {
+                      "name": "has_owner_tag",
+                      "expression": "`has_owner_tag`"
+                    },
+                    {
+                      "name": "tags",
+                      "expression": "`tags`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Filters, masks and tags"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "table_catalog",
+                    "displayName": "table catalog"
+                  },
+                  {
+                    "fieldName": "table_schema",
+                    "displayName": "table schema"
+                  },
+                  {
+                    "fieldName": "table_name",
+                    "displayName": "table name"
+                  },
+                  {
+                    "fieldName": "table_type",
+                    "displayName": "table type"
+                  },
+                  {
+                    "fieldName": "has_row_filter",
+                    "displayName": "has row filter"
+                  },
+                  {
+                    "fieldName": "masked_columns",
+                    "displayName": "masked columns"
+                  },
+                  {
+                    "fieldName": "direct_filter_count",
+                    "displayName": "direct filter count"
+                  },
+                  {
+                    "fieldName": "direct_masked_columns",
+                    "displayName": "direct masked columns"
+                  },
+                  {
+                    "fieldName": "has_owner_tag",
+                    "displayName": "has owner tag"
+                  },
+                  {
+                    "fieldName": "tags",
+                    "displayName": "tags"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 15,
+            "width": 12,
+            "height": 7
+          }
+        },
+        {
+          "widget": {
+            "name": "rights_audit",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "rights",
+                  "fields": [
+                    {
+                      "name": "citations_checked",
+                      "expression": "`citations_checked`"
+                    },
+                    {
+                      "name": "basis_rows_checked",
+                      "expression": "`basis_rows_checked`"
+                    },
+                    {
+                      "name": "violations",
+                      "expression": "`violations`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Rights audit"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "citations_checked",
+                    "displayName": "citations checked"
+                  },
+                  {
+                    "fieldName": "basis_rows_checked",
+                    "displayName": "basis rows checked"
+                  },
+                  {
+                    "fieldName": "violations",
+                    "displayName": "violations"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 22,
+            "width": 12,
+            "height": 3
+          }
+        },
+        {
+          "widget": {
+            "name": "lineage_edges",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "lineage",
+                  "fields": [
+                    {
+                      "name": "source_table_full_name",
+                      "expression": "`source_table_full_name`"
+                    },
+                    {
+                      "name": "target_table_full_name",
+                      "expression": "`target_table_full_name`"
+                    },
+                    {
+                      "name": "entity_type",
+                      "expression": "`entity_type`"
+                    },
+                    {
+                      "name": "last_seen",
+                      "expression": "`last_seen`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Table lineage"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "source_table_full_name",
+                    "displayName": "source table full name"
+                  },
+                  {
+                    "fieldName": "target_table_full_name",
+                    "displayName": "target table full name"
+                  },
+                  {
+                    "fieldName": "entity_type",
+                    "displayName": "entity type"
+                  },
+                  {
+                    "fieldName": "last_seen",
+                    "displayName": "last seen"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 25,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "break_glass",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "break_glass",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "expression": "`id`"
+                    },
+                    {
+                      "name": "started_at",
+                      "expression": "`started_at`"
+                    },
+                    {
+                      "name": "ended_at",
+                      "expression": "`ended_at`"
+                    },
+                    {
+                      "name": "is_open",
+                      "expression": "`is_open`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Maintenance windows"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "id",
+                    "displayName": "id"
+                  },
+                  {
+                    "fieldName": "started_at",
+                    "displayName": "started at"
+                  },
+                  {
+                    "fieldName": "ended_at",
+                    "displayName": "ended at"
+                  },
+                  {
+                    "fieldName": "is_open",
+                    "displayName": "is open"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 31,
+            "width": 12,
+            "height": 5
+          }
+        },
+        {
+          "widget": {
+            "name": "audit_activity",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "audit",
+                  "fields": [
+                    {
+                      "name": "event_date",
+                      "expression": "`event_date`"
+                    },
+                    {
+                      "name": "events",
+                      "expression": "`events`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "line",
+              "frame": {
+                "showTitle": true,
+                "title": "Audit activity"
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "event_date",
+                  "scale": {
+                    "type": "temporal"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fieldName": "events"
+                }
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 36,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ]
+    },
+    {
+      "name": "market",
+      "displayName": "The market",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "pipeline_funnel",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "pipeline",
+                  "fields": [
+                    {
+                      "name": "source",
+                      "expression": "`source`"
+                    },
+                    {
+                      "name": "kept",
+                      "expression": "`kept`"
+                    },
+                    {
+                      "name": "excluded_from_models",
+                      "expression": "`excluded_from_models`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 3,
+              "widgetType": "bar",
+              "frame": {
+                "showTitle": true,
+                "title": "Kept rows and rows excluded from modelling",
+                "showDescription": true,
+                "description": "Excluded rows are part of kept rows. Bars are grouped, not added."
+              },
+              "encodings": {
+                "x": {
+                  "fieldName": "source",
+                  "scale": {
+                    "type": "categorical"
+                  }
+                },
+                "y": {
+                  "scale": {
+                    "type": "quantitative"
+                  },
+                  "fields": [
+                    {
+                      "fieldName": "kept",
+                      "displayName": "kept"
+                    },
+                    {
+                      "fieldName": "excluded_from_models",
+                      "displayName": "excluded from models"
+                    }
+                  ]
+                }
+              },
+              "mark": {
+                "layout": "group"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "pipeline_counts",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "pipeline",
+                  "fields": [
+                    {
+                      "name": "source",
+                      "expression": "`source`"
+                    },
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "bronze",
+                      "expression": "`bronze`"
+                    },
+                    {
+                      "name": "dropped",
+                      "expression": "`dropped`"
+                    },
+                    {
+                      "name": "kept",
+                      "expression": "`kept`"
+                    },
+                    {
+                      "name": "modelled",
+                      "expression": "`modelled`"
+                    },
+                    {
+                      "name": "excluded_from_models",
+                      "expression": "`excluded_from_models`"
+                    },
+                    {
+                      "name": "first_at",
+                      "expression": "`first_at`"
+                    },
+                    {
+                      "name": "last_at",
+                      "expression": "`last_at`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Source mix and sales dates"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "source",
+                    "displayName": "source"
+                  },
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "bronze",
+                    "displayName": "bronze"
+                  },
+                  {
+                    "fieldName": "dropped",
+                    "displayName": "dropped"
+                  },
+                  {
+                    "fieldName": "kept",
+                    "displayName": "kept"
+                  },
+                  {
+                    "fieldName": "modelled",
+                    "displayName": "modelled"
+                  },
+                  {
+                    "fieldName": "excluded_from_models",
+                    "displayName": "excluded from models"
+                  },
+                  {
+                    "fieldName": "first_at",
+                    "displayName": "first at"
+                  },
+                  {
+                    "fieldName": "last_at",
+                    "displayName": "last at"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 6,
+            "width": 12,
+            "height": 7
+          }
+        }
+      ]
+    },
+    {
+      "name": "benchmark",
+      "displayName": "Benchmark",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1",
+      "layout": [
+        {
+          "widget": {
+            "name": "benchmark_header",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# Benchmark\n",
+                "\n",
+                "Tables are empty until the first benchmark run. Times are milliseconds.\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "bench_coverage",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bench_coverage",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "run_id",
+                      "expression": "`run_id`"
+                    },
+                    {
+                      "name": "tool",
+                      "expression": "`tool`"
+                    },
+                    {
+                      "name": "question",
+                      "expression": "`question`"
+                    },
+                    {
+                      "name": "asked",
+                      "expression": "`asked`"
+                    },
+                    {
+                      "name": "ok",
+                      "expression": "`ok`"
+                    },
+                    {
+                      "name": "ok_share",
+                      "expression": "`ok_share`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Answer coverage"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "run_id",
+                    "displayName": "run id"
+                  },
+                  {
+                    "fieldName": "tool",
+                    "displayName": "tool"
+                  },
+                  {
+                    "fieldName": "question",
+                    "displayName": "question"
+                  },
+                  {
+                    "fieldName": "asked",
+                    "displayName": "asked"
+                  },
+                  {
+                    "fieldName": "ok",
+                    "displayName": "ok"
+                  },
+                  {
+                    "fieldName": "ok_share",
+                    "displayName": "ok share",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bench_speed",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bench_speed",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "run_id",
+                      "expression": "`run_id`"
+                    },
+                    {
+                      "name": "tool",
+                      "expression": "`tool`"
+                    },
+                    {
+                      "name": "question",
+                      "expression": "`question`"
+                    },
+                    {
+                      "name": "n",
+                      "expression": "`n`"
+                    },
+                    {
+                      "name": "first_p50_ms",
+                      "expression": "`first_p50_ms`"
+                    },
+                    {
+                      "name": "first_p95_ms",
+                      "expression": "`first_p95_ms`"
+                    },
+                    {
+                      "name": "full_p50_ms",
+                      "expression": "`full_p50_ms`"
+                    },
+                    {
+                      "name": "full_p95_ms",
+                      "expression": "`full_p95_ms`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "First and full answer time"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "run_id",
+                    "displayName": "run id"
+                  },
+                  {
+                    "fieldName": "tool",
+                    "displayName": "tool"
+                  },
+                  {
+                    "fieldName": "question",
+                    "displayName": "question"
+                  },
+                  {
+                    "fieldName": "n",
+                    "displayName": "n"
+                  },
+                  {
+                    "fieldName": "first_p50_ms",
+                    "displayName": "first p50 ms"
+                  },
+                  {
+                    "fieldName": "first_p95_ms",
+                    "displayName": "first p95 ms"
+                  },
+                  {
+                    "fieldName": "full_p50_ms",
+                    "displayName": "full p50 ms"
+                  },
+                  {
+                    "fieldName": "full_p95_ms",
+                    "displayName": "full p95 ms"
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 8,
+            "width": 12,
+            "height": 6
+          }
+        },
+        {
+          "widget": {
+            "name": "bench_cited",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "bench_cited",
+                  "fields": [
+                    {
+                      "name": "data",
+                      "expression": "`data`"
+                    },
+                    {
+                      "name": "run_id",
+                      "expression": "`run_id`"
+                    },
+                    {
+                      "name": "tool",
+                      "expression": "`tool`"
+                    },
+                    {
+                      "name": "numbers_shown",
+                      "expression": "`numbers_shown`"
+                    },
+                    {
+                      "name": "with_citation",
+                      "expression": "`with_citation`"
+                    },
+                    {
+                      "name": "share",
+                      "expression": "`share`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "widgetType": "table",
+              "frame": {
+                "showTitle": true,
+                "title": "Cited numbers"
+              },
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "data",
+                    "displayName": "data"
+                  },
+                  {
+                    "fieldName": "run_id",
+                    "displayName": "run id"
+                  },
+                  {
+                    "fieldName": "tool",
+                    "displayName": "tool"
+                  },
+                  {
+                    "fieldName": "numbers_shown",
+                    "displayName": "numbers shown"
+                  },
+                  {
+                    "fieldName": "with_citation",
+                    "displayName": "with citation"
+                  },
+                  {
+                    "fieldName": "share",
+                    "displayName": "share",
+                    "format": {
+                      "type": "number-percent",
+                      "decimalPlaces": {
+                        "type": "max",
+                        "places": 1
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 14,
+            "width": 12,
+            "height": 6
+          }
+        }
+      ]
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "canvasBackgroundColor": {
+        "light": "#FCFCFC",
+        "dark": "#1F272D"
+      },
+      "widgetBackgroundColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "widgetBorderColor": {
+        "light": "#FFFFFF",
+        "dark": "#11171C"
+      },
+      "fontColor": {
+        "light": "#11171C",
+        "dark": "#E8ECF0"
+      },
+      "selectionColor": {
+        "light": "#0072B2",
+        "dark": "#56B4E9"
+      },
+      "visualizationColors": [
+        "#0072B2",
+        "#E69F00",
+        "#009E73",
+        "#CC79A7",
+        "#D55E00"
+      ],
+      "widgetHeaderAlignment": "LEFT"
+    }
+  }
+}
