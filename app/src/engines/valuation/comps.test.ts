@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { DEFAULTS, LEGACY, fromResolved, weigh, nEff, backOff, adjust, adjustDetail, trim, weightedQuantile, translate, comparables } from './comps.ts';
+import { DEFAULTS, LEGACY, assertParams, fromResolved, weigh, nEff, backOff, adjust, adjustDetail, trim, weightedQuantile, translate, comparables } from './comps.ts';
 import { resolve } from './params.ts';
 import type { Comp } from './comps.ts';
 
@@ -298,4 +298,39 @@ test('C: one observation per size shrinks the measured size contrast by exactly 
   const rows = ['S', 'L'].map((size, i) => comp(size, 10000 * (i + 1), { size, sold_at: '2026-10-01', product_id: 'p', family_id: 'f', may_model: true }));
   const fitted = fitHistory(rows, as_of);
   close(fitted.size_ratios.f.L / fitted.size_ratios.f.S, 2 ** (1 / 21));
+});
+
+
+for (const params of [DEFAULTS, LEGACY]) {
+  test(`a cheap item's q10 cannot round to zero (blend=${params.blend_enabled})`, () => {
+    const result = comparables({ condition: 'good', site: 'depop' }, [comp('four-dollars', 400)], as_of,
+      { ...params, site_ratios: { depop: { ratio: 1, q25: .1, q75: 1, n: 20 } } });
+    assert.deepEqual(result.range, { q10: 100, q50: 400, q90: 400 });
+  });
+  for (const [cents, expected] of [[250, 300], [350, 400]] as const) {
+    test(`the two languages must not disagree at a half dollar: ${cents} cents (blend=${params.blend_enabled})`, () => {
+      assert.deepEqual(comparables({ condition: 'good' }, [comp('half', cents)], as_of, params).range,
+        { q10: expected, q50: expected, q90: expected });
+    });
+  }
+}
+
+test('assertParams names a missing required scalar or a non-finite scalar', async () => {
+  const { blend_k: _missing, ...missing } = DEFAULTS;
+  assert.throws(() => assertParams(missing), /invalid or missing blend_k/);
+  for (const value of [NaN, Infinity, -Infinity])
+    assert.throws(() => assertParams({ ...DEFAULTS, blend_k: value }), /invalid or missing blend_k/);
+});
+
+test('retail_weight tracks the kind band, every comp level and the recent variant anchor', () => {
+  const target = { condition: 'good', kind: 'shoes', retail_cents: 10000, depreciation: .5,
+    kind_band: { q10: 3000, q50: 5000, q90: 7000, n_eff: 12 } };
+  const rows = ['category', 'family', 'product', 'variant'].map(level => comp(level, 5000,
+    { level: level as Comp['level'], w_match: 1, sold_at: '2026-11-13' }));
+  const out = comparables(target, rows, as_of);
+  close(out.retail_weight, 6 / 18 * (6 / 7) ** 4 * 6 / 7);
+  close(comparables({ ...target, kind_band: undefined }, rows, as_of).retail_weight, (6 / 7) ** 4 * 6 / 7);
+  assert.equal(comparables({ condition: 'good' }, rows, as_of).retail_weight, 0);
+  assert.equal(comparables(target, rows, as_of, LEGACY).retail_weight, 0);
+  assert.equal(comparables({ ...target, kind_band: undefined }, [], as_of).retail_weight, 1);
 });

@@ -13,6 +13,13 @@ test('the spread is nearest-rank over the asks, in the currency most rows use; o
   assert.deepEqual(r.spread, { n: 4, low: 1000, q1: 1000, median: 2000, q3: 3000, high: 4000, currency: 'USD' });
 });
 
+test('three asks in the currency of the person win over more asks in another: 224 pound rows from one site do not move a dollar answer', () => {
+  const pounds = Array.from({ length: 10 }, (_, i) => row(`g${i}`, 'ebay', 100 + i, 'x y', 'GBP'));
+  const r = insights(reach([...pounds, row('a', 'depop', 10, 'x y'), row('b', 'depop', 20, 'x y'), row('c', 'poshmark', 30, 'x y')]), 'q');
+  assert.deepEqual(r.spread, { n: 3, low: 1000, q1: 1000, median: 2000, q3: 3000, high: 3000, currency: 'USD' });
+  assert.equal(insights(reach([...pounds, row('a', 'depop', 10, 'x y')]), 'q').spread?.currency, 'GBP');
+});
+
 test('sites are compared by median ask, cheapest first, only with 3 asks or more', () => {
   const rows = [10, 12, 14].map((d, i) => row(`d${i}`, 'depop', d, 'x y')).concat([30, 35, 40].map((d, i) => row(`p${i}`, 'poshmark', d, 'x y')), [row('e', 'ebay', 5, 'x y')]);
   assert.deepEqual(insights(reach(rows), 'q').bySite, [{ id: 'depop', n: 3, median: 1200 }, { id: 'poshmark', n: 3, median: 3500 }]);

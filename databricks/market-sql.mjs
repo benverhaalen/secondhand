@@ -32,14 +32,45 @@ WHERE e.may_model = true AND o.site <> 'dupe' AND o.data LIKE 'live:%'
   AND o.kind = 'listing'
   AND (o.keep_until IS NULL OR o.keep_until > current_timestamp());`;
 
-const minimum = (schema, param) => `CREATE OR REPLACE FUNCTION ${schema}.market_min_n()
+const minimum = (schema, param, name = 'market_min_n', prior = 8) => `CREATE OR REPLACE FUNCTION ${schema}.${name}()
 RETURNS INT
-COMMENT 'Minimum count from the global champion scalar, or prior 8. ${rights}'
+COMMENT 'Minimum count from the global champion scalar, or prior ${prior}. ${rights}'
 RETURN coalesce((SELECT cast(get_json_object(value_or_hyperparams, '$') AS INT)
   FROM ${param}
-  WHERE name = 'market_min_n' AND scope = '{}' AND status = 'champion'
+  WHERE name = '${name}' AND scope = '{}' AND status = 'champion'
   ORDER BY version DESC
-  LIMIT 1), 8);`;
+  LIMIT 1), ${prior});`;
+
+const similar = (schema, param) => `${minimum(schema, param, 'similar_min_shared_terms', 2)}
+
+CREATE OR REPLACE FUNCTION ${schema}.title_terms(title STRING)
+RETURNS ARRAY<STRING>
+COMMENT 'Shared Unicode title tokenizer for listing reads and DB20 competition word lists. ${rights}'
+RETURN ${words('title_terms.title')};
+
+CREATE OR REPLACE FUNCTION ${schema}.similar_group(kind STRING, brand STRING, title_terms ARRAY<STRING>)
+RETURNS TABLE (observation_id STRING, site STRING, kind STRING, brand_norm STRING, title_terms ARRAY<STRING>, shared_terms INT, n BIGINT, as_of TIMESTAMP)
+COMMENT 'Same kind and a different known brand, ranked by distinct shared title words, not attribute equivalence. Requires similar_min_shared_terms and market_min_n group rows. Missing brands and empty titles never match. ${rights}'
+RETURN
+WITH candidates AS (
+  SELECT o.observation_id, o.site, o.kind, o.brand_norm, o.title_terms,
+    size(array_intersect(o.title_terms, similar_group.title_terms)) AS shared_terms, o.read_at
+  FROM ${schema}.listing_obs o
+  WHERE o.kind = similar_group.kind
+    AND nullif(trim(o.brand_norm), '') IS NOT NULL
+    AND nullif(trim(similar_group.brand), '') IS NOT NULL
+    AND lower(trim(o.brand_norm)) <> lower(trim(similar_group.brand))
+    AND size(o.title_terms) > 0 AND size(similar_group.title_terms) > 0
+), matched AS (
+  SELECT observation_id, site, kind, brand_norm, title_terms, shared_terms,
+    count(*) OVER () AS n, max(read_at) OVER () AS as_of
+  FROM candidates
+  WHERE shared_terms >= ${schema}.similar_min_shared_terms()
+    AND shared_terms > 0
+)
+SELECT observation_id, site, kind, brand_norm, title_terms, shared_terms, n, as_of
+FROM matched WHERE n >= ${schema}.market_min_n()
+ORDER BY shared_terms DESC, observation_id;`;
 
 const coverage = schema => `CREATE OR REPLACE VIEW ${schema}.coverage
 (site, kind, rows, oldest_read, newest_read)
@@ -179,6 +210,32 @@ SELECT 'B', 'clothes', 'test', array('vintage', 'denim', 'denim'), 'used', id * 
   date_trunc('WEEK', current_timestamp()), concat('check_B_', id)
 FROM range(1, 4);`;
 
+const similarCheck = () => `INSERT INTO secondhand.market_check.param VALUES
+  ('similar_min_shared_terms', '{}', 'champion', '2', 1),
+  ('similar_min_shared_terms', '{}', 'challenger', '99', 2),
+  ('similar_min_shared_terms', '{"kind":"clothes"}', 'champion', '99', 3);
+INSERT INTO secondhand.market_check.listing_obs (site, kind, brand_norm, title_terms, read_at, observation_id)
+SELECT 'C', 'clothes', 'another', array('vintage', 'denim', 'denim'), current_timestamp(), concat('off_brand_', id)
+FROM range(1, 9);
+INSERT INTO secondhand.market_check.listing_obs (site, kind, brand_norm, title_terms, read_at, observation_id) VALUES
+  ('C', 'clothes', ' TEST ', array('vintage', 'denim'), current_timestamp(), 'same_brand'),
+  ('C', 'shoes', 'another', array('vintage', 'denim'), current_timestamp(), 'other_kind'),
+  ('C', 'clothes', 'another', array('denim', 'denim'), current_timestamp(), 'too_few_terms'),
+  ('C', 'clothes', NULL, array('vintage', 'denim'), current_timestamp(), 'unknown_brand');
+
+${check('similar group only off-brand same-kind rows', "similar_group('clothes', 'test', array('vintage', 'denim', 'denim'))", "observation_id LIKE 'off_brand_%' AND kind = 'clothes' AND brand_norm = 'another' AND shared_terms = 2 AND n = 8 AND as_of IS NOT NULL", 8)}
+
+UPDATE secondhand.market_check.param SET value_or_hyperparams = '3' WHERE name = 'similar_min_shared_terms' AND scope = '{}' AND status = 'champion';
+SELECT CASE WHEN count(*) = 0 THEN true ELSE raise_error('DBX-A1 similar group shared-term champion') END AS passed
+FROM secondhand.market_check.similar_group('clothes', 'test', array('vintage', 'denim'));
+
+UPDATE secondhand.market_check.param SET value_or_hyperparams = '1' WHERE name = 'similar_min_shared_terms' AND scope = '{}' AND status = 'champion';
+${check('similar group shared-term champion expands membership', "similar_group('clothes', 'test', array('vintage', 'denim'))", "n = 9 AND shared_terms >= 1 AND as_of IS NOT NULL", 9)}
+
+INSERT INTO secondhand.market_check.param VALUES ('market_min_n', '{}', 'champion', '10', 1);
+SELECT CASE WHEN count(*) = 0 THEN true ELSE raise_error('DBX-A1 similar group minimum count') END AS passed
+FROM secondhand.market_check.similar_group('clothes', 'test', array('vintage', 'denim'));`;
+
 const checks = () => [
   check('asks A count and figures', "asks('vintage denim', 'A', 30)", "site = 'A' AND n = 10 AND p50_cents = 550 AND p10_cents = 190 AND p90_cents = 910 AND likes_per_listing = 5.5 AND sold_share = 0.4 AND as_of IS NOT NULL"),
   check('asks B suppression preserves count', "asks('vintage denim', 'B', 30)", "site = 'B' AND n = 3 AND p50_cents IS NULL AND p10_cents IS NULL AND p90_cents IS NULL AND likes_per_listing IS NULL AND sold_share IS NULL AND as_of IS NOT NULL"),
@@ -199,13 +256,14 @@ const checks = () => [
   check('champion update changes guard', "asks('vintage denim', 'A', 30)", 'n = 10 AND p50_cents IS NULL'),
   'DELETE FROM secondhand.market_check.param;',
   check('missing param uses prior', "asks('vintage denim', 'A', 30)", 'n = 10 AND p50_cents = 550'),
+  similarCheck(),
   'DROP SCHEMA secondhand.market_check CASCADE;',
 ].join('\n\n');
 
 export function marketSql() {
   return {
     '15_market.sql': `-- Generated by databricks/market-sql.mjs from packet 78 DBX-A1 and spec/product.md section 3.
--- Missing: API principal for GRANT EXECUTE ON FUNCTION on these five table functions and market_min_n.
+-- Missing: API principal for GRANT EXECUTE ON FUNCTION on the market functions.
 
 ${listing}
 
@@ -213,7 +271,9 @@ ${minimum('secondhand.market', 'secondhand.core.param')}
 
 ${coverage('secondhand.market')}
 
-${functions('secondhand.market')}\n`,
+${functions('secondhand.market')}
+
+${similar('secondhand.market', 'secondhand.core.param')}\n`,
     '15_market_check.sql': `-- Generated by databricks/market-sql.mjs, using the production function bodies.
 -- Run on the workspace later, exclusively, with no existing secondhand.market_check schema.
 -- A failure leaves the scratch schema for inspection. Success drops it.
@@ -225,6 +285,8 @@ ${minimum('secondhand.market_check', 'secondhand.market_check.param')}
 ${coverage('secondhand.market_check')}
 
 ${functions('secondhand.market_check')}
+
+${similar('secondhand.market_check', 'secondhand.market_check.param')}
 
 ${checks()}\n`,
   };

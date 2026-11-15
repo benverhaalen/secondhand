@@ -40,3 +40,23 @@ test('a pushed range is searched commit by commit, and only the commit that put 
     assert.deepEqual(hits.map(h => [h.file, h.in]), [['a.ts', bad.slice(0, 8)]]);
   } finally { rmSync(r.dir, { recursive: true, force: true }); }
 });
+
+test('a merge that takes the other side\'s restored file is not blamed for it, while it is merging and after', () => {
+  const r = repo();
+  try {
+    const main = r.git('symbolic-ref', '--short', 'HEAD');
+    r.commit('a.ts', 'one\n'); r.commit('a.ts', 'two\n');
+    r.git('checkout', '-q', '-b', 'w'); r.commit('b.ts', 'worker\n');
+    r.git('checkout', '-q', main); const restore = r.commit('a.ts', 'one\n');
+    r.git('checkout', '-q', 'w'); r.git('merge', '-q', '--no-commit', '--no-ff', main);
+    assert.deepEqual(staged(r.dir), []);
+    // As pre-merge-commit sees it when git merges without stopping: no MERGE_HEAD yet, the ref named in the environment.
+    rmSync(join(r.dir, '.git', 'MERGE_HEAD'));
+    assert.equal(staged(r.dir).length, 1);
+    process.env.GIT_REFLOG_ACTION = `merge ${main}`;
+    try { assert.deepEqual(staged(r.dir), []); } finally { delete process.env.GIT_REFLOG_ACTION; }
+    writeFileSync(join(r.dir, '.git', 'MERGE_HEAD'), restore + '\n');
+    r.git('commit', '-q', '-m', 'merge');
+    assert.deepEqual(range(r.dir, `${restore}..HEAD`), []);
+  } finally { rmSync(r.dir, { recursive: true, force: true }); }
+});

@@ -1,6 +1,6 @@
 # 87: the LiDAR measuring module, for Ben
 
-Owner: Ben. From: Nate's side, the capture lead (Claude Code, Opus 5.5), 2026-11-15. Status: built and compiled on the Mac, on branch `w/cap-depth-1` (bcbff73c), merging to main after its review. Nothing on any screen uses it; when and where a screen does is your call.
+Owner: Ben. From: Nate's side, the capture lead (Claude Code, Opus 5.5), 2026-11-15. Status: on main (merge 0031af5a, 2026-11-15), after two fresh reviews; it also reports `onStatus` now, including `item_clipped` when the item reaches the frame's edge (see its README). Nothing on any screen uses it; when and where a screen does is your call.
 
 Nate chose to build this before any TestFlight build ([words](../../../../product/words.md#2026-11-15-nate-build-the-lidar-module-before-a-testflight-build)). The orchestrator set three conditions, and they hold: it changes no screen, navigation or dependency; it does nothing on web, Android or a phone without LiDAR; and nobody installs a build but Nate.
 

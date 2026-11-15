@@ -172,3 +172,32 @@ test('composeSources gives createRuntime no public clients and no Apify token wh
   assert.equal(sources.apifyToken, undefined);
   await sources.close();
 });
+
+test('Shopping composition: token presence installs the search port; absent token is unrouted without fetch', async () => {
+  const { runtimePorts } = await import('../intel/public/search.ts');
+  const original = runtimePorts.shopping;
+  const { log, sink } = logger(); let calls = 0;
+  try {
+    for (const token of [undefined, '', '   ']) {
+      const composed = composeSources({ env: { NODE_TEST_CONTEXT: '1', TREG_TOKEN: token }, log, fetch: async () => assert.fail('no token fetched') });
+      assert.equal(composed.shopping, undefined); assert.equal(runtimePorts.shopping, undefined); await composed.close();
+    }
+    const sentinel = 'SYNTHETIC_COMPOSE_SECRET';
+    const composed = composeSources({ env: { NODE_TEST_CONTEXT: '1', TREG_TOKEN: sentinel }, log,
+      fetch: async () => { calls++; return new Response('{"shopping":[]}'); } });
+    assert.ok(composed.shopping); assert.equal(runtimePorts.shopping, composed.shopping); assert.equal(calls, 0);
+    assert.ok((await composed.shopping.search({ q: 'synthetic' }, signal())).ok); assert.equal(calls, 1);
+    assert.equal(sink.text().includes(sentinel), false); assert.equal(JSON.stringify(composed).includes(sentinel), false);
+    await composed.close();
+  } finally { runtimePorts.shopping = original; }
+});
+
+test('Shopping test runner guard never composes a real fetch even with a token', async () => {
+  const { runtimePorts } = await import('../intel/public/search.ts'); const original = runtimePorts.shopping;
+  try {
+    for (const env of [{ NODE_TEST_CONTEXT: '1', TREG_TOKEN: 'synthetic' }, { TREG_TOKEN: 'synthetic' }]) {
+      const composed = composeSources({ env, log: logger().log });
+      assert.equal(composed.shopping, undefined); await composed.close();
+    }
+  } finally { runtimePorts.shopping = original; }
+});

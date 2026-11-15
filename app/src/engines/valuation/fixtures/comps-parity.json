@@ -796,6 +796,21 @@
       "source": "spec/determinations/money.md#d12-best-site-or-set-of-sites"
     },
     {
+      "name": "valuation_sales_tax_rate",
+      "path": "sales_tax_rate",
+      "family": "scalar",
+      "prior": 0.0753,
+      "guard_lo": 0,
+      "guard_hi": 0.2,
+      "scopes": [
+        "kind",
+        "site",
+        "segment",
+        "person"
+      ],
+      "source": "https://taxfoundation.org/data/all/state/2026-sales-tax-rates-midyear/"
+    },
+    {
       "name": "valuation_budget_ms",
       "path": "budget_ms",
       "family": "scalar",
@@ -890,8 +905,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -1173,8 +1190,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -1456,8 +1475,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -2715,8 +2736,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -2998,8 +3021,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -4257,8 +4282,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -5528,8 +5555,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -6784,8 +6813,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -8044,8 +8075,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -9304,8 +9337,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -9457,8 +9492,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -9740,8 +9777,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -10024,8 +10063,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -10314,8 +10355,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -10404,8 +10447,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -10490,8 +10535,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 1
       }
     },
     {
@@ -10575,8 +10622,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -10907,8 +10956,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -11035,8 +11086,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -11144,8 +11197,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -11445,8 +11500,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -11563,8 +11620,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -11660,8 +11719,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -11953,8 +12014,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -12237,8 +12300,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -12538,8 +12603,10 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
-        }
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     },
     {
@@ -12821,8 +12888,750 @@
           "valuation_curve_min_events": 0,
           "valuation_curve_max_error": 0,
           "valuation_hot_days": 0,
-          "valuation_budget_ms": 0
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
+      }
+    },
+    {
+      "name": "cheap item q10 floor blend",
+      "target": {
+        "condition": "good",
+        "site": "depop"
+      },
+      "rows": [
+        {
+          "comp_id": "rounding",
+          "site": "ebay",
+          "sold_at": "2026-11-14",
+          "kind": "sold",
+          "level": "variant",
+          "condition": "good",
+          "w_match": 1,
+          "w_extract": 1,
+          "may_model": false,
+          "citation": "sale:rounding",
+          "price_cents": 400
         }
+      ],
+      "as_of": "2026-11-15",
+      "legacy": false,
+      "params": {
+        "site_ratios": {
+          "depop": {
+            "ratio": 1,
+            "q25": 0.1,
+            "q75": 1,
+            "n": 20
+          }
+        }
+      },
+      "expected": {
+        "comps": [
+          {
+            "comp_id": "rounding",
+            "site": "ebay",
+            "sold_at": "2026-11-14",
+            "kind": "sold",
+            "level": "variant",
+            "condition": "good",
+            "w_match": 1,
+            "w_extract": 1,
+            "may_model": false,
+            "citation": "sale:rounding",
+            "price_cents": 400,
+            "w_type": 1,
+            "w_age": 0.9923279462629435,
+            "w": 0.9923279462629435,
+            "age_days": 1,
+            "adjusted_cents": 400,
+            "gross": 0,
+            "net": 0
+          }
+        ],
+        "n_eff": 1,
+        "level": "variant",
+        "basis_level": "variant",
+        "range": {
+          "q10": 100,
+          "q50": 400,
+          "q90": 400
+        },
+        "dropped": [],
+        "extrapolated": null,
+        "state": "too_few",
+        "param_versions": {
+          "valuation_w_type_sold": 0,
+          "valuation_w_type_best_offer": 0,
+          "valuation_w_type_own_order": 0,
+          "valuation_w_match_variant": 0,
+          "valuation_w_match_product": 0,
+          "valuation_w_match_family": 0,
+          "valuation_w_match_category": 0,
+          "valuation_w_extract_measured": 0,
+          "valuation_w_extract_label": 0,
+          "valuation_w_extract_structured": 0,
+          "valuation_w_extract_inferred": 0,
+          "valuation_half_life_days_default": 0,
+          "valuation_half_life_days_fast": 0,
+          "valuation_max_age_days": 0,
+          "valuation_recent_days": 0,
+          "valuation_min_recent": 0,
+          "valuation_min_n_eff": 0,
+          "valuation_outlier_k": 0,
+          "valuation_adjustment_cut": 0,
+          "valuation_d_offer_cat": 0,
+          "valuation_condition_ratios_new_with_tags": 0,
+          "valuation_condition_ratios_new_without_tags": 0,
+          "valuation_condition_ratios_excellent": 0,
+          "valuation_condition_ratios_good": 0,
+          "valuation_condition_ratios_fair": 0,
+          "valuation_condition_ratios_for_parts": 0,
+          "valuation_completeness_ratios_box_missing": 0,
+          "valuation_completeness_ratios_accessory_missing": 0,
+          "valuation_works_ratios_verified": 0,
+          "valuation_works_ratios_said": 0,
+          "valuation_works_ratios_unknown": 0,
+          "valuation_works_ratios_not working": 0,
+          "valuation_shrinkage_k": 0,
+          "valuation_min_parent_rows": 0,
+          "valuation_time_factor_min": 0,
+          "valuation_time_factor_max": 0,
+          "valuation_min_site_products": 0,
+          "valuation_anchor_enabled": 0,
+          "valuation_anchor_k": 0,
+          "valuation_anchor_blend_k": 0,
+          "valuation_index_enabled": 0,
+          "valuation_index_half_life_days": 0,
+          "valuation_size_enabled": 0,
+          "valuation_size_shrinkage_k": 0,
+          "valuation_age_enabled": 0,
+          "valuation_blend_enabled": 0,
+          "valuation_blend_k": 0,
+          "valuation_dedupe_enabled": 0,
+          "valuation_prior_log_spread": 0,
+          "valuation_coverage_min": 0,
+          "valuation_coverage_max": 0,
+          "valuation_checked_min_n": 0,
+          "valuation_checked_wilson_min": 0,
+          "valuation_curve_min_events": 0,
+          "valuation_curve_max_error": 0,
+          "valuation_hot_days": 0,
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
+      }
+    },
+    {
+      "name": "half dollar 250 blend",
+      "target": {
+        "condition": "good"
+      },
+      "rows": [
+        {
+          "comp_id": "rounding",
+          "site": "ebay",
+          "sold_at": "2026-11-14",
+          "kind": "sold",
+          "level": "variant",
+          "condition": "good",
+          "w_match": 1,
+          "w_extract": 1,
+          "may_model": false,
+          "citation": "sale:rounding",
+          "price_cents": 250
+        }
+      ],
+      "as_of": "2026-11-15",
+      "legacy": false,
+      "params": {},
+      "expected": {
+        "comps": [
+          {
+            "comp_id": "rounding",
+            "site": "ebay",
+            "sold_at": "2026-11-14",
+            "kind": "sold",
+            "level": "variant",
+            "condition": "good",
+            "w_match": 1,
+            "w_extract": 1,
+            "may_model": false,
+            "citation": "sale:rounding",
+            "price_cents": 250,
+            "w_type": 1,
+            "w_age": 0.9923279462629435,
+            "w": 0.9923279462629435,
+            "age_days": 1,
+            "adjusted_cents": 250,
+            "gross": 0,
+            "net": 0
+          }
+        ],
+        "n_eff": 1,
+        "level": "variant",
+        "basis_level": "variant",
+        "range": {
+          "q10": 300,
+          "q50": 300,
+          "q90": 300
+        },
+        "dropped": [],
+        "extrapolated": null,
+        "state": "too_few",
+        "param_versions": {
+          "valuation_w_type_sold": 0,
+          "valuation_w_type_best_offer": 0,
+          "valuation_w_type_own_order": 0,
+          "valuation_w_match_variant": 0,
+          "valuation_w_match_product": 0,
+          "valuation_w_match_family": 0,
+          "valuation_w_match_category": 0,
+          "valuation_w_extract_measured": 0,
+          "valuation_w_extract_label": 0,
+          "valuation_w_extract_structured": 0,
+          "valuation_w_extract_inferred": 0,
+          "valuation_half_life_days_default": 0,
+          "valuation_half_life_days_fast": 0,
+          "valuation_max_age_days": 0,
+          "valuation_recent_days": 0,
+          "valuation_min_recent": 0,
+          "valuation_min_n_eff": 0,
+          "valuation_outlier_k": 0,
+          "valuation_adjustment_cut": 0,
+          "valuation_d_offer_cat": 0,
+          "valuation_condition_ratios_new_with_tags": 0,
+          "valuation_condition_ratios_new_without_tags": 0,
+          "valuation_condition_ratios_excellent": 0,
+          "valuation_condition_ratios_good": 0,
+          "valuation_condition_ratios_fair": 0,
+          "valuation_condition_ratios_for_parts": 0,
+          "valuation_completeness_ratios_box_missing": 0,
+          "valuation_completeness_ratios_accessory_missing": 0,
+          "valuation_works_ratios_verified": 0,
+          "valuation_works_ratios_said": 0,
+          "valuation_works_ratios_unknown": 0,
+          "valuation_works_ratios_not working": 0,
+          "valuation_shrinkage_k": 0,
+          "valuation_min_parent_rows": 0,
+          "valuation_time_factor_min": 0,
+          "valuation_time_factor_max": 0,
+          "valuation_min_site_products": 0,
+          "valuation_anchor_enabled": 0,
+          "valuation_anchor_k": 0,
+          "valuation_anchor_blend_k": 0,
+          "valuation_index_enabled": 0,
+          "valuation_index_half_life_days": 0,
+          "valuation_size_enabled": 0,
+          "valuation_size_shrinkage_k": 0,
+          "valuation_age_enabled": 0,
+          "valuation_blend_enabled": 0,
+          "valuation_blend_k": 0,
+          "valuation_dedupe_enabled": 0,
+          "valuation_prior_log_spread": 0,
+          "valuation_coverage_min": 0,
+          "valuation_coverage_max": 0,
+          "valuation_checked_min_n": 0,
+          "valuation_checked_wilson_min": 0,
+          "valuation_curve_min_events": 0,
+          "valuation_curve_max_error": 0,
+          "valuation_hot_days": 0,
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
+      }
+    },
+    {
+      "name": "half dollar 350 blend",
+      "target": {
+        "condition": "good"
+      },
+      "rows": [
+        {
+          "comp_id": "rounding",
+          "site": "ebay",
+          "sold_at": "2026-11-14",
+          "kind": "sold",
+          "level": "variant",
+          "condition": "good",
+          "w_match": 1,
+          "w_extract": 1,
+          "may_model": false,
+          "citation": "sale:rounding",
+          "price_cents": 350
+        }
+      ],
+      "as_of": "2026-11-15",
+      "legacy": false,
+      "params": {},
+      "expected": {
+        "comps": [
+          {
+            "comp_id": "rounding",
+            "site": "ebay",
+            "sold_at": "2026-11-14",
+            "kind": "sold",
+            "level": "variant",
+            "condition": "good",
+            "w_match": 1,
+            "w_extract": 1,
+            "may_model": false,
+            "citation": "sale:rounding",
+            "price_cents": 350,
+            "w_type": 1,
+            "w_age": 0.9923279462629435,
+            "w": 0.9923279462629435,
+            "age_days": 1,
+            "adjusted_cents": 350,
+            "gross": 0,
+            "net": 0
+          }
+        ],
+        "n_eff": 1,
+        "level": "variant",
+        "basis_level": "variant",
+        "range": {
+          "q10": 400,
+          "q50": 400,
+          "q90": 400
+        },
+        "dropped": [],
+        "extrapolated": null,
+        "state": "too_few",
+        "param_versions": {
+          "valuation_w_type_sold": 0,
+          "valuation_w_type_best_offer": 0,
+          "valuation_w_type_own_order": 0,
+          "valuation_w_match_variant": 0,
+          "valuation_w_match_product": 0,
+          "valuation_w_match_family": 0,
+          "valuation_w_match_category": 0,
+          "valuation_w_extract_measured": 0,
+          "valuation_w_extract_label": 0,
+          "valuation_w_extract_structured": 0,
+          "valuation_w_extract_inferred": 0,
+          "valuation_half_life_days_default": 0,
+          "valuation_half_life_days_fast": 0,
+          "valuation_max_age_days": 0,
+          "valuation_recent_days": 0,
+          "valuation_min_recent": 0,
+          "valuation_min_n_eff": 0,
+          "valuation_outlier_k": 0,
+          "valuation_adjustment_cut": 0,
+          "valuation_d_offer_cat": 0,
+          "valuation_condition_ratios_new_with_tags": 0,
+          "valuation_condition_ratios_new_without_tags": 0,
+          "valuation_condition_ratios_excellent": 0,
+          "valuation_condition_ratios_good": 0,
+          "valuation_condition_ratios_fair": 0,
+          "valuation_condition_ratios_for_parts": 0,
+          "valuation_completeness_ratios_box_missing": 0,
+          "valuation_completeness_ratios_accessory_missing": 0,
+          "valuation_works_ratios_verified": 0,
+          "valuation_works_ratios_said": 0,
+          "valuation_works_ratios_unknown": 0,
+          "valuation_works_ratios_not working": 0,
+          "valuation_shrinkage_k": 0,
+          "valuation_min_parent_rows": 0,
+          "valuation_time_factor_min": 0,
+          "valuation_time_factor_max": 0,
+          "valuation_min_site_products": 0,
+          "valuation_anchor_enabled": 0,
+          "valuation_anchor_k": 0,
+          "valuation_anchor_blend_k": 0,
+          "valuation_index_enabled": 0,
+          "valuation_index_half_life_days": 0,
+          "valuation_size_enabled": 0,
+          "valuation_size_shrinkage_k": 0,
+          "valuation_age_enabled": 0,
+          "valuation_blend_enabled": 0,
+          "valuation_blend_k": 0,
+          "valuation_dedupe_enabled": 0,
+          "valuation_prior_log_spread": 0,
+          "valuation_coverage_min": 0,
+          "valuation_coverage_max": 0,
+          "valuation_checked_min_n": 0,
+          "valuation_checked_wilson_min": 0,
+          "valuation_curve_min_events": 0,
+          "valuation_curve_max_error": 0,
+          "valuation_hot_days": 0,
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
+      }
+    },
+    {
+      "name": "cheap item q10 floor legacy",
+      "target": {
+        "condition": "good",
+        "site": "depop"
+      },
+      "rows": [
+        {
+          "comp_id": "rounding",
+          "site": "ebay",
+          "sold_at": "2026-11-14",
+          "kind": "sold",
+          "level": "variant",
+          "condition": "good",
+          "w_match": 1,
+          "w_extract": 1,
+          "may_model": false,
+          "citation": "sale:rounding",
+          "price_cents": 400
+        }
+      ],
+      "as_of": "2026-11-15",
+      "legacy": true,
+      "params": {
+        "site_ratios": {
+          "depop": {
+            "ratio": 1,
+            "q25": 0.1,
+            "q75": 1,
+            "n": 20
+          }
+        }
+      },
+      "expected": {
+        "comps": [
+          {
+            "comp_id": "rounding",
+            "site": "ebay",
+            "sold_at": "2026-11-14",
+            "kind": "sold",
+            "level": "variant",
+            "condition": "good",
+            "w_match": 1,
+            "w_extract": 1,
+            "may_model": false,
+            "citation": "sale:rounding",
+            "price_cents": 400,
+            "w_type": 1,
+            "w_age": 0.9923279462629435,
+            "w": 0.9923279462629435,
+            "age_days": 1,
+            "adjusted_cents": 400,
+            "gross": 0,
+            "net": 0
+          }
+        ],
+        "n_eff": 1,
+        "level": "category",
+        "basis_level": "variant",
+        "range": {
+          "q10": 100,
+          "q50": 400,
+          "q90": 400
+        },
+        "dropped": [],
+        "extrapolated": null,
+        "state": "too_few",
+        "param_versions": {
+          "valuation_w_type_sold": 0,
+          "valuation_w_type_best_offer": 0,
+          "valuation_w_type_own_order": 0,
+          "valuation_w_match_variant": 0,
+          "valuation_w_match_product": 0,
+          "valuation_w_match_family": 0,
+          "valuation_w_match_category": 0,
+          "valuation_w_extract_measured": 0,
+          "valuation_w_extract_label": 0,
+          "valuation_w_extract_structured": 0,
+          "valuation_w_extract_inferred": 0,
+          "valuation_half_life_days_default": 0,
+          "valuation_half_life_days_fast": 0,
+          "valuation_max_age_days": 0,
+          "valuation_recent_days": 0,
+          "valuation_min_recent": 0,
+          "valuation_min_n_eff": 0,
+          "valuation_outlier_k": 0,
+          "valuation_adjustment_cut": 0,
+          "valuation_d_offer_cat": 0,
+          "valuation_condition_ratios_new_with_tags": 0,
+          "valuation_condition_ratios_new_without_tags": 0,
+          "valuation_condition_ratios_excellent": 0,
+          "valuation_condition_ratios_good": 0,
+          "valuation_condition_ratios_fair": 0,
+          "valuation_condition_ratios_for_parts": 0,
+          "valuation_completeness_ratios_box_missing": 0,
+          "valuation_completeness_ratios_accessory_missing": 0,
+          "valuation_works_ratios_verified": 0,
+          "valuation_works_ratios_said": 0,
+          "valuation_works_ratios_unknown": 0,
+          "valuation_works_ratios_not working": 0,
+          "valuation_shrinkage_k": 0,
+          "valuation_min_parent_rows": 0,
+          "valuation_time_factor_min": 0,
+          "valuation_time_factor_max": 0,
+          "valuation_min_site_products": 0,
+          "valuation_anchor_enabled": 0,
+          "valuation_anchor_k": 0,
+          "valuation_anchor_blend_k": 0,
+          "valuation_index_enabled": 0,
+          "valuation_index_half_life_days": 0,
+          "valuation_size_enabled": 0,
+          "valuation_size_shrinkage_k": 0,
+          "valuation_age_enabled": 0,
+          "valuation_blend_enabled": 0,
+          "valuation_blend_k": 0,
+          "valuation_dedupe_enabled": 0,
+          "valuation_prior_log_spread": 0,
+          "valuation_coverage_min": 0,
+          "valuation_coverage_max": 0,
+          "valuation_checked_min_n": 0,
+          "valuation_checked_wilson_min": 0,
+          "valuation_curve_min_events": 0,
+          "valuation_curve_max_error": 0,
+          "valuation_hot_days": 0,
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
+      }
+    },
+    {
+      "name": "half dollar 250 legacy",
+      "target": {
+        "condition": "good"
+      },
+      "rows": [
+        {
+          "comp_id": "rounding",
+          "site": "ebay",
+          "sold_at": "2026-11-14",
+          "kind": "sold",
+          "level": "variant",
+          "condition": "good",
+          "w_match": 1,
+          "w_extract": 1,
+          "may_model": false,
+          "citation": "sale:rounding",
+          "price_cents": 250
+        }
+      ],
+      "as_of": "2026-11-15",
+      "legacy": true,
+      "params": {},
+      "expected": {
+        "comps": [
+          {
+            "comp_id": "rounding",
+            "site": "ebay",
+            "sold_at": "2026-11-14",
+            "kind": "sold",
+            "level": "variant",
+            "condition": "good",
+            "w_match": 1,
+            "w_extract": 1,
+            "may_model": false,
+            "citation": "sale:rounding",
+            "price_cents": 250,
+            "w_type": 1,
+            "w_age": 0.9923279462629435,
+            "w": 0.9923279462629435,
+            "age_days": 1,
+            "adjusted_cents": 250,
+            "gross": 0,
+            "net": 0
+          }
+        ],
+        "n_eff": 1,
+        "level": "category",
+        "basis_level": "variant",
+        "range": {
+          "q10": 300,
+          "q50": 300,
+          "q90": 300
+        },
+        "dropped": [],
+        "extrapolated": null,
+        "state": "too_few",
+        "param_versions": {
+          "valuation_w_type_sold": 0,
+          "valuation_w_type_best_offer": 0,
+          "valuation_w_type_own_order": 0,
+          "valuation_w_match_variant": 0,
+          "valuation_w_match_product": 0,
+          "valuation_w_match_family": 0,
+          "valuation_w_match_category": 0,
+          "valuation_w_extract_measured": 0,
+          "valuation_w_extract_label": 0,
+          "valuation_w_extract_structured": 0,
+          "valuation_w_extract_inferred": 0,
+          "valuation_half_life_days_default": 0,
+          "valuation_half_life_days_fast": 0,
+          "valuation_max_age_days": 0,
+          "valuation_recent_days": 0,
+          "valuation_min_recent": 0,
+          "valuation_min_n_eff": 0,
+          "valuation_outlier_k": 0,
+          "valuation_adjustment_cut": 0,
+          "valuation_d_offer_cat": 0,
+          "valuation_condition_ratios_new_with_tags": 0,
+          "valuation_condition_ratios_new_without_tags": 0,
+          "valuation_condition_ratios_excellent": 0,
+          "valuation_condition_ratios_good": 0,
+          "valuation_condition_ratios_fair": 0,
+          "valuation_condition_ratios_for_parts": 0,
+          "valuation_completeness_ratios_box_missing": 0,
+          "valuation_completeness_ratios_accessory_missing": 0,
+          "valuation_works_ratios_verified": 0,
+          "valuation_works_ratios_said": 0,
+          "valuation_works_ratios_unknown": 0,
+          "valuation_works_ratios_not working": 0,
+          "valuation_shrinkage_k": 0,
+          "valuation_min_parent_rows": 0,
+          "valuation_time_factor_min": 0,
+          "valuation_time_factor_max": 0,
+          "valuation_min_site_products": 0,
+          "valuation_anchor_enabled": 0,
+          "valuation_anchor_k": 0,
+          "valuation_anchor_blend_k": 0,
+          "valuation_index_enabled": 0,
+          "valuation_index_half_life_days": 0,
+          "valuation_size_enabled": 0,
+          "valuation_size_shrinkage_k": 0,
+          "valuation_age_enabled": 0,
+          "valuation_blend_enabled": 0,
+          "valuation_blend_k": 0,
+          "valuation_dedupe_enabled": 0,
+          "valuation_prior_log_spread": 0,
+          "valuation_coverage_min": 0,
+          "valuation_coverage_max": 0,
+          "valuation_checked_min_n": 0,
+          "valuation_checked_wilson_min": 0,
+          "valuation_curve_min_events": 0,
+          "valuation_curve_max_error": 0,
+          "valuation_hot_days": 0,
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
+      }
+    },
+    {
+      "name": "half dollar 350 legacy",
+      "target": {
+        "condition": "good"
+      },
+      "rows": [
+        {
+          "comp_id": "rounding",
+          "site": "ebay",
+          "sold_at": "2026-11-14",
+          "kind": "sold",
+          "level": "variant",
+          "condition": "good",
+          "w_match": 1,
+          "w_extract": 1,
+          "may_model": false,
+          "citation": "sale:rounding",
+          "price_cents": 350
+        }
+      ],
+      "as_of": "2026-11-15",
+      "legacy": true,
+      "params": {},
+      "expected": {
+        "comps": [
+          {
+            "comp_id": "rounding",
+            "site": "ebay",
+            "sold_at": "2026-11-14",
+            "kind": "sold",
+            "level": "variant",
+            "condition": "good",
+            "w_match": 1,
+            "w_extract": 1,
+            "may_model": false,
+            "citation": "sale:rounding",
+            "price_cents": 350,
+            "w_type": 1,
+            "w_age": 0.9923279462629435,
+            "w": 0.9923279462629435,
+            "age_days": 1,
+            "adjusted_cents": 350,
+            "gross": 0,
+            "net": 0
+          }
+        ],
+        "n_eff": 1,
+        "level": "category",
+        "basis_level": "variant",
+        "range": {
+          "q10": 400,
+          "q50": 400,
+          "q90": 400
+        },
+        "dropped": [],
+        "extrapolated": null,
+        "state": "too_few",
+        "param_versions": {
+          "valuation_w_type_sold": 0,
+          "valuation_w_type_best_offer": 0,
+          "valuation_w_type_own_order": 0,
+          "valuation_w_match_variant": 0,
+          "valuation_w_match_product": 0,
+          "valuation_w_match_family": 0,
+          "valuation_w_match_category": 0,
+          "valuation_w_extract_measured": 0,
+          "valuation_w_extract_label": 0,
+          "valuation_w_extract_structured": 0,
+          "valuation_w_extract_inferred": 0,
+          "valuation_half_life_days_default": 0,
+          "valuation_half_life_days_fast": 0,
+          "valuation_max_age_days": 0,
+          "valuation_recent_days": 0,
+          "valuation_min_recent": 0,
+          "valuation_min_n_eff": 0,
+          "valuation_outlier_k": 0,
+          "valuation_adjustment_cut": 0,
+          "valuation_d_offer_cat": 0,
+          "valuation_condition_ratios_new_with_tags": 0,
+          "valuation_condition_ratios_new_without_tags": 0,
+          "valuation_condition_ratios_excellent": 0,
+          "valuation_condition_ratios_good": 0,
+          "valuation_condition_ratios_fair": 0,
+          "valuation_condition_ratios_for_parts": 0,
+          "valuation_completeness_ratios_box_missing": 0,
+          "valuation_completeness_ratios_accessory_missing": 0,
+          "valuation_works_ratios_verified": 0,
+          "valuation_works_ratios_said": 0,
+          "valuation_works_ratios_unknown": 0,
+          "valuation_works_ratios_not working": 0,
+          "valuation_shrinkage_k": 0,
+          "valuation_min_parent_rows": 0,
+          "valuation_time_factor_min": 0,
+          "valuation_time_factor_max": 0,
+          "valuation_min_site_products": 0,
+          "valuation_anchor_enabled": 0,
+          "valuation_anchor_k": 0,
+          "valuation_anchor_blend_k": 0,
+          "valuation_index_enabled": 0,
+          "valuation_index_half_life_days": 0,
+          "valuation_size_enabled": 0,
+          "valuation_size_shrinkage_k": 0,
+          "valuation_age_enabled": 0,
+          "valuation_blend_enabled": 0,
+          "valuation_blend_k": 0,
+          "valuation_dedupe_enabled": 0,
+          "valuation_prior_log_spread": 0,
+          "valuation_coverage_min": 0,
+          "valuation_coverage_max": 0,
+          "valuation_checked_min_n": 0,
+          "valuation_checked_wilson_min": 0,
+          "valuation_curve_min_events": 0,
+          "valuation_curve_max_error": 0,
+          "valuation_hot_days": 0,
+          "valuation_budget_ms": 0,
+          "valuation_sales_tax_rate": 0
+        },
+        "retail_weight": 0
       }
     }
   ]

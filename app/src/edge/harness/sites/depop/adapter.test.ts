@@ -56,6 +56,12 @@ test('search reads the active listings from the page flight; sold search hands o
   assert.equal(r[0].state, 'live');
   assert.match(String(r[0].seller_ref_hash), /^h[0-9a-f]{8}$/);
   assert.match(String(r[0].url), /^https:\/\/www\.depop\.com\/products\//);
+  // What a card shows and a buyer needs: the text's first line as the title, the photo, condition, size, shipping.
+  assert.deepEqual([r[0].title, r[0].image_url, r[0].condition, r[0].size, r[0].shipping_cents, r[0].color, r[0].category],
+    ['Carhartt black full zip hooded jacket', 'https://media-photos.depop.com/b1/1/1_abc/P0.jpg', 'used excellent', 'M', 599, 'black', 'Outerwear']);
+  // A listing with no text is titled from its slug's words, never from the seller's handle at its front.
+  assert.equal(r[1].title, 'carhartt grey ny yankees jacket');
+  assert.equal(r[1].image_url, undefined);
   assert.equal(code(await run('search', { q: 'carhartt', status: 'sold' })).code, 'no_route');
 });
 

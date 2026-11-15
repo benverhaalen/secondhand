@@ -4,7 +4,7 @@
 import '@/buy/chat/device-store';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef } from 'react';
-import * as WebBrowser from 'expo-web-browser';
+import { Linking } from 'react-native';
 import { ShopView } from '@/buy/chat/shop-view';
 import { useShop } from '@/buy/chat/use-shop';
 import { log, Theme } from '@/ui';
@@ -15,8 +15,7 @@ export default function Shop() {
   const asked = useRef(false);
   useEffect(() => { if (q && !asked.current) { asked.current = true; shop.ask(q); } }, [q, shop]);
   const close = () => { shop.close(); if (router.canGoBack()) router.back(); else router.replace('/buy'); };
-  // Opens the site in the in-app browser; the promise ends when the person comes back, so a source's burst can fold away.
-  const open = (url: string, id: string) => WebBrowser.openBrowserAsync(url).then(() => undefined, e => { log.error('shop.open_site', e, { result: id }); });
+  const open = (url: string, id: string) => Linking.openURL(url).then(() => undefined, e => { log.error('shop.open_site', e, { result: id }); });
   return (
     // White with black type, whatever the phone's mode (Nate, words.md 2026-11-15: "turning everything in the background white").
     <Theme scheme="light">

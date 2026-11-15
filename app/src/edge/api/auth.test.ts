@@ -6,6 +6,7 @@ import { deps, resetRequestState, route } from './http.ts';
 import { example } from './examples.ts';
 import { makeAuthHandlers } from './auth.ts';
 import { createLog, memorySink, observeLogs } from '../../../../log/index.js';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { kv } from '../store/kv.ts';
@@ -179,4 +180,37 @@ test('email IP limits survive a new handler bundle and reset exactly after the h
   assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: 'blocked@example.com' })).status, 429);
   w.advance(3600_000);
   assert.equal((await w.post(w.newStart(), '/v1/auth/email/start', { email: 'blocked@example.com' })).status, 202);
+});
+
+
+test('an unavailable composed sender spends neither address nor IP email limits', () => {
+  const env: NodeJS.ProcessEnv = { ...process.env, NODE_ENV: 'test', NODE_TEST_CONTEXT: 'child-v8' };
+  delete env.SECONDHAND_DEV_CODE;
+  delete env.SECONDHAND_DATA_DIR;
+  execFileSync(process.execPath, ['--input-type=module', '--eval', `
+    import assert from 'node:assert/strict';
+    const { handlers } = await import('./app/src/edge/api/auth.ts');
+    const { configureSender } = await import('./app/src/edge/auth.ts');
+    const { deps, route } = await import('./app/src/edge/api/http.ts');
+    const { createLog, memorySink } = await import('./log/index.js');
+    deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
+    deps.connectingAddress = () => '192.0.2.1';
+    const start = route('POST /v1/auth/email/start', handlers.emailStart, { auth: 'none' });
+    const request = email => start(new Request('http://edge.test/v1/auth/email/start', {
+      method: 'POST', body: JSON.stringify({ email })
+    }));
+    for (let i = 0; i < 25; i++) {
+      const response = await request('unsent@example.invalid');
+      assert.equal(response.status, 503, 'no sender must remain unavailable rather than lock out');
+      assert.equal((await response.json()).code, 'unavailable');
+    }
+    let sends = 0;
+    configureSender(() => { sends++; });
+    for (let i = 0; i < 20; i++) {
+      const response = await request(i === 0 ? 'unsent@example.invalid' : 'ready' + i + '@example.invalid');
+      assert.equal(response.status, 202, 'unsent codes must spend neither limit');
+    }
+    assert.equal(sends, 20);
+    assert.equal((await request('over-limit@example.invalid')).status, 429);
+  `], { env, encoding: 'utf8' });
 });

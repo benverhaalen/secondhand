@@ -52,7 +52,7 @@ export type Item = {
   kind?: string;
   cost?: { amount_cents: Cents; date: string; source: 'purchase' | 'bought_it' | 'you_said' };
   origin: 'capture' | 'purchase' | 'import' | 'folder'; location: { label: string }; quantity: number; group_id?: string;
-  note?: string; kept_reason?: string; photos: Photo[]; attributes: Attribute[]; valuation?: Valuation; limits?: ItemLimits;
+  description?: string; note?: string; kept_reason?: string; photos: Photo[]; attributes: Attribute[]; valuation?: Valuation; limits?: ItemLimits;
   listings: Listing[]; created_at: Iso; updated_at: Iso;
 };
 

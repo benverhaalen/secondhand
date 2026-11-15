@@ -1,100 +1,51 @@
 # 70: the engines and buying-conversation handoff
 
-Updated: 2026-11-15, about 08:30 Central, by the engines lead of the finalization pass ([finalization §4](../../../../spec/plans/finalization.md#4-engines-and-the-buying-conversation-lead-engines)). Owner: Nate. Read this, [packet 55](55-team-leads-and-mac-workers.md) and [valuation.md](../../../../spec/engines/valuation.md) before touching `app/src/engines/` (except `capture/` and `listing/`), `app/src/edge/assist/`, `bench/assist/`, `app/src/edge/api/valuations.ts`, `scores.ts`, `assist.ts`, or `app/src/edge/intel/gather.ts`, `learn.ts`, `classify.ts`, `answer.ts`, `protocols.ts`.
+Updated: 2026-11-15, about 13:30 UTC, by the second engines lead of the finalization pass ([finalization §4](../../../../spec/plans/finalization.md#4-engines-and-the-buying-conversation-lead-engines)). Owner: Nate. Read this, [packet 55](55-team-leads-and-mac-workers.md) and [valuation.md](../../../../spec/engines/valuation.md) before touching `app/src/engines/` (except `capture/` and `listing/`), `app/src/edge/assist/`, `bench/assist/`, `app/src/edge/api/valuations.ts`, `scores.ts`, `assist.ts`, or `app/src/edge/intel/gather.ts`, `learn.ts`, `classify.ts`, `answer.ts`, `protocols.ts`.
+
+Briefs for every branch below are on the Mac at `/tmp/brief-<name>.txt` (and `-r2`, `-r3`, `-r4` for later rounds). `/tmp` can be cleared: the copies in the shared notes folder's sibling note `engines-lead-2-state.md` name them, and the briefs themselves are in that session's scratchpad.
 
 ## True on main
 
-- **EN1, the improved valuation, landed:** squash commit 5d7f61f1, merged at 9d0f91f2. It is the four commits of `w/eng-valuation-2` after three fresh Opus reviews (scratchpad review-en1.md, rounds 1 and 3). What it does:
-  - the log-ratio calibration;
-  - coverage measured from our own sales, so a range can reach `checked`;
-  - a thin basis never reads `checked`;
-  - a curve without evidence still prices and says `curve_checked: false`, top level included;
-  - a family band shows its ends and no median;
-  - an uncitable row is dropped and logged instead of failing the answer;
-  - a store fault keeps the valuation (`persisted: false`, `warm_unavailable`);
-  - `valuate(item, ctx)` is the one entry.
-  
-  Proof, rerun on the Mac on the landing tree:
-  - `realtime.test.ts` 4 of 4, `check` 53, `valuate` 21, `comps` 32, parity 28 in TS and 19 in Python, `aci` 15, `tools` 64, `valuations` 17, `realtime-proof.test.mjs` 13; `tsc` clean.
-  - The ablation rerun on the same 41,988 StockX sales (input SHA-256 02fe1413, 2,404 s) reproduces [valuation.md §9](../../../../spec/engines/valuation.md#development-reading-the-ablation-of-2026-11-15) to the digit.
-  - The full gate on the tree had no new error from this branch. Its 234 errors are main's existing debt: harness and browser logging, render and app-check tests without browsers.
-- The Dupe fixture is scrubbed: 6d34186a, the six recorded Dupe rows in `assist/fixtures/tools/search.json` replaced by hand-written ones.
-- **Nate's rulings today**, each verbatim in [words](../../../../product/words.md):
-  - rows with `may_model` false (eBay API, Apify) may price and be cited in a shown range: "they can, they are verified real data";
-  - Apify rows may fit the models: "Yes, Apify too". It replaced "no keep fits clean", given minutes earlier;
-  - real-time scores per market on each platform, extremely accurate;
-  - in a buying conversation eBay lands last, with answers already coming in (relayed by the search lead).
-  
-  eBay content, including eBay rows read through Apify, stays out of fits under eBay's terms. That is my reading, not overruled.
-- Spec: [valuation.md §9 "Real-time market scores"](../../../../spec/engines/valuation.md#real-time-market-scores) (the design, *agent proposal*, row EN7), and §2 rights (5a74d725).
+- **EN1, the improved valuation** (squash 5d7f61f1, merge 9d0f91f2). The ablation on 41,988 StockX sales reproduced; see [valuation.md §9](../../../../spec/engines/valuation.md#development-reading-the-ablation-of-2026-11-15).
+- **SV6 and EN6's first item: `POST /v1/valuations` prices the person's own item at the request's time through `valuate`.** Branch `w/eng-route-1` at 77a3164a. It reached main inside 3f569d92, a hooks commit by another session that took up my merge while it was in progress in the shared checkout, so that commit's message does not describe it. My §4 row update is 18b216e0, whose "merge:" message describes the route but holds only the row edit. Nothing to undo.
+  - What it does: a person's item from their store (another person's, a missing or deleted item is 404, read nothing); `as_of` = the request's time, so a comp an hour old is kept and a future one is not; the result is the valuation plus `range_state` and `gather`; an engine or port fault is `unavailable` with "The valuation could not be finished."; the observation port is a stand-in until SV7 (reads nothing, a write logs `valuation.observations.not_composed`); written rows carry `use_scope 'hackathon_demo'`, `may_share false`, `may_model` from the comp; every dropped row is counted in `valuation.observations.dropped`; an unknown grade logs `valuation.condition_unknown`.
+  - Proof: `valuations.test.ts` 51 of 51 in ten runs (five with `SECONDHAND_LIVE_SITES=ebay,mercari`, five unset); two fresh Opus reviews (round 1 fix first, round 2 merge); gate on main 52468f9d plus the branch: 3,944 tests, the same 16 failures as main alone (capture process, Mercari linked search, the walk, search latency, ten renders), tsc clean. `realtime-proof.mjs` stays 2 of 10: link 1 is now earned from the route path where before it was written by hand.
+  - The server and app-wiring leads were archived when I tried to tell them: their successors read this line.
+- **The rest of EN6** (merge 79a27944 of `w/eng-en6-1` at 0f92bb03): an uncited retail prior is left out instead of hiding the range, and `comparables` returns the `retail_weight` it applied; a positive quantile never rounds below 100 cents and both languages round half up; `valuation_sales_tax_rate` 0.0753 (Tax Foundation 2026 midyear, *asserted* from a search summary, not opened); the sale `as_of` reaches the stale-fee flag; tests reach `last_sale` and `assertParams`. A fresh Opus review said merge. Gate on main 810fd78a plus the branch: one new failure, the Today card whose keep moved 6 cents with the tax rate ($97.33 to $97.27), updated in 0f92bb03. Its four follow-ups are the first queue item.
+- **Spec:** [valuation.md §2 "In Databricks' terms"](../../../../spec/engines/valuation.md#in-databricks-terms) (aaecb0b3): the engine as a target sales curve moved by named signals, and which signals a served valuation reads today (history and timing only). The data lead points `databricks/RETAIL.md`'s pricing row at that table, so the signals are stated once. Change a row of that table in the same commit as the code that makes it true.
+- Baseline gate on main 52468f9d (Mac, clean worktree `eng-gate-base`): 3,910 tests, 16 failures, none in this area; tsc 0 errors. The gate script is `/tmp/eng-gate.sh <name> <main commit> <branch>...` on the Mac.
 
-## Running on the Mac at the wrap-up, about 13:00 UTC (judge them first)
+## Running on the Mac (judge them first)
 
-Both workers were still running when Nate called the wrap-up, so their latest edits are uncommitted in the worktrees. When a worktree has `WORKER_REPORT.md`, read it, rerun its checks, commit the explicit paths on its branch, and only then review. Nothing on either branch is merged. The Mac's shared `app/node_modules` was rebuilt from main's lockfile at 12:54 UTC and now holds `@anthropic-ai/sdk`.
+None of these is merged. For each: read `WORKER_REPORT.md`, rerun its checks, commit explicit paths on its branch, a fresh review (an Opus seat for anything that changes a figure a person sees), merge `origin/main` into it on the Mac, run the gate script on main plus the branch, then land by `git merge` (never by copying files; packet 55). Watch the shared index: `git diff --cached --name-only` before every commit.
 
-Open review findings:
-- `w/eng-assist-1`: from review round 2 (scratchpad `review-bc2.md`), round 3 targets all of them, and none is verified fixed:
-  - hole B: "400 euros", "400 pounds", "400 EUR", "a 400-dollar jacket" and "50 cents" read as counts, so a count or the person's own number backs a price;
-  - A: "8-10", "2-3 days", "MA-1" and "COVID-19" read as negatives and cut good sentences;
-  - C: model numbers like A1466 and PS5 cut good sentences;
-  - a round with no token fields and no cost is priced at 0;
-  - number words: "Kennedy half dollar" and "100 percent sure" are cut;
-  - "Nov 15, 2026" is cut.
-- `w/eng-route-1`: no review yet.
+| Worktree, branch | Holds | State at the handoff | Done when |
+|---|---|---|---|
+| `eng-assist-1`, `w/eng-assist-1` (r3 committed 3cd73bdc, main merged a9e685c1) | BC1, BC2: the runner's call shape and `--dry` (25 of 25 answered), the cost cap, four tools a round, low or medium effort, the number gate before any text streams | **Round 4 running** (brief `-r4`). A fresh Opus review of r3 confirmed every r2 hole closed, then found more ways a made-up price passes: "400 US dollars", "85-120 dollars", "$400k", full-width and Arabic-Indic digits, a zero-width space, "CA$400", and a reported provider cost of 0 that switches the cap off. Three rounds of adding spellings each left new ones, so r4 changes the rule: Unicode normalization first; a sentence-level rule (in a sentence with any currency cue, every number is money unless explained as a date, a model number, a measure or a count); counts never backed by id or url fields; the cap at the larger of the reported and the computed cost. The reviewer's adversarial list is the r4 test list | r4's checks pass; the same reviewer's questions rechecked by a fresh Opus seat with planted cases inside the good range; `.gitignore` gains `bench/assist/out/`; land; BC1 and BC2 rows set |
+| `eng-en3-1`, `w/eng-en3-1` (r1 committed 9fc3cd26) | EN3: `app/src/engines/param/export.ts`, the reader of the DB4 export (lazy, keeps the last good file, drops bad rows alone, `hackathon_demo` only when `SECONDHAND_USE_SCOPES` has it); `valuate` takes the exported calibration while our own group is under `valuation_conformal_parent_min` | **Round 2 running**: the sale curve. The worker stopped at r1 because the export has p at 7, 30 and 90 days per ratio bin and `path.ts` needs p at any day and price. My rule (*agent proposal*, to write into valuation.md when it lands): ratio = price / q50; linear between bins, clamped at the ends; piecewise linear in days through (0,0), (7,p7), (30,p30), (90,p90), flat after 90; `t` solved on the segment, the row's t25/t50/t75 for a price-blind row | Its checks; review; land; then wire `fittedReader` into `valuations.ts`'s ctx (my file) with `SECONDHAND_PARAMS_EXPORT`, and EN3's proof: a served valuation with a checked state and a chance of sale that is not null |
+| `eng-en7-1`, `w/eng-en7-1` | EN7's scorer: `market-score.ts` (scoreEvent, MarketScore per {site, kind} with Wilson intervals, decayed copy, paired gaps), `freezeBasis` leakage guard, a parity fixture with `experiment.py`, `scripts/market-replay.mjs` over the ablation's estimates | Running (r1) | Its replay matches the ablation's all-on row within 0.05 points; review; land. Then storage (packet 71's `measures.market_score` table, and the registry), `GET /v1/scores?subject_type=market`, and live scoring in the valuation path |
+| `eng-tools-1`, `w/eng-tools-1` | BC3's tools (`tools.ts`), from a fresh Opus review of origin/main's tools: Genie per person through `forUser` (today `ask_genie` runs one shared space under the service token: not served, because `POST /v1/assist` on main is still a stub, but it must not be served as it is); summaries only over returned rows, each with its id; `value_item` as one `valuate` call; the real caller and person to the sources; market functions person-only; no vendor text; `search_market` answers from the first `answer.partial` and sends later frames to `deps.onLate` as new result ids | Running (r1) | Its checks; review; land |
 
-The ablation finished, and its result is in "True on main". Its outputs are on the Mac at `/tmp/ablate-en1/` (out.json, out.predictions.jsonl, out.log.jsonl). /tmp may be cleared, so the served engine's estimates were also copied, in the data lead's columns, to `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (41,988 lines, SHA-256 03acc610…). Tell the data lead if that file moves.
+Data on the Mac: `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (the served engine's estimates, 41,988 lines) and `~/secondhand-data/measures/ablate-en1-predictions-2026-11-15.jsonl` (every contestant's estimates, copied out of `/tmp/ablate-en1/` so it survives). Tell the data lead if either moves.
+
+## The queue, in order (after the branches above)
+
+**First, ahead of everything (orchestrator, 2026-11-15 about 14:05 UTC):** the shop chat has no backend. `POST /v1/assist` is still `exampleHandler` (`app/src/edge/api/assist.ts:14`), so a signed-in person gets 404 and the chat shows "Couldn't answer that yet"; signed out it is 401 and the app logs `SH_CRASH shop.ask no token`. It is the first thing a judge touches after a search. No commit yet makes "What's selling and why" answer from the search's own rows. Order: judge `eng-assist-1` r4 and `eng-tools-1` (both finished with reports at about 14:05 UTC, uncommitted); land them; then one brief for `converse.ts` taking `onLate` and `POST /v1/assist` serving `assist.tool` / `assist.text` / `assist.settled` to the shop chat (`app/src/buy/chat/assist.ts`), in the agreed shape, with the visitor photo allowed, the two-person test and the visitor cap. Nate also wants the capture flow's clarifying-question widgets (prefilled choices when the system is fairly sure) in the chat's answers when a question is ambiguous (size, model year, new or used): agree the block shape with the capture lead (`local_b0ef7332-bb07-4ffe-a010-dc0d32f97279`) so the chat emits the same block and the app draws one part. His words are in product/words.md under that heading. `eng-en3-1` r2 and `eng-en7-1` also finished with reports; judge them after BC3.
+
+0. **EN6 round 2** in worktree `eng-en6-1` (`AGAIN=1`): (1) a parity case with a fractional `retail_weight` (cited retail prior, a kind band, rows at two levels, a recent variant anchor), since every case today has weight 0 or 1; (2) the new-with-tags retail cap (check.ts:90) still applies with no `retail_citation`: gate it on the citation; (3) the 100-cent floor again after calibration (check.ts:108: q10 100 with Q_g 1.0 gives 37 cents); (4) drop the `log.error` fallback for a logger without `note` (check.ts:83).
+1. **BC3, the route.** `converse.ts` takes `onLate` (after r4 lands): each late frame becomes a new result id, gated like the first; then `POST /v1/assist` in the shape agreed with the app-wiring lead (below), a two-person test, the $5 daily visitor cap. A visitor's photo is still 422 (Nate's open question).
+2. **EN2, the loop**, link by link in `scripts/realtime-proof.mjs` order: link 2, the route runs `gather` when `valuate` returns a need (`valuations.ts`); links 3 and 4, gather's steps call search through its handler; links 5 and 6 need SV7 (packet 86's `srv-obs-1`); link 7, citations resolve to stored rows (`memoryProof` needs a durable store); link 8, `updateContribution` from the valuation route; link 9, `cutOrder` and `contributionMean` read in gather's order. Each link updates its test in the same commit.
+3. **`may_model` at write time** in `app/src/engines/valuation/sold.ts`: true for Apify rows whose site is not eBay, false for every eBay row (agreed below), with a test.
+4. **EN7's rest** (above), then **EN4**: land `w/eng-ad9-1` (fcde0de4) with the search lead's two lines in `search.ts` sent as a diff; serve the brand measure from the exported `brand_premium` (the EN3 reader already validates it); `path.ts bestSites` as the twin of `placement.py pick()`. EN5 follows capture's parts parser.
+5. **BC4**: the first scored run on Windows, low then medium effort, each run's cost recorded before the next.
 
 ## Waiting on Nate
 
-- Whether eBay rows read through an Apify actor may fit the models. Today they may not, by my reading of eBay's terms ([data use](../../../../spec/data-use.md)).
-- Whether a visitor's photo may reach the conversation model before the identify step can strip it to attributes. Until then a visitor's image gets 422.
-- Any real-time market score (EN7) or backtest figure on a public page or in the pitch needs both Nate and Ben to have seen it first.
-- The visitor turn cap `ASSIST_TURN_MAX_USD` 0.25 is an *agent proposal*. The daily cap of $5 is his.
-
-## Branches
-
-| Worktree, branch | Holds | Done when |
-|---|---|---|
-| `eng-assist-1`, `w/eng-assist-1` (commits 2f553fff, 36ca64f2; round 3 uncommitted, brief `/tmp/brief-eng-assist-1-r3.txt`) | BC1 and BC2: the runner's real call shape and `--dry`; a cost cap a turn; four tools a round; low or medium effort only; text emitted only after the gate, round by round; money and pct backed only by cited rows; the person's text backs only counts and dates; fixed failure codes; cut sentences never in an event | Round 3 closes the reviewer's hole B (euros, pounds, EUR, GBP, cents and "400-dollar" read as counts) and A, C and the minors. Then: rerun `converse.test.ts` and the dry run, commit, a third look by the same reviewer (scratchpad `review-bc2.md` has rounds 1 and 2), squash onto origin/main with `Rests-on:` refs separated by commas (the checker splits on commas and spaces, not `;`), add `bench/assist/out/` to `.gitignore`, merge, set BC1 and BC2 in finalization §4 |
-| `eng-route-1`, `w/eng-route-1` (from 9d0f91f2, brief `/tmp/brief-eng-route-1.txt`) | SV6 and EN6's first item: `POST /v1/valuations` prices the person's own item at the request's time through `valuate`. Its observation port is a stand-in that logs skipped writes until the server lead's `observations.ts` lands, read with purpose `show`. An engine fault is `unavailable` with a fixed message; `range_state`; proof link 1 becomes works | Its checks, then a fresh Opus review (money a person sees), then a squash merge. Tell the server lead and the app-wiring lead the commit |
-
-Mac facts learned: the shared `app/node_modules` is stale (it lacks `@anthropic-ai/sdk` and `expo-secure-store`), so a worktree that runs `tsc` needs its own `npm ci`, done by the lead before the worker starts. The worktree for the gate is `eng-land-1` or `eng-land-2` (both landed; remove them).
-
-## The queue, in order
-
-1. Land `eng-assist-1` and `eng-route-1` (above).
-2. **EN6, the rest of the engines review**, plus the round-3 latent items:
-   - a retail prior without its citation hides a blended range (check.ts, `noCitation`); have `comparables` return the blend weight it applied instead of `retailWeight` copying it;
-   - tests that reach the last-sale fallback and `assertParams`;
-   - the whole-dollar rounding in comps.ts and its Python twin together (S5: a low end of 0 drops a learning event);
-   - the tax rate's source (keep.ts);
-   - a sale `as_of` so the stale-fee flag fires.
-3. **EN2, the loop**, link by link in `scripts/realtime-proof.mjs` order. Link 1 comes with the route. Then:
-   - link 2: the route runs `gather` when `valuate` returns a need;
-   - links 3 and 4: gather steps call the search through its handler;
-   - links 5 and 6: SV7's writer and reader;
-   - link 7: citations resolve to stored rows, since `memoryProof` needs a durable store;
-   - link 8: `updateContribution` from the valuation route, for the sources that contributed comps;
-   - link 9: `cutOrder` and `contributionMean` read in gather's step order.
-   
-   Each link updates its test in the same commit.
-4. **EN3**, the reader of the DB4 export, against a fixture of the agreed shape. The shape is in the shared notes `eng-en3-export-shape.md`:
-   - param rows `valuation_calibration`, `valuation_sale_curve` and `brand_premium` in `row.json`'s shape;
-   - the file `/Volumes/secondhand/raw/export/params/latest.json`, read at boot and every 10 minutes, keeping the last good file;
-   - `hackathon_demo` rows used only when `SECONDHAND_USE_SCOPES` includes it.
-5. **EN7, the real-time market scores** (Nate's ask, design in valuation.md §9). Score each sold row prequentially before it enters a basis, keep a `market_score` row per `{site, kind}`, and serve it on `GET /v1/scores?subject_type=market`. The proofs are a StockX replay matching the ablation's all-on row, and the leakage test.
-6. **EN4**:
-   - land `w/eng-ad9-1` (fcde0de4) with the search lead's two lines in `search.ts` (`similar_other_brand` in `matchOrder`, `relation: 'similar'` in `rank()`), sent as a diff;
-   - serve the brand measure from `brand_premium`;
-   - make `path.ts bestSites` the twin of `placement.py pick()` (AD5, brief restated in the older version of this packet).
-   
-   EN5, the value of parts, follows capture's parts parser.
-7. **BC3**: a fresh review of `tools.ts`, then:
-   - `value_item` calls `valuate`, one call behind both the money and what is visible;
-   - `search_market` reads the search job as a stream (the contract is in the shared notes `eng-bc3-search-frames.md`): it answers from the first `answer.partial` frames, and later frames become new result ids;
-   - `POST /v1/assist`, in the shape agreed with the app-wiring lead (below), with a two-person test and the daily visitor cap.
-8. **Vocabulary** (orchestrator, for the Databricks judges at 19:00 UTC). When writing or revising `spec/engines/valuation.md` and `spec/engines/adaptation.md`, use Databricks' own terms where they name the same thing: a target sales curve as the baseline, adjusted in real time by named signals (demand, competition, customer sensitivity, timing, season and outside events, digital behavior, history). The mapping is in [databricks-retail-solutions.md](../../../../research/data/nate/databricks-retail-solutions.md). On 2026-11-15 a served valuation read only history live, and timing only as age decay. The data lead has the list for `databricks/RETAIL.md`.
-9. **BC4**: the first scored run on Windows, low then medium effort (`OPENROUTER_API_KEY` is set there), recording each run's cost before the second starts.
+- **Settled 2026-11-15** ([words](../../../../product/words.md#2026-11-15-nate-visitor-photos-may-reach-the-conversation-benchmarks-good-enough-for-the-site-three-free-requests-open-source-with-a-companion-mcp-server)): a visitor's photo may reach the conversation model ("thats ok for photos to reach"). BC3's route accepts `image` for a visitor, held to the same size and type checks as a person's; drop the 422.
+- Market scores and benchmarks: Nate wants them "great enough to put on the site". That makes EN7's accuracy the aim; each figure still goes up only after Ben and Nate have seen it, with Nate's yes for that page.
+- The same message asks for three free requests for every user for the hackathon, the repo free to download on GitHub as open source, and a companion MCP server that gives anyone's agent the search engine. None is engines work; it went to the orchestrator.
+- The visitor turn cap `ASSIST_TURN_MAX_USD` 0.25 is an *agent proposal*; the daily cap of $5 is his.
+- The sale-curve rule above and the 100-cent floor are *agent proposals*.
 
 ## Agreed with other leads
 
@@ -102,25 +53,28 @@ Mac facts learned: the shared `app/node_modules` is stale (it lacks `@anthropic-
   - `readObservations` purpose `show` = may_show and not expired, which valuation reads;
   - purpose `model` = may_model true at both levels and not expired, which fits read;
   - the writer refuses rows whose `may_store` is not true;
-  - SV6 is mine.
-  - At the wrap-up SV7 had not landed. Its brief is `srv-obs-1` (packet 86), and the next server lead sends the commit. Until then the route's stand-in port stays. The Apify ruling only flips the rows' `may_model`; the reader does not change.
-- **Data lead (DB4):** the export shape above, still in build on Mac branch `w/dbx-export-1`, unmerged; the sample file comes from it. Packet 71 adds a `measures.market_score` table per {site, kind} for EN7.
-- **`may_model` is set once, at write time** (agreed with the data lead at the wrap-up): Apify rows whose source site is not eBay get true, and every eBay row, direct or through an Apify actor, gets false (data-use.md:105). The loader, the views and every fit read only `may_model` and never re-derive it from the source. `use_scope` stays "hackathon_demo".
-  On our side, the place to set it is `app/src/engines/valuation/sold.ts`, which today writes `may_model: false` on every scraped row. A queue item for the next lead: change it for non-eBay Apify rows, with a test, and tell the next server lead, so the observation writer keeps the flag as given.
+  - SV6 is mine, and it is on main (above). One marked line in `valuations.ts` is where the real functions plug in.
+  - SV7 had not landed at this handoff. Its brief is `srv-obs-1` (packet 86).
+- **Data lead (DB4):** the export shape is in the shared note `eng-en3-export-shape.md`; the export is on Mac branch `w/dbx-export-1`, unmerged. Packet 71 adds `measures.market_score` per {site, kind} for EN7.
+- **DB4 export landed** (66777d1d, the Databricks lead): `jobs/valuation/export.py`, `sale_curve.py`, `databricks/tasks/export_params.py`, job `export_params` (no schedule; its workspace run waits for the post-19:00 deploy), volume `raw.export`. The envelope is the agreed shape. A local sample (7 sale-curve rows, 1 calibration) is in the orchestrator's notes folder as `dbx-export-sample-2026-11-15.json`, outside the repo. The calibration value gains additive keys `split_at`, `holdout_n`, `holdout_raw_coverage`, `holdout_coverage`: **check that `eng-en3-1`'s reader accepts unknown keys** (it validates rows strictly) and run its tests against this sample before landing. Development readings, off any public page until Nate and Ben have seen them: Q_g 0.0123, fitted on 26,125 engine estimates before 2019-01-01; coverage before widening 74.6% on the fit rows and 80.9% on the 15,863-row holdout, 85.6% after widening.
+- **`use_scope` on every route or search write is `hackathon_demo`** unless the source's `source_rights` row says `product`; no source says so today. `product` means cleared for a shipped model, and would let a demo-only row into `comp_for_product` and `core.param` (data lead, 2026-11-15).
+- **`may_model` is set once, at write time**: Apify rows whose source site is not eBay get true; every eBay row, direct or through Apify, gets false (data-use.md:105). The loader, the views and every fit read only `may_model`.
 - **App-wiring lead:** `POST /v1/assist`, auth visitor:
   - request `{surface:'buy', text ≤ 2000, history? ≤ 10 turns {role, text ≤ 4000}, search_job_id?, image? (person only), item_id?/want_id?/capture_id? (person only)}`;
   - it answers `202 {id, kind:'assist', state:'running', stages, stream}`;
   - events `assist.tool` (no input), `assist.text {delta}` (gated sentences), `assist.settled` (calls without input, cut sentences emptied), `job.state`;
   - `503 unavailable` when there is no key, `429 rate_limited` with `extra.cap: 'daily'` at the $5 visitor cap, `422` for bad input.
-  
+
   Their client already sends this.
-- **Search lead:**
-  - frames in-process through `jobs.listen` and `framesAfter`; `group` ('platform' | 'osint') per source is coming;
-  - Google Shopping through treg was asked of them as a source, with `may_model` false until a research note on Serper's and Google's terms.
+- **Capture lead (the clarifying-question block, `Ask`):** shape in [capture.md §4, "The question block, shared with the buying chat"](../../../../spec/engines/capture.md) (789eb9f1), type exported from `app/src/engines/capture/plan.ts`: {id, field, kind, words, options [{value, label?, proposed, rests_on?}], other, max_length?, unit?, units?, parts?, why, answer {method, path}}; one drawn part in `app/src/ui/parts/` (Ben's). I agreed it with three additions for the chat: the answer goes as `POST /v1/assist` with `answer: {ask_id, field, value}` and text = the chosen label, with ids stable per question; `replaces?` names an earlier Ask it supersedes (a superseded answer gets 409); in the chat `rests_on` (or a separate `cites`, the capture lead's pick) is result ids, and labels pass the number gate. Their reply was pending at this handoff.
+- **Google Shopping is a search source** (merge eb201bac, SR12, the search lead): source id `google_shopping`, group `osint`, lane `treg`, composed only when `TREG_TOKEN` is set, $1.00 a day cap in memory. Rows are asking prices, never sold: { id, title, price_cents, currency, url, image_url?, source_site (merchant, `ebay` for any eBay seller), secondhand (true only for eBay, Poshmark, Depop, Mercari, ThredUp, The RealReal), attribution `Google Shopping`, may_store false, may_model false, keep_until }. They never enter a comp basis or a fit; a shown retail anchor beside a range may read them from the answer frame by source id (a candidate for D7 retail and the new-with-tags live-ask cap, cited by row id).
+- **Search lead:** frames in-process through `jobs.listen` and `framesAfter` (the shared note `eng-bc3-search-frames.md`); `group` ('platform' | 'osint') per source is coming; Google Shopping through treg was asked of them, with `may_model` false until a research note on Serper's and Google's terms.
 
 ## Learned the hard way
 
-- A worker's "all pass" covers only the cases its tests build. Round 2's citation-isolation test passed because its bad rows were outliers. Ask for the adversarial case inside the good range.
-- The `Rests-on:` checker splits references on commas and spaces. A `;` becomes part of the anchor and fails the gate. It also needs a `#heading` on any page with several sections. 41834691 went out without one; it is pushed, so it was left as it is.
-- A Codex worker cannot be steered mid-run. When a ruling changes the brief, stop it (`pkill -f "codex exec.*<worktree> "`), edit the brief, and restart with `AGAIN=1` and a note about the partial edits. That cost five minutes this session.
-- Text held per round keeps the gate whole, but the first words arrive at the end of a model round, not a sentence at a time. Revisit when BC3 streams search frames.
+- A worker's "all pass" covers only the cases its tests build. Ask for the adversarial case inside the good range. On the number gate, three rounds of adding spellings each left new ones; the fix was a rule that treats an unexplained number in a money sentence as money.
+- A test that runs the real sold sources reads `SECONDHAND_LIVE_SITES` and the clock, so it passes or fails by machine (3 of 31 once on the Mac). Stub the sources and pin `deps.now` in every route test.
+- The shared Windows checkout: another session's commit can take up your merge in progress. Make the merge and its commit in one command, or check `git log -1 --format=%P` after.
+- The `Rests-on:` checker splits references on commas and spaces; it needs a `#heading` on any page with several sections.
+- A Codex worker cannot be steered mid-run. When a ruling changes the brief, let it finish and fix the line after (as with `use_scope` on the route), or stop it (`pkill -f "codex exec.*<worktree> "`) and restart with `AGAIN=1`.
+- Text held per round keeps the gate whole, but the first words arrive at the end of a model round. Revisit with BC3's late frames.

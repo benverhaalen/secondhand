@@ -2,11 +2,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAuth, memoryStore } from '../auth.ts';
-import { deps, resetRequestState, route } from './http.ts';
+import { ApiError, deps, resetRequestState, route, type Ctx } from './http.ts';
 import { example } from './examples.ts';
 import { makeAuthHandlers } from './auth.ts';
 import { makeMeHandlers } from './me.ts';
 import { createRuntime } from './runtime.ts';
+import { memoryVault } from '../browser/auth.ts';
 import { getJob, jobsOn } from './jobs.ts';
 import { memoryStore as eventStore, TABLES, type Store, type StoreState } from '../events/ports.ts';
 import type { Db, Vault } from '../data/data.ts';
@@ -19,7 +20,7 @@ const shape = (name: string) => keys((example(name) as { response: unknown }).re
 async function world(workspace?: { db: Db; vault: Vault }) {
   let t = Date.parse('2026-11-15T03:00:00Z'); const store = memoryStore();
   const sink = memorySink(), log = createLog({ src: 'edge.me.test', build: 'test', sink });
-  const runtime = createRuntime(eventStore(), log, { now: () => t });
+  const runtime = createRuntime(eventStore(), log, { now: () => t, vault: memoryVault() });
   const auth = createAuth({ store, now: () => t, verifyApple: async (k) => ({ subject: k }), verifyGoogle: async () => null, sendCode: () => {} });
   deps.verify = auth.verifyAccess; resetRequestState(); deps.now = () => t; deps.log = log;
   const a = makeAuthHandlers(auth, store), m = makeMeHandlers({ store, auth, now: () => t, runtime, workspace });
@@ -31,7 +32,7 @@ async function world(workspace?: { db: Db; vault: Vault }) {
   const call = (f: (q: Request) => Promise<Response>, method: string, path: string, bearer: string, body?: unknown) =>
     f(new Request(`http://x${path}`, { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { Authorization: `Bearer ${bearer}` } }));
   const user = async (sub: string) => (await (await r.apple(new Request('http://x/v1/auth/apple', { method: 'POST', body: JSON.stringify({ identity_token: sub, nonce: 'n' }) }))).json()) as { access_token: string; user: { id: string } };
-  return { r, call, user, runtime, sink, m, tick: (ms: number) => { t += ms; } };
+  return { r, call, user, runtime, store, sink, m, tick: (ms: number) => { t += ms; } };
 }
 
 function seedPerson(st: Store, user_id: string) {
@@ -133,7 +134,7 @@ test('a vault failure still attempts every sign-in, revokes sessions, tracks the
   const res = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token);
   assert.equal(res.status, 503, 'failed vault cleanup must never be acknowledged as complete');
   const error = await res.json() as { job_id: string };
-  assert.deepEqual(attempted, refs, 'one failure cannot skip the remaining sign-ins');
+  assert.deepEqual(attempted, [...refs, `push/${a.user.id}`], 'one failure cannot skip the remaining sign-ins or push registration');
   assert.equal(await w.runtime.vault.get(refs[1]), undefined); assert.ok(await w.runtime.vault.get(other));
   assert.equal(st.getJob(error.job_id)?.kind, 'delete_user'); assert.equal(st.getJob(error.job_id)?.state, 'queued');
   assert.equal(st.getJob(error.job_id)?.error?.code, 'vault_delete_failed');
@@ -208,6 +209,71 @@ test('PATCH notifications with a push token: push_registered, example key set, a
   const b = await res.json(); assert.equal(res.status, 200); assert.equal(b.push_registered, true);
   assert.deepEqual(keys(b), { ...(shape('me.patch.notifications') as object), onboarding: keys(b.onboarding) }); assert.ok(!JSON.stringify(b).includes('ExponentPushToken'));
   assert.equal((await (await w.call(w.r.get, 'GET', '/v1/me', a.access_token)).json()).notification_pref.length, 1);
+});
+test('push token belongs in the vault behind a user ref, stays out of GET and export, and DELETE removes it', async () => {
+  const w = await world(), a = await w.user('push-owner'), token = crypto.randomUUID(), ref = `push/${a.user.id}`;
+  const res = await w.call(w.r.patch, 'PATCH', '/v1/me', a.access_token, { version: 1, push_token: token });
+  assert.equal(res.status, 200);
+  const user = await w.store.getUser(a.user.id);
+  assert.equal(user?.push_token_ref, ref);
+  assert.ok(!JSON.stringify(user).includes(token));
+  assert.deepEqual(await w.runtime.vault.get(ref), { cookies: [], origins: [], push_token: token });
+  const visible = await (await w.call(w.r.get, 'GET', '/v1/me', a.access_token)).text();
+  assert.ok(!visible.includes(token)); assert.ok(!visible.includes(ref));
+  const exp = await (await w.call(w.r.exp, 'POST', '/v1/me/export', a.access_token)).json() as { id: string };
+  const exported = await (await w.call(w.r.job, 'GET', `/v1/jobs/${exp.id}`, a.access_token)).text();
+  assert.ok(!exported.includes(token)); assert.ok(!exported.includes(ref));
+  assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 202);
+  assert.equal(await w.runtime.vault.get(ref), undefined);
+  assert.ok(!w.sink.text().includes(token));
+});
+
+test('stale push token patch writes nothing and concurrent patches store only the winning token', async () => {
+  const w = await world(), a = await w.user('push-race'), ref = `push/${a.user.id}`;
+  const tokens = [crypto.randomUUID(), crypto.randomUUID()];
+  const results = await Promise.all(tokens.map(push_token => w.call(w.r.patch, 'PATCH', '/v1/me', a.access_token, { version: 1, push_token })));
+  assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
+  const winner = results.findIndex(r => r.status === 200);
+  assert.deepEqual(await w.runtime.vault.get(ref), { cookies: [], origins: [], push_token: tokens[winner] });
+  const before = await w.runtime.vault.snapshot(ref);
+  assert.equal((await w.call(w.r.patch, 'PATCH', '/v1/me', a.access_token, { version: 1, push_token: crypto.randomUUID() })).status, 409);
+  assert.deepEqual(await w.runtime.vault.snapshot(ref), before);
+});
+
+test('DELETE racing the first push token PATCH removes the token even when its user snapshot has no ref', async () => {
+  const w = await world(), a = await w.user('push-delete-race'), token = crypto.randomUUID();
+  const ctx: Ctx = { user_id: a.user.id, visitor_id: null, request_id: 'push-delete-race', body: { version: 1, push_token: token }, log: deps.log,
+    params: {}, query: new URLSearchParams(), headers: new Headers() };
+  const [patch, deleted] = await Promise.all([
+    w.m.patch(ctx).catch((error: unknown) => {
+      assert.ok(error instanceof ApiError); assert.equal(error.code, 'stale'); return { status: 409 };
+    }),
+    w.m.delete(ctx),
+  ]);
+  assert.ok([200, 409].includes(patch.status)); assert.equal(deleted.status, 202);
+  assert.equal(await w.runtime.vault.get(`push/${a.user.id}`), undefined);
+});
+
+test('a push PATCH admitted before DELETE cannot recreate its token after vault cleanup', async () => {
+  const w = await world(), a = await w.user('push-admitted-before-delete');
+  const ctx: Ctx = { user_id: a.user.id, visitor_id: null, request_id: 'admitted-before-delete', body: { version: 1, push_token: crypto.randomUUID() }, log: deps.log,
+    params: {}, query: new URLSearchParams(), headers: new Headers() };
+  assert.equal((await w.m.delete(ctx)).status, 202);
+  await assert.rejects(w.m.patch(ctx), (error: unknown) => {
+    assert.ok(error instanceof ApiError); assert.equal(error.code, 'stale'); return true;
+  });
+  assert.equal(await w.runtime.vault.get(`push/${a.user.id}`), undefined);
+});
+
+test('a fresh sign-in after DELETE can register push again using the current user version', async () => {
+  const w = await world(), a = await w.user('push-returning');
+  assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 202);
+  const returning = await w.user('push-returning');
+  const current = await (await w.call(w.r.get, 'GET', '/v1/me', returning.access_token)).json() as { version: number };
+  const token = crypto.randomUUID();
+  const res = await w.call(w.r.patch, 'PATCH', '/v1/me', returning.access_token, { version: current.version, push_token: token });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await w.runtime.vault.get(`push/${returning.user.id}`), { cookies: [], origins: [], push_token: token });
 });
 test('PATCH tutorial_seen matches its example key set', async () => {
   const w = await world(); const a = await w.user('a');
