@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { valuate, basisOf, saleCurve, type ValuateCtx, type ValuationItem, type ObservationPort } from './valuate.ts';
