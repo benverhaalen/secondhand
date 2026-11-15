@@ -2510,3 +2510,9 @@ Nate, the Databricks lead's session, 2026-11-15, about 14:55 UTC, after the broa
 > make the system more intelligent at first analyzing its collective findings and having understanding of what to interpret from each and how. Especially for the chats to answer questions incredibly
 
 Read by the Databricks lead: before the chat answers, code reads every source's rows for what they are (sold or asking, new or used, local or national, how literal the match, what the rights allow) and computes the findings across them; the model then explains those findings for the question asked. Used in: the findings spec draft `brief-eng-findings-1.md` in the orchestrator's notes, for the engines lead (who owns the chat).
+
+## 2026-11-15 nate that chat ui is so bad
+Nate, the orchestrator's session, 2026-11-15, about 14:47 UTC by the machine clock, with a screenshot of the shop after a search: the list rows drawn over the "More for sale" heading and the tiles, and the chat answer opening "I can't say what's selling most".
+> that chat ui is so bad
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (results laid out so nothing is drawn over anything else); the answer's words are the engines lead's (packet 70).
