@@ -8,7 +8,7 @@ The model is code, not a spreadsheet: [scripts/bench/roi.mjs](../scripts/bench/r
 
 1. **One referred purchase earns about $0.94.** That is a $33 order (Poshmark's own 2019 average, *observed* in its S-1) times a blended 2.8% commission, after a network's cut where a site has no direct programme.
 2. **Free works if a person buys through us about once every three months, and Depop watching is designed down.** The base case loses $0.15 per person per month, and the whole loss is Depop: a signed-in sweep costs about $0.45 per person per month. With Depop's partner API (webhooks, no sweep), which we propose and have not joined, the same base case would earn $0.30 per person per month, about $3.5M a year at 1M monthly users.
-3. **Two independent anchors land on the same purchase rate.** Honey earned about $0.49 per monthly user per month in 2018 (*asserted*: PayPal's CEO via a secondary source). At our $0.94 a purchase, that is 0.52 purchases a month. A Poshmark buyer made 6.3 orders a year in 2019 (*asserted*, a write-up of the S-1), which is 0.525 a month. So the flattering case, 0.5 a month, is "as often as a Poshmark buyer already buys", not a fantasy.
+3. **The purchase rate is an assumption, with one real anchor.** A Poshmark buyer made 6.3 orders a year in 2019 (*asserted*, a write-up of the S-1), which is 0.525 a month, so the flattering case, 0.5 a month, is "as often as a Poshmark buyer already buys on Poshmark". That is what a buyer does, not what they would send through us. *Corrected 2026-11-15:* this line used to call Honey a second, independent anchor (about $0.49 per monthly user per month, so 0.52 of our purchases). The [market research](../research/cross-cutting/ben/revenue-market.md#1-who-already-earns-from-shopping-assistance) shows that figure divides 2018 revenue by the user count PayPal gave in 2019 and counts all of Honey's revenue, so it shows the business is real and checks nothing about our rate. Only settled orders will.
 4. **What we run today, and what we propose.** Today Depop is watched by the signed-in sweep (Ben's choice, 08:32). We are not in Depop's partner programme and have not applied. *Proposed:* join it, because its webhooks would replace the sweep and flip the base case to +$0.30 per person per month. Until then the lever is the sweep's cadence: every 23 minutes instead of 15 while live brings Depop watching to about $0.30 a person a month and the base case to break-even.
 
 ## Revenue streams
@@ -21,7 +21,7 @@ The model is code, not a spreadsheet: [scripts/bench/roi.mjs](../scripts/bench/r
 | Buy-side referral, Etsy | Etsy's programme runs through Rakuten | "case-by-case", 7-day cookie (*observed*, Etsy's terms); 3.2% (*asserted*, third party) | yes |
 | Facebook Marketplace | None | no programme found (*observed* absence in [buyer-side research](../research/watch/nate/buyer-side-actions-and-affiliate.md)) | 0 |
 | Studio photos | The one paid extra | $0.99 an item (*assumption*); our cost $0.63, so $0.36 margin | yes |
-| A plan for resellers | Flat monthly, under the crosslisters | $9.99 a month (*assumption*); a crosslister lists at $39.99 (*asserted*) | yes |
+| A plan for resellers | Flat monthly, under the crosslisters | $9.99 a month (*assumption*). It competes with Flyp at $9 and Vendoo Starter at $14.99 (*observed*, pricing pages, [market research §2](../research/cross-cutting/ben/revenue-market.md)), so it is not the cheapest | yes |
 | Market data | Anonymous, from consenting sellers and sources whose terms allow it | not priced | no, later |
 
 The rule that keeps referrals honest: the order of results is computed with every referral field removed ([buy.ts](../app/src/edge/buy/buy.ts)). A referral can pay us; it can never move a listing up.
@@ -31,10 +31,23 @@ The rule that keeps referrals honest: the order of results is computed with ever
 | | Honey | Capital One Shopping | secondhand |
 |---|---|---|---|
 | Money | affiliate commissions, 0.5% to 10% (*asserted*, Honey via productmint and Seeking Alpha) | affiliate commissions across 30,000+ retailers (*observed*, Wikipedia) | the same commissions, only on purchases the person chose |
-| Scale | ~17M monthly users; ~$100M revenue in 2018; bought by PayPal for $4B in January 2020 (*asserted*) | not published | 0 today |
+| Scale | ~17M monthly users (PayPal, 2019, *asserted*); ~$100M revenue in 2018 (Fortune, PayPal-supplied, *asserted*); bought by PayPal for about $4B cash, completed 2020-01-06 (*observed*, PayPal newsroom) | 30,000 partner sites (Capital One engineering post, 2020, *asserted*); revenue and users not published | 0 today |
 | What hurt them | class actions alleging the extensions replaced creators' affiliate links at checkout (*asserted*: suit titles seen in search results, classaction.org and the Oganesyan v. Capital One complaint, 2025; not read in full) | the same | we never touch a link we did not create, and never inject at checkout. The person clicks our link from our search |
 
-The lesson we take: the economics work (Honey proves a shopping helper can earn about $6 per monthly user a year from commissions alone), and the way to lose trust is to take credit you did not earn.
+The lesson we take: shopping help is a real business (Honey earned about $100M in 2018 and sold for $4B), but its revenue per user mixes years and includes more than commissions, so it does not price us. The way to lose trust is to take credit you did not earn: in June 2026 a federal court let the creators' case against Honey go forward (*observed*, the order; no ruling on the merits).
+
+## The market
+
+From the [market research](../research/cross-cutting/ben/revenue-market.md#4-the-market-and-the-people-inside-it), read 2026-11-15:
+
+| Market | Size | What it is not |
+|---|---|---|
+| US secondhand apparel | $78.8B by 2030 (ThredUp and GlobalData, *asserted*, sponsor forecast) | software revenue; it is goods sold |
+| Broader US recommerce | $246.7B in 2026, $307.7B by 2030 (OfferUp and GlobalData, *asserted*) | additive with apparel; apparel is inside it |
+| Depop | 3.2M active sellers, 7.0M active buyers, 59% of sellers also bought (Etsy 10-K for 2025, *observed*) | US resellers who would pay for tools |
+| eBay | 136M active buyers (Q3 2026, *observed*) | used-only or US-only |
+
+What our users route is the market that matters, and it is small: at 0.2 purchases a month and $33 an order, 1,000 people send $79,200 of goods a year, and at eBay fashion's 4% that is $3,168 of commission before costs; 100,000 people send $7.9M and earn $316,800. A program we have not been approved for counts as zero there.
 
 ## Costs
 
