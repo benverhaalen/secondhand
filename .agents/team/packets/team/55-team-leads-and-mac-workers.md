@@ -37,8 +37,8 @@ The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes nga
 | Commit its work (the worker never commits) | `ssh -n ... 'cd ~/dev/projects/secondhand-wt/<name> && git add <explicit paths> && git commit -q -m "<type(scope): plain words>"'` |
 | Bring it to Windows | `git fetch -q mac 'refs/heads/w/*:refs/remotes/mac/w/*'` then `git merge mac/w/<name>` |
 
-- A worker name is new each time and starts with the lead's name: `eng-valuation-1`, `dbx-dashboard-2`. The worktree is cut from `main` as the Mac has it, so push before starting a worker that needs your latest commit.
-- Up to three workers per lead at once; the script refuses to start one when twelve are running. The Mac has 16 cores and 64 GB, measured 93% free with one worker running (2026-11-15 02:40 Central), so use it, without piling on: Nate, "careful not to overdoo it, we have alot of sessions running".
+- A worker name is new each time and starts with the lead's name: `eng-valuation-1`, `dbx-dashboard-2`. The worktree is cut from `origin/main` after a fetch, so push before starting a worker that needs your latest commit. Nothing is run or written in the Mac's main checkout (`~/dev/projects/secondhand`): a long run, a download or a backtest goes in a worker's worktree, since a dirty main checkout is everyone's problem.
+- Up to seven delegates per lead at once, Codex workers and Claude seats counted together, when the lead sees the need: Nate, "if waiting because of the limit each can have up to 7 concurrent", and "too much on one focus is crazy", so seven is for seven separate pieces, never seven on one. The script refuses to start a worker when 28 are running or when under a quarter of the Mac's memory is free. The Mac has 16 cores and 64 GB, measured 93% free with one worker running (2026-11-15 02:40 Central), so use it, without piling on: Nate, "careful not to overdoo it, we have alot of sessions running".
 - The Mac also runs the heavy things: a long test file, a benchmark, a backtest, a Docker service a test needs. Run them in a worker's worktree over SSH, one per worktree, and bring back the numbers.
 - Claude Code on the Mac is not signed in, so Claude seats run from the Windows sessions (below); only Codex and plain commands run on the Mac.
 - The Mac cannot push to GitHub. Work reaches `origin` only through a Windows merge and push.
@@ -95,7 +95,7 @@ Five sessions share `C:\dev\secondhand`. It crashed three times under thirteen, 
 - Commit with explicit paths the moment a piece passes, then `git pull --no-rebase` and `git push`. If `index.lock` is held, wait two seconds and try again. Never `git add -A`, never stash, reset, rebase or force-push.
 - A merge needs a clean index: commit or leave alone your own edits first, and never touch another session's uncommitted files.
 - One test file at a time (`node --test --test-concurrency=1 <file>`). Never `node .agents/check.mjs` and never `scripts/prove.mjs --wave` or `--tune` from a lead: the orchestrator runs the full check before a push that needs it. Heavy or long runs go to the Mac.
-- A lead may hand work to Claude seats of its own (the Agent tool, in the lead's session): Sonnet 5.5 for a specified piece (a doc update, a brief, reading a diff against its brief, a lookup), another Opus 5.5 for a design question or a fresh review. At most two at once per lead, and they do not run tests or builds here: those go to the Mac. A lead starts no new sessions; there are four leads and that number stays.
+- A lead may hand work to Claude seats of its own (the Agent tool, in the lead's session): Sonnet 5.5 for a specified piece (a doc update, a brief, reading a diff against its brief, a lookup), another Opus 5.5 for a design question or a fresh review. They count toward the lead's seven, and they do not run tests or builds here: those go to the Mac. A lead starts no new sessions; there are four leads and that number stays.
 
 ## The documentation of what we build with
 

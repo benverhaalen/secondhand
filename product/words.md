@@ -1487,3 +1487,9 @@ Nate, build session (orchestrator), 2026-11-15 about 03:30 Central, after the or
 > Well benchmark we were thinking would measure spec\benchmark.md
 
 Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate up to seven at once per lead
+Nate, build session (orchestrator), 2026-11-15 about 03:45 Central.
+> Go for up to 7 subagents for each lead, if they see it needed, of course too much on one focus is crazy but if waiting because of the limit each can have up to 7 concurrent
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
