@@ -1,0 +1,253 @@
+{
+ "build": "cea2ba6",
+ "at": "2026-11-15T05:27:11.473Z",
+ "race": [
+  {
+   "sites": 4,
+   "states": 931406,
+   "violation": null,
+   "explore_ms": 101429,
+   "sold_states": 922240,
+   "two_or_more_paid": 522560,
+   "two_or_more_paid_flagged": 522560,
+   "paid_on_failed_delist": 296800,
+   "sold_states_that_do_not_settle_without_the_user": null
+  }
+ ],
+ "race_mutant": {
+  "sites": 2,
+  "caught": "one kept sale",
+  "steps_to_bug": 6,
+  "trace": [
+   "post(0)",
+   "post(1)",
+   "postOk(0)",
+   "postOk(1)",
+   "buyerPays(0)",
+   "buyerPays(1)"
+  ]
+ },
+ "fees": {
+  "assumptions": "buyer pays $6 shipping on shipped sites, seller label cost passes through, tax 0, no boost",
+  "fee_rows_valid_from": "2026-11-14",
+  "source": "research/price/nate/fees-and-taxes.md",
+  "rows": [
+   {
+    "price_cents": 1000,
+    "keep_cents": {
+     "ebay": 742,
+     "depop": 902,
+     "poshmark": 705,
+     "mercari": 840,
+     "facebook": 840,
+     "facebook_local": 1000
+    },
+    "best_shipped": [
+     "depop",
+     902
+    ],
+    "worst_shipped": [
+     "poshmark",
+     705
+    ],
+    "spread_cents": 197
+   },
+   {
+    "price_cents": 2000,
+    "keep_cents": {
+     "ebay": 1606,
+     "depop": 1869,
+     "poshmark": 1600,
+     "mercari": 1740,
+     "facebook": 1740,
+     "facebook_local": 2000
+    },
+    "best_shipped": [
+     "depop",
+     1869
+    ],
+    "worst_shipped": [
+     "poshmark",
+     1600
+    ],
+    "spread_cents": 269
+   },
+   {
+    "price_cents": 5000,
+    "keep_cents": {
+     "ebay": 4198,
+     "depop": 4770,
+     "poshmark": 4000,
+     "mercari": 4440,
+     "facebook": 4440,
+     "facebook_local": 5000
+    },
+    "best_shipped": [
+     "depop",
+     4770
+    ],
+    "worst_shipped": [
+     "poshmark",
+     4000
+    ],
+    "spread_cents": 770
+   },
+   {
+    "price_cents": 10000,
+    "keep_cents": {
+     "ebay": 8518,
+     "depop": 9605,
+     "poshmark": 8000,
+     "mercari": 8940,
+     "facebook": 8940,
+     "facebook_local": 10000
+    },
+    "best_shipped": [
+     "depop",
+     9605
+    ],
+    "worst_shipped": [
+     "poshmark",
+     8000
+    ],
+    "spread_cents": 1605
+   },
+   {
+    "price_cents": 25000,
+    "keep_cents": {
+     "ebay": 21478,
+     "depop": 24110,
+     "poshmark": 20000,
+     "mercari": 22440,
+     "facebook": 22440,
+     "facebook_local": 25000
+    },
+    "best_shipped": [
+     "depop",
+     24110
+    ],
+    "worst_shipped": [
+     "poshmark",
+     20000
+    ],
+    "spread_cents": 4110
+   },
+   {
+    "price_cents": 100000,
+    "keep_cents": {
+     "ebay": 86278,
+     "depop": 96635,
+     "poshmark": 80000,
+     "mercari": 89940,
+     "facebook": 89940,
+     "facebook_local": 100000
+    },
+    "best_shipped": [
+     "depop",
+     96635
+    ],
+    "worst_shipped": [
+     "poshmark",
+     80000
+    ],
+    "spread_cents": 16635
+   }
+  ],
+  "price_to_keep_1700": {
+   "ebay": 2108,
+   "mercari": 1956,
+   "depop": 1825,
+   "poshmark": 2125,
+   "facebook": 1956
+  },
+  "price_to_keep_5000": {
+   "ebay": 5928,
+   "mercari": 5622,
+   "depop": 5238,
+   "poshmark": 6250,
+   "facebook": 5622
+  }
+ },
+ "capture_plan": {
+  "apparel": {
+   "shots": 3,
+   "planned_seconds": 23,
+   "lidar_steps": 0
+  },
+  "shoes": {
+   "shots": 3,
+   "planned_seconds": 46,
+   "lidar_steps": 1
+  },
+  "bags": {
+   "shots": 2,
+   "planned_seconds": 40,
+   "lidar_steps": 1
+  },
+  "jewellery_watches": {
+   "shots": 2,
+   "planned_seconds": 14,
+   "lidar_steps": 0
+  },
+  "electronics": {
+   "shots": 2,
+   "planned_seconds": 33,
+   "lidar_steps": 1
+  },
+  "electronics.phones_laptops": {
+   "shots": 3,
+   "planned_seconds": 27,
+   "lidar_steps": 0
+  },
+  "furniture": {
+   "shots": 1,
+   "planned_seconds": 40,
+   "lidar_steps": 1
+  },
+  "lighting_home": {
+   "shots": 2,
+   "planned_seconds": 33,
+   "lidar_steps": 1
+  },
+  "media": {
+   "shots": 2,
+   "planned_seconds": 11,
+   "lidar_steps": 0
+  },
+  "cards_collectibles": {
+   "shots": 2,
+   "planned_seconds": 10,
+   "lidar_steps": 0
+  },
+  "toys_lego": {
+   "shots": 2,
+   "planned_seconds": 31,
+   "lidar_steps": 1
+  },
+  "appliances_tools": {
+   "shots": 2,
+   "planned_seconds": 33,
+   "lidar_steps": 1
+  },
+  "bikes_sports": {
+   "shots": 2,
+   "planned_seconds": 33,
+   "lidar_steps": 1
+  },
+  "baby_gear": {
+   "shots": 2,
+   "planned_seconds": 33,
+   "lidar_steps": 1
+  },
+  "other": {
+   "shots": 3,
+   "planned_seconds": 35,
+   "lidar_steps": 1
+  }
+ },
+ "engine_speed": {
+  "calls": 200000,
+  "keep_us_per_call": 0.113,
+  "checksum": 4507182600
+ }
+}

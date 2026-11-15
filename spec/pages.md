@@ -125,7 +125,7 @@ The order is Ben's: accounts first, then the sites you use, then pickups and not
 | **3. Link each** | one sheet per picked site: eBay's own OAuth, or the site's real login shown live from the cloud browser; we never see the password | sign in; Not now | specced: `POST /v1/accounts` | the site stays unlinked; a quiet row in You > Accounts |
 | **4. We found these** | "Found 41 listings on Depop" with their photos, and purchases where the site shows them | Bring them in · Not now | specced: `POST /v1/accounts/:id/import`; `merge_items` cards land in Today later | nothing imported |
 | **5. Email for sales** | why: "Poshmark and Mercari tell you a sale by email" | Connect Gmail (read only) · Skip | specced: `POST /v1/accounts {site: email}` | sale detection reads the sold page only |
-| **6. Pickups** | your pickup windows on a week strip, a public meetup spot on a map; or "Ask me every time" | set, skip | specced: `PUT /v1/limits` | asks the first time a pickup is needed |
+| **6. Pickups** | a public meetup spot on a map, optional; no hours to set ([decision](../product/decisions.md#2026-11-15-no-fixed-pickup-windows-tap-the-days-and-times-that-work-and-approve-the-buyers-pick)) | set, skip | specced: `PUT /v1/limits` | days and times are tapped when a buyer wants to meet; the app never reads a calendar |
 | **7. Notifications** | the three kinds that interrupt (an offer you'd take, a deadline within the hour, a sale) and that the rest is batched | Allow · Not now | new: `PATCH /v1/me {notification_pref}`; Expo push token registration | batched only |
 | **then Today** | empty Today with the next setup step in the top slot | | | |
 

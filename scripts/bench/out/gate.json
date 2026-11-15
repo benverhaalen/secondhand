@@ -1,0 +1,2550 @@
+{
+ "what": "fidelity gate on planted edits of Ben's real photos",
+ "photos": 19,
+ "honest": {
+  "n": 38,
+  "passed": 21
+ },
+ "lies": {
+  "n": 117,
+  "caught": 116,
+  "by_variant": {
+   "detail_removed_24px": {
+    "n": 19,
+    "caught": 18
+   },
+   "detail_removed_40px": {
+    "n": 19,
+    "caught": 19
+   },
+   "detail_removed_64px": {
+    "n": 19,
+    "caught": 19
+   },
+   "mirrored": {
+    "n": 19,
+    "caught": 19
+   },
+   "hue_12deg": {
+    "n": 13,
+    "caught": 13,
+    "truth_de_median": 13.49
+   },
+   "hue_24deg": {
+    "n": 14,
+    "caught": 14,
+    "truth_de_median": 19.325000000000003
+   },
+   "hue_40deg": {
+    "n": 14,
+    "caught": 14,
+    "truth_de_median": 29.435000000000002
+   }
+  }
+ },
+ "invisible_shifts": {
+  "n": 16,
+  "held": 7
+ },
+ "held_by": {
+  "struct": 17,
+  "chroma": 0,
+  "region:detail": 0,
+  "framing changed, cannot verify": 0
+ },
+ "false_holds": [
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.92,
+   "chroma": 1.016,
+   "struct": 0.048,
+   "region:detail": 0.98
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.92,
+   "chroma": 1.221,
+   "struct": 0.032,
+   "region:detail": 0.982
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.977,
+   "chroma": 1.279,
+   "struct": 0.534,
+   "region:detail": 0.987
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.977,
+   "chroma": 1.354,
+   "struct": 0.506,
+   "region:detail": 0.987
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.783,
+   "chroma": 1.082,
+   "struct": 0.537,
+   "region:detail": 0.992
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.8,
+   "chroma": 1.291,
+   "struct": 0.514,
+   "region:detail": 0.993
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.789,
+   "chroma": 1.428,
+   "struct": 0.341,
+   "region:detail": 0.994
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.78,
+   "chroma": 1.742,
+   "struct": 0.32,
+   "region:detail": 0.993
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.912,
+   "chroma": 1.932,
+   "struct": 0.085,
+   "region:detail": 0.913
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.87,
+   "chroma": 1.839,
+   "struct": 0.382,
+   "region:detail": 0.955
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.947,
+   "chroma": 0.881,
+   "struct": 0.224,
+   "region:detail": 0.981
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.954,
+   "chroma": 1.114,
+   "struct": 0.169,
+   "region:detail": 0.982
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.79,
+   "chroma": 4.282,
+   "struct": 0.179,
+   "region:detail": 0.994
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.706,
+   "chroma": 1.741,
+   "struct": 0.373,
+   "region:detail": 0.989
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.764,
+   "chroma": 1.99,
+   "struct": 0.339,
+   "region:detail": 0.988
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.745,
+   "chroma": 2.184,
+   "struct": 0.542,
+   "region:detail": 0.991
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.72,
+   "chroma": 2.589,
+   "struct": 0.496,
+   "region:detail": 0.991
+  }
+ ],
+ "missed": [
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.945,
+   "chroma": 1.871,
+   "struct": 0.778,
+   "region:detail": 0.647,
+   "box": [
+    208,
+    152,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  }
+ ],
+ "rows": [
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.92,
+   "chroma": 1.016,
+   "struct": 0.048,
+   "region:detail": 0.98
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.92,
+   "chroma": 1.221,
+   "struct": 0.032,
+   "region:detail": 0.982
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.926,
+   "chroma": 1.003,
+   "struct": 0.038,
+   "region:detail": 0.074,
+   "box": [
+    64,
+    320,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.93,
+   "chroma": 1.001,
+   "struct": 0.05,
+   "region:detail": 0.162,
+   "box": [
+    60,
+    320,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.924,
+   "chroma": 1.018,
+   "struct": 0.029,
+   "region:detail": 0.123,
+   "box": [
+    64,
+    320,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "hue_12deg",
+   "kind": "invisible",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.944,
+   "chroma": 1.526,
+   "struct": -0.006,
+   "region:detail": 0.981,
+   "truth_de": 1.07
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "hue_24deg",
+   "kind": "invisible",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.917,
+   "chroma": 2.158,
+   "struct": 0.042,
+   "region:detail": 0.981,
+   "truth_de": 1.76
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "hue_40deg",
+   "kind": "invisible",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.929,
+   "chroma": 3.174,
+   "struct": 0.033,
+   "region:detail": 0.982,
+   "truth_de": 2.75
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.0
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.977,
+   "chroma": 1.279,
+   "struct": 0.534,
+   "region:detail": 0.987
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.977,
+   "chroma": 1.354,
+   "struct": 0.506,
+   "region:detail": 0.987
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.977,
+   "chroma": 1.276,
+   "struct": 0.542,
+   "region:detail": 0.496,
+   "box": [
+    272,
+    352,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.978,
+   "chroma": 1.304,
+   "struct": 0.512,
+   "region:detail": 0.344,
+   "box": [
+    250,
+    330,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.977,
+   "chroma": 1.288,
+   "struct": 0.446,
+   "region:detail": -0.01,
+   "box": [
+    256,
+    304,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "hue_12deg",
+   "kind": "invisible",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.979,
+   "chroma": 1.545,
+   "struct": 0.52,
+   "region:detail": 0.987,
+   "truth_de": 1.03
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "hue_24deg",
+   "kind": "invisible",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.984,
+   "chroma": 2.246,
+   "struct": 0.535,
+   "region:detail": 0.987,
+   "truth_de": 1.66
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "hue_40deg",
+   "kind": "invisible",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.979,
+   "chroma": 3.052,
+   "struct": 0.529,
+   "region:detail": 0.985,
+   "truth_de": 2.56
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/02.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.308
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.982,
+   "chroma": 2.011,
+   "struct": 0.649,
+   "region:detail": 0.986
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.98,
+   "chroma": 2.081,
+   "struct": 0.629,
+   "region:detail": 0.983
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.982,
+   "chroma": 2.011,
+   "struct": 0.648,
+   "region:detail": 0.26,
+   "box": [
+    144,
+    288,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.982,
+   "chroma": 1.996,
+   "struct": 0.609,
+   "region:detail": 0.343,
+   "box": [
+    130,
+    280,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.982,
+   "chroma": 2.026,
+   "struct": 0.51,
+   "region:detail": 0.244,
+   "box": [
+    128,
+    256,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "hue_12deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.977,
+   "chroma": 2.171,
+   "struct": 0.649,
+   "region:detail": 0.986,
+   "truth_de": 0.79
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "hue_24deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.977,
+   "chroma": 2.502,
+   "struct": 0.65,
+   "region:detail": 0.985,
+   "truth_de": 1.26
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "hue_40deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.975,
+   "chroma": 3.128,
+   "struct": 0.649,
+   "region:detail": 0.984,
+   "truth_de": 2.15
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/03.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.391
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.947,
+   "chroma": 1.009,
+   "struct": 0.633,
+   "region:detail": 0.985
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.947,
+   "chroma": 1.255,
+   "struct": 0.629,
+   "region:detail": 0.984
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.955,
+   "chroma": 1.042,
+   "struct": 0.48,
+   "region:detail": 0.116,
+   "box": [
+    96,
+    224,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.943,
+   "chroma": 1.04,
+   "struct": 0.544,
+   "region:detail": 0.128,
+   "box": [
+    60,
+    370,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.917,
+   "chroma": 1.176,
+   "struct": 0.358,
+   "region:detail": 0.167,
+   "box": [
+    64,
+    304,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "hue_12deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.947,
+   "chroma": 1.67,
+   "struct": 0.64,
+   "region:detail": 0.982,
+   "truth_de": 1.07
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "hue_24deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.942,
+   "chroma": 2.243,
+   "struct": 0.638,
+   "region:detail": 0.982,
+   "truth_de": 1.8
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "hue_40deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.944,
+   "chroma": 3.136,
+   "struct": 0.585,
+   "region:detail": 0.981,
+   "truth_de": 2.78
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/04.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct, region:detail",
+   "align": 0.615,
+   "chroma": 5.643,
+   "struct": -0.202,
+   "region:detail": 0.0
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.967,
+   "chroma": 1.323,
+   "struct": 0.786,
+   "region:detail": 0.988
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.961,
+   "chroma": 1.52,
+   "struct": 0.764,
+   "region:detail": 0.988
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.967,
+   "chroma": 1.322,
+   "struct": 0.68,
+   "region:detail": 0.005,
+   "box": [
+    320,
+    240,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.967,
+   "chroma": 1.334,
+   "struct": 0.673,
+   "region:detail": 0.052,
+   "box": [
+    300,
+    250,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.969,
+   "chroma": 1.379,
+   "struct": 0.284,
+   "region:detail": -0.004,
+   "box": [
+    288,
+    224,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "hue_12deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.961,
+   "chroma": 1.613,
+   "struct": 0.784,
+   "region:detail": 0.988,
+   "truth_de": 0.78
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "hue_24deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.964,
+   "chroma": 2.035,
+   "struct": 0.793,
+   "region:detail": 0.978,
+   "truth_de": 1.27
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "hue_40deg",
+   "kind": "invisible",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.971,
+   "chroma": 2.764,
+   "struct": 0.787,
+   "region:detail": 0.982,
+   "truth_de": 2.18
+  },
+  {
+   "photo": "assets/demo-items/real/carhartt-pants/05.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.326
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.949,
+   "chroma": 1.028,
+   "struct": 0.772,
+   "region:detail": 0.992
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.975,
+   "chroma": 1.434,
+   "struct": 0.68,
+   "region:detail": 0.99
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.95,
+   "chroma": 1.046,
+   "struct": 0.736,
+   "region:detail": 0.017,
+   "box": [
+    304,
+    280,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.953,
+   "chroma": 1.036,
+   "struct": 0.651,
+   "region:detail": -0.033,
+   "box": [
+    280,
+    260,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.954,
+   "chroma": 1.046,
+   "struct": 0.507,
+   "region:detail": 0.143,
+   "box": [
+    272,
+    256,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.951,
+   "chroma": 8.419,
+   "struct": 0.764,
+   "region:detail": 0.991,
+   "truth_de": 8.27
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.92,
+   "chroma": 13.199,
+   "struct": 0.813,
+   "region:detail": 0.993,
+   "truth_de": 13.59
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.926,
+   "chroma": 23.484,
+   "struct": 0.833,
+   "region:detail": 0.991,
+   "truth_de": 25.96
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/01_cover.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.537
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.822,
+   "chroma": 1.195,
+   "struct": 0.701,
+   "region:detail": 0.991
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.84,
+   "chroma": 1.548,
+   "struct": 0.676,
+   "region:detail": 0.99
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.821,
+   "chroma": 1.195,
+   "struct": 0.631,
+   "region:detail": 0.269,
+   "box": [
+    520,
+    504,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.846,
+   "chroma": 1.201,
+   "struct": 0.637,
+   "region:detail": 0.203,
+   "box": [
+    470,
+    140,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.814,
+   "chroma": 1.204,
+   "struct": 0.526,
+   "region:detail": 0.137,
+   "box": [
+    496,
+    144,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.834,
+   "chroma": 8.257,
+   "struct": 0.69,
+   "region:detail": 0.99,
+   "truth_de": 8.08
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.818,
+   "chroma": 13.66,
+   "struct": 0.757,
+   "region:detail": 0.989,
+   "truth_de": 13.89
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.858,
+   "chroma": 23.961,
+   "struct": 0.708,
+   "region:detail": 0.991,
+   "truth_de": 26.34
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/02.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.18
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.783,
+   "chroma": 1.082,
+   "struct": 0.537,
+   "region:detail": 0.992
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.8,
+   "chroma": 1.291,
+   "struct": 0.514,
+   "region:detail": 0.993
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.768,
+   "chroma": 1.092,
+   "struct": 0.547,
+   "region:detail": 0.652,
+   "box": [
+    200,
+    312,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.733,
+   "chroma": 1.085,
+   "struct": 0.483,
+   "region:detail": -0.114,
+   "box": [
+    230,
+    340,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.681,
+   "chroma": 1.088,
+   "struct": 0.368,
+   "region:detail": -0.119,
+   "box": [
+    208,
+    336,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.783,
+   "chroma": 7.637,
+   "struct": 0.558,
+   "region:detail": 0.993,
+   "truth_de": 7.6
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.768,
+   "chroma": 12.516,
+   "struct": 0.619,
+   "region:detail": 0.994,
+   "truth_de": 12.83
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.848,
+   "chroma": 22.352,
+   "struct": 0.524,
+   "region:detail": 0.991,
+   "truth_de": 24.61
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/03.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.574
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.789,
+   "chroma": 1.428,
+   "struct": 0.341,
+   "region:detail": 0.994
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.78,
+   "chroma": 1.742,
+   "struct": 0.32,
+   "region:detail": 0.993
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.752,
+   "chroma": 1.436,
+   "struct": 0.341,
+   "region:detail": 0.581,
+   "box": [
+    288,
+    368,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.777,
+   "chroma": 1.423,
+   "struct": 0.296,
+   "region:detail": -0.062,
+   "box": [
+    390,
+    370,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.76,
+   "chroma": 1.531,
+   "struct": 0.202,
+   "region:detail": 0.017,
+   "box": [
+    368,
+    288,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.748,
+   "chroma": 7.786,
+   "struct": 0.33,
+   "region:detail": 0.993,
+   "truth_de": 7.65
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.784,
+   "chroma": 13.147,
+   "struct": 0.353,
+   "region:detail": 0.994,
+   "truth_de": 13.34
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.752,
+   "chroma": 23.204,
+   "struct": 0.348,
+   "region:detail": 0.989,
+   "truth_de": 25.47
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/04.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.457
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.912,
+   "chroma": 1.932,
+   "struct": 0.085,
+   "region:detail": 0.913
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.87,
+   "chroma": 1.839,
+   "struct": 0.382,
+   "region:detail": 0.955
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.877,
+   "chroma": 2.018,
+   "struct": -0.002,
+   "region:detail": 0.322,
+   "box": [
+    272,
+    192,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.911,
+   "chroma": 1.699,
+   "struct": 0.338,
+   "region:detail": 0.42,
+   "box": [
+    250,
+    190,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.907,
+   "chroma": 1.716,
+   "struct": 0.323,
+   "region:detail": 0.454,
+   "box": [
+    224,
+    176,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.902,
+   "chroma": 8.151,
+   "struct": 0.398,
+   "region:detail": 0.959,
+   "truth_de": 7.98
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.878,
+   "chroma": 13.702,
+   "struct": 0.453,
+   "region:detail": 0.934,
+   "truth_de": 13.98
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.9,
+   "chroma": 24.198,
+   "struct": 0.522,
+   "region:detail": 0.924,
+   "truth_de": 26.76
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/05.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.0
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.947,
+   "chroma": 0.881,
+   "struct": 0.224,
+   "region:detail": 0.981
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.954,
+   "chroma": 1.114,
+   "struct": 0.169,
+   "region:detail": 0.982
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.943,
+   "chroma": 0.901,
+   "struct": 0.161,
+   "region:detail": 0.205,
+   "box": [
+    312,
+    336,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.901,
+   "chroma": 0.87,
+   "struct": 0.145,
+   "region:detail": -0.017,
+   "box": [
+    290,
+    330,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.909,
+   "chroma": 0.868,
+   "struct": 0.105,
+   "region:detail": 0.05,
+   "box": [
+    304,
+    320,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.954,
+   "chroma": 5.316,
+   "struct": 0.242,
+   "region:detail": 0.982,
+   "truth_de": 5.21
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.962,
+   "chroma": 11.298,
+   "struct": 0.188,
+   "region:detail": 0.982,
+   "truth_de": 11.79
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.969,
+   "chroma": 21.188,
+   "struct": 0.185,
+   "region:detail": 0.98,
+   "truth_de": 23.78
+  },
+  {
+   "photo": "assets/demo-items/real/chico-hoodie/06.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.381
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.967,
+   "chroma": 1.538,
+   "struct": 0.872,
+   "region:detail": 0.991
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.954,
+   "chroma": 1.971,
+   "struct": 0.846,
+   "region:detail": 0.992
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.971,
+   "chroma": 1.539,
+   "struct": 0.833,
+   "region:detail": 0.492,
+   "box": [
+    344,
+    176,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.956,
+   "chroma": 1.544,
+   "struct": 0.79,
+   "region:detail": 0.283,
+   "box": [
+    350,
+    170,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.955,
+   "chroma": 1.571,
+   "struct": 0.593,
+   "region:detail": 0.062,
+   "box": [
+    352,
+    176,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.981,
+   "chroma": 13.177,
+   "struct": 0.921,
+   "region:detail": 0.99,
+   "truth_de": 15.22
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.97,
+   "chroma": 23.114,
+   "struct": 0.878,
+   "region:detail": 0.988,
+   "truth_de": 28.54
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.95,
+   "chroma": 33.017,
+   "struct": 0.869,
+   "region:detail": 0.987,
+   "truth_de": 37.09
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/01_cover.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.375
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.952,
+   "chroma": 1.517,
+   "struct": 0.797,
+   "region:detail": 0.992
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.945,
+   "chroma": 1.917,
+   "struct": 0.774,
+   "region:detail": 0.993
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.954,
+   "chroma": 1.519,
+   "struct": 0.77,
+   "region:detail": 0.468,
+   "box": [
+    344,
+    192,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.944,
+   "chroma": 1.517,
+   "struct": 0.691,
+   "region:detail": 0.037,
+   "box": [
+    350,
+    190,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.94,
+   "chroma": 1.546,
+   "struct": 0.507,
+   "region:detail": 0.04,
+   "box": [
+    336,
+    192,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.969,
+   "chroma": 13.236,
+   "struct": 0.84,
+   "region:detail": 0.991,
+   "truth_de": 15.31
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.969,
+   "chroma": 23.229,
+   "struct": 0.845,
+   "region:detail": 0.99,
+   "truth_de": 28.67
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.947,
+   "chroma": 33.157,
+   "struct": 0.82,
+   "region:detail": 0.989,
+   "truth_de": 37.22
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/02.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.333
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.95,
+   "chroma": 1.868,
+   "struct": 0.777,
+   "region:detail": 0.987
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.952,
+   "chroma": 2.443,
+   "struct": 0.736,
+   "region:detail": 0.987
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.945,
+   "chroma": 1.871,
+   "struct": 0.778,
+   "region:detail": 0.647,
+   "box": [
+    208,
+    152,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.945,
+   "chroma": 1.878,
+   "struct": 0.715,
+   "region:detail": 0.102,
+   "box": [
+    210,
+    150,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.942,
+   "chroma": 1.888,
+   "struct": 0.519,
+   "region:detail": 0.082,
+   "box": [
+    192,
+    128,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.947,
+   "chroma": 12.104,
+   "struct": 0.861,
+   "region:detail": 0.985,
+   "truth_de": 14.21
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.929,
+   "chroma": 21.19,
+   "struct": 0.865,
+   "region:detail": 0.981,
+   "truth_de": 26.32
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.953,
+   "chroma": 30.17,
+   "struct": 0.814,
+   "region:detail": 0.974,
+   "truth_de": 33.82
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/03.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.32
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.825,
+   "chroma": 3.661,
+   "struct": 0.703,
+   "region:detail": 0.993
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.79,
+   "chroma": 4.282,
+   "struct": 0.179,
+   "region:detail": 0.994
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct, region:detail",
+   "align": 0.75,
+   "chroma": 4.51,
+   "struct": 0.468,
+   "region:detail": 0.482,
+   "box": [
+    288,
+    376,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct, region:detail",
+   "align": 0.8,
+   "chroma": 5.048,
+   "struct": 0.411,
+   "region:detail": 0.077,
+   "box": [
+    270,
+    370,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.75,
+   "chroma": 2.665,
+   "struct": -0.01,
+   "region:detail": 0.098,
+   "box": [
+    272,
+    368,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "hue_12deg",
+   "kind": "invisible",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.889,
+   "chroma": 6.648,
+   "struct": 0.783,
+   "region:detail": 0.99,
+   "truth_de": 4.37
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.87,
+   "chroma": 10.222,
+   "struct": 0.815,
+   "region:detail": 0.984,
+   "truth_de": 8.71
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.847,
+   "chroma": 14.191,
+   "struct": 0.682,
+   "region:detail": 0.989,
+   "truth_de": 13.36
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/04.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.375
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.97,
+   "chroma": 1.714,
+   "struct": 0.917,
+   "region:detail": 0.984
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.971,
+   "chroma": 2.242,
+   "struct": 0.892,
+   "region:detail": 0.983
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.973,
+   "chroma": 1.716,
+   "struct": 0.846,
+   "region:detail": 0.274,
+   "box": [
+    288,
+    264,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.974,
+   "chroma": 1.72,
+   "struct": 0.782,
+   "region:detail": 0.215,
+   "box": [
+    280,
+    270,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.969,
+   "chroma": 1.743,
+   "struct": 0.666,
+   "region:detail": 0.268,
+   "box": [
+    272,
+    240,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.971,
+   "chroma": 11.701,
+   "struct": 0.938,
+   "region:detail": 0.985,
+   "truth_de": 13.76
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.961,
+   "chroma": 20.455,
+   "struct": 0.888,
+   "region:detail": 0.983,
+   "truth_de": 24.67
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.95,
+   "chroma": 29.169,
+   "struct": 0.878,
+   "region:detail": 0.98,
+   "truth_de": 32.11
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/05.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.326
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.706,
+   "chroma": 1.741,
+   "struct": 0.373,
+   "region:detail": 0.989
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.764,
+   "chroma": 1.99,
+   "struct": 0.339,
+   "region:detail": 0.988
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.706,
+   "chroma": 1.753,
+   "struct": 0.373,
+   "region:detail": -0.014,
+   "box": [
+    312,
+    296,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.712,
+   "chroma": 1.792,
+   "struct": 0.327,
+   "region:detail": 0.187,
+   "box": [
+    310,
+    390,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.682,
+   "chroma": 1.87,
+   "struct": 0.37,
+   "region:detail": 0.418,
+   "box": [
+    224,
+    272,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.7,
+   "chroma": 12.865,
+   "struct": 0.507,
+   "region:detail": 0.989,
+   "truth_de": 14.51
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.738,
+   "chroma": 22.815,
+   "struct": 0.681,
+   "region:detail": 0.987,
+   "truth_de": 27.34
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma, struct",
+   "align": 0.744,
+   "chroma": 32.23,
+   "struct": 0.52,
+   "region:detail": 0.991,
+   "truth_de": 35.56
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/06.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.25
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.745,
+   "chroma": 2.184,
+   "struct": 0.542,
+   "region:detail": 0.991
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "reject",
+   "verdict": "reject: struct",
+   "align": 0.72,
+   "chroma": 2.589,
+   "struct": 0.496,
+   "region:detail": 0.991
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.728,
+   "chroma": 2.199,
+   "struct": 0.517,
+   "region:detail": 0.126,
+   "box": [
+    504,
+    312,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.784,
+   "chroma": 2.195,
+   "struct": 0.5,
+   "region:detail": 0.029,
+   "box": [
+    420,
+    190,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: struct, region:detail",
+   "align": 0.778,
+   "chroma": 2.458,
+   "struct": 0.263,
+   "region:detail": 0.065,
+   "box": [
+    416,
+    160,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.781,
+   "chroma": 11.628,
+   "struct": 0.64,
+   "region:detail": 0.988,
+   "truth_de": 13.49
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.798,
+   "chroma": 20.966,
+   "struct": 0.686,
+   "region:detail": 0.982,
+   "truth_de": 25.19
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.825,
+   "chroma": 30.448,
+   "struct": 0.583,
+   "region:detail": 0.985,
+   "truth_de": 33.74
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/07.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.385
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "relight_warm",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.958,
+   "chroma": 1.74,
+   "struct": 0.847,
+   "region:detail": 0.973
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "relight_cool",
+   "kind": "honest",
+   "got": "pass",
+   "verdict": "pass",
+   "align": 0.959,
+   "chroma": 2.248,
+   "struct": 0.828,
+   "region:detail": 0.974
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "detail_removed_24px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.953,
+   "chroma": 1.744,
+   "struct": 0.809,
+   "region:detail": 0.163,
+   "box": [
+    312,
+    280,
+    24,
+    24
+   ],
+   "share_of_frame": 0.0014
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "detail_removed_40px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.957,
+   "chroma": 1.745,
+   "struct": 0.797,
+   "region:detail": 0.177,
+   "box": [
+    310,
+    260,
+    40,
+    40
+   ],
+   "share_of_frame": 0.0039
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "detail_removed_64px",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: region:detail",
+   "align": 0.949,
+   "chroma": 1.752,
+   "struct": 0.697,
+   "region:detail": 0.024,
+   "box": [
+    320,
+    240,
+    64,
+    64
+   ],
+   "share_of_frame": 0.01
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "hue_12deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.957,
+   "chroma": 13.273,
+   "struct": 0.896,
+   "region:detail": 0.968,
+   "truth_de": 15.18
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "hue_24deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.971,
+   "chroma": 23.228,
+   "struct": 0.869,
+   "region:detail": 0.964,
+   "truth_de": 28.52
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "hue_40deg",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: chroma",
+   "align": 0.92,
+   "chroma": 33.158,
+   "struct": 0.86,
+   "region:detail": 0.964,
+   "truth_de": 37.12
+  },
+  {
+   "photo": "assets/demo-items/real/marquette-tee/08.jpg",
+   "variant": "mirrored",
+   "kind": "lie",
+   "got": "reject",
+   "verdict": "reject: framing changed, cannot verify",
+   "align": 0.308
+  }
+ ],
+ "picture_photo": "assets/demo-items/real/carhartt-pants/01_cover.jpg"
+}

@@ -59,6 +59,8 @@ Each audience changes which narrative leads. *Inferred*, no data yet on which co
 
 ## Numbers to measure ourselves before the pitch
 
+The measured and observed numbers, the cost per listing and the hands-on test are in [numbers.md](numbers.md).
+
 These turn asserted claims into our own observed ones:
 1. **Stopwatch run.** Ben lists one real item by hand on eBay, Mercari and Depop, then with secondhand. Quote both times.
 2. **The $20 table, live.** Run one real item through the Valuation and show its keep-after-fees by site.
