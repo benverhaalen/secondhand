@@ -74,3 +74,17 @@ SELECT g.id, replace(t.title, '-', ' ') AS item, g.metric, g.value_cents, g.lo_c
 FROM secondhand.core.guarded_number g
 JOIN secondhand.market.comp t ON t.comp_id = g.item_id
 WHERE g.state = 'shown' AND g.metric LIKE 'valuation.%';
+
+CREATE OR REPLACE VIEW secondhand.measures.price_basis
+COMMENT 'Each shown valuation with every earlier sale it rests on and whether its basis hash rebuilt exactly (recompute_check). The rows behind measures.why(id), readable where table functions are not. Caller row filters apply.'
+AS
+SELECT g.id, replace(t.title, '-', ' ') AS item, g.metric, g.value_cents, g.lo_cents, g.hi_cents,
+       g.basis_count, g.basis_level, g.as_of, g.data, t.price_cents AS sold_cents,
+       b.basis_id, s.price_cents AS basis_price_cents, s.at AS basis_at, s.source AS basis_source,
+       s.url_ref AS source_url, s.may_model, s.may_show, r.equal AS rebuilt_exactly
+FROM secondhand.core.guarded_number g
+JOIN (SELECT id, basis_id FROM secondhand.core.citation LATERAL VIEW explode(basis_ids) e AS basis_id) b ON b.id = g.citation_id
+JOIN secondhand.market.comp t ON t.comp_id = g.item_id
+LEFT JOIN secondhand.market.comp s ON s.comp_id = b.basis_id
+LEFT JOIN secondhand.measures.recompute_check r ON r.citation_id = g.citation_id
+WHERE g.state = 'shown' AND g.metric LIKE 'valuation.%';
