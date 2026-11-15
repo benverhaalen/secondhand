@@ -59,7 +59,9 @@ export function createSessions({ store, now, rand = Math.random, decide = () => 
   async function withLease<T>(account_id: string, job_id: string, ttl_ms: number, fn: () => Promise<T>): Promise<T | { ok: false; status: 409 | 423 }> {
     const r = lease(account_id, job_id, ttl_ms);
     if (!r.ok) return { ok: false, status: r.status };
-    try { return await fn(); } finally { release(account_id, job_id); }
+    // Renewed at a third of its TTL while fn runs, so a slow write and its read-back never outlive the lease.
+    const renew = setInterval(() => { store.take(account_id, job_id, ttl_ms, now()); }, Math.max(1, Math.floor(ttl_ms / 3)));
+    try { return await fn(); } finally { clearInterval(renew); release(account_id, job_id); }
   }
 
   // The session expired (a login wall, a 401): the account goes stale, its jobs pause, the hint relinks.
@@ -109,7 +111,12 @@ export function createSessions({ store, now, rand = Math.random, decide = () => 
     const cap = () => Math.max(1, pace.per_minute / 6);
     const refill = () => { const t = now(); tokens = Math.min(cap(), tokens + (t - last) * rate / 60_000); last = t; };
     const b: Bucket = {
-      take() { refill(); tokens -= 1; return tokens >= 0 ? 0 : Math.ceil(-tokens * 60_000 / rate); },
+      take() {
+        // Quiet hours (the manifest's pace): nothing goes until the window ends, and no token is spent meanwhile.
+        const quiet = quietLeft(now(), pace.quiet_hours);
+        if (quiet > 0) return quiet;
+        refill(); tokens -= 1; return tokens >= 0 ? 0 : Math.ceil(-tokens * 60_000 / rate);
+      },
       step() {
         const t = now(), [lo, hi] = pace.step_ms, gap = lo + rand() * (hi - lo);
         const at = Math.max(t, nextStep); nextStep = at + gap;
@@ -138,4 +145,14 @@ export function pickRoute<R extends Routable>(routes: R[], fields: string[]): R 
   const has = (r: R) => fields.every(f => r.manifest.fields.some(x => x.name === f));
   const ok = routes.filter(r => has(r) && (r.manifest.session === 'signed_in' || gated.length === 0));
   return ok.sort((a, b) => a.ms - b.ms)[0];
+}
+
+// ms left in a quiet window [start, end) given in whole hours; a window may wrap midnight (22 to 6).
+// shortcut: hours are UTC, since an account carries no time zone yet; read the person's zone once the account row has one.
+export function quietLeft(t: number, hours?: [start: number, end: number]): number {
+  if (!hours) return 0;
+  const [start, end] = hours, d = new Date(t), h = d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600;
+  const inside = start <= end ? h >= start && h < end : h >= start || h < end;
+  if (!inside) return 0;
+  return Math.ceil((((end - h) + 24) % 24) * 3_600_000);
 }

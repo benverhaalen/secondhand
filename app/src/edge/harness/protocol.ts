@@ -4,7 +4,7 @@ import type { Log } from '../../../../log/index.js';
 import type { Accounts } from '../browser/auth.ts';
 
 import { SITES, VERBS, type Site, type Verb } from './names.ts';
-import { hasVerb } from './platform.ts';
+import { hasVerb, PROFILES } from './platform.ts';
 export { SITES, VERBS, type Site, type Verb };
 
 // A write changes something on the site: it needs operation_id, holds the lease through its read-back, and is never replayed.
@@ -120,9 +120,12 @@ export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now
     const has = hasVerb(site, verb);
     if (has !== true) return { ...fail('no_route', has.absent, { do: 'handoff', url: siteUrl(site, verb) }), meta: meta(undefined, t0, false) };
     // Linked accounts only: a call on an account the person did not link (or has no stored sign-in for) runs nothing.
-    if (accounts && typeof args.account_id === 'string') {
-      const a = await accounts.byId(args.account_id);
-      if (!a || a.site !== site) return { ...fail('policy_refused', `account ${args.account_id} is not linked on ${site}`, { do: 'raise_decision', kind: 'link_account' }), meta: meta(undefined, t0, false) };
+    if (accounts) {
+      const id = typeof args.account_id === 'string' ? args.account_id : undefined;
+      const a = id ? await accounts.byId(id) : undefined;
+      const signedIn = (routes.get(`${site}.${verb}`) ?? []).some(r => r.manifest.session === 'signed_in');
+      if ((id && (!a || a.site !== site)) || (!id && signedIn))
+        return { ...fail('policy_refused', `${id ? `account ${id}` : 'no account'} is not linked on ${site}`, { do: 'raise_decision', kind: 'link_account' }), meta: meta(undefined, t0, false) };
     }
     if (isWrite(verb) && !args.operation_id)
       return { ...fail('policy_refused', 'a write needs operation_id', { do: 'raise_decision', kind: 'missing_operation_id' }), meta: meta(undefined, t0, false) };
@@ -157,10 +160,7 @@ async function runOne<T>(a: Adapter, verb: Verb, args: CallArgs, timeoutMs: numb
   return fail('rate_limited', 'the site did not answer in time', { do: 'retry_after', after_s: 30 });
 }
 
-function defaultSiteUrl(site: Site): string {
-  return { ebay: 'https://www.ebay.com', facebook: 'https://www.facebook.com/marketplace', depop: 'https://www.depop.com',
-    poshmark: 'https://poshmark.com', mercari: 'https://www.mercari.com', offerup: 'https://offerup.com', grailed: 'https://www.grailed.com' }[site];
-}
+function defaultSiteUrl(site: Site): string { return PROFILES[site].home; }
 
 // --- parsing an envelope from an untrusted runner (the phone web view, a pool worker): the trust boundary ---
 

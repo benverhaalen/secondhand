@@ -130,6 +130,9 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
   let held = 0, quiet = BUSY_EVERY, finish, last;
   const over = () => jobs.every(j => !['waiting', 'running'].includes(j.state));
 
+  // Codex prints its total at the end of a run: "tokens used: 4,089".
+  const tokensOf = tail => Number(/tokens used\D*([\d,]+)/i.exec(tail ?? '')?.[1]?.replaceAll(',', '')) || undefined;
+
   async function start(j) {
     const folder = folderOf(j.id);
     mkdirSync(folder, { recursive: true });
@@ -142,8 +145,8 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
     try {
       if (readdirSync(folder).length) throw new Error(`${folder} already holds files: a call starts in an empty folder`);
       const input = { job: j.id, role: j.role, inputs: inputs.length, prompt_len: prompt.length, running: running.size };
-      const tail = await (log ? log.call('tool', 'codex', input, () => exec(call), () => ({})) : exec(call));
-      const tokens = Number(/tokens used\D*([\d,]+)/i.exec(tail ?? '')?.[1]?.replaceAll(',', ''));
+      const tail = await (log ? log.call('tool', 'codex', input, () => exec(call), out => ({ token_count: tokensOf(out) })) : exec(call));
+      const tokens = tokensOf(tail);
       if (tokens) j.tokens = tokens;
       const made = readdirSync(folder);
       const images = made.filter(f => IMAGE.test(f));
@@ -153,7 +156,7 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
     } catch (e) { j.state = 'failed'; j.why = e.message; }
     j.seconds = Math.round((Date.now() - t0) / 1000);
     running.delete(j);
-    log?.job(j.id, 'image', j.state, j.why ? { reason: j.why } : undefined);
+    log?.job(j.id, 'image', j.state, j.why ? { reason: j.why, error: { type: 'ImageJob', msg: j.why } } : undefined);
     if (over()) finish();
   }
 
@@ -166,8 +169,10 @@ export async function run(plan, { exec = codex, probe = machine, log, tickMs = 2
       last = now;
       peak.load = Math.max(peak.load, ratio); peak.cpu = Math.max(peak.cpu, now.cpu); peak.mem = Math.max(peak.mem, now.mem); peak.swap = Math.max(peak.swap, swapping);
       log?.note('machine', { load1: now.load1, cpu_pct: Math.round(now.cpu), mem_mb: Math.round(now.mem), swap_mb_s: Math.round(swapping), running: running.size });
-      for (const j of jobs) if (j.state === 'waiting' && j.after.some(d => ['failed', 'skipped'].includes(byId.get(d).state))) { j.state = 'skipped'; j.why = 'what it waits for failed'; }
+      for (const j of jobs) if (j.state === 'waiting' && j.after.some(d => ['failed', 'skipped'].includes(byId.get(d).state))) { j.state = 'skipped'; j.why = 'what it waits for failed'; log?.job(j.id, 'image', 'failed', { skipped: true, reason: j.why, error: { type: 'ImageJob', msg: j.why } }); }
       const ready = jobs.filter(j => j.state === 'waiting' && j.after.every(d => byId.get(d).state === 'done'));
+      // A job is queued once what it waits for is done, so its logged wait is time spent on room to run, not on its inputs.
+      for (const j of ready) if (!j.queued) { j.queued = true; log?.job(j.id, 'image', 'queued'); }
       // Each new call takes memory a swapping machine does not have, so while it swaps, calls run one at a time.
       const room = short ? (running.size ? 0 : 1) : Math.min(max - running.size, busy ? (quiet >= BUSY_EVERY ? 1 : 0) : ramp);
       if ((busy || short) && ready.length) held++;

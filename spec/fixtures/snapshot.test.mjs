@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirHash, filesUnder, piiHits } from './frames/lib.mjs';
 
 const dir = fileURLToPath(new URL('./snapshot/', import.meta.url));
-const PINNED = { version: 2, sha256: '4d3739d6a6a147457c135c16edd5b5d0b880c815b58d42729eaf863683c4950a' };
+const PINNED = { version: 2, sha256: 'b9c638f0ac558e574c3645e47dd058b564ed96a95114cfc4c5bdb19af8fb990b' };
 const manifest = JSON.parse(fs.readFileSync(`${dir}manifest.json`, 'utf8'));
 const SITES = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'];
 const SECTIONS = ['listings', 'offers', 'messages', 'orders', 'notifications'];

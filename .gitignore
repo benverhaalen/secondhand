@@ -1,5 +1,6 @@
 
 # font files: shipped with the app at build time, never committed (public repo)
+fonts/
 *.otf
 *.ttf
 *.woff

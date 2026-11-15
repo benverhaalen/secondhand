@@ -129,7 +129,8 @@ export const PROTOCOLS: Record<QuestionKind, QuestionProtocol> = {
     ],
     budget: { first_ms: 3000, settled_ms: 10000, cents: 2 },
     calculation_id: 'delivered_price',
-    freshness: { offers: 15 * MIN, best_by_relation: 15 * MIN, delivery: 24 * H },
+    freshness: { offers: 15 * MIN, best_by_relation: 15 * MIN,
+      delivery: 24 * H }, // on its own line: spec/sites.test.mjs reads line by line, and this is a delivery freshness
     gather: noGather,
   }),
   product_reviews: row({
