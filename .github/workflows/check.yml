@@ -26,6 +26,7 @@ jobs:
             printf '%s' "$BRAND_FONTS_B64" | base64 -d | tar xzf - -C "$RUNNER_TEMP/fonts"
             echo "BRAND_FONTS=$RUNNER_TEMP/fonts" >> "$GITHUB_ENV"
           fi
+      # The bundle and hermes checks parse with app/'s own TypeScript, so app/ is installed first.
       - run: npm ci
         working-directory: app
       # On a push, origin/main already is the pushed commit, so compare with the commit before the push.

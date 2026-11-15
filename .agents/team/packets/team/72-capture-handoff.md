@@ -25,7 +25,7 @@ Nate ([words](../../../../product/words.md#2026-11-15-nate-wrap-up-the-sessions-
 - The item card shows every captured confidence as 0 (F16, integration's `items.ts`).
 - The first real run asked 6 and 7 questions where the walks ask 3 (F3), because the recorded reads carry no confidences.
 - A scan's size stays a proposal (`extent_conf` 0) until the box check passes.
-- **F18 and F19 are fixed on main** (worker cap-fix-1, merge 09e4bbb1): after `capture_lookup_wait_s` (15 s) lookups count as done, a capture never says done while a required field waits, and a capture with no target reads every site. Mac, after merging main: plan 46, walk 11 (counts unchanged), captures 135, examples 9, items 69, routes 6, fields 34, table 17, select 18, complete 10, tsc clean. A fresh Opus review found nothing that must be fixed; its should-fix is F23.
+- **F18 and F19 are fixed on main** (worker cap-fix-1, merge 09e4bbb1): after `capture_lookup_wait_s` (15 s) lookups count as done, a capture never says done while a required field waits, and a capture with no target reads every site. Mac, after merging main: plan 46, walk 11 (counts unchanged), captures 135, examples 9, items 69, routes 6, fields 34, table 17, select 18, complete 10, tsc clean. A fresh Opus review found nothing that must be fixed; its should-fix, F23, is fixed too (worker cap-fix-2; `captures.test.ts` 139 pass on the Mac after merging main).
 - Found by audit after the wrap-up, now F18 to F22 in capture.md section 8: nothing sets `recall_flag` (F20); photo uploads go to a placeholder URL (F21); talk mode is an example handler (F22).
 - `node .agents/check.mjs` flags `captures.ts:29` as a swallowed error; the fix is in brief 2.
 

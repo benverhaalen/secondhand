@@ -428,6 +428,45 @@ const product = {product_id:'pr_table',family:'furniture',brand:'IKEA',model:'LA
 const studioResult = {kind:'studio_plan',plan:{kind:'tee',asks:[{type:'flaw',text:'Show the mark.',zone:'hem',kind:'stain'}]}};
 const scoreResult = (sharpness = .3, role = 'tag') => ({kind:'photo_score',photos:[{key:'tag',role,score:50,parts:{sharpness,exposure:.9,clipping:.9}}]});
 
+test('F23: identify confirm at 0.8 preserves a known label brand read at 0.96 without asking brand', async () => {
+  await askingCapture();
+  const c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:'Gildan',source:'label',confidence:.96}])]}));
+  assert.equal(fieldOf(c,'brand').state,'known');
+  const held=structuredClone(capturesApi.captureRows.get(c.id)!.state.facts.brand);
+  const after=job(identify([{...product,family:'apparel',c:.8}]));
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,held);
+  assert.equal(fieldOf(after,'brand').value,'Gildan');
+  assert.equal(fieldOf(after,'brand').state,'known');
+  assert.ok(!after.plan.questions.some(q=>q.field==='brand'));
+});
+test('F23: identify confirm at 0.9 replaces a label brand read at 0.5', async () => {
+  await askingCapture();
+  const c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:'Gildan',source:'label',confidence:.5}])]}));
+  assert.equal(fieldOf(c,'brand').value,'Gildan');
+  const after=job(identify([{...product,family:'apparel',c:.9}]));
+  assert.equal(fieldOf(after,'brand').value,product.brand);
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,{value:product.brand,source:'lookup',confidence:.9});
+});
+test('F23: identify confirm replaces a not_read brand', async () => {
+  await askingCapture();
+  const c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:null,unknown_reason:'not_read'}])]}));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.facts.brand.unknown_reason,'not_read');
+  const after=job(identify([{...product,family:'apparel'}]));
+  assert.equal(fieldOf(after,'brand').value,product.brand);
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,{value:product.brand,source:'lookup',confidence:product.c});
+});
+test('F23: running lookups without lookups_at ask brand on GET without changing the stored row', async () => {
+  const c=await lookupCapture();
+  const row=capturesApi.captureRows.get(c.id)!;
+  row.state.lookups='running';
+  delete row.state.lookups_at;
+  const before=structuredClone(row);
+  const after=await bodyOf(await at('GET /v1/captures/:id',c.id));
+  assert.ok(after.plan.questions.some(q=>q.field==='brand'));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'running');
+  assert.deepEqual(capturesApi.captureRows.get(c.id),before);
+});
+
 test('read precedence: not_read preserves M, seen fills a placeholder, and owner facts survive', async () => {
   let c=await askingCapture();
   c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'size_label',value:null,unknown_reason:'not_read'}])]}));

@@ -1,0 +1,205 @@
+[
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r1",
+      "tool": "search_market",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r1",
+      "tool": "search_market",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "poshmark": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r2",
+      "tool": "value_item",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r2",
+      "tool": "value_item",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.text",
+    "data": {
+      "delta": "Reading the garment "
+    }
+  },
+  {
+    "event": "assist.text",
+    "data": {
+      "delta": "shape from the photo."
+    }
+  },
+  {
+    "event": "assist.settled",
+    "data": {
+      "state": "answered",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Read from your photo: brown canvas work pants. The label and measurements would help confirm the exact cut."
+        },
+        {
+          "type": "widget",
+          "widget": "listings",
+          "result_id": "r1"
+        },
+        {
+          "type": "widget",
+          "widget": "price_range",
+          "result_id": "r2"
+        }
+      ],
+      "results": {
+        "r1": {
+          "tool": "search_market",
+          "ok": true,
+          "rows": [
+            {
+              "title": "Brown canvas work pants",
+              "price_cents": 4200,
+              "site": "poshmark",
+              "condition": "Good",
+              "image_url": "/garment.jpg",
+              "url": "https://example.invalid/fixture-listing",
+              "size": "M"
+            },
+            {
+              "title": "Straight-leg work pants",
+              "price_cents": 3800,
+              "site": "mercari",
+              "condition": "Good",
+              "image_url": "/garment.jpg",
+              "url": "https://example.invalid/fixture-listing",
+              "size": "M"
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "14 fixture matches for the photo; not a confirmed identity.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "listings"
+          ],
+          "ms": 1200
+        },
+        "r2": {
+          "tool": "value_item",
+          "ok": true,
+          "rows": [
+            {
+              "q10_cents": 6200,
+              "q50_cents": 7800,
+              "q90_cents": 9600,
+              "count": 14
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "14 fixture sold prices across Poshmark and Mercari; recorded example.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "price_range"
+          ],
+          "ms": 1200
+        }
+      },
+      "sources": [
+        {
+          "url": "https://example.invalid/fixture-report",
+          "title": "Fixture style report",
+          "page_age": "2026-11-15"
+        }
+      ],
+      "calls": [
+        {
+          "id": "r1",
+          "tool": "search_market",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "poshmark": 14
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r2",
+          "tool": "value_item",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 14
+          },
+          "ms": 1200
+        }
+      ],
+      "gate": {
+        "checked": 8,
+        "cut": 1,
+        "cut_sentences": [],
+        "tags_removed": 0
+      },
+      "model": "recorded-fixture",
+      "effort": "low",
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "web_searches": 0,
+        "cost_usd": 0,
+        "cost_source": "provider"
+      },
+      "ms": {
+        "first_text": 1800,
+        "done": 6200
+      }
+    }
+  }
+]

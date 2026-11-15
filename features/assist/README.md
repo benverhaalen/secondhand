@@ -80,7 +80,8 @@ The research behind it: [research/buy/nate/generations-and-platforms.md](../../r
 
 ## Open
 - The controls are proposed as new entries in Ben's component catalog: row B9 in [spec/open-questions.md](../../spec/open-questions.md).
-- For Nate: the visitor spend cap (`assist_daily_cents`), and whether a visitor's photo may go to the model provider at all.
+- Answered by Nate ([words](../../product/words.md#2026-11-15-nate-a-5-visitor-cap-that-points-to-the-repo-visitor-photos-allowed-and-yes-on-vercel)): the visitor cap is $5 a day (`assist_daily_cents` 500). When it is reached, the page says the demo is used up for today and a GitHub widget pops in, pointing to the repo, with the team's GitHub and LinkedIn beside it.
+- Visitor photos may be sent, "ideally no, maybe the system we built can pass over it". *Agent proposal:* a narrow identify step reads the photo and hands the conversation only the attributes (kind, brand, material, size), so the conversation model never sees the image. That keeps faces, rooms and any text written into a photo out of the conversation. It is still a hosted model, because capture's own image reading is one too (`jobs/studio/look.py`, through OpenRouter); a photo stays on our machines only if that step runs on our own hardware.
 
 ## Research
 Research for this feature is filed under [research/identify/](../../research/identify/), [research/watch/](../../research/watch/) and [research/buy/](../../research/buy/).
