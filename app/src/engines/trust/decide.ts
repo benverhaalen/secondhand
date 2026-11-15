@@ -55,12 +55,18 @@ const WHY: Record<string, string> = {
   site_banner: 'the site flagged this buyer', script_print_hit: 'the same message went to other sellers', burst_same_text: 'the same text went to many listings',
 };
 
-const weight = (values: Record<string, unknown>, s: Scored) => {
+const weight = (values: Record<string, unknown>, s: Scored, errors: Error[]) => {
   const model = values.trust_weights as { uri: string; weights: Record<string, number> };
   if (model.uri !== 'none') return numeric(model.weights)(s);
   const q = values[`trust_q.${s}`] as { alpha: number; beta: number };
   const r = values[`trust_r.${s}`] as { alpha: number; beta: number };
-  return liveWeight(q, r, SCORED[s].w, values);
+  try {
+    return liveWeight(q, r, SCORED[s].w, values);
+  } catch (error) {
+    if (!(error instanceof RangeError) || error.message !== 'trust_q/r') throw error;
+    errors.push(new RangeError(`trust_q/r: ${s}`, { cause: error }));
+    return SCORED[s].w;
+  }
 };
 
 async function withTimeout<T>(f: () => Promise<T>, ms: number): Promise<T> {
@@ -74,10 +80,6 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   const scope: Scope = t.person ? { site: t.group, person: t.person } : { site: t.group };
 
   const resolved = d.store ? resolve(d.store, scope) : { values: priors(), versions: priorVersions(), errors: [] };
-  for (const error of resolved.errors) {
-    d.logger?.error('trust.params', error);
-    d.log?.({ kind: 'trust_params_failed', thread_id: t.msg.thread_id, error: error.message });
-  }
   const p = numeric(resolved.values);
   const priceUnknown = t.keep_q50_cents === undefined && t.ctx.price_cents === undefined;
   const keep_cents = t.keep_q50_cents !== undefined ? cents(t.keep_q50_cents, 'keep_q50_cents') : t.ctx.price_cents === undefined ? 0 : cents(t.ctx.price_cents, 'price_cents');
@@ -90,6 +92,10 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   // The model starts first and runs while code signals are read.
   let modelFailed = false;
   const model = d.model;
+  if (!model) {
+    d.logger?.note('trust scan was code only', { thread_id: t.msg.thread_id });
+    d.log?.({ kind: 'trust_code_only', thread_id: t.msg.thread_id, note: 'trust scan was code only' });
+  }
   const runModel = async () => {
     const raw = await withTimeout(() => model!(t.msg), d.ms ?? p('trust_model_timeout_ms'));
     return readModel(raw, n => p(`trust_thr.${n}`), d.version ?? 'unversioned');
@@ -109,7 +115,11 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
 
   const hard = evaluateHard({ site: t.msg.site, checkout: t.checkout, orderPaid: t.orderPaid, local: t.local, present, draft: t.draft });
 
-  const contributions = SCORED_NAMES.filter(n => present.has(n)).map(signal => ({ signal, weight: weight(resolved.values, signal) }));
+  const contributions = SCORED_NAMES.filter(n => present.has(n)).map(signal => ({ signal, weight: weight(resolved.values, signal, resolved.errors) }));
+  for (const error of resolved.errors) {
+    d.logger?.error('trust.params', error);
+    d.log?.({ kind: 'trust_params_failed', thread_id: t.msg.thread_id, error: error.message });
+  }
   const s = contributions.reduce((sum, r) => sum + r.weight, 0);
   const strongest = contributions.filter(r => r.weight > 0).sort((a, b) => b.weight - a.weight)[0];
 
@@ -121,17 +131,24 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   const count = passed ? publish(calib.n!, 'trust_checked', proof, resolved.versions, resolved.values) : null;
   const percent = probability && count ? { p: prob, checked: calib.n!, probability, count } : null;
 
-  const why = SCORED_NAMES.filter((n) => present.has(n) && SCORED[n].w > 0).map((n) => WHY[n]);
+  const why = contributions.filter(r => r.weight > 0 && WHY[r.signal]).sort((a, b) => b.weight - a.weight).map(r => WHY[r.signal]);
   const reasons = [...hard.reasons];
   let action: Action = 'none';
   if (hard.action === 'block') action = 'block';
-  else if (priceUnknown) { action = 'ask'; reasons.unshift('The price is not known.'); }
   else if (modelFailed) { action = 'ask'; reasons.push('The check did not finish, so every commit waits for you.'); }
   else if (passed && prob >= p('trust_p_block')) { action = 'block'; reasons.push('This looks like a known scam.'); }
+  else if (priceUnknown) action = 'ask';
   else if (hard.action === 'ask' || s >= line) action = 'ask';
   else if (s >= line - p('trust_warn_gap')) action = 'warn';
 
-  if (action === 'ask' && why.length > 0) reasons.push(`Check before you reply: ${why.join(', ')}.`);
+  if (action === 'ask' || action === 'block') {
+    if (hard.reasons.length === 0 && strongest && WHY[strongest.signal]) reasons.unshift(`Check before you reply: ${WHY[strongest.signal]}.`);
+    if (priceUnknown) reasons.push('The price is not known.');
+    if (action === 'ask' && why.length > 0) {
+      const reason = `Check before you reply: ${why.join(', ')}.`;
+      if (!reasons.includes(reason)) reasons.push(reason);
+    }
+  }
   if (action === 'warn') reasons.push(strongest && WHY[strongest.signal] ? `Check before you reply: ${WHY[strongest.signal]}.` : "Don’t open links from buyers.");
 
   if (action === 'none') reasons.length = 0;

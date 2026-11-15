@@ -95,7 +95,16 @@ export function resolve(store: ParamStore, scope: Scope) {
   }
   for (const k of ['past', 'paid', 'exact', 'vague', 'new', 'haggle', 'reschedule', 'reply']) {
     const q = values[`trust_ns_q.${k}`] as { alpha: number; beta: number }, r = values[`trust_ns_r.${k}`] as { alpha: number; beta: number };
-    if (versions[`trust_ns_q.${k}`] || versions[`trust_ns_r.${k}`]) values[`trust_ns_${k}_weight`] = liveWeight(q, r, numberParam(priors(), `trust_ns_${k}_weight`), values);
+    if (versions[`trust_ns_q.${k}`] || versions[`trust_ns_r.${k}`]) {
+      const prior = numberParam(priors(), `trust_ns_${k}_weight`);
+      try {
+        values[`trust_ns_${k}_weight`] = liveWeight(q, r, prior, values);
+      } catch (error) {
+        if (!(error instanceof RangeError) || error.message !== 'trust_q/r') throw error;
+        errors.push(new RangeError(`trust_q/r: trust_ns_${k}_weight`, { cause: error }));
+        values[`trust_ns_${k}_weight`] = prior;
+      }
+    }
   }
   return { values, versions, errors };
 }

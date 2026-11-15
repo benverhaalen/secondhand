@@ -290,3 +290,89 @@ test('D5: two actual no-show labels cannot move the paid signal more than half i
   const score = nsScore(input, resolve(store, {}).values);
   assert.ok(Math.abs(score - numeric(priors())('trust_ns_paid_weight')) <= 1.5);
 });
+
+const calibratedStore = () => {
+  const store = setup();
+  fitted(store, 'trust_calib', { kind: 'platt', a: 1, b: 20, n: 400, positives: 40, ece: .01, score_model_version: 0 });
+  return store;
+};
+test('unknown price cannot downgrade a gate-passing calibrated block', async () => {
+  const t = thread();
+  delete t.ctx.price_cents;
+  const out = await decideThread({ store: calibratedStore(), model: async () => [] }, t);
+  assert.ok(out.p !== null && out.p >= numeric(priors())('trust_p_block'));
+  assert.equal(out.action, 'block');
+});
+test('failed extraction still asks above the calibrated block threshold with unknown price', async () => {
+  const t = thread();
+  delete t.ctx.price_cents;
+  const out = await decideThread({ store: calibratedStore(), model: async () => { throw new Error('down'); } }, t);
+  assert.equal(out.action, 'ask');
+  assert.ok(out.reasons.includes('The check did not finish, so every commit waits for you.'));
+});
+for (const row of ['q', 'r']) {
+  test(`corrupt scam ${row} count returns the signal prior and logs exactly one error`, async () => {
+    const store = setup();
+    fitted(store, `trust_${row}.new_account`, { alpha: -1, beta: 20 });
+    const entries: { event: string }[] = [], events: Record<string, unknown>[] = [];
+    const logger = createLog({ src: 'test', build: 'fixture', sink: entry => { entries.push(JSON.parse(entry)); } });
+    const t = thread();
+    t.ctx.buyer.age_days = 1;
+    const out = await decideThread({ store, logger, log: e => events.push(e), model: async () => [] }, t);
+    assert.equal(out.s, SCORED.new_account.w);
+    assert.equal(entries.filter(e => e.event === 'error').length, 1);
+    const errors = events.filter(e => e.kind === 'trust_params_failed');
+    assert.equal(errors.length, 1);
+    assert.match(String(errors[0].error), /trust_q\/r.*new_account/);
+  });
+  test(`corrupt no-show ${row} count resolves to the name's prior with one returned and logged error`, async () => {
+    const store = setup();
+    fitted(store, `trust_ns_${row}.paid`, { alpha: -1, beta: 20 });
+    const out = resolve(store, {});
+    assert.equal(numeric(out.values)('trust_ns_paid_weight'), numeric(priors())('trust_ns_paid_weight'));
+    assert.equal(out.errors.length, 1);
+    assert.match(out.errors[0].message, /trust_q\/r.*paid/);
+    const events: Record<string, unknown>[] = [];
+    await decideThread({ store, log: e => events.push(e), model: async () => [] }, thread());
+    assert.equal(events.filter(e => e.kind === 'trust_params_failed').length, 1);
+  });
+}
+test('unknown price follows the gift-card hard reason in block and messageAction', async () => {
+  const { messageAction } = await import('./action.ts');
+  const t = thread("I'll pay with an Apple gift card");
+  delete t.ctx.price_cents;
+  const out = await decideThread({ model: async () => [] }, t);
+  assert.equal(out.action, 'block');
+  assert.match(out.reasons[0], /gift card/);
+  assert.ok(out.reasons.indexOf('The price is not known.') > 0);
+  assert.equal(messageAction(out).reason, out.reasons[0]);
+});
+for (const calibrated of [false, true]) {
+  test(`${calibrated ? 'block' : 'ask'} puts the strongest learned reason before the unknown price`, async () => {
+    const store = setup();
+    fitted(store, 'trust_weights', { uri: 'fixture', b: -4, weights: { ...Object.fromEntries(SCORED_NAMES.map(name => [name, SCORED[name].w])), new_account: -.2, ship_elsewhere: .8, third_party_collects: .3 } });
+    if (calibrated) fitted(store, 'trust_calib', { kind: 'platt', a: 1, b: 20, n: 400, positives: 40, ece: .01, score_model_version: 1 });
+    const t = thread();
+    t.ctx.buyer.age_days = 1;
+    delete t.ctx.price_cents;
+    const out = await decideThread({ store, model: async () => ['third_party_collects', 'ship_elsewhere'].map(signal => ({ signal, confidence: .9, span: signal })) }, t);
+    assert.equal(out.action, calibrated ? 'block' : 'ask');
+    assert.equal(out.reasons[0], 'Check before you reply: they want it shipped somewhere else.');
+    assert.ok(out.reasons.indexOf('The price is not known.') > 0);
+    assert.doesNotMatch(out.reasons.join(' '), /account is new/);
+    if (!calibrated) assert.match(out.reasons.join(' '), /someone else would collect it/);
+  });
+}
+for (const sink of ['logger', 'log'] as const) {
+  test(`missing extractor records one code-only note per call through ${sink}, without an error`, async () => {
+    const entries: { event: string; msg?: string }[] = [], events: Record<string, unknown>[] = [];
+    const logger = createLog({ src: 'test', build: 'fixture', sink: entry => { entries.push(JSON.parse(entry)); } });
+    const deps = sink === 'logger' ? { logger } : { log: (e: Record<string, unknown>) => events.push(e) };
+    for (let i = 0; i < 2; i++) {
+      await decideThread(deps, thread());
+      assert.equal(sink === 'logger' ? entries.filter(e => e.event === 'note' && /code only/i.test(e.msg ?? '')).length : events.filter(e => e.kind === 'trust_code_only').length, i + 1);
+    }
+    assert.equal(entries.filter(e => e.event === 'error').length, 0);
+    assert.equal(events.filter(e => /failed/.test(String(e.kind))).length, 0);
+  });
+}
