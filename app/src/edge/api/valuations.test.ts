@@ -1,18 +1,24 @@
 import { object } from './captures.ts';
 import assert from 'node:assert/strict';
-import { beforeEach, test } from 'node:test';
+import { afterEach, beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest, ports } from './valuations.ts';
+import { store } from './store.ts';
+import { soldSources } from '../../engines/valuation/sold.ts';
 
 const prefixes = ["valuations"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
+const defaults = { ...ports };
+const AS_OF = '2026-11-15T16:00:00.000Z';
 beforeEach(() => {
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
-  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.parse(AS_OF);
+  ports.sources = () => [];
 });
+afterEach(() => { Object.assign(ports, defaults); });
 const call = (e: Example, options: { body?: unknown; raw?: string; path?: string; token?: string | null; headers?: Record<string, string> } = {}) => {
   const token = options.token === undefined ? (e.auth === 'visitor' ? null : 'good') : options.token;
   const entry = manifest.find(m => m.endpoint === e.endpoint)!;
@@ -119,15 +125,14 @@ test('an outside URL stays queued for identity instead of becoming a product id'
 });
 
 const create = examples.find(e => e.name === 'valuations.create')!;
-const AS_OF = '2026-11-15T16:00:00.000Z';
 const comp = (): import('../../engines/valuation/comps.ts').Comp => ({
   comp_id: 'poshmark:recent', site: 'poshmark', sold_at: '2026-11-15T15:00:00.000Z',
   price_cents: 2400, kind: 'sold', level: 'product', condition: 'good',
   w_match: .5, w_extract: .9, may_model: false, citation: 'https://poshmark.com/listing/recent',
 });
+let itemNumber = 0;
 async function ownItem(extra: Record<string, unknown> = {}) {
-  const { store } = await import('./store.ts');
-  return store.put('item', { id: 'it_route_owned', user_id: 'usr_other', title: 'Blue jacket', ...extra });
+  return store.put('item', { id: `it_route_${++itemNumber}`, user_id: 'usr_other', title: 'Blue jacket', ...extra });
 }
 async function result(response: Response) {
   assert.equal(response.status, 202);
@@ -212,6 +217,13 @@ test('shown-only sold comps are cited, written with their rights, and read on th
   assert.equal(rows.length, 1); assert.equal(rows[0].rights.may_model, false); assert.equal(rows[0].payload.may_model, false);
   assert.equal(rows[0].kind, 'price'); assert.equal(rows[0].subject_ref, comp().comp_id);
   assert.equal(rows[0].observed_at, comp().sold_at); assert.equal(rows[0].data, 'live:poshmark');
+  for (const row of rows) {
+    assert.ok(['hackathon_demo', 'product'].includes(row.use_scope), 'loader must accept every written scope');
+    assert.equal(row.use_scope, 'hackathon_demo', 'no source is cleared for product; source_rights decides when one is');
+    assert.equal('retention_class' in row, false); assert.equal('rights_mode' in row, false);
+  }
+  assert.equal(rows[0].channel, 'secondhand');
+  assert.equal(rows[0].may_store, true); assert.equal(rows[0].may_model, false); assert.equal(rows[0].keep_until, null);
   assert.equal(rows[0].source_route, 'valuation.sold'); assert.equal(rows[0].product_id, 'pr_blue');
   assert.deepEqual(rows[0].rights, { may_store: true, may_model: false, may_show: true, may_share: false, ttl: null });
   assert.ok(object(first.citation)); assert.deepEqual(first.citation.basis_ids, [comp().comp_id]);
@@ -257,8 +269,8 @@ test('an uncomposed observation write is visible in the request log', async () =
   try {
     ports.sources = () => [async () => [comp()]];
     await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
-    const note = sink.lines.map(line => JSON.parse(line)).find(row => row.msg === 'valuation.observations.not_composed');
-    assert.equal(note?.rows, 1); assert.ok(note.req);
+    const notes = sink.lines.map(line => JSON.parse(line)).filter(row => row.msg === 'valuation.observations.not_composed');
+    assert.equal(notes.length, 1); assert.equal(notes[0].rows, 1); assert.ok(notes[0].req);
   } finally { ports.sources = saved; }
 });
 
@@ -299,4 +311,118 @@ for (const [captured, grade] of [['like_new', 'excellent'], ['poor', 'for_parts'
   ports.sources = () => [async () => [{ ...comp(), condition: grade }]];
   const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
   assert.equal(priced.condition, grade); assert.ok(Array.isArray(priced.comps)); assert.equal(priced.comps.length, 1);
+}));
+
+test('route tests start with a fixed clock', () => {
+  assert.equal(deps.now(), Date.parse(AS_OF), 'the request clock must be fixed');
+});
+test('route tests start with no sold sources regardless of live-site settings', () => {
+  assert.deepEqual(ports.sources(async () => { throw new Error('unexpected sold read'); }, ['mercari', 'poshmark'],
+    { query: 'Blue jacket', condition: 'good', error: (_where, error) => { throw error; } }), [], 'sold sources must be stubbed');
+});
+
+test('an item fixture never reuses the deleted item fixture id', async () => {
+  const deleted = await ownItem({ deleted: true }), fresh = await ownItem();
+  assert.notEqual(fresh.id, deleted.id);
+  assert.equal(store.get('item', 'usr_other', fresh.id)?.deleted, undefined);
+});
+
+for (const [reason, extra] of [
+  ['expired', { keep_until: '2026-11-15T15:59:59Z' }],
+  ['bad_keep_until', { keep_until: 'not-a-date' }],
+  ['not_showable', { rights: { may_store: true, may_model: false, may_show: false, may_share: false, ttl: null } }],
+] as const) test(`dropped observations report ${reason} once per read with its count`, async () => withPorts(async () => {
+  const { observationPort } = await import('./valuations.ts');
+  const item = await ownItem();
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  const row = { payload: comp(), ...extra };
+  ports.observations = observationPort({ read: () => [row, row], write: () => {} }, 'usr_other', deps.log);
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.deepEqual(priced.comps, []);
+  const notes = sink.lines.map(line => JSON.parse(line)).filter(row => row.msg === 'valuation.observations.dropped');
+  assert.equal(notes.length, 1, 'each read must log one summary');
+  const counts = { expired: 0, bad_keep_until: 0, not_showable: 0, [reason]: 2 };
+  for (const [key, count] of Object.entries(counts)) assert.equal(notes[0][key], count, key);
+}));
+
+test('a read with no dropped observations emits no dropped summary', async () => withPorts(async () => {
+  const { observationPort } = await import('./valuations.ts');
+  const item = await ownItem();
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  ports.observations = observationPort({ read: () => [{ payload: comp(), keep_until: null }], write: () => {} }, 'usr_other', deps.log);
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.ok(Array.isArray(priced.comps)); assert.equal(priced.comps.length, 1);
+  assert.doesNotMatch(sink.text(), /valuation.observations.dropped/);
+}));
+
+test('a missing example item fails its capture valuation job as unavailable and logs the cause', async t => withPorts(async () => {
+  const get = store.get.bind(store);
+  t.mock.method(store, 'get', (table: Parameters<typeof store.get>[0], user: string, id: string) =>
+    table === 'item' && id === 'it_7c2m' ? undefined : get(table, user, id));
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  const response = await call(create, { body: { capture_id: 'cap_3n9q' } });
+  assert.equal(response.status, 503);
+  const error = await response.json();
+  assert.equal(error.code, 'unavailable'); assert.equal(error.message, 'The valuation could not be finished.');
+  const { jobs } = await import('./jobs.ts');
+  const job = jobs.st.jobs({ user_id: 'usr_8f2k' }).at(-1);
+  assert.equal(job?.state, 'failed');
+  assert.deepEqual(job.error, { code: 'unavailable', message: 'The valuation could not be finished.' });
+  assert.ok(sink.lines.map(line => JSON.parse(line)).some(row => row.event === 'error' && row.where === 'valuation.run'));
+}));
+
+test('an unknown confirmed condition mint uses good and logs its grade on the request', async () => withPorts(async () => {
+  const item = await ownItem({ attributes: [{ name: 'condition', value: 'mint', confirmed: true }] });
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  ports.sources = () => [async () => [comp()]];
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.equal(priced.condition, 'good');
+  assert.ok(Array.isArray(priced.comps)); assert.equal(priced.comps.length, 1);
+  const notes = sink.lines.map(line => JSON.parse(line)).filter(row => row.msg === 'valuation.condition_unknown');
+  assert.equal(notes.length, 1); assert.equal(notes[0].grade, 'mint'); assert.ok(notes[0].req);
+}));
+
+for (const grade of ['new_with_tags', 'new_without_tags', 'excellent', 'good', 'fair', 'for_parts'])
+  test(`the item condition ${grade} explicitly maps to the engine grade`, async () => withPorts(async () => {
+    const item = await ownItem({ condition: grade });
+    ports.sources = () => [async () => [{ ...comp(), condition: grade }]];
+    const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+    assert.equal(priced.condition, grade);
+    assert.ok(Array.isArray(priced.comps)); assert.equal(priced.comps.length, 1);
+  }));
+
+test('one comp read live and from observations counts once in the basis', async () => withPorts(async () => {
+  const item = await ownItem();
+  ports.observations.read = async () => [comp()];
+  ports.observations.write = async () => { assert.fail('an already stored comp must not be written again'); };
+  ports.sources = () => [async () => [comp()]];
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.ok(Array.isArray(priced.comps)); assert.equal(priced.comps.length, 1);
+  assert.equal(priced.n_eff, 1);
+  assert.ok(object(priced.citation)); assert.deepEqual(priced.citation.basis_ids, [comp().comp_id]);
+}));
+
+test('a comp sold after as_of never enters the live or stored basis', async () => withPorts(async () => {
+  const item = await ownItem();
+  const future = { ...comp(), comp_id: 'poshmark:future', sold_at: '2026-11-15T16:00:01.000Z' };
+  ports.observations.read = async () => [future];
+  ports.sources = () => [async () => [comp(), future]];
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.ok(Array.isArray(priced.comps)); assert.deepEqual(priced.comps.map(row => row.comp_id), [comp().comp_id]);
+  assert.equal(priced.n_eff, 1);
+  assert.ok(object(priced.citation)); assert.deepEqual(priced.citation.basis_ids, [comp().comp_id]);
+}));
+
+test('a sold site that throws is logged while the other site still answers the valuation', async () => withPorts(async () => {
+  const item = await ownItem();
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  ports.sources = (_search, sites, q) => soldSources(async site => {
+    if (site === 'mercari') throw new Error('recorded Mercari read fault');
+    return { outcome: 'hit', rows: [{ external_id: 'recent', title: 'Blue jacket', state: 'sold',
+      sold_at: comp().sold_at, price_cents: 2400, condition: 'good', url: comp().citation }] };
+  }, sites, q);
+  const priced = await result(await call(create, { body: { item_id: item.id }, token: 'other' }));
+  assert.ok(Array.isArray(priced.comps)); assert.deepEqual(priced.comps.map(row => row.comp_id), [comp().comp_id]);
+  assert.equal(priced.n_eff, 1);
+  assert.match(sink.text(), /valuation.sold.mercari/); assert.match(sink.text(), /recorded Mercari read fault/);
 }));

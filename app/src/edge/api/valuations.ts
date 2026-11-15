@@ -23,8 +23,8 @@ type Item = Row & { title: string; product_id?: string; kind?: string; condition
 export type ObservationInput = {
   kind: 'price'; site: string; product_id?: string; subject_ref: string; observed_at: string;
   payload: Record<string, unknown>; data: `live:${string}`; rights: Rights; source_route: string;
-  source_url: string; extractor_version: string; retention_class: string; rights_mode: string;
-  may_store: boolean; may_model: boolean; use_scope: string; keep_until: string | null; channel: 'secondhand';
+  source_url: string; extractor_version: string;
+  may_store: boolean; may_model: boolean; use_scope: 'hackathon_demo' | 'product'; keep_until: string | null; channel: 'secondhand';
 };
 type ObservationRow = { payload: unknown; product_id?: string; keep_until?: string | null; may_model?: boolean;
   rights?: Rights; evidence?: { rights: Rights } };
@@ -52,32 +52,40 @@ export function observationPort(functions: ObservationFunctions, user_id: string
   return {
     async read(q) {
       const rows = await functions.read(user_id, { kind: 'price', product_id: q.product_id, purpose: 'show' });
-      return rows.flatMap(row => {
+      const dropped = { expired: 0, bad_keep_until: 0, not_showable: 0 };
+      const comps = rows.flatMap(row => {
         const rights = row.evidence?.rights ?? row.rights;
-        if (rights?.may_show === false || row.keep_until != null && (!date(row.keep_until) || Date.parse(row.keep_until) <= Date.parse(q.as_of))) return [];
+        if (rights?.may_show === false) { dropped.not_showable++; return []; }
+        if (row.keep_until != null) {
+          if (!date(row.keep_until)) { dropped.bad_keep_until++; return []; }
+          if (Date.parse(row.keep_until) <= Date.parse(q.as_of)) { dropped.expired++; return []; }
+        }
         if (!isComp(row.payload)) { log.error('valuation.observations.invalid', new Error('Observation payload is not a valid Comp')); return []; }
         return [{ ...row.payload, may_model: row.payload.may_model && row.may_model !== false && rights?.may_model !== false }];
       });
+      if (Object.values(dropped).some(count => count > 0)) log.note('valuation.observations.dropped', dropped);
+      return comps;
     },
     async write(rows) {
       await functions.write(user_id, rows.map(comp => ({ kind: 'price', site: comp.site, product_id: comp.product_id,
         subject_ref: comp.comp_id, observed_at: comp.sold_at, payload: { ...comp }, data: `live:${comp.site}`,
         rights: { may_store: true, may_model: comp.may_model, may_show: true, may_share: false, ttl: null },
         source_route: 'valuation.sold', source_url: comp.citation, extractor_version: 'valuation.sold',
-        retention_class: 'history', rights_mode: 'public', may_store: true, may_model: comp.may_model,
-        use_scope: 'show', keep_until: null, channel: 'secondhand' })));
+        may_store: true, may_model: comp.may_model,
+        use_scope: 'hackathon_demo', keep_until: null, channel: 'secondhand' })));
     },
   };
 }
-const uncomposed: ObservationPort = {
+const uncomposed = (log: Ctx['log']): ObservationPort => ({
   read: async () => [],
-  async write(rows) { deps.log.note('valuation.observations.not_composed', { rows: rows.length }); },
-};
+  async write(rows) { log.note('valuation.observations.not_composed', { rows: rows.length }); },
+});
+const defaultObservations = uncomposed(deps.log);
 export const ports: { sources: typeof soldSources; observations: ObservationPort; valuate: typeof valuate } = {
-  sources: soldSources, observations: uncomposed, valuate,
+  sources: soldSources, observations: defaultObservations, valuate,
 };
 
-function itemFor(row: Item): ValuationItem & { title: string; fast?: FamilyBand } {
+function itemFor(row: Item, log: Ctx['log']): ValuationItem & { title: string; fast?: FamilyBand } {
   const sample = row.id === 'it_7c2m' && row.user_id === EXAMPLE_USER
     ? example('items.get').response as { valuation: { range: { low: { amount_cents: number }; high: { amount_cents: number }; basis_count: number; as_of: string } } } : null;
   const range = sample?.valuation.range;
@@ -88,33 +96,37 @@ function itemFor(row: Item): ValuationItem & { title: string; fast?: FamilyBand 
   // shortcut: no grade until capture confirms one, upgrade when capture writes condition
   const condition = confirmed('condition') ?? row.condition ?? 'good';
   // Capture's grade names (jobs/capture/process.json) mapped to the valuation registry's D2 names.
-  const grades: Record<string, string> = { like_new: 'excellent', poor: 'for_parts' };
-  return { item_id: row.id, product_id: row.product_id ?? row.id, title: row.title, kind: row.kind ?? row.category, condition: grades[condition] ?? condition,
+  const grades: Record<string, string> = { new_with_tags: 'new_with_tags', new_without_tags: 'new_without_tags',
+    like_new: 'excellent', excellent: 'excellent', good: 'good', fair: 'fair', poor: 'for_parts', for_parts: 'for_parts' };
+  const known = Object.hasOwn(grades, condition);
+  if (!known) log.note('valuation.condition_unknown', { grade: condition });
+  return { item_id: row.id, product_id: row.product_id ?? row.id, title: row.title, kind: row.kind ?? row.category, condition: known ? grades[condition] : 'good',
     size: confirmed('size') ?? row.size, family_id: row.family_id, floor_cents: row.floor_cents ?? 0, objective: 'balanced', sites: soldSites.map(site => ({ site })),
     ...(range ? { fast: { low: range.low.amount_cents, high: range.high.amount_cents, n: range.basis_count, as_of: range.as_of, basis: 'family', state: 'rough' } } : {}) };
 }
 async function run(ctx: Ctx, seed: Exclude<Reply, Response>, row?: Item) {
-  const item = ctx.body.url ? null : itemFor(row ?? store.get<Item>('item', EXAMPLE_USER, 'it_7c2m')!);
   const body = seed.body as { id: string; kind: 'valuate'; state: 'running' | 'queued'; stages: ApiJobRow['stages']; item_id?: string };
   const ownBody = row ? { ...body, item_id: row.id } : body;
   const job = ctx.user_id === EXAMPLE_USER ? jobs.start({ ...ownBody, args: { ...ctx.body } }, ctx.user_id)
     : jobs.put({ ...ownBody, id: undefined, args: { ...ctx.body } }, ctx.user_id!);
-  if (item) {
+  if (!ctx.body.url) {
     try {
+      const stored = row ?? store.get<Item>('item', EXAMPLE_USER, 'it_7c2m');
+      if (!stored) throw new Error('Example valuation item is missing');
+      const item = itemFor(stored, ctx.log);
       const as_of = new Date(deps.now()).toISOString();
       const sources = ports.sources(soldSearch({ person_id: ctx.user_id!, accounts: runtime.accounts, harness: runtime.harness,
         live_sites: (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/), log: ctx.log }), soldSites,
       { query: item.title, condition: item.condition, error: (where, error) => ctx.log.error(where, error) });
       let portFailed = false;
       // SV7 composition: replace uncomposed here with observationPort({ read: (user, q) => readObservations(store, user, q), write: (user, rows) => writeObservations(store, user, rows) }, ctx.user_id!, ctx.log).
-      const observation = ports.observations;
+      const observation = ports.observations === defaultObservations ? uncomposed(ctx.log) : ports.observations;
       const observations: ObservationPort = {
         async read(q) {
           try { return await observation.read(q); }
           catch (error) { portFailed = true; throw error; }
         },
         async write(rows, meta) {
-          if (observation === uncomposed) { ctx.log.note('valuation.observations.not_composed', { rows: rows.length }); return; }
           try { await observation.write(rows.map(comp => ({ ...comp, product_id: comp.product_id ?? item.product_id })), meta); }
           catch (error) { portFailed = true; throw error; }
         },
@@ -132,7 +144,7 @@ async function run(ctx: Ctx, seed: Exclude<Reply, Response>, row?: Item) {
       throw failure;
     }
   }
-  ctx.log.event('state.change', { entity: 'job', id: job.id, to: item ? 'done' : 'queued' });
+  ctx.log.event('state.change', { entity: 'job', id: job.id, to: ctx.body.url ? 'queued' : 'done' });
   return { ...seed, body: { ...ownBody, id: job.id } };
 }
 function validate(ctx: Ctx) {
