@@ -66,6 +66,14 @@ Five sessions share `C:\dev\secondhand`. It crashed three times under thirteen, 
 - One test file at a time (`node --test --test-concurrency=1 <file>`). Never `node .agents/check.mjs` and never `scripts/prove.mjs --wave` or `--tune` from a lead: the orchestrator runs the full check before a push that needs it. Heavy or long runs go to the Mac.
 - A lead may hand work to Claude seats of its own (the Agent tool, in the lead's session): Sonnet 5.5 for a specified piece (a doc update, a brief, reading a diff against its brief, a lookup), another Opus 5.5 for a design question or a fresh review. At most two at once per lead, and they do not run tests or builds here: those go to the Mac. A lead starts no new sessions; there are four leads and that number stays.
 
+## The documentation of what we build with
+
+Nate: "remember to account for all documentation for relevant platforms, languages, frameworks, etc we develop with" ([words](../../../../product/words.md#2026-11-15-nate-account-for-the-documentation-of-everything-we-build-with)).
+
+- Before designing or briefing a piece, the lead reads the current official documentation for what it touches, at the version in the repo, not from memory: Expo SDK 58 and Expo Router API routes, Metro, React Native, Node 24 (type stripping, the test runner), TypeScript, Python 3.12, Databricks (through the databricks skills and its docs), Browser Use Cloud ([our reference](../../../../research/cross-cutting/nate/browser-use-cloud.md)), `playwright-core` over CDP, OpenRouter, each marketplace's official API and help pages, Supabase or whatever store the spec names. Use the docs tools the session has (context7, the databricks docs skill, a fetch of the vendor's page).
+- A Codex worker has no network, so the lead puts the facts the worker needs into the brief, each with its source URL and the version it applies to. A fact that will be needed again goes into a research note (skill `research-note`), not only the brief.
+- A commit that follows a documented behaviour names the page in its `Rests-on:` trailer. Where the docs and the code disagree, the docs for our version win and the code is fixed.
+
 ## Tests, measurements and the record
 
 - Test what can break and what a person would see break: one test per real failure mode, the edges of money and state, each join between two parts. Do not test the same thing at three levels, do not test a constant, and do not rerun a suite that did not change. A piece is done when its own checks pass and a fresh reader has read the diff, not when every test in the repo has run again.
