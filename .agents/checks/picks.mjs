@@ -148,6 +148,10 @@ export const PICKS = {
     return out;
   },
 
+  // Words on a screen use the real marks: a curly apostrophe and the ellipsis character.
+  D5: (root, { files }) => inWords(root, files, /[A-Za-z]'[a-z]|\.\.\./g,
+    m => `${m === '...' ? 'three dots' : `a straight apostrophe in "${m}"`}: on a screen, write ${m === '...' ? 'the ellipsis character …' : 'the curly apostrophe ’'} (brand-round-10.md §4)`, { phrases: true }),
+
   // Motion is optional: the phone's Reduce Motion is never overridden.
   M1: (root, { files }) => files.filter(APP).flatMap(f => { const text = withoutComments(f, read(root, f) ?? '');
     return [...text.matchAll(/\bReduceMotion\.Never\b/g)].map(m => err(`${f}:${lineOf(text, m.index)}`, 'ReduceMotion.Never keeps an animation running for someone who turned motion off: give it a still version instead (frontend-standard §3, Optional)')); }),

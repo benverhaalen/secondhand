@@ -438,3 +438,8 @@ test('picks M4: a named motion with no reason fails, and so does a missing list'
   assert.match(await pick('M4', { 'app/src/ui/motion.ts': ok.replace('};', "  wiggle: { ms: 400 },\n  glow: { why: 'cool', ms: 200 },\n};") }), /"wiggle" has no reason[\s\S]*"glow" has no reason/);
   assert.match(await pick('M4', { 'app/src/ui/layout.tsx': 'x' }), /motion\.ts is missing/);
 });
+
+test('picks D5: a straight apostrophe or three dots on a screen fails; the real marks pass', async () => {
+  assert.match(await pick('D5', screen("<Txt>The server didn't answer...</Txt>")), /straight apostrophe in "n't"[\s\S]*three dots/);
+  assert.equal(await pick('D5', screen("<Txt>The server didn’t answer…</Txt>\nconst a = [...items]; const k = 'ebay';")), '');
+});
