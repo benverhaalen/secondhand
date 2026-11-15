@@ -1922,3 +1922,15 @@ Ben, same thread, 10:14 UTC.
 > do the same with this: https://paste.rachel.systems/ukogokijaz.md
 
 Used in: [.agents/vendor/appllama](../.agents/vendor/appllama/SOURCE.md), `scripts/standards.mjs`, `.agents/checks/standards.mjs`.
+
+## 2026-11-15 nate how credibility should be weighed, and the value we bring truly defined
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> well how do you believe credibility should be weighed. The literature lays out alot and its important you assess that it's proven how we deliver things. That the value our system brings is truly defined
+
+Used in: [spec/engines/credibility.md](../spec/engines/credibility.md#how-credibility-is-weighed).
+
+## 2026-11-15 nate identify the product, find the same thing off brand, and learn whether the brand matters
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> Its important we develop the feature of the system being able to identify the product and what it is, and find off brand similar types of the same quality, material, but different brand, and developing insights on whether people care more about the specific main brand or not
+
+Used in: `spec/engines/adaptation.md` (the brand measure, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
