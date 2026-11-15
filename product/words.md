@@ -1764,3 +1764,11 @@ Nate, build session (orchestrator), 2026-11-15 about 12:30 Central, answering wh
 > we own backtests and such
 
 Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 ben research how depop and other resale apps estimate prices
+
+Ben, project chat, 2026-11-15 09:31 UTC.
+
+> i know depop does price estimates in there app, research that and similar reselling platforms that share similar features
+
+Used in: [how resale platforms suggest prices](../research/price/ben/platform-price-suggestions.md).
