@@ -1,12 +1,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { listedAt, check, confirm, message, run, MAX_PER_CHECK } from './stage-watch.mjs';
+import { listedAt, check, confirm, message, run, toApp, MAX_PER_CHECK } from './stage-watch.mjs';
 
 // Poshmark ids are MongoDB ObjectIds; 6551f0a1 is 2023-11-13T09:47:13Z.
 const A = '6551f0a1b2c3d4e5f6a7b8c9', B = '6551f0a1b2c3d4e5f6a7b8ca', C = '6551f0a1b2c3d4e5f6a7b8cb';
 const card = (id, price) => `<div><a href="/listing/Carhartt-Detroit-jacket-${id}">Carhartt Detroit jacket</a><span>$${price}</span></div>`;
 const page = (...cards) => `<html><title>Search</title><body>${cards.join('')}</body></html>`;
-const listing = (id, price, availability = 'InStock') => `<html><script type="application/ld+json">${JSON.stringify({ '@type': 'Product', name: 'Carhartt Detroit jacket', url: `https://poshmark.com/listing/Carhartt-Detroit-jacket-${id}`, offers: { price: String(price), priceCurrency: 'USD', availability: `https://schema.org/${availability}` } })}</script></html>`;
+const listing = (id, price, availability = 'InStock') => `<html><head><meta property="og:image" content="https://di2ponv0v5otd.cloudfront.net/posts/${id}.jpg"></head><script type="application/ld+json">${JSON.stringify({ '@type': 'Product', name: 'Carhartt Detroit jacket', url: `https://poshmark.com/listing/Carhartt-Detroit-jacket-${id}`, offers: { price: String(price), priceCurrency: 'USD', availability: `https://schema.org/${availability}` } })}</script></html>`;
 const opts = { site: 'poshmark', now: 1_700_000_000_000 };
 
 test('listedAt: a Poshmark id carries its creation time; other sites give none', () => {
@@ -93,4 +93,28 @@ test('run: a blocked site backs off instead of hammering it', async () => {
 
 test('run: refuses a check faster than every 5 seconds', async () => {
   await assert.rejects(run({ url: 'https://poshmark.com/search?query=x', cap: 25, every_s: 2, for_min: 1, fetchPage: async () => '', post: async () => ({}), sleep: async () => {}, now: () => 0 }), /every_s/);
+});
+
+test('confirm: takes the listing photo from the page, for the card in the app', () => {
+  const cand = { site: 'poshmark', site_id: C, url: `https://poshmark.com/listing/x-${C}`, price: 18 };
+  assert.equal(confirm(cand, listing(C, 18), 25).image, `https://di2ponv0v5otd.cloudfront.net/posts/${C}.jpg`);
+});
+
+test('toApp: the file the app reads, in whole cents, with the cap', () => {
+  const a = { site: 'poshmark', site_id: C, url: 'https://poshmark.com/listing/x', title: 'Carhartt Detroit jacket', price: 18.5, image: null, listed_at: 1000, found_at: 42000 };
+  assert.deepEqual(toApp([a], 25), { alerts: [{ id: C, site: 'poshmark', url: 'https://poshmark.com/listing/x', title: 'Carhartt Detroit jacket', price_cents: 1850, cap_cents: 2500, image: null, listed_at: 1000, found_at: 42000 }] });
+});
+
+test('run: writes an empty file at the start, then the file the app reads after each alert', async () => {
+  let t = opts.now, reads = 0;
+  const pages = [page(card(A, 80)), page(card(C, 18), card(A, 80))];
+  const writes = [];
+  await run({
+    url: 'https://poshmark.com/search?query=carhartt', cap: 25, every_s: 10, for_min: 0.5,
+    fetchPage: async url => url.includes('/listing/') ? listing(C, 18) : pages[Math.min(reads++, 1)],
+    post: async () => ({ ok: true }), write: out => writes.push(out),
+    sleep: async ms => { t += ms; }, now: () => t,
+  });
+  assert.deepEqual(writes[0], { alerts: [] });
+  assert.equal(writes.at(-1).alerts[0].price_cents, 1800);
 });

@@ -20,5 +20,5 @@ Updated: November 15, 2026. Owner: Ben. Agent: Claude Code (project thread "Cros
 
 ## Next action
 
-- Ben: whether to apply to eBay for Buyer Demand Data (search counts per aspect), which orders the questions by what buyers filter on.
+- Ben: no applications to eBay or other sites yet, Buyer Demand Data included ([words](../../../../product/words.md#2026-11-15-no-applications-to-marketplaces-yet)). Questions are ordered required first, then recommended.
 - Nate: whether the aspects load belongs in the Databricks bundle, and under which table name.

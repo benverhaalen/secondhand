@@ -25,6 +25,8 @@ export async function build({ force = false, log = () => {} } = {}) {
   for (let t = 0; ; t++) { try { mkdirSync(lock); break; } catch { if (t > 240) throw new Error(`${lock} has been held for two minutes: remove it if no export is running`); await wait(500); } }
   try {
     if (!force && fresh()) return false;
+    // Unminified: the tests and app-check read the screens, not the size, and the minifier stops on server-only syntax
+    // (import.meta, top-level await) in the API routes' bundle, which no screen test calls.
     log('exporting the web build (npx expo export --platform web)');
     try { execFileSync(expo, ['export', '--platform', 'web'], { cwd: appDir, stdio: 'pipe', env: { ...process.env, CI: '1' } }); }
     catch (e) { throw new Error(`expo export failed:\n${String(e.stdout ?? '').slice(-3000)}${String(e.stderr ?? '').slice(-3000)}`); }

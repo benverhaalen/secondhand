@@ -3,9 +3,8 @@
 //   node fit.mjs sets            the set list for each platform, and the "all" set
 //   node fit.mjs <product type>  the route for one product type
 //   node fit.mjs check           every type has a verdict and a reason on every platform
-import { readFileSync } from 'node:fs';
+import data from './platform-fit.json' with { type: 'json' }; // static, no import.meta: the app's server bundle includes this file
 
-const data = JSON.parse(readFileSync(new URL('./platform-fit.json', import.meta.url), 'utf8'));
 const RANK = { best: 4, good: 3, ok: 2, avoid: 1, blocked: 0 };
 const ids = Object.keys(data.platforms);
 const posting = ids.filter(p => data.platforms[p].role === 'post');
@@ -44,7 +43,7 @@ export function check() {
 
 const arg = process.argv[2];
 const label = t => data.types[t];
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1]?.endsWith('fit.mjs')) {
   if (arg === 'check') {
     const errors = check();
     console.log(errors.length ? errors.join('\n') : 'fit ok');

@@ -160,11 +160,11 @@ Ben, 07:53: "can you list out each feature we have for me that is ai or is a fea
 - *Proof now:* built.
 - *Say:* "Every store at once, with the total you'd actually pay. We may earn a referral, and it can't change the order."
 
-**21. Watch for it, and ping me when it's listed.**
-- *What:* you set what you want and your price; it pings you when one appears.
-- *How:* it reads each site's newest listings, only tells you about one that fits and is under your price, re-checks it before pinging, and sends at most three at a time.
-- *Under the hood:* `app/src/edge/watch/watch.ts` (the rule, 7 tests); the stage watcher `scripts/demo/stage-watch.mjs` (10 tests).
-- *Proof now:* built. The live beat is planned in [live buy demo](live-buy-demo.md): Nate posts, Ben's phone pings, and it shows how many seconds after listing it was found, by Poshmark's own clock.
+**21. Watch for it, and show me when it's listed.**
+- *What:* you set what you want and your price; it shows you when one appears.
+- *How:* it reads each site's newest listings, only tells you about one that fits and is under your price, re-checks it before telling you, and sends at most three at a time.
+- *Under the hood:* `app/src/edge/watch/watch.ts` (the rule, 7 tests); the stage watcher `scripts/demo/stage-watch.mjs` (13 tests) and the want screen's live finds (`app/src/buy/stage.ts`, 4 tests).
+- *Proof now:* built. The live beat is planned in [live buy demo](live-buy-demo.md): Nate posts, the find shows in our app on Ben's phone, with how many seconds after listing it was found, by Poshmark's own clock.
 - *Still to run:* tonight's three timed posts.
 - *Say:* "Nate just listed it. My phone knew in 40 seconds."
 

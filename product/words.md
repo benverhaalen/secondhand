@@ -1432,3 +1432,42 @@ Ben, project chat, 07:53 UTC.
 > where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
 
 Used in: [features-proof.md](features-proof.md).
+
+## 2026-11-15 quantify every feature with why, the review step and ROI
+
+Ben, project chat, 08:09 UTC. His numbers refer to the first list of 13 features (photo to listing, studio and its lie check, price ranges, fees and where to sell, cross-listing rules, sale detection, no double sales, replies, earned trust, hot and seasons, buy alerts, Databricks, cost).
+> for our purposes now, quantify and really break everything down. dont dumb it down for me. we need to figure out obviously explaining it on the site but dont worry about that now. like databricks would be more about how do we show how we effectively and creatively used the databricks platform and what OUR specific use did that improved us. also think about the response to each of these. a lot are human in the loop step. can talk about how it avoids mislisting an item. in the plan maybe consider telling a story about someone who doesn't know what an item is. super easy way to figure it out and list what matters about it without needing any knowledge. there are a lot of situations where it could be useful. 2. say it cannot redimension a product. it actually can only ai beautify if you have dimensions or else you cannot trust it. 3. the backtest is super useful here. 4. yeah explain why though and the math numbers or put them somewhere. 5. rules and why. in the constitution judges want to know why. if we dont know why or dont have a why for anything we need one that is backed in something actually good. 5. hitl too. 6. test this more is this actually true. like say if i wanted a brewers jersey because im a big brewers fan and we just won the world series if one actually fits my criteria that it will actually happen. 7. this is not a number that means anything. what does this actually mean. 8. hitl. 9. hitl. 10. this might need some like rdd or something research to give better reasoning to similar problems. 11. oh sorry i thought 6 was talking about this. 12. more about how we creatively used the databricks platform and easy reasons as to why we did and how we did and all that. 13. break this down too look at our costs and estimate an roi for everything at scale essentially. so we need to explain our revenue streams. like the referral links too. see if you can figure out how much those cost for things like honey and businesses that make money that way because on the buy side we link to the sites. use hypotheticals backed in research but research that flatters us but it honest and inspectable. also check that the ui is actually implementing ui flows for all these and if not why not fix it. well not all of them. but for the app features. what should the ui look like for each. like for example photo to listing we can test irl with like a chair or my headphones or something in person but think of how to go about this. is there a way where we can get potential probabilities on it all? like say there are a few options and its ranked by most likely and you choose the one that matches and it auto fills in. maybe a button for similarity scan. identifying something. built into creating a listing too. or it could just be part of the workflow that creating a listing works through. think of these decisions. as for the ai clothing thing, we only let it pass once its accurate. also ensure you are using the 5.5 model i was talking about. rather than nano banana. ensure docs and plans and research is all updated. is there a reason you are using poshmark for polling. specifically compared. i want to use the brewers jersey example. also ensure somewhere that the app is suggesting platform by type or tailoring to each platform. like depop is different from ebay. userbases are different. it might want to have rules for suggesting what to post where.
+
+Used in: [feature-breakdown.md](feature-breakdown.md), [roi.md](roi.md), [jobs/studio/check.py](../jobs/studio/check.py), [jobs/studio/slides_run.py](../jobs/studio/slides_run.py), [jobs/demand/event_effect.py](../jobs/demand/event_effect.py).
+## 2026-11-15 nate no one leaves our platform, and the system reaches each site in the background
+Nate, build session (orchestrator), 2026-11-15 about 01:30 Central. Separate messages.
+> no one should have to leave our platform, and the system can always access each in the background over the period of days, weeks, thats how it works for the user
+
+> So everything is working the way it should be? In terms of the platform harnesses, the engines, the realtime calculations? is there already an understanding for how everything will work, credibly proven, and presented? How it'll be fast, the information it can find, information it can determine and deliver on top of whats found?
+
+## 2026-11-15 nate opus team leads that send out to codex
+Nate, build session (orchestrator), 2026-11-15 about 02:15 Central.
+> Ensure we have focused opus 5.5 team leads covering sessions that send out to codex, covering the databricks design and development, all engines, they combine with the consideration for every feature working together, every engine, deterministic calculations, the way capture works, deterministically selecting by product type and dimensions, all needed fields and information determined and ascertained, with the intelligent ui generating any needed clarifying questions
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 no applications to marketplaces yet
+
+Ben, thread "Cross-list Depop listings and price with quant", 08:15 UTC, answering whether to apply to eBay for Buyer Demand Data.
+> no dont do any applications i dont think they would get accepted yet.
+
+Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), [packet 61](../.agents/team/packets/list/61-ebay-item-specifics.md).
+
+## 2026-11-15 nate use the mac, sonnet and opus under each lead, test but not overtest, problems come up to the rep
+Nate, build session (orchestrator), 2026-11-15 about 02:40 Central. Two messages.
+> You can take alot of advantage with the mac compute. and utilize sonnet 5.5 and other opuses for some of these sessions being delegated by their opus 5.5 team lead. YOu are the fable 5.2 company rep overseeing all the leads, who report back to you. All should be ensured to test, but not overtest, to develop and build and optimize perfectly, updating docs and the progress indicating with benchmarks and measurments and tests, full things to support and show how incredible we are. With problems, have them sent to you, ones that greatly affect what we imagined and require rethinking
+
+> careful not to overdoo it, we have alot of sessions running so keep this amount of team leads
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate account for the documentation of everything we build with
+Nate, build session (orchestrator), 2026-11-15 about 02:55 Central.
+> remember to account for all documentation for relevant platforms, languages, frameworks, etc we develop with
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
