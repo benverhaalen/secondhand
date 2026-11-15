@@ -61,7 +61,8 @@ const compared = Object.entries(byEvent).map(([ev, es]) => {
 });
 
 const md = [
-  `# Run trace: ${task}`, '',
+  `# Run trace: ${task}`,
+  `Researched ${events[0].ts.slice(0, 10)} by Nate (run trace recorder). Observed from the recorded log.`, '',
   `Logs: ${logs.map(p => basename(p)).join(', ')}. ${events.length} lines, ${new Set(events.map(e => e.session)).size} session(s), first line ${events[0].ts}.`,
   `Total: ${total} ms.`, '',
   '## Steps', '', '| session seq | event | detail | since previous |', '|---|---|---|---|', ...steps, '',

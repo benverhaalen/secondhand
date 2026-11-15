@@ -27,7 +27,7 @@ export function slop(w: number, h: number, gap: { x?: number; y?: number } = {})
   return { left: x, right: x, top: y, bottom: y };
 }
 
-export function Press({ id, label, onPress, disabled = false, selected, hit, round = true, part, role = 'button', checked, children }: {
+export function Press({ id, label, onPress, disabled = false, selected, expanded, hit, round = true, part, role = 'button', checked, children }: {
   // What the log calls this control: "accept-offer", "tab-sell". Tests find it by this.
   id: string;
   // What a screen reader says, when the words inside do not say it.
@@ -35,6 +35,8 @@ export function Press({ id, label, onPress, disabled = false, selected, hit, rou
   onPress?: () => void;
   disabled?: boolean;
   selected?: boolean;
+  // A header that folds what is under it: a screen reader says expanded or collapsed.
+  expanded?: boolean;
   hit?: Insets;
   // A pill or a circle takes a round focus ring; a card takes its own corner.
   round?: boolean;
@@ -54,7 +56,7 @@ export function Press({ id, label, onPress, disabled = false, selected, hit, rou
       {...(part ? ({ dataSet: { part, press: id } } as object) : ({ dataSet: { press: id } } as object))}
       accessibilityRole={role}
       accessibilityLabel={label}
-      accessibilityState={role === 'switch' ? { disabled, checked: !!checked } : { disabled, selected }}
+      accessibilityState={role === 'switch' ? { disabled, checked: !!checked } : { disabled, selected, expanded }}
       disabled={disabled}
       hitSlop={hit}
       pressRetentionOffset={16}

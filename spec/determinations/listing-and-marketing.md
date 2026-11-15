@@ -380,8 +380,16 @@ Step 1, the determinations:
 | Poshmark | Sharing raises rank | 5 | Folklore |
 | Mercari | Sales, transaction success, verification, genuine updates over delete-and-relist, keywords, engagement | 3 | Help 2514 |
 | Mercari | Learning-to-rank with recency-boosted text match; Smart Pricing promotes at each drop | 2 | Mercari engineering |
+| eBay | Lever, paid: Promoted Listings General, an ad rate of 2% to 100% of the sale charged only on a sale within 30 days of a click; Priority is cost per click, paid whether or not it sells | 3 | eBay help 4164, 5295 |
+| eBay | Lever, free: offers to watchers, at least 5% under the price, to the 30 most recent interested buyers, valid 96 hours, a new batch every 48 hours | 3 | eBay help 4144 |
+| Depop | Only Boosted Listings buy ranking: 12% in the US and UK, charged only on a sale within 28 days of a view, click or like of the boosted tile | 3 | Depop help, Boosted Listings |
+| Depop | Lever, free: Send Offer to one or all likers, one active offer per buyer, lasts 14 days | 3 | Depop help, Send Offer |
+| Poshmark | Lever, free: Offer to Likers at least 10% under the buyer's lowest price seen, 24 hours to accept; a price drop of 10% or more notifies likers | 3 | Poshmark support 831745541, price drop policy |
+| Poshmark | Lever, paid: Promoted Closet, a weekly budget bid per click | 3 | Poshmark promoted-closet terms |
+| Mercari | No paid placement in search. Lever, free: Promote, a price drop of 5% or more, once per item per 24 hours, lifts the item and notifies likers; Offer to Likers at 10% or more, up to 50 likers, valid 24 hours, once per 72 hours | 3 | Mercari help 347 |
+| Facebook | Boosted listings and ads sit outside the ranking | 3 | Meta transparency page, 2026-09-30 |
 
-All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md), marks there.
+Rows above from [ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md), marks there. The lever rows (what a seller can do and what it costs) are from [ranking-levers-per-site.md](../../research/list/nate/ranking-levers-per-site.md), each read on the site's own page on 2026-11-15; their minimums, windows and fees are fixed inputs, never learned.
 
 **Method**: a table per site, rows sorted by tier then by our [D12](#d12-stand-in-ranker-factors) probability where fitted. A belief our stand-in contradicts (probability under 0.2 with held-out agreement above the floor) is shown with "our tests disagree". Arithmetic sort.
 

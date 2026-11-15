@@ -108,7 +108,7 @@ const decisions = [
     id: 'dec_jacket', kind: 'accept_offer', item_id: jacket.id, site: 'depop', feed: 'now', group_form: 'single', deadline: offers[1].expires_at, offer_ids: ['of_j1', 'of_j2'], conversation_id: 'cv_jd',
     why: 'Two offers. The best is $85 on this site; your lowest is $70.', money: { offer_cents: 8500, you_keep_cents: keepJ1, floor_cents: 7000 }, allow_other: true,
     options: [
-      { id: 'acc', label: 'Accept $85', does: `Sells it now. You keep ${usd(keepJ1)}, and the other listing comes down.` },
+      { id: 'acc', label: 'Accept $85', does: `Sells it now. You get ${usd(keepJ1)}, and the other listing comes down.` },
       { id: 'ctr', label: 'Counter $92', does: `Sends $92. You’d keep ${usd(youKeep('depop', 9200))} if they take it.` },
       { id: 'dec', label: 'Decline', does: 'Tells both buyers no. The listings stay up.' },
     ], suggested: 'ctr',

@@ -1350,6 +1350,34 @@ Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to 
 Ben, project chat, 07:18 UTC.
 > whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
 
+## 2026-11-15 the hand glyphs: A, C and F up close, two colors, every position
+
+Ben, website thread, 07:28 UTC:
+> show me the different hand glyphs for A C and F
+
+Ben, website thread, 07:29 UTC:
+> also the two glyphs should have either different gradient colors or two colors of the same gradient without the gradient. i want to see the icon pack with all the different positions of the hand. like recall huge icons how you showed me an array of positions the hand could be in. show me that for each.
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
+
+Ben, website thread, 07:32 and 07:33 UTC:
+> use the actual font for secondhand for me
+
+> theres brand font on my computer though
+
+> also show me the full array of poses for tabler now
+
+Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs), drawn in CI where the brand faces load from the BRAND_FONTS secret.
+
+Ben, website thread, 07:34 UTC:
+> i also want the hands to be tighter to the wordmark. the same height and alignment vertically as the wordmark
+
+Used in: [hands-fit.js](../brand/explore/web-home/hands-fit.js), the hero's header and opening, and the hand pose sheets.
+
+Ben, website thread, 07:51 UTC:
+> recall the original set of icons i denied. show me that again
+
+Read as Hugeicons, the app's set, whose waving hand round 11 showed beside the wordmark and Ben asked to be slimmer ([round 11](#2026-11-15-round-11-picks)). Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
 Used in (07:18 entry): [seasons-events-and-a-fair-backtest.md](../research/price/ben/seasons-events-and-a-fair-backtest.md), [money D6](../spec/determinations/money.md#d6-range-calibration-and-display-state) steps 6, 8 and 9, [market-insight M12](../spec/determinations/market-insight.md#m12-seasonality).
 
 ## 2026-11-15 the backtest proves it works now and is where we tune, and trends reach past resale
@@ -1384,3 +1412,23 @@ Ben, project chat, 07:46 UTC.
 > another thing - i feel like demoing the buy feature live would be so cool. like notify me when someone posts whatever product for whatever price and make it super low, etc but like nate does it live on his phone and it then notifies me right then and there
 
 Used in: [live-buy-demo.md](live-buy-demo.md), [scripts/demo/stage-watch.mjs](../scripts/demo/stage-watch.mjs).
+
+## 2026-11-15 nate official APIs where they exist, the browser design as specced, ranking systems accounted for, Databricks perfected
+Nate, build session (orchestrator), 2026-11-15 between about 03:00 and 04:00 Central. Separate messages.
+> Lets focus on everything but the harnesses right now. What else is there thats being built.
+
+> Lets do this, continue with the way everything is built, not the private api endpoints, but at least take into account the ranking systems found
+
+> I dont want to violate tos or introduce problems to the users, send out subagents after updating each feature spec, to fix everything already built, to add more, to optimize and finish developing out all engines and harnesses
+
+> Ensure databricks is perfected, ensure we expemplify and really impress the databricks judges and employees. We already hope to position our safety and governance against the built in databricks, but ideally we extend and improve on everything they introduced, show our new features and such
+
+> The way you were speccing the browser automation was perfect before, utilize official apis as well for certain platforms, but dont limit us. we find everyhting and already approved how its not automation as the user opts in and is technically driving each intent
+
+> Send out and utilize the macs when you can ensure things are pushed and pulled so everything syncs
+## 2026-11-15 every AI feature, how we did it and how to prove it
+
+Ben, project chat, 07:53 UTC.
+> where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
+
+Used in: [features-proof.md](features-proof.md).

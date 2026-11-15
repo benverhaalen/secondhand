@@ -106,17 +106,13 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
   const headers = { 'X-Browser-Use-API-Key': apiKey, 'content-type': 'application/json' };
   return {
     kind: 'cloud',
-    async open(profileDir) {
+    async open(profileDir, opts) {
       const profileId = profileDir ? profileFor(profileDir) : undefined;
       const res = await fetchFn(`${base}/browsers`, { method: 'POST', headers,
         // the whole timeout is charged up front and refunded on stop, so it is sized to the job; a challenge is never solved here, it pauses for the person
-        body: JSON.stringify({ proxyCountryCode: country, timeout: timeoutMin, solveCaptchas: false, ...(profileId ? { profileId } : {}) }) });
+        body: JSON.stringify({ proxyCountryCode: country, timeout: Math.min(240, Math.max(1, Math.ceil(opts.timeoutMin ?? timeoutMin))), solveCaptchas: false, ...(profileId ? { profileId } : {}) }) });
       if (!res.ok) throw new Error(`browser-use cloud create answered ${res.status}`);
-      const body: unknown = await res.json();
-      const o = (typeof body === 'object' && body !== null ? body : {}) as Record<string, unknown>;
-      const id = o.id, cdpUrl = o.cdpUrl ?? o.cdp_url;
-      if (typeof id !== 'string' || typeof cdpUrl !== 'string') throw new Error('browser-use cloud create returned no id or cdpUrl');
-      const live_url = typeof (o.liveUrl ?? o.live_url) === 'string' ? String(o.liveUrl ?? o.live_url) : undefined;
+      const { id, cdpUrl, live_url } = parseBrowser(await res.json());
       const stopOnce = () => fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).then(r => r.ok, () => false);
       let stopped = false;
       return { cdpUrl, live_url, stop: async () => {
@@ -133,4 +129,19 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
 export function sourceFromEnv(env: Record<string, string | undefined> = process.env, scratch = join(process.cwd(), '.browser-scratch')): BrowserSource {
   if (env.BROWSER_USE_API_KEY) return browserUseCloud({ apiKey: env.BROWSER_USE_API_KEY });
   return localChrome({ executablePath: env.SECONDHAND_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe', scratch });
+}
+
+// Vendor JSON is untrusted; everything after this boundary uses the validated shape.
+export function parseBrowser(value: unknown): { id: string; cdpUrl: string; live_url?: string } {
+  const invalid = () => new Error('invalid browser create reply');
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw invalid();
+  const row = value as Record<string, unknown>;
+  const id = row.id, cdpUrl = row.cdpUrl ?? row.cdp_url, live = row.liveUrl ?? row.live_url;
+  const url = (v: unknown, protocols: string[]) => {
+    if (typeof v !== 'string') throw invalid();
+    try { if (!protocols.includes(new URL(v).protocol)) throw invalid(); } catch { throw invalid(); }
+    return v;
+  };
+  if (typeof id !== 'string' || !id.trim()) throw invalid();
+  return { id, cdpUrl: url(cdpUrl, ['ws:', 'wss:']), ...(live === undefined ? {} : { live_url: url(live, ['https:', 'http:']) }) };
 }

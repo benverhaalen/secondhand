@@ -74,7 +74,7 @@ const KIND_HELP: Record<QuestionKind, string> = {
   identify: 'what an item in a photo, link or barcode is', listings_matching: 'listings that match a description', available_now: 'who has it for sale now and the best offer',
   product_reviews: 'what buyers say about a product', seller_reviews: 'how a seller is rated', site_rules: 'a marketplace fees and rules',
   trend: 'whether demand for an item is rising or falling', used_vs_official: 'used compared with buying new', listing_swarm: 'write and post a listing across sites',
-  my_analytics: "the seller's own sales and views", general: 'anything else',
+  my_analytics: "the seller’s own sales and views", general: 'anything else',
 };
 const SITE_CHOICES = [...SITES, 'none'];
 const COND_CHOICES = [...CONDITIONS, 'none'];

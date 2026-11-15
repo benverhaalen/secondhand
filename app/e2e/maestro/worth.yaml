@@ -15,7 +15,7 @@ env:
 # check: the range, its source, what you keep per site.
 - openLink: ${URL}/--/worth
 - extendedWaitUntil:
-    visible: "You keep"
+    visible: "You get"
     timeout: 15000
 - tapOn: { id: "worth-sources" }
 - back
@@ -32,4 +32,4 @@ env:
 - tapOn: { id: "worth-model-field" }
 - inputText: "HEG-001"
 - pressKey: Enter
-- assertVisible: "You keep"
+- assertVisible: "You get"

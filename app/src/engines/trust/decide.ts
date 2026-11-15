@@ -129,7 +129,7 @@ export async function decideThread(d: Deps, t: ThreadIn): Promise<Decision> {
   else if (s >= line - p('trust_warn_gap')) action = 'warn';
 
   if (action === 'ask' && why.length > 0) reasons.push(`Check before you reply: ${why.join(', ')}.`);
-  if (action === 'warn') reasons.push("Don't open links from buyers.");
+  if (action === 'warn') reasons.push("Don’t open links from buyers.");
   if (action !== 'none' && present.has('script_print_hit') && t.ctx.printHits.buyers > 0) reasons.push(`Seen in ${t.ctx.printHits.buyers} threads people here reported as scams this month.`);
   if (action === 'none') reasons.length = 0;
 

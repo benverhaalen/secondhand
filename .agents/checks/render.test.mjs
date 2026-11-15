@@ -348,6 +348,11 @@ test('render: a row cut by the fold and text in a sideways scroller are judged w
     <div data-part="chip-row" style="margin:16px 20px;overflow-x:auto;white-space:nowrap;height:36px">${'<span style="display:inline-block;height:36px;padding:8px 12px;margin-right:8px;background:var(--gray);border-radius:999px;font-size:15px">Nike Dunks</span>'.repeat(5)}</div>`), 'app');
   assert.deepEqual(found.filter(o => /^(U1|B34) /.test(o)), []);
 });
+// From the gone-by page (07:57): react-native-web draws a photo as a background image on a div, so a photo tile with no icon is still a picture.
+browserTest('render: a pressable photo tile drawn as a background image, with no icon, passes U1', { skip: !pw }, async () => {
+  const found = await ids(app(`<div role="button" style="margin:16px 20px;width:167px;height:200px;cursor:pointer"><div data-photo aria-label="A jacket" style="width:167px;height:167px;border-radius:20px;background:url(${PX}) center/cover"></div><p style="font-size:15px">Carhartt jacket</p></div>`), 'app');
+  assert.deepEqual(found.filter(o => /^U1 /.test(o)), []);
+});
 // Each case renders in its own page of the one browser, so they run side by side.
 describe('render: in a real browser, side by side', { concurrency: 4 * availableParallelism() }, () => {
   for (const a of browserTests) test(...a);

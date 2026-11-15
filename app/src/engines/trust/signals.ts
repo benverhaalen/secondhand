@@ -3,7 +3,7 @@
 // Prints are salted SimHash of a normalised message; no text is kept (product.md `script_print`).
 import { createHash } from 'node:crypto';
 import type { Declared, ParamStore } from '../param/param.ts';
-import type { Site } from '../../edge/harness/protocol.ts';
+import type { Site } from '../listing/crosslist.ts';
 
 export const GROUPS = ['facebook_local', 'facebook_shipped', 'ebay', 'poshmark', 'mercari', 'depop', 'offerup', 'grailed'] as const;
 export type Group = (typeof GROUPS)[number];

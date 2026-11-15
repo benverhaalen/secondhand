@@ -52,13 +52,15 @@ function page(reply: Reply, ctx: Ctx, endpoint: string): Reply {
   return { ...reply, body: { ...reply.body, data, next_cursor } };
 }
 export type ManifestEntry = { endpoint: string; source: 'example' | 'engine'; auth: 'user' | 'visitor' };
+const engineHandlers = new WeakSet<Handler>();
+export function fromEngine(handler: Handler): Handler { engineHandlers.add(handler); return handler; }
 export function manifestFor(handlers: Record<string, Handler>): ManifestEntry[] {
-  return Object.keys(handlers).map(endpoint => ({ endpoint, source: 'example', auth: EXAMPLES.some(e => e.endpoint === endpoint && e.auth === 'visitor') ? 'visitor' : 'user' }));
+  return Object.keys(handlers).map(endpoint => ({ endpoint, source: engineHandlers.has(handlers[endpoint]) ? 'engine' : 'example', auth: EXAMPLES.some(e => e.endpoint === endpoint && e.auth === 'visitor') ? 'visitor' : 'user' }));
 }
 
 // Example rows belong to the same synthetic user as jobs.seedExamples, never to a second bearer.
 // Endpoint-specific validation runs before the answer; replacing the last handler swaps in the service.
-export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = () => {}, choose?: (ctx: Ctx) => string): Handler {
+export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = () => {}, choose?: (ctx: Ctx) => string, run?: (ctx: Ctx, seed: Exclude<Reply, Response>) => Promise<Reply>, versionOf?: (ctx: Ctx) => Promise<number>): Handler {
   const answer = served(endpoint);
   const options = EXAMPLES.filter(e => e.endpoint === endpoint && e.status < 400);
   const pattern = endpoint.split(' ')[1];
@@ -75,10 +77,15 @@ export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = 
     validate(ctx);
     const selected: Example | undefined = choose ? example(choose(ctx)) : options.find(e => JSON.stringify(paramsOf(pattern, e.path.split('?')[0])) === JSON.stringify(ctx.params));
     if (!selected || selected.endpoint !== endpoint) throw new Error(`invalid example selection for ${endpoint}`);
-    const expected = object(selected.request?.body) ? selected.request.body.version : undefined;
+    const expected = versionOf ? await versionOf(ctx) : object(selected.request?.body) ? selected.request.body.version : undefined;
     if (expected !== undefined && ctx.body.version !== expected) throw new ApiError('stale', 'the resource changed', 'version_check', { by: 'user' }, { current: { version: expected } });
+    const seed = { status: selected.status, body: structuredClone(selected.response), headers: selected.headers };
+    if (run) {
+      const reply = await ctx.log.call('tool', 'api.engine', { endpoint }, () => run(ctx, seed), () => ({ result: { source: 'engine' } }));
+      return page(reply, ctx, endpoint);
+    }
     ctx.log.note('answer from contract example', { endpoint, example: selected.name });
-    return page(choose ? { status: selected.status, body: selected.response, headers: selected.headers } : base, ctx, endpoint);
+    return page(choose ? seed : base, ctx, endpoint);
   };
 }
 

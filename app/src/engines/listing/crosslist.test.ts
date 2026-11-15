@@ -105,7 +105,7 @@ test('each spread prices the other sites its own way, keeps the same floor, and 
     assert.deepEqual(p.sites.map(d => d.floor_cents), keepSame.sites.map(d => d.floor_cents));
     for (const d of p.sites.filter(d => d.price_cents !== undefined)) {
       assert.ok(!/\$|\d/.test(d.why!.says), `the reason is words, not numbers: ${d.why!.says}`);
-      assert.match(d.why!.numbers, /you keep \$/);
+      assert.match(d.why!.numbers, /you get \$/);
     }
   }
 });

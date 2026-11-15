@@ -96,3 +96,19 @@ test('insights: owned Expo files bind auth and export the contract method', asyn
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
 });
+
+test('insights funnel is computed from the AnalyticsPort snapshot', async () => {
+  const { ports } = await import('./insights.ts');
+  const read = ports.read;
+  try {
+    ports.read = async user => {
+      const data = await read(user);
+      data.stats[0].stages.views = 123;
+      return data;
+    };
+    const response = await call(examples.find(e => e.name === 'insights.get')!);
+    assert.equal(response.status, 200);
+    const body = await response.json();
+    assert.equal(body.funnel.find((r: { stage: string }) => r.stage === 'views').count, 123);
+  } finally { ports.read = read; }
+});

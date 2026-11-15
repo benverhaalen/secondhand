@@ -19,6 +19,7 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [product/unique.md](product/unique.md) | What we did that we haven't seen elsewhere, ranked, with what others do and how to show each in five seconds | Agents; *agent proposal* |
 | [product/proof-without-sales.md](product/proof-without-sales.md) | How to prove it works with no sales yet: a sale broken into parts, each with its proof, ranked by what can run before 1 pm | Agents; *agent proposal* |
 | [product/live-buy-demo.md](product/live-buy-demo.md) | The live buy beat: Nate posts, Ben's phone pings. What exists, which site, timing, fallbacks, risks and the rehearsal checklist; the watcher is `scripts/demo/stage-watch.mjs` | Ben, Nate; *agent proposal* |
+| [product/features-proof.md](product/features-proof.md) | Every feature worth showing: what it does, how it works, its proof (measured, observed, built, designed), the proof still to run, one line for judges, and what to show where | Ben, Nate, pitch and website; *agent proposal* |
 | [product/devpost.md](product/devpost.md) | The Devpost write-up draft | Agents; *agent proposal* |
 | [product/pitch-video.md](product/pitch-video.md) | The submission video: script, shot list, how to make it fast | Agents |
 | [product/words.md](product/words.md) | Ben's and Nate's exact product words, the source everything else cites | Append only |

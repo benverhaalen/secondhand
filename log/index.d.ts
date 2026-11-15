@@ -23,5 +23,7 @@ export interface Log {
 }
 
 export function createLog(options: { src: string; build: string; sink: Sink; seed?: number; session?: string; from?: string; config?: Record<string, unknown> }): Log;
+/** Masks personal data and secrets by key and inside any string, as every log line is masked. */
+export function mask<T>(value: T, depth?: number): T;
 export const consoleSink: Sink;
 export function memorySink(): Sink & { lines: string[]; text(): string };

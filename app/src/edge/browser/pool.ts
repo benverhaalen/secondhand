@@ -6,6 +6,8 @@
 // "Per user, we only run the systems for what they link and store auth for"). Their sign-in loads at lease start and is exported at lease end.
 // No code here solves a CAPTCHA or defeats a challenge: a challenge pauses the session and the person clears it in the live browser.
 import { join } from 'node:path';
+import { mask } from '../../../../log/index.js';
+import type { Leases } from '../events/ports.ts';
 import type { Log } from '../../../../log/index.js';
 import type { Accounts, AuthVault, StorageState } from './auth.ts';
 import { PROFILES } from '../harness/platform.ts';
@@ -14,7 +16,7 @@ import type { Site } from '../harness/protocol.ts';
 export type PoolPage = { close(): Promise<void> };
 export type PoolContext<P extends PoolPage = PoolPage> = { newPage(): Promise<P>; close(): Promise<void>; onClose(fn: () => void): void;
   loadState?(s: StorageState): Promise<void>; exportState?(): Promise<StorageState> };
-export type LaunchOptions = { headless: boolean; proxy?: { server: string } };
+export type LaunchOptions = { headless: boolean; timeoutMin?: number; proxy?: { server: string } };
 export type Launcher<P extends PoolPage = PoolPage> = {
   persistent(profileDir: string, opts: LaunchOptions): Promise<PoolContext<P>>;   // one account's profile, kept on disk
   anonymous(opts: LaunchOptions): Promise<PoolContext<P>>;                         // a throwaway context on the shared browser
@@ -25,12 +27,12 @@ export type AddressBook = (account_id: string) => string | undefined;
 export type Task<P extends PoolPage, T> = { account_id?: string; site?: Site; job_id: string; run(page: P): Promise<T> };
 export type Dispatched<T> = { ok: true; value: T; ms: number; warm: boolean } | { ok: false; status: 409 | 'not_linked' | 'error'; message: string; ms: number };
 
-type Slot<P extends PoolPage> = { ctx: Promise<PoolContext<P>>; ready: boolean; dead: boolean; leasedBy?: string; lastUsed: number; loaded?: boolean; headless?: boolean };
+type Slot<P extends PoolPage> = { ctx: Promise<PoolContext<P>>; ready: boolean; dead: boolean; active?: boolean; lastUsed: number; loaded?: boolean; version?: number; headless?: boolean };
 
 export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts: linked, vault, address = () => undefined, maxAccounts = 32,
-  publicConcurrency = 8, log, now = () => performance.now() }: {
+  publicConcurrency = 8, leases, leaseTtlMs = 120_000, log, now = () => performance.now() }: {
   launcher: Launcher<P>; profileRoot: string; accounts?: Accounts; vault?: AuthVault; address?: AddressBook; maxAccounts?: number;
-  publicConcurrency?: number; log?: Log; now?: () => number;
+  publicConcurrency?: number; leases: Leases; leaseTtlMs?: number; log?: Log; now?: () => number;
 }) {
   const accounts = new Map<string, Slot<P>>();
   const publicSlots: (Slot<P> & { busy: boolean })[] = [];
@@ -59,7 +61,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
 
   function evictIdle() {
     if (accounts.size < maxAccounts) return;
-    const idle = [...accounts.entries()].filter(([, s]) => !s.leasedBy).sort((a, b) => a[1].lastUsed - b[1].lastUsed)[0];
+    const idle = [...accounts.entries()].filter(([, s]) => !s.active).sort((a, b) => a[1].lastUsed - b[1].lastUsed)[0];
     if (!idle) return; // every account is mid-job: the pool grows past its cap rather than drop a lease
     accounts.delete(idle[0]);
     void idle[1].ctx.then(c => c.close(), () => undefined);
@@ -90,7 +92,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
 
   async function runOn<T>(ctx: Promise<PoolContext<P>>, task: Task<P, T>): Promise<T> {
     const page = await (await ctx).newPage();
-    try { return await task.run(page); } finally { await page.close().catch(() => undefined); }
+    try { return await task.run(page); } finally { await page.close().catch(e => { log?.error('pool.page_close', e); }); }
   }
 
   async function dispatch<T>(task: Task<P, T>): Promise<Dispatched<T>> {
@@ -100,31 +102,48 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
         // Not linked, or no stored sign-in: nothing is launched for it.
         const acct = linked ? await linked.byId(task.account_id) : undefined;
         if (!acct) return { ok: false, status: 'not_linked', message: 'this account is not linked', ms: now() - t0 };
-        const before = accounts.get(task.account_id);
-        const warm = !!before && !before.dead && before.ready;
-        const slot = slotFor(task.account_id, acct.site);
-        // One task drives an account's session at a time, even two tasks of one job: the second is told 409 at once.
-        if (slot.leasedBy) return { ok: false, status: 409, message: `account busy with ${slot.leasedBy}`, ms: now() - t0 };
-        slot.leasedBy = task.job_id;
-        let ran = false;
-        try {
-          const ctx = await slot.ctx;
-          if (!slot.loaded && ctx.loadState && vault) { const st = await vault.get(acct.token_ref); if (st) await ctx.loadState(st); }
-          slot.loaded = true;
-          const value = await runOn(slot.ctx, task);
-          ran = true;
-          return { ok: true, value, ms: now() - t0, warm };
-        } finally {
-          // The sign-in goes back to the vault after a lease that loaded and ran cleanly, so a cloud browser or a host move loses
-          // nothing. Never after a failed load or run, and never a state with no cookies over one that has them (a logout or an
-          // expiry must not erase the stored sign-in; the adapter reports auth_expired and the person relinks).
-          const ctx = ran && slot.ready && !slot.dead ? await slot.ctx : undefined;
-          if (ctx?.exportState && vault) await ctx.exportState().then(async st => {
-            const had = await vault.get(acct.token_ref);
-            if (st.cookies.length || !had?.cookies.length) await vault.put(acct.token_ref, st);
-          }, () => undefined);
-          slot.leasedBy = undefined; slot.lastUsed = now();
-        }
+        const leased = await leases.withLease<Dispatched<T>>(acct.account_id, task.job_id, leaseTtlMs, async () => {
+          const before = accounts.get(acct.account_id);
+          const warm = !!before && !before.dead && before.ready;
+          const slot = slotFor(acct.account_id, acct.site);
+          if (slot.active) return { ok: false, status: 409, message: 'account already has a page in use', ms: now() - t0 };
+          slot.active = true;
+          let ran = false;
+          try {
+            const ctx = await slot.ctx;
+            if (!slot.loaded && ctx.loadState && vault) {
+              const snapshot = await vault.snapshot(acct.token_ref);
+              if (!snapshot.state) {
+                slot.dead = true; await ctx.close();
+                return { ok: false, status: 'not_linked', message: 'stored sign-in was removed', ms: now() - t0 };
+              }
+              await ctx.loadState(snapshot.state);
+              slot.version = snapshot.version;
+            }
+            slot.loaded = true;
+            const value = await runOn(slot.ctx, task);
+            ran = true;
+            return { ok: true, value, ms: now() - t0, warm };
+          } finally {
+            // The sign-in goes back to the vault after a lease that loaded and ran cleanly, so a cloud browser or a host move loses
+            // nothing. Never after a failed load or run, and never a state with no cookies over one that has them (a logout or an
+            // expiry must not erase the stored sign-in; the adapter reports auth_expired and the person relinks).
+            try {
+              const ctx = ran && slot.ready && !slot.dead ? await slot.ctx : undefined;
+              if (ctx?.exportState && vault && slot.version !== undefined) {
+                const st = await ctx.exportState();
+                const had = await vault.get(acct.token_ref);
+                if (st.cookies.length || !had?.cookies.length) {
+                  const version = await vault.compareAndPut(acct.token_ref, slot.version, st);
+                  if (version !== undefined) slot.version = version;
+                }
+              }
+            } finally {
+              slot.active = false; slot.lastUsed = now();
+            }
+          }
+        });
+        return leased.ok ? leased.value : { ok: false, status: 409, message: 'account busy', ms: now() - t0 };
       }
       let s = publicSlot(task.site);
       while (!s) { await new Promise<void>(r => waiting.push(r)); s = publicSlot(task.site); }
@@ -133,12 +152,14 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
       try { const value = await runOn(s.ctx, task); return { ok: true, value, ms: now() - t0, warm }; }
       finally { s.busy = false; waiting.shift()?.(); }
     };
-    try {
-      return log ? await log.call('browser', 'pool.dispatch', { job_id: task.job_id, account: task.account_id ? 'linked' : 'public' }, go,
-        (d: Dispatched<T>) => ({ result: { ok: d.ok, code: d.ok ? 'ok' : String(d.status), ms: Math.round(d.ms) } })) : await go();
-    } catch (e) {
-      return { ok: false, status: 'error', message: (e as Error)?.message ?? String(e), ms: now() - t0 };
-    }
+    const safeGo = async (): Promise<Dispatched<T>> => {
+      try { return await go(); }
+      catch (e) {
+        return { ok: false, status: 'error', message: JSON.stringify(mask({ message: e instanceof Error ? e.message : String(e) })), ms: now() - t0 };
+      }
+    };
+    return log ? log.call('browser', 'pool.dispatch', { job_id: task.job_id, account: task.account_id ? 'linked' : 'public' }, safeGo,
+      (d: Dispatched<T>) => ({ result: { ok: d.ok, code: d.ok ? 'ok' : String(d.status), ms: Math.round(d.ms) } })) : safeGo();
   }
 
   return {
@@ -152,10 +173,25 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     async warmLinked(person_id?: string, publicSlotsWanted?: number) {
       return this.warm(linked ? (await linked.linked(person_id)).map(a => a.account_id) : [], publicSlotsWanted);
     },
+    async invalidate(account_id: string) {
+      const slot = accounts.get(account_id);
+      if (!slot) return;
+      if (slot.active) throw new Error('cannot invalidate an active account');
+      slot.dead = true;
+      let ctx: PoolContext<P>;
+      try { ctx = await slot.ctx; }
+      catch {
+        if (accounts.get(account_id) === slot) accounts.delete(account_id);
+        log?.error('pool.invalidate', new Error('evicted a failed browser launch'), { account_id });
+        return;
+      }
+      await ctx.close();
+      if (accounts.get(account_id) === slot) accounts.delete(account_id);
+    },
     dispatch,
     // Every task is sent at once, each on its own page; nothing waits on another except two jobs on one account (409).
     dispatchAll<T>(tasks: Task<P, T>[]) { return Promise.all(tasks.map(t => dispatch(t))); },
-    stats: () => ({ launches, accounts: accounts.size, public: publicSlots.length, leased: [...accounts.values()].filter(s => s.leasedBy).length }),
+    stats: () => ({ launches, accounts: accounts.size, public: publicSlots.length, leased: [...accounts.values()].filter(s => s.active).length }),
     async close() {
       const all = [...[...accounts.values()].map(s => s.ctx), ...publicSlots.map(s => s.ctx)];
       accounts.clear(); publicSlots.length = 0;
