@@ -5,6 +5,7 @@
 // and runs the constitution's Part IV on what it measured (.agents/checks/render.mjs). Exit code 1 on any error.
 // A view is each element marked data-view (a slide, a post panel, a frame). With none, it is each screenful of the page.
 // Mark a photo that is not an <img> with data-photo, and each kind of repeated thing with data-part="its-name".
+// In an app mock, mark the phone's own status bar and home bar data-chrome; they are skipped.
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
@@ -22,15 +23,23 @@ export function playwright() {
 }
 
 // Runs in the page. Everything it returns is plain data.
-function measure({ index, rect, faces }) {
+function measure({ index, rect, faces, medium }) {
   const [vx, vy, vw, vh] = rect, els = [], texts = [], ids = new Map();
   const first = s => s.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase();
   const inView = r => r.width > 0 && r.height > 0 && r.right > vx && r.left < vx + vw && r.bottom > vy && r.top < vy + vh;
   const rel = r => [r.left - vx, r.top - vy, r.right - vx, r.bottom - vy].map(v => Math.round(v * 10) / 10);
   const clear = c => !c || c === 'transparent' || /^rgba\((?:[^,]+,){3}\s*0\)$/.test(c);
   const shown = (el, cs) => cs.display !== 'none' && cs.visibility !== 'hidden' && Number(cs.opacity) > 0;
+  // The phone's own status bar and home bar in an app mock are not ours to set. Only the top and bottom strips can be marked.
+  const chrome = el => { const c = medium === 'app' && el.closest('[data-chrome]'); if (!c) return false; const r = c.getBoundingClientRect(); return r.bottom <= vy + 60 || r.top >= vy + vh - 40; };
+  // The part of a box that its scrolling or clipping ancestors let through.
+  const clipped = (el, box) => { let { left, top, right, bottom } = box, scroller = false;
+    for (let a = el; a && a !== document.documentElement; a = a.parentElement) { const s = getComputedStyle(a); if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
+      const r = a.getBoundingClientRect(); scroller ||= /auto|scroll/.test(s.overflowX);
+      if (s.overflowX !== 'visible') { left = Math.max(left, r.left); right = Math.min(right, r.right); } if (s.overflowY !== 'visible') { top = Math.max(top, r.top); bottom = Math.min(bottom, r.bottom); } }
+    return { left, top, right, bottom, width: right - left, height: bottom - top, scroller }; };
   for (const el of document.querySelectorAll('body, body *')) {
-    const cs = getComputedStyle(el); if (!shown(el, cs)) continue;
+    const cs = getComputedStyle(el); if (!shown(el, cs) || chrome(el)) continue;
     const r = el.getBoundingClientRect(); if (!inView(r)) continue;
     const tag = el.tagName.toLowerCase(), map = el.computedStyleMap(), bi = cs.backgroundImage;
     const px = p => { const v = map.get(p); return v && v.unit === 'px' ? v.value : null; };
@@ -51,19 +60,24 @@ function measure({ index, rect, faces }) {
     if (!/\S/.test(n.data)) continue;
     const p = n.parentElement, cs = getComputedStyle(p); if (!p || !ids.has(p) || ['script', 'style', 'noscript'].includes(p.tagName.toLowerCase())) continue;
     const range = document.createRange(); range.selectNodeContents(n);
-    const rs = [...range.getClientRects()].filter(inView); if (!rs.length) continue;
+    const rs = [...range.getClientRects()].map(r => clipped(p, r)).filter(inView); if (!rs.length) continue;
     const box = { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
-    const cx = Math.min(Math.max((rs[0].left + rs[0].right) / 2, 0), innerWidth - 1), cy = Math.min(Math.max((rs[0].top + rs[0].bottom) / 2, 0), innerHeight - 1), ground = [];
-    for (const e of document.elementsFromPoint(cx, cy)) {
-      const s = getComputedStyle(e), id = ids.get(e); if (id == null) continue;
-      if (els[id].photo) { ground.push({ kind: 'photo' }); break; }
-      if (els[id].gradient) { ground.push({ kind: 'gradient', el: id }); break; }
-      if (!clear(s.backgroundColor)) { ground.push({ kind: 'fill', color: s.backgroundColor }); if (!/rgba\(/.test(s.backgroundColor)) break; }
-    }
+    // What is behind the text, read at the middle of a line that can be seen. Text nothing shows at any point is not on the page.
+    const ground = []; let seen = false;
+    for (const r of rs) { const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2, stack = document.elementsFromPoint(cx, cy);
+      if (!stack.some(e => e === p || p.contains(e))) continue; seen = true;
+      for (const e of stack) {
+        const s = getComputedStyle(e), id = ids.get(e); if (id == null) continue;
+        if (els[id].photo) { ground.push({ kind: 'photo' }); break; }
+        if (els[id].gradient) { ground.push({ kind: 'gradient', el: id }); break; }
+        if (!clear(s.backgroundColor)) { ground.push({ kind: 'fill', color: s.backgroundColor }); if (!/rgba\(/.test(s.backgroundColor)) break; }
+      }
+      break; }
+    if (!seen) continue;
     const family = first(cs.fontFamily), group = p.parentElement && p.parentElement !== document.body ? p.parentElement : p;
     texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, weight: Number(cs.fontWeight), family: cs.fontFamily,
       display: family === faces.display, textFace: family === faces.text, color: cs.color, upper: cs.textTransform === 'uppercase',
-      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground,
+      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, scroller: rs.some(r => r.scroller),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
   return { index, w: vw, h: vh, els, texts };
@@ -105,11 +119,16 @@ export async function collect(file, { medium, sheet, tokensCss, browser }) {
         if (!marked) { scrollTo(0, i * h); return [0, 0, innerWidth, innerHeight]; }
         const el = document.querySelectorAll('[data-view]')[i]; el.scrollIntoView({ block: 'start', inline: 'start', behavior: 'instant' });
         const r = el.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }, { i, marked, h: canvas[1] });
-      const view = await page.evaluate(measure, { index: views.length, rect, faces: got.faces });
-      const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], canvas[1]) };
+      // A screen that scrolls is measured whole: the window grows to its height for this view.
+      const tall = sheet.scrolls && marked && rect[3] > canvas[1] + 1;
+      if (tall) { await page.setViewportSize({ width: canvas[0], height: Math.ceil(rect[3]) }); await page.evaluate(i => document.querySelectorAll('[data-view]')[i].scrollIntoView({ block: 'start', inline: 'start', behavior: 'instant' }), i); }
+      if (tall) { const r = await page.evaluate(i => { const b = document.querySelectorAll('[data-view]')[i].getBoundingClientRect(); return [b.left, b.top, b.width, b.height]; }, i); rect.splice(0, 4, ...r); }
+      const view = await page.evaluate(measure, { index: views.length, rect, faces: got.faces, medium });
+      const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], tall ? Math.ceil(rect[3]) : canvas[1]) };
       const png = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`;
       view.share = await page.evaluate(share, { png, photos: view.els.filter(e => e.photo).map(e => e.rect), w: clip.width, h: clip.height });
       views.push({ ...view, canvas, medium });
+      if (tall) await page.setViewportSize({ width: canvas[0], height: canvas[1] });
     }
     await page.close();
   }
