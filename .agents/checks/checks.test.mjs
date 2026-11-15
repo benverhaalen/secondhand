@@ -65,15 +65,15 @@ test('secrets: a secret the shipped app could carry fails; server routes and pub
   const bad = errors(run(secrets, {
     'app/src/sell/price.ts': 'const k = process.env.EXPO_PUBLIC_OPENROUTER_API_KEY;\n',
     'app/src/app/index.tsx': "import { health } from '../edge/databricks';\n",
-    'app/app.json': '{"expo":{"extra":{"trebToken":"x"}}}',
+    'app/app.json': '{"expo":{"extra":{"tregToken":"x"}}}',
   }));
   assert.match(bad, /price\.ts.*EXPO_PUBLIC_OPENROUTER_API_KEY/);
   assert.match(bad, /index\.tsx.*edge/);
-  assert.match(bad, /app\.json.*trebToken/);
+  assert.match(bad, /app\.json.*tregToken/);
   assert.deepEqual(run(secrets, {
     'app/src/app/v1/health+api.ts': "import { health } from '../../edge/databricks';\n",
     'app/src/edge/databricks.ts': 'const t = process.env.DATABRICKS_TOKEN;\n',
-    'app/src/app/index.tsx': 'const u = process.env.EXPO_PUBLIC_API_URL;\n',
+    'app/src/app/index.tsx': 'const u = process.env.EXPO_PUBLIC_API_URL, p = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;\n',
     'app/app.json': '{"expo":{"extra":{"eas":{"projectId":"e9"},"router":{}}}}',
   }), []);
 });
