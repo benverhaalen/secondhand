@@ -789,3 +789,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate the signed-in harness where the account adds capability, faster public paths elsewhere
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after reading the assessment of Ben's sale-detection and levers packets.
 > well heres what I think, if a user has linked their platform, then auth is stored for even background tasks happening overnight on the user behalf. So for unauthenticated users and broad searches on sales data, I see faster paths working. For the things we can leverage with user auth, like tracking things that the platfrom already considers the user profile for, i feel its better to adhere to that harness. Of course faster and cheaper for when better, but not when we are limitting capability.
+
+## 2026-11-14 nate hooks for every app event: what we poll, what the platform triggers, sign-in by oauth where possible
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Figure out the best way to develop and establish hooks for each app event to be caught by the system. For the platforms being targetted, are there things we can build to poll, things that are triggered by the platform itself, ideally they just auth in to each site, using oauth

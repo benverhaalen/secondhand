@@ -147,6 +147,32 @@ Each cell is the first route recon targets (*inferred* from the canon site table
 
 The site terms behind each column are facts on record in the canon table and become `rights` tags. They are not limits on this design ([licences](../product.md#licences-terms-and-the-rules-that-protect-people)).
 
+### 3.6 How every event reaches the system (agent proposal)
+
+Asked by [Nate](../../product/words.md#2026-11-14-nate-hooks-for-every-app-event-what-we-poll-what-the-platform-triggers-sign-in-by-oauth-where-possible). Every source below writes one row to `event` (id, source, site, account, kind, payload ref, dedupe key), and each row starts exactly one job ([product.md](../product.md#6-systems)). A source never acts; it only reports. The harness confirms a site event by a signed-in read before anything is done about it.
+
+| Source | How it is caught | Delay |
+|---|---|---|
+| The app | each `/v1` route writes its event in the same transaction as its change (an outbox), so no event is lost if the job runner is down | none |
+| A site's own push | a signed webhook to the edge: eBay notifications (order, offer, message, listing ended), Depop order webhooks where partner access is granted. Verified by signature, answered in under 1 s, used as a trigger only | seconds |
+| The site's live channel | where a site's own web client receives messages and offers over a held connection, a leased session keeps that connection open for an account during a hot window (an open negotiation, the hour after posting) and turns each frame into an event | seconds |
+| Our watchers, signed in | one sweep per linked account reads the pages the site already builds for the person: the notification feed, the inbox, offers, orders, the listings list with its counts. The sweep keeps the last normalised snapshot and emits an event per difference (`offer.received`, `message.received`, `listing.sold`, `listing.ended`, `like.added`, `price.changed`) | by tier: 1 to 2 min while hot, 15 min live, hourly quiet, through the night |
+| Our watchers, public | a server fetch of the public listing page for the cheap "is it still up" check ([Ben's prototype](../../research/sold/ben/cheap-sale-detection.md)); a hit triggers the signed-in read | 1 to 2 min |
+| The market | the intelligence engine's scheduled gathers per product family write `observation` rows; a change past its threshold is an event (`value_moved`, `demand_rose`) | hourly to daily |
+| Databricks | a table change (change data feed), a file arriving in a volume, a job ending, a schedule | seconds to minutes |
+
+**Reading the notification feed first** is what makes a sweep cheap: one page holds everything the site thought worth telling the person, so most sweeps are one read. Each watcher cadence is a `param` per site and state, learned from how often a sweep finds something.
+
+**Signing in.**
+
+| Site | How the person links it | Platform push |
+|---|---|---|
+| eBay | OAuth in a sheet (refresh token 18 months), which also subscribes us to its notifications; a harness session for what the token cannot do | yes, signed |
+| Depop | OAuth where partner access is granted; otherwise a harness session | order webhooks with partner access |
+| Facebook, Poshmark, Mercari, OfferUp, Grailed | no OAuth is offered to sellers ([platform access](../../research/connect/nate/platform-access.md)). The person signs in once on the site's real login, inside a page we host; we never see the password, they complete any second factor, and the session is stored and kept alive | none; watchers and the live channel |
+
+Either way the person does one sign-in per site and nothing after it. A session that expires raises one `account_stale` decision with a one-tap re-link; jobs for that account pause and resume, none are dropped.
+
 ## 4. Learning
 
 | What | When | Algorithm | Prior | Switch and rollback |
