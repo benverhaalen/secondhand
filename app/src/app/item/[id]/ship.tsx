@@ -7,7 +7,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking } from 'react-native';
 import {
-  Approve, Blank, EmptyState, FootButton, Guess, Icon, ItemCard, Line, List, Meta, Nav, Notice, Photo, Pill, Press, Row, Screen, Section, Sheet, Skeleton, Stack, Tag, Txt, UndoToast,
+  Approve, Blank, EmptyState, FootButton, Guess, Icon, ItemCard, Line, List, Meta, Nav, Notice, Photo, Pill, Press, Row, Screen, Section, Sheet, SiteCopy, SiteLink, Skeleton, Stack, Tag, Txt, UndoToast,
 } from '@/ui';
 import { Chip } from '@/ui/parts/chip';
 import { itemById, ms, usd, when, world, type Decision, type Item, type Order, type World } from '@/demo';
@@ -94,6 +94,8 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
   const [runs, setRuns] = useState<Record<string, Run>>({});
   const [status, setStatus] = useState<'ready' | 'working' | 'done' | 'shipped' | 'cancelled'>('ready');
   const [open, setOpen] = useState<null | 'self' | 'cancel'>(null);
+  const [copy, setCopy] = useState(false);
+  const saleUrl = mine.item.listings.find(l => l.id === mine.order.listing_id)?.url;
   const [tracked, setTracked] = useState<'with' | 'without'>('with');
   const [carrier, setCarrier] = useState(mine.order.label?.carrier ?? 'USPS');
   const [tracking, setTracking] = useState('');
@@ -157,8 +159,13 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
           {offline ? <Meta icon="hourglass" text="Waiting for signal" /> : null}
         </Stack>
         <ItemCard id="ship-item" title={mine.item.title} photo={pic(mine.item.photos[0].key)} site={mine.order.site} state="ship" word={mine.order.clocks.ship_by ? `Ship by ${byDay(mine.order.clocks.ship_by, w.now)}` : 'Ship'}
-          fact={{ label: 'You keep', amount: usd(mine.order.price_cents - mine.order.fees_cents - mine.cost) }} due={dueOf(w, mine.order.clocks.ship_by)}
+          fact={{ label: 'You get', amount: usd(mine.order.price_cents - mine.order.fees_cents - mine.cost) }} due={dueOf(w, mine.order.clocks.ship_by)}
           onPress={() => router.push(`/item/${mine.item.id}` as Href)} />
+        {/* The way back to the sale on its site, and the site's own picture of the order to check the ship-by date against (Ben, 06:19). */}
+        <Line>
+          {saleUrl ? <SiteLink id="ship-site" site={mine.order.site} onPress={() => { Linking.openURL(saleUrl).catch(() => {}); }} /> : null}
+          <Pill id="ship-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setCopy(true)} />
+        </Line>
       </Stack>
 
       {status === 'cancelled' ? (
@@ -241,6 +248,9 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
           ) : null}
         </>
       )}
+
+      <SiteCopy id="ship-copy" open={copy} site={mine.order.site} onClose={() => setCopy(false)}
+        onOpen={() => { setCopy(false); if (saleUrl) Linking.openURL(saleUrl).catch(() => {}); }} />
 
       <Sheet open={open === 'self'} title="Ship it myself" onClose={() => setOpen(null)}>
         <Line>
