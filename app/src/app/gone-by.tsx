@@ -5,8 +5,8 @@
 // the hand-off rule): posting is public in their name and sets prices, so it waits for the tap.
 // Open a moment with ?at= (sweeping, plan, failed, offline, started, wednesday, done) and a world with ?world=.
 // one at a time: approve (alternatives of one state each; .agents/checks/screens.mjs S2)
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { Linking } from 'react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Amount, Approve, DecisionCard, EmptyState, FootButton, Grid, Icon, Line, List, log, Nav, Pill, Row, Screen, Section, Sheet, SiteBadge, Stack, Txt, UndoToast,
@@ -339,7 +339,7 @@ function ThingSheet({ t, spot, drop, miss, editable, onPick }: { t: Thing; spot:
       {t.item.listings.filter(l => l.state === 'live').map(l => (
         <Line key={l.id}>
           <SiteBadge site={l.site} />
-          <Pill id={`open-site-${l.site}`} kind="second" icon="link-01" label="Open on the site" onPress={() => { log.event('user.input', { screen: 'gone-by', control: 'open-site', item: t.item.id, value: l.site }); Linking.openURL(l.url).catch(e => log.error('gone-by.open-site', e, { item: t.item.id, site: l.site })); }} />
+          <Pill id={`open-site-${l.site}`} kind="second" icon="link-01" label="Open on the site" onPress={() => { log.event('user.input', { screen: 'gone-by', control: 'open-site', item: t.item.id, value: l.site }); openMarketplace(l.url).catch(e => log.error('gone-by.open-site', e, { item: t.item.id, site: l.site })); }} />
         </Line>
       ))}
       <FootButton id="open-item" kind="second" label="Open the item" onPress={() => router.push(`/item/${t.item.id}` as Href)} />

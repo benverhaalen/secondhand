@@ -1,7 +1,7 @@
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { useLiveData } from '@/data/live';
 import { DataStatus } from '@/data/status';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
-import { Linking } from 'react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ms, usd, world } from '@/demo';
 import { useScreen } from '@/demo/screen';
@@ -79,7 +79,7 @@ function DemoToday() {
   // One tap acts: the pressed pill shows the step, then the card leaves with Undo, or stays and says what failed.
   function act(c: Card, a: Action, value?: number) {
     if (a.do === 'open') return go(a.to);
-    if (a.do === 'site') { Linking.openURL(a.url).catch(e => { log.error('today.open_site', e, { card: c.key }); setToast({ id: `${c.key}-site-failed`, text: 'The site did not open', undo: () => setToast(null) }); }); return; }
+    if (a.do === 'site') { openMarketplace(a.url).catch(e => { log.error('today.open_site', e, { card: c.key }); setToast({ id: `${c.key}-site-failed`, text: 'The site did not open', undo: () => setToast(null) }); }); return; }
     if (a.do === 'queue') { setQueue({ card: c, total: c.ids.length }); setQueueStatus({ s: 'ready' }); return; }
     if (a.do === 'compare') { setCompare(c); return; }
     if (a.do === 'split') { setSplit(s => new Set(s).add(c.key)); return; }
@@ -262,7 +262,7 @@ function LiveToday() {
   const [review, setReview] = useState<string | null>(null);
   const openListing = async (url: string) => {
     setError(null);
-    try { await Linking.openURL(url); }
+    try { await openMarketplace(url); }
     catch (failure) { log.error('today.open_listing', failure); setError('The listing did not open. Try again.'); }
   };
   const linksFor = (decision: typeof w.decisions[number]) => {

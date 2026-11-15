@@ -4,9 +4,9 @@
 // ways with different images", so each site's row says where its listing differs; "things are either unnecessarily big
 // or small", so every part here is a kit part at its one size, and no field or box is drawn that is not a decision.
 // one at a time: sheet-field, paid, why (alternatives of one state each; .agents/checks/screens.mjs S2)
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useIsFocused, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
-import { Linking } from 'react-native';
 import { useLiveData } from '@/data/live';
 import { DataStatus } from '@/data/status';
 import { SiteLink } from '@/ui/parts/site-link';
@@ -86,7 +86,7 @@ function LiveItemPage({ id }: { id: string }) {
   const attributes = item.attributes.filter(attribute => attribute.value !== null);
   const open = async (url: string) => {
     setError(null);
-    try { await Linking.openURL(url); }
+    try { await openMarketplace(url); }
     catch (failure) { log.error('item.open_site', failure, { item: id }); setError('The listing could not open. Try again.'); }
   };
   return <Screen name="item" state="typical" nav={<Nav back={back} />} refreshing={refreshing} onRefresh={refresh}>

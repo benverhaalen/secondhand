@@ -4,6 +4,7 @@
 // ways out (spec/ways-out.md §6.9): ship it myself, with tracking or without and what that costs, and Cancel sale.
 // Behavior: app/behavior/item/[id]/ship.json.
 // one at a time: ship-box (alternatives of one state each; .agents/checks/screens.mjs S2)
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking } from 'react-native';
@@ -165,7 +166,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
           onPress={() => router.push(`/item/${mine.item.id}` as Href)} />
         {/* The way back to the sale on its site, and the site's own picture of the order to check the ship-by date against (Ben, 06:19). */}
         <Line>
-          {saleUrl ? <SiteLink id="ship-site" site={mine.order.site} onPress={() => { Linking.openURL(saleUrl).catch(e => log.error('ship.open', e)); }} /> : null}
+          {saleUrl ? <SiteLink id="ship-site" site={mine.order.site} onPress={() => { openMarketplace(saleUrl).catch(e => log.error('ship.open', e)); }} /> : null}
           <Pill id="ship-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setCopy(true)} />
         </Line>
       </Stack>
@@ -252,7 +253,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
       )}
 
       <SiteCopy id="ship-copy" open={copy} site={mine.order.site} onClose={() => setCopy(false)}
-        onOpen={() => { setCopy(false); if (saleUrl) Linking.openURL(saleUrl).catch(e => log.error('ship.open', e)); }} />
+        onOpen={() => { setCopy(false); if (saleUrl) openMarketplace(saleUrl).catch(e => log.error('ship.open', e)); }} />
 
       <Sheet open={open === 'self'} title="Ship it myself" onClose={() => setOpen(null)}>
         <Line>
