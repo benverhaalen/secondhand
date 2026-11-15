@@ -1,0 +1,40 @@
+/* The Buy tab, pieced together from round 11's parts (screens.css) and brand/tokens.css. Only what round 11 has no part for is here. */
+
+/* Not locked: agent proposals, one line each. */
+.buy {
+  --find-h: 56px;                  /* the search field: one tall control, the first thing on the tab */
+  --match-photo: 180px;            /* the new match's photo: the largest thing in its card */
+  --shelf-tile: 108px;             /* a tile on the Watching and Bought shelves: three fill the width between the margins */
+}
+
+/* One field for words or a pasted link, with the camera inside it. Text you type is 18 (Art. 6) */
+.buy .find { height: var(--find-h); border-radius: var(--r-pill); background: var(--surface); box-shadow: var(--shadow-card); display: flex; align-items: center; gap: var(--s-3); padding: 0 var(--s-1) 0 var(--s-4); }
+.buy .find > .ic { color: var(--ink-2); }
+.buy .find .ph-text { flex: 1; color: var(--ink-2); }
+
+/* The one quiet line that the search is still running: the sites as their logos */
+.buy .running { display: flex; align-items: center; gap: var(--s-2); color: var(--ink-2); }
+.buy .running .logo { width: 16px; height: 16px; }
+
+/* The new match. The photo leads, with the site's logo on its corner; under it the read, the name and the two prices */
+.buy .match { gap: 0; }
+.buy .match .big { position: relative; display: block; }
+.buy .match .big .ph { width: 100%; height: var(--match-photo); }
+.buy .match .big .site { right: var(--s-2); bottom: var(--s-2); }
+.buy .read { display: flex; align-items: center; gap: var(--s-1); }
+.buy .read .ic { width: 16px; height: 16px; }
+.buy .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
+.buy .card.field .i2 { color: var(--on-field-2); }
+
+/* Shelves: photo tiles in a row. More scroll in from the right */
+.buy .shelf { display: flex; gap: var(--s-3); }
+.buy .shelf .t { width: var(--shelf-tile); flex: none; }
+.buy .shelf .ph { width: var(--shelf-tile); height: var(--shelf-tile); }
+
+/* Round 11 shows a chosen tab by filling the icon's first path. The magnifier's first path is its handle, so the lens vanished:
+   here the lens is the filled part and the handle stays a stroke */
+.buy .tab[aria-current] .ic > :first-child { fill: none; stroke: currentColor; }
+.buy .tab[aria-current] .ic > :nth-child(2) { fill: currentColor; stroke: currentColor; }
+
+/* Shelf titles are headings for a screen reader, not bold: the brand has no bold (Art. 6) */
+.buy h2 { font-weight: var(--w-regular); margin: 0; }

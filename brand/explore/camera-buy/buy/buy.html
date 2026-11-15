@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>secondhand Buy, round 2</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<!-- fonts.local.css is not in git. It names the font files on this machine; without it the faces fall back. -->
+<link rel="stylesheet" href="fonts.local.css">
+<link rel="stylesheet" href="../../round-11/mock/screens.css">
+<link rel="stylesheet" href="buy.css">
+<style>body { margin: 0; background: var(--gray); } .wall { display: flex; gap: var(--s-6); padding: var(--s-6) var(--s-5); align-items: flex-start; } .bare .wall { padding: 0; }</style>
+<body>
+<div class="wall" id="wall"></div>
+<script src="../../round-11/mock/icons.js"></script>
+<script src="icons.js"></script>
+<script>
+// The Buy tab as the round-one merge keeps it (features/buy/design/round-1/merge.md): one field for words or a link, then the shelves
+// New finds, Watching and Bought, with the news said once. ?s=match shows a new match, ?s=none shows the search still running; no ?s shows both.
+// The status bar, nav, tab bar, cards and spacers are round 11's, written the same way (brand/explore/round-11/mock/screens.js).
+// Items are the generated demo photos in assets/demo-items; the amounts and sites are made up for the mock.
+const IC = window.SH_ICONS, A = { items: '../../../../assets/demo-items/', logos: '../../../../assets/platforms/square/' };
+const NAMES = { ebay: 'eBay', depop: 'Depop', poshmark: 'Poshmark', mercari: 'Mercari', facebook: 'Facebook Marketplace' };
+const V = n => `<i class="sp v" style="--n:${n}" data-n="${n}"></i>`, H = n => `<i class="sp h" style="--n:${n}" data-n="${n}"></i>`;
+const ic = k => `<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">${IC[k]}</svg>`;
+const lb = w => `<span class="lb">${w}</span>`;
+const logo = n => `<img class="logo" src="${A.logos}${n}.png" alt="${NAMES[n]}">`;
+const site = n => `<img class="site" data-part="site-badge" src="${A.logos}${n}.png" alt="${NAMES[n]}">`;
+const photo = (n, alt) => `<img class="ph" src="${A.items}${n}.jpg" alt="${alt}">`;
+const line = inner => `<div class="ln">${H(20)}<div class="fx">${inner}</div>${H(20)}</div>`;
+const OSR = '<svg viewBox="0 0 78 12" fill="currentColor" aria-hidden="true"><rect y="8" width="3" height="4" rx="1"/><rect x="5" y="5.5" width="3" height="6.5" rx="1"/><rect x="10" y="3" width="3" height="9" rx="1"/><rect x="15" width="3" height="12" rx="1"/><path d="M32 2.6c2.6 0 5 1 6.8 2.7l-1.3 1.4A7.9 7.9 0 0 0 32 4.5c-2.1 0-4 .8-5.5 2.2l-1.3-1.4A9.8 9.8 0 0 1 32 2.6zm0 3.6c1.6 0 3.1.6 4.2 1.7l-1.3 1.4a4.2 4.2 0 0 0-5.8 0l-1.3-1.4A6 6 0 0 1 32 6.2zm0 3.4c.7 0 1.3.3 1.8.7L32 12l-1.8-1.7c.5-.4 1.1-.7 1.8-.7z"/><rect x="48.5" y=".5" width="24" height="11" rx="3.5" fill="none" stroke="currentColor" opacity=".4"/><rect x="50" y="2" width="21" height="8" rx="2"/><rect x="74" y="4" width="2" height="4" rx="1" opacity=".4"/></svg>';
+const os = `<div class="os" data-chrome><span>9:41</span>${OSR}</div>`;
+const nav = `<div class="nav" data-part="nav"><span class="wm">secondhand</span><button class="ib" aria-label="Messages, 2 new" data-part="nav-icon">${ic('chat')}<span class="count" data-part="count">${lb('2')}</span></button></div>`;
+const tabs = cur => `<nav class="tabs" aria-label="Tabs">${[['today', 'Today'], ['sell', 'Sell'], ['add', ''], ['buy', 'Buy'], ['you', 'You']].map(([k, w]) =>
+  k === 'add' ? `<button class="tab add" aria-label="Add an item"><i>${ic('add')}</i></button>`
+    : `<button class="tab"${k === cur ? ' aria-current="page"' : ''}>${ic(k)}${lb(w)}</button>`).join('')}</nav><i class="home" data-chrome></i>`;
+
+const SITES = ['ebay', 'depop', 'poshmark', 'mercari', 'facebook'];
+const find = `<label class="find">${ic('search')}<span class="t18 ph-text one">Find an item or paste a link</span><button class="ib" aria-label="Take a photo">${ic('camera')}</button></label>`;
+const running = `<div class="running t13">${lb('Searching')}<span class="logos">${SITES.map(logo).join('')}</span></div>`;
+// Two prices side by side, each saying what it is
+const prices = (ask, fair) => `<div class="two">${ask ? `<div><div class="t13 i2">Asking, delivered</div><div class="t18">${ask}</div></div>` : ''}<div><div class="t13 i2">Fair range, delivered</div><div class="t18">${fair}</div></div></div>`;
+
+// The new match is the one thing on the field, so it is the news, said once
+const match = `<div class="card field match" data-part="card-match">
+  <span class="big">${photo('carhartt-jacket', 'Carhartt Detroit jacket')}${site('depop')}</span>${V(12)}
+  <div class="read t15">${ic('tick')}${lb('Fair price')}</div>${V(4)}
+  <div class="t18 one">Carhartt Detroit jacket, M</div>${V(12)}
+  ${prices('$62', '$55 to $70')}${V(16)}
+  <div class="ln"><button class="pill" data-part="pill-card">${lb('View listing')}</button></div></div>`;
+// No match yet: what they asked for, with their own photo of it, on a white card
+const waiting = `<div class="card" data-part="card-item"><div class="ln h72"><span class="thumb">${photo('carhartt-jacket', 'Carhartt Detroit jacket').replace('class="ph"', 'class="ph p72"')}</span>${H(12)}
+  <div class="fx between"><div class="t13 i2">Nothing yet</div><div class="t18 one">Carhartt Detroit jacket, M</div><div class="t15 i2 one">Fair range <span class="ink">$55 to $70</span> delivered</div></div></div></div>`;
+
+const tile = (pic, name, s, label) => `<div class="t">${photo(pic, name)}${V(8)}<div class="t15 one">${name}</div>${V(4)}<div class="ln mid"><span class="t13 i2 fx one">${label}</span>${logo(s)}</div></div>`;   // round 11's Sell tile: the site's logo on the price line
+const watching = `<div class="shelf">${tile('nike-dunks', 'Nike Dunk Low', 'ebay', '$48 delivered')}${tile('switch-oled', 'Switch OLED', 'mercari', '$214 delivered')}${tile('patagonia-fleece', 'Patagonia fleece', 'poshmark', '$52 delivered')}</div>`;
+const bought = `<div class="shelf">${tile('levis-501', 'Levi’s 501', 'poshmark', 'Arrives Thursday')}${tile('brass-lamp', 'Brass lamp', 'ebay', 'Delivered')}</div>`;
+
+const buy = k => `<div class="sh fixed sep-tint wm-center buy" data-view data-moment="${k}"><i class="wash"></i>${os}${nav}${V(16)}
+  ${line(find)}${V(32)}
+  ${line(`<div class="ln mid"><h2 class="t18 fx">New finds</h2>${running}</div>`)}${V(12)}
+  ${line(k === 'match' ? match : waiting)}${V(32)}
+  ${line(`<h2 class="t18">Watching</h2>`)}${V(12)}${line(watching)}${V(32)}
+  ${line(`<h2 class="t18">Bought</h2>`)}${V(12)}${line(bought)}
+  ${tabs('buy')}</div>`;
+
+const s = new URLSearchParams(location.search).get('s');
+if (s) document.body.classList.add('bare');
+document.getElementById('wall').innerHTML = (s ? [s] : ['match', 'none']).map(buy).join('');
+</script>
