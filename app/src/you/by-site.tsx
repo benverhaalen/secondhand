@@ -6,14 +6,15 @@ import { connectionState, insights, type Site } from '@/demo';
 import { Blank, Guess, Line, List, Nav, Screen, Section, Txt } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
-import {cash, changed, drawn, PAGES, plural, skips, span, useGo, useWorld } from './state';
+import { cash, changed, drawn, PAGES, plural, span, useGo, usePage } from './state';
+import { PageStatus } from './page-status';
 
 const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 // What the person typed as an amount, in cents, or null when it is not one.
 const cents = (typed: string) => { const v = Number(typed.replace(/[^0-9.]/g, '')); return typed.trim() && Number.isFinite(v) && v > 0 ? Math.round(v * 100) : null; };
 
 export function BySite() {
-  const w = useWorld(), go = useGo();
+  const { w, asked } = usePage(), go = useGo();
   const n = insights(w);
   const month = MONTH[Number(w.now.slice(5, 7)) - 1];
   const [target, setTarget] = useState<number | null>(w.goal?.target_cents ?? null);
@@ -28,8 +29,9 @@ export function BySite() {
   };
 
   return (
-    <Screen name="you-insights" state={drawn(w, n.by_site.length)} skip={skips(drawn(w, n.by_site.length), { empty: 'drawn with world=new, where no site has a sale', failed: 'the numbers are worked out from the sales already read, so nothing here can fail', offline: 'the numbers are the last ones read' })} nav={<Nav back={() => go.back()} />}>
+    <Screen name="you-insights" state={drawn(w, n.by_site.length, asked)} nav={<Nav back={() => go.back()} />}>
       <Txt role="heading">{PAGES.insights.title}</Txt>
+      <PageStatus asked={asked} what="your numbers">
       <Section>
         {n.by_site.length ? (
           <List>
@@ -65,6 +67,7 @@ export function BySite() {
               : <Blank id="goal-target" name="Amount" numeric onChange={setGoal} look="body" />}</Line>} />
         </List>
       </Section>
+      </PageStatus>
     </Screen>
   );
 }

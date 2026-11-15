@@ -14,6 +14,7 @@ const STATES = {
   loading: { taps: ['link-ebay'], shows: ['Signing in'], state: 'loading' },
   typical: { taps: ['link-ebay'], wait: 1600, shows: ['Linked', '1 site linked. Add the rest now or later.', 'Continue'], state: 'typical' },
   failed: { taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out', 'Try again'], state: 'failed' },
+  offline: { path: '/onboarding?state=offline', shows: ['Waiting for signal', 'Your sites', 'Skip for now'], state: 'offline' },
   pickup: { taps: ['onboarding-next'], shows: ['2 of 3', 'Pickup spot', 'A public place', 'Skip'] },
   photo: { taps: ['onboarding-next', 'onboarding-pickup-next'], shows: ['3 of 3', 'First photo', 'Later', 'Take a photo'] },
 };
@@ -23,7 +24,7 @@ test('onboarding: every state in the behavior table has a test here', () => {
 });
 
 for (const st of table.states) test(`onboarding: ${st.state} shows ${st.shows.slice(0, 70)}`, async () => {
-  const want = STATES[st.state], s = await app.open('/onboarding');
+  const want = STATES[st.state], s = await app.open(want.path ?? '/onboarding');
   for (const id of want.taps ?? []) await s.tap(id);
   if (want.wait) await s.page.waitForTimeout(want.wait);
   for (const t of want.shows) await s.shows(t);

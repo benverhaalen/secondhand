@@ -14,6 +14,8 @@ const STATES = {
   mismatch: ['Doesn’t match', 'Brass desk lamp with cream shade', 'Open on the site'],
   failed: ['Needs you', 'Try again', 'Nothing until you sign in again'],
   new: ['Not linked', 'Link', 'What we did'],
+  loading: [],
+  offline: ['Waiting for signal', 'Linked', 'What we did'],
   empty: ['Linked', 'Nothing yet. Each step shows here with what the site showed after.'],
   'not found': ['Not found'],
 };
@@ -25,6 +27,7 @@ test('you/connections/[site]: every state in the behavior table has a test here'
 for (const st of table.states) test(`you/connections/[site]: ${st.state} shows ${st.shows.slice(0, 70)}`, async () => {
   const s = await app.open(st.path);
   for (const t of STATES[st.state]) await s.shows(t);
+  if (st.state === 'loading') assert.equal(await s.page.locator('[data-screen="you-site"]').getAttribute('data-state'), 'loading');
 });
 
 // The three lists come in Ben's order (05:18), with what doesn't match above them.

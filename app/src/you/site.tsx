@@ -9,20 +9,21 @@ import { FootButton, List, Nav, Pill, Screen, Section, Txt, UndoToast } from '@/
 import { ListRow } from '@/ui/parts/list-row';
 import { MismatchRow } from './mismatch-row';
 import { at, audit, type AuditRow } from './site-audit';
-import { plural, SITE_ORDER, skips, useGo, useLinks, useWorld } from './state';
+import { PageStatus } from './page-status';
+import { plural, SITE_ORDER, useGo, useLinks, usePage } from './state';
 
 const WORD = { connected: 'Linked', loading: 'Signing in', error: 'Needs you', not_connected: 'Not linked' } as const;
 
 export function SitePage() {
   const { site: raw } = useLocalSearchParams<{ site: string }>();
-  const w = useWorld(), go = useGo();
+  const { w, asked } = usePage(), go = useGo();
   const { links, link, unlink } = useLinks(w);
   const [undo, setUndo] = useState(false);
   const back = () => go.back('/you/connections');
   const site = SITE_ORDER.includes(raw as Site) ? (raw as Site) : null;
   if (!site) {
     return (
-      <Screen name="you-site" state="empty" nav={<Nav back={back} />} skip={skips('empty', { new: 'a site that isn’t one of the five has nothing to show in any world' })}>
+      <Screen name="you-site" state="empty" nav={<Nav back={back} />} skip="new: a site that is not one of the five is not found for anyone; one: nothing to count; typical: nothing to count; dense: nothing to count; loading: nothing to load; failed: nothing to load; offline: nothing to load">
         <Txt role="heading">Not found</Txt>
       </Screen>
     );
@@ -30,12 +31,13 @@ export function SitePage() {
   const a = audit(w, site), l = links[site];
   const row = (r: AuditRow) => <ListRow key={r.id} id={r.id} label={r.label} detail={r.detail} value={at(r.at, w.now)} onPress={r.item_id ? () => go.to(`/item/${r.item_id}`) : undefined} />;
   const rows = a.did.length + a.changed.length + a.mismatches.length;
-  const state = l.state === 'loading' ? 'loading' : l.state === 'error' ? 'failed' : l.state === 'not_connected' ? 'new' : rows ? 'typical' : 'empty';
+  const state = asked ?? (l.state === 'loading' ? 'loading' : l.state === 'error' ? 'failed' : l.state === 'not_connected' ? 'new' : rows ? (w.items.length > 30 ? 'dense' : 'typical') : 'empty');
   return (
     <Screen name="you-site" state={state} nav={<Nav back={back} />}
-      skip={skips(state, { new: 'drawn for a site that isn’t linked, like Mercari', empty: 'drawn with world=one, where a linked site has done nothing yet', one: 'a site page counts its rows in sections, so one row is typical', dense: 'drawn with world=flipper', failed: 'drawn for Poshmark, signed out', loading: 'drawn after Try again, while it signs in', offline: 'the page reads the last check, and says when it was' })}
+      skip="one: a site page counts its rows in sections, so one row is drawn as typical"
       foot={undo ? <UndoToast id="site-undo" text="Unlinked" onUndo={() => { link(site); setUndo(false); }} onGone={() => setUndo(false)} />
         : l.state === 'connected' ? <FootButton id="site-unlink" kind="second" label="Unlink" onPress={() => { unlink(site); setUndo(true); }} /> : undefined}>
+      <PageStatus asked={asked} what="this site">
       <List>
         <ListRow id="site-state" site={site} label={WORD[l.state]} tone={l.state === 'error' ? 'brick' : 'ink'}
           detail={l.state === 'error' ? (l.note ?? 'Signed out') : l.state === 'connected' ? (a.read.checked_at ? `Checked ${ago(a.read.checked_at, w.now).toLowerCase()}` : 'Checked just now') : l.state === 'loading' ? 'Finish on the site’s own sign-in page' : 'Unlinking left your listings up'}
@@ -69,6 +71,7 @@ export function SitePage() {
       <Section title="Changed there, not by us">
         {a.changed.length ? <List>{a.changed.map(row)}</List> : <Txt role="body" tone="ink-2">Nothing since the last check.</Txt>}
       </Section>
+      </PageStatus>
     </Screen>
   );
 }

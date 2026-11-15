@@ -5,10 +5,11 @@ import { useState } from 'react';
 import { day, ms } from '@/demo';
 import { EmptyState, List, Nav, Pill, Screen, Section, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
-import {changed, drawn, PAGES, skips, useGo, useWorld } from './state';
+import { changed, drawn, PAGES, useGo, usePage } from './state';
+import { PageStatus } from './page-status';
 
 export function Activity() {
-  const w = useWorld(), go = useGo();
+  const { w, asked } = usePage(), go = useGo();
   const [undone, setUndone] = useState<Record<string, boolean>>({});
   const events = [...w.events].sort((a, b) => ms(b.at) - ms(a.at));
   const days = [...new Set(events.map(e => day(e.at, w.now)))];
@@ -17,8 +18,9 @@ export function Activity() {
   const undo = (id: string) => { setUndone(u => ({ ...u, [id]: true })); changed('event', id, 'undone'); };
 
   return (
-    <Screen name="you-log" state={drawn(w, events.length)} skip={skips(drawn(w, events.length), { empty: 'drawn with world=new, Nothing done for you yet', failed: 'an Undo that fails says so on its row', offline: 'Undo waits for the network and says so on its row' })} nav={<Nav back={() => go.back()} />}>
+    <Screen name="you-log" state={drawn(w, events.length, asked)} nav={<Nav back={() => go.back()} />}>
       <Txt role="heading">{PAGES.log.title}</Txt>
+      <PageStatus asked={asked} what="what we did">
       {events.length ? days.map(d => (
         <Section key={d} title={d}>
           <List>
@@ -32,6 +34,7 @@ export function Activity() {
       )) : (
         <EmptyState title="Nothing done for you yet" line="What runs on its own shows here, with Undo while it can be undone." />
       )}
+      </PageStatus>
     </Screen>
   );
 }

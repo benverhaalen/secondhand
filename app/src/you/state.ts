@@ -3,41 +3,31 @@
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
-import { connectionState, world, WORLD_NAMES, records, type AnyWorld, type Rule, type Site, type World } from '@/demo';
+import { connectionState, world, records, type AnyWorld, type Rule, type Site, type World } from '@/demo';
+import { useScreen, type ScreenState } from '@/demo/screen';
 import { log, money } from '@/ui';
 
-// ?world=new|clearing|flipper|buyer|edge|one picks the person; clearing is the person we build for (app/src/demo/README.md).
-// First launch defaults to the new person, everything else to clearing.
+// ?world=new|clearing|flipper|buyer|edge|one picks the person, and ?state=<s> the state to draw (app/src/demo/screen.ts), so
+// app-check can open every state of every page. First launch defaults to the new person, everything else to clearing.
 export function useWorld(fallback?: AnyWorld): World {
-  const { world: name } = useLocalSearchParams<{ world?: string }>();
-  return world(WORLD_NAMES.includes(name as AnyWorld) ? (name as AnyWorld) : fallback);
+  return useScreen(fallback).w;
+}
+// The page's world and the state asked for in the URL, if any. empty is this page with nothing in it, which in the demo is the
+// new person's world; loading, failed and offline are drawn over the world by PageStatus (app/src/you/page-status.tsx).
+export function usePage(fallback?: AnyWorld): { w: World; asked: ScreenState | null } {
+  const { w, state } = useScreen(fallback);
+  return { w: state === 'empty' ? world('new') : w, asked: state };
 }
 
-// The state a page is drawn in, named from the list every screen is asked about (.agents/ui-states.json: new, empty, one,
-// typical, dense). new: nothing linked or listed yet. empty: this page has no rows. one: a single row. dense: a reseller's load.
-export type DrawnState = 'new' | 'empty' | 'one' | 'typical' | 'dense' | 'loading' | 'failed';
-export function drawn(w: World, rows: number): DrawnState {
+// The state a page is drawn in, named from the list every screen is asked about (.agents/ui-states.json). new: nothing linked
+// or listed yet. empty: this page has no rows. one: a single row. dense: a reseller's load. The URL's ?state= wins.
+export type DrawnState = ScreenState;
+export function drawn(w: World, rows: number, asked: ScreenState | null = null): DrawnState {
+  if (asked) return asked;
   if (w.name === 'new') return 'new';
   if (!rows) return 'empty';
   if (rows === 1) return 'one';
   return w.items.length > 30 ? 'dense' : 'typical';
-}
-
-// B35 asks every screen about each state on .agents/ui-states.json's required list; one render draws one of them, so the rest
-// are named in Screen's skip with where they are drawn or why they can't happen. A page passes only what is particular to it.
-const REQUIRED = ['new', 'empty', 'one', 'typical', 'dense', 'loading', 'failed', 'offline'] as const;
-const WHERE: Record<(typeof REQUIRED)[number], string> = {
-  new: 'drawn with world=new',
-  empty: 'drawn with world=new',
-  one: 'drawn with world=one',
-  typical: 'drawn in the default world, clearing',
-  dense: 'drawn with world=flipper',
-  loading: 'the demo world is read at once, so nothing on this page waits',
-  failed: 'nothing on this page calls out, so nothing here can fail',
-  offline: 'nothing on this page needs the network',
-};
-export function skips(now: string, why: Partial<Record<(typeof REQUIRED)[number], string>> = {}): string {
-  return REQUIRED.filter(s => s !== now).map(s => `${s}: ${(why[s] ?? WHERE[s]).replace(/[:;]/g, ',')}`).join('; ');
 }
 
 // A change the person made (a switch, a field, Undo): one state.change line in the app log, and on the web one event the tests read.
@@ -90,6 +80,8 @@ export const PAGES = {
   rules: { title: 'Rules and limits', icon: 'settings-01' },
   log: { title: 'Activity', icon: 'clock-01' },
   notifications: { title: 'Notifications', icon: 'notification-01' },
+  defaults: { title: 'App defaults', icon: 'tag-01' },
+  permissions: { title: 'Permissions', icon: 'checkmark-circle-02' },
   settings: { title: 'Settings', icon: 'user' },
 } as const;
 export type PageKey = keyof typeof PAGES;
@@ -101,11 +93,12 @@ export const isPage = (p: unknown): p is PageKey => typeof p === 'string' && p i
 export type LinkState = { state: 'connected' | 'loading' | 'error' | 'not_connected'; note: string | null; tried?: boolean };
 export const SITE_ORDER: Site[] = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'];
 const SIGN_IN_MS = 1200;
-export function useLinks(w: World) {
+// seed starts some rows mid-way, so a page opened at ?state=loading or ?state=failed draws a site signing in or one that failed.
+export function useLinks(w: World, seed: Partial<Record<Site, LinkState>> = {}) {
   const [links, setLinks] = useState<Record<Site, LinkState>>(() => Object.fromEntries(SITE_ORDER.map(s => {
     const c = w.connections.find(x => x.site === s);
     const st = c ? connectionState(c) : 'not_connected';
-    return [s, { state: st, note: st === 'error' ? c?.error ?? null : st === 'loading' ? c?.linking?.stage ?? null : null }];
+    return [s, seed[s] ?? { state: st, note: st === 'error' ? c?.error ?? null : st === 'loading' ? c?.linking?.stage ?? null : null }];
   })) as Record<Site, LinkState>);
   const tries = useRef<Record<string, number>>({});
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);

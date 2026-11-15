@@ -1,14 +1,14 @@
 {
   "screen": "you/[page]",
   "route": "/you/:page",
-  "what": "The pages under You, one route so a push or a link opens any of them: payouts, insights (By site, worth, goal), records, connections (Your sites), rules (Rules and limits), log (Activity), notifications, settings. A linked site's own page is app/behavior/you/connections/[site].json.",
+  "what": "The pages under You, one route so a push or a link opens any of them: payouts, insights (By site, worth, goal), records, connections (Your sites), rules (Rules and limits), log (Activity), notifications, defaults (App defaults), permissions (Permissions: what the agent may do), settings. A linked site's own page is app/behavior/you/connections/[site].json.",
   "frame": {
     "who": "The person clearing out reaches Payouts and Your sites after a sale or a sign-out; the person holding a minimum checks Rules and limits for their lowest; the flipper reads By site and Records; anyone leaving uses Settings.",
     "how_often": "Rarely, each one: a page is opened to change one thing or check one number, then left.",
     "came_to": "Change one setting or limit, link a site, undo one automatic step, or download the year's sales.",
     "costly_mistake": "A price set without the person's tap (limits end in Approve); a rule turned on before the person approved it three times without a change (its switch is disabled and says why); deleting an account while a sale is open (refused, and says so). Accepting an offer from the lock screen without the owner's face: Accept, Approve and Counter always need Face ID, and that row has no switch.",
     "ways_out": "spec/ways-out.md: Pause selling (away mode where a site has one, end and bring back elsewhere, never relisting on Poshmark), never suggest photo edits, units and currency, delete (refused while a sale is open), a site's 2FA or captcha (Try again or leave it), unlink a site (Undo for a few seconds). Notifications: every kind can be switched off, quiet hours (a deadline inside them is sent before they start), Group by item.",
-    "in_the_loop": "Rules and limits is where the hand-off line is drawn and moved: what runs alone with a switch, what always asks without one, and each item's lowest price, saved only on Approve. Activity shows every automatic step with Undo while it can be undone where it happened. Your sites puts every place a site and our record disagree first, each with Open on the site, so the person can check the site itself."
+    "in_the_loop": "Rules and limits is where the hand-off line is drawn and moved: what runs alone with a switch, what always asks without one, and each item's lowest price, saved only on Approve. Activity shows every automatic step with Undo while it can be undone where it happened. Your sites puts every place a site and our record disagree first, each with Open on the site, so the person can check the site itself. Permissions lists every kind of step as On its own (with Undo), Asks first, Always asks or Never; a person can make any kind more careful there, and a kind runs on its own only after 3 unedited approvals, under Rules and limits."
   },
   "states": [
     {
@@ -64,12 +64,12 @@
     {
       "state": "rules typical",
       "path": "/you/rules",
-      "shows": "Rules and limits; Runs on its own with a switch per rule and what it does, a rule under three approvals with its switch disabled and the count; Always asks you with four rows and no switch; Lowest prices with a row per live thing"
+      "shows": "Rules and limits; Runs on its own with a switch per rule and what it does, a rule under three approvals with its switch disabled and the count; a row into Permissions; Lowest prices with a row per live thing"
     },
     {
       "state": "rules new",
       "path": "/you/rules?world=new",
-      "shows": "Rules and limits with the line that a card approved 3 times can run on its own; Always asks you"
+      "shows": "Rules and limits with the line that a card approved 3 times can run on its own; a row into Permissions"
     },
     {
       "state": "log typical",
@@ -87,14 +87,39 @@
       "shows": "Notifications; Right away and In the next summary, each kind with its switch and one example of what it says; Summary times; Never sent with no switches; Group by item; Quiet hours on, 10 pm to 8 am as fields; On the lock screen: Accept, Approve and Counter need Face ID, On my way and Running late need no unlock, and a switch for showing messages and addresses, off"
     },
     {
+      "state": "defaults typical",
+      "path": "/you/defaults",
+      "shows": "App defaults; A new listing: How it sells (Sell it), Sites (3 of 3 linked), Ship or pickup, Pickup spot as a field, Lowest price (Suggested); Photos: Clean up on, Enhance with AI off, Never suggest photo edits; Words and units: Replies sound (Like you), Measurements (Inches), Money (US dollars)"
+    },
+    {
+      "state": "permissions typical",
+      "path": "/you/permissions",
+      "shows": "Permissions; each kind with On its own, Asks first or Never, and two fixed rows that say why; Always asks you: a price under your lowest, sharing your address, refunds and payment, saying it’s genuine, with no control; Never: taking a deal off the site; a row into Rules and limits"
+    },
+    {
       "state": "settings typical",
       "path": "/you/settings",
-      "shows": "Settings; Pause selling and Never suggest photo edits with switches and what each changes; a row into Notifications; Units; Account with Signed in with, Export your data, Sign out, Delete account"
+      "shows": "Settings; Pause selling with its switch; rows into Notifications, App defaults and Permissions; Account with Signed in with, Export your data, Sign out, Delete account"
     },
     {
       "state": "not found",
       "path": "/you/nothing",
       "shows": "Not found under Back"
+    },
+    {
+      "state": "loading (any page)",
+      "path": "/you/payouts?state=loading",
+      "shows": "the page's title over gray shapes where its rows will be"
+    },
+    {
+      "state": "failed (any page)",
+      "path": "/you/payouts?state=failed",
+      "shows": "Couldn’t load your payouts, that the site didn’t answer and nothing changed, and Try again"
+    },
+    {
+      "state": "offline (any page)",
+      "path": "/you/payouts?state=offline",
+      "shows": "Waiting for signal, that this is the last copy, then the page as it was"
     }
   ],
   "controls": [
@@ -357,7 +382,7 @@
       "control": "Never suggest photo edits",
       "on_tap": "turns off every edit offer on photos",
       "does": "turns off edit offers",
-      "path": "/you/settings",
+      "path": "/you/defaults",
       "logs": {
         "type": "change",
         "entity": "setting",
@@ -374,18 +399,129 @@
       "goes": "/you/notifications"
     },
     {
+      "id": "settings-defaults",
+      "control": "App defaults (row)",
+      "on_tap": "opens App defaults",
+      "does": "opens App defaults",
+      "path": "/you/settings",
+      "goes": "/you/defaults"
+    },
+    {
+      "id": "settings-permissions",
+      "control": "Permissions (row)",
+      "on_tap": "opens Permissions",
+      "does": "opens the permissions",
+      "path": "/you/settings",
+      "goes": "/you/permissions"
+    },
+    {
+      "id": "default-plan",
+      "control": "How it sells",
+      "on_tap": "opens a sheet with the five choices",
+      "does": "opens the plan sheet",
+      "path": "/you/defaults"
+    },
+    {
+      "id": "plan-fast",
+      "control": "Gone fast",
+      "on_tap": "makes Gone fast the default for a new listing and closes the sheet",
+      "does": "sets the default plan",
+      "path": "/you/defaults",
+      "before": [
+        "default-plan"
+      ],
+      "logs": {
+        "type": "change",
+        "entity": "setting",
+        "id": "default_plan",
+        "to": "fast"
+      }
+    },
+    {
+      "id": "clean-up",
+      "control": "Clean up",
+      "on_tap": "turns clean-up off for new photos",
+      "does": "turns off clean-up",
+      "path": "/you/defaults",
+      "logs": {
+        "type": "change",
+        "entity": "setting",
+        "id": "clean_up",
+        "to": "off"
+      }
+    },
+    {
+      "id": "enhance-ai",
+      "control": "Enhance with AI",
+      "on_tap": "turns AI enhancement on; each enhanced photo is marked next to the real one",
+      "does": "turns on enhancement",
+      "path": "/you/defaults",
+      "logs": {
+        "type": "change",
+        "entity": "setting",
+        "id": "enhance_ai",
+        "to": "on"
+      }
+    },
+    {
+      "id": "perm-counter_offer",
+      "control": "A kind of step",
+      "on_tap": "opens a sheet with the modes it may take",
+      "does": "opens the mode sheet",
+      "path": "/you/permissions"
+    },
+    {
+      "id": "mode-ask",
+      "control": "Asks first",
+      "on_tap": "makes that kind ask first and closes the sheet",
+      "does": "makes it ask",
+      "path": "/you/permissions",
+      "before": [
+        "perm-counter_offer"
+      ],
+      "logs": {
+        "type": "change",
+        "entity": "permission",
+        "id": "counter_offer",
+        "to": "ask"
+      }
+    },
+    {
+      "id": "perm-rules",
+      "control": "Rules and limits (row)",
+      "on_tap": "opens Rules and limits",
+      "does": "opens Rules and limits",
+      "path": "/you/permissions",
+      "goes": "/you/rules"
+    },
+    {
+      "id": "rules-permissions",
+      "control": "Permissions (from Rules)",
+      "on_tap": "opens Permissions",
+      "does": "opens the permissions",
+      "path": "/you/rules",
+      "goes": "/you/permissions"
+    },
+    {
+      "id": "page-retry",
+      "control": "Try again (a page that failed)",
+      "on_tap": "loads the page again",
+      "does": "tries again",
+      "path": "/you/payouts?state=failed"
+    },
+    {
       "id": "units-row",
       "control": "Measurements",
       "on_tap": "opens a sheet with Inches and Centimeters",
       "does": "opens the units sheet",
-      "path": "/you/settings"
+      "path": "/you/defaults"
     },
     {
       "id": "units-cm",
       "control": "Centimeters",
       "on_tap": "shows measurements in centimeters",
       "does": "sets centimeters",
-      "path": "/you/settings",
+      "path": "/you/defaults",
       "before": [
         "units-row"
       ],
@@ -441,7 +577,6 @@
     "Sites are their logos with their state in words, never their names in words (C5); every row runs on its own, so one sign-in never blocks the rest (Ben, 03:22).",
     "The demo's first Link on Mercari stops at the site's code step and times out, so the error and Try again can be seen and tested; the second try links.",
     "A rule can be switched on only once it has 3 unedited approvals; below that its switch is disabled and its line says the count (decisions: tiers that learn; only unedited approvals count).",
-    "The never-alone kinds are listed with no switch, so the person sees the line the agent never crosses.",
     "The floor and the always-accept line are the agent's guesses until the person changes them, so they show as Guess fields (dotted), and they save only on Approve: a price is never set without a tap.",
     "The ceiling here is the always-accept line: above it an offer is taken at once, below the floor it always asks. The buyer's ceiling (most you'd pay) belongs to Want and Buy.",
     "Delete account is refused while a sale is open, as deleting an item is (ways-out, Delete it); otherwise it says what ends first and waits for Approve.",
@@ -459,6 +594,13 @@
     "Accept, Approve and Counter from the lock screen always need Face ID: they commit the person to a sale or a meeting, so that row has a value and no switch (spec/notifications.md, Acting from the lock screen).",
     "Quiet hours move from Settings to Notifications and are on by default, 10 pm to 8 am, as the spec sets; a deadline inside them is sent before they start.",
     "Messages and addresses stay off the lock screen until the person turns them on, because a phone on a table is seen by others.",
-    "Each page answers B35 with Screen's skip: the states it is not drawn in on this render, each with the world that draws it or why it cannot happen (app/src/you/state.ts, skips)."
+    "App defaults and permission defaults (Ben 05:47) are two pages under Settings, not sections of it, so Settings stays one screen and each page is about one thing: what a new listing starts from, and what the agent may do.",
+    "Permission defaults live once, on Permissions; Rules and limits links to it instead of repeating the kinds that always ask, and keeps what is learned (rules after 3 approvals) and each item's lowest price. Why: one fact in one place, and the learned rules are a different question from the starting modes.",
+    "A kind can be made more careful on Permissions, never less: a kind that starts by asking is not offered On its own there, because running alone is earned by 3 unedited approvals (decisions: tiers that learn).",
+    "Locked kinds (a price under your lowest, sharing your address, refunds and payment, claims that it is genuine) show as Always asks with no control; taking a deal off the site shows as Never (spec/product.md §5).",
+    "Taking a listing down after it sells stays On its own with no control, and its row says why: so it can't sell twice.",
+    "App defaults start from spec: Sell it, the lowest price suggested from sold prices and set by the person, Clean up on and Enhance with AI off, replies in the person's voice, ship or pickup from their limits, the saved pickup spot, and only linked sites as default sites.",
+    "Every page draws loading, failed and offline from ?state= (app/src/demo/screen.ts) the same way, through app/src/you/page-status.tsx: gray shapes, Couldn’t load with Try again, or the last copy under Waiting for signal. Your sites draws loading and failed on a site's row instead, since one site signing in never blocks the page.",
+    "A page that lists every setting from the start (Settings, Notifications, App defaults, Permissions) skips empty and one, with why."
   ]
 }

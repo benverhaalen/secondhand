@@ -6,7 +6,8 @@ import { useState } from 'react';
 import { Guess, Line, List, Nav, Screen, Section, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
-import { cash, changed, PAGES, skips, useGo, useWorld } from './state';
+import { PageStatus } from './page-status';
+import { cash, changed, PAGES, useGo, usePage } from './state';
 
 type Kind = { kind: string; pref?: string; label: string; says: string };
 // The events table of spec/notifications.md, by level. `pref` names the kind stored on the person (user.notification_pref).
@@ -29,7 +30,7 @@ const LATER: Kind[] = [
 const NEVER = ['Offers under your lowest, answered for you', 'Likes, views and followers', 'What we did inside your limits'];
 
 export function Notifications() {
-  const w = useWorld(), go = useGo();
+  const { w, asked } = usePage(), go = useGo();
   const stored = (k: Kind) => w.user.notification_pref.find(p => p.event_kind === k.pref)?.channel;
   const [on, setOn] = useState<Record<string, boolean>>(() => Object.fromEntries([...NOW, ...LATER].map(k => [k.kind, stored(k) !== 'off'])));
   const [byItem, setByItem] = useState(true);
@@ -43,9 +44,10 @@ export function Notifications() {
       trail={<Switch id={`notify-${k.kind}`} label={k.label} on={on[k.kind]} onChange={flip(k, level)} />} />
   );
   return (
-    <Screen name="you-notifications" state="typical" nav={<Nav back={() => go.back()} />}
-      skip={skips('typical', { new: 'every kind is listed from the first launch, with its default', empty: 'every kind is always listed', one: 'every kind is always listed', dense: 'the list is the same for every person', failed: 'a switch is saved on the phone first, so it cannot fail here', offline: 'a switch is saved on the phone and sent when it is back' })}>
+    <Screen name="you-notifications" state={asked === 'loading' || asked === 'failed' || asked === 'offline' || asked === 'new' || asked === 'dense' ? asked : w.name === 'new' ? 'new' : 'typical'} nav={<Nav back={() => go.back()} />}
+      skip="empty: every kind is always listed, so the page is never empty; one: every kind is always listed, never one">
       <Txt role="heading">{PAGES.notifications.title}</Txt>
+      <PageStatus asked={asked} what="your notifications">
 
       <Section title="Right away">
         <List>{NOW.map(row('push'))}</List>
@@ -97,6 +99,7 @@ export function Notifications() {
             trail={<Switch id="lock-previews" label="Show messages and addresses" on={previews} onChange={setting('lock_previews', setPreviews)} />} />
         </List>
       </Section>
+      </PageStatus>
     </Screen>
   );
 }
