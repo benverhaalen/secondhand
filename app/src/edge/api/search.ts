@@ -25,8 +25,22 @@ const reading = new Map<string, ActiveRead>();
 
 type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found };
 type JudgedRow = { row: Row; judged: Judged };
-type PublicOffer = BuyOffer & { currency: string; image_url?: string; external_id: string; data: `live:${Site}` };
+type PublicOffer = BuyOffer & { match: Judged['match']; currency: string; image_url?: string; external_id: string; data: `live:${Site}` };
 type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
+
+const matchOrder: Record<Judged['match'], number> = { exact: 0, likely_same_model: 1, same_family_other_variant: 2, comparable: 3, unresolved: 4 };
+
+function rankedOffers(offers: PublicOffer[]): BuyRow[] {
+  const matches = new Map(offers.map(o => [o.id, o.match]));
+  return rankOffers(offers, { medianShipping: 0 }).sort((a, b) =>
+    matchOrder[matches.get(a.id)!] - matchOrder[matches.get(b.id)!] || a.delivered_cents - b.delivered_cents);
+}
+
+function identity(rows: JudgedRow[]): { by: 'model' | 'codes' | 'default'; model_ok: boolean } {
+  if (!rows.length || rows.some(r => r.judged.by === 'default')) return { by: 'default', model_ok: false };
+  const model_ok = rows.some(r => r.judged.by === 'jev');
+  return { by: model_ok ? 'model' : 'codes', model_ok };
+}
 
 function candidates(source: Source, rows: Row[]): Result[] {
   const site = source.site;
@@ -42,11 +56,9 @@ function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters
   const offers: PublicOffer[] = [];
   for (const { row, judged } of rows) {
     if (judged.keep !== 'keep') { drop(judged.keep); continue; }
-    if (judged.match === 'unresolved') { drop('unresolved'); continue; }
-    if (judged.match === 'same_family_other_variant') { drop('other_variant'); continue; }
     const offer: PublicOffer = { ...candidates(source, [row])[0], external_id: row.id!, currency: row.currency!, data: `live:${site}`,
       ...(row.image_url ? { image_url: row.image_url } : {}), condition: row.condition ?? 'unknown',
-      relation: judged.match === 'comparable' ? 'functional_equivalent' : 'same_product',
+      match: judged.match, relation: judged.match === 'comparable' ? 'functional_equivalent' : 'same_product',
       shipping_cents: null, tax_rate: 0, source_kind: 'marketplace', sold: row.sold };
     if (Array.isArray(filters.condition) && !filters.condition.includes(offer.condition)) { drop('condition'); continue; }
     if (Array.isArray(filters.seller_kind) && !filters.seller_kind.includes(offer.seller_kind)) { drop('seller_kind'); continue; }
@@ -56,7 +68,7 @@ function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters
     if (object(filters.max_delivered_cents) && row.currency !== filters.max_delivered_cents.currency) { drop('currency'); continue; }
     offers.push(offer);
   }
-  const live = rankOffers(offers, { medianShipping: 0 });
+  const live = rankedOffers(offers);
   if (offers.length > live.length) found.dropped_by_reason.unavailable_or_duplicate = offers.length - live.length;
   const ranked = live.filter(r => {
     if (object(filters.max_delivered_cents) && r.delivered_cents > Number(filters.max_delivered_cents.amount_cents)) { drop('max_delivered_cents'); return false; }
@@ -71,7 +83,7 @@ function offerView(row: BuyRow) {
   const offer = row as BuyRow & PublicOffer;
   const amount = (n: number) => ({ amount_cents: n, currency: offer.currency });
   return { id: offer.id, listing_id: offer.listing_id, external_id: offer.external_id, title: offer.title, url: offer.url,
-    site: offer.site, route_id: offer.route_id, data: offer.data, condition: offer.condition, relation: offer.relation,
+    site: offer.site, route_id: offer.route_id, data: offer.data, condition: offer.condition, relation: offer.match,
     source_kind: offer.source_kind, price_cents: amount(offer.price_cents), shipping_cents: null,
     delivered_cents: amount(offer.delivered_cents), shipping_estimated: offer.shipping_estimated, also_on: offer.also_on,
     ...(offer.image_url ? { image_url: offer.image_url } : {}) };
@@ -92,8 +104,13 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
       for (const [site, count] of Object.entries(batch.found.sites)) found.sites[site] = (found.sites[site] ?? 0) + count;
       for (const [reason, count] of Object.entries(batch.found.dropped_by_reason)) found.dropped_by_reason[reason] = (found.dropped_by_reason[reason] ?? 0) + count;
     }
-    const ranked = rankOffers([...batches.values()].flatMap(b => b.offers), { medianShipping: 0 });
-    return { product: null, results: ranked.map(offerView), official: [], sites_pending: [...pending], found,
+    const ranked = rankedOffers([...batches.values()].flatMap(b => b.offers));
+    const duplicates = found.results_used - ranked.length;
+    if (duplicates) found.dropped_by_reason.unavailable_or_duplicate = (found.dropped_by_reason.unavailable_or_duplicate ?? 0) + duplicates;
+    found.results_used = ranked.length;
+    for (const site of Object.keys(found.sites)) found.sites[site] = 0;
+    for (const row of ranked) found.sites[row.site] = (found.sites[row.site] ?? 0) + 1;
+    return { product: null, results: ranked.map(offerView), identity: identity([...batches.values()].flatMap(b => b.rows)), official: [], sites_pending: [...pending], found,
       searched: [...batches.values()].map(b => ({ ...b.searched, ...(b.cached ? { cached: true } : {}) })) };
   };
   const answer = (settled: boolean): Answer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
@@ -120,7 +137,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     if (stage.state === 'late') ctx.log.event('state.change', { entity: 'job.stage', id: `${job.id}:${stage.name}`, to: 'late', job: job.id, stage: stage.name, found: stage.found });
     else ctx.log.stage(job.id, stage.name, { state: stage.state, found: stage.found });
     jobs.append(job.id, 'job.stage', { job_id: job.id, stage: stage.name, state: stage.state, at: stage.ended_at, found: stage.found });
-    emit('answer.partial', { site, product: null, results: batch.ranked.map(offerView), official: [], sites_pending: [...pending] });
+    emit('answer.partial', { site, product: null, results: batch.ranked.map(offerView), identity: identity(batch.rows), official: [], sites_pending: [...pending] });
   };
   const sitePlan = async (source: Source, freshness_s: number) => {
     const site = source.site;
