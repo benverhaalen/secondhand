@@ -29,6 +29,41 @@ No public benchmark exists for secondhand intelligence in anything we researched
 
 Rows 1 to 6, 8 and 9 measure the data itself. Row 7 is accuracy and is one row of ten on purpose.
 
+## How it is shown
+
+Nate ([words](../product/words.md#2026-11-15-nate-show-the-benchmark-as-amounts-not-tables-of-checks-and-crosses)): "we want amount of items compared graphically shown, amount of time, price, accuracy or capability could be the x's and checkmarks." A check or a cross is used only where the fact is yes or no (a capability); everything that is an amount is drawn as an amount with its count. How it is drawn is Ben's; what each view must carry is below.
+
+What public benchmarks of this kind show today (*observed* on each page through search highlights, 2026-11-15; nothing rerun by us):
+
+| Page | What it shows | What we take |
+|---|---|---|
+| [Openbenchmarks web search](https://openbenchmarks.com/web-search) | per vendor: accuracy, cost per 1,000 correct answers, latency, on 300 fixed questions; open harness and dataset; vendors listed alphabetically; the answer-reading model and the judge held constant | cost per correct answer as one figure; the item count in the headline; alphabetical order, not ours first |
+| [Scrapingbench, as reported by Context.dev](https://www.context.dev/blog/scrapingbench-web-scraping-api-benchmark-results) | tasks done as "38 of 40", a 95% interval beside every rate, cost per finished task, median time; run by a third party | counts as "n of N" with an interval, never a bare percentage |
+| [Firecrawl benchmarks](https://www.firecrawl.dev/benchmarks) | coverage, extraction F1, recall, P95 latency on 1,000 URLs in ten categories; scored against human answers, not a model; dated and changelogged; its own numbers included | a result per category; a dated changelog; human-labelled truth |
+| [fastCRW](https://fastcrw.com/benchmarks) | truth-recall on a rival's own public dataset; p50, p90 and p99 instead of an average; one script to rerun | percentiles, never an average; a rerun command on the page |
+| [SerpKite](https://serpkite.com/benchmarks) | median latency, success as "60 of 60", list prices; raw per-request data published monthly | the raw record of every request downloadable |
+| [Nimble](https://llms.nimbleway.com/performance-slas-and-scale) | a factsheet where every figure links to its source, and the categories where rivals win are published | every figure links to its records; lost rows shown |
+| [Parallel](https://github.com/parallel-web/parallel-llms-txt/blob/f6b31ffe/public/index.md) | accuracy against cost as a scatter, one point per system | the two-axis view below |
+
+None of these is about secondhand goods; they are the nearest public practice. None shows breadth of data per answer, which is our strongest row.
+
+The views:
+
+| View | Draws | Must carry |
+|---|---|---|
+| The headline | three figures: items compared, sites covered per answer, sale prices that landed in range | the count behind each ("200 items", "132 of 200") and the run date |
+| Coverage | one bar per tool: items answered out of 200, as a filled count, with the sites drawn on | "n of 200" on the bar and its interval |
+| Breadth | for one item, the twelve kinds of fact as a row of cells per tool, each cell filled with the number of data points returned (0 leaves it empty) | the count in each cell: this is the "swath of data" picture, and it is an amount, not a tick |
+| Accuracy against speed | a scatter: share of sale prices in range against seconds to a full answer, one point per tool, the point sized by coverage | tools with no price answer sit on the axis, labelled "no answer" |
+| Accuracy by family | small bars per product family with the item count under each | never a family with fewer than ten items |
+| Time | p50 and p95 seconds to first and full answer as two marks on one line per tool | no average |
+| Freshness | the age of the newest data point per tool on a time line | the run time as the zero |
+| Sources | the share of numbers that open to their evidence, as a filled bar, and the page itself opens every one of ours | a live example: tap a number, see its listings |
+| Capabilities | the only table with checks and crosses: the yes-or-no facts (sells and buys, sold prices, offers handled, delists on sale, shows sources) | a cross reads "not in this run", with the date |
+| Price | what a person pays for each tool per month, as plain figures | list prices with the date checked |
+
+Every view links to the raw records and the rerun command, lists tools alphabetically, shows the rows we lose, and states the date and item count in its own caption.
+
 ## How it is built
 
 | Part | Owns | Proves with |
