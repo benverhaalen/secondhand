@@ -26,7 +26,7 @@ POST /v1/auth/apple   {"identity_token": "…", "nonce": "…", "name": "Sam"}
 ```
 Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202), `POST /v1/auth/email/verify {email, code}`, `POST /v1/auth/refresh`, `POST /v1/auth/signout`.
 
-**2. Onboarding progress and push** on `GET` and `PATCH /v1/me`: `onboarding {done_steps[], finished_at?}` with steps `signed_in, sites_picked, sites_linked, imported, email, pickups, notifications`; `push_token` (Expo push) and `notification_pref[]`.
+**2. Onboarding progress and push.** `GET /v1/me` is a new route: `user` plus `onboarding {done_steps[], finished_at?}` and `auth_methods[]`. `PATCH /v1/me {onboarding_step?, notification_pref?, push_token?, tutorial_seen?}`; steps are `signed_in, sites_picked, sites_linked, imported, email, pickups, notifications`. `notification_pref[]` already exists on `user`; only the write is new. Also `POST /v1/auth/link/{apple,google,email}` to add a second method, and a push payload `{kind, decision_id?, item_id?, path}` so a tap opens the right page.
 
 **3. The top slot** on `GET /v1/today` ([pages §4](../../../../spec/pages.md#4-the-top-slot)). The server picks the row so phone and web agree, and never sends a zero.
 
@@ -38,12 +38,12 @@ Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202
 
 **4. Stacks in Today** ([pages §5](../../../../spec/pages.md#5-today-a-list-with-stacks-only-for-same-kind-groups)): each decision gets `group_key` (the item and kind, or the kind for three or more notices) and `group_rank` (the order inside the stack, best option first). A decision due within an hour is never ranked under another.
 
-**5. Seller intent** on `strategy` and `limits` ([price](../../../../spec/features/price.md#selling-intents)): `intent` (`sell`, `fast`, `best`, `reserve`, `check`), `gone_by?`, `fallback` (`ask`, `donate`, `keep`, `trade_in`, `relist`), `markdown_on`, `review_at?`; `limits.accept_mode` (`auto`, `ask_all`). Engine changes: a `fast` plan with a date uses a step holding cost at the date; `reserve` builds no path and never enters `stale`; D15 skips `reserve` and `check`; `end_unsold` is raised only when `fallback` is `ask`. The floor rule is unchanged.
+**5. Seller intent** on `limits`, per item ([price](../../../../spec/features/price.md#selling-intents)): `plan_choice` (`sell`, `fast`, `best`, `reserve`, `check`; not `intent`, which your assist entity and `message.intent` already use), `gone_by?`, `fallback` (`ask`, `donate`, `keep`, `trade_in`, `relist`; relist never on Poshmark), `markdown_on`, `review_at?`, `accept_mode` (`auto`, `ask_all`). It maps onto `objective`: sell → balanced, fast → quick, best → max_return, reserve → max_return with no path, check → an appraisal or balanced with ask_all. Engine changes: a `fast` plan with a date uses a step holding cost at the date; `reserve` builds no path and never enters `stale`, and offers below its number go to `decline_offer` (a counter at the floor) or ask; D15 skips `reserve` and `check`. `end_unsold` stays ask and not promotable; `fallback` only preselects its answer. Always accept is offered, never preset. A suggested price never goes below `floor_cents`. Also wanted: a read of the five choices with days and you-keep before one is picked (e.g. `GET /v1/items/:id/plan-choices`), with per-site sold prices.
 
-**6. Standing** on each listing ([score](../../../../spec/features/score.md#standing-against-the-market)), recomputed with the success score and sent on `score.change`:
+**6. Standing** on each listing as `market_standing` (your `strategy.standing` already names the standing levers) ([score](../../../../spec/features/score.md#standing-against-the-market)), recomputed with the success score and sent on `score.change`:
 
 ```json
-"standing": {"word": "on_pace", "place": {"rank": 3, "of": 14, "basis": "price"},
+"market_standing": {"word": "on_pace", "place": {"rank": 3, "of": 14, "basis": "price"},
              "outlook": {"days_lo": 4, "days_hi": 9},
              "fix": {"change": "Add a photo of the tag", "points": 6, "action_id": "act_tagphoto"},
              "citation_id": "ci_77a", "state": "shown"}
@@ -60,6 +60,8 @@ Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202
 
 **7. Your style** endpoint: `GET`, `PATCH /v1/me/style` over the existing `style_profile`.
 
+**7b. Smaller asks**, each a row in [pages §8](../../../../spec/pages.md#8-what-the-pages-need-that-the-canon-does-not-have-yet): a purpose on the capture (`sell`, `appraise`, `find`) beside `capture.mode`; a realtime session for talk mode; an import preview ("We found these"); job events for a visitor's search; the open-decision count and top kind per item on `GET /v1/items`; web sessions (storage, CORS, Apple and Google web client ids); `format=pdf` on records, or tell us to drop it.
+
 **8. One name for the relink card.** The canon's decision kind is `relink`; [protocol and adapters §3.6](../../../../spec/engines/protocol-and-adapters.md#36-how-every-event-reaches-the-system-agent-proposal) says `account_stale`. Pick one; the pages use whichever you keep.
 
 ## How we build at the same time
@@ -67,8 +69,8 @@ Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202
 From [parallel-build.md](../../../../spec/plans/parallel-build.md):
 
 - The seam is `spec/examples/` (`T0-2`). The pages need it first, so it is the most valuable thing your side can land: one request and response per endpoint, the stream frames for one job, and every error.
-- The screens call the API through one client in `app/src/api/` (task `W0-1`, Ben's side). When a route does not exist yet, the client answers from `spec/examples/`; when stream 15 adds the route, the real answer flows with no change on either side. `MOCK=<names>` forces the example for a demo. Nothing on Ben's side writes `app/src/app/v1/` or `spec/examples/`, which [workstreams](../../../../spec/plans/workstreams.md) gives to stream 15. Nobody waits.
-- The page waves are timed to your packet 45 clock (21:45, 23:30, 02:00, 03:00 Central), so the thin path is on screen when your wave 1 walk goes green.
+- The screens call the API through one client in `app/src/api/` (task `W0-1`, Ben's side). When a route is not in the edge's route list yet (a manifest, not a 404, since your 404 also means "not yours, or gone"), the client answers from `spec/examples/`; when stream 15 adds the route, the real answer flows with no change on either side. `MOCK=<names>` forces the example for a demo. Nothing on Ben's side writes `app/src/app/v1/` or `spec/examples/`, which [workstreams](../../../../spec/plans/workstreams.md) gives to stream 15. Nobody waits.
+- The pages run on the examples until your wave 2 is done at 02:00, so they never wait on your clock; they meet your checkpoints (21:45, 23:30, 02:00, 03:00 Central) to swap mocks for real routes as each lands. Joining is in your 03:00 to 07:00 leeway, as packet 45 already says.
 - The website is the same Expo Router codebase on the web (react-native-web is already installed), so the edge stays in the Expo API routes and is hosted with the web build. This replaces "the edge on Next.js" from app/README. Your call; option C there keeps Next.js for the signed-out Home only.
 - The first wave is the thin path both sides already agreed: sign-in, ＋, capture, identify, a price range, one eBay listing, a Today card.
 
@@ -76,11 +78,11 @@ From [parallel-build.md](../../../../spec/plans/parallel-build.md):
 
 | Your line | Ben's line | What depends on it |
 |---|---|---|
-| The success score is shown by color ([score](../../../../spec/features/score.md)) | The brand allows four state colors, though Ben said at 02:59 not to weight color blindness too much ([words](../../../../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)) | Proposed in [pages §3](../../../../spec/pages.md#3-what-every-card-and-tile-tells): stage keeps the four fills; standing (your bands) is drawn separately, with at most one new hue (ember, Hot only) if Ben picks it. Your bands map to the words; the API sends `standing.word`, never a color |
+| The success score is shown by color ([score](../../../../spec/features/score.md)) | The brand allows four state colors, though Ben said at 02:59 not to weight color blindness too much ([words](../../../../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)) | Proposed in [pages §3](../../../../spec/pages.md#3-what-every-card-and-tile-tells): stage keeps the four fills; standing (your bands) is drawn separately, with at most one new hue (ember, Hot only) if Ben picks it. Your bands map to the words; the API sends `market_standing.word`, never a color |
 | Capture opens on the type pick ([capture](../../../../spec/features/capture.md)) | Capture opens on the guided shot list ([decision](../../../../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)) | The camera page; [pages §6.5](../../../../spec/pages.md#65-camera) follows yours with the shot list as the process after the pick |
 | A sale is batched with other alerts ([today](../../../../spec/features/today.md)) | Ben's research proposes an immediate push for a sale ([today research §3](../../../../research/today/ben/today-wants-alerts-and-clickability.md#3-alerts-a-person-perks-up-at)) | The notifications step and the push rules |
 | You answered B6, B7, B8, B10 and J17 in [open-questions](../../../../spec/open-questions.md) | Ben has not agreed on record | Studio, capture and photo defaults |
 
 ## Next action
 
-Nate: have stream 15 land `T0-2` with the rows above in it, pick the sign-in library and the relink name, and reply here with anything you would shape differently. Ben's agents build the parts kit and the wave 1 pages against the examples meanwhile.
+Nate: have stream 15 land `T0-2` with the rows above in it, pick the sign-in library and the relink name, say which stream owns sign-in (`AU-1` writes `app/src/edge/auth.ts`, which no stream owns yet), and reply here with anything you would shape differently. Ben's agents build the parts kit and the wave 1 pages against the examples meanwhile.

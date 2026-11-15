@@ -235,7 +235,8 @@ No passwords are ever held, for the app or for a marketplace. A store rule to ch
 | `POST /v1/auth/refresh` | `{refresh_token}` | a new pair; the old refresh token stops working |
 | `POST /v1/auth/signout` | | `204`; the refresh token is revoked |
 | `GET /v1/me` | | `user` plus `onboarding {done_steps[], finished_at?}` and `auth_methods[]` |
-| `PATCH /v1/me` | `{onboarding_step?, notification_pref?, push_token?, tutorial_seen?}` | the user |
+| `PATCH /v1/me` | `{onboarding_step?, notification_pref?, push_token?, tutorial_seen?}`; `onboarding_step` adds one step to `done_steps`; `notification_pref[]` already exists on `user`, only the write is new | the user |
+| `POST /v1/auth/link/{apple,google,email}` | the same body as sign-in, with the session | `auth_methods[]`; links a second method to this account |
 
 Errors follow §7: a wrong or expired code is `400 invalid` with `retry.by: user`; too many tries is `429`.
 
