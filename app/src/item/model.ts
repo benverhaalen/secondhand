@@ -115,6 +115,12 @@ function mode(xs: number[]): number {
   return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0] ?? 0;
 }
 
+// Whether the LiDAR scan measured the item, which is what lets the AI redraw run: a redraw is held to the item's real
+// size, and only the scan is trusted for it (Ben, 09:09: "only allow this from lidar flow too"; jobs/studio/plan.py relays
+// only when measured_by is "lidar"). In the app only the scan writes source 'measured' (engines/capture/fields.ts: the
+// measured way needs has_lidar); a size the person typed is 'you_said', one off a label 'label', a published one 'spec'.
+export const scanned = (it: Item) => it.attributes.some(a => a.source === 'measured' && a.value !== null);
+
 // How many photos the item has: its own, plus the shots after the cover that Ben's real items carry.
 export const photoCount = (it: Item) => it.photos.length + (it.photos[0] ? MORE_SHOTS[it.photos[0].key]?.length ?? 0 : 0);
 
@@ -261,6 +267,28 @@ export function priceFor(it: Item, c: Choice): Cents | null {
   if (!v) return null;
   const at = { sell: (v.low + v.high) / 2, fast: v.low, best: v.high, reserve: Math.max(v.high, floor), check: v.high }[c];
   return Math.max(whole(at), floor);
+}
+
+// The three ways to price (Ben, 09:09: "our algorithm can price to sell. it can price to the market ... shouldnt it end up
+// showing what each of these toggles is meant to show?"). Each is a mark on the price slider (valuation.md, The price
+// slider; posture.ts MARKS): Gone fast is quick (0.15), Sell it is balanced (0.5), Best price is max_return (0.85).
+// For each, what the person would see on the Plan: the price, what they get on the best site the plan posts to, and how
+// fast it sells when the engine has a sale curve for the item (valuation.pace). No curve, no days: none is made up.
+export const PRICE_MODES = ['fast', 'sell', 'best'] as const;
+export type PriceMode = typeof PRICE_MODES[number];
+export type ModeRow = { choice: PriceMode; label: string; price: Cents; get: Cents | null; days: number | null; p30: number | null; line: string };
+export function priceModes(w: World, it: Item, flipped: Site[] = []): ModeRow[] {
+  return PRICE_MODES.flatMap(choice => {
+    const price = priceFor(it, choice);
+    if (price === null) return [];
+    const on = planSites(w, it, price, flipped).filter(s => s.on && s.keep !== null);
+    const get = on.length ? Math.max(...on.map(s => s.keep ?? 0)) : null;
+    const pace = it.valuation?.pace?.[choice] ?? null;
+    const days = pace?.days_t50 != null ? Math.max(1, Math.round(pace.days_t50)) : null;
+    const line = [get !== null ? `You get ${usd(get)}` : null, days !== null ? `Sells in about ${days} ${days === 1 ? 'day' : 'days'}` : null,
+      pace ? `${Math.round(pace.p_sale_30 * 10)} in 10 sell within 30 days` : null].filter(Boolean).join('. ');
+    return [{ choice, label: CHOICES.find(c => c.id === choice)?.label ?? choice, price, get, days, p30: pace?.p_sale_30 ?? null, line }];
+  });
 }
 
 // What a listing at this price would keep on each site the plan uses, and what a site that is left out says. `flipped`
