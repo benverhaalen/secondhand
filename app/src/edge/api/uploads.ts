@@ -44,4 +44,12 @@ export const handlers: Record<string, Handler> = {
   'PUT /v1/uploads/:id': (ctx, req) => (upload ??= createUploads(photos()))(ctx, req),
 };
 
-export const manifest = [{ endpoint: 'PUT /v1/uploads/:id', source: 'engine' as const, auth: 'none' as const }];
+export const manifest = [{ endpoint: 'PUT /v1/uploads/:id', source: 'engine' as const, auth: 'none' as const }, { endpoint: 'GET /v1/photos/:id', source: 'engine' as const, auth: 'user' as const }];
+
+export const readPhoto: Handler = async ctx => {
+  const photo = await photos().read(ctx.user_id!, ctx.params.id);
+  if (!photo) throw new ApiError('not_found', 'photo not found', 'read');
+  return new Response(new Uint8Array(photo.bytes), { headers: {
+    'Content-Type': photo.content_type, 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff',
+  } });
+};

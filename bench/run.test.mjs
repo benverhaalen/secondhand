@@ -83,6 +83,16 @@ test('runner selects owned items and rejects an unknown set', async () => {
   await assert.rejects(run({manifestPath:path,outRoot:dir,set:'other',ask}),/invalid set/);
 });
 
+test('a Google Shopping read through treg is recorded on the api lane instead of throwing', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-api-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]}));
+  const result={searched:[{site:'google_shopping',kind:'search',url:null,outcome:'hit',ms:900,count:3}],results:[]};
+  const records=await run({manifestPath:path,outRoot:dir,sleep:async()=>{},ask:async endpoint=>endpoint==='/v1/search'?reply({id:'job',kind:'search',state:'running',result}):endpoint.startsWith('/v1/jobs/')?reply({id:'job',kind:'search',state:'done',result}):reply({code:'unauthenticated'},401)});
+  const search=records.find(r=>r.question==='search');
+  assert.deepEqual(search.reads,[{site:'google_shopping',lane:'api',ms:900,outcome:'hit',rows:3,warm:false}]);
+  assert.equal(search.cost.cents,null);
+});
+
 test('search reads retain lanes, count citations and go cold then warm without counting polls twice', async () => {
   const dir=await mkdtemp(join(tmpdir(),'bench-reads-')); const path=join(dir,'manifest.json');
   await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'},{id:'two',query:'shoes'}]}));

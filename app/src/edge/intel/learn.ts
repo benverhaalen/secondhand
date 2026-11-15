@@ -9,28 +9,35 @@ export function declareLearning(store: ParamStore): void {
 }
 
 export interface SettledContribution {
+  person?: string; outcome_id?: string;
   kind: QuestionKind;
   stage: Stage;
   called: readonly string[];
   used: readonly string[];
 }
 
+const learned = new WeakMap<ParamStore, Set<string>>();
+
 // The caller commits these observations in the same transaction as answer.settled.
 export function updateContribution(store: ParamStore, answer: SettledContribution, at: string): void {
   if (answer.stage !== 'settled') throw new Error('contribution requires a settled answer');
+  const key = answer.outcome_id ? JSON.stringify([answer.person, answer.kind, answer.outcome_id]) : null;
+  const seen = learned.get(store) ?? new Set<string>();
+  if (key && seen.has(key)) return;
   const called = new Set(answer.called);
   const used = new Set(answer.used);
   if ([...used].some(id => !called.has(id))) throw new Error('a used target must have been called');
   for (const target_id of called) {
-    const scope = { kind: answer.kind, segment: target_id };
+    const scope = { kind: answer.kind, segment: target_id, ...(answer.person ? { person: answer.person } : {}) };
     const previous = store.rows('intel_contribution', scope).find(p => p.status === 'champion');
     const days_since_last = previous?.promoted_at ? Math.max(0, (Date.parse(at) - Date.parse(previous.promoted_at)) / 86_400_000) : 0;
     store.observe('intel_contribution', scope, { success: used.has(target_id) ? 1 : 0, weight: 1, days_since_last }, at);
   }
+  if (key) { seen.add(key); learned.set(store, seen); }
 }
 
-export function contributionMean(store: ParamStore, kind: QuestionKind, target_id: string): number {
-  const value = store.read('intel_contribution', { kind, segment: target_id }).value;
+export function contributionMean(store: ParamStore, kind: QuestionKind, target_id: string, person?: string): number {
+  const value = store.read('intel_contribution', { kind, segment: target_id, ...(person ? { person } : {}) }).value;
   if (typeof value !== 'object' || value === null || !('alpha' in value) || !('beta' in value)) throw new Error('invalid contribution Beta');
   const { alpha, beta } = value;
   if (typeof alpha !== 'number' || typeof beta !== 'number' || !Number.isFinite(alpha) || !Number.isFinite(beta) || alpha <= 0 || beta <= 0) throw new Error('invalid contribution Beta');
@@ -44,12 +51,12 @@ function nonnegative(value: number, name: string): void {
 }
 
 // Only used when the kind's cents ceiling binds. Free targets save no cents by being cut.
-export function cutOrder<T extends ContributionTarget>(store: ParamStore, kind: QuestionKind, targets: readonly T[]): T[] {
+export function cutOrder<T extends ContributionTarget>(store: ParamStore, kind: QuestionKind, targets: readonly T[], person?: string): T[] {
   return targets.map(target => {
     nonnegative(target.p95_ms, 'p95_ms');
     if (target.p95_ms === 0) throw new Error('p95_ms must be positive');
     nonnegative(target.cents, 'cents');
-    const ratio = target.cents === 0 ? Infinity : contributionMean(store, kind, target.target_id) / (target.p95_ms * target.cents);
+    const ratio = target.cents === 0 ? Infinity : contributionMean(store, kind, target.target_id, person) / (target.p95_ms * target.cents);
     return { target, ratio };
   }).sort((a, b) => a.ratio - b.ratio).map(({ target }) => target);
 }

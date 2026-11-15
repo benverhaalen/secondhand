@@ -8,7 +8,9 @@ Images to put in, in this order: the $3 against $17 card; one phone screen of To
 
 ## secondhand
 
-**Your second hand for buying and selling used things.** Take a few photos of something you own, and it's listed on the right sites at the right price, buyers are answered, and it comes down everywhere when it sells. Looking for something used? One search across every site, with a fair price and the total with shipping.
+**Your second hand for buying and selling used things.** We're building secondhand to help you turn a few photos into a plan for selling: what the item is worth, where to list it, and what you would keep after fees. The goal is to handle the work around a sale while you approve the decisions and send the replies. For buyers, the goal is to compare used listings across marketplaces, including shipping.
+
+The app demonstrates that workflow with demo data. Its engines have separate tests and dated live experiments; a complete sale across all five marketplaces is still to be demonstrated. Our historical StockX research benchmark recorded **84% fewer big pricing misses**, with the comparison and limits below. [Feature proof](https://github.com/benverhaalen/secondhand/blob/main/product/features-proof.md).
 
 ## Inspiration
 
@@ -20,9 +22,21 @@ AI can already write a listing in seconds. That was never the hard part. The har
 
 ## Let's dig in
 
-We read the theme three ways. **Dig through what's buried:** the closet, the basement, the things worth money that nobody uses (eBay found its sellers had 36 sellable items at home on average). **Dig deep:** we didn't stop at the happy path. We checked every order of events for two buyers paying at once, 931,406 of them on four sites, and planted 174 lies in our own photos to test the photo check. **And keep judgment in charge:** secondhand does the work for you, but code checks your money and your address, and anything over your line waits for your tap. The theme comes from Dean Remzi Arpaci-Dusseau's essay ["Time to Dig"](https://cai.wisc.edu/2026/07/01/time-to-dig-founding-dean-essay/), which asks for technology that is "clearly for us", not done to us. That is the rule we built secondhand on: it's always you.
+We read "Let's dig in" three ways.
 
-## What it does
+**Dig through your closet.** Start with something you meant to sell and never did. In its [2020 Recommerce Report](https://static.ebayinc.com/assets/Uploads/Documents/eBay-Recommerce-Report-2020.pdf), eBay reported an average of 36 sellable household items for its U.S. respondents. Our goal is to make selling it worth the trouble, with you in charge of the price, the conversation and the handoff.
+
+**Dig into the complex tooling.** Follow that item beneath the screen: comparable sales behind a price, fees behind what you keep, and a photo checked against the original. We explored 931,406 states in a model of one item selling on four sites, and planted 174 lies in our photos to find what the check missed. Those are tests of the mechanisms; the complete live selling journey is still to be demonstrated.
+
+**Dig into what we got wrong.** Our first pricing model missed which shoe it was. We changed it to start from that product's own recent sales. On the same 39,707 historical StockX sneaker sales, the research model then made **84% fewer big pricing misses** than the shoe's 90-day sold-price median: **1.5% versus 9.8%** more than 20% from the actual sale price. This was the development window where we found the bug, covering deadstock sneakers from November 2018 to February 2019. It measures historical pricing accuracy, not seller savings or sale speed, and it is not a result for the live app. On 35,862 paired sales from eight unseen months, the fixed model priced 97.5% within 20% of the sale price, against 90.5% for the median. [Development results](https://github.com/benverhaalen/secondhand/blob/main/scripts/bench/out/backtest-stockx.json). [Unseen-month results](https://github.com/benverhaalen/secondhand/blob/main/scripts/bench/out/backtest-stockx-2018-03-to-10.json).
+
+We found a similar failure in the photo check: aligning two images could hide a stretch. The planted tests exposed it, and we changed the check. Digging in means showing what failed and what we learned from it.
+
+The theme comes from Dean Remzi Arpaci-Dusseau's essay ["Time to Dig"](https://cai.wisc.edu/2026/07/01/time-to-dig-founding-dean-essay/), which calls for tools that are "clearly for us". That is the connection to our handoff rule: secondhand helps with the work, and you keep the judgment.
+
+## The workflow we're building
+
+These are the intended selling and buying journeys. The [feature proof](https://github.com/benverhaalen/secondhand/blob/main/product/features-proof.md) distinguishes what is built, measured, observed live and designed.
 
 **Selling.** You take a few guided photos. secondhand works out what the thing is, measures it, and finds what it really sells for. Then it:
 - picks the sites where it will sell, and tells you where it won't. A couch goes to Facebook Marketplace, not Depop, because Depop only ships and its buyers want clothes;
@@ -34,11 +48,13 @@ You see one short list of decisions. Anything that touches your money, your addr
 
 **Buying.** Type, photograph or paste a link to something you want. One search covers eBay, Depop, Poshmark, Mercari and Facebook Marketplace, plus official stores. You get what it usually sells for, the total with shipping, and a heads-up when new or refurbished is the better buy. Save it, and it watches for you.
 
-**It's free.** Listing an item costs us a few cents, so we don't charge sellers or buyers. We earn a referral when someone buys through us, and that never changes which listing we show first.
+**Our goal is a free app.** We plan to fund it through purchase referrals, with referral fees excluded from ranking. Estimated per-item processing costs are only part of that plan; the full operating cost and referral revenue still need to be measured.
 
 ## One jacket, start to finish
 
-You take three photos of a $40 jacket. It becomes one record: what it is, its size, its flaws, each fact pointing to the spot in the photo it came from. Before anything goes live, it picks the sites and the price from what similar jackets actually sold for, and where there's too little to go on, it says so. You set the limits once; inside them it acts, outside them it asks. Saturday at 2:14 it sells on Depop. From that moment the other listings are a risk, so it takes them down and checks each one is gone. If a second buyer pays anyway, that's a case we planned for: we counted every way it can happen, 931,406 of them, and each ends with you deciding. Every step is written down and never overwritten.
+This is a worked example of the intended journey, not a recorded live sale.
+
+You take three photos of a $40 jacket. It becomes one record: what it is, its size, its flaws, each fact pointing to the spot in the photo it came from. Before anything goes live, it picks the sites and the price from what similar jackets actually sold for, and where there's too little to go on, it says so. You set the limits once; inside them it acts, outside them it asks. Saturday at 2:14 it sells on Depop. From that moment the other listings are a risk, so it takes them down and checks each one is gone. If a second buyer pays anyway, that's a case we planned for: the model explored 931,406 states for one item across four sites and flagged every state with multiple payments. Every step is written down and never overwritten.
 
 ## How we built it
 
@@ -48,7 +64,7 @@ You take three photos of a $40 jacket. It becomes one record: what it is, its si
 
 - **One record per item.** Every fact on an item (brand, size, a stain) keeps where it came from: a region of a photo, a line of the tag, a measurement, or "you said". Listings for every site are built from that record.
 - **A harness for each marketplace.** eBay through its official API. For the others, your own signed-in session runs in a cloud browser (Browser Use Cloud) and does each action the way the site's own web app does it, then reads the site back to confirm. Nothing counts as done until the site shows it.
-- **Seeing a sale without watching all day.** A sold Poshmark or Mercari listing stays public with a sold mark, so we check the public page, which takes about half a second (0.44 s, observed), and open a signed-in browser only to confirm.
+- **Seeing a sale without watching all day.** A sold Poshmark or Mercari listing stays public with a sold mark, so we check the public page, which took 0.44 seconds in one observed read, and use a signed-in browser for actions that require one.
 - **A fee engine.** One dated row per site per fee. On a $20 item you keep $18.69 on Depop and $16.00 on Poshmark; to keep $17 you'd ask $18.25 and $21.25.
 - **Photos that can't lie.** Clean up only adjusts the light in your own photo. AI relighting is optional, labeled, and checked against your original before you see it: color, structure, and every logo, tag and flaw box. The AI doesn't keep sizes on its own: on a tee that tapes 21.25 in across, it drew 18.6 in, and all 15 raw redraws came out 8 to 21% narrow. So every AI photo is measured against your tape before it posts, set back to the measured shape or thrown out; the three published slides landed within 1.2%. That's one tee so far, not a rate. The real photo is always first.
 - **Databricks** [only what's deployed]: live state in Lakebase, every event and comparable sale in Delta tables, photos in a Unity Catalog volume, every model call through one gateway, and every agent step as an MLflow trace that the app shows when you tap Why?.
@@ -63,25 +79,23 @@ Three things we haven't seen another tool do (we checked the crosslisters, the p
 
 ## How deep we dug
 
-The theme says dig. We took it literally, on the product and on how we built it. Every number below was counted in the repo on 2026-11-15, and every link goes to the file.
+The theme says dig. We took it literally, on the product and on how we built it. The links below lead to the decisions, checks and measured results.
 
 **How the project was made**
 
-- **Every decision has a reason someone can check.** 44 decisions, each with who made it and why ([decisions](https://github.com/benverhaalen/secondhand/blob/main/product/decisions.md)). 314 things Ben and Nate said about the product, quoted word for word and linked from wherever they're used ([words](https://github.com/benverhaalen/secondhand/blob/main/product/words.md)). Nothing gets marked decided without one of them agreeing.
-- **The rules are written down, then enforced by code.** A brand constitution, a UI constitution and a pitch constitution give a reason for every rule. 185 UI rules are tracked, and 23 check files fail the build when one is broken ([checks](https://github.com/benverhaalen/secondhand/blob/main/.agents/checks)). When someone corrects a mistake a script could catch, the correction becomes a failing test, not another line of advice.
-- **Research before building.** 227 research notes, every claim in them marked observed (we saw it), asserted (someone said it) or inferred (our reasoning) ([research](https://github.com/benverhaalen/secondhand/blob/main/research)). Pricing alone has 32 money rules and 29 market rules, each with its method, when it's shown, when it's hidden, and how we'd know it was wrong ([money](https://github.com/benverhaalen/secondhand/blob/main/spec/determinations/money.md), [market](https://github.com/benverhaalen/secondhand/blob/main/spec/determinations/market-insight.md)).
-- **About 2,300 JavaScript test cases and 590 Python tests**, run on every push.
+- **Every decision has a reason someone can check.** The project records who made each decision and why ([decisions](https://github.com/benverhaalen/secondhand/blob/main/product/decisions.md)). The decision record links to what Ben and Nate said ([words](https://github.com/benverhaalen/secondhand/blob/main/product/words.md)). Nothing gets marked decided without one of them agreeing.
+- **The rules are written down, then enforced by code.** A brand constitution, a UI constitution and a pitch constitution give a reason for every rule. The repo records UI rules and checks them in code ([checks](https://github.com/benverhaalen/secondhand/blob/main/.agents/checks)). For example, the render check flags Clofie outside the secondhand wordmark.
+- **Research before building.** The research notes mark what we observed, what a source said and what we inferred ([research](https://github.com/benverhaalen/secondhand/blob/main/research)). Pricing alone has 32 money rules and 29 market rules, each with its method, when it's shown, when it's hidden, and how we'd know it was wrong ([money](https://github.com/benverhaalen/secondhand/blob/main/spec/determinations/money.md), [market](https://github.com/benverhaalen/secondhand/blob/main/spec/determinations/market-insight.md)).
 - **Everything is logged against one contract**: 27 event kinds, personal data masked, and a checker that replays a run and fails on a leak ([log](https://github.com/benverhaalen/secondhand/blob/main/log/README.md)).
 - **A backtest designed before any data, so it can't be tuned to flatter us.** 32 decisions: how to split by time so nothing leaks, what to compare against (the eBay sold median people look up today), why the headline is "within 20%" when identical items resell about 11% apart, and how to test the test itself ([plan](https://github.com/benverhaalen/secondhand/blob/main/spec/plans/backtest/plan.md)).
 
 **Technology used in ways we haven't seen**
 
-- **A model checker for selling one thing in four places.** Instead of testing a few cases, we listed every order in which posts, payments, take-downs and failures can happen to one item: 931,406 states on four sites. Every state where two buyers paid ends with you seeing it, and a deliberately broken refund rule is caught in 6 steps (measured, `node scripts/bench/bench.mjs`).
+- **A model checker for selling one thing in four places.** The model explored 931,406 states for one item on four sites, including simulated failures. It flagged every state with multiple payments and caught a deliberately broken refund rule in six steps. [Model results](https://github.com/benverhaalen/secondhand/blob/main/scripts/bench/out/bench-sites-4.json).
 - **AI photos measured against the item.** The AI on its own drew a tee that tapes 21.25 in across as 18.6 in, and all 15 of its raw drafts came out 8 to 21% narrow. Every published slide landed within 1.2%, because each redraw is measured against the tape, set back to the real shape or thrown out ([measure proof](https://github.com/benverhaalen/secondhand/blob/main/research/studio/ben/measure-proof.md)). On LiDAR phones the measurement comes from the capture itself (designed; Ben's call). The same check catches 173 of 174 planted lies with plain image math, not another model.
 - **A used item priced like a thinly traded asset.** A hedonic model with calibrated ranges and comparable sales weighted by how close they are, across sites, after collapsing a cross-post into one sale ([market.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/valuation/market.py), [cluster.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/identity/cluster.py)). With too few sales, it refuses to give a price and says why.
 - **Identification that knows when it isn't sure.** Four ways of recognising an item run at once, and a conformal set decides how many candidates to show you, so "not sure" is measured, not guessed ([ladder.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/identity/ladder.py)).
 - **Site readers that repair themselves.** When a page changes, a fast typed model picks which data on the page are the listings, reading text only, and the fix becomes the new recorded step: 48 of 48 listings found in 0.64 s (observed).
-- **A sale seen for almost nothing.** Poshmark and Mercari keep sold listings public, so a plain read (0.44 s, observed) replaces a browser kept open, which would cost about $170 a month per person.
 - **Databricks as the place every learned number lives.** Each learned weight is a versioned row; a nightly job fits a challenger and promotes it only when it beats the current one on held-out data, with a rollback ([registry.py](https://github.com/benverhaalen/secondhand/blob/main/jobs/param/registry.py), [bundle](https://github.com/benverhaalen/secondhand/blob/main/deploy/databricks.yml)). Sign-ins sit in a secret scope readable only by the sign-in job. Genie answers questions over our market tables with the query it ran.
 - **Codex as an image pipeline with a judge.** Every image is its own fresh Codex call with nothing but the sign-in, told how it will be judged rather than what to draw; a separate call critiques it. Cleaning out the context cut Codex's fixed cost per call from 9,030 tokens to 4,089 (measured, [image-gen](https://github.com/benverhaalen/secondhand/blob/main/.agents/skills/image-gen/SKILL.md)).
 - **An API for other AI agents.** Search, prices, history and trends as MCP tools, serving only data we're allowed to share and never anything about a person ([mcp.ts](https://github.com/benverhaalen/secondhand/blob/main/app/src/edge/mcp/mcp.ts)).
@@ -97,19 +111,17 @@ We didn't want an agent that acts alone. In September, an assistant on another p
 
 ## Challenges
 
-- **Two sites can sell the same thing at once.** We modelled every order of events for one item on three sites, 60,936 of them, and checked that a second buyer never goes unnoticed and nothing gets stuck. We broke the refund rule on purpose to make sure the check can fail: it found the double sale in 6 steps.
+- **Two sites can sell the same thing at once.** Our three-site model reached 60,936 states for one item. We checked whether each simulated second payment triggers an alert. We broke the refund rule on purpose to make sure the check can fail: it found the double sale in 6 steps.
 - **Proving an AI photo is honest.** We painted out details, swapped tag text, stretched, shifted colors and mirrored Ben's own photos, then checked whether the gate caught them: 173 of 174. The test found a hole first (lining the photos up undid a stretch), so the gate now checks for stretch too. It's cautious, and holds about half of the honest relights too; when it holds one, you get your real photo instead.
 - **Sites that refuse robots.** Depop and Mercari turned away a headless browser, so each site's harness is built from how that site actually works, and every action falls back to typed steps, then to an agent, when a page changes.
-- **Cost.** A browser left open to watch for sales would cost about $170 a month per person. The half-second public check is what makes a free app possible.
+- **Cost.** An always-open browser would be expensive. We’re testing public reads as a cheaper check when the marketplace shows the listing status.
 
 ## Accomplishments we're proud of
 
 - [Live on the web at URL.] [Submitted to the App Store / App Store coming soon.]
 - 173 of 174 planted photo lies caught; 76 of 76 cleaned-up photos within the color limit.
-- 60,936 orders of events checked on 3 sites, and 931,406 on 4, with no silent double sale.
-- A sale seen in 0.44 s from a public page.
-- [1,420 tests on every push, once CI is green.]
-- 184 research notes, every claim marked observed, asserted or inferred, and 39 dated product decisions, so every rule in the app has a reason we can show.
+- The four-site model flagged every simulated state with multiple payments.
+- The frozen research model priced 97.5% of 35,862 paired sneaker sales within 20% of what buyers paid in eight unseen months.
 
 ## What we learned
 

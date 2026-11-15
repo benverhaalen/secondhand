@@ -15,8 +15,12 @@ const chapters = [
   ['04', 'Follow through', 'follow-through'],
 ];
 
+function ExternalArrow() {
+  return <svg className={styles.externalArrow} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>;
+}
+
 function Source({ path, children }: { path: string; children: React.ReactNode }) {
-  return <a className={styles.source} href={`${repo}${path}`}>{children}<span aria-hidden="true"> ↗</span></a>;
+  return <a className={styles.source} href={`${repo}${path}`}>{children}<ExternalArrow/></a>;
 }
 
 function StepIcon({ type }: { type: 'facts' | 'listing' | 'approve' }) {
@@ -27,7 +31,7 @@ function StepIcon({ type }: { type: 'facts' | 'listing' | 'approve' }) {
 
 export default function Features() {
   return <main id="main" className={styles.page}>
-    <section className={styles.hero} aria-labelledby="features-title">
+    <section className={`${styles.hero} marketing-atmosphere`} data-tone="features" aria-labelledby="features-title">
       <div className={`${styles.wrap} ${styles.heroGrid}`}>
         <div className={styles.heroCopy}>
           <p className={styles.eyebrow}>Features</p>
@@ -39,7 +43,7 @@ export default function Features() {
           </nav>
         </div>
         <figure className={styles.heroFigure}>
-          <img src="/marketing/app/preview.png" width="880" height="1840" alt="Secondhand listing review for a gold Marquette tee, with separate eBay and Depop previews, editable prices and a final posting action." fetchPriority="high" />
+          <img src="/marketing/app/preview.png" width="880" height="1840" alt="Secondhand listing review for a Carhartt jacket, with separate eBay and Depop previews and editable prices, ready for a review decision." fetchPriority="high" />
           <figcaption>Your item. Your price. Your approval.<span>App preview · Sample data</span></figcaption>
         </figure>
       </div>
@@ -51,9 +55,9 @@ export default function Features() {
       <div className={styles.steps}>
         <article><StepIcon type="facts"/><h3>Read the item.</h3><p>Pull the details from your photos. Check the brand, size and condition before they reach a buyer.</p><Source path="spec/engines/capture.md">How capture works</Source></article>
         <article><StepIcon type="listing"/><h3>Prepare each listing.</h3><p>Turn the same item facts into a title, photos and price for each marketplace you choose.</p><Source path="spec/features/list.md">The listing design</Source></article>
-        <article><StepIcon type="approve"/><h3>You approve.</h3><p>Review what will be posted, see the expected take-home and change the details before you approve.</p><Source path="spec/features/list.md">Review and posting</Source></article>
+        <article><StepIcon type="approve"/><h3>You approve.</h3><p>Check each preview, compare the expected take-home and edit the details before you approve a listing.</p><Source path="spec/features/list.md">Review and posting</Source></article>
       </div>
-      <div className={styles.reasonBand}><div><h3>One item record. A preview for each marketplace.</h3><p>A wrong size or condition can change the price. Keeping the facts together helps each listing describe the same thing, even when the forms differ.</p></div><Source path="spec/engines/protocol-and-adapters.md">Inside the adapters</Source></div>
+      <div className={styles.reasonBand}><div><h3>One item record. A preview for each marketplace.</h3><p>A wrong size or condition can change the price. Keeping the facts together helps each listing describe the same thing, even when the forms differ. This app preview shows the review decision; it does not demonstrate a live marketplace post.</p></div><Source path="spec/engines/protocol-and-adapters.md">Inside the adapters</Source></div>
       <details className={styles.disclosure}>
         <summary><span>What we got wrong: a better-looking photo can change the item.</span><span className={styles.expand} aria-hidden="true">+</span></summary>
         <div className={styles.disclosureBody}><p>A photo edit can remove a flaw that a buyer needs to see. We tested the photo check with deliberately altered images and honest lighting changes.</p><div className={styles.testResults}><p><span>173 / 174</span>planted edits caught across 19 photos</p><p><span>17 / 38</span>honest relights also held for review</p></div><p>The check caught almost all planted edits, but it also held good ones. That tradeoff is visible in the results; it is a reason to keep review in the process.</p><Source path="scripts/bench/out/gate.json">Read the full photo test</Source></div>
@@ -63,13 +67,13 @@ export default function Features() {
     <section id="take-home" className={`${styles.section} ${styles.wrap}`} aria-labelledby="take-home-title">
       <div className={styles.chartHeading}><div><p className={styles.eyebrow}>Compare what you keep</p><h2 id="take-home-title">Same sale.<br/>Different take-home.</h2></div><p className={styles.metric}><span>$2.69</span>more to keep in this example</p></div>
       <figure className={styles.chart}>
-        <figcaption>What you keep on the same $20 sale</figcaption>
+        <figcaption>Illustrative take-home on the same $20 sale</figcaption>
         <div className={styles.barRows}>
           <div className={styles.barRow}><span>Depop</span><div className={styles.track}><div className={styles.depopBar}/></div><span>$18.69</span></div>
           <div className={styles.barRow}><span>Poshmark</span><div className={styles.track}><div className={styles.poshmarkBar}/></div><span>$16.00</span></div>
           <div className={styles.axis} aria-hidden="true"><span>$0</span><span>$5</span><span>$10</span><span>$15</span><span>$20</span></div>
         </div>
-        <div className={styles.chartFoot}><p>Fee calculation, November 14, 2026. Buyer pays $6 shipping; label cost passes through. No tax or boost. This compares fees, not the chance of a sale.</p><Source path="scripts/bench/out/bench-sites-4.json">See the calculation</Source></div>
+        <div className={styles.chartFoot}><p>Repository fee model, November 14, 2026. Buyer pays $6 shipping; label cost passes through. No tax or boost. Actual fees depend on the marketplace and account. This compares modeled fees, not the chance of a sale.</p><Source path="scripts/bench/out/bench-sites-4.json">See the calculation</Source></div>
       </figure>
       <p className={styles.afterChart}>The asking price is only part of the decision. Showing the payout beside it helps you choose where to list with both amounts in view.</p>
     </section>
@@ -101,16 +105,16 @@ export default function Features() {
           <caption>Published capabilities and monthly subscription prices</caption>
           <thead><tr><th scope="col">Tool</th><th scope="col">Useful for</th><th scope="col">Monthly price</th></tr></thead>
           <tbody>
-            <tr><th scope="row"><a href="https://www.ebay.com/help/selling/selling-tools/product-research?id=4853">eBay Product Research ↗</a></th><td>Researching actual eBay sales, including accepted offers.</td><td><a href="https://www.ebay.com/sellercenter/resources/seller-updates/2024-summer/tools">Free for eligible sellers ↗</a></td></tr>
-            <tr><th scope="row"><a href="https://fliptip.ai/">FlipTip Hustler ↗</a></th><td>Photo appraisal, sold-price lookup where supported, listing drafts and profit tracking.</td><td>$9.99 <span>US price listed in FAQ</span></td></tr>
-            <tr><th scope="row"><a href="https://www.vendoo.co/pricing">Vendoo Starter ↗</a></th><td>Cross-listing, inventory management, sale detection and automatic delisting.</td><td>$14.99 <span>US, billed monthly</span></td></tr>
-            <tr className={styles.ownRow}><th scope="row">secondhand</th><td>Pricing, listing review and finding in one workflow, with decisions returned to the person.</td><td>To be announced <span>Customer pricing is not set</span></td></tr>
+            <tr><th scope="row"><a href="https://www.ebay.com/help/selling/selling-tools/product-research?id=4853">eBay Product Research <ExternalArrow/></a></th><td>Researching actual eBay sales, including accepted offers.</td><td><a href="https://www.ebay.com/sellercenter/resources/seller-updates/2024-summer/tools">Free for eligible sellers <ExternalArrow/></a></td></tr>
+            <tr><th scope="row"><a href="https://fliptip.ai/">FlipTip Starter <ExternalArrow/></a></th><td>Photo appraisal, sold-price lookup where supported, listing drafts and profit tracking.</td><td>$1.99 <span>US · 40 scans per month</span></td></tr>
+            <tr><th scope="row"><a href="https://www.vendoo.co/pricing">Vendoo Starter <ExternalArrow/></a></th><td>Cross-listing, inventory management, sale detection and automatic delisting.</td><td>$14.99 <span>US, billed monthly</span></td></tr>
+            <tr className={styles.ownRow}><th scope="row">secondhand</th><td>An app preview combining pricing, listing review and finding, with decisions returned to the person.</td><td>To be announced <span>Customer pricing is not set</span></td></tr>
           </tbody>
         </table>
       </div>
       <p className={styles.tableNote}>Provider documentation checked November 15, 2026. This is a selection of capabilities, not an exhaustive feature list. Plans, regions and limits differ. Marketplace fees are separate. FlipTip has additional publishing and automation features on higher plans.</p>
       <details className={styles.disclosure}><summary><span>How do speed and accuracy compare?</span><span className={styles.expand} aria-hidden="true">+</span></summary><div className={styles.disclosureBody}><p>We have not completed a matched, end-to-end comparison against these products. A marketplace read time is not the time to finish a listing, and a test on one dataset cannot rank a product tested on another.</p><p>The comparison needs the same items, task and endpoint, with corrections and completed attempts recorded alongside the time.</p><Source path="product/numbers.md">Read the measurement plan</Source></div></details>
-      <div className={styles.next}><div><p className={styles.eyebrow}>Dig into the evidence</p><h3>What is behind the price?</h3><p>Follow the records, checks and decisions through our data system.</p></div><Link className={styles.pill} href="/data-use">Explore Data Use <span aria-hidden="true">→</span></Link></div>
+      <div className={styles.next}><div><p className={styles.eyebrow}>Dig into the evidence</p><h3>What is behind the price?</h3><p>Follow the records, checks and decisions through our data system.</p></div><Link className="marketing-pill" href="/data-use">Explore Data Use <span aria-hidden="true">→</span></Link></div>
     </section>
   </main>;
 }

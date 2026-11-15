@@ -2534,3 +2534,15 @@ Nate, the orchestrator's session, 2026-11-15, about 14:59 UTC by the machine clo
 > well after a good 5 seconds, close it so when they return its their home, or on app redirect close it
 
 Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (`BURST_HOLD_MS`: the colour folds back five seconds after the site opens, or as soon as the app is active again, whichever is first).
+
+## 2026-11-15 nate the camera's guide animates like Apple's Measure, and the camera ask is bordered and focused
+Nate, the orchestrator's session, 2026-11-15, about 15:01 UTC by the machine clock, with a screenshot of `/camera?mode=worth` on the web: "Photograph the front" in the header, corner brackets, the "use your camera" text with Allow camera and Choose photos floating in the middle of the frame, "What is it?" under it.
+> the way it says photograph the front , can we fix this , there should be the svg animations that are like apples style with the measure app, the use your camera should , while custom styled, be bordered and focused more. Try to adhere this to better guideline design standards and professional ui's
+
+Used in: the camera screen (Ben's area); see the session started for it.
+
+## 2026-11-15 nate the story of the product, for the website and the video
+Nate, the orchestrator's session, 2026-11-15, about 15:09 UTC by the machine clock.
+> lets focus on now with all benchmarks established , things appearing impressive, remember focusing on the story of our product, how we are aimed around a problem first, to help users find an easy way to measure, manage, and monitor second hand selling, simplify the hasstle of listing items, tracking its performance, how to market it well and handle requests. Driven by an advanced agentic search engine or however to technically but understandably describe it exactly, official terms, built around data bricks to leverage their storage services, security, etc.. and extending feature sets across their retail front and other to provide/deliver/bring something better. With this engine, we've also empowered buyers with a unified search engine that takes any product query, or even interesting question, and utilizes broad, "deeply dug" (that is the prompt, "to dig deep", ) osint and opted in platform search aggregation to deliver market insights, sales trends, fashion statements and industry speculation. We give people a way to negoitate at public sales like garage sales, with an in hand accurate appraiser, assessing, similar or exact product listings offered on online sites, even determining if you want what the price will be. SEND THIS TO BEN FOR WEBSITE AND PERHAPS VIDEO
+
+Used in: [packet 98](../.agents/team/packets/team/98-the-story-for-the-site-and-video.md), for Ben's website and video.

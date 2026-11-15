@@ -1,5 +1,5 @@
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { useEffect, useState } from 'react';
-import { Linking } from 'react-native';
 import { api } from '@/api/client';
 import type { ApiJobRow } from '@/edge/api/jobs';
 import { FootButton, List, Photo, Section, Stack, Txt, log } from '@/ui';
@@ -16,7 +16,7 @@ function JobResult({ job }: { job: CaptureJob }) {
   const result = record(job.result), range = record(result.range), basis = record(result.basis);
   const candidates = Array.isArray(result.candidates) ? result.candidates : Array.isArray(result.set) ? result.set : [];
   const [linkError, setLinkError] = useState<string | null>(null);
-  const open = (url: string) => { setLinkError(null); Linking.openURL(url).catch(error => { log.error('capture.open_match', error); setLinkError('The listing did not open. Try again.'); }); };
+  const open = (url: string) => { setLinkError(null); openMarketplace(url).catch(error => { log.error('capture.open_match', error); setLinkError('The listing did not open. Try again.'); }); };
   if (job.kind === 'valuate') return <Stack>
     {typeof range.q10 === 'number' && typeof range.q90 === 'number' ? <Txt role="headline">{`${dollars(range.q10)} to ${dollars(range.q90)}`}</Txt> : <Txt role="body">There is not enough evidence to show an appraisal yet.</Txt>}
     <Section title="Why"><Txt role="body">{typeof basis.count === 'number' && basis.count > 0

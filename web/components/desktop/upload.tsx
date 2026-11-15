@@ -20,7 +20,7 @@ export function Upload({ close }: { close: () => void }) {
     try {
       setProgress('Preparing upload');
       let capture = await api<Capture>('/v1/captures', { mode: 'shots', purpose: 'sell', intent: 'sell', confirm_mode: 'tap', device: { has_lidar: false, object_capture: false } });
-      const targets = await api<{ photos: { upload: { url: string; method: string } }[]; capture: Capture }>(`/v1/captures/${capture.id}/photos`, { photos: files.map((file, i) => ({ role: i === 0 ? 'front' : 'detail', step: capture.process[i]?.key ?? `upload-${i + 1}`, key: `upload-${i + 1}`, content_type: file.type, bytes: file.size })) });
+      const targets = await api<{ photos: { upload: { url: string; method: string } }[]; capture: Capture }>(`/v1/captures/${capture.id}/photos`, { photos: files.map((file, i) => ({ role: i === 0 ? 'front' : 'detail', step: capture.process[i]?.key ?? `upload-${i + 1}`, key: i === 0 ? 'front' : `upload-${i + 1}`, content_type: file.type, bytes: file.size })) });
       capture = targets.capture;
       for (const [index, file] of files.entries()) {
         setProgress(`Uploading photo ${index + 1} of ${files.length}`);
@@ -31,8 +31,7 @@ export function Upload({ close }: { close: () => void }) {
       }
       setProgress('Saving your item');
       const current = await api<Capture>(`/v1/captures/${capture.id}`);
-      const result = await api<{ item: { id: string } }>(`/v1/captures/${capture.id}/finish`, { version: current.version, ...(title.trim() ? { note: title.trim() } : {}) });
-      if (title.trim()) { const item = await api<{ version: number }>(`/v1/items/${result.item.id}`); await api(`/v1/items/${result.item.id}`, { version: item.version, title: title.trim() }, 'PATCH'); }
+      const result = await api<{ item: { id: string } }>(`/v1/captures/${capture.id}/finish`, { version: current.version, ...(title.trim() ? { title: title.trim() } : {}) });
       refresh(); close(); router.push(`/app/sell/${result.item.id}`);
     } catch(e) { setError(message(e)); } finally { setBusy(false); setProgress(''); }
   }

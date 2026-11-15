@@ -9,6 +9,8 @@ export const RATES = Object.freeze({
   official: null,
   // product/numbers.md:73-91; product/roi.md:54-62: no MCP rate stated.
   mcp: null,
+  // A paid third-party API (treg's Google Shopping, the Apify actors): priced per call, not per minute; the server logs each call's cost_usd.
+  api: null,
   // product/numbers.md:73-91; product/roi.md:54-62: no proxy-byte rate stated.
   proxy_bytes: null,
   // product/numbers.md:75 gives input-token pricing, not a per-call rate; product/roi.md:61 prices a web search.

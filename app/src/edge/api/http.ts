@@ -156,6 +156,7 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
     let res: Response;
     let visitor_id: string | null = null;
     let claimedSlot: string | null = null;
+    let rawRead = false;
     const storage = deps.kv;
     try {
       if (req.method !== method) throw new ApiError('invalid', `${req.method} on ${endpoint}`, 'route');
@@ -169,7 +170,7 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
       const query = new URLSearchParams(url.search); query.delete('user_id');
       let body: Record<string, unknown> = {};
       let binary: Promise<Uint8Array> | undefined;
-      const read = opts.body === 'raw' ? () => binary ??= readRaw(req, opts.max_bytes, log) : undefined;
+      const read = opts.body === 'raw' ? () => binary ??= readRaw(req, opts.max_bytes, log).then(bytes => { rawRead = true; return bytes; }) : undefined;
       const raw = opts.body === 'raw' || method === 'GET' ? '' : await req.text();
       if (raw) {
         try { body = JSON.parse(raw); } catch { throw new ApiError('invalid', 'body is not JSON', 'parse', { by: 'user' }); }
@@ -200,6 +201,12 @@ ${raw}`;
       } else {
         claimedSlot = slot;
         res = toResponse(await handler(ctx, req), request_id);
+        if (user_id && res.ok && method !== 'GET' && !(method === 'DELETE' && pattern === '/v1/me') && !pattern.startsWith('/v1/auth/') && mode === 'user') {
+          try {
+            const { jobs } = await import('./jobs.ts');
+            jobs.append(`user:${user_id}`, 'resource.changed', { path: url.pathname, method, at: new Date(deps.now()).toISOString() });
+          } catch (error) { log.error('api.invalidate', error, { endpoint }); }
+        }
         if (slot) {
           if (res.status >= 500 || res.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() === 'text/event-stream') {
             storage.delete('idem', slot);
@@ -219,6 +226,7 @@ ${raw}`;
       res = Response.json(err.toJSON(), { status: err.status, headers: { 'X-Request-Id': request_id } });
     }
     res.headers.set('X-Request-Id', request_id);
+    if (opts.body === 'raw' && !rawRead) res.headers.set('Connection', 'close');
     if (visitor_id) res.headers.set('X-Visitor-Id', visitor_id);
     deps.started = true;
     log.event('request.end', { status: res.status, ms: deps.now() - t0 });

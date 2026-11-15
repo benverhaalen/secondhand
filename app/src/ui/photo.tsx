@@ -1,6 +1,8 @@
 // Photos lead (C3). A photo's corner is its parent's corner less the parent's padding (Art. 9.1: 36 less 16 is 20), so
 // it never takes a radius of its own. It carries a 1 px inner edge, because a pale photo on white has no edge (Art. 5,
 // What separates rule 4), and a black veil of 8% in dark (Art. 5, Dark mode line 7). With no photo yet, a gray slot.
+import { useSyncExternalStore } from 'react';
+import { api } from '../api/client';
 import { Image, type ImageSource } from 'expo-image';
 import { View } from 'react-native';
 import { useColors } from './theme';
@@ -21,7 +23,7 @@ export type DemoPhoto = keyof typeof DEMO_PHOTOS;
 // A photo is a demo name, a URL, or what require() gave.
 export type PhotoSrc = DemoPhoto | string | number | ImageSource;
 
-const source = (src: PhotoSrc) => (typeof src === 'string' ? (src in DEMO_PHOTOS ? DEMO_PHOTOS[src as DemoPhoto] : { uri: src }) : src);
+const source = (src: PhotoSrc) => typeof src === 'string' ? src.startsWith('/v1/photos/') ? api.photoSource(src) : src in DEMO_PHOTOS ? DEMO_PHOTOS[src as DemoPhoto] : { uri: src } : src;
 
 export function Photo({ src, label, fit = 'card', faded = false }: {
   src?: PhotoSrc | null;
@@ -33,6 +35,7 @@ export function Photo({ src, label, fit = 'card', faded = false }: {
   // An ended item's photo loses its color: color is for what is alive (R30).
   faded?: boolean;
 }) {
+  useSyncExternalStore(api.subscribe, () => api.session.token, () => null);
   const c = useColors();
   const box = fit === 'card' ? { width: size.photoCard, height: size.photoCard } : fit === 'row' ? { width: size.pillCardH, height: size.pillCardH } : { width: '100%' as const, aspectRatio: 1 };
   // data-photo says a photo is drawn here: expo-image puts its <img> in a wrapper of no height on the web, so the render

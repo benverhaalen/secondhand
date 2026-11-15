@@ -5,9 +5,9 @@
 // anything else. Each message of the person's side says who wrote it: You, Sent for you, or Drafted and sent by you; Take
 // over stops drafts in the thread until the person hands it back (spec/ways-out.md §6.3, Ben 05:18 to 05:24).
 // Behavior: app/behavior/messages/[id].json.
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
-import { Linking } from 'react-native';
 import {
   Approve, Message, Composer, DecisionCard, Draft, EmptyState, Guess, Icon, ItemCard, Line, Meta, Nav, Notice, Pill, Row, Screen, Sheet, SiteCopy, SiteLink, Skeleton, Stack, Txt,
   UndoToast, type DecisionStatus, type Span, type TagState,
@@ -29,7 +29,7 @@ const TAG: Partial<Record<Item['state'], TagState>> = { live: 'live', stale: 'st
 // A name inside a button is cut to fit the 1 to 3 words a button holds (copy.md).
 const short = (name: string) => (name.length <= 12 ? name : 'them');
 // Opens the thing on its site, in the site's app when it is installed.
-const openSite = (url: string) => { Linking.openURL(url).catch(e => log.error('message.open_site', e)); };
+const openSite = (url: string) => { openMarketplace(url).catch(e => log.error('message.open_site', e)); };
 
 type Said = { id: string; kind: 'mine' | 'drafted' | 'note'; text: string };
 type Open = null | { kind: 'more' } | { kind: 'snapshot' } | { kind: 'why'; msg: Msg } | { kind: 'counter'; offer: Offer } | { kind: 'offer-more'; offer: Offer };

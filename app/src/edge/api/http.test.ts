@@ -467,4 +467,58 @@ test('a DELETE body reaches the handler', async () => {
   assert.deepEqual((await r.json()).got, { ids: ['cap_1'] });
   const empty = await call(h, '/v1/lookups', { method: 'DELETE' });
   assert.deepEqual((await empty.json()).got, {});
+
+for (const reply of ['object', 'response', 'throw', 'auth'] as const) test(`raw ${reply} refusal without reading closes the connection`, async () => {
+  let pulls = 0;
+  const stream = new ReadableStream<Uint8Array>({ pull(c) { pulls++; c.enqueue(Uint8Array.of(1)); } }, { highWaterMark: 0 });
+  const h = route('PUT /v1/uploads/:id', () => {
+    if (reply === 'throw') throw new ApiError('not_found', 'upload not found', 'upload');
+    if (reply === 'response') return new Response(null, { status: 404, headers: { Connection: 'keep-alive' } });
+    return { status: 404 };
+  }, { auth: reply === 'auth' ? 'user' : 'none', body: 'raw', max_bytes: 4 });
+  const req = new Request('http://edge.test/v1/uploads/unknown', { method: 'PUT', body: stream, duplex: 'half' } as RequestInit);
+  try {
+    const response = await h(req);
+    assert.equal(response.status, reply === 'auth' ? 401 : 404);
+    assert.equal(response.headers.get('Connection'), 'close');
+    assert.equal(pulls, 0);
+    assert.equal(req.bodyUsed, false);
+  } finally { await stream.cancel(); }
+});
+
+for (const failure of ['declared', 'stream', 'source', 'caught'] as const) test(`raw ${failure} read rejection closes the connection`, async () => {
+  const stream = new ReadableStream<Uint8Array>({
+    pull(c) { if (failure === 'source') c.error(new Error('upload source failed')); else c.enqueue(new Uint8Array(5)); },
+  }, { highWaterMark: 0 });
+  const h = route('PUT /v1/uploads/:id', async ctx => {
+    if (failure === 'caught') await assert.rejects(ctx.readRaw!(), { status: 413 });
+    else await ctx.readRaw!();
+    return { status: 404 };
+  }, { auth: 'none', body: 'raw', max_bytes: 4 });
+  const req = new Request('http://edge.test/v1/uploads/unknown', {
+    method: 'PUT', body: stream, duplex: 'half', headers: failure === 'declared' ? { 'Content-Length': '5' } : {},
+  } as RequestInit);
+  const response = await h(req);
+  assert.equal(response.status, failure === 'caught' ? 404 : failure === 'source' ? 503 : 413);
+  assert.equal(response.headers.get('Connection'), 'close');
+});
+
+for (const status of [204, 404]) test(`raw completed read with ${status} does not close the connection`, async () => {
+  const bytes = Uint8Array.of(1, 2, 3);
+  const h = route('PUT /v1/uploads/:id', async ctx => {
+    assert.deepEqual(await ctx.readRaw!(), bytes);
+    assert.deepEqual(await ctx.readRaw!(), bytes);
+    if (status === 404) throw new ApiError('not_found', 'upload not found', 'upload');
+    return { status };
+  }, { auth: 'none', body: 'raw', max_bytes: 4 });
+  const response = await call(h, '/v1/uploads/unknown', { method: 'PUT', token: null, body: bytes });
+  assert.equal(response.status, status);
+  assert.equal(response.headers.get('Connection'), null);
+});
+
+for (const body of ['{}', 'invalid']) test(`JSON ${body} response does not close the connection`, async () => {
+  const h = route('POST /v1/captures', () => ({ status: 404 }), { auth: 'none' });
+  const response = await call(h, '/v1/captures', { method: 'POST', token: null, body });
+  assert.equal(response.status, body === '{}' ? 404 : 400);
+  assert.equal(response.headers.get('Connection'), null);
 });

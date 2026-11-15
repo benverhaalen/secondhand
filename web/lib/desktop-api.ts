@@ -35,11 +35,12 @@ export function webLink(raw?: string): string | undefined {
   if (!raw) return;
   try { const url = new URL(raw); return ['https:', 'http:'].includes(url.protocol) ? url.href : undefined; } catch { return; }
 }
-export function photo(item: Item) { return webLink(item.cover_photo_url ?? item.photo_url ?? item.photos?.find(p => p.url)?.url); }
+export function photo(item: Item) { return item.cover_photo_url ?? item.photo_url ?? item.photos?.find(p => p.url)?.url; }
 export function message(error: unknown) { return error instanceof Error ? error.message : 'Could not complete this. Try again.'; }
 
 export function subscribeStream(path: `/v1/${string}`, receive: (event: string, data: Record<string, unknown>) => void, onConnection?: (connected: boolean) => void) {
   const controller = new AbortController();
+  let terminal = false;
   let cursor = '', retry: ReturnType<typeof setTimeout> | undefined;
   async function connect() {
     if (controller.signal.aborted) return;
@@ -62,12 +63,12 @@ export function subscribeStream(path: `/v1/${string}`, receive: (event: string, 
               if (line.startsWith('data:')) data.push(line.slice(5).trimStart());
             }
             if (!data.length) continue;
-            try { const parsed = JSON.parse(data.join('\n')); if (id) cursor = id; receive(event, parsed); } catch {}
+            try { const parsed = JSON.parse(data.join('\n')); if (id) cursor = id; if (event === 'job.state' && ['done', 'failed', 'cancelled'].includes(parsed.state)) terminal = true; receive(event, parsed); } catch {}
           }
         }
       } finally { reader.releaseLock(); }
     } catch { onConnection?.(false); }
-    if (!controller.signal.aborted) retry = setTimeout(connect, 1500);
+    if (!controller.signal.aborted && !terminal) retry = setTimeout(connect, 1500);
   }
   void connect();
   return () => { controller.abort(); clearTimeout(retry); };

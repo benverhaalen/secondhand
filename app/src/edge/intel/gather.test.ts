@@ -31,6 +31,25 @@ const run = (arrivals: Arrival[], steps: GatherStep[], extra: Record<string, unk
 
 const spread = (n: number, from = 1000, ago = 5) => Array.from({ length: n }, (_, i) => row(from + i * 500, ago));
 
+test('source_gap names basis_level family while gather stops on sufficient count and recency', async () => {
+  const { basisOf } = await import('../../engines/valuation/valuate.ts');
+  const { DEFAULTS } = await import('../../engines/valuation/comps.ts');
+  const sales = (level: 'family' | 'variant', n: number) => Array.from({ length: n }, (_, i) => ({
+    comp_id: `${level}:${i}`, site: 'poshmark' as const, sold_at: daysAgo(5), price_cents: 4000,
+    kind: 'sold' as const, level, condition: 'good', w_match: level === 'family' ? .25 : 1,
+    w_extract: .9, may_model: false, citation: `source:${level}:${i}`,
+  }));
+  const rows = sales('family', 31), arrivals = [arr(rows)], answer = base(arrivals);
+  const guarded = { state: 'shown' as const, basis_count: 31, as_of: daysAgo(0), citation_id: 'c', notes: ['source_gap'] };
+  answer.facts[0]!.guarded = guarded;
+  assert.equal(basisOf(rows, daysAgo(0), DEFAULTS).basis_level, 'family');
+  assert.ok(measure(arrivals, NOW).n_eff > 6);
+  assert.equal(measure(arrivals, NOW).sold_90d, 31);
+  const result = await gather({ answer, plan, arrivals, steps: [step(1, sales('variant', 8))], product: 'p', now: () => NOW });
+  assert.deepEqual(result.answer.gather?.steps_done, [], 'the numeric gather basis is already met');
+  assert.equal(result.stop, 'basis');
+});
+
 test('gather more: thin sales run more steps until the basis is met, one gather.update per step', async () => {
   const ev: string[] = [];
   const r = await run([arr(spread(2))], [step(1, spread(2, 3000)), step(2, spread(3, 6000)), step(3, spread(3, 9000))],
@@ -155,4 +174,44 @@ test('a price-only arrival cannot make repeated raw comp ids count as new sales'
   const full = { comp_id: 'repeated', site: 'ebay', sold_at: daysAgo(0), price_cents: 4000,
     kind: 'sold', level: 'variant', condition: 'good', w_match: 1, w_extract: 1, may_model: false, citation: 'source:repeated' };
   assert.equal(measure([arr([...Array.from({ length: 6 }, () => full), row(4000, 0)])], NOW).n_eff, 2);
+});
+
+
+test('learned contribution changes the next source order within a widening step and keeps fallback steps ordered', async () => {
+  const { memoryStore } = await import('../../engines/param/param.ts');
+  const { declareLearning, updateContribution } = await import('./learn.ts');
+  const params = memoryStore(); declareLearning(params);
+  const seen: string[] = [];
+  const source = (target_id: string, n = 1): GatherStep => ({ ...step(n, []), target_id, p95_ms: 100,
+    run: async () => { seen.push(target_id); return { arrivals: [], searched: [], cents: 0 }; } });
+  const steps = [source('a'), source('b'), source('later', 2)];
+  await run([], steps, { learning: params });
+  assert.deepEqual(seen, ['a', 'b', 'later']); seen.length = 0;
+  updateContribution(params, { kind: 'price_now', stage: 'settled', called: ['a', 'b'], used: ['b'] }, daysAgo(0));
+  await run([], steps, { learning: params });
+  assert.deepEqual(seen, ['b', 'a', 'later'], 'a moved source weight must alter real execution order');
+});
+
+test('a thrown gather step retains its cause and reports it to the request logger', async () => {
+  const errors: unknown[] = [];
+  const r = await run([], [{ n: 1, est_cents: 0, run: async () => { throw new Error('page changed'); } }],
+    { onError: (_where: string, error: unknown) => errors.push(error) });
+  assert.equal(errors.length, 1);
+  assert.match(r.records[0].error ?? '', /page changed/);
+});
+
+test('searchStep releases its frame listener on deadline without counting a stalled search as empty', async () => {
+  const { searchStep } = await import('./gather.ts');
+  const { createLog, memorySink } = await import('../../../../log/index.js');
+  let listeners = 0;
+  const search = searchStep({ source: 'poshmark', text: 'jacket',
+    ctx: { body: {}, user_id: 'person_a', visitor_id: null, params: {}, query: new URLSearchParams(), headers: new Headers(), request_id: 'deadline',
+      log: createLog({ src: 'test', build: 'test', sink: memorySink() }) },
+    handler: async ctx => { assert.equal(ctx.user_id, 'person_a'); return { status: 202, body: { id: 'job_stalled' } }; },
+    jobs: { framesAfter: () => [], listen: () => { listeners++; return () => { listeners--; }; } },
+  });
+  const result = await gather({ answer: base([]), plan, arrivals: [], product: 'p', steps: [search], params: { deadline_ms: 10 } });
+  assert.equal(result.stop, 'deadline');
+  assert.equal(listeners, 0, 'deadline must release the search subscription');
+  assert.deepEqual(result.answer.searched.slice(-1).map(s => s.outcome), ['timeout']);
 });
