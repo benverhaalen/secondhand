@@ -113,13 +113,24 @@ test('D12: a second site joins only when its marginal gain beats the double-sale
 });
 
 test('PLANTED: under a fee step a lower price keeps as much, and priceForKeep finds it', () => {
-  assert.ok(keep('ebay', 934).keep_cents > keep('ebay', 935).keep_cents);
-  const p = priceForKeep('ebay', keep('ebay', 934).keep_cents);
-  assert.ok(p <= 934, `${p}`);
-  assert.ok(keep('ebay', p).keep_cents >= keep('ebay', 934).keep_cents);
+  assert.ok(keep('ebay', 929).keep_cents > keep('ebay', 930).keep_cents);
+  const p = priceForKeep('ebay', keep('ebay', 929).keep_cents);
+  assert.ok(p <= 929, `${p}`);
+  assert.ok(keep('ebay', p).keep_cents >= keep('ebay', 929).keep_cents);
 });
 
 test('F8: fractional shipping or promotion cents are refused before calculating keep', () => {
   for (const name of ['buyer_shipping_cents', 'seller_shipping_cents', 'boost_cents'] as const)
     assert.throws(() => keep('ebay', 5000, { [name]: .5 }), /whole cents/, name);
+});
+
+
+test('a hard-coded tax rate is replaced by the sourced 0.0753 prior and a known buyer rate still wins', () => {
+  const prior = keep('ebay', 10000);
+  assert.equal(prior.base_cents, 10753); assert.equal(prior.fee_cents, 1502); assert.equal(prior.keep_cents, 8498);
+  const known = keep('ebay', 10000, { tax_rate: .1 });
+  assert.equal(known.base_cents, 11000); assert.equal(known.keep_cents, 8464);
+  assert.equal(keep('ebay', 10000, noTax).base_cents, 10000);
+  for (const site of ['depop', 'facebook'] as const) assert.equal(keep(site, 10000).base_cents, 10753);
+  for (const site of ['poshmark', 'mercari', 'facebook_local'] as const) assert.equal(keep(site, 10000).base_cents, 10000);
 });
