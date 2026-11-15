@@ -89,6 +89,7 @@ function compose(apiKey: string) {
     },
     async complete(user_id: string, handle: string) {
       const row = owner(user_id, handle);
+      if (await client.stillSigningIn(user_id, handle)) return { state: 'waiting', account_id: row.account_id };
       try {
         const result = await client.finishLink(user_id, handle);
         if (!result) throw notFound();

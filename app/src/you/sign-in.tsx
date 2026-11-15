@@ -30,7 +30,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     return () => clearInterval(timer);
   }, [resendAt]);
   const signInWithApple = async () => {
-    if (busy) return;
+    if (busy || offline) return;
     setAppleBusy(true); setError(null);
     try { if (await appleSignIn(requestAppleToken)) await onDone(); }
     catch (failure) { log.error('sign-in.apple', failure instanceof ApiFailure ? new Error(`Apple sign-in failed (${failure.status})`) : new Error('Apple sign-in failed')); setError(accountError(failure)); }

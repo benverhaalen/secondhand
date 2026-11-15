@@ -30,28 +30,45 @@ export function Services({ onChanged }: { onChanged?: () => void } = {}) {
       if (result.state === 'linked' || result.state === 'ok') {
         setPending(null); setNotice('Connected.'); await load(); onChanged?.();
       } else if (result.state === 'waiting') {
-        setNotice('Finish signing in on the service, then check again.');
+        setNotice('You are still on the sign-in page. Open it again to finish, then tap Done.');
       } else { setPending(null); await load(); setError(result.reason ?? 'The connection was not completed. Try connecting again.'); }
     } catch (failure) {
       setPending(null);
       try { await api.call(`DELETE /v1/connections/${encodeURIComponent(current.handle)}`); } catch { /* The server expires any unconfirmed connection. */ }
       log.error('connections.complete', failure); setError(accountError(failure));
+      await load(); // a link that finished before the answer was lost shows as Connected
     }
     finally { setBusy(null); }
   };
   const connect = async (site: Site) => {
     if (busy || pending) return;
     setBusy(site); setError(null); setNotice(null);
+    let current: Pending | undefined;
     try {
       const result = await api.call<Omit<Pending, 'site'>>('POST /v1/connections', { body: { site } });
-      const current = { ...result, site }; setPending(current);
-      const { url } = await api.call<{ url: string }>(`POST /v1/connections/${encodeURIComponent(result.handle)}/view`);
-      if (!/^https:\/\//.test(url)) throw new Error('The sign-in page is unavailable');
-      // ui=false hides the viewer's own tabs and toolbar so the service's page gets the screen (docs.browser-use.com, live preview).
-      const view = new URL(url); view.searchParams.set('ui', 'false');
-      const browser = await WebBrowser.openBrowserAsync(view.toString(), { presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN, dismissButtonStyle: 'done' });
-      if (browser.type === 'cancel' || browser.type === 'dismiss') await check(current);
-    } catch (failure) { log.error('connections.start', new Error('Service sign-in could not open')); setError(accountError(failure)); }
+      current = { ...result, site }; setPending(current);
+      await show(result.handle, current);
+    } catch (failure) {
+      log.error('connections.start', new Error('Service sign-in could not open')); setError(accountError(failure));
+      // A sign-in that never opened is cancelled, so the next Connect is not refused as already running.
+      setPending(null); api.call(`DELETE /v1/connections/${encodeURIComponent(current?.handle ?? '')}`).catch(() => {});
+    }
+    finally { setBusy(null); }
+  };
+  // Opens the service's page; closing it checks the sign-in, and a pending code keeps it open to reopen.
+  const show = async (handle: string, current: Pending) => {
+    const { url } = await api.call<{ url: string }>(`POST /v1/connections/${encodeURIComponent(handle)}/view`);
+    if (!/^https:\/\//.test(url)) throw new Error('The sign-in page is unavailable');
+    // ui=false hides the viewer's own tabs and toolbar so the service's page gets the screen (docs.browser-use.com, live preview).
+    const view = new URL(url); view.searchParams.set('ui', 'false');
+    const browser = await WebBrowser.openBrowserAsync(view.toString(), { presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN, dismissButtonStyle: 'done' });
+    if (browser.type === 'cancel' || browser.type === 'dismiss') await check(current);
+  };
+  const reopen = async () => {
+    if (!pending || busy) return;
+    setBusy(pending.site); setError(null);
+    try { await show(pending.handle, pending); }
+    catch (failure) { log.error('connections.reopen', failure); setError(accountError(failure)); }
     finally { setBusy(null); }
   };
   const cancel = async () => {
@@ -94,7 +111,8 @@ export function Services({ onChanged }: { onChanged?: () => void } = {}) {
       <Txt role="body">Sign in on the service’s page, then tap Done. Secondhand checks the connection before saving it.</Txt>
       {notice ? <Txt role="body">{notice}</Txt> : null}
       {error ? <Txt role="body">{error}</Txt> : null}
-      <FootButton id="connection-check" label="Check connection" state={busy ? 'working' : 'idle'} onPress={() => check()} />
+      <FootButton id="connection-reopen" label="Open sign-in" state={busy ? 'working' : 'idle'} onPress={reopen} />
+      <FootButton id="connection-check" kind="second" label="Check connection" state={busy ? 'working' : 'idle'} onPress={() => check()} />
       <FootButton id="connection-cancel" kind="second" label="Cancel connection" state={busy ? 'disabled' : 'idle'} onPress={cancel} />
     </Sheet>
   </Stack>;
