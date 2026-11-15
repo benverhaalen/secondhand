@@ -89,10 +89,11 @@ Each is in [product/words.md](../../../../product/words.md) under 2026-11-14 and
 | No Depop partner access: the person's signed-in session is the API, agents author and repair the commands; the template for every site with no API | protocol and adapters, 3.7 |
 | Saved passwords by choice, as secrets only the sign-in job can read; the system is the person's own agent | protocol and adapters, 3.7 |
 | We host every engine and every browser ourselves; the phone's web view is a route while the app is open; no browser vendor and no Apify | protocol and adapters, 3.8 |
+| Five sites: eBay, Facebook Marketplace, Depop, Poshmark, Mercari. OfferUp and Grailed are a future idea. eBay's own sale notification is kept only if measured faster than our watcher, and only as a trigger | [workstreams](../../../../spec/plans/workstreams.md) |
 | Our own gathering is built on the patterns of Firecrawl, crawl4ai, browser-use and Jev | [intelligence API](../../../../spec/engines/intelligence-api.md) |
 | Expert research sessions per engine are the first wave of the build | the plan, wave 0 |
 
-Ben's three packets from the same night are folded into the plan: commits cite their sources ([44, research reaches code](44-research-reaches-code.md)), each site's levers and signals as tested data ([43](../price/43-platform-levers-and-signals.md)), and the public-page sale check ([44, cheap sale detection](../sold/44-cheap-sale-detection.md)). Of that last packet's six proposals Nate took the public-page check as the frequent check with the signed-in read as confirmation, the webhook signature checks and the hosted sign-in link; sale email stays out; using eBay's push as a trigger is still his to decide.
+Ben's three packets from the same night are folded into the plan: commits cite their sources ([44, research reaches code](44-research-reaches-code.md)), each site's levers and signals as tested data ([43](../price/43-platform-levers-and-signals.md)), and the public-page sale check ([44, cheap sale detection](../sold/44-cheap-sale-detection.md)). Of that last packet's six proposals Nate took the public-page check as the frequent check with the signed-in read as confirmation, the webhook signature checks and the hosted sign-in link; sale email stays out; eBay's push is kept as a trigger only if measured faster than our watcher.
 
 ## Protections that hold whatever else changes
 
@@ -134,7 +135,7 @@ You are the orchestrator for Nate's side of secondhand. Read .agents/team/packet
 Goal: every backend feature built, working and testable with no UI, by 03:00 Central, starting with every task in spec/plans/start-now.md at once, then the full plan wave by wave.
 
 How to run it:
-0. You launch each stream in spec/plans/workstreams.md as its own session, led by Opus or Fable, each with Sonnet seats and Codex workers on GPT-6.1 as builders. Streams 1, 2, 10, 13 and 15 push their interface first; the seven platform teams and the scoring streams start the moment the protocol envelope is pushed. You hold the canon, the walk and the clock.
+0. You launch each stream in spec/plans/workstreams.md as its own session, led by Opus or Fable, each with Sonnet seats and Codex workers on GPT-6.1 as builders. Streams 1, 2, 10, 13 and 15 push their interface first; the five platform teams and the scoring streams start the moment the protocol envelope is pushed. You hold the canon, the walk and the clock.
 1. Wave 0 first: the workspace checks on the event workspace, the scaffolds, the fixtures, the failure reporter, and the eleven expert research sessions (one per engine, from a working professional's view: what must be determined, the best way, what to consider). Fold each session's findings into its engine document and its tasks' accepts and breaks before that engine's build tasks start.
 2. Dispatch every task whose dependencies are done and whose owned files are disjoint, all in one message. Paste the plan's "Say this in every build brief" block into each brief, with the task's rests, owns, check, accepts and breaks. Specified tasks go to Sonnet or a Codex worker; Opus only where the approach must be found in the code.
 3. A seat settles in writing how the thing is built before it finishes building: how the agent operates on the page, the pipeline of actions, what runs in parallel. No guess and check.
