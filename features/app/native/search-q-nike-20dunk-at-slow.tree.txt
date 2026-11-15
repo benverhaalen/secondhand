@@ -1,97 +1,97 @@
-Attributes: Application, 0x102344e80, pid: 83512, label: 'secondhand'
+Attributes: Application, 0x10363c930, pid: 19907, label: 'secondhand'
 Element subtree:
- →Application, 0x102344e80, pid: 83512, label: 'secondhand'
-    Window (Main), 0x102353730, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x102343a60, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x102340f30, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x1023414c0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x10232f790, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x102362660, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x102233680, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x1022385c0, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x10222af40, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x10223f3c0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x1022381a0, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x102228840, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x102242a00, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x102230300, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x102230420, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x10223f700, {{0.0, 0.0}, {402.0, 874.0}}
-                                    ScrollView, 0x10223f820, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x10223f940, {{0.0, 0.0}, {402.0, 874.0}}
-                                        Other, 0x10223fa60, {{0.0, 0.0}, {402.0, 874.0}}
-                                          Other, 0x10223fb80, {{0.0, 0.0}, {402.0, 298.0}}
-                                          Other, 0x10223fca0, {{20.0, 62.0}, {362.0, 44.0}}
-                                            Button, 0x10223fdc0, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                            Button, 0x10223fee0, {{342.0, 64.0}, {40.0, 40.0}}, identifier: 'search-watch', label: 'Watch this search'
-                                          Other, 0x102240000, {{20.0, 114.0}, {362.0, 48.0}}
-                                          Button, 0x102240120, {{68.0, 114.0}, {258.0, 48.0}}, identifier: 'search-box', label: 'Search: nike dunk'
-                                          Other, 0x102240240, {{36.0, 128.0}, {20.0, 20.0}}
-                                            Other, 0x102240360, {{37.9, 129.9}, {16.2, 16.2}}
-                                              Other, 0x102240480, {{37.9, 129.9}, {14.6, 14.6}}
-                                              Other, 0x1022405a0, {{49.5, 141.5}, {4.6, 4.6}}
-                                          Other, 0x1022406c0, {{348.0, 128.0}, {20.0, 20.0}}
-                                            ActivityIndicator, 0x1022407e0, {{348.0, 128.0}, {20.0, 20.0}}, label: 'In progress', value: 1
-                                          StaticText, 0x102240900, {{20.0, 194.0}, {362.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                            StaticText, 0x102240a20, {{20.0, 194.0}, {362.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                          StaticText, 0x102240b40, {{20.0, 226.3}, {362.0, 40.3}}, label: 'Sold used for $65 to $95. New, $115 or $123.05 delivered.'
-                                            StaticText, 0x102240c60, {{20.0, 226.3}, {362.0, 40.3}}, label: 'Sold used for $65 to $95. New, $115 or $123.05 delivered.'
-                                          Other, 0x102240d80, {{20.0, 278.7}, {64.0, 46.0}}, label: 'eBay: 41'
-                                            Other, 0x102240ea0, {{20.0, 278.7}, {24.0, 24.0}}, label: 'eBay'
-                                            Other, 0x102240fc0, {{22.0, 280.7}, {20.0, 20.0}}
-                                              Other, 0x10223a580, {{22.0, 280.7}, {20.0, 20.0}}, label: 'eBay'
-                                                Image, 0x10223a6a0, {{22.0, 280.7}, {20.0, 20.0}}, label: 'eBay'
-                                            StaticText, 0x10223a7c0, {{20.0, 306.7}, {12.3, 18.0}}, label: '41'
-                                              StaticText, 0x10223a8e0, {{20.0, 306.7}, {12.3, 18.0}}, label: '41'
-                                          Other, 0x10223aa00, {{92.3, 278.7}, {64.0, 46.0}}, label: 'Mercari: still searching'
-                                            Other, 0x10223ab20, {{92.3, 278.7}, {24.0, 24.0}}, label: 'Mercari'
-                                            Other, 0x10223ac40, {{94.3, 280.7}, {20.0, 20.0}}
-                                              Other, 0x10223bcc0, {{94.3, 280.7}, {20.0, 20.0}}, label: 'Mercari'
-                                                Image, 0x10223bde0, {{94.3, 280.7}, {20.0, 20.0}}, label: 'Mercari'
-                                            Other, 0x10223bf00, {{95.3, 309.2}, {14.0, 13.3}}
-                                              Other, 0x10223c020, {{95.3, 308.9}, {14.0, 14.0}}
-                                                ActivityIndicator, 0x10223c140, {{95.3, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
-                                          Other, 0x10223c260, {{164.7, 278.7}, {64.0, 46.0}}, label: 'Depop: still searching'
-                                            Other, 0x10223c380, {{164.7, 278.7}, {24.0, 24.0}}, label: 'Depop'
-                                            Other, 0x10223c4a0, {{166.7, 280.7}, {20.0, 20.0}}
-                                              Other, 0x10223c5c0, {{166.7, 280.7}, {20.0, 20.0}}, label: 'Depop'
-                                                Image, 0x10223c6e0, {{166.7, 280.7}, {20.0, 20.0}}, label: 'Depop'
-                                            Other, 0x10223c800, {{167.7, 309.2}, {14.0, 13.3}}
-                                              Other, 0x10223c920, {{167.7, 308.9}, {14.0, 14.0}}
-                                                ActivityIndicator, 0x10223ca40, {{167.7, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
-                                          Other, 0x10223cb60, {{237.3, 278.7}, {64.0, 46.0}}, label: 'Facebook Marketplace: still searching'
-                                            Other, 0x10223cc80, {{237.3, 278.7}, {24.0, 24.0}}, label: 'Facebook Marketplace'
-                                            Other, 0x10223cda0, {{239.3, 280.7}, {20.0, 20.0}}
-                                              Other, 0x10223cec0, {{239.3, 280.7}, {20.0, 20.0}}, label: 'Facebook Marketplace'
-                                                Image, 0x10223cfe0, {{239.3, 280.7}, {20.0, 20.0}}, label: 'Facebook Marketplace'
-                                            Other, 0x10223d100, {{240.3, 309.2}, {14.0, 13.3}}
-                                              Other, 0x10223d220, {{240.3, 308.9}, {14.0, 14.0}}
-                                                ActivityIndicator, 0x10223d340, {{240.3, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
-                                          Other, 0x10223d460, {{309.7, 278.7}, {64.0, 46.0}}, label: 'Poshmark: still searching'
-                                            Other, 0x10223d580, {{309.7, 278.7}, {24.0, 24.0}}, label: 'Poshmark'
-                                            Other, 0x10223d6a0, {{311.7, 280.7}, {20.0, 20.0}}
-                                              Other, 0x10223d7c0, {{311.7, 280.7}, {20.0, 20.0}}, label: 'Poshmark'
-                                                Image, 0x10223d8e0, {{311.7, 280.7}, {20.0, 20.0}}, label: 'Poshmark'
-                                            Other, 0x10223da00, {{312.7, 309.2}, {14.0, 13.3}}
-                                              Other, 0x10223db20, {{312.7, 308.9}, {14.0, 14.0}}
-                                                ActivityIndicator, 0x10223dc40, {{312.7, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
-                                          Button, 0x10223dd60, {{20.0, 356.7}, {362.0, 56.0}}, identifier: 'search-product', label: 'Price history and recent sales'
-                                          Button, 0x10223de80, {{20.0, 444.7}, {362.0, 104.0}}, identifier: 'result-mt_d2', label: 'Nike Dunk Low Grey Fog, men’s 10'
-                                          Button, 0x10223dfa0, {{20.0, 564.7}, {362.0, 104.0}}, identifier: 'result-mt_d5', label: 'Nike Dunk Low Grey Fog, men’s 10'
-                                      Other, 0x10223e0c0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x10223e1e0, {{396.0, 65.0}, {3.0, 744.0}}
-                                      Other, 0x10223e300, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x10223e420, {{65.0, 868.0}, {272.0, 3.0}}
-                                      Other, 0x10207bee0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x1020aa430, {{396.0, 65.0}, {3.0, 744.0}}
-                                      Other, 0x102091a50, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x102086ac0, {{65.0, 868.0}, {272.0, 3.0}}
-                      Other, 0x102090500, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10208f060, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x10363c930, pid: 19907, label: 'secondhand'
+    Window (Main), 0x103636ba0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x103654e40, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x1032a39f0, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x109109050, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x109107f70, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x10910d890, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x10364a580, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x10365c0f0, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x103654a20, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x1036541e0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103636ee0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x10363a310, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10363d090, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x10364dac0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x103635980, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x103639110, {{0.0, 0.0}, {402.0, 874.0}}
+                                    ScrollView, 0x1036496c0, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x10365cac0, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x10363cc70, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x10363f630, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x1036481c0, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x10365c6a0, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                            Button, 0x103641270, {{342.0, 64.0}, {40.0, 40.0}}, identifier: 'search-watch', label: 'Watch this search'
+                                          Other, 0x103648e60, {{20.0, 114.0}, {362.0, 48.0}}
+                                          Button, 0x103654600, {{68.0, 114.0}, {258.0, 48.0}}, identifier: 'search-box', label: 'Search: nike dunk'
+                                          Other, 0x1036643c0, {{36.0, 128.0}, {20.0, 20.0}}
+                                            Other, 0x1036644e0, {{37.9, 129.9}, {16.2, 16.2}}
+                                              Other, 0x103664600, {{37.9, 129.9}, {14.6, 14.6}}
+                                              Other, 0x103664720, {{49.5, 141.5}, {4.6, 4.6}}
+                                          Other, 0x103664840, {{348.0, 128.0}, {20.0, 20.0}}
+                                            ActivityIndicator, 0x103664960, {{348.0, 128.0}, {20.0, 20.0}}, label: 'In progress', value: 1
+                                          StaticText, 0x103664a80, {{20.0, 194.0}, {362.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                            StaticText, 0x103664ba0, {{20.0, 194.0}, {362.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                          StaticText, 0x103664cc0, {{20.0, 226.3}, {362.0, 40.3}}, label: 'Sold used for $65 to $95. New, $115 or $123.05 delivered.'
+                                            StaticText, 0x103664de0, {{20.0, 226.3}, {362.0, 40.3}}, label: 'Sold used for $65 to $95. New, $115 or $123.05 delivered.'
+                                          Other, 0x103664f00, {{20.0, 278.7}, {64.0, 46.0}}, label: 'eBay: 41'
+                                            Other, 0x103665020, {{20.0, 278.7}, {24.0, 24.0}}, label: 'eBay'
+                                            Other, 0x103665140, {{22.0, 280.7}, {20.0, 20.0}}
+                                              Other, 0x103665260, {{22.0, 280.7}, {20.0, 20.0}}, label: 'eBay'
+                                                Image, 0x103665380, {{22.0, 280.7}, {20.0, 20.0}}, label: 'eBay'
+                                            StaticText, 0x1036654a0, {{20.0, 306.7}, {12.3, 18.0}}, label: '41'
+                                              StaticText, 0x1036655c0, {{20.0, 306.7}, {12.3, 18.0}}, label: '41'
+                                          Other, 0x1036656e0, {{92.3, 278.7}, {64.0, 46.0}}, label: 'Mercari: still searching'
+                                            Other, 0x103665800, {{92.3, 278.7}, {24.0, 24.0}}, label: 'Mercari'
+                                            Other, 0x103665920, {{94.3, 280.7}, {20.0, 20.0}}
+                                              Other, 0x103665a40, {{94.3, 280.7}, {20.0, 20.0}}, label: 'Mercari'
+                                                Image, 0x103665b60, {{94.3, 280.7}, {20.0, 20.0}}, label: 'Mercari'
+                                            Other, 0x103665c80, {{95.3, 309.2}, {14.0, 13.3}}
+                                              Other, 0x103665da0, {{95.3, 308.9}, {14.0, 14.0}}
+                                                ActivityIndicator, 0x103666190, {{95.3, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
+                                          Other, 0x1036662b0, {{164.7, 278.7}, {64.0, 46.0}}, label: 'Depop: still searching'
+                                            Other, 0x1036663d0, {{164.7, 278.7}, {24.0, 24.0}}, label: 'Depop'
+                                            Other, 0x1036664f0, {{166.7, 280.7}, {20.0, 20.0}}
+                                              Other, 0x103666610, {{166.7, 280.7}, {20.0, 20.0}}, label: 'Depop'
+                                                Image, 0x103666730, {{166.7, 280.7}, {20.0, 20.0}}, label: 'Depop'
+                                            Other, 0x103666850, {{167.7, 309.2}, {14.0, 13.3}}
+                                              Other, 0x103666970, {{167.7, 308.9}, {14.0, 14.0}}
+                                                ActivityIndicator, 0x103666a90, {{167.7, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
+                                          Other, 0x103666bb0, {{237.3, 278.7}, {64.0, 46.0}}, label: 'Facebook Marketplace: still searching'
+                                            Other, 0x103666cd0, {{237.3, 278.7}, {24.0, 24.0}}, label: 'Facebook Marketplace'
+                                            Other, 0x103666df0, {{239.3, 280.7}, {20.0, 20.0}}
+                                              Other, 0x103666f10, {{239.3, 280.7}, {20.0, 20.0}}, label: 'Facebook Marketplace'
+                                                Image, 0x103667030, {{239.3, 280.7}, {20.0, 20.0}}, label: 'Facebook Marketplace'
+                                            Other, 0x103667150, {{240.3, 309.2}, {14.0, 13.3}}
+                                              Other, 0x103667270, {{240.3, 308.9}, {14.0, 14.0}}
+                                                ActivityIndicator, 0x103667390, {{240.3, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
+                                          Other, 0x1036674b0, {{309.7, 278.7}, {64.0, 46.0}}, label: 'Poshmark: still searching'
+                                            Other, 0x1036675d0, {{309.7, 278.7}, {24.0, 24.0}}, label: 'Poshmark'
+                                            Other, 0x1036676f0, {{311.7, 280.7}, {20.0, 20.0}}
+                                              Other, 0x103667810, {{311.7, 280.7}, {20.0, 20.0}}, label: 'Poshmark'
+                                                Image, 0x103667930, {{311.7, 280.7}, {20.0, 20.0}}, label: 'Poshmark'
+                                            Other, 0x103667a50, {{312.7, 309.2}, {14.0, 13.3}}
+                                              Other, 0x103667b70, {{312.7, 308.9}, {14.0, 14.0}}
+                                                ActivityIndicator, 0x103667c90, {{312.7, 308.9}, {14.0, 14.0}}, label: 'In progress', value: 1
+                                          Button, 0x103667db0, {{20.0, 356.7}, {362.0, 56.0}}, identifier: 'search-product', label: 'Price history and recent sales'
+                                          Button, 0x103667ed0, {{20.0, 444.7}, {362.0, 104.0}}, identifier: 'result-mt_d2', label: 'Nike Dunk Low Grey Fog, men’s 10'
+                                          Button, 0x103667ff0, {{20.0, 564.7}, {362.0, 104.0}}, identifier: 'result-mt_d5', label: 'Nike Dunk Low Grey Fog, men’s 10'
+                                      Other, 0x103288e80, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x103288200, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x1032925c0, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x103298830, {{3.0, 834.0}, {396.0, 3.0}}
+                                      Other, 0x103299290, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x10329f7f0, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x10329e6a0, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x103297dc0, {{3.0, 834.0}, {396.0, 3.0}}
+                      Other, 0x10329df80, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10329fb90, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x102344e80, pid: 83512, label: 'secondhand'
+ →Application, 0x10363c930, pid: 19907, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x10213ce40, pid: 83512, label: 'secondhand'
+    Application, 0x103286cd0, pid: 19907, label: 'secondhand'
   }

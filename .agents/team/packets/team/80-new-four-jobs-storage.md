@@ -7,7 +7,7 @@ Ben (11:29 and 11:32, [words](../../../../product/words.md#2026-11-15-new-holds-
 What touches your side:
 
 1. `capture.intent` (`sell`, `worth`, `track`, `find`) on the capture row. This is the only new column. It tells a find from a sell capture.
-2. A new `GET /v1/lookups?limit=20`, with `DELETE /v1/lookups/:capture_id` and `DELETE /v1/lookups`. These are the person's recent finds and unkept appraisals, which feed Buy's Recent list.
+2. A new `GET /v1/lookups?limit=20`, with `DELETE /v1/lookups/:capture_id` and `DELETE /v1/lookups`. These are the person's recent finds and unkept appraisals, which feed Buy's Recent list. Each row needs `capture_id`, `kind` (`find` or `worth`), `product_id`, `short_name` (what the camera read, before it knew the product) and `at`; the app's demo shape is `Lookup` in `app/src/demo/types.ts`.
 3. `POST /v1/wants` also takes `product_id` and `capture_id`, so a Track from the camera keeps what it read.
 4. Nothing new for Appraise and Sell. `POST /v1/valuations` with `capture_id`, Keep it and Sell this all use routes that are already specced.
 
