@@ -516,8 +516,11 @@ function appendBlocks(previous: Answer['blocks'], next: Answer['blocks']): Answe
   if (previous.at(-1)?.type === 'ask') return [...previous, ...next];
   const last = previous.findLast(block => block.type === 'text');
   const firstIndex = next.findIndex(block => block.type === 'text'), first = next[firstIndex];
-  if (last?.type === 'text' && first?.type === 'text' && !last.text.endsWith('\n') && !first.text.startsWith('\n')) {
-    next = next.map((block, index) => index === firstIndex ? { ...first, text: `${/^(?:## |[-*+] |\|)/.test(first.text) ? '\n\n' : '\n'}${first.text}` } : block);
+  if (last?.type === 'text' && first?.type === 'text') {
+    // The same rule as emitText: a heading, list or table needs a blank line before it, a sentence one line break.
+    const required = /^\n*(?:## |[-*+] |\|)/.test(first.text) ? 2 : 1;
+    const existing = (last.text.match(/\n*$/)?.[0].length ?? 0) + (first.text.match(/^\n*/)?.[0].length ?? 0);
+    if (existing < required) next = next.map((block, index) => index === firstIndex ? { ...first, text: '\n'.repeat(required - existing) + first.text } : block);
   }
   return [...previous, ...next];
 }
