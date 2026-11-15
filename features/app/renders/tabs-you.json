@@ -2,7 +2,14 @@
   "route": "(tabs)/you",
   "screen": "you",
   "states": [
-    "typical"
+    "typical",
+    "new",
+    "empty",
+    "one",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
   ],
   "skip": "",
   "catalog": false,
@@ -21,10 +28,10 @@
       "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
     },
     {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"you\"",
-      "msg": "is not drawn in the states new, empty, one, dense, loading, failed, offline, at /you?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
+      "level": "warn",
+      "id": "L2",
+      "where": "screen 2",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
     }
   ]
 }

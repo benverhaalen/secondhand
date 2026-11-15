@@ -1185,3 +1185,15 @@ Ben, project chat (relayed), 2026-11-15 06:44 UTC.
 > also did you figure out any super unique ways that we ended up solving problems. ways that nobody really has done things before or a super unique way and why and how to exemplify that in the pitch or website etc
 
 Used in: [unique.md](unique.md), [pitch.md](pitch.md#whats-new-three-things-we-havent-seen-anyone-else-do), [devpost.md](devpost.md).
+## 2026-11-15 cross-listing prices are a choice, the reason in words first
+
+Ben, thread "Cross-list Depop listings and price with quant", 06:51 UTC.
+> think about what a user would want. like different sites have different prices where it sells at. how does a user decide what they want with crosslisting. like do they want to sell it at a certain price no matter what. some price will be the highest some price will be the lowest and how do you navigate that. do you let the user sell to get the same profit everywhere. think of all the presets. think of all the reasons someone might sell and conflicting reasons. like should you truthfully price or should you keep the same price across platforms for what you get in return etc. i think the user should be able to choose just need to understand what they would want to do you know. maybe use a bit of research to help solve this. this is an ambiguous problem and use rdd and possible similar ways where a generalized problem was solved to try and solve it. i think there probably isnt one concrete answer to all this and it should be some sort of feature in it
+
+Ben, project chat, 06:53 UTC.
+> i think also you dont want to make it a quantitative thing. but also you can see the reasoning as to why we think this. maybe take rdd and iae from adjacent oss projects with agents doing things. strategically understanding the different levers a user might want.
+
+Ben, project chat, 06:53 UTC.
+> like the user should in plain language be able to understand the reasoning and can then see numbers if need be
+
+Used in: [research/list/ben/crosslist-pricing.md](../research/list/ben/crosslist-pricing.md), `SPREADS` in app/src/engines/listing/crosslist.ts.

@@ -64,6 +64,8 @@ test('camera: Worth walks only the stages that set a price, and ends at what it 
   await s.shows('See what it’s worth');
   await s.tap('cam-done');
   await s.page.waitForURL(u => new URL(u).pathname === '/worth', { timeout: 3000 });
+  // The value is of the thing the camera read, the jacket, not another product.
+  await s.shows(/Carhartt Detroit Jacket J97/);
   await s.page.close();
 });
 

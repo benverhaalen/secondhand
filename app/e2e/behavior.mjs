@@ -65,7 +65,7 @@ function screen(page) {
 // One test per control in the table: pressing it logs a tap with its id, and leads where the table says.
 // Pass node:test's test, the table, and how to open the screen with each control showing.
 export function controlTests(test, table, open) {
-  for (const c of table.controls) test(`${table.screen}: ${c.id} ${c.does ?? ''}`.trim(), async () => {
+  for (const c of table.controls) test(`${table.screen}: ${c.id} ${c.on_tap ?? c.does ?? ''}`.trim(), async () => {
     const s = await open(c);
     await s.tap(c.id);
     await s.saw({ type: 'tap', id: c.id });

@@ -1,7 +1,7 @@
 // Rules and limits (spec/pages.md §6.16 Automation; decisions: automation runs in tiers that learn, buyers are handled inside
 // limits you set, always-accept counts unedited approvals only). Three things, each a plain switch or field that says what it changes:
 //   what runs on its own: a switch per rule. A kind can be turned on once it was approved 3 times without a change.
-//   what always asks: the never-alone kinds, shown so the person sees the line the agent never crosses. No switch.
+//   what always asks, and what each kind of step starts as, live once in Settings (permission defaults); a row here opens it.
 //   each live thing's limits: the lowest it takes without asking (the floor) and the offer it accepts at once (the top line).
 //     A price is set only on the person's tap (README, the hand-off rule), so the sheet ends in Approve.
 import { useState } from 'react';
@@ -9,19 +9,13 @@ import type { Item } from '@/demo';
 import { Approve, Guess, Line, List, Nav, Screen, Section, Sheet, Stack, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
-import { cash, changed, drawn, PAGES, PROMOTE_AT, ruleName, ruleSentence, useGo, useWorld } from './state';
+import { cash, changed, drawn, PAGES, PROMOTE_AT, ruleName, ruleSentence, useGo, usePage } from './state';
+import { PageStatus } from './page-status';
 
-// Never alone (decisions: tiers that learn), and a price under the floor (decisions: a price below your floor always asks).
-const ALWAYS_ASKS = [
-  { id: 'ask-floor', label: 'Any price under your lowest' },
-  { id: 'ask-address', label: 'Sharing your address' },
-  { id: 'ask-payment', label: 'Anything about payment' },
-  { id: 'ask-off-site', label: 'Deals off the site' },
-];
 const cents = (typed: string) => { const v = Number(typed.replace(/[^0-9.]/g, '')); return typed.trim() && Number.isFinite(v) && v > 0 ? Math.round(v * 100) : null; };
 
 export function Rules() {
-  const w = useWorld(), go = useGo();
+  const { w, asked } = usePage(), go = useGo();
   const [on, setOn] = useState<Record<string, boolean>>(() => Object.fromEntries(w.rules.map(r => [r.id, r.state === 'auto'])));
   const [limits, setLimits] = useState<Record<string, { floor: number; top: number | null }>>(() =>
     Object.fromEntries(w.items.filter(i => i.limits).map(i => [i.id, { floor: i.limits!.floor_cents, top: i.limits!.always_accept_cents }])));
@@ -45,8 +39,9 @@ export function Rules() {
   const line = (l: { floor: number; top: number | null }) => l.top ? `Takes ${cash(l.top)} or more at once. Asks you under ${cash(l.floor)}` : `Asks you about any offer under ${cash(l.floor)}`;
 
   return (
-    <Screen name="you-rules" state={drawn(w, w.rules.length)} nav={<Nav back={() => go.back()} />}>
+    <Screen name="you-rules" state={drawn(w, w.rules.length, asked)} nav={<Nav back={() => go.back()} />}>
       <Txt role="heading">{PAGES.rules.title}</Txt>
+      <PageStatus asked={asked} what="your rules">
 
       <Section title="Runs on its own">
         {w.rules.length ? (
@@ -65,9 +60,10 @@ export function Rules() {
         )}
       </Section>
 
-      <Section title="Always asks you">
-        <List>{ALWAYS_ASKS.map(a => <ListRow key={a.id} id={a.id} label={a.label} />)}</List>
-      </Section>
+      <List>
+        <ListRow id="rules-permissions" label="Permissions" detail="What it does with Undo, what always asks, and what it never does"
+          onPress={() => go.to('/you/permissions')} />
+      </List>
 
       {live.length ? (
         <Section title="Lowest prices">
@@ -77,6 +73,7 @@ export function Rules() {
         </Section>
       ) : null}
 
+      </PageStatus>
       <Sheet open={editing !== null} title={editing?.title} onClose={() => setEditing(null)}>
         <Stack>
           <ListRow id="limit-floor-row" label="Lowest you’d take" detail="Under this, it always asks you"

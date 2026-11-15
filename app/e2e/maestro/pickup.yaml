@@ -1,0 +1,35 @@
+# Pickup (app/behavior/item/[id]/pickup.json) on a phone or simulator: the same states as app/e2e/pickup.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/pickup.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/pickup.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+# Planned: the address goes only with words typed and its own tap.
+- openLink: ${URL}/--/item/it_chair/pickup
+- extendedWaitUntil:
+    visible: "Add to Google Calendar"
+    timeout: 30000
+- tapOn: { id: "pickup-share" }
+- tapOn: { id: "pickup-send-address" }
+- assertNotVisible: "Sent your address to Jordan"
+# A buyer wants to meet: tap the days, drag a span, and the message says it in words.
+- openLink: ${URL}/--/item/it_chair/pickup?case=ask
+- extendedWaitUntil:
+    visible: "Days that work"
+    timeout: 10000
+- tapOn: { id: "meet-day-2026-11-16" }
+- assertVisible: "I’m free tomorrow 2 to 4 pm.*"
+- swipe:
+    from: { id: "span-2026-11-16-end" }
+    direction: RIGHT
+- assertVisible: "Ends after dark"
+# The buyer's pick: who is coming, then Approve.
+- openLink: ${URL}/--/item/it_chair/pickup?case=pick
+- extendedWaitUntil:
+    visible: "Who’s coming"
+    timeout: 10000
+- tapOn: { id: "meet-approve" }
+- assertVisible: "Add to Apple Calendar"

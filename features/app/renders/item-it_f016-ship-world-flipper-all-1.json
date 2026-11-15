@@ -1,0 +1,24 @@
+{
+  "route": "item/it_f016/ship?world=flipper&all=1",
+  "screen": "ship",
+  "states": [
+    "dense",
+    "empty",
+    "one",
+    "typical",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "new: Ship opens only from a sale, and a person who has done nothing has sold nothing",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}
