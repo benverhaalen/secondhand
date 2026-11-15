@@ -77,3 +77,14 @@ test('U11: a main tab\'s title row (page-head) is the nav, not lines before the 
 test('U11: four lines under the title row still fail', { skip: !pw }, async () => {
   assert.deepEqual(ids(await tab(`${head}${line('Since yesterday')}${line('$96.20', 'amount')}${line('Needs you now')}${line('Due first, today at 3 pm')}${grid}`)), ['U11']);
 });
+
+// Buy, 11-15: Section sets its title at 18 in ink and marks nothing, so "Needs you" over cards titled at 18 passed U10
+// unseen. A line with items after it in its own group is a header, marked or not.
+test('U10: an unmarked section title set like the card titles under it fails; a quiet label over the cards passes', { skip: !pw }, async () => {
+  const card = '<div data-part="card-decision" style="height:156px"><div data-role="headline" style="font-size:18px">Nike Dunk Low</div></div>';
+  const section = title => `<div style="padding-top:59px">${title}${card}${card}</div>`;
+  const read = async body => { const page = await browser.newPage({ viewport: { width: 390, height: 844 } }); await page.setContent(body);
+    const snap = await page.evaluate(snapshot, { insetTop: 59 }); await page.close(); return compose(snap, { route: 'listing/[id]' }); };
+  assert.deepEqual(ids(await read(section('<div data-role="headline" style="font-size:18px">Needs you</div>'))), ['U10']);
+  assert.deepEqual(ids(await read(section('<div data-head="cards"><div data-role="body" style="font-size:15px;color:rgb(10 10 10 / 0.65)">Needs you</div></div>'))), []);
+});

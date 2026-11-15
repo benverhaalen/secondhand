@@ -26,9 +26,13 @@ export function snapshot({ insetTop = 0 } = {}) {
   const inBar = el => !!partOf(el, /^(tab-bar|nav|page-head)$/);
   const seen = r => r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < VH;
   const shown = el => { const s = getComputedStyle(el); return s.visibility !== 'hidden' && Number(s.opacity) > 0.05; };
+  // A header is marked (a shelf's head, data-head), or it is a line that is not in an item and has items after it in its own
+  // group, as Section draws its title: an unmarked header is judged as one (Buy's "Needs you" over its cards, 11-15).
+  const hasItem = el => ITEM.test(el.dataset?.part ?? '') || [...el.querySelectorAll('[data-part]')].some(k => ITEM.test(k.dataset.part));
+  const headsItems = el => { const sibs = el.parentElement ? [...el.parentElement.children] : [], i = sibs.indexOf(el); return i >= 0 && sibs.slice(i + 1).some(hasItem); };
   const texts = [...document.querySelectorAll('[data-role]')].filter(shown).map(el => {
     const r = el.getBoundingClientRect(), s = getComputedStyle(el), item = partOf(el, ITEM);
-    const head = el.closest('[data-part="shelf-head"],[data-head]');
+    const head = el.closest('[data-part="shelf-head"],[data-head]') ?? (!item && headsItems(el) ? el : null);
     return { s: el.textContent.trim().slice(0, 60), role: el.dataset.role, color: s.color, size: parseFloat(s.fontSize), y: Math.round(r.top), bottom: Math.round(r.bottom), seen: seen(r),
       bar: inBar(el), head: !!head, shelf: el.closest('[data-shelf]')?.dataset.shelf ?? null, item: item ? item.dataset.part : null,
       cut: s.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1 || (s.webkitLineClamp !== 'none' && el.scrollHeight > el.clientHeight + 2) };
