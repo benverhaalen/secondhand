@@ -41,7 +41,7 @@ VISION = ["google/gemini-4-carbon", "google/gemini-4-hydrogen", "google/gemini-2
 CANDIDATES = [("google/gemini-nano-banana-2.1", 1), ("google/gemini-nano-banana-2.1", 2), ("google/gemini-nano-banana-2.1", 3),
               ("google/gemini-nano-banana-2.1", 4), ("google/gemini-3-pro-image", 1)]
 SIDE = 1080
-STEAM_TOP = 2  # the two smoothest redraws that passed get a second pressing
+STEAM_TOP = 2  # the two smoothest redraws that passed get a second pressing: four Nano Banana calls, about $0.15 an item
 STEAM_WITH = [("google/gemini-nano-banana-2.1", 1), ("google/gemini-nano-banana-2.1", 2)]
 
 IRONED = ("Freshly steamed and pressed: the fabric lies taut, smooth and flat across the whole body and every sleeve or leg, "
@@ -291,16 +291,21 @@ def run_item(folder: str, out: str) -> dict:
     for p in look["photos"]:
         p["sharp"] = sharp(imgs[p["id"]])
     meas = {(p.get("measure") or {}).get("name"): (p.get("measure") or {}).get("value_in") for p in look["photos"] if p.get("measure")}
-    meas_from = "read off the tape photos"
+    meas_from, tape_from = "read off the tape photos", "tape"
     if os.path.exists(os.path.join(folder, "tape.json")):  # the seller's own numbers win over what the model read off a photo
         with open(os.path.join(folder, "tape.json")) as f:
-            meas = {**meas, **{k: v for k, v in json.load(f).items() if isinstance(v, (int, float))}}
+            tj = json.load(f)
+            meas = {**meas, **{k: v for k, v in tj.items() if isinstance(v, (int, float))}}
+            tape_from = tj.get("from", "tape")
         meas_from = "tape.json"
     kind = P.kind_of(look["kind"])
     ks = P.SPEC["kinds"][kind]
     if ks["template"] in ("shirt", "sweatshirt") and meas.get("pit_to_pit") and meas.get("length"):
         look["tape_ratio"] = meas["pit_to_pit"] / meas["length"]
-    look["measured"] = meas  # stands in for the capture's LiDAR reading: tape.json, else the tape photos
+    look["measured"] = meas
+    # Ben, 09:09: AI enhancement only from the LiDAR flow. A tape photo or a typed number is a measurement but not that
+    # flow, so only a tape.json that says "from": "lidar" (a capture fixture) lets the re-lay run
+    look["measured_by"] = tape_from
     pl = P.plan(look)
     os.makedirs(out, exist_ok=True)
     log, made = [], []
