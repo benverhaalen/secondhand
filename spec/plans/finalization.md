@@ -225,3 +225,23 @@ Proofs rerun by the orchestrator, who wrote none of these fixes. Each line is *o
 - Passing now that failed at 13:15: search's four and the two in `scripts/walk.test.mjs`.
 - Failing: about 20 server tests whose behaviour the onboarding merges changed (accounts import, preview and unlink; `conversations.list` and `.messages`; `items.list`; `orders.list` and two fee tests; the import job; three in `routes.test.ts`), with the server lead and told to Ben in [packet 94](../../.agents/team/packets/team/94-web-walk-defects-for-ben.md); ten rendered-fixture checks on one brand rule (Ben, packet 84); `app/src/engines/capture/process.test.ts` failing as a file (capture).
 - The engines lead handed off at its context limit with `POST /v1/assist` unbuilt; a fresh engines lead is proposed and waits for Nate to start it.
+
+## 13. What works, kept by the orchestrator
+
+Nate, 14:00 UTC: "assess what works, you yourself get it working, check with ben, we continously test with codex" ([words](../../product/words.md#2026-11-15-nate-organize-shut-down-what-is-finished-get-it-working-yourself-check-with-ben-keep-testing-with-codex)). One row per thing a person or a judge touches. "Seen" means the orchestrator saw it run, with the time; anything else is a lead's claim. Updated in place.
+
+| What | State at 14:05 UTC | Seen | Next, and who |
+|---|---|---|---|
+| Sign-in by email code | Works on the dev server with a development code; the session survives reloads | seen 13:40, browser | On the host: an email sender key (Nate, section 9) |
+| Search, signed out and signed in | Works: four sources, 100 to 300 listings, 3.3 to 9.2 s; photos and real Depop titles since bcd35ce1 and e45dd58e | seen 13:25 and 13:40, browser | eBay sometimes read in pounds, shipping not shown: search lead |
+| The price summary | Works, in dollars | seen 13:45 after 06be368e | none |
+| The chat after a search | Does not work: `POST /v1/assist` is example data | seen 13:40 | The gate and the tools are merged with main on the Mac and in review (orchestrator lands them); the route: fresh engines lead |
+| The four tabs and Messages on owned data | Work, empty for a new person; `/v1/lookups` since 530a217f | seen 13:45, browser | Layout and labels: Ben, packet 94 |
+| Capture: photo, identify, questions | Not walked by the orchestrator | no | capture lead; an unsigned iOS build compiles (its claim) |
+| A valuation of the person's own item | Route on main, 205 tests | tests seen 13:25; not walked in the app | engines lead |
+| The hosted server | Deployed, stops five minutes after each start | did not answer at 13:40 | a card on Fly (Nate), then walk it |
+| The app on an iOS simulator | Not yet | no | walks lead |
+| Databricks: workspace, dashboard, Genie, retail views | Read back healthy by the data lead (WORKS.md) | not by the orchestrator today | the alert change at 19:00 UTC; data lead |
+| The full check on the Mac | 34 of 4,226 failing, static errors 90 and falling | seen 13:55 | server lead (20), Ben (10), capture (1) |
+| A person's whole path through the server, as one test | Being written by a Codex test driver (`orc-journey-1`), rerun at each landing | no | orchestrator |
+| Live benchmarks | Last run 12:00 UTC: 16 of 16 queries, 0.82 on target | seen then | rerun after search's round 3 lands: orchestrator |
