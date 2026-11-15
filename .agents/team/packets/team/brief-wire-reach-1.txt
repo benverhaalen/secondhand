@@ -1,0 +1,73 @@
+Outcome: one pure function turns a search job's frames into what the search screen shows while it loads and after, so every number and every step on the screen is a field of a real frame, and a source that failed, was late, was served from cache or needs an account says so.
+
+Done when (run from app/, each exits 0):
+  node app/src/buy/fixtures/record.ts            (from the repo root; writes the two recorded fixtures below)
+  node --test --test-concurrency=1 src/buy/reach.test.ts
+  npx tsc --noEmit -p .    (no error in the files you own)
+
+Files you own (create; change nothing else):
+  app/src/buy/reach.ts, app/src/buy/reach.test.ts
+  app/src/buy/fixtures/record.ts
+  app/src/buy/fixtures/search-late-cached.json, app/src/buy/fixtures/search-needs-account.json (written by record.ts, committed)
+  app/src/buy/fixtures/README.md (one short page: each fixture, how it was made, what it proves)
+
+Read first: AGENTS.md; .agents/skills/build/SKILL.md; app/src/edge/api/search.ts (all of it: land(), answer(), result(), the SearchStage, SearchAnswer and OfferView types, which you import with `import type`); app/src/edge/api/jobs.ts (SseFrame, append, framesAfter); app/src/edge/intel/answer.ts (Found); app/src/edge/intel/public/search.ts line 19-20 (SiteOutcome, SiteSearched); app/src/edge/api/search.test.ts lines 1-79 (how a test runs the real handler with fake ports), 464-475 (a cached Poshmark whose live refresh times out: late and cached in one job), 706-721 (Mercari with no account: needs_account); app/src/buy/fixtures/search-live-levi.json (a real stream recorded from the dev server: {recorded, start, frames[]}: four sources failed with no_route, Dupe and Poshmark arrived, Dupe dropped 18 duplicates); .agents/team/packets/team/70-search-streams-each-site-as-it-lands.md (the frame order).
+
+How the frames work (from search.ts; confirm in the code):
+  - The 202 body (`start`) lists every source asked as a stage `site:<id>`, state running, in the order asked. That order is the order the screen lists sources.
+  - Each source lands with job.stage {stage, state: arrived | late | failed, at, found, error?} immediately followed by answer.partial {site, results (that source's ranked offers), sites_pending, answer}. answer.searched[] has one entry per source landed so far, each with site, route_id, outcome (a SiteOutcome: hit, empty, blocked, timeout, page_changed, needs_account, failed, unknown), ms, and when present pace, dropped (unreadable cards), error_code, reason, fallback, cost_usd_est.
+  - A source served from cache lands twice: first while its id is still in sites_pending (that is the saved copy; a refresh is running), then again with the live read. answer.settled's searched[] marks it cached: true when the live read did not replace it.
+  - needs_account is an arrived stage with no error; only answer.searched says needs_account and its reason.
+  - answer.settled carries the merged ranked results and the merged found (cross-source duplicates removed), then job.state done. job.state failed carries error {code, message}.
+
+What reach.ts exports:
+  reach(start: unknown, frames: unknown[]): Reach   pure; parses at the boundary; a frame it cannot read is skipped and counted in reach.skipped, never thrown and never guessed at.
+  Reach = {
+    state: 'running' | 'done' | 'failed';
+    query: string | null;                      // answer.slots.text of the newest answer
+    sources: SourceReach[];                    // in the order of start.stages
+    landed: string[];                          // source ids in the order they first landed
+    pending: string[];                         // newest sites_pending, else every source not yet landed
+    found: Found;                              // answer.settled's found once settled; before, the sum of each source's newest stage found
+    ms: { first: number | null; settled: number | null };   // newest answer.ms
+    results: OfferView[];                      // settled: answer.settled results in its order; before: each landed source's newest partial results, sources in landing order
+    error: { code: string; message: string } | null;        // job.state failed
+    skipped: number;
+  }
+  SourceReach = {
+    id: string;                                // the stage name without 'site:'
+    state: 'running' | 'arrived' | 'late' | 'failed';       // the stage state
+    outcome: SiteOutcome | null;               // from the newest answer.searched entry for this site; null until it lands
+    read: number; kept: number;                // found.results_found, found.results_used
+    dropped: { reason: string; count: number }[];           // found.dropped_by_reason, largest first, then by reason
+    ms: number | null; pace: Pace | null; cost_usd_est: number | null; fallback: 'apify' | null;
+    cached: 'refreshing' | 'kept' | null;      // refreshing: landed while still pending; kept: settled searched says cached
+    error: { code: string; reason: string } | null;        // stage error, else searched error_code and reason
+    at: string | null;                         // stage at
+  }
+  Use the server's names for states and outcomes; invent no new word for a state the server has. A source with no frame yet is running with zeros and nulls, exactly as the 202 says.
+
+Failure modes to test first (each test names its cause):
+  - the live fixture: six sources in start order; depop, mercari, facebook, ebay failed with error no_route; dupe arrived read 40 kept 22 dropped [{duplicate,18}] with its ms and pace; landed order is the frames' order; state done; found equals answer.settled's found.
+  - folding only the first k frames of the live fixture, for every k, never shows a number that is not in frames[0..k] (a property test over all prefixes), and pending shrinks as sources land.
+  - the late and cached fixture: poshmark shows cached 'refreshing' after its first land, then state late and cached 'kept' after settle; its kept count is the cached batch's.
+  - the needs_account fixture: mercari state arrived, outcome needs_account, the server's reason, no error.
+  - a frame with a missing found, an unknown event, a non-object data, a stage for a source not in start: skipped and counted, the rest still folds.
+  - job.state failed: state failed with its code and message; sources still running stay running (not invented as failed) unless a stage frame says so.
+  - before answer.settled, results are per-source in landing order; after it, exactly answer.settled's order.
+  - reach(null, frames) works from the frames alone (sources listed in landing order) so a resumed screen with no 202 still shows truth.
+
+record.ts: runs the real POST /v1/search handler and the real job store in-process with fake ports, the way search.test.ts does (copy its setup; do not import the test file), for (a) the scenario of search.test.ts:464 (two searches; record the second job: start body and every frame from jobs.framesAfter) and (b) the scenario of :706. Write each as {recorded: "<how, which test it mirrors, the date>", start, frames} with JSON.stringify(x, null, 1). No network; spec/fixtures/pages/ supplies the pages.
+
+Out of scope: any React, any screen, any fetch. If something cannot be done from the repo, write what is missing in the report and move on; never invent data or loosen a test.
+
+tsc reports no error in the files you own (cd app && npx tsc --noEmit -p .).
+
+How to work:
+- Read AGENTS.md and .agents/skills/build/SKILL.md first, then the documents this brief names. The files this brief says you own are the only files you create or change.
+- Before code, work out how the thing operates and what is most likely to break it, and write a test for each break so a failure names its cause. Write the failing test first. Take every name from spec/product.md. Follow the patterns of the code already in the same folder; reuse what exists (the param registry in app/src/engines/param and jobs/param, the proof layer in app/src/engines/proof, the log in log/).
+- Run only your own checks, one test file at a time: Python with ./.venv/bin/python -m pytest <file> -q ; TypeScript with node --test --test-concurrency=1 <file> . Never run scripts/prove.mjs with --wave or --tune, never run .agents/check.mjs, never start a server or a browser, never use the network.
+- No secret, token or personal data in any file. No console.log in app code (log through log/). No `any` in TypeScript. No swallowed errors.
+- Do not run git commit, push, checkout or any git command that writes; the lead commits your work.
+- Do every task in the brief. If one truly cannot be done from the repo, say exactly what is missing and move to the next.
+- When finished, write WORKER_REPORT.md in the folder root: one line per task with its check command and exit code, the files you created, and anything not done with the reason.

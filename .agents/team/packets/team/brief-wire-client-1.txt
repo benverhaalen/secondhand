@@ -1,0 +1,57 @@
+Outcome: the phone app gets its one connection to the server: a client that knows the server's address on web and on a device, keeps the visitor id the server hands out, leaves a seam for a sign-in token, calls a /v1 route, and reads a job's event stream.
+
+Done when (run from app/, each exits 0):
+  node --test --test-concurrency=1 src/api/client.test.ts
+  node --test --test-concurrency=1 src/api/sse.test.ts
+  npx tsc --noEmit -p .    (no error in src/api/)
+
+Files you own (create; change nothing else):
+  app/src/api/origin.ts          web and node: the API origin. process.env.EXPO_PUBLIC_API_ORIGIN if set, else '' (same origin; the web app is served by the API's own dev server).
+  app/src/api/origin.native.ts   a device: EXPO_PUBLIC_API_ORIGIN if set, else `http://${Constants.expoConfig?.hostUri}` from expo-constants (the dev server the bundle came from), else null. Metro picks .native.ts on iOS and Android; node and tsc see origin.ts.
+  app/src/api/fetch.ts           export const fetch = globalThis.fetch (web and node).
+  app/src/api/fetch.native.ts    export { fetch } from 'expo/fetch' (streams response.body on iOS and Android; React Native's own fetch does not).
+  app/src/api/client.ts
+  app/src/api/sse.ts
+  app/src/api/client.test.ts, app/src/api/sse.test.ts
+  app/src/api/README.md          one short page: what each file does and the seam for the token.
+
+Read first: AGENTS.md; .agents/skills/build/SKILL.md; app/src/edge/api/http.ts lines 104-160 (how the server reads Authorization: Bearer <token>, X-Visitor-Id matching /^vis_[a-z0-9]{8,32}$/, and sets X-Visitor-Id on its answer; the error body shape {code, message, failed_step, retry}); app/src/edge/api/jobs.ts (SseFrame, the SSE encoding `id: N\nevent: E\ndata: JSON\n\n`, ': heartbeat' comment lines, Last-Event-ID resume, and that the stream closes after a job.state done or failed frame); app/src/edge/api/search.ts (POST /v1/search answers 202 with {id, kind, state, stages[], stream}); app/src/buy/fixtures/search-live-levi.json (a real stream recorded from the dev server: {recorded, start, frames[]}); app/src/buy/stage.ts (how this app parses at a boundary).
+
+What client.ts exports (names are yours to refine, the behavior is not):
+  - createClient({ origin, fetch, now? }) returning { call, search, jobFrames, session }. A default `api` built from origin.ts and fetch.ts is exported too, so screens import one thing. Tests build their own client with a fake fetch; no test touches the network or globalThis.fetch.
+  - session: { token: string | null; visitor: string | null }. token stays null (sign-in cannot issue one yet); when set, every call sends Authorization: Bearer <token>. visitor is taken from the X-Visitor-Id header of any answer and sent on every later call, because GET /v1/jobs/:id/events only answers the visitor that made the job (a different visitor gets not_found). Memory only; no storage yet (say so in a `shortcut:` comment).
+  - call<T>(endpoint 'POST /v1/search' style or method+path, { body?, signal? }) -> Promise<T>. A non-2xx answer throws an ApiFailure (exported class) carrying status and the server's code, message and retry when the body has them; a network error throws ApiFailure with code 'unreachable' and status 0. The result is typed by the caller; parsing the shape is the caller's job.
+  - search(text, filters?) -> the 202 body, typed from the server by `import type` (do not copy server types): the stages are `SearchStage` from app/src/edge/api/search.ts. Import types only (`import type`), never server values: the server modules pull node-only code.
+  - jobFrames(jobId, { signal, onFrame }) -> Promise<void>: opens GET /v1/jobs/:id/events with Accept: text/event-stream, decodes response.body with getReader() and TextDecoder({stream:true}), feeds sse.ts, and calls onFrame for each frame in order. If response.body is null, it reads response.text() once (the stream ends with the job, so that still gives every frame, only late). If the connection drops before a job.state frame whose state is done or failed, it reconnects with Last-Event-ID set to the last frame id, at most 3 times, then throws ApiFailure 'stream_lost'. Aborting the signal ends it quietly. Frames are typed as SseFrame from app/src/edge/api/jobs.ts.
+
+What sse.ts exports: a pure incremental parser. createSseParser() -> { push(chunk: string): SseFrame[] } that holds a partial block across chunks, ignores ':' comment lines (heartbeats), accepts \n and \r\n, joins multiple data: lines with \n, parses data as JSON (a block whose data is not JSON is skipped and counted in a `skipped` number, never thrown), and takes id as a number.
+
+Failure modes to test first, each named so its failure says the cause:
+  - a frame split across two chunks, and a chunk holding three frames and half of a fourth
+  - heartbeat comments between frames produce no frame
+  - \r\n line endings
+  - the whole recorded fixture, encoded back to SSE text and pushed in 64-byte chunks, gives back exactly fixture.frames in order
+  - the visitor id from the first answer's header is sent on the next call; a token, once set, is sent as Bearer
+  - a 400 with the server's error body throws ApiFailure with that code and retry; a rejected fetch throws code 'unreachable'
+  - a stream that ends after frame 5 of the fixture without job.state done reconnects with Last-Event-ID 5 and gets the rest; three drops in a row throws stream_lost
+  - a null body falls back to text() and still yields every frame
+  - an aborted signal stops without throwing and without reconnecting
+  - origin.ts returns EXPO_PUBLIC_API_ORIGIN when set and '' when not
+
+Out of scope: any screen, any hook, polling fallback, token storage, sign-in. If something cannot be done from the repo, write what is missing in the report and move on; never invent data or loosen a test.
+
+Facts you cannot look up (no network):
+  - expo/fetch: `import { fetch } from 'expo/fetch'`; its response.body is a ReadableStream read with getReader(), confirmed by Expo's own test suite reading an Accept: text/event-stream response in chunks (github.com/expo/expo apps/test-suite/tests/Fetch.ts, SDK 52 and later; the repo is on SDK 58).
+  - expo-constants: Constants.expoConfig?.hostUri is the dev server's host:port when the app was loaded from one (expo-linking's createURL.ts uses it the same way).
+  - EXPO_PUBLIC_* variables are inlined into the app bundle by Metro at build time; read them as process.env.EXPO_PUBLIC_API_ORIGIN written out in full (Metro replaces only the literal expression).
+
+tsc reports no error in the files you own (cd app && npx tsc --noEmit -p .).
+
+How to work:
+- Read AGENTS.md and .agents/skills/build/SKILL.md first, then the documents this brief names. The files this brief says you own are the only files you create or change.
+- Before code, work out how the thing operates and what is most likely to break it, and write a test for each break so a failure names its cause. Write the failing test first. Take every name from spec/product.md. Follow the patterns of the code already in the same folder; reuse what exists (the param registry in app/src/engines/param and jobs/param, the proof layer in app/src/engines/proof, the log in log/).
+- Run only your own checks, one test file at a time: Python with ./.venv/bin/python -m pytest <file> -q ; TypeScript with node --test --test-concurrency=1 <file> . Never run scripts/prove.mjs with --wave or --tune, never run .agents/check.mjs, never start a server or a browser, never use the network.
+- No secret, token or personal data in any file. No console.log in app code (log through log/). No `any` in TypeScript. No swallowed errors.
+- Do not run git commit, push, checkout or any git command that writes; the lead commits your work.
+- Do every task in the brief. If one truly cannot be done from the repo, say exactly what is missing and move to the next.
+- When finished, write WORKER_REPORT.md in the folder root: one line per task with its check command and exit code, the files you created, and anything not done with the reason.

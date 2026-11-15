@@ -22,7 +22,7 @@ What changed:
 | Momondo ([company page](https://www.momondo.com.au/company)); Going on Momondo ([2026-10-14](https://www.going.com/guides/how-to-use-momondo)) | evidence | searches "hundreds of ... sites at once"; done when the wheel stops; filters work once the search has begun | the list is usable while it fills | observed |
 | Defera's flight-search timing ([2026-10-20](https://defera.app/guides/fastest-flight-search-engines)), a rival's own test | evidence | "the fastest engines showed the first flights as soon as they had them"; Google Flights first fares about 0.8 s | the first source that lands shows its rows at once | observed |
 | NN/g, long waits ([2021-09-05](https://www.nngroup.com/articles/designing-for-waits-and-interruptions/)) | mechanism | where a percent is unreliable, "provide a list of completed and remaining steps" | sources done and sources still asked, not a percent | observed |
-| NN/g, progress indicators ([2014-10-26](https://www.nngroup.com/articles/progress-indicators/)) | mechanism | a looped indicator for 2 to 9 s, percent-done from 10 s; a wrong estimate costs credibility | no time estimate we cannot back; our searches settle in about 1.4 s on the dev server (measured below) | observed |
+| NN/g, progress indicators ([2014-10-26](https://www.nngroup.com/articles/progress-indicators/)) | mechanism | a looped indicator for 2 to 9 s, percent-done from 10 s; a wrong estimate costs credibility | no time estimate we cannot back; our searches settle in about 1.5 s on the dev server (measured below) | observed |
 | Material 3 ([guidelines](https://m3.material.io/components/progress-indicators/guidelines)) | mechanism | "the indicator must accurately represent the progress"; switch from indeterminate to determinate as information arrives | "4 of 6 answered" appears only when frames say so | observed |
 | Jakob Nielsen, "Slow AI" ([2025-10-13](https://jakobnielsenphd.substack.com/p/slow-ai)) | mechanism | label partial results as incomplete | rows before the settled answer are marked as so far | observed |
 | Buell and Norton, "The Labor Illusion" ([Management Science 57(9), 2011](https://www.hbs.edu/faculty/Pages/item.aspx?num=40158)) | evidence | people "can actually prefer websites with longer waits" when the work is shown; tested on travel and dating sites | showing the work raises the answer's value, so we never hide it, and never pad it | observed (abstract) |
@@ -45,7 +45,7 @@ The build is the view model `app/src/buy/reach.ts` (every field above comes from
 
 ## Our own number
 
-A visitor search for "levi 501" on the dev server, 2026-11-15 05:50 Central: six sources asked. Four failed with `no_route`, because the dev server has no harness or Apify lane. Dupe read 40, kept 22 and dropped 18 duplicates. Poshmark read 48 and kept 47. First rows came at 1.0 s and the settled answer at 1.4 s (`app/src/buy/fixtures/search-live-levi.json`, *observed*).
+A visitor search for "levi 501" on the dev server, 2026-11-15 05:50 Central: six sources asked. Four failed with `no_route`, because the dev server has no harness or Apify lane. Dupe read 40, kept 22 and dropped 18 duplicates. Poshmark read 48, kept 47 and dropped 1 duplicate. First rows came at 1.4 s and the settled answer at 1.5 s (`app/src/buy/fixtures/search-live-levi.json`, *observed*).
 
 ## Limits
 
