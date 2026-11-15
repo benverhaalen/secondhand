@@ -17,6 +17,7 @@ Names and states are the canon's ([spec/product.md](../../../spec/product.md) §
 | `insights(w)`, `payouts(w)`, `records(w)` | You: sold, earned, fees, kept, on its way, could earn, worth of kept things, by site, goal progress; money landed and due; the year's sales rows |
 | `PRODUCTS`, `product(id)`, `RETAIL`, `SEARCH_DUNKS`, `SEARCH_SLOW`, `SEARCH_EMPTY` | The buy side's market: product pages with price per site and history, official offers, a search with sites still answering, one with one site in, one with nothing found |
 | `TITLES`, `AMOUNTS`, `NAMES` | Break content: titles at and past 80 characters, an unbroken one; amounts from $0 to $999,999.99; the longest buyer name |
+| `useScreen()` from `@/demo/screen` | Which world and which state a page draws, from `?world=` and `?state=` (new, empty, one, typical, dense, loading, failed, offline). Every page reads its state here, so app-check can open `<route>?state=<s>` for each required state (B35). A state a page cannot be in goes on `<Screen skip="offline: why">` |
 | `NOW`, `usd`, `usdExact`, `range`, `countdown`, `when`, `day`, `clock`, `ago`, `inHours`, `inDays`, `inMinutes` | Formatters: `$85`, `$77.35`, `3h 40m`, `tomorrow at 6 pm`, `Yesterday`, `5m ago` |
 | `youKeep(site, cents, local?)`, `SITE_LABEL` | What a sale keeps after the site's fee; a site's name for `accessibilityLabel` only (show the logo) |
 | `photo(key)`, `logo(site)` (in `photos.ts`) | Image sources from `app/assets/demo/` |

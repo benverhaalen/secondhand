@@ -8,30 +8,6 @@
   "findings": [
     {
       "level": "error",
-      "id": "B34",
-      "where": "screen 1 \"secondhand\"",
-      "msg": "spills out of [wordmark]: a thing holds what is in it (ledger L37)"
-    },
-    {
-      "level": "error",
-      "id": "B32",
-      "where": "screen 1",
-      "msg": "the wordmark is transformed: it is never transformed, shadowed, outlined, stroked, filtered, faded or moved (C1)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "screen 1 <div>",
-      "msg": "has a fill of rgb(242, 242, 242), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B9",
-      "where": "screen 1 <img>",
-      "msg": "is an image with no alt text: say what the photo shows, or name the logo (C3, C5)"
-    },
-    {
-      "level": "error",
       "id": "B4",
       "where": "screen 1",
       "msg": "has 4 gradients: one field per view (C2)"
@@ -86,9 +62,9 @@
     },
     {
       "level": "error",
-      "id": "B34",
-      "where": "screen 7 \"$60 to $80\"",
-      "msg": "spills out of [range]: a thing holds what is in it (ledger L37)"
+      "id": "A7",
+      "where": "screen 7",
+      "msg": "has 2 display headings (\"Nothing needs you\", \"Connect a site\"): one per view besides the wordmark (Art. 6)"
     },
     {
       "level": "warn",
@@ -98,27 +74,9 @@
     },
     {
       "level": "error",
-      "id": "B34",
-      "where": "screen 8 \"Connect a site\"",
-      "msg": "spills out of [top-setup]: a thing holds what is in it (ledger L37)"
-    },
-    {
-      "level": "error",
-      "id": "A7",
-      "where": "screen 8",
-      "msg": "has 2 display headings (\"Nothing needs you\", \"Connect a site\"): one per view besides the wordmark (Art. 6)"
-    },
-    {
-      "level": "error",
       "id": "B8",
       "where": "dark screen 1",
       "msg": "is 64% color, with a wash that covers 28%: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "dark screen 2 [site-badge]",
-      "msg": "has a --surface line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)"
     },
     {
       "level": "warn",

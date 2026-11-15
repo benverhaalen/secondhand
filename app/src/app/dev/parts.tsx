@@ -6,7 +6,13 @@ import { useState } from 'react';
 import {
   Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
   Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  Feed, QueueView,
 } from '@/ui';
+import { GoalBar } from '@/ui/parts/goal-bar';
+import { ListRow } from '@/ui/parts/list-row';
+import { Switch } from '@/ui/parts/switch';
+import { TabNav } from '@/ui/parts/tab-nav';
+import { WeekBars } from '@/ui/parts/week-bars';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
@@ -15,6 +21,10 @@ import { photo } from '@/demo/photos';
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
 const at = (h: number) => Date.now() + h * HOUR;
+const QUEUE: Record<string, { title: string; photo: 'brass-lamp' | 'kindle' | 'ikea-chair' }> = {
+  q1: { title: 'Brass desk lamp', photo: 'brass-lamp' }, q2: { title: 'Kindle Paperwhite', photo: 'kindle' }, q3: { title: 'IKEA Stefan chair', photo: 'ikea-chair' },
+};
+const QUEUE_SITES: ('ebay' | 'depop')[] = ['ebay', 'depop'];
 const STATES: TagState[] = ['need', 'live', 'hot', 'stuck', 'sold', 'ship', 'paid', 'failed', 'draft', 'ended', 'working'];
 
 export default function Parts() {
@@ -31,6 +41,9 @@ function Sheetful() {
   const [tab, setTab] = useState<TabKey>('index');
   const [sheet, setSheet] = useState(false);
   const [size, setSize] = useState('');
+  const [on, setOn] = useState(true);
+  const [fed, setFed] = useState(['f-a', 'f-b']);
+  const [queued, setQueued] = useState<string[] | null>(null);
   return (
     <Screen name="parts" state="all" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
@@ -64,6 +77,23 @@ function Sheetful() {
           due={at(22)} form="batch" status="working" step="2 of 3" primary={{ id: 'd-batch-run-print', label: 'Print 3 labels' }} second={{ id: 'd-batch-run-each', label: 'One by one' }} />
         <DecisionCard id="d-queue" kind="need" word="Offer" title="Kindle Paperwhite" photo="kindle" site="ebay" fact={{ label: 'You keep', amount: 51 }}
           due={at(6)} form="queue" waiting={4} primary={{ id: 'd-queue-accept', label: 'Accept $58' }} second={{ id: 'd-queue-counter', label: 'Counter' }} />
+      </Section>
+
+      <Section title="Feed: an answered card leaves and the gap closes">
+        <Feed>
+          {fed.map(k => (
+            <DecisionCard key={k} id={k} kind="need" word="Offer" title={k === 'f-a' ? 'Brass desk lamp' : 'Kindle Paperwhite'} photo={k === 'f-a' ? 'brass-lamp' : 'kindle'} site="ebay"
+              fact={{ label: 'You keep', amount: 28.9 }} primary={{ id: `${k}-accept`, label: 'Accept $32', onPress: () => setFed(f => f.filter(x => x !== k)) }} />
+          ))}
+        </Feed>
+        <Line><Pill id="f-reset" kind="second" label="Bring them back" onPress={() => setFed(['f-a', 'f-b'])} /></Line>
+      </Section>
+
+      <Section title="Queue view: one of many, full screen">
+        <Line><Pill id="q-open" kind="second" label="Open a queue of 3" onPress={() => setQueued(['q1', 'q2', 'q3'])} /></Line>
+        <QueueView id="q" open={!!queued} title="Ready to post" total={3} does="Post at $45 on 2 sites" onClose={() => setQueued(null)}
+          entries={(queued ?? []).map(k => ({ id: k, title: QUEUE[k].title, photo: QUEUE[k].photo, price: '$45', sites: QUEUE_SITES }))}
+          onApprove={e => setQueued(q => (q && q.length > 1 ? q.filter(x => x !== e.id) : null))} onSkip={e => setQueued(q => (q && q.length > 1 ? q.filter(x => x !== e.id) : null))} onEdit={() => setQueued(null)} />
       </Section>
 
       <Section title="Item card">
@@ -175,6 +205,23 @@ function Sheetful() {
 
       <Section title="Top slot, a new person">
         <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+      </Section>
+
+      <Section title="You: tab nav, list rows, switch, goal, week bars">
+        <TabNav title="You" inbox={{ count: 2 }} />
+        <List>
+          <ListRow id="lr-plain" lead="money-03" label="Payouts" onPress={() => {}} />
+          <ListRow id="lr-value" label="On its way" value="$132.33" tabular onPress={() => {}} />
+          <ListRow id="lr-fact" label="Money" value="US dollars" />
+          <ListRow id="lr-switch" label="Pause selling" detail="Sites use their own away mode. The rest end and come back on your date" trail={<Switch id="sw-1" label="Pause selling" on={on} onChange={setOn} />} />
+          <ListRow id="lr-off" label="Buy shipping labels" detail="Asks you first. Approved 2 of 3 times without a change" trail={<Switch id="sw-2" label="Buy shipping labels" on={false} disabled />} />
+          <ListRow id="lr-site" site="depop" label="Linked" detail="Checked 5m ago" onPress={() => {}} />
+          <ListRow id="lr-link" site="mercari" label="Not linked" trail={<Pill id="lr-link-p" kind="second" label="Link" />} />
+          <ListRow id="lr-linking" site="ebay" label="Signing in" trail={<Pill id="lr-linking-p" kind="second" label="Link" state="working" />} />
+          <ListRow id="lr-error" site="poshmark" tone="brick" label="Didn’t link" trail={<Pill id="lr-error-p" kind="second" label="Try again" icon="refresh" />} />
+        </List>
+        <GoalBar label="November goal" kept={132.33} target={300} />
+        <WeekBars weeks={[{ label: 'Sep 22', amount: 31.3 }, { label: '29', amount: 0 }, { label: 'Oct 6', amount: 64 }, { label: '13', amount: 12.5 }, { label: '20', amount: 0 }, { label: '27', amount: 88.1 }, { label: 'Nov 3', amount: 40 }, { label: '10', amount: 132.33, now: true }]} />
       </Section>
 
       <Section title="Tab bar">

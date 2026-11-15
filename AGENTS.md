@@ -23,6 +23,8 @@ The map is in [README.md](README.md). Read [product/vision.md](product/vision.md
 | Generating any image | Skill `image-gen`: the Codex CLI with Astra, given the loop to run and how to judge, not the content. |
 | Words a person reads, in the app or out of it | Skill `writing` (Ben's lint and rules). |
 | Writing code that runs: the app, the server, a job, an agent loop | Skill `build`: done and the command that proves it first, the failing test first, names from `spec/`, a clean diff, a `Rests-on:` trailer citing the sources it follows, and a fresh review against them. Log through [log/](log/README.md): every input, state change, outside call, approval and error. Check a run with `node spec/log.mjs <file>`. |
+| Ben or Nate names a skill the repo does not have | Fetch it ([Ben](product/words.md#2026-11-15-a-skill-i-name-that-is-not-in-the-repo-gets-fetched)): from its public source, or ask for the folder it lives in. Copy it unchanged to `.agents/vendor/<author>/` with its LICENSE and a SOURCE.md, then run it, or wrap it in a skill here that says how it runs in this repo. |
+| Make something faster or cheaper | Skill `hillclimb`: poteto's playbook with `log/climb.mjs` as the harness. |
 | Before every push | `node .agents/check.mjs` (checks and tests). It must pass. |
 
 The skills live in `.agents/skills/` (Codex) and `.claude/skills/` (a link to the same files). Mark your own suggestions as *agent proposal*, and never move one to Decided yourself.

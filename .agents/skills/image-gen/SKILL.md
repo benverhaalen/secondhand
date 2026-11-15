@@ -33,7 +33,7 @@ Ben's words this comes from: [Codex with Astra, the loop and how to judge](../..
 6. **The plan.** File paths are relative to the plan.
 
    ```json
-   { "max": 24, "load": 0.7, "ramp": 2, "swap": 10, "timeout": 600,
+   { "max": 24, "load": 0.7, "ramp": 2, "swap": 10, "timeout": 600, "tick": 2,
      "jobs": [
        { "id": "A", "prompt": "...", "inputs": [{ "file": "inputs/colors.png", "take": "The color sheet. Match these colors." }] },
        { "id": "B", "after": ["A"], "prompt": "...",
@@ -48,7 +48,7 @@ Ben's words this comes from: [Codex with Astra, the loop and how to judge](../..
 
 7. **Fast, without overloading the machine.**
    - Freeze the plan before the first call. A change mid-run means a restart; round 6 restarted twice.
-   - Put every image in one plan. The runner starts `ramp` calls every 2 seconds, up to `max` at once. While the one-minute load is above `load` of the cores, it starts one call every 10 seconds instead. While the machine swaps more than `swap` MB a second, it runs one call at a time. A call still running after `timeout` seconds is stopped with everything it started, and stopping the runner (Ctrl-C, or a kill from an agent's timeout) stops its calls too, so none is left running on its own.
+   - Put every image in one plan. The runner starts `ramp` calls every `tick` seconds (2), up to `max` at once. While the one-minute load is above `load` of the cores, it starts one call every 5 ticks instead. While the machine swaps more than `swap` MB a second, it runs one call at a time. A call still running after `timeout` seconds is stopped with everything it started, and stopping the runner (Ctrl-C, or a kill from an agent's timeout) stops its calls too, so none is left running on its own.
    - Why: a call costs CPU as it starts, then waits on the server. Measured on Ben's M3 (8 cores): 24 one-line calls started in the same second took the load to 54, and each took 99 seconds instead of 8. Round 7 started 28 that way, four times. A running image call used 3% of one core or less.
    - Why 24: at their peak, 24 calls held 3.2 GB of the Mac's 16 (the same run).
    - After a run, read its last line: most at once, the load at its peak, what the calls used, and how often it slowed. If the load crossed the limit with nothing else running on the machine, lower `ramp`. Seconds per call: `node spec/log.mjs <out>/logs/*.jsonl`.

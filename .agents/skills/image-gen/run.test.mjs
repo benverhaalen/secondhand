@@ -27,7 +27,7 @@ function fake({ ms = 15, files = () => ['image.png'] } = {}) {
   return { exec, calls, peak: () => peak };
 }
 const plan = (jobs, more = {}) => ({ out: mkdtempSync(join(tmpdir(), 'image-run-')), jobs, ...more });
-const go = (p, f, more = {}) => run(p, { exec: f.exec, probe: quiet, tickMs: 5, ...more });
+const go = (p, f, more = {}) => run({ tick: 0.005, ...p }, { exec: f.exec, probe: quiet, ...more });
 
 test('check refuses a plan that breaks a context rule', () => {
   const bad = (jobs, word) => assert.match(check({ out: 'x', jobs }).join('\n'), word);
@@ -129,6 +129,8 @@ test('a call is not fresh in a folder that holds files or sits in a repo, so nei
   await assert.rejects(go({ out: join(repo, 'runs'), jobs: [job('a')] }, f), /inside .*AGENTS\.md/s);
 });
 
+// The command-line tests run on whatever else the machine is doing, so they tick fast and never count it as busy: the pacing is tested above with a fake probe.
+const FAST = { tick: 0.05, load: 1000 };
 const posixOnly = { skip: process.platform === 'win32' && 'the stand-in codex is a shebang script, and Windows has no ps' };
 
 test('from the command line: a clean Codex home, one image per call, and a whole log', posixOnly, () => {
@@ -145,7 +147,7 @@ writeFileSync(join(process.argv[process.argv.indexOf('-C') + 1], 'image.png'), '
 console.log('tokens used: 4,089');
 `);
   chmodSync(join(bin, 'codex'), 0o755);
-  writeFileSync(join(dir, 'plan.json'), JSON.stringify({ jobs: [job('a'), job('b')] }));
+  writeFileSync(join(dir, 'plan.json'), JSON.stringify({ jobs: [job('a'), job('b')], ...FAST }));
   const env = { ...process.env, HOME: home, PATH: bin + delimiter + process.env.PATH };
   delete env.CODEX_HOME;
   const ran = spawnSync(process.execPath, [fileURLToPath(new URL('./run.mjs', import.meta.url)), join(dir, 'plan.json'), out], { env, encoding: 'utf8' });
@@ -182,7 +184,7 @@ setInterval(() => {}, 1000);
   chmodSync(join(bin, 'codex'), 0o755);
   const env = { ...process.env, HOME: home, PATH: bin + delimiter + process.env.PATH, PID_FILE: pidFile };
   delete env.CODEX_HOME;
-  const planFile = more => { writeFileSync(join(dir, 'plan.json'), JSON.stringify({ out: join(dir, 'out'), jobs: [job('a'), job('b')], ...more })); return join(dir, 'plan.json'); };
+  const planFile = more => { writeFileSync(join(dir, 'plan.json'), JSON.stringify({ out: join(dir, 'out'), jobs: [job('a'), job('b')], ...FAST, ...more })); return join(dir, 'plan.json'); };
   const pids = () => readFileSync(pidFile, 'utf8').split(/\s+/).filter(Boolean).map(Number);
   const alive = pid => { try { process.kill(pid, 0); return true; } catch { return false; } };
   return { dir, env, planFile, pids, alive };
