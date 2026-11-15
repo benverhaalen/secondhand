@@ -2283,3 +2283,11 @@ Nate, search lead's session, 2026-11-15, about 06:55 Central, after the app-wiri
 > dupes arent considered if copies, if they are new then they are read as additional info, but duplicates from dupe are dropped
 
 Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search), SR11.
+
+## 2026-11-15 nate engine valuations drive the ai; google shopping through treg for ebay prices
+Nate, engines lead's session, 2026-11-15, about 06:50 Central, after the lead said rows that may not be modelled on price a shown range and never a fit.
+> why shouldnt valuation fit into the models? I though we could drive ai utilizing engine valuations
+
+> if it complicates things for a certain area, look like google shopping pages reveal the price of ebay products, im sure treg has something
+
+Used in: the engines lead's answer (engine outputs feed the conversation and our own sales calibrate the engine; the rights limit is only on fitting from rows a source's terms bar, [data use](../spec/data-use.md)); routed to the search lead as a source and to the data lead for the fits.
