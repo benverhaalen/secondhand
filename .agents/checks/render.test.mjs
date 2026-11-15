@@ -1,4 +1,5 @@
-import { test, before, after } from 'node:test';
+import { test, describe, before, after } from 'node:test';
+import { availableParallelism } from 'node:os';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -320,4 +321,7 @@ CASES.push(['B5', 'a state gradient whose colors are mixed by two amounts', NEED
   ['B5', 'a state gradient paler than two days out', NEED(STATE(.8)), /B5 .*\[card-decision\] is a gradient built by hand/, 'app'],
   ['B6', 'the ink of the dark field on a state gradient, which stays light', NEED(STATE(.3), '<p style="font-size:15px;color:var(--on-field)">Nike Dunk Low</p>'), /B6 .*"Nike Dunk Low" is .* on a state gradient: it stays light in dark/, 'app', 'dark'],
   ['U1', 'a tag that is its own button inside a card', NEED(STATE(0), '<button data-part="tag" style="height:20px;padding:0 8px;border:0;border-radius:999px;font:500 13px var(--font-text);background:var(--marigold-tint);color:var(--on-color)">Offer</button>'), /U1 .*\[tag\] that looks pressable/, 'app']);
-for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+// Each case renders in its own page of the one browser, so they run side by side.
+describe('render: each rule fails on the output it exists to catch', { concurrency: availableParallelism() }, () => {
+  for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+});
