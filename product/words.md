@@ -1185,3 +1185,10 @@ Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Cen
 ## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
 
 Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
+
+## 2026-11-15 everything goes into the repo, and nate gets the packets he needs
+
+Ben, project chat, 07:14:
+> ensure all information is continually added to the repo and that nate gets packets that he might need
+
+Used in: [AGENTS.md](../AGENTS.md#how-to-work-here).
