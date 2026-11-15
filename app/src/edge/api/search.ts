@@ -329,6 +329,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     return { ...rank(source, rows, observed, filters), cached: !ran && (outcome === 'hit' || outcome === 'empty') };
   };
   try {
+    const ordinaryLanded = Promise.withResolvers<void>();
     const work = Promise.all(sources.map(async source => {
       try { const batch = await sitePlan(source, protocol.freshness.listings); if (pending.has(source.id)) land(source, batch, settled && source.lands_late); }
       catch (e) {
@@ -336,18 +337,21 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
         const searched: SiteSearched = { site: source.site, group: source.group, kind: 'search', url: null, outcome: 'failed', count: sourceCounts.get(source.id)?.count ?? 0, dropped: sourceCounts.get(source.id)?.dropped,
           ms: Math.round(performance.now() - t0), error_code: 'site_failed', reason: e instanceof Error ? e.message : 'source failed', pace: source.pace };
         land(source, rank(source, [], searched, filters), settled && source.lands_late);
+      } finally {
+        if (sources.every(source => source.lands_late || !pending.has(source.id)) && result().found.results_used > 0)
+          ordinaryLanded.resolve();
       }
     }));
     let cut: ReturnType<typeof setTimeout> | undefined;
     try {
-      await Promise.race([work, new Promise<void>(resolve => { cut = setTimeout(() => {
-        for (const source of sources) if (pending.has(source.id)) {
-          land(source, timeout(source), false, source.lands_late);
-          if (!source.lands_late) controllers.get(source.id)?.abort();
-        }
-        resolve();
-      }, Math.max(0, settleMs - (performance.now() - t0))); })]);
+      await Promise.race([work, ordinaryLanded.promise, new Promise<void>(resolve => {
+        cut = setTimeout(resolve, Math.max(0, settleMs - (performance.now() - t0)));
+      })]);
     } finally { clearTimeout(cut); }
+    for (const source of sources) if (pending.has(source.id)) {
+      land(source, timeout(source), false, source.lands_late);
+      if (!source.lands_late) controllers.get(source.id)?.abort();
+    }
     if (jobs.st.getJob(job.id)?.state !== 'running') return;
     const final = result(); jobs.update(job.id, { result: final });
     settledAt = Math.round(performance.now() - t0); first ??= settledAt;
