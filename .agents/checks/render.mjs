@@ -14,7 +14,10 @@ const SITE_NAME = { ebay: 'eBay', depop: 'Depop', poshmark: 'Poshmark', mercari:
 const MONEY = /^[\s(]*[-+]?(?:[A-Z]{2,3})?\p{Sc}\s?\d[\d,.]*[kKmM]?[\s)]*$|^[\s(]*[-+]?\d[\d,.]*\s?\p{Sc}[\s)]*$/u;
 
 // "rgb(1, 2, 3)" or "rgba(1, 2, 3, 0.5)" as [r, g, b, a]. Anything else (oklch(), color()) is not a token value.
-export const rgba = s => { const m = /^rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/.exec(s ?? ''); return m ? [+m[1], +m[2], +m[3], m[4] == null ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : +m[4]] : null; };
+// color(srgb 1 1 1 / 0.25) is how the browser writes a color-mix() inside a gradient.
+const alphaOf = a => a == null ? 1 : a.endsWith('%') ? parseFloat(a) / 100 : +a;
+export const rgba = s => { const m = /^rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/.exec(s ?? ''); if (m) return [+m[1], +m[2], +m[3], alphaOf(m[4])];
+  const c = /^color\(srgb\s+([\d.]+)\s+([\d.]+)\s+([\d.]+)(?:\s*\/\s*([\d.]+%?))?\s*\)$/.exec(s ?? ''); return c ? [c[1] * 255, c[2] * 255, c[3] * 255, alphaOf(c[4])] : null; };
 const hex = ([r, g, b]) => '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
 const over = (top, under) => [0, 1, 2].map(i => top[i] * top[3] + under[i] * (1 - top[3]));
 const near = (a, b, room = .15) => Math.abs(a - b) <= room;
@@ -38,7 +41,7 @@ function palette(colors, grads = {}) {
   return { name, of: n => rgba(colors[n]), raw: n => colors[n], has: v => name(v) != null, grads };
 }
 const TEXT_INK = new Set(['ink', 'on-color', 'ink-2', 'ink-disabled', 'page', 'white', 'brick', 'brick-deep', 'on-field', 'on-field-2']);
-const LINE_INK = new Set(['ink', 'on-color', 'outline', 'rule', 'ink-2', 'ink-disabled', 'brick', 'page', 'white']);
+const LINE_INK = new Set(['ink', 'on-color', 'outline', 'rule', 'card-edge', 'ink-2', 'ink-disabled', 'brick', 'page', 'white']);
 const hueOf = n => RING.find(h => n === h || n === `${h}-tint`);
 const size = el => [el.rect[2] - el.rect[0], el.rect[3] - el.rect[1]];
 // A pill by shape: the token, or a corner as round as the box allows.
@@ -55,10 +58,36 @@ export const seenAs = (rgb, kind) => oklab(CVD[kind].map(row => Math.min(1, Math
 // Every gradient is a token used as it stands: the field (C2), the wash behind a screen's header (Art. 5), any other gradient tokens.css holds.
 // The one gradient written in place is a state tag, which runs from one hue's tint to its fill (ledger L18). Anything else was built by hand.
 function gradientKind(el, pal) {
-  const g = el.gradient, held = Object.entries(pal.grads).find(([n, t]) => !n.endsWith('-mesh') && t.raw === g.raw && (n.startsWith('wash') || t.base === g.base))?.[0];
+  const g = el.gradient, tokens = Object.entries(pal.grads).filter(([n]) => !n.endsWith('-mesh'));
+  const held = tokens.find(([n, t]) => t.raw === g.raw && (n.startsWith('wash') || t.base === g.base))?.[0] ?? tokens.find(([n, t]) => alike(g.raw, t.raw) && (n.startsWith('wash') || same(rgba(g.base), rgba(t.base))))?.[0];
   if (held) return held.startsWith('wash') ? 'wash' : held.startsWith('field') ? 'field' : 'token';
+  if (stateOf(g, pal)) return 'state';
   const names = g.colors.map(c => pal.name(c)), hues = new Set(names.map(n => n && hueOf(n)));
+  if (names.length && names.every(n => /^hot-[12]$/.test(n ?? '')) && new Set(names).size === 2) return 'tag';
   return hues.size === 1 && !hues.has(undefined) && !hues.has(null) && names.some(n => n.endsWith('-tint')) ? 'tag' : 'built';
+}
+
+// React Native has no var(), so the app writes the wash and the state gradients out in code. Such a gradient is read as the
+// token it stands for when its layers have the token's shape and its stops the token's colors. Clear is clear, whatever its rgb.
+const STOP = /(?:rgba?|color)\((?:[^()]|\([^()]*\))*\)|transparent/g;
+const layers = raw => raw.replace(/(?:,\s*none)+$/, '').replace(/linear-gradient\(180deg,\s*/g, 'linear-gradient(');
+const stops = raw => (layers(raw).match(STOP) ?? []).map(c => c === 'transparent' ? [0, 0, 0, 0] : rgba(c));
+const same = (a, b) => !!a && !!b && (a[3] < .01 && b[3] < .01 || [0, 1, 2].every(i => Math.abs(a[i] - b[i]) <= 1.5) && Math.abs(a[3] - b[3]) <= .01);
+const alike = (raw, token) => { const a = stops(raw), b = stops(token); return layers(raw).replace(STOP, 'C') === layers(token).replace(STOP, 'C') && a.length === b.length && a.every((c, i) => same(c, b[i])); };
+
+// A state gradient (Art. 5, State gradients): the field's mesh, with field-1 under it, drawn in one state's three colors, each
+// mixed toward white by one amount between none and --field-calm-max. The amount follows the deadline, so any one amount passes.
+export const STATES = ['need', 'sold', 'live', 'paid'];
+export function stateOf(g, pal) {
+  const mesh = pal.grads['field-mesh'], L = pal.light ?? pal; if (!mesh || layers(g.raw).replace(STOP, 'C') !== layers(mesh.raw).replace(STOP, 'C')) return null;
+  const got = stops(g.raw), want = stops(mesh.raw), base = rgba(g.base);
+  if (!base || got.length !== want.length || got.some((c, i) => !c || (c[3] < .01) !== (want[i][3] < .01))) return null;
+  const seen = [base, ...got.filter(c => c[3] >= .01)], most = pal.calmMax ?? .58;
+  for (const s of STATES) { const ref = [1, 2, 3].map(k => L.of(`field-${s}-${k}`)); if (ref.some(r => !r) || seen.length !== 3) continue;
+    const j = [0, 1, 2].reduce((a, b) => ref[0][b] < ref[0][a] ? b : a), t = 255 - ref[0][j] < 8 ? 0 : (seen[0][j] - ref[0][j]) / (255 - ref[0][j]);
+    if (t < -.01 || t > most + .01) continue;
+    if (seen.every((c, i) => c[3] > .99 && [0, 1, 2].every(k => Math.abs(c[k] - (ref[i][k] + (255 - ref[i][k]) * t)) <= 1.5))) return s; }
+  return null;
 }
 
 // What is behind a piece of text, as one opaque color where that can be known.
@@ -80,6 +109,10 @@ function checkView(view, ctx) {
   const E = (id, where, msg) => out.push(err(id, `${at} ${where}`.trim(), msg)), W = (id, where, msg) => out.push(warn(id, `${at} ${where}`.trim(), msg));
   const text = view.texts, sizes = sheet.sizes[String(view.canvas?.[0])] ?? Object.values(sheet.sizes)[0], top = Math.max(...sizes);
   const isMark = t => t.display && t.text.trim().toLowerCase() === 'secondhand';
+  // A state gradient and a state tag stay light in dark, with black text (Art. 5, State gradients 3 and Dark mode 4),
+  // so they and everything on them are read in the light palette. In light mode that is the same palette.
+  const lit = new Set(); view.els.forEach((el, i) => { if (lit.has(el.parent) || el.part === 'tag' || el.gradient && gradientKind(el, pal) === 'state') lit.add(i); });
+  const both = pal.light ? { ...pal.light, name: v => pal.light.name(v) ?? pal.name(v) } : pal, P = i => lit.has(i) ? both : pal;
   const sizesOf = w => Array.isArray(w?.sizes) ? w.sizes : w?.sizes?.[String(view.canvas?.[0])] ?? Object.values(w?.sizes ?? {})[0] ?? [], markSizes = sizesOf(sheet.wordmark);
 
   // B28 true scale
@@ -87,7 +120,7 @@ function checkView(view, ctx) {
     E('B28', '', `is ${Math.round(view.w)} by ${Math.round(view.h)}: a ${medium} view is ${sheet.canvas.map(c => c.join(' by ')).join(' or ')}${sheet.scrolls ? ', or taller when it scrolls' : ''} (Part III)`);
 
   for (const t of text) {
-    const q = short(t.text), g = ground(t, view, pal), color = rgba(t.color), name = pal.name(t.color);
+    const q = short(t.text), g = ground(t, view, pal), color = rgba(t.color), inks = P(t.el), name = inks.name(t.color);
     // B15 faces, B13 weights
     if (/(?:^|,)\s*["']?inter(?: [\w ]+)?["']?\s*(?:,|$)/i.test(t.family)) E('B15', q, 'names Inter in its font list: Inter is banned, even as a fallback (Art. 6)');
     if (!t.display && !t.textFace) E('B15', q, `is set in ${t.family.split(',')[0]}: the faces are the text face and the display face from tokens.css (Art. 6)`);
@@ -120,10 +153,12 @@ function checkView(view, ctx) {
       const worst = inside ? 1 : Math.min(...ends.map(p => ratio(lum(over([color[0], color[1], color[2], a], p)), lum(p)))), need = g.wash ? 7 : t.size >= 24 ? 3 : 4.5;
       if (worst < need) E('B6', q, `has ${worst.toFixed(1)}:1 contrast at its worst point over ${g.wash ? 'the wash' : g.kind === 'field' ? 'the field' : 'the gradient'}; it needs ${need}:1 (Art. 5.1${g.wash ? ', Art. 5 The wash' : ''})`); }
     if (g.kind === 'photo') E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
+    else if (g.kind === 'state') { const ok = ['on-field', 'on-field-2', 'on-color'].map((pal.light ?? pal).raw).filter(Boolean);
+      if (!ok.includes(t.color)) E('B6', q, `is ${name ? `--${name}` : t.color} on a state gradient: it stays light in dark, so its text is --on-field or --on-field-2 of the light mode, black in both (Art. 5, State gradients 3)`); }
     else if (g.kind === 'field' || g.kind === 'built') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
       if (ok.length ? !ok.includes(t.color) : !['ink', 'on-color'].includes(name)) E('B6', q, `is --${name ?? 'a raw color'} on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)`); }
-    else if (g.kind !== 'fill' || g.name && hueOf(g.name)) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && pal.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'a gradient'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
-    if (name?.startsWith('on-field') && g.kind !== 'field' && g.kind !== 'built') E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
+    else if (g.kind !== 'fill' || g.name && hueOf(g.name)) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && inks.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'a gradient'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
+    if (name?.startsWith('on-field') && !['field', 'built', 'state'].includes(g.kind)) E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
     else if (g.kind === 'fill' && color && !sampled && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
       if (c < need) E('B6', q, `has ${c.toFixed(1)}:1 contrast with what is behind it; it needs ${need}:1 (Art. 5.1)`); }
     // B17 on the web, text that wraps sits in a column of about 75 characters, 36 times its size (Part III)
@@ -204,7 +239,9 @@ function checkView(view, ctx) {
   for (const el of view.els) {
     const q = el.part ? `[${el.part}]` : `<${el.tag}>`;
     // B7 every color is a token
-    for (const [what, c, inks] of [['fill', el.bg, null], ...el.borders.map(c => ['line', c, LINE_INK])]) { if (!c) continue; const n = pal.name(c);
+    const k = view.els.indexOf(el), state = el.gradient && gradientKind(el, pal) === 'state';
+    // A state gradient's base is its first color mixed toward white, which stateOf() has already read against the tokens.
+    for (const [what, c, inks] of [['fill', state ? null : el.bg, null], ...el.borders.map(c => ['line', c, LINE_INK])]) { if (!c) continue; const n = P(k).name(c);
       if (!n) E('B7', q, `has a ${what} of ${c}, which is not a color in tokens.css: use var(--token)`);
       else if (inks && !inks.has(n)) E('B7', q, `has a --${n} line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)`); }
     // B17 space, B20 radius
@@ -230,7 +267,7 @@ function checkView(view, ctx) {
     // gradients
     if (el.gradient) { const kind = gradientKind(el, pal), held = Object.keys(pal.grads).filter(n => !n.endsWith('-mesh')).map(n => `var(--${n})`).join(', ');
       if (kind === 'built') E('B5', q, `is a gradient built by hand: a gradient is a token used as it stands${held ? ` (${held})` : ''}, never rebuilt (C2)`);
-      if (kind === 'field' || kind === 'built') fields.push(el);
+      if (kind === 'field' || kind === 'built' || kind === 'state') fields.push(el);
       if (kind === 'wash') washes.push(el);
     }
   }
@@ -290,11 +327,14 @@ function checkView(view, ctx) {
       if (o.el.current && !p.some(e => Math.abs(size(e)[0] - 56 * u) <= 1 && Math.abs(size(e)[1] - 32 * u) <= 1)) E('L29', '[tab]', `the current tab has ${p.length ? `a pill of ${size(p[0]).map(Math.round).join(' by ')}` : 'no pill behind its icon'}: it is ${56 * u} by ${32 * u} in --tab-on, so the tab you are on is not told by ink alone`);
       if (!o.el.current && p.length) E('L29', '[tab]', 'a tab you are not on has the pill: only the current tab is marked'); } }
   // U2 a countdown is calm: no seconds, and past a day it is a day and a time
-  for (const t of text) { const h = /\b(\d{2,3})\s?h\b/.exec(t.text), part = (() => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].part) return view.els[i].part; return ''; })();
+  for (const t of text) { const h = /\b(\d{2,3})\s?h\b/.exec(t.text), at = (() => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].part) return i; return -1; })(), part = at >= 0 ? view.els[at].part : '';
     if (h && Number(h[1]) > 24) E('U2', short(t.text), `counts ${h[1]} hours: past a day, show the day and the time`);
     if (/\b\d+m \d+s\b|\b\d{1,2}:\d{2}:\d{2}\b/.test(t.text) || /countdown/.test(part) && /\b\d+\s?s\b/.test(t.text)) E('U2', short(t.text), 'counts seconds: a countdown never ticks by the second');
     // U1 what does nothing never looks pressable
-    if (/tag|badge|count/.test(part) && (t.control || view.els[t.el]?.pointer)) E('U1', short(t.text), `is a [${part}] that looks pressable: a tag, a count or a countdown is not a button`); }
+    // A tag inside a card that is pressed as a whole is not itself pressable (frontend standard 5): the press must start at the tag or inside it.
+    let from = t.el; while (view.els[from]?.pointer && view.els[from].parent >= 0 && view.els[view.els[from].parent].pointer) from = view.els[from].parent;
+    const presses = t.control && (t.controlAt == null || t.controlAt < 0 || within(t.controlAt, at)) || view.els[t.el]?.pointer && within(from, at);
+    if (/tag|badge|count/.test(part) && presses) E('U1', short(t.text), `is a [${part}] that looks pressable: a tag, a count or a countdown is not a button`); }
   // U1 what opens a screen says so: a row that is a link ends in a chevron, and a button is a filled or outlined shape
   view.els.forEach((el, i) => { const inside = k => { for (let j = k.parent; j >= 0; j = view.els[j].parent) if (j === i) return true; return false; };
     if (el.link && el.block && size(el)[0] > .6 * view.w && !view.els.some(k => (k.tag === 'svg' || k.tag === 'img' && Math.max(...size(k)) <= 32 * u) && inside(k) && (k.rect[0] + k.rect[2]) / 2 > el.rect[2] - .2 * size(el)[0]))
@@ -333,7 +373,7 @@ function underStress(view, base, baseOut, ctx) {
 
 // facts: { views: [...], stressed: [...], fontsLoaded }, as scripts/brand-check.mjs collects them. Returns the findings.
 export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
-  const pal = palette(colors, facts.grads ?? {}), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [], named: facts.named ?? {}, textWeight: facts.textWeight ?? 400 }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
+  const pal = Object.assign(palette(colors, facts.grads ?? {}), { light: facts.lightColors ? palette(facts.lightColors, facts.grads ?? {}) : null, calmMax: facts.calmMax ?? null }), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [], named: facts.named ?? {}, textWeight: facts.textWeight ?? 400 }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
   const byIndex = new Map(facts.views.map((v, i) => [v.index, i])), stress = (facts.stressed ?? []).flatMap(v => underStress(v, facts.views[byIndex.get(v.index)], per[byIndex.get(v.index)], ctx));
   const once = new Set(); for (const o of stress) { const k = `${o.where} ${o.msg}`; if (!once.has(k)) { once.add(k); out.push(o); } }
   // B28 everything that shows was measured
@@ -382,7 +422,7 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
   if (sheet.fields && withField > sheet.fields) out.push(err('B4', medium, `${withField} views carry the field: a ${medium} uses it on ${sheet.fields} at most (Part III)`));
   const bleeds = facts.views.filter(v => v.bleed).length, most = sheet.fields ?? 1;
   if (bleeds > most) out.push(err('B8', medium, `the field fills ${bleeds} views: it fills ${most} at most on a ${medium}, and sits on one card or band everywhere else (C2, Part III)`));
-  if (facts.fontsLoaded === false) out.push(warn('B15', medium, 'the brand faces are not installed on this machine, so line counts, widths and margins were measured in a fallback face'));
+  if (facts.fontsLoaded === false) out.push((facts.fontsRequired ? err : warn)('B15', medium, facts.fontsRequired ? 'the brand faces in BRAND_FONTS did not load, so nothing was measured in them: check the folder holds the Clofie and PP Neue Montreal files' : 'the brand faces are not on this machine, so line counts, widths and margins were measured in a fallback face. Put the files in fonts/ (gitignored) or set BRAND_FONTS'));
   return out;
 }
 

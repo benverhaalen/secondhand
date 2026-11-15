@@ -33,6 +33,9 @@ test('harness: a call on an unlinked account runs no adapter', async () => {
   assert.ok(!wrongSite.ok, 'a linked account cannot be used on another site');
   assert.deepEqual(runs, []);
   assert.ok((await harness.call('depop', 'read_listings', { account_id: 'a-depop' })).ok);
+  const none = await harness.call('depop', 'post', { operation_id: 'op-1' });
+  assert.ok(!none.ok && none.error.code === 'policy_refused', 'a signed-in verb with no account is refused too');
+  assert.deepEqual(runs, ['depop.read_listings']);
 });
 
 test('pool, sweep and scheduler: the planted site gets zero launches, zero sweeps, zero jobs', async () => {

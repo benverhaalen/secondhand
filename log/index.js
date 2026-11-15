@@ -133,6 +133,14 @@ export function createLog({ src, build, sink, seed, session, from, platform, con
         event('call.end', join({ call, ok: true, ms: time().getTime() - t0 }, kept));
         return out;
       },
+      // Time work that stays inside the process: log.timed('check.links', () => links(root)). Sync stays sync; a promise is awaited.
+      timed(name, fn, fields) {
+        const t0 = time().getTime();
+        const done = (ok, e) => event('timing', join({ name, ok, ms: time().getTime() - t0, ...(e ? { error: errorOf(e) } : {}) }, fields), ok ? 'info' : 'error');
+        let out; try { out = fn(); } catch (e) { done(false, e); throw e; }
+        if (out && typeof out.then === 'function') return out.then(v => { done(true); return v; }, e => { done(false, e); throw e; });
+        done(true); return out;
+      },
       // const run = log.agent('list.depop', { item, goal }); run.step({ action, why }); await run.call('tool', ...); run.end({ ok: true, result }).
       agent(agent, fields) {
         const run = `r${++state.runs}`, t0 = time().getTime(), child = make({ ...bound, run }, src);

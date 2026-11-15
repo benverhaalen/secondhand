@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { words, allCaps, titleCase, sheetAgrees, seenAs } from './render.mjs';
+import { words, allCaps, titleCase, sheetAgrees, seenAs, judge } from './render.mjs';
 import { scan } from '../../scripts/copy-lint.mjs';
 import { check, playwright } from '../../scripts/brand-check.mjs';
 import { mediaCss } from '../../scripts/media-css.mjs';
@@ -31,6 +31,11 @@ test('render: brand/media.json holds the same numbers as Part III of the constit
   const worse = sheetAgrees(constitution, drift).map(o => `${o.where} ${o.msg}`).join('\n');
   assert.match(worse, /deck unit disagrees/); assert.match(worse, /story layouts disagree/); assert.match(worse, /post "act" is true/); assert.match(worse, /web wordmark \(c1\) disagrees/);
   assert.match(sheetAgrees('# no table', media)[0].msg, /can't read the Part III media table/);
+});
+
+test('render B15: faces CI was given that do not load fail; faces that are only missing on this machine warn', () => {
+  const run = fontsRequired => judge({ views: [], stressed: [], fontsLoaded: false, fontsRequired }, { medium: 'deck', sheet: media.deck, scales: { space: new Set([0]), weight: new Set([500, 600]) }, colors: {} }).filter(o => o.id === 'B15').map(o => o.level);
+  assert.deepEqual(run(true), ['error']); assert.deepEqual(run(false), ['warn']);
 });
 
 // Each rule is shown failing on the output it exists to catch, in a real browser. A machine with no browser skips these.
@@ -267,7 +272,6 @@ CASES.push(['U6', 'an old line-drawn logo in place of the square icon', app(`<im
   ['U6', 'a copy of the icon kept somewhere else', app(`<img alt="Depop" src="${PX}" data-x style="width:24px;height:24px;margin:16px 20px">`), /U6 .*an inline picture as the Depop logo/, 'app'],
   ['U7', 'a current tab whose gray box pushes the others over', TABS('', 'class="on"'), /U7 .*moves [\d.]+ px when \.on on "Items"/, 'app'],
   ['U7', 'a current tab marked by aria-current that grows', app(`<nav style="display:flex;gap:8px;padding:16px 20px;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" ${i ? '' : 'aria-current="page"'}>${t}</a>`).join('')}</nav><style>nav a[aria-current=page]{padding:0 12px}</style>`), /U7 .*when aria-current on "Items"/, 'app']);
-for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.
 import { mkdirSync } from 'node:fs';
@@ -299,3 +303,21 @@ test('ui: an emoji in app copy is an error', () => {
   const r = repo({ 'app/src/app/x.tsx': '<Txt>Sold 🎉</Txt>' });
   try { assert.match(ui(r, { files: ['app/src/app/x.tsx'] }).filter(o => o.level === 'error').map(o => o.msg).join('\n'), /emoji/); } finally { rmSync(r, { recursive: true }); }
 });
+// React Native has no var(), so the app kit writes the wash and the state gradients out in code (app/src/ui/paint.ts).
+// They pass when they are the token's shape in the token's colors, and a state gradient stays light in dark with black text.
+const toward = (hex, t) => '#' + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - t) + 255 * t).toString(16).padStart(2, '0')).join('');
+const STATE = (t, [c1, c2, c3] = ['#F5D297', '#EBF08F', '#FECCAA'].map(c => toward(c, t))) => `background-color:${c1};background-image:radial-gradient(at 30% 100%, ${c2}, ${c2}00 60%), radial-gradient(at 100% 100%, ${c3}, ${c3}00 65%)`;
+const NEED = (style, inner = '') => app(`<div role="button" data-part="card-decision" style="cursor:pointer;margin:64px 20px 0;height:156px;border-radius:36px;padding:16px 24px;border:1px solid var(--card-edge);${style}">${inner}</div>`);
+const ON_NEED = `<p style="font-size:15px;color:#0A0A0A">Nike Dunk Low</p><p style="font-size:13px;color:rgb(10 10 10 / .65)">Mon 10 AM</p><span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;background:#EFF1F2;color:#0A0A0A">Offer</span>`;
+const WASH_IN_CODE = (page, w1, w2) => `<header style="position:absolute;left:0;right:0;top:0;height:var(--wash-h);background-color:${w1};background-image:linear-gradient(180deg, ${page}00 0%, ${page}40 45%, ${page}cc 80%, ${page} 100%), linear-gradient(105deg, ${w1}, ${w2})"><p style="font-size:15px;position:absolute;top:120px;left:20px">Today</p></header>`;
+test('render: the wash and a state gradient written out in code pass, in light and dark, with a tag in a card pressed as a whole', { skip: !pw }, async () => {
+  for (const t of [0, .3, .58]) assert.deepEqual(await ids(NEED(STATE(t), ON_NEED), 'app'), [], `light at ${t}`);
+  assert.deepEqual(await ids(NEED(STATE(.3), ON_NEED), 'app', 'error', 'dark'), []);
+  assert.deepEqual(await ids(app(WASH_IN_CODE('#FFFFFF', '#A5E1FE', '#A1EACB')), 'app'), []);
+  assert.deepEqual(await ids(app(WASH_IN_CODE('#101315', '#0A4C65', '#03523B')), 'app', 'error', 'dark'), []);
+});
+CASES.push(['B5', 'a state gradient whose colors are mixed by two amounts', NEED(STATE(0, [toward('#F5D297', .1), toward('#EBF08F', .4), toward('#FECCAA', .1)])), /B5 .*\[card-decision\] is a gradient built by hand/, 'app'],
+  ['B5', 'a state gradient paler than two days out', NEED(STATE(.8)), /B5 .*\[card-decision\] is a gradient built by hand/, 'app'],
+  ['B6', 'the ink of the dark field on a state gradient, which stays light', NEED(STATE(.3), '<p style="font-size:15px;color:var(--on-field)">Nike Dunk Low</p>'), /B6 .*"Nike Dunk Low" is .* on a state gradient: it stays light in dark/, 'app', 'dark'],
+  ['U1', 'a tag that is its own button inside a card', NEED(STATE(0), '<button data-part="tag" style="height:20px;padding:0 8px;border:0;border-radius:999px;font:500 13px var(--font-text);background:var(--marigold-tint);color:var(--on-color)">Offer</button>'), /U1 .*\[tag\] that looks pressable/, 'app']);
+for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));

@@ -5,7 +5,7 @@
 // and runs the constitution's Part IV on what it measured (.agents/checks/render.mjs). Exit code 1 on any error.
 // A view is each element marked data-view (a slide, a post panel, a frame). With none, it is each screenful of the page.
 // The marks it reads are listed in brand/constitution.md Part IV, under the table.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -14,6 +14,20 @@ import { scales } from '../.agents/checks/brand.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const COLOR = /^(?:#[0-9a-f]{3,8}|rgba?\(|hsla?\(|oklch\()/i;
+
+// The brand faces, from a folder that is never committed: BRAND_FONTS if set, else fonts/ at the repo root, else
+// app/assets/fonts/ where the app reads them (both gitignored). CI unpacks them from a secret (.github/workflows/check.yml).
+// A file named for Clofie is the display face at 600; ppneuemontreal-book or text-400 is the text face at 400, and
+// ppneuemontreal-medium or text-500 at 500.
+export function brandFaces(tokensCss, dir = process.env.BRAND_FONTS || [join(root, 'fonts'), join(root, 'app/assets/fonts')].find(existsSync) || '') {
+  if (!existsSync(dir)) return null;
+  const family = v => tokensCss.match(new RegExp(`--font-${v}:\\s*"([^"]+)"`))?.[1], text = family('text'), display = family('display');
+  const kinds = [[/clofie|display-600/i, display, 600], [/ppneuemontreal-medium|text-500/i, text, 500], [/ppneuemontreal-book|text-400/i, text, 400]];
+  const rules = readdirSync(dir).filter(f => /\.(woff2?|otf|ttf)$/i.test(f)).flatMap(f => { const k = kinds.find(([re]) => re.test(f)); if (!k || !k[1]) return [];
+    const type = { woff2: 'woff2', woff: 'woff', otf: 'opentype', ttf: 'truetype' }[f.split('.').pop().toLowerCase()];
+    return [`@font-face { font-family: "${k[1]}"; font-weight: ${k[2]}; font-style: normal; src: url(data:font/${type};base64,${readFileSync(join(dir, f)).toString('base64')}) format("${type}"); }`]; });
+  return rules.length ? rules.join('\n') : null;
+}
 
 export function playwright() {
   for (const from of [import.meta.url, pathToFileURL(join(process.env.NODE_PATH?.split(':')[0] ?? '/nonexistent', 'x.js')).href, pathToFileURL('/opt/node-tools/x.js').href])
@@ -100,11 +114,11 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     let blk = p; while (blk.parentElement && blk !== document.body && /^inline|contents/.test(getComputedStyle(blk).display)) blk = blk.parentElement;
     const firstText = document.createTreeWalker(blk, NodeFilter.SHOW_TEXT, { acceptNode: x => /\S/.test(x.data) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP }).nextNode();
     const lead = firstText === n && /^(?:start|left|-webkit-auto)$/.test(getComputedStyle(blk).textAlign) && !/center|end|around|between|evenly/.test(getComputedStyle(blk.parentElement ?? blk).justifyContent);
-    const control = !!p.closest('button, a, summary, [role=button], [role=link]'), disabled = !!p.closest('[disabled], [aria-disabled="true"]');
+    const press = p.closest('button, a, summary, [role=button], [role=link]'), control = !!press, controlAt = press ? ids.get(press) ?? -1 : -1, disabled = !!p.closest('[disabled], [aria-disabled="true"]');
     texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, lh: parseFloat(cs.lineHeight) ? Math.round(parseFloat(cs.lineHeight) / parseFloat(cs.fontSize) * 1000) / 1000 : null, tr: Math.round((parseFloat(cs.letterSpacing) || 0) / parseFloat(cs.fontSize) * 1000) / 1000, weight: Number(cs.fontWeight), family: cs.fontFamily,
       display: family === faces.display, textFace: family === faces.text, color: cs.webkitTextFillColor || cs.color, upper: cs.textTransform === 'uppercase',
       caps: cs.textTransform === 'capitalize' ? 'capitalized by CSS' : cs.fontVariantCaps !== 'normal' ? 'set in small capitals' : null, italic: cs.fontStyle !== 'normal', stroked: parseFloat(cs.webkitTextStrokeWidth) > 0,
-      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, disabled, lead, opacity: alpha,
+      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, controlAt, disabled, lead, opacity: alpha,
       cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, full: rel(range.getBoundingClientRect()),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
@@ -170,22 +184,28 @@ async function under({ png, boxes }) {
 }
 
 export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
+  const faces = brandFaces(tokensCss);
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
-  const views = [], stressed = [], outside = []; let colors, lengths = [], named = {}, grads = {}, textWeight = 400, fontsLoaded = true, screens = 0, scaled = false;
+  const views = [], stressed = [], outside = []; let colors, lightColors, calmMax, lengths = [], named = {}, grads = {}, textWeight = 400, fontsLoaded = true, screens = 0, scaled = false;
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
-    await page.goto(/^https?:\/\//.test(file) ? file : pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
+    await page.goto(/^https?:\/\//.test(file) ? file : pathToFileURL(resolve(file)).href);
+    if (faces) { await page.addStyleTag({ content: faces }); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); }
+    await page.evaluate(() => document.fonts.ready);
     const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
     const probe = await browser.newPage(); await probe.setContent(`<html><style>${tokensCss}</style><body><i id="p"></i>`); await probe.evaluate(t => { if (t) document.documentElement.dataset.theme = t; }, theme);
     const got = await probe.evaluate(({ names, grads, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [], named: {}, grads: {} }; p.style.display = 'block';
-      for (const n of [...new Set(names)]) { p.style.color = 'rgb(1, 2, 3)'; p.style.color = `var(--${n})`; const a = cs.color; p.parentElement.style.color = 'rgb(3, 2, 1)'; p.style.color = `var(--${n})`; if (cs.color === a) out.colors[n] = a; p.parentElement.style.color = ''; }
+      const read = () => { const o = {}; for (const n of [...new Set(names)]) { p.style.color = 'rgb(1, 2, 3)'; p.style.color = `var(--${n})`; const a = cs.color; p.parentElement.style.color = 'rgb(3, 2, 1)'; p.style.color = `var(--${n})`; if (cs.color === a) o[n] = a; p.parentElement.style.color = ''; } return o; };
+      // The light palette too: a state gradient and a state tag stay light in dark (Art. 5), so what sits on them is read in light.
+      const root = document.documentElement, was = root.dataset.theme; out.colors = read(); root.dataset.theme = 'light'; out.light = read(); if (was) root.dataset.theme = was; else delete root.dataset.theme;
+      out.calmMax = parseFloat(getComputedStyle(root).getPropertyValue('--field-calm-max')) / 100 || null;
       // The gradients the tokens hold (the field, the wash), as the browser writes them, so a page's gradient can be told from one it rebuilt.
       for (const n of grads) { p.style.background = `var(--${n})`; if (/gradient\(/.test(cs.backgroundImage)) out.grads[n] = { raw: cs.backgroundImage, base: cs.backgroundColor }; p.style.background = ''; }
       for (const [k, v] of lengths) { p.style.width = `var(--${k})`; out.lengths.push(parseFloat(cs.width) || v); out.named[k] = parseFloat(cs.width) || v; }
       for (const f of ['text', 'display']) { p.style.fontFamily = `var(--font-${f})`; out.faces[f] = cs.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase(); }
       out.textWeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--w-text')) || 400;
       return out; }, { names, grads: [...new Set([...tokensCss.matchAll(/--([\w-]+)\s*:/g)].map(m => m[1]))], lengths: [...tokensCss.matchAll(/--((?!s-|t-|r-|lh-|tr-)[\w-]+)\s*:\s*(\d+(?:\.\d+)?)px\s*;/g)].map(m => [m[1], Number(m[2])]) });
-    await probe.close(); colors = got.colors; lengths = got.lengths; named = got.named; grads = got.grads; textWeight = got.textWeight;
+    await probe.close(); colors = got.colors; lightColors = got.light; calmMax = got.calmMax; lengths = got.lengths; named = got.named; grads = got.grads; textWeight = got.textWeight;
     // A face is here when text set in it measures differently from the same text in two generic fallbacks. document.fonts.check() says yes to a face it has never heard of.
     fontsLoaded &&= await page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
       return [f.text, f.display].every(face => ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`)) && ['monospace', 'serif'].every(fb => w(`40px "${face}", ${fb}`) === w(`40px "${face}", ${fb === 'serif' ? 'monospace' : 'serif'}`))); }, got.faces);
@@ -236,7 +256,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     }
     await page.close();
   }
-  return { views, stressed, colors, lengths, named, grads, textWeight, fontsLoaded, outside: [...new Set(outside)], screens, scaled };
+  return { views, stressed, colors, lightColors, calmMax, lengths, named, grads, textWeight, fontsLoaded, fontsRequired: !!process.env.BRAND_FONTS, outside: [...new Set(outside)], screens, scaled };
 }
 
 export async function check(file, medium, { browser } = {}) {

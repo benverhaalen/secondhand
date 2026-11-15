@@ -125,3 +125,31 @@ test('pickRoute: a public route is never ranked over a signed-in one for a field
   assert.equal(pickRoute([pub], ['id', 'watchers']), undefined);                       // no signed-in route: none, not the public one
   assert.equal(pickRoute([pub, signed], ['id', 'nope']), undefined);                   // nobody lists it
 });
+
+test('review: a write that runs past its lease TTL keeps the lease through its read-back; a second job gets 409', async () => {
+  const store = memoryLeaseStore();
+  const s = createSessions({ store, now: () => Date.now() });
+  let second: unknown;
+  const out = await s.withLease('acct', 'write-1', 30, async () => {
+    await new Promise(r => setTimeout(r, 80)); // the write and its read-back outlast the 30 ms TTL
+    second = s.lease('acct', 'job-2', 30);
+    return 'written';
+  });
+  assert.equal(out, 'written');
+  assert.deepEqual(second, { ok: false, status: 409 });
+  assert.ok(s.lease('acct', 'job-2', 30).ok, 'released once the write is done');
+});
+
+test('review: quiet hours hold every request until the window ends, across midnight too', async () => {
+  const { quietLeft } = await import('./session.ts');
+  const at = (iso: string) => Date.parse(iso);
+  assert.equal(quietLeft(at('2026-11-15T23:00:00Z'), [22, 6]), 7 * 3_600_000);
+  assert.equal(quietLeft(at('2026-11-15T05:30:00Z'), [22, 6]), 30 * 60_000);
+  assert.equal(quietLeft(at('2026-11-15T12:00:00Z'), [22, 6]), 0);
+  let t = at('2026-11-15T03:00:00Z');
+  const s = createSessions({ store: memoryLeaseStore(), now: () => t });
+  const b = s.bucket('acct', 'depop', { per_minute: 30, step_ms: [2000, 5000], quiet_hours: [2, 6] });
+  assert.equal(b.take(), 3 * 3_600_000);
+  t = at('2026-11-15T06:00:00Z');
+  assert.equal(b.take(), 0);
+});
