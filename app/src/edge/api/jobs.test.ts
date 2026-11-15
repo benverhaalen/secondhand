@@ -243,6 +243,15 @@ test('restart preserves search stages, found counts and frame ids on a fresh dat
   assert.deepEqual(restarted.framesAfter('job_restart', 0).map(f => f.id), [1, 2, 3]);
 });
 
+test('an answer frame whose root names its site reads back from SQLite after a restart with its storable rows', t => {
+  const open = disk(t), { s } = open();
+  const kept = { site: 'ebay', may_store: true, keep_until: null, url: 'https://example.test/kept' };
+  s.put({ id: 'job_frame_root', kind: 'search', state: 'running' }, 'usr_8f2k');
+  s.append('job_frame_root', 'answer.partial', { site: 'ebay', product: null, results: [kept, { site: 'dupe', may_store: false }] });
+  const { s: restarted } = open();
+  assert.deepEqual(restarted.framesAfter('job_frame_root', 0)[0].data, { site: 'ebay', product: null, results: [kept] });
+});
+
 test('rights filtering removes forbidden URLs from job and frame SQL while live GET and frames retain every row', async t => {
   const open = disk(t), { db, s } = open(), result = searchResult();
   s.put({ id: 'job_rights', kind: 'search', state: 'running' }, 'usr_8f2k');

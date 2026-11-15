@@ -74,3 +74,12 @@ test('only searched entries are exempt; nested listing rows still need storage r
   assert.deepEqual(storable(value, now), { searched: [{ site: 'x', may_store: false, result: null }], result: null });
   assert.equal(dropped(value, now), 2);
 });
+
+test('a frame whose root names its site keeps the frame and filters the rows inside it', () => {
+  const kept = { site: 'ebay', may_store: true, keep_until: null };
+  const refused = { site: 'dupe', may_store: false };
+  const frame = { site: 'ebay', product: null, results: [kept, refused], offer: { site: 'x' } };
+  assert.deepEqual(storable(frame, now), { site: 'ebay', product: null, results: [kept], offer: null });
+  assert.equal(dropped(frame, now), 2);
+  assert.equal(storable({ site: 'dupe', may_store: false }, now), null, 'a root that states its own rights is still a row');
+});
