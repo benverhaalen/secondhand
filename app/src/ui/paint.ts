@@ -15,9 +15,9 @@ export function alpha(hex: string, a: number): string {
   return `#${hex.slice(1, 7)}${aa}`;
 }
 
-// A color mixed toward white by t (0 keeps it, 1 is white).
+// A color mixed toward white, the light --surface, by t (0 keeps it, 1 is white).
 export function towardWhite(hex: string, t: number): string {
-  return toward(hex, '#FFFFFF', t);
+  return toward(hex, color.surface, t);
 }
 
 // A color mixed toward another by t (0 keeps it, 1 is the other).
