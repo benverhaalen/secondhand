@@ -33,7 +33,7 @@ export function PhotoPager({ photos, label, faded = false }: {
     <View {...mark('photo-pager', { count: String(photos.length), at: String(at + 1) })} style={{ gap: space.s3 }}>
       <View onLayout={onLayout} style={{ borderRadius: radius.photo, overflow: 'hidden' }}>
         <ScrollView
-          testID="photos"
+          testID="photo-pager"
           horizontal
           pagingEnabled
           showsHorizontalScrollIndicator={false}

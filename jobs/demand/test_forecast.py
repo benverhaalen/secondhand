@@ -3,7 +3,7 @@ from demand.events import Event, season_terms
 from demand.forecast import count_forecast, price_comps, price_forecast
 from demand.velocity import Velocity, velocity
 
-POST = velocity([], {"a": 8.0, "b": 4.0})  # 2 a week
+POST = velocity([], {"shape": 8.0, "rate": 4.0})  # 2 a week
 FLAT = {m: 1.0 for m in range(1, 13)}
 PARAMS = {"beta_D": 0.5, "k_cov": 1.0}
 FC_FIELDS = {"id", "subject", "horizon_weeks", "metric", "p10", "p50", "p90", "basis_count", "param_versions",
@@ -29,9 +29,9 @@ def test_holiday_raises_the_season_term():
 
 
 def test_no_history_reads_the_prior_with_a_wide_interval():
-    prior_only = count_forecast("p", velocity([], {"a": 2.0, "b": 1.0}), weeks=[1.0] * 4, D=0.0, params=PARAMS,
+    prior_only = count_forecast("p", velocity([], {"shape": 2.0, "rate": 1.0}), weeks=[1.0] * 4, D=0.0, params=PARAMS,
                                 basis_count=0, as_of="2026-11-01")
-    sure = count_forecast("p", Velocity(a=200.0, b=100.0, mean=2.0, p10=0, p90=0), weeks=[1.0] * 4, D=0.0,
+    sure = count_forecast("p", Velocity(shape=200.0, rate=100.0, mean=2.0, p10=0, p90=0), weeks=[1.0] * 4, D=0.0,
                           params=PARAMS, basis_count=400, as_of="2026-11-01")
     assert (prior_only["p90"] - prior_only["p10"]) > (sure["p90"] - sure["p10"])
 

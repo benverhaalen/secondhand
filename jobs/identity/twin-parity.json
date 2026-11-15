@@ -1,0 +1,286 @@
+{
+  "match": [
+    {
+      "name": "code below threshold is not exact",
+      "left": {
+        "mpn": "M1"
+      },
+      "right": {
+        "mpn": "M1"
+      },
+      "text_sim": 0,
+      "image_sim": 0,
+      "score": 0.3,
+      "label": "unresolved"
+    },
+    {
+      "name": "code plus threshold",
+      "left": {
+        "mpn": "M1"
+      },
+      "right": {
+        "mpn": "M1"
+      },
+      "text_sim": 1,
+      "image_sim": 1,
+      "score": 1.0,
+      "label": "exact"
+    },
+    {
+      "name": "model alone is not an exact anchor",
+      "left": {
+        "model": "M1"
+      },
+      "right": {
+        "model": "M1"
+      },
+      "text_sim": 1,
+      "image_sim": 1,
+      "score": 1.0,
+      "label": "likely_same_model"
+    },
+    {
+      "name": "variant wins over code",
+      "left": {
+        "brand": "A",
+        "model": "M1",
+        "variant": "red",
+        "mpn": "M1"
+      },
+      "right": {
+        "brand": "A",
+        "model": "M1",
+        "variant": "blue",
+        "mpn": "M1"
+      },
+      "text_sim": 1,
+      "image_sim": 1,
+      "score": 0.925,
+      "label": "same_family_other_variant"
+    }
+  ],
+  "jaccard": [
+    {
+      "left": "black black jacket",
+      "right": "jacket blue",
+      "expected": 0.3333333333333333
+    },
+    {
+      "left": "CAF\u00c9 Stra\u00dfe",
+      "right": "caf stra e",
+      "expected": 1.0
+    },
+    {
+      "left": "",
+      "right": "",
+      "expected": 0.0
+    },
+    {
+      "left": "A_B",
+      "right": "a_b",
+      "expected": 1.0
+    }
+  ],
+  "hamming": [
+    {
+      "left": "0000000000000000",
+      "right": "00000000000000ff",
+      "expected": 8
+    },
+    {
+      "left": "0000000000000000",
+      "right": "ffffffffffffffff",
+      "expected": 64
+    },
+    {
+      "left": "0000000000000001",
+      "right": "0000000000000002",
+      "expected": 2
+    }
+  ],
+  "clusters": [
+    {
+      "name": "retail photo is not evidence",
+      "comps": [
+        {
+          "site": "depop",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "a",
+          "seller_ref_hash": "a"
+        },
+        {
+          "site": "depop",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "b",
+          "seller_ref_hash": "b"
+        }
+      ],
+      "retail_phashes": [
+        "0000000000000000"
+      ],
+      "expected": [
+        [
+          "a"
+        ],
+        [
+          "b"
+        ]
+      ]
+    },
+    {
+      "name": "five sellers across sites are stock per identity spec",
+      "comps": [
+        {
+          "site": "depop",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "0",
+          "seller_ref_hash": "0"
+        },
+        {
+          "site": "ebay",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "1",
+          "seller_ref_hash": "1"
+        },
+        {
+          "site": "mercari",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "2",
+          "seller_ref_hash": "2"
+        },
+        {
+          "site": "poshmark",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "3",
+          "seller_ref_hash": "3"
+        },
+        {
+          "site": "facebook",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "4",
+          "seller_ref_hash": "4"
+        }
+      ],
+      "expected": [
+        [
+          "0"
+        ],
+        [
+          "1"
+        ],
+        [
+          "2"
+        ],
+        [
+          "3"
+        ],
+        [
+          "4"
+        ]
+      ]
+    },
+    {
+      "name": "eight bits joins",
+      "comps": [
+        {
+          "site": "depop",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "a",
+          "seller_ref_hash": "a"
+        },
+        {
+          "site": "depop",
+          "price_cents": 8000,
+          "phash": [
+            "00000000000000ff"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "b",
+          "seller_ref_hash": "b"
+        }
+      ],
+      "expected": [
+        [
+          "a",
+          "b"
+        ]
+      ]
+    },
+    {
+      "name": "nine bits does not join",
+      "comps": [
+        {
+          "site": "depop",
+          "price_cents": 8000,
+          "phash": [
+            "0000000000000000"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "a",
+          "seller_ref_hash": "a"
+        },
+        {
+          "site": "depop",
+          "price_cents": 8000,
+          "phash": [
+            "00000000000001ff"
+          ],
+          "listed_at_source": "2026-11-01T00:00:00Z",
+          "title": "black jacket",
+          "id": "b",
+          "seller_ref_hash": "b"
+        }
+      ],
+      "expected": [
+        [
+          "a"
+        ],
+        [
+          "b"
+        ]
+      ]
+    }
+  ]
+}

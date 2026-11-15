@@ -16,6 +16,7 @@
 // `next_run_at` on job is added there, here it rides as an extra field), hp-1 (the real Harness replaces HarnessLike;
 // the read-back `data.landed === true` shape is assumed and settles with hp-1). Never log message text or tokens:
 // this file logs ids, kinds, codes and counts only.
+import { confirmedOrder } from '../delist/delist.ts';
 import { check } from './policy.ts';
 import type { PolicyInput, PolicyResult } from './policy.ts';
 import type { EventRow } from './event.ts';
@@ -167,6 +168,8 @@ export function createPipeline(d: PipelineDeps) {
       return data;
     },
     async act(j, verb, decision_kind, extra = {}) {
+      const saleDelist = verb === 'end' && j.args.decision_kind === 'delist_after_sale';
+      if (saleDelist && !confirmedOrder(store, j)) throw new Stop({ k: 'refused', kind: 'failed_delist' });
       const st = stageOf(j.id, verb);
       if (st?.state === 'arrived') return st.result;
       const op = `${j.id}:${verb}`;
@@ -178,7 +181,7 @@ export function createPipeline(d: PipelineDeps) {
       }
       const num = (v: unknown) => (typeof v === 'number' ? v : undefined);
       const r = policy({
-        action: verb, decision_kind, actor: eventOf(j)?.actor ?? 'auto', price_cents: num(j.args.price_cents), floor_cents: num(j.args.floor_cents),
+        action: verb, decision_kind, actor: eventOf(j)?.actor ?? 'auto', price_cents: saleDelist ? undefined : num(j.args.price_cents), floor_cents: saleDelist ? undefined : num(j.args.floor_cents),
         always_accept_cents: num(j.args.always_accept_cents), promoted: (d.promoted ?? (() => new Set<string>()))(j.user_id), site: j.site ?? '',
       });
       if (!r.allow) {

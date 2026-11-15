@@ -16,7 +16,7 @@ import { ingest, type LogLike } from '../events/intake.ts';
 import type { Site } from '../events/event.ts';
 import type { HarnessLike, Store } from '../events/ports.ts';
 import { fanOut, type ItemListing } from '../delist/delist.ts';
-import type { orderBook, OrderRead } from '../orders/orders.ts';
+import type { orderBook, OrderRead, OrderRow } from '../orders/orders.ts';
 
 export type PublicState = { state: 'sold' | 'live' | 'unknown'; why: string };
 
@@ -77,7 +77,29 @@ export async function confirm(d: { store: Store; log: LogLike; harness: HarnessL
   if (!env.ok) return env.error.code === 'auth_expired' ? { outcome: 'paused' as const } : { outcome: 'error' as const, code: env.error.code };
   const paid = (env.data.orders ?? []).find(o => o.listing_id === job.listing_id && o.state !== 'cancelled');
   if (!paid) return { outcome: 'not_sold' as const }; // the public page was wrong: nothing is delisted
+  const saved = d.store.rows<OrderRow & Record<string, unknown>>('order', { user_id: job.user_id, site: job.site, external_order_id: paid.external_order_id })[0];
+  if (saved) {
+    const { version: _version, ...durable } = saved;
+    d.orders.apply(durable);
+    const restored = d.orders.all().find(o => o.site === job.site && o.external_order_id === paid.external_order_id)!;
+    delete restored.payout_cents;
+    delete restored.payout_recorded_at;
+    Object.assign(restored, durable);
+  }
   const applied = d.orders.apply({ ...paid, kind: 'sale', user_id: job.user_id, item_id: job.item_id, site: job.site });
-  const delist = fanOut(d.store, d.log, { user_id: job.user_id, item_id: job.item_id, sold_listing_id: job.listing_id, confirmed: true, trace_id: job.trace_id, listings: d.listingsOf(job.item_id) });
+  const saleStore: Store = { ...d.store, tx: fn => {
+    const result = d.store.tx(t => {
+      applied.order.id = saved?.id ?? `ord_${encodeURIComponent(job.site)}_${encodeURIComponent(paid.external_order_id)}`;
+      t.put('order', { ...applied.order });
+      return fn({ ...t,
+        insertEvent: event => t.insertEvent({ ...event, payload: { ...event.payload, order_id: applied.order.id } }),
+        insertJob: next => t.insertJob({ ...next, args: { ...next.args, order_id: applied.order.id } }),
+      });
+    });
+    d.log.event('note', { msg: 'confirmed order saved', order_id: applied.order.id, item_id: job.item_id });
+    return result;
+  } };
+  if (applied.order.state === 'cancelled' || applied.order.state === 'refunded') return saleStore.tx(() => ({ outcome: 'not_sold' as const }));
+  const delist = fanOut(saleStore, d.log, { user_id: job.user_id, item_id: job.item_id, sold_listing_id: job.listing_id, confirmed: true, trace_id: job.trace_id, listings: d.listingsOf(job.item_id) });
   return { outcome: 'sold' as const, order: applied.order, new_sale: applied.new_sale, delist };
 }

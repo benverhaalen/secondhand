@@ -4,6 +4,7 @@ import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest } from './orders.ts';
+import { ledger } from '../orders/orders.ts';
 
 const prefixes = ["orders","appointments"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
@@ -104,5 +105,30 @@ test('order reads use orderBook records rather than fixed money values', async (
     ports.all = () => all().map(row => ({ ...row, price_cents: 1000 }));
     const response = await call(examples.find(e => e.name === 'orders.list')!);
     assert.equal((await response.json()).data[0].price_cents.amount_cents, 1000);
+  } finally { ports.all = all; }
+});
+
+test('orders: unknown fees stay null in the response and kept stays unknown in the ledger', async () => {
+  const { ports } = await import('./orders.ts');
+  const all = ports.all;
+  try {
+    ports.all = () => all().map(row => ({ ...row, fees_cents: null }));
+    const response = await call(examples.find(e => e.name === 'orders.list')!);
+    assert.equal(response.status, 200, 'an unknown fee must not crash the route');
+    const body = await response.json();
+    assert.equal(body.data[0].fees_cents, null, 'unknown fees must not become a money object or zero');
+    assert.equal(ledger(ports.all())[0].kept_cents, null, 'kept cannot be known before fees');
+  } finally { ports.all = all; }
+});
+
+test('orders: a reported zero fee remains known money rather than null', async () => {
+  const { ports } = await import('./orders.ts');
+  const all = ports.all;
+  try {
+    ports.all = () => all().map(row => ({ ...row, fees_cents: 0 }));
+    const response = await call(examples.find(e => e.name === 'orders.list')!);
+    assert.equal(response.status, 200);
+    assert.deepEqual((await response.json()).data[0].fees_cents, { amount_cents: 0, currency: 'USD' });
+    assert.equal(ledger(ports.all())[0].kept_cents, ports.all()[0].price_cents);
   } finally { ports.all = all; }
 });

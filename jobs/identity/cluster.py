@@ -1,7 +1,9 @@
 """Cross-post collapse; rejected pairs are constraints on whole components."""
 from datetime import datetime
 from hashlib import sha256
-from identity.pair import read_param, text_similarity
+from identity.pair import text_similarity
+from identity.params import use
+from identity.validation import money
 
 
 def phash(value):
@@ -11,6 +13,10 @@ def phash(value):
     return number
 
 
+def hamming(left, right):
+    return (phash(left) ^ phash(right)).bit_count()
+
+
 def instant(value):
     result = datetime.fromisoformat(value.replace("Z", "+00:00"))
     if result.tzinfo is None:
@@ -18,17 +24,21 @@ def instant(value):
     return result
 
 
-def cluster_comps(comps, *, retail_phashes=(), blocked_pairs=(), params=(), scope=None, log=None):
+def cluster_comps(comps, *, retail_phashes=(), blocked_pairs=(), params=(), scope=None, log=None, resolved=None):
     comps = sorted(comps, key=lambda c: c["id"])
     if len({c["id"] for c in comps}) != len(comps):
         raise ValueError("duplicate comp id")
     scope = scope or {}
-    distance = read_param(params, "identity_phash_distance", scope, 8)
-    price_tolerance = read_param(params, "identity_price_tolerance", scope, .15)
-    days = read_param(params, "identity_date_days", scope, 30)
+    resolved = use(resolved, params, scope)
+    v = resolved['values']
+    distance = v['identity_phash_distance']
+    price_tolerance = v['identity_price_tolerance']
+    days = v['identity_date_days']
+    for row in comps:
+        money(row['price_cents'], 'price_cents')
     hashes = {c["id"]: tuple(phash(h) for h in c.get("phash", ())) for c in comps}
     retail = tuple(phash(h) for h in retail_phashes)
-    close = lambda a, b: (a ^ b).bit_count() <= distance
+    close = lambda a, b: hamming(a, b) <= distance
     # Detect reuse across the whole input before any union. For large ingest,
     # the caller supplies the warm retail/reuse index as retail_phashes.
     all_hashes = set(h for values in hashes.values() for h in values)
@@ -36,7 +46,7 @@ def cluster_comps(comps, *, retail_phashes=(), blocked_pairs=(), params=(), scop
     for h in all_hashes:
         sellers = {c["seller_ref_hash"] for c in comps if c.get("seller_ref_hash")
                    and any(close(h, other) for other in hashes[c["id"]])}
-        if len(sellers) >= 5 or any(close(h, other) for other in retail):
+        if len(sellers) >= v["identity_stock_sellers"] or any(close(h, other) for other in retail):
             stock.add(h)
     parent = list(range(len(comps)))
     members = {i: {c["id"]} for i, c in enumerate(comps)}
@@ -55,13 +65,14 @@ def cluster_comps(comps, *, retail_phashes=(), blocked_pairs=(), params=(), scop
             if ri == rj or any(frozenset((x, y)) in blocked for x in members[ri] for y in members[rj]):
                 continue
             seller = (bool(a.get("seller_ref_hash")) and a["seller_ref_hash"] == b.get("seller_ref_hash")
-                      and text_similarity(a.get("title", ""), b.get("title", "")) >= .8)
+                      and text_similarity(a.get("title", ""), b.get("title", "")) >= v["identity_seller_text"])
             photos = (not a.get("stock_photo") and not b.get("stock_photo") and
                       any(close(x, y) for x in hashes[a["id"]] if x not in stock
                           for y in hashes[b["id"]] if y not in stock))
             prices = a.get("price_cents"), b.get("price_cents")
             price_ok = (all(p is not None and p > 0 for p in prices)
                         and abs(prices[0] - prices[1]) / max(prices) <= price_tolerance)
+            # Fixed unit conversion: 86400 seconds per day.
             date_ok = (a.get("listed_at_source") and b.get("listed_at_source") and
                        abs((instant(a["listed_at_source"]) - instant(b["listed_at_source"])).total_seconds()) <= days * 86400)
             if seller or (photos and price_ok and date_ok):
