@@ -58,7 +58,19 @@ header { color: var(--ink); }
 .tape .v { font-variant-numeric: tabular-nums; }
 .tape .note { margin-top: var(--s-7); }
 @media (max-width: 760px) { .tape-row { grid-template-columns: minmax(0, 1fr); gap: var(--s-7); } }
-.how { min-height: 100svh; display: grid; place-items: center; background: var(--page); }
+/* Section 2 (C, Ben 10:24): three screens in a row, the same size and cut at the same line, so they read as one sequence
+   left to right. Each is the app's real screen (L61) in a card with the app's corner and a hairline, no device drawn
+   around it: the screen is the product, a drawn phone is decoration. The step sits under its screen: its number in the
+   second ink, its name, one line. On a phone the row scrolls sideways with each screen snapping to the edge, and runs
+   out to the screen's edges (--bleed is the page margin turned back, so it stays on the spacing scale). */
+.how { background: var(--page); }
+.steps3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-7); margin: var(--s-8) 0 0; padding: 0; list-style: none; }
+.steps3 li { display: grid; gap: var(--s-3); align-content: start; }
+.steps3 .screen { margin: 0 0 var(--s-3); border-radius: var(--r-card); overflow: hidden; border: 1px solid var(--rule); background: var(--surface); }
+.steps3 .screen img { width: 100%; height: auto; }
+.steps3 .n { color: var(--ink-2); margin-right: var(--s-3); font-variant-numeric: tabular-nums; }
+.steps3 p { color: var(--ink-2); font-size: var(--t-18); line-height: var(--lh-18); max-width: 30ch; }
+@media (max-width: 760px) { .steps3 { grid-template-columns: repeat(3, 78%); overflow-x: auto; scroll-snap-type: x mandatory; gap: var(--s-4); --bleed: calc(-1 * var(--mx)); margin-inline: var(--bleed); padding-inline: var(--mx); scroll-padding-inline: var(--mx); } .steps3 li { scroll-snap-align: start; } }
 
 /* the open: the wordmark with its hands in the middle, the hands stepping in beside it, then it settles in the header (hero.js; L58) */
 .intro { position: fixed; inset: 0; z-index: 20; display: none; place-items: center; background: var(--page); color: var(--ink); }
