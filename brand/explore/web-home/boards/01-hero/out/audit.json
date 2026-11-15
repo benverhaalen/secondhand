@@ -9,14 +9,22 @@
         "pill_y": 560,
         "headline_lines": 4,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 33,
-        "pill_y": 668,
-        "headline_lines": 4,
+        "pill_y": 621,
+        "headline_lines": 3,
         "photos": 0,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "a",
       "label": "A. The line alone on the field",
@@ -29,14 +37,22 @@
         "pill_y": 420,
         "headline_lines": 4,
         "photos": 1,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 38,
         "pill_y": 668,
         "headline_lines": 4,
         "photos": 1,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "b",
       "label": "B. The line beside the product working",
@@ -52,14 +68,22 @@
         "pill_y": 500,
         "headline_lines": 4,
         "photos": 1,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "1440": {
         "words": 49,
         "pill_y": 470,
         "headline_lines": 2,
         "photos": 1,
-        "fonts": []
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "faces": true
       },
       "id": "c",
       "label": "C. The line above the scene",
