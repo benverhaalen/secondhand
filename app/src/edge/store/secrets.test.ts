@@ -11,8 +11,7 @@ const names = ['SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISI
 test('production missing or short signing keys throw naming the variable without exposing values', () => {
   for (const [name, variable] of [['visitor', 'SECONDHAND_VISITOR_KEY'], ['decision', 'DECISION_SIGNING_KEY']] as const) {
     for (const value of [undefined, randomBytes(8).toString('hex')]) {
-      const env = { NODE_ENV: 'production', [variable]: value };
-      assert.throws(() => secret(name, env), (error: Error) => {
+      for (const env of [{ NODE_ENV: 'production', [variable]: value }, { [variable]: value }, { NODE_ENV: 'staging', [variable]: value }]) assert.throws(() => secret(name, env), (error: Error) => {
         assert.match(error.message, new RegExp(variable));
         if (value) assert.ok(!error.message.includes(value));
         return true;
@@ -21,6 +20,7 @@ test('production missing or short signing keys throw naming the variable without
     const value = randomBytes(32).toString('hex');
     assert.equal(secret(name, { NODE_ENV: 'production', [variable]: value }), value);
     assert.equal(secret(name, { [variable]: value }), value);
+    assert.equal(secret(name, { NODE_ENV: 'development', [variable]: value }), value);
   }
 });
 
@@ -37,6 +37,7 @@ test('production boot lists every missing variable and never includes a supplied
   });
   requireProduction({ NODE_ENV: 'production', SECONDHAND_DATA_DIR: '/data', SECONDHAND_PEER_HEADER: 'Fly-Client-IP', SECONDHAND_VISITOR_KEY: value, DECISION_SIGNING_KEY: value });
   requireProduction({ NODE_ENV: 'development' });
+  for (const env of [{}, { NODE_ENV: 'staging' }]) assert.throws(() => requireProduction(env), /Missing production variables/, JSON.stringify(env));
 });
 
 test('development signing keys persist across fresh bundles and restarted processes on the same SQLite file', () => {
