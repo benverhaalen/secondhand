@@ -1,8 +1,8 @@
 .page { width: 100%; max-width: none; --gutter: 64px; --content: 1200px; font-synthesis: none; -webkit-font-smoothing: antialiased; }
 .wrap { width: min(var(--content), calc(100% - var(--gutter) * 2)); margin-inline: auto; }
 .page h1, .page h2 { font-family: var(--font-text); font-weight: var(--w-text); letter-spacing: var(--tr-50); }
-.page h1 { max-width: 900px; font-size: clamp(40px, 4.2vw, 60px); line-height: 1.08; }
-.page h2 { font-size: clamp(32px, 3.5vw, 50px); line-height: 1.12; }
+.page h1 { max-width: 900px; font-size: var(--t-50); line-height: var(--lh-50); }
+.page h2 { font-size: var(--t-36); line-height: var(--lh-36); }
 .page h3 { font-size: var(--t-21); line-height: 1.35; }
 .eyebrow { font-size: var(--t-15); margin-bottom: var(--s-5); }
 .hero { padding-block: 136px 64px; }
@@ -51,7 +51,7 @@
 .platformList .link { margin-top: var(--s-2); }
 .basis .number { background: var(--aqua); color: var(--on-color); border-color: transparent; }
 .engineeringNote { border-left: 1px solid var(--rule); padding-left: var(--s-8); align-self: start; position: sticky; top: 128px; }
-.statement { font-size: 30px; line-height: 1.3; letter-spacing: var(--tr-36); }
+.statement { font-size: var(--t-21); line-height: 1.3; letter-spacing: var(--tr-36); }
 .engineeringNote > p:not(.eyebrow):not(.statement) { font-size: var(--t-18); line-height: 1.55; color: var(--ink-2); margin-top: var(--s-6); }
 .engineeringNote details { border-block: 1px solid var(--rule); margin-block: var(--s-7); padding-block: var(--s-5); }
 .engineeringNote summary { font-size: var(--t-15); line-height: 1.5; min-height: var(--control-min); }
@@ -98,7 +98,7 @@
 @media (max-width: 760px) {
   .page { --gutter: 24px; }
   .hero { padding-block: 136px 64px; }
-  .page h1 { font-size: 40px; }
+  .page h1 { font-size: var(--t-36); }
   .page h2 { font-size: var(--t-36); }
   .architecture { margin-top: var(--s-8); }
   .flow { grid-template-columns: 1fr; }

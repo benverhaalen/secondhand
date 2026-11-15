@@ -139,7 +139,9 @@ function checkView(view, ctx) {
     // B14 off the app, a size of 32 and up is set at leading 1.1 and tracking -0.02em; the wordmark is -0.01em (Art. 6.4, 6.12)
     if (u > 1 && t.size >= 32 && t.lh !== undefined) { const want = mark ? -.01 : -.02;
       if (t.lh == null || Math.abs(t.lh - 1.1) > .02 || Math.abs(t.tr - want) > .003) E('B14', q, `is set at leading ${t.lh ?? 'normal'} and tracking ${t.tr}em: on a ${medium}${mark ? ' the wordmark' : ' a size of 32 and up'} is leading 1.1 and tracking ${want}em (Art. 6.12)`); }
-    if (t.display && !mark) E('A7', q, 'uses the wordmark face: set all other text in PP Neue Montreal (Art. 6)');
+    const webHero = medium === 'web' && t.heroHeading;
+    if (t.display && !mark && !webHero) E('A7', q, 'uses the wordmark face outside an approved logo or public page headline (Art. 6)');
+    if (t.display && webHero && !t.lowercase && t.text.trim() !== t.text.trim().toLowerCase()) E('A7', q, 'the public headline in the wordmark face is lowercase (Art. 6)');
     // B7 every color is a token, and color is a ground, never ink
     if (!name) E('B7', q, `is colored ${t.color}, which is not a color in tokens.css: use var(--token)`);
     else if (!TEXT_INK.has(name)) E('B7', q, `is --${name} text: color is a ground, never ink. Text is ink, the second ink, or white on black, brick and the deep steps (Art. 5.1)`);

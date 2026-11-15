@@ -245,18 +245,18 @@ Ben, [round 9](../product/words.md#2026-11-15-round-9-picks): "the psychology an
 
 ### Article 6. Type
 
-Ben, 20:17: "im still not set on the fonts. i think you need to justify all text." Since then: mirror QOVES's fonts and how it sets them, without the mono ([round 7](../product/words.md#2026-11-15-round-7-picks)), the wordmark is Clofie SemiBold, ([round 8](../product/words.md#2026-11-15-round-8-picks)), and the text file is PP Neue Montreal 2.6 ([round 10](../product/words.md#2026-11-15-round-10-picks), L38). Ben later restricted Clofie to the logo across formats.
+Ben, 20:17: "im still not set on the fonts. i think you need to justify all text." Since then: mirror QOVES's fonts and how it sets them, without the mono ([round 7](../product/words.md#2026-11-15-round-7-picks)), the wordmark is Clofie SemiBold, ([round 8](../product/words.md#2026-11-15-round-8-picks)), and the text file is PP Neue Montreal 2.6 ([round 10](../product/words.md#2026-11-15-round-10-picks), L38). Ben later reserved Clofie for the logo, with one exception for the largest headline on a public marketing page.
 
 | Face | Sets | Why |
 |---|---|---|
 | **PP Neue Montreal** 2.6, Medium (500) | Everything people read or tap: item titles, amounts, buttons, tabs, messages, captions, headlines in cards | QOVES sets all of its text in it, headings included, in Book and Medium; Ben found Book light and picked Medium for all of it ([the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500)) ([what its stylesheets say](explore/round-8/qoves-type.md)) |
-| **Clofie SemiBold**, 600 | The lowercase secondhand wordmark | Ben's pick. Geometric and friendly, and not the grotesk every AI app uses |
+| **Clofie SemiBold**, 600 | The lowercase secondhand wordmark and a public marketing page’s largest headline | Ben's pick. Geometric and friendly, and not the grotesk every AI app uses |
 
 Where a licensed file is missing (the Mac-only fonts), the pair draws in Hanken Grotesk Medium and Outfit SemiBold, bundled under the OFL in `app/assets/fonts-open/`: *agent proposal* on Nate's words ([an open font for every system](../product/words.md#2026-11-15-nate-set-up-treg-for-the-tools-identification-needs-an-open-font-for-every-system)), for Ben to judge by eye ([the brief](explore/open-fallback/README.md)).
 
 **Clofie is always lowercase** ([Ben’s correction](../product/words.md#2026-11-15-shared-header-icon-only-navigation-and-lowercase-display-type)). Apply this at display time without rewriting stored content.
 
-**Where Clofie goes.** Use it only for the lowercase secondhand wordmark. Set every heading, price, caption, label and control in PP Neue Montreal.
+**Where Clofie goes.** Use it for the lowercase secondhand wordmark and the largest headline at the start of a public marketing page. Set all other headings, prices, captions, labels and controls in PP Neue Montreal.
 
 **Banned:** Inter, even as a fallback (Ben's harness rule). Faux bold and faux italics. More than two families in one output, not counting a Noto fallback for a script the text face lacks. Uppercase mono labels as a style (Ben, 19:59: "completely fine not doing a mono font"); use the text face in sentence case.
 
@@ -271,7 +271,7 @@ Where a licensed file is missing (the Mac-only fonts), the pair draws in Hanken 
 8. **Sizes follow the person's text setting.** The sizes are the default-size values; on iOS they map to Dynamic Type (13 footnote, 15 subheadline, 18 body, 21 title2, 36 largeTitle) and grow with it. Line heights are ratios, so they grow too.
 9. **A size belongs to one face, and to one weight** (Ben, [round 9](../product/words.md#2026-11-15-round-9-picks): "text of the same size should end up being the same font and weight"). The wordmark has its own face and weight. All text sizes use PP Neue Montreal. The one exception is 15, where a button label is medium and a row is book, as Apple sets Headline and Body at one size in two weights ([the sources](../research/cross-cutting/ben/brand-round-10.md)). Weight never changes with state: the selected tab keeps its weight (L29; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks)).
 10. **Type is centered by its ink** (agent decision A8; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "they seem not centered", "tailor them for their quirks"). A label in a control (a button, a tag, a chip, a tab) is centered between its cap height and its baseline, not in its line box. On the web that is `text-box: trim-both cap alphabetic` on the label, and `ex alphabetic` for a string with no capitals (the wordmark). Space above and below the wordmark is measured from its ink the same way. React Native cannot trim, so each face takes a fixed offset: PP Neue Montreal sits 0.7 to 1.3 px high at every size in the roles table and takes none; Clofie sits .12 em high and moves down by `--nudge-display`. Measured in Chrome on Ben's Mac ([the numbers](../research/cross-cutting/ben/brand-round-11.md)).
-11. **Each face has limits, read from its file.** PP Neue Montreal has ’ × − ½ … – and →: write the real character, never x for ×, a hyphen for − or three dots for …. It has no ″ or ′, so a length is written `32 in`. Clofie sets the fixed string “secondhand.” A headline that needs an amount puts the amount on its own line in the text face (C6).
+11. **Each face has limits, read from its file.** PP Neue Montreal has ’ × − ½ … – and →: write the real character, never x for ×, a hyphen for − or three dots for …. It has no ″ or ′, so a length is written `32 in`. The wordmark is the fixed string “secondhand.” A marketing headline uses the normal font fallback for any glyph Clofie lacks. A headline that needs an amount puts the amount on its own line in the text face (C6).
 12. **Off the app** (agent proposal, R26; a maker working from this file alone had to guess). Sizes for a deck, a post or the web come from `brand/media.css`. Every size of 32 and up is set at leading 1.1 and tracking `-0.02em`; text under 32 at leading 1.4 and tracking 0.
 
 **Roles** (agent proposal; tokens in [tokens.css](tokens.css)):

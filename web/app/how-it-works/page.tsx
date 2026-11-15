@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { AccountAccess } from '../../components/marketing/home';
+import { Icon } from '../../components/icon';
+import { AppPreviewImage } from '../../components/marketing/app-preview-image';
+import { AccountAccess } from '../../components/marketing/chrome';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -10,30 +12,30 @@ export const metadata: Metadata = {
 
 const sellingSteps = [
   {
-    id: 'selling', number: '01', title: 'Start with photos.',
+    id: 'selling', number: '01', title: 'Start with photos',
     body: 'Add the item and any detail that could change its price, like a label or a flaw.',
     image: 'capture', alt: 'The app camera frames the whole front of a brown Carhartt jacket.',
   },
   {
-    id: 'price', number: '02', title: 'Review the price.',
+    id: 'price', number: '02', title: 'Review the price',
     body: 'Check similar items that sold and compare what you’d keep on each site.',
     image: 'plan', alt: 'Price planning for a Carhartt jacket, with sold-price evidence and estimated proceeds.',
     href: '/data-use', link: 'Where the prices come from',
   },
   {
-    id: 'review', number: '03', title: 'Review each listing.',
+    id: 'review', number: '03', title: 'Review each listing',
     body: 'The app preview shows each site’s photos, price and listing details for you to review.',
     image: 'preview', alt: 'A Carhartt jacket is ready for review, with separate marketplace listing previews.',
   },
 ];
 
 function Arrow({ down = false }: { down?: boolean }) {
-  return <span aria-hidden="true">{down ? '↓' : '→'}</span>;
+  return <Icon name={down ? "arrow-down-01" : "arrow-right-01"} size={16} />;
 }
 
 function Phone({ name, alt, eager = false, caption = 'App preview · Sample data' }: { name: string; alt: string; eager?: boolean; caption?: string }) {
   return <figure className={styles.phone}>
-    <img src={`/marketing/app/${name}.png`} alt={alt} width={880} height={1840} loading={eager ? 'eager' : 'lazy'} decoding="async" />
+    <AppPreviewImage name={name} alt={alt} sizes="(max-width: 359px) 240px, 280px" eager={eager} />
     <figcaption>{caption}</figcaption>
   </figure>;
 }
@@ -43,8 +45,8 @@ export default function HowItWorksPage() {
     <header className="marketing-atmosphere" data-tone="process"><div className={`${styles.wrap} ${styles.intro}`}>
       <div>
         <p className={styles.label}>How It Works</p>
-        <h1>From the first photo to the next decision.</h1>
-        <p className={styles.lead}>See the app preview for selling something you own or finding what you want used.</p>
+        <h1 className="marketing-page-title">Get your clothes ready to resell from as little as one photo</h1>
+        <p className={styles.lead}>Check sold prices and choose what to list. If you’re shopping, start with what you want and how much you can spend.</p>
       </div>
       <nav className={styles.paths} aria-label="Choose a walkthrough">
         <a href="#selling"><span>Selling<small>From photos to a listing you review.</small></span><Arrow down /></a>
@@ -53,7 +55,7 @@ export default function HowItWorksPage() {
     </div></header>
 
     <div>
-      {sellingSteps.map((step, index) => <section id={step.id} key={step.id} className={`${styles.step} ${index % 2 ? styles.reverse : ''} ${index === 0 ? 'marketing-atmosphere' : ''}`} data-tone={index === 0 ? 'process' : undefined} aria-labelledby={`${step.id}-title`}>
+      {sellingSteps.map((step, index) => <section id={step.id} key={step.id} className={`${styles.step} ${index % 2 ? styles.reverse : ''}`} aria-labelledby={`${step.id}-title`}>
         <div className={`${styles.wrap} ${styles.stepGrid}`}>
           <div className={styles.copy}>
             <p className={styles.label}><span>Selling</span><span className={styles.stepNumber}>{step.number} / 03</span></p>
@@ -75,7 +77,7 @@ export default function HowItWorksPage() {
       <div className={`${styles.wrap} ${styles.stepGrid}`}>
         <div className={styles.copy}>
           <p className={styles.label}>After a sale</p>
-          <h2 id="shipping-title">See what needs shipping.</h2>
+          <h2 id="shipping-title">See what needs shipping</h2>
           <p className={styles.body}>Check the label, drop-off options and next action for a sold item.</p>
         </div>
         <Phone name="ship" alt="A separate Kindle shipping example shows the shipping label, drop-off options and next action." caption="Separate shipping example · Sample data" />
@@ -86,7 +88,7 @@ export default function HowItWorksPage() {
       <div className={`${styles.wrap} ${styles.buyingGrid}`}>
         <div className={styles.copy}>
           <p className={styles.label}>Buying</p>
-          <h2 id="buying-title">Tell us what you’re looking for.</h2>
+          <h2 id="buying-title">Tell us what you’re looking for</h2>
           <p className={styles.body}>Set your budget, fit and whether you can pick it up.</p>
           <dl className={styles.buyingDetails}>
             <div><dt>Check the listing</dt><dd>Compare the item and delivery cost, then open its marketplace.</dd></div>
@@ -102,7 +104,7 @@ export default function HowItWorksPage() {
       <div><Link className={styles.textLink} href="/features">Explore Features <Arrow /></Link><Link className={styles.textLink} href="/data-use">Explore Data Use <Arrow /></Link></div>
     </section>
     <section className={`${styles.wrap} ${styles.signup}`} aria-labelledby="signup-title">
-      <div><p className={styles.label}>Sign Up</p><h2 id="signup-title">Start with one thing.</h2></div>
+      <div><p className={styles.label}>Sign Up</p><h2 id="signup-title">Start with one thing</h2></div>
       <AccountAccess label="Create an account" />
     </section>
   </main>;
