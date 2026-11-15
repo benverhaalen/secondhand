@@ -194,7 +194,7 @@ Ben, [round 9](../product/words.md#2026-11-15-round-9-picks): "the psychology an
 3. Separate with space first (Article 7.3), then one fill, then a hairline between rows of one list. Never a fill and a line on one edge.
 4. A photo carries a 1 px inner edge of `--rule`, because a pale photo on a white page has no edge of its own.
 5. Neighbors on the ring never carry two meanings in one view. Aqua sits .042 to .049 from mint and sky, and peach .036 from marigold, so aqua and peach are field colors only. If Ben says yes, the Category row in the table above becomes pink and lilac.
-6. A background that only groups needs no edge. Whatever a person must find in order to act follows the States rule: a word or an icon, never color alone.
+6. A background that only groups needs no edge. Whatever a person must find before they can act follows the States rule: a word or an icon, never color alone.
 
 ### Article 6. Type
 
