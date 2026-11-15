@@ -7,9 +7,10 @@ Open [index.html](index.html) in a browser. It shows four screens at 390 wide: T
 | In the address | Shows |
 |---|---|
 | `?only=today` | One screen with nothing around it, for a screenshot |
-| `?o=now` | Round 10's choices: gray item boxes, a black pill on every decision, an outline second button |
-| `?o=rows,fill,one,more` | Choices by name. With no `o`, rows, fill and one are on |
-| `?ship=peach` | Shipping in peach in place of lilac |
+| `?o=now` | Round 10's choices: gray boxes, a black pill on every decision, an outline second button |
+| `?sep=tint`, `white`, `gray`, `rows` | What separates a card from the page (R29). With no `sep` it is `tint` |
+| `?o=fill,one,more` | Choices by name. With no `o`, fill and one are on |
+| `?states=old` | Failed and ended as round 10 drew them |
 | `?sel=live`, `?from=4` | On Sell: which state chip is chosen, and which item the grid starts at |
 | `?touches=hand,tags` | The two touches Ben has not ruled on |
 
@@ -17,18 +18,22 @@ What changed from round 10:
 
 | Change | Why | Ledger |
 |---|---|---|
+| Cards, photos, tags, buttons and the nav take the sizes Ben approved on the Today render | Ben: "the spacing i like", "ensure that there are primitives of it all" | L46 |
+| Today is the screen Ben approved: the wash, the week's money, cards by kind, a notice that leads somewhere | Ben: "love 95% of this" | L44, L46 |
 | The selected tab keeps its weight | Ben tapped it | L29 |
-| The sum is a receipt, on white paper | Ben: "i like the B. the receipt thing". The eBay logo blended into gray paper | L41, R31 |
+| The sum is a receipt, on white paper | Ben: "i like the B. the receipt thing". The eBay logo blended into gray paper | L41 |
 | No "laid on a table" | Ben tapped Drop | |
-| Live is sky, sold is mint, paid is lime, shipping is lilac | Ben's note on colors | L39, R28 |
-| Failed is a brick fill; ended is a darker gray on a washed photo | Ben: they "kinda blend in a bit" | R30 |
-| A tag is 24 with a 16 icon, 4 from three edges | Ben: the tag's padding "doesn't feel balanced" | A9 |
+| Live is sky, sold is mint, paid is lime. Anything about shipping is mint with the parcel, because Ben is color blind and no fifth color survives | Ben: "green not brown" | L39, L45, A10 |
+| Failed is a brick fill; ended is dark gray with white text on a photo without its color | Ben: they "kinda blend in a bit" | R30 |
+| A tag is 20 with a 12 icon, 4 from three edges | Ben: the tag's padding "doesn't feel balanced" | A9, L46 |
 | Labels are trimmed to their ink, so they sit in the true middle | Ben: "they seem not centered" | A8 |
 | Sell: state chips are tags at chip size; Store and Type open lists | Ben's note on the selections at the top | R32 |
-| Items in a feed are rows on white | Ben: the gray box "doesn't feel as separate" | R29 |
+| A card is white on a tinted page, with the card's shadow | Ben: the gray box "doesn't feel as separate" | R29 |
 | The second button is a light fill | Ben: nothing else has a black outline | R33 |
 | One black pill per view, on the field | Ben: the heavy black | R34 |
 | The item page shows what you keep and opens the receipt on a tap; listing actions are rows at the foot | Ben: show only what the common person needs; consider footers | R31 |
+
+The brand checker (`node scripts/brand-check.mjs brand/explore/round-11/mock/check.html --medium app`) still reports what it has not been taught about the approved screen: the wordmark on the left, the wash, gray text on the field and the tinted page. Those are with the thread that owns the checker.
 
 | File | Holds |
 |---|---|
