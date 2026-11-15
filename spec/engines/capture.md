@@ -312,7 +312,7 @@ The plan then needs no change: `candidates.brand` and `candidates.model` become 
 2. **What it may spend.** Every paid call goes through one spend port that logs `{tool, capture_id, cost_micro}` from the `X-Treg-Cost-Micro` response header and refuses a call past `identify_spend_cap_capture_micro` (prior 3,000, one Lens call) per capture or `identify_spend_cap_day_micro` (prior 100,000, $0.10) per day for the whole team. No loop calls a paid tool without a stated total. Tests replay recorded answers; a live call is one at a time and only on Nate's yes. The team balance was $1.00 on 2026-11-15.
 3. **What we keep.** Only our own candidate (`brand:<slug>`, `c`, `rests_on` such as "3 of 5 similar pages name Carhartt"). The answer's titles, links and thumbnails are used inside the run and dropped. Serper's and DataForSEO's terms were not read; until they are, nothing more is kept.
 
-**Nate's decisions for this rung**: whether a person's photo may be sent to Google through treg and Serper at all; whether the per-capture and per-day caps are right; and whether to top up the balance before the fixed-set run (20 items at one Lens call each is $0.06).
+**Decided by Nate** ([words](../../product/words.md#2026-11-15-nate-yes-to-google-lens-through-treg-as-designed)), asked "May a seller's photo go to Google Lens through treg, as designed?": "yes". The three rules above are the design he said yes to. Still his: whether to top up the balance before the fixed-set run (20 items at one Lens call each is $0.06).
 
 **Where results may not go.** eBay's terms keep its content to eBay listings ([platform access](../../research/connect/nate/platform-access.md)): a visual hit's title and image are used inside the run and never stored; only our own candidate (`brand:<slug>`, `c`, `rests_on`) is kept. Photos sent to a route are crops of the item ([identify, facts to know](../features/identify.md#facts-to-know)).
 
@@ -372,6 +372,15 @@ The phone also sends the first frame's suggestion `{family, p, second_p, kind?}`
 **Per scan.** `{scan_ok, extent_cm {width, depth, height}, extent_conf, frames}`. Apple's bounds page states no unit, so `extent_conf` stays under `min_conf` until the known-size box check passes.
 
 **Confidences** are the phone's calibrated values. A module version that has not passed the fixed set sends 0, so every read is a proposal.
+
+## 7a. The shot guide
+
+Nate ([words](../../product/words.md#2026-11-15-nate-capture-onboarding-is-line-art-on-glass-one-guide-per-shot)): line art on a glass background that still shows the camera, like Apple's Measure telling people to move closer or further; set by the item's type to the photo to take; one press dismisses it, the shutter takes the photo and moves to the next step. The look is Ben's (`app/src/ui/`); what follows is what the guide shows and when, *agent proposal* where not quoted.
+
+- **Which guide.** The plan's next shot: the first `shot` question, else the first process step still `pending` or `retake`. So the type, and the steps its process row lists (`jobs/capture/process.json` `types`), set the guide with no screen logic. The art is chosen by `<family>.<step>` with `<step>` as the fallback (an apparel `front` is a laid-flat garment; a furniture `front` is a chair seen from the front). There are 19 step keys today: front, back, tag, scan, size_label, soles, inside_tab, back_or_stamp, model_plate, about_screenshot, front_screen_on, base, front_cover, back_barcode, box_or_set_front, rating_plate, serial, model_date_label, group.
+- **What it shows.** The step's line art and the plan's words for it (the shot question's `words`, else the step's name) on a glass panel over the live feed, so the item stays visible through it. A retake shows the same art with the retake's reason.
+- **When it goes.** It appears by itself when a step becomes the next one. One press anywhere on it dismisses it, leaving the frame. The shutter takes the photo; once the photo is kept, the next step's guide appears. A step the person refuses (a `read` offer) shows no guide again.
+- **Closer or further.** Only on a phone with LiDAR, from the depth module's distance to the item at the frame's centre (`distance_m` on its `onExtent` event, added in the module's next round). Outside the step's range the guide shows a move-closer or move-back mark and the words, like Measure. Ranges are two param rows: `capture_guide_distance_close_m` (prior 0.10 to 0.35) for the reading steps (tag, size_label, inside_tab, model_plate, rating_plate, serial, model_date_label, back_barcode, back_or_stamp), `capture_guide_distance_m` (prior 0.30 to 1.20) for the rest. Without LiDAR no distance mark is drawn: the guide never guesses one.
 
 ## 8. What is wrong: named fixes and their tests
 

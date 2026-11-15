@@ -29,27 +29,28 @@ let app;
 before(async () => { app = await start(); });
 after(async () => { await app?.stop(); });
 
-test('shop: each source comes in as asked, the failed ones say why, then the answer and the bar at the bottom, every count the frames\' own', async () => {
+const bubbles = (v, state) => v.page.locator(`[data-part="source-bubble"][data-state="${state}"]`).count();
+
+test('shop: each source floats in as its logo while asked, unconnected ones are not shown, then what the listings say and the bar at the bottom', async () => {
   const s = stream();
   const v = await app.open('/shop?q=levi%20501', { api: { '/v1/search': fixture.start, [events]: r => s.answer(r) } });
   await state(v, 'building');
   await v.shows('levi 501');
-  // Building: the four no_route sources have landed and are not listed (Nate: "if not connected, don't list it");
-  // Poshmark and Dupe are still asked.
-  await v.shows('Asking', { timeout: WAIT });
-  for (const id of ['depop', 'mercari', 'facebook', 'ebay']) assert.equal(await v.countId(`source-${id}`), 0, `${id} is not connected, so not listed`);
-  // The lanes come in one after another (sourceIn, 60 ms apart), so wait for the last to arrive.
-  await v.page.waitForFunction(() => document.body.innerText.split(/\n/).filter(l => l.trim() === 'Asking').length === 2, null, { timeout: WAIT });
-  // Chat: the reconnect carried on after frame 9, the line of logos says the settled counts, the bar is at the bottom.
+  // Building: the four no_route sources have landed and are not shown (Nate: "if not connected, don't list it");
+  // Poshmark and Dupe float in, faded, while they are still asked.
+  await v.page.getByTestId('float-poshmark').first().waitFor({ timeout: WAIT });
+  await v.page.waitForFunction(() => document.querySelectorAll('[data-part="source-bubble"][data-state="asking"]').length === 2, null, { timeout: WAIT });
+  for (const id of ['depop', 'mercari', 'facebook', 'ebay']) assert.equal(await v.countId(`float-${id}`), 0, `${id} is not connected, so not shown`);
+  // Chat: the reconnect carried on after frame 9; each logo carries the count it kept; the listings' read leads.
   await state(v, 'chat');
-  await v.shows(/^88 read, 69 kept in 1\.5\s?s$/);
-  await v.shows('View listing');
+  assert.equal(await bubbles(v, 'landed'), 2);
+  await v.shows('47');
+  await v.shows('22');
+  await v.shows(/^From \d+ listings for sale now, read in 1\.5\s?s$/);
+  await v.shows(/^Most ask /);
   assert.deepEqual(s.seen, [0, 9], 'one read, then one reconnect after frame 9');
   const bar = await v.page.getByTestId('shop-bar-input').boundingBox();
   assert.ok(bar && bar.y > 844 / 2, `the bar dropped to the bottom (y ${bar?.y})`);
-  // Where it looked opens again from the line.
-  await v.tap('shop-sources');
-  await v.shows('48 read, 47 kept in 1.2s');
 });
 
 test('shop: closing keeps the chat on this device without a Dupe row, and it opens again from the list', async () => {
@@ -62,7 +63,7 @@ test('shop: closing keeps the chat on this device without a Dupe row, and it ope
   assert.equal(kept[0].turns.flatMap(t => t.kind === 'search' ? t.reach.results : []).filter(r => r.site === 'dupe').length, 0);
   await v.page.goto(new URL('/shop', v.page.url()).href);
   await v.tap(`shop-chat-${kept[0].id}`);
-  await v.shows('88 read, 69 kept in 1.5s');
+  await v.shows(/^Most ask /);
 });
 
 test('shop: a search that cannot start says so, with Try again', async () => {

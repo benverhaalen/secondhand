@@ -12,6 +12,7 @@ import { sameProduct, type Judged, type Result } from '../intel/reconcile.ts';
 import { jevAsk } from '../intel/jev.ts';
 import { searchAll as rankOffers, type BuyOffer, type BuyRow } from '../buy/buy.ts';
 import { jobs, type ApiJobRow } from './jobs.ts';
+import { storable } from './keep.ts';
 
 const protocol = PROTOCOLS.listings_matching;
 // The Apify adapter keeps DEADLINE_MS private; search.test.ts checks this clock against that source.
@@ -174,7 +175,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     for (const [source, found] of [['answer', a.found], ...[...batches].map(([id, batch]) => [id, batch.found] as const)] as const) {
       auditCounts(source, found);
     }
-    ctx.log.event(event, { job: job.id, answer: a });
+    ctx.log.event(event, { job: job.id, answer: storable(a, Date.now()) }); // the log keeps only rows a source lets us store
     jobs.append(job.id, event, { job_id: job.id, ...data, answer: a });
   };
   const land = (source: Source, batch: Batch, late = false) => {
@@ -337,7 +338,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
             found: batch.found, searched: [page.searched], answer: { ...answer(true), stage: 'late' as const, found: batch.found,
               searched: [{ site: facebook.site, group: facebook.group, route_id: routeId(facebook), query, outcome: page.searched.outcome, ms: page.searched.ms }] } };
           auditCounts(facebook.id, batch.found);
-          ctx.log.event('answer.late', { job: job.id, ...late });
+          ctx.log.event('answer.late', { job: job.id, ...storable(late, Date.now()) });
           jobs.append(job.id, 'answer.late', late);
         }).catch(e => { ctx.log.error('search.facebook.fill', e); });
     }

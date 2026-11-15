@@ -7,8 +7,10 @@ export class ApiFailure extends Error {
   constructor(status: number) { super(status === 429 ? 'Request rate limited' : 'Request failed'); this.state = status === 429 ? 'rate_limited' : 'failed'; }
 }
 export class JobFailure extends Error {}
-export async function ask(text: string, image: Photo | undefined, visitor: string, key: string, fetcher: typeof fetch = fetch, signal?: AbortSignal): Promise<string> {
+export async function ask(text: string, image: Photo | undefined, visitor: string, key: string, fetcher: typeof fetch = fetch, signal?: AbortSignal, adopt: (visitor: string) => void = () => undefined): Promise<string> {
   const response = await fetcher('/v1/assist', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Visitor-Id': visitor, 'Idempotency-Key': key }, body: JSON.stringify({ surface: 'buy', text, ...(image ? { image } : {}) }), signal });
+  const issued = response.headers.get('X-Visitor-Id');
+  if (issued) adopt(issued);
   if (!response.ok) throw new ApiFailure(response.status);
   const reply: unknown = await response.json();
   if (response.status !== 202 || !record(reply) || typeof reply.id !== 'string' || !/^job_[a-zA-Z0-9_-]+$/.test(reply.id) || reply.kind !== 'assist' || typeof reply.state !== 'string' || !Array.isArray(reply.stages)) throw new Error('Invalid job reply');

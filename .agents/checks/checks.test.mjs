@@ -114,9 +114,8 @@ test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass'
     'brand/tokens.css': ':root { --ink: #111; }' });
   assert.equal(errors(good), '');
   assert.equal(errors(run(ui, { 'app/src/ui/text.tsx': 'const s = { fontFamily: `${FACE.text}` };\n' })), '');
-  const warn = run(ui, { 'app/Hero.tsx': 'export const H = () => <p>A seamless way to sell</p>;\n' });
-  assert.equal(errors(warn), '');
-  assert.match(warn.map(o => o.msg).join(), /empty adjective/);
+  // Every copy hit is an error since Ben's 10:11 ruling (ui.mjs); it was a warning when this case was written.
+  assert.match(errors(run(ui, { 'app/Hero.tsx': 'export const H = () => <p>A seamless way to sell</p>;\n' })), /empty adjective/);
 });
 
 import { brand } from './brand.mjs';

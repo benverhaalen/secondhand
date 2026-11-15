@@ -2296,4 +2296,74 @@ Used in: the engines lead's answer (engine outputs feed the conversation and our
 Nate, engines lead's session, 2026-11-15, about 07:00 Central, answering "May Apify rows also be used to fit the nightly models?" (buttons "Yes, Apify too" and "Keep fits clean").
 > no keep fits clean
 
-Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1.
+Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1. Changed by Nate minutes later: [Apify rows may fit the models](#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate).
+
+## 2026-11-15 nate apify rows may fit the models; real-time scores per market on each platform, extremely accurate
+Nate, engines lead's session, 2026-11-15, about 07:05 Central. He changes the answer of a few minutes earlier ([apify rows never fit a model](#2026-11-15-nate-apify-rows-never-fit-a-model)), answering the same question, "May Apify rows also be used to fit the nightly models?".
+> Yes, Apify too
+
+> Make it extremly accurate we are benchmarking and showing depth and credibility with our realtime score metrics generated and assigned to each market within a specific platfrom
+
+Read by the engines lead: Apify rows may fit the nightly models. eBay content stays out of fits under eBay's terms ([data use](../spec/data-use.md)), including eBay rows that came through an Apify actor, until Nate says otherwise. The second line asks for real-time accuracy scores for each market (a platform and a kind of item), built in [valuation.md §9](../spec/engines/valuation.md#real-time-market-scores).
+
+## 2026-11-15 nate our own page read; is a website's read driven by the visitor's browser?
+Nate, orchestrator's session, 2026-11-15, about 08:05 Central, after the cross-source benchmark (our eBay page read against the paid actor).
+> lets do our page read, and for websites its driven with something using their browser of some sort?
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the search lead's rows.
+
+## 2026-11-15 nate understand how Databricks shapes dynamic pricing
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Understand how databricks shapes dynamic pricing https://www.databricks.com/blog/dynamic-pricing-airlines-how-ai-can-reshape-revenue-strategy
+
+Used in: [the retail mapping](../research/data/nate/databricks-retail-solutions.md).
+
+## 2026-11-15 nate check Ben's packets, address them, and prepare a wrap-up and fresh sessions
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central.
+> check packets too for any ben incoming messages, then launch a subagent to address it, prepare rest for a wrapup and fresh new sessions
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate yes to Google Lens through treg, as designed
+Nate, orchestrator's session, 2026-11-15, about 08:40 Central, answering "May a seller's photo go to Google Lens through treg, as designed?" (the design: only when the tag, label and barcode reads abstain, one crop of the item, pixels only, through a single-use address that expires in 120 s, capped at $0.003 a capture and $0.10 a day, nothing of the answer kept but our own candidate line).
+> yes
+
+Used in: [the capture design](../spec/engines/capture.md), [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate floating logos that burst into the site, and confirm every harness does every job
+Nate, the app-wiring lead's session, 2026-11-15, about 07:55 Central (machine clock), on the shop takeover with Depop and eBay reading.
+> This view sucks, it should be like floating logos around it, that click to expand into the browser session that links. Like the bubble fills the page white, blue, red, purple, and light blue. then the link loads on the platform , dont wait to fill it, like try to open the browser as soon as majority of screen is filled. Confirm the harnesses work for each of those sites to both search, engine and calculate on, and also monitor and manage and deliver analytics
+
+And, to "Wire the signed-in screens next?": "yes".
+
+Used in: the shop takeover's source bubbles (packet 81), the harness check (packet 83).
+
+## 2026-11-15 nate fix everything, fast
+Nate, server-core lead's session, 2026-11-15, about 08:30 Central, after the lead reported a commit that had overwritten the server's request-state fix.
+> LEts fix everything to be fast
+
+Read by the server-core lead as: land the fixes now and run the remaining queued ones at once rather than one after another. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md) (the restore ff56bbda and three workers started in parallel).
+
+## 2026-11-15 nate capture onboarding is line art on glass, one guide per shot
+Nate, the capture lead's session, 2026-11-15, about 13:30 UTC.
+> Ensure the capture onboarding is svg indicating what to do, line art with glass like shaded blurry background so you can still transparently see whats in the camera, similar to how apple measure places graphics telling people to move closer or further. For each product type selected, the onboarding then automatically is set to indicate the photo to take, they press once to dismiss the photo, and cpature the image to move on to the next of several or few more needed steps.
+
+Used in: [the capture design §7a](../spec/engines/capture.md#7a-the-shot-guide), [packet 90](../.agents/team/packets/team/90-capture-shot-guide-for-ben.md).
+
+## 2026-11-15 nate ensure these mistakes dont happen again
+Nate, the orchestrator's session, 2026-11-15, about 13:10 UTC, pasting the server-core lead's note that commit 8560d836 had put stale copies of 18 files over its request-state work.
+> ensure these mistakes dont happen again
+
+Used in: [the hooks](../.agents/hooks/stale-copy.mjs), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md) (a worker's branch lands by merge and no other way), [the git rules](../.agents/coordination.md#when-use-git-often).
+
+## 2026-11-15 nate the goal: finalize all systems, test, fix, get them realized
+Nate, the orchestrator's session, 2026-11-15, about 13:12 UTC, set as the session's goal.
+> is to finalize all systems, test, fix, get them realized
+
+Used in: [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate simulate full user experiences, verify by eye, natively too, and get the benchmarks perfect
+Nate, the orchestrator's session, 2026-11-15, about 13:30 UTC.
+> with the server getting hosted, begin simulating full user experiences, checking and visually verifying the features. Both natively with xcode, sending codex reviewers to drive the tests, and however you can audit and such to confirm and benchmark everything working. fixing yourself quickly and ingeniously to get benchmarks perfect\
+
+Used in: [the finalization spec, section 12](../spec/plans/finalization.md).
