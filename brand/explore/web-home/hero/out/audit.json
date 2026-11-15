@@ -15,7 +15,7 @@
       "links": false,
       "button_h": 48,
       "menu_h": 44,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -33,7 +33,7 @@
       "links": false,
       "button_h": 48,
       "menu_h": 44,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -51,7 +51,7 @@
       "links": false,
       "button_h": 48,
       "menu_h": 44,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": [],
       "contrast_floor": 4.97,
@@ -75,7 +75,7 @@
       "links": false,
       "button_h": 48,
       "menu_h": 44,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -93,7 +93,7 @@
       "links": false,
       "button_h": 48,
       "menu_h": 44,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -111,7 +111,7 @@
       "links": false,
       "button_h": 48,
       "menu_h": 44,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -129,7 +129,7 @@
       "links": false,
       "button_h": 48,
       "menu_h": 44,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -147,7 +147,7 @@
       "links": true,
       "button_h": 48,
       "menu_h": null,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -165,7 +165,7 @@
       "links": true,
       "button_h": 48,
       "menu_h": null,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     },
@@ -183,7 +183,7 @@
       "links": true,
       "button_h": 48,
       "menu_h": null,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": [],
       "contrast_floor": 4.97
@@ -202,7 +202,7 @@
       "links": true,
       "button_h": 48,
       "menu_h": null,
-      "hl_fit": "1.000",
+      "hl_fit": "0.984",
       "logos_round": true,
       "problems": []
     }

@@ -1,0 +1,10 @@
+{
+  "title": "Section 2: what do I do?",
+  "question": "How does a stranger see the three steps, from one photo to sold, in the real app?",
+  "purpose": "Ben, 10:05: one part at a time, options with how each looks and why. The hero says what it is; this section proves it with the app's own screens (W3, W15 phone frame).",
+  "variants": [
+    { "id": "a", "label": "A. The scroll: one step per screen, the phone stays and its screen changes" },
+    { "id": "b", "label": "B. One screen: three steps beside one phone" },
+    { "id": "c", "label": "C. Three phones in a row, a step under each" }
+  ]
+}

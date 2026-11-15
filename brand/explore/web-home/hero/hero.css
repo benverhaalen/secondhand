@@ -14,7 +14,7 @@ header { color: var(--ink); }
 :root { --bar: 72px; }  /* the header's height: its 56 controls and 8 above and below */
 .hero { position: relative; isolation: isolate; min-height: max(100svh, 560px); display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: var(--bar) var(--mx) var(--s-9); overflow: hidden; background: var(--page); }
 .copy { position: relative; z-index: 2; will-change: transform, opacity; justify-self: stretch; min-width: 0; }  /* the column's width, so the line with its hands is measured against the room it really has */
-.hero .lead { color: var(--ink); margin-top: var(--s-6); }  /* ink, not ink-2: the lead sits on the moving wall, and 4.5:1 holds only in ink */
+.hero .lead { color: var(--ink); margin-top: var(--s-6); text-wrap: balance; }  /* balance: no word left alone on the last line (the Mac render showed "sells." by itself at 1440) */  /* ink, not ink-2: the lead sits on the moving wall, and 4.5:1 holds only in ink */
 /* No gradient on the first screen (L56; Ben, 09:21: "no gradient and just a very tasteful shadow underneath the text"). The
    shadow is the page's own color, so in dark it is a dark shadow under light text: a tight one that keeps each letter's
    edge, and a wide faint one that quiets the photos behind the words. It never reads as a glow, because it is the ground's
