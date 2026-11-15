@@ -79,7 +79,7 @@ function Sheetful() {
           due={at(3.67)} lead primary={{ id: 'd-need-accept', label: 'Accept $38' }} second={{ id: 'd-need-counter', label: 'Counter' }} more={{ id: 'd-need-more', label: 'More' }} />
         <DecisionCard id="d-ship" kind="ship" word="Ship" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} site="ebay" fact={{ label: 'You get', amount: 31.4 }}
           due={at(30)} lead primary={{ id: 'd-ship-print', label: 'Print label' }} second={{ id: 'd-ship-spots', label: 'Drop-off spots' }} />
-        <DecisionCard id="d-live" kind="live" word="Price" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" fact={{ label: 'Lower to', amount: 52 }}
+        <DecisionCard id="d-live" kind="live" word="Price" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} site="poshmark" fact={{ label: 'You get', amount: 41.6 }}
           lead primary={{ id: 'd-live-lower', label: 'Lower to $52' }} second={{ id: 'd-live-keep', label: 'Keep $58' }} />
         <DecisionCard id="d-paid" kind="paid" word="Paid" title="Levi’s 501, 32 × 32" photo="levis-501" site="poshmark" fact={{ label: 'You get', amount: 44.1 }}
           due={at(47)} lead primary={{ id: 'd-paid-out', label: 'Cash out' }} second={{ id: 'd-paid-later', label: 'Later' }} />
@@ -147,7 +147,7 @@ function Sheetful() {
       </Section>
 
       <Section title="Notice">
-        <Notice id="n-plain" icon="tick-02" text="Handled 6 things today" />
+        <Notice id="n-plain" icon="tick-02" text="6 actions today" />
         <Notice id="n-need" icon="waving-hand-01" text="2 questions from buyers" tone="need" />
       </Section>
 
@@ -264,7 +264,7 @@ function Sheetful() {
       </Section>
 
       <Section title="Top slot, a new person">
-        <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+        <TopSlot setup={{ id: 'top-setup', step: 'Connect a site' }} />
       </Section>
 
       <Section title="Messages: thread row, message, draft, composer">
