@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "items": [
+    {
+      "id": "clothes-1",
+      "kind": "clothes",
+      "photos": [
+        "clothes-1/front.jpg",
+        "clothes-1/tag.jpg"
+      ],
+      "fields": {
+        "chest_width_cm": {
+          "unit": "cm",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "tape measure"
+        },
+        "length_cm": {
+          "unit": "cm",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "tape measure"
+        },
+        "tag_text": {
+          "unit": "text",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "read by hand"
+        }
+      },
+      "sold_price_cents": {
+        "answer": null,
+        "recorded_by": null,
+        "recorded_on": null
+      }
+    },
+    {
+      "id": "clothes-2",
+      "kind": "clothes",
+      "photos": [
+        "clothes-2/front.jpg",
+        "clothes-2/tag.jpg"
+      ],
+      "fields": {
+        "chest_width_cm": {
+          "unit": "cm",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "tape measure"
+        },
+        "length_cm": {
+          "unit": "cm",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "tape measure"
+        },
+        "tag_text": {
+          "unit": "text",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "read by hand"
+        }
+      },
+      "sold_price_cents": {
+        "answer": null,
+        "recorded_by": null,
+        "recorded_on": null
+      }
+    },
+    {
+      "id": "shoes-1",
+      "kind": "shoes",
+      "photos": [
+        "shoes-1/front.jpg",
+        "shoes-1/tag.jpg"
+      ],
+      "fields": {
+        "length_cm": {
+          "unit": "cm",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "tape measure"
+        },
+        "tag_text": {
+          "unit": "text",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "read by hand"
+        }
+      },
+      "sold_price_cents": {
+        "answer": null,
+        "recorded_by": null,
+        "recorded_on": null
+      }
+    },
+    {
+      "id": "shoes-2",
+      "kind": "shoes",
+      "photos": [
+        "shoes-2/front.jpg",
+        "shoes-2/tag.jpg"
+      ],
+      "fields": {
+        "length_cm": {
+          "unit": "cm",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "tape measure"
+        },
+        "tag_text": {
+          "unit": "text",
+          "answer": null,
+          "measured_by": null,
+          "measured_on": null,
+          "method": "read by hand"
+        }
+      },
+      "sold_price_cents": {
+        "answer": null,
+        "recorded_by": null,
+        "recorded_on": null
+      }
+    }
+  ]
+}
