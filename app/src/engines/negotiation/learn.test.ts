@@ -15,6 +15,37 @@ const later = '2026-01-31T00:00:00Z';
 const logit = (p: number) => Math.log(p / (1 - p));
 function fitted(store: ParamStore): Model { return store.read('P_accept', scope).value as Model; }
 
+test('tiny nonzero global and feature priors can learn from one accepted outcome', () => {
+  const store = memoryStore();
+  resolveLearning(store, scope);
+  const model = { terms: { global: 1e-6 }, weights: [1e-6, 0, 0, 0, 0, 0, 0, 0] };
+  store.apply('P_accept', scope, () => ({ value: model, weight: 0 }), at);
+  onOutcome(store, scope, { site: scope.site, category: scope.segment, features: [.5, 0, 0, 0, 0, 0, 0, 0], accepted: 1 }, at);
+  assert.ok(fitted(store).terms.global > .1, 'tiny global prior must not freeze the global term');
+  assert.ok(fitted(store).weights[0] > .1, 'tiny feature prior must not freeze the feature weight');
+});
+
+test('event guards use the larger of the prior share and half the resolved logit span', () => {
+  for (const prior of [0, 1e-6, -1e-6, 1, -1, 10, -10]) {
+    for (const pLo of [.02, .05]) {
+      for (const direction of [-1, 1]) {
+        const store = memoryStore();
+        resolveLearning(store, scope);
+        store.apply('negotiation_p_lo', scope, () => ({ value: pLo, weight: 0 }), at);
+        store.apply('negotiation_p_hi', scope, () => ({ value: .9, weight: 0 }), at);
+        store.apply('negotiation_prior_guard_share', scope, () => ({ value: .7, weight: 0 }), at);
+        const model = { terms: { global: prior + direction * 1000 }, weights: Array<number>(8).fill(0),
+          prior_terms: { global: prior }, prior_weights: Array<number>(8).fill(0) };
+        store.apply('P_accept', scope, () => ({ value: model, weight: 0 }), at);
+        onOutcome(store, scope, { site: scope.site, category: scope.segment, features: Array<number>(8).fill(0), accepted: 1 }, at);
+        const width = Math.max(Math.abs(prior) * .7, (logit(.9) - logit(pLo)) / 2);
+        assert.ok(Math.abs(fitted(store).terms.global - (prior + direction * width)) < 1e-12,
+          `guard for prior ${prior}, p_lo ${pLo}, direction ${direction} must use resolved parameters`);
+      }
+    }
+  }
+});
+
 test('ordered outcomes move the very next counter; forgetting, held-out promotion and rollback preserve the answer', () => {
   const store = memoryStore(), s = state();
   const build = (c: number, x: OfferState) => features(c, x);

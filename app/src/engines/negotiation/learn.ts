@@ -163,7 +163,9 @@ function applyOutcome(store: ParamStore, scope: Scope, outcome: Outcome, at: str
       const information = Math.max(1, (precision[name] ?? 1) * keep); // Fixed unit baseline precision, fit.py.
       precision[name] = information + p * (1 - p) * feature * feature;
       const estimate = prior + keep * (value - prior) + (outcome.accepted - p) * feature / precision[name];
-      const width = prior === 0 ? Math.log(params.values.negotiation_p_hi / params.values.negotiation_p_lo) : Math.abs(prior) * params.values.negotiation_prior_guard_share;
+      const { negotiation_p_lo: pLo, negotiation_p_hi: pHi, negotiation_prior_guard_share: guardShare } = params.values;
+      const logitWidth = (Math.log(pHi / (1 - pHi)) - Math.log(pLo / (1 - pLo))) / 2;
+      const width = Math.max(Math.abs(prior) * guardShare, logitWidth);
       return Math.min(prior + width, Math.max(prior - width, estimate));
     }
     const active = keys(outcome);
