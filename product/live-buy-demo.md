@@ -62,7 +62,7 @@ Ben: "plan to use however nate builds the harness to end up doing the demo. im h
 |---|---|---|
 | 0:00 | "Buying works the other way round. I want a Carhartt Detroit jacket under $25." | the want screen, on the big screen |
 | 0:08 | "Nate, list yours." | Nate, phone in hand, taps Post on a ready draft |
-| 0:12 | "It's reading Poshmark's own public search, the page you'd refresh yourself, every few seconds while we're up here. It only tells me about one that's under my price." | the watcher's terminal, "watching Poshmark: 48 listings already there, none will ping" |
+| 0:12 | "It's reading Poshmark's own public search, the page you'd refresh yourself, every few seconds while we're up here. It only tells me about one that's under my price." | Ben's phone, mirrored: the want screen, "Looking on" with Poshmark in. The watcher's terminal stays on the laptop, for us; it's not a designed surface ([Ben, 09:25](words.md#2026-11-15-every-designed-thing-uses-the-apps-design-system)) |
 | ~0:40 | *(silence; let the find appear)* | Ben's phone, mirrored: the want screen, and under it the find, "Under your price", $18, "41s after listing" |
 | ~0:45 | "Found 41 seconds after Nate listed it, by Poshmark's own clock." | the tap opens the listing; the found-after number |
 | ~0:55 | "Nate, take it down." | it's gone |
@@ -71,7 +71,7 @@ Ben: "plan to use however nate builds the harness to end up doing the demo. im h
 
 **If nothing has arrived by 1:30**, say "sites take a minute to show new listings", and switch:
 1. The price drop on a listing Nate posted before we came up (real, and usually faster than a new listing).
-2. The clip of tonight's best run, with the phone and the terminal both in frame and the clock visible. Say "recorded at [time] tonight".
+2. The clip of tonight's best run, with Nate's phone and Ben's phone both in frame and the clock visible; its title card and caption come from `brand/templates/story.html`. Say "recorded at [time] tonight".
 
 Never fire a fake alert. A demo-data alert is shown only with "demo data" said out loud.
 

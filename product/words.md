@@ -1745,3 +1745,10 @@ Nate, build session (orchestrator), 2026-11-15 about 11:45 to 11:55 Central. Two
 > We will prepare, rigorously and accurately on mac test to prepare for testflight in hands development
 
 Used in: the second round of audits under `spec/plans/sweep/round-2/`; [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 every designed thing uses the app's design system
+
+Ben, project chat, 09:25 UTC.
+> and can you ensure for all designed things everything is used right for any videos, or other pages, etc.
+
+Used in: [demo-reel.md](demo-reel.md#2-showing-how-it-works), [pitch-constitution.md](pitch-constitution.md#part-vii-before-going-on), [live-buy-demo.md](live-buy-demo.md).
