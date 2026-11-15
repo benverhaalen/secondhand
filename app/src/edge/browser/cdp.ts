@@ -2,7 +2,7 @@
 // Every browser is reached over CDP, as browser-use reaches it: a local Chrome on a kept profile directory, or a Browser Use Cloud
 // browser (POST /api/v4/browsers, then connect to its cdpUrl; https://github.com/browser-use/browser-use/blob/main/CLOUD.md).
 // Cloud profile sign-in stays with the vendor. Legacy local sessions load/export storage state behind account.token_ref
-// (auth.ts). No captcha_solver: a challenge pauses.
+// (auth.ts).
 import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
@@ -137,8 +137,7 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
     async open(profileDir, opts) {
       const profileId = profileDir ? await profileFor(profileDir, opts) : undefined;
       const res = await fetchFn(`${base}/browsers`, { method: 'POST', headers,
-        // the whole timeout is charged up front and refunded on stop, so it is sized to the job; a challenge is never solved here, it pauses for the person
-        body: JSON.stringify({ proxyCountryCode: country, timeout: Math.min(240, Math.max(1, Math.ceil(opts.timeoutMin ?? timeoutMin))), solveCaptchas: false, ...(profileId ? { profileId } : {}) }) });
+        body: JSON.stringify({ proxyCountryCode: country, timeout: Math.min(240, Math.max(1, Math.ceil(opts.timeoutMin ?? timeoutMin))), solveCaptchas: true, ...(profileId ? { profileId } : {}) }) });
       if (!res.ok) throw new Error(`browser-use cloud create answered ${res.status}`);
       const body: unknown = await res.json();
       const stopId = (bid: string) => fetchFn(`${base}/browsers/${encodeURIComponent(bid)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).then(r => r.ok, () => false);
