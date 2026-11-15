@@ -1188,3 +1188,6 @@ Ben, thread "Roll the UI system out everywhere", 07:10 UTC, tapped on a decision
 > Deep teal in dark: The lead card in dark goes deep teal with light text, as in the render. I change the brand rule and its check to match.
 
 Used in: [brand/constitution.md](../brand/constitution.md) Art. 5, State gradients rule 3; ledger A13; `stateGradient` in app/src/ui/paint.ts; `stateOf` in .agents/checks/render.mjs.
+## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
+
+Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
