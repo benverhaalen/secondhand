@@ -125,7 +125,7 @@ export function createHarness({ adapters, log, timeoutMs = 20_000, now = () => p
     for (const [i, a] of chain.entries()) {
       const run = () => runOne<T>(a, verb, args, timeoutMs);
       const r = log ? await log.call('harness', `${site}.${verb}`, { route_id: a.route_id, operation_id: args.operation_id }, run,
-        (o: AdapterResult<T>) => ({ status: o.ok ? 'ok' : o.error.code, result: { ok: o.ok } })) : await run();
+        (o: AdapterResult<T>) => ({ result: { ok: o.ok, code: o.ok ? 'ok' : o.error.code } })) : await run();
       last = { ...r, meta: meta(a, t0, i > 0, r.observation_ids) } as Envelope<T>;
       delete (last as { observation_ids?: unknown }).observation_ids;
       // Only a read that the page changed under falls to the next route; a write never switches route.

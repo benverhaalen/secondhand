@@ -62,6 +62,16 @@ Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202
 
 **7b. Smaller asks**, each a row in [pages §8](../../../../spec/pages.md#8-what-the-pages-need-that-the-canon-does-not-have-yet): a purpose on the capture (`sell`, `appraise`, `find`) beside `capture.mode`; a realtime session for talk mode; an import preview ("We found these"); job events for a visitor's search; the open-decision count and top kind per item on `GET /v1/items`; web sessions (storage, CORS, Apple and Google web client ids); `format=pdf` on records, or tell us to drop it.
 
+**7c. Ways out** ([spec/ways-out.md](../../../../spec/ways-out.md), from Ben at 03:55: no one gets stuck in the AI flow). Each is one tap off the main path:
+- per-kind "ask me first" over the auto kinds (beside `ask_every_time`); `user.auto_reply` (`on`, `drafts`, `off`, per site)
+- `user.paused_until` with a Pause selling job (each site's own away mode, else end and relist on the date)
+- `POST /v1/decisions/:id/snooze {until}` (never past the deadline); an act option `done_elsewhere` that closes a card and reads the site
+- an item from words, with no photo (Post asks for one before posting); one listing imported by link
+- `attribute.locked` (the agent never proposes a change to that field); a typed price on the plan
+- `POST /v1/items/:id/sold-elsewhere {price_cents?}`, keep or donated at any time, `DELETE /v1/items/:id`, copy an item, split an item
+- self-ship on `POST /v1/orders/:id/ship {carrier, tracking?}`; moving a pickup time
+- `user.prefs {suggest_edits}` (never offer photo edits); "Not my size" on a match
+
 **8. One name for the relink card.** The canon's decision kind is `relink`; [protocol and adapters §3.6](../../../../spec/engines/protocol-and-adapters.md#36-how-every-event-reaches-the-system-agent-proposal) says `account_stale`. Pick one; the pages use whichever you keep.
 
 ## How we build at the same time

@@ -39,7 +39,7 @@ before(async () => { if (pw) { browser = await pw.chromium.launch(); dir = mkdte
 after(async () => { await browser?.close(); if (dir) rmSync(dir, { recursive: true }); });
 
 const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--page);color:var(--ink);font-family:var(--font-text);font-weight:400}
+const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--page);color:var(--ink);font-family:var(--font-text);font-weight:var(--w-text)}
 .s{width:1920px;height:1080px;padding:96px;position:relative;overflow:hidden;line-height:1.1}.s *,.p *,.st *{letter-spacing:-.02em}.p{width:1080px;height:1350px;padding:72px;position:relative;overflow:hidden;line-height:1.1}
 .h{font-size:64px;font-family:var(--font-display);font-weight:600}.b{font-size:32px}.s .m,.p .m,.st .m,.m{font-family:var(--font-display);font-weight:600;font-size:64px;letter-spacing:-.01em}.f{background:var(--field)}`;
 // On a deck the wordmark sits bottom left of every slide at 32, and alone at 64 on the closing slide.
@@ -64,7 +64,7 @@ const CASES = [
   ['B28', 'a slide at the wrong size', `<section data-view style="width:1280px;height:720px"><p class="m">secondhand</p></section>`, /B28 .*1280 by 720/],
   ['B15', 'a face that is not ours', deck('<p class="b" style="font-family:Arial">Listed in a minute</p>'), /B15 .*Arial/],
   ['B13', 'bold text', deck('<p class="b" style="font-weight:700">Listed in a minute</p>'), /B13 .*weight 700/],
-  ['B13', 'medium weight where there are no buttons', deck('<p class="b" style="font-weight:500">Listed in a minute</p>'), /B13 .*weight 500/],
+  ['B13', 'book weight on a slide', deck('<p class="b" style="font-weight:400">Listed in a minute</p>'), /B13 .*the text face at weight 400: text is 500 everywhere/],
   ['B14', 'a size off the set', deck('<p style="font-size:28px">Listed in a minute</p>'), /B14 .*28 px/],
   ['B14', 'two peak numbers', deck('<p class="b">You keep</p><p style="font-size:200px">$46.95</p><p style="font-size:160px">$12</p>'), /B14 .*one peak number/],
   ['A7', 'a number in the display face', deck('<p class="h">Sold in 3 days</p>'), /A7 .*number in the display face/],
@@ -137,7 +137,7 @@ test('render: a story with the wordmark on its end card passes', { skip: !pw }, 
 CASES.push(['B9', 'an item with no photo', deck('<div data-item><p class="b">Carhartt jacket</p></div>'), /B9 .*item with no photo/],
   ['B10', 'two black pills in one card', app(`<div data-part="card" style="margin:16px 20px"><div><button style="${PILL}">Accept $38</button></div><div style="margin-top:16px"><button style="${PILL}">Send a counter</button></div></div>`), /B10 .*\[card\] holds two black pills/, 'app'],
   ['B10', 'a black pill with a round corner that is not the token', deck('<span class="b" style="display:inline-block;background:var(--ink);color:var(--page);border-radius:64px;padding:16px 32px">Accept $38</span>'), /B10 .*black pill/],
-  ['B13', 'medium weight on text that is not a button', app('<p style="font-size:15px;font-weight:500;padding:16px 20px">Carhartt jacket</p>'), /B13 .*not a button label/, 'app'],
+  ['B13', 'book weight on a row in the app', app('<p style="font-size:15px;font-weight:400;padding:16px 20px">Carhartt jacket</p>'), /B13 .*the text face at weight 400/, 'app'],
   ['B12', 'a band of color behind an amount', deck('<div><p class="b">You keep <span style="background:var(--lime)">$46.95</span></p></div>'), /B12 .*band of color/],
   ['B16', 'a phrase in capitals', deck('<p class="b">SOLD TODAY</p>'), /B16 .*all capitals/],
   ['B31', 'one kind of thing at two widths', deck('<div style="display:flex;gap:16px"><div data-part="tile" style="height:160px;width:160px;background:var(--gray)"></div><div data-part="tile" style="height:160px;width:240px;background:var(--gray)"></div></div>'), /B31 view 2 \[tile\] is 160, 240 px wide/],
