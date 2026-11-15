@@ -39,8 +39,9 @@ Data on the Mac: `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (th
 
 ## Waiting on Nate
 
-- Whether a visitor's photo may reach the conversation model before the identify step strips it to attributes. Until then a visitor's image is 422.
-- Any real-time market score (EN7) or backtest figure on a public page or in the pitch needs both Nate and Ben to have seen it first.
+- **Settled 2026-11-15** ([words](../../../../product/words.md#2026-11-15-nate-visitor-photos-may-reach-the-conversation-benchmarks-good-enough-for-the-site-three-free-requests-open-source-with-a-companion-mcp-server)): a visitor's photo may reach the conversation model ("thats ok for photos to reach"). BC3's route accepts `image` for a visitor, held to the same size and type checks as a person's; drop the 422.
+- Market scores and benchmarks: Nate wants them "great enough to put on the site". That makes EN7's accuracy the aim; each figure still goes up only after Ben and Nate have seen it, with Nate's yes for that page.
+- The same message asks for three free requests for every user for the hackathon, the repo free to download on GitHub as open source, and a companion MCP server that gives anyone's agent the search engine. None is engines work; it went to the orchestrator.
 - The visitor turn cap `ASSIST_TURN_MAX_USD` 0.25 is an *agent proposal*; the daily cap of $5 is his.
 - The sale-curve rule above and the 100-cent floor are *agent proposals*.
 
