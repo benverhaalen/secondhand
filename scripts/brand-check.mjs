@@ -5,7 +5,7 @@
 // and runs the constitution's Part IV on what it measured (.agents/checks/render.mjs). Exit code 1 on any error.
 // A view is each element marked data-view (a slide, a post panel, a frame). With none, it is each screenful of the page.
 // The marks it reads are listed in brand/constitution.md Part IV, under the table.
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -37,27 +37,28 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
   // cut: a box that hides its overflow (not one that scrolls) took part of it away. dots: that box ends cut text with an ellipsis or a line clamp.
   const clipped = (el, box) => { let { left, top, right, bottom } = box, scroller = false, cut = false, dots = false;
     for (let a = el; a && a !== document.documentElement; a = a.parentElement) { const s = getComputedStyle(a); if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
-      const r = a.getBoundingClientRect(), was = [left, top, right, bottom]; scroller ||= /auto|scroll/.test(s.overflowX);
+      const r = a.getBoundingClientRect(), was = [left, top, right, bottom]; scroller ||= /auto|scroll/.test(s.overflowX) && a.scrollWidth > a.clientWidth + 1;
       if (s.overflowX !== 'visible') { left = Math.max(left, r.left); right = Math.min(right, r.right); } if (s.overflowY !== 'visible') { top = Math.max(top, r.top); bottom = Math.min(bottom, r.bottom); }
       const lost = was[2] - was[0] - Math.max(0, right - left) > 1 && /hidden|clip/.test(s.overflowX) || was[3] - was[1] - Math.max(0, bottom - top) > 1 && /hidden|clip/.test(s.overflowY);
       if (lost && !scroller && !a.hasAttribute('data-view')) { cut = true; dots ||= s.textOverflow === 'ellipsis' || (s.webkitLineClamp ?? 'none') !== 'none'; } }
     return { left, top, right, bottom, width: right - left, height: bottom - top, scroller, cut, dots }; };
-  for (const el of document.querySelectorAll('body, body *')) {
+  for (const el of document.querySelectorAll('html, body, body *')) {
     const cs = getComputedStyle(el); if (!shown(el, cs) || chrome(el)) continue;
     const r = el.getBoundingClientRect(); if (!inView(r)) continue;
     const tag = el.tagName.toLowerCase(), map = el.computedStyleMap(), bi = cs.backgroundImage;
     const px = p => { const v = map.get(p); return v && v.unit === 'px' ? v.value : null; };
-    const photo = ['img', 'video', 'canvas'].includes(tag) && !el.closest('[data-logo]') && !/platforms\//.test(el.currentSrc || el.src || '') || el.hasAttribute('data-photo') || /url\(/.test(bi);
-    const gradient = /gradient\(/.test(bi) ? { radial: /radial-gradient\(/.test(bi), repeating: /repeating-/.test(bi),
-      colors: [...new Set([...(bi.match(/rgba?\([^)]*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
+    const photo = ['img', 'video', 'canvas'].includes(tag) && !el.closest('[data-logo]') && !/platforms\//.test(el.currentSrc || el.src || '') || el.hasAttribute('data-photo') || /url\(/.test(bi) && !(cs.backgroundRepeat.startsWith('no-repeat') && cs.backgroundSize.split(' ').every(v => v === 'auto' || v.endsWith('px') && parseFloat(v) <= 32));
+    const gradient = /gradient\(/.test(bi) ? { radial: /radial-gradient\(/.test(bi), repeating: /repeating-/.test(bi), conic: /conic-gradient\(/.test(bi),
+      colors: [...new Set([...(bi.match(/(?:rgba?|hsla?|oklch|oklab|lch|lab|color|color-mix)\((?:[^()]|\([^()]*\))*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
-    els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
+    els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
       alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
       radius: ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(c => cs[`border${c}Radius`].split(' ')[0]).filter(v => parseFloat(v) > 0),
-      shadow: cs.boxShadow !== 'none',
+      // A shadow is depth when it is soft. A layer with no blur is a ring: the focus ring, a selected photo.
+      shadow: cs.boxShadow !== 'none' && cs.boxShadow.split(/,(?![^(]*\))/).some(l => parseFloat(l.replace(/rgba?\([^)]*\)|inset/g, '').trim().split(/\s+/)[2]) > 0),
       space: ['padding-top', 'padding-right', 'padding-bottom', 'padding-left', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left', 'row-gap', 'column-gap'].map(p => [p, px(p)]).filter(([, v]) => v) });
   }
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -67,13 +68,19 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     const range = document.createRange(); range.selectNodeContents(n);
     // A line set tighter than its glyph box (line-height under about 1.2) is measured as the line, so a heading that starts on a margin is on it.
     const lh = parseFloat(cs.lineHeight), line = r => { const cut = lh && r.height > lh ? (r.height - lh) / 2 : 0; return { left: r.left, right: r.right, top: r.top + cut, bottom: r.bottom - cut, width: r.width, height: r.height - 2 * cut }; };
-    const all = [...range.getClientRects()].map(r => clipped(p, line(r))), rs = all.filter(inView); if (!rs.length) continue;
+    // Faded to nothing (a toast that has left), or clipped to a dot (a label only a screen reader gets): not on the page.
+    let alpha = 1; for (let a = p; a && a !== document.documentElement; a = a.parentElement) alpha *= Number(getComputedStyle(a).opacity);
+    const all = [...range.getClientRects()].map(r => clipped(p, line(r))), rs = all.filter(inView).filter(r => r.width > 1.5 && r.height > 1.5); if (!rs.length || alpha < .05) continue;
     const box = { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
     // What is behind the text, read at the middle of a line that can be seen. Text nothing shows at any point is not on the page.
     const ground = []; let seen = false;
+    const solid = e => { const id = ids.get(e); return id != null && (els[id].photo || els[id].gradient || /^rgb\(/.test(getComputedStyle(e).backgroundColor) || Number(getComputedStyle(e).backgroundColor.match(/[\d.]+(?=\)$)/)?.[0]) >= .99); };
     for (const r of rs) { const cx = (r.left + r.right) / 2, cy = (r.top + r.bottom) / 2, stack = document.elementsFromPoint(cx, cy);
-      if (!stack.some(e => e === p || p.contains(e))) continue; seen = true;
-      for (const e of stack) {
+      // Text that taps pass through (pointer-events: none) never shows up at its own point, so it is taken as seen. Anything else must be there,
+      // with nothing solid painted over it: a row scrolled under a bar, or behind a floating button, is covered.
+      const at = stack.findIndex(e => e === p || p.contains(e)); if (at < 0 && cs.pointerEvents !== 'none') continue;
+      if (stack.slice(0, Math.max(at, 0)).some(e => !e.contains(p) && solid(e))) continue; seen = true;
+      for (const e of at < 0 ? stack : stack.slice(at)) {
         const s = getComputedStyle(e), id = ids.get(e); if (id == null) continue;
         if (els[id].photo) { ground.push({ kind: 'photo' }); break; }
         if (els[id].gradient) { ground.push({ kind: 'gradient', el: id }); break; }
@@ -88,10 +95,11 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     const family = first(cs.fontFamily);
     // An amount is alone when no words sit with it: in its own box, or in the row or block that holds it, up to three boxes out and never the whole view.
     let group = p; for (let a = p.parentElement, i = 0; a && i < 3 && a !== document.body && !a.hasAttribute('data-view'); a = a.parentElement, i++) { group = a; if (/\p{L}/u.test((a.innerText ?? '').replace(n.data, ''))) break; }
-    const control = !!p.closest('button, a, summary, [role=button], [role=tab], [role=link], [aria-current], [aria-selected="true"]');
+    const control = !!p.closest('button, a, summary, [role=button], [role=link]'), disabled = !!p.closest('[disabled], [aria-disabled="true"]');
     texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, weight: Number(cs.fontWeight), family: cs.fontFamily,
-      display: family === faces.display, textFace: family === faces.text, color: cs.color, upper: cs.textTransform === 'uppercase',
-      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control,
+      display: family === faces.display, textFace: family === faces.text, color: cs.webkitTextFillColor || cs.color, upper: cs.textTransform === 'uppercase',
+      caps: cs.textTransform === 'capitalize' ? 'capitalized by CSS' : cs.fontVariantCaps !== 'normal' ? 'set in small capitals' : null, italic: cs.fontStyle !== 'normal', stroked: parseFloat(cs.webkitTextStrokeWidth) > 0,
+      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, disabled, opacity: alpha,
       cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, full: rel(range.getBoundingClientRect()),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
@@ -115,22 +123,29 @@ async function share({ png, photos, w, h }) {
 // Opens the output at each of the medium's canvas sizes and measures every view.
 export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
-  const views = [], stressed = []; let colors, fontsLoaded = true;
+  const views = [], stressed = [], outside = []; let colors, lengths = [], fontsLoaded = true, screens = 0, scaled = false;
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
     await page.goto(pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
     const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
-    const probe = await browser.newPage(); await probe.setContent(`<html data-theme="${theme}"><style>${tokensCss}</style><body><i id="p"></i>`);
-    const got = await probe.evaluate(names => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {} };
+    const probe = await browser.newPage(); await probe.setContent(`<html><style>${tokensCss}</style><body><i id="p"></i>`); await probe.evaluate(t => { if (t) document.documentElement.dataset.theme = t; }, theme);
+    const got = await probe.evaluate(({ names, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [] }; p.style.display = 'block';
       for (const n of [...new Set(names)]) { p.style.color = 'rgb(1, 2, 3)'; p.style.color = `var(--${n})`; const a = cs.color; p.parentElement.style.color = 'rgb(3, 2, 1)'; p.style.color = `var(--${n})`; if (cs.color === a) out.colors[n] = a; p.parentElement.style.color = ''; }
+      for (const [k, v] of lengths) { p.style.width = `var(--${k})`; out.lengths.push(parseFloat(cs.width) || v); }
       for (const f of ['text', 'display']) { p.style.fontFamily = `var(--font-${f})`; out.faces[f] = cs.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase(); }
-      return out; }, names);
-    await probe.close(); colors = got.colors;
+      return out; }, { names, lengths: [...tokensCss.matchAll(/--((?!s-|t-|r-|lh-|tr-)[\w-]+)\s*:\s*(\d+(?:\.\d+)?)px\s*;/g)].map(m => [m[1], Number(m[2])]) });
+    await probe.close(); colors = got.colors; lengths = got.lengths;
     // A face is here when text set in it measures differently from the same text in two generic fallbacks. document.fonts.check() says yes to a face it has never heard of.
     fontsLoaded &&= await page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
       return [f.text, f.display].every(face => ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`)) && ['monospace', 'serif'].every(fb => w(`40px "${face}", ${fb}`) === w(`40px "${face}", ${fb === 'serif' ? 'monospace' : 'serif'}`))); }, got.faces);
     const marked = await page.evaluate(() => document.querySelectorAll('[data-view]').length);
-    const steps = marked || Math.min(12, Math.ceil(await page.evaluate(() => document.documentElement.scrollHeight) / canvas[1]));
+    scaled ||= await page.evaluate(() => [document.documentElement, document.body, ...document.querySelectorAll('[data-view]')].some(el => { const s = getComputedStyle(el); return s.transform !== 'none' || Number(s.zoom || 1) !== 1 || (s.scale ?? 'none') !== 'none'; }));
+    const tall = Math.ceil(await page.evaluate(() => document.documentElement.scrollHeight) / canvas[1]), steps = marked || Math.min(40, tall); if (!marked) screens = Math.max(screens, tall);
+    // Once one view is marked, everything that shows belongs in a view. Text outside them all would be checked by nothing.
+    if (marked) outside.push(...await page.evaluate(() => { const out = [], w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+      for (let n = w.nextNode(); n; n = w.nextNode()) { const p = n.parentElement; if (!/\S/.test(n.data) || p.closest('[data-view], script, style, noscript, template')) continue; const s = getComputedStyle(p), r = p.getBoundingClientRect();
+        if (s.display !== 'none' && s.visibility !== 'hidden' && r.width > 1.5 && r.height > 1.5) out.push(n.data.trim().slice(0, 40)); }
+      return out.slice(0, 3); }));
     // Measures view i as it stands now. With a screenshot it also reads the share of color.
     const shot = async (i, index, old) => {
       const rect = await page.evaluate(({ i, marked, h }) => {
@@ -163,7 +178,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     }
     await page.close();
   }
-  return { views, stressed, colors, fontsLoaded };
+  return { views, stressed, colors, lengths, fontsLoaded, outside: [...new Set(outside)], screens, scaled };
 }
 
 export async function check(file, medium, { browser } = {}) {
@@ -179,8 +194,11 @@ export async function check(file, medium, { browser } = {}) {
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const args = process.argv.slice(2), file = args.find(a => !a.startsWith('--')), medium = args[args.indexOf('--medium') + 1];
-  if (!file || !args.includes('--medium')) { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 7).join('\n') + '\n'); process.exit(2); }
+  const args = process.argv.slice(2), at = args.indexOf('--medium'), medium = at < 0 ? null : args[at + 1], file = args.find((a, i) => !a.startsWith('--') && i !== at + 1);
+  const stop = msg => { process.stderr.write(`${msg}\n`); process.exit(2); };
+  if (file && medium && !existsSync(file)) stop(`no file ${file}`);
+  if (file && medium && !Object.keys(JSON.parse(readFileSync(join(root, 'brand/media.json'), 'utf8'))).includes(medium)) stop(`no medium "${medium}": it is app, web, post, story or deck`);
+  if (!file || !medium) { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 7).join('\n') + '\n'); process.exit(2); }
   const { facts, findings } = await check(file, medium);
   if (args.includes('--json')) process.stdout.write(JSON.stringify({ findings, views: facts.views.map(v => ({ index: v.index, share: v.share })) }, null, 2) + '\n');
   else {

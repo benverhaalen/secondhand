@@ -3,7 +3,8 @@
     "canvas": [[390, 844]],
     "unit": 1,
     "margin": { "x": 20 },
-    "sizes": { "390": [13, 15, 18, 21, 36, 50] },
+    "sizes": { "390": [13, 15, 18, 21, 36] },
+    "peak": 50,
     "wordmark": { "sizes": [21], "at": "top-center" },
     "act": true,
     "scrolls": true
