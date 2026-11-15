@@ -24,8 +24,8 @@
       "name": "phone",
       "sideways": 0,
       "headline_lines": 4,
-      "headline_px": 50,
-      "button_bottom": 524,
+      "headline_px": 36,
+      "button_bottom": 493,
       "first_screen": 667,
       "menu": true,
       "links": false,
@@ -41,8 +41,8 @@
       "name": "phone",
       "sideways": 0,
       "headline_lines": 4,
-      "headline_px": 50,
-      "button_bottom": 612,
+      "headline_px": 36,
+      "button_bottom": 581,
       "first_screen": 844,
       "menu": true,
       "links": false,
@@ -51,9 +51,9 @@
       "hl_fit": "1.000",
       "logos_round": true,
       "problems": [],
-      "contrast_floor": 5.27,
+      "contrast_floor": 4.77,
       "photos_in_a_minute": {
-        "shown": 103,
+        "shown": 99,
         "pool": 380,
         "kinds": 7
       }
@@ -176,7 +176,7 @@
       "hl_fit": "1.000",
       "logos_round": true,
       "problems": [],
-      "contrast_floor": 4.86
+      "contrast_floor": 4.71
     },
     {
       "w": 1920,
@@ -197,9 +197,10 @@
     }
   ],
   "brand_errors": [
-    "B32 view 1 <svg>, <div>, <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
+    "B32 view 1 <div>, <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
     "B32 view 1 \"Your second hand, for everything\", \"Take one photo. It's priced, posted o...\", <div> sits within 43.25 px of the wordmark: nothing but its ground comes within half its type size (C1)",
-    "B32 view 3 <svg>, <div>, <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
-    "B32 view 3 \"Your second hand, for everything\", <div>, <img> sits within 25 px of the wordmark: nothing but its ground comes within half its type size (C1)"
+    "B3 view 3 the wordmark is 36 px: on a web 390 wide it is 21 or 50 px (Part III)",
+    "B32 view 3 <div>, <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
+    "B32 view 3 \"Your second hand, for everything\", <div>, <img> sits within 18 px of the wordmark: nothing but its ground comes within half its type size (C1)"
   ]
 }
