@@ -190,7 +190,7 @@ test('searchAll queries approved public sources in parallel and maps outcomes pe
   assert.equal(peak, 2);
   assert.ok(performance.now() - t0 < 40 * 3);
   const by = Object.fromEntries(r.searched.map(s => [s.site, s]));
-  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'mercari', 'offerup', 'poshmark']);
+  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'google_shopping', 'mercari', 'offerup', 'poshmark']);
   assert.deepEqual(requested.map(url => SITES.find(site => url.startsWith(BASE[site]))).sort(), ['offerup', 'poshmark']);
   assert.equal(by.facebook, undefined);
   assert.equal(by.depop!.outcome, 'failed');
