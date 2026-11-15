@@ -845,3 +845,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-15 what he wants over what he says
 Ben, project chat, 2026-11-15 02:49 UTC, relayed to the thread "Roll the UI system out everywhere".
 > also im thinking about if some of what i say contradicts past things ui wise consider what i want not what i say. that should be a great principle. the evidence from what i praise vs not. and extrapolate that.
+
+## 2026-11-15 color blindness, weighed lightly
+Ben, thread "Make gradients and colors carry meaning", 2026-11-15 02:59 UTC, relayed to the thread "Roll the UI system out everywhere".
+> dont weight to colorblindness too much
