@@ -13,18 +13,18 @@ export const metadata: Metadata = {
 const sellingSteps = [
   {
     id: 'selling', number: '01', title: 'Start with photos',
-    body: 'Add the item and any detail that could change its price, like a label or a flaw.',
+    body: 'Start with a photo, then check the brand, size and condition. A clear photo of the label or a flaw can fill in details the first photo missed.',
     image: 'capture', alt: 'App review after adding one photo of a Carhartt jacket.',
   },
   {
     id: 'price', number: '02', title: 'Review the price',
-    body: 'Check similar sales and choose an asking price.',
+    body: 'Compare the estimate with similar sales and check what you would keep after marketplace fees. Choose an asking price that fits your item’s condition.',
     image: 'plan', alt: 'The asking-price screen for the same jacket.',
     href: '/data-use', link: 'Where the prices come from',
   },
   {
     id: 'review', number: '03', title: 'Review the listing',
-    body: 'Check the photos, price and item details. Copy the listing details when you’re ready to finish on the marketplace you choose.',
+    body: 'Review the photos, price and description. When they look right, copy the listing details and finish posting on your chosen marketplace.',
     image: 'preview', alt: 'The same jacket in the listing preview.',
   },
 ];
@@ -50,7 +50,7 @@ export default function HowItWorksPage() {
       </div>
       <nav className={styles.paths} aria-label="Choose a walkthrough">
         <a href="#selling"><span>Selling<small>From photos to a listing you review.</small></span><Arrow down /></a>
-        <a href="#buying"><span>Buying<small>Find what fits your budget and your plans.</small></span><Arrow down /></a>
+        <a href="#buying"><span>Buying<small>Find an item in your size and budget.</small></span><Arrow down /></a>
       </nav>
     </div></header>
 
@@ -76,8 +76,8 @@ export default function HowItWorksPage() {
       <div className={`${styles.wrap} ${styles.stepGrid}`}>
         <div className={styles.copy}>
           <p className={styles.label}>After a sale</p>
-          <h2 id="shipping-title">Check what the sale paid out</h2>
-          <p className={styles.body}>See what the buyer paid and what you kept. Continue on the marketplace for shipping.</p>
+          <h2 id="shipping-title">See what you kept after the sale</h2>
+          <p className={styles.body}>Check the sale amount, fees and what you kept. Open the marketplace to arrange shipping.</p>
         </div>
         <Phone name="ship" alt="Sale details and a marketplace handoff for an e-reader." />
       </div>
@@ -88,9 +88,9 @@ export default function HowItWorksPage() {
         <div className={styles.copy}>
           <p className={styles.label}>Buying</p>
           <h2 id="buying-title">Tell us what you’re looking for</h2>
-          <p className={styles.body}>Set your budget, size and preferences.</p>
+          <p className={styles.body}>Save the item you want, along with your size, budget and preferences.</p>
           <dl className={styles.buyingDetails}>
-            <div><dt>Check the listing</dt><dd>Compare the item and delivery cost, then open its marketplace.</dd></div>
+            <div><dt>Check the listing</dt><dd>Check the size, condition and total cost, including delivery.</dd></div><div><dt>Buy on the marketplace</dt><dd>Open the listing to confirm availability, shipping and payment details before buying.</dd></div>
           </dl>
           <Link className={styles.textLink} href="/features">How matching works <Arrow /></Link>
         </div>
@@ -99,7 +99,7 @@ export default function HowItWorksPage() {
     </section>
 
     <section className={`${styles.wrap} ${styles.deeper}`} aria-labelledby="deeper-title">
-      <h2 id="deeper-title">Want to see what’s behind it?</h2>
+      <h2 id="deeper-title">How does secondhand make these decisions?</h2>
       <div><Link className={styles.textLink} href="/features">Explore Features <Arrow /></Link><Link className={styles.textLink} href="/data-use">Explore Data Use <Arrow /></Link></div>
     </section>
     <section className={`${styles.wrap} ${styles.signup}`} aria-labelledby="signup-title">
