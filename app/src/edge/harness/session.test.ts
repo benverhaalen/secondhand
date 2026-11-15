@@ -139,3 +139,17 @@ test('review: a write that runs past its lease TTL keeps the lease through its r
   assert.deepEqual(second, { ok: false, status: 409 });
   assert.ok(s.lease('acct', 'job-2', 30).ok, 'released once the write is done');
 });
+
+test('review: quiet hours hold every request until the window ends, across midnight too', async () => {
+  const { quietLeft } = await import('./session.ts');
+  const at = (iso: string) => Date.parse(iso);
+  assert.equal(quietLeft(at('2026-11-15T23:00:00Z'), [22, 6]), 7 * 3_600_000);
+  assert.equal(quietLeft(at('2026-11-15T05:30:00Z'), [22, 6]), 30 * 60_000);
+  assert.equal(quietLeft(at('2026-11-15T12:00:00Z'), [22, 6]), 0);
+  let t = at('2026-11-15T03:00:00Z');
+  const s = createSessions({ store: memoryLeaseStore(), now: () => t });
+  const b = s.bucket('acct', 'depop', { per_minute: 30, step_ms: [2000, 5000], quiet_hours: [2, 6] });
+  assert.equal(b.take(), 3 * 3_600_000);
+  t = at('2026-11-15T06:00:00Z');
+  assert.equal(b.take(), 0);
+});

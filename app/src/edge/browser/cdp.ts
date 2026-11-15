@@ -115,3 +115,10 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
     },
   };
 }
+
+// The one place the pool's browser is chosen: a Browser Use Cloud browser when BROWSER_USE_API_KEY is present (read by presence,
+// passed only to the header), else a local Chrome on this host (SECONDHAND_CHROME, or the default Windows install path).
+export function sourceFromEnv(env: Record<string, string | undefined> = process.env, scratch = join(process.cwd(), '.browser-scratch')): BrowserSource {
+  if (env.BROWSER_USE_API_KEY) return browserUseCloud({ apiKey: env.BROWSER_USE_API_KEY });
+  return localChrome({ executablePath: env.SECONDHAND_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe', scratch });
+}

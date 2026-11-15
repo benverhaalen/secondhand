@@ -277,3 +277,9 @@ test('review: a failed load, a failed run, or a logged-out export never overwrit
   assert.ok((await pool.dispatch({ account_id: 'a', job_id: 'j3', run: async () => 1 })).ok);
   assert.deepEqual(await vault.get('ref-a'), good, 'an export with no cookies (logged out) keeps the stored state');
 });
+
+test('review: the browser source is the cloud when its key is present, else local Chrome', async () => {
+  const { sourceFromEnv } = await import('./cdp.ts');
+  assert.equal(sourceFromEnv({ BROWSER_USE_API_KEY: 'k' }).kind, 'cloud');
+  assert.equal(sourceFromEnv({}).kind, 'local');
+});
