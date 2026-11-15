@@ -8,7 +8,7 @@ description: Use in secondhand when an answer rests on a fact that could have ch
 The failure this prevents: relying on pretraining or another model's summary, and turning a narrow search into "nothing exists".
 
 1. Write the question, the decision it feeds, and your draft answer from memory.
-2. Search both for the draft and against it. Say whether the draft changed.
+2. Search both for the draft and against it. Say whether the draft changed, and put it in the note under **What changed** with the draft beside the finding. A note with no draft, or one that says nothing changed without having searched against it, is not done. (The dark mode note that Ben approved found its draft wrong on the fills this way.)
 3. Use the rawest source: code, docs, changelog, paper, the product itself, the author's own post. A listicle or another model's answer only points you to a source. Open the source at the line you cite. Check the date, since this field moves monthly.
 4. Mark every claim:
    - *observed*: you read it in the source, or ran it.
