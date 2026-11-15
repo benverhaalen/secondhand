@@ -2,16 +2,16 @@
 // spec/product.md comp, valuation, citation; spec/determinations/money.md D1-D15.
 import type { Log } from '../../../../log/index.js';
 import type { ToolName, ToolResult } from './types.ts';
-import { searchSource, runtimePorts as searchRuntime, type SiteResult } from '../intel/public/search.ts';
+import { runtimePorts as searchRuntime } from '../intel/public/search.ts';
 import { SOURCES, sourcesFor, type SourceSite } from '../intel/public/sources.ts';
 import { fetchPage } from '../intel/fetch.ts';
 import { PROTOCOLS } from '../intel/protocols.ts';
 import { normalize } from '../intel/run.ts';
-import { createDupe } from '../harness/sites/dupe/adapter.ts';
 import { soldSearch } from '../api/valuation-sold.ts';
 import { soldSources, toComps, type Search, type SoldRow, type SoldSite } from '../../engines/valuation/sold.ts';
 import { valuate, type ValuateCtx, type ValuationItem } from '../../engines/valuation/valuate.ts';
-import { memoryStore } from '../../engines/param/param.ts';
+import { assistParams, memoryStore, type ParamStore } from '../../engines/param/param.ts';
+import { sha256Hex } from '../../engines/proof/sha256.ts';
 import { FEES } from '../../engines/valuation/keep.ts';
 import { handlers as searchHandlers, type OfferView } from '../api/search.ts';
 import { jobs, type SseFrame } from '../api/jobs.ts';
@@ -36,8 +36,8 @@ export interface SearchJobPort {
   framesAfter(id: string, after: number): SseFrame[];
 }
 export interface ToolDeps {
-  search(site: SourceSite, query: string, signal: AbortSignal): Promise<SiteResult>;
   sold: Search;
+  params?: Pick<ParamStore, 'read'>;
   store: StorePort | null;
   forUser?(person_id: string): Promise<GenieDeps | null>;
   person_id?: string;
@@ -48,6 +48,8 @@ export interface ToolDeps {
   now(): number;
   log: Log;
 }
+
+assistParams.declare({ name: 'assist_search_wait_ms', family: 'scalar', prior: 30000, guard_lo: 1 });
 
 const DEADLINE_MS = PROTOCOLS.listings_matching.budget.settled_ms;
 const SOLD_SITES: readonly SoldSite[] = ['mercari', 'poshmark'];
@@ -88,21 +90,15 @@ export const TOOL_DEFS = [
 
 export function defaultDeps(env: Record<string, string | undefined>, fetch: typeof globalThis.fetch, log: Log): ToolDeps {
   const { DATABRICKS_HOST: host, DATABRICKS_TOKEN: token, DATABRICKS_WAREHOUSE_ID: warehouse_id } = env;
-  const dupe = createDupe({ send: (url, init) => fetch(url, init), log });
   const page = (signal: AbortSignal) => (url: string, opts: Parameters<typeof fetchPage>[1]) =>
     fetchPage(url, { ...opts, fetchImpl: (url, init) => fetch(url, { ...init, signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]) }) });
   const deps: ToolDeps = {
-    caller: 'visitor', now: Date.now, log,
-    search: (site, query, signal) => {
-      const source = SOURCES.find(s => s.site === site && s.on);
-      if (!source) return Promise.reject(new Error('source is not on'));
-      return searchSource(source, query, 'search', { ...searchRuntime, caller: deps.caller === 'person' ? 'person' : 'background', person_id: deps.person_id, signal, dupe, deadline_ms: DEADLINE_MS, fetchPage: page(signal), log });
-    },
-    sold: (site, query, signal) => {
+    caller: 'visitor', now: Date.now, log, params: assistParams,
+    sold(site, query, signal) {
       const live_sites = (env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).filter(Boolean);
       if (!live_sites.includes(site)) return Promise.resolve({ rows: [], outcome: 'blocked', reason: 'SECONDHAND_LIVE_SITES is missing or does not enable this site' });
-      if (deps.caller !== 'person') return Promise.resolve({ rows: [], outcome: 'needs_account' });
-      return soldSearch({ ...searchRuntime, live_sites, caller: deps.caller, person_id: deps.person_id, signal, fetchPage: page(signal), log })(site, query, signal);
+      if (this.caller !== 'person') return Promise.resolve({ rows: [], outcome: 'needs_account' });
+      return soldSearch({ ...searchRuntime, live_sites, caller: this.caller, person_id: this.person_id, signal, fetchPage: page(signal), log: this.log })(site, query, signal);
     },
     store: host && token && warehouse_id ? { host, warehouse_id, token: async () => token, fetch } : null,
     forUser: person_id => geniePorts.forUser(person_id),
@@ -202,14 +198,19 @@ function listing(row: SearchOffer): Row {
     url: row.url, condition: row.condition, relation: row.relation, ...offerMoney('price', row.price_cents),
     currency: row.price_cents?.currency ?? null, ...offerMoney('delivered', row.delivered_cents), likes: row.likes ?? null,
     ...(row.may_model === undefined ? {} : { may_model: row.may_model }), ...(row.use_scope === undefined ? {} : { use_scope: row.use_scope }),
+    ...(row.may_store === undefined ? {} : { may_store: row.may_store }),
     ...(row.site === 'dupe' ? { source: 'dupe', commercial: true, attribution: 'via Dupe.com' } : row.attribution ? { attribution: row.attribution } : {}) };
+}
+function searchOffers(data: Record<string, unknown>): SearchOffer[] {
+  if (!Array.isArray(data.results) || !data.results.every(row => object(row) !== null)) throw new Error('invalid search results');
+  return data.results as SearchOffer[];
 }
 function searchRows(data: Record<string, unknown>, x: Extract<Input, { query: string }>, d: ToolDeps, r: ToolResult): { rows: Row[]; sites_pending: string[] } {
   const allowed = sourcesFor(d.caller === 'person' ? 'person' : 'background').map(s => s.site);
   const eligible = (site: string) => allowed.includes(site as SourceSite) && (!x.sites || x.sites.includes(site as SourceSite));
   const pending = (data.sites_pending as string[] | undefined ?? []).filter(eligible);
   const brand = x.exclude_brand ? new RegExp(`(?<![\\p{L}\\p{N}_])${x.exclude_brand.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![\\p{L}\\p{N}_])`, 'iu') : null;
-  const offers = (data.results as SearchOffer[]).filter(row => eligible(row.site));
+  const offers = searchOffers(data).filter(row => eligible(row.site));
   const kept = offers.filter(row => !brand || !brand.test(row.title));
   const sites = [...new Set(kept.map(row => row.site))];
   const rows = kept.slice(0, Math.max(0, 30 - sites.length)).map(listing);
@@ -251,9 +252,10 @@ function readSearchJob(id: string, x: Extract<Input, { query: string }>, d: Tool
   if (!port) return Promise.reject(new Error('search job is not connected'));
   const first_id = `${id}:first`;
   return new Promise<SearchToolResult>((resolve, reject) => {
-    let cursor = 0, first = true, late = 0, settled = false, closed = false;
+    let cursor = 0, first = true, late = 0, closed = false;
     let off: (() => void) | undefined;
-    const stop = () => { closed = true; off?.(); signal.removeEventListener('abort', abort); };
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const stop = () => { closed = true; clearTimeout(timer); off?.(); signal.removeEventListener('abort', abort); };
     const abort = () => { stop(); if (first) reject(signal.reason); };
     const pump = () => {
       if (closed) return;
@@ -265,7 +267,7 @@ function readSearchJob(id: string, x: Extract<Input, { query: string }>, d: Tool
           if (settledFrame) frames = frames.filter(frame => frame.id >= settledFrame.id);
           else if (partials.length) {
             const rows = new Map<string, SearchOffer>();
-            for (const frame of partials) for (const row of frame.data.results as SearchOffer[]) rows.set(row.id, row);
+            for (const frame of partials) for (const row of searchOffers(frame.data)) rows.set(row.id, row);
             const latest = partials.at(-1)!;
             frames = [{ ...latest, data: { ...latest.data, results: [...rows.values()] } },
               ...frames.filter(frame => frame.id > latest.id)];
@@ -273,8 +275,8 @@ function readSearchJob(id: string, x: Extract<Input, { query: string }>, d: Tool
         }
         for (const frame of frames) {
           cursor = frame.id;
-          if (frame.event === 'job.state' && frame.data.state === 'failed') {
-            d.log.error('assist.search.job', frame.data.error ?? new Error('search job failed'));
+          if (frame.event === 'job.state' && ['done', 'failed', 'cancelled'].includes(String(frame.data.state))) {
+            if (frame.data.state === 'failed') d.log.error('assist.search.job', frame.data.error ?? new Error('search job failed'));
             stop(); if (first) resolve({ ...fail(r, 'failed', 'search job failed'), result_id: first_id }); return;
           }
           if (!['answer.partial', 'answer.settled', 'answer.late'].includes(frame.event)) continue;
@@ -286,11 +288,14 @@ function readSearchJob(id: string, x: Extract<Input, { query: string }>, d: Tool
               counts: snapshot.counts, citation_ids: update.rows.map(row => String(row.citation_id)), basis: 'search job rows' };
             resolve(result);
           } else d.onLate?.({ result_id: `${first_id}:late:${++late}`, site: typeof frame.data.site === 'string' ? frame.data.site : 'all', ...update });
-          if (frame.event === 'answer.settled') settled = true;
-          if (settled && update.sites_pending.length === 0) { stop(); return; }
         }
       } catch (error) { stop(); if (first) reject(error); else d.log.error('assist.search.late', error); }
     };
+    timer = setTimeout(() => {
+      stop();
+      d.log.note('assist.search.deadline', { job: id });
+      if (first) resolve({ ...fail(r, 'failed', 'search job deadline exceeded'), result_id: first_id });
+    }, (d.params ?? assistParams).read('assist_search_wait_ms', {}).value as number);
     signal.addEventListener('abort', abort, { once: true });
     try { off = port.listen(id, pump); if (closed) off(); else if (signal.aborted) abort(); else pump(); }
     catch (error) { stop(); reject(error); }
@@ -430,7 +435,10 @@ async function marketStore(x: Extract<Input, { function: FunctionName }>, d: Too
       d.log.error('assist.genie', new Error(got.reason));
       return fail(r, 'failed', 'Genie failed');
     }
-    r.rows = citedRows(zip(got.columns, got.rows), `genie:${d.person_id}:${crypto.randomUUID()}`).map(row => ({ ...row, sql: got.citation.sql, tables: got.citation.tables.join(', ') }));
+    r.rows = zip(got.columns, got.rows).map((row, index) => {
+      const id = `genie:${sha256Hex(JSON.stringify([d.person_id, row, index])).slice(0, 16)}`;
+      return { ...row, id, citation_id: id, sql: got.citation.sql, tables: got.citation.tables.join(', ') };
+    });
     r.citation_ids = r.rows.map(row => String(row.citation_id));
     r.counts = { rows: r.rows.length, row_count: got.citation.row_count };
     r.as_of = got.citation.as_of; r.basis = `Genie SQL reads ${got.citation.tables.join(', ')}${got.citation.stale ? '; stale' : ''}`;
@@ -470,8 +478,7 @@ async function marketStore(x: Extract<Input, { function: FunctionName }>, d: Too
 
 export async function runTool(name: string, input: unknown, deps: ToolDeps, signal: AbortSignal): Promise<ToolResult> {
   const start = deps.now();
-  // ToolResult's fixed union cannot carry an unknown tool name; invalid names use its first member.
-  const tool = TOOL_DEFS.find(d => d.name === name)?.name ?? 'search_market';
+  const tool = name as ToolName;
   let result = empty(tool, new Date(start).toISOString());
   try {
     if (!validate(name, input)) result = fail(result, 'invalid_input', 'tool name or input does not match its schema');

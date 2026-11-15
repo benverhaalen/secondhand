@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
@@ -9,6 +9,7 @@ import type { SiteResult } from '../intel/public/search.ts';
 import type { Search, SoldRow } from '../../engines/valuation/sold.ts';
 import { SOURCES, type SourceSite } from '../intel/public/sources.ts';
 import { memoryStore } from '../../engines/param/param.ts';
+import { sha256Hex } from '../../engines/proof/sha256.ts';
 import { sourcesFor } from '../intel/public/sources.ts';
 import { ports as geniePorts } from '../api/genie.ts';
 import { ports as searchPorts, type OfferView } from '../api/search.ts';
@@ -20,22 +21,23 @@ const searches = recorded('search').sources as Record<string, SiteResult>;
 const sales = recorded('sold').sources as Record<string, Awaited<ReturnType<Search>>>;
 const NOW = Date.parse('2026-11-15T12:00:00Z');
 const signal = () => new AbortController().signal;
-function deps(overrides: Partial<ToolDeps> = {}) {
+function deps(overrides: Partial<ToolDeps> = {}, search: (site: SourceSite) => Promise<SiteResult> = async site => structuredClone(searches[site])) {
   const sink = memorySink();
-  const d: ToolDeps = { caller: 'person', person_id: 'person-a', search: async site => structuredClone(searches[site]),
+  const d: ToolDeps = { caller: 'person', person_id: 'person-a',
     sold: async site => structuredClone(sales[site]), store: null, now: () => NOW,
     log: createLog({ src: 'test.assist.tools', build: 'test', sink }), ...overrides };
   let fixtureRows: ReturnType<typeof offer>[] = [];
   d.searchJob ??= {
     async start() {
       const results = (await Promise.all((['poshmark', 'dupe'] as const).map(async site => {
-        const got = await d.search(site, 'fixture', signal());
+        const got = await search(site);
         return got.rows.map((row, i) => offer(site, i, row.price_cents ?? 0, row.title ?? 'jeans', row.likes));
       }))).flat();
       fixtureRows = results; return { id: 'recorded' };
     },
     listen: () => () => {},
-    framesAfter: () => [{ id: 1, event: 'answer.settled', data: { results: fixtureRows, sites_pending: [] } }],
+    framesAfter: () => [{ id: 1, event: 'answer.settled', data: { results: fixtureRows, sites_pending: [] } },
+      { id: 2, event: 'job.state', data: { state: 'done' } }],
   };
   return { d, sink };
 }
@@ -44,7 +46,7 @@ const listings = (r: ToolResult) => r.rows.filter(row => row.kind !== 'site_summ
 const resultKeys = ['tool', 'ok', 'reason', 'rows', 'counts', 'as_of', 'citation_ids', 'basis', 'not_built', 'widgets', 'ms', 'result_id'];
 function contract(r: ToolResult) {
   assert.ok(Object.keys(r).every(k => resultKeys.includes(k)));
-  assert.ok(TOOL_DEFS.some(d => d.name === r.tool));
+  assert.ok(TOOL_DEFS.some(d => d.name === r.tool) || r.reason === 'invalid_input');
   assert.ok(r.rows.every(row => Object.values(row).every(v => v === null || ['string', 'boolean', 'number'].includes(typeof v))));
   assert.ok(Object.values(r.counts).every(n => typeof n === 'number' && Number.isFinite(n)));
   assert.ok(Number.isFinite(r.ms) && r.ms >= 0);
@@ -83,7 +85,7 @@ for (const [label, name, input] of [
   ['nonfinite number', 'market_store', { function: 'asks', args: { term: 'jeans', site: 'all', days: Infinity } }],
   ['args array', 'market_store', { function: 'coverage_now', args: [] }],
 ] as const) test(`invalid input: ${label}`, async () => {
-  const { d } = deps({ search: async () => { throw new Error('must not call'); }, sold: async () => { throw new Error('must not call'); } });
+  const { d } = deps({ sold: async () => { throw new Error('must not call'); } }, async () => { throw new Error('must not call'); });
   const r = await call(name, input, d);
   assert.equal(r.ok, false); assert.equal(r.reason, 'invalid_input'); assert.deepEqual(r.rows, []); contract(r);
 });
@@ -94,6 +96,8 @@ function offer(site: SourceSite, id: number, cents = 1000, title = 'jeans', like
     external_id: String(id), route_id: `fixture:${site}`, data: `live:${site}`, source_kind: 'marketplace', may_store: false, shipping_cents: null, shipping_estimated: true, also_on: [],
     ...(likes === undefined ? {} : { likes }) };
 }
+const closeScripts = new Set<() => void>();
+afterEach(() => { for (const close of closeScripts) close(); closeScripts.clear(); });
 function script() {
   const frames: SseFrame[] = []; const listeners = new Set<() => void>();
   const starts: { caller: string; person_id?: string }[] = [];
@@ -102,11 +106,98 @@ function script() {
     listen(_id: string, fn: () => void) { listeners.add(fn); return () => { listeners.delete(fn); }; },
     framesAfter(_id: string, cursor: number) { return frames.filter(f => f.id > cursor); },
   };
-  return { port, starts, listeners, emit(event: string, data: Record<string, unknown>) {
+  const job = { port, starts, listeners, emit(event: string, data: Record<string, unknown>) {
     frames.push({ id: frames.length + 1, event, data }); for (const fn of [...listeners]) fn();
   } };
+  closeScripts.add(() => job.emit('job.state', { state: 'done' }));
+  return job;
 }
 const turn = () => new Promise(resolve => setImmediate(resolve));
+
+test('an unknown tool reports its own name', async () => {
+  const r = await call('raw_sql', {});
+  assert.equal(r.tool, 'raw_sql');
+  assert.equal(r.reason, 'invalid_input');
+});
+
+for (const snapshot of [false, true]) {
+  for (const state of ['done', 'failed', 'cancelled']) {
+    test(`${snapshot ? 'existing' : 'new'} search closes on ${state} without an answer`, async () => {
+      const job = script(), ctl = new AbortController();
+      const d = deps({ searchJob: job.port }).d;
+      const pending = snapshot ? searchJobResult('script', { ...d, signal: ctl.signal })
+        : runTool('search_market', { query: 'jeans' }, d, ctl.signal);
+      await turn();
+      job.emit('job.state', { state });
+      assert.equal(job.listeners.size, 0, `${state} must unsubscribe without waiting for abort`);
+      const r = await pending;
+      assert.equal(r.reason, 'failed');
+      assert.deepEqual(r.rows, []);
+    });
+  }
+  for (const first of [false, true]) {
+    test(`${snapshot ? 'existing' : 'new'} search deadline closes ${first ? 'after' : 'before'} the first answer`, { timeout: 1000 }, async t => {
+      t.mock.timers.enable({ apis: ['setTimeout'] });
+      const job = script(), ctl = new AbortController(), params = memoryStore();
+      params.declare({ name: 'assist_search_wait_ms', family: 'scalar', prior: 17 });
+      const d = Object.assign(deps({ searchJob: job.port }).d, { params });
+      const pending = snapshot ? searchJobResult('script', { ...d, signal: ctl.signal })
+        : runTool('search_market', { query: 'jeans' }, d, ctl.signal);
+      await turn();
+      if (first) { job.emit('answer.partial', { results: [offer('poshmark', 1)], sites_pending: ['ebay'] }); await pending; }
+      t.mock.timers.tick(16);
+      assert.equal(job.listeners.size, 1);
+      t.mock.timers.tick(1);
+      assert.equal(job.listeners.size, 0, 'configured search deadline must unsubscribe');
+      const r = await pending;
+      if (first) assert.equal(listings(r).length, 1);
+      else assert.equal(r.reason, 'failed');
+      assert.equal(ctl.signal.aborted, false);
+    });
+  }
+}
+
+test('settled with no pending sites still forwards Facebook fills until terminal state', async () => {
+  const job = script(), updates: import('./tools.ts').LateUpdate[] = [];
+  const pending = call('search_market', { query: 'jeans' }, deps({ searchJob: job.port, onLate: u => updates.push(u) }).d);
+  await turn();
+  job.emit('answer.settled', { results: [offer('poshmark', 1)], sites_pending: [] });
+  await pending;
+  assert.equal(job.listeners.size, 1, 'settled does not mean the search job is terminal');
+  job.emit('answer.late', { site: 'facebook', results: [offer('facebook', 2)], sites_pending: [] });
+  assert.equal(updates[0].site, 'facebook');
+  assert.equal(updates[0].rows[0].id, 'offer:facebook:2');
+  job.emit('job.state', { state: 'done' });
+  assert.equal(job.listeners.size, 0);
+  job.emit('answer.late', { site: 'facebook', results: [offer('facebook', 3)], sites_pending: [] });
+  assert.equal(updates.length, 1);
+});
+
+test('one failed site preserves rows from the sites that answer', async () => {
+  const job = script(), updates: import('./tools.ts').LateUpdate[] = [];
+  const pending = call('search_market', { query: 'jeans' }, deps({ searchJob: job.port, onLate: u => updates.push(u) }).d);
+  await turn();
+  job.emit('answer.partial', { site: 'poshmark', results: [offer('poshmark', 1)], sites_pending: ['ebay', 'dupe'] });
+  const first = await pending;
+  job.emit('job.stage', { site: 'ebay', state: 'failed', found: {} });
+  job.emit('answer.partial', { site: 'dupe', results: [offer('dupe', 2)], sites_pending: [] });
+  job.emit('job.state', { state: 'failed' });
+  assert.equal(listings(first)[0].id, 'offer:poshmark:1');
+  assert.equal(updates[0].rows[0].id, 'offer:dupe:2');
+  assert.equal(job.listeners.size, 0);
+});
+
+for (const results of [undefined, {}, [null], [3], ['bad'], [[]]]) {
+  test(`search rejects malformed results before reading rows: ${JSON.stringify(results)}`, async () => {
+    const job = script();
+    job.emit('answer.settled', { results, sites_pending: [] });
+    const { d, sink } = deps({ searchJob: job.port });
+    const r = await call('search_market', { query: 'jeans' }, d);
+    assert.equal(r.reason, 'failed');
+    assert.match(sink.text(), /invalid search results/);
+    assert.equal(job.listeners.size, 0);
+  });
+}
 
 test('a summary over rows not returned is refused: summaries use only capped returned ids', async () => {
   const job = script();
@@ -130,6 +221,7 @@ test('a figure with no row id: search preserves OfferView ids and row rights inc
   const r = await call('search_market', { query: 'jeans' }, deps({ searchJob: job.port }).d);
   const row = listings(r)[0]; assert.equal(row.id, 'offer:dupe:1'); assert.equal(row.citation_id, row.id);
   assert.equal(row.attribution, 'via Dupe.com'); assert.equal(row.may_model, false); assert.equal(row.use_scope, 'hackathon_demo');
+  assert.equal(row.may_store, false, 'the storage mark must survive listing projection');
   assert.ok(r.rows.every(row => row.id && r.citation_ids.includes(String(row.citation_id))));
 });
 
@@ -144,6 +236,7 @@ test('search returns the first partial while eBay is pending and sends later fra
   job.emit('answer.settled', { results: [offer('depop', 1), offer('poshmark', 2), offer('ebay', 3)], sites_pending: [] });
   assert.equal(updates.length, 3); assert.equal(updates[1].site, 'ebay'); assert.equal(updates[1].rows[0].id, 'offer:ebay:3');
   const first = (r as ToolResult & { result_id: string }).result_id;
+  job.emit('job.state', { state: 'done' });
   assert.deepEqual(updates.map(u => u.result_id), [1, 2, 3].map(n => `${first}:late:${n}`)); assert.equal(job.listeners.size, 0);
   assert.equal(job.starts[0].caller, 'person'); assert.equal(job.starts[0].person_id, 'person-a');
 });
@@ -154,6 +247,7 @@ test('search forwards answer.late after settled while pending sites remain', asy
   await turn(); job.emit('answer.partial', { site: 'poshmark', results: [offer('poshmark', 1)], sites_pending: ['ebay'] }); await pending;
   job.emit('answer.settled', { results: [offer('poshmark', 1)], sites_pending: ['ebay'] }); assert.equal(job.listeners.size, 1);
   job.emit('answer.late', { site: 'ebay', results: [offer('ebay', 2)], sites_pending: [] });
+  job.emit('job.state', { state: 'done' });
   assert.deepEqual(updates, ['all', 'ebay']); assert.equal(job.listeners.size, 0);
 });
 
@@ -396,6 +490,10 @@ test('ask_genie refuses a visitor and gives a person rows, SQL and tables withou
   const r = await call('market_store', { function: 'ask_genie', args: { question: 'What is held?' } }, d);
   assert.equal(r.ok, true); assert.equal(r.rows[0].price, '$12.50'); assert.match(String(r.rows[0].sql), /^SELECT/);
   assert.equal(r.rows[0].tables, 'secondhand.market.listing_obs'); contract(r);
+  const id = `genie:${sha256Hex(JSON.stringify([d.person_id, { price: '$12.50', price_cents: 1250 }, 0])).slice(0, 16)}`;
+  assert.equal(r.rows[0].id, id);
+  assert.deepEqual(r.citation_ids, [id]);
+  assert.ok(!JSON.stringify(r).includes(d.person_id!));
 });
 test('ask_genie uses a 30 second polling budget and reports failure', async () => {
   const { d, sink } = deps(); let clock = NOW, calls = 0;
@@ -434,6 +532,22 @@ test('defaultDeps feeds the existing public sold reader through the injected fet
   assert.equal(r.ok, true); assert.equal(r.reason, 'too_few'); assert.equal(r.counts.n_comps, 3);
   assert.equal(urls.length, 1); assert.match(urls[0], /availability=sold_out/);
 });
+
+test('copied default sold tools read the current request identity instead of the template identity', async () => {
+  const html = readFileSync(new URL('../harness/sites/poshmark/fixtures/search-sold.html', import.meta.url), 'utf8');
+  let fetches = 0;
+  const template = defaultDeps({ SECONDHAND_LIVE_SITES: 'poshmark' }, async () => { fetches++; return new Response(html); }, deps().d.log);
+  const person: ToolDeps = { ...template, caller: 'person', person_id: 'person-a' };
+  const visitor: ToolDeps = { ...template, caller: 'visitor' };
+  const [personRows, visitorRows] = await Promise.all([
+    person.sold('poshmark', "Levi's 501", signal()), visitor.sold('poshmark', "Levi's 501", signal()),
+  ]);
+  assert.equal(personRows.outcome, 'hit');
+  assert.equal(personRows.rows.length, 3);
+  assert.equal(visitorRows.outcome, 'needs_account');
+  assert.equal(fetches, 1);
+  assert.equal(template.caller, 'visitor');
+});
 test('money and share formatting edges preserve null and suppress only zero cents', () => {
   assert.equal(format(0, 'cents'), '$0'); assert.equal(format(100000, 'cents'), '$1,000');
   assert.equal(format(99, 'cents'), '$0.99'); assert.equal(format(1250, 'cents'), '$12.50'); assert.equal(format(129900, 'cents'), '$1,299');
@@ -449,7 +563,7 @@ test('every tool result uses only the fixed types.ts contract', async () => {
 
 test('elapsed time is measured and logs contain tool metadata without the query', async () => {
   let tick = NOW;
-  const { d, sink } = deps({ now: () => tick, search: async site => { tick += 7; return structuredClone(searches[site]); } });
+  const { d, sink } = deps({ now: () => tick }, async site => { tick += 7; return structuredClone(searches[site]); });
   const r = await call('search_market', { query: 'private wardrobe query', sites: ['poshmark'] }, d);
   assert.equal(r.ms, 14); assert.ok(!sink.text().includes('private wardrobe query')); assert.match(sink.text(), /assist.search/);
 });
@@ -621,6 +735,7 @@ test('existing search reader uses latest settled snapshot rather than replaying 
   const job = script();
   job.emit('answer.partial', { results: [offer('poshmark', 0)], sites_pending: ['ebay'] });
   job.emit('answer.settled', { results: [offer('poshmark', 1), offer('ebay', 2), offer('ebay', 3)], sites_pending: [] });
+  job.emit('job.state', { state: 'done' });
   const updates: unknown[] = [];
   const r = await searchJobResult('script', { ...deps({ searchJob: job.port, onLate: u => updates.push(u) }).d, signal: signal() });
   assert.deepEqual(listings(r).map(row => row.id), ['offer:poshmark:1', 'offer:ebay:2', 'offer:ebay:3']);
@@ -641,6 +756,7 @@ test('existing search reader merges partial rows by id and follows only subseque
   assert.equal(r.counts.ebay_pending, 1);
   job.emit('answer.settled', { results: [offer('poshmark', 1), offer('dupe', 2)], sites_pending: ['ebay'] });
   job.emit('answer.late', { site: 'ebay', results: [offer('ebay', 3)], sites_pending: [] });
+  job.emit('job.state', { state: 'done' });
   assert.deepEqual(updates.map(u => u.result_id), ['script:first:late:1', 'script:first:late:2']);
   assert.equal(job.listeners.size, 0);
   ctl.abort();

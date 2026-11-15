@@ -80,8 +80,13 @@ export function createAssistHandler(overrides: AssistDeps = {}): Handler {
     ctx.log.job(job.id, 'assist', 'running');
     const input: TurnInput = { ...ctx.body as unknown as TurnInput, user_id: ctx.user_id ?? undefined };
     const task = async () => {
-      const answer = await runTurn(job.id, input, { ...overrides, env, jobs: store, params, now, log: ctx.log, client: configured });
-      settle?.(answer?.usage.cost_usd ?? max_usd);
+      let cost_usd = max_usd;
+      try {
+        const answer = await runTurn(job.id, input, { ...overrides, env, jobs: store, params, now, log: ctx.log, client: configured });
+        cost_usd = answer?.usage.cost_usd ?? max_usd;
+      } finally {
+        settle?.(cost_usd);
+      }
     };
     (overrides.schedule ?? (task => { setTimeout(() => { void task().catch(error => ctx.log.error('assist.background', error)); }, 0); }))(task);
     return { status: 202, body: { id: job.id, kind: 'assist', state: 'running', stages: [], stream: `/v1/jobs/${job.id}/events` } };

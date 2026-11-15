@@ -103,10 +103,10 @@ export async function runTurn(job_id: string, input: TurnInput, deps: RunTurnDep
     const work = async () => {
       const configured = deps.client ?? clientFromEnv(deps.env);
       if (!configured) throw new Error('conversation not configured');
-      const toolDeps = Object.assign(deps.toolDeps ?? defaultDeps(deps.env, deps.fetch ?? globalThis.fetch, log), {
+      const toolDeps: ToolDeps = { ...deps.toolDeps ?? defaultDeps(deps.env, deps.fetch ?? globalThis.fetch, log),
         caller: input.user_id ? 'person' as const : 'visitor' as const, person_id: input.user_id,
-        now: deps.now, log, onLate,
-      });
+        now: deps.now, log, onLate, params: deps.params,
+      };
       if (toolDeps.searchJob) {
         toolDeps.searchJob = { ...toolDeps.searchJob,
           listen: (id, fn) => deps.jobs.listen(id, fn), framesAfter: (id, after) => deps.jobs.framesAfter(id, after) };
