@@ -7,6 +7,7 @@ import { fileStore } from './file-store.ts';
 import { createWatcher, type WatcherDeps } from './watcher.ts';
 import { decide, type OfferState } from '../../engines/negotiation/choose.ts';
 import { keep } from '../../engines/valuation/keep.ts';
+import { memoryStore as paramStore } from '../../engines/param/param.ts';
 import { orderBook } from '../orders/orders.ts';
 import { memoryStore, memoryParams, memoryLeases, type Store, type JobRow } from './ports.ts';
 import { createPipeline } from './pipeline.ts';
@@ -27,7 +28,7 @@ test('seven days: limits, drafts, stale sessions, confirmed sale, quiet cadence 
   const began = performance.now();
   const a = await week();
   assert.equal(a.calls.filter(c => c.site === 'facebook').length, 0);
-  for (const call of a.calls.filter(c => writeVerbs.has(c.verb))) {
+  for (const call of a.calls.filter(c => writeVerbs.has(c.verb) && c.verb !== 'end')) {
     assert.equal(call.args.decided_by, 'negotiation'); assert.equal(call.args.negotiation_ask, false);
     assert.ok(Number(call.args.price_cents) >= Number(call.args.floor_cents));
     assert.ok(Number(call.args.price_cents) <= Number(call.args.ask_cents));
@@ -286,6 +287,7 @@ test('a confirmed sale is recorded in the caller order book once', async () => {
   assert.equal(recorded[0].item_id, 'it_walk');
   assert.equal(recorded[0].listing_id, 'listing_depop');
   assert.equal(recorded[0].state, 'paid');
+  assert.equal(rig.store.rows('order', { user_id: 'usr_walk' })[0]?.id, recorded[0].id, 'caller and durable order share their identity');
   rig.advance(900000); await rig.watcher.tick();
   assert.deepEqual(orders.all(), recorded, 'repeated order reads must not duplicate the sale');
 });
@@ -577,4 +579,176 @@ test('a queued offer reply rechecks the current floor after a rate-limited first
   rig.advance(60000); await rig.watcher.tick();
   assert.equal(rig.calls.filter(v => v === 'answer_offer').length, 1, 'captured limits cannot override the current floor');
   assert.equal(rig.store.decisions({ kind: 'price_below_floor', state: 'open' }).length, 1);
+});
+
+
+function saleRig(storage: Store = memoryStore(), price_cents = 5900, noLimits = false) {
+  let sold = false;
+  const rig = smallRig(async () => ({ ok: true, data: [] }), {}, { store: storage });
+  const listings = ['sold', 'live', 'posting', 'delistFailed'].map((state, i) => ({
+    listing_id: i === 0 ? 'listing_depop' : `listing_${state}`, item_id: 'it_walk', site: 'depop' as const,
+    account_id: 'acc_depop', external_id: i === 0 ? 'ext' : state, state: i === 0 ? 'live' : state,
+  }));
+  const ended: unknown[] = [];
+  const deps: WatcherDeps = { ...rig,
+    limits: { of: () => noLimits ? undefined : rig.limits.of() },
+    listings: { byExternal: (_u, _s, ext) => listings.find(l => l.external_id === ext), ofItem: () => listings },
+    harness: { async call<T>(_site: Site, verb: Verb, args: CallArgs = {}) {
+      if (verb === 'end') ended.push(args.listing_id);
+      const data = verb === 'read_listings' ? listings.map((l, i) => ({ external_id: l.external_id,
+        state: i === 0 && sold ? 'sold' : l.state, price_cents: 6000, slug: `slug-${l.external_id}` }))
+        : verb === 'read_orders' && sold ? [{ external_order_id: 'confirmed_order', listing_external_id: 'ext', state: 'paid', price_cents }] : [];
+      return { ok: true, data: data as T, meta: { route_id: 'fake.sale', adapter_version: 'fixture', ms: 0, fell_back: false, observation_ids: [] } };
+    } },
+  };
+  return { ...rig, deps, ended, sell: () => { sold = true; }, watcher: createWatcher(deps) };
+}
+
+for (const [label, price, noLimits] of [['below floor', 1000, false], ['above ask', 7000, false], ['no limits', 5900, true]] as const) {
+  test(`a confirmed sale with ${label} ends every other buyable listing without negotiation`, async () => {
+    const r = saleRig(undefined, price, noLimits);
+    await r.watcher.tick(); r.sell(); r.advance(900000); await r.watcher.tick();
+    assert.deepEqual(r.ended.sort(), ['listing_delistFailed', 'listing_live', 'listing_posting']);
+    const [order] = r.store.rows('order', { user_id: 'usr_walk' });
+    assert.ok(order, 'confirmation must persist the order');
+    assert.equal(order.fees_cents, null, 'missing fees remain unknown');
+    for (const job of r.store.jobs({ kind: 'delist' })) {
+      assert.equal(job.args.order_id, order.id, 'delist is authorized by the recorded order');
+      assert.equal(job.args.sold_listing_id, 'listing_depop');
+      assert.equal(job.args.decided_by, undefined, 'ending a sold item never asks negotiation');
+    }
+  });
+}
+
+test('confirmed orders survive fileStore reload with pending delists and a fresh watcher', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'watcher-orders-')); t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'store.json'), r = saleRig(fileStore(path));
+  await r.watcher.tick();
+  r.store.put('account', { ...r.store.get('account', 'usr_walk', 'acc_depop')!, next_check_at: new Date(start + 900000).toISOString() });
+  r.sell(); r.advance(900000); await r.watcher.tick();
+  const recorded = r.store.rows('order', { user_id: 'usr_walk' });
+  assert.equal(recorded.length, 1);
+  const store = fileStore(path);
+  for (const j of store.jobs({ kind: 'delist' })) store.updateJob(j.id, { state: 'queued', stages: [] });
+  r.ended.length = 0;
+  // Slugs normally come from the target account sweep; these jobs retain the read slug on restart.
+  for (const j of store.jobs({ kind: 'delist' })) store.updateJob(j.id, { args: { ...j.args, slug: `slug-${j.args.external_id}` } });
+  await createWatcher({ ...r.deps, store }).tick();
+  assert.deepEqual(store.rows('order', { user_id: 'usr_walk' }), recorded);
+  assert.equal(r.ended.length, 3, 'durable order authorizes the pending ends after restart');
+});
+
+test('a failed delist fan-out rolls back the confirmed order as well', async () => {
+  const memory = memoryStore();
+  const store: Store = { ...memory, tx: fn => memory.tx(t => fn({ ...t, insertJob(job) {
+    if (job.kind === 'delist') throw new Error('delist insert failed');
+    return t.insertJob(job);
+  } })) };
+  const r = saleRig(store);
+  await r.watcher.tick(); r.sell(); r.advance(900000); await r.watcher.tick();
+  assert.equal(store.jobs({ kind: 'poll_orders' }).some(j => j.error?.code === 'internal'), true, 'transaction failure must surface');
+  assert.equal(store.rows('order', { user_id: 'usr_walk' }).length, 0, 'no order commits without its delist fan-out');
+  assert.equal(store.jobs({ kind: 'delist' }).length, 0);
+});
+
+test('hot listings receive at least five times the stale reads over a day within the monthly budget', async () => {
+  const r = await hazardWeek(true, { days: 1 });
+  const hot = r.calls.filter(c => c.account_id === 'z_hot').length;
+  const stale = r.calls.filter(c => c.account_id === 'a_stale').length;
+  assert.ok(hot >= 5 * Math.max(1, stale), `hot ${hot}, stale ${stale}: budget must not serialize their sweeps`);
+  assert.ok(r.calls.length <= r.budget);
+});
+
+
+async function twoListingDay(budget: number, ticks: number) {
+  const r = smallRig(async () => ({ ok: true, data: [] }));
+  const accounts = ['hot', 'stale'].map(id => ({ account_id: id, person_id: 'usr_walk', site: 'depop' as const, token_ref: 'fixture' }));
+  const registry = paramStore();
+  const calls: string[] = [];
+  for (const a of accounts) {
+    r.store.put('account', { id: a.account_id, user_id: a.person_id, site: a.site, next_check_at: new Date(start).toISOString() });
+    r.snapshots.set(a.account_id, { site: a.site, account_id: a.account_id, user_id: a.person_id, route: 'signed_in', taken_at: new Date(start).toISOString(),
+      listings: [{ external_id: a.account_id, state: 'live', price_cents: 6000 }], offers: a.account_id === 'hot'
+        ? [{ external_id: 'offer', listing_external_id: 'hot', amount_cents: 5900, state: 'open' }] : [] });
+  }
+  const watcher = createWatcher({ ...r,
+    cadenceParams: { ...registry, read(name, scope) { const value = registry.read(name, scope); return name === 'sweeps_per_person_month' ? { ...value, value: budget } : value; } },
+    accounts: { async linked() { return accounts; }, async byId(id) { return accounts.find(a => a.account_id === id); } },
+    listings: { byExternal: (_u, _s, id) => ({ listing_id: id, external_id: id, item_id: `it_${id}`, account_id: id, site: 'depop', state: 'live' }), ofItem: () => [] },
+    limits: { of: () => undefined },
+    hazard: l => ({ listing_id: l.listing_id, per_hour: l.offers?.some(o => o.state === 'open') ? 0.6 : 0.001, basis: 'd10', citation_id: 'd10:jacket:depop' }),
+    harness: { async call<T>(_s: Site, verb: Verb, args: CallArgs = {}) {
+      const id = String(args.account_id);
+      if (verb === 'read_listings') calls.push(id);
+      const snapshot = r.snapshots.get(id)!;
+      const data = verb === 'read_listings' ? snapshot.listings : verb === 'read_offers' ? snapshot.offers : [];
+      return { ok: true, data: data as T, meta: { route_id: 'fake.budget', adapter_version: 'fixture', ms: 0, fell_back: false, observation_ids: [] } };
+    } },
+  });
+  for (let i = 0; i < ticks; i++) { await watcher.tick(); r.advance(60000); }
+  return { calls, store: r.store };
+}
+
+test('a budget with room for both due accounts never serializes their first sweep', async () => {
+  assert.deepEqual((await twoListingDay(1000000, 1)).calls.sort(), ['hot', 'stale']);
+});
+
+test('two listings: a live offer gets five times the stale reads over a day under 2000 per month', async () => {
+  const { calls } = await twoListingDay(2000, 1440);
+  const hot = calls.filter(id => id === 'hot').length, stale = calls.filter(id => id === 'stale').length;
+  assert.ok(stale > 0, 'stale listing is still checked');
+  assert.ok(hot >= stale * 5, `hot ${hot}, stale ${stale}`);
+  assert.ok(calls.length <= 2000, 'day stays within the monthly budget');
+});
+
+
+test('delists carry the order just confirmed even when an older cancelled order names the same listing', async () => {
+  const r = saleRig();
+  r.store.put('order', { id: 'ord_old', user_id: 'usr_walk', kind: 'sale', item_id: 'it_walk', listing_id: 'listing_depop',
+    site: 'depop', external_order_id: 'old', state: 'cancelled', price_cents: 1000, fees_cents: null, shipping_cents: 0, history: [] });
+  await r.watcher.tick(); r.sell(); r.advance(900000); await r.watcher.tick();
+  assert.equal(r.ended.length, 3, 'an older cancelled order must not shadow the confirmed paid order');
+  for (const j of r.store.jobs({ kind: 'delist' })) assert.equal(j.args.order_id, 'ord_depop_confirmed_order');
+});
+
+
+test('repeated confirmations after restart keep persisting one order without a stale version', async () => {
+  const r = saleRig();
+  await r.watcher.tick(); r.sell(); r.advance(900000); await r.watcher.tick();
+  const watcher = createWatcher(r.deps);
+  const job = queueRead(r, 'usr_walk', 'acc_depop', 'poll_orders');
+  await watcher.tick();
+  assert.equal(r.store.getJob(job.id)?.state, 'done');
+  r.store.updateJob(job.id, { state: 'queued', stages: [] });
+  await watcher.tick();
+  assert.equal(r.store.getJob(job.id)?.state, 'done', 'a cached Store version must not poison the next confirmation');
+  assert.equal(r.store.rows('order', { user_id: 'usr_walk' }).length, 1);
+});
+
+
+test('projected overspend slows the lowest hazard before changing the hot interval', async () => {
+  const { store } = await twoListingDay(17300, 1);
+  const due = (id: string) => Date.parse(String(store.get('account', 'usr_walk', id)?.next_check_at)) - start;
+  assert.equal(due('hot'), 150000, 'highest hazard keeps its own interval while lower hazards can absorb the overspend');
+  assert.ok(due('stale') > 86400000, 'the lowest hazard absorbs the overspend first');
+});
+
+test('budget-slowed accounts become due again by the next month', async () => {
+  const { store } = await twoListingDay(3, 1);
+  const due = Date.parse(String(store.get('account', 'usr_walk', 'stale')?.next_check_at));
+  assert.ok(due <= Date.UTC(2026, 11, 1), 'a new monthly budget must not inherit months of delay');
+});
+
+
+test('a fresh caller order book cannot overwrite a different durable order after restart', async () => {
+  const r = saleRig();
+  r.store.put('order', { id: 'ord_1', user_id: 'usr_walk', kind: 'sale', item_id: 'it_old', listing_id: 'listing_old',
+    site: 'depop', external_order_id: 'old', state: 'paid', price_cents: 1000, fees_cents: null, shipping_cents: 0, history: [] });
+  const orders = orderBook();
+  const watcher = createWatcher({ ...r.deps, orders });
+  await watcher.tick(); r.sell(); r.advance(900000); await watcher.tick();
+  const rows = r.store.rows('order', { user_id: 'usr_walk' });
+  assert.equal(rows.length, 2, 'ordinal ids from a fresh caller book must not replace an older order');
+  assert.equal(r.store.get('order', 'usr_walk', 'ord_1')?.external_order_id, 'old');
+  assert.equal(rows.find(o => o.external_order_id === 'confirmed_order')?.id, orders.all()[0]?.id);
 });

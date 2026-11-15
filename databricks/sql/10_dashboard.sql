@@ -1,0 +1,67 @@
+-- spec/databricks-build.md sections 7–9; spec/engines/valuation.md section 9.
+-- Run after the market pipeline and 01–09 with databricks/run-sql.mjs.
+CREATE OR REPLACE VIEW secondhand.measures.pipeline_funnel
+COMMENT 'Source mix: bronze, dropped, kept, modelled and excluded rows, with the dates of kept sales.'
+AS
+WITH b AS (
+  SELECT source, count(*) bronze FROM secondhand.market.sold_raw GROUP BY source
+), s AS (
+  SELECT source, data, count(*) kept, count_if(may_model) modelled,
+         min(at) first_at, max(at) last_at
+  FROM secondhand.market.comp GROUP BY source, data
+)
+SELECT b.source, s.data, b.bronze, b.bronze - coalesce(s.kept, 0) AS dropped,
+       coalesce(s.kept, 0) AS kept, coalesce(s.modelled, 0) AS modelled,
+       coalesce(s.kept, 0) - coalesce(s.modelled, 0) AS excluded_from_models,
+       s.first_at, s.last_at
+FROM b LEFT JOIN s USING (source);
+
+CREATE OR REPLACE VIEW secondhand.measures.param_history
+COMMENT 'Parameter insertions and updated values from Delta CDF; preimages are excluded.'
+AS
+SELECT name, scope, version, status, value_or_hyperparams, held_out_score, moved_by,
+       _change_type, _commit_version, _commit_timestamp
+FROM table_changes('secondhand.core.param', 0)
+WHERE _change_type IN ('insert', 'update_postimage');
+
+CREATE OR REPLACE VIEW secondhand.measures.headline_latest
+COMMENT 'Latest backtest per source, with dataset, tested families and test window attached to every contestant. Historical results only.'
+AS
+WITH latest AS (
+  SELECT *, row_number() OVER (PARTITION BY source ORDER BY started_at DESC, run_id DESC) AS rank
+  FROM secondhand.measures.backtest_run
+), families AS (
+  SELECT run_id, concat_ws(', ', sort_array(collect_set(kind))) AS families
+  FROM secondhand.measures.backtest_estimate
+  GROUP BY run_id
+)
+SELECT r.run_id, r.source, r.data, r.test_from, r.test_to, r.n_tests, r.started_at,
+       f.families, h.contestant, h.n, h.priced, h.hit_rate, h.within_20,
+       h.median_ape, h.coverage, h.bias, h.lift_vs_primary,
+       concat('Backtest on ', r.source, ', ', coalesce(nullif(f.families, ''), 'families not recorded'),
+              ', sales ', date_format(r.test_from, 'yyyy-MM-dd'), ' to ',
+              coalesce(concat(date_format(r.test_to, 'yyyy-MM-dd'), ' (exclusive)'), 'open end'),
+              '; not today''s market') AS claim
+FROM latest r
+JOIN secondhand.measures.backtest_headline h ON h.run_id = r.run_id
+LEFT JOIN families f ON f.run_id = r.run_id
+WHERE r.rank = 1;
+
+-- Keep the correlated table function behind a measures view. Select five ids
+-- before expanding their basis rows; the lead must validate LATERAL in the workspace.
+CREATE OR REPLACE VIEW secondhand.measures.recent_why
+COMMENT 'Recomputed proof for the five most recent shown numbers visible to the caller.'
+AS
+SELECT g.id, g.created_at, s.*
+FROM (
+  SELECT id, created_at FROM secondhand.core.guarded_number
+  WHERE state = 'shown'
+  ORDER BY created_at DESC, id DESC
+  LIMIT 5
+) g, LATERAL secondhand.measures.why_summary(g.id) s;
+
+CREATE OR REPLACE VIEW secondhand.measures.break_glass_windows
+COMMENT 'Maintenance window ids and times; principal identities and free-text reasons remain in governance.break_glass.'
+AS
+SELECT id, started_at, ended_at, ended_at IS NULL AS is_open
+FROM secondhand.governance.break_glass;
