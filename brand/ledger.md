@@ -41,6 +41,8 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L33 | The palette is the wider set: eight light hues under one rule | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L34 | Gradients are a set by rule, and a larger set. They are written in code, and one can change into the next | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L35 | The black button's depth is a faint glow | [round 8](../product/words.md#2026-11-15-round-8-picks) |
+| L36 | No emoji, anywhere | [ban all emojis](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
+| L37 | Things of one kind are one standard size, whatever is in them | [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
 
 ## Decided by agents (means; Ben can veto)
 

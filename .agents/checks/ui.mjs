@@ -19,7 +19,7 @@ export function ui(root, { files }) {
       if (!/^\s*(var\(|inherit|\$\{)/.test(m[1]) && m[1].trim()) out.push(err(`${f}:${lineOf(code, m.index)}`, `font ${m[1].trim()}: use the font token from brand/tokens.css`));
     for (const { s, i } of strings(text)) for (const h of scan(s)) {
       const where = `${f}:${lineOf(text, i)}`, msg = `"${h.match}" ${h.why} (product/copy.md ${h.id})`;
-      out.push(h.id === 'O13' ? err(where, msg) : warn(where, msg));
+      out.push(h.id === 'O13' || h.id === 'S2' ? err(where, msg) : warn(where, msg));
     }
   }
   return out;

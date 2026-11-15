@@ -7,6 +7,7 @@ import { PICKS } from './picks.mjs';
 
 export const RULES = '.agents/ui-rules.json', TESTS = '.agents/checks/checks.test.mjs';
 const KINDS = ['check', 'judge', 'ben', 'lesson'];
+const RENDER = '.agents/checks/render.mjs', RENDER_TESTS = '.agents/checks/render.test.mjs', MEDIA = 'brand/media.json', BRAND = 'brand/constitution.md';
 // What can hold a rule: a check in picks.mjs, a check file the runner runs, a test the runner runs, or the image runner, which refuses a bad plan when it is used.
 const HOLDER = /^\.agents\/checks\/[\w-]+\.mjs$|^(?:\.agents|scripts|spec)\/.*\.test\.mjs$|^app\/src\/.*\.test\.ts$|^\.agents\/skills\/image-gen\/run\.mjs$/;
 
@@ -22,7 +23,8 @@ export function rules(root) {
   const list = load(root);
   if (list === null) return read(root, 'brand/ledger.md') == null ? [] : [err(RULES, 'is missing: it says what holds each pick in brand/ledger.md')];
   if (!Array.isArray(list)) return [err(RULES, 'is not a JSON list')];
-  const out = [], seen = new Set(), tests = read(root, TESTS) ?? '';
+  const out = [], seen = new Set(), tests = read(root, TESTS) ?? '', render = read(root, RENDER) ?? '', renderTests = read(root, RENDER_TESTS) ?? '';
+  const media = (() => { try { return Object.keys(JSON.parse(read(root, MEDIA) ?? '{}')); } catch { return []; } })();
   for (const r of list) {
     if (r === null || typeof r !== 'object') { out.push(err(RULES, 'a row is not an object')); continue; }
     const at = `${RULES} ${r.id ?? '(no id)'}`;
@@ -30,16 +32,24 @@ export function rules(root) {
     seen.add(r.id);
     if (!KINDS.includes(r.kind)) { out.push(err(at, `kind is "${r.kind}"; it is one of ${KINDS.join(', ')}`)); continue; }
     if (r.kind === 'check') {
-      const by = String(r.by ?? ''), pick = by.match(/^picks:(\w+)$/)?.[1];
-      if (pick ? !PICKS[pick] : !HOLDER.test(by) || read(root, by) == null) out.push(err(at, `is held by "${by}", which is not a check that exists: name picks:<id> for a check in .agents/checks/picks.mjs, a file in .agents/checks/, or a test the runner runs`));
+      const by = String(r.by ?? ''), pick = by.match(/^picks:(\w+)$/)?.[1], drawn = by.match(/^render:(\w+)$/)?.[1];
+      if (drawn) { if (!render.includes(`'${drawn}'`) || !renderTests.includes(`['${drawn}', '`)) out.push(err(at, `render:${drawn} needs a check with that id in ${RENDER} and a test named "render ${drawn}:" in ${RENDER_TESTS}`)); }
+      else if (pick ? !PICKS[pick] : !HOLDER.test(by) || read(root, by) == null) out.push(err(at, `is held by "${by}", which is not a check that exists: name picks:<id> for a check in .agents/checks/picks.mjs, a file in .agents/checks/, or a test the runner runs`));
       else if (pick && !tests.includes(`picks ${pick}:`)) out.push(err(at, `picks:${pick} has no test named "picks ${pick}:" in ${TESTS}: a check counts once it is shown failing on what it exists to catch`));
     }
+    if (r.media != null && (!Array.isArray(r.media) || !r.media.length || r.media.some(m => !media.includes(m)))) out.push(err(at, `"media" is a list of the media in ${MEDIA}: ${media.join(', ')}`));
     if (r.kind === 'judge' && !/^fail if /i.test(r.fail ?? '')) out.push(err(at, 'a judge row needs "fail": one line that starts "Fail if", specific enough to fail a screen on'));
     if (r.kind === 'lesson' && /^[LA]\d+$/.test(r.id)) out.push(err(at, 'is a pick from the ledger, so it is a check, a judge line or ben, not a lesson'));
     if (r.kind === 'lesson') {
       if (!r.finding || !Array.isArray(r.seen) || !r.seen.length) out.push(err(at, 'a lesson needs "finding" and "seen": where it came up'));
       else if (r.seen.length >= 2) out.push(err(at, `"${r.finding}" has come up ${r.seen.length} times (${r.seen.join('; ')}): make it a check if a script can find it, or a judge line if not`));
     }
+  }
+  // Part IV of the constitution names who runs each brand check; this list names the holder. The two agree.
+  for (const [, id, runs] of (read(root, BRAND) ?? '').matchAll(/^\|\s*(B\d+)\s*\|.*\|\s*([^|]+?)\s*\|\s*$/gm)) {
+    const want = /^Script(?! \(source)/.test(runs) ? 'check' : runs === 'Look' ? 'judge' : null, row = list.find(r => r?.id === id);
+    if (want && row?.kind !== want) out.push(err(`${BRAND} ${id}`, `runs as "${runs}" in Part IV and ${row ? `is "${row.kind}"` : 'has no row'} in ${RULES}: a Script row is a check held by render:${id}, and a Look row is a judge line`));
+    if (!want && row && /^Not built/.test(runs)) out.push(err(`${BRAND} ${id}`, `is "Not built" in Part IV and has a row in ${RULES}: say who runs it now`));
   }
   const ledger = read(root, 'brand/ledger.md');
   for (const id of ledgerIds(ledger ?? '')) if (!seen.has(id))
@@ -55,4 +65,5 @@ export function tally(root) {
 }
 
 // The fail list a fresh judge is handed, and nothing else from the rule docs.
-export const judgeBrief = list => list.filter(r => r.kind === 'judge').map(r => `${r.id}: ${r.fail}`).join('\n');
+// A row with no "media" is about screens, so it goes to the app and the web. A deck, a post or a story gets only the rows that name it.
+export const judgeBrief = (list, medium = 'app') => list.filter(r => r.kind === 'judge' && (r.media ? r.media.includes(medium) : ['app', 'web'].includes(medium))).map(r => `${r.id}: ${r.fail}`).join('\n');

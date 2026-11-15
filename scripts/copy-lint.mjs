@@ -24,6 +24,7 @@ const RULES = [
   ["C12", /(?:©|\(c\))\s*20\d\d|\blorem ipsum\b/gi, "hard-coded year or placeholder text"],
   // secondhand additions (agent proposal, from product/copy.md)
   ["S1", /!(?=\s|$|["'<])/g, "exclamation mark in UI copy"],
+  ["S2", /(?![©®™])\p{Extended_Pictographic}|[\u{1F1E6}-\u{1F1FF}]/gu, "emoji (\"ban all emojis\")"],
 ];
 
 // Mask inline code and URLs so they are not flagged (same as the Python original).
