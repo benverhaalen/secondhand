@@ -31,7 +31,7 @@ export type Citation = {
 export type HideReason = 'too_few' | 'too_wide' | 'stale' | 'mixed_types' | 'source_gap' | 'conflict' | 'noise';
 export type GuardedNumber = {
   value: number | { lo: number; hi: number }; basis_count: number; as_of: string; citation_id: string;
-  basis_level: string; notes: HideReason[]; state: 'shown' | 'hidden'; hide_reason?: HideReason;
+  basis_level?: string; notes?: HideReason[]; state: 'shown' | 'hidden'; hide_reason?: HideReason;
 };
 
 // What an answer rests on: its sources, counts, dates and the proof rows it passed.
@@ -186,7 +186,7 @@ export function guard(a: Answer<NumberValue>, rules: GuardRules): (GuardedNumber
 // Return the guarded result and its updated citation so it can be stored under the same id.
 export function guardWith(store: ParamStore | undefined, scope: Scope, a: Answer<number | { lo: number; hi: number }>) {
   const { values, versions, scopes } = resolve(store, scope, ['proof_min_n_eff', 'proof_max_age_days']);
-  const citation = a.ok ? { ...structuredClone(a.citation),
+  const citation: Citation | null = a.ok ? { ...structuredClone(a.citation),
     filters: { calculation: structuredClone(a.citation.filters), param_scopes: scopes },
     param_versions: { ...a.citation.param_versions, ...versions },
   } : null;

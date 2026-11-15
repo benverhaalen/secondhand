@@ -15,6 +15,22 @@ const rows = (n: number, at = '2026-11-10T00:00:00.000Z'): BasisRow[] =>
   Array.from({ length: n }, (_, i) => ({ id: `obs_${i}`, source: i % 2 ? 'ebay' : 'mercari', at, price_cents: 4000 + i * 100 }));
 const RULES = { min_n_eff: 6, max_age_days: 14 };
 
+test('guarded number constructors can omit basis_level and notes independently', () => {
+  const legacy: proof.GuardedNumber = { value: 45, basis_count: 8, as_of: NOW, citation_id: 'cit_legacy', state: 'shown' };
+  const numbers: proof.GuardedNumber[] = [legacy, { ...legacy, basis_level: 'family' }, { ...legacy, notes: ['too_few'] }];
+  assert.deepEqual(numbers.map(g => g.basis_level ?? 'variant'), ['variant', 'family', 'variant']);
+  assert.deepEqual(numbers.map(g => g.notes ?? []), [[], [], ['too_few']]);
+});
+
+test('guard and guardWith still populate basis_level and notes on shown numbers', () => {
+  const a = answer(45, rows(8), cite, NOW);
+  for (const g of [guard(a, RULES), proof.guardWith(undefined, {}, a).guarded]) {
+    assert.equal(g.state, 'shown');
+    assert.equal('basis_level' in g && g.basis_level, 'variant');
+    assert.deepEqual('notes' in g && g.notes, []);
+  }
+});
+
 test('refused: an answer with no basis is not an answer', () => {
   assert.deepEqual(answer(42, [], cite, NOW), { ok: false, refused: 'no_basis' });
   assert.deepEqual(answer(42, [{ id: 'obs_1', source: 'ebay', at: 'not a date' }], cite, NOW), { ok: false, refused: 'no_basis' });
