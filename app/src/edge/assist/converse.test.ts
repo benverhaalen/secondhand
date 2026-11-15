@@ -1093,3 +1093,56 @@ test('BC2 uncertain consecutive number-word scales cannot back themselves', asyn
   assert.deepEqual(held.answer.gate.cut_sentences, [text]);
   assert.equal(streamed(held.events), '');
 });
+
+test('seed rows reach the first user message, back their price, and keep invented money cut', async () => {
+  const recording = replay(fixture('numbers').slice(1));
+  const t = setup('answer', { client: recording.client, seed: [result] });
+  const answer = await t.run();
+  assert.equal(prose(answer), 'It costs $45.');
+  assert.equal(answer.gate.cut, 1);
+  assert.equal(answer.results.r1.citation_ids[0], 'c1');
+  assert.ok(JSON.stringify(recording.requests[0].messages).includes('r1'));
+  assert.equal(answer.calls.length, 0);
+});
+
+test('queued late rows get a new id and one bounded round after end_turn', async () => {
+  const messages = [fixture('answer')[0], fixture('numbers')[1]];
+  messages[1].content = [{ type: 'text', text: 'The late listing costs $60. It costs $999.', citations: null }];
+  const recording = replay(messages);
+  let receive: ((u: import('./tools.ts').LateUpdate) => void) | undefined;
+  let off = 0;
+  const t = setup('answer', { seed: [result], late: { on(fn) { receive = fn; return () => { off++; }; } } });
+  t.options.client = { messages: { stream(p, o) {
+    const stream = recording.client.messages.stream(p, o);
+    return { on: stream.on, async finalMessage() {
+      const m = await stream.finalMessage();
+      if (recording.requests.length === 1) receive!({ result_id: 'job:first:late:1', site: 'ebay', rows: [{ id: 'late-row', citation_id: 'late-row', price_cents: 6000 }], sites_pending: [] });
+      return m;
+    } };
+  } } };
+  const answer = await t.run();
+  assert.equal(recording.requests.length, 2);
+  assert.ok(JSON.stringify(recording.requests[1].messages).includes('late result r2: ebay'));
+  assert.equal(answer.results.r2.citation_ids[0], 'late-row');
+  assert.ok(prose(answer).includes('$60'));
+  assert.ok(!prose(answer).includes('$999'));
+  assert.equal(off, 1);
+  receive!({ result_id: 'after', site: 'ebay', rows: [], sites_pending: [] });
+  assert.ok(t.sink.text().includes('assist.late.after_settle'));
+});
+
+test('late updates remain bounded by max_rounds and the cost cap', async () => {
+  for (const limit of ['rounds', 'cost']) {
+    let receive: ((u: import('./tools.ts').LateUpdate) => void) | undefined;
+    const t = setup('answer', { max_rounds: limit === 'rounds' ? 1 : 6, max_cost_usd: limit === 'cost' ? 0.000001 : 1,
+      late: { on(fn) { receive = fn; return () => {}; } } });
+    const original = t.options.client;
+    t.options.client = { messages: { stream(p, o) {
+      receive!({ result_id: 'late', site: 'poshmark', rows: [], sites_pending: [] });
+      return original.messages.stream(p, o);
+    } } };
+    const answer = await t.run();
+    assert.equal(t.requests.length, 1);
+    assert.equal(answer.reason, limit === 'rounds' ? 'max_rounds' : 'cost_cap');
+  }
+});

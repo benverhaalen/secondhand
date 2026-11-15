@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { registerHooks } from 'node:module';
 import { createLog, memorySink } from '../../../../log/index.js';
-import { TOOL_DEFS, defaultDeps, format, runTool, toTrendComps, type ToolDeps, type StorePort } from './tools.ts';
+import { TOOL_DEFS, defaultDeps, format, runTool, searchJobResult, toTrendComps, type ToolDeps, type StorePort } from './tools.ts';
 import type { ToolResult } from './types.ts';
 import type { SiteResult } from '../intel/public/search.ts';
 import type { Search, SoldRow } from '../../engines/valuation/sold.ts';
@@ -615,4 +615,48 @@ test('defaultDeps passes the authenticated caller into the real search job owner
     }
     assert.notEqual(owners[0], owners[1]);
   } finally { searchPorts.sources = oldSources; }
+});
+
+test('existing search reader uses latest settled snapshot rather than replaying its partials', async () => {
+  const job = script();
+  job.emit('answer.partial', { results: [offer('poshmark', 0)], sites_pending: ['ebay'] });
+  job.emit('answer.settled', { results: [offer('poshmark', 1), offer('ebay', 2), offer('ebay', 3)], sites_pending: [] });
+  const updates: unknown[] = [];
+  const r = await searchJobResult('script', { ...deps({ searchJob: job.port, onLate: u => updates.push(u) }).d, signal: signal() });
+  assert.deepEqual(listings(r).map(row => row.id), ['offer:poshmark:1', 'offer:ebay:2', 'offer:ebay:3']);
+  assert.equal(r.result_id, 'script:first');
+  assert.equal(updates.length, 0);
+  assert.equal(job.starts.length, 0);
+  assert.equal(job.listeners.size, 0);
+});
+
+test('existing search reader merges partial rows by id and follows only subsequent frames', async () => {
+  const job = script(), ctl = new AbortController();
+  job.emit('answer.partial', { results: [offer('poshmark', 1, 1000)], sites_pending: ['ebay'] });
+  job.emit('answer.partial', { results: [offer('poshmark', 1, 1200), offer('dupe', 2)], sites_pending: ['ebay'] });
+  const updates: import('./tools.ts').LateUpdate[] = [];
+  const r = await searchJobResult('script', { ...deps({ searchJob: job.port, onLate: u => updates.push(u) }).d, signal: ctl.signal });
+  assert.equal(listings(r).length, 2);
+  assert.equal(listings(r)[0].price_cents, 1200);
+  assert.equal(r.counts.ebay_pending, 1);
+  job.emit('answer.settled', { results: [offer('poshmark', 1), offer('dupe', 2)], sites_pending: ['ebay'] });
+  job.emit('answer.late', { site: 'ebay', results: [offer('ebay', 3)], sites_pending: [] });
+  assert.deepEqual(updates.map(u => u.result_id), ['script:first:late:1', 'script:first:late:2']);
+  assert.equal(job.listeners.size, 0);
+  ctl.abort();
+});
+
+test('existing search reader waits for first answer and unsubscribes on abort before or after it', async () => {
+  for (const first of [false, true]) {
+    const job = script(), ctl = new AbortController();
+    const pending = searchJobResult('script', { ...deps({ searchJob: job.port }).d, signal: ctl.signal });
+    assert.equal(job.listeners.size, 1);
+    if (first) {
+      job.emit('answer.partial', { results: [offer('poshmark', 1)], sites_pending: ['ebay'] });
+      assert.equal(listings(await pending).length, 1);
+    }
+    ctl.abort(new Error('cancelled'));
+    if (!first) await assert.rejects(pending, /cancelled/);
+    assert.equal(job.listeners.size, 0);
+  }
 });
