@@ -1063,3 +1063,7 @@ Used in: [log/README.md](../log/README.md#hill-climb), [log/climb.mjs](../log/cl
 ## 2026-11-14 nate moving the build to the Mac Studio over SSH; cloud browsers with saved profiles and custom proxies; Facebook needs a proxy plan
 Nate, build session (orchestrator), 2026-11-14 about 23:00 Central, after a third crash, with a screenshot of Browser Use Cloud's "Launch a cloud browser" page.
 > Ok so crashed again, im gonna transition you to be able to ssh into my mac studio m4 max with 64 gb of ram in a bit when I sign into my mac after grabbing a keyboard. But continue with what we can on here before preparing to ssh into tailscale and drive the rest with a fully pushed repo with the harness you can then remote ssh clone and everyhting. But until then, understand that we can have browser clouds built, with saved profiles, running at 0.01 per 15 minutes with custom proxies. In the case of facebook we need to account for regularly rotating to a new proxy, or something of that nature you can understand.
+
+## 2026-11-14 nate we do not need our own proxy rotation
+Nate, build session (orchestrator), 2026-11-14 about 23:20 Central, with a pasted general description of how cloud browser platforms reduce detection (full browsers on a virtual display, consistent fingerprints, built-in residential proxy routing, saved session contexts). The paste is not his words and is not from Browser Use's docs.
+> I actualyl dont think we need to proxy
