@@ -1,6 +1,7 @@
 // Content for the break pass (break-ui): the longest real titles, huge and zero amounts, one item, a failed site,
 // an expired offer, and a card in each state. `edge` is the clearing world with all of it added, so one render shows every break.
 import { decision, item, listings, offerIn, standing, valuation, youKeep } from './build.ts';
+import { draft } from './capture.ts';
 import { inHours, inMinutes, usd } from './format.ts';
 import type { Decision, Item, Message } from './types.ts';
 import { clearing } from './worlds/clearing.ts';
@@ -69,7 +70,8 @@ const longMessage: Message = {
 
 export const edge: World = {
   ...clearing, name: 'edge',
-  items: [longItem, hugeItem, freeItem, failedItem, ...clearing.items],
+  // The camera's draft, waiting on review (capture.ts, draft).
+  items: [longItem, hugeItem, freeItem, failedItem, draft(), ...clearing.items],
   offers: [...clearing.offers, expired, deadSoon],
   messages: [...clearing.messages, longMessage],
   conversations: clearing.conversations.map(c => c.id === 'cv_jd' ? { ...c, buyer: NAMES.longBuyer, unread: 128 } : c),

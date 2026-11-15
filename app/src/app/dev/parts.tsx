@@ -6,7 +6,7 @@ import { useState } from 'react';
 import {
   Amount, Approve, Blank, Composer, Count, DecisionCard, Draft, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Message, Meta, Nav, Notice, Pill,
   Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
-  BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
+  CamButton, CamNote, CaptureFrame, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
   Feed, QueueView, MoneyNews, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
@@ -245,12 +245,9 @@ function Sheetful() {
       <BuySide />
       <Section title="New and the camera (on the bar)">
         <FeedSwatch>
-          <ChoiceCapsule id="nc-sell" label="Sell this" icon="tag-01" lead index={0} shown />
-          <ChoiceCapsule id="nc-worth" label="What’s it worth" icon="money-03" index={1} shown />
-          <Line>
-            <BarPill id="nc-link" icon="link-01" label="Paste a link" />
-            <BarPill id="nc-describe" icon="pencil-edit-02" label="Describe it" />
-          </Line>
+          <ChoiceCapsule id="nc-sell" label="Sell it" icon="tag-01" lead index={0} shown onType={() => {}} />
+          <ChoiceCapsule id="nc-worth" label="What’s it worth" icon="money-03" index={1} shown onType={() => {}} />
+          <CaptureFrame sample band={<Chips><FactChip id="nc-frame-brand" name="Brand" value="Carhartt" /><FactChip id="nc-frame-size" name="Size" /></Chips>} />
           <StageBubbles stages={[{ name: 'Kind', state: 'done' }, { name: 'Photos', state: 'now' }, { name: 'Label', state: 'skipped' }, { name: 'Measure', state: 'later' }, { name: 'Condition', state: 'later' }]} />
           <Instruction text="Closer on the tag" />
           <Chips>

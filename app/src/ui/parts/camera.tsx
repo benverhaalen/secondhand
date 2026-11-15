@@ -11,8 +11,8 @@
 //   STAGE 22     the stage bubble, from the brief and round 2's camera (features/capture/design/round-2).
 //   SHUTTER 76   the phone camera's shutter; its fill is 76 less two rings of 4, so 60.
 //   HOLD 1500    how long the found pop-up holds: Art. 11, on-screen words hold 0.3 s a word plus 1 s, at least 1.5 s.
-import { useEffect, useRef, type ReactNode, type Ref } from 'react';
-import { Platform, View, useWindowDimensions, type ImageSourcePropType, type ViewStyle } from 'react-native';
+import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
+import { Platform, ScrollView, View, useWindowDimensions, type ImageSourcePropType, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, { Easing, FadeIn, FadeOut, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -26,6 +26,7 @@ import { Press, slop } from '../press';
 import { Txt, type Tone } from '../text';
 import { OnGround, useColors, useScheme } from '../theme';
 import { color, motion, radius, size, space } from '../tokens.generated';
+import { CaptureFrame } from './camera-frame';
 import { Blank } from './loop';
 import { mark } from './mark';
 
@@ -103,7 +104,8 @@ const SKIP = 'new: the camera is the same for a new person; empty: there is alwa
 
 // The whole camera: the feed, the bar at the top and the foot, and what sits over the feed. `feed` is the photo standing
 // in for the live camera on the web; on a phone `live` turns the camera itself on. `blink` dips the feed when a still is taken.
-export function Viewfinder({ state, mode, feed, live, camera, blink = 0, top, cloud, bottom, children }: {
+// `framed` draws the 3:4 capture frame between the bars (./camera-frame), and `facts` sits in it under the square.
+export function Viewfinder({ state, mode, feed, live, camera, blink = 0, top, cloud, bottom, framed = false, facts, children }: {
   state: string;
   mode?: string;
   feed?: ImageSourcePropType | null;
@@ -113,9 +115,13 @@ export function Viewfinder({ state, mode, feed, live, camera, blink = 0, top, cl
   top?: ReactNode;
   cloud?: ReactNode;
   bottom?: ReactNode;
+  framed?: boolean;
+  facts?: ReactNode;
   children?: ReactNode;
 }) {
   const { bar } = useBar(), reduced = useReducedMotion();
+  // The bars' heights, so the frame sits in the feed they leave open.
+  const [topH, setTopH] = useState(0), [footH, setFootH] = useState(0);
   const dip = useSharedValue(0);
   useEffect(() => {
     if (!blink) return;
@@ -131,11 +137,12 @@ export function Viewfinder({ state, mode, feed, live, camera, blink = 0, top, cl
         <FeedLayer feed={feed} live={live ? <CameraView ref={camera} facing="back" style={{ flex: 1 }} /> : undefined} />
         <Animated.View pointerEvents="none" style={[fill, { backgroundColor: bar }, blinkLook]} />
         {cloud}
+        {framed && topH && footH ? <CaptureFrame top={topH} bottom={footH} band={facts} /> : null}
         {top ? (
-          <Animated.View entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: bar, paddingBottom: space.s4 }}>{top}</Animated.View>
+          <Animated.View onLayout={e => setTopH(e.nativeEvent.layout.height)} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: bar, paddingBottom: space.s4 }}>{top}</Animated.View>
         ) : null}
         {bottom ? (
-          <Animated.View entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: bar, paddingTop: space.s4 }}>{bottom}</Animated.View>
+          <Animated.View onLayout={e => setFootH(e.nativeEvent.layout.height)} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: bar, paddingTop: space.s4 }}>{bottom}</Animated.View>
         ) : null}
         {children}
       </View>
@@ -225,13 +232,16 @@ function StageDot({ name, state }: { name: string; state: Bubble }) {
   );
 }
 
-// The one instruction, centered under the bubbles at 18/24, on the bar. A new one crossfades in.
+// The one instruction, centered under the bubbles, on the bar. A new one crossfades in. It is the text face at the
+// headline role, PP Neue Montreal 500 at 18/24 (read from the render on 2026-11-15, after Ben's "make sure that's the right
+// font"): the largest text-face role, since it is read at arm's length with the phone held up, and never the display face,
+// which is for a screen's title. Its lines center, as a subtitle's do (Ben, 03:17: "like a subtitle for instructions").
 export function Instruction({ text }: { text: string }) {
   const b = useBar();
   return (
     <View style={{ marginTop: space.s3, paddingHorizontal: space.s6, minHeight: 24, alignItems: 'center' }}>
       <Animated.View key={text} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(motion.feedback)}>
-        <View {...mark('instruction', { fit: 'content' })} accessibilityLiveRegion="polite"><Txt role="headline" tone={b.tone}>{text}</Txt></View>
+        <View {...mark('instruction', { fit: 'content' })} accessibilityLiveRegion="polite"><Txt role="headline" tone={b.tone} center>{text}</Txt></View>
       </Animated.View>
     </View>
   );
@@ -373,9 +383,16 @@ export function CamNote({ icon, text }: { icon: IconName; text: string }) {
   );
 }
 
-// The chips, centered and wrapping, above the modes.
+// The chips on one line, centered while they fit and sliding sideways once they do not: the camera reads every field any
+// site asks for (Ben, 06:19: "collect the max amount of data and then ... whittle it down"), and a second or third row
+// would eat the frame. Found ones come first, so what is left to fill is where the line runs on.
 export function Chips({ children }: { children: ReactNode }) {
-  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: space.s2, paddingHorizontal: space.gutter }}>{children}</View>;
+  return (
+    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center', gap: space.s2, paddingHorizontal: space.s3 }}>
+      {children}
+    </ScrollView>
+  );
 }
 
 // Sell, Worth, Find, as the phone camera's modes: the current one on a pill in the bar's opposite, the others as an icon
