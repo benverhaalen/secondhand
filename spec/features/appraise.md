@@ -142,7 +142,7 @@ flowchart LR
 | Bar | Source | Test |
 |---|---|---|
 | Glance p95 under 2 s, Check p95 under 10 s on mobile data | Ben's tiers ([appraisal-run](../../research/appraise/ben/appraisal-run.md)) | timed runs at a real garage sale |
-| Range coverage and miss: the same bars as price (at least 70% per category in an 80% range; MdAPE under 28%) | Underpriced AI 75.3% of 81; FlipTip $28 on $100 ([range-calibration](../../research/price/nate/range-calibration.md)) | the price backtest, restricted to appraisals |
+| Range coverage and miss: the same pass rule as price ([money.md D6](../determinations/money.md#d6-range-calibration-and-display-state); *agent proposal*) | our own backtest. Underpriced AI 75.3% of 81 and FlipTip $28 on $100: published by the vendors, method not sound, see [the note](../../research/price/nate/published-price-tests-and-their-flaws.md) | the price backtest, restricted to appraisals |
 | Bought at or under `max_pay` resold at a profit at least 8 times in 10 | *agent proposal* | resale outcomes of Bought it items |
 | The one check moves the verdict more often than a fixed order | VOI | split test |
 | Recall gate catches every product in a set of known recalled items | CPSA s19 | 50 recalled products from the CPSC list |

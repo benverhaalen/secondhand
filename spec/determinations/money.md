@@ -103,7 +103,7 @@ Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are 
 
 **Speed**: candidate sets and weights are kept ready per `product_id` and refreshed when new comps land. Only the person's own item adjustments run on demand.
 
-**Check later**: in the backtest, compare D5 MdAPE with match weights against equal weights. The weights are wrong if equal weights do as well or better.
+**Check later**: in the backtest of [D6](#d6-range-calibration-and-display-state), on the same frozen estimates and cells, compare the median error of D5's q50 with match weights against equal weights (*agent proposal*). The weights are wrong if equal weights do as well or better overall, or in most reported cells.
 
 ## D2 Condition variant completeness and size adjustment
 
@@ -198,7 +198,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 4. Before the model is trained (cold start): weighted quantiles p10 and p90 of the adjusted comps, widened by the parent's `Q_g`, with state "not checked yet".
 5. Round to whole dollars; net ranges come from [D9](#d9-what-you-keep-per-site).
 
-**Why this method**: weighted quantiles of comps describe the spread of comps, not the error of a prediction for a new item. The one public tool measured at 75.3% of 81 in a range meant to hold 8 in 10, and its own earlier range from "measured spread" held "about half" (*observed*, [range-calibration.md](../../research/price/nate/range-calibration.md) section 6). Quantile heads plus conformal correction give stated coverage with ranges that adapt to how hard an item is (*observed* CQR, arXiv 1905.03222). The alternative, an LLM estimate, measured $30 to $43 typical miss on $100 (*observed* via the same page) and cannot state coverage.
+**Why this method**: weighted quantiles of comps describe the spread of comps, not the error of a prediction for a new item. The one public tool measured at 75.3% of 81 in a range meant to hold 8 in 10, and its own earlier range from "measured spread" held "about half" (*observed*, [range-calibration.md](../../research/price/nate/range-calibration.md) section 6). Quantile heads plus conformal correction give stated coverage with ranges that adapt to how hard an item is (*observed* CQR, arXiv 1905.03222). The alternative, an LLM estimate, measured $30 to $43 typical miss on $100 (*observed* via the same page) and cannot state coverage. Both figures are the vendor's own, and its method is not sound, so they show the failure, not a bar ([published-price-tests-and-their-flaws.md](../../research/price/nate/published-price-tests-and-their-flaws.md)).
 
 **When it is not shown**: `too_few_sales` (D1). `too_wide` when `high - low > q50` (the range is wider than the value itself). The person sees "Not enough sales to price this" or "Prices for this vary too much to say", plus the comps and Deep research.
 
@@ -206,7 +206,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 **Speed**: comp features are kept ready per product; inference is under 100 ms ([build-plan.md](../../research/price/ben/build-plan.md)).
 
-**Check later**: run the rolling-origin backtest by month with a gap (D6). The range is wrong if MdAPE of q50 is 28% or more (FlipTip's $28 on $100, *observed* in [build-plan.md](../../research/price/ben/build-plan.md)).
+**Check later**: the backtest in [D6](#d6-range-calibration-and-display-state), per family and price band, with its starting pass rule (*agent proposal*). The range is wrong if, in any reported cell, the median error of q50 is worse than the better of the two baselines (median of recent sold comps, last sale of the same product) or coverage of the 80% range falls outside 75% to 85%. No vendor figure is the bar ([published-price-tests-and-their-flaws.md](../../research/price/nate/published-price-tests-and-their-flaws.md)).
 
 ## D6 Range calibration and display state
 
@@ -230,7 +230,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 6. State. **Checked**: Wilson lower bound of 70% or more at n of 30 or more. **Not checked yet**: the parent's range, drawn wider and labelled. **Hidden**: rules of D5.
 7. The share shown is the measured coverage rounded down to the nearest tenth: a checked group at 83% says "8 in 10".
 
-**Why this method**: conformal methods are the only published procedure that turns quantiles into a range with a finite-sample coverage statement. Plain quantile networks under-cover (*observed* arXiv 1905.03222). Mondrian grouping fixes the per-category failure seen at 20 to 70% per category on the vendor page (*observed*), and ACI keeps long-run coverage under drift (*observed*). The alternative is trusting the model's quantiles as given, and that is the failure the vendor reported.
+**Why this method**: conformal methods are the only published procedure that turns quantiles into a range with a finite-sample coverage statement. Plain quantile networks under-cover (*observed* arXiv 1905.03222). Mondrian grouping fixes the per-category failure seen at 20 to 70% per category on the vendor page (*observed*; vendor-run, method not sound, [published-price-tests-and-their-flaws.md](../../research/price/nate/published-price-tests-and-their-flaws.md)), and ACI keeps long-run coverage under drift (*observed*). The alternative is trusting the model's quantiles as given, and that is the failure the vendor reported.
 
 **When it is not shown**: the stated share is never shown for a not-checked group. That group says "not checked yet for this kind of thing" ([price.md](../features/price.md)).
 
@@ -238,7 +238,15 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 **Speed**: `Q_g` and `alpha_g` are kept ready per group and updated as sales land; the person-facing step is one addition.
 
-**Check later**: the 80% ranges hold at least 70% in every shown category and 80% overall ([price.md](../features/price.md)). They are wrong if any checked category's Wilson upper bound falls below 70% over a quarter.
+**Check later**: our own backtest, the one test every price check in this file uses (*agent proposal*). No vendor's published figure is the bar: their tests are not sound ([published-price-tests-and-their-flaws.md](../../research/price/nate/published-price-tests-and-their-flaws.md)).
+1. Prospective rolling origin on held-out sales: for each test month, train on sales before it, leave a 7-day gap, and freeze each estimate (q10, q50, q90) as of the day before the test sale's listing went live, using only comps sold before that day. The tested item and its relists are removed (leakage routes 1 to 6, [range-calibration.md](../../research/price/nate/range-calibration.md) section 7).
+2. Stratified by family and by price band of the frozen q50 (starting bands: under $25, $25 to $100, $100 to $500, over $500). A cell with fewer than 30 test sales states no result; it is reported as "too few" with its count.
+3. Truth, stated per site in the report: the accepted price where we can read it, else the sold price. eBay: the sold price, with Best Offer sales at the accepted amount where read through the person's session ([M3](market-insight.md#m3-used-price-per-site-over-time)), otherwise left out and counted. Mercari and Depop: the sold price. Our own orders on any site: the accepted price from the order or payout. Shipping charged to the buyer is taken off; cancelled and returned sales are removed.
+4. Unsold listings are not dropped. Each one that ends or goes stale in the test month enters through the time-to-sale model ([D10](#d10-chance-of-sale-within-a-period-at-a-price)) as a sale censored at its last ask, and the report states how many there were per cell.
+5. Report per cell and overall: coverage of the 80% range with a Wilson 95% interval, and the distribution of absolute percentage error of q50 against the truth (p25, median, p75, p90), next to two baselines on the same sales: the median of the product's sold comps in the 90 days before the frozen date, and the last sale of the same product before that date.
+6. Sales at exactly the seller's ask are reported separately (step 5 above) and are not in the headline.
+
+Pass, as starting values to fix after the first run: in every reported cell and overall, coverage is between 75% and 85%, and the median error of q50 is no worse than the better of the two baselines. The range is wrong if any reported cell fails either, two months running.
 
 ## D7 Original retail price
 

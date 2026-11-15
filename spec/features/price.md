@@ -142,8 +142,8 @@ Every write sends an `Idempotency-Key`. Ids `val_`, `st_`, `cmp_`, `pr_`.
 
 | Bar | Source of the bar | Test |
 |---|---|---|
-| 80% ranges hold at least 70% per category, and 80% overall, beating 75.3% of 81 | Underpriced AI ([range-calibration](../../research/price/nate/range-calibration.md)) | rolling-origin backtest by month with a gap; calibrate on the window before; binomial interval per category; leakage routes 1 to 6 closed |
-| Median absolute miss under 28% of price | FlipTip $28 on $100; ChatGPT $33, Gemini $30, Perplexity $43 (same note) | MdAPE on held-out sales |
+| 80% ranges hold 75% to 85% in every family and price band with enough sales, and overall (starting values, *agent proposal*) | the pass rule in [money.md D6](../determinations/money.md#d6-range-calibration-and-display-state). Underpriced AI's 75.3% of 81: published by the vendor, method not sound, see [the note](../../research/price/nate/published-price-tests-and-their-flaws.md) | rolling-origin backtest by month with a gap; calibrate on the window before; binomial interval per cell; leakage routes 1 to 6 closed ([range-calibration](../../research/price/nate/range-calibration.md)) |
+| Median miss of the middle estimate no worse than the better of two baselines: median of recent sold comps, and last sale of the same product (*agent proposal*) | the pass rule in [money.md D5 and D6](../determinations/money.md#d6-range-calibration-and-display-state). FlipTip's $28 on $100 (FlipTip) and ChatGPT $33, Gemini $30, Perplexity $43 (Underpriced AI): published by the vendors, method not sound, see [the note](../../research/price/nate/published-price-tests-and-their-flaws.md) | error distribution on held-out sales, per family and price band, next to both baselines |
 | 7 in 10 sale prices inside the range | `spec/features/score.md` | same backtest on our own sales |
 | P(sold by d) calibrated within 5 points | Kaplan-Meier with censoring (same note) | calibration plot per horizon |
 | Same inputs give the same plan | Nate's definition | replay 100 plans from their citations |

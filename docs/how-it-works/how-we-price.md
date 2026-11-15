@@ -70,7 +70,7 @@ Take the coat on Poshmark at $45, where the fee is 20%. An offer of $35 would ke
 
 ## What is shown as a range, and why
 
-Every estimate here is shown as a range or hidden. Even with the exact item identified, other sales of it miss by about 28%, in FlipTip's published test of 99 sales (vendor-published, not re-opened here; see [range calibration](../../research/price/nate/range-calibration.md)). A single number would claim more than that. The chance is hidden when there are fewer than 30 sale events in the group, or when the calibration is off by more than 5 points in that price bin, and the screen reads "Not enough sales to say how fast." A price is exact only where you choose it.
+Every estimate here is shown as a range or hidden. Used prices for the same item vary from sale to sale, so a single number would claim more than we know. Our own backtest decides how wide the range is and whether it is shown ([money.md D6](../../spec/determinations/money.md#d6-range-calibration-and-display-state)). Vendors publish accuracy tests, but they are not relied on here: their methods are not sound ([published-price-tests-and-their-flaws](../../research/price/nate/published-price-tests-and-their-flaws.md)). The chance is hidden when there are fewer than 30 sale events in the group, or when the calibration is off by more than 5 points in that price bin, and the screen reads "Not enough sales to say how fast." A price is exact only where you choose it.
 
 ```mermaid
 flowchart LR
