@@ -107,6 +107,8 @@ Ben: "the money also might be a little too blank ... you could say earned this w
 
 Row 1 falls back to "Earned this month" when this week had no release but the month did. The "Roll the UI system out everywhere" thread drew the same slot from the UI side ([buttons-taps-corners-new-camera §5 and §6](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md)); the order of rows is Ben's to settle.
 
+**A narrower alternative** from that thread ([top of Today and stacking](../research/today/ben/top-of-today-and-stacking.md), *agent proposal* on Ben's card): the top shows only money kept since the person last looked, and only when there is some; a new person sees the next setup step; the totals and a weekly chart live on You. It is rows 1 and 7 of the ladder above with "since you last looked" as the window, and the rest moved to You. Whichever Ben picks, the server still chooses, so the contract adds `user.last_open_at` and a headline kind `kept_since_last_open`.
+
 The server picks the row so web and phone agree: `GET /v1/today` returns `headline {kind, value, label, sub, citation_id}` (§8).
 
 ## 5. Today: a list, with stacks only for same-kind groups
@@ -119,7 +121,7 @@ Ben asked to debate stacking cards as a queue you tap to fan out ([words](../pro
 | B. One deck, one card at a time (a queue you swipe) | focus; fast triage | hides how many are waiting and which is due first; a missed deadline sits under the top card |
 | C. A list where same-kind cards for one item, or many low-stakes cards of one kind, collapse into a stack that fans out on tap (iOS grouped notifications) | the count stays visible, nothing urgent hides, five offers become one stack "5 offers on the Carhartt jacket" | one more interaction to learn, but it is the iOS one |
 
-**Recommendation: C.** A stack forms only for the same item and kind, or for three or more notices of one kind. A stack never hides a card due within an hour: that card always sits on top and shows its countdown. The stack's top card carries the best option (the highest offer). This is a structure call for the UI loop to draw; the backend sends `group_key` on each decision so web and phone stack the same way (§8).
+**Recommendation: C.** A stack forms only for the same item and kind, or for three or more notices of one kind. A same-kind group takes one of two forms ([top of Today and stacking](../research/today/ben/top-of-today-and-stacking.md), *agent proposal* on Ben's card): a **batch card** when one action covers all of them ("3 to ship", Print 3 labels), or a **queue card**, drawn as a stack with "1 of 40", when each needs its own look; it opens them one at a time, full screen. Anything due within a day never stacks. The stack's top card carries the best option (the highest offer). This is a structure call for the UI loop to draw; the backend sends `group_key`, `group_rank` and `group_form` (`batch` or `queue`) on each decision so web and phone stack the same way (§8).
 
 ## 6. The pages
 
@@ -327,8 +329,8 @@ Sent to Nate as [packet 47](../.agents/team/packets/team/47-what-the-pages-need-
 | A second sign-in method | You > Account | `POST /v1/auth/link/{apple,google,email}` |
 | Web sessions | the website | cookie or token storage on the web, CORS for the site's origin, Apple and Google web client ids (the edge's call) |
 | Push deep links | every push | `{kind, decision_id?, item_id?, path}` in the push payload, so a tap opens the right page |
-| The top slot | Today, You | `headline {kind, value, label, sub, citation_id}` on `GET /v1/today` |
-| Stacks | Today | `group_key` and `group_rank` on each decision |
+| The top slot | Today, You | `headline {kind, value, label, sub, citation_id}` on `GET /v1/today`; `user.last_open_at`, set when Today opens, for the `kept_since_last_open` kind |
+| Stacks | Today | `group_key`, `group_rank` and `group_form` (`batch`, `queue`) on each decision; nothing due within a day is grouped |
 | Facts one at a time, and the comp count, while the camera is open | Camera | a `fact.found` frame per attribute (name, value or blank, source) and `found.comps` on the identify and valuate job streams |
 | Seller intent | Plan, standing, every automatic move | on `limits` per item: `plan_choice`, `gone_by?`, `fallback`, `markdown_on`, `accept_mode`, `review_at?` ([price](features/price.md#selling-intents)) |
 | Standing | tiles, item, Today | `listing.market_standing {word, place {rank, of}, outlook, fix?, citation_id}` (not `standing`, which the canon's `strategy` already uses for its standing levers), judged against the intent ([score](features/score.md#standing-against-the-market)) |
