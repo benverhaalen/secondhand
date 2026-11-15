@@ -35,7 +35,7 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   const c = useColors(), ground = useGround();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const t = look === 'amount' ? type.t50 : look === 'headline' ? type.t18 : type.t15;
+  const t = look === 'amount' ? type.t50 : type.t18;
   const tinted = agent && look !== 'amount';
   const ink = ground === 'field' ? c.onField : c.ink;
   const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: tinted ? c.onColor : line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
@@ -55,8 +55,7 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
           onSubmitEditing={commit}
           keyboardType={numeric ? 'decimal-pad' : 'default'}
           selectTextOnFocus
-          // Inputs are at least 16, so iOS never zooms (frontend-standard §5); the text you type is 18.
-          style={{ fontSize: Math.max(16, t.fontSize), lineHeight: t.lineHeight, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: ink, padding: 0, outlineStyle: 'none' } as object}
+          style={{ ...t, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: ink, padding: 0, outlineStyle: 'none' } as object}
         />
       </View>
     );

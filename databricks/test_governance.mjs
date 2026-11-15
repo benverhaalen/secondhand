@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { runInNewContext } from 'node:vm'
+import { DatabaseSync } from 'node:sqlite'
 import { statements } from './run-sql.mjs'
 
 const root = new URL('./', import.meta.url)
@@ -133,6 +134,98 @@ test('audit views expose rights, lineage, anonymized activity and tag coverage',
   assert.match(sql, /date_sub\(current_date\(\), 30\)/)
   assert.match(sql, /secondhand\.information_schema\.column_tags/)
   assert.match(sql, /secondhand\.information_schema\.table_tags/)
+})
+
+// Execute the audit's relational query locally, adapting only catalog names and array expansion.
+function auditDatabase(t) {
+  const db = new DatabaseSync(':memory:')
+  t.after(() => db.close())
+  db.exec(`
+    CREATE TABLE citation (id STRING, metric STRING, basis_ids STRING, data STRING);
+    CREATE TABLE comp (comp_id STRING, source STRING, may_model BOOLEAN, data STRING);
+    CREATE TABLE observation (id STRING, site STRING, evidence_id STRING, data STRING);
+    CREATE TABLE evidence (id STRING, may_model BOOLEAN);
+  `)
+  for (const name of ['rights_audit', 'rights_audit_summary']) {
+    const view = statements(read('sql/05_audit.sql')).find(s => s.startsWith(`CREATE OR REPLACE VIEW secondhand.measures.${name}\n`))
+    const local = view.replace('CREATE OR REPLACE VIEW', 'CREATE VIEW')
+      .replace(/\nCOMMENT '(?:''|[^'])*'\nAS\n/, '\nAS\n')
+      .replaceAll(/secondhand\.(?:core|market|measures)\./g, '')
+      .replaceAll('explode(c.basis_ids)', 'json_each.value')
+      .replaceAll('FROM citation c', 'FROM citation c, json_each(c.basis_ids)')
+    db.exec(local)
+  }
+  const cite = (id, metric, ids, data = 'live:facebook') => db.prepare('INSERT INTO citation VALUES (?, ?, ?, ?)').run(id, metric, JSON.stringify(ids), data)
+  return { db, cite, rows: () => db.prepare('SELECT * FROM rights_audit ORDER BY citation_id, basis, comp_id').all().map(r => ({ ...r })) }
+}
+
+test('rights audit preserves market violations and follows observation evidence rights', t => {
+  const { db, cite, rows } = auditDatabase(t)
+  db.exec(`
+    INSERT INTO comp VALUES ('comp_denied', 'grailed_2021', false, 'dataset:grailed_2021'),
+                            ('comp_allowed', 'stockx_2019', true, 'dataset:stockx_2019');
+    INSERT INTO evidence VALUES ('ev_denied', false), ('ev_allowed', true);
+    INSERT INTO observation VALUES ('obs_denied', 'ebay', 'ev_denied', 'live:ebay'),
+                                   ('obs_allowed', 'facebook', 'ev_allowed', 'live:facebook');
+  `)
+  cite('cit_market', 'valuation.model.q50', ['comp_denied', 'comp_denied', 'comp_allowed'])
+  cite('cit_observation', 'asking_p50_cents', ['obs_denied', 'obs_denied'])
+  cite('cit_clean', 'asking_p50_cents', ['obs_allowed', 'missing'])
+  assert.deepEqual(rows(), [
+    { citation_id: 'cit_market', metric: 'valuation.model.q50', comp_id: 'comp_denied', source: 'grailed_2021', basis: 'market_comp' },
+    { citation_id: 'cit_observation', metric: 'asking_p50_cents', comp_id: 'obs_denied', source: 'ebay', basis: 'observation' },
+  ], 'forbidden observation evidence must be audited without changing existing market violations or duplicating repeated ids')
+})
+
+test('current-price metrics reject frozen comp and observation bases regardless of modelling permission', t => {
+  const { db, cite, rows } = auditDatabase(t)
+  db.exec(`
+    INSERT INTO comp VALUES ('comp_frozen', 'mercari_kaggle', true, 'dataset:mercari_kaggle'),
+                            ('comp_live', 'facebook', true, 'live:facebook');
+    INSERT INTO observation VALUES ('obs_frozen', 'mercari', 'ev_allowed', 'dataset:mercari_kaggle'),
+                                   ('obs_no_evidence', 'grailed', 'missing', 'dataset:grailed_2021'),
+                                   ('obs_live', 'facebook', 'ev_allowed', 'live:facebook');
+    INSERT INTO evidence VALUES ('ev_allowed', true);
+  `)
+  for (const metric of ['asking_p50_cents', 'sold_p50_cents']) {
+    cite(`cit_${metric}`, metric, ['comp_frozen', 'comp_frozen', 'obs_frozen', 'obs_no_evidence', 'comp_live', 'obs_live'])
+  }
+  cite('cit_historical', 'valuation.model.q50', ['comp_frozen', 'obs_frozen'])
+  cite('cit_clean', 'asking_p50_cents', ['comp_live', 'obs_live'], 'dataset:stockx_2019')
+  assert.deepEqual(rows(), ['asking_p50_cents', 'sold_p50_cents'].flatMap(metric => [
+    ['comp_frozen', 'mercari_kaggle'], ['obs_frozen', 'mercari'], ['obs_no_evidence', 'grailed'],
+  ].map(([comp_id, source]) => ({ citation_id: `cit_${metric}`, metric, comp_id, source, basis: 'dataset_in_current_metric' }))),
+  'inspect basis provenance, including observations without evidence, while allowing historical metrics and live bases')
+})
+
+test('audit columns remain additive and summary totals include each violation kind', t => {
+  const { db, cite } = auditDatabase(t)
+  assert.deepEqual(db.prepare('PRAGMA table_info(rights_audit)').all().map(c => [c.name, c.type]), [
+    ['citation_id', 'STRING'], ['metric', 'STRING'], ['comp_id', 'STRING'], ['source', 'STRING'], ['basis', ''],
+  ], 'existing rights audit column names, positions and source types must survive')
+  const columns = ['citations_checked', 'basis_rows_checked', 'violations', 'observation_violations', 'dataset_current_violations']
+  assert.deepEqual(db.prepare('PRAGMA table_info(rights_audit_summary)').all().map(c => c.name), columns)
+  const summary = () => Object.values(db.prepare('SELECT * FROM rights_audit_summary').get())
+  assert.deepEqual(summary(), [0, 0, 0, 0, 0], 'empty audit counts must be zero')
+  db.exec(`
+    INSERT INTO comp VALUES ('comp_denied', 'grailed_2021', false, 'dataset:grailed_2021');
+    INSERT INTO evidence VALUES ('ev_denied', false);
+    INSERT INTO observation VALUES ('obs_denied', 'ebay', 'ev_denied', 'live:ebay');
+  `)
+  cite('cit_mixed', 'asking_p50_cents', ['comp_denied', 'obs_denied', 'comp_denied'])
+  cite('cit_empty', 'sold_p50_cents', [])
+  assert.deepEqual(summary(), [2, 3, 3, 1, 1], 'total includes market rights, observation rights and dataset-current violations separately')
+  assert.deepEqual(Object.values(db.prepare(`SELECT ${columns.map(c => `typeof(${c})`).join(', ')} FROM rights_audit_summary`).get()),
+    columns.map(() => 'integer'))
+})
+
+test('audit SQL remains safe for tasks that split at every semicolon', () => {
+  const sql = read('sql/05_audit.sql')
+  for (const [literal] of withoutComments(sql).matchAll(/'(?:''|[^'])*'/g)) {
+    assert.ok(!literal.includes(';'), 'no statement separators inside SQL strings')
+  }
+  assert.doesNotMatch(sql, /--[^\n]*;/, 'no statement separators inside SQL comments')
+  assert.doesNotMatch(sql, /\bBEGIN\b/i, 'SQL file tasks cannot run compound blocks')
 })
 
 const loader = () => read('load/load.mjs')

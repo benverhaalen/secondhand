@@ -10,6 +10,7 @@ import type { Log } from '../../../log/index.js';
 import type { DatabaseSync } from 'node:sqlite';
 import { db, migrate, tx } from './store/db.ts';
 import { ApiError, deps } from './api/http.ts';
+import { examplesServed } from './api/examples.ts';
 
 export type Provider = 'apple' | 'google' | 'email';
 export type Notify = { event_kind: string; channel: string; on: boolean };
@@ -45,9 +46,10 @@ export interface AuthStore {
   putStyle(user_id: string, s: Style, expectedVersion: number): Promise<boolean>;
 }
 
+// A new person starts with no taste facets; only the example person gets the contract's, and only while examples are served.
 export const seedStyle = (user_id: string): Style => ({
   id: user_id.replace(/^usr_/, 'sp_'), edited_at: null, version: 1,
-  facets: [['brand', 'Carhartt', 0.82, 'sold', false], ['size', 'L', 0.74, 'kept', true], ['era', '1990s', 0.41, 'saved', false], ['price_band', '50-120', 0.36, 'bought', false]]
+  facets: user_id !== 'usr_8f2k' || !examplesServed() ? [] : [['brand', 'Carhartt', 0.82, 'sold', false], ['size', 'L', 0.74, 'kept', true], ['era', '1990s', 0.41, 'saved', false], ['price_band', '50-120', 0.36, 'bought', false]]
     .map(([name, value, weight, from, pinned]) => ({ name, value, weight, from, pinned, removed_at: null }) as Facet),
 });
 

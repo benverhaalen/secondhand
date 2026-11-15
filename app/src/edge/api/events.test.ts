@@ -44,3 +44,24 @@ test('undo: own undoable event works once; twice or not undoable is 409 site_no_
   const theirs = put('usr_eb', 'it_e5', new Date().toISOString(), true);
   assert.equal((await UNDO(req(`/v1/events/${theirs.id}/undo`, 'a', true))).status, 404);
 });
+
+test('events: real people see no example events; undo replays one event and refuses a changed body', async () => {
+  const owner = 'usr_' + crypto.randomUUID(), other = 'usr_' + crypto.randomUUID();
+  deps.verify = async token => token === 'good' ? owner : token === 'other' ? other : null;
+  const empty = await LIST(req('/v1/events', 'good'));
+  assert.deepEqual((await empty.json()).data, []);
+  const e = put(owner, 'it_' + crypto.randomUUID(), new Date().toISOString(), true);
+  const headers = { Authorization: 'Bearer good', 'Idempotency-Key': crypto.randomUUID() };
+  const request = (body: unknown, token = 'good') => new Request(`http://edge.test/v1/events/${e.id}/undo`, {
+    method: 'POST', headers: { ...headers, Authorization: 'Bearer ' + token }, body: JSON.stringify(body),
+  });
+  const foreign = await UNDO(request({}, 'other'));
+  assert.equal(foreign.status, 404); assert.equal((await foreign.json()).code, 'not_found');
+  const first = await UNDO(request({})); assert.equal(first.status, 200);
+  const answer = await first.json();
+  const replay = await UNDO(request({})); assert.equal(replay.status, 200); assert.deepEqual(await replay.json(), answer);
+  const changed = await UNDO(request({ changed: true }));
+  assert.equal(changed.status, 409); assert.equal((await changed.json()).code, 'idempotency_mismatch');
+  assert.equal(store.events({ user_id: owner }).filter(row => row.undo_of === e.id).length, 1);
+  assert.deepEqual((await (await LIST(req('/v1/events', 'other'))).json()).data, []);
+});

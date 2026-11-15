@@ -30,12 +30,14 @@ export default function Onboarding() {
     {session.error ? <Txt role="body">{session.error}</Txt> : null}
     {session.status === 'failed' ? <FootButton id="account-retry" label="Try again" onPress={session.reload} /> : null}
   </Screen>;
-  if (step === 'photo') return <Screen name="onboarding-photo" state={busy ? 'loading' : error ? 'failed' : 'new'} nav={<Nav back={() => setStep('services')} />}
-    foot={<FootButton id="onboarding-camera" label="Take a photo" icon="camera-01" state={busy ? 'working' : 'idle'} onPress={() => void finish('/camera?mode=sell')} />}>
-    <Stack gap="tight"><Txt role="caption">2 of 2</Txt><Txt role="heading">First photo</Txt></Stack>
-    <Txt role="body" tone="ink-2">One photo starts the listing.</Txt>
-    <Pill id="onboarding-buy" kind="second" label="Start with shopping chat" state={busy ? 'disabled' : 'idle'} onPress={() => void finish('/shop')} />
-    <Pill id="onboarding-later" kind="second" label="Not now" state={busy ? 'disabled' : 'idle'} onPress={() => void finish('/')} />
+  if (step === 'photo') return <Screen name="onboarding-photo" state={busy ? 'loading' : error ? 'failed' : 'new'} nav={<Nav back={() => setStep('services')} />}>
+    <Stack gap="tight"><Txt role="caption">2 of 2</Txt><Txt role="heading">First photo</Txt>
+      <Txt role="body" tone="ink-2">One photo starts the listing.</Txt></Stack>
+    <Stack gap="group">
+      <FootButton id="onboarding-camera" label="Take a photo" icon="camera-01" state={busy ? 'working' : 'idle'} onPress={() => void finish('/camera?mode=sell')} />
+      <Pill id="onboarding-buy" kind="second" label="Start with shopping chat" state={busy ? 'disabled' : 'idle'} onPress={() => void finish('/shop')} />
+      <Pill id="onboarding-later" kind="second" label="Not now" state={busy ? 'disabled' : 'idle'} onPress={() => void finish('/')} />
+    </Stack>
     {error ? <Txt role="body">{error}</Txt> : null}
   </Screen>;
   return <Screen name="onboarding" state={busy ? 'loading' : error ? 'failed' : 'new'} nav={<Nav />}

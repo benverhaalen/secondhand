@@ -12,7 +12,7 @@ export const captureMessage = (error: unknown) => error instanceof ApiFailure &&
   ? 'Sign in to continue.'
   : error instanceof Error ? error.message : 'Could not reach the service. Try again.';
 export const openCapture = (purpose: Capture['purpose']) => api.call<Capture>('POST /v1/captures', {
-  body: { mode: 'shots', purpose, confirm_mode: 'tap', device: { has_lidar: false, object_capture: false } },
+  body: { mode: 'shots', purpose, intent: purpose === 'appraise' ? 'worth' : purpose, confirm_mode: 'tap', device: { has_lidar: false, object_capture: false } },
 });
 export const readCapture = (id: string) => api.call<Capture>(`GET /v1/captures/${encodeURIComponent(id)}`);
 export const answerCapture = (capture: Capture, question: Question, value: unknown) => api.call<Capture>(`PATCH /v1/captures/${encodeURIComponent(capture.id)}`, {

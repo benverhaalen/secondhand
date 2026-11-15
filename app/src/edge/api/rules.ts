@@ -3,8 +3,8 @@ import type { Ctx, Handler } from './http.ts';
 import { manifestFor, fields, text, bool, money, object, invalid, oneOf, integer } from './captures.ts';
 import { ApiError, deps } from './http.ts';
 import { MODE_FOR, NEVER_PROMOTED } from '../events/policy.ts';
-import { runtime, engine, owned, checkVersion, publicRow, list } from './runtime.ts';
-import { example } from './examples.ts';
+import { runtime, engine, owned, checkVersion, publicRow, list, readable } from './runtime.ts';
+import { example, examplesServed } from './examples.ts';
 import type { Row } from '../events/ports.ts';
 
 export function validateLimits(patch: Record<string, unknown>, current: Record<string, unknown> = {}) {
@@ -27,13 +27,16 @@ export function limitsView(row: Row) {
   const { id, user_id, version, item_id, data, ...view } = row;
   return view;
 }
-const userLimits = (ctx: Ctx): Row => runtime.store.get('limits', ctx.user_id!, ctx.user_id!) ?? {
-  id: ctx.user_id!, user_id: ctx.user_id!, version: 0,
-  handover: [], pickup_windows: [], saved_spot: null, ask_every_time: false,
+const userLimits = (ctx: Ctx): Row => {
+  const row = runtime.store.get('limits', ctx.user_id!, ctx.user_id!);
+  return row && readable(row, ctx.user_id!) ? row : {
+    id: ctx.user_id!, user_id: ctx.user_id!, version: 0,
+    handover: [], pickup_windows: [], saved_spot: null, ask_every_time: false,
+  };
 };
 const limits = (ctx: Ctx) => ({
   ...limitsView(userLimits(ctx)),
-  items: runtime.store.rows('limits', { user_id: ctx.user_id! }).filter(row => row.item_id).map(row => ({ item_id: row.item_id, ...limitsView(row) })),
+  items: runtime.store.rows('limits', { user_id: ctx.user_id! }).filter(row => row.item_id && readable(row, ctx.user_id!)).map(row => ({ item_id: row.item_id, ...limitsView(row) })),
   version: userLimits(ctx).version,
 });
 const locked = (kind: string) => { if (MODE_FOR[kind] === 'locked' || NEVER_PROMOTED.has(kind)) throw new ApiError('locked', kind + ' is never automatic', 'policy_check'); };
@@ -54,7 +57,7 @@ export const handlers: Record<string, Handler> = {
     const next = limits(ctx);
     return { status: 200, body: { ask_every_time: owned('limits', ctx, ctx.user_id!).ask_every_time, items: next.items, version: next.version } };
   }),
-  'GET /v1/rules': engine(ctx => ({ status: 200, body: list(ctx, runtime.store.rows('rule', { user_id: ctx.user_id! }).filter(row => !row.deleted).map(row => {
+  'GET /v1/rules': engine(ctx => ({ status: 200, body: list(ctx, runtime.store.rows('rule', { user_id: ctx.user_id! }).filter(row => readable(row, ctx.user_id!)).map(row => {
     const rowFields: Record<string, unknown> = row;
     const view: Record<string, unknown> = publicRow(row, rowFields.created === true);
     delete view.created;
@@ -71,7 +74,7 @@ export const handlers: Record<string, Handler> = {
       if (!decision) throw new ApiError('not_found', `no decision ${ctx.body.from_decision_id} for this user`, 'read');
       kind = decision.kind;
       scope = decision.kind === 'accept_offer' ? decision.item_id ?? 'all' : 'all';
-      if (ctx.body.from_decision_id === 'dec_lb1') template = structuredClone(example('rules.promote').response) as Record<string, unknown>;
+      if (ctx.user_id === 'usr_8f2k' && examplesServed() && ctx.body.from_decision_id === 'dec_lb1') template = structuredClone(example('rules.promote').response) as Record<string, unknown>;
     }
     locked(kind);
     if (!(kind in MODE_FOR)) throw invalid('unknown decision kind', ['kind']);

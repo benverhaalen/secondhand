@@ -2546,3 +2546,97 @@ Nate, the orchestrator's session, 2026-11-15, about 15:09 UTC by the machine clo
 > lets focus on now with all benchmarks established , things appearing impressive, remember focusing on the story of our product, how we are aimed around a problem first, to help users find an easy way to measure, manage, and monitor second hand selling, simplify the hasstle of listing items, tracking its performance, how to market it well and handle requests. Driven by an advanced agentic search engine or however to technically but understandably describe it exactly, official terms, built around data bricks to leverage their storage services, security, etc.. and extending feature sets across their retail front and other to provide/deliver/bring something better. With this engine, we've also empowered buyers with a unified search engine that takes any product query, or even interesting question, and utilizes broad, "deeply dug" (that is the prompt, "to dig deep", ) osint and opted in platform search aggregation to deliver market insights, sales trends, fashion statements and industry speculation. We give people a way to negoitate at public sales like garage sales, with an in hand accurate appraiser, assessing, similar or exact product listings offered on online sites, even determining if you want what the price will be. SEND THIS TO BEN FOR WEBSITE AND PERHAPS VIDEO
 
 Used in: [packet 98](../.agents/team/packets/team/98-the-story-for-the-site-and-video.md), for Ben's website and video.
+
+## 2026-11-15 nate does everything actually work, measured so we can show it
+Nate, the orchestrator's session, 2026-11-15, about 15:13 UTC by the machine clock.
+> very important, but can you assess this works, like perectly, desing and ui aside, do all the things actually work, in a way we can benchmark and show how we're impressive.
+
+Used in: the scorecard in [the finalization spec, section 13](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator); each lead measures its area on one main.
+
+## 2026-11-15 nate everything off the Mac, onto main, buildable for TestFlight
+Nate, the orchestrator's session, 2026-11-15, about 15:15 UTC by the machine clock.
+> lets get every off mac and focus now on bringing it all here completely and pushing it to main. assessing and delviering final code working and buildable on testflight /goal
+
+Used in: no new Mac or Codex work; each lead brings its finished branches to a Windows worktree and hands the orchestrator one `w/<area>-final` branch on GitHub; the orchestrator merges them to main. The iOS bundle and `expo-doctor` are checked on Windows; the native Release build is walked on the Mac simulator; EAS build and submit stay Nate's.
+## 2026-11-15 ben the Lens UI must work as implied
+
+Ben, Codex, 2026-11-15.
+
+> ensure theres an appropriate expert level ui that comes with the google lens feature and its appropriately integrated into the ui and actually works as the ui implied it should work and ensure its wired up to the ui
+
+After the agent reported the absent backend join and asked which result flow to preserve:
+
+> double check it should work if not, nate is working on it
+
+Used in: [Find UI and Lens integration status](../.agents/team/packets/team/20261115-lens-ui.md). Backend work stays with Nate; client integration is verified with controlled responses until his join lands.
+
+## 2026-11-15 ben wire the main selling flows
+
+Ben, Codex, 2026-11-15.
+
+> check the main flows of selling on the app and try to wire up as much as possible and create new ui screens that adhere to the brand constitution as well as being designed by an expert ui ux designer who also considers composition and user intent and familiarity too.
+
+Used in: [selling integration](../.agents/team/packets/team/20261115-selling-ui.md).
+
+## 2026-11-15 ben audit the whole selling composition
+
+Ben, Codex, 2026-11-15.
+
+> the listing preview site and review your item one and your sale one should be audited for coherence to the brand design and how the app should be designed and the expert ui ux principles that dont just extend to component design or ensuring pages fit the brand but also composition and all the little things that an expert ux psychologist would know. if you ever recognize pages on the site where they look shit like this fix them
+
+> use subagents to to do this, astra fast gpt6 high. so you can continue what you were working on before i came in
+
+> the choose a price page also needs to have the same edits done too
+
+> ensure when grabbing references you are grabbing the completely most upto date screenshots of the latest ui builds
+
+Applied to all four selling screens, using current rendered app screenshots and independently audited composition. Historical brand images establish the brand, not the current state of another app.
+
+## 2026-11-15 ben typography is the pre-push requirement
+
+Ben, Codex, 2026-11-15, while reviewing the selling UI work.
+
+> ensure that all font weight tests where every font of the same size has the same weight and typeface etc that those pass idc about the other tests though before pushing
+
+Applied to this selling/UI push: typography consistency must pass; other repository-check failures do not block this push. This does not change the standing repository rule for future work.
+
+## 2026-11-15 — Ben: audit unapproved intermediate screen layouts
+
+Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026.
+
+> some of those photos dont look like they use correct component styling and coloring and font use
+
+> actually all the screens that i never explicitly said anything about approving. most the in between non-main screens. the layout is weirdly spaced and an expert would rearrange it to be more intuitive. dont change any functionality though
+
+Scope: layout and component styling on unapproved intermediate screens. Preserve functionality and explicitly approved compositions.
+
+## 2026-11-15 — Ben: connect every UI to existing application capabilities
+
+Source: Ben's direct message in the selling UI chat; recorded November 15, 2026.
+
+> ensure all uis can effectively wire to actual app data and functionality that exists in the repo
+
+Scope: use existing repository data and action contracts. Keep unsupported backend capabilities explicit, and preserve intended interactions during layout changes.
+
+## 2026-11-15 — Ben: preserve UI and hand wiring findings to Nate
+
+Source: Ben's direct message in the selling UI chat; recorded November 15, 2026.
+
+> dont completely overhaul ui and remove things just send packets to nate about it all
+
+This narrows the preceding data-wiring request: retain existing screens and controls. Send the integration gaps to Nate as packets; do not replace screens or remove functionality to work around missing backend support.
+
+## 2026-11-15 nate merge everything to complete and working, then a packet for Ben on how it looks
+Nate, the orchestrator's session, 2026-11-15, about 15:31 and 15:34 UTC by the machine clock, two messages.
+> Prioritize merging everyhting to complete and working , push and send packet to ben with insight into what it currently looks like, and /fast to get it done, dont utilize subagents all the time even when you can just focus on it
+
+> You can easily identify on each error and why, utilize documentation and focused subagent sent to assist you
+
+Used in: the full check's failures, each diagnosed by one focused seat while the orchestrator merges; the packet to Ben after main is green.
+## 2026-11-15 — Ben: typography and spacing follow the brand
+
+Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026.
+
+> ensure you are using the right fonts in tune with the brand guidelines at certiain sizes
+
+> also ensure spacing is all up to standard with the brand

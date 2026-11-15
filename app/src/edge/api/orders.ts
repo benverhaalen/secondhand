@@ -1,11 +1,21 @@
 // Rests-on: spec/product.md §7 Resources; spec/examples/.
-import type { Handler } from './http.ts';
-import { exampleHandler, manifestFor, fields, text, version, strings, money, oneOf, invalid, reference, sites } from './captures.ts';
+import { ApiError, type Handler } from './http.ts';
+import { exampleHandler as contractExample, manifestFor, fields, text, version, strings, money, oneOf, invalid, reference, sites } from './captures.ts';
 
 import { runtime, engine, list, publicRow, readable } from './runtime.ts';
 import type { OrderRow } from '../orders/orders.ts';
 import type { Row } from '../events/ports.ts';
+import { examplesServed } from './examples.ts';
+
 export const ports = { all: (user_id = '') => runtime.store.rows<Row & OrderRow>('order', { user_id }) };
+function exampleHandler(...args: Parameters<typeof contractExample>): Handler {
+  const handler = contractExample(...args);
+  return (ctx, req) => {
+    if (ctx.user_id !== 'usr_8f2k' || !examplesServed()) throw new ApiError('unavailable', 'Order services are not available yet', 'read');
+    return handler(ctx, req);
+  };
+}
+
 export const handlers: Record<string, Handler> = {
   'GET /v1/orders': engine(ctx => {
     const kind = ctx.query.get('kind');

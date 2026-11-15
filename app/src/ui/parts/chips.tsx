@@ -55,8 +55,7 @@ function ChipInput({ id, name, numeric, onDone }: { id: string; name: string; nu
         onSubmitEditing={() => onDone(text)}
         keyboardType={numeric ? 'decimal-pad' : 'default'}
         returnKeyType="done"
-        // Inputs are at least 16, so iOS never zooms (frontend-standard §5).
-        style={{ minWidth: space.s8, fontSize: Math.max(16, type.t15.fontSize), lineHeight: type.t15.lineHeight, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: c.ink, padding: 0, outlineStyle: 'none' } as object}
+        style={{ ...type.t18, minWidth: space.s8, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: c.ink, padding: 0, outlineStyle: 'none' } as object}
       />
     </View>
   );
