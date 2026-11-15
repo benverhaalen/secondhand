@@ -1,0 +1,72 @@
+# Plan (app/behavior/item/[id]/plan.json) on a phone or simulator: the same states as app/e2e/plan.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/plan.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/plan.yaml
+# Amounts are matched, not "You keep": the money line is moving to "You get" (Ben, 06:19).
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+# typical: the five choices, the price with the sold range beside it, each site's returns rule.
+- openLink: ${URL}/--/item/it_jacket/plan
+- extendedWaitUntil:
+    visible: "What do you want\\?"
+    timeout: 30000
+- assertVisible: "Similar ones sold for \\$85 to \\$115"
+- assertVisible: "Returns as you set them"
+- assertVisible: "Refunds only if not as described"
+- assertNotVisible: { id: "save-plan" }
+# A typed price far over the range asks once; Save waits for Yes (edge-cases §3).
+- tapOn: { id: "plan-price" }
+- inputText: "500"
+- pressKey: Enter
+- assertVisible: "Similar ones sold for \\$85 to \\$115. List at \\$500\\?"
+- assertNotVisible: { id: "save-plan" }
+- tapOn: { id: "far-yes" }
+- assertVisible: { id: "save-plan" }
+# A lowest over the price is refused in place.
+- openLink: ${URL}/--/item/it_jacket/plan
+- extendedWaitUntil:
+    visible: "What do you want\\?"
+    timeout: 10000
+- tapOn: { id: "plan-floor" }
+- inputText: "120"
+- pressKey: Enter
+- assertVisible: "Can’t be over the price, \\$95. Kept at \\$70."
+# Skip a site; add one the agent left out; Save names the price and the count, with Undo.
+- openLink: ${URL}/--/item/it_jacket/plan
+- extendedWaitUntil:
+    visible: "What do you want\\?"
+    timeout: 10000
+- scrollUntilVisible:
+    element: { id: "site-facebook" }
+- tapOn: { id: "site-facebook" }
+- assertVisible: "Save: \\$95 on 3 sites"
+- tapOn: { id: "save-plan" }
+- assertVisible: "Saved. \\$95 on 3 sites."
+- tapOn: { id: "save-plan-undo" }
+# An avoided site says why and a tap adds it; a blocked site says why (edge-cases §11).
+- openLink: ${URL}/--/item/it_chair/plan
+- extendedWaitUntil:
+    visible: "What do you want\\?"
+    timeout: 10000
+- scrollUntilVisible:
+    element: "Not allowed here. Over the 15 lb cap, no pickup"
+- assertVisible: "A Home > Furniture category exists, but it ships only and its buyers want clothes"
+- tapOn: { id: "site-depop" }
+- assertVisible: "Save: \\$35 on 2 sites"
+# A draft's foot is Preview listings, which opens the Post preview.
+- openLink: ${URL}/--/item/it_switch/plan
+- extendedWaitUntil:
+    visible: "Preview listings"
+    timeout: 10000
+- tapOn: { id: "preview" }
+- extendedWaitUntil:
+    visible: "Post at \\$235 on 2 sites"
+    timeout: 10000
+# offline.
+- openLink: ${URL}/--/item/it_jacket/plan?state=offline
+- extendedWaitUntil:
+    visible: "Offline. Changes send when you’re back."
+    timeout: 10000

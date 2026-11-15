@@ -17,6 +17,7 @@
 // without LiDAR: the Measure stage finds no sizes, and AI stays off.
 //
 // What the camera or a model filled sits on the lilac tint; what the person typed is plain (Ben, 08:12).
+// one at a time: cam-close (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';
@@ -49,7 +50,7 @@ const NONE = 'None of these';
 const SIZED: FactKey[] = ['chest', 'length', 'sleeve'];
 const scannedBy = (lidar: boolean) => (f: { fact: FactKey }) => lidar || !SIZED.includes(f.fact);
 const MODES = CHOICES.map(c => ({ mode: c.mode, icon: MODE_ICON[c.mode], label: c.mode === 'sell' ? 'Sell' : c.mode === 'worth' ? 'Worth' : 'Find' }));
-const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat('en-US').format(n)} ${new Intl.PluralRules('en-US').select(n) === 'one' ? one : many}`;
+const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat('en-US').format(n)} ${n === 1 ? one : many}`;
 
 // Where a drawn moment starts: which stages are done, what is known, how many stills.
 function start(drawn: Drawn | null, mode: Mode, lidar: boolean) {

@@ -1,15 +1,19 @@
 import { comparables, type Comp, type Params } from './comps.ts';
-import { pricePath, ladder, bestSites, type Curve, type Objective } from './path.ts';
+import { pricePath, ladder, bestSites, planOf, type Curve, type Objective } from './path.ts';
 import { keep, type FeeSite, type Sale } from './keep.ts';
 import { answer } from '../proof/proof.ts';
 import type { FamilyBand } from './fast.ts';
+import { ceiling, MARKS, pointOnSite, type Point } from './posture.ts';
+
+type Mode = Point & { per_site: Point[] };
+type Modes = Record<'fast' | 'sell' | 'best', Mode>;
 
 export type CheckInput = {
   product_id: string; variant?: string; condition: string; as_of: string;
   floor_cents: number; objective: Objective; param_version: number; params?: Params;
   fast?: FamilyBand | null; warm_comps: Comp[];
   sources: ((signal: AbortSignal) => Promise<Comp[]>)[];
-  sites: { site: FeeSite; curve: Curve; sale?: Sale }[];
+  sites: { site: FeeSite; curve?: Curve; sale?: Sale }[];
   calibration?: { Q_g: number; group: string; coverage: number; passes: boolean };
   recalled?: boolean; budget_ms?: number;
   log: { timed: <T>(name: string, fn: () => T) => T; error: (where: string, error: unknown) => void };
@@ -52,16 +56,30 @@ export async function check(x: CheckInput) {
       state: calibrated && found.state === 'ok' ? 'checked' : 'not_checked_yet', group: x.calibration?.group ?? null,
       share_shown: calibrated ? Math.floor(x.calibration!.coverage * 10) / 10 : null,
     } : { q10: warm?.low ?? null, q50: null, q90: warm?.high ?? null, state: warm ? 'not_checked_yet' : 'hidden', group: null, share_shown: null };
-    const per_site = sites.map(s => {
-      const local = comparables({ condition: x.condition, site: s.site }, unique, x.as_of, x.params);
+    const cap = ceiling([], [], x.as_of);
+    const modeSites = sites.map(s => ({ ...s, local: comparables({ condition: x.condition, site: s.site }, unique, x.as_of, x.params) }));
+    const mode = (choice: keyof Modes): Mode | null => {
+      const per_site = modeSites.flatMap(({ local, ...s }) => {
+        if (local.state !== 'ok') return [];
+        const point = pointOnSite({ ...s, top: [], offer_discount: 0,
+          sold: local.comps.map(c => ({ price_cents: c.adjusted_cents, w: c.w, sold_at: c.sold_at })) },
+        MARKS[planOf(choice).objective], x.floor_cents, cap);
+        return point ? [point] : [];
+      });
+      const best = per_site.reduce<Point | null>((best, point) => !best || point.keep_cents > best.keep_cents ? point : best, null);
+      return best ? { ...best, per_site } : null;
+    };
+    const fast = mode('fast'), sell = mode('sell'), best = mode('best');
+    const modes: Modes | null = !x.recalled && found.state === 'ok' && fast && sell && best ? { fast, sell, best } : null;
+    const per_site = modeSites.map(({ local, ...s }) => {
       const p = local.range.q50;
       return { site: s.site, ...local.range, translated: local.comps.some(c => c.site !== s.site),
         keep_q10: local.range.q10 === null ? null : keep(s.site, local.range.q10, s.sale).keep_cents,
         keep_q50: p === null ? null : keep(s.site, p, s.sale).keep_cents,
         keep_q90: local.range.q90 === null ? null : keep(s.site, local.range.q90, s.sale).keep_cents,
-        p_sale: p === null ? null : { d7: s.curve.p(p, 7), d30: s.curve.p(p, 30), d90: s.curve.p(p, 90) },
-        days: p === null ? null : { t25: s.curve.t(p, .25), t50: s.curve.t(p, .5), t75: s.curve.t(p, .75) },
-        path: x.recalled || local.state !== 'ok' ? null : pricePath({ site: s.site,
+        p_sale: p === null || !s.curve ? null : { d7: s.curve.p(p, 7), d30: s.curve.p(p, 30), d90: s.curve.p(p, 90) },
+        days: p === null || !s.curve ? null : { t25: s.curve.t(p, .25), t50: s.curve.t(p, .5), t75: s.curve.t(p, .75) },
+        path: x.recalled || local.state !== 'ok' || !s.curve ? null : pricePath({ site: s.site,
           rungs: ladder(local.comps.map(c => c.adjusted_cents), local.comps.map(c => c.w)).filter(p => p >= x.floor_cents).concat(x.floor_cents).filter((p, i, all) => p > 0 && all.indexOf(p) === i).sort((a, b) => b - a),
           curve: s.curve, objective: x.objective, sale: s.sale, person_floor_cents: x.floor_cents, q90_cents: local.range.q90 ?? x.floor_cents }),
       };
@@ -72,7 +90,7 @@ export async function check(x: CheckInput) {
     const price_path = path && { ...path, ladder: path.ladder.filter(r => r.price >= path.floor) };
     return { product_id: x.product_id, variant: x.variant, condition: x.condition, as_of: x.as_of,
       fast: warm ?? null, comps: found.comps, n_eff: found.n_eff, range, per_site: per_site.map(({ path: _path, ...s }) => s),
-      best_sites: chosen, price_path, param_version: x.param_version, partial,
+      best_sites: chosen, price_path, modes, param_version: x.param_version, partial,
       basis: proof.ok ? proof.basis : { count: warm?.n ?? 0, oldest: warm?.as_of ?? null, newest: warm?.as_of ?? null, sources: warm ? [warm.basis] : [] },
       citation: proof.ok ? proof.citation : null };
   });

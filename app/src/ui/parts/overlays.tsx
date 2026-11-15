@@ -9,6 +9,7 @@ import { Txt } from '../text';
 import { Theme, useColors, useScheme } from '../theme';
 import { motion, radius, size, space } from '../tokens.generated';
 import { Pill } from './buttons';
+import { log } from '../log';
 import { mark } from './mark';
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
@@ -23,7 +24,8 @@ export function Sheet({ open, title, onClose, children }: { open: boolean; title
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
           <Animated.View entering={FadeIn.duration(ms).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(motion.select)} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: c.scrim }}>
             {/* The scrim is not a button that gives way: a tap anywhere on it closes the sheet, as on iOS. */}
-            <View accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true} onResponderRelease={onClose} />
+            <View testID="sheet-scrim" accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true}
+              onResponderRelease={() => { log.event('user.input', { screen: 'sheet', control: 'sheet-scrim', value: title ?? 'close' }); onClose(); }} />
           </Animated.View>
           <Animated.View entering={SlideInDown.duration(ms).easing(EASE_OUT).reduceMotion(ReduceMotion.System)} exiting={SlideOutDown.duration(motion.select)}>
             <Surface kind="sheet" part="sheet" box={{ paddingHorizontal: space.gutter, paddingTop: space.s6, paddingBottom: space.s8, gap: space.s4 }}>

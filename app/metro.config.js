@@ -3,5 +3,5 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 // The shared logger lives at the repo root (log/), outside this folder.
-config.watchFolders = ['../log', '../spec', '../jobs/capture', '../research/list/ben/platforms', '../scripts'].map(p => path.resolve(__dirname, p)); // spec/examples: the edge serves them until each engine lands
+config.watchFolders = ['../log', '../spec', '../jobs/capture', '../jobs/studio', '../research/list/ben/platforms', '../scripts'].map(p => path.resolve(__dirname, p)); // spec/examples: the edge serves them until each engine lands
 module.exports = config;

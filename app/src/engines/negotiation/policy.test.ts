@@ -3,7 +3,16 @@ import assert from 'node:assert/strict';
 import { offer, opener, switchPolicy, rollbackPolicy, offerFromRegistry } from './policy.ts';
 import { memoryStore } from '../param/param.ts';
 import type { OfferState } from './choose.ts';
-const state = (): OfferState => ({ site: 'ebay', offer_cents: 6200, ask_cents: 8000, floor_cents: 6000, always_accept_cents: 7200, keep: p => Math.max(0, Math.round(.864 * p - 940)), v_wait_cents: 5000, trust_block: false });
+const state = (): OfferState => ({ site: 'ebay', offer_cents: 6200, ask_cents: 8000, floor_cents: 6000, always_accept_cents: 7200, keep: p => Math.round(.864 * p - 940), v_wait_cents: 5000, trust_block: false });
+test('a $5 eBay offer with negative keep asks below the $60 floor at every posture', () => {
+  const s = { ...state(), offer_cents: 500 };
+  assert.equal(s.keep(s.offer_cents), -508);
+  for (const posture of [0, .15, .5, .85, 1]) for (const policy of ['champion', 'challenger'] as const) {
+    const d = offer(s, () => .5, posture, policy);
+    assert.equal(d.kind, 'price_below_floor');
+    assert.equal(d.ask, true);
+  }
+});
 test('quick posture accepts faster while firm posture counters high', () => {
   assert.equal(offer(state(), () => .5, 0).kind, 'accept_offer');
   const hard = offer(state(), () => .5, 1);
@@ -68,7 +77,7 @@ test('F2: neither policy auto accepts below the firm accept line when waiting is
   }
 });
 test('F8: posture thresholds and keeps leave the policy in whole cents', () => {
-  const x = { ...state(), floor_cents: 0, offer_cents: 100, always_accept_cents: 7211, keep: (p: number) => Math.max(0, Math.round(.864 * p - 940)) };
+  const x = { ...state(), floor_cents: 0, offer_cents: 100, always_accept_cents: 7211, keep: (p: number) => Math.round(.864 * p - 940) };
   const thresholds: number[] = [];
   offer(x, (_p, s) => { thresholds.push(s.always_accept_cents); return .5; }, .51);
   assert.ok(thresholds.length > 0);

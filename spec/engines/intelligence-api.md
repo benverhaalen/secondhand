@@ -254,7 +254,7 @@ Gathering stops at the first of these:
 - every source in the plan has been tried;
 - the deadline passes, a param starting at 120 s.
 
-Only then does the number stay hidden, shown with its `searched[]`. "Not found" is the evidence that the item is rare, and it is shown as such.
+The number is never held back while gathering: it is given from the next step of its fallback order ([valuation §3](valuation.md#3-the-calculation)) with its `searched[]`, and replaced in place when the gather settles. It hides only when no level can state it. "Not found" is then the evidence that the item is rare, and it is shown as such.
 
 ## 4. Learning
 

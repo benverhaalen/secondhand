@@ -39,6 +39,8 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
   const ink = t === 'on-ink' ? c.page : t === 'on-color' ? c.onColor : ground === 'field' ? (quiet ? c.onField2 : c.onField) : quiet ? c.ink2 : c.ink;
   return (
     <Text
+      // The role on the web (data-role), so the composition checks read a page's levels (scripts/composition.mjs).
+      {...(Platform.OS === 'web' ? ({ dataSet: { role } } as object) : {})}
       numberOfLines={lines}
       accessibilityLabel={label}
       accessibilityRole={role === 'heading' ? 'header' : undefined}
@@ -46,7 +48,7 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
         fontSize: r.fontSize,
         lineHeight: r.lineHeight,
         letterSpacing: 'letterSpacing' in r ? r.letterSpacing : 0,
-        fontFamily: `${r.display ? FACE.display : FACE.text}`,
+        fontFamily: (r.display ? FACE.display : FACE.text) ?? undefined,
         fontWeight: Platform.OS === 'web' || !(r.display ? FACE.display : FACE.text) ? (r.display ? weight.display : weight.text) : undefined,
         fontVariant: tabular ? ['tabular-nums'] : undefined,
         color: ink,

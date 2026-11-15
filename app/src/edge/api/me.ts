@@ -1,6 +1,10 @@
 // Handlers for /v1/me, /v1/me/export, /v1/me/style (connect.md). The user is always ctx.user_id from the token; a body or query user_id never reaches here.
 import { auth as defaultAuth, iso, store as defaultStore, type Auth, type AuthStore, type Facet, type Notify, type User } from '../auth.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
+import { runtime as defaultRuntime } from './runtime.ts';
+import type { Store, JobKind } from '../events/ports.ts';
+import type { AuthVault } from '../browser/auth.ts';
+import { deleteUser as deleteWorkspaceUser, type Db, type Vault } from '../data/data.ts';
 
 export const STEPS = ['signed_in', 'sites_picked', 'sites_linked', 'imported', 'email', 'pickups', 'notifications'];
 const bad = (m: string) => new ApiError('invalid', m, 'validate', { by: 'user' });
@@ -15,16 +19,31 @@ const FIELDS: Record<string, (v: unknown) => boolean> = {
   notification_pref: (v) => Array.isArray(v) && v.length < 50 && v.every((n: Notify) => n && isStr(n.event_kind) && isStr(n.channel) && typeof n.on === 'boolean'),
 };
 
-export function makeMeHandlers(o: { store: AuthStore; auth: Auth; now: () => number }) {
+const redactRefs = (value: unknown): unknown => Array.isArray(value) ? value.map(redactRefs)
+  : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, key.endsWith('token_ref') ? '[held in the vault]' : redactRefs(nested)])) : value;
+
+export function makeMeHandlers(o: {
+  store: AuthStore; auth: Auth; now: () => number;
+  runtime?: { store: Store; vault: AuthVault };
+  // The Db port must already be in a transaction scoped to app.user_id (data.ts).
+  workspace?: { db: Db; vault: Vault };
+}) {
   const { store, auth, now } = o;
+  const runtime = o.runtime ?? defaultRuntime;
   const mine = async (c: Ctx) => {
     const u = await store.getUser(c.user_id!); if (!u) throw new ApiError('not_found', 'no such user', 'read');
     return u;
   };
-  const job = (c: Ctx, kind: string, stage: string, prefix: string) => {
-    const id = `job_${prefix}${crypto.randomUUID().replace(/-/g, '').slice(0, 6)}`;
-    c.log.event('job.state', { job: id, kind, state: 'queued' });
-    return { status: 202, body: { id, kind, state: 'queued', stages: [{ name: stage, state: 'started', started_at: iso(now()), ended_at: null, found: {} }] } };
+  const job = (c: Ctx, kind: Extract<JobKind, 'delete_user' | 'export_user'>, stage: string) => {
+    const row = runtime.store.insertJob({
+      kind, user_id: c.user_id!, event_id: c.request_id, idempotency_key: `${kind}:${crypto.randomUUID()}`,
+      args: { user_id: c.user_id! }, state: 'queued',
+      stages: [{ name: stage, state: 'started', started_at: iso(now()), ended_at: null, found: {} }],
+      attempts: 0, trace_id: c.request_id, created_at: iso(now()),
+      ...(kind === 'delete_user' && !o.workspace ? { paused: 'workspace_port_not_configured' as const, reason: 'workspace port not configured' } : {}),
+    }).row;
+    c.log.job(row.id, kind, row.state);
+    return row;
   };
 
   return {
@@ -58,9 +77,60 @@ export function makeMeHandlers(o: { store: AuthStore; auth: Auth; now: () => num
       return { status: 200, body: { id: u.id, ...out, version: next_.version } };
     },
     async delete(c) {
-      const r = job(c, 'delete_user', 'unlink_accounts', 'dl'); await store.dropUserSessions(c.user_id!); return r;
+      const user_id = c.user_id!;
+      const call = <T>(kind: string, name: string, fn: () => Promise<T>, describe: (out: T) => Record<string, unknown>) =>
+        c.log.call(kind, name, { user_id }, async () => {
+          try { return await fn(); } catch (cause) { throw new Error(`${name} failed`, { cause }); }
+        }, describe);
+      const refs = new Set(runtime.store.rows('account', { user_id }).map(row => row.token_ref).filter((ref): ref is string => typeof ref === 'string'));
+      const counts = runtime.store.deleteUser(user_id);
+      c.log.event('state.change', { entity: 'user', id: user_id, to: 'deleted', ...counts });
+      const failures: unknown[] = [];
+      for (const ref of refs) {
+        try { await call('db', 'vault.delete', () => runtime.vault.delete(ref), () => ({ count: 1 })); }
+        catch (cause) { failures.push(cause); }
+      }
+      await store.dropUserSessions(user_id);
+      c.log.event('state.change', { entity: 'session', id: user_id, to: 'ended' });
+      let row = job(c, 'delete_user', 'purge_workspace');
+      if (failures.length) {
+        runtime.store.updateJob(row.id, { error: { code: 'vault_delete_failed', message: 'marketplace sign-in deletion failed' }, ...(o.workspace ? { state: 'failed' } : {}) });
+        c.log.job(row.id, row.kind, o.workspace ? 'failed' : 'queued', { failed_count: failures.length });
+        const error = new ApiError('waking', 'marketplace sign-in deletion failed', 'unlink_accounts', { by: 'none' }, { job_id: row.id });
+        error.cause = new AggregateError(failures, 'marketplace sign-in deletion failed');
+        throw error;
+      }
+      if (o.workspace) {
+        const { db, vault } = o.workspace;
+        runtime.store.updateJob(row.id, { state: 'running', attempts: 1 });
+        c.log.job(row.id, row.kind, 'running');
+        try {
+          const result = await deleteWorkspaceUser({
+            query: (sql, params) => call('db', 'workspace.query', () => db.query(sql, params), out => ({ count: out.rows.length })),
+          }, {
+            delete: key => call('db', 'workspace.vault.delete', () => vault.delete(key), () => ({ count: 1 })),
+            list: prefix => call('db', 'workspace.vault.list', () => vault.list(prefix), keys => ({ count: keys.length })),
+          }, user_id, {
+            ...c.log,
+            job: (_id, kind, state, fields) => c.log.job(row.id, kind, state, { ...fields }),
+            error: (where, cause) => c.log.error(where, new Error('workspace purge failed', { cause }), { job: row.id }),
+          });
+          row = runtime.store.updateJob(row.id, { state: result.state, result: { counts: result.counts, scan: result.scan }, stages: row.stages.map(stage => ({ ...stage, state: result.state === 'done' ? 'arrived' : 'failed', ended_at: iso(now()) })) });
+        } catch (cause) {
+          row = runtime.store.updateJob(row.id, { state: 'failed', error: { code: 'internal', message: 'workspace purge failed' }, stages: row.stages.map(stage => ({ ...stage, state: 'failed', ended_at: iso(now()) })) });
+          c.log.error('me.delete', new Error('workspace purge failed', { cause }), { job: row.id });
+        }
+        c.log.job(row.id, row.kind, row.state);
+      }
+      return { status: 202, body: { id: row.id, kind: row.kind, state: row.state, stages: row.stages, ...(row.reason ? { reason: row.reason } : {}) } };
     },
-    async export(c) { return job(c, 'export_user', 'gather', 'ex'); },
+    async export(c) {
+      const result = redactRefs(runtime.store.exportUser(c.user_id!));
+      const queued = job(c, 'export_user', 'gather');
+      const row = runtime.store.updateJob(queued.id, { state: 'done', result, stages: queued.stages.map(stage => ({ ...stage, state: 'arrived', ended_at: iso(now()) })) });
+      c.log.job(row.id, row.kind, row.state);
+      return { status: 202, body: { id: row.id, kind: row.kind, state: row.state, stages: row.stages } };
+    },
     async styleGet(c) { return { status: 200, body: await store.getStyle(c.user_id!) }; },
     async stylePatch(c) {
       const s = await store.getStyle(c.user_id!), { version, facets } = c.body;

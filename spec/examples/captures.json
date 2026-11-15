@@ -84,7 +84,7 @@
           ],
           "kept": []
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 1,
         "plan": {
           "family": "apparel",
@@ -469,7 +469,7 @@
               "tag"
             ]
           },
-          "created_at": "2026-11-15T03:50:00Z",
+          "created_at": "2026-11-15T03:50:00.000Z",
           "version": 2,
           "plan": {
             "family": "apparel",
@@ -795,7 +795,7 @@
             "tag"
           ]
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 3,
         "plan": {
           "family": "apparel",
@@ -1041,7 +1041,7 @@
               "tag"
             ]
           },
-          "created_at": "2026-11-15T03:50:00Z",
+          "created_at": "2026-11-15T03:50:00.000Z",
           "version": 4,
           "plan": {
             "family": "apparel",
@@ -1293,7 +1293,7 @@
       "response": {
         "id": "cap_3n9q",
         "item_id": "it_7c2m",
-        "state": "shooting",
+        "state": "uploading",
         "mode": "shots",
         "purpose": "sell",
         "type": "apparel",
@@ -1351,7 +1351,7 @@
             "back"
           ]
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 5,
         "plan": {
           "family": "apparel",
@@ -1618,7 +1618,7 @@
       "response": {
         "id": "cap_3n9q",
         "item_id": "it_7c2m",
-        "state": "shooting",
+        "state": "uploading",
         "mode": "shots",
         "purpose": "sell",
         "type": "apparel",
@@ -1676,7 +1676,7 @@
             "back"
           ]
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 5,
         "plan": {
           "family": "apparel",
@@ -2003,7 +2003,7 @@
           ],
           "kept": []
         },
-        "created_at": "2026-11-15T03:50:00Z",
+        "created_at": "2026-11-15T03:50:00.000Z",
         "version": 1,
         "plan": {
           "family": "apparel",
@@ -2250,6 +2250,260 @@
             }
           },
           "status": "shooting"
+        }
+      }
+    },
+    {
+      "name": "captures.generate",
+      "endpoint": "PATCH /v1/captures/:id",
+      "path": "/v1/captures/cap_3n9q",
+      "request": {
+        "body": {
+          "version": 3,
+          "generate": true
+        }
+      },
+      "auth": "user",
+      "status": 200,
+      "response": {
+        "id": "cap_3n9q",
+        "item_id": "it_7c2m",
+        "state": "shooting",
+        "mode": "shots",
+        "purpose": "sell",
+        "type": "apparel",
+        "suggested_type": "apparel",
+        "picker": [
+          "apparel",
+          "shoes",
+          "bags",
+          "electronics",
+          "jewellery_watches",
+          "furniture",
+          "lighting_home",
+          "media",
+          "cards_collectibles",
+          "toys_lego",
+          "appliances_tools",
+          "bikes_sports",
+          "baby_gear",
+          "other"
+        ],
+        "process": [
+          {
+            "step": "front",
+            "kind": "series",
+            "role": "front",
+            "needs_lidar": false,
+            "seconds": 5,
+            "key": "front",
+            "state": "kept"
+          },
+          {
+            "step": "back",
+            "kind": "series",
+            "role": "back",
+            "needs_lidar": false,
+            "seconds": 10,
+            "key": "back",
+            "state": "pending"
+          },
+          {
+            "step": "tag",
+            "kind": "series",
+            "role": "tag",
+            "needs_lidar": false,
+            "seconds": 8,
+            "key": "tag",
+            "state": "kept"
+          }
+        ],
+        "coverage": {
+          "needed": [
+            "back"
+          ],
+          "kept": [
+            "front",
+            "tag"
+          ]
+        },
+        "created_at": "2026-11-15T03:50:00.000Z",
+        "version": 4,
+        "plan": {
+          "family": "apparel",
+          "kind": null,
+          "dimension_class": "flat_garment",
+          "inner_class": null,
+          "fallback": null,
+          "process": [
+            {
+              "step": "front",
+              "kind": "series",
+              "role": "front",
+              "needs_lidar": false,
+              "seconds": 5,
+              "key": "front",
+              "state": "kept"
+            },
+            {
+              "step": "back",
+              "kind": "series",
+              "role": "back",
+              "needs_lidar": false,
+              "seconds": 10,
+              "key": "back",
+              "state": "pending"
+            },
+            {
+              "step": "tag",
+              "kind": "series",
+              "role": "tag",
+              "needs_lidar": false,
+              "seconds": 8,
+              "key": "tag",
+              "state": "kept"
+            }
+          ],
+          "checks": [
+            "stains",
+            "holes",
+            "pilling",
+            "fading",
+            "print_cracking"
+          ],
+          "fields": [
+            {
+              "field": "brand",
+              "state": "known",
+              "value": "Gildan",
+              "source": "label",
+              "required_by": [],
+              "recommended_by": [
+                "ebay",
+                "poshmark"
+              ]
+            },
+            {
+              "field": "colour",
+              "state": "known",
+              "value": [
+                "black"
+              ],
+              "source": "seen",
+              "required_by": [],
+              "recommended_by": [
+                "ebay",
+                "poshmark"
+              ]
+            },
+            {
+              "field": "condition",
+              "state": "waiting",
+              "value": null,
+              "source": null,
+              "required_by": [
+                "ebay",
+                "poshmark"
+              ],
+              "recommended_by": []
+            },
+            {
+              "field": "department",
+              "state": "waiting",
+              "value": null,
+              "source": null,
+              "required_by": [],
+              "recommended_by": [
+                "ebay",
+                "poshmark"
+              ]
+            },
+            {
+              "field": "dimensions",
+              "state": "missing",
+              "value": null,
+              "source": null,
+              "required_by": [
+                "studio"
+              ],
+              "recommended_by": [
+                "ebay",
+                "poshmark"
+              ]
+            },
+            {
+              "field": "fabric",
+              "state": "missing",
+              "value": null,
+              "source": null,
+              "required_by": [],
+              "recommended_by": [
+                "ebay"
+              ]
+            },
+            {
+              "field": "size_label",
+              "state": "proposed",
+              "value": "M",
+              "source": "label",
+              "required_by": [
+                "poshmark"
+              ],
+              "recommended_by": [
+                "ebay"
+              ]
+            },
+            {
+              "field": "type",
+              "state": "known",
+              "value": "apparel",
+              "source": "you_said",
+              "required_by": [
+                "ebay",
+                "poshmark"
+              ],
+              "recommended_by": []
+            }
+          ],
+          "questions": [],
+          "complete": {
+            "ebay": {
+              "ready": false,
+              "missing": [
+                {
+                  "field": "condition",
+                  "state": "waiting"
+                }
+              ]
+            },
+            "poshmark": {
+              "ready": false,
+              "missing": [
+                {
+                  "field": "condition",
+                  "state": "waiting"
+                },
+                {
+                  "field": "size_label",
+                  "state": "proposed"
+                }
+              ]
+            },
+            "studio": {
+              "ready": false,
+              "missing": [
+                {
+                  "field": "dimensions",
+                  "state": "missing"
+                }
+              ]
+            }
+          },
+          "status": "shooting"
+        },
+        "item": {
+          "id": "it_7c2m",
+          "category": "apparel"
         }
       }
     }

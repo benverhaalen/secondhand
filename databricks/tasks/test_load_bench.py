@@ -29,12 +29,12 @@ def test_fixture_preserves_answers_and_counts_malformed_lines():
 def test_invalid_times_float_cents_and_duplicate_keys_are_rejected():
     bad = [{**BASE, 'full_at': '2026-11-14T23:59:59Z'},
            {**BASE, 'numbers': [{**BASE['numbers'][0], 'value_cents': 1.5}]},
-           {**BASE, 'sites': ['ebay', 'ebay']}, BASE, BASE]
+           BASE, BASE]
     result = parse([json.dumps(r) for r in bad])
-    assert len(result.records) == 1 and len(result.rejects) == 4
+    assert len(result.records) == 1 and len(result.rejects) == 3
     assert 'full_at' in result.rejects[0]['reason']
     assert 'value_cents' in result.rejects[1]['reason']
-    assert 'duplicate' in result.rejects[2]['reason'] and 'duplicate' in result.rejects[3]['reason']
+    assert result.rejects[2]['reason'] == 'duplicate record key'
     for table, rows in [('record', result.records), ('number', result.numbers), ('fact', result.facts), ('site', result.sites)]:
         keys = [tuple(row[k] for k in MERGE_KEYS[table]) for row in rows]
         assert len(keys) == len(set(keys))
@@ -44,3 +44,15 @@ def test_sql_speed_uses_percentiles_not_average():
     sql = (ROOT / 'databricks/sql/06_bench.sql').read_text().lower()
     speed = sql.split('view secondhand.measures.bench_speed', 1)[1].split(';', 1)[0]
     assert 'avg(' not in speed and speed.count('percentile_cont') >= 4
+
+
+def test_repeated_values_have_distinct_positions():
+    row = {**BASE, 'numbers': [{**BASE['numbers'][0], 'value_cents': n} for n in (100, 200, 300)],
+           'sites': ['ebay', 'ebay'], 'facts': [{'kind': 'sold', 'count': 1}] * 2}
+    result = parse([json.dumps(row), json.dumps(row)])
+    assert len(result.records) == 1
+    assert result.rejects[0]['reason'] == 'duplicate record key'
+    for table, rows, length in [('number', result.numbers, 3), ('site', result.sites, 2), ('fact', result.facts, 2)]:
+        assert [r['position'] for r in rows] == list(range(length))
+        assert len({tuple(r[k] for k in MERGE_KEYS[table]) for r in rows}) == length
+    assert [n['name'] for n in result.numbers] == ['price'] * 3

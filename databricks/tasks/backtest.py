@@ -23,6 +23,7 @@ sys.path[:0] = [str(ROOT / 'jobs'), str(ROOT / 'log'), str(ROOT / 'databricks'),
 
 from valuation import experiment, market  # noqa: E402
 from secondhand_log import create_log, file_sink  # noqa: E402
+from guard import guard_batch  # noqa: E402
 
 HEADLINE_FIELDS = ('n', 'priced', 'hit_rate', 'within_20', 'median_ape', 'coverage', 'bias', 'lift_vs_primary')
 
@@ -55,7 +56,7 @@ def to_runner_rows(spark_rows):
             row[key] = int(float(row[key])) if row[key] is not None else None
         for key, default in experiment.FLAGS.items():
             row[key] = experiment._flag(raw.get(key), default)
-        for key in ('at', 'listed_at'):
+        for key in ('at', 'listed_at', 'released_at'):
             row[key] = _timestamp_string(row[key], row['source'])
         rows.append(row)
     return rows
@@ -129,8 +130,6 @@ def guarded_rows(estimates, rows_by_id, hash_fn, citation_id_fn, run_id, now, *,
             by_product.setdefault(row['product_id'], []).append(row)
     for est in estimates:
         ids = est.get('comp_ids') or []
-        if not ids:
-            continue
         item = rows_by_id[est['item_id']]
         basis = [{'id': i, 'source': rows_by_id[i]['source'], 'at': _basis_timestamp(rows_by_id[i]['at']),
                   'weight': 1, 'price_cents': int(rows_by_id[i]['price_cents'])} for i in ids]
@@ -146,8 +145,9 @@ def guarded_rows(estimates, rows_by_id, hash_fn, citation_id_fn, run_id, now, *,
             citation[field] = json.dumps(cite[field], sort_keys=True)
         # The indexed market contestant now carries its recent product basis.
         # Its minimum applies to all prior product sales, not just ANCHOR_K ids.
+        shown = bool(est['shown']) and bool(ids)
         reason = None
-        if not est['shown']:
+        if not shown:
             reason = 'too_few'
             if est['contestant'] == 'model':
                 ages = [(experiment.ts(est['as_of']) - experiment.ts(r['at'])) / 86400
@@ -157,13 +157,17 @@ def guarded_rows(estimates, rows_by_id, hash_fn, citation_id_fn, run_id, now, *,
                 n90 = sum(0 < age <= 90 for age in ages)
                 if n12 >= market.MIN_12M and n90 >= market.MIN_90D:
                     reason = 'too_wide'
+            if not ids:
+                reason = 'source_gap'
         identity = hashlib.sha256(f"{run_id}:{est['contestant']}:{est['item_id']}".encode()).hexdigest()[:24]
         guards.append({**shared, 'id': 'gn_' + identity, 'item_id': est['item_id'], 'metric': metric,
                        'value_cents': _cents(est['q50']), 'lo_cents': _cents(est['q10']), 'hi_cents': _cents(est['q90']),
                        'currency': 'USD', 'basis_count': len(ids), 'n_eff': float(len(ids)), 'as_of': est['as_of'],
-                       'state': 'shown' if est['shown'] else 'hidden', 'hide_reason': reason,
-                       'citation_id': citation['id'] if est['shown'] else None})
-        citations.append(citation)
+                       'basis_level': (est.get('basis_level') or 'product') if ids else 'prior',
+                       'state': 'shown' if shown else 'hidden', 'hide_reason': reason,
+                       'citation_id': citation['id'] if shown else None})
+        if ids:
+            citations.append(citation)
     return guards, new_citations(citations, set())
 
 
@@ -186,8 +190,19 @@ def table_frame(spark, table, rows):
 
 def append_rows(spark, log, table, rows):
     if rows:
+        guard_batch(spark, log, 'valuation_backtest', table, rows)
         log.call('db', 'append', {'table': table, 'rows': len(rows)},
                  lambda: table_frame(spark, table, rows).write.mode('append').saveAsTable(table))
+
+
+def write_batches(spark, log, batches):
+    pending_citations = set()
+    for table, rows in batches:
+        guard_batch(spark, log, 'valuation_backtest', table, rows, citation_ids=pending_citations)
+        if table == 'secondhand.core.citation':
+            pending_citations.update(r['id'] for r in rows)
+    for table, rows in batches:
+        append_rows(spark, log, table, rows)
 
 
 def job_log(name, config):
@@ -206,16 +221,19 @@ def require_snapshot_version(before, after):
 
 
 def log_training_input(mlflow, log, version):
-    dataset = log.call('mlflow', 'load_delta', {'table': 'secondhand.market.comp_for_model', 'version': int(version)},
-                       lambda: mlflow.data.load_delta(table_name='secondhand.market.comp_for_model', version=int(version)))
+    dataset = log.call('mlflow', 'load_delta', {'table': 'secondhand.market.comp', 'version': int(version)},
+                       lambda: mlflow.data.load_delta(table_name='secondhand.market.comp', version=int(version), name='comp_for_model'))
     log.call('mlflow', 'log_input', {'context': 'training', 'version': int(version)},
              lambda: mlflow.log_input(dataset, context='training'))
+    tags = {'input_filter': 'may_model = true', 'input_view': 'secondhand.market.comp_for_model'}
+    log.call('mlflow', 'input_tags', tags, lambda: mlflow.set_tags(tags))
 
 
 def main(argv=None):
     ap = argparse.ArgumentParser()
     ap.add_argument('--root', type=Path, default=ROOT)
     ap.add_argument('--source', default='stockx_2019')
+    ap.add_argument('--experiment', default='/Shared/secondhand/valuation-backtest')
     ap.add_argument('--test-from', default='2018-11-01')
     ap.add_argument('--test-to')
     args = ap.parse_args(argv)
@@ -241,7 +259,7 @@ def main(argv=None):
                 'table_versions': [{'table': 'secondhand.market.comp', 'version': int(version)}]}
         contestants = [experiment.ProductMedian(), experiment.LastSale(), experiment.Model()]
         log.call('mlflow', 'tracking', {}, lambda: mlflow.set_tracking_uri('databricks'))
-        log.call('mlflow', 'experiment', {}, lambda: mlflow.set_experiment('/Shared/secondhand/valuation-backtest'))
+        log.call('mlflow', 'experiment', {}, lambda: mlflow.set_experiment(args.experiment))
         with mlflow.start_run(run_name=run_id) as run:
             log_training_input(mlflow, log, version)
             log.call('mlflow', 'params', {}, lambda: mlflow.log_params({
@@ -263,11 +281,14 @@ def main(argv=None):
                 existing = log.call('db', 'existing_citations', {'candidates': len(ids)},
                                     lambda: {r['id'] for r in spark.table('secondhand.core.citation').where(F.col('id').isin(ids)).select('id').collect()},
                                     describe=lambda found: {'rows': len(found)})
-                append_rows(spark, log, 'secondhand.core.citation', new_citations(citations, existing))
-            append_rows(spark, log, 'secondhand.core.guarded_number', guards)
-            append_rows(spark, log, 'secondhand.measures.backtest_estimate', estimates_table(estimates, by_id, run_id))
-            append_rows(spark, log, 'secondhand.measures.backtest_headline', headlines)
-            append_rows(spark, log, 'secondhand.measures.backtest_run', [run_row])
+                citations = new_citations(citations, existing)
+            write_batches(spark, log, [
+                ('secondhand.core.citation', citations),
+                ('secondhand.core.guarded_number', guards),
+                ('secondhand.measures.backtest_estimate', estimates_table(estimates, by_id, run_id)),
+                ('secondhand.measures.backtest_headline', headlines),
+                ('secondhand.measures.backtest_run', [run_row]),
+            ])
             metrics = {f'{key}.{row["contestant"]}': float(row[key]) for row in headlines for key in HEADLINE_FIELDS if row[key] is not None}
             log.call('mlflow', 'metrics', {}, lambda: mlflow.log_metrics(metrics))
             log.call('mlflow', 'report', {}, lambda: mlflow.log_dict(json.loads(run_row['report']), 'report.json'))

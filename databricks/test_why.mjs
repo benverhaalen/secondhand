@@ -102,12 +102,14 @@ test('row-filtered tables have no CHECK additions; primary keys require non-null
   }
 })
 
-test('guard view reports each broken rule and ends with a failing assertion', () => {
+test('guard defines every predicate and status reads the latest cross-owner snapshot', () => {
   const parsed = statements(read('sql/09_guard.sql'))
-  assert.equal(parsed.length, 2)
-  assert.match(parsed[0], /^CREATE OR REPLACE VIEW secondhand\.measures\.guard_violations/)
-  assert.match(parsed[0], /COMMENT '[^']*CHECK[^']*row-filtered[^']*every run[^']*'/)
-  const branches = parsed[0].split(/\bUNION ALL\b/i)
+  assert.equal(parsed.length, 6)
+  assert.match(parsed[0], /^ALTER TABLE secondhand\.governance\.break_glass ADD COLUMNS \(reason_closed STRING\)/)
+  assert.match(parsed[1], /^CREATE TABLE IF NOT EXISTS secondhand\.measures\.guard_refusals/)
+  assert.match(parsed[4], /^CREATE OR REPLACE VIEW secondhand\.measures\.guard_violations/)
+  assert.match(parsed[4], /COMMENT '[^']*CHECK[^']*row-filtered[^']*'/)
+  const branches = parsed[4].split(/\bUNION ALL\b/i)
   for (const [table, rule, expression] of [
     ['guarded_number', 'guarded_number_state', "state NOT IN ('shown','hidden','not_found')"],
     ['guarded_number', 'guarded_number_shown_citation', "state = 'shown' AND citation_id IS NULL"],
@@ -126,12 +128,19 @@ test('guard view reports each broken rule and ends with a failing assertion', ()
     const branch = branches.find(s => s.includes(`'${table}_data' AS rule`))
     assert.ok(branch, `${table}: missing provenance guard`)
     assert.ok(branch.includes(`FROM secondhand.core.${table}`))
-    assert.ok(branch.includes("WHERE data NOT RLIKE '^(synthetic|example|dataset:.+|live:.+)$'"))
+    assert.ok(branch.includes("WHERE data NOT RLIKE '^(synthetic|example|captured|dataset:.+|live:.+)$'"))
     assert.ok(branch.includes(`'${table}' AS table_name`))
     assert.ok(branch.includes(table === 'log_event' ? "concat(session, ':', cast(seq AS STRING)) AS row_id" : 'id AS row_id'))
   }
-  assert.equal(branches.length, 6 + tables.filter(([, , body]) => /\bdata STRING/.test(body)).length)
-  assert.equal(parsed.at(-1), "SELECT assert_true((SELECT count(*) FROM secondhand.measures.guard_violations) = 0, 'guard violations: see secondhand.measures.guard_violations') AS guard_ok")
+  assert.ok(branches.some(s => s.includes("'guarded_number_basis_level' AS rule") && s.includes("WHERE metric LIKE 'valuation.%' AND (basis_level IS NULL OR basis_level NOT IN ('variant','product','family','kind','prior'))")))
+  assert.match(parsed[2], /^CREATE TABLE IF NOT EXISTS secondhand\.measures\.guard_snapshot \(/)
+  assert.match(parsed[3], /^CREATE TABLE IF NOT EXISTS secondhand\.measures\.guard_snapshot_rows \(/)
+  assert.match(parsed[5], /^CREATE OR REPLACE VIEW secondhand\.measures\.guard_status/)
+  const wildcard = branches.find(s => s.includes("'principal_map_unlogged_wildcard' AS rule"))
+  assert.ok(wildcard.includes("WHERE m.user_id = '*' AND NOT EXISTS (SELECT 1 FROM secondhand.governance.break_glass b WHERE b.principal = m.principal AND b.ended_at IS NULL)"))
+  assert.equal(branches.length, 8 + tables.filter(([, , body]) => /\bdata STRING/.test(body)).length)
+  assert.match(parsed.at(-1), /SELECT violations AS violations_now,[\s\S]*checked_at AS last_checked_at[\s\S]*FROM secondhand\.measures\.guard_snapshot\s+ORDER BY checked_at DESC\s+LIMIT 1$/)
+  assert.doesNotMatch(parsed.at(-1), /guard_violations/)
 })
 
 test('informational foreign keys and purge properties remain; obsolete guards are dropped', () => {
@@ -166,20 +175,24 @@ test('constraint reruns drop existing foreign keys before primary keys, then re-
   assert.equal(constraints.size, 12, 'expected ten primary keys and two foreign keys')
 })
 
-test('the setup resource runs why, constraints and guard on the warehouse; purge receives catalog and root', () => {
+test('the setup resource runs why, constraints and sources on the warehouse, then the Python guard; purge receives catalog and root', () => {
   const resource = read('../deploy/resources/governance.yml')
   assert.match(resource, /governance_setup:\s+name: secondhand-governance-setup/)
   const tasks = [...resource.matchAll(/- task_key: (\w+)([\s\S]*?)(?=\n        - task_key:|$)/g)]
-  assert.equal(tasks.length, 3)
-  tasks.forEach((t, i) => {
+  assert.equal(tasks.length, 4)
+  tasks.slice(0, 3).forEach((t, i) => {
     assert.match(t[2], /sql_task:/)
     assert.ok(t[2].includes('warehouse_id: ${var.warehouse_id}'))
     const path = t[2].match(/path: (\S+)/)?.[1]
-    assert.equal(path, `../../databricks/sql/${['07_why.sql', '08_constraints.sql', '09_guard.sql'][i]}`)
+    assert.equal(path, `../../databricks/sql/${['07_why.sql', '08_constraints.sql', '11_sources.sql'][i]}`)
     readFileSync(new URL(path, new URL('../deploy/resources/governance.yml', import.meta.url)), 'utf8')
   })
   assert.ok(tasks[1][2].includes(`task_key: ${tasks[0][1]}`), 'constraints must depend on why')
-  assert.ok(tasks[2][2].includes(`task_key: ${tasks[1][1]}`), 'guard must depend on constraints')
+  assert.ok(tasks[2][2].includes(`task_key: ${tasks[1][1]}`), 'sources must depend on constraints')
+  assert.ok(tasks[3][2].includes(`task_key: ${tasks[2][1]}`), 'guard must depend on sources')
+  assert.match(resource, /environments:\s+- environment_key: guard\s+spec:\s+environment_version: "3"/)
+  assert.match(tasks[3][2], /environment_key: guard\s+spark_python_task:\s+python_file: ..\/..\/databricks\/tasks\/guard_job.py/)
+  assert.ok(tasks[3][2].includes('parameters: ["--root", "${workspace.file_path}"]'))
   const purge = read('../deploy/databricks.yml').split('    purge_user:')[1].split('\ntargets:')[0]
   assert.ok(purge.includes('parameters: ["{{job.parameters.user_id}}", "${var.catalog}", "--root", "${workspace.file_path}"]'))
 })

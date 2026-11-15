@@ -2,6 +2,17 @@
 
 The open benchmark's runner and scorer ([spec/benchmark.md](../spec/benchmark.md)). Owner: the integration lead.
 
+## Where the benchmark's parts live
+
+| Part | Holds |
+|---|---|
+| [scripts/bench/](../scripts/bench/) | the backtest, gate, photo, seasons, cadence and roi benchmarks; its `out/` holds their results |
+| [spec/items/manifest.json](../spec/items/manifest.json) | the fixed item set the runner asks about |
+| [spec/benchmark.md](../spec/benchmark.md) | the open benchmark: rows, method and raw answers |
+| [spec/plans/backtest/](../spec/plans/backtest/) | the backtest plan: claims, datasets, how we price, the money statistic |
+| [databricks/parity/](../databricks/parity/) | one calculation in two languages, checked for equality |
+| [deploy/resources/bench.yml](../deploy/resources/bench.yml) | the bundle job that loads benchmark results into the workspace |
+
 | Command | Does |
 |---|---|
 | `node bench/run.mjs` | asks our `/v1` API (in process, through the same contract layer a phone hits) every question for every item in `spec/items/manifest.json`; writes `bench/out/<run_id>/records.jsonl` and the raw answers under `raw/` |
@@ -9,6 +20,7 @@ The open benchmark's runner and scorer ([spec/benchmark.md](../spec/benchmark.md
 | `node bench/run.mjs --base <url>` | the same over HTTP against a running edge, as a visitor |
 | `node bench/score.mjs bench/out/<run_id> --baseline bench/out/<baseline_run_id>` | score both runs together, tools alphabetical, with record paths relative to the primary run folder; both must use the same manifest bytes and item set |
 | `node bench/score.mjs bench/out/<run_id>` | rows 1, 2, 3, 8 and 10 into `bench/out/<run_id>/results.json`, each number with "n of N", a Wilson 95% interval where it is a share, nearest-rank p50 and p95 for times (never an average), and the record lines behind it |
+| `node bench/score.mjs bench/out/<run_id> --upload` | after writing `results.json`, copies `records.jsonl` and `results.json` to the Databricks benchmark landing volume; upload failures print `upload skipped: <reason>` and do not fail scoring |
 | `node --test --test-concurrency=1 bench/run.test.mjs` | runner checks, using injected reads without a server or browser |
 | `node --test --test-concurrency=1 bench/score.test.mjs` | scorer checks, including old records and a separate baseline run |
 
@@ -64,3 +76,4 @@ A sale is used for row 7 only if it is dated after the record's `asked_at` (`sal
 | 2026-11-15 09:23 UTC, with the plain-request baseline at 09:24 | 20 market items each, main at 896a4d68 | ours: row 1 coverage 15 of 20 (Wilson 95% 0.53 to 0.89); first answer p50 2.0 s, p95 12.0 s; full answer p50 2.0 s, p95 4.0 s; per-site read inside the search: Poshmark p50 0.99 s, p95 2.05 s (plain), Depop 0.58 s to a block, Facebook 0.86 s to page_changed, Mercari blocked at once (needs the person's account). Baseline (one plain GET of Poshmark search, cards counted): 17 of 20 (0.64 to 0.95), 0.67 s p50, 0.86 s p95 | the baseline beats us on both rows today. Why: our Poshmark reader returns page_changed on 5 items whose page the baseline counted cards from (strict reader), and our times are rounded up to the runner's 2 s poll (being changed to the job's own stage times). Cost per answer: unknown (only the cloud-browser rate is written down, product/numbers.md:78) |
 | 2026-11-15 09:26 UTC | 20 market items, in process, real lanes, times from the job's own stage clocks (`time_source: job`) | row 1 coverage 19 of 20 (Wilson 95% 0.76 to 0.99), Poshmark only; row 8 first answer p50 0.79 s, p95 2.08 s; full answer p50 2.07 s, p95 2.88 s | the 09:23 first-answer p50 of 2.0 s was the runner's poll. Coverage moves between runs (15 to 19 of 20) with how often Poshmark's page trips its strict reader. The plain baseline at 09:24 answered first at 0.67 s p50 |
 | 2026-11-15 09:31 UTC | 20 market items, in process, real lanes, job clocks, main with the reader keeping whole cards (c0e639f4) | row 1 coverage 14 of 20 (Wilson 95% 0.48 to 0.85), Poshmark only; row 8 first answer p50 1.54 s, p95 3.34 s; full p50 2.27 s, p95 3.34 s | Poshmark answered a hit on 14 items and on 5 a page with no listing card at all (id, title, price and url all missing), which the reader calls page_changed: the items change from run to run (m-small_goods-2 hit here, missed at 09:23), so Poshmark is intermittently serving a page without listings, not a new layout. Coverage now swings 14 to 19 of 20 across four runs on that alone |
+| 2026-11-15 09:41 UTC | 20 market items, in process, real lanes, job clocks, main at 04db3007 (Dupe on, Depop on its harness, sources failing alone) | row 1 coverage 20 of 20 (Wilson 95% 0.84 to 1.00), drawing on 2 sources per answer (median); row 8 first answer p50 0.87 s, p95 1.62 s | Dupe answered 19 of 20 (1 timeout), Poshmark 19 hits and 1 page its reader could not parse (served page kept as evidence: raw/m-small_goods-4-poshmark-served.json, 200, a full search page), Depop failed on all 20 because no cloud launcher is configured on the machine that ran it, Mercari needs the person's account. Ahead of the plain-request baseline (17 of 20, 0.67 s p50) on coverage, behind it on the median first answer |

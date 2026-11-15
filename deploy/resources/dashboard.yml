@@ -1,0 +1,16 @@
+# spec/databricks-build.md sections 6–9. Paths are relative to this file.
+resources:
+  dashboards:
+    proof:
+      display_name: "secondhand: proof"
+      file_path: ../../databricks/dashboards/proof.lvdash.json
+      warehouse_id: ${var.warehouse_id}
+      dataset_catalog: secondhand
+      dataset_schema: measures
+      parent_path: /Shared/secondhand
+      embed_credentials: false
+  experiments:
+    valuation_backtest_experiment:
+      name: /Shared/secondhand/valuation-backtest
+    param_walk_experiment:
+      name: /Shared/secondhand/param-walk

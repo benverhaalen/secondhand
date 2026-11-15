@@ -54,3 +54,26 @@ test('ok or not_found (already gone) both settle as delisted', () => {
   assert.equal(settle(s, log(), p, r.jobs[0], { ok: true }), 'delisted');
   assert.equal(settle(s, log(), p, r.jobs[1], { ok: false, error: { code: 'not_found', message: 'gone' } }), 'delisted');
 });
+
+
+test('dry delist settlement leaves the listing live and asks once per listing without failed_delist', () => {
+  const s = memoryStore(), p = memoryParams({ delist_max_attempts: 3 });
+  const r = fanOut(s, log(), sale(true)); assert.ok('jobs' in r);
+  const plan = { dry: true, request: { listing_external_id: 'fixture' } };
+  for (const job of r.jobs) {
+    s.put('listing', { id: job.listing_id!, user_id: job.user_id, state: 'live' });
+    s.updateJob(job.id, { stages: [{ name: 'delivered', state: 'arrived' }, { name: 'end', state: 'started' }] });
+    for (let repeat = 0; repeat < 2; repeat++) {
+      assert.equal(settle(s, log(), p, job, { ok: true, data: plan }), 'planned');
+      assert.deepEqual(s.getJob(job.id)!.result, { planned: true, plan });
+      assert.equal(s.getJob(job.id)!.stages.find(stage => stage.name === 'end')?.state, 'planned', 'dry settlement must replace the started write stage');
+      assert.equal(s.getJob(job.id)!.stages.find(stage => stage.name === 'delivered')?.state, 'arrived', 'settlement must preserve unrelated stages');
+      assert.equal(s.get('listing', job.user_id, job.listing_id!)?.state, 'live');
+    }
+    const decisions = s.decisions({ subject: job.listing_id, state: 'open' });
+    assert.equal(decisions.length, 1);
+    assert.equal(decisions[0].kind, job.args.decision_kind);
+    assert.deepEqual(decisions[0].options.map(o => o.label), ['End it on the site', 'Not now']);
+  }
+  assert.equal(s.decisions({ kind: 'failed_delist' }).length, 0);
+});

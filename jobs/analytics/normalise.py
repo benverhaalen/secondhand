@@ -29,6 +29,7 @@ shortcut: eBay is fixed at -07:00 all year, as eBay's own report states; revisit
 """
 from datetime import datetime, timedelta, timezone
 
+
 STAGES = ("exposure", "attention", "interest", "intent", "outcome")
 FLAGS = (
     "not_reported", "not_yet_processed", "counter_reset", "boosted", "definition_undocumented",
@@ -105,14 +106,36 @@ def _window(site, day):
 def normalise(reads):
     """Rows {listing_id, item_id, site, day, window_utc, stages, terms, flags, boosted, read_at, route}."""
     rows, prev = [], {}
-    for r in sorted(reads, key=lambda r: (r["listing_id"], r["read_at"])):
+    unique, ids = {}, {}
+    for r in reads:
+        if r.get('id'):
+            identity = (r['site'], r['id'])
+            if identity in ids and ids[identity] != r:
+                raise ValueError('conflicting observation id')
+            ids[identity] = r
+        key = (r['site'], r['listing_id'], r['read_at'])
+        if key in unique and unique[key] != r:
+            if not r.get('id') or not unique[key].get('id'):
+                raise ValueError('ambiguous reads at equal timestamps require unique ids')
+            if r['id'] == unique[key]['id']:
+                raise ValueError('conflicting read id')
+            unique[key] = max((r, unique[key]), key=lambda row: row['id'])
+        else:
+            unique[key] = r
+    daily = {}
+    for r in unique.values():
+        day = r['payload']['day'] if r['site'] == 'ebay' else _ts(r['read_at']).date().isoformat()
+        key = (r['site'], r['listing_id'], day)
+        if key not in daily or (r['read_at'], r.get('id', '')) > (daily[key]['read_at'], daily[key].get('id', '')):
+            daily[key] = r
+    for r in sorted(daily.values(), key=lambda r: (r["site"], r["listing_id"], r["read_at"], r.get('id', ''))):
         site = r["site"]
         if site not in SITES:
             raise ValueError(f"unknown site {site!r}")
         spec, p = SITES[site], r["payload"]
         flags = set(spec["flags"]) | ({"harness_read"} if r["route"] == "harness" else set())
         day = p["day"] if site == "ebay" else _ts(r["read_at"]).date().isoformat()
-        base = prev.get(r["listing_id"])
+        base = prev.get((site, r["listing_id"]))
         truncated = base is None and spec["cumulative"] and _ts(r["posted_at"]).date().isoformat() < day
         if truncated:
             flags.add("left_truncated")
@@ -149,9 +172,9 @@ def normalise(reads):
             state["_boost"] = boost
         if boosted:
             flags.add("boosted")
-        prev[r["listing_id"]] = state
+        prev[(site, r["listing_id"])] = state
         rows.append(dict(listing_id=r["listing_id"], item_id=r["item_id"], site=site, day=day,
-                         window_utc=_window(site, day), stages=stages, terms=terms,
+                         id=r.get("id"), posted_at=r["posted_at"], window_utc=_window(site, day), stages=stages, terms=terms,
                          flags=sorted(flags), boosted=boosted, read_at=r["read_at"], route=r["route"]))
     return rows
 

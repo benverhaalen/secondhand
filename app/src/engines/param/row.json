@@ -1,6 +1,8 @@
 {
   "name": "p_min_quick",
-  "scope": { "site": "depop" },
+  "scope": {
+    "site": "depop"
+  },
   "family": "scalar",
   "value_or_hyperparams": 0.7,
   "prior": 0.6,
@@ -13,5 +15,9 @@
   "guard_hi": 1,
   "status": "challenger",
   "frozen": false,
-  "promoted_at": null
+  "promoted_at": null,
+  "origin": "fit",
+  "previous_version": null,
+  "keep": null,
+  "days_since_last": null
 }

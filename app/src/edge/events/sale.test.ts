@@ -18,11 +18,12 @@ const listings: ItemListing[] = [
   { listing_id: 'L-merc', item_id: 'i1', site: 'mercari', account_id: 'a-merc', state: 'live' },
 ];
 
-test('a sale on Poshmark delists eBay, Depop and Mercari; a stale eBay account is paused and resumed, not dropped', async () => {
+test('a sale on Poshmark plans a Depop delist and ends eBay and Mercari; a stale eBay account is paused and resumed, not dropped', async () => {
   const store = memoryStore(), log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   let ebayLinked = false;
   const harness = fakeHarness({
     'poshmark:read_orders': () => ({ ok: true, data: { orders: [{ external_order_id: 'P1', listing_id: 'L-posh', state: 'paid', price_cents: 5000, fees_cents: 1000, shipping_cents: 0 }] }, meta }),
+    'depop:end': () => ({ ok: true, data: { dry: true, request: { slug: 'fixture' } }, meta }),
     'ebay:end': (): Envelope => ebayLinked ? { ok: true, data: { landed: true }, meta }
       : { ok: false, error: { code: 'auth_expired', message: 'login wall', hint: { do: 'relink' } }, meta },
   }, 15);
@@ -65,4 +66,11 @@ test('a sale on Poshmark delists eBay, Depop and Mercari; a stale eBay account i
   await pipe.runOnce(10);
   assert.equal(store.jobs({ kind: 'delist' }).filter(j => j.state === 'done').length, 3);
   assert.equal(store.jobs({ kind: 'delist' }).length, 3, 'no delist job was doubled');
+  const planned = store.jobs({ kind: 'delist', site: 'depop' })[0];
+  assert.equal(planned.stages[0].state, 'planned');
+  assert.deepEqual(planned.result, { planned: true, plan: { dry: true, request: { slug: 'fixture' } } });
+  assert.equal(store.getJob(ebay.id)!.stages[0].state, 'arrived');
+  assert.equal(store.decisions({ kind: 'delist_after_sale', subject: 'L-dep', state: 'open' }).length, 1);
+  assert.equal(store.events().filter(e => e.action === 'listing.ended').length, 0);
+  assert.equal(store.rows('order', { user_id: 'u1' }).length, 1);
 });

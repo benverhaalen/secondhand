@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { scoreRun, saleUsable } from './score.mjs';
+import { scoreRun, saleUsable, scoreCli } from './score.mjs';
 import { run } from './run.mjs';
 
 const fixture = fileURLToPath(new URL('./fixtures/score/', import.meta.url));
@@ -151,6 +151,44 @@ test('CLI writes results.json inside the supplied run directory', t => {
   const child=spawnSync(process.execPath,[scorer,run,'--manifest',manifestPath,'--set','owned'],{encoding:'utf8'});
   assert.equal(child.status,0,child.stderr);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(run,'results.json'))),scoreRun(run,manifestPath,'owned'));
+});
+
+test('upload creates the landing folder and copies only records and results for the scored run', async t => {
+  const {run,manifestPath}=planted(t);
+  const calls=[];
+  const stdout=[];
+  const code=await scoreCli({
+    args:[run,'--manifest',manifestPath,'--set','owned','--upload'],
+    execFileSync:(command,args)=>calls.push([command,args]),
+    writeStdout:line=>stdout.push(line),
+  });
+  const runId=rows()[0].run_id;
+  const landing=`dbfs:/Volumes/secondhand/raw/landing/bench/${runId}`;
+  assert.equal(code,0);
+  assert.deepEqual(calls,[
+    ['databricks',['fs','mkdir',landing,'--profile','Nate']],
+    ['databricks',['fs','cp',path.join(run,'records.jsonl'),`${landing}/records.jsonl`,'--overwrite','--profile','Nate']],
+    ['databricks',['fs','cp',path.join(run,'results.json'),`${landing}/results.json`,'--overwrite','--profile','Nate']],
+  ]);
+  assert.deepEqual(stdout,[]);
+  assert.equal(fs.existsSync(path.join(run,'results.json')),true);
+  const localFiles=calls.flatMap(([,args])=>args.filter(value=>typeof value==='string' && value.startsWith(run)));
+  assert.deepEqual(localFiles,[path.join(run,'records.jsonl'),path.join(run,'results.json')]);
+});
+
+test('a failed upload prints one skip line and keeps the scoring command successful', async t => {
+  const {run,manifestPath}=planted(t);
+  const calls=[];
+  const stdout=[];
+  const code=await scoreCli({
+    args:[run,'--manifest',manifestPath,'--set','owned','--upload'],
+    execFileSync:(command,args)=>{ calls.push([command,args]); throw new Error('profile not signed in'); },
+    writeStdout:line=>stdout.push(line),
+  });
+  assert.equal(code,0);
+  assert.deepEqual(stdout,['upload skipped: profile not signed in']);
+  assert.equal(calls.length,1);
+  assert.equal(fs.existsSync(path.join(run,'results.json')),true);
 });
 
 for (const [name, change, message] of [
