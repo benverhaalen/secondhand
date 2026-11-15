@@ -290,7 +290,7 @@ function linksFor(o, identical) {
       `${o.search.results.length} unresolved rows kept; identity.by=${o.search.identity.by}, model_ok=${o.search.identity.model_ok}; product=null; no product identity invented.`,
       { spec: 'spec/engines/intelligence-api.md §3.3–3.4', missing_input: 'Recorded Jev/Decisions answers or identifier/pair-score evidence for these pages.' }),
     link(5, 'built, not called', 'valuate → observations.write', 'app/src/engines/valuation/valuate.ts', "await ctx.log.timed('valuation.observations.write'",
-      'The route calls valuate and its ObservationPort.write, but the default port logs not_composed; the shared Store has no observation service.',
+      'The route calls valuate and its ObservationPort.write, but the default port logs not_composed; the Store has an observation table and writer (SV7, events/observations.ts) that the port does not call yet.',
       `${o.observations.length} observation rows; ${o.observation_writes} writes; no stored source/time/data/evidence chain.`,
       { spec: 'spec/product.md §3 observation and data provenance; §6 Information engines, Gatherer' }),
     link(6, 'built, not called', 'comparables / nEff / measure', 'app/src/engines/valuation/comps.ts', 'export function comparables',

@@ -95,8 +95,8 @@ test('4: the real reconciler refuses to invent a product relation without identi
 });
 
 test('5: no gathered observation or evidence is persisted', () => {
-  gap(5, 'built, not called', 'The route calls valuate and its ObservationPort.write, but the default port logs not_composed; the shared Store has no observation service.');
-  assert.ok(!report.observed.tables.includes('observation'));
+  gap(5, 'built, not called', 'The route calls valuate and its ObservationPort.write, but the default port logs not_composed; the Store has an observation table and writer (SV7, events/observations.ts) that the port does not call yet.');
+  assert.ok(report.observed.tables.includes('observation'));
   assert.deepEqual(report.observed.observations, []);
   assert.equal(report.observed.observation_writes, 0);
   assert.equal(report.observed.observation_import_in_search, false);
