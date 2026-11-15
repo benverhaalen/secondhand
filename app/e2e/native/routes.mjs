@@ -2,7 +2,7 @@ const safeSlug = /^[a-zA-Z0-9][a-zA-Z0-9_.-]*$/;
 const stage = { slug: 'stage', route: '/item/it_stage/post?world=stage&flip=poshmark,mercari,facebook' };
 
 function normalize(route) {
-  const path = route.replace(/^\/?\(tabs\)\//, '').replace(/^index(?=\?|$)/, '');
+  const path = route.replace(/^\/?\(tabs\)\//, '').replace(/^index(?=\?|$)/, '').replace(/\/index(?=\?|$)/, '');
   return path.startsWith('/') ? path : `/${path}`;
 }
 

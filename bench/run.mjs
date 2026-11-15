@@ -17,7 +17,7 @@ function mapped(counts = {}, sites = [], numbers = [], range = null) {
 }
 const evidence = row => [row.url, ...(Array.isArray(row.evidence) ? row.evidence.filter(x=>typeof x==='string') : [])].filter(Boolean);
 function offersMap(body, key) {
-  const offers = Array.isArray(body[key]) ? body[key] : [];
+  const offers = Array.isArray(body[key]) ? body[key].filter(row => !('dupe_count' in row)) : [];
   const official = Array.isArray(body.official) ? body.official : [];
   return {offers,official, sites:offers.map(x=>x.site), numbers:offers.filter(x=>amount(x.delivered_cents ?? x.price_cents)!==null).map(x=>number('delivered_cents',x.delivered_cents ?? x.price_cents,x.citation_id ?? null,evidence(x)))};
 }
@@ -54,6 +54,45 @@ async function inProcess() {
   const wrapped=new Map();
   return makeAsk({dispatch: req=>{const pathname=new URL(req.url).pathname; const row=manifest.find(x=>x.method===req.method && paramsOf(x.endpoint.split(' ')[1],pathname)!==null); if(!row) return Promise.resolve(Response.json({code:'not_found'},{status:404})); if(!wrapped.has(row.endpoint)) wrapped.set(row.endpoint,route(row.endpoint,handlers[row.endpoint],{auth:row.auth})); return wrapped.get(row.endpoint)(req);}});
 }
+// Dupe permits aggregate observations only; remove its content at the response boundary.
+function scrub(body) {
+  const host = value => typeof value === 'string' && /mcp\.dupe\.com/i.test(value);
+  const source = value => value && typeof value === 'object' && !Array.isArray(value) &&
+    (value.site === 'dupe' || value.route_id === 'dupe.search.api' || value.via === 'dupe' || value.via === 'dupe.search.api' ||
+     'commercial_link' in value || 'attribution' in value || Object.values(value).some(host));
+  function clean(value, key = '') {
+    if (typeof value === 'string') {
+      // Only an event stream is split by line; a served marketplace page is kept whole, as it was read.
+      if (key === 'stream') {
+        return value.split('\n').map(line => {
+          if (!line.startsWith('data:')) return /(?:dupe|commercial_link|attribution)/i.test(line) ? '' : line;
+          try { return 'data: ' + JSON.stringify(clean(JSON.parse(line.slice(5)))); }
+          catch { return ''; }
+        }).join('\n');
+      }
+      return host(value) ? undefined : value;
+    }
+    if (Array.isArray(value)) {
+      let removed = 0;
+      const rows = value.flatMap(row => {
+        if (source(row) && key !== 'searched') { removed++; return []; }
+        const cleaned = clean(row, key); return cleaned === undefined ? [] : [cleaned];
+      });
+      if (removed) rows.push({dupe_count:removed});
+      return rows;
+    }
+    if (!value || typeof value !== 'object') return value;
+    if (source(value) && key === 'searched') {
+      return Object.fromEntries(Object.entries(value).filter(([k]) => ['site','route_id','kind','outcome','ms','count','pace','dropped','error_code','cached'].includes(k)));
+    }
+    if (source(value)) return {dupe_count:1};
+    return Object.fromEntries(Object.entries(value).flatMap(([k,v]) => {
+      if (k === 'commercial_link' || k === 'attribution') return [];
+      const cleaned = clean(v,k); return cleaned === undefined ? [] : [[k,cleaned]];
+    }));
+  }
+  return clean(body);
+}
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 export async function run({manifestPath='spec/items/manifest.json',outRoot='bench/out',set='market',tool='secondhand',ask,fetch:fetchPlain=globalThis.fetch,timeoutS=20,sleep=delay,sources=SOURCES}={}) {
   if (!['market','owned'].includes(set)) throw new Error('invalid set: '+set);
@@ -80,8 +119,8 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
       if(result.cost) usage=result.cost;
     }
     async function request(path, options) {
-      let res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); let body=await res.json(); raw.push({endpoint:path,status:res.status,body});
-      if(res.status===429) { await sleep(Math.max(0,Number(body.retry?.after_s ?? 0))*1000); res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); body=await res.json(); raw.push({endpoint:path,status:res.status,body}); }
+      let res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); let body=scrub(await res.json()); raw.push({endpoint:path,status:res.status,body});
+      if(res.status===429) { await sleep(Math.max(0,Number(body.retry?.after_s ?? 0))*1000); res=await log.call('http',path,{method:options?.method ?? 'GET'},()=>ask(path,options),r=>({result:{status:r.status}})); body=scrub(await res.json()); raw.push({endpoint:path,status:res.status,body}); }
       observe(body); return {res,body};
     }
     async function follow(path, remaining) {
@@ -92,7 +131,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
         const timeout=new Promise(resolve=>{timer=setTimeout(()=>resolve(false),remaining);});
         const consume=(async()=>{while(true) {const part=await reader.read(); if(part.done) return true; text+=decoder.decode(part.value,{stream:true});}})();
         const finished=await Promise.race([consume,timeout]);
-        raw.push({endpoint:path,status:res.status,body:text});
+        raw.push({endpoint:path,status:res.status,body:scrub({stream:text}).stream});
         return finished;
       } finally {clearTimeout(timer); await reader.cancel();}
     }
@@ -103,7 +142,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
           let outcome='timeout', count=0;
           try {
             const res=await log.call('http',url,{method:'GET'},()=>fetchPlain(url,{method:'GET',redirect:'manual'}),r=>({result:{status:r.status}}));
-            const html=await res.text(); raw.push({endpoint:url,status:res.status,body:html});
+            const html=await res.text(); raw.push({endpoint:url,status:res.status,body:scrub({body:html}).body});
             if(!res.ok) {error=`http_${res.status}`; outcome='blocked';}
             else {
               const read=readPage('poshmark',html);
@@ -155,7 +194,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
         const headers=Object.fromEntries([...res.headers].filter(([name])=>!/cookie|authorization/i.test(name)));
         const served={status:res.status,final_url:res.url || read.url,headers,body:await res.text(),fetched_at:new Date().toISOString()};
         const ref=`raw/${item.id}-${read.site}-served.json`;
-        await writeFile(join(dir,ref),JSON.stringify(served,null,2)+'\n'); servedRefs.push(ref); servedPaths.push(join(dir,ref));
+        await writeFile(join(dir,ref),JSON.stringify(scrub(served),null,2)+'\n'); servedRefs.push(ref); servedPaths.push(join(dir,ref));
       } catch(e) {log.error('bench.served',e);}
     }
     const cost=tool==='baseline'?answerCost(reads,{browser_s:0,proxy_bytes:0,model_calls:0}):answerCost(reads,usage);
