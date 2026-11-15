@@ -118,3 +118,12 @@ def test_an_anchor_uses_only_the_products_sales_before_the_date_and_the_caller_c
     assert own != m.interval({**item, "product_id": None}, item["at"])
     assert own == pytest.approx(m.interval(item, item["at"], recent=[r for r in m.sold if r.get("product_id") == "p0"] + [later]))
     assert m.interval(item, item["at"], recent=[]) == m.interval({**item, "product_id": None}, item["at"])
+
+
+def test_the_anchored_band_scores_each_sale_only_on_its_products_sales_in_the_90_days_before_it():
+    day = market.DAY
+    # 20 products alike: residual 0 on day 0, 1 on day 1, 3 on day 200. Products sit nowhere apart, so nothing shrinks
+    # and each error is the sale's residual minus the earlier ones' median: only the day-1 sale has a prior in 90 days.
+    by = {f"p{i}": ([0.0, day, 200 * day], [0.0, 1.0, 3.0]) for i in range(20)}
+    a = market._anchor_fit(by, market.ALPHA)
+    assert a["tau2"] == 0.0 and a["band"]["*"] == pytest.approx((1.0, 1.0, 1.0))
