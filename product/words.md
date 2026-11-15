@@ -2409,3 +2409,11 @@ Nate, the orchestrator's session, 2026-11-15, about 13:50 UTC.
 > I think we can add those clarifying question widgest to the intelligent ui too
 
 Read by the orchestrator as: the generative clarifying-question widgets built for capture (prepopulated selects when the system is fairly sure) also appear in the buying chat's answers; one block shape and one drawn part for both. Sent to the capture lead and the engines lead.
+
+## 2026-11-15 nate fix the server to be up so photos work
+Nate, the server-core lead's session, 2026-11-15, about 13:45 UTC.
+> Fix the server to be up, so photos work, be efficient, fast, get things working and stop models if it means you can fix this so we can have capture, searching all features working and pushed to main
+
+Then, on sign-in: "are we using vercel auth? i can add sign in with google", and "whatever is the way to set up auth do it, i made a new cloud project".
+
+Read by the server-core lead as: redeploy main to the Fly app now, compose the photo store and the capture upload targets, and set up Google sign-in in the new Cloud project. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md).

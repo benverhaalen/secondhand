@@ -1,6 +1,31 @@
 # 86: server core handoff
 
-Updated: 2026-11-15, about 08:15 Central (13:15 UTC), at hand-off. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
+Updated: 2026-11-15, about 08:00 Central (14:00 UTC), by the second server-core lead; first written about 13:15 UTC. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
+
+## At 14:00 UTC, the second server-core lead (read this first; the sections below are the first lead's and still hold unless this says otherwise)
+
+**On main, each rerun on the Mac by this lead (tests one file at a time, `tsc` clean):**
+
+| What | Commit on main | Proved by |
+|---|---|---|
+| Every production refusal holds unless `NODE_ENV=development` is stated: no data folder means no database, keys required, boot lists what is missing, no examples, the development code ignored with a note. One rule, `development(env)` in `store/db.ts`, used by db, secrets, examplesServed; a test that states production in the runner keeps the refusals. Plus srv-fix-2: keep.ts fails closed, no email lockout without a sender, code generator per code, no vendor text in logs | 56e985fd (on main 29058664) | db 2 suites, secrets, auth, api/auth, keep, jobs, server/main, server/proof all exit 0. Fresh Opus review: one HIGH regression (frames stored as null), fixed below |
+| A frame whose root names its site is stored with its rows (the root is a row only by its own `may_store`/`keep_until`); sender error names kept only as plain words; crash receiver needs development | 4a72e9e9 | keep.test and a new jobs.test read an `answer.partial` back from SQLite after a restart; both failed on the old code |
+| Encrypted vault (`store/vault.ts`, AES-256-GCM, ref as AAD, versions, tombstones); push tokens in it under `push/<user_id>`; examples seeded only where served; `SECONDHAND_VAULT_KEY` in the boot check | 5177d340, 28567664 (on main b7b24f65) | vault 7, secrets, runtime 46, me 24, accounts, search, watcher, server/main |
+| SV7 observation writer and its two reads (`events/observations.ts`, table `observation`); proof link 5 says it exists and nothing calls it yet | 03a7737f, 7139cedc (on main fcec6e91) | observations 92 across memory and SQLite stores, sqlite-store, ports, me, realtime-proof |
+| The pipeline passes the job's person on every harness call (since d042963f every post, delist and offer answer was refused as "not linked"); a Depop shop reply with no `page_info` is the last page (ac133f38 had broken the watcher's week) | e8981d9f | `scripts/walk.test.mjs` 7 of 7 (all fifteen stages), watcher, pipeline, depop adapter |
+| Photos: one photo store per server beside the database; `PUT /v1/uploads/:id` uses it; `POST /v1/captures/:id/photos` gives a captured row a real single-use target (example rows keep the example address). `fly.toml` sets `SECONDHAND_PUBLIC_ORIGIN` and `APPLE_CLIENT_IDS = com.bnvg.secondhand` (public identifiers) | eaec5743 (on main 9c8eab08) | captures, uploads, http, server/main; `bash server/container-check.sh` on the Mac at 9c8eab08, every step ok |
+
+**Hosted.** Redeployed main 9c8eab08 to `secondhand-api` at about 13:49 UTC on Nate's "Fix the server to be up". Probed by IP from the Mac (this network's DNS answers NXDOMAIN for the fly.dev name): `/healthz` 200 in 54 ms, `/v1/routes` 401, a bad upload token 404 (the route is composed), email start 503 "no email sender is configured". **The machine stops after 5 minutes: the Fly account is a trial** ("Trial machine stopping. To run for longer than 5m0s, add a credit card"). Only Nate can add the card; after it, `flyctl machine start 8e170ec76731d8 -a secondhand-api`.
+
+**Sign-in on the hosted server today:** none works yet. Email: Ben's `connect/email.ts` sends through Resend when `RESEND_API_KEY` (a secret) and `SECONDHAND_EMAIL_FROM` (an address on a domain verified in Resend) are set; fix the review's two email faults first (a resend resets the guess count; no per-address limit on auth-none routes). Apple: `APPLE_CLIENT_IDS` is now set; the app needs its Apple button wired. Google: the server verifies Google ID tokens against `GOOGLE_CLIENT_IDS` (comma list); Nate made Cloud project `secondhand-514813`; he creates the iOS client (bundle `com.bnvg.secondhand`) and a Web client in Google Auth Platform, then the ids go into `fly.toml` and a redeploy. The app has no Google sign-in client code yet (Ben's or the app-wiring lead's).
+
+**Open, in order:**
+1. The fresh review of the vault and SV7 (14:00 UTC) said fix first: (a) a PATCH /v1/me in flight can write a push token back after DELETE (tombstone version accepted by compareAndPut; the user row is never marked deleted); (b) the Dupe guard is `site === 'dupe'` only: compare case-insensitively and refuse `data`, `payload.source` or `payload.attribution` naming Dupe; (c) a rewrite with stricter rights is skipped because the id omits rights and `keep_until`; (d) private fields slip the key regexes (values unchecked; `postcode`, `location`, `email`, `phone`, `owner`; `query` stored in PUBLIC); (e) DELETE failing midway strands vault entries; (f) legacy raw push tokens used as refs; (g) `JSON.parse` outside the vault's try. Brief: `server-core-briefs/brief-srv-fix-4.txt` in the notes folder. Nothing calls the observation writer yet, so (b) to (d) are not live.
+2. Wire the observation writer: the engines lead's `ObservationPort` default (one marked line) and search's landing; then the Databricks landing (item 4 of the first lead's list).
+3. SV8 in the order of `spec/plans/app-wiring.md`; the email faults above; the review's "should fix" (`req.text()` reads any body before auth with no size cap); the rest of SV10.
+4. A fresh reviewer for e8981d9f and eaec5743 (photos are the reviewed kind). Not yet run.
+
+**Mac worktrees of this lead:** srv-fix-2, srv-vault-1, srv-obs-1, srv-fix-3, srv-walk-1, all merged to main; removable.
 
 ## What is true on main
 
