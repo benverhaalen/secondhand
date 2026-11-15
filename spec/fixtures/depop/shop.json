@@ -1,0 +1,287 @@
+{
+ "fixture": "depop-shop",
+ "note": "Made-up products in the Depop Partner API Product shape (partnerapi.depop.com openapi). Not anyone's real listings. `size` is the resolved size label; the Partner API itself returns size_set_id and size_id, which map through Depop's attributes endpoint.",
+ "products": [
+  {
+   "sku": "FIX-1",
+   "product_id": 900001,
+   "slug": "fixture-champion-badgers-tee-900001",
+   "status": "STATUS_ONSALE",
+   "description": "Vintage 90s Champion Wisconsin Badgers reverse weave tee\nSingle stitch, light fade on collar.\n#vintage #90s #badgers",
+   "price_currency": "USD",
+   "price_amount": "30.00",
+   "discount_price": "24.00",
+   "national_shipping_cost": "5.00",
+   "quantity": 1,
+   "pictures": [
+    {
+     "url": "https://example.com/fixture/1/P0.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/1/P1.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/1/P2.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/1/P3.jpg",
+     "height": 1280,
+     "width": 1280
+    }
+   ],
+   "department": "menswear",
+   "product_type": "tshirts",
+   "condition": "used_good",
+   "colour": [
+    "red"
+   ],
+   "brand": "Champion",
+   "size": "L",
+   "age": [
+    "90s"
+   ],
+   "source": [
+    "vintage"
+   ],
+   "style": []
+  },
+  {
+   "sku": "FIX-2",
+   "product_id": 900002,
+   "slug": "fixture-levis-550-jeans-900002",
+   "status": "STATUS_ONSALE",
+   "description": "Levi's 550 relaxed fit jeans\nMedium wash, 34x30.\n#levis #denim",
+   "price_currency": "USD",
+   "price_amount": "28.00",
+   "national_shipping_cost": "5.00",
+   "quantity": 1,
+   "pictures": [
+    {
+     "url": "https://example.com/fixture/2/P0.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/2/P1.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/2/P2.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/2/P3.jpg",
+     "height": 1280,
+     "width": 1280
+    }
+   ],
+   "department": "menswear",
+   "product_type": "jeans",
+   "condition": "used_excellent",
+   "colour": [
+    "blue"
+   ],
+   "brand": "Levi's",
+   "size": "34",
+   "age": [],
+   "source": [
+    "preloved"
+   ],
+   "style": []
+  },
+  {
+   "sku": "FIX-3",
+   "product_id": 900003,
+   "slug": "fixture-carhartt-chore-jacket-900003",
+   "status": "STATUS_ONSALE",
+   "description": "Vintage 90s Carhartt chore coat blanket lined\nBrown duck canvas, worn in.\n#carhartt #workwear #vintage",
+   "price_currency": "USD",
+   "price_amount": "90.00",
+   "national_shipping_cost": "5.00",
+   "quantity": 1,
+   "pictures": [
+    {
+     "url": "https://example.com/fixture/3/P0.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/3/P1.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/3/P2.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/3/P3.jpg",
+     "height": 1280,
+     "width": 1280
+    }
+   ],
+   "department": "menswear",
+   "product_type": "jackets",
+   "condition": "used_good",
+   "colour": [
+    "brown"
+   ],
+   "brand": "Carhartt",
+   "size": "XL",
+   "age": [
+    "90s"
+   ],
+   "source": [
+    "vintage"
+   ],
+   "style": []
+  },
+  {
+   "sku": "FIX-4",
+   "product_id": 900004,
+   "slug": "fixture-nike-y2k-hoodie-900004",
+   "status": "STATUS_ONSALE",
+   "description": "Y2K Nike centre swoosh hoodie\nGrey, small mark on cuff.\n#y2k #nike",
+   "price_currency": "USD",
+   "price_amount": "32.00",
+   "national_shipping_cost": "5.00",
+   "quantity": 1,
+   "pictures": [
+    {
+     "url": "https://example.com/fixture/4/P0.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/4/P1.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/4/P2.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/4/P3.jpg",
+     "height": 1280,
+     "width": 1280
+    }
+   ],
+   "department": "menswear",
+   "product_type": "hoodies",
+   "condition": "used_fair",
+   "colour": [
+    "grey"
+   ],
+   "brand": "Nike",
+   "size": "M",
+   "age": [
+    "00s"
+   ],
+   "source": [
+    "vintage"
+   ],
+   "style": []
+  },
+  {
+   "sku": "FIX-5",
+   "product_id": 900005,
+   "slug": "fixture-patagonia-baggies-900005",
+   "status": "STATUS_ONSALE",
+   "description": "Patagonia Baggies 5in shorts navy\n#patagonia #gorpcore",
+   "price_currency": "USD",
+   "price_amount": "35.00",
+   "national_shipping_cost": "5.00",
+   "quantity": 1,
+   "pictures": [
+    {
+     "url": "https://example.com/fixture/5/P0.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/5/P1.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/5/P2.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/5/P3.jpg",
+     "height": 1280,
+     "width": 1280
+    }
+   ],
+   "department": "menswear",
+   "product_type": "shorts",
+   "condition": "used_like_new",
+   "colour": [
+    "navy"
+   ],
+   "brand": "Patagonia",
+   "size": "M",
+   "age": [],
+   "source": [
+    "preloved"
+   ],
+   "style": []
+  },
+  {
+   "sku": "FIX-6",
+   "product_id": 900006,
+   "slug": "fixture-champion-hoodie-sold-900006",
+   "status": "STATUS_SOLD",
+   "description": "Champion reverse weave hoodie\n#champion",
+   "price_currency": "USD",
+   "price_amount": "40.00",
+   "national_shipping_cost": "5.00",
+   "quantity": 1,
+   "pictures": [
+    {
+     "url": "https://example.com/fixture/6/P0.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/6/P1.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/6/P2.jpg",
+     "height": 1280,
+     "width": 1280
+    },
+    {
+     "url": "https://example.com/fixture/6/P3.jpg",
+     "height": 1280,
+     "width": 1280
+    }
+   ],
+   "department": "menswear",
+   "product_type": "hoodies",
+   "condition": "used_good",
+   "colour": [
+    "grey"
+   ],
+   "brand": "Champion",
+   "size": "L",
+   "age": [],
+   "source": [],
+   "style": []
+  }
+ ]
+}
