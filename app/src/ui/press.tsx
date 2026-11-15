@@ -27,7 +27,7 @@ export function slop(w: number, h: number, gap: { x?: number; y?: number } = {})
   return { left: x, right: x, top: y, bottom: y };
 }
 
-export function Press({ id, label, onPress, disabled = false, selected, hit, round = true, part, children }: {
+export function Press({ id, label, onPress, disabled = false, selected, hit, round = true, part, role = 'button', checked, children }: {
   // What the log calls this control: "accept-offer", "tab-sell". Tests find it by this.
   id: string;
   // What a screen reader says, when the words inside do not say it.
@@ -39,6 +39,9 @@ export function Press({ id, label, onPress, disabled = false, selected, hit, rou
   // A pill or a circle takes a round focus ring; a card takes its own corner.
   round?: boolean;
   part?: string;
+  // What a screen reader calls it: a button, or a switch that also says whether it is on (`checked`), as iOS Settings does.
+  role?: 'button' | 'switch';
+  checked?: boolean;
   children: ReactNode | ((s: PressState) => ReactNode);
 }) {
   const c = useColors(), screen = usePathname(), reduced = useReducedMotion();
@@ -49,9 +52,9 @@ export function Press({ id, label, onPress, disabled = false, selected, hit, rou
     <Pressable
       testID={id}
       {...(part ? ({ dataSet: { part, press: id } } as object) : ({ dataSet: { press: id } } as object))}
-      accessibilityRole="button"
+      accessibilityRole={role}
       accessibilityLabel={label}
-      accessibilityState={{ disabled, selected }}
+      accessibilityState={role === 'switch' ? { disabled, checked: !!checked } : { disabled, selected }}
       disabled={disabled}
       hitSlop={hit}
       pressRetentionOffset={16}
