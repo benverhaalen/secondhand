@@ -1465,3 +1465,19 @@ Nate, build session (orchestrator), 2026-11-15 about 02:40 Central. Two messages
 > careful not to overdoo it, we have alot of sessions running so keep this amount of team leads
 
 Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate account for the documentation of everything we build with
+Nate, build session (orchestrator), 2026-11-15 about 02:55 Central.
+> remember to account for all documentation for relevant platforms, languages, frameworks, etc we develop with
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate the leads use codex well
+Nate, build session (orchestrator), 2026-11-15 about 03:10 Central.
+> Ensure the team leads are best utilizing codex, understand the proper models, efforts, and how to effectively prompt and configure for using such workers too
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate is this the most efficient way to read a site
+Nate, build session (orchestrator), 2026-11-15 about 03:05 Central.
+> is this really the most optimized way to read the site too? like acounting for efficienny? using jev ultrafast and such?
