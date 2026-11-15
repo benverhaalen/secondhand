@@ -101,7 +101,7 @@ Delist: one job per listing, key `delist:{item}:{site}`; cancel in-flight post o
 ## Contract for the frontend
 REST under `/v1`, prefixed ids, money `{amount_cents, currency}`, ISO 8601 UTC.
 - `GET /v1/orders?item_id=` and `GET /v1/orders/:id`: `{id, item_id, site, state, price_cents, fees_cents, shipping_cents, payout_cents, clocks:{ship_by, respond_by, claim_until, release_at}, listing_ids[], evidence:{capture_id, flaw_ids[], tracking_ref}}`.
-- `POST /v1/orders/:id/ship {insure_cents?}` returns a job `label`, stages `rate`, `buy`, `upload_tracking`, streamed at `GET /v1/jobs/:id/events`. Errors `{code, message, failed_step, retry}`. Not yet in product.md §7; asked under Needs.
+- `POST /v1/orders/:id/ship {insure_cents?}` returns a job `label`, stages `rate`, `buy`, `upload_tracking`, streamed at `GET /v1/jobs/:id/events`. Errors `{code, message, failed_step, retry}`. In [product §7](../product.md).
 - `POST /v1/orders/labels {order_ids[], layout}` buys the unbought labels as one `buy_label` decision and returns one PDF in pick-list order; `GET /v1/orders/pick-list` returns the day's rows grouped by `location.label`. Both asked under Needs.
 - Jobs: `label`, `poll_orders`; linked `delist`, `reconcile`. Decision kinds linked: `book_pickup` (messages).
 - Decisions owned here: `ship_by`, `buy_label`, `cancel_sale` (carries `cancel_reason`), `no_show`, `double_sale`, `refund` (locked), `return_claim`, `claim_reply`, `dispute`, `leave_review`. Owned elsewhere: `delist_after_sale`, `failed_delist` ([list.md](./list.md)), `book_pickup`, `pickup_outside_hours`, `share_address` (messages), `relink`, `site_warning` ([connect.md](./connect.md)).

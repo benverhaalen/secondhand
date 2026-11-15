@@ -21,7 +21,7 @@ Measure has no tab of its own. It runs after capture reaches `judged` and shows 
 
 | Choice | Options considered | Picked | Why | What would change it |
 |---|---|---|---|---|
-| Garment scale without LiDAR | ARKit plane ([measure plan](../../research/measure/ben/build-plan.md)); card or ArUco marker ([garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)); monocular depth ([adaptive-capture](../../research/capture/nate/adaptive-capture.md)); the product's published size | a card or marker first, then a published length, then the plane | a 10 cm marker reached 4.10 to 4.20% (Kowaleczko 2022, *observed*), far under the 12% Ben's plan gave monocular depth; no plane-alone figure exists | the plane test on 30 garments matches the card |
+| Garment scale without LiDAR | ARKit plane ([measure plan](../../research/measure/ben/build-plan.md)); card or ArUco marker ([garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)); monocular depth ([adaptive-capture](../../research/capture/nate/adaptive-capture.md)); the product's published size | the identified product's published size chart first, with the floor plane as the cross-check; a card or printed marker laid beside the garment is the fallback only when the two disagree or no size chart exists, because it is extra input | a 10 cm marker reached 4.10 to 4.20% (Kowaleczko 2022, *observed*), far under the 12% Ben's plan gave monocular depth; no plane-alone figure exists | the plane test on 30 garments matches the card |
 | Garment scale with LiDAR | LiDAR plus keypoints; plane | LiDAR plus keypoints, card as the cross-check | 1.59 to 2.08% relative error, about 8 to 10 mm on 50 cm (Kim 2022, *observed*) | none expected |
 | Monocular depth | as scale; as a cross-check only | cross-check only | UniDepthV2-L indoor ARel 6.8%, MoGe-2 Rel 15.7 ([garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) | a model under 2% indoors |
 | How points are placed | geometric pass; a pointing model; the person drags ([measure plan](../../research/measure/ben/build-plan.md)) | geometric pass plus a pointing model run 3 times, then one drag | DeepFashion2 landmark AP is only 0.563, so a model alone is not enough; the person settles what disagrees | point error on 30 garments |
@@ -50,7 +50,7 @@ Every `evidence` carries `captured_at` and `extractor_version`. A `package` hand
 
 | Class | Measured | Path, in order | If unresolved |
 |---|---|---|---|
-| Tops, outerwear, dresses | pit to pit, length (primary); shoulder, sleeve | LiDAR or card, published length, plane; mask and points ([measuring-garments](../../research/measure/ben/measuring-garments.md)) | `measure_review`: drag or "Measure between these two points" |
+| Tops, outerwear, dresses | pit to pit, length (primary); shoulder, sleeve | LiDAR, published size chart, plane; card only as the fallback; mask and points ([measuring-garments](../../research/measure/ben/measuring-garments.md)) | `measure_review`: drag or "Measure between these two points" |
 | Pants, skirts | waist, inseam (primary); rise, thigh, leg opening | same | same |
 | Shoes | outsole length and width; size from the tag | LiDAR box, Object Capture bounds | tag size alone (`label`) |
 | Bags | L, W, H; strap drop | LiDAR box, Object Capture | two taps on a photo with a card |
@@ -72,7 +72,7 @@ The earlier rule multiplied a fixed 10 or 15 mm by 1, 1.5 or 2.5. That rule had 
 | Budget | Ben's ±1.3 cm primary and ±2 cm secondary (*inferred*); rigid ±1 cm or 3% |
 | Outside budget | `measure_review` asks once; the value is never shown as measured until resolved |
 
-On a 50 cm pit to pit, Kim's LiDAR figure is about 1 cm and Kowaleczko's card figure about 2 cm, so without LiDAR a card alone misses Ben's ±1.3 cm primary budget. The card path therefore needs the published length or the person's drag to confirm a primary value; the test below decides whether the plane closes that gap.
+On a 50 cm pit to pit, Kim's LiDAR figure is about 1 cm and Kowaleczko's card figure about 2 cm, so without LiDAR a card alone misses Ben's ±1.3 cm primary budget. The card is therefore the fallback, and a primary value is confirmed when the published size chart and the plane agree, or by the person's drag; the test below decides whether the plane closes that gap.
 
 ## States
 

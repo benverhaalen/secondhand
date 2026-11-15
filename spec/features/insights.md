@@ -206,6 +206,6 @@ Rules that stay: buyers' personal data is not shown or kept, and the risk to a r
 ## Needs from the shared model
 - `GET /v1/records?tax_year=` (sales, fees, gain or loss, labelled a record), and an "I got paid" action on `order`.
 - `order` money lines with `source`, including `promotion_spend`; events `order.paid_out`, `order.fee_reported`, `goal.set`.
-- Job kind `poll_stats` (runs `read_stats` for the funnel); notice kinds `listing_stale` and `anomaly`; the suite fields on `GET /v1/insights`.
+- Job kind `poll_stats`, notice kinds `listing_stale` and `anomaly` and the suite fields on `GET /v1/insights` are in [product.md](../product.md).
 - [product §8](../product.md) proof-layer guard still says "fewer than 5 sales"; it should link [money D1](../determinations/money.md#d1-comparable-set-and-weights) and [D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site).
 - Cards to add in money.md: Profit by group, P&L for a period, Slow movers and ABC, Sell-down estimate, Own listing cohorts, Anomaly in own figures, Promotion return. [D23](../determinations/money.md#d23-sell-through-and-share-of-asking) still defines sell-through as sold over sold plus active, against M6.

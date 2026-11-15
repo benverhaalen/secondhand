@@ -32,13 +32,13 @@ For the jacket on eBay the app says: "Start at $48, drop to $42 after 9 days, ne
 
 Three plans are offered, and you can pick another at any time ([price spec](../../spec/features/price.md)).
 
-| Plan | Shown as | Starting price path (no study behind it yet) |
+| Plan | Shown as | Start (no study behind it yet) |
 |---|---|---|
-| quick | Sell this week | 25th percentile, 10% drops on days 3 and 5 |
-| balanced | Typical | median, 7% drops on days 10 and 20 |
-| max_return | Get the most | 75th percentile, 5% drop on day 21, a relist on day 45 |
+| quick | Sell this week | 25th percentile |
+| balanced | Typical | median |
+| max_return | Get the most | 75th percentile |
 
-The default is 30 days. A plan is recomputed when its comparable set goes stale, when interest moves, or when you edit the item. A sold range built on fewer than 5 sales is hidden, and so is an asking range on fewer than 6 listings. A hidden number is better than a shaky one.
+The three plans differ only in where they start and how long they run; the later steps are the same for all ([D15](../../spec/determinations/money.md#d15-markdown-path-stale-and-relist)). When a listing has gone stale (no sale by the plan's median days, and less interest than similar listings) it moves to the next price rung, or relists if the price is already at or below the middle of similar listings. After that the app offers watchers a deal, adds another site, and then asks what to do, and a step below your floor always asks. The default is 30 days. A plan is recomputed when its comparable set goes stale, when interest moves, or when you edit the item. A sold range built on fewer than 5 sales is hidden, and so is an asking range on fewer than 6 listings. A hidden number is better than a shaky one.
 
 The same logic picks the sites. [D1](../../spec/determinations/listing-and-marketing.md#d1-platform-fit) ranks them in a fixed order: a site's own rule is a veto, then sold comparables, then a researched fit table, then your setting, which always wins. With 10 or more sales the measured rank replaces the table.
 
@@ -87,7 +87,7 @@ The policy check runs in code before anything else, and replay cannot widen it (
 | A markdown on the path, at or above the floor | Any price below the floor | Moving the chat off the site |
 | Answer a question from confirmed facts | A relist (never on Poshmark) | A refund |
 | Accept an offer at or above your "always accept" price | Pickup outside your hours | |
-| Counter a low offer at the floor | A scam warning, an unbacked claim | |
+| Counter an offer at or above your floor | A scam warning, an unbacked claim | |
 | Book a pickup inside your hours | A cancelled sale, a no-show, a double sale, a dispute | |
 
 After 3 unedited approvals of one kind of action, the app offers "Always do this". It never offers it for the locked actions, a below-floor price, an out-of-hours pickup or an unbacked claim. Any undo demotes the rule that did it.
@@ -96,7 +96,7 @@ The Today screen shows only decisions outside your limits, ordered by deadline, 
 
 ## Buyers, offers and pickups
 
-Offers are decided by plain code against your limits ([messages spec](../../spec/features/messages.md)). A model only words the reply, and it never sees your floor or your address. A buyer offers $30 for the jacket. Your floor is $35, so the app counters at $35. A buyer offers $44, above your always-accept price of $42, so the app accepts. Buyer text is treated as data, never as an instruction.
+Offers are decided by plain code against your limits ([messages spec](../../spec/features/messages.md)). A model only words the reply, and it never sees your floor or your address. A buyer offers $30 for the jacket. Your floor is $35 and $30 is below it, so the app asks you and proposes a counter at the midpoint between the offer and the current price, never below the floor. A buyer offers $44, above your always-accept price of $42, so the app accepts. Buyer text is treated as data, never as an instruction.
 
 Every outgoing text passes an evidence gate. Money, times, places and item facts are checked by plain code against confirmed facts. Free text goes through an entailment check, which asks whether a fact supports the sentence. The threshold is set so that passed claims reach 98% precision on labelled examples. Authenticity, whether it works and hidden condition are held unless they are your own words.
 

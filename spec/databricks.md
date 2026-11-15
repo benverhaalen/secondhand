@@ -303,7 +303,7 @@ Each block gives the pieces, the data path, what the official skills say, what w
 ### 4.14 Today ([spec](features/today.md))
 - **Pieces:** decisions, rules and events stored in Lakebase; ranking in plain code; Expo push notifications; approvals recorded as labels; earned autonomy (§5.3).
 - **Data path:** acting on a stale decision returns 409. After 3 unedited approvals of the same kind, the card offers "Always do this" ([decisions](../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)).
-- **What the skills say:** in databricks-mlflow-evaluation, feedback attaches to traces. `log_feedback` does not cover traces stored in Unity Catalog (*observed*, [platform note](../research/data/nate/databricks-platform.md#mlflow-3)), so a person's tap on a trace is stored as a `label` row in Delta that links the trace id ([product.md](product.md) keeps traces in Unity Catalog Delta; product.md should state the `log_feedback` limit, *agent proposal*).
+- **What the skills say:** in databricks-mlflow-evaluation, feedback attaches to traces. `log_feedback` does not cover traces stored in Unity Catalog (*observed*, [platform note](../research/data/nate/databricks-platform.md#mlflow-3)), so a person's tap on a trace is stored as a `label` row in Delta that links the trace id ([product.md](product.md) keeps traces in Unity Catalog Delta and states the `log_feedback` limit).
 - **Test first:** every promotion can be traced back to its three approvals.
 
 ### 4.15 Insights ([spec](features/insights.md))
