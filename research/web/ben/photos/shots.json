@@ -1,0 +1,19 @@
+{
+  "model": "bytedance-seed/seedream-5-5",
+  "aspect_ratio": "3:2",
+  "pause_seconds": 20,
+  "job": "A photo for the top of the website of a resale app, for college students and people in their twenties clearing out their stuff. It shows the moment just before an item gets listed: {scene}. Image 1 is the real item and image 2 a close-up of it: keep the item exactly as it is, its color, print, tag and every sign of wear. Late afternoon window light, warm, from one side. Leave calm, plain space on one side, where interface cards will be laid over the photo.",
+  "variants": {
+    "person": "One person is in the frame doing it, seen from a few steps away. Their face is turned away or out of frame.",
+    "empty": "No people and no hands in the frame. It should feel like someone stepped away a moment ago."
+  },
+  "fail": "It fails if: the item differs from image 1 in color, print, shape or wear; any text, logo, watermark or screen interface appears other than the item's own print; a face is the subject or looks at the camera; it reads as a stock photo or a render (plastic skin, glossy surfaces, perfect symmetry, catalog styling); the room is tidier than a real student room; there is no calm side for the cards.",
+  "shots": [
+    {"id": "tee", "item": "../../../../assets/demo-items/real/marquette-tee/01_cover.jpg", "closeup": "../../../../assets/demo-items/real/marquette-tee/03.jpg",
+     "scene": "the gold t-shirt laid flat on the wood floor of a small apartment, a phone held over it to take the listing photo"},
+    {"id": "hoodie", "item": "../../../../assets/demo-items/real/chico-hoodie/01_cover.jpg", "closeup": "../../../../assets/demo-items/real/chico-hoodie/04.jpg",
+     "scene": "the crimson hoodie folded on an unmade bed next to a half-packed shipping mailer"},
+    {"id": "pants", "item": "../../../../assets/demo-items/real/carhartt-pants/01_cover.jpg", "closeup": "../../../../assets/demo-items/real/carhartt-pants/04.jpg",
+     "scene": "the black work pants on top of a pile of clothes being sorted on a bedroom floor in front of an open closet"}
+  ]
+}

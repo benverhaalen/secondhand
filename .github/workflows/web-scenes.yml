@@ -1,0 +1,45 @@
+name: web scene photos
+# Makes the website's mock scene photos (research/web/ben/photos). Runs only when
+# the shot plan changes on this branch, one image at a time, and skips any shot
+# that already has a file, so a run costs only what is missing.
+on:
+  push:
+    branches: [claude/project-thread-dbgps7]
+    paths: [research/web/ben/photos/shots.json, research/web/ben/photos/gen.py]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: web-scenes
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Render scenes
+        env:
+          K1: ${{ secrets.OPEN_ROUTER }}
+          K2: ${{ secrets.OPENROUTER_API_KEY }}
+          K3: ${{ secrets.OPENROUTER_KEY }}
+        run: |
+          export OPENROUTER_API_KEY="${K1:-${K2:-$K3}}"
+          python3 research/web/ben/photos/gen.py
+      - name: Shrink for the repo
+        if: always()
+        run: |
+          pip install -q pillow
+          python3 - <<'PY'
+          import glob, os
+          from PIL import Image
+          for f in glob.glob('research/web/ben/photos/*.png'):
+              im = Image.open(f).convert('RGB'); print(f, im.size)
+              im.thumbnail((2000, 2000)); im.save(f[:-4] + '.jpg', quality=88); os.remove(f)
+          PY
+      - name: Commit scenes
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add research/web/ben/photos
+          git commit -m "test(web): mock scene photos for the website" || exit 0
+          git pull --no-rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"
