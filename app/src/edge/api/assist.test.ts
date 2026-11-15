@@ -413,3 +413,73 @@ test('question and answer logging passes the shared log contract and stores only
   assert.ok(calls.length > 0);
   assert.ok(calls.every(line => !JSON.stringify(line.input).includes('medium')));
 });
+
+for (const count of [84, 307]) test(`round 4 route replay answers from all ${count} attached listings on three sites`, async () => {
+  const t = setup(), query = 'carhartt detroit jacket';
+  const search = t.jobs.put({ kind: 'search', state: 'done' }, 'person-a');
+  const sites = ['poshmark', 'ebay', 'dupe'];
+  const siteCounts = Object.fromEntries(sites.map((site, index) => [site, Math.floor((count + 2 - index) / 3)]));
+  t.jobs.append(search.id, 'answer.settled', { results: Array.from({ length: count }, (_, i) => offer(`ls_coat_${i}`, sites[i % 3], 4500)),
+    sites_pending: [], at: '2026-11-15T14:58:00Z',
+    answer: { slots: { text: query }, found: { results_used: count, results_found: count, sites: siteCounts } } });
+  t.jobs.append(search.id, 'job.state', { state: 'done' });
+  const empty = t.jobs.put({ kind: 'search', state: 'running' }, 'person-a');
+  t.jobs.append(empty.id, 'answer.partial', { results: [], sites_pending: sites });
+  let searches = 0;
+  const handler = createAssistHandler({ env: {}, jobs: t.jobs, params: assistParams, now: () => NOW,
+    fetch: noNetwork, schedule: task => t.tasks.push(task),
+    toolDeps: { caller: 'person', store: null, now: () => NOW, log: t.log, sold: async () => { throw new Error('unexpected sold read'); },
+      searchJob: { start: async () => { searches++; return { id: empty.id }; }, listen: t.jobs.listen, framesAfter: t.jobs.framesAfter } },
+    client: { model: 'stand-in', client: { messages: { stream(p) {
+      t.requests.push(structuredClone(p));
+      const final = message();
+      const first = p.messages[0].content;
+      assert.ok(Array.isArray(first));
+      const seed = first.find(b => b.type === 'text' && b.text.startsWith('seed result'));
+      assert.ok(seed?.type === 'text');
+      const result = JSON.parse(seed.text.slice(seed.text.indexOf('\n') + 1)) as ToolResult;
+      const text = `${result.counts.rows} listings for sale now. ${sites.map(site => `${site}: ${result.counts[`${site}_n`]} listings.`).join(' ')}`;
+      final.content = [{ type: 'text', text: `**What we measured**\n${text}\n[widget:r5]\nIt failed with not_connected.\nSources:`, citations: null }];
+      if (t.requests.length === 1 && count === 84) {
+        final.stop_reason = 'tool_use';
+        final.content.push({ type: 'tool_use', id: 'redundant-search', name: 'search_market', input: { query }, caller: { type: 'direct' } });
+      }
+      return { on() {}, finalMessage: async () => final };
+    } } } },
+  });
+  const response = await handler(t.ctx('person-a', { surface: 'buy', text: 'What do these rows show?', search_job_id: search.id }), new Request('http://test'));
+  assert.ok(!(response instanceof Response));
+  await t.tasks[0]();
+  const job = t.jobs.get((response.body as { id: string }).id, 'person-a')!;
+  const answer = job.result as import('../assist/types.ts').Answer;
+  assert.equal(job.state, 'done');
+  assert.equal(searches, 0, 'the attached item must never start a second search');
+  const text = answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join('');
+  assert.match(text, new RegExp(`\\b${count} listings for sale now`));
+  for (const site of sites) assert.match(text, new RegExp(`${site}: ${siteCounts[site]} listings`));
+  assert.doesNotMatch(text, /\*\*|\[widget:|not_connected|search_market|Sources:|stopped early/);
+  const deltas = t.jobs.framesAfter(job.id, 0).filter(f => f.event === 'assist.text').map(f => String(f.data.delta)).join('');
+  assert.doesNotMatch(deltas, /\*\*|\[widget:|not_connected|search_market|Sources:|stopped early/);
+});
+
+test('round 4 route gate never lets a web citation back a prose figure', async () => {
+  const t = setup();
+  const final = (JSON.parse(readFileSync(new URL('../assist/fixtures/converse/citation.json', import.meta.url), 'utf8')) as Message[])[0];
+  const block = final.content.find(b => b.type === 'text' && b.citations?.length);
+  assert.ok(block?.type === 'text');
+  block.text = 'They sell for $150 to $400 depending on era.';
+  for (const citation of block.citations ?? []) if (citation.type === 'web_search_result_location') citation.cited_text = block.text;
+  const handler = createAssistHandler({ env: {}, jobs: t.jobs, now: () => NOW, tools, fetch: noNetwork,
+    client: { model: 'stand-in', client: { messages: { stream() { return { on() {}, finalMessage: async () => final }; } } } },
+    schedule: task => t.tasks.push(task) });
+  const response = await handler(t.ctx('person-a'), new Request('http://test'));
+  assert.ok(!(response instanceof Response));
+  await t.tasks[0]();
+  const job = t.jobs.get((response.body as { id: string }).id, 'person-a')!;
+  assert.equal(job.state, 'done');
+  const answer = job.result as import('../assist/types.ts').Answer;
+  assert.equal(answer.sources.length, 1);
+  assert.doesNotMatch(JSON.stringify(answer.blocks), /\$150|\$400/);
+  assert.doesNotMatch(JSON.stringify(t.jobs.framesAfter(job.id, 0).filter(f => f.event === 'assist.text')), /\$150|\$400/);
+  assert.equal(answer.gate.cut, 1);
+});

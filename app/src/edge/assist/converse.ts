@@ -4,7 +4,7 @@ import type { Log } from '../../../../log/index.js';
 import type { Ask } from '../../engines/capture/plan.ts';
 import { sha256Hex } from '../../engines/proof/sha256.ts';
 import { gate } from '../gate/gate.ts';
-import type { LateUpdate } from './tools.ts';
+import { searchBasis, type LateUpdate } from './tools.ts';
 import { SYSTEM } from './prompt.ts';
 import { resolveTags, stripTags } from './widgets.ts';
 import type { Answer, AssistEvent, ToolCallInfo, ToolName, ToolResult, Usage, WebSource } from './types.ts';
@@ -38,6 +38,7 @@ export interface ConverseOptions {
   image?: { media_type: 'image/jpeg' | 'image/png' | 'image/webp'; data_base64: string };
   history?: MessageParam[];
   seed?: ToolResult[];
+  search_query?: string;
   late?: { on(fn: (update: LateUpdate) => void): () => void };
   effort: 'low' | 'medium';
   max_cost_usd: number;
@@ -408,15 +409,37 @@ function askInput(value: unknown): value is Omit<Ask, 'id' | 'answer' | 'replace
   return value.kind !== 'number_with_unit' || bounded(value.unit, 80);
 }
 
-const INTERNAL_WORD = /\b(?:not_connected|invalid_input|not_built|too_few|function_missing|signed_in_only|too_many_calls|already_asked|search_market|value_item|price_trend|where_to_list|market_store|web_search|ask_person)\b/i;
+const INTERNAL_WORD = /\b(?:not_connected|invalid_input|not_built|too_few|function_missing|signed_in_only|too_many_calls|already_asked|search_market|value_item|price_trend|where_to_list|market_store|web_search|ask_person)\b|\b(?:ls_|job_|cit_|summary:|genie:|valuation:|trend:|fee:|market:|offer:|listing:)\S+/i;
 function plainText(text: string): string {
   return text.replace(/\*\*|__/g, '');
 }
 
 async function shownDraft(...args: Parameters<typeof checkedDraft>) {
-  const text = await checkedDraft(...args);
   const answer = args[1];
+  let removed = 0;
+  if (args[0]) args[0] = { ...args[0], content: args[0].content.map(block => {
+    if (block.type !== 'text') return block;
+    return { ...block, text: block.text.replace(/\[([^\]:\r\n]+):([^\]\r\n]*)\]/g, (tag, kind: string, id: string) => {
+      if (kind === 'widget') {
+        const widget = answer.results[id]?.widgets[0];
+        if (widget) return `[${widget}:${id}]`;
+      } else if (['price_range', 'price_trend', 'sites', 'listings', 'alternatives', 'table', 'sources'].includes(kind)) return tag;
+      removed++;
+      return '';
+    }).replace(/\[[^\]:\r\n]+:[^\]\r\n]*(?=$|\r?\n)/g, () => {
+      removed++;
+      return '';
+    }).replace(/\[(?:widget|price_range|price_trend|sites|listings|alternatives|table|sources)(?:\]|(?=$|\r?\n))/g, () => {
+      removed++;
+      return '';
+    }) };
+  }) };
+  const text = await checkedDraft(...args);
+  answer.gate.tags_removed += removed;
   const rejected = sentences(text.replace(/\*\*|__/g, '  ')).filter(({ segment }) => INTERNAL_WORD.test(stripTags(segment)));
+  const heading = /(?:^|\n)[ \t]*(?:#{1,6}[ \t]*)?(?:\*\*|__)?Sources\s*:?(?:\*\*|__)?[ \t]*$/i.exec(text.trimEnd());
+  if (heading) rejected.push({ index: heading.index, segment: text.slice(heading.index) });
+  rejected.sort((a, b) => a.index - b.index);
   answer.gate.cut += rejected.length;
   answer.gate.cut_sentences.push(...rejected.map(({ index, segment }) => text.slice(index, index + segment.length).trim()));
   const clean = (start: number, end: number) => {
@@ -439,6 +462,16 @@ async function shownDraft(...args: Parameters<typeof checkedDraft>) {
     return shown ? [{ ...block, text: shown }] : [];
   });
   return clean(0, text.length);
+}
+
+function appendBlocks(previous: Answer['blocks'], next: Answer['blocks']): Answer['blocks'] {
+  if (previous.at(-1)?.type === 'ask') return [...previous, ...next];
+  const last = previous.findLast(block => block.type === 'text');
+  const firstIndex = next.findIndex(block => block.type === 'text'), first = next[firstIndex];
+  if (last?.type === 'text' && first?.type === 'text' && !last.text.endsWith('\n') && !first.text.startsWith('\n')) {
+    next = next.map((block, index) => index === firstIndex ? { ...first, text: `\n${first.text}` } : block);
+  }
+  return [...previous, ...next];
 }
 
 async function question(input: unknown, answer: Answer, o: ConverseOptions): Promise<Ask | null> {
@@ -510,6 +543,14 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
   };
   const toolEvent = (call: ToolCallInfo, phase: 'start' | 'end') => o.onEvent?.({ event: 'assist.tool', data: { ...publicCall(call), phase } });
   let resultId = 0, early = false;
+  let lastText = '', lastRoundCost = 0, finishReason: string | undefined;
+  const emitText = (text: string) => {
+    if (!text) return;
+    if (lastText && !lastText.endsWith('\n') && !text.startsWith('\n')) text = `\n${text}`;
+    if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
+    o.onEvent?.({ event: 'assist.text', data: { delta: text } });
+    lastText = text;
+  };
   const pendingWeb: PendingWeb = new Map();
   const queued: LateUpdate[] = [];
   let settled = false;
@@ -524,10 +565,12 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
     return { id, rendered: renderResult(result, id) };
   };
   const drainLate = () => queued.splice(0).map(update => {
+    const counts = update.counts ?? { rows: update.rows.filter(row => row.kind !== 'site_summary').length, sites_pending: update.sites_pending.length };
+    const as_of = update.as_of ?? new Date(o.now()).toISOString();
     const result: ToolResult = { tool: 'search_market', ok: true, rows: update.rows,
-      counts: { rows: update.rows.filter(row => row.kind !== 'site_summary').length, sites_pending: update.sites_pending.length },
+      counts,
       citation_ids: update.rows.map(row => String(row.citation_id ?? row.id)),
-      as_of: new Date(o.now()).toISOString(), basis: 'search job rows', not_built: [], widgets: ['listings'], ms: 0 };
+      as_of, basis: update.basis ?? searchBasis(counts, update.rows, as_of), not_built: [], widgets: ['listings'], ms: 0 };
     const { id, rendered } = addResult(result);
     return { type: 'text' as const, text: `late result ${id}: ${update.site}
 ${rendered}` };
@@ -544,27 +587,32 @@ ${rendered}` };
       content.push({ type: 'text', text: `seed result ${id}:
 ${rendered}` });
     }
+    if (o.seed?.some(result => result.tool === 'search_market')) content.push({ type: 'text',
+      text: `The attached search${o.search_query ? ` is for ${JSON.stringify(o.search_query)}` : ''} is already available as seed rows. Answer from those rows. Search only for a different item.` });
     const messages: MessageParam[] = [...(o.history ?? []), { role: 'user', content }];
     const maxRounds = o.max_rounds ?? 6;
     if (!Number.isInteger(maxRounds) || maxRounds < 1) throw new Error('max_rounds must be a positive integer');
     for (let round = 0; round < maxRounds; round++) {
       o.signal.throwIfAborted();
-      if (!(answer.usage.cost_usd < o.max_cost_usd)) {
-        early = true;
-        answer.reason = 'cost_cap';
-        break;
-      }
+      const costLeft = o.max_cost_usd - answer.usage.cost_usd;
+      const costLimit = !(costLeft > 0) || costLeft < Math.max(lastRoundCost, 1024 * PRICE_TABLE.output_per_million / 1e6);
+      const answerNow = Boolean(finishReason) || round + 1 === maxRounds || costLimit;
+      const limitReason = finishReason ?? (costLimit ? 'cost_cap' : 'max_rounds');
       const lateNotes = drainLate();
       if (lateNotes.length) messages.push({ role: 'user', content: lateNotes });
+      if (answerNow) messages.push({ role: 'user', content: 'Answer now from the results you already have. Lead with the rows. Tools are off; give the final answer.' });
       const roundStart = o.now();
       const max_tokens = Math.max(1024, Math.min(16000,
-        Math.floor((o.max_cost_usd * 1e6 - answer.usage.cost_usd * 1e6) / PRICE_TABLE.output_per_million)));
-      const final = await o.log.call('model', o.model, { round: round + 1, effort: o.effort, message_count: messages.length }, async () => {
+        Math.floor(Number.isFinite(costLeft)
+          ? (o.max_cost_usd * 1e6 - answer.usage.cost_usd * 1e6) / PRICE_TABLE.output_per_million : 0)));
+      let final: Message;
+      try { final = await o.log.call('model', o.model, { round: round + 1, effort: o.effort, message_count: messages.length, answer_now: answerNow }, async () => {
         try {
           const stream = o.client.messages.stream({
             model: o.model, max_tokens,
             system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }], messages,
             tools: [...o.tools.defs, ASK_PERSON, { type: 'web_search_20260209', name: 'web_search', max_uses: 3 }],
+            ...(answerNow ? { tool_choice: { type: 'none' as const } } : {}),
             output_config: { effort: o.effort }, thinking: { type: 'adaptive' },
           }, { signal: o.signal });
           // Hold the round until its text and web citations are complete, then gate whole sentences.
@@ -575,10 +623,7 @@ ${rendered}` });
             message.content.flatMap(block => block.type === 'text' ? block.citations ?? [] : []) }] };
           const preview: Answer = { ...answer, blocks: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
           const visible = stripTags(await shownDraft(streamed, preview, o.text, o.log, o.now(), true));
-          for (const { segment } of sentences(visible)) {
-            if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
-            o.onEvent?.({ event: 'assist.text', data: { delta: stripTags(segment) } });
-          }
+          emitText(visible);
           return message;
         } catch (error) {
           throw safeError(error, o);
@@ -587,8 +632,15 @@ ${rendered}` });
         const usage = usageOf(message, max_tokens);
         return { ms: o.now() - roundStart, ...usage, tokens_in: usage.input_tokens,
           tokens_out: usage.output_tokens, stop_reason: message.stop_reason };
-      });
+      }); } catch (error) {
+        if (!answerNow) throw error;
+        o.log.error('assist.answer_now', safeError(error, o));
+        early = true;
+        answer.reason = limitReason;
+        break;
+      }
       const usage = usageOf(final, max_tokens);
+      lastRoundCost = usage.cost_usd;
       if (missingTokenUsage(final.usage)) {
         o.log.note('assist.usage', { reason: 'missing_token_usage', round: round + 1, tokens_in: usage.input_tokens, tokens_out: usage.output_tokens });
       }
@@ -597,10 +649,16 @@ ${rendered}` });
       await collectWeb(final, answer, o, toolEvent, pendingWeb, roundStart);
       const hasAsk = final.content.some(block => block.type === 'tool_use' && block.name === 'ask_person');
       const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
-      if (!hasAsk) {
+      if (!hasAsk || answerNow) {
         await shownDraft(final, answer, o.text, o.log, o.now());
-        answer.blocks = [...previous, ...answer.blocks];
+        answer.blocks = appendBlocks(previous, answer.blocks);
         answer.gate.tags_removed += tags_removed;
+      }
+      if (answerNow && (final.stop_reason === 'tool_use' || final.stop_reason === 'pause_turn')) {
+        o.log.error('assist.answer_now', new Error('final call did not answer'));
+        early = true;
+        answer.reason = limitReason;
+        break;
       }
       if (final.stop_reason === 'refusal') {
         answer.state = 'refused';
@@ -609,22 +667,21 @@ ${rendered}` });
       }
       if (final.stop_reason !== 'tool_use' && final.stop_reason !== 'pause_turn') {
         if (final.stop_reason === 'max_tokens' || final.stop_reason === 'model_context_window_exceeded') {
+          if (!answerNow) {
+            finishReason = final.stop_reason;
+            messages.push({ role: 'assistant', content: final.content });
+            continue;
+          }
           early = true;
           answer.reason = final.stop_reason;
         }
-        if (!early && queued.length) {
-          if (round + 1 === maxRounds) { early = true; answer.reason = 'max_rounds'; break; }
+        if (!early && queued.length && !answerNow) {
           messages.push({ role: 'assistant', content: final.content });
           continue;
         }
         break;
       }
       messages.push({ role: 'assistant', content: final.content });
-      if (round + 1 === maxRounds && !hasAsk) {
-        early = true;
-        answer.reason = 'max_rounds';
-        break;
-      }
       if (final.stop_reason === 'tool_use') {
         const uses = final.content.filter(block => block.type === 'tool_use');
         if (!uses.length) throw new Error('tool_use stop without tool calls');
@@ -654,6 +711,11 @@ ${rendered}` });
             } else if (index >= MAX_TOOL_USES_PER_ROUND) {
               result = failedResult(tool, 0, 'too_many_calls');
               o.log.note('assist.tool limit', { tool, result_id: id, reason: result.reason });
+            } else if (use.name === 'search_market' && o.search_query && record(use.input)
+              && typeof use.input.query === 'string' && use.input.query.trim().toLowerCase() === o.search_query.trim().toLowerCase()
+              && o.seed?.some(seed => seed.tool === 'search_market' && seed.ok)) {
+              result = o.seed.find(seed => seed.tool === 'search_market' && seed.ok)!;
+              o.log.note('assist.search.reused', { result_id: id });
             } else result = await o.log.call('tool', use.name, logValue(use.input, o), async () => {
               try { return await o.tools.run(use.name, use.input, o.signal); }
               catch (error) { throw safeError(error, o); }
@@ -678,7 +740,7 @@ ${rendered}` });
           const render = async () => {
             const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
             await shownDraft({ ...final, content: group }, answer, o.text, o.log, o.now());
-            answer.blocks = [...previous, ...answer.blocks];
+            answer.blocks = appendBlocks(previous, answer.blocks);
             answer.gate.tags_removed += tags_removed;
             group = [];
           };
@@ -700,11 +762,10 @@ ${rendered}` });
       const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
       const text = await shownDraft({ content: [{ type: 'text', text: 'The answer stopped early.', citations: null }] } as Message,
         answer, o.text, o.log, o.now());
-      answer.blocks = [...previous, ...answer.blocks];
+      answer.blocks = appendBlocks(previous, answer.blocks);
       answer.gate.tags_removed += tags_removed;
       if (text) {
-        if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
-        o.onEvent?.({ event: 'assist.text', data: { delta: stripTags(text) } });
+        emitText(stripTags(text));
       }
     }
     o.log.note('assist.gate', { ...answer.gate, cut_sentences: undefined, early_count: early ? 1 : 0 });

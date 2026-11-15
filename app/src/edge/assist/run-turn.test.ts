@@ -224,3 +224,23 @@ test('answer note and job id reach converse and answer values are hashed out of 
   assert.ok(!t.sink.text().includes(answer.value));
   assert.ok(t.sink.text().includes(sha256Hex(answer.value)));
 });
+
+test('round 4 late search results have a readable basis and full frame counts', async () => {
+  const t = setup();
+  const search = t.jobs.put({ kind: 'search', state: 'running' }, 'person-a');
+  const row = { id: 'ls_first', listing_id: 'ls_first', site: 'poshmark', title: 'coat', url: 'https://example.test/coat',
+    condition: 'good', relation: 'exact', price_cents: { amount_cents: 4500, currency: 'USD' }, delivered_cents: null };
+  t.jobs.append(search.id, 'answer.partial', { results: [row], sites_pending: ['ebay'], at: '2026-11-15T14:58:00Z' });
+  let rounds = 0;
+  t.deps.client = { model: 'stand-in', client: { messages: { stream() {
+    const final = fixture()[1];
+    final.content = [{ type: 'text', text: 'These match.', citations: null }];
+    if (++rounds === 1) t.jobs.append(search.id, 'answer.late', { site: 'ebay',
+      results: Array.from({ length: 84 }, (_, i) => ({ ...row, id: `ls_late_${i}`, site: 'ebay' })), sites_pending: [], at: '2026-11-15T14:59:00Z' });
+    return { on() {}, finalMessage: async () => final };
+  } } } };
+  const answer = await runTurn(t.job.id, { surface: 'buy', text: 'analyse', user_id: 'person-a', search_job_id: search.id }, t.deps);
+  assert.equal(answer?.results.r2.basis, '84 listings for sale now on ebay, read 14:59 UTC');
+  assert.equal(answer?.results.r2.counts.rows, 84);
+  assert.equal(answer?.results.r2.counts.ebay_n, 84);
+});

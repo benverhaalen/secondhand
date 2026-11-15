@@ -123,7 +123,7 @@ export async function runTurn(job_id: string, input: TurnInput, deps: RunTurnDep
         job_id, text: input.text, image: input.image,
         answer_note: input.answer ? `answer to ${input.answer.ask_id}: ${input.answer.field} = ${JSON.stringify(input.answer.value)}` : undefined,
         history: input.history?.map(turn => ({ role: turn.role, content: turn.text })),
-        seed, late, ...configured, effort, max_cost_usd, now: deps.now, log, signal: ctl.signal, onEvent: emit,
+        seed, search_query: seed[0]?.query, late, ...configured, effort, max_cost_usd, now: deps.now, log, signal: ctl.signal, onEvent: emit,
         tools: deps.tools ?? { defs: TOOL_DEFS, run: (name, value, signal) => runTool(name, value, toolDeps, signal) },
       });
     };

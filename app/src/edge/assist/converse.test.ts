@@ -66,7 +66,7 @@ test('settled blocks preserve text and widgets from every round in order', async
   assert.equal(answer.blocks[0].type === 'text' && answer.blocks[0].text, 'Looking now.');
   assert.deepEqual(answer.blocks.filter(b => b.type === 'widget').map(b => b.widget), ['price_range', 'table']);
   const last = answer.blocks.at(-1);
-  assert.equal(last?.type === 'text' && last.text, 'Finished.');
+  assert.equal(last?.type === 'text' && last.text, '\nFinished.');
   assert.equal(answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join('').replace(/\s/g, ''), streamed(t.events).replace(/\s/g, ''));
   const settled = t.events.find(e => e.event === 'assist.settled');
   assert.ok(settled?.event === 'assist.settled');
@@ -600,10 +600,11 @@ test('missing input counts default to zero and missing output uses max_tokens', 
   assert.equal((await setup('answer', { client: replay([missingOutput]).client }).run()).usage.output_tokens, 16000);
 });
 
-test('non-finite accumulated cost reaches the cap', async () => {
+test('non-finite accumulated cost forces one final answer attempt', async () => {
   const recording = replay(Array.from({ length: 6 }, () => continuingRound({ output_tokens: NaN })));
   const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
-  assert.equal(recording.requests.length, 1);
+  assert.equal(recording.requests.length, 2);
+  assert.deepEqual(recording.requests[1].tool_choice, { type: 'none' });
   assert.equal(answer.reason, 'cost_cap');
 });
 
@@ -612,9 +613,10 @@ test('cache creation costs 1.25 times input pricing and counts toward the cap', 
     input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 100000,
   })));
   const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
-  assert.equal(recording.requests.length, 1);
+  assert.equal(recording.requests.length, 2);
+  assert.deepEqual(recording.requests[1].tool_choice, { type: 'none' });
   assert.equal(answer.reason, 'cost_cap');
-  assert.equal(answer.usage.cost_usd, 0.25);
+  assert.equal(answer.usage.cost_usd, 0.5);
 });
 
 test('each round sizes max_tokens from remaining output budget, bounded by 1024 and 16000', async () => {
@@ -833,6 +835,7 @@ test('a round without token fields or provider cost uses max_tokens pricing and 
   const t = setup('answer', { client: recording.client, max_cost_usd: 0.001 });
   const answer = await t.run();
   assert.equal(recording.requests.length, 1);
+  assert.deepEqual(recording.requests[0].tool_choice, { type: 'none' });
   assert.equal(answer.reason, 'cost_cap');
   assert.equal(answer.usage.input_tokens, 0);
   assert.equal(answer.usage.output_tokens, recording.requests[0].max_tokens);
@@ -935,7 +938,8 @@ for (const [text, prices] of plantedMoney) {
 test('BC1 reported zero never lowers token pricing or disables max_cost_usd', async () => {
   const recording = replay([continuingRound({ cost: 0, input_tokens: 900000, output_tokens: 16000, cache_read_input_tokens: 0 })]);
   const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
-  assert.equal(recording.requests.length, 1);
+  assert.equal(recording.requests.length, 2);
+  assert.deepEqual(recording.requests[1].tool_choice, { type: 'none' });
   assert.equal(answer.reason, 'cost_cap');
   assert.equal(answer.usage.cost_usd, 1.96);
   assert.equal(answer.usage.cost_source, 'price_table');
@@ -1170,7 +1174,8 @@ test('late updates remain bounded by max_rounds and the cost cap', async () => {
     } } };
     const answer = await t.run();
     assert.equal(t.requests.length, 1);
-    assert.equal(answer.reason, limit === 'rounds' ? 'max_rounds' : 'cost_cap');
+    assert.equal(answer.reason, undefined);
+    assert.deepEqual(t.requests[0].tool_choice, { type: 'none' });
   }
 });
 
@@ -1186,9 +1191,9 @@ function askMessage(input: unknown = sizeQuestion()): Message {
   return message;
 }
 
-test('ambiguous sizes use the shared Ask in content order and end even at the round limit', async () => {
+test('ambiguous sizes use the shared Ask in content order before the final answer round', async () => {
   const recording = replay([askMessage()]);
-  const t = setup('answer', { ...recording, job_id: 'job_sizes', seed: [result], max_rounds: 1,
+  const t = setup('answer', { ...recording, job_id: 'job_sizes', seed: [result], max_rounds: 2,
     tools: { defs: [], run: async () => { throw new Error('ask_person must stay in converse'); } } });
   const answer = await t.run();
   assert.equal(answer.state, 'answered');
@@ -1307,3 +1312,112 @@ for (const token of ['not_connected', 'invalid_input', 'not_built', 'too_few', '
     assert.equal(answer.gate.cut, 1);
   });
 }
+
+test('round 4 widget aliases resolve to the first widget; unknown bracket tags never become prose', async () => {
+  const t = setup('answer', { seed: [result], client: replay([textMessage('See [widget:r1]. Missing [widget:r5] and [unknown:r1].')]).client });
+  const answer = await t.run();
+  assert.deepEqual(answer.blocks.filter(b => b.type === 'widget'), [{ type: 'widget', widget: 'price_range', result_id: 'r1' }]);
+  assert.doesNotMatch(prose(answer) + streamed(t.events), /\[[^\]]*:/);
+  assert.equal(answer.gate.tags_removed, 2);
+});
+
+test('round 4 prompt leads with attached rows and limits web sources to words', () => {
+  assert.match(SYSTEM, /lead with.*rows/i);
+  assert.match(SYSTEM, /never open with a refusal/i);
+  assert.match(SYSTEM, /different item/i);
+  assert.match(SYSTEM, /web sources.*words.*never figures/i);
+  assert.match(SYSTEM, /never.*sources heading/i);
+  assert.match(SYSTEM, /never write an id/i);
+  assert.doesNotMatch(SYSTEM, /writing \[widget:result_id\]/);
+});
+
+test('round 4 drops an empty trailing sources heading after the gate cuts its contents', async () => {
+  const t = setup('answer', { client: replay([textMessage('These match.\n\n**Sources:**\nIt costs $999.')]).client });
+  const answer = await t.run();
+  assert.equal(prose(answer), 'These match.');
+  assert.equal(streamed(t.events).trim(), 'These match.');
+});
+
+for (const id of ['ls_dupe_dupe-de34e3be381e', 'job_search-private', 'summary:poshmark:abc', 'genie:abc']) {
+  test(`round 4 cuts row or citation id ${id} after gating`, async () => {
+    const t = setup('answer', { client: replay([textMessage(`These match. Pick (${id}).`)]).client });
+    const answer = await t.run();
+    assert.equal(prose(answer), 'These match.');
+    assert.equal(streamed(t.events), 'These match. ');
+  });
+}
+
+test('round 4 separate model rounds keep the same line break in streamed and settled text', async () => {
+  const first = continuingRound({});
+  first.content.unshift({ type: 'text', text: 'Found across the sites.', citations: null });
+  const t = setup('answer', { client: replay([first, textMessage('- These are asking prices.')]).client });
+  const answer = await t.run();
+  assert.equal(answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join(''), 'Found across the sites.\n- These are asking prices.');
+  assert.equal(streamed(t.events), 'Found across the sites.\n- These are asking prices.');
+});
+
+for (const limit of ['rounds', 'cost'] as const) test(`round 4 ${limit} limit reserves one tools-off answer from the results`, async () => {
+  const first = continuingRound({ cost: limit === 'cost' ? 0.2 : 0.001 });
+  const recording = replay([first, textMessage('There are 3 sold listings.')]);
+  const t = setup('answer', { seed: [result], client: recording.client,
+    max_rounds: limit === 'rounds' ? 2 : 6, max_cost_usd: limit === 'cost' ? 0.25 : 1 });
+  const answer = await t.run();
+  assert.equal(recording.requests.length, 2);
+  assert.deepEqual(recording.requests[1].tool_choice, { type: 'none' });
+  assert.match(JSON.stringify(recording.requests[1].messages), /answer now.*results/i);
+  assert.doesNotMatch(prose(answer), /stopped early/);
+  assert.match(prose(answer), /3 sold listings/);
+});
+
+test('round 4 removes unknown and incomplete bracket tags as well as named kinds', async () => {
+  const t = setup('answer', { client: replay([textMessage('These match. [price graph:r1] [weird-kind:r9]\n[widget:r5')]).client });
+  const answer = await t.run();
+  assert.doesNotMatch(prose(answer) + streamed(t.events), /\[/);
+  assert.equal(answer.gate.tags_removed, 3);
+});
+
+test('round 4 malformed final response preserves its text in both stream and settled blocks', async () => {
+  const final = continuingRound({});
+  final.content.unshift({ type: 'text', text: 'These match.', citations: null });
+  const t = setup('answer', { client: replay([final]).client, max_rounds: 1 });
+  const answer = await t.run();
+  assert.equal(answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join(''), streamed(t.events));
+  assert.equal(streamed(t.events), 'These match.\nThe answer stopped early.');
+});
+
+test('round 4 a different item may still search when a search is attached', async () => {
+  const first = fixture('one-tool')[0];
+  first.content = [{ type: 'tool_use', id: 'different', name: 'search_market', input: { query: 'wool trousers' }, caller: { type: 'direct' } }];
+  const t = setup('answer', { seed: [{ ...result, tool: 'search_market' }], search_query: 'carhartt detroit jacket',
+    client: replay([first, textMessage('These match.')]).client });
+  const queries: unknown[] = [];
+  t.options.tools.run = async (_name, input) => { queries.push(input); return result; };
+  await t.run();
+  assert.deepEqual(queries, [{ query: 'wool trousers' }]);
+});
+
+test('round 4 a widget between model rounds still keeps the prose line break', async () => {
+  const first = continuingRound({});
+  first.content.unshift({ type: 'text', text: 'Found. [listings:r1]', citations: null });
+  const t = setup('answer', { seed: [{ ...result, tool: 'search_market', widgets: ['listings'] }],
+    client: replay([first, textMessage('Done.')]).client });
+  const answer = await t.run();
+  assert.equal(answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join(''), 'Found.\nDone.');
+  assert.match(streamed(t.events), /Found\. *\nDone\./);
+});
+
+test('round 4 a malformed widget tag without its result id never becomes prose', async () => {
+  const t = setup('answer', { client: replay([textMessage('These match. [widget] [listings]\n[widget')]).client });
+  const answer = await t.run();
+  assert.doesNotMatch(prose(answer) + streamed(t.events), /\[/);
+  assert.equal(answer.gate.tags_removed, 3);
+});
+
+test('round 4 returned citation ids never become prose even when their dates are backed', async () => {
+  const id = 'valuation:q_coat:all:2026-11-15T12:00:00Z';
+  const t = setup('answer', { seed: [{ ...result, as_of: '2026-11-15T12:00:00Z', citation_ids: [id] }],
+    client: replay([textMessage(`These match. Use ${id}.`)]).client });
+  const answer = await t.run();
+  assert.equal(prose(answer), 'These match.');
+  assert.equal(streamed(t.events), 'These match. ');
+});

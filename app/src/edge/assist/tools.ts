@@ -28,8 +28,8 @@ export interface StorePort {
   token(): Promise<string>;
   fetch: typeof globalThis.fetch;
 }
-export type LateUpdate = { result_id: string; site: string; rows: Row[]; sites_pending: string[] };
-export type SearchToolResult = ToolResult & { result_id: string };
+export type LateUpdate = { result_id: string; site: string; rows: Row[]; sites_pending: string[]; counts?: ToolResult['counts']; as_of?: string; basis?: string };
+export type SearchToolResult = ToolResult & { result_id: string; query?: string };
 export interface SearchJobPort {
   start(input: { query: string; caller: 'visitor' | 'person'; person_id?: string; signal: AbortSignal }): Promise<{ id: string }>;
   listen(id: string, fn: () => void): () => void;
@@ -214,7 +214,7 @@ function searchRows(data: Record<string, unknown>, x: Extract<Input, { query: st
   const kept = offers.filter(row => !brand || !brand.test(row.title));
   const sites = [...new Set(kept.map(row => row.site))];
   const rows = kept.slice(0, Math.max(0, 30 - sites.length)).map(listing);
-  r.counts = { rows: rows.length, sites_hit: new Set(rows.map(row => row.site)).size, sites_pending: pending.length,
+  r.counts = { rows: kept.length, sample_rows: rows.length, sites_hit: sites.length, sites_pending: pending.length,
     dropped_brand: offers.length - kept.length, ...Object.fromEntries(pending.map(site => [`${site}_pending`, 1])) };
   const found = object(data.found) ?? object(object(data.answer)?.found);
   if (found) {
@@ -226,18 +226,25 @@ function searchRows(data: Record<string, unknown>, x: Extract<Input, { query: st
       if (eligible(site) && typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) r.counts[`${site}_found`] = value;
     }
   }
-  const summaries = [...new Set(rows.map(row => String(row.site)))].map(site => {
+  const summaries = sites.map(site => {
     const local = rows.filter(row => row.site === site), prices = local.filter(row => row.currency === 'USD').map(row => Number(row.price_cents));
     const likes = local.flatMap(row => typeof row.likes === 'number' ? [row.likes] : []);
     const p50 = median(prices), mean = likes.length ? likes.reduce((a, b) => a + b, 0) / likes.length : null;
-    r.counts[`${site}_n`] = local.length; r.counts[`${site}_rows`] = local.length; r.counts[`${site}_likes_rows`] = likes.length;
+    const total = kept.filter(row => row.site === site).length;
+    r.counts[`${site}_n`] = total; r.counts[`${site}_rows`] = total; r.counts[`${site}_likes_rows`] = likes.length;
     if (p50 !== null) r.counts[`${site}_p50_ask_cents`] = p50;
     if (mean !== null) r.counts[`${site}_likes_per_listing`] = mean;
     const id = `summary:${site}:${basisHash(local.map(row => ({ id: String(row.id), source: String(row.url), at: r.as_of, ...(typeof row.price_cents === 'number' ? { price_cents: row.price_cents } : {}) })))}`;
-    return { id, citation_id: id, kind: 'site_summary', site, n: local.length, ...money('p50_ask', p50),
+    return { id, citation_id: id, kind: 'site_summary', site, n: local.length, total, ...money('p50_ask', p50),
       likes_per_listing: mean, likes_rows: likes.length, basis_ids: JSON.stringify(local.map(row => row.id)) };
   });
   return { rows: [...rows, ...summaries], sites_pending: pending };
+}
+
+export function searchBasis(counts: ToolResult['counts'], rows: Row[], as_of: string): string {
+  const sites = [...new Set(rows.map(row => String(row.site)))];
+  const names = sites.length > 1 ? `${sites.slice(0, -1).join(', ')} and ${sites.at(-1)}` : sites[0] ?? 'no sites';
+  return `${counts.rows} listings for sale now on ${names}, read ${as_of.slice(11, 16)} UTC`;
 }
 async function searchMarket(x: Extract<Input, { query: string }>, d: ToolDeps, signal: AbortSignal, r: ToolResult): Promise<ToolResult> {
   r.widgets = [x.exclude_brand ? 'alternatives' : 'listings'];
@@ -263,6 +270,7 @@ function readSearchJob(id: string, x: Extract<Input, { query: string }>, d: Tool
   const first_id = `${id}:first`;
   return new Promise<SearchToolResult>((resolve, reject) => {
     let cursor = 0, first = true, late = 0, closed = false;
+    let waiting: SearchToolResult | undefined;
     let off: (() => void) | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
     const stop = () => { closed = true; clearTimeout(timer); off?.(); signal.removeEventListener('abort', abort); };
@@ -290,21 +298,31 @@ function readSearchJob(id: string, x: Extract<Input, { query: string }>, d: Tool
             stop(); if (first) resolve({ ...fail(r, 'failed', 'search job failed'), result_id: first_id }); return;
           }
           if (!['answer.partial', 'answer.settled', 'answer.late'].includes(frame.event)) continue;
-          const snapshot = { ...r, counts: {} };
+          const as_of = typeof frame.data.at === 'string' ? new Date(frame.data.at).toISOString()
+            : typeof frame.data.as_of === 'string' ? new Date(frame.data.as_of).toISOString() : new Date(d.now()).toISOString();
+          const snapshot: ToolResult = { ...r, as_of, counts: {} };
           const update = searchRows(frame.data, x, d, snapshot);
+          const basis = searchBasis(snapshot.counts, update.rows, as_of);
           if (first) {
+            const query = object(object(frame.data.answer)?.slots)?.text;
+            const result: SearchToolResult = { ...snapshot, result_id: first_id, rows: update.rows,
+              citation_ids: update.rows.map(row => String(row.citation_id)), basis,
+              ...(typeof query === 'string' ? { query } : {}) };
+            if (snapshot.counts.rows === 0 && update.sites_pending.length && frame.event !== 'answer.settled') {
+              waiting = result;
+              continue;
+            }
             first = false;
-            const result: SearchToolResult = { ...r, result_id: first_id, rows: update.rows,
-              counts: snapshot.counts, citation_ids: update.rows.map(row => String(row.citation_id)), basis: 'search job rows' };
             resolve(result);
-          } else d.onLate?.({ result_id: `${first_id}:late:${++late}`, site: typeof frame.data.site === 'string' ? frame.data.site : 'all', ...update });
+          } else d.onLate?.({ result_id: `${first_id}:late:${++late}`, site: typeof frame.data.site === 'string' ? frame.data.site : 'all',
+            ...update, counts: snapshot.counts, as_of, basis });
         }
       } catch (error) { stop(); if (first) reject(error); else d.log.error('assist.search.late', error); }
     };
     timer = setTimeout(() => {
       stop();
       d.log.note('assist.search.deadline', { job: id });
-      if (first) resolve({ ...fail(r, 'failed', 'search job deadline exceeded'), result_id: first_id });
+      if (first) resolve(waiting ?? { ...fail(r, 'failed', 'search job deadline exceeded'), result_id: first_id });
     }, (d.params ?? assistParams).read('assist_search_wait_ms', {}).value as number);
     signal.addEventListener('abort', abort, { once: true });
     try { off = port.listen(id, pump); if (closed) off(); else if (signal.aborted) abort(); else pump(); }
