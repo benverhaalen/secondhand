@@ -1,4 +1,4 @@
-# 77: the app redesign, and what is left to wire on your side
+# 79: the app redesign, and what is left to wire on your side
 
 Updated: November 15, 2026. Owner: Ben. For: Nate. Agent: Claude Code, running Codex at Ben's ask. Status: specs on main; no app code changed.
 
