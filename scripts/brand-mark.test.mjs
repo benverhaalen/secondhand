@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { readFileSync, existsSync } from 'node:fs';
+import { resolve } from 'node:path';
+const root = resolve(import.meta.dirname, '..');
+const read = p => readFileSync(resolve(root, p), 'utf8');
+const mark = read('brand/mark.svg');
+assert.ok(!/<(?:rect|image)\b/.test(mark), 'the isolated mark has no background or embedded bitmap');
+assert.equal((mark.match(/fill-rule="evenodd"/g) ?? []).length, 2, 'both tags have transparent holes');
+for (const p of ['app/assets/brand/mark.svg', 'web/public/brand/mark.svg']) assert.equal(read(p), mark);
+const config = JSON.parse(read('app/app.json')).expo;
+assert.equal(config.ios.icon, './assets/images/icon.png', 'iOS must not override the tags with Expo artwork');
+for (const p of [config.icon, config.ios.icon, config.android.adaptiveIcon.foregroundImage, config.web.favicon]) assert.ok(existsSync(resolve(root, 'app', p)));
+const chrome = read('app/src/ui/parts/chrome.tsx');
+assert.ok(chrome.indexOf('<BrandMark') < chrome.indexOf('<Txt role="title">secondhand'));
+assert.ok(!chrome.includes("mark('hand'"));
+assert.ok(read('web/components/chrome.tsx').includes('BrandMark'));
+console.log('Paired tag asset and integration checks passed');

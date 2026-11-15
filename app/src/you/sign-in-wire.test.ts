@@ -44,3 +44,32 @@ test('a wrong code, too many tries and no server each name their own reason, and
   assert.equal(why(new ApiFailure(0, 'unreachable', 'down')), 'unreachable');
   assert.equal(await vault.get(), null);
 });
+
+test('Google cancellation and an unavailable provider never create a session', async () => {
+  const { googleSignIn } = await import('./sign-in-wire.ts');
+  const vault = memoryVault();
+  const client = createClient({ origin: '', vault, fetch: async () => { throw new Error('must not call'); } });
+  assert.equal(await googleSignIn(async () => null, client), false);
+  await assert.rejects(googleSignIn(undefined, client), /not available/);
+  assert.equal(await vault.get(), null);
+});
+
+test('Google exchanges the provider ID token and stores only the issued session', async () => {
+  const { googleSignIn } = await import('./sign-in-wire.ts');
+  const vault = memoryVault();
+  const client = createClient({ origin: '', vault, fetch: async (url, init) => {
+    assert.ok(url.endsWith('/v1/auth/google'));
+    assert.deepEqual(JSON.parse(String(init?.body)), { id_token: 'provider-test-token' });
+    return new Response(JSON.stringify(issued));
+  } });
+  assert.equal(await googleSignIn(async () => 'provider-test-token', client), true);
+  assert.equal((await vault.get())?.access_token, issued.access_token);
+});
+
+test('a rejected Google ID token never stores a session', async () => {
+  const { googleSignIn } = await import('./sign-in-wire.ts');
+  const vault = memoryVault();
+  const client = createClient({ origin: '', vault, fetch: async () => new Response(JSON.stringify({ code: 'unauthenticated', message: 'Rejected' }), { status: 401 }) });
+  await assert.rejects(googleSignIn(async () => 'invalid-test-token', client), (error: unknown) => error instanceof ApiFailure && error.status === 401);
+  assert.equal(await vault.get(), null);
+});

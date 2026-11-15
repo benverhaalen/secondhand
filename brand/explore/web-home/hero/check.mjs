@@ -43,7 +43,13 @@ const facts = () => {
   const vis = el => el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0;
   const h1 = document.querySelector('.hero-t'), pill = document.querySelector('.copy .pill'), btn = document.querySelector('.menu-btn'), nav = document.querySelector('header nav');
   const tall = el => vis(el) ? Math.round(el.getBoundingClientRect().height) : null;
+  const mark = document.querySelector('header .brand-mark'), word = document.querySelector('header .wordmark');
+  const m = mark?.getBoundingClientRect(), w = word?.getBoundingClientRect();
   return {
+    tag_left: !!m && !!w && m.right < w.left,
+    tag_center_delta: m && w ? Math.abs(m.top + m.height / 2 - w.top - w.height / 2) : null,
+    tag_loaded: !!mark?.complete && mark.naturalWidth > 0,
+    hand_marks: document.querySelectorAll('.hand, [data-part=hand], .intro').length,
     sideways: document.documentElement.scrollWidth - innerWidth,
     headline_lines: Math.round(h1.getBoundingClientRect().height / parseFloat(getComputedStyle(h1).lineHeight)),
     headline_px: parseFloat(getComputedStyle(h1).fontSize),
@@ -60,6 +66,10 @@ for (const [w, h, name] of SCREENS) {
   await page.evaluate(() => window.__hero.step(4000));
   const f = { w, h, name, ...(await page.evaluate(facts)) };
   f.problems = [
+    !f.tag_left && 'tags are not left of the wordmark',
+    f.tag_center_delta > 1 && 'tags are not vertically centered with the wordmark',
+    !f.tag_loaded && 'the tag SVG did not load',
+    f.hand_marks > 0 && 'retired hand branding remains',
     f.sideways > 0 && `scrolls sideways by ${f.sideways}px`,
     f.button_bottom > f.first_screen && `the button is ${f.button_bottom - f.first_screen}px below the first screen`,
     w < 900 && !f.menu && 'no menu button under 900',

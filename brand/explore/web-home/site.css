@@ -126,3 +126,7 @@
     @keyframes arrive { from { opacity: 0; transform: translateY(16px) scale(.98); } }
   }
   @media (prefers-reduced-motion: reduce) { .field, .reveal { animation: none; } html { scroll-behavior: auto; } }
+
+.lockup { display: inline-flex; align-items: center; gap: var(--s-2); text-decoration: none; white-space: nowrap; }
+.brand-mark { display: block; width: 24px; height: 28px; object-fit: contain; flex: 0 0 auto; }
+.lockup .wordmark { display: block; padding: 0; }

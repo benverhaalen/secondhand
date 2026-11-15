@@ -6,9 +6,7 @@ The site's pages and the tools that check them. Ben asked for the app's lean way
 |---|---|
 | `hero/` | The home page's first screen: the wall of photos, the field over it, the header, the open. `check.mjs` checks it on 11 screens. |
 | `boards/` | Variants of a section side by side, for Ben to pick from. `render.mjs <board>` draws one. |
-| `sprites/` | The hand animations, drawn by Codex as stop-motion frames from `base.svg` (Hugeicons four-finger-03). |
 | `photos/wall/` | The wall's open-licensed photos and their credits. |
-| `hands-fit.js` | Sizes the hands to the wordmark's ink and sets them on its baseline. |
 
 ## How a change is made
 
@@ -19,3 +17,5 @@ The site's pages and the tools that check them. Ben asked for the app's lean way
 5. Tell Ben when something merges to main, not before.
 
 Every string on a page passes `python3 -I .agents/skills/writing/scripts/lint.py --surface product <file>` and `node scripts/copy-lint.mjs`.
+
+The logo uses the transparent paired-tag mark in `brand/mark.svg`, before the wordmark. Hand concepts and their opening animation have been retired.
