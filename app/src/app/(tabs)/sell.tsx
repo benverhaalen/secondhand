@@ -252,7 +252,7 @@ export default function Sell() {
 
       <Sheet open={changing} title={`${picked.length} selected`} onClose={() => { setChanging(false); setChange(null); }}>
         <List>
-          <Choice id="bulk-keep" icon="tick-02" label="Keep" line="Ends listings. Sell again any time." picked={change === 'keep'} onPress={() => setChange('keep')} />
+          <Choice id="bulk-keep" icon="tick-02" label="Keep it" line="Ends listings. Sell again any time." picked={change === 'keep'} onPress={() => setChange('keep')} />
           <Choice id="bulk-donated" icon="package" label="Donated" line="Ends listings, keeps the value" picked={change === 'donated'} onPress={() => setChange('donated')} />
           <Choice id="bulk-sold_elsewhere" icon="money-03" label="Sold elsewhere" line="Ends listings, counts the sale" picked={change === 'sold_elsewhere'} onPress={() => setChange('sold_elsewhere')} />
           <Choice id="bulk-delete" icon="cancel-01" label="Delete" line={blocked.length ? `${blocked.length} ${blocked.length === 1 ? 'has an open order and stays' : 'have open orders and stay'}` : 'Removes them and their photos. No undo.'} picked={change === 'delete'} onPress={() => setChange('delete')} />

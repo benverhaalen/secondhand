@@ -25,10 +25,10 @@ function Track({ share }: { share: number }) {
   const c = useColors();
   return (
     <View style={{ height: TICK, justifyContent: 'center' }}>
-      <View style={{ height: TRACK, borderRadius: radius.pill, backgroundColor: c.gray }} />
-      <View style={{ position: 'absolute', left: 0, width: `${share * 100}%`, height: TRACK, borderRadius: radius.pill, backgroundColor: c.ink2 }} />
+      <View style={{ height: TRACK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} />
+      <View style={{ position: 'absolute', left: 0, width: `${share * 100}%`, height: TRACK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink2 }} />
       <View style={{ position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, alignItems: 'center' }}>
-        <View style={{ width: 2, height: TICK, borderRadius: radius.pill, backgroundColor: c.ink }} />
+        <View style={{ width: 2, height: TICK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink }} />
       </View>
     </View>
   );

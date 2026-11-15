@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { runInNewContext } from 'node:vm';
 import { createLog } from '../../../../log/index.js';
 import { memoryStore, memoryLeases } from '../events/ports.ts';
 import { memoryProfileRegistry, storeProfileRegistry, type ProfileRow } from '../browser/auth.ts';
@@ -20,15 +21,23 @@ function setup(site: ProfileRow['site'] = 'poshmark') {
   const creates: Record<string, unknown>[] = [], logs: unknown[] = [], deleted: string[] = [];
   let profiles = 0;
   let refuseStop = false;
-  let stops = 0, closedPages = 0, routes = 0, imports = 0, exports = 0;
+  let stops = 0, closedPages = 0, routes = 0, imports = 0, exports = 0, clicks = 0, contentReads = 0, evaluations = 0;
+  const visits: string[] = [];
+  let finalUrl: string | undefined, status = 200;
   let html = '<html>Account</html>', url = '', body: unknown = fixture('poshmark', 'inbox.json');
   const listeners = new Set<(response: SessionResponse) => void>();
   const page: SessionPage = {
-    async goto(next) { url = next; for (const f of listeners) f({ url: () => 'https://www.mercari.com/v1/api?operationName=conversationsQuery', status: () => 200, text: async () => JSON.stringify(body), request: () => ({ postData: () => null }) }); return { status: () => 200, text: async () => html }; },
-    url: () => url, content: async () => html,
-    async evaluate<T, A>(_fn: (a: A) => T | Promise<T>, _arg: A): Promise<T> { return { status: 200, body, url, html: '' } as T; },
+    async goto(next) { visits.push(next); url = next; for (const f of listeners) f({ url: () => 'https://www.mercari.com/v1/api?operationName=conversationsQuery', status: () => 200, text: async () => JSON.stringify(body), request: () => ({ postData: () => null }) }); return { status: () => status, text: async () => { contentReads++; return html; } }; },
+    url: () => url, content: async () => { contentReads++; return html; },
+    async evaluate<T, A>(fn: (a: A) => T | Promise<T>, arg: A): Promise<T> {
+      evaluations++;
+      if (arg && typeof arg === 'object') return runInNewContext(`(${fn.toString()})(input)`, {
+        input: arg, document: { documentElement: { outerHTML: html }, querySelector: () => ({ click() { clicks++; } }) },
+      }) as T;
+      return { status: 200, body, url, html: '' } as T;
+    },
     async route() { routes++; }, on(_event, fn) { listeners.add(fn); }, off(_event, fn) { listeners.delete(fn); },
-    async waitForLoadState() {}, async close() { closedPages++; },
+    async waitForLoadState() { if (finalUrl !== undefined) url = finalUrl; }, async close() { closedPages++; },
   };
   const pw: CdpPw<SessionPage> = { chromium: { async connectOverCDP() { return {
     contexts: () => [{ pages: () => [], newPage: async () => page, addCookies: async () => { imports++; }, addInitScript: async () => { imports++; }, storageState: async () => { exports++; return { cookies: [], origins: [] }; }, close: async () => {} }],
@@ -44,7 +53,8 @@ function setup(site: ProfileRow['site'] = 'poshmark') {
   const pool = createPool({ launcher, registry, profileRoot: '/unused', leases, log });
   const options = { pool, registry, launcher, profileRoot: '/unused', leases, log, ttlMs: 60_000, createProfile: async () => { profiles++; return 'profile_new'; }, deleteProfile: async (id: string) => { deleted.push(id); } };
   const service = scanErrors(sessionClient(options));
-  return { registry, pool, service, newService: (overrides: Partial<Parameters<typeof sessionClient>[0]>) => scanErrors(sessionClient({ ...options, ...overrides })), creates, logs, deleted, page, site, counts: () => ({ stops, closedPages, routes, imports, exports, profiles }),
+  return { registry, pool, service, newService: (overrides: Partial<Parameters<typeof sessionClient>[0]>) => scanErrors(sessionClient({ ...options, ...overrides })), creates, logs, deleted, page, site, visits, counts: () => ({ stops, closedPages, routes, imports, exports, profiles, clicks, contentReads, evaluations }),
+    setNavigation: (next: string, responseStatus = 200) => { finalUrl = next; status = responseStatus; },
     refuseStop: () => { refuseStop = true; }, setHtml: (value: string) => { html = value; }, setBody: (value: unknown) => { body = value; } };
 }
 
@@ -109,7 +119,7 @@ test('Mercari captures page responses without request interception', async () =>
   assert.equal(e.counts().routes, 0); await e.pool.close();
 });
 
-for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: link handle is owner checked, viewer is consumed once, finish refuses missing account evidence and stops`, async () => {
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: link handle is owner checked, viewer is consumed once, finish verifies the account page and stops`, async () => {
   const f = setup();
   if (!existing) {
     await assert.rejects(f.service.startLink('poshmark', owner), /account/);
@@ -122,8 +132,8 @@ for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unkn
   assert.equal(await f.service.finishLink('person_b', handle), undefined);
   assert.equal(await f.service.liveView(owner.user_id, handle), 'https://viewer.invalid/private');
   assert.equal(await f.service.liveView(owner.user_id, handle), undefined);
-  assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, false);
-  assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'needs_signin');
+  assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, true);
+  assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'linked');
   assert.equal(f.counts().stops, 1); assert.equal(f.counts().exports, 0);
   assert.equal(await f.service.finishLink(owner.user_id, handle), undefined);
 });
@@ -269,7 +279,7 @@ for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unkn
   assert.equal(f.counts().stops, 2);
 });
 
-for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: a failed adapter verification closes the browser and never links`, async () => {
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: a failed account-page verification closes the browser and never links`, async () => {
   const f = setup();
   if (!existing) {
     await assert.rejects(f.service.startLink('poshmark', owner), /account/);
@@ -295,7 +305,7 @@ for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unkn
   assert.equal(f.creates.length, 0);
 });
 
-for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: completion holds its account lease through adapter verification`, async () => {
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: completion holds its account lease through account-page verification`, async () => {
   const f = setup();
   if (!existing) {
     await assert.rejects(f.service.startLink('poshmark', owner), /account/);
@@ -310,7 +320,7 @@ for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unkn
     return evaluate(fn, arg);
   };
   const handle = await f.service.startLink('poshmark', owner);
-  assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, false); assert.equal(blocked, true);
+  assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, true); assert.equal(blocked, true);
 });
 
 for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: a vendor that refuses stop cannot publish a linked profile`, async () => {
@@ -417,7 +427,7 @@ for (const stage of ['launch', 'navigation', 'cancel', 'expiry', 'verification']
     const handle = await service.startLink('poshmark', owner);
     if (stage === 'cancel') await service.cancelLink(owner.user_id, handle);
     if (stage === 'expiry') { now = 60_001; await service.liveView(owner.user_id, handle); }
-    if (stage === 'verification') await service.finishLink(owner.user_id, handle);
+    if (stage === 'verification') { f.setHtml('<input type="password">'); await service.finishLink(owner.user_id, handle); }
   }
   assert.deepEqual(f.deleted, ['profile_new']);
   assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row()); noSecrets(f.logs);
@@ -432,13 +442,15 @@ test('failed deletion logs only the profile id and releases the lease', async ()
   const next = await f.service.startLink('poshmark', owner); await f.service.cancelLink(owner.user_id, next);
 });
 
-for (const site of ['poshmark', 'mercari', 'depop'] as const) for (const empty of [true, false]) test(`${site} ${empty ? 'empty' : 'populated'} inbox without account evidence cannot link`, async () => {
+for (const site of ['poshmark', 'mercari', 'depop'] as const) for (const empty of [true, false]) test(`${site} ${empty ? 'empty' : 'populated'} inbox does not affect account-page verification`, async () => {
   const f = setup(site); await f.registry.put(owner.user_id, row(site));
   f.setBody(site === 'mercari' ? (empty ? { data: { conversations: { conversationsList: [] } } } : (fixture(site, 'inbox.json') as { api: { body: unknown }[] }).api[0].body) : empty ? (site === 'poshmark' ? { data: [] } : { objects: [] }) : fixture(site, 'inbox.json'));
   const handle = await f.service.startLink(site, owner);
   const result = await f.service.finishLink(owner.user_id, handle);
-  assert.ok(result && !result.ok && result.error.code === 'no_route' && result.error.hint.do === 'handoff');
-  assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row(site));
+  assert.ok(result?.ok);
+  assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.profile_id, 'profile_new');
+  assert.equal(f.counts().evaluations, 1);
+  assert.equal(f.counts().contentReads, 0);
 });
 
 test('no-secret scan rejects connection key names and bare endpoints', () => {
@@ -508,8 +520,84 @@ test('pending launch option cannot bypass registry ownership for a published pro
   assert.equal(await resolve('/unused', { ...owner, headless: true }), 'profile_a');
 });
 
-test('eBay link refusal also scans its SessionClientError message before returning it', async () => {
+test('eBay startLink opens its sign-in page with no interception or solver', async () => {
   const f = setup('ebay'); await f.registry.put(owner.user_id, row('ebay'));
-  await assert.rejects(f.service.startLink('ebay', owner), e => e instanceof SessionClientError && e.error.code === 'no_route');
-  assert.equal(f.counts().profiles, 0); assert.equal(f.creates.length, 0);
+  const handle = await f.service.startLink('ebay', owner);
+  assert.deepEqual(f.visits, ['https://signin.ebay.com/']);
+  assert.equal(f.creates[0].solveCaptchas, false);
+  assert.equal(f.counts().routes, 0);
+  await f.service.cancelLink(owner.user_id, handle);
 });
+
+const linkPages = {
+  ebay: { account: 'https://www.ebay.com/mys/home', login: 'https://signin.ebay.com/ws/eBayISAPI.dll?SignIn&private_query=synthetic' },
+  poshmark: { account: 'https://poshmark.com/user/account-info', login: 'https://poshmark.com/login?private_query=synthetic' },
+  depop: { account: 'https://www.depop.com/settings/', login: 'https://www.depop.com/login/?private_query=synthetic' },
+  mercari: { account: 'https://www.mercari.com/mypage/', login: 'https://www.mercari.com/login/?private_query=synthetic' },
+} as const;
+
+for (const site of ['ebay', 'poshmark', 'depop', 'mercari'] as const) {
+  for (const outcome of ['account', 'account_child', 'signin', 'unexpected_signin', 'challenge', '403', 'unexpected', 'query', 'signin_form', 'non_2xx', 'null_response', 'other_origin', 'other_scheme', 'navigation_error'] as const) test(`${site} account verification: ${outcome}`, async () => {
+    const f = setup(site); await f.registry.put(owner.user_id, row(site));
+    const handle = await f.service.startLink(site, owner);
+    const account = linkPages[site].account;
+    const final = outcome === 'account_child' ? `${account.replace(/\/$/, '')}/details?private_query=synthetic` : outcome === 'unexpected_signin' ? 'https://unexpected.invalid/login?private_query=synthetic' : outcome === 'signin' ? linkPages[site].login : outcome === 'unexpected' ? new URL('/unrelated', account).href :
+      outcome === 'other_origin' ? account.replace(new URL(account).hostname, 'unexpected.invalid') :
+      outcome === 'other_scheme' ? account.replace('https:', 'http:') : `${account}?private_query=synthetic#private_fragment`;
+    f.setNavigation(final, outcome === '403' ? 403 : outcome === 'non_2xx' ? 500 : outcome === 'account_child' ? 204 : 200);
+    if (outcome === 'challenge') f.setHtml('<title>Just a moment...</title>');
+    if (outcome === '403' || outcome === 'signin_form' || outcome === 'unexpected_signin') f.setHtml('<input type="password">');
+    if (outcome === 'null_response') {
+      const goto = f.page.goto;
+      f.page.goto = async (url, opts) => { await goto(url, opts); return null; };
+    }
+    if (outcome === 'navigation_error') f.page.goto = async () => { throw new Error(final); };
+    if (outcome === 'navigation_error') {
+      await assert.rejects(f.service.finishLink(owner.user_id, handle), error => {
+        assert.ok(error instanceof Error); assert.equal(error.message, 'session.verify failed'); return true;
+      });
+    } else {
+      const result = await f.service.finishLink(owner.user_id, handle);
+      assert.ok(result);
+      if (outcome === 'account' || outcome === 'query' || outcome === 'account_child') {
+        assert.ok(result.ok);
+        const published = await f.registry.get(owner.user_id, owner.account_id);
+        assert.equal(published?.state, 'linked'); assert.equal(published?.profile_id, 'profile_new');
+        assert.equal(published?.data, 'captured'); assert.ok(published?.linked_at); assert.equal(published?.last_ok_at, published?.linked_at);
+        assert.deepEqual(f.deleted, []);
+      } else {
+        assert.ok(!result.ok);
+        const code = outcome === 'signin' || outcome === 'signin_form' ? 'auth_expired' : outcome === 'challenge' || outcome === '403' ? 'blocked' : 'page_changed';
+        assert.equal(result.error.code, code);
+        assert.equal(result.error.hint.do, code === 'auth_expired' ? 'relink' : code === 'blocked' ? 'pause_session' : 'author');
+      }
+      assert.doesNotMatch(JSON.stringify(result), /private_query|private_fragment/);
+      assert.equal(f.visits[1], account);
+    }
+    if (outcome !== 'account' && outcome !== 'query' && outcome !== 'account_child') {
+      assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row(site));
+      assert.deepEqual(f.deleted, ['profile_new']);
+    }
+    assert.equal(f.counts().stops, 1); assert.equal(f.counts().clicks, 0);
+    assert.equal(f.counts().routes, 0); assert.equal(f.counts().imports, 0); assert.equal(f.counts().exports, 0);
+    assert.equal(f.counts().contentReads, 0);
+    assert.doesNotMatch(JSON.stringify(f.logs), /private_query|private_fragment/); noSecrets(f.logs);
+    assert.equal(await f.service.finishLink(owner.user_id, handle), undefined);
+  });
+}
+
+for (const site of ['ebay', 'poshmark', 'depop', 'mercari'] as const) {
+  for (const unavailable of ['settle', 'state'] as const) test(`${site} HTTP 403 stays blocked when ${unavailable} is unavailable`, async () => {
+    const f = setup(site); await f.registry.put(owner.user_id, row(site));
+    const handle = await f.service.startLink(site, owner);
+    f.setNavigation(linkPages[site].account, 403);
+    if (unavailable === 'settle') f.page.waitForLoadState = async () => { throw new Error('private_query=synthetic'); };
+    else f.page.evaluate = async () => { throw new Error('private_query=synthetic'); };
+    const result = await f.service.finishLink(owner.user_id, handle);
+    assert.ok(result && !result.ok && result.error.code === 'blocked' && result.error.hint.do === 'pause_session');
+    assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row(site));
+    assert.deepEqual(f.deleted, ['profile_new']);
+    assert.equal(f.counts().stops, 1); assert.equal(f.counts().clicks, 0);
+    assert.equal(f.counts().contentReads, 0); assert.equal(f.counts().evaluations, 0); noSecrets(f.logs);
+  });
+}

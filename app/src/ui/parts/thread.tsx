@@ -83,7 +83,7 @@ export function Message({ side, children, meta, id, label, onPress }: {
   const theirs = side === 'theirs';
   const fill = (
     <OnGround ground={theirs ? 'page' : 'card'}>
-      <View style={{ borderRadius: radius.photo, paddingHorizontal: space.s4, paddingVertical: space.s2, backgroundColor: theirs ? c.gray : c.surface,
+      <View style={{ borderRadius: radius.photo, borderCurve: 'continuous', paddingHorizontal: space.s4, paddingVertical: space.s2, backgroundColor: theirs ? c.gray : c.surface,
         borderWidth: 1, borderColor: theirs ? 'transparent' : c.cardEdge }}>
         <Txt role="body">{children}</Txt>
       </View>
@@ -180,7 +180,7 @@ export function Draft({ id, who, spans, facts = [], status = 'ready', lead = tru
   const done = () => { setEditing(false); onChange?.(remark(spans, text)); };
   const sending = status === 'sending';
   // Not sent yet: the dashed edge of a thing still being written, the card's white inside, the bubble's corner.
-  const box = { borderRadius: radius.photo, paddingHorizontal: space.s4, paddingVertical: space.s3, gap: space.s2, backgroundColor: c.surface, borderWidth: 1, borderStyle: 'dashed' } as const;
+  const box = { borderRadius: radius.photo, borderCurve: 'continuous', paddingHorizontal: space.s4, paddingVertical: space.s3, gap: space.s2, backgroundColor: c.surface, borderWidth: 1, borderStyle: 'dashed' } as const;
   // Who it goes to, inside the box, with the pencil that says it is still being written and can be changed.
   const label = (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>
@@ -231,7 +231,7 @@ function Fact({ text, from }: { text: string; from: string }) {
   const c = useColors();
   return (
     <View {...mark('fact', { fit: 'content' })} accessibilityLabel={`${text}, from ${from}`}
-      style={{ height: size.tagH, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.s1, paddingHorizontal: space.s2, backgroundColor: c.gray, ...FLAT }}>
+      style={{ height: size.tagH, borderRadius: radius.pill, borderCurve: 'continuous', flexDirection: 'row', alignItems: 'center', gap: space.s1, paddingHorizontal: space.s2, backgroundColor: c.gray, ...FLAT }}>
       <Icon name="tick-02" size={12} tone="ink-2" />
       <Txt role="caption" tone="ink" lines={1}>{text}</Txt>
       <Txt role="caption" lines={1}>{`from ${from}`}</Txt>
@@ -253,7 +253,7 @@ export function Composer({ id, to, value, onChange, onSend, sending = false }: {
   const c = useColors();
   return (
     <View {...mark('composer')} style={{ flexDirection: 'row', alignItems: 'flex-end', gap: space.s2 }}>
-      <View style={{ flex: 1, minHeight: size.pillCardH, borderRadius: radius.photo, backgroundColor: c.gray, paddingHorizontal: space.s4, justifyContent: 'center' }}>
+      <View style={{ flex: 1, minHeight: size.pillCardH, borderRadius: radius.photo, borderCurve: 'continuous', backgroundColor: c.gray, paddingHorizontal: space.s4, justifyContent: 'center' }}>
         <TextInput testID={`${id}-input`} accessibilityLabel={`Message ${to}`} placeholder={`Message ${to}`} placeholderTextColor={c.ink2} multiline numberOfLines={1} value={value} onChangeText={onChange}
           style={{ fontFamily: `${FACE.text}`, fontWeight: weight.text, fontSize: type.t18.fontSize, lineHeight: type.t18.lineHeight, color: c.ink, paddingVertical: space.s2, outlineStyle: 'none' } as object} />
       </View>

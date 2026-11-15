@@ -6,15 +6,17 @@ Marks: *observed* (read in a doc or seen on the workspace, source named), *infer
 
 ## 1. The workspace we build on
 
-Nate's workspace (`--profile Nate`, id 7474651613371474) is Free Edition (*observed*, [workspace checks](../research/data/nate/workspace-checks.md)). Its limits shape the build (*observed*, [Free Edition limitations](https://docs.databricks.com/aws/en/getting-started/free-edition-limitations)):
+Nate's workspace (`--profile Nate`, id 7474651613371474) is a **Databricks free trial**, not Free Edition: Nate read the Manage Trial bar on 2026-11-15, $392 of $400 in credit left (*observed*, [packet 71](../.agents/team/packets/team/71-databricks-handoff.md)). It was created 2026-11-13 23:14 UTC, so the 14-day trial ends about 2026-11-27 (*inferred*; the Manage Trial bar shows the date). This is the workspace the judges see. An earlier version of this page called it Free Edition from a feature count; that was wrong and set limits we did not have for a day.
 
-| Limit | What we do |
+The choices below were made for Free Edition and are kept, because they cost nothing and spend the credit slowly:
+
+| Choice | Why it stays |
 |---|---|
-| Serverless only; outbound internet limited to trusted domains | Public sold files are fetched off the workspace, hash-checked, and uploaded to a volume. No job fetches the web. |
-| One SQL warehouse, 2X-Small | Every query, the dashboard and Genie use the existing Serverless Starter Warehouse. No warehouse is created. |
-| 5 concurrent job tasks | Job tasks run in a chain or at most 4 wide. |
-| One active pipeline per type | One pipeline, `secondhand-market`, owns bronze to silver for market data. |
-| Apps: 3, 24 h each; Lakebase: one project | Not used by this layer. An App or Lakebase needs Nate's go. |
+| Public sold files are fetched off the workspace, hash-checked, and uploaded to a volume. No job fetches the web. | The hash is the provenance; a job that fetches can change under us. |
+| Every query, the dashboard and Genie use the existing Serverless Starter Warehouse (`a2d6ba8cc4538aca`, auto-stop 10 minutes). | No warehouse is created. A new one is a paid resource and needs Nate's go. |
+| Job tasks run in a chain or at most 4 wide. | Keeps a run readable and its credit small. |
+| One pipeline, `secondhand-market`, owns bronze to silver for market data. | One owner per table. |
+| No App, no Lakebase project, no endpoint. | Each is a paid resource and needs Nate's go. |
 
 Nothing on this page creates a paid resource.
 
@@ -134,12 +136,27 @@ The centrepiece. Each row is a promise the app makes, the Databricks feature it 
 
 ## 8. The proof a judge sees
 
-**Dashboard `secondhand: proof`** (AI/BI, in the bundle, every query tested with `databricks experimental aitools tools query` first):
-1. Valuation on real sold data: within-20% rate against the 90-day median baseline, coverage of the stated range, bias, by kind and price band, with n on every cell and cells under 30 hidden.
-2. Weights over time: each `param` version by month, promotions and rollbacks marked.
-3. Citation coverage: shown numbers with a citation over all shown numbers; recompute pass rate.
-4. Refused and held: hidden numbers by `hide_reason`; decisions by `policy_mode`.
-5. Governance: tables with a filter, masks, tags; rights audit violations; lineage edges; parity pass rate.
+**Dashboard `secondhand: proof`** ([proof.lvdash.json](../databricks/dashboards/proof.lvdash.json), rebuilt 2026-11-15 after Nate rejected the first one: "So i hated the dashboard. Did you even consider standards", [packet 71](../.agents/team/packets/team/71-databricks-handoff.md)). The first version was seven pages of governance tables, deployed after its queries passed and before anyone looked at it. The rebuild follows the AI/BI skill's first rule ("KPI on the top ... and we see something happen"), [the UI constitution](../product/ui-constitution.md) and the [brand](../brand/constitution.md). It is one story page and one data page. Each beat has one heading, counters on top, one chart where something changes, and a table only where a judge opens rows:
+
+| Beat | Counters | Then | Reads |
+|---|---|---|---|
+| 1. A price opens to the sales behind it | shown prices that carry their sales; prices rebuilt exactly from those sales | pick a price, see its earlier sales with links (`measures.why`) | `citation_coverage`, `recompute_check`, `why()` |
+| 2. Closer than the usual guesses, on the same sales | within 20% for our price, last sale and the 90-day median; how often our range held the sale | within 20% by week, three lines on the same sales | the metric view `valuation_metrics` |
+| 3. The weight on recent sales changed once, on evidence | changes, months held, rollbacks | the half-life in force each month; each change with its gain and noise | `param_moves` |
+| 4. Each person's rows stay theirs, even from the owner | rule-breaking rows across every owner (the break-glass guard); tables locked to their owner; accounts the viewer can read | the locks in force | `guard_status`, `policies_in_force`, `governance.principal_map` |
+| 5. What it never does on its own | never-alone requests refused | each action, asked and refused | `never_automated` (synthetic, labelled) |
+
+Rules the page keeps, each checked by [test_dashboard.mjs](../databricks/test_dashboard.mjs): every figure has a title and a description naming its data; every rate shows its count (`98.5% of 39,707`); no statistics notation or em dashes; figures are historical public sales and never called accuracy on live data. Our price is ink and the baselines gray, so the eye goes to ours (brand Article 5: color is not decoration). The Genie space is linked through `uiSettings.genieSpace`.
+
+**Next: the live page** (Nate, 2026-11-15, after seeing the rebuilt page: "thats a good test dashboard, but we will develop our dashboard to respond to realtime data from across sites and what we scan for our internal testing"). The page above becomes the test page, which shows how we test on public history. A live page goes first, built over the rows the product writes:
+- reads per site in the last day: answered, failed or blocked, time to answer, minutes since the last read (`core.log_event`, `core.observation` with `data = 'live:<site>'`);
+- prices shown from live reads with their sales attached, and prices held back with the reason (`core.guarded_number`, `core.citation`);
+- what our internal scans found: items by kind, identified or asked again (`core.evidence`, `data = 'captured'`).
+Measured 2026-11-15 10:40 Central: the workspace holds no `live:` or `captured` rows yet, only example (53 observations) and synthetic (480 policy answers) rows. The page needs the logs to land first. Today `load_logs` runs on demand. Running it every few minutes, or as an Auto Loader stream in the market pipeline, spends trial credit, so the cadence is Nate's call. Until rows arrive, each live tile says what has not arrived, never zero.
+
+**The metric view** `measures.valuation_metrics` ([13_metrics.sql](../databricks/sql/13_metrics.sql)) is the one place the price measures are defined: sales tested, estimates shown, within 20 percent, median error, range held the sale, by who priced it, week, kind and dataset. Every rate is null when fewer than 30 estimates were shown in the cell, the same 30 as `valuation_accuracy` and §9's rule. It is created through the Statements API (§11.3), not by a bundle task.
+
+**How a dashboard change ships.** Every dataset query runs through the Statements API with the dashboard's catalog and schema; then a review copy is created with `databricks lakeview create` under `/Shared/secondhand-review`, rendered in a browser, judged by a design-critic seat against the constitutions, and shown to Nate. Only then does `databricks bundle deploy` replace the deployed dashboard. A passing query is not a passing screen.
 
 **Genie space `secondhand market`** over `market.comp`, the `measures` views and the metric view, with instructions to answer the hide reason when n is under the guard, and 10 benchmark questions with verified SQL (*observed*, [Genie Agents](https://docs.databricks.com/genie-agents/)).
 
@@ -157,6 +174,21 @@ Read on Nate's workspace, 2026-11-15. Each line names the command that gives it.
 | Never-automated actions refuse | 480 policy answers; all 32 never-performed answers `never` on every site, promoted or not | `node databricks/policy-sweep.mjs` |
 
 ## 10. Open
+
+**Main is ahead of the workspace.** These are merged and not deployed: the guard that runs inside break-glass, erasure with tombstone and vacuum, the governance revokes, `source_rights`, `basis_level`, and nightly-fits paused in the bundle. The deploy is blocked because the deployed dashboard was edited in the UI, and `databricks bundle deploy` will not overwrite it without `--force`, which waits on Nate. Until the deploy and the setup chain (`setup`, `erasure_setup`, `governance_setup`, `parity`, `load_bench`, `load_logs`) run, any "zero violations" read on the workspace is from the old guard. That guard ran under the owner filter and could not see other people's rows.
+
+**Named fixes, in build order** (from packet 71's queue; each has its measure):
+
+| # | Fix | Owned files | Done when |
+|---|---|---|---|
+| F1 | The param registry's four new columns on the live table: `origin` ('fit' or 'event'), `previous_version`, `keep`, `days_since_last` (contract from engines, `jobs/param/registry.py:15`; engines adds them to the CREATE TABLE in `01_tables.sql`). Ours: `ALTER TABLE secondhand.core.param ADD COLUMNS` through `migrate_data.py`, a guard rule listing any `origin` outside the two values, `param_walk.registry_rows` carrying all four. Runs after the dashboard deploy | `databricks/tasks/migrate_data.py`, `databricks/sql/09_guard.sql`, `databricks/tasks/param_walk.py` | `test_migrate_data.py` passes; `DESCRIBE secondhand.core.param` shows the four columns; the guard rule returns 0 rows |
+| F2 | Payload columns that carry buyer or seller text are masked or dropped (security audit #3, [01_tables.sql:23](../databricks/sql/01_tables.sql)) | `databricks/sql/01_tables.sql`, `02_governance.sql` | a viewer outside the owner reads the payload as masked; `policies_in_force` lists it under masked columns |
+| F3 | The secret scope's ACL is set to the operator and the job principal only (audit #4). It holds no secrets today, and its only ACL is the owner's MANAGE | `deploy/databricks.yml` | `databricks secrets list-acls` shows exactly the two principals |
+| F4 | A champion marked served reads only `comp_for_product` | `databricks/sql/09_guard.sql`, `jobs/valuation/fit.py` (engines) | a guard rule returns 0 rows on the workspace; a fixture fit over a `may_model = false` row fails its test |
+| F5 | A weekly view of which fallback level priced each shown number, once engines' `guard()` writes `basis_level` | `databricks/sql/10_dashboard.sql` | the view returns one row per week and level; the share at the top level is on the board |
+| F6 | `databricks/README.md` says what each folder holds and how a change ships (§8) | `databricks/README.md` | a reader finds the deploy order and the review step without this page |
+| F7 | nightly-fits stays paused until `fit.py` stops reading `may_model = false` rows (row in [waiting.md](plans/waiting.md), owner engines) | `deploy/resources/*.yml` | `databricks jobs get` shows PAUSED until engines' fix lands |
+
 
 - **Claude on the gateway, claim checks at the gateway**: needs a full workspace or Nate's go on a provider; designed, not built.
 - **An App showing "why this price"** from a citation: needs Nate's go (an App is a resource).

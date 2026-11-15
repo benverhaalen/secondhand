@@ -1,6 +1,6 @@
 # Trust engine
 
-**Draft, not yet reviewed** (the engines lead's spec pass, 2026-11-15, drafted by a Sonnet seat from the code and checked only for the state block). An Opus review of this page comes before any build from it; see [packet 70](../../.agents/team/packets/team/70-engines-handoff.md).
+**Reviewed** (drafted by a Sonnet seat from the code, then checked against the code by a fresh Opus reviewer on 2026-11-15, whose corrections are applied: D1's fix and test, D17, the recall rows against card 20, the stale line references, and N2 and N3 swapped because a false recall clear is unlawful).
 
 *agent proposal* (the whole file). Canon names in [product.md](../product.md) win. This engine joins five cards into one build: scams ([card 5](../determinations/managing-and-buyers.md#5-how-likely-a-buyer-is-a-scam)), no-shows ([card 6](../determinations/managing-and-buyers.md#6-how-likely-a-buyer-will-not-show)), account health ([card 17](../determinations/managing-and-buyers.md#17-whether-an-account-is-healthy-or-at-risk)), recalls ([card 20](../determinations/seeing-the-item.md#20-recall-or-safety-flag)) and counterfeits. The cards hold the start values; this file says how they run and what learns. How a `param` updates, folds, promotes and rolls back is in [real-time weights](../product.md#real-time-weights-agent-proposal), not here.
 
@@ -18,7 +18,7 @@ Paths: `T/` is `app/src/engines/trust/`, `J/` is `jobs/trust/`. References are `
 - Isotonic knots are validated in both languages: finite, sorted, outputs in [0,1] (`T/calibration.ts:13`, `J/fit.py:105`).
 - An empty held-out set refuses a fit: `J/fit.py:157` (and `brier` `:119`, `ece` `:128`, zero total weight `:83`). Test `J/test_audit.py:9`.
 - `gtin14()` (`T/recall.ts:15`) checks the GS1 check digit and pads to 14. Fixture `T/fixtures/gtin-parity.json` (16 cases) is read by `T/gtin.parity.test.ts` and by `jobs/identity` (`jobs/identity/test_audit.py:103`).
-- Also fixed since the audit, each with a test: the model's reading is validated (`T/signals.ts:22`); health refuses a bad threshold (`T/health.ts:5`); published numbers carry a guarded citation (`T/publication.ts:5`, used at `T/decide.ts:107`, `T/counterfeit.ts:28`, `T/noshow.ts:20`); calibration and base risk read at the thread's site and person scope (`T/decide.ts:75`); `r` is updated on every thread read, `q` on scams (`T/labels.ts:66`); recall ties are stable (`T/recall.ts:60`); no-show, print, salt, warning and isotonic constants are named params; authentication floors come from `spec/sites.mjs` (`T/counterfeit.ts:24`).
+- Also fixed since the audit, each with a test: the model's reading is validated (`T/signals.ts:22`); health refuses a bad threshold (`T/health.ts:5`); published numbers carry a guarded citation (`T/publication.ts:5`, used at `T/decide.ts:108`, `T/counterfeit.ts:28`, `T/noshow.ts:20`); calibration and base risk read at the thread's site and person scope (`T/decide.ts:75`); `r` is updated on every thread read, `q` on scams (`T/labels.ts:66`); recall ties are stable (`T/recall.ts:60`); no-show, print, salt, warning and isotonic constants are named params; authentication floors come from `spec/sites.mjs` (`T/counterfeit.ts:24`).
 
 ## Wrong today
 
@@ -26,22 +26,23 @@ From the "Trust" rows of [the audit](audit.md#trust) not yet fixed, the [science
 
 | # | What is wrong | Where | Fix | Test that proves it |
 |---|---|---|---|---|
-| D1 | The product never scores a thread: the port returns `none`, and messages call only `evaluateHard`, so code signals (`payment_link`, `gift_crypto_wire`, link guard) never run | `conversations.ts:83`, `messages.ts:79` | Wire `decideThread` as the port, with `codeSignals` on the raw text | `trust.wired`: a gift-card message through the messages route makes a `scam_warning` with the extractor down |
+| D1 | The product never scores a thread: the port returns `none`, and messages call only `evaluateHard`, so code signals (`payment_link`, `gift_crypto_wire`, link guard) never run | `conversations.ts:83`, `messages.ts:79` | Wire `decideThread` as the port, with `codeSignals` on the raw text, and map its action as card 5 step 4 says: `block` makes a `scam_warning` decision, `ask` holds commit actions for the person, `warn` adds the reason line. This replaces `messages.ts:81`, which raises `scam_warning` on any action that is not `none` and so would turn every ask and warn into a scam warning | `trust.wired`: with the extractor up and returning no signals, a gift-card message through the messages route makes a `scam_warning` whose reason names the gift-card rule; a `new_account`-only thread warns and raises no `scam_warning` |
 | D2 | A malformed extractor reply throws out of `decideThread`; only the model call is inside the catch. Spec §8 says a model failure becomes ask | `T/decide.ts:96` (`readModel` throws at `T/signals.ts:24-28`) | Treat a throw from `readModel` as `modelFailed` | `trust.model_down`: confidence 2, an unknown signal and an empty span each give `ask` |
 | D3 | Labels, prints and the poison-cap ledger live in `Map`s and an array, so a restart empties them and resets the cap. `trust_signal`, `trust_label` and `script_print` rows are not written | `T/labels.ts:33-36` | Write the rows; derive the ledger from them | `trust.poison_cap` across a restart: 500 labels, restart, 500 more, still inside 5% |
 | D4 | A changed label overwrites its row but its earlier counts stay and the new ones add again (comment at `:53`) | `T/labels.ts:54-72` | Store each label's folded contribution; reverse it before applying a change | A scam label changed to fine leaves the same counts as one fine label |
-| D5 | Live weights from `q/r` are not held to ±50% of the written value until 30 positive and 30 negative threads; only the nightly fit holds them | `T/decide.ts:58-65`; band at `J/fit.py:248-251` | Apply the band in `weight()` | A signal with 2 labels cannot move more than 50% of its prior |
-| D6 | Priors are declared twice, in TypeScript and Python, with no parity test: `trust_b`, `trust_m_ask`, `trust_c_tap_cents`, `trust_delta`, `trust_loss_min_cents`, `trust_weight_band`, `trust_isotonic_n`. The 30-day half-life is `FORGET_DAYS` (`param.ts:90`) and also `trust_half_life_days` | `T/params.ts:30-37`, `J/params.py:33` | One prior file both read | A parity test over that file, as for calibration |
+| D5 | Live weights from `q/r` are not held to ±50% of the written value until 30 positive and 30 negative threads; only the nightly fit holds them | `T/decide.ts:58-65`; band at `J/fit.py:248-251` | Apply the band in `weight()` and to the no-show `ln(q/r)` override in `T/params.ts:75-78` | A signal with 2 labels cannot move more than 50% of its prior |
+| D6 | Priors are declared twice, in TypeScript and Python, with no parity test: `trust_b`, `trust_m_ask`, `trust_c_tap_cents`, `trust_delta`, `trust_loss_min_cents`, `trust_weight_band`, `trust_isotonic_n`. The 30-day half-life is `FORGET_DAYS` (`app/src/engines/param/param.ts:91`) and also `trust_half_life_days` | `T/params.ts:30-37`, `J/params.py:36` | One prior file both read | A parity test over that file, as for calibration |
 | D7 | A warning computes `flag_m` but never stores it; `trust_flag_m` is one global scalar | `T/health.ts:19-22` | Observe it per (site, metric) and read it | `trust.health_flag`: warning at 0.7, then `health()` flags at 0.63 |
-| D8 | Pace: `observeChallenge` takes whatever scope the caller passes, with no actions-per-hour bucket; `paceAllowed` uses a Cantelli bound, not a Beta quantile; at the prior the bound is about 0.053, so no pace passes until about 450 clean actions in a bucket (my arithmetic, *inferred*) | `T/health.ts:23`, `:33-43` | Bucket as scope; exact Beta upper bound; state the starting pace as a param | `trust.pace`: 500 clean actions pass; one challenge in 50 fails |
+| D8 | Pace: `observeChallenge` takes whatever scope the caller passes, with no actions-per-hour bucket; `paceAllowed` uses a Cantelli bound, not a Beta quantile; at the prior the bound is about 0.053, so no pace passes until about 450 clean actions in a bucket (my arithmetic, *inferred*) | `T/health.ts:23`, `:33-43` | Bucket as scope; exact Beta upper bound; state the starting pace as a param | `trust.pace`: at the prior, 250 clean actions pass under the exact Beta bound (Cantelli fails them: 5.36/350 = 0.0153); one challenge in 50 fails |
 | D9 | No-show learning is per event only. No nightly fit, no 2 h confirm timer. The dispute record is kept but never shown (`shown: null`) and `trust_dispute_show` is unused | `T/noshow.ts:23`, `T/health.ts:29-32`, `J/fit.py` | A no-show fit in `fold`; the confirm job; publish closed-case counts | `trust.learns` for no-shows; "Won 14 of 17" only from 10 closed cases |
 | D10 | Rollback covers calibration only (`watch`, Brier worse by `trust_watch_tolerance`). The weights champion and the spec's other triggers (§4) have none | `J/fit.py:174-190` | One `watch` per champion kind, with the §4 triggers | `trust.rollback` for each trigger |
 | D11 | Dollar fields remain, and units disagree: `keep_q50` is read as cents, `refund_asked` as dollars. `price_usd`, `priceUsd`, `q50` also remain | `T/decide.ts:79-80`, `T/signals.ts:113`, `T/counterfeit.ts:15-16` | Delete the legacy fields; the type refuses them | `tsc` fails on `keep_q50`; a $50 refund and a 4800-cent keep give loss 9800 |
 | D12 | Calibration promotion has noise 0, so any held-out gain promotes. The spec's switch rule (cost, bootstrap, recall) is built for weights only | `J/fit.py:147`, `:325` | Pass a bootstrap noise from the held-out Brier gap | Two fits of equal quality never swap champions |
 | D13 | The warn line is always "Don't open links from buyers", whatever fired | `T/decide.ts:122` | Name the signal that put the score near the line | `warn` on `new_account` shows that reason |
-| D14 | A recall model token is any 4+ character token with a digit and a letter ("120V", "1500W"); one shared token is `exact`, which blocks with no override. Spec says brand plus model (*inferred* risk from the regex) | `T/recall.ts:34-41`, `:51`, `:81-86` | Require a shared brand word, or a minimum token shape (params) | The 20 lookalikes (§9) |
-| D15 | Counterfeit "ask for a proof photo" applies on every site; spec limits it to where "not authentic" is a case reason (Poshmark, Depop) | `T/counterfeit.ts:34` | Read the case reasons from site facts | A proof-less brand item on eBay does not ask |
+| D14 | A recall model token is any 4+ character token with a digit and a letter ("120V", "1500W"); one shared token is `exact`, which blocks with no override. Card 20 says brand plus model number (or GTIN) with the manufacture date inside the recall's range; a name hit plus a date code is `exact` at `:56`, where card 20 holds it; the rule that a safety-set kind with no confirmed model number cannot be cleared is not built (*inferred* risk from the regex) | `T/recall.ts:34-41`, `:51`, `:81-86` | Require a shared brand word, or a minimum token shape (params) | The 20 lookalikes (§9) |
+| D15 | Counterfeit "ask for a proof photo" applies on every site; spec limits it to where "not authentic" is a case reason (Poshmark, Depop) | `T/counterfeit.ts:23` | Read the case reasons from site facts | A proof-less brand item on eBay does not ask |
 | D16 | Beta guards are [0.001, 0.95]; the canon says [0.02, 0.98] | `T/params.ts:20` | Take the canon's, or change the canon | A trust Beta cannot leave the canon band |
+| D17 | A missing price, q50 or fitted weight throws instead of abstaining: no `price_cents` and no `price_usd`; no q50 in counterfeit; a fitted `trust_weights` that lacks a scored name (`resolve()` checks only `model.b`) | `T/decide.ts:79`, `T/signals.ts:113`, `T/counterfeit.ts:16`, `T/decide.ts:60`, `T/params.ts:70-74` | Abstain to ask; `resolve()` refuses a fitted weights row that lacks a name | Each input missing gives `ask`, never a throw; a fitted row missing a name falls back to the prior with a logged error |
 
 ## 1. What it decides
 
@@ -74,11 +75,11 @@ Sources: [trust, returns, disputes §8](../../research/sold/nate/trust-returns-d
 
 | Signal | By | Prior | Source of the prior |
 |---|---|---|---|
-| `off_platform` | model | +2.0 | card 5. On a Facebook local deal, paying at the meeting scores 0 (asserted, facebook-marketplace) |
+| `off_platform` | model | +2.0 | card 5. On a Facebook local deal, paying at the meeting scores 0 (asserted, facebook-marketplace; not built: `scoreOffPlatform`, `T/hard.ts:42`, is unread) |
 | `ship_elsewhere` | model | +1.5 | card 5 |
 | `link_early` (flagged link in message 1 or 2, `T/signals.ts:118`) | code | +1.0 | card 5 |
 | `new_account`: age under `trust_new_days` (30) or no ratings | adapter | +0.7 | card 5 |
-| `urgency_no_question` over `trust_urgent_cents` (20,000) | model plus price | +0.5 | card 5 |
+| `urgency_no_question` over `trust_urgent_cents` (20,000) | code, from the caller's `urgent` flag plus price (`T/signals.ts:123`) | +0.5 | card 5 |
 | `good_history`: at least `trust_good_buys` (10) | adapter | -1.5 | card 5 |
 | `third_party_collects` | model | +1.5 | the "mover with a check" pattern (asserted) |
 | `site_banner` | adapter | +2.0 | the site's own word, as card 17 ranks it |
@@ -89,7 +90,7 @@ The model's threshold per predicate is `trust_thr.<signal>`: 0.1 for `asks_code`
 
 ### No-show (prior weights `trust_ns_<k>_weight`, `T/params.ts:47-48`; source card 6, the last two inferred)
 
-`past` +2.0 each, `paid` -3.0, `exact` -1.0, `vague` +1.0, `new` +0.5, `haggle` +0.3, `reschedule` +0.7, `reply` -1.5. Confirm at `trust_ns_confirm` 1.0, ask before booking at `trust_ns_ask` 3.0 or `trust_ns_past_ask` 2 past no-shows (`T/noshow.ts:14-19`). Silence of `trust_ns_wait_min` 15 after the slot is `no_show` (`T/noshow.ts:40`).
+`past` +2.0 each, `paid` -3.0, `exact` -1.0, `vague` +1.0, `new` +0.5, `haggle` +0.3, `reschedule` +0.7, `reply` -1.5. Confirm at `trust_ns_confirm` 1.0, ask before booking at `trust_ns_ask` 3.0 or `trust_ns_past_ask` 2 past no-shows (`T/noshow.ts:14-19`). Silence of `trust_ns_wait_min` 15 after the slot is `no_show` (`T/noshow.ts:40` takes `waitMin` from the caller; `trust_ns_wait_min` is unread).
 
 ### Account health — `T/health.ts`
 
@@ -105,7 +106,7 @@ The signals describe the listing, never the item; authenticity is never inferred
 
 | Signal | Action |
 |---|---|
-| Brand in `trust_cf_brands` with no proof photo | ask (`:34`, D15). The list is 10 brands, *agent proposal*, not read from the programmes |
+| Brand in `trust_cf_brands` with no proof photo | ask (`:23`, D15). The list is 10 brands, *agent proposal*, not read from the programmes |
 | Poshmark price at or over `authentication.floor_cents`; eBay shoes at `authentication.shoes.floor_cents` | warn (`:24-25`). Facts from `spec/sites.mjs` (*observed*: $500 and $75, [trust, returns, disputes §6](../../research/sold/nate/trust-returns-disputes.md#6-counterfeits-and-authentication)), not params |
 | Brand in the list and price under `trust_cf_price_ratio` (0.6) x the [valuation](valuation.md) q50 | warn; both prices are shown only if each has a guarded citation (`:28-34`) |
 | Stock-image match (`stockPhoto`, supplied by the caller; the matcher is *not built*) | warn |
@@ -124,7 +125,7 @@ Beta `trust_dispute` (prior `Beta(1, 1)`) per (site, reason, bundle complete) fr
 | 1. Code signals (`codeSignals`, `T/signals.ts:112`) | built. The 24 h buyer-profile cache is *not built*: the caller passes `ctx.buyer` |
 | 2. Model predicates, started first, with `trust_model_timeout_ms` (2000) | built (`:86-97`). On timeout or error: `ask`, reason says the check did not finish. Haiku is the spec's choice; no model is wired. D2 |
 | 3. Hard rules: block | built (`:100`, `:115`) |
-| 4. `s = sum(w_i)` over present scored signals; `logit p = trust_b + s` | built (`:102`, `:106`). `trust_b` is one prior for every group; the six per-group base rates are *not built*. A fitted `trust_weights` row replaces `q/r` weights and `trust_b` (`:58-65`, `T/params.ts:67`) |
+| 4. `s = sum(w_i)` over present scored signals; `logit p = trust_b + s` | built (`:102`, `:106`). `trust_b` is one prior for every group; the six per-group base rates are *not built*. A fitted `trust_weights` row replaces `q/r` weights and `trust_b` (`:58-65`, `T/params.ts:32`) |
 | 5. `L = max(trust_loss_min_cents, keep_q50 + refund asked)` | built (`:35`) |
 | 6. `F = round(trust_c_tap_cents + trust_delta · L)` | built (`:37`) |
 | 7. Ask when `s >= ln(F / (L (1 - trust_m_ask))) - trust_b`; warn within `trust_warn_gap` below | built (`:41`, `:118-119`) |
@@ -214,7 +215,7 @@ Words follow [copy](../../product/copy.md). Shapes only:
 | `trust.health_flag` | warning at 0.7 gives flag 0.63 | arithmetic only; D7 |
 | `trust.rollback` | each trigger restores the previous champion | calibration only; D10 |
 | `trust.learns` | on a planted stream, weights recovered within 0.2 after 2,000 threads; a planted bad challenger never promoted | bad challenger only (`J/test_sim.py:13`); recovery *not built*: `J/sim.py:6-7` says it waits for the weight learner, which now exists (`J/fit.py:202`); the planted-weight run is unwritten |
-| `trust.speed` | code path p95 under 50 ms, full path under 2 s on 1,000 threads | bench built, no recorded run |
+| `trust.speed` | code path p95 under 50 ms, full path under 2 s on 1,000 threads | asserted by `J/test_sim.py:27`; no recorded run |
 | `trust.recall_set` | 20 CPSC recalls blocked, 20 lookalikes not ([features-proof item 17](../../product/features-proof.md), table row 5) | *not built*. Source of the 20: the CPSC list; lookalikes chosen first by hand |
 | `trust.scam_set` | 30 public scam scripts caught, 30 ordinary messages not flagged (row 6). Both counts reported, with n | *not built*. Needs a wired extractor (D1) |
 | `trust.wired` | D1's test | *not built* |
@@ -228,8 +229,8 @@ Each step lists the measure that says it worked. Steps 1 to 4 are fixes, not pro
 | # | Task | Measure | Files |
 |---|---|---|---|
 | N1 | Wire D1 and D2: `decideThread` as the port; bad extractor output becomes ask | `trust.wired`, `trust.model_down` pass | `conversations.ts`, `messages.ts`, `T/decide.ts` |
-| N2 | Persist labels, prints and signals; fix replacement (D3, D4, D5) | `trust.poison_cap` across a restart; changed-label test | `T/labels.ts` |
-| N3 | Recall: fix D14, run the 20 and 20, wire `postGate`, `takedowns`, `buyGate` and the daily delta | "20 of 20 blocked, 0 false blocks" with n | `T/recall.ts` |
+| N2 | Recall: fix D14, run the 20 and 20, wire `postGate`, `takedowns`, `buyGate` and the daily delta | "20 of 20 blocked, 0 false blocks" with n | `T/recall.ts` |
+| N3 | Persist labels, prints and signals; fix replacement (D3, D4, D5) | `trust.poison_cap` across a restart; changed-label test | `T/labels.ts` |
 | N4 | Scam set: wire an extractor, run 30 scripts and 30 ordinary messages, fit `trust_thr` on half, report on the other half | recall at least 0.95 and false positives at most 2% on the held-back half, both counts and n | `J/fit.py` `fit_thresholds` |
 | N5 | One prior file for both languages; delete legacy dollar fields; calibration noise (D6, D11, D12) | parity test passes; `tsc` clean; two equal fits do not swap | `T/params.ts`, `J/params.py`, `J/fit.py` |
 | N6 | Health: store `flag_m`, bucketed pace, exact Beta bound; show an ECE interval beside the gate | `trust.health_flag`, `trust.pace`; bootstrap interval of ECE under 5 points before a percentage shows (*agent proposal*) | `T/health.ts` |

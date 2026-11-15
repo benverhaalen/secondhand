@@ -26,14 +26,14 @@ export function Surface({ kind, gradient = 'need', hours = null, box, part, chil
     return (
       <Theme scheme={scheme}>
         <OnGround ground="field">
-          <View {...mark} style={[{ borderRadius: radius.card, overflow: 'hidden' }, stateGradient(gradient, hours, scheme) as ViewStyle, box]}>{children}</View>
+          <View {...mark} style={[{ borderRadius: radius.card, borderCurve: 'continuous', overflow: 'hidden' }, stateGradient(gradient, hours, scheme) as ViewStyle, box]}>{children}</View>
         </OnGround>
       </Theme>
     );
   }
   const look: ViewStyle =
-    kind === 'card' ? { backgroundColor: c.surface, borderRadius: radius.card, borderWidth: 1, borderColor: c.cardEdge }
-    : kind === 'gray' ? { backgroundColor: c.gray, borderRadius: radius.card }
+    kind === 'card' ? { backgroundColor: c.surface, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: c.cardEdge }
+    : kind === 'gray' ? { backgroundColor: c.gray, borderRadius: radius.card , borderCurve: 'continuous'}
     : { backgroundColor: c.surface, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderWidth: scheme === 'dark' ? 1 : 0, borderColor: c.cardEdge };
   return (
     <OnGround ground={kind === 'sheet' ? 'page' : 'card'}>
