@@ -6,7 +6,7 @@
     "who": "Every seller; the person clearing out (primary) opens it after a sale to see the money, the flipper most days for the running total and the trend (product/personas.md; research/today/ben/top-of-today-and-stacking.md §1).",
     "how_often": "A few times a week; Today's top slot taps through to it after a sale (spec/pages.md §4).",
     "came_to": "See that it worked and how it is going: the money and where it is, the sales over time, what is for sale and how each live thing is doing, then reach a setting, a site or the log in one tap.",
-    "costly_mistake": "Reading money that can still be taken back as money in hand: on its way is its own part of the bar and its own row, never added to paid out (spec/features/insights.md, Kept versus sold). One big sale read as a good run: each week shows its count of sales under its bar. A site that signed the person out going unnoticed: it leads the page, with Sign in on the row.",
+    "costly_mistake": "Reading money that can still be taken back as money in hand: on its way is its own part of the bar and its own row, never added to paid out (spec/features/insights.md, Kept versus sold). One big sale read as a good run: each week shows its count of sales under its bar. A site that signed the person out going unnoticed: it is the first row under the money, with Sign in on the row, on the first screen.",
     "ways_out": "Pause selling, never suggest edits, units, delete (Settings); quiet hours and every kind of alert (Notifications); unlink a site (Your sites); undo what the agent did (Activity); turn a rule back to asking (Rules and limits). spec/ways-out.md rows: I'm away, Not at night, Don't edit my photos, Inches not centimetres, Get me out.",
     "in_the_loop": "The person stays in the loop through Rules and limits (what runs alone, what always asks) and Activity (every automatic step with Undo); this page points to both and says how many rules run on their own."
   },
@@ -14,7 +14,7 @@
     {
       "state": "typical",
       "world": "clearing",
-      "shows": "the title You with the inbox and its count; Poshmark's logo with Signed out yesterday at 9 pm, Nothing sells there until you sign in, and Sign in; $163.63, Earned after fees, from 4 sales; a bar of Paid out ($31.30), On its way ($132.33, Ready on the site about Tuesday) and Could still earn ($253 to $276, If your 4 live things sell); Sales each week on a dollar axis ($0, $100, $200) with a Sales row under the dates (1, then 3 this week); Your things: a bar and tiles Getting ready 2, Live 4, Sold 4, Kept 1 worth $70 to $95; How they’re doing: the lamp, the jacket, the pants and the fleece, each with views, likes, offers and days up against the usual, and the key; rows By site, Records, Your sites (3 of 5), Rules and limits, Activity, Notifications, Settings"
+      "shows": "the title You with the inbox and its count; $163.63, You got from 4 sales, after fees; a bar of Paid out ($31.30), On its way ($132.33, Ready on the site about Tuesday) and Could still earn ($253 to $276, If your 4 live things sell); Poshmark's logo with Signed out yesterday at 9 pm, Nothing sells there until you sign in, and Sign in; Sales each week on a dollar axis ($0, $100, $200) with a Sales row under the dates (1, then 3 this week); Your things: a bar and tiles Getting ready 2, Live 4, Sold 4, Kept 1 worth $70 to $95; How they’re doing: the lamp, the jacket, the pants and the fleece, each with views, likes, offers and days up against the usual, and the key; rows By site, Records, Your sites (3 of 5), Rules and limits, Activity, Notifications, Settings"
     },
     {
       "state": "dense",
@@ -24,7 +24,7 @@
     {
       "state": "one",
       "world": "one",
-      "shows": "Poshmark's Sign in row; Nothing sold yet with its line and no button; the bar with Could still earn; Your things with Live 1; How they’re doing with the jacket; no chart; rows Your sites, Rules and limits, Notifications, Settings"
+      "shows": "Nothing sold yet with its line and no button; the bar with Could still earn; Poshmark's Sign in row; Your things with Live 1; How they’re doing with the jacket; no chart; rows Your sites, Rules and limits, Notifications, Settings"
     },
     {
       "state": "new",
@@ -214,7 +214,7 @@
   "decisions": [
     "The title is You in the text face at 21, Medium, centered where Today has the wordmark: the wordmark stays the one brand mark (research/today/ben/today-feed-and-card-states.md §5). Brand-check warns B3 on purpose.",
     "You is a dashboard (Ben 06:19, product/words.md, notes on the first gallery): each of his questions gets one form. Sales: the amount with its count of sales, and a weekly bar chart. Where the money is: one bar. Listings: a bar by state with a tile per part. How they're doing: a row per live thing with four counts against the usual. Why: he asked for visuals and context, and each form answers one question (dataviz: one form per question).",
-    "A signed-out site leads the page as a row with its logo and Sign in, and the tap starts that site's own sign-in in place (Ben 06:19: click on something to sign back in). Why: one tap fixes it, and the person sees it work without leaving You. The row is not a button itself, so there is one act and no chevron.",
+    "A signed-out site is the first row under the money with its logo and Sign in, and the tap starts that site's own sign-in in place (Ben 06:19: click on something to sign back in). Why: one tap fixes it, and the person sees it work without leaving You. The row is not a button itself, so there is one act and no chevron. It sits under the money, not over it (11-15): a person opens You for the money first, the money is the page's one focal point (Art. 7.4), and the row still lands on the first screen, as Settings puts an account's alert under its header.",
     "The peak amount is earned after fees with the number of sales beside it, and the bar under it splits that money into paid out and on its way, then adds what the live things could bring. Why: one big sale is read as one sale, and money that can still be taken back is never shown as in hand (insights.md).",
     "Could still earn is what the person keeps after each site's fees at the asking price (engines/valuation/keep.ts), a range when one thing is up at different prices on different sites and one number when every thing is on one site, in whole dollars. Why: Ben 06:19, 'if it was one site, it would just be one number'; it was the valuation range before, which is what it might fetch, not what is asked. The words are plain: Could still earn, If your 4 live things sell (Ben: '4 live, could earn' was clunky).",
     "The weekly chart shows once there are 3 sales in its 8 weeks (it was 3 weeks with a sale, an agent proposal in top-of-today-and-stacking.md §1). Why: Ben wants the chart, and 3 sales make a shape; fewer is a sentence. The axis is dollars from zero to a round top, each week's count of sales sits under its date in the same column, and only this week and the tallest week are labelled. Two measures share the columns, never a second y-axis.",
@@ -223,6 +223,7 @@
     "Colors follow the state everywhere else (ui/states.ts): lime paid, mint sold and on its way, sky live, gray getting ready, lilac kept, peach didn't sell; the unsure part of could earn is the quieter step of sky. Text stays in ink, and every part has its words and an icon or a swatch beside them, so color is never alone.",
     "Rows into pages are a settings list with hairlines, in groups: money, how the agent runs, the app. Payouts, By site and Records rows wait for a sale, and Activity for the agent's first step.",
     "No tabular figures on this page: no amount here changes in place, and PP Neue Montreal's tabular digits read as letter-spaced in a lone value (Art. 6.7).",
-    "Money to come is said as You get, never You keep (Ben 06:19 found \"you keep this much money\" clunky; one form across the app). Money that came is Earned after fees, and the chart is Sales each week with its axis titled After fees."
+    "Money to come is said as You get, never You keep (Ben 06:19 found \"you keep this much money\" clunky; one form across the app). Money that came is You got, after fees, as on an item's sale (app/src/item/model.ts), and the chart is Sales each week with its axis titled After fees.",
+    "Paid out has no second line: \"In your bank or your hand\" said what Paid out already says (Ben, 09:56: \"ensure there is no excessive text\"). On its way keeps its date and Could still earn its condition, because each says something the label does not."
   ]
 }

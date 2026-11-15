@@ -10,11 +10,15 @@ import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
 import { ago, usd, unread, world, type Decision, type Want, type World } from '@/demo';
 import { TabNav } from '@/ui/parts/tab-nav';
+import { shortName } from '@/demo/short-name';
 import {
   DecisionCard, EmptyState, ItemCard, Line, MatchCard, Nav, OfferSheet, Pill, Screen, SearchField, Section, Sheet, Stack, UndoToast,
 } from '@/ui';
 
 const dollars = (cents: number) => cents / 100;
+// A want's name on its card: what it is, without the most and the distance its line and its page already say
+// ("Standing desk under $150 within 10 miles" is "Standing desk", over "Nothing yet under $150"). Art. 7.15, check U14.
+const wantName = (text: string) => shortName({ title: text.replace(/\s*\b(under|below) \$[\d,.]+/i, '').replace(/\s*\bwithin \d+ (mi|miles?)\b/i, '') });
 
 // The person a state is drawn for (app/src/demo/screen.ts): empty is this person with nothing on the list; one is one want
 // with one match; dense is the hunter's full list (the flipper's world has no wants, so the buyer's stands in).
@@ -60,7 +64,7 @@ export default function Buy() {
     if (d.kind === 'buy_offer') {
       const cents = d.money?.offer_cents ?? m.price_cents;
       return (
-        <DecisionCard key={d.id} id={d.id} kind="need" word="Your offer" title={m.title} photo={m.key} site={m.site} lead={lead}
+        <DecisionCard key={d.id} id={d.id} kind="need" word="Your offer" title={shortName(m)} photo={m.key} site={m.site} lead={lead}
           fact={{ label: 'They ask', amount: usd(m.price_cents) }} onOpen={open} status={sending === d.id ? 'working' : 'open'} step="Sending"
           primary={{ id: `${d.id}-send`, label: `Send ${usd(cents)}`, onPress: () => send(d, cents) }}
           second={{ id: `${d.id}-change`, label: 'Change', onPress: () => setOffering(d) }}
@@ -69,7 +73,7 @@ export default function Buy() {
     }
     const raise = Math.ceil(dollars(m.delivered_cents));
     return (
-      <DecisionCard key={d.id} id={d.id} kind="need" word="Over your most" title={m.title} photo={m.key} site={m.site} lead={lead}
+      <DecisionCard key={d.id} id={d.id} kind="need" word="Over your most" title={shortName(m)} photo={m.key} site={m.site} lead={lead}
         fact={{ label: 'Delivered', amount: usd(m.delivered_cents) }} onOpen={open}
         primary={{ id: `${d.id}-walk`, label: 'Walk away', onPress: () => leave(d, 'Hidden') }}
         second={{ id: `${d.id}-raise`, label: `Raise to ${usd(raise * 100)}`, onPress: () => leave(d, `Your most is ${usd(raise * 100)}`) }}
@@ -94,7 +98,7 @@ export default function Buy() {
 
       {fresh.length ? (
         <Section title="New matches">
-          {fresh.map(m => <MatchCard key={m.id} id={`match-${m.id}`} title={m.title} photo={m.key} site={m.site} verdict={m.verdict} likeness={m.label}
+          {fresh.map(m => <MatchCard key={m.id} id={`match-${m.id}`} title={shortName(m)} photo={m.key} site={m.site} verdict={m.verdict} likeness={m.label}
             {...cardLine(m)} when={ago(m.seen_at)} onPress={() => router.push(href(w, `/listing/${m.id}`))} />)}
         </Section>
       ) : null}
@@ -105,7 +109,7 @@ export default function Buy() {
             const n = found(x), tag = wantTag(x), p = w.products.find(pr => pr.id === x.product_id);
             // The want's photo: its product's, else the newest thing it found; with neither, the empty photo slot.
             const key = p?.key ?? w.matches.find(m => m.want_id === x.id)?.key ?? null;
-            return <ItemCard key={x.id} id={`want-${x.id}`} title={x.text} photo={key} state={tag.state} word={tag.word}
+            return <ItemCard key={x.id} id={`want-${x.id}`} title={wantName(x.text)} photo={key} state={tag.state} word={tag.word}
               fact={{ label: n ? `${n} found under` : 'Nothing yet under', amount: x.max_total_cents == null ? undefined : usd(x.max_total_cents) }}
               onPress={() => router.push(href(w, `/want?id=${x.id}`))} />;
           })}
@@ -114,7 +118,7 @@ export default function Buy() {
 
       {saved.length ? (
         <Section title="Watching">
-          {saved.map(m => <MatchCard key={m.id} id={`match-${m.id}`} title={m.title} photo={m.key} site={m.site} verdict={m.verdict} likeness={m.label}
+          {saved.map(m => <MatchCard key={m.id} id={`match-${m.id}`} title={shortName(m)} photo={m.key} site={m.site} verdict={m.verdict} likeness={m.label}
             {...cardLine(m)} onPress={() => router.push(href(w, `/listing/${m.id}`))} />)}
         </Section>
       ) : null}
@@ -123,7 +127,7 @@ export default function Buy() {
         <Section title="Bought">
           {bought.map(o => {
             const it = w.items.find(i => i.id === o.item_id);
-            return <ItemCard key={o.id} id={`bought-${o.id}`} title={it?.title ?? 'Bought'} photo={it?.photos[0]?.key ?? null} site={o.site} state="paid" word="Bought"
+            return <ItemCard key={o.id} id={`bought-${o.id}`} title={it ? shortName(it) : 'Bought'} photo={it?.photos[0]?.key ?? null} site={o.site} state="paid" word="Bought"
               fact={{ label: 'Paid', amount: usd(o.price_cents + o.shipping_cents) }} onPress={() => router.push(href(w, `/item/${o.item_id}`))} />;
           })}
         </Section>

@@ -1,8 +1,8 @@
 // You (spec/pages.md §6.16), a dashboard (Ben 06:19: "I want to know my sales, I want to know my listings, I want to know how
 // they're doing ... how much I could earn", explained "using visuals ... and in context too"). Top to bottom:
-// - a site that signed the person out, with Sign in on the row (it stops selling there, so it leads);
-// - what selling kept after fees and from how many sales, then one bar of where that money is and what the live things could
-//   still bring (paid out, on its way, could still earn), each part a row into its page;
+// - what selling brought in after fees and from how many sales, then one bar of where that money is and what the live things
+//   could still bring (paid out, on its way, could still earn), each part a row into its page;
+// - a site that signed the person out, with Sign in on the row: the first thing after the money that needs them;
 // - money kept each week on a dollar axis with each week's count of sales under it, once there are 3 sales to draw;
 // - everything being sold by where it is, a bar and a tile per part into that shelf on Sell;
 // - how each live thing is doing against what is usual for it, the slow ones first;
@@ -12,6 +12,7 @@
 import { insights, unread } from '@/demo';
 import { EmptyState, List, Screen, Section, Amount } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
+import { shortName } from '@/demo/short-name';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { MoneyBar, type MoneyPart } from '@/ui/parts/money-bar';
 import { PulseKey, PulseRow } from '@/ui/parts/pulse-row';
@@ -52,7 +53,7 @@ export default function You() {
   const state = drawn(w, n.sold + things.reduce((a, t) => a + t.count, 0), asked);
 
   const parts: MoneyPart[] = [
-    ...(landed > 0 ? [{ id: 'you-paid-out', label: 'Paid out', detail: 'In your bank or your hand', value: cash(landed), low: landed, fill: 'lime' as const, onPress: () => go.to('/you/payouts') }] : []),
+    ...(landed > 0 ? [{ id: 'you-paid-out', label: 'Paid out', value: cash(landed), low: landed, fill: 'lime' as const, onPress: () => go.to('/you/payouts') }] : []),
     ...(onItsWay > 0 ? [{ id: 'you-on-its-way', label: 'On its way', detail: soonest(coming) ?? undefined, value: cash(onItsWay), low: onItsWay, fill: 'mint' as const, onPress: () => go.to('/you/payouts') }] : []),
     // Across sites the same thing is up at different prices, so this is a range; on one site it is one number (Ben 06:19).
     ...(could ? [{ id: 'you-live', label: 'Could still earn', detail: `If your ${plural(could.things, 'live thing sells', 'live things sell')}`,
@@ -62,16 +63,18 @@ export default function You() {
   return (
     <Screen name="you" state={state} wash nav={<TabNav title="You" inbox={{ count: unread(w), onPress: () => go.to('/messages') }} />}>
       <PageStatus asked={asked} what="your numbers">
-      {signedOut.length ? <List>{signedOut.map(s => <SignInRow key={s} site={s} link={links[s]} onSignIn={() => link(s)} />)}</List> : null}
-
       <Section>
         {n.sold ? (
-          <Amount value={n.kept_cents / 100} what={`Earned after fees, from ${plural(n.sold, 'sale', 'sales')}`} />
+          <Amount value={n.kept_cents / 100} what={`You got from ${plural(n.sold, 'sale', 'sales')}, after fees`} />
         ) : (
           <EmptyState title="Nothing sold yet" line="What you get after fees shows here." action={could ? undefined : { id: 'you-sell', label: 'Sell something', onPress: () => go.to('/new') }} />
         )}
         {parts.length ? <MoneyBar parts={parts} /> : null}
       </Section>
+
+      {/* Under the money, not over it: a person opens You for the money first, and a signed-out site is the first thing after it
+          that needs them, still on the first screen (Mail and Settings put an account's alert under its header). */}
+      {signedOut.length ? <List>{signedOut.map(s => <SignInRow key={s} site={s} link={links[s]} onSignIn={() => link(s)} />)}</List> : null}
 
       {weeks ? (
         <Section title="Sales each week">
@@ -91,7 +94,7 @@ export default function You() {
         <Section title="How they’re doing">
           <List>
             {rows.slice(0, SHOWN).map(r => (
-              <PulseRow key={r.id} id={`pulse-${r.id}`} title={r.title} photo={r.key ? (photo(r.key as PhotoKey) as PhotoSrc) : null} sites={r.sites}
+              <PulseRow key={r.id} id={`pulse-${r.id}`} title={shortName(r)} photo={r.key ? (photo(r.key as PhotoKey) as PhotoSrc) : null} sites={r.sites}
                 price={r.price.low === r.price.high ? cash(r.price.low) : `${cash(r.price.low)} to ${cash(r.price.high)}`} line={r.line} cells={cells(r)} onPress={() => go.to(`/item/${r.id}`)} />
             ))}
             {rows.length > SHOWN ? <ListRow id="you-all-live" label={`All ${rows.length} live`} onPress={() => go.to('/sell?filter=live')} /> : null}
