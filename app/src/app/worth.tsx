@@ -6,8 +6,9 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Approve, Blank, Guess, Line, List, Nav, Photo, Pill, Row, Screen, Section, Sheet, Stack, Txt, type PhotoSrc } from '@/ui';
 import { Choice } from '@/ui/parts/chip';
-import { KeepRow, Range } from '@/ui/parts/worth';
-import { ago, connectionState, itemById, product, usd, world, WORLD_NAMES, youKeep, type AnyWorld, type Cents, type Site, type World } from '@/demo';
+import { KeepRow, Range, RangeSkeleton } from '@/ui/parts/worth';
+import { ago, connectionState, itemById, product, usd, youKeep, type Cents, type Site, type World } from '@/demo';
+import { useScreen } from '@/demo/screen';
 import type { PhotoKey } from '@/demo/photo-keys';
 import { photo } from '@/demo/photos';
 
@@ -23,6 +24,8 @@ type Subject = {
 // was not enough, the guess is the Switch, whose model number is on its label (clearing world, it_switch).
 // A range is said in whole dollars, widened outward so it never claims more than the sales show (copy.md: numbers as a friend says them).
 const down = (c: Cents) => usd(Math.floor(c / 100) * 100), up = (c: Cents) => usd(Math.ceil(c / 100) * 100);
+// The list states Worth cannot be in, with why (B35).
+const SKIP = 'empty: Worth is of one thing, so it has no list to be empty; one: it is always one thing; dense: one thing a page, so nothing piles up';
 const FRESH = 'pr_dunk', UNSURE = 'pr_switch', UNSURE_GUESS = 'Nintendo Switch';
 
 function fromProduct(id: string): Subject | null {
@@ -43,8 +46,12 @@ function fromItem(w: World, id: string): Subject | null {
 }
 
 export default function Worth() {
-  const params = useLocalSearchParams<{ world?: string; item?: string; product?: string; stage?: string }>();
-  const w = world(WORLD_NAMES.includes(params.world as AnyWorld) ? (params.world as AnyWorld) : undefined);
+  const params = useLocalSearchParams<{ item?: string; product?: string; stage?: string }>();
+  // The person and the state, from the URL (app/src/demo/screen.ts). Worth is always one thing, so it has no list to be
+  // empty, one or dense; loading, failed and offline are the sales check that has not answered.
+  const { w, state: asked } = useScreen();
+  const [retried, setRetried] = useState(false);
+  const waiting = retried ? null : asked;
   const [stage, setStage] = useState<Stage>(params.stage === 'glance' || params.stage === 'unsure' || params.stage === 'unknown' ? params.stage : 'check');
   // A price the person has in mind, and whether they already said yes to one far from the sales (asked once).
   const [pricing, setPricing] = useState(false);
@@ -63,12 +70,32 @@ export default function Worth() {
   // A new number arrives when the person types the model: the value is checked again for what they named.
   const named = (v: string) => { setModel(v); setTyping(false); if (v.trim()) setStage('check'); };
 
+  if (waiting === 'loading' || waiting === 'failed' || waiting === 'offline') {
+    // The sales have not answered yet. Loading holds the range's place; failed says so with Try again; offline waits for
+    // the signal (ways-out, Everywhere). No number is shown that the sales did not give.
+    return (
+      <Screen name="worth" state={waiting} skip={SKIP} nav={nav}>
+        <Row lead={<Photo src={pic} label={s.title} />}>
+          <Txt role="headline" lines={2}>{s.title}</Txt>
+        </Row>
+        {waiting === 'loading' ? <RangeSkeleton /> : (
+          <Stack>
+            <Txt role="body">{waiting === 'failed' ? 'The sales didn’t load.' : 'Waiting for signal'}</Txt>
+            {waiting === 'failed'
+              ? <Line gap="tight"><Pill id="worth-retry" label="Try again" onPress={() => setRetried(true)} /></Line>
+              : <Txt role="body" tone="ink-2">It checks the sales when you’re back online.</Txt>}
+          </Stack>
+        )}
+      </Screen>
+    );
+  }
+
   if (stage === 'unsure' || stage === 'unknown') {
     // "I don't know" is an answer, not a failure (edge-cases §4): no number, since sales can't be matched to a guess,
     // and selling still works from what the photo shows. Looking deeper is the way to a number.
     const unknown = stage === 'unknown';
     return (
-      <Screen name="worth" state={stage} nav={nav}>
+      <Screen name="worth" state={stage} skip={SKIP} nav={nav}>
         <Row lead={<Photo src={pic} label="Your photo" />}>
           <Txt role="title">{unknown ? 'No number yet' : 'Which one is it?'}</Txt>
           {unknown ? <Txt role="body" tone="ink-2">It’ll be listed by what the photos show.</Txt>
@@ -104,7 +131,8 @@ export default function Worth() {
     .map(r => ({ ...r, keepLow: r.low == null ? null : youKeep(r.site, r.low), keepHigh: r.high == null ? null : youKeep(r.site, r.high) }))
     .sort((a, b) => (b.keepHigh ?? -1) - (a.keepHigh ?? -1));
   const glance = stage === 'glance';
-  const state = kept ? 'kept' : stage;
+  // A URL that names new or typical draws this page for that person, and says so.
+  const state = kept ? 'kept' : asked === 'new' || asked === 'typical' ? asked : stage;
   const sellTo = (s.itemId ? `/item/${s.itemId}` : '/camera') as Href;
   const valuable = !!s.itemId && !!itemById(w, s.itemId)?.attributes.some(a => VALUABLE.includes(a.name) && a.value != null);
   // More than 3 times the top of the sales, or under a third of the bottom (edge-cases §3).
@@ -115,7 +143,7 @@ export default function Worth() {
   };
 
   return (
-    <Screen name="worth" state={state} nav={nav}>
+    <Screen name="worth" state={state} skip={SKIP} nav={nav}>
       <Row lead={<Photo src={pic} label={s.title} />}>
         <Txt role="headline" lines={2}>{s.title}</Txt>
       </Row>

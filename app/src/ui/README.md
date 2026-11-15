@@ -60,6 +60,35 @@ See every part in every state at **`/dev/parts`** (light) and **`/dev/parts?sche
 | `Range` (parts/worth) | 50 + its line | `low`, `high`, `what`. A value as a range, one piece of text that breaks at a space |
 | `KeepRow` (parts/worth) | 56 | `site`, `keep?`, `line`, `note?`. What the person keeps on one site; no `keep` when there are too few sales |
 
+### New and the camera (`parts/takeover.tsx`, `parts/camera.tsx`)
+
+Both draw on the camera's bar (`useBar()`): ink black with page white on it in light, so the ＋ visibly becomes the circle; the dark page and its ink in dark, so nothing light covers the screen at night. A control on the bar is the bar's opposite, filled or at 12%.
+
+| Part | Size | Props |
+|---|---|---|
+| `TakeoverPlace` | the screen | `name`, `state`, `skip?`. New's root: `data-screen`, `data-state` and the states it does not draw |
+| `CircleStage` | a circle from a point to the whole screen | `origin`, `start?` (56), `phase: 'opening' \| 'open' \| 'closing' \| 'closed'`, `ground?: 'bar'`, `onSettled?`, `children?`. Grows out of what was touched in `newOpen`, shrinks back in `--t-select`. What is inside stays where it is on the screen |
+| `PlusClose` | 56 circle where the ＋ is | `open`, `onPress`. Its ＋ turns 45° to × (`new-close`) |
+| `ChoiceColumn` | content width, standing 24 on the × | `ways?`, children (choices, bottom up) |
+| `ChoiceCapsule` | 350 x 88, a 56 icon well | `id`, `label`, `icon`, `lead?` (the last used: filled), `index`, `shown`, `onPress?`. Rises 30 ms after the one before |
+| `WaysOut`, `BarPill` | a wrapping line of 40 pills | `WaysOut`: `shown`, `count`, children. `BarPill`: `id`, `icon`, `label`, `onPress?` |
+| `Viewfinder` | the screen | `state`, `mode?`, `feed?` (the photo on the web), `live?` + `camera?` (the phone's camera), `blink?`, `top?`, `cloud?`, `bottom?`. `top` and `bottom` sit on solid bars |
+| `CameraBar` | 44 row | `left?`, `right?`, children (the bubbles) |
+| `CamButton` | 40 circle, the bar's opposite at 12% | `id`, `icon`, `label`, `onPress?` |
+| `CamWord` | 32 tall word and arrow | `id`, `label`, `onPress?` (Skip) |
+| `StageBubbles` | 22 each, 8 apart | `stages: { name, state: 'later' \| 'now' \| 'done' \| 'skipped' }[]`. Shape carries the state; done fills to a check in `stageDone` |
+| `Instruction` | 18/24, centered | `text`. Crossfades when it changes |
+| `FoundPop` | 44 tall, a 28 check | `text`, `to` (its bubble's center), `stay?`, `onLanded?`. Drops in 250 ms, holds 1.5 s (`HOLD`), flies 300 ms; a light haptic with it |
+| `PointCloud` | the screen | `outline`, `features` (0 to 1 in the photo), `phase: 'outline' \| 'gather' \| 'gone'`, `spread` (ms). Points land in clusters where features were found |
+| `Chips`, `FactChip`, `CamNote` | 32 tall surface bars | `FactChip`: `id`, `name`, `value?`, `onChange?`: a check and the value, or a `Blank` with the name. `CamNote`: `icon`, `text` |
+| `Modes` | 32 tall | `modes`, `current`, `onPick`. Sell, Worth, Find, the current one on the bar's opposite |
+| `Shutter`, `ShutterRow`, `CameraAct`, `CameraFoot` | 76 | `Shutter`: `id`, `waiting?`, `onPress?`. `CameraAct` (`id`, `label`, `onPress?`) holds the one act in the shutter's place once done |
+| `CameraOff` | the screen | `title`, `line`, `acts: { id, label, onPress? }[]`: the camera is off; the first act filled, the rest outlined |
+| `FixChip` (`parts/camera-fix.tsx`) | 32 tall surface chip | `id`, `label`, `on`, `onPress`. Clean up and Enhance with AI, side by side: a plus when off, a check when on |
+| `FeedSwatch` | | The camera's ground on the parts sheet only |
+
+Helpers: `useBar()` (the bar's colors and tones), `cue(event)` (the log, and `globalThis.__events` on the web), `haptic.light()` and `haptic.success()` (expo-haptics; logged on the web), `useCameraLayout()`, `usePlus()`, `wellCenter(i, plus)`, `onScreen(spot, screen)`.
+
 Helpers: `money(amount)`, `timeLeft(due, now)`, `useMinute()` (a clock that ticks once a minute), `log` and `tap` (the app log), `MOTIONS` (every motion and its reason).
 
 ## Which to reach for

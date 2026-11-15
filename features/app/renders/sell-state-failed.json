@@ -1,0 +1,24 @@
+{
+  "route": "sell?state=failed",
+  "screen": "sell",
+  "states": [
+    "failed",
+    "typical"
+  ],
+  "skip": "",
+  "status": "fail",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "screen",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    },
+    {
+      "level": "error",
+      "id": "B35",
+      "where": "screen \"sell\"",
+      "msg": "is not drawn in the states new, empty, one, dense, loading, offline, at /sell?state=failed?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
+    }
+  ]
+}

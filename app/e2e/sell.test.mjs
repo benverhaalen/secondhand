@@ -11,7 +11,11 @@ after(async () => { await app?.stop(); });
 
 // How each state is reached: its route, and the taps after it.
 const STATES = {
+  new: { taps: [] },
   empty: { taps: [] },
+  loading: { taps: [] },
+  failed: { taps: [] },
+  offline: { taps: [] },
   typical: { taps: [] },
   one: { taps: [] },
   dense: { taps: [] },
@@ -97,6 +101,25 @@ test('sell: select, keep, then undo', async () => {
   assert.equal(await screen.page.locator('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]').count(), 0, 'the lamp left Needs you');
   await screen.tap('bulk-undo');
   await screen.page.waitForFunction(() => !!document.querySelector('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]'));
+});
+
+// ways-out, Everywhere: with no signal the last copy stays, and an approved change waits for it instead of being lost.
+test('sell: offline, a change waits for the signal', async () => {
+  const screen = await app.open('/sell?state=offline');
+  await screen.shows('Waiting for signal');
+  await screen.tap('sell-select');
+  await screen.tap('tile-it_lamp');
+  await screen.tap('select-act');
+  await screen.tap('bulk-keep');
+  await screen.tap('bulk-approve');
+  await screen.page.getByTestId('bulk-approve').filter({ hasText: 'Waiting for signal' }).waitFor({ state: 'visible', timeout: 3000 });
+  assert.equal(await screen.page.locator('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]').count(), 1, 'the lamp stays until the change is sent');
+});
+
+test('sell: failed says so, and Try again loads the things', async () => {
+  const screen = await app.open('/sell?state=failed');
+  await screen.tap('sell-retry');
+  await screen.shows('Needs you');
 });
 
 test('sell: delete is refused for a thing with an open order', async () => {

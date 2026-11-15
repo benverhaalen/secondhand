@@ -9,7 +9,7 @@ let app;
 before(async () => { app = await start(); });
 after(async () => { await app?.stop(); });
 
-const STATES = { glance: [], check: [], unsure: [], kept: ['worth-keep'], unknown: [] };
+const STATES = { glance: [], check: [], unsure: [], kept: ['worth-keep'], unknown: [], loading: [], failed: [], offline: [] };
 
 test('worth: every state in the behavior table has a test here', () => {
   assert.deepEqual(Object.keys(STATES).sort(), table.states.map(s => s.state).sort());

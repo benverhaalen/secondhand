@@ -2,18 +2,19 @@
 // there is some; then one feed of decisions in three tiers, ordered by what ignoring a card costs; the notices; and one
 // quiet line for what the agent did on its own, which opens its log with Undo. The words and order come from
 // app/src/today/cards.ts; every decision about this page is in app/behavior/(tabs)/index.json.
-// The demo world is picked with ?world=new|clearing|flipper|buyer|edge|one (clearing by default). ?fail=<decision id>,...
-// makes those acts fail once, so the failed state can be reached. ?state=loading draws the skeleton the page shows while
-// GET /v1/today answers; ?state=offline holds every tap as "Waiting for signal" until the signal returns (ways-out, Everywhere).
+// The person and the state come from useScreen() (app/src/demo/screen.ts): ?state=new|empty|one|typical|dense|loading|
+// failed|offline and ?world=<name>. Two extras are Today's own: ?world=stops, the clearing day things went wrong (edge cases
+// §1 and §7), and ?fail=<decision id>,..., which makes those acts fail once so a failed card can be reached.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { WORLD_NAMES, ms, usd, world, type AnyWorld } from '@/demo';
+import { ms, usd, world } from '@/demo';
+import { useScreen } from '@/demo/screen';
 import { photo } from '@/demo/photos';
 import {
   DecisionCard, EmptyState, Feed, FootButton, List, Nav, Notice, Pill, Photo, QueueView, Row, Screen, Section, Sheet, SiteBadge, Skeleton,
   Stack, TopSlot, Txt, UndoToast, Approve, Guess, type PhotoSrc, type QueueEntry,
 } from '@/ui';
-import { stopsWorld } from '@/today/stops';
+import { oneCardWorld, stopsWorld } from '@/today/stops';
 import { JOB_MS, backAt, cards as derive, entries as queueEntries, group, handledLine, log as autoLog, notices as deriveNotices, top as deriveTop, inbox, fit, sales as twoSales, single, type Action, type Card } from '@/today/cards';
 
 type Status = { s: 'working' | 'failed'; step?: string; option?: string };
@@ -24,11 +25,15 @@ const pic = (key: Parameters<typeof photo>[0] | null) => (key ? (photo(key) as P
 const cents = (s: string) => Math.round(Number(s.replace(/[^0-9.]/g, '')) * 100);
 
 export default function Today() {
-  const params = useLocalSearchParams<{ world?: string; fail?: string; state?: string }>();
-  const offline = params.state === 'offline';
-  // stops: the clearing world on a day things went wrong (app/src/today/stops.ts, spec/edge-cases.md §1 and §7).
-  const name = params.world === 'stops' ? 'stops' : (WORLD_NAMES as string[]).includes(params.world ?? '') ? (params.world as AnyWorld) : 'clearing';
-  const w = useMemo(() => (name === 'stops' ? stopsWorld : world(name)), [name]);
+  const { state: asked, name: picked } = useScreen();
+  const params = useLocalSearchParams<{ world?: string; fail?: string }>();
+  const offline = asked === 'offline', loading = asked === 'loading';
+  // empty draws this page with nothing on it; failed (asked for in the URL) is the page that did not load, with Try again.
+  const bare = asked === 'empty' || asked === 'failed' || loading;
+  // stops: the clearing world on a day things went wrong (app/src/today/stops.ts, spec/edge-cases.md §1 and §7). one: one
+  // card, since the demo's one world has nothing to decide (stops.ts, oneCardWorld).
+  const name = params.world === 'stops' ? 'stops' : asked === 'one' && !params.world ? 'one-card' : picked;
+  const w = useMemo(() => (name === 'stops' ? stopsWorld : name === 'one-card' ? oneCardWorld : world(name)), [name]);
   // Deadlines are in the world's time; the countdown runs on the real clock from the moment the page opened.
   const [shift] = useState(() => Date.now() - ms(w.now));
   const failOnce = useRef(new Set((params.fail ?? '').split(',').filter(Boolean)));
@@ -55,10 +60,10 @@ export default function Today() {
     if (split.has(c.key)) return w.decisions.filter(d => c.ids.includes(d.id)).map(d => fit(single(w, d)));
     const ids = left[c.key];
     return ids ? (ids.length ? [{ ...group(w, ids, c.form), key: c.key }] : []) : [c];
-  }).filter(c => !gone.has(c.key)), [w, gone, left, split]);
-  const top = params.state === 'loading' ? null : deriveTop(w), line = handledLine(w), notices = deriveNotices(w), events = autoLog(w);
+  }).filter(c => !gone.has(c.key) && !bare), [w, gone, left, split, bare]);
+  const top = bare ? null : deriveTop(w), line = handledLine(w), notices = deriveNotices(w), events = autoLog(w);
   // The tiers, with the notices and the handled line at the end of Good to know: they ask nothing, so they are its rows (pages §6.2).
-  const quiet = (notices.length > 0 || !!line) && params.state !== 'loading';
+  const quiet = (notices.length > 0 || !!line) && !bare;
   const tiers = useMemo(() => {
     const out: { tier: Card['tier']; label: string | null; cards: Card[] }[] = [];
     const LABEL = { now: 'Now', when_you_can: 'When you can', good_to_know: 'Good to know' } as const;
@@ -140,8 +145,7 @@ export default function Today() {
 
   // The state, in the names every screen is checked in (.agents/ui-states.json): a world is a state of the page.
   const failing = Object.values(status).some(s => s.s === 'failed') || feed.some(c => c.status === 'failed');
-  const state = params.state === 'loading' ? 'loading' : offline ? 'offline' : name === 'new' ? 'new' : !feed.length ? 'empty' : failing ? 'failed'
-    : name === 'flipper' ? 'dense' : name === 'one' ? 'one' : name === 'stops' ? 'failed' : 'typical';
+  const state = asked ?? (name === 'new' ? 'new' : !feed.length ? 'empty' : failing || name === 'stops' ? 'failed' : name === 'flipper' ? 'dense' : 'typical');
   const toastEl = toast ? <UndoToast key={toast.id} id={toast.id} text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} /> : null;
 
   return (
@@ -150,10 +154,12 @@ export default function Today() {
       {top?.kind === 'setup' ? <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: top.step, onPress: () => go(top.to) }} /> : null}
 
       {/* Nothing to decide. A new person has the setup step above and one way to start; anyone else is told it is clear. */}
-      {state === 'new' ? <Notice id="empty-worth" icon="camera-01" text="What’s something worth?" onPress={() => go('/camera')} />
-        : !feed.length && state !== 'loading' ? <EmptyState title="Nothing needs you" /> : null}
+      {offline ? <Txt role="caption" tone="ink-2">Waiting for signal</Txt> : null}
+      {name === 'new' && !bare ? <Notice id="empty-worth" icon="camera-01" text="What’s something worth?" onPress={() => go('/camera')} />
+        : asked === 'failed' ? <EmptyState title="Today didn’t load" action={{ id: 'retry', label: 'Try again', onPress: () => router.setParams({ state: '' }) }} />
+        : !feed.length && !loading ? <EmptyState title="Nothing needs you" /> : null}
 
-      {state === 'loading' ? (
+      {loading ? (
         <Stack gap="cards"><Skeleton of="card-decision" /><Skeleton of="card-decision" /><Skeleton of="notice" /></Stack>
       ) : tiers.map(t => (
         <Section key={t.tier} title={t.label ?? undefined}>
