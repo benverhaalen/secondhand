@@ -9,8 +9,8 @@ import json
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-import openrouter  # noqa: E402
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+from studio import openrouter  # noqa: E402
 
 
 def cmd_smoke(out_dir: str) -> None:
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     elif cmd == "smoke":
         cmd_smoke(*rest)
     elif cmd == "slides":
-        import slides_run
+        from studio import slides_run
         slides_run.main(*rest)
     else:
         print(__doc__)
