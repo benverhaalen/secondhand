@@ -2277,3 +2277,9 @@ Nate, orchestrator's session, 2026-11-15, about 07:50 Central.
 > Very important, see how we can utilize these, or build our engines and features on top https://www.databricks.com/solutions/industries/retail-industry-solutions to show we truly extend databricks
 
 Used in: `research/data/nate/databricks-retail-solutions.md`, [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate dupe's copies of listings already read are dropped, its new ones kept
+Nate, search lead's session, 2026-11-15, about 06:55 Central, after the app-wiring lead measured Dupe returning Poshmark listings the direct Poshmark read already had ("you called poshmark twice").
+> dupes arent considered if copies, if they are new then they are read as additional info, but duplicates from dupe are dropped
+
+Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search), SR11.
