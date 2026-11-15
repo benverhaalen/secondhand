@@ -32,6 +32,7 @@ export async function runExample(sinkFor, build = '0.1.0+example') {
   await run.call('model', 'seedream-5', { scene: 'studio', photos: ['ph_1'] }, async () => ({ image: 'rn_1', usd: 0.04 }),
     out => ({ model: 'seedream-5', cost_usd: out.usd, result: { image: out.image } }));
   job.stage('jb_1', 'rendering', { state: 'arrived' });
+  job.timed('studio.pick', () => 'rn_1', { candidates: 1 });
   job.stage('jb_1', 'checking', { state: 'started' });
   run.step({ action: 'gate', why: 'every render is compared with the real photo' });
   await run.call('tool', 'gate', { image: 'rn_1' }, async () => ({ pass: false, box: [10, 20, 80, 60], reason: 'logo drift' }));

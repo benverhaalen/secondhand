@@ -85,7 +85,7 @@ export async function gate(adapter: FixtureAdapter, fixture: Fixture, ports?: Ga
     return result;
   };
   return ports?.log ? ports.log.call('harness', 'release.gate', { route_id: adapter.route_id, version: adapter.manifest.version }, run,
-    r => ({ status: r.ok ? 'ok' : 'failed', result: { ok: r.ok, count: r.failures.length } })) : run();
+    r => ({ result: { ok: r.ok, code: r.ok ? 'ok' : 'failed', count: r.failures.length } })) : run();
 }
 
 export type Health = { successes: number; failures: number };

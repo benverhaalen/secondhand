@@ -258,6 +258,28 @@ class Log:
         self._finish(call, t0, out, describe)
         return out
 
+    def timed(self, name, fn, **fields):
+        """Time work that stays inside the process: out = log.timed('photo.score', lambda: score(shots))."""
+        t0 = time.monotonic()
+        try:
+            out = fn()
+        except BaseException as e:
+            self.event("timing", _join({"name": name, "ok": False, "ms": round((time.monotonic() - t0) * 1000), "error": error_of(e)}, fields), "error")
+            raise
+        self.event("timing", _join({"name": name, "ok": True, "ms": round((time.monotonic() - t0) * 1000)}, fields))
+        return out
+
+    async def atimed(self, name, fn, **fields):
+        """The same for async work: out = await log.atimed('capture.process', lambda: process(item))."""
+        t0 = time.monotonic()
+        try:
+            out = await fn()
+        except BaseException as e:
+            self.event("timing", _join({"name": name, "ok": False, "ms": round((time.monotonic() - t0) * 1000), "error": error_of(e)}, fields), "error")
+            raise
+        self.event("timing", _join({"name": name, "ok": True, "ms": round((time.monotonic() - t0) * 1000)}, fields))
+        return out
+
     def agent(self, agent, **fields):
         """run = log.agent('studio.repair', item=item, goal='...'); run.step(action=..., why=...); run.call('tool', ...); run.end(ok=True, result=...)."""
         with self._state["lock"]:

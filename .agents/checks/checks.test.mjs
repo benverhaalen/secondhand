@@ -87,6 +87,7 @@ test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass'
   const good = run(ui, { 'app/Today.tsx': 'const s = { color: "var(--ink)", fontFamily: "var(--font-text)" };\nexport const T = () => <h1>Sold</h1>;\n',
     'brand/tokens.css': ':root { --ink: #111; }' });
   assert.equal(errors(good), '');
+  assert.equal(errors(run(ui, { 'app/src/ui/text.tsx': 'const s = { fontFamily: `${FACE.text}` };\n' })), '');
   const warn = run(ui, { 'app/Hero.tsx': 'export const H = () => <p>A seamless way to sell</p>;\n' });
   assert.equal(errors(warn), '');
   assert.match(warn.map(o => o.msg).join(), /empty adjective/);

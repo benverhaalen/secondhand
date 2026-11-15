@@ -20,14 +20,14 @@ type CdpBrowser = { contexts(): CdpContext[]; newContext(): Promise<CdpContext>;
   newBrowserCDPSession?(): Promise<{ send(method: 'Browser.close'): Promise<unknown> }> };
 export type CdpPw = { chromium: { connectOverCDP(url: string, o?: { timeout?: number }): Promise<CdpBrowser> } };
 
-export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState(s: StorageState): Promise<void>; exportState(): Promise<StorageState> };
+export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState(s: StorageState): Promise<void>; exportState(): Promise<StorageState>; live_url?: string };
 
 export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage> {
   async function connect(profileDir: string | undefined, opts: LaunchOptions): Promise<AuthedContext<CdpPage>> {
     const ep = await source.open(profileDir, opts);
     let browser: CdpBrowser;
     try { browser = await pw.chromium.connectOverCDP(ep.cdpUrl, { timeout: 30_000 }); }
-    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/wss?:\/\/\S+/g, '[cdp]')}`); }
+    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`); }
     const ctx = browser.contexts()[0] ?? await browser.newContext();
     let closed = false;
     const closers: (() => void)[] = [];
@@ -50,6 +50,7 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
           `if (location.origin === ${JSON.stringify(o.origin)}) { for (const [k, v] of ${JSON.stringify(o.localStorage.map(i => [i.name, i.value]))}) localStorage.setItem(k, v); }` });
       },
       exportState: () => ctx.storageState(),
+      live_url: ep.live_url, // a cloud browser's live view; the server keeps it and hands the client only an opaque token
     };
   }
   return { persistent: (dir, opts) => connect(dir, opts), anonymous: opts => connect(undefined, opts) };
@@ -114,4 +115,11 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
       return { cdpUrl, live_url, stop: async () => { await fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).catch(() => undefined); } };
     },
   };
+}
+
+// The one place the pool's browser is chosen: a Browser Use Cloud browser when BROWSER_USE_API_KEY is present (read by presence,
+// passed only to the header), else a local Chrome on this host (SECONDHAND_CHROME, or the default Windows install path).
+export function sourceFromEnv(env: Record<string, string | undefined> = process.env, scratch = join(process.cwd(), '.browser-scratch')): BrowserSource {
+  if (env.BROWSER_USE_API_KEY) return browserUseCloud({ apiKey: env.BROWSER_USE_API_KEY });
+  return localChrome({ executablePath: env.SECONDHAND_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe', scratch });
 }

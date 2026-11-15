@@ -1,0 +1,56 @@
+{
+ "note": "Trimmed from a signed-out Poshmark search page (levis 501), recorded 2026-11-15 by recon (research/cross-cutting/nate/runs/hp-7.md): three public listings, only the fields the adapter reads; no seller ids.",
+ "site": "poshmark",
+ "verb": "search",
+ "url": "https://poshmark.com/search?query=levis%20501",
+ "embedded": {
+  "source": "window.__INITIAL_STATE__",
+  "json": {
+   "$_search": {
+    "gridData": {
+     "data": [
+      {
+       "id": "6af937f3fa43c1745d0c48c0",
+       "title": "Levi's 501 Big E Tab Premium Button Fly Denim Jeans Unisex Adults Size 25 x 32",
+       "price_amount": {
+        "val": "32.0",
+        "currency_code": "USD",
+        "currency_symbol": "$"
+       },
+       "size": "25",
+       "brand": "Levi's",
+       "like_count": 0,
+       "status": "published"
+      },
+      {
+       "id": "6af9349d8925d3761351ee59",
+       "title": "Levi's 501 Men's Straight Jeans Waist 30x30",
+       "price_amount": {
+        "val": "21.0",
+        "currency_code": "USD",
+        "currency_symbol": "$"
+       },
+       "size": "30",
+       "brand": "Levi's",
+       "like_count": 0,
+       "status": "published"
+      },
+      {
+       "id": "6af9321672e624a1dd2676ec",
+       "title": "Levi's 501 Original Fit Straight Leg Jeans Men's Black Size 36x32 Button Fly",
+       "price_amount": {
+        "val": "38.0",
+        "currency_code": "USD",
+        "currency_symbol": "$"
+       },
+       "size": "36",
+       "brand": "Levi's",
+       "like_count": 0,
+       "status": "published"
+      }
+     ]
+    }
+   }
+  }
+ }
+}

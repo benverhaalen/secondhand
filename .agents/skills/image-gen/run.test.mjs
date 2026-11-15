@@ -104,6 +104,18 @@ test('a critic makes its named file, and the run leaves a log the checker accept
   assert.equal(sink.lines.filter(l => JSON.parse(l).event === 'call.end').length, 2);
 });
 
+test('the log holds each job\'s wait before it ran, the tokens of each call, and a failure the checker accepts', async () => {
+  const sink = memorySink(), log = createLog({ src: 'job.image', build: 'test', sink, seed: 1 });
+  const p = plan([job('a'), job('b')]);
+  mkdirSync(join(p.out, 'b')); writeFileSync(join(p.out, 'b', 'earlier.png'), 'x');
+  await go(p, fake(), { log });
+  log.end();
+  const lines = sink.lines.map(l => JSON.parse(l));
+  assert.deepEqual(lines.filter(e => e.event === 'job.state' && e.job === 'a').map(e => e.state), ['queued', 'running', 'done']);
+  assert.deepEqual(lines.filter(e => e.event === 'call.end').map(e => e.token_count), [1200]);
+  assert.deepEqual(checkLog(sink.text()).problems, []);
+});
+
 test('a call is not fresh in a folder that holds files or sits in a repo, so neither runs', async () => {
   const f = fake(), p = plan([job('a'), job('b')]);
   mkdirSync(join(p.out, 'a'));

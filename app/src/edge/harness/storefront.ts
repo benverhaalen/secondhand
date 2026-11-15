@@ -29,7 +29,8 @@ export function toSnapshot(account_id: string, site: Site, data: unknown, { as_o
   const num = (f: StorefrontField) => (got.get(f) as number | undefined);
   const shop = Object.fromEntries(SHOP.filter(f => got.has(f)).map(f => [f, got.get(f)])) as StorefrontSnapshot['shop'];
   const totals = Object.fromEntries(TOTALS.filter(f => got.has(f)).map(f => [f, num(f)])) as StorefrontSnapshot['totals'];
-  // The four counts the row requires default to 0 only when this read returned them; otherwise they are named missing.
+  // The row's schema requires four counts; one this read did not return is set to 0 as a placeholder and named in
+  // fields_missing, so a reader never takes it for a real zero (shortcut: a nullable column would be cleaner, once db-1 lands).
   shop.active_count ??= 0; shop.sold_count ??= 0; totals.orders ??= 0; totals.gross_cents ??= 0;
   const fields_missing = [...new Set([...storefrontMissing(site), ...STOREFRONT_FIELDS.filter(f => !got.has(f))])];
   return { account_id, site, as_of, shop, totals, window_days, per_listing_ref, fields_missing, source: 'harness', citation_id };

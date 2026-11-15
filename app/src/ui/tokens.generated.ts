@@ -45,12 +45,30 @@ export const color = {
   scrim: "rgba(10, 10, 10, 0.4)",
   glow1: "rgba(129, 207, 252, 0.55)",
   glow2: "rgba(238, 243, 151, 0.7)",
+  field1: "#A5E1FE",
+  field2: "#A1EACB",
+  field3: "#EBF08F",
+  fieldNeed1: "#F5D297",
+  fieldNeed2: "#EBF08F",
+  fieldNeed3: "#FECCAA",
+  fieldSold1: "#A1EACB",
+  fieldSold2: "#91EAE9",
+  fieldSold3: "#EBF08F",
+  fieldLive1: "#A5E1FE",
+  fieldLive2: "#DDCEFE",
+  fieldLive3: "#91EAE9",
+  fieldPaid1: "#EBF08F",
+  fieldPaid2: "#A1EACB",
+  fieldPaid3: "#F5D297",
   hot1: "#FF4D2E",
   hot2: "#FF9A3C",
+  wash1: "#A5E1FE",
+  wash2: "#A1EACB",
   cardEdge: "rgba(10, 10, 10, 0.08)",
   photoVeil: "rgba(0, 0, 0, 0)",
   tabOn: "rgba(10, 10, 10, 0.08)",
   stackShade: "rgba(10, 10, 10, 0.07)",
+  outline: "#0A0A0A",
 } as const;
 
 export const colorDark = {
@@ -100,20 +118,50 @@ export const radius = {
 } as const;
 
 export const size = {
+  washH: 236,
   controlMin: 44,
   buttonH: 48,
   navH: 44,
   tabH: 84,
   photoCard: 72,
+  cardCorner: 24,
+  cardPad: 16,
+  cardDecisionH: 156,
+  cardItemH: 104,
+  noticeH: 56,
+  pillCardH: 40,
+  pillCardPad: 20,
+  tagH: 20,
+  tagIcon: 12,
+  badgeH: 20,
+  siteBadge: 24,
 } as const;
 
 export const type = {
   t13: {"fontSize":13,"lineHeight":18},
   t15: {"fontSize":15,"lineHeight":20},
   t18: {"fontSize":18,"lineHeight":24},
-  t21: {"fontSize":21,"lineHeight":23},
-  t36: {"fontSize":36,"lineHeight":41},
-  t50: {"fontSize":50,"lineHeight":57},
+  t21: {"fontSize":21,"lineHeight":23,"letterSpacing":-0.21},
+  t36: {"fontSize":36,"lineHeight":41,"letterSpacing":-0.54},
+  t50: {"fontSize":50,"lineHeight":57,"letterSpacing":-1},
+} as const;
+
+export const font = {
+  text: "PP Neue Montreal",
+  display: "Clofie",
+} as const;
+
+export const weight = {
+  display: "600",
+  text: "500",
+} as const;
+
+export const nudge = {
+  display: 0.12,
+} as const;
+
+export const calm = {
+  max: 0.58,
 } as const;
 
 export const motion = {

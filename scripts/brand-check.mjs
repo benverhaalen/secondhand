@@ -5,7 +5,7 @@
 // and runs the constitution's Part IV on what it measured (.agents/checks/render.mjs). Exit code 1 on any error.
 // A view is each element marked data-view (a slide, a post panel, a frame). With none, it is each screenful of the page.
 // The marks it reads are listed in brand/constitution.md Part IV, under the table.
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -14,6 +14,19 @@ import { scales } from '../.agents/checks/brand.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const COLOR = /^(?:#[0-9a-f]{3,8}|rgba?\(|hsla?\(|oklch\()/i;
+
+// The brand faces, from a folder that is never committed: BRAND_FONTS if set, else fonts/ at the repo root (gitignored).
+// CI unpacks them there from a secret (.github/workflows/check.yml). A file named for Clofie is the display face at 600;
+// ppneuemontreal-book or text-400 is the text face at 400, and ppneuemontreal-medium or text-500 at 500.
+export function brandFaces(tokensCss, dir = process.env.BRAND_FONTS || join(root, 'fonts')) {
+  if (!existsSync(dir)) return null;
+  const family = v => tokensCss.match(new RegExp(`--font-${v}:\\s*"([^"]+)"`))?.[1], text = family('text'), display = family('display');
+  const kinds = [[/clofie|display-600/i, display, 600], [/ppneuemontreal-medium|text-500/i, text, 500], [/ppneuemontreal-book|text-400/i, text, 400]];
+  const rules = readdirSync(dir).filter(f => /\.(woff2?|otf|ttf)$/i.test(f)).flatMap(f => { const k = kinds.find(([re]) => re.test(f)); if (!k || !k[1]) return [];
+    const type = { woff2: 'woff2', woff: 'woff', otf: 'opentype', ttf: 'truetype' }[f.split('.').pop().toLowerCase()];
+    return [`@font-face { font-family: "${k[1]}"; font-weight: ${k[2]}; font-style: normal; src: url(data:font/${type};base64,${readFileSync(join(dir, f)).toString('base64')}) format("${type}"); }`]; });
+  return rules.length ? rules.join('\n') : null;
+}
 
 export function playwright() {
   for (const from of [import.meta.url, pathToFileURL(join(process.env.NODE_PATH?.split(':')[0] ?? '/nonexistent', 'x.js')).href, pathToFileURL('/opt/node-tools/x.js').href])
@@ -170,11 +183,14 @@ async function under({ png, boxes }) {
 }
 
 export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
+  const faces = brandFaces(tokensCss);
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
   const views = [], stressed = [], outside = []; let colors, lengths = [], named = {}, grads = {}, textWeight = 400, fontsLoaded = true, screens = 0, scaled = false;
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
-    await page.goto(/^https?:\/\//.test(file) ? file : pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
+    await page.goto(/^https?:\/\//.test(file) ? file : pathToFileURL(resolve(file)).href);
+    if (faces) { await page.addStyleTag({ content: faces }); await page.evaluate(() => Promise.all([...document.fonts].map(f => f.load().catch(() => null)))); }
+    await page.evaluate(() => document.fonts.ready);
     const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
     const probe = await browser.newPage(); await probe.setContent(`<html><style>${tokensCss}</style><body><i id="p"></i>`); await probe.evaluate(t => { if (t) document.documentElement.dataset.theme = t; }, theme);
     const got = await probe.evaluate(({ names, grads, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [], named: {}, grads: {} }; p.style.display = 'block';
@@ -236,7 +252,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     }
     await page.close();
   }
-  return { views, stressed, colors, lengths, named, grads, textWeight, fontsLoaded, outside: [...new Set(outside)], screens, scaled };
+  return { views, stressed, colors, lengths, named, grads, textWeight, fontsLoaded, fontsRequired: !!process.env.BRAND_FONTS, outside: [...new Set(outside)], screens, scaled };
 }
 
 export async function check(file, medium, { browser } = {}) {
