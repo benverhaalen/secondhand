@@ -29,7 +29,9 @@ export const titleCase = s => { const w = s.trim().split(/\s+/).filter(x => /^\p
 
 // The colors a medium may use, by token name: { light: { ink: 'rgb(10, 10, 10)', ... } } as the browser computes them.
 function palette(colors) {
-  const byValue = new Map(Object.entries(colors).map(([n, v]) => [v, n]).reverse());
+  // Two tokens may hold one value (the second ink, and the second ink on a field). The name the rules know wins.
+  const rank = n => TEXT_INK.has(n) ? 0 : hueOf(n) ? 1 : LINE_INK.has(n) ? 2 : 3, byValue = new Map();
+  for (const [n, v] of Object.entries(colors)) if (!byValue.has(v) || rank(n) < rank(byValue.get(v))) byValue.set(v, n);
   const name = v => byValue.get(v) ?? (v === 'rgb(255, 255, 255)' ? 'white' : null);
   return { name, of: n => rgba(colors[n]), has: v => name(v) != null };
 }
@@ -150,7 +152,7 @@ function checkView(view, ctx) {
   for (const t of text.filter(isMark)) {
     if (t.text.trim() !== 'secondhand') E('B3', '', `the wordmark reads "${t.text.trim()}": it is "secondhand", lowercase (C1)`);
     const cx = (t.rect[0] + t.rect[2]) / 2, cy = (t.rect[1] + t.rect[3]) / 2, where = sheet.wordmark?.at, mid = near(cx, view.w / 2, 2);
-    const ok = { 'top-center': mid && cy < view.h / 4, 'top-left': cx < view.w / 2 && cy < view.h / 4 || t.size > Math.min(...markSizes) + 1, 'center': mid && cy > view.h / 3 && cy < view.h * 2 / 3, 'top-or-bottom-center': mid && (cy < view.h / 4 || cy > view.h * 3 / 4), any: true }[where ?? 'any'];
+    const ok = { 'top-center': mid && cy < view.h / 4, 'top-left': cx < view.w / 2 && cy < view.h / 4 || t.size > Math.min(...markSizes) + 1, 'center': mid && cy > view.h / 3 && cy < view.h * 2 / 3, 'top-or-bottom-center': mid && (cy < view.h / 4 || cy > view.h * 3 / 4), 'bottom-left': cx < view.w / 2 && cy > view.h * 3 / 4 || near(t.size, sheet.wordmark.alone ?? -1), any: true }[where ?? 'any'];
     if (!ok) E('B3', '', `the wordmark sits at ${Math.round(cx)}, ${Math.round(cy)}: on a ${medium} it goes ${where.replace(/-/g, ' ')} (C1, Part III)`);
   }
   // B32 the wordmark's kit (C1): once per view, untouched, on the page or the field, with one unit of clear space around it
@@ -313,6 +315,12 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
     if (rs.length > 1) out.push(err('B31', `${at} [${part}]`, `has corners of ${rs.join(' and ')}: things of one kind have one corner`));
     if (ws.length && spread(ws)) out.push(err('B31', `${at} [${part}]`, `is ${ws.join(', ')} px wide in different places: things of one kind are one size, whatever is in them. Where a width should follow its words, mark it data-fit="content"`)); }
   const where = sheet.wordmark?.views;
+  // A medium that carries the wordmark on every view sets it small, and once large and alone on the closing view (C1, the deck line).
+  const alone = sheet.wordmark?.alone;
+  if (where === 'every') marks.forEach((m, i) => { if (!m.length && marks.some(x => x.length)) out.push(err('B3', `view ${i + 1}`, `has no wordmark: on a ${medium} it sits on every view (C1, Part III)`)); });
+  if (alone) marks.forEach((m, i) => { for (const t of m) if (near(t.size, alone)) { const heads = facts.views[i].texts.filter(o => o.display && o !== t);
+    if (i !== n - 1) out.push(err('B3', `view ${i + 1}`, `sets the wordmark at ${alone} px: that size is for the closing view, where it stands alone (C1)`));
+    else if (heads.length) out.push(err('B3', `view ${i + 1}`, `sets the wordmark at ${alone} px beside the heading ${short(heads[0].text)}: at that size it stands alone, or it reads as a heading (C1)`)); } });
   marks.forEach((m, i) => { if (m.length && (where === 'last' && i !== n - 1 || where === 'first-last' && i !== 0 && i !== n - 1))
     out.push(err('B3', `view ${i + 1}`, `carries the wordmark: on a ${medium} it goes on ${where === 'last' ? 'the last view' : 'the first and last views'} only (Part III)`)); });
   if (sheet.wordmark?.same) { const ys = marks.flat().map(t => Math.round(t.rect[1])); if (Math.max(...ys) - Math.min(...ys) > 1) out.push(err('B3', medium, 'the wordmark moves between views: it sits in the same place on every view of a series (C1)')); }

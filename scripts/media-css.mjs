@@ -21,7 +21,7 @@ export function mediaCss(media, tokensCss) {
       `  --u: ${s.unit};`,
       `  --canvas-w: ${w}px; --canvas-h: ${h}px;`,
       `  --margin-x: ${m.x}px; --margin-top: ${m.top}px; --margin-bottom: ${m.bottom}px;`,
-      `  ${s.roles.map((r, i) => `--mt-${r}: ${sizes[i]}px;`).join(' ')}${s.peak ? ` --mt-peak: ${s.peak}px;` : ''} --mt-wordmark: ${s.wordmark.sizes[0]}px;`,
+      `  ${s.roles.map((r, i) => `--mt-${r}: ${sizes[i]}px;`).join(' ')}${s.peak ? ` --mt-peak: ${s.peak}px;` : ''} --mt-wordmark: ${Math.min(...s.wordmark.sizes)}px;${s.wordmark.alone ? ` --mt-wordmark-alone: ${s.wordmark.alone}px;` : ''}`,
       '}');
   }
   out.push('/* The space and radius scales, times the medium\'s unit: --ms-3 on a deck is --s-3 times 2. */',
