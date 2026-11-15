@@ -2417,3 +2417,9 @@ Nate, the server-core lead's session, 2026-11-15, about 13:45 UTC.
 Then, on sign-in: "are we using vercel auth? i can add sign in with google", and "whatever is the way to set up auth do it, i made a new cloud project".
 
 Read by the server-core lead as: redeploy main to the Fly app now, compose the photo store and the capture upload targets, and set up Google sign-in in the new Cloud project. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md).
+
+## 2026-11-15 nate organize, shut down what is finished, get it working yourself, check with Ben, keep testing with Codex
+Nate, the orchestrator's session, 2026-11-15, about 14:00 UTC.
+> Lets have you fully start to organize and shut down running subagents when completed. assess what works, you yourself get it working, check with ben, we continously test with codex andd such
+
+Used in: [the finalization spec, section 13](../spec/plans/finalization.md).
