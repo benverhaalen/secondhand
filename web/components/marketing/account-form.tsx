@@ -2,8 +2,9 @@
 import Link from 'next/link';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { authRequest, getSession, rememberSession, signOutSession, type Profile } from '../../lib/browser-session';
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from 'react';
+import { accountDestination } from '../../lib/auth-navigation';
+import { authRequest, getSession, rememberSession, sessionSnapshot, signOutSession, subscribeToSession, type Profile } from '../../lib/browser-session';
 
 type GoogleIdentity = {
   initialize(config: { client_id: string; callback: (response: { credential: string }) => void }): void;
@@ -22,7 +23,7 @@ function googleProfile(credential: string): Profile {
   } catch { return {}; }
 }
 
-export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup'; googleClientId?: string }) {
+export function AccountForm({ mode, googleClientId, destination }: { mode: 'signin' | 'signup'; googleClientId?: string; destination: string }) {
   const router = useRouter();
   const googleButton = useRef<HTMLDivElement>(null);
   const busy = useRef(false);
@@ -34,6 +35,12 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
   const [status, setStatus] = useState('');
   const [googleProblem, setGoogleProblem] = useState(false);
   const signup = mode === 'signup';
+
+  useEffect(() => {
+    let active = true;
+    void getSession().then(session => { if (active && session) router.replace(destination); }).catch(() => undefined);
+    return () => { active = false; };
+  }, [destination, router]);
 
   async function submit(route: 'email/start' | 'email/verify' | 'google', body: Record<string, string>) {
     if (busy.current) return;
@@ -49,11 +56,7 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
         setStatus(`We sent a code to ${body.email}.`);
       } else if (route !== 'email/start' && result === 200) {
         await rememberSession(response, route === 'google' ? googleProfile(body.id_token) : {});
-        const next = new URLSearchParams(window.location.search).get('next');
-        const destination = new URL(next?.startsWith('/app') ? next : '/app', window.location.origin);
-        const privateRoute = destination.origin === window.location.origin
-          && (destination.pathname === '/app' || destination.pathname.startsWith('/app/'));
-        router.replace(privateRoute ? destination.pathname + destination.search + destination.hash : '/app');
+        router.replace(destination);
       } else if (result === 429) {
         setError('Too many attempts. Try again later.');
       } else if (route === 'email/verify' && (result === 400 || result === 401 || result === 422)) {
@@ -67,7 +70,7 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
         setError(messages[route]);
       }
     } catch {
-      setError('Could not reach sign-in. Try again.');
+      setError('Couldn’t connect to sign-in. Try again.');
     } finally {
       busy.current = false;
       setPending(null);
@@ -113,22 +116,22 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
         {error && <p role="alert" className="account-error">{error}</p>}
         {status && <p role="status" className="account-quiet">{status}</p>}
       </form>
-      <p className="account-quiet">{signup ? <>Already have an account? <Link href="/signin">Sign in</Link></> : <>New to secondhand? <Link href="/signup">Create an account</Link></>}</p>
+      <p className="account-quiet">{signup ? <>Already have an account? <Link href={accountDestination('signin', destination)}>Sign in</Link></> : <>New to secondhand? <Link href={accountDestination('signup', destination)}>Create an account</Link></>}</p>
     </div>
   </main>;
 }
 
 export function AccountStatus() {
   const router = useRouter();
-  const [state, setState] = useState<'checking' | 'active' | 'signed-out' | 'error'>('checking');
+  const session = useSyncExternalStore(subscribeToSession, sessionSnapshot, () => undefined);
+  const [checkFailed, setCheckFailed] = useState(false);
+  const state = session ? 'active' : session === null ? 'signed-out' : checkFailed ? 'error' : 'checking';
   const [signingOut, setSigningOut] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
     let mounted = true;
-    void getSession().then(session => {
-      if (mounted) setState(session ? 'active' : 'signed-out');
-    }).catch(() => { if (mounted) setState('error'); });
+    void getSession().catch(() => { if (mounted) setCheckFailed(true); });
     return () => { mounted = false; };
   }, []);
 
@@ -150,7 +153,7 @@ export function AccountStatus() {
     {state === 'checking' && <p role="status">Checking your sign-in…</p>}
     {state === 'active' && <><p>You’re signed in.</p><Link className="account-primary" href="/app">Open your workspace</Link><button className="account-options-button" type="button" disabled={signingOut} onClick={signOut}>{signingOut ? 'Signing out…' : 'Sign out'}</button></>}
     {state === 'signed-out' && <Link className="account-primary" href="/signin">Sign in</Link>}
-    {state === 'error' && <p role="alert">We couldn’t check whether you’re signed in. <Link href="/signin">Return to sign-in</Link>.</p>}
+    {state === 'error' && <p role="alert">We couldn’t check your sign-in. <Link href="/signin">Return to sign-in</Link>.</p>}
     {error && <p role="alert" className="account-error">{error}</p>}
   </div></main>;
 }
