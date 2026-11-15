@@ -734,3 +734,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate each type gets its own select for every field its process needs
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether electronics may have a fourth follow-up input.
 > yes electronics and all other needed fields that differ in the process get their own select type
+
+## 2026-11-14 nate pricing weighs every platform's top listings, official listings and credible discounts, with a slider and a free note
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> the system should aggregate all top listings from each second hand platform, all official market listings, if there are discounts from credible sources, all to help it weigh its suggested pricing, with a range of lowball to hard to negoitate the user can use a slider to select their preference. Theres also the option to type or text additional info before you generate the full listing, anything you want to add like where you got it, the user can even repeat things the system already identified
