@@ -8,20 +8,35 @@ Precedence when rules conflict: Ben's decisions, then accessibility, then this s
 
 ## 1. Judge: the order of questions for any screen
 
-Ask these in order. A later question never rescues an earlier failure.
+Apply this order to product interfaces, native or web. Public pages take their audience and purpose from [the web constitution](constitutions/web.md); timed media take their delivery profile from [brand Part III](../brand/constitution.md#part-iii-media). Shared identity does not imply shared layout. This distinction follows [Ben's hierarchy and medium request](words.md#2026-11-15-hierarchy-components-medium-and-independent-implementation). The [current design review](../research/cross-cutting/ben/secondhand-design-review.md) compares page structures and records observed weaknesses; its broader layouts remain proposals.
 
-1. **Job.** What is the one thing this screen is for, and what is the next action? If you can't say it in one sentence, stop and fix the screen's job, not its look.
-2. **Familiar.** Which app the user already knows does this job, and what do we keep from it? (Jakob's law.) If none, the pattern needs a written reason.
-3. **Shown, not said.** Cover all the text. Can you still tell the item's state and the next action from photos, pills, badges, numbers and position?
-4. **Attention.** Blur or squint. The first thing you see is the thing that matters most; the second is the next action. One primary action per decision. Whatever acts looks pressable and nothing else does (§5).
-5. **Honest.** Every number has a source, every automatic action is labelled and undoable, nothing invented, no fake urgency.
-6. **Motion.** Does anything move? Each movement must explain a cause and effect the user would otherwise miss. Otherwise delete it.
-7. **Words.** Run the anti-claudish pass: `node scripts/copy-lint.mjs` (C1 to C12 in copy.md). Labels 1 to 3 words, no paragraphs, no em dashes.
-8. **Access.** Contrast, target size, Dynamic Type, VoiceOver labels, reduced motion.
+1. **Purpose and audience.** Name the outcome the person came for, without listing controls. Read the existing [page job](../features/app/page-jobs.json) before inventing another. Choose the primary audience from evidence; do not average all personas into one crowded page.
+2. **Ownership and flow.** Give each object and task a canonical home. Identify entry, default state, next action, result and return. Put these in the existing behavior table and interaction rows, not a second specification. A summary links to the owning destination; it does not reproduce the destination.
+3. **Hierarchy.** Say what must be noticed first in this state and why. A deadline, unresolved decision or failed action can change the priority. Keep the information required to choose beside the action. Give unrelated tasks their own destination.
+4. **Composition.** Use a list for comparing repeated attributes, a grid for recognizing images, a detail view for one object and a sequence for dependent steps. Group related information through position and spacing before adding a container. Use the existing component family; equal styling is not a reason to give different jobs the same layout.
+5. **Honesty and recovery.** Numbers identify their basis and state. Distinguish a pending action from a confirmed result. Offer Undo only when the action can actually be reversed; otherwise explain its consequence before committing. Failure preserves useful input and offers the appropriate recovery.
+6. **Perception and access.** Assign semantic type, color and emphasis roles before choosing values from the tokens. Verify loaded fonts, text enlargement, contrast, focus, targets and reading order on the actual medium. Color never carries a required distinction alone. Existing display type stays lowercase.
+7. **Words and motion.** Ask whether a string needs to exist before shortening it. Preserve identity, scope, units, consequences and recovery. Use motion for feedback, continuity or the medium's story; verify its fallback. Run copy-lint for candidates, then inspect the words in context.
+8. **Proof.** Exercise the complete entry-to-result-to-return journey, including refresh and failure where applicable. Review the actual final render and current checks. Passing geometry and token checks does not establish useful hierarchy.
+
+### Space and medium
+
+A visible element earns space by helping the person orient, decide, act, recover or understand a material consequence in the current state. Supporting detail can be disclosed beside its subject; another task belongs at its canonical destination. Cutting visible detail must preserve its reachable home. Empty space can separate groups and make the next action clear; fill it only when useful content belongs there.
+
+Use the spacing tokens to express relationships: closer within one thought, more separation between thoughts. Reserve stronger size and contrast for the intended priority. Keep identity, state and consequences readable before adding decorative density. Repeated components use the approved geometry; if real content or accessibility cannot fit, improve the shared component contract with a named variant rather than shrinking text or hiding necessary meaning. Existing locked dimensions remain in force until that change is accepted.
+
+| Surface | Composition and interaction constraints | Evidence needed |
+|---|---|---|
+| Native app | Safe areas, touch, keyboard, Dynamic Type, platform Back and independent tab state | Device journey and enlarged-text review; a web render alone is insufficient |
+| Signed-in web product | Same object ownership and permissions; URLs, browser Back/Forward, refresh, keyboard/focus, zoom and responsive reflow | Browser journeys at relevant widths, direct entry and reload with preserved scope |
+| Public website | Explain relevance and support the next decision; compose around message, proof and action using approved web choices | Real phone/desktop renders, links/forms and content review; app card dimensions are not a website template |
+| Video | Order information in time; use shots, captions and sound for the intended viewing conditions | Actual playback, reading time, caption/audio coverage and destination-specific safe areas; a checked still frame is partial evidence |
+
+The [Appllama usage method](../.agents/vendor/appllama/appllama-usage/SKILL.md) supplies flow study and diagnosis before redesign. Use preceding and following states from references, not isolated screenshots. The [copy audit](../spec/copy-cuts.md) supplies contextual candidates, not automatic deletions. Neither overrides the product's feature scope or Ben's brand decisions.
 
 ## 2. Build: the loop
 
-This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored from his ui-factory skill. Each state says what happens and where it goes next. Any state can ask one research question with a time limit when it is unsure (the `research-note` skill), and comes back to where it was.
+This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored from his ui-factory skill. Each state says what happens and where it goes next. When uncertainty changes the design, use the `research-note` skill to resolve it and return to that decision.
 
 **Size the work first.** The size is set by what a mistake costs and how often the screen is seen, and it sets how much of the loop runs.
 
@@ -40,10 +55,10 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 | 5. Judge, merge and split | A fresh judge gets the images, the intention, each design's person and the fail list from `node scripts/ui-rules.mjs judge`, written before it looks. For each design it says how and why the design serves its person: which element answers which want, and what that costs the other people. Then it writes the merge: what to keep from each, taking what serves one person without costing another. Sort every other finding: an exact fix (a size, a gap, a color) is saved for the build and never sent back to the image model. A feel note goes into the next round. | New feel notes or an untested merge: 4, 3 rounds at most. Otherwise the best so far, not the latest, moves on. |
 | 6. Ben reacts | Large only. Ben sees the best one or two. A model is a weak judge of taste, so his reaction replaces a third round. What he praises or criticizes goes in as a dated row in [taste-evidence.md](../research/cross-cutting/ben/taste-evidence.md), and the next Frame reads it. | Pick: 7. Redirect: 2. |
 | 7. Static build | Build the chosen image as a still screen with sample content, in the smallest change that fits, composed from the parts and the brand values. The image gives the idea, never a size, color or gap. A photo the screen needs, such as an item or the camera feed placeholder, is generated alone and layered in ([Ben, 03:24](words.md#2026-11-15-compose-screens-from-the-brand-system-and-layer-ai-photos); [04:01](words.md#2026-11-15-image-models-sketch-ideas-and-mock-placeholders-for-judging-and-the-build-uses-the-system-parts): "for the image to code part it should utilize the components"). Read the [coder card](../brand/coder-card.md). Apply the saved exact fixes. A part that is missing is added to app/src/ui with its reason. | 8 |
-| 8. Behavior table | A fresh agent that has not seen the code looks at the still screen and writes `app/behavior/<screen>.json`: what each state shows, what each control does on tap and where Back goes. A control that leads to a screen that doesn't exist queues that screen at 1. | 9 |
+| 8. Behavior table | A fresh agent compares the intended journey, existing `app/behavior/<screen>.json` and interaction contract with the render. Reconcile missing states and controls; do not infer intended behavior from a screenshot alone or overwrite an existing contract. A missing destination queues that screen at 1. | 9 |
 | 9. Tests first | An agent that is not the builder turns the table into tests that fail. The app's tests are Maestro files, explored once with agent-device ([decision](decisions.md)); the website's are Playwright. Tests read the event log, not pixels. The builder edits neither the table nor the tests. | 10 |
 | 10. Add behavior | Make the tests pass. Take motion and haptics from §3 for each kind of transition. A transition with no standard gets one, written once in §3. | 11 |
-| 11. Check | `node .agents/check.mjs`, then §5 on the screen at 390×844. A fresh agent compares the build with the chosen image and calls each difference intended, a substitution or drift. Large screens also get worst-case content (Empty, One, Huge) and a motion review. | Pass: 12. Fail: 10, stopping after two rounds with no progress. |
+| 11. Check | Run the scoped proof command in [the build contract](../.agents/ui-build/README.md#spend-checks-where-the-change-is), then §5 on current renders. A fresh agent checks the journey and priority as well as visual drift. Test relevant empty, busy, failure and enlarged-text cases. | Pass: 12. Fail: repair the cause; repeated failure returns to the framing or evaluator. |
 | 12. Record | New parts go in app/src/ui, new motion standards in §3. Every finding from a judge, an audit or Ben goes through §7, so the next screen is checked for it. | Done |
 
 A beautiful screen with a dead control fails. So does a working screen that drifts from the chosen look.
@@ -233,7 +248,7 @@ Ben: "deterministic ways to assess adherence to certain rules whether its like a
 | `judge` | One "Fail if" line. `node scripts/ui-rules.mjs judge` prints them all, and only the judge reads them | One line in one prompt |
 | `ben` | Ben's eye | His attention |
 
-`node .agents/check.mjs` prints the count of each kind. The share held by a script is the number to push up.
+`node .agents/check.mjs` prints the count of each kind. Automate rules that have a reliable observable failure. Do not optimize the share held by scripts by replacing useful judgment with arbitrary numeric limits.
 
 **How a new rule gets in.**
 
@@ -250,4 +265,4 @@ A rule leaves the list when removing it does not bring the mistake back, or when
 
 **What a script holds on the rendered output.** Anything written as HTML (a mock, the website, a deck, a post) goes through `node scripts/brand-check.mjs <file> --medium <medium>`, which measures the page in a browser: faces, sizes, colors against tokens, contrast, one field per view, color under a third of the view, margins, words per view, and one size for things of one kind (constitution Part IV). `node scripts/ui-rules.mjs judge <medium>` prints the judge's lines for that medium.
 
-**What they can't hold yet.** The app's own screens on a device, until they render in a test: inside tighter than between, small targets, overflow. They stay with the §5 audit. Words in the app also pass `node scripts/copy-lint.mjs`, which flags candidates, not verdicts. Scripts can't prove a screen looks good; brand feel goes to Ben.
+**Proof scope.** `app-check` measures the app's web rendition and the E2E suites execute browser interactions. CI already runs both in its app job. The scoped proof command joins these checks to the existing purpose and behavior contracts and records current evidence. It does not prove native device behavior, all state combinations, hierarchy quality or brand feel. Use §5 and a fresh review of current artifacts for those judgment questions; device-specific claims need device evidence. Copy-lint flags candidates, not verdicts.

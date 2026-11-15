@@ -2050,6 +2050,29 @@ Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
 
+
+## 2026-11-15 Shared header, icon-only navigation and lowercase display type
+
+Ben, Codex chat, 2026-11-15; exact excerpt:
+
+> ui updates: the top left should be logo. top right should be the messages. under that should be a smaller font that is the page you are on. either today, sell, buy or you. the bottom pill should not have any text. all icons should be vertically aligned.
+
+> also quick note, everything in the word mark font should be lowercase.
+
+Scope: the shared main-tab shell and existing wordmark-typeface presentation. The broader page layouts requested in the same chat remain agent proposals for review.
+
+
+## 2026-11-15 Hierarchy, components, medium and independent implementation
+
+Ben, Codex, 2026-11-15, Secondhand UI review:
+
+> ensure to clean up and use intelligence to improve the system for all design. mainly focused to web and app. but also applicable to a video. the medium matters and design decisions matter in that medium. certain features cant be on everything.
+
+> and then ensuring an agent can work alone and those rules are enforced is something needed
+
+> whats your opinion on defining the intended hierarchy of the app and specific changes to components or rules of all ui design once and then letting it implement using building blocks and deterministic rules
+
+Scope: improve Secondhand's existing system. The last excerpt requests an opinion; it does not approve every proposed page layout. The review separates shared brand decisions, purpose and behavior contracts, medium-specific composition, executable checks and judgment. Broader page layouts remain proposals; the explicitly requested shared shell changes are implemented separately.
 ## 2026-11-15 nate if it is not in the repo, ben has not worked on it
 Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
 > If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me

@@ -27,7 +27,7 @@
   { "id": "L26", "kind": "judge", "fail": "Fail if the gradient sits on more than one thing at rest, or a sale does not fill the whole screen with it, with a haptic and a sound." },
   { "id": "L27", "kind": "judge", "fail": "Fail if the gradient is a still picture. It drifts slowly and is barely noticed." },
   { "id": "L28", "kind": "check", "by": ".agents/checks/parts.mjs" },
-  { "id": "L29", "kind": "judge", "fail": "Fail if the selected tab is shown by anything but the filled icon in ink on a pill behind the icon, has a line or a dot, or its label is a different weight from the other tabs." },
+  { "id": "L29", "kind": "judge", "fail": "Fail if the selected tab is shown by anything but the filled icon in ink on a pill behind the icon, has a line or a dot, shows visible text, or its icons do not share a vertical center." },
   { "id": "L30", "kind": "judge", "fail": "Fail if a photo that opens a page does not grow into it, or a button gives nothing back the moment it is pressed." },
   { "id": "L31", "kind": "judge", "fail": "Fail if a gradient is not three neighboring hues on the ring. The named set is open as R17." },
   { "id": "L32", "kind": "judge", "fail": "Fail if Clofie sets a number or words a person wrote, or anything beyond the wordmark, a screen title and the headline of a moment.", "media": ["app", "web", "post", "story", "deck"] },
