@@ -87,7 +87,24 @@ Hide rules, one per axis:
 | Visibility | posterior interval on rank or impression share | panel size, days observed, noise floor | held-out agreement not above the floor, panel older than a day, or a change notice up |
 | Trend | change point or drift flag with run length | window and detector | series shorter than burn-in, or a change notice up for that site |
 
-The combined line is not an axis. Whether it exists waits on [product §9](../product.md) ("may the axes combine into one score"). If allowed: expected value, chance of sale within a horizon ([money D10](../determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price)) times what you keep ([D9](../determinations/money.md#d9-what-you-keep-per-site)) less holding cost, with its weights as starting values, unsourced, shown to the person; hidden when any axis is hidden. A card for it goes in money.md before it ships.
+### The success score (agent proposal, answered by Nate)
+
+Nate, 2026-11-14 ([words](../../product/words.md#2026-11-14-nate-the-system-runs-the-storefront-learns-the-person-and-scores-every-listing-with-one-success-score)): "The system scores each listing a user has, which our UI is planned to use color indication as a helpful way of showing its projected performance, combing all engines and calculations we perform into a unified success score". This answers "may the axes combine into one score": yes. Ben's agreement is not recorded, and the colours and how they are drawn are Ben's.
+
+| Part | How |
+|---|---|
+| What it is | one number per listing, 0 to 100: the projected performance of this listing as it stands, against the best this item could do |
+| The calculation | `U_now / U_best`, scaled to 100. `U` is the marketing engine's objective: the chance of sale within the horizon ([money D10](../determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price)) times what the person keeps ([D9](../determinations/money.md#d9-what-you-keep-per-site)) less holding cost. `U_now` uses the listing's own price, photos, title, fields, site and age. `U_best` is the same item under the best plan the engines can find at the person's [posture](../engines/valuation.md) |
+| What feeds it | every engine: valuation (price against sold comps, top listings and official prices), photo (quality and the site's set), the marketing engine (title, fields, site, timing), demand and trend (the forecast), platform analytics (how this site does for items like this), trust and account health, and the listing's own results so far (views, likes, offers) |
+| Bands | four, by score: strong, on track, needs attention, at risk. The cut points are `param` rows, refit so each band's actual sale rate differs from its neighbours'. Colour shows the band and is never the only signal: the band's word is always there |
+| On tap | the four axes, then the one change that would raise the score most, with the points it is worth ("Lower to $44: +12", "Add a photo of the tag: +6") and a button that does it where the autonomy setting allows |
+| Over time | recomputed on each event on the listing and hourly; a drop across a band is a `listing_stale` or `value_moved` notice |
+| Hidden when | any axis it needs is hidden for thin basis, after the gather request has run; then the band shows as "still learning" with what is being gathered |
+| Proof | on the fixed set and on our own listings, listings in a higher band sell more often and sooner than those in a lower one, with the measured rates shown; a score change that an action predicted is compared with what happened |
+
+For the whole storefront, the same score is averaged by expected keep per site and overall, and opens to the listings pulling it down ([insights](insights.md)).
+
+**Learning the person.** The system also learns how this person sells and buys, so it acts as their agent and not a generic one: their posture choices, which suggestions they take or undo, the offers they accept or refuse against what the policy proposed, how fast they ship, what they keep and what they sell, and their words in notes. These are `param` rows scoped to the person (prior: the market-wide value), read by the negotiation, marketing and recommendation engines. The person can see each one and reset it.
 
 ## Axes
 
