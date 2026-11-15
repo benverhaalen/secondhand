@@ -2,7 +2,7 @@ import { object } from './captures.ts';
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
-import { deps, route } from './http.ts';
+import { deps, resetRequestState, route, visitorId } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest, ports, searchJobs } from './search.ts';
 import { readFileSync } from 'node:fs';
@@ -51,7 +51,7 @@ const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1]
 beforeEach(() => {
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
-  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  resetRequestState(); deps.now = () => Date.now();
   _reset();
   searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 0 });
   depopRead = async () => blocked();
@@ -116,7 +116,7 @@ for (const e of examples.filter(e => e.status < 400 && ['POST', 'PATCH', 'PUT'].
   }
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.startsWith('POST '))) test(e.name + ': reconnect replays same action and rejects changed body', async () => {
-  const headers = { 'Idempotency-Key': 'test_reconnect', ...(e.auth === 'visitor' ? { 'X-Visitor-Id': 'vis_worker01' } : {}) };
+  const headers = { 'Idempotency-Key': 'test_reconnect', ...(e.auth === 'visitor' ? { 'X-Visitor-Id': visitorId() } : {}) };
   const first = await call(e, { headers }), again = await call(e, { headers });
   assert.equal(again.status, first.status); assert.equal(await again.text(), await first.text());
   assert.equal(again.headers.get('Idempotent-Replayed'), 'true');
@@ -879,7 +879,7 @@ describe('SR2, SR3 and SR5 route proofs', () => {
   const tick = () => new Promise<void>(resolve => setImmediate(resolve));
 
   beforeEach(() => {
-    _reset(); deps.idem.clear(); deps.visits.clear();
+    _reset(); resetRequestState();
     deps.log = createLog({ src: 'test.search', build: 'test', sink });
     deps.verify = async token => token;
     Object.assign(ports, { ...original, sources: sources('ebay'), harness: undefined, accounts: undefined, apify: undefined,
@@ -890,7 +890,7 @@ describe('SR2, SR3 and SR5 route proofs', () => {
     Object.assign(ports, original); Object.assign(deps, originalDeps); _reset();
   });
 
-  async function start(query: string, person?: string, visitor = `vis_${crypto.randomUUID()}`) {
+  async function start(query: string, person?: string, visitor = visitorId()) {
     const response = await route('POST /v1/search', handlers['POST /v1/search'], { auth: 'visitor' })(new Request('http://edge.test/v1/search', {
       method: 'POST', headers: { 'content-type': 'application/json', 'X-Visitor-Id': visitor, 'Idempotency-Key': crypto.randomUUID(),
         ...(person ? { authorization: `Bearer ${person}` } : {}) }, body: JSON.stringify({ text: query }),

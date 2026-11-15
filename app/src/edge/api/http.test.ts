@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test, beforeEach } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
-import { ApiError, deps, paramsOf, route, served } from './http.ts';
+import { ApiError, deps, paramsOf, resetRequestState, route, served, visitorId } from './http.ts';
 import { example } from './examples.ts';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -42,6 +42,25 @@ const call = (h: (r: Request) => Promise<Response>, path: string, init: RequestI
   if (init.token !== null) headers.set('Authorization', `Bearer ${init.token ?? 'good'}`);
   return h(new Request(`http://edge.test${path}`, { ...init, headers }));
 };
+
+test('request reset clears idempotency and visits while preserving other namespaces', () => {
+  deps.kv.set('idem', 'request', { state: 'running' });
+  deps.kv.incr('visit', 'peer', 60000);
+  deps.kv.set('other', 'keep', true);
+  resetRequestState();
+  assert.equal(deps.kv.get('idem', 'request'), undefined);
+  assert.equal(deps.kv.get('visit', 'peer'), undefined);
+  assert.equal(deps.kv.get('other', 'keep'), true);
+});
+
+test('a minted visitor id is accepted unchanged by the route', async () => {
+  const visitor = visitorId();
+  const h = route('GET /v1/search', ctx => ({ status: 200, body: { visitor: ctx.visitor_id } }), { auth: 'visitor' });
+  const response = await call(h, '/v1/search', { token: null, headers: { 'X-Visitor-Id': visitor } });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('X-Visitor-Id'), visitor);
+  assert.deepEqual(await response.json(), { visitor });
+});
 
 test('params come from the endpoint pattern', () => {
   assert.deepEqual(paramsOf('/v1/items/:id/attributes/:name', '/v1/items/it_7c2m/attributes/size'), { id: 'it_7c2m', name: 'size' });

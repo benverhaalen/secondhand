@@ -80,7 +80,11 @@ function toResponse(reply: Reply, requestId: string): Response {
 const stripUserId = (o: Record<string, unknown>) => { delete o.user_id; return o; };
 
 const visitorMac = (nonce: string) => createHmac('sha256', secret('visitor')).update(nonce).digest('hex').slice(0, 20);
-function visitorId(given: string | null): string {
+export function visitorId(): string {
+  return acceptedVisitorId(null);
+}
+
+function acceptedVisitorId(given: string | null): string {
   if (given && /^vis_[a-z0-9]{12}[a-f0-9]{20}$/.test(given)) {
     const nonce = given.slice(4, 16);
     if (timingSafeEqual(Buffer.from(given.slice(16)), Buffer.from(visitorMac(nonce)))) return given;
@@ -128,7 +132,7 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
       if (mode === 'user' && !user_id) throw new ApiError('unauthenticated', token ? 'token expired or unknown' : 'no token', 'auth', { by: 'user' });
       if (mode === 'visitor' && !user_id) {
         const given = req.headers.get('X-Visitor-Id');
-        visitor_id = visitorId(given);
+        visitor_id = acceptedVisitorId(given);
         visit(deps.connectingAddress(req) ?? visitor_id);
       }
       const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
