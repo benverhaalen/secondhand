@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import { decide, guard, midpoint, type OfferState, type PAccept } from './choose.ts';
 
 // negotiation.md worked example: keep(x) = 0.864x - 9.40, in cents.
-const keep = (x: number) => 0.864 * x - 940;
+const keep = (x: number) => Math.round(0.864 * x - 940);
 const base: OfferState = {
   site: 'ebay', offer_cents: 6200, ask_cents: 8000, floor_cents: 6000, always_accept_cents: 7200,
   keep, v_wait_cents: 4400, trust_block: false,
@@ -62,16 +62,15 @@ test('a pAccept that is NaN or throws falls back to the champion and says so', (
 });
 
 test('pAccept is clamped to [0.02, 0.98]', () => {
-  const d = decide(base, (c) => (c === 7800 ? 5 : -5), 'challenger');
+  const d = decide(base, (c) => (c === 7800 ? 1 : 0), 'challenger');
+  assert.ok(d.candidates.length > 1);
   for (const c of d.candidates) if (c.amount_cents !== 6200) assert.ok(c.p_accept >= 0.02 && c.p_accept <= 0.98);
 });
 
 test('no ending between floor and ask: still a decision, never a crash', () => {
   const a = decide({ ...base, floor_cents: 6600, ask_cents: 6700, offer_cents: 6650, always_accept_cents: 9000 }, tableP, 'challenger');
   assert.equal(a.kind, 'accept_offer');
-  const b = decide({ ...base, floor_cents: 9000, ask_cents: 8000, offer_cents: 5000, always_accept_cents: 9500 }, tableP);
-  assert.equal(b.kind, 'price_below_floor');
-  assert.equal(b.amount_cents, null);
+  assert.throws(() => decide({ ...base, floor_cents: 9000, ask_cents: 8000, offer_cents: 5000, always_accept_cents: 9500 }, tableP), /floor_cents/);
 });
 
 test('injection: features cannot change the candidate set', () => {
@@ -103,7 +102,7 @@ test('limits property test: 10,000 random states, planted pAccept, fee-step keep
   const r = prng(20261114);
   const planted: PAccept = (c, s) => (c < s.floor_cents ? 0.98 : 0.02);
   // eBay's fixed fee steps from $0.30 to $0.40 above $10, so keep falls by 9 cents at 935: a planted non-monotone keep.
-  const stepKeep = (a: number, b: number) => (x: number) => Math.round(a * x) - (x <= 1000 ? 30 : 40) - b;
+  const stepKeep = (a: number, b: number) => (x: number) => Math.max(0, Math.round(a * x) - (x <= 1000 ? 30 : 40) - b);
   let accepts = 0, asks = 0, counters = 0;
   for (let i = 0; i < 10000; i++) {
     const ask = 500 + Math.floor(r() * 30000);
@@ -113,9 +112,10 @@ test('limits property test: 10,000 random states, planted pAccept, fee-step keep
     const a = 0.5 + r() * 0.45, b = Math.floor(r() * 1500);
     const s: OfferState = {
       site: ['ebay', 'poshmark', 'depop', 'mercari'][i % 4], offer_cents: offer, ask_cents: ask,
-      floor_cents: floor, always_accept_cents: always, keep: i % 2 ? (x) => a * x - b : stepKeep(a, b),
+      floor_cents: floor, always_accept_cents: always, keep: i % 2 ? (x) => Math.max(0, Math.round(a * x - b)) : stepKeep(a, b),
       v_wait_cents: r() < 0.2 ? null : Math.floor(r() * ask), trust_block: false,
     };
+    if (floor > ask || offer <= 0) { assert.throws(() => decide(s, planted), RangeError); continue; }
     const rnd: PAccept = () => r();
     for (const p of [planted, rnd, () => 0.98, () => 0.02]) {
       for (const policy of ['champion', 'challenger'] as const) {
@@ -165,4 +165,63 @@ test('plan_choice check asks on every answer; the hard end proposes no counter u
   const d = decide({ ...base, offer_cents: 5000, counter_under_floor: false }, () => 0.5);
   assert.equal(d.kind, 'price_below_floor');
   assert.equal(d.amount_cents, null);
+});
+
+test('audit: invalid states refuse before a model or keep callback runs', () => {
+  for (const patch of [{ floor_cents: 9000 }, { offer_cents: 0 }, { offer_cents: -1 }, { always_accept_cents: NaN }, { v_wait_cents: Infinity }]) {
+    assert.throws(() => decide({ ...base, ...patch, keep: () => { throw Error('callback ran'); } }, () => { throw Error('model ran'); }), /cents/);
+  }
+});
+test('audit: keep callbacks must return integer cents and expected keep is rounded', () => {
+  assert.throws(() => decide({ ...base, keep: () => 1.5 }, tableP), /keep/);
+  const d = decide({ ...base, keep: p => p - 941 }, () => .333, 'challenger');
+  for (const c of d.candidates) assert.ok(Number.isSafeInteger(c.expected_keep));
+});
+test('audit: guard refuses fractional money and invalid bounds', () => {
+  assert.throws(() => guard(6000.5, base), /amount/);
+  assert.throws(() => guard(6000, { ...base, floor_cents: NaN }), /floor_cents/);
+});
+test('audit: out of range probabilities use named fallback', () => {
+  for (const p of [-1, 2]) assert.equal(decide(base, () => p, 'challenger').fallback, 'p_accept_invalid');
+});
+
+test('audit: returning buyer continuation changes counter expected keep', () => {
+  const d = decide({ ...base, keep: p => p, q_return: () => .5, returning_keep: () => 10000 }, () => .5, 'challenger');
+  const c = d.candidates.find(c => c.amount_cents === 7500)!;
+  assert.equal(c.expected_keep, 7350); // .5*7500 + .5*(.5*10000+.5*4400)
+});
+test('audit: decline and expiry-aware wait compete with counters', () => {
+  const s = { ...base, keep: () => 1000, v_wait_cents: 6000 };
+  assert.equal(decide(s, () => .5, 'challenger').kind, 'decline_offer');
+  const waiting = { now: '2026-11-15T00:00:00Z', expires_at: '2026-11-15T06:00:00Z', p_higher: .5, gain_cents: 2000 };
+  const d = decide({ ...s, waiting }, () => .5, 'challenger');
+  assert.equal(d.kind, 'wait'); assert.equal(d.expected_keep, 7000); assert.equal(d.next_check_at, '2026-11-15T04:00:00.000Z');
+  assert.notEqual(decide({ ...s, waiting: { ...waiting, expires_at: waiting.now } }, () => .5, 'challenger').kind, 'wait');
+});
+
+test('audit: decision display numbers require a dated basis and parameter versions', () => {
+  assert.equal(decide(base, tableP).proof.amount_cents.guarded.state, 'hidden');
+  const proof = { now: '2026-11-15T00:00:00Z', code_version: 'test', rows: Array.from({ length: 6 }, (_, i) => ({ id: `o${i}`, source: 'offer_outcome', at: '2026-11-14T00:00:00Z' })) };
+  const d = decide({ ...base, proof }, tableP);
+  assert.equal(d.proof.amount_cents.guarded.state, 'shown');
+  assert.ok(d.proof.expected_keep.answer.ok);
+  if (d.proof.expected_keep.answer.ok) assert.equal(d.proof.expected_keep.answer.citation.param_versions.negotiation_p_lo, 0);
+});
+
+test('twins: hierarchical logistic and half-life share expected outputs with Python', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { predict, halfLife } = await import('./model.ts');
+  const fixture = JSON.parse(readFileSync(new URL('./twins.json', import.meta.url), 'utf8')) as { logistic: { terms: Record<string, number>; weights: number[]; row: { site: string; category: string; features: number[] }; expected: number }[]; decay: { days: number; expected: number }[] };
+  for (const c of fixture.logistic) assert.ok(Math.abs(predict(c, c.row) - c.expected) < 1e-12);
+  for (const c of fixture.decay) assert.ok(Math.abs(halfLife(c.days) - c.expected) < 1e-12);
+});
+
+test('money: round expected keep once after the full continuation calculation', () => {
+  const d = decide({ ...base, keep: () => 1, v_wait_cents: 1, q_return: () => .5, returning_keep: () => 2 }, () => .5, 'challenger');
+  assert.equal(d.candidates.find(c => c.amount_cents === 6500)?.expected_keep, 1);
+});
+
+test('audit R1: equal expected keeps choose the lowest counter, independent of ending digit order', () => {
+  const s = { ...base, keep: () => 1000, v_wait_cents: 1000, accept_line_cents: 7200 };
+  for (const digits of [[5, 8], [8, 5]]) assert.equal(decide({ ...s, ending: { above_cents: 2000, digits } }, () => .5, 'challenger').amount_cents, 6500);
 });

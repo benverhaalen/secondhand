@@ -1,0 +1,20 @@
+{
+  "cases": [
+    { "input": "036000291452", "expected": "00036000291452" },
+    { "input": "0036000291452", "expected": "00036000291452" },
+    { "input": "00036000291452", "expected": "00036000291452" },
+    { "input": "036000291453", "expected": null },
+    { "input": "036-000 291-452", "expected": "00036000291452" },
+    { "input": "96385074", "expected": "00000096385074" },
+    { "input": "12345670", "expected": "00000012345670" },
+    { "input": "12345678905", "expected": "00012345678905" },
+    { "input": "12345678901231", "expected": "12345678901231" },
+    { "input": "96385075", "expected": null },
+    { "input": "0000000", "expected": null },
+    { "input": "000036000291452", "expected": null },
+    { "input": "036000x291452", "expected": null },
+    { "input": "036000.291452", "expected": null },
+    { "input": "", "expected": null },
+    { "input": " - ", "expected": null }
+  ]
+}

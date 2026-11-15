@@ -100,3 +100,27 @@ def test_current_held_out_win_is_not_blocked_by_historical_champion_score():
     store.promote('score_bands', {}, row['version'], 0, '2026-11-14')
     out = nightly(outcomes(), outcomes('held'), PRIOR, store, {}, '2026-11-15')
     assert out['state'] == 'promoted'
+
+
+def test_training_rounds_half_up_before_fitting_and_scoring():
+    from score.fit import errors
+    rows = [{**r, 'value': r['value'] + .5} for r in outcomes()]
+    model = fit_bands(rows)
+    assert model['cuts'] == [16., 26., 36.]
+    assert errors({'cuts': [11, 21, 31], 'rates': [0, .25, .75, 1]}, [dict(outcome_id='tie', value=10.5, sold=1)])[0] == .75 ** 2
+
+
+def test_registry_sample_gate_and_versions_are_read_by_scope():
+    from score.params import DECLARED, resolve
+    calls = []
+    def read(name, scope):
+        calls.append((name, scope))
+        return {'value': 100 if name == 'score_min_band' else next(e['prior'] for e in DECLARED if e['name'] == name), 'version': 7}
+    out = nightly(outcomes(), outcomes('held'), PRIOR, MemoryStore(), {'site': 'ebay'}, '2026-11-15', read=read)
+    assert out['state'] == 'prior'
+    assert out['param_versions']['score_min_band'] == 7
+    assert all(scope == {'site': 'ebay'} for _, scope in calls)
+    with pytest.raises(KeyError):
+        fit_bands(outcomes(), params={})
+    with pytest.raises(KeyError):
+        resolve(lambda name, scope: {}, {})

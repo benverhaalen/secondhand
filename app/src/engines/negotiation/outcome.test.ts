@@ -62,3 +62,17 @@ test('a buyer taking our counter: the final price is the counter, not the offer'
   s.fromReply({ conversation_id: 'c1', round: 1, response: 'accepted', counter_cents: 6800, at: 1_001_000 });
   assert.equal(s.rows()[0].final_price, 6800);
 });
+
+test('audit: invalid outcome money refuses atomically', () => {
+  for (const value of [NaN, Infinity, -1, 1.5]) {
+    const s = outcomeStore(); s.fromOffer(read);
+    assert.throws(() => s.fromReply({ conversation_id: 'c1', round: 1, response: 'accepted', final_price_cents: value, at: read.at }), /final_price_cents/);
+    assert.equal(s.rows()[0].response, null);
+    assert.throws(() => s.reconcile('c1', 1, { response: 'countered', counter_cents: value }), /counter_cents/);
+    assert.throws(() => s.fromOffer({ ...read, conversation_id: 'bad', offer_cents: value }), /offer_cents/);
+  }
+});
+test('audit: omitted round cannot settle the first of multiple rounds', () => {
+  const s = outcomeStore(); s.fromOffer(read); s.fromOffer({ ...read, round: 2 });
+  assert.throws(() => s.fromReply({ conversation_id: 'c1', response: 'accepted', at: read.at }), /round/);
+});

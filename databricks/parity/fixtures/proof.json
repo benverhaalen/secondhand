@@ -208,8 +208,7 @@
       {
         "id": "obs_1",
         "source": "ebay",
-        "at": "2026-11-10",
-        "price_cents": null
+        "at": "2026-11-10"
       },
       {
         "id": "obs_2",
@@ -1547,5 +1546,5283 @@
       }
     ],
     "case": "short_month_normalization"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "other_metric",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "citation_metric"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "other"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "citation_filters"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 1
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "citation_param_version"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 38
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "citation_table_version"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d2",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "citation_definition_version"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c2",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "citation_code_version"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": "m1"
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "citation_model_version"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "duplicate_ids_basisHash",
+    "operation": "basisHash",
+    "expect_error": "duplicate basis id obs_0"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "duplicate_ids_basisOf",
+    "operation": "basisOf",
+    "expect_error": "duplicate basis id obs_0"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "duplicate_ids_answer",
+    "operation": "answer",
+    "expect_error": "duplicate basis id obs_0"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": -1
+      }
+    ],
+    "case": "negative_weight_basisHash",
+    "operation": "basisHash",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": -1
+      }
+    ],
+    "case": "negative_weight_basisOf",
+    "operation": "basisOf",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": -1
+      }
+    ],
+    "case": "negative_weight_answer",
+    "operation": "answer",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "NaN"
+        }
+      }
+    ],
+    "case": "weight_NaN_basisHash",
+    "operation": "basisHash",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "NaN"
+        }
+      }
+    ],
+    "case": "weight_NaN_basisOf",
+    "operation": "basisOf",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "NaN"
+        }
+      }
+    ],
+    "case": "weight_NaN_answer",
+    "operation": "answer",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "Infinity"
+        }
+      }
+    ],
+    "case": "weight_Infinity_basisHash",
+    "operation": "basisHash",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "Infinity"
+        }
+      }
+    ],
+    "case": "weight_Infinity_basisOf",
+    "operation": "basisOf",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "Infinity"
+        }
+      }
+    ],
+    "case": "weight_Infinity_answer",
+    "operation": "answer",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "-Infinity"
+        }
+      }
+    ],
+    "case": "weight_-Infinity_basisHash",
+    "operation": "basisHash",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "-Infinity"
+        }
+      }
+    ],
+    "case": "weight_-Infinity_basisOf",
+    "operation": "basisOf",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": {
+          "$number": "-Infinity"
+        }
+      }
+    ],
+    "case": "weight_-Infinity_answer",
+    "operation": "answer",
+    "expect_error": "weight must be finite and nonnegative"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": -1
+      }
+    ],
+    "case": "cents_negative_basisHash",
+    "operation": "basisHash",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": -1
+      }
+    ],
+    "case": "cents_negative_basisOf",
+    "operation": "basisOf",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": -1
+      }
+    ],
+    "case": "cents_negative_answer",
+    "operation": "answer",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 0.5
+      }
+    ],
+    "case": "cents_fractional_basisHash",
+    "operation": "basisHash",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 0.5
+      }
+    ],
+    "case": "cents_fractional_basisOf",
+    "operation": "basisOf",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 0.5
+      }
+    ],
+    "case": "cents_fractional_answer",
+    "operation": "answer",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 9007199254740992
+      }
+    ],
+    "case": "cents_unsafe_basisHash",
+    "operation": "basisHash",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 9007199254740992
+      }
+    ],
+    "case": "cents_unsafe_basisOf",
+    "operation": "basisOf",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 9007199254740992
+      }
+    ],
+    "case": "cents_unsafe_answer",
+    "operation": "answer",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": null
+      }
+    ],
+    "case": "cents_null_basisHash",
+    "operation": "basisHash",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": null
+      }
+    ],
+    "case": "cents_null_basisOf",
+    "operation": "basisOf",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": null
+      }
+    ],
+    "case": "cents_null_answer",
+    "operation": "answer",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": {
+          "$number": "NaN"
+        }
+      }
+    ],
+    "case": "cents_NaN_basisHash",
+    "operation": "basisHash",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": {
+          "$number": "NaN"
+        }
+      }
+    ],
+    "case": "cents_NaN_basisOf",
+    "operation": "basisOf",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": {
+          "$number": "NaN"
+        }
+      }
+    ],
+    "case": "cents_NaN_answer",
+    "operation": "answer",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": {
+          "$number": "Infinity"
+        }
+      }
+    ],
+    "case": "cents_Infinity_basisHash",
+    "operation": "basisHash",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": {
+          "$number": "Infinity"
+        }
+      }
+    ],
+    "case": "cents_Infinity_basisOf",
+    "operation": "basisOf",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": {
+          "$number": "Infinity"
+        }
+      }
+    ],
+    "case": "cents_Infinity_answer",
+    "operation": "answer",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": true
+      }
+    ],
+    "case": "cents_boolean_basisHash",
+    "operation": "basisHash",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": true
+      }
+    ],
+    "case": "cents_boolean_basisOf",
+    "operation": "basisOf",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": true
+      }
+    ],
+    "case": "cents_boolean_answer",
+    "operation": "answer",
+    "expect_error": "price_cents must be nonnegative safe integer cents"
+  },
+  {
+    "engine": "proof",
+    "now": "invalid",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "bad_now_basisOf",
+    "operation": "basisOf",
+    "expect_error": "now must be a valid date"
+  },
+  {
+    "engine": "proof",
+    "now": "invalid",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "bad_now_answer",
+    "operation": "answer"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-16",
+        "price_cents": 4000
+      }
+    ],
+    "case": "future_date_basisOf",
+    "operation": "basisOf",
+    "expect_error": "basis date must be valid and not after now"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-16",
+        "price_cents": 4000
+      }
+    ],
+    "case": "future_date_answer",
+    "operation": "answer"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "invalid",
+        "price_cents": 4000
+      }
+    ],
+    "case": "invalid_date_basisOf",
+    "operation": "basisOf",
+    "expect_error": "basis date must be valid and not after now"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "invalid",
+        "price_cents": 4000
+      }
+    ],
+    "case": "invalid_date_answer",
+    "operation": "answer"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [],
+    "case": "empty_basis_basisOf",
+    "operation": "basisOf",
+    "expect_error": "basis must contain rows"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [],
+    "case": "empty_basis_answer",
+    "operation": "answer"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 0,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "min_n_eff_zero",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": -1,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "min_n_eff_negative",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": {
+        "$number": "NaN"
+      },
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "min_n_eff_NaN",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": {
+        "$number": "Infinity"
+      },
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "min_n_eff_Infinity",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": {
+        "$number": "-Infinity"
+      },
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "min_n_eff_negative_infinity",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": null,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "min_n_eff_null",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": true,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "min_n_eff_boolean",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 0
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "max_age_days_zero",
+    "operation": "guard",
+    "expect_error": "max_age_days must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": -1
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "max_age_days_negative",
+    "operation": "guard",
+    "expect_error": "max_age_days must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": {
+        "$number": "NaN"
+      }
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "max_age_days_NaN",
+    "operation": "guard",
+    "expect_error": "max_age_days must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": {
+        "$number": "Infinity"
+      }
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "max_age_days_Infinity",
+    "operation": "guard",
+    "expect_error": "max_age_days must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": {
+        "$number": "-Infinity"
+      }
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "max_age_days_negative_infinity",
+    "operation": "guard",
+    "expect_error": "max_age_days must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": null
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "max_age_days_null",
+    "operation": "guard",
+    "expect_error": "max_age_days must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": true
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "max_age_days_boolean",
+    "operation": "guard",
+    "expect_error": "max_age_days must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 0,
+      "max_age_days": 14
+    },
+    "rows": [],
+    "case": "rules_before_refusal",
+    "operation": "guard",
+    "expect_error": "min_n_eff must be finite and positive"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "$number": "NaN"
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "value_NaN",
+    "operation": "guard",
+    "expect_error": "value must be finite"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "$number": "Infinity"
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "value_Infinity",
+    "operation": "guard",
+    "expect_error": "value must be finite"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "$number": "-Infinity"
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "value_negative_infinity",
+    "operation": "guard",
+    "expect_error": "value must be finite"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 2,
+      "hi": 1
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "range_reversed",
+    "operation": "guard",
+    "expect_error": "range must have finite ordered bounds"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": {
+        "$number": "NaN"
+      },
+      "hi": 3
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "range_nonfinite_lo",
+    "operation": "guard",
+    "expect_error": "range must have finite ordered bounds"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 0,
+      "hi": {
+        "$number": "Infinity"
+      }
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "range_nonfinite_hi",
+    "operation": "guard",
+    "expect_error": "range must have finite ordered bounds"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": 1e+308
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100,
+        "weight": 5e+307
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200,
+        "weight": 3.333333333333333e+307
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300,
+        "weight": 2.5e+307
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400,
+        "weight": 2e+307
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500,
+        "weight": 1.6666666666666666e+307
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600,
+        "weight": 1.4285714285714286e+307
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700,
+        "weight": 1.25e+307
+      }
+    ],
+    "case": "normalize_overflow"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": 1e-300
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100,
+        "weight": 5e-301
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200,
+        "weight": 3.3333333333333334e-301
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300,
+        "weight": 2.5e-301
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400,
+        "weight": 2e-301
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500,
+        "weight": 1.6666666666666667e-301
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600,
+        "weight": 1.4285714285714285e-301
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700,
+        "weight": 1.25e-301
+      }
+    ],
+    "case": "normalize_underflow"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": 1.7976931348623157e+308
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100,
+        "weight": 1.7976931348623157e+308
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200,
+        "weight": 1.7976931348623157e+308
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300,
+        "weight": 1.7976931348623157e+308
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400,
+        "weight": 1.7976931348623157e+308
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500,
+        "weight": 1.7976931348623157e+308
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600,
+        "weight": 1.7976931348623157e+308
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700,
+        "weight": 1.7976931348623157e+308
+      }
+    ],
+    "case": "normalize_max"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": 5e-324
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100,
+        "weight": 5e-324
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200,
+        "weight": 5e-324
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300,
+        "weight": 5e-324
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400,
+        "weight": 5e-324
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500,
+        "weight": 5e-324
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600,
+        "weight": 5e-324
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700,
+        "weight": 5e-324
+      }
+    ],
+    "case": "normalize_min"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 1.0
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_one"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 0.30000000000000004
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_sum"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 1e+21
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_large"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 5e-07
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_small"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": {
+          "$number": "-0"
+        }
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_negative_zero"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 0.5
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_half"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 1e+20
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_fixed_large"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 1e-06
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_fixed_small"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "number": 1.0000000000000001e+18
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "number_large_rounding"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "\""
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_quote"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "\\"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_backslash"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "\n"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_newline"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "\u0001"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_control"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "é"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_nonascii"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "😀"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_astral"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/  "
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_all_escapes"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "string": "\ud800x\udc00"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "string_lone_surrogates"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "～": null,
+        "😀": [
+          true,
+          false,
+          {
+            "b": 2,
+            "a": 1
+          }
+        ]
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "nested_utf16_keys"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "kept": null,
+        "dropped": {
+          "$undefined": true
+        }
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "undefined_dropped"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "kept": null
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "undefined_absent"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "n": {
+          "$number": "NaN"
+        }
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "identity_NaN",
+    "expect_error": "citation identity must be finite JSON"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "n": {
+          "$number": "Infinity"
+        }
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "identity_Infinity",
+    "expect_error": "citation identity must be finite JSON"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "n": {
+          "$number": "-Infinity"
+        }
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "identity_-Infinity",
+    "expect_error": "citation identity must be finite JSON"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000,
+        "weight": null
+      }
+    ],
+    "case": "null_weight"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-01T03:59:59.999Z",
+        "price_cents": 4700
+      }
+    ],
+    "case": "fractional_age"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 1e+307,
+      "hi": 1.7e+308
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "overflow_wide"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 6e+307,
+      "hi": 1.7e+308
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "overflow_narrow"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 0,
+      "hi": 5e-324
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "product_id": "prd_fixture"
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      },
+      {
+        "id": "obs_1",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4100
+      },
+      {
+        "id": "obs_2",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4200
+      },
+      {
+        "id": "obs_3",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4300
+      },
+      {
+        "id": "obs_4",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4400
+      },
+      {
+        "id": "obs_5",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4500
+      },
+      {
+        "id": "obs_6",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4600
+      },
+      {
+        "id": "obs_7",
+        "source": "ebay",
+        "at": "2026-11-10",
+        "price_cents": 4700
+      }
+    ],
+    "case": "underflow_wide"
+  },
+  {
+    "engine": "proof",
+    "now": "2026-11-15T04:00:00.000Z",
+    "value": {
+      "lo": 40,
+      "hi": 50
+    },
+    "cite": {
+      "metric": "sold_range",
+      "filters": {
+        "x": [
+          {
+            "$undefined": true
+          }
+        ]
+      },
+      "table_versions": [
+        {
+          "table": "observation",
+          "version": 37
+        }
+      ],
+      "definition_version": "d1",
+      "code_version": "c1",
+      "param_versions": {
+        "proof_min_n_eff": 0
+      },
+      "model_version": null
+    },
+    "passed": [
+      "claim_check"
+    ],
+    "rules": {
+      "min_n_eff": 6,
+      "max_age_days": 14
+    },
+    "rows": [
+      {
+        "id": "obs_0",
+        "source": "mercari",
+        "at": "2026-11-10",
+        "price_cents": 4000
+      }
+    ],
+    "case": "undefined_in_list",
+    "expect_error": "citation identity must be finite JSON"
   }
 ]

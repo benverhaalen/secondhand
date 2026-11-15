@@ -59,6 +59,13 @@
             "needs_session": true
           },
           {
+            "endpoint": "GET /v1/captures/:id",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
             "endpoint": "GET /v1/citations/:id",
             "source": "example",
             "auth": "user",
@@ -305,7 +312,7 @@
           },
           {
             "endpoint": "PATCH /v1/captures/:id",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "PATCH",
             "needs_session": true
@@ -438,21 +445,21 @@
           },
           {
             "endpoint": "POST /v1/captures",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
           },
           {
             "endpoint": "POST /v1/captures/:id/finish",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
           },
           {
             "endpoint": "POST /v1/captures/:id/photos",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true

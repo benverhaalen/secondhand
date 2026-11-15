@@ -1,6 +1,6 @@
 """Freeze one source's raw files into rows.csv.gz and manifest.json, byte-identical on every rerun.
 
-    cd jobs && python -m valuation.data.freeze <source> <out_dir> <raw file...>
+    cd jobs && PYTHONPATH=../log python -m valuation.data.freeze [--share=0.05] <source> <out_dir> <raw file...>
 
 The raw files must match the sha256 recorded in sources.json, so a changed mirror is refused rather than frozen.
 The manifest (inputs and their hashes, the output's hash, rows by price_type and kind, the date range, what was
@@ -37,7 +37,14 @@ def _commit() -> str:
     return out.stdout.strip() or "unknown"
 
 
-def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None = None, log=None) -> dict:
+def in_sample(key: str, share: float) -> bool:
+    """A product is in the sample when its id hashes below `share`: every listing of a kept product is kept, so
+    histories stay whole, and the same share always picks the same products (datasets.md §3)."""
+    return int.from_bytes(hashlib.sha256(key.encode()).digest()[:8], "big") < share * 2 ** 64
+
+
+def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None = None, log=None,
+           share: float = 1.0) -> dict:
     inputs = sorted(Path(p) for p in inputs)
     seen = []
     for p in inputs:
@@ -49,29 +56,41 @@ def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None =
     dropped: dict = {}
     reader = READERS[source]
     rows = reader(inputs, dropped) if source in MULTI_FILE else (r for p in inputs for r in reader(p, dropped))
-    text = io.StringIO()
-    w = csv.DictWriter(text, fieldnames=COLUMNS, lineterminator="\n")
-    w.writeheader()
-    n, by_type, by_kind, dates = 0, {}, {}, []
-    for r in rows:
-        w.writerow(r)
-        n += 1
-        by_type[r["price_type"]] = by_type.get(r["price_type"], 0) + 1
-        by_kind[r["kind"]] = by_kind.get(r["kind"], 0) + 1
-        if r["at"]:
-            dates.append(r["at"])
-    body = text.getvalue().encode()
-
     out_dir.mkdir(parents=True, exist_ok=True)
+    body_hash = hashlib.sha256()
+    n, by_type, by_kind, lo, hi = 0, {}, {}, None, None
     with open(out_dir / "rows.csv.gz", "wb") as f:   # mtime 0 and no filename: the same rows give the same bytes
         with gzip.GzipFile(filename="", fileobj=f, mode="wb", mtime=0) as g:
-            g.write(body)
+            def write(line: str) -> None:
+                b = line.encode()
+                body_hash.update(b)
+                g.write(b)
+            text = io.StringIO()
+            w = csv.DictWriter(text, fieldnames=COLUMNS, lineterminator="\n")
+            w.writeheader()
+            for r in rows:
+                if share < 1.0 and not in_sample(r["product_id"] or r["row_id"], share):
+                    dropped["not_in_sample"] = dropped.get("not_in_sample", 0) + 1
+                    continue
+                w.writerow(r)
+                if text.tell() > 1 << 20:
+                    write(text.getvalue())
+                    text.seek(0)
+                    text.truncate()
+                n += 1
+                by_type[r["price_type"]] = by_type.get(r["price_type"], 0) + 1
+                by_kind[r["kind"]] = by_kind.get(r["kind"], 0) + 1
+                if r["at"]:
+                    lo, hi = min(lo or r["at"], r["at"]), max(hi or r["at"], r["at"])
+            write(text.getvalue())
     manifest = {
         "source": source, "licence": LICENCE[source], "may_model": MAY_MODEL[source], "code_commit": _commit(),
-        "inputs": seen, "output": {"file": "rows.csv.gz", "sha256": hashlib.sha256(body).hexdigest(), "columns": list(COLUMNS)},
+        "inputs": seen, "output": {"file": "rows.csv.gz", "sha256": body_hash.hexdigest(), "columns": list(COLUMNS)},
         "rows": n, "by_price_type": dict(sorted(by_type.items())), "by_kind": dict(sorted(by_kind.items())),
-        "at_range": [min(dates), max(dates)] if dates else None, "dropped": dict(sorted(dropped.items())),
+        "at_range": [lo, hi] if lo else None, "dropped": dict(sorted(dropped.items())),
     }
+    if share < 1.0:
+        manifest["sample"] = {"share": share, "unit": "product_id (row_id when empty)", "rule": "sha256(key)[:8] < share * 2^64"}
     (out_dir / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     if log:
         log.job(f"freeze-{source}", "freeze", "done", n=n, source=source, sha256=manifest["output"]["sha256"])
@@ -79,6 +98,9 @@ def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None =
 
 
 def main(argv: list[str]) -> None:
+    share = 1.0
+    if argv and argv[0].startswith("--share="):
+        share, argv = float(argv[0].split("=", 1)[1]), argv[1:]
     source, out_dir, raw = argv[0], Path(argv[1]), [Path(p) for p in argv[2:]]
     expect = {f["file"]: f["sha256"] for f in json.loads((HERE / "sources.json").read_text())[source]["files"]}
     log_dir = Path(__file__).resolve().parents[3] / "logs"
@@ -86,7 +108,7 @@ def main(argv: list[str]) -> None:
     log = create_log("job.freeze", _commit(), tee_sink(stdout_sink, file_sink(str(log_dir / f"freeze-{source}.jsonl"))))
     log.job(f"freeze-{source}", "freeze", "running", source=source, n=len(raw))
     try:
-        m = freeze(source, raw, out_dir, expect, log)
+        m = freeze(source, raw, out_dir, expect, log, share)
     except Exception as e:
         log.error("freeze", e, source=source)
         log.job(f"freeze-{source}", "freeze", "failed", source=source)

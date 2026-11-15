@@ -53,7 +53,7 @@ export function wantsOn(st: Store): Record<string, Handler> {
         return { status: 201, body: createView(prior) };
       }
       const row = st.put('want', { ...ctx.body, id: 'want_' + crypto.randomUUID().replaceAll('-', ''), user_id: ctx.user_id!, state: 'active', created_at: new Date().toISOString(), checked: {}, behind: [], ...(key ? { create_key: key, create_hash } : {}) });
-      ctx.log.change('want', row.id, 'active');
+      ctx.log.event('state.change', { entity: 'want', id: row.id, to: 'active' });
       return { status: 201, body: createView(row) };
     }),
     'GET /v1/wants': wrap(ctx => {
@@ -68,7 +68,7 @@ export function wantsOn(st: Store): Record<string, Handler> {
       if (!Object.keys(edits).length) throw invalid('no want edits');
       if (ctx.body.version !== row.version) throw new ApiError('stale', 'want changed', 'version_check', { by: 'user' }, { current: { version: row.version } });
       const next = st.put('want', { ...row, ...edits });
-      ctx.log.change('want', row.id, next.state);
+      ctx.log.event('state.change', { entity: 'want', id: row.id, to: next.state });
       return { status: 200, body: { id: next.id, state: next.state, version: next.version } };
     }),
     'GET /v1/wants/:id/matches': wrap(ctx => {
@@ -83,7 +83,7 @@ export function wantsOn(st: Store): Record<string, Handler> {
       const action = ctx.body.action as 'dismiss' | 'save' | 'not_same' | 'bought';
       const state = { dismiss: 'dismissed', save: 'saved', not_same: 'dismissed', bought: 'bought' }[action];
       const next = st.put('match', { ...row, state, ...(action === 'not_same' ? { not_same: true } : {}) });
-      ctx.log.change('match', next.id, state);
+      ctx.log.event('state.change', { entity: 'match', id: next.id, to: state });
       return { status: 200, body: { id: next.id, state } };
     }),
   };
@@ -107,10 +107,10 @@ export function runWant(st: Store, want_id: string, listings: Listing[], prior: 
     for (const match of result.matches) {
       const old = stored.find(m => m.id === match.id);
       t.put('match', { ...old, ...match, user_id: row.user_id });
-      log.change('match', match.id, match.state);
+      log.event('state.change', { entity: 'match', id: match.id, to: match.state });
     }
     t.put('want', { ...row, checked: { ...row.checked, ...opts.checked }, behind: opts.behind ?? row.behind });
-    log.change('want', row.id, row.state, { matches_count: result.matches.length });
+    log.event('state.change', { entity: 'want', id: row.id, to: row.state, matches_count: result.matches.length });
     return result;
   });
 }

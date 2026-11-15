@@ -230,6 +230,17 @@
   "source": "https://commons.wikimedia.org/wiki/File:CitiBike_Angel_backpack_2024_jeh.jpg",
   "provider": "wikimedia commons"
  },
+ "backpack-150078918": {
+  "kind": "bags and accessories",
+  "query": "backpack",
+  "title": "Wikimedia swag backpack",
+  "creator": "Kaartic",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Wikimedia_swag_backpack.jpg",
+  "provider": "wikimedia commons"
+ },
  "backpack-70039125": {
   "kind": "bags and accessories",
   "query": "backpack",
@@ -250,6 +261,17 @@
   "license_version": null,
   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
   "source": "https://commons.wikimedia.org/wiki/File:Plecak_Hiker_50_L_HiMountain.jpg",
+  "provider": "wikimedia commons"
+ },
+ "baseball-cap-106193556": {
+  "kind": "clothes",
+  "query": "baseball cap",
+  "title": "Niksun baseball cap - Know the Unknown",
+  "creator": "Jonathan Schilling",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Niksun_baseball_cap_-_Know_the_Unknown.jpg",
   "provider": "wikimedia commons"
  },
  "baseball-cap-10828802": {
@@ -307,6 +329,28 @@
   "source": "https://commons.wikimedia.org/wiki/File:Blue_baseball_cap_on_wooden_table.jpg",
   "provider": "wikimedia commons"
  },
+ "bicycle-143875268": {
+  "kind": "hobbies",
+  "query": "bicycle",
+  "title": "Bike on a snowy street in Quebec City at night",
+  "creator": "Wilfredor",
+  "license": "CC0",
+  "license_version": null,
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "source": "https://commons.wikimedia.org/wiki/File:Bike_on_a_snowy_street_in_Quebec_City_at_night.jpg",
+  "provider": "wikimedia commons"
+ },
+ "bicycle-148796159": {
+  "kind": "hobbies",
+  "query": "bicycle",
+  "title": "Parked bicycle with graffitied building facade and doors in Amsterdam",
+  "creator": "Basile Morin",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Parked_bicycle_with_graffitied_building_facade_and_doors_in_Amsterdam.jpg",
+  "provider": "wikimedia commons"
+ },
  "bicycle-151669500": {
   "kind": "hobbies",
   "query": "bicycle",
@@ -338,6 +382,17 @@
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
   "source": "https://commons.wikimedia.org/wiki/File:Raleigh_lady%27s_loop_frame_bicycle_1930s.jpg",
+  "provider": "wikimedia commons"
+ },
+ "bicycle-77740868": {
+  "kind": "hobbies",
+  "query": "bicycle",
+  "title": "Bike share 2019, Berlin (P1080139)",
+  "creator": "Matti Blume",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Bike_share_2019,_Berlin_(P1080139).jpg",
   "provider": "wikimedia commons"
  },
  "board-game-133127536": {
@@ -428,6 +483,17 @@
   "source": "https://commons.wikimedia.org/wiki/File:Paris_75005_Quai_de_Montebello_Bouquinistes_20071014.jpg",
   "provider": "wikimedia commons"
  },
+ "books-29354066": {
+  "kind": "hobbies",
+  "query": "books",
+  "title": "13-11-02-olb-by-RalfR-03",
+  "creator": "Ralf Roletschek",
+  "license": "CC BY 3.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by/3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:13-11-02-olb-by-RalfR-03.jpg",
+  "provider": "wikimedia commons"
+ },
  "books-305390": {
   "kind": "hobbies",
   "query": "books",
@@ -450,17 +516,6 @@
   "source": "https://commons.wikimedia.org/wiki/File:Latin_dictionary.jpg",
   "provider": "wikimedia commons"
  },
- "books-87283345": {
-  "kind": "hobbies",
-  "query": "books",
-  "title": "Part of a bookshelf containing books by Aristotle (1)",
-  "creator": "Roman Eisele",
-  "license": "CC BY-SA 4.0",
-  "license_version": null,
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Part_of_a_bookshelf_containing_books_by_Aristotle_(1).jpg",
-  "provider": "wikimedia commons"
- },
  "books-87283346": {
   "kind": "hobbies",
   "query": "books",
@@ -481,6 +536,17 @@
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
   "source": "https://commons.wikimedia.org/wiki/File:Bookcase_in_Olten.jpg",
+  "provider": "wikimedia commons"
+ },
+ "bookshelf-123899189": {
+  "kind": "home",
+  "query": "bookshelf",
+  "title": "Bookshelf of Sanko Library 1",
+  "creator": "Eugene Ormandy",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Bookshelf_of_Sanko_Library_1.jpg",
   "provider": "wikimedia commons"
  },
  "bookshelf-3758023": {
@@ -514,17 +580,6 @@
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
   "source": "https://commons.wikimedia.org/wiki/File:Part_of_a_bookshelf_containing_books_by_ancient_philosophers_(1.1).jpg",
-  "provider": "wikimedia commons"
- },
- "bookshelf-92696547": {
-  "kind": "home",
-  "query": "bookshelf",
-  "title": "Wooden public bookcase Groenstraat Heverlee",
-  "creator": "Landolso",
-  "license": "CC0",
-  "license_version": null,
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Wooden_public_bookcase_Groenstraat_Heverlee.jpg",
   "provider": "wikimedia commons"
  },
  "bookshelf-93026169": {
@@ -670,6 +725,17 @@
   "source": "https://commons.wikimedia.org/wiki/File:A_Ceramic_Vase_in_Kanazawa.jpg",
   "provider": "wikimedia commons"
  },
+ "coffee-mug-118662991": {
+  "kind": "kitchen",
+  "query": "coffee mug",
+  "title": "IBM merchandising coffee mug with company logo",
+  "creator": "Pittigrilli",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:IBM_merchandising_coffee_mug_with_company_logo.jpg",
+  "provider": "wikimedia commons"
+ },
  "coffee-mug-124269909": {
   "kind": "kitchen",
   "query": "coffee mug",
@@ -703,6 +769,17 @@
   "source": "https://commons.wikimedia.org/wiki/File:Coffee_Mug_on_Desk.jpg",
   "provider": "wikimedia commons"
  },
+ "coffee-mug-15573749": {
+  "kind": "kitchen",
+  "query": "coffee mug",
+  "title": "Mug Wikipedia Malayalam",
+  "creator": "Ranjithsiji",
+  "license": "CC BY-SA 3.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Mug_Wikipedia_Malayalam.jpg",
+  "provider": "wikimedia commons"
+ },
  "coffee-mug-203215276": {
   "kind": "kitchen",
   "query": "coffee mug",
@@ -714,15 +791,15 @@
   "source": "https://commons.wikimedia.org/wiki/File:Coffee_mug_(90973).jpg",
   "provider": "wikimedia commons"
  },
- "coffee-table-174265096": {
+ "coffee-table-152000277": {
   "kind": "home",
   "query": "coffee table",
-  "title": "A H McIntosh coffee table 01",
-  "creator": "Sam Wilson",
+  "title": "Coffee table with price tag",
+  "creator": "Vaibhavratnaparkhi",
   "license": "CC BY-SA 4.0",
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:A_H_McIntosh_coffee_table_01.jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Coffee_table_with_price_tag.jpg",
   "provider": "wikimedia commons"
  },
  "coffee-table-174265097": {
@@ -1594,6 +1671,28 @@
   "source": "https://commons.wikimedia.org/wiki/File:High_heels_in_Miami.jpg",
   "provider": "wikimedia commons"
  },
+ "hoodie-122502044": {
+  "kind": "clothes",
+  "query": "hoodie",
+  "title": "\"Vaccinated\" hoodie on sale, reference to COVID-19",
+  "creator": "Syced",
+  "license": "CC0",
+  "license_version": null,
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "source": "https://commons.wikimedia.org/wiki/File:%22Vaccinated%22_hoodie_on_sale,_reference_to_COVID-19.jpg",
+  "provider": "wikimedia commons"
+ },
+ "hoodie-133113556": {
+  "kind": "clothes",
+  "query": "hoodie",
+  "title": "Sonoma Raceway hoodie - June 2023 - Sarah Stierch",
+  "creator": "Missvain",
+  "license": "CC BY 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Sonoma_Raceway_hoodie_-_June_2023_-_Sarah_Stierch.jpg",
+  "provider": "wikimedia commons"
+ },
  "hoodie-140673215": {
   "kind": "clothes",
   "query": "hoodie",
@@ -1603,6 +1702,17 @@
   "license_version": null,
   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
   "source": "https://commons.wikimedia.org/wiki/File:Hoodie_m7agar.jpg",
+  "provider": "wikimedia commons"
+ },
+ "hoodie-147727947": {
+  "kind": "clothes",
+  "query": "hoodie",
+  "title": "Atheists hoodie",
+  "creator": "Hossam el-Hamalawy",
+  "license": "CC BY 2.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Atheists_hoodie.jpg",
   "provider": "wikimedia commons"
  },
  "hoodie-173201672": {
@@ -1638,17 +1748,6 @@
   "source": "https://commons.wikimedia.org/wiki/File:Houseplant_Calathea_orbifolia.jpg",
   "provider": "wikimedia commons"
  },
- "houseplant-111102632": {
-  "kind": "home",
-  "query": "houseplant",
-  "title": "Large majesty palm houseplant outdoors",
-  "creator": "B137",
-  "license": "CC0",
-  "license_version": null,
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Large_majesty_palm_houseplant_outdoors.jpg",
-  "provider": "wikimedia commons"
- },
  "houseplant-125417690": {
   "kind": "home",
   "query": "houseplant",
@@ -1669,6 +1768,17 @@
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
   "source": "https://commons.wikimedia.org/wiki/File:Amaryllis_(Hippeastrum)_18-01-2025._(actm.)_02.jpg",
+  "provider": "wikimedia commons"
+ },
+ "houseplant-183972411": {
+  "kind": "home",
+  "query": "houseplant",
+  "title": "Lidcactus, Schlumbergera ×buckleyi. 14-12-2025. (actm.) 01",
+  "creator": "Agnes Monkelbaan",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Lidcactus,_Schlumbergera_%C3%97buckleyi._14-12-2025._(actm.)_01.jpg",
   "provider": "wikimedia commons"
  },
  "houseplant-62040584": {
@@ -1748,15 +1858,15 @@
   "source": "https://commons.wikimedia.org/wiki/File:IBM_Thinkpad_R51.jpg",
   "provider": "wikimedia commons"
  },
- "laptop-61681597": {
+ "laptop-177765450": {
   "kind": "tech",
   "query": "laptop",
-  "title": "Ruler and laptop on a desk (Unsplash)",
-  "creator": "Oli Dale olidale",
+  "title": "Laptop image",
+  "creator": "Darakshanehaluddin",
   "license": "CC0",
   "license_version": null,
   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Ruler_and_laptop_on_a_desk_(Unsplash).jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Laptop_image.jpg",
   "provider": "wikimedia commons"
  },
  "leather-boots-104519000": {
@@ -1781,6 +1891,17 @@
   "source": "https://commons.wikimedia.org/wiki/File:Leather_Goodyear_welt_example.jpg",
   "provider": "wikimedia commons"
  },
+ "leather-boots-145998446": {
+  "kind": "shoes",
+  "query": "leather boots",
+  "title": "Pair of female red leather boots – Turku Museum Centre, Finland",
+  "creator": "Turun museokeskus",
+  "license": "CC BY 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Pair_of_female_red_leather_boots_%E2%80%93_Turku_Museum_Centre,_Finland.jpg",
+  "provider": "wikimedia commons"
+ },
  "leather-boots-146287407": {
   "kind": "shoes",
   "query": "leather boots",
@@ -1790,17 +1911,6 @@
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
   "source": "https://commons.wikimedia.org/wiki/File:Leather_boots_men%27s.jpg",
-  "provider": "wikimedia commons"
- },
- "leather-boots-157168648": {
-  "kind": "shoes",
-  "query": "leather boots",
-  "title": "Black high-heeled boots in synthetic leather 2",
-  "creator": "W.carter",
-  "license": "CC BY-SA 4.0",
-  "license_version": null,
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Black_high-heeled_boots_in_synthetic_leather_2.jpg",
   "provider": "wikimedia commons"
  },
  "leather-boots-4856693": {
@@ -1825,6 +1935,17 @@
   "source": "https://commons.wikimedia.org/wiki/File:Boots-WhiteLeather-6cmHeel.jpg",
   "provider": "wikimedia commons"
  },
+ "leather-jacket-129606790": {
+  "kind": "clothes",
+  "query": "leather jacket",
+  "title": "Pelle Pelle Exotic Design Leather Jacket",
+  "creator": "RobertStr17",
+  "license": "CC BY 2.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by/2.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Pelle_Pelle_Exotic_Design_Leather_Jacket.jpg",
+  "provider": "wikimedia commons"
+ },
  "leather-jacket-15042643": {
   "kind": "clothes",
   "query": "leather jacket",
@@ -1845,17 +1966,6 @@
   "license_version": null,
   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
   "source": "https://commons.wikimedia.org/wiki/File:Black_worn_leather_jacket_detail_1.jpg",
-  "provider": "wikimedia commons"
- },
- "leather-jacket-75169736": {
-  "kind": "clothes",
-  "query": "leather jacket",
-  "title": "Black worn leather jacket detail 2",
-  "creator": "W.carter",
-  "license": "CC0",
-  "license_version": null,
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Black_worn_leather_jacket_detail_2.jpg",
   "provider": "wikimedia commons"
  },
  "leather-jacket-80506678": {
@@ -2122,17 +2232,6 @@
   "source": "https://commons.wikimedia.org/wiki/File:Dutch_mahogany_metamorphic_wing-backed_folding_bed_chair_Bed_Chair,_mid-18th_century_(CH_18319113).jpg",
   "provider": "wikimedia commons"
  },
- "mid-century-chair-64559367": {
-  "kind": "home",
-  "query": "mid century chair",
-  "title": "Chair (Germany), mid-18th century",
-  "creator": "Unknown artistUnknown artist",
-  "license": "Public domain",
-  "license_version": null,
-  "license_url": null,
-  "source": "https://commons.wikimedia.org/wiki/File:Chair_(Germany),_mid-18th_century_(CH_18147159).jpg",
-  "provider": "wikimedia commons"
- },
  "mid-century-chair-64657790": {
   "kind": "home",
   "query": "mid century chair",
@@ -2143,6 +2242,17 @@
   "license_url": null,
   "source": "https://commons.wikimedia.org/wiki/File:Side_Chair_(England),_mid-19th_century_(CH_18492073).jpg",
   "provider": "wikimedia commons"
+ },
+ "mid-century-chair-b6044a15": {
+  "kind": "home",
+  "query": "mid century chair",
+  "title": "Eero Saarinen's Tulip Chair Knoll",
+  "creator": null,
+  "license": "cc0",
+  "license_version": "1.0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+  "source": "https://www.rawpixel.com/image/8883574/tulip-chair-eero-saarinen-for-knoll-associates",
+  "provider": "rawpixel"
  },
  "mid-century-chair-df83ad8f": {
   "kind": "home",
@@ -2705,17 +2815,6 @@
   "source": "https://commons.wikimedia.org/wiki/File:Ghana_local_sandals.jpg",
   "provider": "wikimedia commons"
  },
- "sandals-186110881": {
-  "kind": "shoes",
-  "query": "sandals",
-  "title": "Handcrafted sandals 02",
-  "creator": "Uzhor",
-  "license": "CC BY-SA 4.0",
-  "license_version": null,
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Handcrafted_sandals_02.jpg",
-  "provider": "wikimedia commons"
- },
  "sandals-43932723": {
   "kind": "shoes",
   "query": "sandals",
@@ -2848,6 +2947,17 @@
   "source": "https://www.flickr.com/photos/35320672@N08/29731489541",
   "provider": "flickr"
  },
+ "smartphone-130445259": {
+  "kind": "tech",
+  "query": "smartphone",
+  "title": "Nokia 6670",
+  "creator": "AnVuong1222004",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Nokia_6670.png",
+  "provider": "wikimedia commons"
+ },
  "smartphone-144805055": {
   "kind": "tech",
   "query": "smartphone",
@@ -2868,17 +2978,6 @@
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
   "source": "https://commons.wikimedia.org/wiki/File:5_different_Smartphones.jpg",
-  "provider": "wikimedia commons"
- },
- "smartphone-87338474": {
-  "kind": "tech",
-  "query": "smartphone",
-  "title": "Back of Galaxy Note 10, Galaxy Note 10+ and Galaxy Note 10 Lite 20200220a",
-  "creator": "Samsung Galaxy Note 10",
-  "license": "CC BY-SA 4.0",
-  "license_version": null,
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Back_of_Galaxy_Note_10,_Galaxy_Note_10%2B_and_Galaxy_Note_10_Lite_20200220a.jpg",
   "provider": "wikimedia commons"
  },
  "smartphone-90453007": {
@@ -2947,15 +3046,15 @@
   "source": "https://commons.wikimedia.org/wiki/File:Huawei_Smartwatch_Fit_2.jpg",
   "provider": "wikimedia commons"
  },
- "smartwatch-51058155": {
+ "smartwatch-51058096": {
   "kind": "tech",
   "query": "smartwatch",
-  "title": "Android Wear Smartwatch- LG G Watch (15051419582)",
+  "title": "Android Wear Smartwatch- LG G Watch (15051774155)",
   "creator": "Maurizio Pesce from Milan, Italia",
   "license": "CC BY 2.0",
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by/2.0",
-  "source": "https://commons.wikimedia.org/wiki/File:Android_Wear_Smartwatch-_LG_G_Watch_(15051419582).jpg",
+  "source": "https://commons.wikimedia.org/wiki/File:Android_Wear_Smartwatch-_LG_G_Watch_(15051774155).jpg",
   "provider": "wikimedia commons"
  },
  "smartwatch-89195051": {
@@ -3244,6 +3343,28 @@
   "source": "https://commons.wikimedia.org/wiki/File:Summer_Dress_LACMA_M.2007.211.740_(5_of_5).jpg",
   "provider": "wikimedia commons"
  },
+ "sunglasses-130406130": {
+  "kind": "bags and accessories",
+  "query": "sunglasses",
+  "title": "Mezmay, Sports sunglasses, Reflective mirrored sunglasses, Russia",
+  "creator": "Vyacheslav Argenberg",
+  "license": "CC BY 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Mezmay,_Sports_sunglasses,_Reflective_mirrored_sunglasses,_Russia.jpg",
+  "provider": "wikimedia commons"
+ },
+ "sunglasses-135129426": {
+  "kind": "bags and accessories",
+  "query": "sunglasses",
+  "title": "Sunglasses on ground outside Varnado Hall",
+  "creator": "Timothy Holdiness",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Sunglasses_on_ground_outside_Varnado_Hall.jpg",
+  "provider": "wikimedia commons"
+ },
  "sunglasses-137040103": {
   "kind": "bags and accessories",
   "query": "sunglasses",
@@ -3253,6 +3374,28 @@
   "license_version": null,
   "license_url": "https://creativecommons.org/licenses/by/2.0",
   "source": "https://commons.wikimedia.org/wiki/File:Women%27s_sunglasses_VERSACE_Violet_Gradient_(Creative_Commons).jpg",
+  "provider": "wikimedia commons"
+ },
+ "sunglasses-137149884": {
+  "kind": "bags and accessories",
+  "query": "sunglasses",
+  "title": "Sunglasses in Mexico",
+  "creator": "BORNTHISWAYMEDIA",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Sunglasses_in_Mexico.jpg",
+  "provider": "wikimedia commons"
+ },
+ "sunglasses-4469278": {
+  "kind": "bags and accessories",
+  "query": "sunglasses",
+  "title": "2008-07-27 Sunglasses",
+  "creator": "Ildar Sagdejev (Specious)",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:2008-07-27_Sunglasses.jpg",
   "provider": "wikimedia commons"
  },
  "sunglasses-89839469": {
@@ -3277,6 +3420,17 @@
   "source": "https://commons.wikimedia.org/wiki/File:A_Pink_Bunny_with_bunny_candy_t-shirt_in_the_fashion_shop.jpg",
   "provider": "wikimedia commons"
  },
+ "t-shirt-137772688": {
+  "kind": "clothes",
+  "query": "t-shirt",
+  "title": "T-shirt mockup",
+  "creator": "FFMAAS",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:T-shirt_mockup.jpg",
+  "provider": "wikimedia commons"
+ },
  "t-shirt-147521783": {
   "kind": "clothes",
   "query": "t-shirt",
@@ -3286,6 +3440,39 @@
   "license_version": null,
   "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
   "source": "https://commons.wikimedia.org/wiki/File:T-shirt_mocup.jpg",
+  "provider": "wikimedia commons"
+ },
+ "t-shirt-182297625": {
+  "kind": "clothes",
+  "query": "t-shirt",
+  "title": "Protest t-shirt against DRM on HTML",
+  "creator": "Mind Booster Noori",
+  "license": "CC0",
+  "license_version": null,
+  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+  "source": "https://commons.wikimedia.org/wiki/File:Protest_t-shirt_against_DRM_on_HTML.jpg",
+  "provider": "wikimedia commons"
+ },
+ "t-shirt-83076658": {
+  "kind": "clothes",
+  "query": "t-shirt",
+  "title": "Ambigram Ideal, polysymmetrical logo printed on a green T-shirt",
+  "creator": "Basile Morin",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Ambigram_Ideal,_polysymmetrical_logo_printed_on_a_green_T-shirt.jpg",
+  "provider": "wikimedia commons"
+ },
+ "t-shirt-83076660": {
+  "kind": "clothes",
+  "query": "t-shirt",
+  "title": "Ambigram Zen Yes text with meditation pictogram, embroidered on a blue T-shirt",
+  "creator": "Basile Morin",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Ambigram_Zen_Yes_text_with_meditation_pictogram,_embroidered_on_a_blue_T-shirt.jpg",
   "provider": "wikimedia commons"
  },
  "tablet-computer-10576885": {
@@ -3508,6 +3695,39 @@
   "source": "https://commons.wikimedia.org/wiki/File:Bag-Den.corp-deep_red_tote_bag,Kyoto.jpg",
   "provider": "wikimedia commons"
  },
+ "tote-bag-48758098": {
+  "kind": "bags and accessories",
+  "query": "tote bag",
+  "title": "Wikipedia tote bag",
+  "creator": "Wikiolo",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Wikipedia_tote_bag.JPG",
+  "provider": "wikimedia commons"
+ },
+ "tote-bag-58503525": {
+  "kind": "bags and accessories",
+  "query": "tote bag",
+  "title": "Gifts for Participant's for Wiki Mrebawani II - Tote bag",
+  "creator": "Danangtrihartanto",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Gifts_for_Participant%27s_for_Wiki_Mrebawani_II_-_Tote_bag.jpg",
+  "provider": "wikimedia commons"
+ },
+ "tote-bag-78465090": {
+  "kind": "bags and accessories",
+  "query": "tote bag",
+  "title": "Totebag",
+  "creator": "Duphyc",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Totebag.jpg",
+  "provider": "wikimedia commons"
+ },
  "tote-bag-85084275": {
   "kind": "bags and accessories",
   "query": "tote bag",
@@ -3717,16 +3937,16 @@
   "source": "https://commons.wikimedia.org/wiki/File:Earfun_wireless_black_headphones,_September_2024_14.jpg",
   "provider": "wikimedia commons"
  },
- "wireless-earbuds-760ec7c2": {
+ "wireless-earbuds-157367569": {
   "kind": "tech",
   "query": "wireless earbuds",
-  "title": "Fairphone+True+Wireless+Earbuds+with+Charging+Case",
-  "creator": "Fairphone",
-  "license": "by-sa",
-  "license_version": "2.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/2.0/",
-  "source": "https://www.flickr.com/photos/60295192@N08/51548822927",
-  "provider": "flickr"
+  "title": "Earfun wireless black headphones, September 2024 16",
+  "creator": "Chenspec",
+  "license": "CC BY-SA 4.0",
+  "license_version": null,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+  "source": "https://commons.wikimedia.org/wiki/File:Earfun_wireless_black_headphones,_September_2024_16.jpg",
+  "provider": "wikimedia commons"
  },
  "wireless-earbuds-9068fa9f": {
   "kind": "tech",
@@ -3827,17 +4047,6 @@
   "source": "https://commons.wikimedia.org/wiki/File:Cebu_Wooden_chair.jpg",
   "provider": "wikimedia commons"
  },
- "wool-sweater-139561247": {
-  "kind": "clothes",
-  "query": "wool sweater",
-  "title": "Dog sweater 2",
-  "creator": "Sciencia58",
-  "license": "CC0",
-  "license_version": null,
-  "license_url": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
-  "source": "https://commons.wikimedia.org/wiki/File:Dog_sweater_2.jpg",
-  "provider": "wikimedia commons"
- },
  "wool-sweater-157893610": {
   "kind": "clothes",
   "query": "wool sweater",
@@ -3858,6 +4067,17 @@
   "license_version": null,
   "license_url": null,
   "source": "https://commons.wikimedia.org/wiki/File:Doll%27s_Peach_Wool_Sweater_-_DPLA_-_4641f061daf2306840af6c6dea8bea6a_(page_2).jpg",
+  "provider": "wikimedia commons"
+ },
+ "wool-sweater-157925056": {
+  "kind": "clothes",
+  "query": "wool sweater",
+  "title": "Doll's Blue Knit Wool Sweater",
+  "creator": "",
+  "license": "Public domain",
+  "license_version": null,
+  "license_url": null,
+  "source": "https://commons.wikimedia.org/wiki/File:Doll%27s_Blue_Knit_Wool_Sweater_-_DPLA_-_697d209b6cff14e5662965cb83c43d60_(page_1).jpg",
   "provider": "wikimedia commons"
  },
  "wool-sweater-157925058": {

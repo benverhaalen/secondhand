@@ -5,9 +5,9 @@ import { calculate, sourcedLever, scoreCandidate, type MarketingInput, type Site
 import { memoryStore } from '../param/param.ts';
 
 function fixture(site: Site): MarketingInput {
-  return { item: { item_id: 'proof_item', kind: 'clothing', attrs: { brand: { value: 'Patagonia', source: 'label', confirmed: true } }, photos: [{ photo_id: 'front', score: 1 }] }, site, connected: true, category_allowed: true, fit: 'good', category_id: 'jacket', rows: [], objective: 'balanced', cover_style: 'flat_lay', position: [3, 8], floor_cents: 4000, midpoint_cents: 5000, adjusted_cents: [4500, 5000, 5500, 6000, 6500, 7000], weights: [1, 1, 1, 1, 1, 1], sales_12m: 20, sales_90d: 20,
-    curve: { p: (p, d) => 1 - Math.exp(-d / (p / 300)), t: (p, q) => -p / 300 * Math.log(1 - q) }, keep: p => p * .8, shipping_modes: ['buyer_pays'], ship_cents: 500,
-    comp_rows: [{ id: 'sale1', source: 'fixture:sold', at: '2026-11-14T00:00:00Z', price_cents: 5000 }], as_of: '2026-11-15T00:00:00Z', params: memoryStore(), log: { timed: (_n, fn) => fn() } };
+  return { item: { item_id: 'proof_item', kind: 'apparel', attrs: { type: { value: 'Jacket', source: 'label', confirmed: true }, size_label: { value: 'M', source: 'label', confirmed: true }, condition: { value: 'good', source: 'you_said', confirmed: true }, colour: { value: 'Blue', source: 'label', confirmed: true }, department: { value: 'unisex', source: 'label', confirmed: true }, brand: { value: 'Patagonia', source: 'label', confirmed: true } }, photos: [{ photo_id: 'front', score: 1 }] }, site, connected: true, category_allowed: true, fit: 'good', category_id: 'jacket', rows: [], objective: 'balanced', cover_style: 'flat_lay', position: [3, 8], floor_cents: 4000, midpoint_cents: 5000, adjusted_cents: [4500, 5000, 5500, 6000, 6500, 7000], weights: [1, 1, 1, 1, 1, 1], sales_12m: 20, sales_90d: 20,
+    curve: { p: (p, d) => 1 - Math.exp(-d / (p / 300)), t: (p, q) => -p / 300 * Math.log(1 - q) }, keep: p => Math.round(p * .8), shipping_modes: ['buyer_pays'], ship_cents: 500,
+    metric_basis: Object.fromEntries(['position','shipping','sale_curve','time','alternatives'].map(metric => [metric,Array.from({length:6},(_,i) => ({id:`${metric}:${i}`,source:`fixture:${metric}`,at:'2026-11-15T00:00:00Z'}))])), comp_rows: Array.from({length:6}, (_,i) => ({ id: `sale${i}`, source: 'fixture:sold', at: '2026-11-14T00:00:00Z', price_cents: 5000 })), as_of: '2026-11-15T00:00:00Z', params: memoryStore(), log: { timed: (_n, fn) => fn() } };
 }
 
 test('every registry lever has its source; a planted missing source fails', () => {
@@ -16,9 +16,9 @@ test('every registry lever has its source; a planted missing source fails', () =
   }
   assert.throws(() => sourcedLever('ebay', 'buyer_offer', [{ id: 'buyer_offer', source: '' }]), /missing source/);
 });
-test('below MIN_SALES no price or lever is used', () => {
+test('below the former sales minimum a named fallback plan still uses safe levers', () => {
   const x = fixture('ebay'); x.sales_12m = 5; x.sales_90d = 1;
-  const out = calculate(x); assert.equal(out.price, null); assert.equal(out.standing, null);
+  const out = calculate(x); assert.equal(out.verdict, 'list'); assert.equal(out.basis_level, 'variant'); assert.ok(out.price); assert.ok(out.standing);
 });
 test('all five plans respect floor and site restrictions and cite reproducible inputs', () => {
   for (const site of Object.keys(levers.sites) as Site[]) {

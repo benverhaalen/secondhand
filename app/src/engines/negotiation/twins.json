@@ -1,0 +1,15 @@
+{
+  "logistic": [
+    {"terms":{},"weights":[0],"row":{"site":"ebay","category":"jacket","features":[1]},"expected":0.5},
+    {"terms":{"global":1,"site:ebay":-0.5,"category:jacket":0.25,"cell:ebay:jacket":0.25},"weights":[-1],"row":{"site":"ebay","category":"jacket","features":[1]},"expected":0.5},
+    {"terms":{"global":1000},"weights":[],"row":{"site":"ebay","category":"jacket","features":[]},"expected":0.98},
+    {"terms":{"global":-1000},"weights":[],"row":{"site":"ebay","category":"jacket","features":[]},"expected":0.02},
+    {"terms":{"global":1.0986122886681098},"weights":[],"row":{"site":"ebay","category":"jacket","features":[]},"expected":0.75}
+  ],
+  "decay": [{"days":0,"expected":1},{"days":30,"expected":0.5},{"days":60,"expected":0.25}],
+  "bootstrap": [
+    {"champion":[100,100],"challenger":[101,102],"draws":[[0,0],[0.9,0.9],[0,0.9]],"expected":{"mean_gain":2,"lower_95":1,"n":2}},
+    {"champion":[100,100],"challenger":[99,100],"draws":[[0,0.9],[0.9,0.9],[0,0]],"expected":{"mean_gain":0,"lower_95":-1,"n":2}},
+    {"champion":[100,100],"challenger":[90,130],"draws":[[0,0],[0.9,0.9]],"expected":{"mean_gain":10,"lower_95":-9,"n":2}}
+  ]
+}

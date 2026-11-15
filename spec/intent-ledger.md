@@ -15,7 +15,7 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | # | Ask | Why it's a gap | Proposed |
 |---|---|---|---|
 | G4 | Sign in with Apple, Google or email as the first onboarding step ([02:46](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)) | Specced in [pages §6.1](pages.md#61-first-launch-onboarding); `onboarding.tsx` starts at connecting sites | Built (demo data): sign-in is step 1 in onboarding.tsx (app/src/you/sign-in.tsx); Apple and Google are demo stubs, not yet wired to /v1/auth |
-| G5 | shadcn and the Vercel AI SDK "in here somehow" ([22:23](../product/words.md#2026-11-14-the-ui-loop)) | Named in docs only; the Expo app uses neither and no one decided where they fit | Website thread, for the web build |
+| G5 | shadcn and the Vercel AI SDK "in here somehow" ([22:23](../product/words.md#2026-11-14-the-ui-loop)) | Decided for the website (agent decision, 08:55): the site is plain HTML on the brand tokens and keeps no shadcn components, because their own grays, radii and Tailwind defaults are what brand checks B5 and B7 reject, and the site has three controls (a menu sheet, the FAQ list, one input). The AI SDK fits one place: the home page's "Paste a link or say what it is" check, which would stream its answer from a server route through AI SDK UI. That box is a mock today, so nothing is added until the site has a server. Ben asked where they would be most useful; this answers it for the website only | The app's answer stays open |
 | G6 | "is there any downside to doing it on the dev acct?" (07:51) | No recorded answer | Pitch thread |
 | G7 | "i think stagehand is better than playwright right?" (04:11) | No recorded answer | Done (agent decision): Playwright for our own app's tests, because they must be exact, repeatable and free to run; Stagehand's model-driven steps fit sites we do not control, which is the harness (browser-use with cached replays, [ai-harness-from-repos](../research/cross-cutting/ben/ai-harness-from-repos.md)). Written in [app/e2e/README.md](../app/e2e/README.md) |
 | G8 | Gradients whose intensity rises as a deadline nears ([03:41](../product/words.md#2026-11-15-hot-is-red-like-fire-no-glow-state-gradients-with-the-multicolor-intensity-as-deadlines-arise-a-brand-motion-constitution)) | Built: `strength(hours)` in `app/src/ui/paint.ts` mixes the lead card's gradient toward its ground by (1 − u) × 58%, u = ln(48 / t) / ln(96): palest two days out, full in the last half hour, repainted once a minute ([brand constitution, State gradients rule 1](../brand/constitution.md)); DecisionCard passes its deadline's hours | Done |
@@ -158,6 +158,9 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | 05:32 | The first scroll, demos of the real app, impressive over housekeeping | Planned | [web W2 to W4](../product/constitutions/web.md) |
 | 05:41 | Mobile done properly; "App Store coming soon" | Planned | [web W10](../product/constitutions/web.md) |
 | 04:32 | Where the buy/sell toggle lives; people in scene photos | Ben | cards in the website thread |
+| 08:31 | The hero as close to the reference: pills and layout, no black top bar, a see-through field over the wall that turns color, four-finger-03 hands beside both wordmarks | Assigned | website thread; [the hero](../brand/explore/web-home/hero/index.html) ([words](../product/words.md#2026-11-15-the-hero-from-the-reference-four-finger-hands-stop-motion-sprites-and-a-lean-site-workflow)) |
+| 08:31 | Stop-motion hand sprites by Codex: the dap, the wave, a pull | Assigned | website thread; [sprites](../brand/explore/web-home/sprites/) |
+| 08:31 | The site's workflow made lean like the app's | Done | [web-home README](../brand/explore/web-home/README.md); `web-boards.yml` |
 
 ## The pitch and the demo
 
@@ -178,6 +181,7 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | 06:59 | Ben's calls on J46 to J52 | Ben | [open-questions.md](open-questions.md) |
 | 07:15 | Proof without sales | Done | [proof-without-sales.md](../product/proof-without-sales.md) |
 | 07:53 | Every AI feature, how we did it, how to prove it | Done | [features-proof.md](../product/features-proof.md) |
+| 08:32 | Being in Depop's partner API goes in the ROI case as a proposal, never as a claim | Planned | pitch thread ([words](../product/words.md#2026-11-15-the-depop-partner-api-is-a-proposal-never-a-claim)); the site makes no such claim |
 | 08:09 | Quantify every feature; a why for each rule; costs, ROI, referral revenue; Databricks explained | Assigned | thread "Quantify every feature with why and ROI"; rules and why: [constitutions](../product/constitutions/README.md) |
 | 08:16 | Every plan written up the chain; this ledger; how close the UI is | Done | this file and [constitutions](../product/constitutions/README.md) |
 
@@ -194,3 +198,15 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | 07:18 | Every decision to the project chat; merge to main | Done (standing) | project instructions |
 | 08:18 | Save Opus: fewer steps and tokens in the build | Ben | the coordinator's four cuts are waiting on his yes |
 | 08:43 | Research runs on Codex from now on, with nothing lost or redone | Assigned | Each thread hands off its remaining research at its next breakpoint ([words](../product/words.md#2026-11-15-research-moves-to-codex)) |
+
+## Constitution reasons still needed
+
+These rules are preserved. Their missing reasons are open questions, not evidence that the choices are wrong. Asked here following [Ben's 08:59 instruction](../product/words.md#2026-11-15-every-why-explained-numbers-that-help-and-a-statistic-we-can-defend).
+
+| Rule | Question | Status | Evidence |
+|---|---|---|---|
+| D2 | Why exactly three clean rehearsals before a beat runs live? What failure or readiness decision does that count resolve? | Why not yet stated; asked in this ledger | [Demo rules](../product/constitutions/demo.md#rules); rehearsals expose failures, but the exact count has no stated basis |
+| W1 | Why no period, the second word in the wordmark face, and hands sized to the wordmark? What does each choice help a visitor see or do? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); the cited instructions settle the choices, not their individual causes |
+| W8 | Why Cleo's spatial layout, shorter, and dark by default for this visitor and story? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); the cited preferences do not state those causes |
+| W10 | Why should the store logos be rounded like the app on this surface? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); responsive access has a reason, this exact visual choice does not |
+| W13 | Why this OpenRouter image route and the exclusion of GPT image for the site's non-product imagery? | Why not yet stated; asked in this ledger | [Website rules](../product/constitutions/web.md#rules); the instruction specifies the route without its reason |

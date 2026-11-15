@@ -969,18 +969,20 @@
      {
       "way": "lookup",
       "min_conf": 0.9
+     },
+     {
+      "way": "asked"
      }
     ],
     "confirm": "auto",
     "required": [
      "depop"
     ],
-    "recommended": [
-     "ebay",
-     "poshmark",
-     "mercari",
-     "facebook"
-    ]
+    "recommended": [],
+    "ask": {
+     "kind": "pick_one",
+     "words": "Brand?"
+    }
    },
    {
     "field": "material",
@@ -1914,5 +1916,21 @@
     "note": "ours: a locked phone cannot be resold"
    }
   ]
+ },
+ "steps": {
+  "group": {
+   "step": "group",
+   "kind": "instant",
+   "role": "group",
+   "needs_lidar": false,
+   "seconds": 5
+  },
+  "front_still": {
+   "step": "front",
+   "kind": "series",
+   "role": "front",
+   "needs_lidar": false,
+   "seconds": 5
+  }
  }
 }

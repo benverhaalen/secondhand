@@ -1,6 +1,6 @@
 # How we price, what it reads, and where "within 20%" and "8 in 10" come from
 
-Written 2026-11-15 for Ben's 08:54 questions. Every statement is marked: *observed* (read in the code or the spec at the link, or run), *asserted* (a source says it without showing it), *inferred* (reasoning). The depreciation research is running through Codex and lands in `research/price/ben/depreciation-and-market-proxies.md`.
+Written 2026-11-15 for Ben's 08:54 questions. Every statement is marked: *observed* (read in the code or the spec at the link, or run), *asserted* (a source says it without showing it), *inferred* (reasoning). The depreciation research ran through Codex: [depreciation-and-market-proxies.md](../../../research/price/ben/depreciation-and-market-proxies.md). Its finding: no published coefficient can be plugged in; each proxy has to be measured on our own rows, and the runner now keeps `retail_cents` and `released_at` so it can be.
 
 ## 1. The two numbers: 20 and 80, and where "7 in 10" came from
 
@@ -42,11 +42,11 @@ There are two engines. The one the app serves is the comps engine; the Python mo
 | Retail ([M2](../../determinations/market-insight.md#m2-retail-price-and-release-date)) | Launch retail and price new today, by identifier | Rechecked monthly | Designed |
 | The `comp` table on Databricks ([fit.py](../../../jobs/valuation/fit.py)) | Every stored sold and asking comp with product, brand, category, size, era, site | Nightly | The nightly fit reads it |
 
-**The honest gap** (*observed*): `POST /v1/valuations` ([valuations.ts](../../../app/src/edge/api/valuations.ts)) calls the engine with `warm_comps: []` and `sources: []`, so the app today shows a fixed family band from an example item, not live comps. Wiring the Mercari and Poshmark sold searches into `sources` is what turns the engine on.
+**The gap, and where it stands** (*observed*): `POST /v1/valuations` ([valuations.ts](../../../app/src/edge/api/valuations.ts)) called the engine with no comps. It now passes Mercari and Poshmark sold-search sources ([sold.ts](../../../app/src/engines/valuation/sold.ts)), but the runtime harness has no route for either site yet, so they add nothing and the app still shows the family band. Registering the two adapters, plus condition, size and a sale date on search rows, is asked of the harness side in [packet 69](../../../.agents/team/packets/price/69-live-sold-comps-into-the-valuation.md).
 
 ## 4. Is there a proxy for depreciation?
 
-Yes, five, and four are in the design (*observed* in money.md; effect sizes come from the Codex note):
+Yes, five, and four are in the design (*observed* in money.md; effect sizes and their limits are in the Codex note):
 
 1. **Condition grade** (D2): the biggest one for used goods. Priors from new-with-tags 1.35 to fair 0.75, replaced by paired sales of the same product in two conditions within 60 days, then by the hedonic fit.
 2. **Time**: comps decay with a 90-day half-life (30 for fast kinds), and D3 moves old sales to today's level with a category index. For hype goods the market itself depreciates the product after release; the StockX run showed this as January to February prices falling 10 to 16% below the model's single trend before the product anchor fixed it (*observed*, [plan.md §9](plan.md)).

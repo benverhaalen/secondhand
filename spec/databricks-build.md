@@ -18,6 +18,18 @@ Nate's workspace (`--profile Nate`, id 7474651613371474) is Free Edition (*obser
 
 Nothing on this page creates a paid resource.
 
+Measured on this workspace, 2026-11-15 (*observed*):
+
+| Feature | Works | How it was checked |
+|---|---|---|
+| ABAC: governed tags (tag policies) and catalog row filter and column mask policies | yes; a new governed tag takes about a minute before `CREATE POLICY` accepts it | a probe policy masked `alice` as `a***`; now live as `sh_owner_only`, `sh_mask_handle` |
+| Metric views, including a guarded measure (`CASE WHEN COUNT(1) >= 30 THEN … END`) | yes, created through the Statements API; the CLI's `aitools tools query` drops indented YAML lines, so it cannot create one | probe view over `market.comp` returned per-source medians |
+| AI functions | yes: `ai_classify` answered in 3.7 s | one call on a StockX title |
+| System tables `system.access.table_lineage`, `system.access.audit` | readable | the lineage and audit views return rows |
+| Serverless `spark_python_task` | runs the file with no `__file__`; entrypoints take `--root ${workspace.file_path}` | three jobs failed with NameError, then passed |
+| SQL file tasks | split on every `;`, so a `BEGIN … END` block fails; compound SQL runs from a Python task | the data migration failed, then passed as a Python task |
+| SQL warehouse | the existing Serverless Starter Warehouse, auto-stop 10 minutes | `databricks warehouses get a2d6ba8cc4538aca` |
+
 ## 2. Audit, 2026-11-15
 
 | Piece | State | Evidence |

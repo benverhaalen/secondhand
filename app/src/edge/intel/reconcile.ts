@@ -3,6 +3,7 @@
 // Cross-site collapse follows spec/engines/identity.md C, including its stock-photo guard.
 import { jevAsk, validateChoice, type JevQuestions, type JevResult, type Llm } from './jev.ts';
 import type { Log } from '../../../../log/index.js';
+import { gtin14 } from '../../engines/trust/recall.ts';
 
 export const MATCH_LABELS = ['exact', 'likely_same_model', 'same_family_other_variant', 'comparable', 'unresolved'] as const;
 export type MatchLabel = typeof MATCH_LABELS[number];
@@ -24,8 +25,15 @@ export interface Judged { id: string; match: MatchLabel; keep: KeepLabel; in_bas
 
 type Ask = (state: object, questions: JevQuestions) => Promise<JevResult>;
 
-const idClash = (a?: Ids, b?: Ids) => (['gtin', 'mpn'] as const).some(k => a?.[k] && b?.[k] && a[k] !== b[k]);
-const idAgree = (a?: Ids, b?: Ids) => (['gtin', 'mpn', 'model'] as const).some(k => a?.[k] && b?.[k] && a[k] === b[k]);
+const productCode = (ids: Ids | undefined, key: keyof Ids) => key === 'gtin' ? gtin14(ids?.gtin) : ids?.[key];
+const idClash = (a?: Ids, b?: Ids) => (['gtin', 'mpn'] as const).some(k => {
+  const left = productCode(a, k), right = productCode(b, k);
+  return left && right && left !== right;
+});
+const idAgree = (a?: Ids, b?: Ids) => (['gtin', 'mpn', 'model'] as const).some(k => {
+  const left = productCode(a, k), right = productCode(b, k);
+  return left && right && left === right;
+});
 
 // Code first: shared identifiers, then the score at either end. Returns null for the band Jev decides.
 function byCode(t: Target, r: Result): Judged | null {
