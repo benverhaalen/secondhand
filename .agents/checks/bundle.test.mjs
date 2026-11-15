@@ -1,14 +1,19 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import { bundle } from './bundle.mjs';
 
 const route = 'app/src/app/v1/index+api.ts';
-function run(files) {
+function run(files, compiler = true) {
   const root = mkdtempSync(join(tmpdir(), 'bundle-'));
   try {
+    if (compiler) {
+      mkdirSync(join(root, 'app'), { recursive: true });
+      symlinkSync(fileURLToPath(new URL('../../app/node_modules', import.meta.url)), join(root, 'app/node_modules'), 'dir');
+    }
     for (const [path, text] of Object.entries(files)) { mkdirSync(dirname(join(root, path)), { recursive: true }); writeFileSync(join(root, path), text); }
     return bundle(root, { files: Object.keys(files) });
   } finally { rmSync(root, { recursive: true, force: true }); }
@@ -43,4 +48,46 @@ test('terminates cycles and ignores unreachable files', () => {
 test('ignores awaits in functions and arrows with TypeScript return annotations', () => {
   const out = findings({ [route]: 'async function f(): Promise<void> { await load(); }\nconst g = async (): Promise<void> => { await load(); };\nclass C { async m(): Promise<void> { await load(); } }' });
   assert.equal(out, '');
+});
+
+test('ignores await inside an async function with an object return type', () => {
+  assert.equal(findings({ [route]: 'async function getJson(): Promise<{ ok: true; body: unknown } | { ok: false }> { await load(); return { ok: false }; }' }), '');
+});
+test('ignores await inside a class method with a typed object parameter', () => {
+  assert.equal(findings({ [route]: 'class Adapter { async getJson(options: { url: string }) { await load(); } }' }), '');
+});
+test('finds real top-level await after a function with an object return type', () => {
+  const out = run({ [route]: 'async function getJson(): Promise<{ ok: true }> { await load(); return { ok: true }; }\nawait load();' });
+  assert.equal(out.length, 1);
+  assert.match(out[0].where, /index\+api.ts:2$/);
+  assert.match(out[0].msg, /top-level await/);
+});
+test('finds top-level for await but ignores it inside functions', () => {
+  const out = run({ [route]: 'for await (const item of items) {}\nasync function load() { for await (const item of items) {} }' });
+  assert.equal(out.length, 1);
+  assert.match(out[0].where, /index\+api.ts:1$/);
+  assert.match(out[0].msg, /top-level await/);
+});
+test('reports one error when TypeScript cannot be loaded', () => {
+  const out = run({ [route]: 'import.meta; await load();' }, false);
+  assert.equal(out.length, 1);
+  assert.equal(out[0].level, 'error');
+  assert.match(out[0].msg, /[Tt]ype[Ss]cript.*load|load.*[Tt]ype[Ss]cript/);
+});
+test('finds property readFileSync calls and ignores method declarations and strings', () => {
+  const out = run({ [route]: "const object = { readFileSync() {} };\nfs.readFileSync('data');\nconst text = 'readFileSync()';\nfs.readFileSync('data'); // bundle-safe: data dir" });
+  assert.equal(out.length, 1);
+  assert.match(out[0].where, /index\+api.ts:2$/);
+  assert.match(out[0].msg, /readFileSync/);
+});
+test('finds expressions inside template substitutions', () => {
+  const out = findings({ [route]: 'const text = `value: ${import.meta.url} ${await load()} ${fs.readFileSync("data")}`;' });
+  assert.match(out, /import\.meta/);
+  assert.match(out, /top-level await/);
+  assert.match(out, /readFileSync/);
+});
+test('follows imports with attributes and ignores import text in template strings', () => {
+  const out = findings({ [route]: 'import data from "./data" with { type: "json" }; const text = `import "./lost"`;', 'app/src/app/v1/data.js': 'import.meta;', 'app/src/app/v1/lost.ts': 'import.meta;' });
+  assert.match(out, /data\.js/);
+  assert.doesNotMatch(out, /lost\.ts/);
 });
