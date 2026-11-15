@@ -1,4 +1,4 @@
-import { test } from 'node:test';
+import { beforeEach, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createHarness, SITES } from '../../harness/protocol.ts';
@@ -9,6 +9,9 @@ import type { FetchOpts, PageResult } from '../fetch.ts';
 import { readPage, searchUrl, BASE } from './readers.ts';
 import { searchAll as runSearchAll, searchSite, searchSource, type SearchOpts } from './search.ts';
 import { SOURCES } from './sources.ts';
+import { _reset } from '../run.ts';
+
+beforeEach(() => _reset());
 
 const searchAll = (query: string, opts: SearchOpts = {}) => runSearchAll(query, { sources: SOURCES.filter(s => s.id !== 'dupe'), ...opts });
 
@@ -164,7 +167,7 @@ test('searchAll with search+sold never fetches Depop pages and reports its unava
   const r = await searchAll('levi 501', { sites: ['depop', 'poshmark', 'ebay'], kinds: ['search', 'sold'], fetchPage: async u => { urls.push(u); return page(fx('poshmark.html')); } });
   assert.deepEqual(urls.sort(), [searchUrl('poshmark', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'sold')].sort());
   assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'search')!.error_code, 'no_route');
-  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'sold')!.outcome, 'needs_account');
+  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'sold')!.error_code, 'no_route');
   assert.equal(r.searched.find(s => s.site === 'poshmark' && s.kind === 'sold')!.outcome, 'hit');
   const d = r.searched.find(s => s.site === 'depop' && s.kind === 'sold')!;
   assert.equal(d.outcome, 'failed');
