@@ -142,12 +142,15 @@ export function DecisionCard(p: DecisionCardProps) {
   const hours = p.due == null ? null : (p.due - now) / 3600000;
   const working = status === 'working';
   const fact: Fact = failed ? { label: p.step ?? 'This did not go through' } : p.fact;
+  // C4's rule for when: the lead decision and any whose clock is under 60 minutes take the black pill; every other one,
+  // failed or not, leads with the light fill, so a feed of ten offers is not ten black pills.
+  const act = p.lead || (hours != null && hours < 1) ? 'primary' : 'second';
   const card = (
     <Press id={`${p.id}-open`} label={p.title} onPress={p.onOpen} round={false}>
       <Surface kind={gradient ? 'field' : 'card'} gradient={gradient} hours={hours} part="card-decision" box={{ height: size.cardDecisionH, padding: size.cardPad, gap: space.s3 }}>
         <Body photo={p.photo} title={p.title} site={p.site} tag={failed ? 'failed' : p.kind} word={failed ? TAGS.failed.word : p.word} fact={fact} due={failed ? undefined : p.due} now={now} />
         <View style={{ flexDirection: 'row', height: size.pillCardH, gap: space.s2 }}>
-          <Pill id={p.primary.id} label={failed ? 'Retry' : p.primary.label} icon={failed ? 'refresh' : undefined} state={working ? 'working' : 'idle'} step={p.step} onPress={p.primary.onPress} />
+          <Pill id={p.primary.id} kind={act} label={failed ? 'Retry' : p.primary.label} icon={failed ? 'refresh' : undefined} state={working ? 'working' : 'idle'} step={p.step} onPress={p.primary.onPress} />
           {p.second ? <Pill id={p.second.id} kind="second" label={p.second.label} state={working ? 'disabled' : 'idle'} onPress={p.second.onPress} /> : null}
           {p.more ? <IconButton id={p.more.id} icon="more-horizontal" label={p.more.label} onPress={p.more.onPress} /> : null}
         </View>
