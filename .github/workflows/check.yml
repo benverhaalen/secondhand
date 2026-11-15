@@ -30,6 +30,15 @@ jobs:
       - run: node .agents/check.mjs
         env:
           CHECK_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
+      # Every check and test file is a timing line in logs/check-*.jsonl. Keeping it per run lets node log/climb.mjs rank what makes CI slow over time.
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: check-timings
+          path: logs/check-*.jsonl
+          retention-days: 30
+          if-no-files-found: ignore
+
   # Every app screen on its real web render: the brand checks on each route, then the behavior tests (app/e2e/README.md).
   app:
     runs-on: ubuntu-latest

@@ -1,0 +1,10 @@
+{
+  "provenance": "Synthetic transcription of identity worked example. M1 computes .836; the example's .81 describes a mapped learned W, not the prior.",
+  "comp": {"id": "cmp_jacket", "brand": "Patagonia", "model": "Nano Puff Hoody", "colour": "black", "size": "L", "kind": "apparel"},
+  "product": {"id": "pr_jacket", "brand": "Patagonia", "model": "Nano Puff Hoody", "colour": "black", "kind": "apparel"},
+  "capture": {"q_kind": 0.60, "rungs": [{"rung": 2, "product_id": "pr_black", "similarity": 0.82}, {"rung": 3, "product_id": "pr_black", "similarity": 0.91}, {"rung": 3, "product_id": "pr_blue", "similarity": 0.89}]},
+  "cross_posts": [
+    {"id": "cmp_depop", "site": "depop", "price_cents": 8000, "phash": [0], "seller_ref_hash": "hash_jacket", "title": "Nano Puff Hoody black", "listed_at_source": "2026-11-01T00:00:00Z"},
+    {"id": "cmp_poshmark", "site": "poshmark", "price_cents": 7500, "phash": [7], "seller_ref_hash": "hash_jacket", "title": "Nano Puff Hoody black", "listed_at_source": "2026-11-05T00:00:00Z"}
+  ]
+}

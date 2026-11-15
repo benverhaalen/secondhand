@@ -25,6 +25,7 @@ export type SiteProfile = {
   clocks: Record<string, Fact>;                              // the spec/sites.mjs facts for this site, with their marks
   storefront: { shows: StorefrontField[]; mark: Fact['mark']; src: string };
   headed: boolean;                                           // the site refuses a headless browser: run a real window (a virtual display on a server)
+  home: string; login: string | null;                        // the site's front page and its own sign-in page (null: OAuth, not a page we host)
 };
 
 const P = 'research/list/ben/platforms/';
@@ -65,9 +66,16 @@ function clocksFor(site: Site): Record<string, Fact> {
 // Observed 2026-11-15 (research/cross-cutting/nate/runs/bp-1.md): headless Chrome got 403 from Depop ("Forbidden") and a challenge
 // page from Mercari ("Just a moment..."); the same Chrome headed got each site's real search page with no challenge.
 const HEADED: Site[] = ['depop', 'mercari'];
+// Each site's front page and its own login page, asserted (the public URLs as of 2026-11-15); eBay links by OAuth instead.
+const URLS: Record<Site, { home: string; login: string | null }> = {
+  ebay: { home: 'https://www.ebay.com', login: null }, facebook: { home: 'https://www.facebook.com/marketplace', login: 'https://www.facebook.com/login' },
+  depop: { home: 'https://www.depop.com', login: 'https://www.depop.com/login/' }, poshmark: { home: 'https://poshmark.com', login: 'https://poshmark.com/login' },
+  mercari: { home: 'https://www.mercari.com', login: 'https://www.mercari.com/login/' }, offerup: { home: 'https://offerup.com', login: 'https://offerup.com/login' },
+  grailed: { home: 'https://www.grailed.com', login: 'https://www.grailed.com/users/sign_up' },
+};
 
 export const PROFILES: Record<Site, SiteProfile> = Object.fromEntries(SITES.map(site => [site, {
-  site, ...BASE[site], headed: HEADED.includes(site), listing: FIT.platforms[site === 'facebook' ? 'facebook' : site] ?? null, clocks: clocksFor(site),
+  site, ...BASE[site], headed: HEADED.includes(site), ...URLS[site], listing: FIT.platforms[site === 'facebook' ? 'facebook' : site] ?? null, clocks: clocksFor(site),
 }])) as Record<Site, SiteProfile>;
 
 export const hasVerb = (site: Site, verb: Verb): true | Absent => PROFILES[site]?.verbs[verb] ?? { absent: `${verb} is not a verb on ${site}` };

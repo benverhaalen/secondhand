@@ -1,0 +1,2802 @@
+[
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_0_a",
+      "train_pair_0_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_0",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_1_a",
+      "train_pair_1_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_1",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_2_a",
+      "train_pair_2_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_2",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_3_a",
+      "train_pair_3_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_3",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_4_a",
+      "train_pair_4_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_4",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_5_a",
+      "train_pair_5_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_5",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_6_a",
+      "train_pair_6_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_6",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_7_a",
+      "train_pair_7_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_7",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_8_a",
+      "train_pair_8_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_8",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_9_a",
+      "train_pair_9_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_9",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_10_a",
+      "train_pair_10_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_10",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_11_a",
+      "train_pair_11_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_11",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_12_a",
+      "train_pair_12_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_12",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_13_a",
+      "train_pair_13_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_13",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_14_a",
+      "train_pair_14_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_14",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_15_a",
+      "train_pair_15_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_15",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_16_a",
+      "train_pair_16_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_16",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_17_a",
+      "train_pair_17_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_17",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_18_a",
+      "train_pair_18_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_18",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_19_a",
+      "train_pair_19_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_19",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_20_a",
+      "train_pair_20_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_20",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_21_a",
+      "train_pair_21_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_21",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_22_a",
+      "train_pair_22_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_22",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_23_a",
+      "train_pair_23_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_23",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_24_a",
+      "train_pair_24_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_24",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_25_a",
+      "train_pair_25_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_25",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_26_a",
+      "train_pair_26_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_26",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_27_a",
+      "train_pair_27_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_27",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_28_a",
+      "train_pair_28_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_28",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_29_a",
+      "train_pair_29_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_29",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_30_a",
+      "train_pair_30_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_30",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_31_a",
+      "train_pair_31_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_31",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_32_a",
+      "train_pair_32_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_32",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_33_a",
+      "train_pair_33_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_33",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_34_a",
+      "train_pair_34_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_34",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_35_a",
+      "train_pair_35_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_35",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_36_a",
+      "train_pair_36_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_36",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_37_a",
+      "train_pair_37_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_37",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_38_a",
+      "train_pair_38_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_38",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_39_a",
+      "train_pair_39_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_39",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_40_a",
+      "train_pair_40_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_40",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_41_a",
+      "train_pair_41_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_41",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_42_a",
+      "train_pair_42_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_42",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_43_a",
+      "train_pair_43_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_43",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_44_a",
+      "train_pair_44_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_44",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_45_a",
+      "train_pair_45_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_45",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_46_a",
+      "train_pair_46_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_46",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_47_a",
+      "train_pair_47_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_47",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_48_a",
+      "train_pair_48_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_48",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_49_a",
+      "train_pair_49_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_49",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_50_a",
+      "train_pair_50_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_50",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_51_a",
+      "train_pair_51_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_51",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_52_a",
+      "train_pair_52_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_52",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_53_a",
+      "train_pair_53_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_53",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_54_a",
+      "train_pair_54_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_54",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_55_a",
+      "train_pair_55_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_55",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_56_a",
+      "train_pair_56_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_56",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_57_a",
+      "train_pair_57_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_57",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_58_a",
+      "train_pair_58_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_58",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_59_a",
+      "train_pair_59_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_59",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_60_a",
+      "train_pair_60_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_60",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_61_a",
+      "train_pair_61_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_61",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_62_a",
+      "train_pair_62_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_62",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_63_a",
+      "train_pair_63_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_63",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_64_a",
+      "train_pair_64_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_64",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_65_a",
+      "train_pair_65_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_65",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_66_a",
+      "train_pair_66_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_66",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_67_a",
+      "train_pair_67_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_67",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_68_a",
+      "train_pair_68_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_68",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_69_a",
+      "train_pair_69_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_69",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_70_a",
+      "train_pair_70_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_70",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_71_a",
+      "train_pair_71_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_71",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_72_a",
+      "train_pair_72_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_72",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_73_a",
+      "train_pair_73_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_73",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_74_a",
+      "train_pair_74_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_74",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_75_a",
+      "train_pair_75_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_75",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_76_a",
+      "train_pair_76_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_76",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_77_a",
+      "train_pair_77_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_77",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_78_a",
+      "train_pair_78_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_78",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_79_a",
+      "train_pair_79_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_79",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_80_a",
+      "train_pair_80_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_80",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_81_a",
+      "train_pair_81_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_81",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_82_a",
+      "train_pair_82_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_82",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_83_a",
+      "train_pair_83_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_83",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_84_a",
+      "train_pair_84_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_84",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_85_a",
+      "train_pair_85_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_85",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_86_a",
+      "train_pair_86_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_86",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_87_a",
+      "train_pair_87_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_87",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_88_a",
+      "train_pair_88_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_88",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_89_a",
+      "train_pair_89_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_89",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_90_a",
+      "train_pair_90_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_90",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_91_a",
+      "train_pair_91_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_91",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_92_a",
+      "train_pair_92_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_92",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_93_a",
+      "train_pair_93_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_93",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_94_a",
+      "train_pair_94_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_94",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_95_a",
+      "train_pair_95_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_95",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_96_a",
+      "train_pair_96_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_96",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_97_a",
+      "train_pair_97_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_97",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_98_a",
+      "train_pair_98_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_98",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_99_a",
+      "train_pair_99_b"
+    ],
+    "match": true,
+    "text_sim": 1,
+    "id": "train_pair_99",
+    "fields": {
+      "mpn": true
+    },
+    "image_sim": 1
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_100_a",
+      "train_pair_100_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_100",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_101_a",
+      "train_pair_101_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_101",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_102_a",
+      "train_pair_102_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_102",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_103_a",
+      "train_pair_103_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_103",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_104_a",
+      "train_pair_104_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_104",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_105_a",
+      "train_pair_105_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_105",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_106_a",
+      "train_pair_106_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_106",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_107_a",
+      "train_pair_107_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_107",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_108_a",
+      "train_pair_108_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_108",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_109_a",
+      "train_pair_109_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_109",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_110_a",
+      "train_pair_110_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_110",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_111_a",
+      "train_pair_111_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_111",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_112_a",
+      "train_pair_112_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_112",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_113_a",
+      "train_pair_113_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_113",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_114_a",
+      "train_pair_114_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_114",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_115_a",
+      "train_pair_115_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_115",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_116_a",
+      "train_pair_116_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_116",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_117_a",
+      "train_pair_117_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_117",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_118_a",
+      "train_pair_118_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_118",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_119_a",
+      "train_pair_119_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_119",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_120_a",
+      "train_pair_120_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_120",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_121_a",
+      "train_pair_121_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_121",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_122_a",
+      "train_pair_122_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_122",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_123_a",
+      "train_pair_123_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_123",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_124_a",
+      "train_pair_124_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_124",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_125_a",
+      "train_pair_125_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_125",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_126_a",
+      "train_pair_126_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_126",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_127_a",
+      "train_pair_127_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_127",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_128_a",
+      "train_pair_128_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_128",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_129_a",
+      "train_pair_129_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_129",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_130_a",
+      "train_pair_130_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_130",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_131_a",
+      "train_pair_131_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_131",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_132_a",
+      "train_pair_132_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_132",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_133_a",
+      "train_pair_133_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_133",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_134_a",
+      "train_pair_134_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_134",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_135_a",
+      "train_pair_135_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_135",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_136_a",
+      "train_pair_136_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_136",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_137_a",
+      "train_pair_137_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_137",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_138_a",
+      "train_pair_138_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_138",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_139_a",
+      "train_pair_139_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_139",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_140_a",
+      "train_pair_140_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_140",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_141_a",
+      "train_pair_141_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_141",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_142_a",
+      "train_pair_142_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_142",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_143_a",
+      "train_pair_143_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_143",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_144_a",
+      "train_pair_144_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_144",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_145_a",
+      "train_pair_145_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_145",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_146_a",
+      "train_pair_146_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_146",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_147_a",
+      "train_pair_147_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_147",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_148_a",
+      "train_pair_148_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_148",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_149_a",
+      "train_pair_149_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_149",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_150_a",
+      "train_pair_150_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_150",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_151_a",
+      "train_pair_151_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_151",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_152_a",
+      "train_pair_152_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_152",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_153_a",
+      "train_pair_153_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_153",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_154_a",
+      "train_pair_154_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_154",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_155_a",
+      "train_pair_155_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_155",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_156_a",
+      "train_pair_156_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_156",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_157_a",
+      "train_pair_157_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_157",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_158_a",
+      "train_pair_158_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_158",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_159_a",
+      "train_pair_159_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_159",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_160_a",
+      "train_pair_160_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_160",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_161_a",
+      "train_pair_161_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_161",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_162_a",
+      "train_pair_162_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_162",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_163_a",
+      "train_pair_163_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_163",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_164_a",
+      "train_pair_164_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_164",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_165_a",
+      "train_pair_165_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_165",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_166_a",
+      "train_pair_166_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_166",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_167_a",
+      "train_pair_167_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_167",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_168_a",
+      "train_pair_168_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_168",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_169_a",
+      "train_pair_169_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_169",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_170_a",
+      "train_pair_170_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_170",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_171_a",
+      "train_pair_171_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_171",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_172_a",
+      "train_pair_172_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_172",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_173_a",
+      "train_pair_173_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_173",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_174_a",
+      "train_pair_174_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_174",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_175_a",
+      "train_pair_175_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_175",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_176_a",
+      "train_pair_176_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_176",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_177_a",
+      "train_pair_177_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_177",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_178_a",
+      "train_pair_178_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_178",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_179_a",
+      "train_pair_179_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_179",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_180_a",
+      "train_pair_180_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_180",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_181_a",
+      "train_pair_181_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_181",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_182_a",
+      "train_pair_182_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_182",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_183_a",
+      "train_pair_183_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_183",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_184_a",
+      "train_pair_184_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_184",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_185_a",
+      "train_pair_185_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_185",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_186_a",
+      "train_pair_186_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_186",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_187_a",
+      "train_pair_187_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_187",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_188_a",
+      "train_pair_188_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_188",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_189_a",
+      "train_pair_189_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_189",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_190_a",
+      "train_pair_190_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_190",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_191_a",
+      "train_pair_191_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_191",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_192_a",
+      "train_pair_192_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_192",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_193_a",
+      "train_pair_193_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_193",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_194_a",
+      "train_pair_194_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_194",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_195_a",
+      "train_pair_195_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_195",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_196_a",
+      "train_pair_196_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_196",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_197_a",
+      "train_pair_197_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_197",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_198_a",
+      "train_pair_198_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_198",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  },
+  {
+    "kind": "apparel",
+    "item_ids": [
+      "train_pair_199_a",
+      "train_pair_199_b"
+    ],
+    "match": false,
+    "text_sim": 0,
+    "id": "train_pair_199",
+    "fields": {
+      "mpn": false
+    },
+    "image_sim": 0
+  }
+]

@@ -4,7 +4,7 @@ import type { Log } from '../../../../log/index.js';
 import type { Accounts } from '../browser/auth.ts';
 
 import { SITES, VERBS, type Site, type Verb } from './names.ts';
-import { hasVerb } from './platform.ts';
+import { hasVerb, PROFILES } from './platform.ts';
 export { SITES, VERBS, type Site, type Verb };
 
 // A write changes something on the site: it needs operation_id, holds the lease through its read-back, and is never replayed.
@@ -160,10 +160,7 @@ async function runOne<T>(a: Adapter, verb: Verb, args: CallArgs, timeoutMs: numb
   return fail('rate_limited', 'the site did not answer in time', { do: 'retry_after', after_s: 30 });
 }
 
-function defaultSiteUrl(site: Site): string {
-  return { ebay: 'https://www.ebay.com', facebook: 'https://www.facebook.com/marketplace', depop: 'https://www.depop.com',
-    poshmark: 'https://poshmark.com', mercari: 'https://www.mercari.com', offerup: 'https://offerup.com', grailed: 'https://www.grailed.com' }[site];
-}
+function defaultSiteUrl(site: Site): string { return PROFILES[site].home; }
 
 // --- parsing an envelope from an untrusted runner (the phone web view, a pool worker): the trust boundary ---
 
