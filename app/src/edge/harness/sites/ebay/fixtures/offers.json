@@ -1,0 +1,7 @@
+{"SH-0001":{"total":1,"offers":[{"offerId":"9000000001","sku":"SH-0001","marketplaceId":"EBAY_US","format":"FIXED_PRICE","availableQuantity":1,"categoryId":"11483","status":"PUBLISHED",
+   "listing":{"listingId":"110551234567","listingStatus":"ACTIVE","soldQuantity":0},"pricingSummary":{"price":{"value":"34.99","currency":"USD"}},
+   "listingPolicies":{"bestOfferTerms":{"bestOfferEnabled":true,"autoAcceptPrice":{"value":"32.00","currency":"USD"},"autoDeclinePrice":{"value":"28.00","currency":"USD"}}}}]},
+ "SH-0002":{"total":1,"offers":[{"offerId":"9000000002","sku":"SH-0002","marketplaceId":"EBAY_US","format":"FIXED_PRICE","availableQuantity":0,"categoryId":"57988","status":"PUBLISHED",
+   "listing":{"listingId":"110552222222","listingStatus":"ENDED","soldQuantity":1},"pricingSummary":{"price":{"value":"60.00","currency":"USD"}}}]},
+ "SH-0003":{"total":1,"offers":[{"offerId":"9000000003","sku":"SH-0003","marketplaceId":"EBAY_US","format":"FIXED_PRICE","availableQuantity":1,"categoryId":"57988","status":"UNPUBLISHED",
+   "pricingSummary":{"price":{"value":"75.00","currency":"USD"}}}]}}

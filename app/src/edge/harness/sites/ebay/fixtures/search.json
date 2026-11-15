@@ -1,0 +1,8 @@
+{"href":"https://api.ebay.com/buy/browse/v1/item_summary/search?q=levis+501&limit=2&offset=0","total":2,"limit":2,"offset":0,
+ "itemSummaries":[
+  {"itemId":"v1|110551234567|0","legacyItemId":"110551234567","title":"Levi's 501 Jeans 32x30 Medium Wash","price":{"value":"34.99","currency":"USD"},
+   "itemWebUrl":"https://www.ebay.com/itm/110551234567","itemCreationDate":"2026-11-10T18:22:04.000Z","condition":"Pre-owned","buyingOptions":["FIXED_PRICE","BEST_OFFER"],
+   "watchCount":7,"seller":{"username":"fixture_seller_a","feedbackPercentage":"99.6","feedbackScore":1204}},
+  {"itemId":"v1|110559876543|0","legacyItemId":"110559876543","title":"Vintage Levi's 501 USA Made","price":{"value":"89.00","currency":"USD"},
+   "itemWebUrl":"https://www.ebay.com/itm/110559876543","condition":"Pre-owned","buyingOptions":["FIXED_PRICE"],
+   "seller":{"username":"fixture_seller_b","feedbackPercentage":"100.0","feedbackScore":88}}]}
