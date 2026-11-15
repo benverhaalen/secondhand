@@ -3,7 +3,7 @@ Status: draft, second pass. Everything here is *agent proposal* except where a l
 
 Rule it follows: Ben, "it shouldnt change the environment or lie. it should touch up" ([words](../../product/words.md#2026-11-14-photos-touch-up-never-change-the-environment)). Studio makes the person's own photos look better. It never makes a different photo.
 
-Design in one line: redraw each real photo in place with better light and true color (Seedream seeds plus Nano Banana 2.1), check every candidate against the real photo, rank them, and let the person approve. This is Ben's built route ([packet 30](../../.agents/team/packets/studio/30-studio-build-plan.md): "The gate ranks several candidates ... it no longer blocks"). The check blocks only a vanished flaw or changed tag text; the pixel rule per level is in "The check".
+Design in one line: redraw each real photo in place with better light and true color (Seedream 5.5 seeds, Ben's pick, with one Nano Banana 2.1 candidate only as a fallback; a whole-item redraw needs a tape reading or it is never shown), check every candidate against the real photo, rank them, and let the person approve. This is Ben's built route ([packet 30](../../.agents/team/packets/studio/30-studio-build-plan.md): "The gate ranks several candidates ... it no longer blocks"). The check blocks only a vanished flaw or changed tag text; the pixel rule per level is in "The check".
 
 ## What the person does and sees
 Lives in the item's review step, after capture, before listing. Studio works on the real frames the capture session picked ([scan-to-images](../../research/capture/nate/scan-to-images.md) section e), never on new shots. It never blocks the item state ([product.md](../product.md) item states).

@@ -27,8 +27,8 @@ export async function build({ force = false, log = () => {} } = {}) {
     if (!force && fresh()) return false;
     // Unminified: the tests and app-check read the screens, not the size, and the minifier stops on server-only syntax
     // (import.meta, top-level await) in the API routes' bundle, which no screen test calls.
-    log('exporting the web build (npx expo export --platform web --no-minify)');
-    try { execFileSync(expo, ['export', '--platform', 'web', '--no-minify'], { cwd: appDir, stdio: 'pipe', env: { ...process.env, CI: '1' } }); }
+    log('exporting the web build (npx expo export --platform web)');
+    try { execFileSync(expo, ['export', '--platform', 'web'], { cwd: appDir, stdio: 'pipe', env: { ...process.env, CI: '1' } }); }
     catch (e) { throw new Error(`expo export failed:\n${String(e.stdout ?? '').slice(-3000)}${String(e.stderr ?? '').slice(-3000)}`); }
     return true;
   } finally { rmdirSync(lock); }
