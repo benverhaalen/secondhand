@@ -51,10 +51,11 @@
   --field-1: var(--sky); --field-2: var(--mint); --field-3: var(--lime);
   --field-mesh: radial-gradient(at 30% 100%, var(--field-2), transparent 60%), radial-gradient(at 100% 100%, var(--field-3), transparent 65%);
   --field: var(--field-mesh), var(--field-1);
-  /* the wash: the field, faint, behind the header of a screen and nowhere else, 200 tall (Ben, 2026-11-15: "a gradient fading into the white ... at the top to give some character") */
-  --wash-1: rgb(165 225 254 / .3); --wash-2: rgb(161 234 203 / .25);    /* Ben, 02:46: "a little less invasive at the top" */
-  --wash: radial-gradient(120% 90% at 15% 0%, var(--wash-1), transparent 70%), radial-gradient(90% 80% at 95% 0%, var(--wash-2), transparent 70%);
-  --wash-h: 200px;
+  /* the wash: sky to mint at full strength under a fade to the page, behind the header of a screen and nowhere else. It ends where the first card starts
+     (Ben, 2026-11-15 03:22: "it bleeds vertically no lower than the top card ... more intense than shown now ... more of an accent") */
+  --wash-1: var(--sky); --wash-2: var(--mint);
+  --wash: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--page) 25%, transparent) 45%, color-mix(in srgb, var(--page) 80%, transparent) 80%, var(--page) 100%), linear-gradient(105deg, var(--wash-1), var(--wash-2));
+  --wash-h: 236px;
 
   /* type (Art. 6; Ben, rounds 7, 8 and 10): PP Neue Montreal 2.6 as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
   /* never system-ui: it can resolve to an Inter-derived face. Scripts a face lacks fall to Noto */
@@ -86,11 +87,14 @@
   --card-border: 1px solid var(--rule);
   --shadow-soft: 0 1px 2px rgb(0 0 0 / .05), 0 8px 24px rgb(0 0 0 / .06);
   --card-edge: rgb(10 10 10 / .08); --photo-veil: rgb(0 0 0 / 0);
+  --tab-on: rgb(10 10 10 / .08);         /* the pill behind the icon of the tab you are on (Ben, 03:22: "a less subtle way to show what section you are on") */
+  --stack-shade: rgb(10 10 10 / .07); --shadow-stack: 0 6px 14px var(--stack-shade);   /* under the lower cards of a stack, the one blur in light (Ben, 03:22: "some sort of depth with shadows") */
   --shadow-card: 0 0 0 1px var(--card-edge);   /* a card on the page: a hairline, no blur (Ben, 02:46: the shadow "looks a little weird") */
   /* size */
-  --outline: var(--ink);               /* outline buttons: 1px ink, not --rule */
+  --outline: var(--ink);               /* off the app only: the app's second button is a light fill (L5) */
   --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px; --photo-card: 72px;
   /* the parts and their sizes (Ben, 2026-11-15: "the spacing i like", "ensure that there are primitives of it all"; Art. 7.8) */
+  --card-corner: 24px;                   /* a thing in a card's corner that is not a photo starts this far from the two edges, so it clears the 36 arc by 16 */
   --card-pad: 16px; --card-decision-h: 156px; --card-item-h: 104px; --notice-h: 56px;
   --pill-card-h: 40px; --pill-card-pad: 20px; --tag-h: 20px; --tag-icon: 12px; --badge-h: 20px; --site-badge: 24px;
   /* motion (frontend-standard §3) */
@@ -107,7 +111,7 @@
   --on-color: #0A0A0A;                  /* text on a state fill stays black in both modes */
   --on-field: #ECEFF1; --on-field-2: #CDD2D4; --sec-on-field: rgb(255 255 255 / .14);
   --field-1: #0A4C65; --field-2: #03523B; --field-3: #025050;   /* deep sky, deep mint, deep aqua. No lime in dark */
-  --wash-1: rgb(10 76 101 / .3); --wash-2: rgb(3 82 59 / .25);
+  --wash-1: #0A4C65; --wash-2: #03523B; --tab-on: rgb(255 255 255 / .14); --stack-shade: rgb(0 0 0 / 0);
   --card-edge: rgb(255 255 255 / .08); --glow-1: transparent; --glow-2: transparent;
   --photo-veil: rgb(0 0 0 / .08);       /* painted over a photo, so it does not glare on a dark page */
 }

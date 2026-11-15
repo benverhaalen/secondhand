@@ -8,9 +8,9 @@ Open [index.html](index.html) in a browser. It shows four screens at 390 wide: T
 |---|---|
 | `?only=today` | One screen with nothing around it, for a screenshot |
 | `?o=now` | Round 10's choices: gray boxes, a black pill on every decision, an outline second button |
-| `?sep=tint`, `white`, `gray`, `rows` | What separates a card from the page (R29). With no `sep` it is `tint` |
+| `?sep=tint`, `white`, `gray`, `rows` | What separates a card from the page (R29). With no `sep` it is `white` |
 | `?o=fill,one,more` | Choices by name. With no `o`, fill and one are on |
-| `?wm=center` | The wordmark centered, as L3 locks it. With no `wm` it is left, which is the proposal (R41) |
+| `?wm=left` | The wordmark left with the inbox right, which Ben turned down in round 11. With no `wm` it is centered (L3) |
 | `?states=old` | Failed and ended as round 10 drew them |
 | `?sel=live`, `?from=4` | On Sell: which state chip is chosen, and which item the grid starts at |
 | `?touches=hand,tags` | The two touches Ben has not ruled on |

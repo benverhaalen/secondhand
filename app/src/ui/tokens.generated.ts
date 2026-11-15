@@ -45,10 +45,10 @@ export const color = {
   scrim: "rgba(10, 10, 10, 0.4)",
   glow1: "rgba(129, 207, 252, 0.55)",
   glow2: "rgba(238, 243, 151, 0.7)",
-  wash1: "rgba(165, 225, 254, 0.3)",
-  wash2: "rgba(161, 234, 203, 0.25)",
   cardEdge: "rgba(10, 10, 10, 0.08)",
   photoVeil: "rgba(0, 0, 0, 0)",
+  tabOn: "rgba(10, 10, 10, 0.08)",
+  stackShade: "rgba(10, 10, 10, 0.07)",
 } as const;
 
 export const colorDark = {
@@ -69,8 +69,10 @@ export const colorDark = {
   field1: "#0A4C65",
   field2: "#03523B",
   field3: "#025050",
-  wash1: "rgba(10, 76, 101, 0.3)",
-  wash2: "rgba(3, 82, 59, 0.25)",
+  wash1: "#0A4C65",
+  wash2: "#03523B",
+  tabOn: "rgba(255, 255, 255, 0.14)",
+  stackShade: "rgba(0, 0, 0, 0)",
   cardEdge: "rgba(255, 255, 255, 0.08)",
   photoVeil: "rgba(0, 0, 0, 0.08)",
 } as const;
