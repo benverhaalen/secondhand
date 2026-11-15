@@ -14,12 +14,11 @@ function garment(item: string) {
 }
 const field = (result: ReturnType<typeof parseTag>, name: string) => result.facts.filter(fact => fact.field === name);
 
-test('Carhartt RN and lexicon survive while translated cotton is counted once', () => {
+test('Carhartt RN and lexicon survive while flattened unsegmented facts abstain', () => {
   const out = garment('carhartt-pants');
   assert.ok(out.brands.some(b => b.brand === 'Carhartt' && b.s === 1 && b.rule === 'rn'));
   assert.ok(out.brands.some(b => b.brand === 'Carhartt' && b.s === 0.9 && b.rule === 'brand_lexicon'));
-  for (const [name, value] of Object.entries({fabric: '100% cotton', origin: 'Mexico'}))
-    assert.deepEqual(field(out, name).map(f => f.value), [value]);
+  for (const name of ['fabric', 'origin']) assert.deepEqual(field(out, name), []);
   assert.equal(out.style_code, undefined);
   assert.deepEqual(field(out, 'colour'), []);
   assert.deepEqual(field(out, 'size_label'), []);
@@ -61,7 +60,7 @@ test('ambiguous sizes and impossible fabric totals abstain', () => {
 
 test('shoe numbers require a sizing system and style and colour require local context', () => {
   assert.equal(field(parseTag([{line: '10', confidence: 1}]), 'size_label').length, 0);
-  assert.equal(field(parseTag([{line: 'US 10', confidence: 0.8}]), 'size_label')[0]?.value, '10');
+  assert.deepEqual(field(parseTag([{line: 'US 10', confidence: 0.8}]), 'size_label'), []);
   assert.equal(parseTag([{line: 'AB123 far away from everything BLK', confidence: 1}]).style_code, undefined);
   assert.equal(parseTag([{line: 'RN14806 BLK M', confidence: 1}]).style_code, undefined);
   assert.equal(parseTag([{line: 'SW1A 1AA BLK M', confidence: 1}]).style_code, undefined);
@@ -101,12 +100,77 @@ test('common English brand words require capitals or a brand cue even in demo ti
 });
 
 const tag = (line: string) => parseTag([{line, confidence: 1}]);
+
+for (const line of [
+  'Lining: 100% polyester\nMade in China', 'Hood lining: 100% polyester\nM',
+  'Nike\nL\nRib: 98% cotton 2% elastane',
+  ...['pocket', 'pocketing', 'ribbing', 'trim', 'contrast', 'insulation', 'filling', 'padding', 'sleeve lining', 'collar',
+    'doublure', 'forro', 'Futter', 'fodera'].map(part => `${part}: 100% cotton`),
+  'Lining:\n100% polyester', 'Unknown: 100% cotton', '100% cotton mystery', 'not 100% cotton',
+  'Sleeves:\n100% polyester', 'Pocket bag:\n100% polyester', 'Unknown:\n100% cotton', '100% cotton,',
+  'Main: 60% cotton\nSleeves:\n40% polyester',
+  'Hood lining -\n100% polyester', 'Lining.\n100% polyester', 'Unknown.\n100% cotton',
+  'Sleeves\n100% polyester', 'Pocket bags\n100% cotton', 'Panel 2\n100% cotton', 'Collar & cuffs\n100% cotton',
+]) test(`M1: a part or unconsumed composition cannot state main fabric: ${line}`, () => {
+  assert.deepEqual(field(tag(line), 'fabric'), []);
+});
+for (const main of ['Shell', 'Body', 'Outer', 'Main', 'Self', 'Fabric', 'Extérieur', 'Tejido principal', 'Oberstoff', 'Esterno'])
+  for (const separator of ['\n', '; ', ' ']) test(`M1: only ${main} counts beside lining (${JSON.stringify(separator)})`, () => {
+    assert.deepEqual(field(tag(`${main}: 100% cotton${separator}Lining: 100% polyester`), 'fabric').map(f => f.value), ['100% cotton']);
+  });
+
+for (const line of [
+  'SIZE S M L XL', 'S M L XL', 'US M 9 / W 10.5', 'Pat. US 5,987,654', 'Patent US 5,987,654', 'Pat. No. US 5,987,654',
+  'UK 10', 'Dr. Martens\nAIRWAIR\nUK 8\nMade in Thailand', 'Nike EU42',
+  'Adidas\nGL9876\nUK 8 FR 42 2/3\nMade in Vietnam', 'EU 42 / US 9',
+  'Size 9 US', 'US 9.5', 'EUR42', 'FR 42', 'IT 42', 'JP 26', 'CN 42', 'MX 8', 'W 10', 'M 10',
+  'Size M mystery', 'Size M Size L', 'RN 12345 Size M', 'CA 12345 Size M', 'LOT K1234 Size M',
+  'Style 10', 'Date US 9', '2023-10-10 Size M', 'Size 5,987', 'Size 10.25', 'Size 10%',
+  'Sizes', 'Tallas', 'TailleS', 'SizeS',
+  'Size M\nSIZE S M L XL', 'M\nUK 10', 'US M\nUK L', 'US M\nUK M', 'M\nEU L', 'US M 9 / W 10.5\nM',
+]) test(`M2/M3: size grammar cannot discard tokens or the system: ${line}`, () => {
+  assert.deepEqual(field(tag(line), 'size_label'), []);
+});
+for (const line of ['Taille M', 'Talla M', 'Größe M', 'SIZE/TAILLE/TALLA: M', 'Size: M', 'US M', 'Size: L (G)'])
+  test(`M2: a complete letter-size segment is read: ${line}`, () => {
+    assert.deepEqual(field(tag(line), 'size_label').map(f => f.value), [line.endsWith('(G)') ? 'L' : 'M']);
+  });
+
+for (const [line, expected] of [
+  ['Fabric made in Italy\nMade in China', ['China']], ['Fabric made in Japan\nMade in USA', ['United States']],
+  ['Made in China\nMade in Vietnam', []], ['Made in China / Made in Vietnam', []],
+  ['Material made in Italy', []], ['Designed made in Italy', []], ['Something made in Italy', []],
+  ['Fabric from Japan', []], ['Designed in USA', []], ['Assembled in USA', []], ['Printed in USA', []],
+  ['Made in China mystery', []], ['Made in China or elsewhere', []],
+  ['Designed in California / Made in China', ['China']], ['(Imported) Made in China', ['China']],
+  ['MADE IN CHINA / FABRIQUÉ EN CHINE / HECHO EN CHINA', ['China']], ['Made in P.R.C.', ['China']],
+] as const) test(`M4: only a complete garment-origin segment counts: ${line}`, () => {
+  assert.deepEqual(field(tag(line), 'origin').map(f => f.value), expected);
+});
+
+for (const line of ['Patagonia F23', 'Nike EUR42', 'Nike M10', 'Nike FY23', 'Nike FY23\nM\nMade in Vietnam',
+  'CARHARTT LOT K1234', 'LOT K1234', 'Nike ZZ12345', 'Nike FY2023', 'Nike H23', 'Nike W10',
+  'Carhartt B324 unknown', 'Style AB1234 unknown', 'Style FW23', 'Style EUR42',
+  'Style EU-42', 'Style FY-23', 'Nike\nStyle FY-23', 'Style LOT123', 'Style LOT-123', 'Style AB1234 unknown\nStyle CD5678',
+  'Style LOT-K1234', 'Style LOT123A', 'Style FW2023-24', 'Carhartt B324\nCarhartt J97 unknown'])
+  test(`M5: a season, system, lot or unaccounted token cannot become a model: ${line}`, () => {
+    assert.equal(tag(line).style_code, undefined);
+    assert.deepEqual(field(tag(line), 'style_code'), []);
+  });
+for (const [line, value] of [['RN: 14806', 'Carhartt']])
+  test(`review recall: labelled registration: ${line}`, () => assert.equal(tag(line).brands[0]?.brand, value));
+for (const [line, value] of [['Style No. 25551', '25551'], ['Carhartt B324', 'B324']])
+  test(`review recall: whole style segment: ${line}`, () => assert.equal(tag(line).style_code?.value, value));
+for (const [line, value] of [['Polyester 100%', '100% polyester'], ['98% Algodón 2% Élasthanne', '98% cotton, 2% elastane']])
+  test(`review recall: whole translated or reversed composition: ${line}`, () => assert.deepEqual(field(tag(line), 'fabric').map(f => f.value), [value]));
+for (const line of ['Size: 10', 'lululemon\n6'])
+  test(`review recall: numeric size without a system still abstains: ${line}`, () => assert.deepEqual(field(tag(line), 'size_label'), []));
 for (const [line, expected] of [
   ['Made in Viet Nam', ['Vietnam']], ['Made in Vietnam', ['Vietnam']],
   ['Made in USA', ['United States']], ['Made in U.S.A.', ['United States']],
   ['Made in the USA of imported fabric', ['United States']], ['Made in the USA of imported materials', ['United States']],
-  ['Made in China, Assembled in USA', ['China']], ['Made in China and Vietnam', ['China', 'Vietnam']],
-  ['Made in Italy, fabric from Japan', ['Italy']], ['Made in China, Made in USA', ['China', 'United States']],
+  ['Made in China, Assembled in USA', ['China']], ['Made in China and Vietnam', []],
+  ['Made in Italy, fabric from Japan', ['Italy']], ['Made in China, Made in USA', []],
   ['Made in UK', ['United Kingdom']], ['Made in UAE', ['United Arab Emirates']], ['Made in PRC', ['China']],
   ['Made in Hong Kong', ['Hong Kong']], ['Made in Korea', ['South Korea']],
   ['Hecho en México', ['Mexico']], ['Fabriqué au Mexique', ['Mexico']], ['Fabriqué en France', ['France']],
@@ -120,14 +184,17 @@ for (const line of ['U.S.A.', 'Made in U.S.A.', 'Do not use chlorine bleach L', 
   test(`size without a label, standalone line or system abstains: ${line}`, () => {
     assert.deepEqual(field(tag(line), 'size_label'), []);
   });
-for (const [line, value] of [['M', 'M'], ['XS', 'XS'], ['L.L.Bean\nL', 'L'], ['Size M', 'M'], ['Sz: XL', 'XL'], ['US M', 'M'], ['EU 40', '40'], ['Size 9 US', '9'], ['38 X 36', '38x36']])
+for (const [line, value] of [['M', 'M'], ['XS', 'XS'], ['L.L.Bean\nL', 'L'], ['Size M', 'M'], ['Sz: XL', 'XL'], ['US M', 'M'], ['38 X 36', '38x36']])
   test(`size context establishes the token: ${line}`, () => assert.equal(field(tag(line), 'size_label')[0]?.value, value));
+for (const line of ['EU 40', 'Size 9 US'])
+  test(`system-qualified number cannot be stored as a bare size: ${line}`, () => assert.deepEqual(field(tag(line), 'size_label'), []));
 test('numeric Size label alone is not a shoe-size system', () => assert.deepEqual(field(tag('Size 9'), 'size_label'), []));
 
 for (const line of ['AB1234 Size M', 'AB1234 BLK M', 'Carhartt\nAB1234 BLK Size M'])
   test(`style proximity alone is not a brand line or label: ${line}`, () => assert.equal(tag(line).style_code, undefined));
-for (const line of ['Style AB1234 Size M', 'Style No. AB1234', 'Art AB1234', 'Model AB1234', 'Item AB1234', 'Carhartt AB1234'])
+for (const line of ['Style AB1234 Size M', 'Style No. AB1234', 'Art AB1234', 'Model AB1234', 'Item AB1234'])
   test(`style brand line or explicit label establishes code: ${line}`, () => assert.equal(tag(line).style_code?.value, 'AB1234'));
+test('Carhartt AB1234 is not in the sourced brand style grammar', () => assert.equal(tag('Carhartt AB1234').style_code, undefined));
 
 for (const line of ['champion quality', 'Apple juice stain', 'Amazon Prime', 'Wash with apple juice'])
   test(`ordinary sentence does not establish a common-word brand: ${line}`, () => assert.deepEqual(matchBrands(line), []));
@@ -160,7 +227,7 @@ test('capital common-word tag heading can share its line with a style or size', 
   for (const line of ['CHAMPION AB1234', 'CHAMPION Size M']) {
     assert.equal(tag(line).brands[0]?.brand, 'Champion');
   }
-  assert.equal(tag('CHAMPION AB1234').style_code?.value, 'AB1234');
+  assert.equal(tag('CHAMPION AB1234').style_code, undefined);
 });
 
 test('unrelated company cue cannot turn a care sentence into a common-word brand', () => {

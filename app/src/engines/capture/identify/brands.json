@@ -30,7 +30,13 @@
     {
       "brand": "Carhartt",
       "aliases": [],
-      "data": "example"
+      "data": "example",
+      "style": "^(?:B324|J97)$",
+      "style_source": [
+        "research/studio/ben/slides/runs/20261115-0652-43687372523/carhartt-pants/manifest.json#read.tag_text",
+        "research/identify/ben/build-plan.md#loop-2"
+      ],
+      "style_mark": "Only codes attested in repo sources; no inferred brand-wide format."
     },
     {
       "brand": "Champion",
@@ -88,7 +94,7 @@
       "aliases": [
         "Levis",
         "Levi Strauss",
-        "Levi’s"
+        "Levi\u2019s"
       ],
       "data": "example"
     },

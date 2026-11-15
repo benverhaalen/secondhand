@@ -19,6 +19,18 @@ function logger() {
 }
 const input: IdentifyInput = {capture_id: 'cap_unknown', family: 'apparel', photos: [{key: 'front', role: 'front'}, {key: 'tag', role: 'tag', text: [{line: 'Size XL MADE IN MEXICO', confidence: 0}]}]};
 
+test('M5: Nike FY23 cannot confirm an invented model through the tag rung', async () => {
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line: 'Nike FY23\nM\nMade in Vietnam', confidence: 0.9}]}]}, {}, memoryStore(), logger().log);
+  assert.equal(out.set[0]?.brand, 'Nike');
+  assert.ok([...out.set, ...out.others].every(candidate => candidate.model === undefined && !candidate.product_id.includes('/model:')));
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'style_code'), []);
+});
+
+test('M4: fabric origin cannot reach the confirmed garment facts', async () => {
+  const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line: 'Nike\nFabric made in Italy\nMade in China', confidence: 0.9}]}]}, {}, memoryStore(), logger().log);
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), ['China']);
+});
+
 for (const row of record.items) test(`${row.item}: the real tag confirms its brand without visual or model calls`, async () => {
   const {read} = json(row.manifest) as {read: {tag_text: string}};
   assert.equal(tagLines.items[row.item].join(' '), read.tag_text);
@@ -31,10 +43,10 @@ for (const row of record.items) test(`${row.item}: the real tag confirms its bra
   assert.equal(out.set[0]?.brand, {'carhartt-pants': 'Carhartt', 'chico-hoodie': 'Russell Athletic', 'marquette-tee': 'Fruit of the Loom'}[row.item]);
   assert.ok(out.set[0].rests_on.some(line => line.includes('on the tag')));
   assert.ok(out.facts.every(fact => fact.confidence === 0 && capture.photos.some(photo => photo.key === fact.ref)));
-  const expected = {'carhartt-pants': [null, 'Mexico'], 'chico-hoodie': ['XXL', 'Mexico'], 'marquette-tee': ['XL', 'Honduras']}[row.item];
+  const expected = {'carhartt-pants': [null, null], 'chico-hoodie': ['XXL', 'Mexico'], 'marquette-tee': ['XL', 'Honduras']}[row.item];
   assert.ok(expected);
   assert.deepEqual(out.facts.filter(fact => fact.field === 'size_label').map(fact => fact.value), expected[0] ? [expected[0]] : []);
-  assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), [expected[1]]);
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), expected[1] ? [expected[1]] : []);
   if (row.item === 'carhartt-pants') assert.equal(out.set[0].model, undefined);
   assert.deepEqual(calls, []);
 });
