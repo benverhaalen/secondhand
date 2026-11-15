@@ -206,10 +206,10 @@ test('a card missing a required field is dropped and counted, the rest are retur
   const r = readPage('offerup', page);
   assert.ok(r.ok, JSON.stringify(r).slice(0, 200));
   assert.deepEqual(r.data.map(x => [x.id, x.price_cents]), [['ok', 1250]]);   // before: the whole page failed, or passed Infinity on
-  assert.equal((r as { dropped?: number }).dropped, 1);
+  assert.equal(r.dropped, 1);
   // one priced card among unpriced ones on a real recorded page: the priced one comes back, the page is not failed
   let n = 0;
   const partly = fx('depop.html').replace(/<p aria-description="Price">[^<]*<\/p>/g, m => (n++ === 0 ? m : ''));
   const d = readPage('depop', partly);
-  assert.ok(d.ok && d.data.length === 1 && (d as { dropped?: number }).dropped === n - 1, JSON.stringify(d).slice(0, 200));
+  assert.ok(d.ok && d.data.length === 1 && d.dropped === n - 1, JSON.stringify(d).slice(0, 200));
 });
