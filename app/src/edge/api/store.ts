@@ -1,7 +1,9 @@
 // The one Store every /v1 route and the events pipeline reads and writes.
-// shortcut: file-backed until the async Lakebase port lands.
-import { join } from 'node:path';
-import { memoryStore } from '../events/ports.ts';
-import { fileStore } from '../events/file-store.ts';
+import { db } from '../store/db.ts';
+import { sqliteStore } from '../events/sqlite-store.ts';
+import type { Store } from '../events/ports.ts';
 
-export const store = process.env.SECONDHAND_DATA_DIR ? fileStore(join(process.env.SECONDHAND_DATA_DIR, 'store.json')) : memoryStore();
+const sqlite = sqliteStore(db());
+export const store: Store = sqlite;
+// Only the server entry calls this, once at boot: running jobs go back to queued and claims are dropped.
+export const recoverStore = (): number => sqlite.recover();
