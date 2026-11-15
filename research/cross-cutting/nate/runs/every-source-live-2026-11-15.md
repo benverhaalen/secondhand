@@ -1,5 +1,7 @@
 # Every search source, live and signed out (2026-11-15)
 
+Researched 2026-11-15 by Nate (Claude Code search lead, Opus). Feature: cross-cutting.
+
 Run by the search lead (Claude Code, Opus). Nate asked: "Check all sources and ensure with these test that every source works." Everything below is *observed* unless marked otherwise.
 
 ## What ran

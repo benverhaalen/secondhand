@@ -1,5 +1,7 @@
 # What each site's harness can do today (2026-11-15)
 
+Researched 2026-11-15 by Nate (Claude Code search lead, Opus). Feature: cross-cutting.
+
 By the search lead (Claude Code, Opus), answering Nate: "Confirm the harnesses work for each of those sites to both search, engine and calculate on, and also monitor and manage and deliver analytics."
 
 Each cell comes from an adapter's manifest and tests (`app/src/edge/harness/sites/<site>/`) and from the run pages in this folder. None of it is from memory. Nothing was run signed in. The site test files all passed today: Depop 25, Poshmark 24, Mercari 25 plus linked 2, eBay 26 plus page 25, Dupe 14, Apify 13.
