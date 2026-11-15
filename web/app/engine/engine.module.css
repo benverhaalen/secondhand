@@ -5,7 +5,7 @@
 .page h2 { font-size: var(--t-36); line-height: var(--lh-36); }
 .page h3 { font-size: var(--t-21); line-height: 1.3; }
 .eyebrow { font-size: var(--t-15); margin-bottom: var(--s-5); }
-.hero { padding-block: 136px 96px; }
+.hero { padding-block: calc(var(--s-9) + var(--s-8) + var(--s-6)) calc(var(--s-9) + var(--s-7)); }
 .lead { font-size: var(--t-21); line-height: 1.5; margin-top: var(--s-6); max-width: 58ch; }
 .leadNote { font-size: var(--t-15); line-height: 1.55; color: var(--ink-2); margin-top: var(--s-4); max-width: 62ch; }
 .answers { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-5); margin-block: var(--s-8) var(--s-4); }
@@ -25,14 +25,14 @@
 .marketHead { font-size: var(--t-13); color: var(--ink-2); }
 .market { border-top: 1px solid var(--rule); font-size: var(--t-18); font-variant-numeric: tabular-nums; }
 .marketSite { display: flex; align-items: center; gap: var(--s-3); }
-.marketSite img { border-radius: 50%; display: block; }
+.marketSite img { border-radius: var(--r-pill); display: block; }
 .marketSite small { font-size: var(--t-13); color: var(--ink-2); }
 .rank { font-size: var(--t-13); color: var(--ink-2); width: 2ch; }
 .score { color: var(--aqua); }
 .reach { display: grid; grid-template-columns: 1fr 5ch; gap: var(--s-3); align-items: center; text-align: end; }
 .jump { display: flex; flex-wrap: wrap; gap: var(--s-3); margin-top: var(--s-7); }
 
-.act { padding-block: 96px; scroll-margin-top: var(--s-6); border-top: 1px solid var(--rule); }
+.act { padding-block: calc(var(--s-9) + var(--s-7)); scroll-margin-top: var(--s-6); border-top: 1px solid var(--rule); }
 .actHead { max-width: 640px; }
 .actHead > p:last-child { font-size: var(--t-18); line-height: 1.55; color: var(--ink-2); margin-top: var(--s-6); }
 .scroller { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: var(--s-9); align-items: start; margin-top: var(--s-8); }
@@ -41,7 +41,7 @@
 .steps li { min-height: 56svh; display: flex; flex-direction: column; justify-content: center; padding-block: var(--s-7); }
 .steps li:last-child { min-height: 70svh; }
 .steps p { font-size: var(--t-18); line-height: 1.55; color: var(--ink-2); margin-top: var(--s-4); max-width: 42ch; }
-[data-motion] .steps li { opacity: .35; transition: opacity var(--t-panel) var(--ease-out); }
+[data-motion] .steps li { opacity: .55; transition: opacity var(--t-panel) var(--ease-out); }
 [data-motion] .steps li[data-on] { opacity: 1; }
 .stage { position: sticky; top: var(--s-6); height: calc(100svh - var(--s-8)); display: flex; flex-direction: column; justify-content: center; gap: var(--s-4); }
 .caption { font-size: var(--t-13); line-height: 1.5; color: var(--ink-2); max-width: 60ch; margin-inline: auto; text-align: center; }
@@ -49,7 +49,7 @@
 /* figures: every color is a token, every size is in the figure's own 400-wide units */
 .fig { display: block; width: 100%; max-width: 520px; max-height: calc(100svh - 160px); margin-inline: auto; overflow: visible; font-family: var(--font-text); font-weight: var(--w-text); }
 .fig text { fill: var(--ink); font-size: 13px; }
-.fig image[href^="/marketing/platforms"] { clip-path: circle(50%); }
+.fig image[href^="/marketing/platforms"] { clip-path: inset(0 round var(--r-pill)); }
 .fig [data-k="sub"] { fill: var(--ink-2); font-size: 10.5px; }
 .fig [data-k="sub-ink"] { font-size: 10.5px; }
 .fig [data-k="big"] { font-size: 22px; letter-spacing: var(--tr-36); }
@@ -98,7 +98,7 @@
 .link { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-15); line-height: 1.5; min-height: var(--control-min); text-underline-offset: var(--s-1); }
 .link:hover { opacity: .75; }
 
-.close { padding-block: 96px; border-top: 1px solid var(--rule); }
+.close { padding-block: calc(var(--s-9) + var(--s-7)); border-top: 1px solid var(--rule); }
 .closeGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-8); margin-top: var(--s-8); }
 .closeGrid p { font-size: var(--t-18); line-height: 1.55; color: var(--ink-2); padding-top: var(--s-5); border-top: 1px solid var(--rule); }
 
@@ -110,7 +110,7 @@
 @media (max-width: 760px) {
   .page { --gutter: 16px; }
   .page h1 { font-size: var(--t-36); line-height: var(--lh-36); }
-  .hero { padding-block: 120px var(--s-9); }
+  .hero { padding-block: calc(var(--s-9) + var(--s-8) + var(--s-2)) var(--s-9); }
   .lead { font-size: var(--t-18); }
   .act, .close { padding-block: var(--s-9); }
   .scroller { display: flex; flex-direction: column; gap: 0; align-items: stretch; margin-top: var(--s-7); }
@@ -120,7 +120,7 @@
   .fig { max-height: 54svh; }
   .stage .caption { display: none; }
   .steps li, .steps li:last-child { min-height: 0; padding-block: var(--s-7); }
-  .steps li:last-child { padding-bottom: 30svh; }
+  .steps li:last-child { padding-bottom: calc(var(--s-9) + var(--s-9)); }
   .act[data-tall] .stage { position: static; border-bottom: 0; }
   .act[data-tall] .fig { max-height: none; }
   .act[data-tall] .steps li:last-child { padding-bottom: var(--s-7); }
