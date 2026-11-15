@@ -817,3 +817,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate not a comparison: we develop our own, on firecrawl, crawl4ai, browser use and jev ultrafast
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent wrote Apify's price in as a comparison.
 > no not to compare against ours, just that we can and definitely should develop our own. utilizing the firecrawl web4crawl browser use and jev ultrafast technologies to optimize and perfect the way we gather and delvier information
+
+## 2026-11-14 nate host all engines ourselves, and can the person's own device do the work
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Can the user use their own compute? I feel its best to host all engines ourselves. Like we cant host remote cloud based browser sessions on the phone app can we? if we can and they perform just as well awesome
