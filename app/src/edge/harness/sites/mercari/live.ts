@@ -55,7 +55,7 @@ try {
   const timed = async (read: string, f: () => Promise<{ ok: boolean; data?: unknown; error?: unknown }>) => {
     const a = ms();
     // one read's own failure (a timeout, a closed page) is printed and the run goes on
-    const r = await f().catch((e: Error) => ({ ok: false, error: e.message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 200) }));
+    const r: { ok: boolean; data?: unknown; error?: unknown } = await f().catch((e: Error) => ({ ok: false, error: e.message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 200) }));
     const count = Array.isArray(r.data) ? r.data.length : r.ok ? 1 : 0;
     // on a failure, the status and the op names the page answered with (names only), to see what moved
     console.log(JSON.stringify({ read, ok: r.ok, count, ms: ms() - a, ...(r.ok ? {} : { error: r.error, status: last?.status, ops: last?.api.map(x => x.op) }) }));

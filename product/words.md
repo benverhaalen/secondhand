@@ -1571,3 +1571,9 @@ Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Po
 > just the poshmark one
 
 Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
+
+## 2026-11-15 nate mercari under the person's approval, broad search through sites that already show it, ebay on the harness until the api is approved
+Nate, build session (orchestrator), 2026-11-15 about 05:15 Central, after the Mercari harness build quoted Mercari's rule against automated access.
+> Pull all packets from ben to see recent benchmarking and changes, ensure too you are focused on everything. Also we do read mercari, but we do it cognizently under user approval, I believe for more broad searches like the buying system that searches across all marketplaces, we are less through with mercari, and instead lean on websites that already display information from those platforms, or others as well, like we could harness dupe. Also ebay is pending api approval, so fall on the optimized harness for now
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).

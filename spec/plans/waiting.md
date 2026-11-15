@@ -31,7 +31,7 @@ Nate ([words](../../product/words.md#2026-11-15-nate-no-worker-waits-confused-an
 | Asked of | What, in one line | Unlocks | Meanwhile |
 |---|---|---|---|
 | Nate | sign in to one marketplace account once through the cloud browser's live view | the first proof of any signed-in verb (inbox, offers, orders, storefront) on a real account | signed-in verbs are proved on recorded pages only |
-| Nate | eBay developer keys in the environment (checked by presence, never written down) | eBay through its official APIs | the eBay adapter is built and tested against the documented responses |
+| Nate | eBay developer keys in the environment once eBay approves the application (checked by presence, never written down) | eBay through its official APIs | eBay reads run on the page harness, being built by the orchestrator; the API adapter is built and tested against the documented responses (25 tests) |
 | Nate | a go for each paid Databricks resource a lead asks for through the orchestrator | whatever that resource serves | the lead builds what does not need it |
 | Nate | whether the Depop adapter's calls to the site's own web API from inside the open page (`webapi.depop.com`) count as the private endpoints he ruled out | how Depop reads are built: those calls, or the rendered page only | Depop reads stay as built and proved; nothing new is added on those calls |
 | Nate and Ben | photograph and measure the owned items for the item set, and record what each later sold for | the capture accuracy numbers and the owned half of the benchmark | market items carry the first run |
