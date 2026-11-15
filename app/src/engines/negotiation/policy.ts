@@ -1,10 +1,11 @@
-import { decide, assertLimits, type OfferState, type PAccept, type Decision } from './choose.ts';
+import { decide, assertLimits, assertState, type OfferState, type PAccept, type Decision } from './choose.ts';
 import { stance } from '../valuation/posture.ts';
 import { roundToEnding } from '../money/ending.ts';
 import type { ParamStore, Scope } from '../param/param.ts';
 import { fact } from '../../../../spec/sites.mjs';
 
 export function offer(state: OfferState, pAccept: PAccept, posture: number, policy: Decision['policy'] = 'champion', param_version = 0): Decision {
+  assertState(state); // before the accept line is computed from the floor
   const s = stance(posture);
   const adjusted = { ...state,
     always_accept_cents: state.floor_cents + s.accept_line_share * (Math.max(state.floor_cents, state.always_accept_cents) - state.floor_cents),
