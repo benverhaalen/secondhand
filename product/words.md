@@ -1617,6 +1617,13 @@ Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the le
 
 Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
 
+## 2026-11-15 ben a bug may be fixed if the same system generalizes; claim the most each experiment allows without lying
+Ben, project timeline, 08:49 and 08:54 UTC, after the first StockX backtest and its fix. Two messages.
+> get git back . also you can selectively remove a bug. just ensure the same system generalizes. think about what each dataset proves too. and how we can make the best claims for a given experiment without lying. think about the project evidence skill and how i frame my projects in my get-hired repo
+
+> with the 70 20 rule thing im interested where that came from and why like the logic behind our pricing algorithm. i feel like there could be like proxies in a small dataset possibly where its more realistic to how we price based on the market at the time. idk. again all research use codex from here on out if you need it. but like actually using the harness what data do we ingest essentially and is there some proxy of depreciation.
+
+Used in: [backtest claims](../spec/plans/backtest/claims.md), [how we price](../spec/plans/backtest/how-we-price.md).
 ## 2026-11-15 nate ebay does work in cases
 Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the orchestrator reported that eBay refused every public page with a 403.
 > you havent worked out far enough, ebay does work in cases, I've seen it used
