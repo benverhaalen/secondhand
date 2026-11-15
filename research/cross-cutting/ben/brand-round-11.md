@@ -163,3 +163,24 @@ What follows (inferred):
 - Sky and mint are .016 apart under tritan vision, the rare kind. They are told apart by icon and word, which every state already has.
 - So shipping takes no color of its own. Ben's word is that it is green, so it is mint with the parcel icon (ledger L45), and the check `picks:A10` fails when two state fills come closer than .05 under protan or deutan vision.
 - A dark yellow reads as brown. That is why lime and marigold are never a dark ground (constitution Art. 5, Dark mode, line 5).
+
+## The weight of the text
+
+Ben, 2026-11-15 02:46 UTC, on the Today render: "i feel like the fonts are a bit lighter idrc. like a middle ground would be good."
+
+Measured on Ben's Mac on 2026-11-15 from the outlines of each file, in font units of 1000 (observed):
+
+| File | Stroke of the l | Stroke of the I | Weight class | Glyphs |
+|---|---|---|---|---|
+| PP Neue Montreal 2.6 Book | 65 | 73 | 400 | 742 |
+| Neue Montreal 1.0 Regular | 80 | 90 | 400 | 363 |
+| PP Neue Montreal 2.6 Medium | 98 | 110 | 500 | 742 |
+| Neue Montreal 1.0 Medium | 106 | 119 | 500 | 363 |
+
+- The Mac holds PP 2.6 in Thin, Book, Italic, Medium, SemiBold Italic and Bold, and 1.0 in Light, Regular, Medium and Bold with italics. None is a variable font (observed).
+- The x-height is 510 in both versions (observed), so the 1.0 Regular can stand in for the Book without moving a line.
+- The 1.0 Regular sits almost halfway between the PP Book and the PP Medium (inferred from the table: 80 against 65 and 98).
+- The 1.0 file has no ½ and no fractions, and its fixed-width digits come from the font-tnum patch (observed, and in [neue-montreal-file.md](neue-montreal-file.md)).
+- The paid PP Neue Montreal family has a Regular between Book and Medium (asserted, from memory; not read today).
+
+Open as R42 in the [ledger](../../../brand/ledger.md).

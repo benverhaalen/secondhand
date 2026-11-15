@@ -837,3 +837,19 @@ Ben, project chat, 02:52 UTC.
 ## 2026-11-14 nate the entire product is finished by 3 am, with leeway to 7 am
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about 21:00 Central.
 > When you say tonights settled items, understand that the entire product must be finished by 3 am, with some leeway up to 7 am
+
+## 2026-11-14 nate faster than the proposed timeline, with codex beside claude
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> I imagine we will move even faster than the proposed timeline given the way we can orchestrate and drive optimized subagents. Utilize codex too, sol and terra and even astra at times. 6.1 which you have access to, they can handle work alongside you, but should be understood to what extent you want your own family of models working
+
+## 2026-11-15 what he wants over what he says
+Ben, project chat, 2026-11-15 02:49 UTC, relayed to the thread "Roll the UI system out everywhere".
+> also im thinking about if some of what i say contradicts past things ui wise consider what i want not what i say. that should be a great principle. the evidence from what i praise vs not. and extrapolate that.
+
+## 2026-11-15 do not weight color blindness too much
+Ben, thread "Make gradients and colors carry meaning", 2026-11-15 02:59 UTC, after the first board of state colors, which leaned on simulated red-green color blindness.
+> dont weight to colorblindness too much
+
+## 2026-11-14 nate every platform gets an expert team, codex builds beside claude, and a fresh orchestrator launches the sessions
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> codex wont be used for any portion of the models driving the working product, at least not planned, more so to parallel handle development, effectively and perfectly stay on task while saving us hours. They could do research and calculate the proper way systems weigh gathered infromation, all platform harnesses should be built to account for everything. Searching all listings on the platform, viewing and managing the users listings, thier notifications, messages, etc. Every platform is understood, a small team of experts build each custom api / harness to drive the app actions with the authenticated sessions. The system for the mass swarm intelligence layers we need for additional insight and data for things outside what just the platforms tell us. Then understanding how to credibly weigh and realtime score everything, the databricks and such. Again I will begin building in a fresh session. But lets fully plan out piece by piece everything, get a fresh orchestrator driving it, launching out seperate sessions, sessions with codex being orchestrated by one of your opus or fable models,

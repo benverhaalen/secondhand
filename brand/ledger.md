@@ -91,6 +91,7 @@ Round 10 picks and notes are in [words.md](../product/words.md#2026-11-15-round-
 | R39 | A device beyond the drifting gradient. Ben: "a drifting gradient is a bit standard as a device". Now with the thread "Make gradients and colors carry meaning" | Four on the picks page | Ben picks |
 | R40 | What the app optimizes for. Ben: "what are we optimizing for in the long run" | A: decisions answered. B: time from photo to paid. C: money kept. For Ben and Nate | A (agent) |
 | R41 | Where the wordmark sits in the app. Changes L3 | A: centered at the top, as locked. B: left, with the inbox on the right, as the Today mock Ben liked draws it | A (agent) until Ben says |
+| R42 | The weight of the text. Ben, 2026-11-15 02:46: "the fonts are a bit lighter", "a middle ground would be good". Changes L38 | A: PP Neue Montreal Book, as locked (stroke 65). B: the older Neue Montreal 1.0 Regular (stroke 80) until PP's own Regular is in hand. C: Book, with Medium (98) for titles and money | B (agent) |
 
 Small calls the mocks forced, each one line in [screens.css](explore/round-11/mock/screens.css): a filter chip is 36 tall, which is in no scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label. The mocks run through the brand checker with `node scripts/brand-check.mjs brand/explore/round-11/mock/check.html --medium app`.
 

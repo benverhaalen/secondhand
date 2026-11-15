@@ -28,17 +28,17 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 | Size | Examples | Image rounds | Who judges | States it runs |
 |---|---|---|---|---|
 | Small | A 404, an empty state, a settings row, a state of a screen that exists | None | Scripts | 1, then 7 to 12 |
-| Medium | A new screen made mostly of parts that exist | One round of 3: two open, one steered | The model | All but 6 |
-| Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 rounds of 4: two open, two steered | The model, then Ben | All |
+| Medium | A new screen made mostly of parts that exist | One round of 2 or 3, each leaning toward one person | The model | All but 6 |
+| Large | Today, the Sell grid, Capture, the Offer sheet, a section of the web front page | Up to 3 rounds. The first: 3 or 4, each leaning toward one person. Later ones: the merge, plus one or two pushed on a lever | The model, then Ben | All |
 
 | State | What happens | Next |
 |---|---|---|
 | 1. Triage | Size the work from the table above. | Small goes to 7. Otherwise 2. |
 | 2. Frame | Write who it is for, how often they come, what they came to do and where a mistake costs most. Say what they want, as opposed to what they would say ([Article 2.1](ui-constitution.md#article-2-start-from-the-person-not-the-screen)). | 3 |
 | 3. In the family? | List the parts in [app/src/ui](../app/src/ui/README.md), the patterns and the decisions that already cover this screen, and what is fixed around it: the tab bar, the header, the screens it sits between. A control that the Vercel UI SDK or shadcn already has is decided. | If the parts that exist can build it, 7, with no image. Otherwise 4. |
-| 4. Explore, 2 to 4 ways | Each design comes from its own fresh call through the [`image-gen` skill](../.agents/skills/image-gen/SKILL.md), in parallel. Every call gets the intention, the fixed surroundings as images, feel references, how it will be judged and what not to do. Two calls get nothing more. Each of the others also gets one lever to push as far as it goes, from the table below. No call gets a layout, copy, numbers or another design. | 5 |
-| 5. Judge and split | A fresh judge gets the images, the intention and the fail list from `node scripts/ui-rules.mjs judge`, written before it looks. Sort every finding: an exact fix (a size, a gap, a color) is saved for the build and never sent back to the image model. A feel note goes into the next round. | New feel notes: 4, with 2 or 3 designs, 3 rounds at most. Otherwise the best so far, not the latest, moves on. |
-| 6. Ben reacts | Large only. Ben sees the best one or two. A model is a weak judge of taste, so his reaction replaces a third round. | Pick: 7. Redirect: 2. |
+| 4. Explore, 2 to 4 ways | Each design comes from its own fresh call through the [`image-gen` skill](../.agents/skills/image-gen/SKILL.md), in parallel. Every call gets the intention, the fixed surroundings as images, feel references, how it will be judged and what not to do. In the first round each call also gets one person to design for, from the table below. In a later round the calls start from the merge, and one or two also get one lever to push. No call gets a layout, copy, numbers, another design, or two steers. | 5 |
+| 5. Judge, merge and split | A fresh judge gets the images, the intention, each design's person and the fail list from `node scripts/ui-rules.mjs judge`, written before it looks. For each design it says how and why the design serves its person: which element answers which want, and what that costs the other people. Then it writes the merge: what to keep from each, taking what serves one person without costing another. Sort every other finding: an exact fix (a size, a gap, a color) is saved for the build and never sent back to the image model. A feel note goes into the next round. | New feel notes or an untested merge: 4, 3 rounds at most. Otherwise the best so far, not the latest, moves on. |
+| 6. Ben reacts | Large only. Ben sees the best one or two. A model is a weak judge of taste, so his reaction replaces a third round. What he praises or criticizes goes in as a dated row in [taste-evidence.md](../research/cross-cutting/ben/taste-evidence.md), and the next Frame reads it. | Pick: 7. Redirect: 2. |
 | 7. Static build | Recreate the image as a still screen with sample content, in the smallest change that fits, from the parts and the brand values. Read the [coder card](../brand/coder-card.md). Apply the saved exact fixes. A part that is missing is added to app/src/ui with its reason. | 8 |
 | 8. Behavior table | A fresh agent that has not seen the code looks at the still screen and writes `app/behavior/<screen>.json`: what each state shows, what each control does on tap and where Back goes. A control that leads to a screen that doesn't exist queues that screen at 1. | 9 |
 | 9. Tests first | An agent that is not the builder turns the table into tests that fail. The app's tests are Maestro files, explored once with agent-device ([decision](decisions.md)); the website's are Playwright. Tests read the event log, not pixels. The builder edits neither the table nor the tests. | 10 |
@@ -48,9 +48,17 @@ This is [Ben's loop](words.md#2026-11-14-the-ui-loop) as twelve states, tailored
 
 A beautiful screen with a dead control fails. So does a working screen that drifts from the chosen look.
 
-### Levers for the steered designs
+### Personas for the first round
 
-Ben: two designs "not specifically prompted to look a certain way", and the others told "to maximize different levers" ([words](words.md#2026-11-15-a-brand-system-for-anything-alive-and-bold-with-purpose-code-that-knows-each-app-and-knowing-when-things-sell)). The list is an *agent proposal* from [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md). One lever per design, never two. Each names a change in structure, because a model answers an adjective with decoration.
+Ben: "each of the different options in the first run should be favored or tilted or leaned in favor of the wants of a persona", then the judging "should also try and determine if how and why it achieves that. then it should merge them together" ([words](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)).
+
+The people, and the one line a call gets for each, are in [personas.md](personas.md). Take the two to four who use the screen. The line says who is looking and what they want, never what the screen contains, so the model is still the one that works out the design. A reseller is a stress case for the judge, never a lean.
+
+The merge is not an average. Keep what serves one person and costs nobody. Where two people's wants conflict, the person clearing out wins, or the conflict becomes something the person sets once, such as their minimum.
+
+### Levers for the later rounds
+
+Ben first asked for two designs "not specifically prompted to look a certain way" and the others told "to maximize different levers". His later note gave the first round to personas, so the levers now steer rounds two and three ([words](words.md#2026-11-15-a-brand-system-for-anything-alive-and-bold-with-purpose-code-that-knows-each-app-and-knowing-when-things-sell)). The list is an *agent proposal* from [bold-and-alive.md](../research/cross-cutting/ben/bold-and-alive.md). One lever per design, never two. Each names a change in structure, because a model answers an adjective with decoration.
 
 | Lever | The line the call gets | It must keep | Use on |
 |---|---|---|---|
@@ -108,7 +116,8 @@ Each moment names its borrowed pattern, its timing and its fallback.
 | Open an item from a grid or a row | Many per day | The photo grows into the item page and shrinks back on return. The page shows what the tile already knew and fills in the rest | Apple Photos, App Store cards | Crossfade |
 | Switch tabs | Constant | None; the content swaps | iOS tab bar | Same |
 | Open all messages (chat icon, top right) | Several per day | Pushes in from the right like any iOS navigation, `--t-panel`; unread count crossfades | iOS navigation push; eBay and Marketplace header icon | Instant |
-| Open ＋ (Sell this / What's it worth / Find this) | Daily | Sheet rises from the bottom, `--t-panel`, drag to dismiss | iOS sheet | Fade |
+| Open New (Sell this / What's it worth / Find this) | Daily | The 56 circle's ＋ turns to ×, a scrim fades in, and the three choices rise from the button 30 ms apart, `--t-select`. Sell this opens the camera out of the button's circle, `--t-panel` ([Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready), [note §5](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#5-new-then-the-camera)) | Floating action menus; the iOS camera opening from its button | Choices and camera fade in |
+| The camera reads the item | Once per item | Corner brackets hold the item; a line in the field colors sweeps only while the work runs; each fact lands as a chip with a check as it resolves, and a fact not found yet is a blank chip; the caption names the real comparison | ID and face scanners | No sweep; chips appear |
 | Take a shot in the guided capture | Tens per item | Shutter blink, then the thumbnail flies to its slot in the shot strip (origin-aware), ~250 ms. The next shot's outline appears. Light haptic | iOS Camera thumbnail | Thumbnail appears in place |
 | Researching | Once per item | Fields fill in as each resolves, a 30 to 80 ms stagger, one thin progress line; no spinner after the first second | Skeleton screens (Vercel rule); live build logs | Fields appear |
 | Approve a Today card | Many per day | Card collapses and the list closes the gap, `--t-select`; an Undo toast holds ~5 s | Gmail archive with Undo | Card disappears; toast stays |
@@ -164,6 +173,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: the blur test passes (focal point first, next action second).
 - [ ] Block: color appears only as state fills, one field and the brick alert (brand constitution Art. 5, C2, C6).
 - [ ] Flag: more than three actions visible on a card. Choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)), so justify it rather than ban it.
+- [ ] Block: nothing sits in a corner's curve. In a box with radius r and padding p, content in a corner keeps p from the arc only at an inset x ≥ r − (r − p)/√2, measured on the ink, not the line box. On a decision card a top-right countdown sits 24 from the right edge. Shapes concentric with the box (the photo, radius r − p) already hold ([Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready), [note §1](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#1-where-content-sits-in-a-rounded-corner)).
 - [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 
 ### Honesty
@@ -192,11 +202,12 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 
 ### Access
 - [ ] Block: text contrast is at least 4.5:1 (WCAG 2.2 AA), and 3:1 for large text and UI parts. Field, state and category colors are never text on white (brand Art. 5.1).
-- [ ] Block: touch targets are at least 44 pt, and main buttons 48.
+- [ ] Block: a button's size follows its kind, never its words. A pill is 40 tall and hugs its label with 20 a side, at least 88 wide; the copy limit is its ceiling. A full-width primary is the content width by 48, one per screen. An icon button is a 40 circle; New is 56. Every target's hit area is at least 44 by 44: it grows into free space around a small control, and between two close targets the gap is split down the middle so no point belongs to both (Apple HIG; [Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready); [note §2 and §3](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#2-button-sizes)).
 - [ ] Block: inputs are at least 16 px, which prevents iOS zoom.
 - [ ] Block: VoiceOver labels exist on icon-only controls and state pills, and a pill reads as "Live on eBay", not "green dot".
 - [ ] Block: the layout holds at the largest Dynamic Type size.
-- [ ] Block: state follows brand Art. 5's States rule (a word or an icon, never color alone), and renders are also checked under simulated protanopia and deuteranopia (Machado 2009). Two state colors in one view stay at least .056 apart in Oklab, the closest pair the four state fills have today, so a new color can't come closer. No dark ground has OKLCH hue 70 to 115 with L under .5: it reads brown. Ben is color blind ([words](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §6](../research/today/ben/today-wants-alerts-and-clickability.md#6-color-blindness)).
+- [ ] Block: state follows brand Art. 5's States rule (a word or an icon, never color alone). No dark ground has OKLCH hue 70 to 115 with L under .5: it reads brown.
+- [ ] Flag: renders checked under simulated protanopia and deuteranopia (Machado 2009), with two state colors in one view at least .056 apart in Oklab. Ben is color blind but asked that it not weigh too much ([02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §6](../research/today/ben/today-wants-alerts-and-clickability.md#6-color-blindness); [02:59](words.md#2026-11-15-do-not-weight-color-blindness-too-much): "dont weight to colorblindness too much"), so a near pair is a reason to write down, not a stop.
 
 ### Character
 - [ ] Block: tokens only, with the real fonts and Hugeicons rendered. The check is on the rendered result, not the CSS.
