@@ -2159,3 +2159,9 @@ Nate, orchestrator's session, 2026-11-15, about 06:20 Central. The middle of the
 >  to it, which it updated the spec and pushed. So address everything to fix to work and also perform at its best.
 
 Used in: [the finalization spec](../spec/plans/finalization.md), [the audit](../spec/plans/audit-2026-11-15.md).
+
+## 2026-11-15 nate get identification, listing classification and the generative clarifying UI built
+Nate, orchestrator's session, 2026-11-15, about 06:45 Central.
+> Get this going too, unless theres a lead working on this stuff, the identification and intelligent listing classification and generative intelligent ui built
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the identify lead's brief.
