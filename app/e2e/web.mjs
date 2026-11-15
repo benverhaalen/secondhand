@@ -9,7 +9,8 @@ import { fileURLToPath } from 'node:url';
 
 export const appDir = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const dist = join(appDir, 'dist'), routesFile = join(dist, 'server/_expo/routes.json');
-const SOURCES = ['src', 'assets', 'app.json', 'package-lock.json', 'metro.config.js', 'tsconfig.json'];
+// ../log and ../spec are bundled too (metro.config.js watchFolders), and ../brand/tokens.css is what the checks compare against.
+const SOURCES = ['src', 'assets', 'app.json', 'package-lock.json', 'metro.config.js', 'tsconfig.json', '../log', '../spec', '../brand/tokens.css'];
 const expo = join(appDir, 'node_modules/.bin/expo');
 
 const newest = p => { if (!existsSync(p)) return 0; const s = statSync(p); if (!s.isDirectory()) return s.mtimeMs;

@@ -46,10 +46,10 @@ def test_refurbished_groups_and_retail_cache_expiry():
     assert sum(len(g["offers"]) for g in groups) == 2
 
 
-def test_variant_range_requires_three_sold_not_three_asking():
+def test_variant_range_blends_sold_evidence_at_every_count():
     family = {"low": 100, "high": 200}
-    assert variant_range(family, [200, 200], [100, 100, 100])["low"] == 100
-    assert variant_range(family, [200, 200, 200], [100, 100, 100])["low"] == 200
+    assert variant_range(family, [200, 200], [100, 100, 100])["low"] == 140
+    assert variant_range(family, [200, 200, 200], [100, 100, 100])["low"] == 150
 
 
 def test_unknown_relation_is_an_input_error():

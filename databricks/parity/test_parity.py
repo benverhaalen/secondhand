@@ -31,6 +31,22 @@ def test_every_committed_typescript_case_matches_python():
     assert all(r['equal'] for r in results), [r for r in results if not r['equal']]
 
 
+def test_public_citation_id_matches_every_typescript_fixture():
+    from proof import citationId
+
+    fixtures, ts = inputs()
+    expected = {row['case']: row['value'] for row in ts}
+    checked = 0
+    for fixture in fixtures:
+        value = expected[fixture['case']]
+        answer = value.get('answer', {}) if isinstance(value, dict) else {}
+        citation = answer.get('citation') if isinstance(answer, dict) else None
+        if citation:
+            assert citationId(citation, citation['basis_hash']) == citation['id'], fixture['case']
+            checked += 1
+    assert checked > 0
+
+
 def test_changed_typescript_string_and_integer_are_unequal():
     fixtures, ts = inputs()
     changed = copy.deepcopy(ts)
@@ -58,6 +74,23 @@ def test_workspace_job_reads_committed_fixtures_and_serializes_table_values():
     assert all(r['checked_at'] == checked_at and r['code_sha'] == 'fixture_build' for r in rows)
     assert json.loads(rows[0]['ts_value']) == results[0]['ts_value']
     assert json.loads(rows[0]['py_value']) == results[0]['py_value']
+
+
+def test_every_fixture_table_row_is_utf8_and_preserves_values():
+    from datetime import datetime, timezone
+    from parity.parity import table_rows
+
+    fixtures, ts = inputs()
+    results = compare(fixtures, ts, proof_case)
+    rows = table_rows(results, 'fixture_build', datetime.now(timezone.utc))
+    for fixture, result, row in zip(fixtures, results, rows):
+        for value in row.values():
+            if isinstance(value, str):
+                value.encode('utf-8')
+        assert json.loads(row['case']) == fixture
+        assert json.loads(row['ts_value']) == result['ts_value']
+        assert json.loads(row['py_value']) == result['py_value']
+        assert row['equal'] == result['equal']
 
 
 def test_identity_variants_share_basis_but_have_distinct_citation_ids():

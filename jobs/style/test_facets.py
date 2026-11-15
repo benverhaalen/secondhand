@@ -26,14 +26,15 @@ def test_worked_example_brand_weight():
     # kept events are within a day or two so decay is ~1; compare with the formula, not a rounded number
     (f,) = find(compute(es, NOW), "brand", value="Patagonia")
     a = sum(START[s][0] * 0.5 ** (d / 365) for s, d in [("purchase", 365), ("kept", 1), ("kept", 4), ("kept", 7), ("save", 1), ("save", 2)])
-    assert f["weight"] == pytest.approx(a / (a + 2))
+    assert f["weight"] == pytest.approx(a / (a + 2) * 6 / 9 * 365 / 367)
     assert f["count"] == 6 and f["from"] == "saved"
 
 
-def test_thin_facet_is_not_shown():
-    # 3 events needed, from at least 2 days
-    assert not find(compute([ev(str(i), "save", 1, brand="X") for i in range(2)], NOW), "brand")
-    assert not find(compute([Event(str(i), "a", "save", NOW, {"brand": "X"}) for i in range(3)], NOW), "brand")
+def test_thin_facet_shows_with_shrinkage_instead_of_count_gate():
+    two = find(compute([ev(str(i), "save", 1, brand="X") for i in range(2)], NOW), "brand")[0]
+    three = find(compute([ev(str(i), "save", 1, brand="X") for i in range(3)], NOW), "brand")[0]
+    assert 0 < two['weight'] < three['weight'] < 1
+    assert two['guarded']['weight']['state']=='shown'
 
 
 def test_purchase_listed_within_a_week_is_not_taste():
@@ -46,10 +47,12 @@ def test_purchase_listed_after_a_month_is_taste():
     assert find(compute(es, NOW), "brand", value="Nike")
 
 
-def test_sold_item_counts_zero_for_taste_and_size():
+def test_sold_item_counts_spec_weights_for_taste_and_size():
     es = [ev(f"s{i}", "sold", 10 + i, brand="Nike", category="shoe", size="10") for i in range(5)]
     es += [ev(f"p{i}", "purchase", 100 + i, sold=True, brand="Nike", category="shoe", size="10") for i in range(5)]
-    assert compute(es, NOW).facets == []
+    facets = compute(es, NOW).facets
+    assert {f["name"] for f in facets} == {"brand", "category", "size"}
+    assert next(f for f in facets if f["name"]=="size")["count"] == 10
 
 
 def test_two_brands_two_sizes_both_kept():
@@ -77,7 +80,10 @@ def test_pool_offsets_needs_five_people():
 def test_child_size_steps_up_with_months():
     es = [ev(f"o{i}", "purchase", 365 + i, recipient="son", category="shoe", size="8") for i in range(3)]
     es += [ev(f"n{i}", "purchase", 20 + i * 5, recipient="son", category="shoe", size="10") for i in range(3)]
-    (f,) = find(compute(es, NOW, children={"son"}), "size", recipient="son")
+    from style.params import resolve
+    params=resolve()
+    params["values"]["style_child_half_life_days"]=91.0
+    (f,) = find(compute(es, NOW, children={"son"}, params=params), "size", recipient="son")
     assert f["value"] == "10"
 
 

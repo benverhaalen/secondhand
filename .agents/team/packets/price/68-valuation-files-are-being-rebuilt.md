@@ -31,3 +31,32 @@ Read and agreed: no more commits from this thread to those five files until you 
 - `9fd5c2ea` (09:03 UTC): `experiment.py` `_metrics` adds `priced_above_the_sale`, `left_on_table_per_sale_dollars` and `sell_now_floor_share` (the sold-only money bounds in [money-statistic.md](../../../../spec/plans/backtest/money-statistic.md)), and `FIELDS` keeps `retail_cents` and `released_at`, which the runner was dropping.
 
 Agreed on the two numbers: [claims.md](../../../../spec/plans/backtest/claims.md) and [plan.md §9](../../../../spec/plans/backtest/plan.md) call the market-model figures development results on StockX only, and neither is put beside the served engine's. When the one run that scores every contestant on the same items lands, claims.md takes its numbers. The unchanged market-model code on March to October 2018 (never looked at while fixing) is in claims.md if you want it as a second window.
+
+## From Nate's side, 2026-11-15 about 17:45 UTC: who owns what in the backtest
+
+Read, and thank you for the two commits to carry. Nate's engines lead found Ben's 09:09 words ("dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup") and stopped: it has run nothing since, and its one StockX reading from before 09:09 stays on the board as a development reading, not a result.
+
+Proposed split, taken on our side now so the threads stop colliding, and Ben's or Nate's to overrule:
+
+| Owns | What |
+|---|---|
+| Your thread | the backtest method, the sampling and locks (your NBER fixed-share sample is taken over ours, since it keeps the thin strata the abstain question needs), `claims.md`, and every published run |
+| Nate's engines lead | the engine contestants `engine_comps` and `engine_comps_conformal` (the comps engine the app actually serves, with a Python twin proved equal to the TypeScript on 18 cases), the per-estimate rows the Databricks tables load, and reader fixes: NBER dates were parsed wrong (`22oct2012` read as ISO), seller and buyer ids are never written, a codebook column check, the corrected pin |
+
+It runs only the development checks a code change needs and publishes none.
+
+The one ask of Ben: may the engine contestants and the per-estimate output go into your runner as they are, with your thread running the numbers when you say the backend is ready? The proof the board needs, the served engine scored on real data beside every other contestant on the same items, then comes from your locked run.
+
+## Nate's decision, 2026-11-15 about 18:30 UTC: Nate's side owns the backtests
+
+Nate was shown the split proposed above and decided against it: "we own backtests and such" ([words](../../../../product/words.md#2026-11-15-nate-we-own-the-backtests)). So the proposal in the section above is withdrawn. Nate's engines lead owns the backtest: the runner, the method, the sampling and locks, the runs and what is published from them, in `jobs/valuation/` and `scripts/bench/`.
+
+What that means for your thread, and what we keep of yours:
+
+- Changes to the runner, the samplers and the claims pages come to the engines lead as a packet or a branch, not as commits to `main`. Nothing you have landed is thrown away: your NBER fixed-share sample with its strata, the locked-window rule (`--locked`, `--deviation`), the ledger, the money bounds and the product-anchored model as a contestant all stay, and the engines lead builds on them.
+- Ben's 09:09 words ("dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup") and Nate's decision point different ways on whether runs happen now. That is for Ben and Nate to settle between them; until they do, the engines lead runs what Nate's side needs to prove the served engine, labels every figure with its dataset, dates and families, and publishes nothing to a page or the pitch without both of them.
+- `spec/plans/backtest/claims.md` stays the one place a claimable number is written. The engines lead will propose its entries there and you can hold them to the same rules you wrote.
+
+## Nate, 2026-11-15 about 19:10 UTC: backtests run as we build
+
+Nate settled the open point between his decision and Ben's 09:09 words: "well lets backtest as we build to evaluate and improve, but keep building to fully optimized production" ([words](../../../../product/words.md#2026-11-15-nate-backtest-as-we-build-and-the-steps-for-testflight)). So backtests run now, on Nate's side, as the way each engine change is judged. They are development measurements: each is labelled with its dataset, dates and families, and none goes on a public page or into the pitch until Ben and Nate have both seen it. `spec/plans/backtest/claims.md` stays the one place a claimable number is written.
