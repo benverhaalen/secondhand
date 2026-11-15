@@ -7,7 +7,7 @@ import { spawn } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Launcher, LaunchOptions, PoolContext } from './pool.ts';
-import type { StorageState, ProfileRegistry } from './auth.ts';
+import { profileRow, type StorageState, type ProfileRegistry } from './auth.ts';
 
 export type CdpEndpoint = { cdpUrl: string; live_url?: string; cloudProfile?: boolean; isStopped?(): boolean; stop(): Promise<void> };
 // Where a browser comes from. profileDir is undefined for an anonymous public browser.
@@ -89,7 +89,7 @@ export function localChrome({ executablePath, scratch, headless, spawnFn = spawn
       const t0 = Date.now();
       while (Date.now() - t0 < readyMs) {
         try {
-          const [port, path] = readFileSync(join(dir, 'DevToolsActivePort'), 'utf8').split(/\r?\n/);
+          const [port, path] = readFileSync(join(dir, 'DevToolsActivePort'), 'utf8').split(/\r?\n/); // bundle-safe: reads the port file the Chrome it just launched wrote in its temp profile, not a repo file
           if (port && path) return { cdpUrl: `ws://127.0.0.1:${port}${path}`, stop };
         } catch { /* not written yet */ }
         if (child.exitCode !== null) break;
@@ -168,6 +168,11 @@ export function registryProfileFor(registry: ProfileRegistry) {
     if (!opts.user_id || !opts.account_id) throw new Error('profile owner required');
     const row = await registry.get(opts.user_id, opts.account_id);
     if (!row) throw new Error('profile not found');
+    if (opts.pending_profile_id !== undefined) {
+      const pending = profileRow({ ...row, profile_id: opts.pending_profile_id });
+      if (await registry.hasProfile(pending.profile_id)) throw new Error('profile already published');
+      return pending.profile_id;
+    }
     return row.profile_id;
   };
 }

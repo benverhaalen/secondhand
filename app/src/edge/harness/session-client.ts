@@ -1,7 +1,7 @@
 // Profile-backed transports. The runtime supplies ports; this module never reads credentials or opens a browser by itself.
 import { randomUUID } from 'node:crypto';
 import type { Log } from '../../../../log/index.js';
-import type { ProfileRegistry, ProfileRow } from '../browser/auth.ts';
+import { profileRow, type ProfileRegistry, type ProfileRow } from '../browser/auth.ts';
 import { profileDirFor, type Pool, type Launcher, type PoolContext } from '../browser/pool.ts';
 import type { Leases } from '../events/ports.ts';
 import { PROFILES } from './platform.ts';
@@ -33,14 +33,18 @@ export class SessionClientError extends Error {
   constructor(error: CallError) { super(error.message); this.error = error; }
 }
 const stale = (site: SessionSite) => fail('auth_expired', 'link this account again', { do: 'relink', site });
-const paused = (site: SessionSite) => fail('blocked', 'this account needs your attention', { do: 'pause_session', site });
-const failurePage = (state: ProfileRow['state']): PageResult => ({ status: state === 'paused' ? 403 : 401, html: state === 'needs_signin' ? '<title>Sign in or Register</title>' : '', challenge: state === 'paused', api: [] });
+type Denial = ProfileRow['state'] | 429;
+const failurePage = (state: Denial): PageResult => ({ status: state === 429 ? 429 : state === 'paused' ? 403 : 401, html: state === 'needs_signin' ? '<title>Sign in or Register</title>' : '', challenge: state === 'paused', api: [] });
+
+function checkAbort(signal: AbortSignal) {
+  if (signal.aborted) throw new DOMException('session read cancelled', 'AbortError');
+}
 
 async function abortable<T>(signal: AbortSignal, run: () => Promise<T>): Promise<T> {
-  signal.throwIfAborted();
+  checkAbort(signal);
   let abort!: () => void;
   const interrupted = new Promise<never>((_, reject) => {
-    abort = () => reject(new Error('session read cancelled'));
+    abort = () => reject(new DOMException('session read cancelled', 'AbortError'));
     signal.addEventListener('abort', abort, { once: true });
   });
   try { return await Promise.race([run(), interrupted]); }
@@ -54,8 +58,9 @@ function pageState(url: string, html: string, status: number): 'needs_signin' | 
 }
 
 export function sessionClient(o: {
-  pool: Pick<Pool<SessionPage>, 'dispatch' | 'invalidate'>; registry: ProfileRegistry; launcher: Launcher<SessionPage>;
+  pool: Pick<Pool<SessionPage>, 'dispatch'>; registry: ProfileRegistry; launcher: Launcher<SessionPage>;
   profileRoot: string; leases: Leases; createProfile(owner: Owner & { site: SessionSite }): Promise<string>;
+  deleteProfile(profile_id: string): Promise<void>;
   ttlMs: number; log: Log; now?: () => number;
 }) {
   if (!(o.ttlMs > 0 && o.ttlMs <= 240 * 60_000)) throw new Error('link lifetime must be within 240 minutes');
@@ -63,7 +68,7 @@ export function sessionClient(o: {
   const iso = () => new Date(now()).toISOString();
   const call = <T>(name: string, site: SessionSite, run: () => Promise<T>) => o.log.call('browser', name, { site }, async () => {
     try { return await run(); }
-    catch (e) { if (e instanceof SessionClientError) throw e; throw new Error(`${name} failed`); }
+    catch { throw new Error(`${name} failed`); }
   }, () => ({ ok: true }));
   async function owned(site: SessionSite, who: Owner) {
     const row = await o.registry.get(who.user_id, who.account_id);
@@ -72,13 +77,13 @@ export function sessionClient(o: {
   }
   async function change(row: ProfileRow, state: ProfileRow['state'], signal: AbortSignal) {
     const current = await o.registry.get(row.user_id, row.account_id);
-    signal.throwIfAborted();
+    checkAbort(signal);
     if (current?.profile_id !== row.profile_id || current.state !== row.state) throw new Error('session changed');
     await o.registry.put(row.user_id, { ...row, state, ...(state === 'linked' ? { last_ok_at: iso() } : {}) });
     o.log.event('state.change', { entity: 'account', id: row.account_id, to: state, was: row.state });
   }
   function transport(site: SessionSite, isLinked: () => boolean,
-    run: <T>(signal: AbortSignal, task: (page: SessionPage) => Promise<T>, denied: (state: ProfileRow['state']) => T) => Promise<T>,
+    run: <T>(signal: AbortSignal, task: (page: SessionPage) => Promise<T>, denied: (state: Denial) => T) => Promise<T>,
     mark: (state: 'needs_signin' | 'paused', signal: AbortSignal) => Promise<void>): Transport {
     const allowed = (url: string, api = false) => {
       const target = new URL(url, api && site === 'depop' ? DEPOP_API : PROFILES[site].home);
@@ -88,8 +93,6 @@ export function sessionClient(o: {
       return target.href;
     };
     async function doc(page: SessionPage, url: string, signal: AbortSignal): Promise<PageResult> {
-      // eBay refuses browsers that intercept requests (protocol-and-adapters.md §8). The pool itself never routes requests.
-      if (site !== 'ebay') await page.route('**/*', r => ['image', 'media', 'font'].includes(r.request().resourceType()) ? r.abort() : r.continue());
       const api: PageResult['api'] = [], pending: Promise<void>[] = [];
       let responseState: 'needs_signin' | 'paused' | undefined, responseFailed = false;
       const onResponse = (r: SessionResponse) => {
@@ -127,7 +130,7 @@ export function sessionClient(o: {
         await Promise.all(pending);
         if (responseFailed) throw new Error('marketplace response could not be read');
         state = state ?? responseState;
-        if (state) { signal.throwIfAborted(); await mark(state, signal); return failurePage(state); }
+        if (state) { checkAbort(signal); await mark(state, signal); return failurePage(state); }
         return { status: response?.status() ?? 0, html, api };
       } finally { if (site === 'mercari') page.off('response', onResponse); }
     }
@@ -137,7 +140,7 @@ export function sessionClient(o: {
       page: (url, signal) => run(signal, p => doc(p, url, signal), failurePage),
       json: (path, signal) => run<Reply>(signal, async p => {
         const home = await doc(p, PROFILES[site].home, signal);
-        if (home.status === 401 || home.challenge) return { status: home.status, body: null };
+        if (home.status === 401 || home.status === 429 || home.challenge) return { status: home.status, body: null };
         const reply = await p.evaluate(async (url: string) => {
           const response = await fetch(url, { credentials: 'include' });
           const text = await response.text();
@@ -146,72 +149,87 @@ export function sessionClient(o: {
           return { status: response.status, body, url: response.url, html: body === null ? text : '' };
         }, allowed(path, true));
         const state = pageState(reply.url, reply.html, reply.status);
-        if (state) { signal.throwIfAborted(); await mark(state, signal); return { status: state === 'paused' ? 403 : 401, body: null }; }
+        if (state) { checkAbort(signal); await mark(state, signal); return { status: state === 'paused' ? 403 : 401, body: null }; }
         return { status: reply.status, body: reply.body };
-      }, state => ({ status: state === 'paused' ? 403 : 401, body: null })),
+      }, state => ({ status: state === 429 ? 429 : state === 'paused' ? 403 : 401, body: null })),
     };
   }
   async function clientFor<S extends SessionSite>(site: S, who: Owner): Promise<Clients[S]> {
     let row = await owned(site, who);
     return transport(site, () => row?.state === 'linked', async (signal, task, denied) => {
-      signal.throwIfAborted(); row = await owned(site, who);
+      checkAbort(signal); row = await owned(site, who);
       if (row?.state !== 'linked') return denied(row?.state ?? 'needs_signin');
       const result = await call('session.read', site, () => o.pool.dispatch({ ...who, site, job_id: `session:${randomUUID()}`, run: async page => {
         row = await owned(site, who);
         if (row?.state !== 'linked') return denied(row?.state ?? 'needs_signin');
-        signal.throwIfAborted();
+        checkAbort(signal);
         const value = await abortable(signal, () => task(page));
-        signal.throwIfAborted();
+        checkAbort(signal);
         if (row.state === 'linked') await change(row, 'linked', signal);
         return value;
       } }));
+      checkAbort(signal);
       if (result.ok) return result.value;
       if (result.status === 'not_linked') return denied('needs_signin');
-      throw new SessionClientError(paused(site).error);
+      if (result.status === 409) return denied(429);
+      throw new Error('session read failed');
     }, async (state, signal) => { if (row) { await change(row, state, signal); row = { ...row, state }; } }) as Clients[S];
   }
 
-  type Link = { row: ProfileRow; site: SessionSite; ctx: PoolContext<SessionPage>; page: SessionPage; viewer?: string;
-    expires: number; job: string; closed: boolean; stopping?: Promise<void>; timer?: ReturnType<typeof setTimeout> };
+  type Link = { row: ProfileRow; previous: ProfileRow; site: SessionSite; ctx: PoolContext<SessionPage>; page: SessionPage; viewer?: string;
+    expires: number; job: string; closed: boolean; stopping?: Promise<void>; cleanup?: Promise<void>; timer?: ReturnType<typeof setTimeout> };
   const links = new Map<string, Link>();
   function stop(link: Link): Promise<void> {
     if (link.stopping) return link.stopping;
     link.closed = true; link.viewer = undefined; clearTimeout(link.timer);
     return link.stopping = call('session.stop', link.site, () => link.ctx.close());
   }
-  async function close(link: Link) {
-    try { await stop(link); } finally { o.leases.give(link.row.account_id, link.job); }
+  async function discard(profile_id: string, site: SessionSite) {
+    try {
+      if (await o.registry.hasProfile(profile_id)) return;
+      await call('session.delete_profile', site, () => o.deleteProfile(profile_id));
+    } catch {
+      o.log.error('session.delete_profile', new Error('profile delete failed'), { profile_id });
+    }
+  }
+  function close(link: Link): Promise<void> {
+    if (link.cleanup) return link.cleanup;
+    return link.cleanup = (async () => {
+      try { await stop(link); }
+      finally {
+        o.leases.give(link.row.account_id, link.job);
+        await discard(link.row.profile_id, link.site);
+      }
+    })();
   }
   async function find(user_id: string, handle: string) {
     const link = links.get(handle);
     if (!link || link.row.user_id !== user_id) return;
     const current = await owned(link.site, { user_id, account_id: link.row.account_id });
-    if (link.closed || now() >= link.expires || current?.profile_id !== link.row.profile_id ||
+    if (link.closed || now() >= link.expires || current?.profile_id !== link.previous.profile_id ||
         !o.leases.take(link.row.account_id, link.job, link.expires - now()).ok) { links.delete(handle); await close(link); return; }
     return link;
   }
   return {
     clientFor,
     async startLink(site: SessionSite, who: Owner): Promise<string> {
-      await owned(site, who);
+      const previous = await owned(site, who);
+      if (!previous) throw new Error('account not found');
       // eBay's signed-in Client requires OAuth. Its PageClient has no signed-in verification read yet.
       if (site === 'ebay') throw new SessionClientError(fail('no_route', 'eBay needs a signed-in page adapter', { do: 'handoff', url: PROFILES.ebay.home }).error);
       const handle = randomUUID(), job = `link:${handle}`, expires = now() + o.ttlMs;
-      if (!o.leases.take(who.account_id, job, o.ttlMs).ok) throw new SessionClientError(paused(site).error);
+      if (!o.leases.take(who.account_id, job, o.ttlMs).ok) throw new SessionClientError(fail('rate_limited', 'account busy', { do: 'retry_after', after_s: 60 }).error);
       const assertLease = () => {
         if (now() >= expires || !o.leases.take(who.account_id, job, expires - now()).ok) throw new Error('link lease expired');
       };
-      let ctx: PoolContext<SessionPage> | undefined;
+      let ctx: PoolContext<SessionPage> | undefined, pending: ProfileRow | undefined;
       try {
-        await o.pool.invalidate(who.account_id);
         const profile_id = await call('session.create_profile', site, () => o.createProfile({ ...who, site }));
-        assertLease();
-        const row: ProfileRow = { ...who, site, profile_id, state: 'needs_signin', linked_at: null, last_ok_at: null, data: 'captured' };
-        await o.registry.put(who.user_id, row);
-        o.log.event('state.change', { entity: 'account', id: row.account_id, to: 'needs_signin' });
+        const row = pending = profileRow({ ...who, site, profile_id, state: 'needs_signin', linked_at: null, last_ok_at: null, data: 'captured' });
+        if (await o.registry.hasProfile(profile_id)) throw new Error('profile already published');
         assertLease();
         ctx = await call('session.open', site, () => o.launcher.persistent(profileDirFor(o.profileRoot, who.account_id), {
-          ...who, headless: !PROFILES[site].headed, timeoutMin: Math.ceil((expires - now()) / 60_000),
+          ...who, pending_profile_id: row.profile_id, headless: !PROFILES[site].headed, timeoutMin: Math.ceil((expires - now()) / 60_000),
         }));
         assertLease();
         const viewer = (ctx as PoolContext<SessionPage> & { live_url?: string }).live_url;
@@ -219,7 +237,7 @@ export function sessionClient(o: {
         const page = await ctx.newPage();
         await call('session.signin', site, () => page.goto(PROFILES[site].login!));
         assertLease();
-        const link: Link = { row, site, ctx, page, viewer, expires, job, closed: false };
+        const link: Link = { row, previous, site, ctx, page, viewer, expires, job, closed: false };
         links.set(handle, link);
         link.timer = setTimeout(() => {
           links.delete(handle);
@@ -229,7 +247,10 @@ export function sessionClient(o: {
       } catch {
         o.log.error('session.link', new Error('link could not start'));
         try { if (ctx) await call('session.stop', site, () => ctx!.close()); }
-        finally { o.leases.give(who.account_id, job); }
+        finally {
+          o.leases.give(who.account_id, job);
+          if (pending) await discard(pending.profile_id, site);
+        }
         throw new Error('link could not start');
       }
     },
@@ -247,19 +268,19 @@ export function sessionClient(o: {
         const client = transport(link.site, () => state === 'linked', async (signal, run) => {
           return abortable(signal, () => run(link.page));
         }, async (next, signal) => {
-          signal.throwIfAborted();
+          checkAbort(signal);
           if (link.closed || now() >= link.expires || !o.leases.take(link.row.account_id, link.job, link.expires - now()).ok) throw new Error('link lease expired');
-          await change(link.row, next, signal); state = next;
+          state = next;
         });
         const adapters = link.site === 'poshmark' ? poshmarkAdapters(client) : link.site === 'mercari' ? mercariAdapters(client) : depopAdapters(client);
         const result = await call('session.verify', link.site, () => adapters.find(a => a.manifest.verb === 'read_inbox')!.run({}, AbortSignal.timeout(Math.max(1, link.expires - now()))));
         if (link.closed || now() >= link.expires || !o.leases.take(link.row.account_id, link.job, link.expires - now()).ok) return stale(link.site);
-        await stop(link); // Keep the lease through vendor persistence and publication.
+        await stop(link); // Keep the lease through verification and browser stop.
         if (!link.ctx.profileSaved?.()) throw new Error('profile was not saved');
         if (now() >= link.expires || !o.leases.take(link.row.account_id, link.job, link.expires - now()).ok) return stale(link.site);
-        if (result.ok) await o.registry.put(user_id, { ...link.row, state: 'linked', linked_at: iso(), last_ok_at: iso() });
-        o.log.event('state.change', { entity: 'account', id: link.row.account_id, to: result.ok ? 'linked' : state === 'linked' ? 'needs_signin' : state });
-        return result;
+        // All three read_inbox adapters return message rows only, with no account/owner evidence.
+        // A successful empty (or populated) inbox cannot establish a signed-in session.
+        return result.ok ? fail('no_route', 'the adapter cannot verify the signed-in account', { do: 'handoff', url: PROFILES[link.site].home }) : result;
       } finally { await close(link); }
     },
     async cancelLink(user_id: string, handle: string) {

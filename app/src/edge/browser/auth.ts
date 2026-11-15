@@ -53,10 +53,11 @@ export type ProfileRow = {
 export type ProfileRegistry = {
   get(user_id: string, account_id: string): Promise<ProfileRow | undefined>;
   put(user_id: string, row: ProfileRow): Promise<void>;
+  hasProfile(profile_id: string): Promise<boolean>;
 };
 
 
-function profileRow(row: ProfileRow): ProfileRow {
+export function profileRow(row: ProfileRow): ProfileRow {
   const id = (v: unknown) => typeof v === 'string' && /^[a-zA-Z0-9_-]{1,200}$/.test(v);
   const date = (v: unknown) => v === null || (typeof v === 'string' && /^\d{4}-\d\d-\d\dT[\d:.]+Z$/.test(v) && Number.isFinite(Date.parse(v)));
   if (![row.account_id, row.user_id, row.profile_id].every(id) || !SITES.includes(row.site) ||
@@ -73,6 +74,7 @@ export function storeProfileRegistry(store: Store): ProfileRegistry {
     return t.get<Row & Partial<ProfileRow>>('account', user_id, account_id);
   }
   return {
+    async hasProfile(profile_id) { return store.systemRows('account', { profile_id }).length > 0; },
     async get(user_id, account_id) {
       const r = owned(store, user_id, account_id);
       if (r && !r.profile_id) throw new Error('account needs profile migration');

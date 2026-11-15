@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createPool, type Launcher, type LaunchOptions, type PoolContext, type PoolPage } from './pool.ts';
 import { loadPlaywright, playwrightLauncher } from './playwright.ts';
-import { memoryAccounts, memoryVault, type Accounts, type StorageState } from './auth.ts';
+import { memoryAccounts, memoryVault, memoryProfileRegistry, type Accounts, type StorageState } from './auth.ts';
 import { browserUseCloud, cdpLauncher, localChrome, type CdpPw } from './cdp.ts';
 import { memoryLeases } from '../events/ports.ts';
 import { createLog } from '../../../../log/index.js';
@@ -397,7 +397,8 @@ test('F2: scheduler pool work inherits its account lease without releasing it ea
   const { memoryParams } = await import('../events/ports.ts');
   const leases = memoryLeases(), f = fakeLauncher(0);
   const pool = createPool({ leases, launcher: f.launcher, profileRoot: '/profiles', accounts: allLinked });
-  const scheduler = createScheduler({ leases, params: memoryParams({ watch_cadence_s: 60 }), now: Date.now,
+  let now = 0;
+  const scheduler = createScheduler({ leases, params: memoryParams({ watch_cadence_s: 60 }), now: () => now,
     accounts: () => [{ account_id: 'a', site: 'ebay', user_id: 'p1' }], stateOf: () => 'live', onStale: () => {},
     runSweep: async () => {
       const r = await pool.dispatch({ account_id: 'a', job_id: 'adapter', run: async () => 1 });
@@ -405,7 +406,8 @@ test('F2: scheduler pool work inherits its account lease without releasing it ea
       assert.equal(leases.take('a', 'signin', 1000).ok, false, 'pool released the outer sweep lease');
       return { ok: true };
     } });
-  scheduler.resume('a'); // Explicitly due: new accounts now start spread across the first cadence.
+  // 9d1d4719 staggers new accounts: reach the reported due time without resume.
+  await scheduler.tick(); now = scheduler.nextDue().a;
   await scheduler.tick(); assert.equal(f.launched.length, 1); await pool.close();
 });
 
@@ -468,4 +470,13 @@ test('cloud profiles omit state import/export while local CDP retains both', asy
     await context.close();
   }
   assert.equal(loaded, 1); assert.equal(exported, 1); assert.equal(stopped, 2);
+});
+
+
+test('registry warming skips legacy account lookup and unowned profile launches', async () => {
+  const f = fakeLauncher(0); let lookups = 0;
+  const pool = createPool({ leases: memoryLeases(), launcher: f.launcher, profileRoot: '/profiles', registry: memoryProfileRegistry(),
+    accounts: { byId: async id => { lookups++; return allLinked.byId(id); }, linked: async () => { lookups++; return [{ account_id: 'a', person_id: 'p1', site: 'ebay', token_ref: 'ref' }]; } } });
+  await pool.warm(['a'], 0); await pool.warmLinked('p1', 0);
+  assert.equal(lookups, 0); assert.equal(f.launched.length, 0); await pool.close();
 });

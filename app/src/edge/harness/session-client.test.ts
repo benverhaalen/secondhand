@@ -6,8 +6,9 @@ import { memoryStore, memoryLeases } from '../events/ports.ts';
 import { memoryProfileRegistry, storeProfileRegistry, type ProfileRow } from '../browser/auth.ts';
 import { createPool } from '../browser/pool.ts';
 import { browserUseCloud, cdpLauncher, registryProfileFor, type CdpPw } from '../browser/cdp.ts';
-import { sessionClient, type SessionPage, type SessionResponse } from './session-client.ts';
+import { SessionClientError, sessionClient, type SessionPage, type SessionResponse } from './session-client.ts';
 import { poshmarkAdapters } from './sites/poshmark/adapter.ts';
+import { createHarness } from './protocol.ts';
 import { mercariAdapters } from './sites/mercari/adapter.ts';
 
 const owner = { user_id: 'person_a', account_id: 'account_a' };
@@ -16,7 +17,8 @@ const fixture = (site: string, name: string): unknown => JSON.parse(readFileSync
 const signal = () => new AbortController().signal;
 function setup(site: ProfileRow['site'] = 'poshmark') {
   const registry = memoryProfileRegistry();
-  const creates: Record<string, unknown>[] = [], logs: unknown[] = [];
+  const creates: Record<string, unknown>[] = [], logs: unknown[] = [], deleted: string[] = [];
+  let profiles = 0;
   let refuseStop = false;
   let stops = 0, closedPages = 0, routes = 0, imports = 0, exports = 0;
   let html = '<html>Account</html>', url = '', body: unknown = fixture('poshmark', 'inbox.json');
@@ -40,9 +42,9 @@ function setup(site: ProfileRow['site'] = 'poshmark') {
   const launcher = cdpLauncher(pw, source), leases = memoryLeases();
   const log = createLog({ src: 'session.test', build: 'test', sink: line => { logs.push(JSON.parse(line)); } });
   const pool = createPool({ launcher, registry, profileRoot: '/unused', leases, log });
-  const options = { pool, registry, launcher, profileRoot: '/unused', leases, log, ttlMs: 60_000, createProfile: async () => 'profile_new' };
-  const service = sessionClient(options);
-  return { registry, pool, service, newService: (overrides: Partial<Parameters<typeof sessionClient>[0]>) => sessionClient({ ...options, ...overrides }), creates, logs, page, site, counts: () => ({ stops, closedPages, routes, imports, exports }),
+  const options = { pool, registry, launcher, profileRoot: '/unused', leases, log, ttlMs: 60_000, createProfile: async () => { profiles++; return 'profile_new'; }, deleteProfile: async (id: string) => { deleted.push(id); } };
+  const service = scanErrors(sessionClient(options));
+  return { registry, pool, service, newService: (overrides: Partial<Parameters<typeof sessionClient>[0]>) => scanErrors(sessionClient({ ...options, ...overrides })), creates, logs, deleted, page, site, counts: () => ({ stops, closedPages, routes, imports, exports, profiles }),
     refuseStop: () => { refuseStop = true; }, setHtml: (value: string) => { html = value; }, setBody: (value: unknown) => { body = value; } };
 }
 
@@ -97,45 +99,70 @@ for (const [html, state, code, action] of [
   await f.pool.close();
 });
 
-test('Mercari captures page responses and eBay installs no request interception', async () => {
+test('Mercari captures page responses without request interception', async () => {
   const f = setup('mercari'); await f.registry.put(owner.user_id, row('mercari')); f.setBody((fixture('mercari', 'inbox.json') as { api: { body: unknown }[] }).api[0].body);
   const c = await f.service.clientFor('mercari', owner);
   assert.equal((await mercariAdapters(c).find(a => a.manifest.verb === 'read_inbox')!.run({}, signal())).ok, true);
-  assert.ok(f.counts().routes > 0); await f.pool.close();
+  assert.equal(f.counts().routes, 0); await f.pool.close();
   const e = setup('ebay'); await e.registry.put(owner.user_id, row('ebay'));
   await (await e.service.clientFor('ebay', owner)).page('https://www.ebay.com/sch/i.html', signal());
   assert.equal(e.counts().routes, 0); await e.pool.close();
 });
 
-test('link handle is owner checked, viewer is consumed once, finish verifies through adapter and stops before linked', async () => {
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: link handle is owner checked, viewer is consumed once, finish refuses missing account evidence and stops`, async () => {
   const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
   const handle = await f.service.startLink('poshmark', owner);
   assert.equal(typeof handle, 'string'); assert.ok(!handle.includes('http'));
   assert.equal(await f.service.liveView('person_b', handle), undefined);
   assert.equal(await f.service.finishLink('person_b', handle), undefined);
   assert.equal(await f.service.liveView(owner.user_id, handle), 'https://viewer.invalid/private');
   assert.equal(await f.service.liveView(owner.user_id, handle), undefined);
-  assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, true);
-  assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'linked');
+  assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, false);
+  assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'needs_signin');
   assert.equal(f.counts().stops, 1); assert.equal(f.counts().exports, 0);
   assert.equal(await f.service.finishLink(owner.user_id, handle), undefined);
 });
 
-test('abandoning a link stops the browser and never links; foreign cancellation does nothing', async () => {
-  const f = setup(), handle = await f.service.startLink('poshmark', owner);
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: abandoning a link stops the browser and never links; foreign cancellation does nothing`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
+  const handle = await f.service.startLink('poshmark', owner);
   await f.service.cancelLink('person_b', handle); assert.equal(f.counts().stops, 0);
   await f.service.cancelLink(owner.user_id, handle); assert.equal(f.counts().stops, 1);
   assert.notEqual((await f.registry.get(owner.user_id, owner.account_id))?.state, 'linked');
 });
 
+function scanErrors<T extends object>(target: T): T {
+  return new Proxy(target, { get(object, key, receiver) {
+    const value: unknown = Reflect.get(object, key, receiver);
+    if (typeof value !== 'function') return value;
+    return (...args: unknown[]) => Promise.resolve(Reflect.apply(value, object, args)).then(result =>
+      result && typeof result === 'object' ? scanErrors(result) : result,
+    error => { if (error instanceof SessionClientError) noSecrets(error.message); throw error; });
+  } });
+}
 function noSecrets(value: unknown): void {
-  if (typeof value === 'string') assert.doesNotMatch(value, /https?:\/\/|wss?:\/\/|bearer\s|sessionid=|eyJ[a-zA-Z0-9_-]+\./i);
+  if (typeof value === 'string') assert.doesNotMatch(value, /https?:\/\/|wss?:\/\/|bearer\s|sessionid=|(?:[a-z0-9.-]+|\[[a-f0-9:]+\]):\d+\/\S+|eyJ[a-zA-Z0-9_-]+\./i);
   else if (value && typeof value === 'object') for (const [key, v] of Object.entries(value)) {
-    assert.doesNotMatch(key, /cookie|token|storage.?state|localstorage|live.?url|authorization|password/i); noSecrets(v);
+    assert.doesNotMatch(key, /cookie|token|storage.?state|localstorage|live.?url|authorization|password|cdp|ws_?url|connect/i); noSecrets(v);
   }
 }
-test('stored rows and captured logs contain no credentials, storage, or viewer address, including failures', async () => {
-  const f = setup(); const handle = await f.service.startLink('poshmark', owner);
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: stored rows and captured logs contain no credentials, storage, or viewer address, including failures`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' }); const handle = await f.service.startLink('poshmark', owner);
   await f.service.finishLink(owner.user_id, handle);
   const store = memoryStore(); await storeProfileRegistry(store).put(owner.user_id, (await f.registry.get(owner.user_id, owner.account_id))!);
   noSecrets(store.dump().rows); noSecrets(f.logs);
@@ -185,17 +212,28 @@ test('eBay recorded sign-in page relinks and records expired session rather than
   assert.equal(f.counts().routes, 0); await f.pool.close();
 });
 
-test('link verification challenge stops the browser and cannot publish linked state', async () => {
-  const f = setup(), handle = await f.service.startLink('poshmark', owner);
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: link verification challenge stops the browser and cannot publish linked state`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
+  const handle = await f.service.startLink('poshmark', owner);
   f.setHtml('<title>Just a moment</title>');
   const result = await f.service.finishLink(owner.user_id, handle);
   assert.ok(result && !result.ok && result.error.code === 'blocked');
-  assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'paused');
+  assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'needs_signin');
   assert.equal(f.counts().stops, 1);
 });
 
-test('expired handles stop abandoned browsers and are unavailable to their owner', async () => {
-  const f = setup(); let now = Date.now();
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: expired handles stop abandoned browsers and are unavailable to their owner`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' }); let now = Date.now();
   const service = f.newService({ now: () => now, ttlMs: 1000 });
   const handle = await service.startLink('poshmark', owner); now += 1001;
   assert.equal(await service.liveView(owner.user_id, handle), undefined);
@@ -204,15 +242,26 @@ test('expired handles stop abandoned browsers and are unavailable to their owner
   assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'needs_signin');
 });
 
-test('timer stops a link even if its handle is never used again', async () => {
-  const f = setup(), service = f.newService({ ttlMs: 10 });
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: timer stops a link even if its handle is never used again`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
+  const service = f.newService({ ttlMs: 10 });
   const handle = await service.startLink('poshmark', owner);
   await new Promise(resolve => setTimeout(resolve, 25));
   assert.equal(f.counts().stops, 1); assert.equal(await service.finishLink(owner.user_id, handle), undefined);
 });
 
-test('a failed sign-in navigation stops the browser, frees the lease, and hides vendor errors', async () => {
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: a failed sign-in navigation stops the browser, frees the lease, and hides vendor errors`, async () => {
   const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
   f.page.goto = async () => { throw new Error('navigation failed https://viewer.invalid/private?sessionid=synthetic'); };
   await assert.rejects(f.service.startLink('poshmark', owner), /link could not start/);
   assert.equal(f.counts().stops, 1); noSecrets(f.logs);
@@ -220,37 +269,58 @@ test('a failed sign-in navigation stops the browser, frees the lease, and hides 
   assert.equal(f.counts().stops, 2);
 });
 
-test('a failed adapter verification closes the browser and never links', async () => {
-  const f = setup(), handle = await f.service.startLink('poshmark', owner);
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: a failed adapter verification closes the browser and never links`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
+  const handle = await f.service.startLink('poshmark', owner);
   f.page.evaluate = async () => { throw new Error('https://viewer.invalid/private'); };
   await assert.rejects(f.service.finishLink(owner.user_id, handle), /session.verify failed/);
   assert.equal(f.counts().stops, 1);
   assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'needs_signin'); noSecrets(f.logs);
 });
 
-test('link setup cannot outlive its lease and then expose a live browser', async () => {
-  const f = setup(); let now = 0;
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: link setup cannot outlive its lease and then expose a live browser`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' }); let now = 0;
   const service = f.newService({ now: () => now, ttlMs: 1000, createProfile: async () => { now = 1001; return 'profile_new'; } });
   await assert.rejects(service.startLink('poshmark', owner), /link could not start/);
   assert.equal(f.creates.length, 0);
 });
 
-test('completion holds its account lease until the linked row is published', async () => {
-  const f = setup(); let blocked = false;
-  const registry = { get: f.registry.get, async put(user: string, value: ProfileRow) {
-    if (value.state === 'linked') {
-      await assert.rejects(f.service.startLink('poshmark', owner), e => {
-        blocked = e instanceof Error && 'error' in e && (e.error as { code: string }).code === 'blocked'; return blocked;
-      });
-    }
-    await f.registry.put(user, value);
-  } };
-  const service = f.newService({ registry }), handle = await service.startLink('poshmark', owner);
-  assert.equal((await service.finishLink(owner.user_id, handle))?.ok, true); assert.equal(blocked, true);
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: completion holds its account lease through adapter verification`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
+  const evaluate = f.page.evaluate; let blocked = false;
+  f.page.evaluate = async (fn, arg) => {
+    await assert.rejects(f.service.startLink('poshmark', owner), e => {
+      blocked = e instanceof SessionClientError && e.error.code === 'rate_limited'; return blocked;
+    });
+    return evaluate(fn, arg);
+  };
+  const handle = await f.service.startLink('poshmark', owner);
+  assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, false); assert.equal(blocked, true);
 });
 
-test('a vendor that refuses stop cannot publish a linked profile', async () => {
-  const f = setup(), handle = await f.service.startLink('poshmark', owner); f.refuseStop();
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: a vendor that refuses stop cannot publish a linked profile`, async () => {
+  const f = setup();
+  if (!existing) {
+    await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+    assert.equal(f.counts().profiles, 0); return;
+  }
+  await f.registry.put(owner.user_id, { ...row(), state: 'needs_signin' });
+  const handle = await f.service.startLink('poshmark', owner); f.refuseStop();
   await assert.rejects(f.service.finishLink(owner.user_id, handle), /profile was not saved/);
   assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'needs_signin');
   assert.equal(f.counts().stops, 2); noSecrets(f.logs);
@@ -263,7 +333,7 @@ test('aborting an in-page fetch closes its page and releases its lease promptly'
   const controller = new AbortController(), c = await f.service.clientFor('poshmark', owner);
   const read = c.json('/vm-rest/users/self/inbox', controller.signal);
   await started; controller.abort();
-  await assert.rejects(Promise.race([read, new Promise((_, reject) => setTimeout(() => reject(new Error('read retained lease after abort')), 50))]), e => e instanceof Error && e.message !== 'read retained lease after abort');
+  await assert.rejects(Promise.race([read, new Promise((_, reject) => setTimeout(() => reject(new Error('read retained lease after abort')), 50))]), e => e instanceof Error && e.name === 'AbortError');
   assert.equal(f.pool.stats().leased, 0); assert.ok(f.counts().closedPages > 0); await f.pool.close();
 });
 
@@ -290,4 +360,156 @@ test('legacy account migration is refused before creating a vendor profile', asy
   const service = f.newService({ registry: storeProfileRegistry(store), createProfile: async () => { created++; return 'new'; } });
   await assert.rejects(service.startLink('poshmark', owner));
   assert.equal(created, 0); assert.equal(store.get('account', owner.user_id, owner.account_id)?.health, 'broken');
+});
+
+
+test('concurrent verbs report retry_after through the harness, never author or pause', async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  let entered!: () => void, release!: () => void;
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  const wait = new Promise<void>(resolve => { release = resolve; });
+  const evaluate = f.page.evaluate;
+  f.page.evaluate = async (fn, arg) => { entered(); await wait; return evaluate(fn, arg); };
+  const h = createHarness({ adapters: poshmarkAdapters(await f.service.clientFor('poshmark', owner)) });
+  const first = h.call('poshmark', 'read_inbox'); await started;
+  try {
+    const second = await h.call('poshmark', 'read_orders');
+    assert.ok(!second.ok && second.error.code === 'rate_limited' && second.error.hint.do === 'retry_after');
+    assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'linked');
+  } finally { release(); await first; await f.pool.close(); }
+});
+
+for (const site of ['poshmark', 'mercari', 'depop', 'ebay'] as const) test(`${site} default never routes requests`, async () => {
+  const f = setup(site); await f.registry.put(owner.user_id, row(site));
+  const c = await f.service.clientFor(site, owner), url = `https://${site !== 'poshmark' ? 'www.' : ''}${site}.com/`;
+  if ('doc' in c) await c.doc(url, signal()); else await c.page(url, signal());
+  assert.equal(f.counts().routes, 0); await f.pool.close();
+});
+
+for (const ending of ['cancel', 'expiry', 'failure'] as const) test(`relink ${ending} preserves the entire linked row and profile`, async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row()); let now = 0;
+  const service = f.newService({ now: () => now });
+  const handle = await service.startLink('poshmark', owner);
+  assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row());
+  assert.equal(f.creates[0].profileId, 'profile_new');
+  if (ending === 'cancel') await service.cancelLink(owner.user_id, handle);
+  if (ending === 'expiry') { now = 60_001; await service.liveView(owner.user_id, handle); }
+  if (ending === 'failure') { f.setHtml('<input type="password">'); await service.finishLink(owner.user_id, handle); }
+  assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row());
+  assert.deepEqual(f.deleted, ['profile_new']);
+});
+
+test('unknown account is refused before any vendor profile or browser is created', async () => {
+  const f = setup();
+  await assert.rejects(f.service.startLink('poshmark', owner), /account/);
+  assert.equal(f.counts().profiles, 0); assert.equal(f.creates.length, 0);
+});
+
+for (const stage of ['launch', 'navigation', 'cancel', 'expiry', 'verification'] as const) test(`unpublished profile is deleted after ${stage}`, async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row()); let now = 0;
+  const service = f.newService({ now: () => now, ...(stage === 'launch' ? { launcher: {
+    persistent: async () => { throw new Error('vendor.invalid:9222/private'); },
+    anonymous: async () => { throw new Error('unexpected anonymous launch'); },
+  } } : {}) });
+  if (stage === 'navigation') f.page.goto = async () => { throw new Error('vendor.invalid:9222/private'); };
+  if (stage === 'launch' || stage === 'navigation') await assert.rejects(service.startLink('poshmark', owner));
+  else {
+    const handle = await service.startLink('poshmark', owner);
+    if (stage === 'cancel') await service.cancelLink(owner.user_id, handle);
+    if (stage === 'expiry') { now = 60_001; await service.liveView(owner.user_id, handle); }
+    if (stage === 'verification') await service.finishLink(owner.user_id, handle);
+  }
+  assert.deepEqual(f.deleted, ['profile_new']);
+  assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row()); noSecrets(f.logs);
+});
+
+test('failed deletion logs only the profile id and releases the lease', async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  const service = f.newService({ deleteProfile: async () => { throw new Error('vendor.invalid:9222/private bearer secret'); } });
+  const handle = await service.startLink('poshmark', owner); await service.cancelLink(owner.user_id, handle);
+  noSecrets(f.logs);
+  assert.match(JSON.stringify(f.logs), /profile_new/);
+  const next = await f.service.startLink('poshmark', owner); await f.service.cancelLink(owner.user_id, next);
+});
+
+for (const site of ['poshmark', 'mercari', 'depop'] as const) for (const empty of [true, false]) test(`${site} ${empty ? 'empty' : 'populated'} inbox without account evidence cannot link`, async () => {
+  const f = setup(site); await f.registry.put(owner.user_id, row(site));
+  f.setBody(site === 'mercari' ? (empty ? { data: { conversations: { conversationsList: [] } } } : (fixture(site, 'inbox.json') as { api: { body: unknown }[] }).api[0].body) : empty ? (site === 'poshmark' ? { data: [] } : { objects: [] }) : fixture(site, 'inbox.json'));
+  const handle = await f.service.startLink(site, owner);
+  const result = await f.service.finishLink(owner.user_id, handle);
+  assert.ok(result && !result.ok && result.error.code === 'no_route' && result.error.hint.do === 'handoff');
+  assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row(site));
+});
+
+test('no-secret scan rejects connection key names and bare endpoints', () => {
+  for (const key of ['cdp', 'ws_url', 'wsUrl', 'connect']) assert.throws(() => noSecrets({ [key]: 'secret' }));
+  for (const value of ['localhost:9222/devtools/browser/secret', '127.0.0.1:9222/private', 'vendor.invalid:443/private']) assert.throws(() => noSecrets(value));
+});
+
+test('vendor SessionClientError text is sanitized before logging or escaping', async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  const service = f.newService({ createProfile: async () => { throw new SessionClientError({ code: 'blocked', message: 'vendor.invalid:9222/private bearer secret', hint: { do: 'pause_session', site: 'poshmark' } }); } });
+  await assert.rejects(service.startLink('poshmark', owner), /link could not start/);
+  noSecrets(f.logs);
+});
+
+for (const foreign of [false, true]) test(`an already published ${foreign ? 'foreign' : 'own'} profile is never launched or deleted as pending`, async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  if (foreign) await f.registry.put('person_b', { ...row(), user_id: 'person_b', account_id: 'account_b', profile_id: 'profile_b' });
+  const service = f.newService({ createProfile: async () => foreign ? 'profile_b' : 'profile_a' });
+  await assert.rejects(service.startLink('poshmark', owner), /link could not start/);
+  assert.deepEqual(f.deleted, []); assert.equal(f.creates.length, 0);
+  assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), row());
+});
+
+test('a pending profile delete cannot retain the account lease', async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  let entered!: () => void, release!: () => void;
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  const pending = new Promise<void>(resolve => { release = resolve; });
+  const service = f.newService({ deleteProfile: async () => { entered(); await pending; } });
+  const handle = await service.startLink('poshmark', owner), cancellation = service.cancelLink(owner.user_id, handle);
+  await started;
+  try {
+    const c = await f.service.clientFor('poshmark', owner);
+    assert.equal((await c.json('/vm-rest/users/self/inbox', signal())).status, 200);
+  } finally { release(); await cancellation; await f.pool.close(); }
+});
+
+test('a pre-aborted read stays an AbortError without leaking its reason or launching', async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  const c = await f.service.clientFor('poshmark', owner), controller = new AbortController();
+  controller.abort(new Error('vendor.invalid:9222/private'));
+  await assert.rejects(c.json('/vm-rest/users/self/inbox', controller.signal), e => { assert.ok(e instanceof Error); noSecrets(e.message); return e.name === 'AbortError'; });
+  assert.equal(f.creates.length, 0); noSecrets(f.logs);
+});
+
+test('relink leaves the previous warm browser available after cancellation', async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  const c = await f.service.clientFor('poshmark', owner);
+  await c.json('/vm-rest/users/self/inbox', signal());
+  const previous = await f.registry.get(owner.user_id, owner.account_id);
+  const handle = await f.service.startLink('poshmark', owner);
+  assert.equal(f.counts().stops, 0);
+  await f.service.cancelLink(owner.user_id, handle);
+  assert.deepEqual(await f.registry.get(owner.user_id, owner.account_id), previous);
+  await c.json('/vm-rest/users/self/inbox', signal());
+  assert.equal(f.creates.length, 2); await f.pool.close();
+});
+
+test('pending launch option cannot bypass registry ownership for a published profile', async () => {
+  const f = setup(); await f.registry.put(owner.user_id, row());
+  await f.registry.put('person_b', { ...row(), user_id: 'person_b', account_id: 'account_b', profile_id: 'profile_b' });
+  const resolve = registryProfileFor(f.registry);
+  for (const pending_profile_id of ['profile_a', 'profile_b', 'vendor.invalid:9222/private']) {
+    await assert.rejects(resolve('/unused', { ...owner, headless: true, pending_profile_id }), /profile/);
+  }
+  assert.equal(await resolve('/unused', { ...owner, headless: true, pending_profile_id: 'profile_new' }), 'profile_new');
+  assert.equal(await resolve('/unused', { ...owner, headless: true }), 'profile_a');
+});
+
+test('eBay link refusal also scans its SessionClientError message before returning it', async () => {
+  const f = setup('ebay'); await f.registry.put(owner.user_id, row('ebay'));
+  await assert.rejects(f.service.startLink('ebay', owner), e => e instanceof SessionClientError && e.error.code === 'no_route');
+  assert.equal(f.counts().profiles, 0); assert.equal(f.creates.length, 0);
 });
