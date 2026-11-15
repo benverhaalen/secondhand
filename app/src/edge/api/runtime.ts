@@ -48,6 +48,10 @@ export function seedExamples(st: Store) {
     seed('item', { ...card, id: card.id, user_id: EXAMPLE_USER, tile: tiles.find(row => row.id === card.id), strategy_options: { fast: response('items.strategy').strategies } });
     for (const tile of (response('items.list').data as Row[])) seed('item', { attributes: [], photos: [], listings: [], ...tile, tile });
     for (const listing of card.listings as Row[]) seed('listing', { ...listing, item_id: card.id, account_id: listing.site === 'ebay' ? 'acc_eb1' : 'acc_dp1', required_fields: ['chest_width'] });
+    for (const order of response('orders.list').data as Row[]) {
+      const amounts = Object.fromEntries(['price_cents', 'fees_cents', 'shipping_cents', 'payout_cents'].map(key => [key, object(order[key]) ? order[key].amount_cents : order[key]]));
+      seed('order', { ...order, ...amounts });
+    }
     const preview = response('accounts.import_preview');
     for (const listing of preview.listings as Record<string, unknown>[]) seed('listing', { ...listing, id: `ls_import_${listing.external_id}`, account_id: preview.account_id, site: preview.site, import_preview: true, read_at: preview.read_at });
     for (const account of response('accounts.list').data as Row[]) seed('account', account);
@@ -300,9 +304,12 @@ export const runtime = createRuntime(store, log, { publicClients: sources.public
 let closing: Promise<void> | undefined;
 runtime.close = () => closing ??= Promise.resolve().then(() => sources.close());
 
+export function readable(row: Row, user_id: string): boolean {
+  return !row.deleted && row.user_id === user_id && (row.data !== 'example' || user_id === EXAMPLE_USER && examplesServed());
+}
 export function owned(table: Table, ctx: Ctx, id: string): Row {
   const row = runtime.store.get(table, ctx.user_id!, id);
-  if (!row || row.deleted) throw new ApiError('not_found', `no ${table} ${id} for this user`, 'read');
+  if (!row || !readable(row, ctx.user_id!)) throw new ApiError('not_found', `no ${table} ${id} for this user`, 'read');
   return row;
 }
 export function checkVersion(row: Row, expected: unknown) {

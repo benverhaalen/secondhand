@@ -36,7 +36,10 @@
       },
       "id": "a",
       "label": "A. The rail: real listings drift past",
-      "brand_errors": [],
+      "brand_errors": [
+        "B32 view 1 <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
+        "B32 view 2 <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)"
+      ],
       "brand_warnings": 2
     },
     {
@@ -72,7 +75,10 @@
       },
       "id": "b",
       "label": "B. The stitches: garment seams drift",
-      "brand_errors": [],
+      "brand_errors": [
+        "B32 view 1 <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
+        "B32 view 2 <img> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)"
+      ],
       "brand_warnings": 2
     },
     {
@@ -89,7 +95,7 @@
         "compositor_only": false,
         "fastest_px_s": 2,
         "clothing_share": 0.02,
-        "contrast_floor": 3.58,
+        "contrast_floor": 3.6,
         "moves_under_reduce_motion": 0
       },
       "1440": {
@@ -111,10 +117,10 @@
       "id": "c",
       "label": "C. The walls: listings climb either side",
       "brand_errors": [
-        "B32 view 1 <svg> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
-        "B32 view 2 <svg> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)"
+        "B32 view 1 <img>, <svg> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
+        "B32 view 2 <img>, <svg> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)"
       ],
-      "brand_warnings": 3
+      "brand_warnings": 2
     }
   ]
 }

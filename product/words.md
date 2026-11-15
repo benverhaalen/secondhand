@@ -2417,3 +2417,40 @@ Nate, the server-core lead's session, 2026-11-15, about 13:45 UTC.
 Then, on sign-in: "are we using vercel auth? i can add sign in with google", and "whatever is the way to set up auth do it, i made a new cloud project".
 
 Read by the server-core lead as: redeploy main to the Fly app now, compose the photo store and the capture upload targets, and set up Google sign-in in the new Cloud project. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md).
+
+## 2026-11-15 nate organize, shut down what is finished, get it working yourself, check with Ben, keep testing with Codex
+Nate, the orchestrator's session, 2026-11-15, about 14:00 UTC.
+> Lets have you fully start to organize and shut down running subagents when completed. assess what works, you yourself get it working, check with ben, we continously test with codex andd such
+
+Used in: [the finalization spec, section 13](../spec/plans/finalization.md).
+## 2026-11-15 paired tags replace hand branding
+
+Ben, Codex chat:
+> use the tags and then create an icon for it and make it an svg and make it have a transparent background and then remove all the hand icon ideas and parts of the logos from the website in the repo and get the app icon to actually be the one with tags and align the tags once separated and isolated to be in expert ui ux practices in alignment vertically and horizontally to the left of the wordmark where an expert would put it also on the app too
+
+Used in: brand/mark.svg, brand/constitution.md C1, app/src/ui/brand-mark.tsx, app/app.json, web/components/chrome.tsx, brand/explore/web-home.
+
+## 2026-11-15 Google sign-in UI for Nate to connect
+
+Ben, same Codex chat:
+> add a sign in with google to the app ui that nate can wire on the backend
+
+Used in: app/src/you/sign-in.tsx and sign-in-wire.ts. The UI does not claim a session until the existing server exchange succeeds.
+
+## 2026-11-15 nate when the price cannot be set, the number of listings is the signal
+Nate, the search lead's session, 2026-11-15, about 14:03 UTC, answering whether Google Shopping rows (shown, never judged for the same product) should be filtered for display.
+> well, no, if we can't determine price, we maybe grab details on how many lsitings are there, and that indicates something, perhaps that none are being sold, that it was popular, theres alot there
+
+Used in: [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate systems working before the look
+Nate, the app's native-walks lead session, 2026-11-15, about 14:05 UTC, while the walks were reading screenshots against the brand card.
+> dont focus on ui as much as you should getting every system to work. then we can return
+
+Used in: section 6 of [finalization.md](../spec/plans/finalization.md) (the native walk table lists each failing system with its owner; the look findings are parked for Ben).
+
+## 2026-11-15 nate the browser sign-in window works end to end
+Nate, the app's native-walks lead session, 2026-11-15, about 13:40 UTC.
+> ensure the browser actions work, like the sesion window pops up for the user to authenticate, answer 2fa if needed, etc
+
+Used in: the connect walk in section 6 of [finalization.md](../spec/plans/finalization.md); `app/src/account/services.tsx`, `app/src/edge/connect/hosted.ts`.
