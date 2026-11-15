@@ -924,9 +924,3 @@ Ben, project chat, 2026-11-15 03:55 UTC, after asking for one thread to build th
 ## 2026-11-14 nate an OpenRouter key for secondhand supports jev and more
 Nate, build session (orchestrator), 2026-11-14 about 22:25 Central. The key itself is left out: it is a secret and this repo is public.
 > we have an established open router key utilized for secondhand that can support our jev use, and more [key redacted]
-
-## 2026-11-14 nate each harness is built from what it understands of the site, as documented endpoints such as /write-listing
-Nate, build session (orchestrator), 2026-11-14 about 22:40 Central, two messages as the five platform teams started.
-> watch out claude, its starting to slow down and get dangerous with how much memory is being used
-
-> Theres not so much one template to follow, but each harness is intelligentlly built from what it understands about web structure, , deterministic accuracy to always assure the best page navigation and understanding, to create well documented endpoints that can even just be slash commands or endpoints whatever's best, like /write-listing with the listing then provided from the app
