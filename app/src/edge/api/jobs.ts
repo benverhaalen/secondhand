@@ -111,3 +111,14 @@ export const userStream = (s: JobStore = jobs): Handler => (ctx, req) => sse(s, 
 
 export const jobs: JobStore = jobsOn(store);
 seedExamples(jobs);
+
+export const routeHandlers = {
+  'GET /v1/jobs/:id': getJob(),
+  'GET /v1/jobs/:id/events': jobEvents(),
+  'GET /v1/stream': userStream(),
+};
+const routeAuth: Record<string, 'user' | 'visitor' | 'none'> = {
+  'GET /v1/jobs/:id': 'visitor',
+  'GET /v1/jobs/:id/events': 'visitor',
+};
+export const manifest = Object.keys(routeHandlers).map(endpoint => ({ endpoint, source: 'engine' as const, auth: routeAuth[endpoint] ?? 'user' as const }));
