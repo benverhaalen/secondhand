@@ -2454,3 +2454,9 @@ Nate, the app's native-walks lead session, 2026-11-15, about 13:40 UTC.
 > ensure the browser actions work, like the sesion window pops up for the user to authenticate, answer 2fa if needed, etc
 
 Used in: the connect walk in section 6 of [finalization.md](../spec/plans/finalization.md); `app/src/account/services.tsx`, `app/src/edge/connect/hosted.ts`.
+
+## 2026-11-15 nate check the lens capture is wired to the expo app
+Nate, the orchestrator's session, 2026-11-15, about 14:14 UTC.
+> Check the lens capture is also wired to the expo app, ben is testing and his model says its not wired
+
+Checked by the orchestrator on main the same minute: it is not wired. The app's photo step stops at an example upload address; identify and the Lens step are on Mac branches. Sent to the capture lead with a new order: identify merged as it is, the route join started at once, Lens behind it, a packet for Ben when the join lands.
