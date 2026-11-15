@@ -1,0 +1,278 @@
+{
+ "shape_lies_with_no_truth": 2,
+ "invisible_color_changes": 0,
+ "honest_kept": 8,
+ "honest": 8,
+ "lies_dropped": 13,
+ "shape_lies_set_to_tape": 1,
+ "lies": 16,
+ "rows": [
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "as drawn",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "8% brighter",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "turned 3 degrees",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "5% smaller",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "print painted out",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "print 0 not found as it is in the real photo"
+   ],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "print swapped",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "print 0 not found as it is in the real photo"
+   ],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "hue +30",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "the model drew the item 18 color units away from the real one"
+   ],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "hue +60",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "the model drew the item 48 color units away from the real one"
+   ],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "35% darker",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "the model drew the item 11 color units away from the real one"
+   ],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "12% wider",
+   "truth": "lie",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "12% taller",
+   "truth": "lie",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "chico-hoodie",
+   "slide": "cover",
+   "case": "mirrored",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "print 0 not found as it is in the real photo"
+   ],
+   "shape_checked": false,
+   "set_to_tape": false
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "as drawn",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "8% brighter",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "turned 3 degrees",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "5% smaller",
+   "truth": "honest",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "print painted out",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "print 0 not found as it is in the real photo"
+   ],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "print swapped",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "print 0 not found as it is in the real photo"
+   ],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "hue +30",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "the model drew the item 33 color units away from the real one"
+   ],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "hue +60",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "the model drew the item 44 color units away from the real one"
+   ],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "35% darker",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "the model drew the item 20 color units away from the real one"
+   ],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "12% wider",
+   "truth": "lie",
+   "dropped": false,
+   "reasons": [],
+   "shape_checked": true,
+   "set_to_tape": true
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "12% taller",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "drawn -23% off the tape, too far to set right",
+    "proportions -23% against the tape"
+   ],
+   "shape_checked": true,
+   "set_to_tape": false
+  },
+  {
+   "item": "marquette-tee",
+   "slide": "cover",
+   "case": "mirrored",
+   "truth": "lie",
+   "dropped": true,
+   "reasons": [
+    "print 0 not found as it is in the real photo"
+   ],
+   "shape_checked": true,
+   "set_to_tape": true
+  }
+ ]
+}
