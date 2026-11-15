@@ -2,7 +2,7 @@ import { object } from './captures.ts';
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, describe, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
-import { deps, route } from './http.ts';
+import { deps, resetRequestState, route, visitorId } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest, ports, searchJobs } from './search.ts';
 import { readFileSync } from 'node:fs';
@@ -41,7 +41,8 @@ const ended = (id: string) => bounded(new Promise<void>(resolve => {
   const check = () => { if (['done', 'failed'].includes(jobs.st.getJob(id)!.state)) { off(); resolve(); } };
   const off = jobs.listen(id, check); check();
 }));
-const poll = (id: string, visitor = 'vis_search01', events = false, after = 0) => route(
+let searchVisitor: string;
+const poll = (id: string, visitor = searchVisitor, events = false, after = 0) => route(
   events ? 'GET /v1/jobs/:id/events' : 'GET /v1/jobs/:id', events ? jobEvents() : getJob(), { auth: 'visitor' },
 )(new Request(`http://edge.test/v1/jobs/${id}${events ? '/events' : ''}`, { headers: { 'X-Visitor-Id': visitor, 'Last-Event-ID': String(after) } }));
 
@@ -51,7 +52,7 @@ const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1]
 beforeEach(() => {
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
-  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  resetRequestState(); searchVisitor = visitorId(); deps.now = () => Date.now();
   _reset();
   searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 0 });
   depopRead = async () => blocked();
@@ -116,7 +117,7 @@ for (const e of examples.filter(e => e.status < 400 && ['POST', 'PATCH', 'PUT'].
   }
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.startsWith('POST '))) test(e.name + ': reconnect replays same action and rejects changed body', async () => {
-  const headers = { 'Idempotency-Key': 'test_reconnect', ...(e.auth === 'visitor' ? { 'X-Visitor-Id': 'vis_worker01' } : {}) };
+  const headers = { 'Idempotency-Key': 'test_reconnect', ...(e.auth === 'visitor' ? { 'X-Visitor-Id': visitorId() } : {}) };
   const first = await call(e, { headers }), again = await call(e, { headers });
   assert.equal(again.status, first.status); assert.equal(await again.text(), await first.text());
   assert.equal(again.headers.get('Idempotent-Replayed'), 'true');
@@ -148,9 +149,10 @@ test('search: malformed field values name the validation failure', async () => {
 });
 
 test('search: a visitor is rate limited with retry by auto', async () => {
+  const visitor = visitorId();
   const e = examples.find(e => e.name === 'search.text')!;
-  for (let i = 0; i < deps.visitorPerMinute; i++) assert.equal((await call(e, { headers: { 'X-Visitor-Id': 'vis_limit001', 'Idempotency-Key': 'limit_' + i } })).status, 202);
-  const r = await call(e, { headers: { 'X-Visitor-Id': 'vis_limit001' } });
+  for (let i = 0; i < deps.visitorPerMinute; i++) assert.equal((await call(e, { headers: { 'X-Visitor-Id': visitor, 'Idempotency-Key': 'limit_' + i } })).status, 202);
+  const r = await call(e, { headers: { 'X-Visitor-Id': visitor } });
   assert.equal(r.status, 429); const error = await r.json(); assert.equal(error.code, 'rate_limited'); assert.equal(error.retry.by, 'auto'); assert.ok(error.retry.after_s > 0);
 });
 
@@ -177,20 +179,21 @@ test('search stores the public engine rows on the job, without a network depende
 });
 
 test('new searches have distinct jobs within and across visitor sessions', async () => {
+  const firstVisitor = visitorId(), secondVisitor = visitorId();
   const { jobs } = await import('./jobs.ts');
   const e = examples.find(e => e.name === 'search.text')!;
-  const first = await (await call(e, { headers: { 'X-Visitor-Id': 'vis_first01', 'Idempotency-Key': 'first-search' } })).json();
+  const first = await (await call(e, { headers: { 'X-Visitor-Id': firstVisitor, 'Idempotency-Key': 'first-search' } })).json();
   await ended(first.id);
-  const saved = structuredClone(jobs.get(first.id, 'vis_first01')?.result);
-  const second = await (await call(e, { body: { text: 'another jacket' }, headers: { 'X-Visitor-Id': 'vis_second01', 'Idempotency-Key': 'second-search' } })).json();
-  const third = await (await call(e, { body: { text: 'different jacket' }, headers: { 'X-Visitor-Id': 'vis_first01', 'Idempotency-Key': 'third-search' } })).json();
+  const saved = structuredClone(jobs.get(first.id, firstVisitor)?.result);
+  const second = await (await call(e, { body: { text: 'another jacket' }, headers: { 'X-Visitor-Id': secondVisitor, 'Idempotency-Key': 'second-search' } })).json();
+  const third = await (await call(e, { body: { text: 'different jacket' }, headers: { 'X-Visitor-Id': firstVisitor, 'Idempotency-Key': 'third-search' } })).json();
   assert.notEqual(first.id, second.id); assert.notEqual(first.id, third.id);
-  assert.ok(jobs.get(second.id, 'vis_second01'));
-  assert.equal(jobs.get(second.id, 'vis_first01'), undefined);
-  assert.deepEqual(jobs.get(first.id, 'vis_first01')?.result, saved);
+  assert.ok(jobs.get(second.id, secondVisitor));
+  assert.equal(jobs.get(second.id, firstVisitor), undefined);
+  assert.deepEqual(jobs.get(first.id, firstVisitor)?.result, saved);
 });
 
-const start = async (body: Record<string, unknown> = { text: 'levi 501' }, visitor = 'vis_search01') => {
+const start = async (body: Record<string, unknown> = { text: 'levi 501' }, visitor = searchVisitor) => {
   const response = await bounded(call(examples.find(e => e.name === 'search.text')!, {
     body, headers: { 'X-Visitor-Id': visitor, 'Idempotency-Key': crypto.randomUUID() },
   }), 100);
@@ -215,7 +218,7 @@ test('site batches reach polling and a live SSE reader in landing order, with ex
   depopRead = () => new Promise(resolve => release.set('depop', resolve));
   ports.fetchPage = async u => new Promise(resolve => release.set(siteOf(u), resolve));
   const job = await start();
-  const res = await poll(job.id, 'vis_search01', true);
+  const res = await poll(job.id, searchVisitor, true);
   const reader = res.body!.getReader();
   let early = '';
   while ((early.match(/event: answer.partial/g) ?? []).length < 3) early += new TextDecoder().decode((await bounded(reader.read())).value); // Dupe, unlinked Mercari and unrouted eBay settle first
@@ -282,12 +285,13 @@ test('a Depop harness block is a failed site with its code before a slow site en
 });
 
 test('a different visitor cannot poll or stream a new job; SSE resumes strictly after Last-Event-ID', async () => {
+  const otherVisitor = visitorId();
   const job = await start(); await ended(job.id);
-  for (const events of [false, true]) assert.equal((await poll(job.id, 'vis_other001', events)).status, 404);
+  for (const events of [false, true]) assert.equal((await poll(job.id, otherVisitor, events)).status, 404);
   const frames = jobs.framesAfter(job.id, 2);
-  const stream = await bounded((await poll(job.id, 'vis_search01', true, 2)).text());
+  const stream = await bounded((await poll(job.id, searchVisitor, true, 2)).text());
   assert.deepEqual([...stream.matchAll(/^id: (\d+)$/gm)].map(m => Number(m[1])), frames.map(f => f.id));
-  assert.equal(await (await poll(job.id, 'vis_search01', true, frames.at(-1)!.id)).text(), '');
+  assert.equal(await (await poll(job.id, searchVisitor, true, frames.at(-1)!.id)).text(), '');
 });
 
 test('sameProduct receives the query, labels a look-alike comparable, and drops balance counts', async () => {
@@ -471,7 +475,9 @@ test('a fresh cache hit avoids a hanging refresh and keeps its arrived offers', 
 test('the fixture-only visitor id cannot create a job that the example ownership exception would expose', async () => {
   const e = examples.find(e => e.name === 'search.text')!;
   const before = jobs.st.jobs({ kind: 'search' }).length;
-  const response = await call(e, { headers: { 'X-Visitor-Id': 'vis_example01' } });
+  const response = await route(e.endpoint, (ctx, req) => handlers[e.endpoint]({ ...ctx, visitor_id: 'vis_example01' }, req), { auth: 'none' })(
+    new Request('http://edge.test' + e.path, { method: 'POST', body: JSON.stringify(e.request!.body) }),
+  );
   assert.equal(response.status, 400);
   assert.equal((await response.json()).code, 'invalid');
   assert.equal(jobs.st.jobs({ kind: 'search' }).length, before);
@@ -481,7 +487,7 @@ test('search logs successful and late site transitions through the existing log 
   const { checkLog } = await import('../../../../spec/log.mjs');
   const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
   ports.fetchPage = async u => siteOf(u) === 'poshmark' ? new Promise(() => {}) : blocked();
-  const reply = await handlers['POST /v1/search']({ user_id: null, visitor_id: 'vis_search01', request_id: 'test',
+  const reply = await handlers['POST /v1/search']({ user_id: null, visitor_id: searchVisitor, request_id: 'test',
     params: {}, query: new URLSearchParams(), body: { text: 'levi 501' }, headers: new Headers(), log: deps.log,
   }, new Request('http://edge.test/v1/search'));
   assert.ok(!(reply instanceof Response) && object(reply.body) && typeof reply.body.id === 'string');
@@ -879,7 +885,7 @@ describe('SR2, SR3 and SR5 route proofs', () => {
   const tick = () => new Promise<void>(resolve => setImmediate(resolve));
 
   beforeEach(() => {
-    _reset(); deps.idem.clear(); deps.visits.clear();
+    _reset(); resetRequestState();
     deps.log = createLog({ src: 'test.search', build: 'test', sink });
     deps.verify = async token => token;
     Object.assign(ports, { ...original, sources: sources('ebay'), harness: undefined, accounts: undefined, apify: undefined,
@@ -890,7 +896,7 @@ describe('SR2, SR3 and SR5 route proofs', () => {
     Object.assign(ports, original); Object.assign(deps, originalDeps); _reset();
   });
 
-  async function start(query: string, person?: string, visitor = `vis_${crypto.randomUUID()}`) {
+  async function start(query: string, person?: string, visitor = visitorId()) {
     const response = await route('POST /v1/search', handlers['POST /v1/search'], { auth: 'visitor' })(new Request('http://edge.test/v1/search', {
       method: 'POST', headers: { 'content-type': 'application/json', 'X-Visitor-Id': visitor, 'Idempotency-Key': crypto.randomUUID(),
         ...(person ? { authorization: `Bearer ${person}` } : {}) }, body: JSON.stringify({ text: query }),
