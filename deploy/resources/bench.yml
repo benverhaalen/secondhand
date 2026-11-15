@@ -14,8 +14,19 @@ resources:
             parameters: ["--root", "${workspace.file_path}"]
     bench_setup:
       name: secondhand-bench-setup
+      environments:
+        - environment_key: bench
+          spec:
+            environment_version: "3"
       tasks:
+        # The live bench_record predates the cost columns; bench_cost reads them, so they come first.
+        - task_key: migrate
+          environment_key: bench
+          spark_python_task:
+            python_file: ../../databricks/tasks/load_bench.py
+            parameters: ["--root", "${workspace.file_path}", "--migrate-only"]
         - task_key: bench_setup
+          depends_on: [{ task_key: migrate }]
           sql_task:
             warehouse_id: ${var.warehouse_id}
             file:
