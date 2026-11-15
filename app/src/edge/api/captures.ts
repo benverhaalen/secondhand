@@ -580,12 +580,17 @@ export const handlers: Record<string, Handler> = {
     let row=read(ctx); writable(row); fields(ctx.body,{version},{note:text,title:text}); checkVersion(ctx,row);
     const uploaded: {id:string;role:string;url:string;use:'real';ai_marked:false}[]=[];
     if (row.data==='captured') {
-      for (const photo of row.photo_rows ?? []) {
-        if (!row.state.kept.includes(photo.key)) continue;
-        if (!await photoStore().read(row.user_id,photo.id)) throw invalid('Upload each photo before saving the item',['photos']);
+      // A photo whose bytes never arrived is left off the item, not a reason to lose the capture: identify still reads
+      // its text and codes, and an unsure identify shows similar candidates without writing an identity.
+      const kept=(row.photo_rows ?? []).filter(photo=>row.state.kept.includes(photo.key));
+      let missing=0;
+      for (const photo of kept) {
+        if (!await photoStore().read(row.user_id,photo.id)) { missing++; continue; }
         uploaded.push({id:photo.id,role:photo.role,url:`/v1/photos/${photo.id}`,use:'real',ai_marked:false});
       }
-      if (!uploaded.length && !runtime.store.get('item',row.user_id,row.item_id)) throw invalid('Add a photo before saving the item',['photos']);
+      if (missing) ctx.log.note('Capture finished without some photo bytes', {capture:row.id,missing,uploaded:uploaded.length});
+      const evidence=uploaded.length>0 || kept.some(photo=>photo.read_text!==undefined || photo.codes!==undefined) || Object.keys(row.state.facts).length>0;
+      if (!evidence && !runtime.store.get('item',row.user_id,row.item_id)) throw invalid('Add a photo before saving the item',['photos']);
       if (!row.identify_job_id) startIdentify(row,ctx.log);
       let pending=captures.identifyRuns.get(row.id);
       while (pending) {
