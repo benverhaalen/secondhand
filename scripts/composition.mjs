@@ -21,6 +21,10 @@ export function snapshot({ insetTop = 0 } = {}) {
   const VH = innerHeight;
   const ITEM = /^(card|tile|sale-row|notice|thread-row|keep-row|pulse-row|money-row|site-row)/;
   const partOf = (el, re) => { for (let n = el; n; n = n.parentElement) if (n.dataset?.part && re.test(n.dataset.part)) return n; return null; };
+  // A part marked data-item is an item too: a row of a thing with its photo, as Buy's Recent draws it (brand-check reads
+  // data-item the same way, B9: every item shows its photo).
+  const isItem = n => !!n.dataset?.part && (ITEM.test(n.dataset.part) || n.hasAttribute('data-item'));
+  const itemOf = el => { for (let n = el; n; n = n.parentElement) if (isItem(n)) return n; return null; };
   // The bars: the tab bar, a pushed page's nav, and a main tab's title row (page-head, TabNav), which took the nav's place on
   // the tabs: its title, count and Select are the nav, not lines before the first item (U11).
   const inBar = el => !!partOf(el, /^(tab-bar|nav|page-head)$/);
@@ -28,10 +32,10 @@ export function snapshot({ insetTop = 0 } = {}) {
   const shown = el => { const s = getComputedStyle(el); return s.visibility !== 'hidden' && Number(s.opacity) > 0.05; };
   // A header is marked (a shelf's head, data-head), or it is a line that is not in an item and has items after it in its own
   // group, as Section draws its title: an unmarked header is judged as one (Buy's "Needs you" over its cards, 11-15).
-  const hasItem = el => ITEM.test(el.dataset?.part ?? '') || [...el.querySelectorAll('[data-part]')].some(k => ITEM.test(k.dataset.part));
+  const hasItem = el => isItem(el) || [...el.querySelectorAll('[data-part]')].some(isItem);
   const headsItems = el => { const sibs = el.parentElement ? [...el.parentElement.children] : [], i = sibs.indexOf(el); return i >= 0 && sibs.slice(i + 1).some(hasItem); };
   const texts = [...document.querySelectorAll('[data-role]')].filter(shown).map(el => {
-    const r = el.getBoundingClientRect(), s = getComputedStyle(el), item = partOf(el, ITEM);
+    const r = el.getBoundingClientRect(), s = getComputedStyle(el), item = itemOf(el);
     const head = el.closest('[data-part="shelf-head"],[data-head]') ?? (!item && headsItems(el) ? el : null);
     return { s: el.textContent.trim().slice(0, 60), role: el.dataset.role, color: s.color, size: parseFloat(s.fontSize), y: Math.round(r.top), bottom: Math.round(r.bottom), seen: seen(r),
       bar: inBar(el), head: !!head, news: !!el.closest('[data-part="money-news"]'), shelf: el.closest('[data-shelf]')?.dataset.shelf ?? null, item: item ? item.dataset.part : null,
@@ -40,7 +44,7 @@ export function snapshot({ insetTop = 0 } = {}) {
   const box = el => { const r = el.getBoundingClientRect(); return { y: Math.round(r.top), bottom: Math.round(r.bottom), seen: seen(r) }; };
   const pills = [...document.querySelectorAll('[data-part="pill-card"],[data-part="button"],[data-part="icon-button"]')].filter(e => shown(e) && !inBar(e))
     .map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
-  const items = [...document.querySelectorAll('[data-part]')].filter(e => ITEM.test(e.dataset.part) && shown(e) && !partOf(e.parentElement ?? e, ITEM)).map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
+  const items = [...document.querySelectorAll('[data-part]')].filter(e => isItem(e) && shown(e) && !itemOf(e.parentElement ?? e)).map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
   const shelves = [...document.querySelectorAll('[data-shelf]')].map(sh => ({ id: sh.dataset.shelf, head: !!sh.querySelector('[data-part="shelf-head"]'),
     tags: [...sh.querySelectorAll('[data-part="tag"]:not([data-quiet])')].filter(shown).map(t => t.dataset.state) }));
   const navEl = document.querySelector('[data-part="nav"]') ?? document.querySelector('[data-part="page-head"]'), nav = navEl ? box(navEl) : null;

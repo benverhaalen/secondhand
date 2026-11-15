@@ -209,4 +209,9 @@ export const clearing: World = {
   ],
   wants: [{ id: 'want_desk', state: 'active', text: 'Standing desk under $150 within 10 miles', product_id: null, fit: { radius_mi: 10, condition_floor: 'Used, good' }, max_total_cents: 15000, sites: ['facebook', 'ebay', 'mercari'], checked: { facebook: inMinutes(-20), ebay: inMinutes(-20), mercari: inMinutes(-55) }, behind: ['mercari'], quiet_hours: { from: '22:00', to: '08:00' }, alert: 'under' }],
   matches: [], products: PRODUCTS, searches: [SEARCH_DUNKS], retail: RETAIL,
+  // What they looked up and did not keep: a jacket priced at a thrift store, then sneakers a friend asked about.
+  lookups: [
+    { capture_id: 'cap_lk_dunk', kind: 'find', product_id: 'pr_dunk', short_name: 'Grey Nike sneakers', at: inHours(-2) },
+    { capture_id: 'cap_lk_j97', kind: 'worth', product_id: 'pr_j97', short_name: 'Carhartt jacket', at: inDays(-1) },
+  ],
 };

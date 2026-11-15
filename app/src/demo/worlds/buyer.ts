@@ -86,5 +86,5 @@ export const buyer: World = {
     { id: 'want_kin', state: 'paused', text: 'Kindle Paperwhite under $70', product_id: null, fit: { condition_floor: 'Used, good' }, max_total_cents: 7000, sites: ['ebay', 'mercari'], checked: { ebay: inDays(-3), mercari: inDays(-3) }, behind: [], quiet_hours: null, alert: 'under' },
     { id: 'want_oven', state: 'active', text: 'Le Creuset dutch oven, 5.5 qt, any color', product_id: null, fit: { radius_mi: 25 }, max_total_cents: 15000, sites: ['facebook', 'ebay'], checked: { ebay: inMinutes(-6) }, behind: [], quiet_hours: null, alert: 'available' },
   ],
-  matches, products: PRODUCTS, searches: [SEARCH_DUNKS, SEARCH_EMPTY], retail: RETAIL,
+  matches, products: PRODUCTS, searches: [SEARCH_DUNKS, SEARCH_EMPTY], retail: RETAIL, lookups: [],
 };
