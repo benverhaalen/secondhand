@@ -48,7 +48,7 @@ Notes read: [search and similar finders](../research/watch/nate/teardown-search-
 
 | Capability | Who does it and how (mark) | Ours: adopt or better, and why | Spec file and card | Status |
 |---|---|---|---|---|
-| Sale detection | Vendoo polls every 10 min (*observed*); List Perfectly alerts on higher tiers (*observed*) | better: events plus a sold-page poll, under 2 min p95 | [connect](features/connect.md) | in the spec |
+| Sale detection | Vendoo detects sales by polling (the 10-minute figure is not on its pricing page; *asserted* from an earlier note); List Perfectly alerts on higher tiers (*observed*) | better: events plus a sold-page poll, under 2 min p95 | [connect](features/connect.md) | in the spec |
 | Delist on a sale | List Perfectly on Pro Plus only (*observed*); disputed elsewhere ([§4](../research/cross-cutting/nate/crosslister-teardown.md#4-documented-failures-by-class)) | better: automatic for everyone, confirmed by a read-back, `failed_delist` card | [list](features/list.md) | in the spec |
 | Bulk edits | crosslisters' bulk relist and offers (*asserted*) | better: a preview with what is left out | [list](features/list.md) | in the spec |
 | A verb a site lacks | not covered by the tools (*inferred* gap) | a one-tap handoff that opens the site | [connect](features/connect.md) | in the spec |
