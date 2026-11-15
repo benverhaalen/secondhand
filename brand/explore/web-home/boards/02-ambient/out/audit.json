@@ -1,0 +1,138 @@
+{
+  "board": "Section 1, the hero: what moves behind the line",
+  "question": "What moves behind the line, so a visitor knows in a second that this is about their clothes?",
+  "faces": true,
+  "variants": [
+    {
+      "390": {
+        "words": 20,
+        "pill_y": 463,
+        "headline_lines": 4,
+        "photos": 0,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "animated": [
+          "transform"
+        ],
+        "compositor_only": true,
+        "fastest_px_s": 8,
+        "clothing_share": 0.19,
+        "contrast_floor": 9.5,
+        "moves_under_reduce_motion": 0
+      },
+      "1440": {
+        "words": 29,
+        "pill_y": 470,
+        "headline_lines": 3,
+        "photos": 32,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "animated": [
+          "transform"
+        ],
+        "compositor_only": true,
+        "fastest_px_s": 11,
+        "clothing_share": 0.22,
+        "contrast_floor": 9.5,
+        "moves_under_reduce_motion": 0
+      },
+      "id": "a",
+      "label": "A. The rail: real listings drift past",
+      "brand_errors": [],
+      "brand_warnings": 2
+    },
+    {
+      "390": {
+        "words": 20,
+        "pill_y": 463,
+        "headline_lines": 4,
+        "photos": 8,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "animated": [
+          "transform"
+        ],
+        "compositor_only": true,
+        "fastest_px_s": 269,
+        "clothing_share": 0.09,
+        "contrast_floor": 9.5,
+        "moves_under_reduce_motion": 0
+      },
+      "1440": {
+        "words": 29,
+        "pill_y": 470,
+        "headline_lines": 3,
+        "photos": 8,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "animated": [
+          "transform"
+        ],
+        "compositor_only": true,
+        "fastest_px_s": 333,
+        "clothing_share": 0.11,
+        "contrast_floor": 9.5,
+        "moves_under_reduce_motion": 0
+      },
+      "id": "b",
+      "label": "B. The stitches: garment seams drift",
+      "brand_errors": [],
+      "brand_warnings": 2
+    },
+    {
+      "390": {
+        "words": 20,
+        "pill_y": 603,
+        "headline_lines": 4,
+        "photos": 0,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "animated": [
+          "strokeDashoffset",
+          "transform"
+        ],
+        "compositor_only": false,
+        "fastest_px_s": 2,
+        "clothing_share": 0.02,
+        "contrast_floor": 3.58,
+        "moves_under_reduce_motion": 0
+      },
+      "1440": {
+        "words": 29,
+        "pill_y": 629,
+        "headline_lines": 3,
+        "photos": 0,
+        "fonts": [
+          "Clofie 600",
+          "PP Neue Montreal 500"
+        ],
+        "animated": [
+          "strokeDashoffset",
+          "transform"
+        ],
+        "compositor_only": false,
+        "fastest_px_s": 2,
+        "clothing_share": 0.01,
+        "contrast_floor": 9.5,
+        "moves_under_reduce_motion": 0
+      },
+      "id": "c",
+      "label": "C. The walls: listings climb either side",
+      "brand_errors": [
+        "B32 view 1 <svg> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)",
+        "B32 view 2 <svg> sits within 10.5 px of the wordmark: nothing but its ground comes within half its type size (C1)"
+      ],
+      "brand_warnings": 3
+    }
+  ]
+}

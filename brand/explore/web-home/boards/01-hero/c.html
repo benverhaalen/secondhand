@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secondhand</title>
+<link rel="stylesheet" href="../../../../tokens.css">
+<link rel="stylesheet" href="../../site.css">
+<!-- Variant C: the field is a band at the top holding the line; the hallway scene with its cards rises into the first
+     screen below it, as Cleo stands its phone in a meadow. The scene is a generated mock (Art. 8.4). -->
+<style>
+  .band { position: relative; background: var(--field); padding: var(--s-9) var(--mx) var(--s-9); text-align: center; color: var(--on-field); }
+  .band .hero-t { max-width: none; }
+  .band .act { margin-top: var(--s-6); }
+  .hero header { position: static; }
+  .rise { width: min(var(--content), 100% - 2 * var(--mx)); margin: var(--s-6) auto 0; }
+  .rise .scene-photo { aspect-ratio: 16 / 7; }
+  .rise .stack { top: var(--s-6); transform: none; left: var(--s-6); }
+  @media (max-width: 760px) { .band .hero-t { max-width: 14ch; margin-inline: auto; } .rise .scene-photo { aspect-ratio: auto; } }
+</style>
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div class="band" data-field>
+      <header>
+  <div class="wrap">
+    <a class="wordmark" href="#">secondhand</a>
+    <nav aria-label="Pages"><a href="#">How it works</a><a href="#">Sites and fees</a><a href="#">The data</a><a href="#">FAQ</a></nav>
+    <a class="signin" href="#">Sign in</a>
+  </div>
+</header>
+      <h1 class="hero-t" style="margin-top:var(--s-8)">Your second hand, for everything secondhand.</h1>
+      <p class="lead">Take one photo. It's priced, posted on five sites and sold for you.</p>
+      <div class="act"><a class="pill glow" href="#">Try it</a><div class="logos" aria-label="Posts to">
+            <img src="../../../../../assets/platforms/square/ebay.png" alt="eBay">
+            <img src="../../../../../assets/platforms/square/depop.png" alt="Depop">
+            <img src="../../../../../assets/platforms/square/poshmark.png" alt="Poshmark">
+            <img src="../../../../../assets/platforms/square/mercari.png" alt="Mercari">
+            <img src="../../../../../assets/platforms/square/facebook.png" alt="Facebook Marketplace">
+          </div></div>
+    </div>
+    <div class="rise">
+      <figure class="panel scene-photo" data-item>
+        <img src="../../../../../research/cross-cutting/ben/website/photos/move__empty.jpg" alt="A hallway mid-move with a brass lamp, a brown work jacket and a wooden chair set out to sell">
+        <div class="stack">
+          <div class="card need" data-part="scene-card">
+            <div class="row"><span class="tag need">Offer</span><img src="../../../../../assets/platforms/square/depop.png" alt="Depop" width="20" height="20"><span class="keep" data-fill="amount">You keep $77.35</span></div>
+            <p class="why" data-fill="text">A buyer offered $85. Your lowest is $70.</p>
+            <div class="acts"><button class="pill small" type="button">Accept $85</button><button class="ghost" type="button">Counter $92</button></div>
+          </div>
+        </div>
+      </figure>
+    </div>
+  </section>
+</main>
+</body>
+</html>
