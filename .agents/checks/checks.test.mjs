@@ -180,6 +180,18 @@ test('code: a grab-bag file name, a type escape, a swallowed error, history in a
   })), '');
 });
 
+test('code: in a screen or part, a catch that does something but never logs fails; one that logs or rethrows passes', () => {
+  const bad = errors(run(code, {
+    'app/src/app/today.tsx': j("const a = () => open().catch(() => setToast('no'));\ntry { x(); } catch (e) { setToast('no'); ", "}\n"),
+  }));
+  assert.match(bad, /today\.tsx:1 .*not logged/);
+  assert.match(bad, /today\.tsx:2 .*not logged/);
+  assert.equal(errors(run(code, {
+    'app/src/app/today.tsx': "const a = () => open().catch(e => { log.error('today.open', e); setToast('no'); });\ntry { x(); } catch (e) { log.error('x', e); setToast('no'); }\ntry { y(); } catch (e) { throw e; }\n",
+    'app/src/today/plain.ts': "try { x(); } catch (e) { setToast('no'); }\n",
+  })), '');
+});
+
 test('code: a long file and code that changed with no test are questions, not failures', () => {
   const long = Array.from({ length: 450 }, (_, i) => `export const v${i} = ${i};`).join('\n');
   const out = run(code, { 'server/everything.ts': long }, { changed: ['server/everything.ts'] });
