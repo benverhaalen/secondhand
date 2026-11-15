@@ -331,3 +331,85 @@ test('next midnight retry and daily cap reach the app through the shared ApiErro
   assert.equal(body.cap, 'daily');
   assert.equal(body.retry.after_s, 60);
 });
+
+function askingRoute(kind: 'pick_one' | 'pick_many' | 'yes_no' | 'text' | 'number_with_unit' = 'pick_one') {
+  const t = setup(); let asks = 0;
+  const handler = createAssistHandler({ env: {}, jobs: t.jobs, params: assistParams, now: () => NOW, tools,
+    client: { model: 'stand-in', client: { messages: { stream(p) {
+      t.requests.push(structuredClone(p)); const m = message();
+      if (++asks <= 2) {
+        m.stop_reason = 'tool_use';
+        m.content = [{ type: 'tool_use', id: 'size-question', name: 'ask_person', caller: { type: 'direct' }, input: {
+          field: 'size', kind, words: 'PRIVATE_ASK_WORDS', other: false, why: 'value',
+          options: [{ value: 'small', label: 'Small', proposed: false, cites: [], rests_on: [] },
+            { value: 'medium', label: 'Medium', proposed: true, cites: [], rests_on: [] }],
+          ...(kind === 'text' ? { max_length: 20 } : {}),
+          ...(kind === 'number_with_unit' ? { unit: 'cm', units: ['cm', 'in'] } : {}),
+        } }];
+      } else m.content = [{ type: 'text', text: 'These match.', citations: null }];
+      return { on() {}, finalMessage: async () => m };
+    } } } }, schedule: task => t.tasks.push(task) });
+  const post = async (owner = 'person-a', answer?: unknown) => {
+    const response = await handler(t.ctx(owner, { surface: 'buy', text: 'Chosen size', ...(answer === undefined ? {} : { answer }) }), new Request('http://test'));
+    assert.ok(!(response instanceof Response)); return { status: response.status, id: (response.body as { id: string }).id };
+  };
+  const ask = async () => {
+    const response = await post(); await t.tasks.at(-1)!();
+    const result = t.jobs.get(response.id, 'person-a')!.result as import('../assist/types.ts').Answer;
+    const block = result.blocks.find(b => b.type === 'ask'); assert.ok(block?.type === 'ask'); return block.ask;
+  };
+  return { ...t, post, ask };
+}
+
+test('answers are owner scoped, superseded across turns, reach the model as a note, and close once', async () => {
+  const t = askingRoute(), first = await t.ask();
+  await rejects(t.post('person-b', { ask_id: first.id, field: 'size', value: 'medium' }), 'not_found', 404);
+  await rejects(t.post('person-a', { ask_id: 'q_unknown_size', field: 'size', value: 'medium' }), 'not_found', 404);
+  await rejects(t.post('person-a', { ask_id: first.id, field: 'size', value: 'extra-large' }), 'invalid', 422);
+  await rejects(t.post('person-a', { ask_id: first.id, field: 'other', value: 'medium' }), 'invalid', 422);
+  const second = await t.ask(); assert.equal(second.replaces, first.id);
+  const settled = t.jobs.framesAfter(second.id.slice(2, -5), 0).find(f => f.event === 'assist.settled');
+  assert.ok(JSON.stringify(settled?.data).includes(first.id), 'replaces must be visible in the settled stream');
+  await rejects(t.post('person-a', { ask_id: first.id, field: 'size', value: 'medium' }), 'conflict', 409);
+  const response = await t.post('person-a', { ask_id: second.id, field: 'size', value: 'medium' });
+  assert.equal(response.status, 202); await t.tasks.at(-1)!();
+  assert.ok(JSON.stringify(t.requests.at(-1)?.messages).includes('answer to ' + second.id));
+  assert.ok(JSON.stringify(t.requests.at(-1)?.messages).includes('size = \\"medium\\"'));
+  await rejects(t.post('person-a', { ask_id: second.id, field: 'size', value: 'medium' }), 'not_found', 404);
+  assert.ok(!t.sink.text().includes('PRIVATE_ASK_WORDS'));
+});
+
+for (const [kind, good, bad] of [
+  ['pick_many', ['small', 'medium'], ['unlisted']], ['yes_no', false, 'yes'],
+  ['text', '  PRIVATE_ANSWER  ', 'x'.repeat(21)], ['number_with_unit', 42.5, '42.5'],
+] as const) test(`answer validation follows ${kind}`, async () => {
+  const t = askingRoute(kind), ask = await t.ask();
+  await rejects(t.post('person-a', { ask_id: ask.id, field: ask.field, value: bad }), 'invalid', 422);
+  assert.equal((await t.post('person-a', { ask_id: ask.id, field: ask.field, value: good })).status, 202);
+  await t.tasks.at(-1)!();
+  assert.ok(JSON.stringify(t.requests.at(-1)?.messages).includes('answer to ' + ask.id));
+  assert.ok(!t.sink.text().includes('PRIVATE_ANSWER'));
+});
+
+test('pruning a job also forgets its open asks', async () => {
+  const t = askingRoute(), ask = await t.ask(); t.jobs.prune(Date.now() + 86400000);
+  await rejects(t.post('person-a', { ask_id: ask.id, field: ask.field, value: 'small' }), 'not_found', 404);
+});
+
+test('question and answer logging passes the shared log contract and stores only lengths and hashes', async () => {
+  const t = askingRoute(), ask = await t.ask();
+  const value = 'medium';
+  await t.post('person-a', { ask_id: ask.id, field: ask.field, value });
+  await t.tasks.at(-1)!();
+  t.log.end();
+  const { checkLog } = await import('../../../../spec/log.mjs');
+  assert.deepEqual(checkLog(t.sink.text()).problems, []);
+  const logged = t.sink.lines.map(line => JSON.parse(line) as Record<string, unknown>);
+  const answered = logged.find(line => line.msg === 'assist.answer');
+  assert.equal(answered?.length, JSON.stringify(value).length);
+  assert.equal(answered?.value_hash, (await import('../../engines/proof/sha256.ts')).sha256Hex(JSON.stringify(value)));
+  for (const line of logged) assert.ok(!JSON.stringify(line).includes('PRIVATE_ASK_WORDS'));
+  const calls = logged.filter(line => line.event === 'call.start' && line.name === 'ask_person');
+  assert.ok(calls.length > 0);
+  assert.ok(calls.every(line => !JSON.stringify(line.input).includes('medium')));
+});

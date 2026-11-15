@@ -927,8 +927,8 @@ for (const [text, prices] of plantedMoney) {
     assert.equal(streamed(held.events), '', 'planted price must never stream');
     const kept = await run(prices);
     assert.equal(kept.answer.gate.cut, 0);
-    assert.equal(prose(kept.answer), text, 'normalization must not change displayed text');
-    assert.equal(streamed(kept.events), text);
+    assert.equal(prose(kept.answer), text.replace(/\*\*|__/g, ''), 'figures stay unchanged and emphasis is stripped');
+    assert.equal(streamed(kept.events), text.replace(/\*\*|__/g, ''));
   });
 }
 
@@ -1173,3 +1173,137 @@ test('late updates remain bounded by max_rounds and the cost cap', async () => {
     assert.equal(answer.reason, limit === 'rounds' ? 'max_rounds' : 'cost_cap');
   }
 });
+
+const sizeQuestion = () => ({ field: 'size', kind: 'pick_one', words: 'Which size?',
+  options: ['Small', 'Medium', 'Large'].map((label, i) => ({ value: label.toLowerCase(), label, proposed: i === 1,
+    cites: i === 1 ? ['r1'] : [], rests_on: i === 1 ? ['Most matching rows'] : [] })), other: false, why: 'value' });
+function askMessage(input: unknown = sizeQuestion()): Message {
+  const message = textMessage('');
+  message.stop_reason = 'tool_use';
+  message.content = [{ type: 'text', text: 'These match. ', citations: null },
+    { type: 'tool_use', id: 'ask-size', name: 'ask_person', caller: { type: 'direct' }, input: input as Record<string, unknown> },
+    { type: 'text', text: 'You can change your pick.', citations: null }];
+  return message;
+}
+
+test('ambiguous sizes use the shared Ask in content order and end even at the round limit', async () => {
+  const recording = replay([askMessage()]);
+  const t = setup('answer', { ...recording, job_id: 'job_sizes', seed: [result], max_rounds: 1,
+    tools: { defs: [], run: async () => { throw new Error('ask_person must stay in converse'); } } });
+  const answer = await t.run();
+  assert.equal(answer.state, 'answered');
+  assert.equal(answer.reason, undefined);
+  assert.equal(recording.requests.length, 1);
+  assert.deepEqual(answer.blocks.map(b => b.type), ['text', 'ask', 'text']);
+  const block = answer.blocks.find(b => b.type === 'ask');
+  assert.ok(block?.type === 'ask');
+  assert.equal(block.ask.id, 'q_job_sizes_size');
+  assert.equal(block.ask.options[1].proposed, true);
+  assert.deepEqual(block.ask.answer, { method: 'POST', path: '/v1/assist' });
+  assert.deepEqual(t.events.filter(e => e.event === 'assist.tool').map(e => e.data.phase), ['start', 'end']);
+  assert.ok(t.events.filter(e => e.event === 'assist.tool').every(e => !('input' in e.data)));
+  assert.ok(recording.requests[0].tools?.some(tool => 'name' in tool && tool.name === 'ask_person'));
+  const logged = t.sink.text();
+  assert.ok(!logged.includes('Which size?'));
+  assert.ok(!logged.includes('Most matching rows'));
+  assert.ok(logged.includes(sha256Hex(JSON.stringify(sizeQuestion()))));
+});
+
+for (const cited of [false, true]) test(`an option with money ${cited ? 'backed by its cited result stays' : 'without a cited result is dropped'}`, async () => {
+  const question = sizeQuestion();
+  question.options[0] = { value: 'extra', label: '$40 more', proposed: false, rests_on: [], cites: cited ? ['r1'] : [] };
+  const t = setup('answer', { job_id: 'job_money', seed: [{ ...result, rows: [{ price_cents: 4000 }] }],
+    client: replay([askMessage(question)]).client });
+  const answer = await t.run();
+  const block = answer.blocks.find(b => b.type === 'ask');
+  assert.ok(block?.type === 'ask');
+  assert.equal(block.ask.options.some(option => option.label === '$40 more'), cited);
+  assert.equal(answer.gate.cut, cited ? 0 : 1);
+});
+
+test('multiple proposed picks are cleared and a second ask gets a tool error', async () => {
+  const question = sizeQuestion(); question.options[0].proposed = true;
+  const message = askMessage(question);
+  message.content.push({ type: 'tool_use', id: 'ask-again', name: 'ask_person', caller: { type: 'direct' }, input: sizeQuestion() });
+  const t = setup('answer', { job_id: 'job_twice', client: replay([message]).client });
+  const answer = await t.run();
+  const blocks = answer.blocks.filter(b => b.type === 'ask');
+  assert.equal(blocks.length, 1);
+  assert.ok(blocks[0].ask.options.every(option => !option.proposed));
+  assert.equal(answer.calls[1].ok, false);
+  assert.equal(answer.results[answer.calls[1].id].reason, 'already_asked');
+  assert.match(t.sink.text(), /multiple_proposed/);
+});
+
+test('plain text removes emphasis after gating and cuts internal error sentences in stream and settled text', async () => {
+  const text = '**These match.** __Choose freely.__ It failed with not_connected. A call to search_market failed. Sold prices are not available here yet.';
+  const t = setup('answer', { client: replay([textMessage(text)]).client });
+  const answer = await t.run();
+  assert.equal(prose(answer), 'These match. Choose freely. Sold prices are not available here yet.');
+  assert.equal(streamed(t.events), prose(answer));
+  assert.equal(answer.gate.cut, 2);
+});
+
+test('a sentence containing an internal code drops its widget and every fragment, but widget names are not prose', async () => {
+  const t = setup('answer', { seed: [{ ...result, widgets: ['price_trend'] }], client: replay([
+    textMessage('The trend [price_trend:r1] is shown. It failed [price_trend:r1] with invalid_input. These match.'),
+  ]).client });
+  const answer = await t.run();
+  assert.equal(answer.blocks.filter(b => b.type === 'widget').length, 1);
+  assert.ok(!prose(answer).includes('failed'));
+  assert.ok(!prose(answer).includes('invalid_input'));
+  assert.equal(streamed(t.events), 'The trend  is shown. These match.');
+  assert.equal(answer.gate.cut, 1);
+});
+
+test('ask words use turn results, reasons use only cited results, and too few surviving choices drop the ask', async () => {
+  const question = sizeQuestion(); question.words = 'Is it worth $999?';
+  let answer = await setup('answer', { job_id: 'job_gate', client: replay([askMessage(question)]).client }).run();
+  assert.equal(answer.blocks.filter(b => b.type === 'ask').length, 0);
+  assert.equal(answer.gate.cut, 1);
+  question.words = 'Which size?'; question.options[0].rests_on = ['$999 less'];
+  question.options[1].label = '$999 more'; question.options[2].label = '$999 more';
+  answer = await setup('answer', { job_id: 'job_gate', client: replay([askMessage(question)]).client }).run();
+  assert.equal(answer.blocks.filter(b => b.type === 'ask').length, 0);
+  assert.equal(answer.gate.cut, 4, 'one reason, two options and the question were dropped');
+});
+
+for (const [cause, changes] of [
+  ['long field', { field: 'x'.repeat(61) }], ['long words', { words: 'x'.repeat(201) }],
+  ['unknown why', { why: 'guess' }], ['extra property', { extra: 'unknown' }],
+  ['too many options', { options: Array.from({ length: 9 }, (_, i) => ({ value: String(i), label: 'Size', proposed: false, cites: [] })) }],
+  ['long label', { options: [{ value: 's', label: 'x'.repeat(81), proposed: false, cites: [] }] }],
+  ['long value', { options: [{ value: 'x'.repeat(81), label: 'Small', proposed: false, cites: [] }] }],
+  ['long reason', { options: [{ value: 's', label: 'Small', proposed: false, cites: [], rests_on: ['x'.repeat(201)] }] }],
+  ['missing text limit', { kind: 'text' }], ['missing unit', { kind: 'number_with_unit' }],
+] as const) test(`ask_person rejects ${cause} without running an outside tool`, async () => {
+  const t = setup('answer', { job_id: 'job_invalid', client: replay([askMessage({ ...sizeQuestion(), ...changes })]).client });
+  const answer = await t.run();
+  assert.equal(answer.blocks.filter(b => b.type === 'ask').length, 0);
+  assert.equal(answer.calls[0].ok, false);
+  assert.equal(answer.gate.cut, 1);
+});
+
+test('an ask can cite another tool in the current round, and its event settles after the gate', async () => {
+  const question = sizeQuestion(); question.options[0].label = '$40 more'; question.options[0].cites = ['r2'];
+  const message = askMessage(question);
+  message.content.push({ type: 'tool_use', id: 'lookup', name: 'value_item', caller: { type: 'direct' }, input: { query: 'jacket' } });
+  const t = setup('answer', { job_id: 'job_round', client: replay([message]).client });
+  t.options.tools.run = async () => { await new Promise(resolve => setImmediate(resolve)); return { ...result, rows: [{ price_cents: 4000 }] }; };
+  const answer = await t.run();
+  const block = answer.blocks.find(b => b.type === 'ask'); assert.ok(block?.type === 'ask');
+  assert.equal(block.ask.options[0].label, '$40 more');
+  assert.equal(answer.calls[0].ok, true);
+  assert.equal(answer.calls[0].counts.options, 3);
+});
+
+for (const token of ['not_connected', 'invalid_input', 'not_built', 'too_few', 'function_missing', 'signed_in_only', 'too_many_calls', 'already_asked',
+  'search_market', 'value_item', 'price_trend', 'where_to_list', 'market_store', 'web_search', 'ask_person']) {
+  test(`internal token ${token} is cut from streamed and settled sentences`, async () => {
+    const t = setup('answer', { client: replay([textMessage(`It failed with '${token}'. These match.`)]).client });
+    const answer = await t.run();
+    assert.equal(streamed(t.events), 'These match.');
+    assert.equal(prose(answer), 'These match.');
+    assert.equal(answer.gate.cut, 1);
+  });
+}

@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import type { ContentBlockParam, Message, MessageCreateParamsBase, MessageParam, Tool, ToolResultBlockParam } from '@anthropic-ai/sdk/resources/messages';
 import type { Log } from '../../../../log/index.js';
+import type { Ask } from '../../engines/capture/plan.ts';
 import { sha256Hex } from '../../engines/proof/sha256.ts';
 import { gate } from '../gate/gate.ts';
 import type { LateUpdate } from './tools.ts';
@@ -31,6 +32,8 @@ export interface ToolPort {
 }
 
 export interface ConverseOptions {
+  job_id?: string;
+  answer_note?: string;
   text: string;
   image?: { media_type: 'image/jpeg' | 'image/png' | 'image/webp'; data_base64: string };
   history?: MessageParam[];
@@ -367,6 +370,104 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
   return kept;
 }
 
+const askString = (maxLength: number) => ({ type: 'string', minLength: 1, maxLength });
+const askObject = (properties: Record<string, unknown>, required = Object.keys(properties)) =>
+  ({ type: 'object' as const, properties, required, additionalProperties: false });
+export const ASK_PERSON = {
+  name: 'ask_person', description: 'Ask one clarifying question when an open field changes the price or the pick.', strict: true as const,
+  input_schema: askObject({
+    field: askString(60), kind: { type: 'string', maxLength: 80, enum: ['pick_one', 'pick_many', 'yes_no', 'text', 'number_with_unit'] },
+    words: askString(200), options: { type: 'array', maxItems: 8, items: askObject({
+      value: askString(80), label: askString(80), proposed: { type: 'boolean' },
+      cites: { type: 'array', maxItems: 8, items: askString(80) },
+      rests_on: { type: 'array', maxItems: 8, items: askString(200) },
+    }, ['value', 'label', 'proposed', 'cites']) },
+    other: { type: 'boolean' }, max_length: { type: 'integer', minimum: 1, maximum: 2000 },
+    unit: askString(80), units: { type: 'array', maxItems: 8, items: askString(80) },
+    why: { type: 'string', maxLength: 200, enum: ['required', 'confirm', 'value', 'only_you_know'] },
+  }, ['field', 'kind', 'words', 'options', 'other', 'why']),
+};
+
+const record = (value: unknown): value is Record<string, unknown> => value !== null && typeof value === 'object' && !Array.isArray(value);
+const bounded = (value: unknown, limit: number): value is string => typeof value === 'string' && value.trim().length > 0 && value.length <= limit;
+const stringList = (value: unknown, limit: number) => Array.isArray(value) && value.length <= 8 && value.every(entry => bounded(entry, limit));
+function askInput(value: unknown): value is Omit<Ask, 'id' | 'answer' | 'replaces'> {
+  if (!record(value) || Object.keys(value).some(key => !Object.hasOwn(ASK_PERSON.input_schema.properties, key))) return false;
+  if (!bounded(value.field, 60) || !bounded(value.words, 200) || typeof value.other !== 'boolean'
+    || typeof value.kind !== 'string' || !['pick_one', 'pick_many', 'yes_no', 'text', 'number_with_unit'].includes(value.kind)
+    || typeof value.why !== 'string' || !['required', 'confirm', 'value', 'only_you_know'].includes(value.why)) return false;
+  if (!Array.isArray(value.options) || value.options.length > 8 || !value.options.every(option => record(option)
+    && Object.keys(option).every(key => ['value', 'label', 'proposed', 'cites', 'rests_on'].includes(key))
+    && bounded(option.value, 80) && bounded(option.label, 80) && typeof option.proposed === 'boolean'
+    && stringList(option.cites, 80) && (option.rests_on === undefined || stringList(option.rests_on, 200)))) return false;
+  if (new Set(value.options.map(option => option.value)).size !== value.options.length) return false;
+  if (value.max_length !== undefined && !(typeof value.max_length === 'number' && Number.isInteger(value.max_length) && value.max_length >= 1 && value.max_length <= 2000)) return false;
+  if (value.kind === 'text' && value.max_length === undefined) return false;
+  if (value.unit !== undefined && !bounded(value.unit, 80)) return false;
+  if (value.units !== undefined && !stringList(value.units, 80)) return false;
+  return value.kind !== 'number_with_unit' || bounded(value.unit, 80);
+}
+
+const INTERNAL_WORD = /\b(?:not_connected|invalid_input|not_built|too_few|function_missing|signed_in_only|too_many_calls|already_asked|search_market|value_item|price_trend|where_to_list|market_store|web_search|ask_person)\b/i;
+function plainText(text: string): string {
+  return text.replace(/\*\*|__/g, '');
+}
+
+async function shownDraft(...args: Parameters<typeof checkedDraft>) {
+  const text = await checkedDraft(...args);
+  const answer = args[1];
+  const rejected = sentences(text.replace(/\*\*|__/g, '  ')).filter(({ segment }) => INTERNAL_WORD.test(stripTags(segment)));
+  answer.gate.cut += rejected.length;
+  answer.gate.cut_sentences.push(...rejected.map(({ index, segment }) => text.slice(index, index + segment.length).trim()));
+  const clean = (start: number, end: number) => {
+    let cursor = start, kept = '';
+    for (const cut of rejected) {
+      if (cut.index >= end || cut.index + cut.segment.length <= start) continue;
+      kept += text.slice(cursor, Math.max(cursor, cut.index));
+      cursor = Math.min(end, cut.index + cut.segment.length);
+    }
+    return plainText(kept + text.slice(cursor, end));
+  };
+  let cursor = 0;
+  answer.blocks = answer.blocks.flatMap<Answer['blocks'][number]>(block => {
+    if (block.type === 'ask') return [block];
+    const raw = block.type === 'text' ? block.text : `[${block.widget}:${block.result_id}]`;
+    const start = text.indexOf(raw, cursor), end = start + raw.length;
+    cursor = end;
+    if (block.type === 'widget') return rejected.some(cut => cut.index < end && cut.index + cut.segment.length > start) ? [] : [block];
+    const shown = clean(start, end).trim();
+    return shown ? [{ ...block, text: shown }] : [];
+  });
+  return clean(0, text.length);
+}
+
+async function question(input: unknown, answer: Answer, o: ConverseOptions): Promise<Ask | null> {
+  if (!askInput(input) || !o.job_id) { answer.gate.cut++; return null; }
+  const passes = async (text: string, results: Answer['results']) => {
+    const probe: Answer = { ...answer, results, blocks: [], sources: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
+    await shownDraft({ content: [{ type: 'text', text, citations: null }] } as Message, probe, '', o.log, o.now());
+    answer.gate.checked += probe.gate.checked;
+    answer.gate.cut += probe.gate.cut;
+    return probe.gate.cut === 0;
+  };
+  if (!await passes(input.words, answer.results)) return null;
+  const options: Ask['options'] = [];
+  for (const option of input.options) {
+    const results = Object.fromEntries((option.cites ?? []).flatMap(id => answer.results[id] ? [[id, answer.results[id]]] : []));
+    if (!await passes(option.label!, results)) continue;
+    const rests_on: string[] = [];
+    for (const reason of option.rests_on ?? []) if (await passes(reason, results)) rests_on.push(plainText(reason));
+    options.push({ ...option, label: plainText(option.label!), rests_on });
+  }
+  if (['pick_one', 'pick_many'].includes(input.kind) && options.length < 2) { answer.gate.cut++; return null; }
+  if (input.kind === 'pick_one' && input.options.filter(option => option.proposed).length > 1) {
+    options.forEach(option => { option.proposed = false; });
+    o.log.note('assist.ask', { reason: 'multiple_proposed' });
+  }
+  return { ...input, words: plainText(input.words), options,
+    id: `q_${o.job_id}_${input.field}`, answer: { method: 'POST', path: '/v1/assist' } };
+}
+
 function failedResult(name: ToolName, ms: number, reason = 'failed'): ToolResult {
   return { tool: name, ok: false, reason, rows: [], counts: {}, as_of: '', citation_ids: [], basis: '', not_built: [], widgets: [], ms };
 }
@@ -437,6 +538,7 @@ ${rendered}` };
     const content: ContentBlockParam[] = [];
     if (o.image) content.push({ type: 'image', source: { type: 'base64', media_type: o.image.media_type, data: o.image.data_base64 } });
     content.push({ type: 'text', text: o.text });
+    if (o.answer_note) content.push({ type: 'text', text: o.answer_note });
     for (const result of o.seed ?? []) {
       const { id, rendered } = addResult(result);
       content.push({ type: 'text', text: `seed result ${id}:
@@ -462,7 +564,7 @@ ${rendered}` });
           const stream = o.client.messages.stream({
             model: o.model, max_tokens,
             system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }], messages,
-            tools: [...o.tools.defs, { type: 'web_search_20260209', name: 'web_search', max_uses: 3 }],
+            tools: [...o.tools.defs, ASK_PERSON, { type: 'web_search_20260209', name: 'web_search', max_uses: 3 }],
             output_config: { effort: o.effort }, thinking: { type: 'adaptive' },
           }, { signal: o.signal });
           // Hold the round until its text and web citations are complete, then gate whole sentences.
@@ -472,7 +574,7 @@ ${rendered}` });
           const streamed: Message = { ...message, content: [{ type: 'text', text: accumulated || message.content.flatMap(block => block.type === 'text' ? [block.text] : []).join(''), citations:
             message.content.flatMap(block => block.type === 'text' ? block.citations ?? [] : []) }] };
           const preview: Answer = { ...answer, blocks: [], gate: { checked: 0, cut: 0, cut_sentences: [], tags_removed: 0 } };
-          const visible = stripTags(await checkedDraft(streamed, preview, o.text, o.log, o.now(), true));
+          const visible = stripTags(await shownDraft(streamed, preview, o.text, o.log, o.now(), true));
           for (const { segment } of sentences(visible)) {
             if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
             o.onEvent?.({ event: 'assist.text', data: { delta: stripTags(segment) } });
@@ -493,10 +595,13 @@ ${rendered}` });
       for (const key of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'web_searches', 'cost_usd'] as const) answer.usage[key] += usage[key];
       if (usage.cost_source === 'provider') answer.usage.cost_source = 'provider';
       await collectWeb(final, answer, o, toolEvent, pendingWeb, roundStart);
+      const hasAsk = final.content.some(block => block.type === 'tool_use' && block.name === 'ask_person');
       const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
-      await checkedDraft(final, answer, o.text, o.log, o.now());
-      answer.blocks = [...previous, ...answer.blocks];
-      answer.gate.tags_removed += tags_removed;
+      if (!hasAsk) {
+        await shownDraft(final, answer, o.text, o.log, o.now());
+        answer.blocks = [...previous, ...answer.blocks];
+        answer.gate.tags_removed += tags_removed;
+      }
       if (final.stop_reason === 'refusal') {
         answer.state = 'refused';
         answer.reason = final.stop_details?.category ?? 'refusal';
@@ -515,7 +620,7 @@ ${rendered}` });
         break;
       }
       messages.push({ role: 'assistant', content: final.content });
-      if (round + 1 === maxRounds) {
+      if (round + 1 === maxRounds && !hasAsk) {
         early = true;
         answer.reason = 'max_rounds';
         break;
@@ -523,22 +628,36 @@ ${rendered}` });
       if (final.stop_reason === 'tool_use') {
         const uses = final.content.filter(block => block.type === 'tool_use');
         if (!uses.length) throw new Error('tool_use stop without tool calls');
-        const returned = await Promise.all(uses.map(async (use, index) => {
-          const id = `r${++resultId}`, tool = use.name as ToolName;
-          const call: ToolCallInfo = { id, tool, input: use.input, ok: false, counts: {}, ms: 0 };
+        let asked = false;
+        const askBlocks = new Map<string, Ask>();
+        const entries = uses.map((use, index) => {
+          const call: ToolCallInfo = { id: `r${++resultId}`, tool: use.name as ToolName, input: use.input, ok: false, counts: {}, ms: 0 };
           answer.calls.push(call);
           toolEvent(call, 'start');
-          const toolStart = o.now();
+          return { use, index, call };
+        });
+        const execute = async ({ use, index, call }: typeof entries[number]) => {
+          const { id } = call, tool = use.name as ToolName, toolStart = o.now();
           let result: ToolResult;
           try {
-            if (index >= MAX_TOOL_USES_PER_ROUND) {
+            if (use.name === 'ask_person') {
+              const duplicate = asked;
+              asked = true;
+              const input = JSON.stringify(use.input);
+              result = await o.log.call('tool', 'ask_person', { length: input.length, input_hash: sha256Hex(input) }, async () => {
+                if (duplicate) return failedResult(tool, 0, 'already_asked');
+                const ask = await question(use.input, answer, o);
+                if (!ask) return failedResult(tool, 0, 'invalid_input');
+                askBlocks.set(use.id, ask);
+                return { ...failedResult(tool, 0), ok: true, reason: undefined, counts: { options: ask.options.length } };
+              }, value => ({ ok: value.ok, reason: value.reason, counts: value.counts }));
+            } else if (index >= MAX_TOOL_USES_PER_ROUND) {
               result = failedResult(tool, 0, 'too_many_calls');
               o.log.note('assist.tool limit', { tool, result_id: id, reason: result.reason });
             } else result = await o.log.call('tool', use.name, logValue(use.input, o), async () => {
               try { return await o.tools.run(use.name, use.input, o.signal); }
               catch (error) { throw safeError(error, o); }
-            },
-              value => ({ ok: value.ok, reason: value.reason, counts: value.counts, ms: o.now() - toolStart, tokens_in: 0, tokens_out: 0, cost_usd: 0 }));
+            }, value => ({ ok: value.ok, reason: value.reason, counts: value.counts, ms: o.now() - toolStart, tokens_in: 0, tokens_out: 0, cost_usd: 0 }));
           } catch (error) {
             o.log.error('assist.tool', safeError(error, o), { tool: use.name, result_id: id });
             result = failedResult(tool, o.now() - toolStart);
@@ -548,15 +667,38 @@ ${rendered}` });
           toolEvent(call, 'end');
           return { type: 'tool_result', tool_use_id: use.id, content: renderResult(result, id),
             ...(!result.ok ? { is_error: true } : {}) } satisfies ToolResultBlockParam;
-        }));
+        };
+        const normal = entries.filter(entry => entry.use.name !== 'ask_person');
+        const results = await Promise.all(normal.map(execute));
+        for (const entry of entries.filter(entry => entry.use.name === 'ask_person')) await execute(entry);
+        answer.results = Object.fromEntries(Object.entries(answer.results).sort(([a], [b]) => Number(a.slice(1)) - Number(b.slice(1))));
         o.signal.throwIfAborted();
-        messages.push({ role: 'user', content: returned });
+        if (hasAsk) {
+          let group: Message['content'] = [];
+          const render = async () => {
+            const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
+            await shownDraft({ ...final, content: group }, answer, o.text, o.log, o.now());
+            answer.blocks = [...previous, ...answer.blocks];
+            answer.gate.tags_removed += tags_removed;
+            group = [];
+          };
+          for (const block of final.content) {
+            if (block.type === 'tool_use' && block.name === 'ask_person') {
+              await render();
+              const ask = askBlocks.get(block.id);
+              if (ask) answer.blocks.push({ type: 'ask', ask });
+            } else group.push(block);
+          }
+          await render();
+          break;
+        }
+        messages.push({ role: 'user', content: results });
       }
     }
     await closeWeb(pendingWeb, answer.reason ?? 'missing_result', o, toolEvent);
     if (early) {
       const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
-      const text = await checkedDraft({ content: [{ type: 'text', text: 'The answer stopped early.', citations: null }] } as Message,
+      const text = await shownDraft({ content: [{ type: 'text', text: 'The answer stopped early.', citations: null }] } as Message,
         answer, o.text, o.log, o.now());
       answer.blocks = [...previous, ...answer.blocks];
       answer.gate.tags_removed += tags_removed;

@@ -778,3 +778,20 @@ test('existing search reader waits for first answer and unsubscribes on abort be
     assert.equal(job.listeners.size, 0);
   }
 });
+
+test('search seeds retain full listed and site totals while rows stay capped, from settled or latest partial', async () => {
+  for (const event of ['answer.settled', 'answer.partial']) {
+    const frames: SseFrame[] = [{ id: 1, event, data: {
+      results: Array.from({ length: 84 }, (_, i) => offer('poshmark', i, 4000)), sites_pending: [],
+      ...(event === 'answer.settled' ? { found: { results_found: 90, results_used: 84, sites: { poshmark: 84 } } }
+        : { answer: { found: { results_found: 90, results_used: 84, sites: { poshmark: 84 } } } }),
+    } }, { id: 2, event: 'job.state', data: { state: 'done' } }];
+    const { d } = deps({ searchJob: { start: async () => ({ id: 'search' }), listen: () => () => {}, framesAfter: () => frames } });
+    const r = await searchJobResult('search', { ...d, signal: signal() });
+    assert.ok(r.rows.length <= 30);
+    assert.equal(r.counts.results_found, 90);
+    assert.equal(r.counts.results_used, 84);
+    assert.equal(r.counts.poshmark_found, 84);
+    assert.ok(r.counts.rows < r.counts.results_used);
+  }
+});

@@ -9,6 +9,7 @@ import { runTurn, type RunTurnDeps } from './run-turn.ts';
 import type { ToolResult } from './types.ts';
 import type { StreamClient } from './converse.ts';
 import { defaultDeps } from './tools.ts';
+import { sha256Hex } from '../../engines/proof/sha256.ts';
 
 test('concurrent person and visitor turns keep their own tool caller and person id', async () => {
   const t = setup();
@@ -209,4 +210,17 @@ test('escaped multiline history and image echoes are redacted even inside tool f
     assert.ok(!logged.includes(value));
     assert.ok(!logged.includes(JSON.stringify(value).slice(1, -1)));
   }
+});
+
+test('answer note and job id reach converse and answer values are hashed out of error logs', async () => {
+  const t = setup(fixture().slice(1));
+  const answer = { ask_id: 'q_previous_size', field: 'size', value: 'private-chosen-value' };
+  t.deps.converse = async o => {
+    assert.equal(o.job_id, t.job.id);
+    assert.equal(o.answer_note, 'answer to q_previous_size: size = "private-chosen-value"');
+    throw new Error(o.answer_note);
+  };
+  await runTurn(t.job.id, { surface: 'buy', text: 'Medium', answer }, t.deps);
+  assert.ok(!t.sink.text().includes(answer.value));
+  assert.ok(t.sink.text().includes(sha256Hex(answer.value)));
 });

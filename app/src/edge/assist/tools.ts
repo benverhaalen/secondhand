@@ -216,6 +216,16 @@ function searchRows(data: Record<string, unknown>, x: Extract<Input, { query: st
   const rows = kept.slice(0, Math.max(0, 30 - sites.length)).map(listing);
   r.counts = { rows: rows.length, sites_hit: new Set(rows.map(row => row.site)).size, sites_pending: pending.length,
     dropped_brand: offers.length - kept.length, ...Object.fromEntries(pending.map(site => [`${site}_pending`, 1])) };
+  const found = object(data.found) ?? object(object(data.answer)?.found);
+  if (found) {
+    for (const key of ['results_found', 'results_used', 'sources_searched']) {
+      const value = found[key];
+      if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) r.counts[key] = value;
+    }
+    for (const [site, value] of Object.entries(object(found.sites) ?? {})) {
+      if (eligible(site) && typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) r.counts[`${site}_found`] = value;
+    }
+  }
   const summaries = [...new Set(rows.map(row => String(row.site)))].map(site => {
     const local = rows.filter(row => row.site === site), prices = local.filter(row => row.currency === 'USD').map(row => Number(row.price_cents));
     const likes = local.flatMap(row => typeof row.likes === 'number' ? [row.likes] : []);
