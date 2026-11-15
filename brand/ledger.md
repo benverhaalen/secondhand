@@ -43,7 +43,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L35 | The black button's depth is a faint glow | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L36 | No emoji, anywhere | [ban all emojis](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
 | L37 | Things of a relatively similar size are one standard width and height, whatever is in them | [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
-| L38 | The text face is PP Neue Montreal 2.6 Medium (500), everywhere in the app, tailored to how it sits. Closes R42 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500) |
+| L38 | The text face is PP Neue Montreal 2.6. In the app it has one weight, Medium (500), at every size, tailored to how it sits. Closes R42 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500) |
 | L39 | Live is blue, sold is mint, and needs you is yellow | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L40 | What separates: the six rules in constitution Art. 5. A box that holds content is open again as R29 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the gray box](../product/words.md#2026-11-15-a-constitution-with-little-wiggle-room-the-heavy-black-the-black-outline-and-the-gray-box) |
 | L41 | The sum of what you keep is a receipt | [round 10](../product/words.md#2026-11-15-round-10-picks) |

@@ -169,7 +169,7 @@ export const PICKS = {
   // The text face is PP Neue Montreal 2.6: it is the first family the brand values name.
   L38: (root) => { const t = tokens(root); if (!t) return []; const first = (t.light['font-text'] ?? '').split(',')[0].trim().replace(/^["']|["']$/g, '');
     const out = first === 'PP Neue Montreal' ? [] : [err(TOKENS, `--font-text starts with "${first}": the text face is PP Neue Montreal 2.6 (ledger L38)`)];
-    for (const n of ['w-regular', 'w-medium']) if (n in t.light && t.light[n] !== '500') out.push(err(TOKENS, `--${n} is ${t.light[n]}: the text face has one weight, Medium, 500 (ledger L38)`));
+    if ('w-text' in t.light && t.light['w-text'] !== '500') out.push(err(TOKENS, `--w-text is ${t.light['w-text']}: text in the app has one weight, Medium, 500 (ledger L38)`));
     return out; },
 
   // The palette is one family: every hue's tint, fill and deep are built the same way, with the hue kept.

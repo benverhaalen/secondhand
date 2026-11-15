@@ -61,7 +61,8 @@
   --font-text:    "PP Neue Montreal", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
   --font-display: "Clofie", var(--font-text);                     /* the wordmark and what Art. 6 lists, nothing else */
   --w-display: 600;                                               /* Clofie SemiBold, the only display weight */
-  --w-regular: 500; --w-medium: 500;                              /* the text face has one weight, Medium (Ben, 2026-11-15: "i like 500"). Both names stay, so nothing that reads them breaks; weight never changes with state */
+  --w-text: 500;                                                  /* text in the app has one weight, Medium (Ben, 2026-11-15: "i like 500"). Weight never changes with state */
+  --w-regular: 400; --w-medium: 500;                              /* off the app (web, post, story, deck): Book, and Medium on buttons, until Ben rules on those */
   --nudge-display: .12em;                                         /* Clofie sits this far above center in its line; move it down where text cannot be trimmed (Art. 6.10) */
   /* app sizes by role (Art. 6 roles); line heights are ratios so they grow with the text setting */
   --t-13: 13px; --lh-13: 1.385;                   /* caption, time, tab label */

@@ -21,7 +21,7 @@
 .sh.sep-rows .card:not(.field), .sh.sep-rows .notice { background: none; box-shadow: none; border-radius: 0; padding-left: 0; padding-right: 0; border-top: var(--card-border); }   /* rows on white with a hairline (L16) */
 
 .sh { width: 390px; min-height: 844px; position: relative; overflow: hidden; flex: none; display: flex; flex-direction: column;
-  background: var(--page); color: var(--ink); font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text);
+  background: var(--page); color: var(--ink); font: var(--w-text) var(--t-15)/var(--lh-15) var(--font-text);
   text-align: start; -webkit-font-smoothing: antialiased; }
 .sh.fixed { height: 844px; }
 .sh.strip { min-height: 0; height: var(--tab-h); }               /* a specimen that shows the tab bar alone */
@@ -65,7 +65,7 @@
 .sh.wm-center .nav .wm { grid-column: 2; }
 .sh.wm-center .nav .ib { grid-column: 3; justify-self: end; }
 .sh .count { position: absolute; top: 2px; right: 0; min-width: var(--badge-h); height: var(--badge-h); padding: 0 var(--s-1); border-radius: var(--r-pill); background: var(--ink); color: var(--surface);
-  font-size: var(--t-13); line-height: var(--lh-13); font-weight: var(--w-medium); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--page); }
+  font-size: var(--t-13); line-height: var(--lh-13); font-weight: var(--w-text); display: grid; place-items: center; box-shadow: 0 0 0 2px var(--page); }
 .sh .wash { position: absolute; left: 0; right: 0; top: 0; height: var(--wash-h); background: var(--wash); z-index: 0; pointer-events: none; }
 .sh .a36 { font-size: var(--t-36); line-height: var(--lh-36); letter-spacing: var(--tr-36); }
 .sh .ink { color: var(--ink); }
@@ -115,7 +115,7 @@
 /* buttons. The act is the black pill with the glow (C4). Every other button is a light fill: gray in a white card, white at 72% on the field.
    .out is round 10's black outline, kept for the side by side (R33). In a card a button is 40 tall in a 44 touch area */
 .sh .pill { height: var(--pill-card-h); padding: 0 var(--pill-card-pad); border: 0; border-radius: var(--r-pill); background: var(--ink); color: var(--surface); position: relative;
-  font: var(--w-medium) var(--t-15)/var(--lh-15) var(--font-text); white-space: nowrap; cursor: pointer; box-shadow: var(--pill-glow);
+  font: var(--w-text) var(--t-15)/var(--lh-15) var(--font-text); white-space: nowrap; cursor: pointer; box-shadow: var(--pill-glow);
   display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2);
   transition: transform var(--t-feedback) var(--ease-out), box-shadow var(--t-feedback), background-color var(--t-feedback); }
 .sh .pill::after { content: ""; position: absolute; inset: -2px 0; }
@@ -173,7 +173,7 @@
 .sh .chips { display: flex; gap: var(--s-2); overflow: hidden; margin-right: calc(var(--gutter) * -1);     /* the row runs off the screen's edge and fades, so it reads as more, not as a clipped shape */
   -webkit-mask: linear-gradient(to right, #000 calc(100% - 48px), transparent); mask: linear-gradient(to right, #000 calc(100% - 48px), transparent); }
 .sh .chip { height: var(--chip-h); padding: 0 var(--s-4); border: 0; border-radius: var(--r-pill); background: var(--ctl); box-shadow: var(--ctl-edge); color: var(--ink); flex: none; position: relative;
-  font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text); cursor: pointer; display: inline-flex; align-items: center; gap: var(--s-1); }
+  font: var(--w-text) var(--t-15)/var(--lh-15) var(--font-text); cursor: pointer; display: inline-flex; align-items: center; gap: var(--s-1); }
 .sh .chip::after { content: ""; position: absolute; inset: -4px 0; }
 .sh .chip .ic { width: 20px; height: 20px; }
 .sh .chip:has(> .ic:first-child) { padding-left: var(--s-2); }
