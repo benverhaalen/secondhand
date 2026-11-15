@@ -48,7 +48,8 @@ export function appTokenSource(o: { client_id: string; client_secret: string; en
     const res = await fetchFn(`${HOSTS[o.env ?? 'production'].api}/identity/v1/oauth2/token`, { method: 'POST', signal: s,
       headers: { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: `Basic ${Buffer.from(`${o.client_id}:${o.client_secret}`).toString('base64')}` },
       body: new URLSearchParams({ grant_type: 'client_credentials', scope }).toString() });
-    const b: unknown = await res.json().catch(() => undefined);
+    let b: unknown;
+    try { b = await res.json(); } catch (error) { if (error instanceof SyntaxError) return undefined; throw error; }
     const token = str(at(b, 'access_token')), ttl = num(at(b, 'expires_in'));
     if (!res.ok || !token || !ttl) return undefined;
     cache.set(scope, { token, until: now() + (ttl - 60) * 1000 });
@@ -617,9 +618,9 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
   make_offer: (c, a) => {
     const listing = id(a, 'listing_external_id'); if (!listing) return refuse('missing_input', 'make_offer needs listing_external_id');
     // spec/sites.mjs defaults last_sent_at to null, which tsc reads as the only allowed type
-    const r = (sellerOffer as unknown as (site: string, o: Record<string, unknown>) => unknown)('ebay', { list_cents: Number(a.list_cents), offer_cents: Number(a.offer_cents),
+    const r = sellerOffer('ebay', { list_cents: Number(a.list_cents), offer_cents: Number(a.offer_cents),
       lowest_cents: a.lowest_cents === undefined ? undefined : Number(a.lowest_cents), last_sent_at: a.last_sent_at ? new Date(String(a.last_sent_at)) : null,
-      now: a.now ? new Date(String(a.now)) : (c.now?.() ?? new Date()), promised_elsewhere: a.promised_elsewhere === true }) as { ok: boolean; why?: string };
+      now: a.now ? new Date(String(a.now)) : (c.now?.() ?? new Date()), promised_elsewhere: a.promised_elsewhere === true });
     if (!r.ok) return refuse('seller_offer', r.why ?? 'refused');
     const f = underFloor(a, ints(a.offer_cents)); if (f) return f;
     const HOURS_A_DAY = 24;
