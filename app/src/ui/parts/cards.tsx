@@ -132,6 +132,8 @@ export type DecisionCardProps = {
   waiting?: number;
   // The one card on the screen that needs the person most takes its state's gradient (Art. 5, State gradients rule 2). The screen decides which.
   lead?: boolean;
+  // The tag drawn quiet, its word kept: the screen says so when a header already names the state every card in it shares (U13).
+  quiet?: boolean;
   onOpen?: () => void;
 };
 
@@ -150,7 +152,7 @@ export function DecisionCard(p: DecisionCardProps) {
   const card = (
     <Press id={`${p.id}-open`} label={p.title} onPress={p.onOpen} round={false}>
       <Surface kind={gradient ? 'field' : 'card'} gradient={gradient} hours={hours} part="card-decision" box={{ height: size.cardDecisionH, padding: size.cardPad, gap: space.s3 }}>
-        <Body photo={p.photo} title={p.title} site={p.site} tag={failed ? 'failed' : p.kind} word={failed ? TAGS.failed.word : p.word} fact={fact} due={failed ? undefined : p.due} now={now} />
+        <Body photo={p.photo} title={p.title} site={p.site} tag={failed ? 'failed' : p.kind} word={failed ? TAGS.failed.word : p.word} fact={fact} due={failed ? undefined : p.due} now={now} quiet={p.quiet && !failed} />
         <View style={{ flexDirection: 'row', height: size.pillCardH, gap: space.s2 }}>
           <Pill id={p.primary.id} kind={act} label={failed ? 'Retry' : p.primary.label} icon={failed ? 'refresh' : undefined} state={working ? 'working' : 'idle'} step={p.step} onPress={p.primary.onPress} />
           {p.second ? <Pill id={p.second.id} kind="second" label={p.second.label} state={working ? 'disabled' : 'idle'} onPress={p.second.onPress} /> : null}

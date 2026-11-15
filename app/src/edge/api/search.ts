@@ -1,7 +1,7 @@
 // Rests-on: spec/product.md §7 Jobs and the event stream, §8 search budget; int-search-1 brief.
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid, pagination } from './captures.ts';
-import { searchSource, type SearchOpts, type SiteSearched, type SearchRow } from '../intel/public/search.ts';
+import { searchSource, sourceUnavailable, runtimePorts as searchRuntime, type SearchOpts, type SiteSearched, type SearchRow } from '../intel/public/search.ts';
 import { BASE, searchUrl } from '../intel/public/readers.ts';
 import { fetchPage } from '../intel/fetch.ts';
 import { SOURCES, sourcesFor, routeId, type Caller, type Source, type SourceSite } from '../intel/public/sources.ts';
@@ -14,18 +14,19 @@ import { searchAll as rankOffers, type BuyOffer, type BuyRow } from '../buy/buy.
 import { jobs, type ApiJobRow } from './jobs.ts';
 
 const protocol = PROTOCOLS.listings_matching;
-export const ports: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe'> & { fetchPage: typeof fetchPage; ask: typeof jevAsk; deadline_ms: number; sources: readonly Source[] } = {
-  fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES, accounts: undefined, harness: undefined,
-};
+export const ports = Object.assign(searchRuntime, {
+  fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES as readonly Source[],
+});
 // The shared job store owns the promises as well as their rows; nothing is detached without a rejection handler.
 export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string, Promise<void>>() });
 type ActiveRead = { rows?: JudgedRow[]; searched?: SiteSearched };
 const reading = new Map<string, ActiveRead>();
 
-type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped'>)[] };
-type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
+// Exported for the app's search screen (app/src/api), which imports these instead of copying them.
+export type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'site' | 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped' | 'fallback' | 'cost_usd_est'>)[] };
+export type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
 type JudgedRow = { row: SearchRow; judged: Judged };
-type PublicOffer = BuyOffer & { converted?: boolean; host?: string; match: Judged['match']; currency: string; image_url?: string; external_id: string; data: `live:${SourceSite}`; commercial_link?: true; attribution?: 'Dupe.com'; source_site?: string; secondhand?: boolean; keep_until?: string };
+type PublicOffer = BuyOffer & Pick<SearchRow, 'via' | 'actor' | 'may_model' | 'use_scope'> & { converted?: boolean; host?: string; match: Judged['match']; currency?: string; image_url?: string; external_id: string; data: `live:${SourceSite}`; commercial_link?: true; attribution?: 'Dupe.com'; source_site?: string; secondhand?: boolean; keep_until?: string };
 type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
 
 const matchOrder: Record<Judged['match'], number> = { exact: 0, likely_same_model: 1, same_family_other_variant: 2, comparable: 3, unresolved: 4 };
@@ -53,11 +54,11 @@ function identity(rows: JudgedRow[]): { by: 'model' | 'codes' | 'default'; model
   return { by: model_ok ? 'model' : 'codes', model_ok };
 }
 
-function candidates(source: Source, rows: SearchRow[]): Result[] {
+function candidates(source: Source, rows: SearchRow[], route_id = routeId(source)): Result[] {
   const site = source.site;
   // readPage's required-field gate has already validated these fields.
   return rows.map(row => ({ id: `ls_${site}_${row.id}`, listing_id: `ls_${site}_${row.id}`, site,
-    title: row.title!, price_cents: row.price_cents!, url: row.url!, route_id: routeId(source) }));
+    title: row.title!, price_cents: row.price_cents!, url: row.url!, route_id }));
 }
 
 function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters: Record<string, unknown>): Batch {
@@ -68,7 +69,8 @@ function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters
   const offers: PublicOffer[] = [];
   for (const { row, judged } of rows) {
     if (judged.keep !== 'keep') { drop(judged.keep); continue; }
-    const offer: PublicOffer = { ...candidates(source, [row])[0], external_id: row.id!, currency: row.currency!, ...(row.host ? { host: row.host } : {}), ...(row.converted ? { converted: true } : {}), data: `live:${site}`,
+    const offer: PublicOffer = { ...candidates(source, [row], searched.route_id)[0], external_id: row.id!, currency: row.currency, ...(row.host ? { host: row.host } : {}), ...(row.converted ? { converted: true } : {}), data: `live:${site}`,
+      ...(row.via ? { via: row.via, actor: row.actor, may_model: row.may_model, use_scope: row.use_scope } : {}),
       ...('commercial_link' in row ? { commercial_link: row.commercial_link, attribution: row.attribution, source_site: row.source_site, secondhand: row.secondhand, keep_until: row.keep_until } : {}),
       ...(row.image_url ? { image_url: row.image_url } : {}), condition: row.condition ?? 'unknown',
       match: judged.match, relation: judged.match === 'comparable' ? 'functional_equivalent' : 'same_product',
@@ -92,15 +94,17 @@ function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters
   return { searched, rows, offers: offers.filter(o => kept.has(o.id)), ranked, found };
 }
 
+export type OfferView = ReturnType<typeof offerView>;
 function offerView(row: BuyRow) {
   const offer = row as BuyRow & PublicOffer;
-  const amount = (n: number) => ({ amount_cents: n, currency: offer.currency });
+  const amount = (n: number) => offer.currency ? { amount_cents: n, currency: offer.currency } : null;
   return { id: offer.id, listing_id: offer.listing_id, external_id: offer.external_id, title: offer.title, url: offer.url,
     site: offer.site, route_id: offer.route_id, data: offer.data, condition: offer.condition, relation: offer.match,
     source_kind: offer.source_kind, price_cents: amount(offer.price_cents), shipping_cents: null,
     delivered_cents: inDollars(offer) ? amount(offer.delivered_cents) : null,
     ...(offer.host ? { host: offer.host } : {}), ...(offer.converted ? { converted: true } : {}), shipping_estimated: offer.shipping_estimated, also_on: offer.also_on,
     ...(offer.image_url ? { image_url: offer.image_url } : {}),
+    ...(offer.via ? { via: offer.via, actor: offer.actor, may_model: offer.may_model, use_scope: offer.use_scope } : {}),
     ...(offer.commercial_link ? { commercial_link: offer.commercial_link, attribution: offer.attribution, source_site: offer.source_site, secondhand: offer.secondhand, keep_until: offer.keep_until } : {}) };
 }
 
@@ -131,8 +135,8 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   };
   const answer = (settled: boolean): SearchAnswer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
     protocol_version: protocol.version, facts: [], found: result().found,
-    searched: [...batches.entries()].map(([id, b]) => ({ route_id: routeId(sources.find(s => s.id === id)!), query,
-      outcome: b.searched.outcome, ms: b.searched.ms, ...(b.searched.pace ? { pace: b.searched.pace } : {}), ...(b.searched.dropped ? { dropped: b.searched.dropped } : {}), ...(b.searched.error_code ? { error_code: b.searched.error_code } : {}), ...(b.searched.reason ? { reason: b.searched.reason } : {}) })),
+    searched: [...batches.entries()].map(([id, b]) => ({ site: b.searched.site, route_id: b.searched.route_id ?? routeId(sources.find(s => s.id === id)!), query,
+      outcome: b.searched.outcome, ms: b.searched.ms, ...(b.searched.pace ? { pace: b.searched.pace } : {}), ...(b.searched.dropped ? { dropped: b.searched.dropped } : {}), ...(b.searched.error_code ? { error_code: b.searched.error_code } : {}), ...(b.searched.reason ? { reason: b.searched.reason } : {}), ...(b.searched.fallback ? { fallback: b.searched.fallback } : {}), ...(b.searched.cost_usd_est !== undefined ? { cost_usd_est: b.searched.cost_usd_est } : {}) })),
     stage: settled ? 'settled' : 'first', ms: { first, settled: settled ? Math.round(performance.now() - t0) : null } });
   const emit = (event: 'answer.partial' | 'answer.settled', data: Record<string, unknown>) => {
     const a = answer(event === 'answer.settled');
@@ -148,7 +152,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     stage.state = batch.searched.outcome === 'timeout' ? 'late' : batch.searched.error_code && batch.searched.outcome !== 'empty' ? 'failed' : 'arrived';
     if (stage.state === 'failed') stage.error = { code: batch.searched.error_code!, message: batch.searched.reason ?? 'source failed' };
     stage.ended_at = new Date().toISOString(); stage.found = batch.found;
-    first ??= Math.round(performance.now() - t0);
+    if (batch.rows.length) first ??= Math.round(performance.now() - t0);
     saveStages(); jobs.update(job.id, { result: result() });
     // events.json still has the old stage enum; state.change records the brief's late state without falsifying it.
     if (stage.state === 'late') ctx.log.event('state.change', { entity: 'job.stage', id: `${job.id}:${stage.name}`, to: 'late', job: job.id, stage: stage.name, found: stage.found });
@@ -158,7 +162,12 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   };
   const sitePlan = async (source: Source, freshness_s: number) => {
     const site = source.site;
-    const scopedRoute = source.lane === 'harness' ? `${routeId(source)}:${ctx.user_id ?? ctx.visitor_id}` : routeId(source);
+    const readOptions: SearchOpts = { paced: true, caller, person_id: ctx.user_id ?? undefined, visitor_id: ctx.visitor_id ?? undefined,
+      accounts: opts.accounts, harness: opts.harness, routed: opts.routed, apify: opts.apify, dupe: opts.dupe, fetchPage: opts.fetchPage, log: ctx.log };
+    const unavailable = await sourceUnavailable(source, 'search', readOptions);
+    const fallback = unavailable?.searched.error_code === 'no_route' && site === 'ebay' && caller === 'person' && opts.apify;
+    if (unavailable && !fallback) return { batch: rank(source, [], unavailable.searched, filters), cached: false, live: undefined };
+    const scopedRoute = source.lane === 'harness' || source.lane === 'apify' ? `${routeId(source)}:${ctx.user_id ?? ctx.visitor_id}` : routeId(source);
     const key = `${scopedRoute}|${normalize(query)}`;
     let shared = reading.get(key), ran = false, rows: JudgedRow[] = [];
     // One allowance per search, charged against the same clock on the cached and live reads. The harness owns and reuses its browser.
@@ -168,13 +177,12 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     const a = await runPlan({ kind: 'listings_matching', slots: { text: query }, protocol_version: protocol.version,
       first_ms: protocol.budget.first_ms, settled_ms: remaining,
       targets: [{ target_id: `site:${source.id}`, query, deadline_ms: remaining, freshness_s, routes: [{
-        route_id: scopedRoute, site, lane: source.lane, pace: source.pace, cache: source.lane !== 'mcp', host: site === 'dupe' ? 'mcp.dupe.com' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
+        route_id: scopedRoute, site, lane: source.lane, pace: unavailable || source.lane === 'apify' ? undefined : source.pace, cache: source.lane !== 'mcp' && source.lane !== 'apify' && !(site === 'ebay' && opts.apify), host: site === 'dupe' ? 'mcp.dupe.com' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
         async run(q, { signal, readEnded }) {
           const readAt = performance.now();
           ran = true; shared = {}; reading.set(key, shared);
           try {
-            const page = await searchSource(source, q, 'search', { paced: true, caller, person_id: ctx.user_id ?? undefined,
-              accounts: opts.accounts, harness: opts.harness, dupe: opts.dupe, signal, fetchPage: opts.fetchPage, deadline_ms: remaining, log: ctx.log }).finally(readEnded);
+            const page = await searchSource(source, q, 'search', { ...readOptions, signal, deadline_ms: remaining }).finally(readEnded);
             shared.searched = page.searched;
             const judged = await sameProduct({ title: q }, candidates(source, page.rows), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
             shared.rows = page.rows.map((row, i) => ({ row, judged: judged[i] }));

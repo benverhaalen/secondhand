@@ -309,6 +309,96 @@ function job(result: unknown, user = 'usr_8f2k', id = 'cap_3n9q'): CaptureBody {
 }
 const fieldOf = (capture:CaptureBody, field:string) => capture.plan.fields.find(f=>f.field===field)!;
 
+async function lookupCapture(token='good') {
+  let c=await bodyOf(await requestCapture('POST /v1/captures',{mode:'shots',purpose:'sell',rigid:true,extent_cm:30},token));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'none');
+  c=await bodyOf(await at(patchEndpoint,c.id,{version:c.version,type:'other'},token));
+  return bodyOf(await at(photosEndpoint,c.id,{photos:c.plan.process.map(step=>photo(step.key))},token));
+}
+test('F18: no job result holds brand and dimensions before 15 seconds and asks them after the wait', async () => {
+  let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
+  const c=await lookupCapture();
+  assert.ok(c.plan.process.every(step=>step.state==='kept'));
+  const version=c.version;
+  now+=14_999;
+  const before=await bodyOf(await at('GET /v1/captures/:id',c.id));
+  for(const field of ['brand','dimensions']) {
+    assert.equal(fieldOf(before,field).state,'waiting',`${field} must wait before the deadline`);
+    assert.ok(!before.plan.questions.some(q=>q.field===field),`${field} must not be asked before the deadline`);
+  }
+  assert.notEqual(before.plan.status,'done');
+  now+=2;
+  const after=await bodyOf(await at('GET /v1/captures/:id',c.id));
+  for(const field of ['brand','dimensions']) assert.ok(after.plan.questions.some(q=>q.field===field),`${field} must be asked after the deadline without a job result`);
+  assert.equal(after.version,version,'GET timeout must not write a version');
+});
+test('F18: lookup start is ISO deps.now and later photos and timeout plans keep the stored lookup running', async () => {
+  let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
+  const c=await lookupCapture();
+  const started=new Date(now).toISOString();
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups_at,started);
+  now+=15_000;
+  const after=await bodyOf(await at(photosEndpoint,c.id,{photos:[photo(c.plan.process[0].key)]}));
+  assert.ok(after.plan.questions.some(q=>q.field==='brand'),'photo response must use the elapsed deadline at exactly 15 seconds');
+  const row=capturesApi.captureRows.get(c.id)!;
+  assert.equal(row.state.lookups_at,started,'later photos must not restart the wait');
+  assert.equal(row.state.lookups,'running','only the effective planning state can become done');
+});
+test('F18: PATCH accepts a lookup answer after the deadline using the same effective plan', async () => {
+  let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
+  const c=await lookupCapture();
+  assert.equal((await at(patchEndpoint,c.id,{version:c.version,answer:{field:'brand',value:'Acme'}})).status,422);
+  now+=15_000;
+  const after=await bodyOf(await at(patchEndpoint,c.id,{version:c.version,answer:{field:'brand',value:'Acme'}}));
+  assert.equal(fieldOf(after,'brand').state,'known');
+  assert.ok(after.plan.questions.some(q=>q.field==='dimensions'),'PATCH response must use the elapsed plan');
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'running');
+});
+test('F18: finish returns the elapsed plan while stored lookups remain running', async () => {
+  let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
+  const c=await lookupCapture();now+=15_000;
+  const after=await bodyOf(await at('POST /v1/captures/:id/finish',c.id,{version:c.version}));
+  for(const field of ['brand','dimensions']) assert.ok(after.plan.questions.some(q=>q.field===field),`finish must use elapsed ${field}`);
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'running');
+});
+test('F18: identify inside the wait settles brand and dimensions without a question', async () => {
+  let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
+  const c=await lookupCapture();now+=5_000;
+  const after=job(identify([{...product,family:'other'}]),'usr_8f2k',c.id);
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'done');
+  for(const field of ['brand','dimensions']) {
+    assert.equal(fieldOf(after,field).state,'known',`identify must settle ${field} inside the wait`);
+    assert.ok(!after.plan.questions.some(q=>q.field===field),`identify must avoid a ${field} question`);
+  }
+});
+test('F18: identify brand keeps lookup confidence and never replaces an owner answer', async () => {
+  let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
+  const c=await lookupCapture();now+=5_000;
+  let after=job(identify([{...product,family:'other',c:.8}]),'usr_8f2k',c.id);
+  assert.equal(fieldOf(after,'brand').state,'proposed','a weak identify result must not silently settle brand');
+  assert.ok(after.plan.questions.some(q=>q.field==='brand'));
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,{value:product.brand,source:'lookup',confidence:.8});
+  after=await bodyOf(await at(patchEndpoint,c.id,{version:after.version,answer:{field:'brand',value:'Owner brand'}}));
+  const owner=structuredClone(capturesApi.captureRows.get(c.id)!.state.facts.brand);
+  job(identify([{...product,family:'other'}]),'usr_8f2k',c.id);
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,owner);
+});
+test('F18: one persons elapsed capture never finishes another persons lookup wait', async () => {
+  let now=Date.parse(exampleCreatedAt);deps.now=()=>now;
+  const a=await lookupCapture();now+=10_000;
+  const b=await lookupCapture('other');now+=5_000;
+  const before=structuredClone(capturesApi.captureRows.get(b.id));
+  const elapsed=await bodyOf(await at('GET /v1/captures/:id',a.id));
+  const waiting=await bodyOf(await at('GET /v1/captures/:id',b.id,undefined,'other'));
+  for(const field of ['brand','dimensions']) {
+    assert.ok(elapsed.plan.questions.some(q=>q.field===field),`first persons ${field} wait must end`);
+    assert.equal(fieldOf(waiting,field).state,'waiting',`second persons ${field} must still wait`);
+    assert.ok(!waiting.plan.questions.some(q=>q.field===field));
+  }
+  assert.deepEqual(capturesApi.captureRows.get(b.id),before);
+  assert.equal((await at('GET /v1/captures/:id',a.id,undefined,'other')).status,404);
+});
+
 test('new capture rows are captured, use deterministic timestamps, and updates preserve creation time', async () => {
   resetCaptures();
   let now = Date.parse('2026-11-15T12:00:00.000Z');
@@ -337,6 +427,45 @@ const identify = (set:unknown[], action = 'confirm') => ({kind:'identify',action
 const product = {product_id:'pr_table',family:'furniture',brand:'IKEA',model:'LACK',c:.98,dimensions:{width:55,depth:55,height:45}};
 const studioResult = {kind:'studio_plan',plan:{kind:'tee',asks:[{type:'flaw',text:'Show the mark.',zone:'hem',kind:'stain'}]}};
 const scoreResult = (sharpness = .3, role = 'tag') => ({kind:'photo_score',photos:[{key:'tag',role,score:50,parts:{sharpness,exposure:.9,clipping:.9}}]});
+
+test('F23: identify confirm at 0.8 preserves a known label brand read at 0.96 without asking brand', async () => {
+  await askingCapture();
+  const c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:'Gildan',source:'label',confidence:.96}])]}));
+  assert.equal(fieldOf(c,'brand').state,'known');
+  const held=structuredClone(capturesApi.captureRows.get(c.id)!.state.facts.brand);
+  const after=job(identify([{...product,family:'apparel',c:.8}]));
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,held);
+  assert.equal(fieldOf(after,'brand').value,'Gildan');
+  assert.equal(fieldOf(after,'brand').state,'known');
+  assert.ok(!after.plan.questions.some(q=>q.field==='brand'));
+});
+test('F23: identify confirm at 0.9 replaces a label brand read at 0.5', async () => {
+  await askingCapture();
+  const c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:'Gildan',source:'label',confidence:.5}])]}));
+  assert.equal(fieldOf(c,'brand').value,'Gildan');
+  const after=job(identify([{...product,family:'apparel',c:.9}]));
+  assert.equal(fieldOf(after,'brand').value,product.brand);
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,{value:product.brand,source:'lookup',confidence:.9});
+});
+test('F23: identify confirm replaces a not_read brand', async () => {
+  await askingCapture();
+  const c=await bodyOf(await requestCapture(photosEndpoint,{photos:[photo('tag',[{field:'brand',value:null,unknown_reason:'not_read'}])]}));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.facts.brand.unknown_reason,'not_read');
+  const after=job(identify([{...product,family:'apparel'}]));
+  assert.equal(fieldOf(after,'brand').value,product.brand);
+  assert.deepEqual(capturesApi.captureRows.get(c.id)!.state.facts.brand,{value:product.brand,source:'lookup',confidence:product.c});
+});
+test('F23: running lookups without lookups_at ask brand on GET without changing the stored row', async () => {
+  const c=await lookupCapture();
+  const row=capturesApi.captureRows.get(c.id)!;
+  row.state.lookups='running';
+  delete row.state.lookups_at;
+  const before=structuredClone(row);
+  const after=await bodyOf(await at('GET /v1/captures/:id',c.id));
+  assert.ok(after.plan.questions.some(q=>q.field==='brand'));
+  assert.equal(capturesApi.captureRows.get(c.id)!.state.lookups,'running');
+  assert.deepEqual(capturesApi.captureRows.get(c.id),before);
+});
 
 test('read precedence: not_read preserves M, seen fills a placeholder, and owner facts survive', async () => {
   let c=await askingCapture();

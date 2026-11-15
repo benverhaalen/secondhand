@@ -1,7 +1,7 @@
 {
   "screen": "you/[page]",
   "route": "/you/:page",
-  "what": "The pages under You, one route so a push or a link opens any of them: payouts, insights (By site, worth, goal), records, connections (Your sites), rules (Rules and limits), log (Activity), notifications, defaults (App defaults), permissions (Permissions: what the agent may do), settings. A linked site's own page is app/behavior/you/connections/[site].json.",
+  "what": "The pages under You, one route so a push or a link opens any of them: payouts, insights (Insights: the week chart, your things, how they are doing, by site, worth, goal), records, connections (Your sites), rules (Rules and limits), log (Activity), notifications, defaults (App defaults), permissions (Permissions: what the agent may do), settings. A linked site's own page is app/behavior/you/connections/[site].json.",
   "frame": {
     "who": "The person clearing out reaches Payouts and Your sites after a sale or a sign-out; the person holding a minimum checks Rules and limits for their lowest; the flipper reads By site and Records; anyone leaving uses Settings.",
     "how_often": "Rarely, each one: a page is opened to change one thing or check one number, then left.",
@@ -24,12 +24,12 @@
     {
       "state": "insights typical",
       "path": "/you/insights",
-      "shows": "By site; a row per site with its logo, sales count, days to sell and money kept; What your things are worth rows with ranges; the November goal bar and the goal as a field, “$300 a month”"
+      "shows": "Insights; Sales each week on a dollar axis with a Sales row under the dates; Your things: a bar and tiles Getting ready 2, Live 4, Sold 4, Kept 1 worth $70 to $95; How they’re doing with each live thing and the key; By site, a row per site with its logo, sales count, days to sell and money kept; What your things are worth rows with ranges; the November goal bar and the goal as a field, “$300 a month”"
     },
     {
       "state": "insights new",
       "path": "/you/insights?world=new",
-      "shows": "By site with a line that sites show once they have a sale; the goal with an empty Amount field"
+      "shows": "Insights; By site with a line that sites show once they have a sale; the goal with an empty Amount field"
     },
     {
       "state": "records typical",
@@ -612,6 +612,95 @@
       "on_tap": "opens a sheet: with a sale open it says how many and offers no delete; with none it says what ends and offers Delete on Approve",
       "does": "opens the delete sheet",
       "path": "/you/settings"
+    },
+    {
+      "id": "things-in_progress",
+      "control": "Getting ready (tile)",
+      "on_tap": "opens Sell on In progress",
+      "does": "opens Sell",
+      "goes": "/sell",
+      "path": "/you/insights"
+    },
+    {
+      "id": "things-live",
+      "control": "Live (tile)",
+      "on_tap": "opens Sell on Live",
+      "does": "opens Sell",
+      "goes": "/sell",
+      "path": "/you/insights"
+    },
+    {
+      "id": "things-sold",
+      "control": "Sold (tile)",
+      "on_tap": "opens Sell on Sold",
+      "does": "opens Sell",
+      "goes": "/sell",
+      "path": "/you/insights"
+    },
+    {
+      "id": "things-kept",
+      "control": "Kept (tile)",
+      "on_tap": "opens Sell on Kept",
+      "does": "opens Sell",
+      "goes": "/sell",
+      "path": "/you/insights"
+    },
+    {
+      "id": "pulse-it_lamp",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the lamp",
+      "goes": "/item/it_lamp",
+      "path": "/you/insights"
+    },
+    {
+      "id": "pulse-it_jacket",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the jacket",
+      "goes": "/item/it_jacket",
+      "path": "/you/insights"
+    },
+    {
+      "id": "pulse-it_pants",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the pants",
+      "goes": "/item/it_pants",
+      "path": "/you/insights"
+    },
+    {
+      "id": "pulse-it_fleece",
+      "control": "A live thing (how it's doing)",
+      "on_tap": "opens that item",
+      "does": "opens the fleece",
+      "goes": "/item/it_fleece",
+      "path": "/you/insights"
+    },
+    {
+      "id": "you-all-live",
+      "control": "All 16 live",
+      "on_tap": "opens Sell on Live",
+      "does": "opens Sell",
+      "goes": "/sell",
+      "world": "flipper",
+      "path": "/you/insights"
+    },
+    {
+      "id": "rules-activity",
+      "control": "Activity (from Rules)",
+      "on_tap": "opens Activity",
+      "does": "opens Activity",
+      "path": "/you/rules",
+      "goes": "/you/log"
+    },
+    {
+      "id": "settings-records",
+      "control": "Records (row)",
+      "on_tap": "opens Records",
+      "does": "opens Records",
+      "path": "/you/settings",
+      "goes": "/you/records"
     }
   ],
   "back": "Back goes to the screen it came from; opened directly, it goes to You.",
@@ -646,6 +735,7 @@
     "App defaults start from spec: Sell it, the lowest price suggested from sold prices and set by the person, Clean up on and Enhance with AI off, replies in the person's voice, ship or pickup from their limits, the saved pickup spot, and only linked sites as default sites.",
     "Every page draws loading, failed and offline from ?state= (app/src/demo/screen.ts) the same way, through app/src/you/page-status.tsx: gray shapes, Couldn’t load with Try again, or the last copy under Waiting for signal. Your sites draws loading and failed on a site's row instead, since one site signing in never blocks the page.",
     "A page that lists every setting from the start (Settings, Notifications, App defaults, Permissions) skips empty and one, with why.",
-    "App defaults holds the account's cross-listing price rule, Same take-home unless the person switches it (decisions.md, 2026-11-15: cross-listing starts on same take-home). Each rule is its name and its one plain reason from SPREADS; the numbers for one jacket sit a tap under them (Ben 06:53: \"in plain language ... then see numbers if need be\"), priced by the engine's own sitePrice. One item's own rule is set on its Plan, not here."
+    "App defaults holds the account's cross-listing price rule, Same take-home unless the person switches it (decisions.md, 2026-11-15: cross-listing starts on same take-home). Each rule is its name and its one plain reason from SPREADS; the numbers for one jacket sit a tap under them (Ben 06:53: \"in plain language ... then see numbers if need be\"), priced by the engine's own sitePrice. One item's own rule is set on its Plan, not here.",
+    "Insights holds the analytics that left You (Ben, 10:27: \"profile shouldnt have analytics\"): the week chart, Your things and How they're doing come first, then By site, worth and the goal. Activity opens from Rules and limits, and Records from Settings, so nothing that was on You is more than one row away."
   ]
 }

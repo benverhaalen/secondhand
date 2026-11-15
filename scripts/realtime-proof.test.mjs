@@ -61,8 +61,9 @@ test('3: the configured recorded source reaches the real reader only after a sep
   assert.deepEqual(config.sources.map(s => [s.id, s.lane, s.on, s.needs_ask]), [
     ['dupe', 'mcp', true, false], ['depop', 'harness', true, false],
     ['poshmark', 'public_page', true, false], ['mercari', 'harness', true, true],
-    ['facebook', 'harness', false, false], ['ebay', 'harness', true, false],
+    ['facebook', 'apify', true, false], ['ebay', 'harness', true, false],
   ], 'source rows changed: review the replay coverage before updating this pin');
+  assert.equal(config.sources.find(s => s.id === 'facebook').person_only, true);
   assert.deepEqual(config.reads.map(r => r.fixture), ['poshmark', 'poshmark-empty']);
   assert.deepEqual(config.unrecorded_requests, []);
   assert.deepEqual(report.observed.learning.empty_search.searched.map(r => [r.site, r.outcome]), [['poshmark', 'empty']]);

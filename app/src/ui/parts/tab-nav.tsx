@@ -1,35 +1,30 @@
-// The top of every main tab: the tab's name in the brand's face at the start, and the inbox at the end of the same line
-// (Ben, 09:56: "the today page should say today, the sell sell, the buy page, buy", "the second hand font isnt used
-// enough"). It replaces the wordmark row on the tabs, the way iOS's large title opens Mail, Music and Photos, so every
-// tab opens the same way and the person always knows where they are. Clofie 36 is the screen title role (Art. 6, one per
-// view). 48 tall: the title's 40 line plus its nudge, and the inbox's 44 target centered on it.
-// States: with the inbox and its count, with the inbox and no count, and without the inbox (a tab that is a moment).
-import { router, type Href } from 'expo-router';
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { Txt } from '../text';
 import { size, space } from '../tokens.generated';
-import { IconButton } from './buttons';
+import { Nav } from './chrome';
 import { mark } from './mark';
-import { Count } from './small';
 
-export const PAGE_HEAD_H = 48;
-
-// action: the tab's one page-wide act in words beside the inbox, where iOS puts Select or Edit (Sell's Select).
-export function TabNav({ title, inbox, action }: { title: string; inbox?: { count: number; onPress?: () => void }; action?: ReactNode }) {
+// The top of a main tab (Ben, 11:31: "the top left should be logo. top right should be the messages. under that should be a
+// smaller font that is the page you are on"): the Nav, then the tab's name in a row with its one page-wide act.
+// Given as a Screen's nav, Screen pins the Nav row and brings it back on any scroll up (Ben, 11:27, on the decision card:
+// "Wordmark bar, title under, back on up"), and the name row scrolls with the page.
+export type TabNavProps = { title: string; inbox?: { count: number; onPress?: () => void }; action?: ReactNode };
+export function TabNav({ title, inbox, action }: TabNavProps) {
   return (
-    <View {...mark('page-head')} style={{ height: PAGE_HEAD_H, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Txt role="heading" lines={1}>{title}</Txt>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
+    <View style={{ gap: space.s2 }}>
+      <Nav inbox={inbox} />
+      <TabTitle title={title} action={action} />
+    </View>
+  );
+}
+
+// The name row alone, for Screen, which draws the Nav row itself when it pins it.
+export function TabTitle({ title, action }: Pick<TabNavProps, 'title' | 'action'>) {
+  return (
+    <View {...mark('page-head')} style={{ minHeight: size.controlMin, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Txt role="headline" lines={1}>{title.toLowerCase()}</Txt>
       {action}
-      {inbox ? (
-        <View style={{ width: size.controlMin, alignItems: 'flex-end' }}>
-          <IconButton id="nav-inbox" icon="inbox" label={inbox.count ? `Messages, ${inbox.count} new` : 'Messages'} look="plain" onPress={inbox.onPress ?? (() => router.push('/messages' as Href))}>
-            {inbox.count ? <Count n={inbox.count} /> : null}
-          </IconButton>
-        </View>
-      ) : null}
-      </View>
     </View>
   );
 }

@@ -55,6 +55,7 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
         fontVariant: tabular ? ['tabular-nums'] : undefined,
         color: ink,
         textAlign: center ? 'center' : undefined,
+        textTransform: r.display ? 'lowercase' : undefined,
         // Clofie sits .12 em above center in its line; it moves down where text cannot be trimmed (Art. 6.10).
         position: r.display ? 'relative' : undefined,
         top: r.display ? Math.round(r.fontSize * nudge.display) : undefined,

@@ -18,7 +18,10 @@ Nate: "a dedicated page, and on our homepage top hero as a fun visitable demonst
 - **The home hero:** the same input at the top of `/`, with three starter asks a visitor can tap (one item by words, one by photo, Nate's trends question). An answer opens in place; "Continue" moves it to `/buy`.
 - **Every state:** empty, typing, running (tools landing), answered, thin data (the count named), refused, rate limited, offline, the model or a site failing. Phone first at 375 wide, then web; tap targets 44 pt; no horizontal scroll.
 - **Built from:** [brand/constitution.md](../../brand/constitution.md), [product/ui-constitution.md](../../product/ui-constitution.md), [product/frontend-standard.md](../../product/frontend-standard.md), [product/copy.md](../../product/copy.md); strings pass `node scripts/copy-lint.mjs`.
-- **Public:** a Vercel deploy is public, so it waits on Nate's say each time.
+- **What it calls, and with no API:** the API cannot run as Vercel functions as built ([hosting.md](../../spec/plans/hosting.md)), so `/buy` has nothing to call until Nate picks a host. Until then a missing `SECONDHAND_API_ORIGIN` or an unreachable API shows the failed state ("Can't reach the assistant right now", Try again). Recorded answers play only at `/buy?replay=…` and `/states`, labelled "Recorded answer". Behind the rewrite the page polls `GET /v1/jobs/:id` every 2 s.
+- **Built from Ben's work in the repo:** the brand tokens, constitution and coder card in `brand/`, the UI constitution, frontend standard and copy rules in `product/`. Nate: "If its not in the repo then he hasnt worked on it."
+- **The cap reached:** the page says the demo is used up for today. A GitHub widget pops in (the logo, responsive, animated in per frontend-standard.md), linking to the repo `github.com/benverhaalen/secondhand`, with the team's GitHub and LinkedIn links beside it. The LinkedIn addresses come from Nate; none is guessed.
+- **Public:** Nate said yes to Vercel ([words](../../product/words.md#2026-11-15-nate-a-5-visitor-cap-that-points-to-the-repo-visitor-photos-allowed-and-yes-on-vercel)). The CLI on this machine is logged out, so he runs `vercel login` once. The site is `web/`, and `/v1/*` waits on the API host (Fly.io, chosen at 10:45; Hetzner is the alternative and is not set up).
 
 ## Decided
 - Nothing specific to this feature yet. Joint decisions that touch it are in [decisions.md](../../product/decisions.md).
@@ -28,3 +31,4 @@ Nate: "a dedicated page, and on our homepage top hero as a fun visitable demonst
 
 ## Research
 Research for this feature is filed under [research/watch/](../../research/watch/) (no folder of its own yet).
+- [How a many-source search shows its reach while it runs](../../research/buy/nate/search-in-progress.md): every source a row from the first frame, counts not percents, rows usable before the end and marked so far, the record kept after.

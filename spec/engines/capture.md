@@ -147,7 +147,7 @@ Reading a part's own sticker (a memory stick's label) needs a step of its own an
 
 **The parser** (`parts.ts`, `readParts(lines, rows, slack)`, pure). The phone sends the read step's recognized text as `text: [{line, confidence}]` (section 7). For each part row, the first line whose first word or words equal one of its `labels` gives the value from the rest of the line. Labels match whole words, so "Processors" is not "Processor". The value is read by the row's type:
 - `text`: trademark marks (`(R)`, `(TM)`, `®`, `™`), the words "CPU" and "Processor", and a trailing clock speed (`@ 2.90GHz`, `2.90 GHz`) are cut. "Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz 2.90 GHz" becomes "Intel Core i7-10700".
-- a size in GB: the number with its unit after the last " of " when the line has one ("123 GB used of 476 GB" reads 476), else the first. TB counts 1000 GB. The value is the smallest listed size at or above the reading, kept only when the reading is at least `1 − capture_part_size_slack` of it. Windows prints a 512 GB drive as 476.9 GB (0.93 of 512) and a 2 TB drive as 1.82 TB (0.91 of 2000); 300 GB is 0.6 of 500 and is dropped. The listed sizes leave out 480, so a 500 GB drive (465.7) reads 500; a 480 GB drive (447) is 0.89 of 500, is dropped, and is asked.
+- a size in GB: the number with its unit after the last " of " when the line has one ("123 GB used of 476 GB" reads 476), else the first. TB counts 1000 GB. Windows prints sizes in binary units under the name GB, and macOS prints decimal ones, so the reading is tried both as printed and times 1.073741824. The value is the listed size nearest to either try by ratio, kept only when that ratio is within `capture_part_size_slack` of 1. Windows' 476.9 for a 512 GB drive is 512.06 binary, so it reads 512; 465.7 is 500.04, so it reads 500; macOS's 500.07 reads 500; Windows' 1.82 TB is 2001, so it reads 2000; 300 is 1.17 from 256 and is dropped, and asked. (Found by worker cap-parts-1: the earlier "smallest listed size at or above" rule read 476.9 as 500.)
 - a number in W: the number before "W".
 
 Each read is `{field: part.<name>, value, source: label, confidence: the line's}`. A part that no line matches is not read. That is not `not_read`, because no gate failed. The lines are never stored or logged, because the same screen shows the device name and product ID; only the parsed values are kept.
@@ -237,8 +237,9 @@ Every bound is a `param` row read through `app/src/engines/param` with the prior
 | `capture_question_cap` | 3 | card 17 |
 | `capture_dims_match_cm`, `capture_dims_match_pct` | 2, 0.03 | *agent proposal*, from LiDAR's ±1 cm on objects over 10 cm ([adaptive-capture §1](../../research/capture/nate/adaptive-capture.md#1-depth-sensor-facts-arkit-scene-depth)) |
 | `capture_effort_yes_no`, `_pick_one`, `_pick_many`, `_number_with_unit`, `_text`, `_shot` | 1, 1, 2, 3, 3, 4 | card 17's effort tiebreak |
+| `capture_lookup_wait_s` | 15 | *agent proposal*: how long the plan holds a lookup field before asking it (F18); to be measured against identify's real time to answer |
 | `capture_label_sharp_min` | 0.5 | *agent proposal*, on `score.py`'s 0 to 1 sharpness part |
-| `capture_part_size_slack` | 0.1 | *agent proposal*: a drive's size in GiB is about 7% under its size in GB, and a 2 TB drive reads 0.91 of 2000; 0.1 keeps both (the parser, section 2) |
+| `capture_part_size_slack` | 0.1 | *agent proposal*: once binary and decimal units are both tried, a real drive reads within 1% of its listed size, and the next listed size is at least 2.4% away (500 and 512); 0.1 drops a reading off by more than a size step only where sizes are far apart (the parser, section 2) |
 
 The confidence each ladder rung needs (`min_conf`) is a column of the versioned `requirement` row in `process.json`. Rows default to 0.9 for `label` and `lookup` and 0.8 for `seen` and `measured`; each row's own value is in the table. Each is read as the param `capture_min_conf.<field>.<way>` (`table.ts` `minConf()`), with the row's value as its prior and the scope `{kind: <family>}`, or `{kind: <family>.<kind>}` for a kind's own row, so a promoted row moves the known rule for that family alone. Bundle pieces (`size_label.2`) read their base field's param.
 
@@ -262,7 +263,7 @@ This is the whole contract, in order. Each response returns the capture with `pl
    Condition uses `ConditionPicker`. `other: true` adds "Something else". The option with `proposed: true` is preselected.
 4. **Send `answer`.** `PATCH /v1/captures/:id` with one of `{version, type}`, `{version, answer: {field, value}}`, `{version, refuse: field}` or `{version, generate: true}`. A shot answer is the next `POST .../photos`. Read the new plan.
 5. **When `plan.status` is `done`, or the person taps Done:** `POST /v1/captures/:id/finish {version}`. `plan.complete` says, per site, ready or what is missing.
-6. **To refresh after a background read:** `GET /v1/captures/:id`.
+6. **To refresh after a background read:** `GET /v1/captures/:id`. When `plan.status` is `asking` and `plan.questions` is empty, a lookup is still running (F18): show that the item is being looked up and GET again; the wait ends within `capture_lookup_wait_s`.
 
 The screen never decides what to ask or when to stop. Layout, motion and the words around a question are Ben's.
 
@@ -276,11 +277,56 @@ The screen never decides what to ask or when to stop. Layout, motion and the wor
 
 | `kind` | Shape (from) | Effect |
 |---|---|---|
-| `identify` | `{action, set: [{product_id, family, kind?, brand?, model?, c, label?, dimensions?, components?}]}` (`jobs/identity/ladder.py` `action()` and the conformal set) | Sets the suggestion when the phone gave none, the brand and model candidates, and the dimension variants, or a dimensions fact when the action is confirm with one product. With confirm, `kind` sets the capture's kind when none is set, and `components` (`{<part>: value}`, checked against the kind's part rows) become `lookup` part facts and `custom_build` false (F17). Sets `lookups: done`. |
+| `identify` | `{action, set: [{product_id, family, kind?, brand?, model?, c, label?, dimensions?, components?}]}` (`jobs/identity/ladder.py` `action()` and the conformal set) | Sets the suggestion when the phone gave none, the brand and model candidates, the brand as a `lookup` fact at `c` when the action is confirm with one product (never over a `you_said` or confirmed brand; added with F18 so a settled identify ends the brand question), and the dimension variants, or a dimensions fact when the action is confirm with one product. With confirm, `kind` sets the capture's kind when none is set, and `components` (`{<part>: value}`, checked against the kind's part rows) become `lookup` part facts and `custom_build` false (F17). Sets `lookups: done`. |
 | `studio_plan` | `{plan: {kind, asks}}` (`manifest.json`) | Studio asks, held until Generate. |
 | `photo_score` | `{photos: [{key, role, score, parts}]}` (`jobs/photo/score.py` `score()`) | A tag, care label or screenshot photo whose `parts.sharpness` is under `capture_label_sharp_min` becomes a `not_read` read on its step, so the plan asks a retake. |
 
 The job runner calls this function when a job ends. That call is the integration lead's, and it is not built.
+
+### The identify job
+
+Written 2026-11-15 by the fourth capture lead for Nate's flow ([words](../../product/words.md#2026-11-15-nate-the-camera-takes-each-types-shots-then-the-system-processes-then-the-generative-ui-asks-with-prefilled-selects)): the person finishes the type's shots, "the system processes what it can", and the questions open with "prepopulated selects ... when there are certain possible matches". Every line is *agent proposal* unless it links a decision. The routes and their order come from [identify](../features/identify.md#the-routes); the price and terms of each are in [identify from photos](../../research/identify/nate/identify-from-photos-2026-11.md).
+
+**When it runs.** Once per capture, when the last process step is kept (the plan leaves `shooting`), and again when a retake of a `tag`, `care_label` or `size_label` step is kept. One job row of kind `identify` per run, readable at `GET /v1/jobs/:id` with one stage per rung. Its end calls `applyJobResult`. A run that ends after finish is refused as stale (F13).
+
+**What goes in.** From the capture row only: `type` or the suggestion's family, `kind`, and each kept photo's `{key, role, text?: [{line, confidence}], codes?: [{symbology, payload}], file_ref?}`. `text` and `codes` are the phone's Vision reads (section 7); a `tag`, `care_label` or `size_label` photo carries `text` the same way a `read` step does. Without them the OCR and barcode ports read the stored bytes; with neither, the text rungs abstain.
+
+**The rungs.** Each rung abstains when it has nothing, and a later rung runs only for what the earlier ones left open. Scores are the ladder's (`jobs/identity/ladder.py`, `identity_rung_<n>`, priors 1.0, 0.8, 0.5, 0.3), so the TypeScript twin and the Python ladder give one answer (`jobs/identity/twin-parity.json`).
+
+| Rung | Reads | By | s |
+|---|---|---|---|
+| 1, a code | a GTIN, UPC, EAN or ISBN from `codes`, normalized by `gtin14`'s rule | code; the catalogue port turns it into a product (none composed by default, so it abstains) | 1 on a catalogue hit |
+| 2, the tag | the text lines of the tag, care label or size label | code: an RN or CA number in a committed table, the brand lexicon (longest word-bounded match, case-insensitive), a style code on the brand's line, the size token, fibre percentages, "Made in", a colour code from a fixed table | 1 for an RN or CA hit, 0.9 for a lexicon hit, 0.6 for a lexicon hit inside a longer unknown word run |
+| 3, visual search | the front photo's bytes | the visual port (eBay `searchByImage` first, since it is official and free; Lens or Web Detection only on Nate's yes); each hit's title runs through rung 2's brand parser | the share of the top hits that name the brand, weighted by rank |
+| 4, a model | the front and tag photos | a vision model through the model port, only when rungs 1 to 3 leave the family or the brand open; its answer is checked against a schema and the table's values before use. Off by default: a paid call needs Nate's yes, and tests replay a recorded answer | the model's own share, capped by the rung |
+
+**What comes out.** A candidate is a brand, and a brand with a model when a style code or a code hit names one: `product_id` is `brand:<slug>` or `brand:<slug>/model:<slug>`. `c` is the ladder's, the set is the ladder's conformal set (`c >= identity_q_kind`, prior 0.6) and the action is the ladder's (`confirm`, `pick`, `ask`). So a tag read alone can confirm a brand (0.8 ≥ 0.6), visual search alone can only propose one (0.5), and a model only adds options. The result is section 5's `identify` shape plus two fields:
+- `facts: [{field, value, source: label, confidence, rule, ref}]` for what rung 2 read (size, fibre, origin, colour, style code), each with the rule that read it and the photo key. These merge through the same source order as a phone read (section 6), so a `you_said` value is never replaced.
+- `rests_on` on each set member: one plain line per rung that found it ("RN 14806 on the tag", "6 of 10 similar listings").
+
+The plan then needs no change: `candidates.brand` and `candidates.model` become the options of the brand and model questions, and a proposed fact is the preselected option (section 2, the questions).
+
+**Where results may not go.** eBay's terms keep its content to eBay listings ([platform access](../../research/connect/nate/platform-access.md)): a visual hit's title and image are used inside the run and never stored; only our own candidate (`brand:<slug>`, `c`, `rests_on`) is kept. Photos sent to a route are crops of the item ([identify, facts to know](../features/identify.md#facts-to-know)).
+
+**Measure.** On the three real garments in `spec/items/capture-real/` with their recorded tag reads: the brand question opens with the right brand proposed on all three, by rung 2 alone (Carhartt by RN 14806 and the lexicon, Russell Athletic and Fruit of the Loom by the lexicon), and questions per item fall from 6 and 7 (section 10) by at least the brand and fabric. Then the fixed set of 20 in [the benchmark](../benchmark.md), once Nate's real items exist.
+
+### Listing classification
+
+*agent proposal*, 2026-11-15, for Nate's "intelligent listing classification" ([words](../../product/words.md#2026-11-15-nate-get-identification-listing-classification-and-the-generative-clarifying-ui-built)). Code: `app/src/engines/listing/classify.ts` (to build).
+
+`classify(item, sites, ports)` takes the item the capture wrote (kind, department, the garment or product type, brand, model and every attribute with its source and confidence) and returns, per linked site:
+- `category`: the site's category for the item (eBay a leaf id; Depop department and product type; Poshmark department, category and subcategory; Mercari its three levels; Facebook its form category), with `status` and `rests_on`;
+- `fields`: one row per field the site's form takes for that category, `{field, site_name, required, status, value?, source?}`.
+
+`status` is `known`, `proposed` or `missing`, decided by capture's own rule (`fields.ts` field state and `missingFor`, so a field is never known in one place and proposed in another): `known` when capture's state is known; `proposed` when a value exists below its rung's `min_conf`, or a category came only from the static table or a model; `missing` otherwise.
+
+Where the category comes from, in order: (1) eBay's Taxonomy API `getCategorySuggestions` on the item's title words when the eBay port is composed, then `getItemAspectsForCategory` read through `aspects.ts` `aspectRows`; (2) a committed table, `app/src/engines/listing/categories.json`, from our kind and department to each site's category, each row with its source (Ben's [item attributes by site](../../research/capture/ben/item-attributes-by-site.md)) and a mark. A kind with no row gives `category: missing` for that site, never a guess. eBay's content stays on eBay rows (`aspects.ts` header).
+
+A required field that is `missing` or `proposed` and that capture's table has no row for (an eBay aspect such as `ebay:Inseam`) becomes one more question in the plan: `pick_one` over the aspect's `allowed` values when eBay gives them (`SELECTION_ONLY`), else `text`, with eBay's own name as its words. It is asked only for a linked site that requires it, and counts toward the cap like any optional question unless the site requires it.
+
+### How a question is ordered by what it narrows
+
+Nate asked for questions that pin down "what it is" ([words](../../product/words.md#2026-11-15-nate-the-camera-takes-each-types-shots-then-the-system-processes-then-the-generative-ui-asks-with-prefilled-selects)). The identify job writes, beside `candidates`, each option's score and what it rests on (`state.candidate_detail[field][value] = {c, rests_on}`). The plan adds one order key after key 1 (the shaping fields): the entropy, in bits, of the field's candidate scores normalized to sum to 1 (`-Σ p log2 p`), descending. A field with no scored candidates has 0, so every existing walk keeps its order (`walk.test.ts`). Each option carries `rests_on` from the same map, so a screen can say why it is preselected. Agreement with [identify's design](../features/identify.md#design-choices) (expected information gain over the candidate set): with one answer collapsing the set to one value, the expected gain of asking a field is its entropy.
 
 ## 6. The capture row
 
@@ -325,6 +371,8 @@ Fixed. Each was found by a fresh review and has a regression test:
 
 | Fix | Test |
 |---|---|
+| F23: identify's brand replaced a stronger label brand, and a running capture with no `lookups_at` waited forever | `captures.test.ts` 139 pass: a known label brand at 0.96 survives an identify at 0.8; a 0.5 label or a `not_read` brand takes the lookup; no `lookups_at` counts as past the wait (cap-fix-2) |
+| F18, F19: lookups never ended without a job runner, so lookup fields were never asked and `done` came with a required field missing; with no target nothing was asked | `captures.test.ts` 135, `plan.test.ts` 46, walk counts unchanged (cap-fix-1, merge 09e4bbb1) |
 | Furniture brand could not be asked when Depop was linked | `plan.test.ts`, furniture on Depop asks brand |
 | The cap missed tap-confirmed answers | `plan.test.ts`, a tapped colour leaves two optional questions |
 | `missingFor` ignored a recall | `complete.test.ts`, recall agrees with `completeness` |
@@ -358,12 +406,16 @@ Open:
 | F12 | The colour maximum of 2 is written in the route. The table side is done: list rows carry `max` and `table.ts` validates it (cap-param-1) | The route reads `row.max` and no longer names colour (cap-route-2 round 2) |
 | F16 | `GET /v1/items/:id` shows each captured attribute with its source and evidence, but `items.ts:29` reads every attribute's confidence as 0 and `items.ts:70` drops the field (integration's file, found by cap-route-2) | The item card shows the confidence the capture recorded |
 | F17 | No route sets a capture's `kind`, so `electronics.phones_laptops` is reached only by the walks; and an item's parts are not captured (section 2, the parts of one item) | `walk.test.ts`, each walk run twice with identical output, the nine existing walks' counts unchanged and walk D's output byte-identical after the rename: a prebuilt desktop identified with its components asks no part and not `custom_build`; a custom desktop (eBay, Facebook) with its colour seen and no screen asks, outside the required fields, exactly `custom_build`, the offer, then after the skip `part.graphics` and `part.processor`; with the screen read at 0.95 it asks no part; a custom build derives `model` "Custom build" and never asks it; a laptop reads memory and storage from its about screenshot and asks no part. `parts.test.ts`: constructed Windows 11 and macOS screen lines parse to the expected parts; 476.9 GB reads 512, 1.82 TB reads 2000, 300 GB is dropped; "Processors" does not match "Processor"; no output holds a device name or product ID line. `captures.test.ts`: `kind` is accepted only for its family and cleared by a type change; a label part replaces a lookup part and identify does not overwrite a label part; a skipped offer is never offered again and a retake cannot be refused; the lines are in no stored row and no log; two people's captures stay apart |
+| F20 | `recall_flag` is read by `complete.ts` but nothing sets it, so a recalled item is never blocked, contrary to section 11 | A product on a recall list makes every site not ready (`complete.test.ts` with a planted recall), from the job that knows recalls (owner to be named) |
+| F21 | Photo upload URLs are placeholders (`https://uploads.example/...`, `captures.ts:361`), so no photo bytes are kept anywhere, and `photo_score` and studio have nothing real to read | An upload to the returned URL is stored, and the key is readable by the scoring job (integration's storage; packet 75) |
+| F22 | `POST /v1/captures/:id/talk` is an example handler (`captures.ts:421`), so talk mode does not exist, and `note.py` has no caller (F7) | A spoken or typed note becomes facts with `source: you_said` evidence, through the plan's own checks |
 | F14 | Studio asks are checked loosely: a `measure` ask without its name, or a `flaw` without its zone, is accepted | Each ask type's required fields enforced at `applyJobResult` |
 
 The seeded example user's first open replaces the example row. That is by design, so the contract examples stay the engine's output, and `captures.test.ts` asserts it.
 
 ## 9. What comes next, in order, each with its measure
 
+0. **Nate's flow, end to end** ([words](../../product/words.md#2026-11-15-nate-the-camera-takes-each-types-shots-then-the-system-processes-then-the-generative-ui-asks-with-prefilled-selects)): the camera takes each type's shots as the process tells the person; the person finishes; the system processes what it can; then the question widgets ask what is left, with selects prefilled where the system is sure. The plan already orders shots before questions (section 2, "While shots are pending") and fills options and `proposed` from `candidates` (section 5). What is missing is what fills those candidates: no visual search route is built (`grep` finds no eBay `search_by_image`, Lens, Web Detection or treg call in `app/src` or `jobs/`), and no job runner carries a result to `applyJobResult` (F6). The routes and their order are in [identify](../features/identify.md) (five visual routes, Lens through SerpApi or treg as one route among them, [treg tool routing](../../research/cross-cutting/nate/treg-tool-routing.md)). Measure: on the fixed set, the share of items whose brand and type questions open with the right option proposed, and questions per item against today's walks.
 1. **Ben's screen on the routes** (section 4). Measure: one real item captured on a phone from the first photo to `done`, with the questions recorded beside the walk's counts.
 2. **The Swift module** (section 7), on a LiDAR iPhone. Measure: the fixed set's 30 items, the share of `label` reads correct at the confidence they claim, and the known-size box within 1 cm.
 3. **F5** (F4 is done): captures survive a restart. Measure: a reloaded store returns the same capture; then F16, the item card shows the confidence each captured fact carries.

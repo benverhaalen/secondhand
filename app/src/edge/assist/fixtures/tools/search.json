@@ -1,0 +1,440 @@
+{
+  "provenance": [
+    "spec/fixtures/pages/{poshmark,ebay,depop,mercari}.html",
+    "app/src/edge/harness/sites/dupe/fixtures/{initialize,tools-list,search}.sse"
+  ],
+  "sources": {
+    "poshmark": {
+      "rows": [
+        {
+          "url": "https://poshmark.com/listing/Levis-501-90s-Straight-Leg-Jeans-Blue-Waist-25-6af924447625b11bb42ec837",
+          "id": "6af924447625b11bb42ec837",
+          "title": "Levi's 501 '90s Straight Leg Jeans Blue Waist 25",
+          "price_cents": 3500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Levis-501-Denim-Jeans-6acc277c24cc87fabe88bca4",
+          "id": "6acc277c24cc87fabe88bca4",
+          "title": "Levi's 501 Denim Jeans",
+          "price_cents": 1900,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Levis-501-Orig-Fit-Straight-Leg-Butterfly-Graphic-Jeans-Womens-W28-L28-Cream-6af8a7fd3738532bad1e44d2",
+          "id": "6af8a7fd3738532bad1e44d2",
+          "title": "Levi’s 501 Orig Fit Straight Leg Butterfly Graphic Jeans Women's W28 L28 Cream",
+          "price_cents": 2300,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Levis-501-Original-High-Rise-Cutoff-Denim-Shorts-Size-24-PC9-563270227-6aee182c231393cac3941b52",
+          "id": "6aee182c231393cac3941b52",
+          "title": "Levi's 501 Original High Rise Cutoff Denim Shorts Size 24 (PC9 56327-0227)",
+          "price_cents": 1000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/LEVIS-501-Original-Fit-ButtonFly-Black-Straight-Leg-Denim-Jeans-Size-38X32-6ace6e5bb55223caa65a6bbb",
+          "id": "6ace6e5bb55223caa65a6bbb",
+          "title": "LEVIS 501 Original Fit Button-Fly Black Straight Leg Denim Jeans Size 38X32",
+          "price_cents": 2500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Vintage-501-Levis-6ad63271c9ddecf01eaf740c",
+          "id": "6ad63271c9ddecf01eaf740c",
+          "title": "Vintage 501 Levis",
+          "price_cents": 24300,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Vintage-levis-501-32-womens-6aebf37d1b53fe3ade631d38",
+          "id": "6aebf37d1b53fe3ade631d38",
+          "title": "Vintage levis 501 (32) womens",
+          "price_cents": 22000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Levis-501-Light-Blue-Distressed-Womens-Denim-Shorts-29-6af8ab684adcb31cbcb29f82",
+          "id": "6af8ab684adcb31cbcb29f82",
+          "title": "Levi's 501 Light Blue Distressed Women's Denim Shorts 29",
+          "price_cents": 2000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Vintage-1990-Levis-501-Button-Fly-Jeans-Made-in-USA-30x32-Distressed-Workwear-6af925245ad4be15b53f9b09",
+          "id": "6af925245ad4be15b53f9b09",
+          "title": "Vintage 1990 Levi's 501 Button Fly Jeans Made in USA 30x32 Distressed Workwear",
+          "price_cents": 6500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Levis-501-Mens-Slim-Straight-Ripped-Light-Blue-Jeans-34x36-Workwear-6acffd5f28951f0594e64704",
+          "id": "6acffd5f28951f0594e64704",
+          "title": "Levi's 501 Men's Slim Straight Ripped Light Blue Jeans 34x36 Workwear",
+          "price_cents": 2500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Levis-501s-Light-Wash-StraightLeg-Womens-Jeans-with-Button-Croch-6af774ca88963f06e0e739b2",
+          "id": "6af774ca88963f06e0e739b2",
+          "title": "Levi's 501’s Light Wash Straight-Leg Women's Jeans with Button Croch",
+          "price_cents": 2500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://poshmark.com/listing/Vintage-Levis-501-Original-Jeans-Mens-30x30-Black-Denim-Straight-Leg-6af68cb380cb08b95e82c32c",
+          "id": "6af68cb380cb08b95e82c32c",
+          "title": "Vintage Levi's 501 Original Jeans Mens 30x30 Black Denim Straight Leg",
+          "price_cents": 3400,
+          "currency": "USD"
+        }
+      ],
+      "searched": {
+        "site": "poshmark",
+        "kind": "search",
+        "url": null,
+        "outcome": "hit",
+        "ms": 12,
+        "count": 12
+      }
+    },
+    "ebay": {
+      "rows": [
+        {
+          "url": "https://www.ebay.com/itm/100000000",
+          "id": "100000000",
+          "title": "Levi 501 jeans 32x30 blue",
+          "price_cents": 3999,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.ebay.com/itm/100007919",
+          "id": "100007919",
+          "title": "Vintage Levis 501 Made in USA",
+          "price_cents": 6500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.ebay.com/itm/100015838",
+          "id": "100015838",
+          "title": "Levi 501 original fit W34",
+          "price_cents": 2450,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.ebay.com/itm/100023757",
+          "id": "100023757",
+          "title": "Levis 501 shrink-to-fit dark",
+          "price_cents": 1899,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.ebay.com/itm/100031676",
+          "id": "100031676",
+          "title": "Levi 501 90s straight 29",
+          "price_cents": 4200,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.ebay.com/itm/100039595",
+          "id": "100039595",
+          "title": "Levi 501 distressed light wash",
+          "price_cents": 2999,
+          "currency": "USD"
+        }
+      ],
+      "searched": {
+        "site": "ebay",
+        "kind": "search",
+        "url": null,
+        "outcome": "hit",
+        "ms": 12,
+        "count": 6
+      }
+    },
+    "depop": {
+      "rows": [
+        {
+          "url": "https://www.depop.com/products/h02d9d650-levis-501-blue-jeans-90s-0345/",
+          "id": "h02d9d650-levis-501-blue-jeans-90s-0345",
+          "title": "Levi's women's blue jeans",
+          "price_cents": 1000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/h745cdd29-levis-501-blue-jeans-2930-f2a0/",
+          "id": "h745cdd29-levis-501-blue-jeans-2930-f2a0",
+          "title": "Levi's men's blue jeans",
+          "price_cents": 1000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/h191ed1fa-size-26-levis-ribcage-straight-2091/",
+          "id": "h191ed1fa-size-26-levis-ribcage-straight-2091",
+          "title": "Levi's women's blue jeans",
+          "price_cents": 1000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/h551fffa4-levis-501-blue-denim-jeans-c97f/",
+          "id": "h551fffa4-levis-501-blue-denim-jeans-c97f",
+          "title": "Levi's men's blue and navy jeans",
+          "price_cents": 1421,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/he04479f1-levis-501-dark-wash-jeans-06c5/",
+          "id": "he04479f1-levis-501-dark-wash-jeans-06c5",
+          "title": "Levi's men's navy and blue jeans",
+          "price_cents": 800,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/h0753871c-levis-501-blue-jeans-size-759c/",
+          "id": "h0753871c-levis-501-blue-jeans-size-759c",
+          "title": "Levi's men's blue jeans",
+          "price_cents": 1000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/he41791c5-levis-501-jeans-shrink-to-cafe/",
+          "id": "he41791c5-levis-501-jeans-shrink-to-cafe",
+          "title": "Levi's men's navy and blue jeans",
+          "price_cents": 2500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/h3b4ddb54-levi-501-black-denim-jeans-5a3e/",
+          "id": "h3b4ddb54-levi-501-black-denim-jeans-5a3e",
+          "title": "Levi's men's black jeans",
+          "price_cents": 2000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/h642bc5f2-levis-501-original-jeans-light-30e6/",
+          "id": "h642bc5f2-levis-501-original-jeans-light-30e6",
+          "title": "Levi's women's blue jeans",
+          "price_cents": 800,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/hb6e89407-levis-501-blue-denim-jeans-fcc9/",
+          "id": "hb6e89407-levis-501-blue-denim-jeans-fcc9",
+          "title": "Levi's men's blue jeans",
+          "price_cents": 1300,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/had753446-levi-501-authentic-jeans-high-waisted-8f8a/",
+          "id": "had753446-levi-501-authentic-jeans-high-waisted-8f8a",
+          "title": "Levi's women's blue jeans",
+          "price_cents": 1200,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.depop.com/products/h3e6077b9-levis-black-vintage-501-denim-c01d/",
+          "id": "h3e6077b9-levis-black-vintage-501-denim-c01d",
+          "title": "Levi's men's navy and black jeans",
+          "price_cents": 1500,
+          "currency": "USD"
+        }
+      ],
+      "searched": {
+        "site": "depop",
+        "kind": "search",
+        "url": null,
+        "outcome": "hit",
+        "ms": 12,
+        "count": 12
+      }
+    },
+    "mercari": {
+      "rows": [
+        {
+          "url": "https://www.mercari.com/us/item/m69088739137/?ref=search_results",
+          "id": "m69088739137",
+          "title": "Carhartt Detroit Jacket WJ097 VRS Large Regular",
+          "price_cents": 30000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m21260719174/?ref=search_results",
+          "id": "m21260719174",
+          "title": "Carhartt Jacket Youth Medium 10-12 Green Hooded Workwear Duck Canvas",
+          "price_cents": 4500,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m43342625482/?ref=search_results",
+          "id": "m43342625482",
+          "title": "Carhartt Toddler Boys Jacket",
+          "price_cents": 4000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m64155602132/?ref=search_results",
+          "id": "m64155602132",
+          "title": "J97 Carhartt Detroit Jacket",
+          "price_cents": 15793,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m30189830342/?ref=search_results",
+          "id": "m30189830342",
+          "title": "Carhartt J130 Active Jacket Hooded Black Sandstone Duck Regular, Small (2016)",
+          "price_cents": 10925,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m32054127050/?ref=search_results",
+          "id": "m32054127050",
+          "title": "Vintage Carhartt J97 PTL Detroit Jacket Faded Gray Distressed Workwear Size L",
+          "price_cents": 26985,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m48789424984/?ref=search_results",
+          "id": "m48789424984",
+          "title": "Carhartt Brown Quilted Lined Hooded Jacket",
+          "price_cents": 7000,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m45088829251/?ref=search_results",
+          "id": "m45088829251",
+          "title": "Carhartt boys brown chore jacket size 4/5yrs",
+          "price_cents": 2900,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m39608570068/?ref=search_results",
+          "id": "m39608570068",
+          "title": "Carhartt J140 Men's Black Zip Hooded Insulated Jacket",
+          "price_cents": 5100,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m16765684292/?ref=search_results",
+          "id": "m16765684292",
+          "title": "Carhartt Brown Detroit Style Jacket S",
+          "price_cents": 7671,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m10342395716/?ref=search_results",
+          "id": "m10342395716",
+          "title": "Berne Canvas Work Jacket Youth S (6-8) Brown Detroit Style Fleece Lined Retro",
+          "price_cents": 2025,
+          "currency": "USD"
+        },
+        {
+          "url": "https://www.mercari.com/us/item/m40438949300/?ref=search_results",
+          "id": "m40438949300",
+          "title": "Carhartt canvas Sherpa Lined Vest L",
+          "price_cents": 4465,
+          "currency": "USD"
+        }
+      ],
+      "searched": {
+        "site": "mercari",
+        "kind": "search",
+        "url": null,
+        "outcome": "hit",
+        "ms": 12,
+        "count": 12
+      }
+    },
+    "dupe": {
+      "rows": [
+        {
+          "id": "dupe-fixture-1",
+          "title": "Hand-written straight leg jeans fixture 1",
+          "price_cents": 1500,
+          "currency": "USD",
+          "url": "https://example.invalid/dupe-fixture/1",
+          "image_url": "https://example.invalid/dupe-fixture/1.jpg",
+          "source_site": "Poshmark",
+          "secondhand": true,
+          "commercial_link": true,
+          "attribution": "Dupe.com",
+          "keep_until": "2026-11-15T12:00:00.000Z"
+        },
+        {
+          "id": "dupe-fixture-2",
+          "title": "Hand-written straight leg jeans fixture 2",
+          "price_cents": 1614,
+          "currency": "USD",
+          "url": "https://example.invalid/dupe-fixture/2",
+          "image_url": "https://example.invalid/dupe-fixture/2.jpg",
+          "source_site": "Depop",
+          "secondhand": true,
+          "commercial_link": true,
+          "attribution": "Dupe.com",
+          "keep_until": "2026-11-15T12:00:00.000Z"
+        },
+        {
+          "id": "dupe-fixture-3",
+          "title": "Hand-written straight leg jeans fixture 3",
+          "price_cents": 2499,
+          "currency": "USD",
+          "url": "https://example.invalid/dupe-fixture/3",
+          "image_url": "https://example.invalid/dupe-fixture/3.jpg",
+          "source_site": "eBay",
+          "secondhand": true,
+          "commercial_link": true,
+          "attribution": "Dupe.com",
+          "keep_until": "2026-11-15T12:00:00.000Z"
+        },
+        {
+          "id": "dupe-fixture-4",
+          "title": "Hand-written straight leg jeans fixture 4",
+          "price_cents": 2999,
+          "currency": "USD",
+          "url": "https://example.invalid/dupe-fixture/4",
+          "image_url": "https://example.invalid/dupe-fixture/4.jpg",
+          "source_site": "eBay",
+          "secondhand": true,
+          "commercial_link": true,
+          "attribution": "Dupe.com",
+          "keep_until": "2026-11-15T12:00:00.000Z"
+        },
+        {
+          "id": "dupe-fixture-5",
+          "title": "Hand-written straight leg jeans fixture 5",
+          "price_cents": 2500,
+          "currency": "USD",
+          "url": "https://example.invalid/dupe-fixture/5",
+          "image_url": "https://example.invalid/dupe-fixture/5.jpg",
+          "source_site": "Ebay",
+          "secondhand": false,
+          "commercial_link": true,
+          "attribution": "Dupe.com",
+          "keep_until": "2026-11-15T12:00:00.000Z"
+        },
+        {
+          "id": "dupe-fixture-6",
+          "title": "Hand-written straight leg jeans fixture 6",
+          "price_cents": 3578,
+          "currency": "USD",
+          "url": "https://example.invalid/dupe-fixture/6",
+          "image_url": "https://example.invalid/dupe-fixture/6.jpg",
+          "source_site": "Walmart",
+          "secondhand": false,
+          "commercial_link": true,
+          "attribution": "Dupe.com",
+          "keep_until": "2026-11-15T12:00:00.000Z"
+        }
+      ],
+      "searched": {
+        "site": "dupe",
+        "kind": "search",
+        "url": null,
+        "outcome": "hit",
+        "ms": 12,
+        "count": 6
+      }
+    }
+  }
+}

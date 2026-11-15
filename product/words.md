@@ -1935,6 +1935,13 @@ Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
 
 Used in: `spec/engines/adaptation.md` (the brand measure, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
 
+## 2026-11-15 each page has one purpose, and the profile is not a pile of everything
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 10:27 UTC (relayed by the coordinator to the UI builder).
+
+> each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter
+
+Used in: `app/src/app/(tabs)/you.tsx` and `app/behavior/(tabs)/you.json` (the glance and one-line rows; the analytics moved to Insights, `app/src/you/trends.tsx`), `app/src/app/(tabs)/sell.tsx` (a shelf named once).
 Ben, same thread, 10:27 UTC.
 
 > each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter
@@ -2050,8 +2057,150 @@ Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
 
+
+## 2026-11-15 Shared header, icon-only navigation and lowercase display type
+
+Ben, Codex chat, 2026-11-15; exact excerpt:
+
+> ui updates: the top left should be logo. top right should be the messages. under that should be a smaller font that is the page you are on. either today, sell, buy or you. the bottom pill should not have any text. all icons should be vertically aligned.
+
+> also quick note, everything in the word mark font should be lowercase.
+
+Scope: the shared main-tab shell and existing wordmark-typeface presentation. The broader page layouts requested in the same chat remain agent proposals for review.
+
+
+## 2026-11-15 Hierarchy, components, medium and independent implementation
+
+Ben, Codex, 2026-11-15, Secondhand UI review:
+
+> ensure to clean up and use intelligence to improve the system for all design. mainly focused to web and app. but also applicable to a video. the medium matters and design decisions matter in that medium. certain features cant be on everything.
+
+> and then ensuring an agent can work alone and those rules are enforced is something needed
+
+> whats your opinion on defining the intended hierarchy of the app and specific changes to components or rules of all ui design once and then letting it implement using building blocks and deterministic rules
+
+Scope: improve Secondhand's existing system. The last excerpt requests an opinion; it does not approve every proposed page layout. The review separates shared brand decisions, purpose and behavior contracts, medium-specific composition, executable checks and judgment. Broader page layouts remain proposals; the explicitly requested shared shell changes are implemented separately.
 ## 2026-11-15 nate if it is not in the repo, ben has not worked on it
 Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
 > If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
 
 Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
+
+## 2026-11-15 nate answers at the wrap-up: assess, archive, spec the finalizations, then new leads
+Nate, orchestrator's session, 2026-11-15, about 10:45 Central, answering the orchestrator's numbered questions.
+> Sure delete the raw files from the benchmark. Its science fair style judging. Which valuation? we aren't done yet. I wanted us to assess where we were. archive the running leads. fully spec out and decide on finalizations, then launch new leads to see it through. for 4. it should be hourly until after judging. Yes we can host with fly.io, i also have a hetzner box. for the website, since bens busy i wnated us to work on it, but lets ensure the system and all features work. We are getting hosting to work, but can realtime test on the dev server. forget apple sign in. We probably need other modules right. Apples object capture kit, or no? Have apify replace fb marketplace and ebay for now. planned that when approved we get ebay, and hopefully fb. we wont be able to wait on ebay. for depop its ok if working but ensure we can perfectly evaluate the amount of times we catch it, identify why, if its because we get rejected, we can build a system to auto detect if we;re on the right page or someting, and immediately start a new one. Think through a solution, perhaps not that unless its the only/best way. Lets not do paid vector search. Lets utilize mercari data the best way we can
+
+Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate apify where it is better; monitor a person's listings instead of posting for them; market-research tools as a fallback
+Nate, orchestrator's session, 2026-11-15, about 11:25 Central, three messages in a row.
+> if the browser harness doesn't work, we at least need to be able to gather mass swarm intelligence on products and such, /research any open source repos that can aggregate all realtime product info from storefronts, not paid just hosted, and recently updated with a great amount of stars
+
+> if apify is better at ebay in general and fills all gaps then great. instead of automatically posting the listings, we can still at least harness the monitoring of alerts and messages and stuff, how many people are interested in the listing. We deliver all that data and track and tell them about it on the app
+
+> not so much agents, but just like ai intelligence gatherers or tools for searching that people have built for buisiness market research. If they require api's we fill gaps with apify and only automate reading user data for monitoring and such
+
+Also, on the buying assistant: "Wait, can genie ai be the buying ai people talk to?", "Like or some sort of ai model we build on it, combining databricks backend storage we do, with ai stuff like that", "or is that not recommended".
+
+Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 the tab top: the wordmark bar, the tab's name under it, back on any scroll up
+
+Ben, in the thread "Roll the UI system out everywhere", 11:27 UTC, tapped option A on a decision card. The card asked "Choose how each tab's top looks and acts when you scroll up". He chose:
+> Wordmark bar, title under, back on up
+
+The option as he read it: "The wordmark with its hands is centered on top, the tab's name sits under it. Scrolling down hides the bar and any scroll up brings it back. Costs about 44 points of first screen." The alternatives he passed over were an iOS large title that shrinks into a pinned title, and keeping the title-only head that scrolls away. This answers pattern 1 in [spec/redesign/README.md §6](../spec/redesign/README.md#6-new-patterns-needing-bens-ok) for the four tabs.
+
+## 2026-11-15 New holds four jobs, and each result has a home
+
+Ben, project chat, 11:29 UTC, in full.
+> some quick ui changes. after hitting plus, remove the three edit icon buttons on the right. make each pill a different gradient color. the different buttons should be appraise an item. sell an item. track an item. and find an item. rather than 3 of them.
+
+Ben, project chat, 11:32 UTC, in full.
+> actually, dont add gradient colors. also, should look very similar to how it currently looks, just adding another icon. the find and buy icons should do different things. one is like tracking a brewers jersey secondhand. find is finding out what an item is. selling an item goes through that flow. what's it worth appraises an item based on what the secondhand market prices it at now. think of where each of these are stored after. like where a draft post is stored. how that data and info is stored. where you should access items youre tracking. items you found recently. etc.
+
+Used in: `app/src/app/new.tsx`, `app/src/demo/capture.ts`, [spec/redesign/new-results.md](../spec/redesign/new-results.md), [packet 80](../.agents/team/packets/team/80-new-four-jobs-storage.md).
+## 2026-11-15 nate audit our own code first, then read Ben's plan
+Nate, orchestrator's session, 2026-11-15, about 05:25 Central (the session's earlier "Central" times were written six hours late; the machine clock is the source here).
+> Great, when data bricks closes out, compact, lets first fully audit and review through the codebase, then look at bens sessions new plan called whats left. But only after we get our own opinion of the fresh codebase
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate every search shows how far it reaches while it loads; scaffold the screens with everything wired so design can pass over
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> In some way we need to deliver in every search, responsive ui for loading states that shows how broad we reach, how thorough and credible and impressive the search is, technical the computation is. Just a needed feature, there are im sure many examples of this type of ui being practiced with many professional sites now, even as animations on their site for marketing. Ben right now is working on the views and such, but its important we plan to integrate all working technologies and such, like we did for lidar, we can build out and template the needed views and screens, Utilize professional ui and ux skills, and expo skills to send a team lead and codex builder to fully understand and perfectly scaffold with everything integrated, that design can pass over.
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), the app-wiring lead's brief.
+
+## 2026-11-15 nate a $5 visitor cap that points to the repo, visitor photos allowed, and yes on vercel
+Nate, buying-conversation lead's session, 2026-11-15, about 07:45 Central.
+> yes $5 a spend cap, but also then indicate they go to the repo, with a responsive github logo widget popping in, we also have github and our linkedin's available. visitor photos can be sent sure, ideally no, maybe the system we built can pass over it. that'd be cool for safety reasons. but then again, isnt our system that checks images read by claude and other things that drive the image classification for capture. Did we confirm hetzner? and yes on vercel. You have vercel cli logged in no?
+
+Used in: `features/assist/README.md` (the cap and photos), `features/buy/README.md` (the cap's repo widget, the deploy).
+
+## 2026-11-15 nate wire more than search; finish the audit with expert reviewers, then Ben's list, then our own spec
+Nate, orchestrator's session, 2026-11-15, about 05:55 Central.
+> Wire more than that, we'll have you finish auditing the app right now, of course sending out expert subagent reviewers to capture every aspect, followed by checking in on bens to do list for additional understanding, and we formulate for ourselves whats needed, and spec out
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), `spec/plans/finalization.md`, the app-wiring lead's brief.
+
+## 2026-11-15 nate the camera takes each type's shots, then the system processes, then the generative ui asks with prefilled selects
+Nate, capture lead's session, 2026-11-15, night Central.
+> Fix that too, please get everything working, review what I've stated we need the camera to capture. it should be able to identify the product, take input and save the color, item classification from its types, enough to drive perhaps a search officially, a search for similar, with clarifying questions. even if something requiring an identifer like a picture of the tag as well as front or back, might need to know condition with further input, or something like that
+
+> The camera doesnt the system takes the capture or amount the way each is intended per product type and told to them, then they finish that up, the system processes what it can, and then the generative intelligent ui pops in the generative clarifying question widgets to ask questions and get answers to what it is, with prepopulated selects and such fields when there are certain possible matches, that the system feels certain on based on a number of factors, like brand, design found with reverse image search, many opensource tools, treg also has google lens and treg has alot we could pay to use
+
+Used in: `spec/engines/capture.md` section 9, `.agents/team/packets/team/72-capture-handoff.md` section 0.
+
+## 2026-11-15 nate address every fix, then fully realize the system; how capture should run
+Nate, orchestrator's session, 2026-11-15, about 06:20 Central. The middle of the message is what he sent the capture lead, quoted by him.
+> Lets address all fixes, and then also fully realize the system. im working on capture right now, and sent The camera doesnt the system takes the capture or amount the way each is intended per product type and told to them, then they finish that up, the system processes what it can, and then the generative intelligent ui pops in the generative clarifying question widgets to ask questions and get answers to what it is, with prepopulated selects and such fields when there are certain possible matches, that the system feels certain on based on a number of factors, like brand, design found with reverse image search, many opensource tools, treg also has google lens and treg has alot we could pay to use
+>
+>  to it, which it updated the spec and pushed. So address everything to fix to work and also perform at its best.
+
+Used in: [the finalization spec](../spec/plans/finalization.md), [the audit](../spec/plans/audit-2026-11-15.md).
+
+## 2026-11-15 nate get identification, listing classification and the generative clarifying UI built
+Nate, orchestrator's session, 2026-11-15, about 06:45 Central.
+> Get this going too, unless theres a lead working on this stuff, the identification and intelligent listing classification and generative intelligent ui built
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the identify lead's brief.
+
+## 2026-11-15 nate production and the domain later, protection stays, set the api origin
+Nate, buying-conversation lead's session, 2026-11-15, about 06:10 Central.
+> production and custom domain, we'll do it later. Turning off protection not yet. Setting that yes
+
+Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the Vercel row).
+
+## 2026-11-15 nate rewrite the history; a phrase to remove from the repo; make sure Databricks works and accounts for everything planned
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central. The first line answers the orchestrator's question about three Dupe rows left in git history. Two words of the second line are left out, marked [...], because the line itself asks that they not appear in the repo.
+> Rewrite it
+> Please also get rid of any mention of [...] from the repo, rewrite history, and focus on ensuring databricks works, that we've accounted for everything fully planned and currently being built that alligns with the product
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the data lead's brief.
+
+## 2026-11-15 nate search is the black bar, the home has a top bar and carousels, and a focused search turns white while the answer builds and each source animates in
+Nate, the app-wiring lead's session, 2026-11-15, about 06:10 Central (machine clock), on seeing the plain `/dev/search` scaffold.
+> This isnt what we want, there is no where we look at the top, there is no for sale in the search box, the black search bar is also the black add button, you click it and then select shop or sell, you can also add a listing in the button inside of the my shopping page. Theres also a small bar at the top of thier home view, which does have like announcments or notifications, followed by carousels of recommended products, maybe insights and findings from research below it. The search box then gets focused when pressed, turning everything in the background white, with the intelligent ui then building out the full response in black font, with the generative widgets coming in and such. During the loading periods for waiting for search, or as stuff searches in in real time, thats when we animate the source in, wiht its listings, like a logo of it. Utilize intelligent ui and ux component building. Align with what bens components are from his design.
+
+Used in: the app-wiring lead's search takeover (packet 81).
+
+## 2026-11-15 nate after the first answer the bar drops to the bottom and it becomes a chat, kept on the device, not on our servers
+Nate, the app-wiring lead's session, 2026-11-15, about 06:15 Central (machine clock), two messages after the one above.
+> after the first output, the bar goes to the bottom, and the view becomes a chat, until cancelled out, then saved on expo local object store
+
+> not saved in our servers, on web we can save messages i guess to persist with browser cookies
+
+Used in: the app-wiring lead's search takeover (packet 81).
+
+## 2026-11-15 nate the + keeps Ben's choices
+Nate, the app-wiring lead's session, 2026-11-15, about 06:20 Central (machine clock), on "you click it and then select shop or sell" two entries above.
+> Dont go by my choice then, he has some select
+
+Used in: the app-wiring lead's search takeover (packet 81): the ＋ keeps New's own choices (app/src/ui/parts/takeover.tsx).
+
+## 2026-11-15 nate the history rewrite runs after judging
+Nate, orchestrator's session, 2026-11-15, about 07:40 Central, answering "Run the history rewrite right after judging with Ben stopped, or now?"
+> After judging
+
+Used in: [the finalization spec](../spec/plans/finalization.md#11-the-history-rewrite-after-judging).

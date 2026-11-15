@@ -2,6 +2,8 @@ agent proposal, written by Codex 2026-11-15 at Ben's ask (10:27, 10:30)
 
 # The four tabs as one family
 
+Scope update, 2026-11-15: [Ben’s newer shared-shell decision](../../product/words.md#2026-11-15-shared-header-icon-only-navigation-and-lowercase-display-type) supersedes this proposal’s centered-wordmark and large-tab-title clauses: logo left, Messages right, smaller page name below, and an icon-only bottom pill with aligned icons. All Clofie text displays lowercase. This note changes only the shared shell; the redesign proposals and feature coverage below remain proposals as written.
+
 Feature and wiring audit added for Ben's 10:31 instruction: "ensuring each checks against what is planned feature wise for each and also noting down what is left to be wired up and such".
 
 The Planned features tables below are the coverage ledger. Each ID names one page-capability assignment, not one backend feature or proof of completion. `In redesign` means held on this root or its contextual decision surface. `Added` means the audit found a gap and this revision adds it. `Elsewhere` names the detail page that carries the capability, with a route from this lane. All are design coverage, not wired functionality. Shared capabilities can appear under more than one tab; the final counts count these assignments explicitly.

@@ -222,6 +222,12 @@ CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-v
   ['B32', 'the wordmark on a gray box', `<section class="s" data-view><div style="background:var(--gray);padding:64px"><p class="m">secondhand</p></div></section>`, /B32 .*sits on --gray/],
   ['B33', 'logos of two heights in a row', deck(`<div>${LOGO(48)}${LOGO(64)}</div>`), /B33 .*48, 64 px tall/],
   ['B33', 'a row of logos taller than the wordmark', deck(`<div>${LOGO(96)}${LOGO(96)}</div>`), /B33 .*96 px tall: none is taller/]);
+// Messages and Sell, 11-15: a row or tile led by its photo was called a bare button while the photo was still fading in
+// (opacity 0), so the check passed or failed on load timing. A photo slot is a picture by kind, loaded or not.
+browserTest('render: a row led by a photo slot whose image is still loading passes U1', { skip: !pw }, async () => {
+  const row = '<div role="button" style="margin:16px 20px;display:flex;gap:12px;align-items:center;cursor:pointer"><div data-part="photo" style="width:72px;height:72px;border-radius:20px;background:var(--gray)"><img alt="" style="opacity:0;width:72px;height:72px"></div><span style="font-size:18px">Jordan</span></div>';
+  assert.doesNotMatch((await ids(app(row), 'app')).join('\n'), /U1 .*no fill and no outline/);
+});
 browserTest('render: a logo standing alone where a photo would be passes at any size', { skip: !pw }, async () => assert.deepEqual(await ids(deck(`<div>${LOGO(160)}</div>`)), []));
 // The wash and the field are tokens, used as they stand. The field takes the ink of its mode, and the wash is not a field.
 const WASH = (style = 'top:0', inner = '') => `<header style="position:absolute;left:0;right:0;${style};height:var(--wash-h);background:var(--wash)">${inner}</header>`;

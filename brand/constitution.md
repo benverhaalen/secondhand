@@ -86,7 +86,7 @@ When a new reference is added: name its one job, say whether it is a requirement
 The few signature assets that make secondhand recognizable (E4). Each has an exact value in `tokens.css` and a boundary. Every output uses the codes that its medium can carry (see Part III) and no codes that are not on this list.
 
 **C1. The wordmark.** "secondhand", all lowercase, one word, set in Clofie SemiBold (Article 6; Ben, [round 8](../product/words.md#2026-11-15-round-8-picks)), black on white or on the field.
-- App: centered at the top of every main screen, in the navigation bar. Ben, 20:17: "the secondhand wordmark should be right at the top, centered."
+- App: at the left of the top navigation row, messages at the right. The page name sits below at 18. Ben’s [shared header correction](../product/words.md#2026-11-15-shared-header-icon-only-navigation-and-lowercase-display-type) supersedes the earlier centered placement.
 - Web: top left in the header at 21, and once in the footer at `--t-section`.
 - Post: top center or bottom center, at 3% of the frame's height, the same place on every post in a series.
 - Deck: bottom left of every slide at 32, and alone at the heading size on the closing slide. No slide sets the wordmark and a heading at one size, because both are Clofie and the wordmark would read as a heading (agent proposal, R26).
@@ -176,7 +176,7 @@ Every state a screen can show, decided once so no worker invents one (agent deci
 | Pressed | `--ink-press` | `--gray-press` | Scale 0.97, `--t-feedback`, as in [frontend-standard.md §3](../product/frontend-standard.md) |
 | Hover (web) | `--ink-press` | `--gray-press` | |
 | Focus | 2 px ink ring, 2 px white gap | same | Every control; never removed |
-| Selected | | | Chips and segments: ink fill, white text (19.8:1). Tabs: the filled icon in ink on a pill of `--tab-on`, 56 by 32 (ink at 8%, white at 14% in dark), and the label in ink at the same weight (L29; Ben picked the pill, [a pill behind the current tab](../product/words.md#2026-11-15-text-at-500-and-a-pill-behind-the-current-tab)). Grid photos: 2 px ink ring and a check |
+| Selected | | | Chips and segments: ink fill, white text (19.8:1). Tabs: the filled icon in ink on a pill of `--tab-on`, 56 by 32 (ink at 8%, white at 14% in dark), with no visible tab labels (L29; Ben picked the pill, [a pill behind the current tab](../product/words.md#2026-11-15-text-at-500-and-a-pill-behind-the-current-tab)). Grid photos: 2 px ink ring and a check |
 | Disabled | `--gray` fill, `--ink-disabled` text | same | Never the only sign; say why nearby |
 | Loading | Spinner in place of the label, width kept | | Skeletons are `--gray` |
 
@@ -252,6 +252,8 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 | **PP Neue Montreal** 2.6, Medium (500) | Everything people read or tap: item titles, amounts, buttons, tabs, messages, captions, headlines in cards | QOVES sets all of its text in it, headings included, in Book and Medium; Ben found Book light and picked Medium for all of it ([the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500)) ([what its stylesheets say](explore/round-8/qoves-type.md)) |
 | **Clofie SemiBold**, 600 | The wordmark, and the short list below | Ben's pick. Geometric and friendly, and not the grotesk every AI app uses |
 
+**Clofie is always lowercase** ([Ben’s correction](../product/words.md#2026-11-15-shared-header-icon-only-navigation-and-lowercase-display-type)). Apply this at display time without rewriting stored content.
+
 **Where Clofie goes** (agent decision; Ben asked for it in [round 8](../product/words.md#2026-11-15-round-8-picks); the reasons and sources are in [explore/round-9/clofie-use.md](explore/round-9/clofie-use.md)). A string is set in Clofie only when all five hold: we wrote it, it is 21 px or larger, it fits on one line, it has no digits, and it is the only Clofie string in the view besides the wordmark.
 
 | Clofie | Never Clofie |
@@ -286,7 +288,8 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 | Button label | 15 | text 500 | white on the pill, ink on the others |
 | A card's title; a section header over tiles and rows; text you type | 18 | text 500 | ink |
 | Wordmark | 21 | Clofie 600 | ink |
-| Screen title, one per view | 36 | Clofie 600 | ink |
+| Main tab page name, below the logo row | 18 | text 500 | ink |
+| Other screen title, one per view | 36 | Clofie 600 | ink |
 | The amount at the top of a main tab; the peak amount on a sale | 50 | text 500 | ink |
 
 **Any language.** The same rules hold in every language: sentence case, two weights, the size steps, no exclamation marks, no em dashes. When a script is not covered by the text face, fall back to Noto Sans in that script at the matching weight (the stack is in `tokens.css`), and check that line breaks still fall between words or phrases, not inside them. Numbers, dates and currency follow the locale (`Intl.NumberFormat`), never a hard-coded US format. Length limits counted in words count 2 characters as a word in Chinese, Japanese and Korean. The display face is never used for a script it does not cover; the text face takes the role instead.
@@ -297,7 +300,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 2. **Inside is tighter than between.** Parts of one thing sit 4 to 12 apart; separate things 12 to 16; sections 24 to 48. If two gaps are equal, the eye cannot tell what belongs together.
 3. **Group with space, not boxes.** No box inside a box. A card holds one thing; a section holds cards; nothing else frames anything.
 4. **One focal point per view** (E1), then the next action.
-5. **Alignment is on one start edge** per column (left in left-to-right scripts, right in right-to-left; use logical properties). Centered text only for the wordmark (C1), single-line headings on posts and end cards.
+5. **Alignment is on one start edge** per column (left in left-to-right scripts, right in right-to-left; use logical properties). Centered text only for wordmarks where the medium calls for it (C1), single-line headings on posts and end cards.
 6. **True scale.** App mockups are 390 × 844 pt and are judged at that size on Ben's MacBook (1512 × 982 pt, Retina). Generated UI at 1.5× scale is the most common image-model failure; attach a true-scale render as the anchor.
 7. **A pill is balanced at its icon** (agent decision A9; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "the padding for the live little sticker over the patagonia vest feels a little off"). At an icon end the padding is one step less than at a text end: `--s-3` and `--s-4` in a button, `--s-1` and `--s-2` in a tag. A tag is 24 tall with a 16 icon and its word at 15, so the icon is 4 from the top, the bottom and the near end, and its word ends 8 from the far end (Ben, 09:59: the tags were "just too small").
 8. **One kind, one size** (L37; Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "the spacing i like", "i want you to ensure that there are primitives of it all"; L46). Every part below has one size on a 390 screen, whatever is in it. Sizes are in `tokens.css`. A tile in the grid is a square photo the width of its column, 8, a 20 line, 4, a 20 line.
@@ -312,7 +315,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
    | A notice | 350 by 56 | 28 | 16 left, 12 right; a 24 icon, text at 15, a 20 chevron |
    | A button in a card | 40 tall, in a 44 touch area | 20 | 20 at each text end |
    | An icon button in a card | 40 by 40, in a 44 touch area | 20 | |
-   | The nav | 350 by 44 | | the wordmark centered (C1, L3), the inbox right in a 44 target |
+   | The nav | 350 by 44 | | the wordmark left (C1, L3), the inbox right in a 44 target |
    | A count | at least 20 by 20 | 10 | text at 13, a 2 ring in the page color |
 
    Gaps: 12 inside a card, 16 between cards, 32 between sections, 8 from the nav to what follows it. A thing in a card's corner that is not a photo starts 24 from the two edges, `--card-corner`, so it clears the 36 arc by 16; a photo is concentric and stays at 16.
@@ -431,12 +434,14 @@ Each AI tell is paired with what to reach for, because banning one default moves
 
 ## Part III. Media
 
+**Scope.** The Website column below is the public marketing preset; it is not the layout contract for signed-in product pages. A product rendered in a browser retains its page purpose and object ownership, with browser navigation, input and responsive behavior from [frontend-standard §1](../product/frontend-standard.md#1-judge-the-order-of-questions-for-any-screen). The Story / Reel / video column is the existing vertical-social preset, not every video's dimensions or pacing. Choose the delivery context before applying it. Shared type, color meanings and imagery survive the transfer; controls and geometry apply only where the medium supports their purpose. Existing numeric gates below remain active; changing a proposed limit requires updating its actual checker and evidence together.
+
 | | App | Website | Instagram post / carousel | Story / Reel / video | Pitch deck |
 |---|---|---|---|---|---|
 | Canvas | 390 × 844 pt | 1440 wide desktop, 390 mobile | 1080 × 1350 | 1080 × 1920 | 1920 × 1080 |
 | A view is | One screen at one scroll position, or one sheet | One viewport at one scroll position | One slide | One frame | One slide |
 | Margins | 20 | 24 mobile, 64 desktop, 1200 max content | 72 | 96 sides; keep 250 top and 340 bottom clear of UI | 96 |
-| Wordmark (C1) | Nav bar, centered, 21 px | Header left, 21 px; footer 86.5 px at 1440 and 50 px at 390, the hero's sizes | Top or bottom center, 40 px, same place in a series | End card, centered, 120 px | Bottom left of every slide, 32 px; alone in the middle of the closing slide at 64 px |
+| Wordmark (C1) | Nav bar, left, 21 px | Header left, 21 px; footer 86.5 px at 1440 and 50 px at 390, the hero's sizes | Top or bottom center, 40 px, same place in a series | End card, centered, 120 px | Bottom left of every slide, 32 px; alone in the middle of the closing slide at 64 px |
 | Field (C2) | The one card or band that needs you | The hero band | Background of one panel per carousel, or one band | One scene or the end card | Title slide and one key slide |
 | Item (C3) | Every item row and card | Real items in every example | The item is the post | Real item footage | Real screenshots and photos |
 | Act (C4) | One per decision | One per section | None (posts don't have buttons); a plain line instead | None | None |
@@ -480,7 +485,7 @@ Ben, [little wiggle room](../product/words.md#2026-11-15-a-constitution-with-lit
 
 **App.**
 1. A screen is 390 wide and scrolls down. Only a row whose next item shows cut at the edge scrolls sideways (B34).
-2. From the top: the nav bar, `--nav-h`, with the wordmark centered at 21 (B3); the content, 20 from each side (B17); the tab bar, `--tab-h`. The wash sits behind the nav bar and the one summary under it (B4).
+2. From the top: the nav bar, `--nav-h`, with the wordmark left at 21 and messages right (B3); the page name below at 18; the content, 20 from each side (B17); the tab bar, `--tab-h`. The wash sits behind the nav bar and the one summary under it (B4).
 3. A screen has at most one field, on the one card that needs the person (B4, G5), and one black pill per decision (B10).
 4. A part is the size its token names on every screen (B31). It keeps that size with the longest and the emptiest content on the list (B34).
 5. A screen is drawn in every state on the list, from first use to offline, or says why a state cannot happen (B35).
@@ -529,7 +534,7 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 |---|---|---|---|
 | B1 | Every element has a reason (Art. 1) | Reason ledger has zero blanks and no reason from the list in Art. 1.2 | Look |
 | B2 | Squint test (E1) | Blur the render 8 px; the first visible mass is an item photo or an amount (except outputs whose job is brand recognition) | Look |
-| B3 | Wordmark lowercase, placed by medium (C1) | Text content equals "secondhand"; app: centered in nav bar ±1 px | Script |
+| B3 | Wordmark lowercase, placed by medium (C1) | Text content equals "secondhand"; app: at the top left | Script |
 | B4 | One field per view (C2), and the wash once (Art. 5) | At most one element uses `var(--field)`. At most one uses `var(--wash)`, only on an app or web screen, starting at the top and no taller than `--wash-h` | Script |
 | B5 | A gradient is a token, never rebuilt (C2) | Every gradient on the page equals a gradient token in `tokens.css` as the browser computes it (`--field`, `--wash`). The one gradient written in place is a state tag, one hue's tint to its fill (L18) | Script |
 | B6 | Text contrast (Art. 5.1) | Every text node ≥ 4.5:1 with what is behind it (≥ 3:1 at 24 px and up). On the field, text is `--on-field` or `--on-field-2`, and that ink is used nowhere else. On state and category fills, text is `--on-color`. Over a gradient or the wash, contrast is read from the rendered pixels under the text, with the text hidden, at the worst point; over the wash it is 7:1. White text only on the black pill, brick and the camera feed's black shade of at least 85% | Script |

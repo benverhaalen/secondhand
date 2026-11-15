@@ -1,0 +1,6 @@
+{
+  "question": {"id":"identify-words-1","category":"identify_words","text":"Find Carhartt pants.","must":["names Carhartt pants"],"must_not":["invents a sold price"],"tools":{"all":["search_market"]}},
+  "answer": {"run_id":"fixture-low","question_id":"identify-words-1","model":"fixture","effort":"low","asked_at":"2026-11-15T12:00:00.000Z","first_text_ms":100,"done_ms":700,"state":"answered","tools_called":["search_market"],"usage":{"input_tokens":100,"output_tokens":30,"cache_read_input_tokens":0,"web_searches":0,"cost_usd":0.001,"cost_source":"provider"},"gate":{"cut":0,"checked":0,"tags_removed":0},"blocks":[{"type":"text","text":"Carhartt pants: 3 asking listings, not sold prices."},{"type":"widget","widget":"listings","result_id":"r1"}],"sources":[],"results_summary":{"r1":{"tool":"search_market","ok":true,"counts":{"rows":3}}},"results":{"r1":{"tool":"search_market","ok":true,"rows":[{"title":"Carhartt pants","site":"poshmark"}],"counts":{"rows":3},"basis":"3 asking listings","widgets":["listings"]}}},
+  "judge": {"lines":[{"id":"must:0","met":true,"quote":"Carhartt pants"},{"id":"must_not:0","met":true,"quote":"not sold prices"}]},
+  "seven_values": [11, 2, 23, 5, 17, 3, 7]
+}

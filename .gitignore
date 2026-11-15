@@ -36,3 +36,6 @@ AuthKey_*
 !.env.example
 *storage-state*.json
 bench/out/
+
+# Vercel link for the web/ deploy
+.vercel

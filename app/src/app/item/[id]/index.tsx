@@ -224,7 +224,7 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
               {review ? (
                 <Row trail={<IconButton id="why-description" icon="information-circle" label="Why?" look="plain" onPress={() => setWhyField(descriptionWhy(item))} />}>
                   <Txt role="caption">Description</Txt>
-                  <Line><Guess id="description" name="Description" value={description} look="body" onChange={v => { input('description', v, v === description); setDescription(v); }} /></Line>
+                  <Guess id="description" name="Description" value={description} look="body" onChange={v => { input('description', v, v === description); setDescription(v); }} />
                 </Row>
               ) : null}
               {fields.map(f => (

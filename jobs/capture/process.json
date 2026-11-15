@@ -1943,6 +1943,7 @@
   "capture_type_auto_floor": 0.9,
   "capture_type_auto_margin": 0.5,
   "capture_max_retakes": 2,
+  "capture_lookup_wait_s": 15,
   "capture_question_cap": 3,
   "capture_dims_match_cm": 2,
   "capture_dims_match_pct": 0.03,

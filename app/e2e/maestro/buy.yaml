@@ -200,7 +200,7 @@ env:
 # State: new
 - openLink: ${URL}/buy?state=new
 - extendedWaitUntil:
-    visible: "Search five sites at once"
+    visible: "Nothing on your list"
     timeout: 15000
 # State: dense
 - openLink: ${URL}/buy?state=dense
