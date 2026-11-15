@@ -274,7 +274,12 @@ function LiveToday() {
   return <Screen name="today" state={loading ? 'loading' : 'typical'} wash nav={<TabNav title="Today" inbox={{ count: inbox(w) }} />} refreshing={refreshing} onRefresh={refresh}>
     <DataStatus resources={['account', 'today']} />
     {error ? <Txt role="body">{error}</Txt> : null}
-    {loading ? <Skeleton of="card-decision" /> : problems.today ? null : tiers.map(tier => {
+    {/* A new person has nothing to decide yet: one first step, to sell or to buy, instead of three empty sections. */}
+    {!loading && !problems.today && !w.items.length && !w.decisions.some(decision => ['open', 'acting', 'failed'].includes(decision.state)) ? <Stack>
+      <EmptyState title="Start with one thing" line="Take a photo of something to sell, or search for something to buy."
+        action={{ id: 'today-first-photo', label: 'Take a photo', onPress: () => go('/camera?mode=sell') }} />
+      <Pill id="today-first-search" kind="second" label="Search to buy" onPress={() => go('/shop')} />
+    </Stack> : loading ? <Skeleton of="card-decision" /> : problems.today ? null : tiers.map(tier => {
       const decisions = w.decisions.filter(decision => decision.feed === tier.id && ['open', 'acting', 'failed'].includes(decision.state));
       return <Section key={tier.id} title={tier.label}><TodayRail id={tier.id}>
         {decisions.map(decision => {
