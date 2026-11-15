@@ -1,4 +1,5 @@
 # Determinations: fields by kind
+Spec pass 2026-11-15: cards marked **Built** say where the code is; the capture engine's rules live in [capture engine](../engines/capture.md).
 Status: *agent proposal* for Ben and Nate. Written 2026-11-14.
 
 This file answers Nate's ask ([words](../../product/words.md#2026-11-14-nate-a-framework-of-fields-for-every-kind-of-product-filled-by-the-engines)): every product people buy and sell gets the fields it needs, and the engines find and fill the rest. It is read with his entry on capture ([words](../../product/words.md#2026-11-14-nate-front-back-and-tag-for-clothes-lidar-for-objects-the-least-extra-input)): a few photos, the least extra input, and we control how each listing is described.
@@ -60,6 +61,8 @@ Any Shopify leaf resolves to the nearest ancestor that has a row. So all 14,606 
 
 ## 2. The field registry is the requirement row
 
+**Built:** the registry is the `fields` block of `jobs/capture/process.json` (v2), read by `app/src/engines/capture/table.ts` and expanded by `select.ts`: the `root` rows, then the family's, then the kind's, then the class's dimensions ([capture engine §2](../engines/capture.md#a-field-row-processjson-fields)). A built row has `field`, `type`, `unit` or `values`, `ways[]`, `confirm`, `required`, `recommended`, `site_names`, `ask` and `per_piece`. It has no `role`, `importance`, `fill_ladder` or `views_needed` column: `ways[]` replaces the last two, and `required` and `recommended` per site replace `importance`, so nothing is learned yet (capture engine fix F1). Where this table and the built row differ, the built row is right for what runs today; the columns here stay the target. The family and kind field lists below are not all in the table; the table's own rows are the ones that run.
+
 Field importance and the capture `requirement` rows are one registry. The `requirement` row in [product §3](../product.md) already carries item_kind, field, type, values_or_unit, role, site_names, importance, fill_ladder, views_needed, seconds, effort, priority and a version; this section says what each column means. Capture reads `views_needed` from it, identify reads `fill_ladder`, list reads `site_names`, and the `requirement_fold` challenger in `param_fold` ([product §6](../product.md#real-time-weights-agent-proposal)) learns `importance` on it. A field still missing is asked through one `clarify(slot, candidates[], value_of_information)` ([product §5](../product.md#decision-kinds-the-complete-list)).
 
 | Column | Values | Meaning |
@@ -118,6 +121,8 @@ Shopify's own attributes for a kind (the 24 for T-shirts) join the row set as `l
 
 ## 3. The fill ladder
 
+**Built:** a field's `ways[]` in `process.json` are its rungs, tried in the row's own order. The ways are `seen`, `label`, `measured`, `derived`, `lookup` and `asked` ([capture engine §2](../engines/capture.md#a-field-row-processjson-fields), `fields.ts` `fieldState`). Not built: the inferred rung 3 (the modal value across listings), parallel running of rungs, and `claim_check` on every value. The ladder runs on the state the capture holds; lookups arrive as the `lookups` flag and variants from an identify job ([capture engine §5](../engines/capture.md#5-results-from-the-jobs-capturests-applyjobresult)). The "you said is never overwritten" rule is built (`captures.ts`, [capture engine §6](../engines/capture.md#6-the-capture-row)).
+
 Every field is tried rung by rung, cheapest first. A rung runs only for fields the earlier rungs left empty or in conflict. Every value written carries `attribute.source`, `evidence[]` and `method`, and every value used in a listing passes `claim_check` ([listing D25](listing-and-marketing.md#d25-claim-check)).
 
 | Rung | What it is | `source` and `evidence.kind` | Cost to the person | Cost to us (*inferred*, starting estimates) |
@@ -131,6 +136,8 @@ Every field is tried rung by rung, cheapest first. A rung runs only for fields t
 The order is the order of **trying**, set by cost to the person and then cost to us. It is not the order of **belief**: a `you_said` value is never overwritten by a model, and a code beats a resemblance. Card F5 settles conflicts.
 
 ### Filled enough
+
+**Built:** per linked site, in [capture engine §2](../engines/capture.md#ready-per-site-completets) (`complete.ts` `completeness`, `missingFor`, which `app/src/engines/listing/build.ts` also calls). A site is ready when every field it `required`s is `known` and its value passes the site's form; a recalled item is never ready. A value is `known` by the field's `confirm` rule, not by `claim_check`, and the `medium` and `low` rows below are not computed: a field is required, recommended or neither for a site. The built rule is right for today's capture; the importance bars are the target once `requirement_fold` learns them.
 
 | Importance on any target | Filled enough when | If it stays empty |
 |---|---|---|
@@ -320,6 +327,8 @@ Asked: "Works?", the only fact no photo settles.
 
 ## F3. Fill-ladder order
 
+**Not built** as a computed order. The order of `ways[]` is written by hand in `process.json`; nothing sorts by cost, reads `route_table` or skips a rung on past fill rate ([capture engine §2](../engines/capture.md#a-field-row-processjson-fields)).
+
 **Determines**: the order in which rungs are tried for each field, and which routes each rung uses.
 
 **Sources and weights**
@@ -348,6 +357,8 @@ Asked: "Works?", the only fact no photo settles.
 
 ## F4. Filled enough
 
+**Built:** per site, in [capture engine §2](../engines/capture.md#ready-per-site-completets) (`complete.ts`), with `required` lists in place of importance. See the line under "Filled enough" in section 3. The `claim_check` gate and the `medium` and `low` handling are not built.
+
 **Determines**: whether each field, and so each site's listing, is ready.
 
 **Sources and weights**
@@ -361,7 +372,7 @@ Asked: "Works?", the only fact no photo settles.
 
 **Method**:
 1. For each target site, take the fields high for that site, the site's required fields, and the medium fields that have values.
-2. A site is ready when every high field meets its bar.
+2. Built: a site is ready when every field it requires is known and fits its form ([capture engine §2](../engines/capture.md#ready-per-site-completets)). The bar for `high` fields below is the target.
 3. A medium field is listed only after `claim_check` passes.
 4. Low fields that are empty are dropped from that site's form.
 

@@ -173,7 +173,7 @@ Every state machine lives here; a feature may add a transition, never a state na
 | strategy | suggested, chosen, running, ended | |
 | want | active, paused, ended | |
 | match | found, alerted, saved, asked, offered, bought, dismissed, gone | |
-| job | queued, running, done, failed | stage states: started, running, arrived, failed. These are the [events.json](events.json) names, so stream, log and screen use one set |
+| job | queued, running, done, failed | stage states: started, running, arrived, planned, failed. `planned` (*agent proposal*, integration lead 2026-11-15, after the security audit found a dry plan recorded as arrived): a write that was planned dry and not sent; the site is unchanged, nothing that depends on the write having happened may proceed, and the person is asked. These are the [events.json](events.json) names, so stream, log and screen use one set |
 | label | proposed, in_use, retired | |
 | conversation | open, closed, blocked | |
 | experiment | suggested, chosen, running, ended | ended carries a reason: result reached, price floor or exploration budget reached, or a `ranker_changed` notice on the site |

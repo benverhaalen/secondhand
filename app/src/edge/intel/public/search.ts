@@ -48,7 +48,7 @@ export async function searchSource(source: Source, query: string, kind: Kind = '
   if ((source.needs_ask || kind === 'sold' && source.site === 'ebay') && !account) return needsAccount();
   if (!o.harness) return { rows: [], searched: { ...blocked('cloud launcher not configured').searched, outcome: 'failed', error_code: 'no_route' } };
   const site = source.site;
-  const run = () => o.harness!.call<(SnapListing & { title?: string; slug?: string; currency: string; url: string })[]>(site, 'search', {
+  const run = () => o.harness!.call<(SnapListing & { title?: string; slug?: string; condition?: string; size?: string; listed_at?: string; sold_at?: string; currency: string; url: string })[]>(site, 'search', {
     q: query, status: kind === 'sold' ? 'sold' : 'active', ...(account ? { account_id: account.account_id, person_id: o.person_id } : {}),
   });
   const result = o.log ? await o.log.call('tool', `${source.id}.search`, { account_id: account?.account_id }, run) : await run();
@@ -61,7 +61,7 @@ export async function searchSource(source: Source, query: string, kind: Kind = '
   }
   // Depop's public search payload has no title; its listing slug is the adapter's only item text.
   const rows = result.data.map(row => ({ id: row.external_id, title: row.title ?? (site === 'depop' ? row.slug : undefined), price_cents: row.price_cents,
-    currency: row.currency, url: row.url, ...(row.state === 'sold' ? { sold: true as const } : {}) }));
+    currency: row.currency, url: row.url, condition: row.condition, size: row.size, listed_at: row.listed_at, sold_date: row.sold_at, ...(row.state === 'sold' ? { sold: true as const } : {}) }));
   const read = classifyRead({ challenge: false, rows }, { site: source.site, fields });
   if (!read.ok) return { rows: [], searched: { ...blocked(read.error.message).searched, outcome: 'page_changed', error_code: 'page_changed', ms: result.meta.ms } };
   return { rows: read.data, searched: { site: source.site, kind, url: null, outcome: rows.length ? 'hit' : 'empty', ms: result.meta.ms, count: rows.length } };

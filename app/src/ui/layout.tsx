@@ -1,7 +1,7 @@
 // The only parts a screen is laid out with. Which one to reach for, and which separator means what, is in README.md beside this file.
 import { Children, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Wash } from './parts/chrome';
 import { Txt } from './text';
 import { OnGround, useColors } from './theme';
@@ -28,13 +28,15 @@ export function Screen({ children, nav, wash = false, center = false, name, stat
   sheet?: string;
   foot?: ReactNode;
 }) {
-  const c = useColors();
+  const c = useColors(), inset = useSafeAreaInsets();
   const marks = name || state || sheet ? ({ dataSet: { screen: name, state, skip, sheet } } as object) : {};
+  // A washed screen takes the top inset itself: the wash runs under the status bar and the content starts below it.
+  // Without a wash the safe area keeps the top, so nothing is ever drawn under the clock (U9).
   return (
     <OnGround ground="page">
-      <SafeAreaView {...marks} edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
-        <ScrollView contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, center && styles.center]}>
-          {wash ? <Wash /> : null}
+      <SafeAreaView {...marks} edges={wash ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
+        <ScrollView contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, wash && { paddingTop: inset.top }, center && styles.center]}>
+          {wash ? <Wash under={inset.top} /> : null}
           {nav ? <View style={styles.nav}>{nav}</View> : null}
           <View style={[styles.content, center && styles.center]}>{children}</View>
         </ScrollView>

@@ -38,7 +38,9 @@ resources:
       schedule:
         quartz_cron_expression: "0 0 2 * * ?"
         timezone_id: America/Chicago
-        pause_status: UNPAUSED
+        # Paused 2026-11-15: jobs/valuation/fit.py still reads market.comp, which holds rows marked may_model false;
+        # unpause once it reads market.comp_for_model and writes core.param (spec/plans/waiting.md).
+        pause_status: PAUSED
       max_concurrent_runs: 1
       environments:
         - environment_key: fits
