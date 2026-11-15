@@ -138,7 +138,7 @@ One value, `posture`, from 0 (priced to go: the lowest price a careful buyer wou
 | The [negotiation](negotiation.md) policy | accept at or above the floor at once | counter high, concede slowly, decline low offers without a counter |
 | Markdown over time | early and steep | late and shallow |
 
-As the slider moves, the card shows for that point: the ask per site, what the person keeps, the chance of sale within 30 days and the expected days, each from the same curves the plans use, so the person sees the trade and not only a number. The floor is never crossed at any setting.
+As the slider moves, the card shows for that point: the ask per site, what the person keeps, the chance of sale within 30 days and the expected days, each from the same curves the plans use, so the person sees the trade and not only a number. The sold prices are drawn on the slider's own track: each recent sale as a tick at its price, with the count and dates beside it, so the person sees what sold prices say about the point they are choosing ([Nate](../../product/words.md#2026-11-14-nate-show-what-sold-prices-say-and-expert-research-sessions-that-first-name-what-must-be-determined): "its probably also helpful to see what sold prices say"). How it is drawn is Ben's. The floor is never crossed at any setting.
 
 How the new signals enter: sold comps still set the value (asks never do). The top listings place the ask among what a buyer sees today on that site. An official price after a credible discount is a ceiling: a used item is not suggested above what the new one costs now, unless the new one is out of stock, and the card says which. A discount that ends raises the ceiling again on its end date, as a `value_moved` notice.
 

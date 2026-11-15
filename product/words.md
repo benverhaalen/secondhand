@@ -742,3 +742,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate the price slider defaults to the middle
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether the price slider defaults to the middle or to the person's last choice.
 > default to the middle for the suggested option.
+
+## 2026-11-14 nate show what sold prices say, and expert research sessions that first name what must be determined
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the price slider was specified.
+> its probably also helpful to see what sold prices say. Ideally, I want expert /research sessions focusing on all things first identifying what needs to be determined, then how to best do it and all things to consider . From a professionals input
