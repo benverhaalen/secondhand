@@ -1,0 +1,51 @@
+# Post preview (app/behavior/item/[id]/post.json) on a phone or simulator: the same states as app/e2e/post.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/post.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/post.yaml
+# Amounts are matched, not "You keep": the money line is moving to "You get" (Ben, 06:19).
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+# typical: each site's preview written for its buyers (edge-cases §5); Approve names the price and the sites.
+- openLink: ${URL}/--/item/it_switch/post
+- extendedWaitUntil:
+    visible: "Post from \\$225 on 2 sites"
+    timeout: 30000
+- assertVisible: "Searched by model: specs in the title"
+- assertVisible: "Nearby, picks up today: pickup price"
+- assertVisible: ".*\\$200.40.*"
+# Untick a site: the count follows.
+- tapOn: { id: "post-facebook" }
+- assertVisible: "Post at \\$235 on 1 site"
+- tapOn: { id: "post-facebook" }
+# Post later names the time on the button.
+- tapOn: { id: "when-other" }
+- inputText: "Sunday 6 pm"
+- pressKey: Enter
+- assertVisible: "Post from \\$225 on 2 sites, Sunday 6 pm"
+- tapOn: { id: "when-now" }
+# Post steps through the sites, then becomes Undo.
+- tapOn: { id: "post" }
+- extendedWaitUntil:
+    visible: "Posted on 2 sites"
+    timeout: 10000
+- tapOn: { id: "post-undo" }
+- assertNotVisible: "Posted on 2 sites"
+# three sites; Depop spells out the size.
+- openLink: ${URL}/--/item/it_jacket/post?flip=facebook
+- extendedWaitUntil:
+    visible: "Post from \\$95 on 3 sites"
+    timeout: 10000
+- assertVisible: "Carhartt Detroit Jacket J97, brown duck, size L"
+# no site picked: nothing to post.
+- openLink: ${URL}/--/item/it_hoodie/post
+- extendedWaitUntil:
+    visible: "Pick a site"
+    timeout: 10000
+# offline.
+- openLink: ${URL}/--/item/it_switch/post?state=offline
+- extendedWaitUntil:
+    visible: "Offline. It posts when you’re back."
+    timeout: 10000

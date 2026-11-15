@@ -12,9 +12,10 @@
 // measurement, since a redraw is only held to its real size by it (Ben, 08:09; 09:09: "only allow this from lidar flow
 // too"; jobs/studio/check.py).
 import * as Linking from 'expo-linking';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Approve, Blank, EmptyState, Icon, Line, List, MOTIONS, Photo, Pill, Row, Skeleton, Stack, Txt, log, type PhotoSrc } from '@/ui';
+import { Platform } from 'react-native';
+import { Approve, Blank, EmptyState, Guess, Icon, Line, List, MOTIONS, Photo, Pill, Row, Skeleton, Stack, Txt, log, type PhotoSrc } from '@/ui';
 import { ActionRow } from '@/ui/parts/action-row';
 import { Chips } from '@/ui/parts/chips';
 import { ListingPreview } from '@/ui/parts/listing-preview';
@@ -37,7 +38,8 @@ const skip = (drawn: string) => [
 ].join('; ');
 
 export default function ItemPost() {
-  const { id, world, price, flip } = useLocalSearchParams<{ id: string; world?: string; price?: string; flip?: string }>();
+  // ?fail=ebay makes that site fail when it posts; ?case=recall draws an item whose recall check failed.
+  const { id, world, price, flip, fail, case: kase } = useLocalSearchParams<{ id: string; world?: string; price?: string; flip?: string; fail?: string; case?: string }>();
   const { state } = useScreen();
   const found = state === 'failed' ? null : M.find(String(id), world);
   if (state === 'loading') {
@@ -50,17 +52,37 @@ export default function ItemPost() {
   if (!found) {
     return (
       <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
-        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load." />
+        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load."
+          action={state === 'failed' ? { id: 'post-retry', label: 'Try again', onPress: () => router.replace(`/item/${id}/post` as Href) } : undefined} />
+      </RouteSheet>
+    );
+  }
+  // A sold item has nothing to post: the sheet says so and offers no Post.
+  const m = M.momentOf(found.w, found.item);
+  if (m === 'sold' || m === 'done') {
+    return (
+      <RouteSheet name="item-post" state="empty" skip={skip('empty').replace('empty: a preview is of an item that exists; ', '')} title="Preview" onClosed={() => router.back()}>
+        <EmptyState title="Sold. Nothing to post" line="It sold, so there is nothing to post." />
       </RouteSheet>
     );
   }
   const p = price && /^\d+$/.test(price) ? Number(price) : null;
-  return <Post w={found.w} item={found.item} price={p} flipped={(flip ?? '').split(',').filter(Boolean) as Site[]} offline={state === 'offline'} />;
+  return <Post w={found.w} item={found.item} price={p} flipped={(flip ?? '').split(',').filter(Boolean) as Site[]} offline={state === 'offline'}
+    fails={(fail ?? '').split(',').filter(Boolean) as Site[]} recalled={kase === 'recall'} />;
 }
 
 type Status = 'ready' | 'working' | 'done' | 'failed';
 
-function Post({ w, item, price, flipped, offline }: { w: World; item: Item; price: number | null; flipped: Site[]; offline: boolean }) {
+// The site opens beside the app, so the preview is still here after (on the web, a new tab; expo-linking's web openURL
+// would replace this page).
+const openSite = (url: string) => {
+  if (Platform.OS === 'web') { globalThis.open?.(url, '_blank', 'noopener'); return; }
+  Linking.openURL(url).catch(e => log.error('item-post.myself', e));
+};
+
+function Post({ w, item, price, flipped, offline, fails, recalled }: {
+  w: World; item: Item; price: number | null; flipped: Site[]; offline: boolean; fails: Site[]; recalled: boolean;
+}) {
   // The sites the plan posts to, with this item's price on each (the plan's price when it came from the Plan sheet).
   const planned = M.planSites(w, item, price ?? item.listings[0]?.price_cents ?? M.priceFor(item, 'sell') ?? 0, flipped).filter(s => s.can && (s.on || item.listings.some(l => l.site === s.site)));
   const [on, setOn] = useState<Site[]>(planned.filter(s => s.on).map(s => s.site));
@@ -70,8 +92,14 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
   const [blank, setBlank] = useState('');
   const [when, setWhen] = useState<string | null>('now');
   const [later, setLater] = useState<string | undefined>();
+  // Post tapped while a site still needs a field, or with no signal: the sheet says what it waits for.
+  const [need, setNeed] = useState(false);
+  const [waiting, setWaiting] = useState(false);
+  // Each site's own words and price, once the person edits them for that site only (ways-out §6.8).
+  const [editing, setEditing] = useState<Site | null>(null);
+  const [own, setOwn] = useState<Partial<Record<Site, { title?: string; price?: number }>>>({});
   const missing = M.fields(item).find(f => f.value === null);
-  const priceOn = (site: Site) => price ?? item.listings.find(l => l.site === site)?.price_cents ?? M.priceFor(item, 'sell') ?? 0;
+  const priceOn = (site: Site) => own[site]?.price ?? price ?? item.listings.find(l => l.site === site)?.price_cents ?? M.priceFor(item, 'sell') ?? 0;
   const prices = on.map(priceOn);
   const photos = M.photoCount(item);
   const key = item.photos[0]?.key;
@@ -83,7 +111,8 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
   const look: Look = ai && measured ? 'ai' : clean ? 'clean' : 'original';
   const cover = key ? (lookable ? studio(key, look) : demoPhoto(key)) as PhotoSrc : null;
   // A site whose listing already failed once in the data fails again here, so the failed state is drawn from data.
-  const willFail = (s: Site) => item.listings.some(l => l.site === s && l.state === 'postFailed');
+  const willFail = (s: Site) => fails.includes(s) || item.listings.some(l => l.site === s && l.state === 'postFailed');
+  const needing = missing && !blank ? on.length : 0;
 
   // Stand-in for the job's stage stream (job.stage): one site posts per beat, so "Posting 1 of 2" is seen.
   useEffect(() => {
@@ -96,17 +125,34 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
   const posted = on.length - failed.length;
   const does = M.postWords(prices) + (when !== 'now' && later ? `, ${later}` : '');
   const state = on.length >= 3 ? 'dense' : planned.length <= 1 ? 'one' : 'typical';
+  // A failed recall check blocks the post and says why (pages §6.8): no Post, only the reason.
+  if (recalled) {
+    return (
+      <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
+        <EmptyState title="Can’t post a recalled item" line="The maker recalled this model, and the sites take recalled items down." />
+      </RouteSheet>
+    );
+  }
   const foot = (
     <Approve id="post" does={does} status={on.length ? status : 'ready'} step={`Posting ${Math.min(done + 1, on.length)} of ${on.length}`}
       done={failed.length ? `Posted on ${posted} ${posted === 1 ? 'site' : 'sites'}. One failed.` : `Posted on ${posted} ${posted === 1 ? 'site' : 'sites'}`}
       failed="Nothing was posted. The site didn’t take it."
-      onApprove={() => { if (!on.length) return; setDone(0); setFailed([]); setStatus('working'); }}
+      onApprove={() => {
+        if (!on.length) return;
+        // No signal: the post waits and nothing claims to be live (ways-out Everywhere, "I'm on bad signal").
+        if (offline) { log.event('ui.show', { screen: 'item-post', state: 'waiting-for-signal', item: item.id, what: 'post' }); setWaiting(true); }
+        // A site that still needs a field does not post until it is filled (edge-cases §7 step 7).
+        if (needing) { log.event('ui.show', { screen: 'item-post', state: 'needs-field', item: item.id, field: missing?.name }); setNeed(true); return; }
+        if (offline) return;
+        setDone(0); setFailed([]); setStatus('working');
+      }}
       onUndo={() => { setStatus('ready'); setDone(0); setFailed([]); }} />
   );
 
   return (
     <RouteSheet name="item-post" state={offline ? 'offline' : state} skip={skip(state)} title="Preview" foot={foot} onClosed={() => router.back()}>
-      {offline ? <Line><Icon name="refresh" size={12} tone="ink-2" /><Txt role="caption">Offline. It posts when you’re back.</Txt></Line> : null}
+      {offline ? <Line><Icon name="refresh" size={12} tone="ink-2" /><Txt role="caption">{waiting ? 'Waiting for signal. It posts when you’re back.' : 'Offline. It posts when you’re back.'}</Txt></Line> : null}
+      {need && needing && missing ? <Line><Icon name="alert-02" size={12} tone="brick" /><Txt role="caption">{`Fill in ${missing.name} first. ${needing === 1 ? '1 site needs' : `${needing} sites need`} it.`}</Txt></Line> : null}
       {lookable ? (
         <Stack>
           <Photo src={cover} label={look === 'original' ? 'Your photo' : look === 'clean' ? 'Your photo, cleaned up' : 'Your photo, enhanced with AI'} fit="fill" />
@@ -129,10 +175,22 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
           return (
             <Stack key={s.site} gap="tight">
               <ListingPreview site={s.site} photo={cover} off={!isOn}
-                title={listingTitle(s.site, item.title, item.attributes)} audience={AUDIENCE[s.site]} price={priceOn(s.site)} keep={youKeep(s.site, priceOn(s.site))}
+                title={own[s.site]?.title ?? listingTitle(s.site, item.title, item.attributes)} audience={AUDIENCE[s.site]} price={priceOn(s.site)} keep={youKeep(s.site, priceOn(s.site))}
                 photos={`${shown < photos ? `First ${shown} of ${photos} photos` : `${photos} ${photos === 1 ? 'photo' : 'photos'}`}, ${form.cover === '1:1' ? 'square' : 'cropped taller'}${look === 'ai' ? ', AI cover marked' : ''}${form.title === 'description_line_1' ? '. The name opens the description' : ''}`}
                 needs={missing && isOn ? <Line><Blank id={`needs-${s.site}`} name={missing.name} value={blank} onChange={setBlank} look="body" /></Line> : undefined}
                 toggle={<Switch id={`post-${s.site}`} label="Post here" on={isOn} disabled={status === 'working'} onChange={o => setOn(x => (o ? [...x, s.site] : x.filter(y => y !== s.site)))} />} />
+              {isOn && status === 'ready' ? (
+                editing === s.site ? (
+                  <Stack gap="tight">
+                    <Txt role="caption">Only this site changes</Txt>
+                    <Line><Guess id="edit-title" name="Title" look="body" value={own[s.site]?.title ?? listingTitle(s.site, item.title, item.attributes)}
+                      onChange={v => { log.event('user.input', { screen: 'item-post', control: 'edit-title', site: s.site, value: v }); setOwn(o => ({ ...o, [s.site]: { ...o[s.site], title: v } })); }} /></Line>
+                    <Line><Guess id="edit-price" name="Price" look="body" numeric value={usd(priceOn(s.site))}
+                      onChange={v => { const c = Math.round(Number(v.replace(/[^0-9.]/g, '')) * 100); log.event('user.input', { screen: 'item-post', control: 'edit-price', site: s.site, value: v }); if (c > 0) setOwn(o => ({ ...o, [s.site]: { ...o[s.site], price: c } })); }} /></Line>
+                    <Line><Pill id="edit-done" label="Done" kind="second" onPress={() => setEditing(null)} /></Line>
+                  </Stack>
+                ) : <Line><Pill id={`edit-${s.site}`} label="Edit" kind="second" icon="edit-02" onPress={() => setEditing(s.site)} /></Line>
+              ) : null}
               {failed.includes(s.site) ? (
                 <Stack gap="tight">
                   <Line><Icon name="alert-02" size={12} tone="brick" /><Txt role="caption">{item.listings.find(l => l.site === s.site)?.error ?? 'The site didn’t take it'}</Txt></Line>
@@ -141,7 +199,7 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
                     <Pill id={`skip-${s.site}`} label="Skip this site" kind="second" onPress={() => { setFailed(f => f.filter(x => x !== s.site)); setOn(x => x.filter(y => y !== s.site)); }} />
                   </Line>
                   <List><ActionRow id={`myself-${s.site}`} label="Post it myself" line="Opens the site to post it there"
-                    onPress={() => { const url = item.listings.find(l => l.site === s.site)?.url; if (url) Linking.openURL(url).catch(e => log.error('item-post.myself', e)); }} /></List>
+                    onPress={() => { const url = item.listings.find(l => l.site === s.site)?.url; if (url) openSite(url); }} /></List>
                 </Stack>
               ) : null}
             </Stack>
