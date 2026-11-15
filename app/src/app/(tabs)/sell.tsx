@@ -1,3 +1,5 @@
+import { LiveSales } from '@/selling/sales';
+import { DataStatus } from '@/data/status';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import { EmptyState, Grid, IconButton, List, Screen, Sheet, Stack, Txt, type PhotoSrc } from '@/ui';
@@ -60,7 +62,7 @@ function rows(world: World, page: Page, filter: string, sort: Sort) {
 
 export default function Sell() {
   const params = useLocalSearchParams<{ filter?: string }>();
-  const { w, state, name } = useScreen();
+  const { w, state, name, demo, refresh, refreshing, problems } = useScreen();
   const [page, setPage] = useState<Page>('listings');
   const [filter, setFilter] = useState(params.filter === 'drafts' ? 'drafts' : 'all');
   const [sort, setSort] = useState<Sort>('latest');
@@ -69,7 +71,7 @@ export default function Sell() {
   const entries = state === 'empty' ? [] : rows(w, page, filter, sort);
   const nav = <TabNav title="Sell" inbox={{ count: unread(w) }} />;
   return (
-    <Screen name="sell" state={state ?? (entries.length ? 'typical' : name === 'new' ? 'new' : 'empty')} wash nav={nav}>
+    <Screen name="sell" state={state ?? (entries.length ? 'typical' : name === 'new' ? 'new' : 'empty')} wash nav={nav} refreshing={refreshing} onRefresh={demo ? undefined : refresh}>
       <Stack gap="tight">
         <SegmentedControl id="sell-page" options={[{ id: 'listings', label: 'Listings' }, { id: 'sales', label: 'Sales' }]} value={page}
           onChange={value => { setPage(value as Page); setFilter('all'); }} />
@@ -78,14 +80,15 @@ export default function Sell() {
           <IconButton id="filter-sort" icon="sorting-01" label="Sort listings" onPress={() => setSorting(true)} />
         </FilterRow>
       </Stack>
+      <DataStatus demo={demo} resources={page === 'sales' ? ['account', 'orders', 'items'] : ['account', 'items']} />
       {state === 'offline' ? <Txt role="body" tone="ink-2">Waiting for signal</Txt> : null}
-      {state === 'failed' ? <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Retry', onPress: () => router.setParams({ state: '' }) }} />
+      {!demo && page === 'sales' ? <LiveSales filter={filter} sort={sort} /> : state === 'failed' ? <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Retry', onPress: () => router.setParams({ state: '' }) }} />
         : state === 'loading' ? <Grid columns={2}>{[0, 1, 2, 3].map(i => <TileSkeleton key={i} />)}</Grid>
         : entries.length ? <Grid columns={2}>{entries.map(({ id, item, order }) => (
           <Tile key={id} id={`tile-${id}`} title={shortName(item)} photo={item.photos[0] ? item.photos[0].key as PhotoSrc : null}
             fact={money(item, order)} onPress={() => router.push(`/item/${item.id}` as Href)} />
         ))}</Grid>
-          : <EmptyState title={page === 'sales' ? 'No sales here yet' : filter === 'drafts' ? 'No drafts' : filter === 'active' ? 'No active listings' : 'Nothing for sale'}
+          : !demo && (problems.items || (page === 'sales' && problems.orders)) ? null : <EmptyState title={page === 'sales' ? 'No sales here yet' : filter === 'drafts' ? 'No drafts' : filter === 'active' ? 'No active listings' : 'Nothing for sale'}
             action={page === 'listings' ? { id: 'sell-empty-camera', label: 'Sell an item', onPress: () => router.push('/camera?mode=sell' as Href) } : undefined} />}
       <Sheet open={sorting} title="Sort" onClose={() => setSorting(false)}>
         <List>{SORTS.map(option => <Choice key={option.id} id={`sort-${option.id}`} label={option.label} picked={sort === option.id} onPress={() => { setSort(option.id); setSorting(false); }} />)}</List>

@@ -27,7 +27,8 @@ import { Press, slop } from '../press';
 import { Txt, type Tone } from '../text';
 import { OnGround, useColors, useScheme } from '../theme';
 import { color, motion, radius, size, space } from '../tokens.generated';
-import { CaptureFrame } from './camera-frame';
+import { CaptureFrame, frameRect } from './camera-frame';
+import { Wash } from './chrome';
 import { Blank } from './loop';
 import { mark } from './mark';
 
@@ -121,8 +122,11 @@ export function Viewfinder({ state, mode, feed, live, camera, blink = 0, top, cl
   children?: ReactNode;
 }) {
   const { bar } = useBar(), reduced = useReducedMotion();
+  const dark = useScheme() === 'dark';
+  const window = useWindow();
   // The bars' heights, so the frame sits in the feed they leave open.
   const [topH, setTopH] = useState(0), [footH, setFootH] = useState(0);
+  const frame = frameRect({ x: 0, y: topH, width: window.width, height: window.height - topH - footH });
   const dip = useSharedValue(0);
   useEffect(() => {
     if (!blink) return;
@@ -135,15 +139,19 @@ export function Viewfinder({ state, mode, feed, live, camera, blink = 0, top, cl
   return (
     <OnGround ground="page">
       <View {...({ dataSet: { screen: 'camera', state, mode, skip: SKIP } } as object)} style={{ flex: 1, backgroundColor: bar, overflow: 'hidden' }}>
-        <FeedLayer feed={feed} live={live ? <CameraView ref={camera} facing="back" style={{ flex: 1 }} /> : undefined} />
+        {framed && feed && !live ? (
+          <View pointerEvents="none" style={{ position: 'absolute', top: frame.y, left: frame.x, width: frame.width, height: frame.height }}>
+            <Image source={feed as number} alt="The camera’s view" accessibilityLabel="The camera’s view" contentFit="contain" transition={motion.select} style={{ width: '100%', height: '100%' }} />
+          </View>
+        ) : <FeedLayer feed={feed} live={live ? <CameraView ref={camera} facing="back" style={{ flex: 1 }} /> : undefined} />}
         <Animated.View pointerEvents="none" style={[fill, { backgroundColor: bar }, blinkLook]} />
         {cloud}
-        {framed && topH && footH ? <CaptureFrame top={topH} bottom={footH} band={facts} /> : null}
+        {framed && topH && footH ? <CaptureFrame top={topH} bottom={footH} /> : null}
         {top ? (
-          <Animated.View onLayout={e => setTopH(e.nativeEvent.layout.height)} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: bar, paddingBottom: space.s4 }}>{top}</Animated.View>
+          <Animated.View onLayout={e => setTopH(e.nativeEvent.layout.height)} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', top: 0, left: 0, right: 0, backgroundColor: bar, overflow: 'hidden', paddingBottom: space.s4 }}>{dark ? <Wash /> : null}{top}</Animated.View>
         ) : null}
         {bottom ? (
-          <Animated.View onLayout={e => setFootH(e.nativeEvent.layout.height)} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: bar, paddingTop: space.s4 }}>{bottom}</Animated.View>
+          <Animated.View onLayout={e => setFootH(e.nativeEvent.layout.height)} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: bar, paddingTop: space.s4 }}>{facts ? <View style={{ paddingHorizontal: space.gutter, paddingBottom: space.s3 }}>{facts}</View> : null}{bottom}</Animated.View>
         ) : null}
         {children}
       </View>
@@ -482,14 +490,19 @@ export function CameraAct({ id, label, onPress }: { id: string; label: string; o
 
 export type BarAct = { id: string; label: string; onPress?: () => void };
 // No camera: what to do instead, on the bar's ground, in the middle of the screen; the first act filled, the rest outlined.
+// One bordered card in the middle of the frame, so the one thing to do reads first (Nate, words.md 2026-11-15: "be
+// bordered and focused more"): the camera's mark, the title, one line, then the first act full width and the rest under it.
 export function CameraOff({ title, line, acts }: { title: string; line: string; acts: readonly BarAct[] }) {
-  const b = useBar();
+  const b = useBar(), c = useColors();
   return (
-    <View style={[fill, { justifyContent: 'center', paddingHorizontal: space.gutter, gap: space.s3 }]}>
-      <Txt role="title" tone={b.tone}>{title}</Txt>
-      <Txt role="body" tone={b.tone}>{line}</Txt>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2, paddingTop: space.s2 }}>
-        {acts.map((a, i) => <BarButton key={a.id} id={a.id} label={a.label} first={i === 0} onPress={a.onPress} />)}
+    <View style={[fill, { justifyContent: 'center', alignItems: 'center', paddingHorizontal: space.gutter }]}>
+      <View {...mark('camera-off')} style={{ width: '100%', maxWidth: 360, padding: space.s5, gap: space.s3, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: c.ink2, backgroundColor: b.bar }}>
+        <Icon name="camera-01" tone={b.icon} />
+        <Txt role="title" tone={b.tone}>{title}</Txt>
+        <Txt role="body" tone={b.tone}>{line}</Txt>
+        <View style={{ gap: space.s2, paddingTop: space.s2 }}>
+          {acts.map((a, i) => <BarButton key={a.id} id={a.id} label={a.label} first={i === 0} onPress={a.onPress} />)}
+        </View>
       </View>
     </View>
   );

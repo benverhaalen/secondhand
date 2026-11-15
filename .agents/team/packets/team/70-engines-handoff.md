@@ -1,52 +1,72 @@
-# 70: the engines handoff
+# 70: the engines and buying-conversation handoff
 
-Updated: November 15, 2026, about 05:30 Central, by the third engines lead at the wrap-up Nate called at 10:00 Central ([words](../../../../product/words.md#2026-11-15-nate-wrap-up-the-sessions-review-the-whole-project-then-the-presentation), "Lets wrap up models as they stand when finished on whats currently happening"). Owner: Nate. Read this, [packet 55](55-team-leads-and-mac-workers.md), [the queue](../../../../spec/plans/engines-queue.md) and the engine's spec page before touching `app/src/engines/` or the `jobs/` engine twins.
+Updated: 2026-11-15, about 14:50 UTC, by the third engines lead of the finalization pass ([finalization §4](../../../../spec/plans/finalization.md#4-engines-and-the-buying-conversation-lead-engines)), halted on Nate's word: "we need to stop agents from merging and working on top of eachother. ensure they halt at good poitns and we full focus on developing and carving out the needed fixes". Owner: Nate. From the halt, the orchestrator is the only one who merges to main. Read this, [packet 55](55-team-leads-and-mac-workers.md) and [valuation.md](../../../../spec/engines/valuation.md) before touching `app/src/engines/` (except `capture/` and `listing/`), `app/src/edge/assist/`, `bench/assist/`, `app/src/edge/api/valuations.ts`, `assist.ts`, `scores.ts`, or `app/src/edge/intel/`.
 
-**The improved valuation is not on main.** It is committed on its branch, `w/eng-valuation-2` at 9e8bb9f5 on the Mac, with origin/main merged in. It waits on three small fixes, listed under "left" below. Main still serves the engine from before the ablation.
+Every brief named below is in the shared notes folder as `brief-<worker>[-rN].txt` and on the Mac at `/tmp/brief-<worker>[-rN].txt`.
 
-## What works on main today
+## True on main
 
-Run TypeScript one file at a time (`node --test --test-concurrency=1 <file>`), Python with `./.venv/bin/python -m pytest <file> -q` on the Mac (`python` on Windows).
+| Commit | What | Proof |
+|---|---|---|
+| e54d286a, 038d0499 (orchestrator) | BC1, BC2 round 4 (the gate's normalisation; the cost cap at the larger of provider and token cost). BC3's tools: Genie per person, cited summaries, one valuate call, search follows a job's frames | converse 202, tools 77, bench runner 10, tsc clean |
+| 5314d834 | **`POST /v1/assist` is the real route** (w/eng-assist-route-1 r1):<br>- visitors and people<br>- `202 {id, kind:'assist', state:'running', stages, stream}`<br>- events `assist.tool`, `assist.text`, `assist.settled`, `job.state`<br>- seeded from the caller's own `search_job_id`; 404 for anyone else's<br>- late search frames as new result ids<br>- a $5 visitor day pool: `assist_visitor_daily_cents` 500, with `assist_turn_max_usd` 0.25 reserved per turn<br>- `503 unavailable`, reason `not_configured`, with no model key | One Opus review before landing: no path from one person to another's data, no text around the gate. assist 27, run-turn 9, converse 205, tools 80, http 35, routes 6, tsc 0, in a clean Mac worktree at origin/main b302ef23 |
+| 5314d834 | EN3 r1 to r3: `fittedReader` (param/export.ts) and the sale curve in valuate. It reads all 8 rows of the real DB4 export shape once rows carry `citation` (the data lead fixed the export, 34533628) | export 35, valuate 41, check 59, realtime 4 |
+| 5314d834 | EN7 r1 and r2: `market-score.ts`, `freezeBasis`, parity, `scripts/market-replay.mjs`. The replay equals the ablation's all-on row: 3.89% median error, 96.0% within 20%, 86.0% held, width 22.7%, last sale -1.0 points on 41,452. It proves scorer parity only, not prequential freezing | market-score 27, Python parity 4 |
+| 5314d834 | sold.ts r1: `Comp.dated_by` ('sold' or 'listed'); `may_model` set at write time (Apify and not eBay true, everything else false) | sold 6, comps 40, valuations 51 |
+| d0890a16 | `market_store`'s tool schema had a top-level `anyOf`, so the model API refused every turn with a 400. Only the live run found it | tools 80, with a test that no tool schema has oneOf, allOf or anyOf at the top |
+| 1a761cf6 | Route r2:<br>- the settled answer keeps every round's text<br>- rows carry `may_store`; a may_store-false row is in no store or log<br>- the search listener ends on a terminal job.state or at `assist_search_wait_ms` 30000; late fills reach the chat until then<br>- opaque Genie ids<br>- fresh tool deps per turn; two concurrent turns keep their identities<br>- a failed turn releases its visitor reservation<br>- the route imports the runtime | assist 30, run-turn 10, converse 207, tools 100, routes 6, tsc 0 |
+| f361db0b | `scripts/realtime-proof.mjs` runs again. 56e985fd made the store refuse to open without a data dir or vault key outside development; the proof now states development and uses a fresh temp store | 2 of 10, unchanged |
+| b2508319 | §4 rows EN3, EN7, BC1, BC2, BC3 | |
 
-- Negotiation learns in real time: an answered offer moves `P_accept` in the same transaction (b565ba90). `negotiation/learn.test.ts` 10, `learn.parity.test.ts`, `jobs/negotiation/test_learn_parity.py` 9.
-- Registry rollback restores the champion a fitted promotion replaced, in memory, SQL and Python (b565ba90). `param/param.test.ts` 41, `sql.test.ts` 37, `parity.test.ts` 63, `jobs/param/test_param.py` 91.
-- Real-time sale, comp and view weights: a sold comp moves demand velocity, our sale moves `Q_g` by ACI, views move the view rate (1f5a70da). `engines/realtime.test.ts` 4/4 on main (checked 2026-11-15 05:05 on Windows), `demand/velocity.test.ts` 14, `valuation/aci.test.ts` 13.
-- Trust decides on code signals with no extractor; D2, D5, D11, D13, D17 fixed (4f01e379). `trust/wired.test.ts` 65 and every `trust/*.test.ts`.
-- The real-time proof on main: `node --test --test-concurrency=1 scripts/realtime-proof.test.mjs` 13/13.
-- Specs: AD9 on [identity.md §3 G](../../../../spec/engines/identity.md) with test 7 and task id-7 (044c8ecf); AD5 on [marketing-engine.md §3.8](../../../../spec/marketing-engine.md) (044c8ecf, 75b2e7e1); money D5 and D6 say the conformal score is a log ratio (777eec10).
+**The chat on the dev server (14:29 UTC, before r2).** Signed in with a dev code, I searched for "carhartt detroit jacket". The chat's own follow-up answered from the search's rows ("26 listings across 3 sites: Depop (9), Poshmark (13) and Dupe (4)") in 18 s, for $0.17, with the gate checking 3 and cutting 0.
 
-## What does not work, or is not joined
+The dev server needs `OPENROUTER_API_KEY` or `ANTHROPIC_API_KEY` in its env. This Windows machine has one; the hosted server has none and refuses with 503.
 
-- **The improved valuation and `valuate(item, ctx)` are on a branch, not main** (`w/eng-valuation-2`: 5e1d3874 the ablated engine, 153e09c2 the seam, 9e8bb9f5 merged with origin/main). Its own checks pass after the merge (`valuate.test.ts` 18, `check.test.ts` 31, `comps.test.ts` 30, `comps.parity.test.ts` 28, `keep.test.ts` 17, `aci.test.ts` 13, `gather.test.ts` 16, `valuations.test.ts` 17, `sources.test.ts` 5, the real-time proof 13, `tsc` clean). But `app/src/engines/realtime.test.ts` fails 2 of 4 on the branch while main passes 4. A fresh review found the causes:
-  1. `aci.ts` `calibrationForCheck` (from main) still hands `Q_g` in cents, and `check.ts:75` now widens by `exp(Q_g)`, so q90 overflows: `RangeError: q90 must be nonnegative safe integer cents` (realtime.test.ts:61). Fix: return `Q_g: Q`, drop the cents translation.
-  2. `check.ts:80` `checked` never reads `local.state`, so a too_few range with a passing calibration reads `checked` while carrying a too_few note. Fix: add `local.state !== 'too_few' &&`, with one test on the overall and per-site state.
-  3. The branch hides `p_sale` and `price_path` when a curve comes without `curve_evidence` n ≥ 30 (realtime.test.ts:79 gets `price_path` null). Keep main's meaning: a supplied curve prices; evidence only annotates. The system always answers (packet 55).
-  Lower: valuate.ts:49 still sends a made-up `param_version` (the max of resolved versions); the route at `edge/api/valuations.ts:22` passes `param_version: 1`.
-- The integration lead's route and real-time links 2, 3, 5 and 7 wait on `valuate` reaching main. No message was sent to it, because the seam did not land.
-- **AD9** is built and parked on `w/eng-ad9-1` at fcde0de4: `attributes.test.ts` 9, `similar.test.ts` 7, `similar.parity.test.ts` 25, `reconcile.test.ts` 25 (18 old unchanged plus 7 new), `jobs/identity/test_similar.py` 26. It is not landable alone: `tsc` fails at `app/src/edge/api/search.ts:31`, whose exhaustive `matchOrder` lacks `similar_other_brand`. That file is the integration lead's (its `int-search-2` worker had it open), and the `similar` relation in `rank()` (`search.ts:74`) goes with it. The TypeScript record is a port of the adaptation lead's `jobs/measures/attributes.py`, uncommitted in `adp-slice-1` (SHA-256 9923d596… when read). Parity of the record waits on that file reaching main.
-- Canon: the match label `similar_other_brand` and the offer relation `similar` are not yet in `spec/product.md` (the match label row, line 149). That change goes to the orchestrator.
-- AD5 is specified only. Python `jobs/analytics/placement.py` `pick()` runs D12 in full; its TypeScript twin `path.ts` `bestSites` does not (fixed `P_DOUBLE`, no hot-item rule), and `check.ts:87` passes `cancel_cost: 0`, so check picks every site with positive gain.
-- `w/eng-valuation-1` round five: see the last line of "left".
+Seen on screen and not fixed yet (route r3 fixes them):
+- raw `**` markdown;
+- reason codes in the prose ("not_connected", "invalid input");
+- the seed holds 26 capped rows while the screen says "From 84 listings".
 
-## What is left, in order
+## On the Mac, not merged
 
-1. Land `w/eng-valuation-2`: fixes 1 to 3 above as one follow-up brief in that worktree (`AGAIN=1`; gpt-6.1-sol, high). Done when `app/src/engines/realtime.test.ts` passes 4, the files listed above stay green, the proof is 13 and `tsc` is clean. Then a fresh review of the delta, and a merge to main by commit id. Tell the integration lead the commit the moment it is on main.
-2. Land AD9 (`w/eng-ad9-1` fcde0de4) together with the integration lead's two lines in `search.ts`: `similar_other_brand` in `matchOrder`, and `relation: 'similar'` in `rank()`. A fresh review first. Then the canon rows to the orchestrator. Record parity once `jobs/measures/attributes.py` is on main.
-3. AD5: the brief is written and not sent (it was a scratchpad file; restated here). Owned files: `app/src/engines/valuation/sites.ts` and `sites.test.ts` (new), `path.ts` (bestSites, made the exact twin of `pick()`), `check.ts` (the site choice), `params.ts` (`site_set.horizon_days` 30, `site_set.cancel_cost_cents` 2500 *agent proposal*, `site_set.delist_window_min` 4), `valuate.ts` (pass-through of `linked` and `committed`), `jobs/analytics/placement.py` and its test, and `best-sites-parity.json` (add cases only). Done: the tests of §3.8 (a fee change and a sell-through change each flip the ranking; both-sites wins once and loses once; an unlinked top site is not picked; a binding open offer holds the plan on Poshmark and an open offer on Depop does not; a hot item goes alone), plus `keep`, `check`, `valuate`, `realtime`, `sources`, the valuations route test, the proof 13 and `tsc`. It starts after item 1, because both change `check.ts`.
-4. V-AB1, the range over-covers (86.0% against 80%), and V-AB2, the last point behind last sale ([valuation.md §9](../../../../spec/engines/valuation.md)). Each is judged by rerunning the same ablation on the same 41,988 items. The Databricks lead keeps the 11-15 ablation row in `secondhand.measures.engine_ablation` until then; send it the new commit and run id.
-5. The value of an item's parts, from the capture lead (packet 72, row 8): queued, not started.
-6. Older items as in [the queue](../../../../spec/plans/engines-queue.md) items 7 and 8.
-7. Land `w/eng-valuation-1` at 4a434c78 (the runner and fit, rounds two to five; the `core.param` columns origin, previous_version, keep and days_since_last at 5262fedf), **after item 1**. Its `comps.py`, `comps.parity.test.ts`, `test_comps_parity.py` and `fixtures/comps-parity.json` collide with `eng-valuation-2`'s; when merging main into it, take eng-valuation-2's. Round five passed its five checks (`pytest jobs/valuation/test_fit.py`, `test_backtest.py`, `test_experiment.py`, `test_market.py`, `PYTHONPATH=jobs python scripts/bench/backtest.py self-test`, all exit 0). Round four's fresh review said merge after one fix (the refit ran only on a paired gain), and round five made it. Still needed: a fresh review of 015b81c1..4a434c78, the merge with main, and a rerun. Then send the Databricks lead the merge commit for the four `core.param` columns.
+Their workers may finish. For each that reports: read the report, check `git status` against its owned files, commit them on its branch, merge `origin/main` in the worktree, and rerun its checks there. Leave it for the orchestrator to land.
 
-## Decisions made, and why
+| Worktree, branch | Brief | State at the halt |
+|---|---|---|
+| `eng-assist-route-1`, `w/eng-assist-route-1` | `-r3` | **Running.** r1 and r2 are on main. r3 is the clarifying-question block:<br>- `Ask` imported from `app/src/engines/capture/plan.ts`, in the capture.md §4 shape<br>- an `ask_person` tool handled inside converse, giving `{type:'ask', ask}` blocks with id `q_<job>_<field>` and labels through the gate<br>- the answer comes back as `POST /v1/assist` with `answer: {ask_id, field, value}`: 404, 409 or 422 when it doesn't fit; `replaces` supersedes an older ask<br>- plain text with no markdown; no reason codes or tool names in the prose (a check after `checkedDraft`)<br>- the seed's counts taken from the search's totals<br><br>**Before r3 lands, the app must accept `{type:'ask'}` blocks** in `block()` in `app/src/buy/chat/assist.ts`. Otherwise a settled frame that holds an ask is skipped whole. Sent to the orchestrator at 14:15 UTC |
+| `eng-gate-5`, `w/eng-gate-5` | `brief-eng-gate-5` | **Running.** The orchestrator's gate rule (*agent proposal*): after normalisation, every numeral and number word in a sentence must equal a figure of a result the sentence cites. A list item or table row goes with its header line, the person's numbers back nothing, and there are no cue, year or "explained" exemptions.<br><br>It owns only the gate functions in converse.ts (`sentences` through `checkedDraft`), so it merges beside route r3.<br><br>Acceptance: its own tests, plus the 20 planted cases in `eng-gate-review-planted.test.ts` in the notes folder (18 of 20 leaked on r4). Run them in its worktree before it lands |
+| `eng-sold-1`, `w/eng-sold-1` | `-r2` | **Committed at 3419a3ae with main merged; checks pass** (sold 7, check 61, valuate 41, valuations 52, tsc 0). Not landed. Ben's packet 91 item 6:<br>- a listed-dated comp's observation has `sold_at` null and `listed_at` kept<br>- `last_sale` is chosen only among sale-dated comps<br>- the proof shows `listed_at` and `dated_by` for a listed-dated comp<br><br>Left: the stored `payload.sold_at` still holds the listing-date age clock. Nulling it needs `observationPort.read` / `isComp` in valuations.ts to rebuild the age clock from `listed_at` |
+| `eng-loop-1`, `w/eng-loop-1` | `brief-eng-loop-1` | **Running.** EN2, the loop from the valuation route:<br>- links 5 and 6: compose SV7 (`events/observations.ts`) in valuations.ts<br>- link 2: gather on a GatherNeed<br>- links 3 and 4: gather's search through its handler, and sameProduct<br>- link 7: citations to stored rows<br>- link 8: updateContribution<br>- link 9: contributionMean and cutOrder in gather's order<br>- a two-person test<br><br>Done is `node scripts/realtime-proof.mjs` above 2 of 10, with each link earned |
+| `eng-assist-review-1` (detached) | | A reviewer's scratch worktree. Remove it: `git worktree remove --force ~/dev/projects/secondhand-wt/eng-assist-review-1` |
 
-- **The serve refit runs every night that is not frozen**, whoever wins (valuation §4: "the winner is then refitted on all rows to serve"). The round-four review found it ran only on a paired gain.
-- **Off-brand similarity is one function, `similar()`, in both languages.** The A11 measure is to read the same function, so "similar" has one meaning. Condition grade is the cell A11 compares within, not a match attribute. `jeans` implies `denim`.
-- **The similar pass runs before the id clash and the wrong-item cut**, because a different maker's GTIN always clashes. Jev is never offered the new label; code decides.
-- **AD5 is D12, stated once on money.md.** The marketing page adds only the linked filter, each term's basis, real cancel costs and the binding-offer hold. With no `linked` passed, the caller's sites count as linked, so today's callers keep their pick.
+## Next, in order (once the orchestrator resumes this area)
 
-## What this session learned the hard way
+1. Land route r3 once the app accepts ask blocks, then the gate rewrite. Then check on the dev server:
+   - the answer has no `**` and no reason code;
+   - its counts match the screen;
+   - a size-ambiguous question shows one Ask with a proposed option.
 
-- **A plain `ssh` command has no `node` or `npx` on the Mac.** Wrap test runs in `zsh -lc "…"`, or they print nothing and look like a pass.
-- **A worker's "all checks pass" covers only the files its brief named.** `realtime.test.ts` was not in the seam brief, and that is where the branch broke main's behaviour. List the callers' tests in the brief, not only the files it owns.
-- **A port of an uncommitted file chases a moving target**: `attributes.py` changed during the AD9 run. Record its hash, and land the reference before its twin.
+   Then the app-walks lead reruns the chat walk on the simulator. Its server needs a model key, which the orchestrator arranges.
+2. `eng-loop-1`: land the links it earned, rerun the proof, and set the EN2 row.
+3. Wire `fittedReader` into valuations.ts's ctx with `SECONDHAND_PARAMS_EXPORT`. EN3's proof is a served valuation with a checked state and a chance of sale that is not null.
+4. EN7: move its two params to the valuation param registry. Then storage (`measures.market_score`), `GET /v1/scores?subject_type=market`, and live scoring in the valuation path.
+5. EN6 round 2, the four follow-ups:
+   - a parity case with a fractional `retail_weight`;
+   - the new-with-tags cap gated on a citation;
+   - the 100-cent floor applied after calibration;
+   - no `log.error` fallback.
+6. EN4: land `w/eng-ad9-1` (fcde0de4) with the search lead's two lines. Then BC4: the first scored run, at low effort then medium, with each run's cost recorded before the next.
+
+## Waiting on Nate
+
+- The gate's new rule cuts more ("about 2 weeks" with nothing cited). It is the orchestrator's call, marked *agent proposal*.
+- These are *agent proposals*: the sale-curve rule, the 100-cent floor, the visitor turn cap of 0.25, and late fills reaching the chat until the job ends. The $5 visitor day cap is his.
+- Market scores go on a public page only after Ben and Nate have seen them, with Nate's yes for that page.
+
+## Learned the hard way
+
+- Only a live run proves the chat. 400 tests passed while the model API refused every turn over one schema keyword. Run the dev server, signed in, before calling a model route done.
+- A reviewer given the worker's claims and a planted list finds what the worker's own tests miss: 18 of 20 planted prices got through round 4's gate. The orchestrator changed the rule rather than adding more spellings.
+- Hardening in another area can break a proof script with no test catching it (56e985fd and the real-time proof). Run the proof after any server-wide change.
+- Land through a private worktree (`C:\dev\secondhand-land-engines`, detached at origin/main), never the shared index. Another session's staged files there stop a merge.
+- Run one real sample through a data contract's reader before landing it. The export lacked `citation`, and some `t` values were past 90 or null; either one dropped every row.

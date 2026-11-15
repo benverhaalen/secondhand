@@ -1,0 +1,8 @@
+[
+ {"kill":true}, {"launch":true}, {"wait":{"id":"tab-today"},"timeout":30000}, {"sleep":1500}, {"shot":"c01-today"},
+ {"tap":"tab-sell"}, {"sleep":2000}, {"shot":"c02-sell"},
+ {"tap":"tab-buy"}, {"sleep":2000}, {"shot":"c03-buy"},
+ {"tap":"tab-you"}, {"sleep":2000}, {"shot":"c04-you"},
+ {"tap":{"label":"Settings"}}, {"sleep":1500}, {"shot":"c05-settings"},
+ {"tap":"tab-new"}, {"sleep":1500}, {"shot":"c06-new"}
+]

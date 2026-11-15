@@ -10,7 +10,7 @@ Updated: November 15, 2026. Owner: Ben. For: Nate. Agent: Claude Code, project t
 | App sign-in (Apple, Google, email code) and the onboarding order | [connect § Signing in](../../../../spec/features/connect.md#signing-in-to-secondhand) |
 | Seller intents (Sell it, Gone fast, Best price, Only at my price, Just checking) and what they set underneath | [price § Selling intents](../../../../spec/features/price.md#selling-intents) |
 | Standing against the market, judged against the intent | [score § Standing](../../../../spec/features/score.md#standing-against-the-market) |
-| How the app, the website and your backend build in parallel against one contract | [plans/parallel-build.md](../../../../spec/plans/parallel-build.md) |
+| How the app, the website and your backend build in parallel against one contract | [plans/finalization.md#13-what-works-kept-by-the-orchestrator](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) |
 
 ## What the pages need that the canon lacks
 
@@ -76,10 +76,10 @@ Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202
 
 ## How we build at the same time
 
-From [parallel-build.md](../../../../spec/plans/parallel-build.md):
+From [parallel-build.md](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator):
 
 - The seam is `spec/examples/` (`T0-2`). The pages need it first, so it is the most valuable thing your side can land: one request and response per endpoint, the stream frames for one job, and every error.
-- The screens call the API through one client in `app/src/api/` (task `W0-1`, Ben's side). When a route is not in the edge's route list yet (a manifest, not a 404, since your 404 also means "not yours, or gone"), the client answers from `spec/examples/`; when stream 15 adds the route, the real answer flows with no change on either side. `MOCK=<names>` forces the example for a demo. Nothing on Ben's side writes `app/src/app/v1/` or `spec/examples/`, which [workstreams](../../../../spec/plans/workstreams.md) gives to stream 15. Nobody waits.
+- The screens call the API through one client in `app/src/api/` (task `W0-1`, Ben's side). When a route is not in the edge's route list yet (a manifest, not a 404, since your 404 also means "not yours, or gone"), the client answers from `spec/examples/`; when stream 15 adds the route, the real answer flows with no change on either side. `MOCK=<names>` forces the example for a demo. Nothing on Ben's side writes `app/src/app/v1/` or `spec/examples/`, which [workstreams](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) gives to stream 15. Nobody waits.
 - The pages run on the examples until your wave 2 is done at 02:00, so they never wait on your clock; they meet your checkpoints (21:45, 23:30, 02:00, 03:00 Central) to swap mocks for real routes as each lands. Joining is in your 03:00 to 07:00 leeway, as packet 45 already says.
 - The website is the same Expo Router codebase on the web (react-native-web is already installed), so the edge stays in the Expo API routes and is hosted with the web build. This replaces "the edge on Next.js" from app/README. Your call; option C there keeps Next.js for the signed-out Home only.
 - The first wave is the thin path both sides already agreed: sign-in, ＋, capture, identify, a price range, one eBay listing, a Today card.

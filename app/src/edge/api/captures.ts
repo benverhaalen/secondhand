@@ -1,7 +1,9 @@
 // Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §§2,5,6,8,11; spec/examples/captures.json.
-// Upload signing and realtime credentials remain contract examples.
+// Realtime credentials remain contract examples.
 // The shared example boundary stays here until the contract layer's owner can move it to http.ts.
-import { ApiError, deps, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
+import { randomUUID } from 'node:crypto';
+import { ApiError, deps as sharedDeps, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
+import { photos as photoStore } from './uploads.ts';
 import { EXAMPLES, example, type Example } from './examples.ts';
 import { FAMILIES, type Family } from '../../engines/capture/process.ts';
 import { plan, type State, type Fact } from '../../engines/capture/plan.ts';
@@ -14,6 +16,18 @@ import type { AttributeEvidence } from '../../engines/proof/proof.ts';
 import { memoryStore } from '../../engines/param/param.ts';
 import { SITES } from '../../../../spec/sites.mjs';
 import slides from '../../../../jobs/studio/slides.json' with { type: 'json' };
+import { identify, type IdentifyInput, type IdentifyPorts, type Stage } from '../../engines/capture/identify/identify.ts';
+import { classify, siteRows } from '../../engines/listing/classify.ts';
+import type { AspectsReply } from '../../engines/listing/aspects.ts';
+import type { Blobs } from '../store/blobs.ts';
+import { jobs } from './jobs.ts';
+import { lensOn, lensPortsFor } from '../identify/compose.ts';
+
+// The server composes ports on the same dependency object used by the API routes.
+export const deps = sharedDeps as typeof sharedDeps & {
+  identifyPorts?: IdentifyPorts;
+  listingAspects?: Partial<Record<Site, AspectsReply>>;
+};
 
 export const invalid = (message: string, fields?: string[]) => new ApiError('invalid', message, 'validate', { by: 'user' }, fields ? { fields } : {});
 export const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -99,15 +113,20 @@ export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = 
   };
 }
 
-export type CaptureRow = { id: string; user_id: string; item_id: string; version: number; created_at: string; updated_at: string; data: 'example' | 'captured'; state: State; status: 'framing' | 'shooting' | 'uploading' | 'judged'; mode: string; photos: number; replacements: Record<string,number>; phone_suggestion: boolean; studio_plan?: StudioPlan };
+export type CaptureRow = { id: string; user_id: string; item_id: string; version: number; created_at: string; updated_at: string; data: 'example' | 'captured'; state: State; status: 'framing' | 'shooting' | 'uploading' | 'judged'; mode: string; photos: number; replacements: Record<string,number>; phone_suggestion: boolean; studio_plan?: StudioPlan; intent?: 'sell' | 'worth' | 'track' | 'find'; lookup_hidden?: boolean; photo_rows?: KeptPhoto[]; identify_job_id?: string; identify_empty?: boolean; visual_retry?: boolean };
 const open = example('captures.open').response as {id: string; item_id: string; created_at: string; picker: string[]};
 const linkedSites = (example('accounts.list').response as {data: {site: string}[]}).data
   .map(account => account.site).filter((site): site is Site => SITES.includes(site));
-const params = memoryStore();
-params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
-export const captureRows = new Map<string, CaptureRow>();
-let captureNumber = 0;
-let exampleOpened = false;
+function liveCaptures() {
+  const params = memoryStore();
+  params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
+  return {rows:new Map<string,CaptureRow>(),identifyRuns:new Map<string,Promise<void>>(),
+    generation:0,exampleOpened:false,subscriptions:new WeakSet<Blobs>(),params};
+}
+const shared = globalThis as { __secondhandCaptures?: ReturnType<typeof liveCaptures> };
+const firstLoad = shared.__secondhandCaptures === undefined;
+const captures = shared.__secondhandCaptures ??= liveCaptures();
+export const captureRows = captures.rows;
 function initial(body: Record<string, unknown>, id: string, item_id: string): State {
   const device = body.device as {has_lidar?: boolean; object_capture?: boolean} | undefined;
   const has_lidar = device?.has_lidar ?? false;
@@ -121,28 +140,29 @@ function initial(body: Record<string, unknown>, id: string, item_id: string): St
     kept: [], retakes: {}, facts: {}, lookups: 'none', refused: [] };
 }
 export function resetCaptures() {
-  captureRows.clear();
-  captureNumber = 0; exampleOpened = false;
+  captures.generation++;captures.identifyRuns.clear();
+  captures.rows.clear();
+  captures.exampleOpened = false;
   const state=initial(example('captures.open').request!.body as Record<string, unknown>,open.id,open.item_id);
-  captureRows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
+  captures.rows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
 }
-resetCaptures();
+if (firstLoad) resetCaptures();
 function read(ctx: Ctx): CaptureRow {
   return ownedCapture(ctx.user_id!,ctx.params.id);
 }
 function ownedCapture(user_id: string, capture_id: string): CaptureRow {
-  const row = captureRows.get(capture_id);
+  const row = captures.rows.get(capture_id);
   if (!row || row.user_id !== user_id) throw new ApiError('not_found', 'capture not found', 'read');
   return row;
 }
 function effectiveState(row: CaptureRow): State {
   const state=row.state;
   return state.lookups==='running' && (state.lookups_at===undefined ||
-    deps.now()-Date.parse(state.lookups_at)>=bound(params,'capture_lookup_wait_s')*1000) ? {...state,lookups:'done'} : state;
+    deps.now()-Date.parse(state.lookups_at)>=bound(captures.params,'capture_lookup_wait_s')*1000) ? {...state,lookups:'done'} : state;
 }
 function view(row: CaptureRow) {
-  const next = plan(effectiveState(row), params);
-  return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose,
+  const next = plan(effectiveState(row), captures.params);
+  return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose, intent: row.intent ?? 'sell',
     type: row.state.type, suggested_type: row.state.suggestion?.family ?? null, picker: open.picker,
     process: next.process, coverage: {needed: next.process.map(step => step.key).filter(key => !row.state.kept.includes(key)), kept: [...row.state.kept]},
     created_at: row.created_at, version: row.version, plan: next};
@@ -188,7 +208,8 @@ function validValue(row: FieldRow, value: unknown): boolean {
 }
 type PhotoRead = {field: string; value: unknown; source?: 'seen'|'label'|'measured'; confidence?: number; unknown_reason?: 'not_read'};
 type Scan = {scan_ok: boolean; extent_cm: {width:number;depth:number;height:number}; extent_conf:number; frames:number};
-type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]; scan?:Scan};
+type KeptPhoto = {id: string; key: string; role: string; read_text?: {line:string;confidence:number}[]; codes?: {symbology:string;payload:string}[]};
+type Photo = {text?: {line:string;confidence:number}[]; codes?: {symbology:string;payload:string}[]; role: string; step: string; content_type: 'image/heic' | 'image/jpeg' | 'image/png'; bytes: number; key?: string; reads?: PhotoRead[]; scan?:Scan};
 const positive = (v: unknown): v is number => number(v) && v>0;
 function validScan(v:unknown): boolean {
   if (!object(v) || !object(v.extent_cm)) return false;
@@ -204,13 +225,14 @@ const rank: Record<Fact['source'], number> = {seen: 0, label: 1, measured: 2, de
 function applyRead(state:State, read:PhotoRead, key:string) {
   const old=state.facts[read.field];
   const source=read.source ?? 'label';
-  if (!old || old.source!=='you_said' && read.unknown_reason!=='not_read' && (old.unknown_reason==='not_read' || rank[source]>=rank[old.source])) state.facts[read.field]={
+  if (!old || old.source!=='you_said' && !old.confirmed && read.unknown_reason!=='not_read' && (old.unknown_reason==='not_read' || rank[source]>=rank[old.source])) state.facts[read.field]={
     value:structuredClone(read.value),source,confidence:read.confidence ?? 0,step:key,
     ...(read.unknown_reason?{unknown_reason:read.unknown_reason}:{}),
   };
 }
 
-export type IdentifyResult = {kind:'identify';action:'confirm'|'pick'|'ask';set:{product_id:string;family:Family;brand?:string;model?:string;c:number;label?:string;dimensions?:Record<string,number>}[]};
+type IdentifyMember = {product_id:string;family:Family|null;kind?:string;brand?:string;model?:string;c:number;label?:string;dimensions?:Record<string,number>;rests_on?:string[]};
+export type IdentifyResult = {kind:'identify';action:'confirm'|'pick'|'ask';set:IdentifyMember[];others?:IdentifyMember[];facts?:{field:string;value:unknown;source:'label';confidence:number;ref?:string}[]};
 export type StudioPlan = {kind:string;asks:StudioAsk[]};
 export type JobResult = IdentifyResult | {kind:'studio_plan';plan:StudioPlan} | {kind:'photo_score';photos:{key:string;role:string;score:number;parts:{sharpness:number;exposure:number;clipping:number;[part:string]:number}}[]};
 const positiveDimensions = (v:unknown): v is Record<string,number> => object(v) && Object.keys(v).length>0 && Object.values(v).every(n=>number(n) && n>0);
@@ -218,13 +240,21 @@ function validateJobResult(result: unknown): asserts result is JobResult {
   if (!object(result)) throw invalid('result is not valid',['result']);
   fields(result,{kind:oneOf('identify','studio_plan','photo_score')});
   if (result.kind==='identify') {
-    fields(result,{action:oneOf('confirm','pick','ask'),set:Array.isArray});
-    let previous=1;
-    for (const [index,member] of (result.set as unknown[]).entries()) {
-      if (!object(member)) throw invalid(`set.${index} is not valid`,[`set.${index}`]);
-      fields(member,{product_id:text,family,c:probability},{brand:text,model:text,label:text,dimensions:positiveDimensions});
-      if (Number(member.c)>previous) throw invalid(`set.${index}.c must be descending`,['c']);
-      previous=member.c as number;
+    fields(result,{action:oneOf('confirm','pick','ask'),set:Array.isArray},{others:Array.isArray,facts:Array.isArray});
+    for (const name of ['set','others'] as const) {
+      let previous=1;
+      for (const [index,member] of ((result[name] ?? []) as unknown[]).entries()) {
+        if (!object(member)) throw invalid(`${name}.${index} is not valid`,[`${name}.${index}`]);
+        fields(member,{product_id:text,family:v=>v===null || family(v),c:probability},{kind:text,brand:text,model:text,label:text,dimensions:positiveDimensions,
+          rests_on:v=>Array.isArray(v) && v.length>=1 && v.length<=6 && v.every(r=>text(r) && r.length<=120)});
+        if (Number(member.c)>previous) throw invalid(`${name}.${index}.c must be descending`,['c']);
+        previous=member.c as number;
+      }
+    }
+    for (const fact of (result.facts ?? []) as unknown[]) {
+      if (!object(fact)) throw invalid('facts is not valid',['facts']);
+      fields(fact,{field:text,source:v=>v==='label',confidence:probability},{ref:text});
+      if (fact.value===null || fact.unknown_reason!==undefined) throw invalid('fact is not read',['facts']);
     }
   } else if (result.kind==='studio_plan') {
     fields(result,{plan:object});
@@ -264,16 +294,30 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
   try {
     writable(current);
     validateJobResult(result);
+    if (result.kind==='identify') for (const fact of result.facts ?? []) {
+      const definition=select(current.state,captures.params).rows.find(row=>row.field===fact.field);
+      if (!definition || !validValue(definition,fact.value)) throw invalid('identify fact does not fit field row',[fact.field]);
+    }
     if (result.kind==='photo_score') for (const photo of result.photos)
       if (!current.state.kept.includes(photo.key)) throw invalid(`${photo.key} was not kept`,[photo.key]);
     const row=structuredClone(current);
     const state=row.state;
     if (result.kind==='identify') {
       const first=result.set[0];
-      if (!row.phone_suggestion && first) state.suggestion={family:first.family,p:first.c,second_p:result.set[1]?.c ?? 0};
+      if (!row.phone_suggestion && first?.family) state.suggestion={family:first.family,p:first.c,second_p:result.set[1]?.c ?? 0};
+      if (!state.kind && result.action==='confirm' && result.set.length===1 && first?.kind) state.kind=first.kind;
+      for (const fact of result.facts ?? []) applyRead(state,fact,fact.ref ?? 'tag');
+      const members=[...result.set,...result.others ?? []];
       state.candidates={...state.candidates};
+      state.candidate_detail={...state.candidate_detail};
       for (const field of ['brand','model'] as const) {
-        state.candidates[field]=[...new Set(result.set.flatMap(member=>member[field]===undefined?[]:[member[field]]))];
+        state.candidates[field]=[...new Set(members.flatMap(member=>member[field]===undefined?[]:[member[field]]))];
+        const detail:Record<string,{c:number;rests_on:string[]}>={};
+        for (const member of members) {
+          const value=member[field];
+          if (value!==undefined && (!detail[value] || detail[value].c<member.c)) detail[value]={c:member.c,rests_on:[...member.rests_on ?? []]};
+        }
+        state.candidate_detail[field]=detail;
       }
       const brand=state.facts.brand;
       if (result.action==='confirm' && result.set.length===1 && first.brand!==undefined && brand?.source!=='you_said' && !brand?.confirmed &&
@@ -281,16 +325,17 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
         state.facts.brand={value:first.brand,source:'lookup',confidence:first.c};
       const dimensions=result.set.flatMap(member=>member.dimensions?[{label:member.label ?? member.product_id,value:structuredClone(member.dimensions),p:member.c}]:[]);
       state.variants={...state.variants,dimensions:dimensions.length>=2?dimensions:[]};
-      if (dimensions.length===1 && result.action==='confirm' && state.facts.dimensions?.source!=='you_said')
+      if (dimensions.length===1 && result.action==='confirm' && state.facts.dimensions?.source!=='you_said' && !state.facts.dimensions?.confirmed)
         state.facts.dimensions={value:dimensions[0].value,source:'lookup',confidence:dimensions[0].p};
       state.lookups='done';
+      classifyCapture(state);
     } else if (result.kind==='studio_plan') {
       row.studio_plan=structuredClone(result.plan);
       if (state.studio?.requested) studioPlan(row,result.plan);
     } else {
-      const selected=select(state,params);
+      const selected=select(state,captures.params);
       const keys=selected.process.map(step=>step.key);
-      const minimum=params.read('capture_label_sharp_min',{}).value as number;
+      const minimum=captures.params.read('capture_label_sharp_min',{}).value as number;
       for (const photo of result.photos) {
         if (!['tag','care_label','screenshot'].includes(photo.role) || photo.parts.sharpness>=minimum) continue;
         for (const field of selected.rows) if (!state.facts[field.field] && field.ways.some(way=>way.way==='label' && way.view && viewsFor(way.view,keys).includes(photo.key)))
@@ -300,7 +345,7 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
     }
     row.version++; row.updated_at=new Date(deps.now()).toISOString();
     const body=view(row);
-    captureRows.set(capture_id,row);
+    captures.rows.set(capture_id,row);
     if (current.status!==row.status) log.event('state.change',{entity:'capture',id:capture_id,was:current.status,to:row.status,kind:result.kind});
     return body;
   } catch (error) {
@@ -309,25 +354,134 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
   }
 }
 
+function validAnswer(state:State, field:string, value:unknown, definition?:FieldRow):boolean {
+  if (definition) return validValue(definition,value);
+  const rows=(state.site_rows ?? []).filter(row=>row.field===field && state.sites.includes(row.site));
+  return rows.length>0 && rows.every(row=>row.allowed ? row.allowed.includes(value as string) : text(value) && value.length<=(row.max_length ?? Infinity));
+}
+function classifyCapture(state:State) {
+  const selected=select(state,captures.params);
+  state.site_rows=siteRows(classify({family:selected.family,kind:state.kind ?? selected.family,attrs:state.facts},state.sites,{params:captures.params,aspects:deps.listingAspects}));
+}
+export function pendingIdentify(user_id:string, capture_id:string):Promise<void>|undefined {
+  ownedCapture(user_id,capture_id);
+  return captures.identifyRuns.get(capture_id);
+}
+function subscribeUploads(blobs:Blobs) {
+  if (captures.subscriptions.has(blobs)) return;
+  captures.subscriptions.add(blobs);
+  blobs.onUploaded(event=> {
+    const row=captures.rows.get(event.capture_id);
+    if (!row || row.user_id!==event.user_id || row.status==='judged' || row.visual_retry || !(deps.identifyPorts?.visual || !deps.identifyPorts && lensOn()) ||
+      !row.photo_rows?.some(photo=>photo.id===event.photo_id && photo.role==='front')) return;
+    const first=captures.identifyRuns.get(row.id);
+    if (!first) return;
+    const retry=first.then(()=> {
+      const current=captures.rows.get(row.id);
+      if (!current || current.user_id!==event.user_id || current.status==='judged' || current.visual_retry || !current.identify_empty) return;
+      current.visual_retry=true;
+      return startIdentify(current,deps.log);
+    }).catch(error=>deps.log.error('capture.upload_identify',error));
+    captures.identifyRuns.set(row.id,retry);
+  });
+}
+function startIdentify(row:CaptureRow, parent:Ctx['log']):Promise<void> {
+  const generation=captures.generation;
+  const started_at=new Date(deps.now()).toISOString();
+  const job=jobs.start({id:`job_${crypto.randomUUID().replaceAll('-','')}`,kind:'identify',item_id:row.item_id,args:{capture_id:row.id},state:'running',created_at:started_at},row.user_id);
+  row.identify_job_id=job.id;row.state.lookups='running';row.state.lookups_at=started_at;
+  const log=parent.child({user:row.user_id,capture:row.id,job:job.id});
+  log.job(job.id,'identify','running');
+  jobs.append(job.id,'job.state',{job_id:job.id,kind:'identify',state:'running',at:started_at});
+  // Starting on the next turn keeps the request independent of the in-process work.
+  const task=new Promise<void>(resolve=>setImmediate(resolve)).then(async()=> {
+    let emptySet:boolean|undefined;
+    try {
+      if (generation!==captures.generation) throw new ApiError('stale','capture changed','state_check');
+      const snapshot=structuredClone(row);
+      const blobs=photoStore();
+      const input:IdentifyInput={capture_id:row.id,family:snapshot.state.type ?? snapshot.state.suggestion?.family ?? null,
+        ...(snapshot.state.kind?{kind:snapshot.state.kind}:{}),photos:[]};
+      for (const photo of snapshot.photo_rows ?? []) {
+        if (!snapshot.state.kept.includes(photo.key)) continue;
+        const blob=await blobs.read(snapshot.user_id,photo.id);
+        input.photos.push({key:photo.key,role:photo.role,
+          ...(photo.read_text!==undefined?{text:photo.read_text}:{}),...(photo.codes!==undefined?{codes:photo.codes}:{}),
+          ...(blob?{file_ref:`data:${blob.content_type};base64,${Buffer.from(blob.bytes).toString('base64')}`}:{})});
+      }
+      const stages:Stage[]=[];
+      const stageLog:Ctx['log']={...log,stage(_id,name,detail={}) {
+        const stage:Stage={name,state:detail.state as Stage['state'],found:detail.found as Record<string,unknown>};
+        stages.push(stage);
+        jobs.update(job.id,{stages:structuredClone(stages)});
+        jobs.append(job.id,'job.stage',{job_id:job.id,...stage});
+        log.stage(job.id,name,detail);
+      }};
+      // A test or the server may set its own ports; otherwise Lens is composed when its token and public address exist.
+      const ports=deps.identifyPorts ?? lensPortsFor(row.id,{kv:deps.kv,log,now:deps.now,params:captures.params});
+      const result=await identify(input,ports,captures.params,stageLog);
+      emptySet=result.set.length===0;
+      const failed=result.stages.find(stage=>stage.state==='failed');
+      if (failed) throw new Error(String(failed.found.reason ?? `identify ${failed.name} failed`));
+      if (generation!==captures.generation || ownedCapture(row.user_id,row.id).identify_job_id!==job.id) throw new ApiError('stale','capture changed','state_check');
+      const rows=select(ownedCapture(row.user_id,row.id).state,captures.params).rows;
+      const facts=result.facts.flatMap(fact=> {
+        const definition=rows.find(row=>row.field===fact.field);
+        const value=definition?.type==='list' ? [fact.value] : fact.value;
+        if (!definition || !validValue(definition,value)) {
+          log.note('capture read dropped',{field:fact.field,reason:definition?'value does not fit field row':'no field row'});
+          return [];
+        }
+        return [{...fact,value}];
+      });
+      applyJobResult(row.user_id,row.id,{...result,facts});
+      const current=ownedCapture(row.user_id,row.id);
+      if (current.identify_empty===undefined) current.identify_empty=result.set.length===0;
+      jobs.finish(job.id,{action:result.action,set_count:result.set.length,others_count:result.others.length,fact_count:facts.length});
+      log.job(job.id,'identify','done');
+    } catch (error) {
+      const reason=error instanceof ApiError && error.code==='stale' ? 'stale' : error instanceof Error ? error.message : 'identify failed';
+      const current=captures.rows.get(row.id);
+      if (generation===captures.generation && current && current.user_id===row.user_id && current.status!=='judged' && current.identify_job_id===job.id) {
+        if (current.identify_empty===undefined && emptySet!==undefined) current.identify_empty=emptySet;
+        current.state.lookups='done';current.version++;current.updated_at=new Date(deps.now()).toISOString();
+      }
+      log.error('capture.identify',error,{reason});
+      jobs.update(job.id,{state:'failed',reason,error:{code:reason==='stale'?'stale':'identify_failed',message:reason}});
+      jobs.append(job.id,'job.state',{job_id:job.id,kind:'identify',state:'failed',reason});
+      log.job(job.id,'identify','failed',{reason});
+    }
+  });
+  const pending=task.catch(error=>log.error('capture.identify_background',error));
+  captures.identifyRuns.set(row.id,pending);
+  return pending;
+}
+
 export const handlers: Record<string, Handler> = {
   'POST /v1/captures': captureHandler('POST /v1/captures', async ctx => {
     fields(ctx.body,
-      {mode:oneOf('shots','scan','talk'),purpose:oneOf('sell','appraise','find')},
-      {first_photo_hint:text,item_id:text,device:v=>object(v) && (v.has_lidar===undefined || bool(v.has_lidar)) && (v.object_capture===undefined || bool(v.object_capture)),
+      {mode:oneOf('shots','scan','talk')},
+      {purpose:oneOf('sell','appraise','find'),first_photo_hint:text,item_id:text,device:v=>object(v) && (v.has_lidar===undefined || bool(v.has_lidar)) && (v.object_capture===undefined || bool(v.object_capture)),
         suggestion:v=>object(v) && family(v.family) && probability(v.p) && probability(v.second_p) && v.second_p<=v.p,
-        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto'),extent_cm:positive,extent_conf:probability,rigid:bool});
+        pieces:v=>integer(v) && v>=1 && v<=12,confirm_mode:oneOf('tap','auto'),extent_cm:positive,extent_conf:probability,rigid:bool,intent:oneOf('sell','worth','track','find')});
+    const purposeFor = {sell:'sell',worth:'appraise',track:'find',find:'find'} as const;
+    const intent=ctx.body.intent as keyof typeof purposeFor|undefined;
+    if (intent && ctx.body.purpose!==undefined && ctx.body.purpose!==purposeFor[intent]) throw invalid('intent and purpose disagree',['intent','purpose']);
+    if (!intent && ctx.body.purpose===undefined) throw invalid('purpose or intent is required',['purpose']);
+    const body={...ctx.body,purpose:intent ? purposeFor[intent] : ctx.body.purpose};
     const device=ctx.body.device as {has_lidar?:boolean;object_capture?:boolean}|undefined;
     if (device?.object_capture && !device.has_lidar) throw answerError('device.object_capture');
     if (ctx.body.item_id) {
       const {ports}=await import('./items.ts');
       if (!await ports.read(ctx.user_id!,ctx.body.item_id as string)) throw new ApiError('not_found','item not found','read');
     }
-    const id=ctx.user_id==='usr_8f2k' && !exampleOpened ? open.id : `cap_${++captureNumber}`;
-    if (id===open.id) exampleOpened=true;
-    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${captureNumber}`);
-    const state=initial(ctx.body,id,item_id), created_at=new Date(deps.now()).toISOString();
-    const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
-    captureRows.set(id,row);
+    const minted=randomUUID().replaceAll('-','');
+    const id=ctx.user_id==='usr_8f2k' && !captures.exampleOpened ? open.id : `cap_${minted}`;
+    if (id===open.id) captures.exampleOpened=true;
+    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${minted}`);
+    const state=initial(body,id,item_id), created_at=new Date(deps.now()).toISOString();
+    const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined,intent:(ctx.body.intent as CaptureRow['intent']) ?? 'sell'};
+    captures.rows.set(id,row);
     ctx.log.event('state.change',{entity:'capture',id,was:null,to:row.status});
     return {status:201,body:view(row)};
   }),
@@ -338,11 +492,19 @@ export const handlers: Record<string, Handler> = {
       oneOf('image/heic','image/jpeg','image/png')(p.content_type) && version(p.bytes) &&
       (p.key===undefined || text(p.key)) && (p.reads===undefined || Array.isArray(p.reads) && p.reads.every(validRead)) &&
       (p.scan===undefined || validScan(p.scan)) && (p.depth_ref===undefined || typeof p.depth_ref==='string') && (p.pose_ref===undefined || typeof p.pose_ref==='string'))});
+    for (const photo of ctx.body.photos as Record<string,unknown>[]) {
+      if (photo.text!==undefined && (!['tag','care_label','size_label','read'].includes(String(photo.role)) ||
+        !Array.isArray(photo.text) || photo.text.length>200 || !photo.text.every(line=>object(line) && typeof line.line==='string' && line.line.length>=1 && line.line.length<=200 && probability(line.confidence)))) throw answerError('text');
+      if (photo.codes!==undefined && (!Array.isArray(photo.codes) || photo.codes.length>10 || !photo.codes.every(code=>object(code) && text(code.symbology) && typeof code.payload==='string' && code.payload.length>=1 && code.payload.length<=64))) throw answerError('codes');
+    }
+    const wasShooting=plan(effectiveState(row),captures.params).status==='shooting';
+    const retake=(ctx.body.photos as Photo[]).some(photo=>row.state.kept.includes(photo.key ?? photo.step) && ['tag','care_label','size_label'].includes(photo.role));
+    subscribeUploads(photoStore());
     // shortcut: depth_ref and pose_ref are validated but not stored, store them when integration adds the photo table (F5).
     const uploads=(example('captures.photos').response as {photos:{upload:{expires_at:string}}[]}).photos;
     const photos=(ctx.body.photos as Photo[]).map(photo=> {
       const key=photo.key ?? photo.step;
-      const selected=select(row.state,params);
+      const selected=select(row.state,captures.params);
       const reads=(photo.reads ?? []).filter(read=> {
         const definition=selected.rows.find(field=>field.field===read.field);
         const reason=!definition?'no field row':read.value!==null && !validValue(definition,read.value)?'value does not fit field row':undefined;
@@ -371,15 +533,23 @@ export const handlers: Record<string, Handler> = {
         }
       }
       const id=`ph_a${++row.photos}`;
-      return {id,role:photo.role,step:photo.step,upload:{url:`https://uploads.example/v/${id}?sig=example`,method:'PUT',expires_at:uploads[0].upload.expires_at}};
+      // A captured row gets a real single-use target in the photo store; an example row keeps the contract's address.
+      const upload=row.data==='example' ? {url:`https://uploads.example/v/${id}?sig=example`,method:'PUT' as const,expires_at:uploads[0].upload.expires_at}
+        : photoStore().target({user_id:row.user_id,capture_id:row.id,photo_id:`${row.id}-${id}`,content_type:photo.content_type,max_bytes:photo.bytes});
+      const stored:KeptPhoto={id:`${row.id}-${id}`,key,role:photo.role,
+        ...(photo.text!==undefined && photo.role!=='read'?{read_text:structuredClone(photo.text)}:{}),
+        ...(photo.codes!==undefined?{codes:structuredClone(photo.codes)}:{})};
+      row.photo_rows=(row.photo_rows ?? []).filter(p=>p.key!==key);row.photo_rows.push(stored);
+      return {id,role:photo.role,step:photo.step,upload};
     });
     write(ctx,row,'uploading');
+    if (retake || wasShooting && select(row.state,captures.params).process.every(step=>row.state.kept.includes(step.key))) startIdentify(row,ctx.log);
     return {status:201,body:{photos,capture:view(row)}};
   }),
   'PATCH /v1/captures/:id': captureHandler('PATCH /v1/captures/:id', ctx=> {
     const row=read(ctx); writable(row);
-    fields(ctx.body,{version},{type:family,answer:v=>object(v) && text(v.field) && Object.hasOwn(v,'value'),refuse:text,generate:v=>v===true});
-    if (['type','answer','refuse','generate'].filter(key=>ctx.body[key]!==undefined).length!==1) throw invalid('choose exactly one of type, answer, refuse or generate',['type','answer','refuse','generate']);
+    fields(ctx.body,{version},{type:family,answer:v=>object(v) && text(v.field) && Object.hasOwn(v,'value') && (v.ask_id===undefined || text(v.ask_id)),edit:v=>object(v) && text(v.field) && Object.hasOwn(v,'value'),refuse:text,generate:v=>v===true});
+    if (['type','answer','edit','refuse','generate'].filter(key=>ctx.body[key]!==undefined).length!==1) throw invalid('choose exactly one of type, answer, edit, refuse or generate',['type','answer','edit','refuse','generate']);
     checkVersion(ctx,row);
     let field:string|undefined;
     if (ctx.body.type!==undefined) row.state.type=ctx.body.type as Family;
@@ -387,37 +557,65 @@ export const handlers: Record<string, Handler> = {
       row.state.studio={requested:true,measurements:[],asks:[]};
       if (row.studio_plan) studioPlan(row,row.studio_plan);
     } else {
-      const answer=ctx.body.answer as {field:string;value:unknown}|undefined;
+      const answer=(ctx.body.answer ?? ctx.body.edit) as {field:string;value:unknown;ask_id?:string}|undefined;
       field=answer?.field ?? ctx.body.refuse as string;
-      const current=plan(effectiveState(row),params);
-      if (!current.questions.some(q=>q.field===field && q.kind!=='shot')) throw answerError(field);
+      const current=plan(effectiveState(row),captures.params);
+      if (answer?.ask_id!==undefined && !current.questions.some(q=>q.id===answer.ask_id && q.field===field)) throw new ApiError('stale','the question changed','question_check');
+      if (ctx.body.edit) {
+        const selected=select(row.state,captures.params);
+        const definition=selected.rows.find(r=>r.field===field);
+        const held=definition ? fieldState(definition,row.state,selected.process.map(step=>step.key),captures.params).fact?.value :
+          row.state.facts[field]?.value ?? row.state.site_rows?.find(r=>r.field===field && row.state.sites.includes(r.site))?.value;
+        if (held===undefined || held===null) throw answerError(field);
+      } else if (!current.questions.some(q=>q.field===field && q.kind!=='shot')) throw answerError(field);
       if (answer) {
-        const definition=select(row.state,params).rows.find(r=>r.field===field)!;
-        if (!validValue(definition,answer.value)) throw answerError(field);
+        const definition=select(row.state,captures.params).rows.find(r=>r.field===field);
+        if (!validAnswer(row.state,field,answer.value,definition)) throw answerError(field);
         row.state.facts[field]={value:structuredClone(answer.value),source:'you_said',confidence:1,confirmed:true};
+        row.state.refused=row.state.refused.filter(refused=>refused!==field);
         if (field==='type') row.state.type=answer.value as Family;
       } else row.state.refused.push(field);
     }
     if (field) ctx.log.note('capture field updated',{field});
-    write(ctx,row,plan(effectiveState(row),params).status==='shooting'?'shooting':row.status,field?{field}:{});
+    write(ctx,row,plan(effectiveState(row),captures.params).status==='shooting'?'shooting':row.status,field?{field}:{});
     return {status:200,body:{...view(row),item:{id:row.state.item_id,category:row.state.type}}};
   }),
   'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', async ctx=> {
     const {runtime}=await import('./runtime.ts');
-    const row=read(ctx); writable(row); fields(ctx.body,{version},{note:text}); checkVersion(ctx,row);
+    let row=read(ctx); writable(row); fields(ctx.body,{version},{note:text,title:text}); checkVersion(ctx,row);
+    const uploaded: {id:string;role:string;url:string;use:'real';ai_marked:false}[]=[];
+    if (row.data==='captured') {
+      for (const photo of row.photo_rows ?? []) {
+        if (!row.state.kept.includes(photo.key)) continue;
+        if (!await photoStore().read(row.user_id,photo.id)) throw invalid('Upload each photo before saving the item',['photos']);
+        uploaded.push({id:photo.id,role:photo.role,url:`/v1/photos/${photo.id}`,use:'real',ai_marked:false});
+      }
+      if (!uploaded.length && !runtime.store.get('item',row.user_id,row.item_id)) throw invalid('Add a photo before saving the item',['photos']);
+      if (!row.identify_job_id) startIdentify(row,ctx.log);
+      let pending=captures.identifyRuns.get(row.id);
+      while (pending) {
+        await pending;
+        const next=captures.identifyRuns.get(row.id);
+        if (next===pending) break;
+        pending=next;
+      }
+      row=read(ctx);writable(row);
+    }
     const at=new Date(deps.now()).toISOString();
-    const state=effectiveState(row), selected=select(state,params), keys=selected.process.map(step=>step.key);
+    const state=effectiveState(row), selected=select(state,captures.params), keys=selected.process.map(step=>step.key);
     const sources:Record<Fact['source'],Attribute['source']>={label:'label',measured:'measured',lookup:'spec',you_said:'you_said',seen:'inferred',derived:'inferred'};
     const kinds:Record<Fact['source'],AttributeEvidence['kind']>={you_said:'owner',label:'label_text',measured:'depth',lookup:'lookup',seen:'image_region',derived:'image_region'};
     await ctx.log.call('db','capture.finish_item',{item_id:row.item_id},()=> {
       runtime.store.tx(st=> {
         const current=st.get('item',row.user_id,row.item_id);
         const attributes=[...(current?.attributes as Attribute[] ?? [])];
+        const known:Record<string,unknown>={};
         for (const field of selected.rows) {
           if (field.field==='type' || field.field==='lot_count') continue;
-          const resolution=fieldState(field,state,keys,params);
+          const resolution=fieldState(field,state,keys,captures.params);
           if (resolution.state!=='known') continue;
           const fact=resolution.fact!;
+          known[field.field]=fact.value;
           const next:Attribute={name:field.field,value:structuredClone(fact.value),source:sources[fact.source],confidence:fact.confidence,
             confirmed:fact.confirmed===true || fact.source==='you_said',method:fact.source,at,
             evidence:[{kind:kinds[fact.source],ref:`${row.id}/${fact.step ?? field.field}`,captured_at:at,extractor_version:`capture.v${table.version}`}]};
@@ -425,10 +623,36 @@ export const handlers: Record<string, Handler> = {
           const merged=mergeAttribute(index<0?next:attributes[index],next,next.source==='you_said'?'user':'auto');
           if (index<0) attributes.push(merged); else attributes[index]=merged;
         }
-        st.put('item',current?{...current,attributes,updated_at:at}:{id:row.item_id,user_id:row.user_id,title:'',state:'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos:[],created_at:at,updated_at:at});
+        const priorPhotos=Array.isArray(current?.photos)?current.photos as {id:string}[]:[];
+        const photos=[...priorPhotos.filter(photo=>!uploaded.some(next=>next.id===photo.id)),...uploaded];
+        // Valuation reads these top-level fields; a lookup brand stays unconfirmed in attributes, so it would not count there.
+        const facts=Object.fromEntries(Object.entries({brand:known.brand,model:known.model,kind:state.kind ?? (selected.family==='other'?undefined:selected.family),
+          condition:known.condition,size:known.size ?? known.size_label,colour:known.colour}).filter(([,value])=>value!==undefined && value!==null && value!==''));
+        // A title only with a brand: a kind alone would pass the valuation's identity rule without naming the thing.
+        const composed=typeof facts.brand==='string' ? `${facts.brand} ${facts.kind ?? ''}`.trim()+(typeof facts.size==='string'?`, size ${facts.size}`:'') : '';
+        const title=typeof ctx.body.title==='string'?ctx.body.title:(current?.title as string|undefined)?.trim() || composed;
+        st.put('item',current?{...current,...facts,title,attributes,photos,updated_at:at}:{id:row.item_id,user_id:row.user_id,...facts,title,state:row.data==='captured'?'review':'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos,created_at:at,updated_at:at});
       });
       write(ctx,row,'judged');
     },()=>({item_id:row.item_id}));
+    if (row.data==='captured') {
+      const item=runtime.store.get('item',row.user_id,row.item_id)!;
+      const jobs:{id:string;kind:string;stream:string}[]=row.identify_job_id?[{id:row.identify_job_id,kind:'identify',stream:`/v1/jobs/${row.identify_job_id}/events`}]:[];
+      let valuation:{range_state:'needs_identity';needs:string[]}|undefined;
+      if (row.state.purpose==='appraise') {
+        // Mirrors the identity rule in engines/valuation/valuate.ts and the needs list check.ts returns without one.
+        const named=(value:unknown)=>typeof value==='string' && value.trim()!=='';
+        if (named(item.title) || named(item.brand) && named(item.kind) || named(item.product_id)) {
+          try {
+            const {startValuation}=await import('./valuations.ts');
+            const started=await startValuation({...ctx,body:{item_id:row.item_id}},item as Parameters<typeof startValuation>[1]);
+            const id=(started.body as {id:string}).id;
+            jobs.push({id,kind:'valuate',stream:`/v1/jobs/${id}/events`});
+          } catch (error) { ctx.log.error('capture.finish_valuation',error); } // the capture is already judged; the item page can still ask for a valuation
+        } else valuation={range_state:'needs_identity',needs:['brand','model','title']};
+      }
+      return {status:202,body:{capture:view(row),item:{id:row.item_id,state:item.state},jobs,...(valuation?{valuation}:{})}};
+    }
     return {status:202,body:{...structuredClone(example('captures.finish').response as Record<string,unknown>),capture:view(row),item:{id:row.state.item_id,state:'researching'}}};
   }),
   'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c=>fields(c.body,{voice:bool})),

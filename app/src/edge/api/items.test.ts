@@ -41,6 +41,11 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
+  if (['items.list', 'conversations.list', 'orders.list'].includes(e.name)) { // a list: a person who owns nothing gets an empty list, never the example rows
+    assert.equal(r.status, 200);
+    for (const value of Object.values(await r.json() as Record<string, unknown>)) if (Array.isArray(value)) assert.deepEqual(value, [], `${e.name} shows another person's rows`);
+    return;
+  }
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.includes(':id'))) test(e.name + ': unknown resource is 404', async () => {
@@ -241,4 +246,49 @@ test('item attributes do not expose fields outside their example shape', async (
   const response = await call(examples.find(e => e.name === 'items.get')!);
   const body = await response.json();
   assert.ok(body.attributes.every((attribute: Record<string, unknown>) => !Object.hasOwn(attribute, 'data')), 'attribute provenance is not a response field');
+});
+
+
+test('items list serves the requesting person’s Store rows and never the example tiles', async () => {
+  const { runtime } = await import('./runtime.ts');
+  runtime.store.put('item', { id: 'it_own', user_id: 'usr_other', title: 'My jacket', state: 'live', quantity: 1, attributes: [], photos: [], price_cents: { amount_cents: 4321, currency: 'USD' } });
+  const response = await call(examples.find(e => e.name === 'items.list')!, { token: 'other' });
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.deepEqual(body.data.map((row: { id: string }) => row.id), ['it_own']);
+  assert.deepEqual(body.data[0].price_cents, { amount_cents: 4321, currency: 'USD' });
+  assert.equal(body.next_cursor, null);
+});
+
+test('the published example item cursor resumes to an empty final page', async () => {
+  const e = examples.find(e => e.name === 'items.list')!;
+  const first = await (await call(e)).json();
+  assert.equal(first.next_cursor, (e.response as { next_cursor: string }).next_cursor);
+  const response = await call(e, { path: e.path + '&cursor=' + encodeURIComponent(first.next_cursor) });
+  assert.equal(response.status, 200, 'the advertised example cursor must be usable');
+  assert.deepEqual(await response.json(), { data: [], next_cursor: null });
+});
+
+test('an edited example collection ends without advertising a removed example row', async () => {
+  const { runtime } = await import('./runtime.ts');
+  const e = examples.find(e => e.name === 'items.list')!;
+  const sample = e.response as { data: { id: string }[] };
+  const last = runtime.store.get('item', 'usr_8f2k', sample.data.at(-1)!.id)!;
+  runtime.store.put('item', { ...last, deleted: true });
+  const response = await call(e);
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).next_cursor, null);
+});
+
+test('owned draft detail returns the persisted asking price and description after editing', async () => {
+  const { runtime } = await import('./runtime.ts');
+  runtime.store.put('item', { id: 'it_draft_review', user_id: 'usr_other', title: 'Canvas jacket', state: 'review', quantity: 1, attributes: [], photos: [], description: 'Brown canvas, worn cuffs.' });
+  const original = runtime.store.get('item', 'usr_other', 'it_draft_review');
+  assert.ok(original);
+  const changed = await call(examples.find(e => e.name === 'items.patch')!, { path: '/v1/items/it_draft_review', token: 'other', body: { version: original.version, price_cents: { amount_cents: 5250, currency: 'USD' } } });
+  assert.equal(changed.status, 200);
+  const response = await call(examples.find(e => e.name === 'items.get')!, { path: '/v1/items/it_draft_review', token: 'other' });
+  const body = await response.json();
+  assert.deepEqual(body.price_cents, { amount_cents: 5250, currency: 'USD' });
+  assert.equal(body.description, 'Brown canvas, worn cuffs.');
 });

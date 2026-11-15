@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { execFileSync } from 'node:child_process';
 import { ApiError } from './api/http.ts';
+import { createLog, memorySink } from '../../../log/index.js';
 import { appleVerifier, createAuth, googleVerifier, memoryStore, type Claims } from './auth.ts';
 
 const enc = new TextEncoder();
@@ -141,7 +143,7 @@ test('an expired access token is 401 (null), exactly at one hour', async () => {
   w.tick(1); assert.equal(await w.auth.verifyAccess(a.access_token), null);
 });
 
-test('refresh rotates: the old refresh token dies, a refresh token used twice is 401 the second time', async () => {
+test('refresh replay revokes the whole family including the rotated refresh and access tokens', async () => {
   const w = world();
   const a = await w.auth.signInApple({ identity_token: 'apple:A', nonce: 'n' });
   const r = await w.auth.refresh({ refresh_token: a.refresh_token });
@@ -149,7 +151,9 @@ test('refresh rotates: the old refresh token dies, a refresh token used twice is
   assert.equal(await w.auth.verifyAccess(r.access_token), a.user_id);
   await rejects(w.auth.refresh({ refresh_token: a.refresh_token }), 'unauthenticated', 401);
   await rejects(w.auth.refresh({ refresh_token: a.access_token }), 'unauthenticated', 401);
-  assert.ok(await w.auth.refresh({ refresh_token: r.refresh_token }));
+  await rejects(w.auth.refresh({ refresh_token: r.refresh_token }), 'unauthenticated', 401);
+  assert.equal(await w.auth.verifyAccess(r.access_token), null);
+  assert.equal(await w.auth.verifyAccess(a.access_token), null);
 });
 
 test('two refreshes at the same instant: exactly one wins', async () => {
@@ -231,4 +235,134 @@ test('link adds a method, is idempotent, and refuses an identity that belongs to
   assert.equal((await w.auth.link(a.user_id, 'google', { id_token: 'google:A2' })).length, 2);
   await assert.rejects(w.auth.link(a.user_id, 'google', { id_token: 'google:B' }), (e) => e instanceof ApiError && e.status === 409 && e.code === 'stale' && e.message === 'already linked to another account');
   assert.equal((await w.auth.methods(b.user_id)).length, 1);
+});
+
+
+test('resend requests inside and after the window spend no verify attempts', async () => {
+  const w = world(), email = 'resend@example.com';
+  await w.auth.startEmail({ email });
+  await rejects(w.auth.startEmail({ email }), 'rate_limited', 429);
+  assert.equal((await w.store.peekCode(await sha(`email:${email}`)))?.attempts, 0);
+  w.tick(30_000);
+  await w.auth.startEmail({ email });
+  for (let i = 0; i < 6; i++) await rejects(w.auth.startEmail({ email }), 'rate_limited', 429);
+  const wrong = w.code() === '000000' ? '111111' : '000000';
+  for (let i = 0; i < 5; i++) await rejects(w.auth.verifyEmail({ email, code: wrong }), 'unauthenticated', 401);
+  await rejects(w.auth.verifyEmail({ email, code: w.code() }), 'rate_limited', 429);
+});
+
+function composedAuth(script: string, devCode?: string, environment: string | null = 'test') {
+  const env: NodeJS.ProcessEnv = { ...process.env, NODE_TEST_CONTEXT: 'child-v8' };
+  if (environment === null) Reflect.deleteProperty(env, 'NODE_ENV');
+  else Reflect.set(env, 'NODE_ENV', environment);
+  delete env.SECONDHAND_DEV_CODE;
+  delete env.SECONDHAND_DATA_DIR;
+  if (devCode !== undefined) env.SECONDHAND_DEV_CODE = devCode;
+  return execFileSync(process.execPath, ['--input-type=module', '--eval', script], { cwd: process.cwd(), env, encoding: 'utf8' });
+}
+
+test('explicit development code signs in without leaking its value or the address to logs', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    const { auth } = await import('./app/src/edge/auth.ts');
+    const { deps } = await import('./app/src/edge/api/http.ts');
+    const { createLog, memorySink } = await import('./log/index.js');
+    const sink = memorySink();
+    deps.log = createLog({ src: 'test', build: 'test', sink });
+    await auth.startEmail({ email: 'development@example.com' });
+    const issued = await auth.verifyEmail({ email: 'development@example.com', code: '123456' });
+    assert.equal(await auth.verifyAccess(issued.access_token), issued.user_id);
+    assert.ok(!sink.text().includes('123456'));
+    assert.ok(!sink.text().includes('development@example.com'));
+    const events = sink.lines.map(line => JSON.parse(line)).filter(line => line.event === 'note' && line.msg === 'auth.dev_code');
+    assert.equal(events.length, 1);
+    assert.match(events[0].email_hash, /^[a-f0-9]{8,12}$/);
+  `, '123456', 'development');
+});
+
+test('development code in production refuses import and names the variable', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    await assert.rejects(import('./app/src/edge/auth.ts'), /SECONDHAND_DEV_CODE/);
+  `, '123456', 'production');
+});
+
+test('malformed development code refuses import', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    await assert.rejects(import('./app/src/edge/auth.ts'), /SECONDHAND_DEV_CODE/);
+  `, '12345', 'development');
+});
+
+test('no sender fails before writing a code; configureSender later enables the port', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    const { auth, store, sha, configureSender, senderReady } = await import('./app/src/edge/auth.ts');
+    assert.equal(senderReady(), false);
+    const email = 'sender@example.com', h = await sha('email:' + email);
+    await assert.rejects(auth.startEmail({ email }), e => e.code === 'unavailable' && e.failed_step === 'send_code' && e.retry.by === 'none');
+    assert.equal(await store.peekCode(h), null);
+    for (let i = 0; i < 6; i++) await assert.rejects(auth.verifyEmail({ email, code: '000000' }), e => e.code === 'unauthenticated');
+    let sent;
+    configureSender((address, code) => { assert.equal(address, email); sent = code; });
+    assert.equal(senderReady(), true);
+    await auth.startEmail({ email });
+    assert.match(sent, /^[0-9]{6}$/);
+    assert.equal((await auth.verifyEmail({ email, code: sent })).created, true);
+  `);
+});
+
+for (const environment of [null, 'test', 'staging', '']) {
+  test(`development code is ignored with a safe note when NODE_ENV is ${JSON.stringify(environment)}`, () => {
+    composedAuth(`
+      import assert from 'node:assert/strict';
+      const { createLog, memorySink } = await import('./log/index.js');
+      const { deps } = await import('./app/src/edge/api/http.ts');
+      const sink = memorySink();
+      deps.log = createLog({ src: 'test', build: 'test', sink });
+      const { auth } = await import('./app/src/edge/auth.ts');
+      await assert.rejects(auth.startEmail({ email: 'ignored@example.invalid' }), e => e.code === 'unavailable');
+      assert.ok(sink.lines.some(line => JSON.parse(line).msg === 'auth.dev_code_ignored'));
+      assert.ok(!sink.text().includes('123456'));
+    `, '123456', environment);
+  });
+}
+
+test('a malformed development code is also ignored outside development', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    const { auth } = await import('./app/src/edge/auth.ts');
+    await assert.rejects(auth.startEmail({ email: 'ignored@example.invalid' }), e => e.code === 'unavailable');
+  `, 'not-a-code', null);
+});
+
+test('configureSender replaces the development code on the next start', () => {
+  composedAuth(`
+    import assert from 'node:assert/strict';
+    const { auth, configureSender } = await import('./app/src/edge/auth.ts');
+    await auth.startEmail({ email: 'development@example.invalid' });
+    let sent;
+    configureSender((_email, code) => { sent = code; });
+    crypto.getRandomValues = array => { array.fill(0); return array; };
+    await auth.startEmail({ email: 'real-sender@example.invalid' });
+    assert.equal(sent, '000000', 'the next code must come from the random generator');
+    await assert.rejects(auth.verifyEmail({ email: 'real-sender@example.invalid', code: '123456' }), e => e.code === 'unauthenticated');
+    assert.equal((await auth.verifyEmail({ email: 'real-sender@example.invalid', code: sent })).created, true);
+  `, '123456', 'development');
+});
+
+test('a sender failure logs its type and a fixed message without vendor text', async () => {
+  const sink = memorySink(), log = createLog({ src: 'test', build: 'test', sink });
+  const auth = createAuth({
+    store: memoryStore(), now: () => NOW, verifyApple: async () => null, verifyGoogle: async () => null,
+    sendCode: () => { throw new TypeError('vendor-detail: rejected private-recipient@example.invalid'); },
+    log: () => log,
+  });
+  await assert.rejects(auth.startEmail({ email: 'private-recipient@example.invalid' }),
+    e => e instanceof Error && e.name === 'TypeError' && e.message === 'email code delivery failed');
+  const failure = sink.lines.map(line => JSON.parse(line)).find(line => line.event === 'call.end' && !line.ok);
+  assert.equal(failure.error.type, 'TypeError');
+  assert.equal(failure.error.msg, 'email code delivery failed');
+  assert.ok(!sink.text().includes('vendor-detail'));
+  assert.ok(!sink.text().includes('private-recipient'));
 });

@@ -544,18 +544,16 @@
       "path": "/v1/sources/health?site=ebay&need=sold",
       "status": 200,
       "response": {
+        "reads": [],
         "routes": [
           {
-            "route_id": "com.ebay.browse.sold",
+            "source_id": "ebay",
+            "route_id": "ebay.search.page",
             "site": "ebay",
-            "need": "sold",
-            "kind": "official_api",
-            "breaker": "closed",
-            "success": 0.97,
-            "p50_ms": 420,
-            "p95_ms": 1300,
-            "right_90d": 0.93,
-            "checked_at": "2026-11-15T04:00:00Z"
+            "group": "platform",
+            "lane": "harness",
+            "composed": false,
+            "paused_until": null
           }
         ]
       }

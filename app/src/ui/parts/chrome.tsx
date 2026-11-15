@@ -7,6 +7,7 @@ import { Icon, type IconName } from '../icon';
 import { alpha } from '../paint';
 import { Press } from '../press';
 import { Txt } from '../text';
+import { BrandMark } from '../brand-mark';
 import { OnGround, useColors } from '../theme';
 import { nudge, radius, size, space, type } from '../tokens.generated';
 import { IconButton } from './buttons';
@@ -49,11 +50,11 @@ export function Nav({ inbox, back, action }: {
 }
 
 function Wordmark() {
-  const clear = Math.ceil(type.t21.fontSize / 2), room = Math.round(type.t21.fontSize * nudge.display);
+  const room = Math.round(type.t21.fontSize * nudge.display);
   return (
-    <View {...mark('wordmark', { fit: 'content' })} accessibilityRole="header" style={{ flexDirection: 'row', alignItems: 'center', height: type.t21.lineHeight + 2 * room }}>
-      <Txt role="title">secondhand</Txt>
-      <View {...mark('hand', { side: 'right' })} style={{ width: clear }} />
+    <View {...mark('wordmark', { fit: 'content' })} accessibilityRole="header" style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: type.t21.lineHeight + 2 * room }}>
+      <BrandMark />
+      <Txt role="wordmark">secondhand</Txt>
     </View>
   );
 }

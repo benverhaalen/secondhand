@@ -13,7 +13,7 @@ ul { list-style: none; }
 .content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--ms-6); }
 
 /* type (Art. 6.12): 32 and up at leading 1.1 and tracking -0.02em; under 32 at 1.4 and 0 */
-.heading { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--mt-heading); line-height: 1.1; letter-spacing: -0.02em; white-space: nowrap; }
+.heading { font-family: var(--font-text); font-weight: var(--w-text); font-size: var(--mt-heading); line-height: 1.1; letter-spacing: -0.02em; white-space: nowrap; }
 .body { font-size: var(--mt-body); line-height: 1.1; letter-spacing: -0.02em; }
 .second { color: var(--ink-2); }
 [data-field] .second { color: var(--on-field-2); }

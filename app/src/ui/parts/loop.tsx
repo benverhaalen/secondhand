@@ -24,21 +24,22 @@ type Field = {
   value: string;
   onChange?: (next: string) => void;
   // headline: the text you type, 18 (Art. 6 roles). body: inside a sentence or a row, 15.
-  look?: 'headline' | 'body';
+  look?: 'headline' | 'body' | 'amount';
   // A number pad for an amount.
   numeric?: boolean;
 };
 
-function Editable({ id, name, value, onChange, look = 'headline', numeric, line, placeholder }: Field & { line: 'dotted' | 'solid'; placeholder?: string }) {
+function Editable({ id, name, value, onChange, look = 'headline', numeric, line, placeholder, live = false }: Field & { line: 'dotted' | 'solid'; placeholder?: string; live?: boolean }) {
   // Dotted is the agent's: its value sits on the lilac tint, in the ink every tint takes (Art. 9, The family).
   const agent = line === 'dotted' && !!value;
   const c = useColors(), ground = useGround();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const t = look === 'headline' ? type.t18 : type.t15;
+  const t = look === 'amount' ? type.t50 : type.t18;
+  const tinted = agent && look !== 'amount';
   const ink = ground === 'field' ? c.onField : c.ink;
-  const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: agent ? c.onColor : line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
-  const tint = agent ? { backgroundColor: c.lilacTint, paddingHorizontal: space.s1, borderTopLeftRadius: space.s1, borderTopRightRadius: space.s1 } : null;
+  const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: tinted ? c.onColor : line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
+  const tint = tinted ? { backgroundColor: c.lilacTint, paddingHorizontal: space.s1, borderTopLeftRadius: space.s1, borderTopRightRadius: space.s1 } : null;
   // A dotted guess the person opens and leaves as it is was still looked at: that confirms it, so it commits too.
   const commit = () => { setEditing(false); if (draft !== value || line === 'dotted') onChange?.(draft); };
   if (editing) {
@@ -49,13 +50,12 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
           accessibilityLabel={name}
           autoFocus
           value={draft}
-          onChangeText={setDraft}
+          onChangeText={next => { setDraft(next); if (live) onChange?.(next); }}
           onBlur={commit}
           onSubmitEditing={commit}
           keyboardType={numeric ? 'decimal-pad' : 'default'}
           selectTextOnFocus
-          // Inputs are at least 16, so iOS never zooms (frontend-standard §5); the text you type is 18.
-          style={{ fontSize: Math.max(16, t.fontSize), lineHeight: t.lineHeight, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: ink, padding: 0, outlineStyle: 'none' } as object}
+          style={{ ...t, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: ink, padding: 0, outlineStyle: 'none' } as object}
         />
       </View>
     );
@@ -63,7 +63,7 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   return (
     <Press id={id} label={`${name}: ${value || placeholder || 'empty'}`} onPress={() => { setDraft(value); setEditing(true); }} round={false} hit={{ top: 12, bottom: 12, left: 4, right: 4 }}>
       <View style={[{ alignSelf: 'flex-start', paddingBottom: 0 }, underline, tint]}>
-        <Txt role={look} tone={agent ? 'on-color' : value ? 'ink' : 'ink-2'}>{value || placeholder}</Txt>
+        <Txt role={look} tone={tinted ? 'on-color' : value ? 'ink' : 'ink-2'}>{value || placeholder}</Txt>
       </View>
     </Press>
   );
@@ -85,10 +85,10 @@ export function Guess({ id, name, value, onChange, look, numeric, changed }: Fie
 }
 
 // A field nobody knows yet. It shows the name of what is missing on a solid line, so the gap is plain to see and quick to fill.
-export function Blank({ id, name, value = '', onChange, look, numeric }: Omit<Field, 'value'> & { value?: string }) {
+export function Blank({ id, name, value = '', onChange, look, numeric, live = false }: Omit<Field, 'value'> & { value?: string; live?: boolean }) {
   return (
     <View {...mark('blank', { filled: value ? 'true' : 'false', fit: 'content' })} style={{ alignSelf: 'flex-start' }}>
-      <Editable id={id} name={name} value={value} look={look} numeric={numeric} line="solid" placeholder={name} onChange={onChange} />
+      <Editable id={id} name={name} value={value} look={look} numeric={numeric} line="solid" placeholder={name} onChange={onChange} live={live} />
     </View>
   );
 }

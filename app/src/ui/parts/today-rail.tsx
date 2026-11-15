@@ -9,7 +9,7 @@ export function TodayRail({ id, children }: { id: string; children: ReactNode })
   const cardWidth = width - space.gutter * 2 - space.s4;
   const closes = LinearTransition.duration(motion.select).easing(Easing.bezier(0.23, 1, 0.32, 1)).reduceMotion(ReduceMotion.System);
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} accessibilityLabel={id}
+    <ScrollView horizontal snapToInterval={cardWidth + space.s4} snapToAlignment="start" decelerationRate="fast" disableIntervalMomentum showsHorizontalScrollIndicator={false} accessibilityLabel={id}
       style={{ marginHorizontal: -space.gutter }}
       contentContainerStyle={{ paddingHorizontal: space.gutter, gap: space.s4, alignItems: 'stretch', paddingBottom: space.s2 }}>
       {Children.toArray(children).map((child, i) => (

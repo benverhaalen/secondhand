@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import type { State } from './select.ts';
 import { plan } from './plan.ts';
 import { memoryStore } from '../param/param.ts';
@@ -45,6 +46,24 @@ for (const fixture of walks) {
   assert.deepEqual(result,run(),`${name} deterministic full plan sequence`);
   assert.deepEqual(result,run({requested:false,measurements:['waist'],asks:[{type:'back',text:'Take a photo of the back.'}]}),`${name} Generate off leaves full output identical`);
   if(!shifted)t.diagnostic(`capture.questions ${name}=${result.questions}`);
+  if(name==='D Phone') {
+   const output=plans.map(({kind,...output})=>output);
+   assert.equal(createHash('sha256').update(JSON.stringify(output)).digest('hex'),'51df3302912ecdee915ad7d9873a45298361404ec241693390061e4e219e0ebc',
+    'phone output stays byte-identical apart from the renamed kind');
+   assert.ok(plans.every(p=>p.kind==='phones'));
+  }
+  if(initial.kind==='desktops') {
+   const optional=[...new Set(plans.flatMap(p=>p.questions.filter(q=>!q.required_by.length).map(q=>q.field)))];
+   assert.deepEqual(optional,name==='H Prebuilt desktop'?[]:name.endsWith('no screen')?['custom_build','system_info','part.graphics','part.processor']:['custom_build','system_info']);
+   if(name.startsWith('I ')) {
+    assert.equal(plans.at(-1)!.fields.find(f=>f.field==='model')!.value,'Custom build');
+    assert.ok(plans.every(p=>!p.questions.some(q=>q.field==='model')));
+   }
+  }
+  if(initial.kind==='laptops' || name.endsWith('screen read')) {
+   assert.ok(plans.every(p=>!p.questions.some(q=>q.field.startsWith('part.'))));
+   for(const field of ['part.memory','part.storage'])assert.equal(plans.at(-1)!.fields.find(f=>f.field===field)!.state,'known');
+  }
   if(initial.variants?.dimensions) {
    const fact=events.map(event=>event.patch.facts?.dimensions).findLast(fact=>fact!==undefined)!;
    const reading=fact.value as Record<string,number>;

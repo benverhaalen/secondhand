@@ -7,7 +7,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { View } from 'react-native';
 import { Icon, type IconName } from '../icon';
-import type { Gradient } from '../paint';
 import { Photo, type PhotoSrc } from '../photo';
 import { Press } from '../press';
 import { TAGS, type TagState } from '../states';
@@ -105,7 +104,6 @@ export type DecisionKind = 'need' | 'ship' | 'live' | 'paid' | 'sold' | 'stuck';
 export type DecisionStatus = 'open' | 'working' | 'done' | 'failed';
 export type Action = { id: string; label: string; onPress?: () => void };
 
-const GRADIENT: Partial<Record<DecisionKind, Gradient>> = { need: 'need', ship: 'sold', live: 'live', paid: 'paid' };
 
 export type DecisionCardProps = {
   id: string;
@@ -130,7 +128,6 @@ export type DecisionCardProps = {
   form?: 'single' | 'batch' | 'queue';
   // In a queue, how many more wait under this one. Two layers are drawn at most.
   waiting?: number;
-  // The one card on the screen that needs the person most takes its state's gradient (Art. 5, State gradients rule 2). The screen decides which.
   lead?: boolean;
   // The tag drawn quiet, its word kept: the screen says so when a header already names the state every card in it shares (U13).
   quiet?: boolean;
@@ -142,7 +139,6 @@ export function DecisionCard(p: DecisionCardProps) {
   const status = p.status ?? 'open';
   if (status === 'done') return null;
   const failed = status === 'failed';
-  const gradient = p.lead && !failed ? GRADIENT[p.kind] : undefined;
   const hours = p.due == null ? null : (p.due - now) / 3600000;
   const working = status === 'working';
   const fact: Fact = failed ? { label: p.step ?? `Could not ${p.primary.label.toLowerCase()}` } : p.fact;
@@ -150,7 +146,7 @@ export function DecisionCard(p: DecisionCardProps) {
   // failed or not, leads with the light fill, so a feed of ten offers is not ten black pills.
   const act = p.lead || (hours != null && hours < 1) ? 'primary' : 'second';
   const card = (
-      <Surface kind={gradient ? 'field' : 'card'} gradient={gradient} hours={hours} part="card-decision" box={{ height: size.cardDecisionH, padding: size.cardPad, gap: space.s3 }}>
+      <Surface kind="card" part="card-decision" box={{ height: size.cardDecisionH, padding: size.cardPad, gap: space.s3 }}>
         <Press id={`${p.id}-open`} label={p.title} onPress={p.onOpen} round={false}>
           <Body photo={p.photo} title={p.title} site={p.site} tag={failed ? 'failed' : p.kind} word={failed ? TAGS.failed.word : p.word} fact={fact} due={failed ? undefined : p.due} now={now} quiet={p.quiet && !failed} />
         </Press>

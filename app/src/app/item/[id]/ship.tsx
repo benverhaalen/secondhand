@@ -1,9 +1,11 @@
+import { SellerFulfillment } from '@/selling/fulfillment';
 // Ship: get a sold thing out the door before its ship-by time (spec/pages.md §6.9, spec/features/sold.md "Shipping").
 // The label the site issues, or one bought for the box the measurements give; every label due printed in one go, with
 // each one's progress and failure on its own row (the Shopify batch, sold.md "Batch print"); where to drop it off; and the
 // ways out (spec/ways-out.md §6.9): ship it myself, with tracking or without and what that costs, and Cancel sale.
 // Behavior: app/behavior/item/[id]/ship.json.
 // one at a time: ship-box (alternatives of one state each; .agents/checks/screens.mjs S2)
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking } from 'react-native';
@@ -50,6 +52,8 @@ export default function Ship() {
   // ?state= draws over the clearing world, or the flipper's six sales for dense (app/src/demo/screen.ts): one is this sale's
   // label alone, typical and dense the batch, empty a sale with nothing left to ship, and offline holds the print.
   const s = useScreen();
+  const { order } = useLocalSearchParams<{ order?: string }>();
+  if (!s.demo) return <SellerFulfillment id={String(p.id)} order={order} />;
   const asked = s.state;
   const base = p.world ? s.w : world(asked === 'dense' ? 'flipper' : 'clearing');
   // A state named in the URL wins over the double-sale case and over ?all, so every state opens from any of the page's links.
@@ -165,7 +169,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
           onPress={() => router.push(`/item/${mine.item.id}` as Href)} />
         {/* The way back to the sale on its site, and the site's own picture of the order to check the ship-by date against (Ben, 06:19). */}
         <Line>
-          {saleUrl ? <SiteLink id="ship-site" site={mine.order.site} onPress={() => { Linking.openURL(saleUrl).catch(e => log.error('ship.open', e)); }} /> : null}
+          {saleUrl ? <SiteLink id="ship-site" site={mine.order.site} onPress={() => { openMarketplace(saleUrl).catch(e => log.error('ship.open', e)); }} /> : null}
           <Pill id="ship-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setCopy(true)} />
         </Line>
       </Stack>
@@ -252,7 +256,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
       )}
 
       <SiteCopy id="ship-copy" open={copy} site={mine.order.site} onClose={() => setCopy(false)}
-        onOpen={() => { setCopy(false); if (saleUrl) Linking.openURL(saleUrl).catch(e => log.error('ship.open', e)); }} />
+        onOpen={() => { setCopy(false); if (saleUrl) openMarketplace(saleUrl).catch(e => log.error('ship.open', e)); }} />
 
       <Sheet open={open === 'self'} title="Ship it myself" onClose={() => setOpen(null)}>
         <Line>
@@ -262,7 +266,7 @@ function ShipSheet({ w, due, mine, startAll, offline }: { w: World; due: Due[]; 
         {tracked === 'with' ? (
           <Stack>
             <Guess id="self-carrier" name="Carrier" value={carrier} onChange={setCarrier} />
-            <Blank id="self-number" name="Tracking number" value={tracking} onChange={setTracking} />
+            <Blank id="self-number" live name="Tracking number" value={tracking} onChange={setTracking} />
           </Stack>
         ) : <Txt role="body">{NO_TRACKING}</Txt>}
         <Approve id="self-save" does={tracked === 'with' ? 'Mark shipped' : 'Mark shipped without tracking'} status={saving ? 'working' : 'ready'} step="Saving" onApprove={markShipped} />

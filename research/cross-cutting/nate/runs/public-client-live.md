@@ -90,6 +90,19 @@ What it says:
 - eBay refused the cloud browser's first request of the run at 12:28:39. The script stopped at the refusal, as a refusal must; nothing was retried. A 403 is the server's answer before any page code runs, so the navigation change cannot cause it (*inferred*). The orchestrator's cross-source benchmark ran from the same address around this time, which may have doubled the pace eBay saw (*not-found*: the overlap is not confirmed). The 32 eBay reads are rerun after the back-off, with no other run from this address.
 - Depop's 470 rows match the earlier 32-read run's 470; that run counted the 8 empty reads as answered. Depop's p50 is 0.91 s against 1.08 s then.
 
+### eBay alone, 12:39:50 to 12:45:23 UTC
+
+The same 32 queries, one read every 10.5 s, with no other run from this address (the orchestrator's benchmark had ended at 12:45 by its own record, so the 12:28 refusal fell inside it). Observed; nearest-rank over the answered reads; every log line kept outside the repo, none with a query.
+
+| Reads | Answered | Empty | Failed | Refused or challenged | Rows | Seconds, p50 | Seconds, p95 | Navigation to commit, typical |
+|---|---|---|---|---|---|---|---|---|
+| 32 | 29 | 2 | 1 (14.4 s: navigation 4.2 s, then an evaluation error) | 0 | 4,837 | 2.40 | 3.21 | 0.46 to 0.98 s |
+
+What it says:
+- SR7's bar is met: a 2.40 s median over 32 reads with the log kept, against 5.03 s before the in-page parser and the commit navigation.
+- The 10.35 s run is not reproduced. The orchestrator measured eBay at 7.97 s at the median when five lanes ran at once on one machine, against about 5 s alone ([cross-source benchmark](cross-source-benchmark-2026-11-15.md)), so contention on the machine fits it (*inferred*; that run kept no log).
+- 23 of the 29 answered reads returned their rows through the server-side fallback (`zero_cards`): the in-page parse found no card although the page had them, on pages of 16 to 240 rows; the 6 answered reads parsed in the page had 3 to 32 rows (and both empty reads parsed in the page). Rows were right either way; the fallback moves the page's HTML out, so fixing it should bring the fallback reads (1.8 to 3.3 s) toward the in-page ones (1.4 to 2.0 s) (*inferred*). It is the next eBay cut.
+
 ## Not shown
 
 No distribution (20 reads a site at the product's pace is the benchmark's job), no cost per read (browser minutes were not read back from the vendor), no sold search, no Facebook, no Mercari.

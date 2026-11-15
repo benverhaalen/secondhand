@@ -2,27 +2,34 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAuth, memoryStore } from '../auth.ts';
-import { deps, route } from './http.ts';
+import { ApiError, deps, resetRequestState, route, type Ctx } from './http.ts';
 import { example } from './examples.ts';
 import { makeAuthHandlers } from './auth.ts';
 import { makeMeHandlers } from './me.ts';
 import { createRuntime } from './runtime.ts';
+import { memoryVault } from '../browser/auth.ts';
 import { getJob, jobsOn } from './jobs.ts';
 import { memoryStore as eventStore, TABLES, type Store, type StoreState } from '../events/ports.ts';
 import type { Db, Vault } from '../data/data.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { checkLog } from '../../../../spec/log.mjs';
+import { mkdtempSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
+import { kv } from '../store/kv.ts';
+import { createBlobs, receiveUpload } from '../store/blobs.ts';
 
 const keys = (o: unknown): unknown => Array.isArray(o) ? (typeof o[0] === 'object' ? keys(o[0]) : 'array') : o && typeof o === 'object' ? Object.fromEntries(Object.keys(o).sort().map((k) => [k, keys((o as Record<string, unknown>)[k])])) : typeof o;
 const shape = (name: string) => keys((example(name) as { response: unknown }).response);
 
-async function world(workspace?: { db: Db; vault: Vault }) {
+async function world(workspace?: { db: Db; vault: Vault }, blobs?: ReturnType<typeof createBlobs>) {
   let t = Date.parse('2026-11-15T03:00:00Z'); const store = memoryStore();
   const sink = memorySink(), log = createLog({ src: 'edge.me.test', build: 'test', sink });
-  const runtime = createRuntime(eventStore(), log, { now: () => t });
+  const runtime = createRuntime(eventStore(), log, { now: () => t, vault: memoryVault() });
   const auth = createAuth({ store, now: () => t, verifyApple: async (k) => ({ subject: k }), verifyGoogle: async () => null, sendCode: () => {} });
-  deps.verify = auth.verifyAccess; deps.idem.clear(); deps.now = () => t; deps.log = log;
-  const a = makeAuthHandlers(auth, store), m = makeMeHandlers({ store, auth, now: () => t, runtime, workspace });
+  deps.verify = auth.verifyAccess; resetRequestState(); deps.now = () => t; deps.log = log;
+  const a = makeAuthHandlers(auth, store), m = makeMeHandlers({ store, auth, now: () => t, runtime, workspace, blobs });
   const r = {
     apple: route('POST /v1/auth/apple', a.apple, { auth: 'none' }), get: route('GET /v1/me', m.get), patch: route('PATCH /v1/me', m.patch), del: route('DELETE /v1/me', m.delete),
     exp: route('POST /v1/me/export', m.export), sget: route('GET /v1/me/style', m.styleGet), spatch: route('PATCH /v1/me/style', m.stylePatch),
@@ -31,7 +38,7 @@ async function world(workspace?: { db: Db; vault: Vault }) {
   const call = (f: (q: Request) => Promise<Response>, method: string, path: string, bearer: string, body?: unknown) =>
     f(new Request(`http://x${path}`, { method, body: body === undefined ? undefined : JSON.stringify(body), headers: { Authorization: `Bearer ${bearer}` } }));
   const user = async (sub: string) => (await (await r.apple(new Request('http://x/v1/auth/apple', { method: 'POST', body: JSON.stringify({ identity_token: sub, nonce: 'n' }) }))).json()) as { access_token: string; user: { id: string } };
-  return { r, call, user, runtime, sink, m, tick: (ms: number) => { t += ms; } };
+  return { r, call, user, runtime, store, sink, m, tick: (ms: number) => { t += ms; } };
 }
 
 function seedPerson(st: Store, user_id: string) {
@@ -53,7 +60,7 @@ test('DELETE removes all owned Store data and vault sign-ins, preserves the othe
   const res = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token);
   assert.equal(res.status, 202);
   const purge = await res.json() as { id: string; kind: string; state: string };
-  assert.equal(purge.kind, 'delete_user'); assert.equal(purge.state, 'queued');
+  assert.equal(purge.kind, 'delete_user'); assert.equal(purge.state, 'done');
   assert.deepEqual(st.exportUser(b.user.id), before, 'every other-person row and count is unchanged');
   assert.equal(await w.runtime.vault.get(`vault/${a.user.id}`), undefined);
   assert.equal(await w.runtime.vault.get(`stale/${a.user.id}`), undefined);
@@ -67,18 +74,35 @@ test('DELETE removes all owned Store data and vault sign-ins, preserves the othe
   assert.ok(!w.sink.text().includes(`vault/${a.user.id}`), 'logs cannot carry vault references');
 });
 
-test('workspace purge stays queued with a visible reason when no Db port is configured', async () => {
+test('with no workspace port the purge job is done, not parked, so nothing waits on a missing port', async () => {
   const w = await world(), a = await w.user('a');
-  const response = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token), job = await response.json() as { id: string };
-  assert.equal(await w.runtime.pipeline.runOnce(100), 0, 'unconfigured purge must not be run by the generic worker');
+  const response = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token), job = await response.json() as { id: string; state: string };
+  assert.equal(job.state, 'done');
   const stored = w.runtime.store.getJob(job.id)!;
-  assert.equal(stored.state, 'queued'); assert.equal(stored.reason, 'workspace port not configured');
-  // The deleted session is gone; inspect the same GET handler with the owner's context.
-  const get = route('GET /v1/jobs/:id', getJob(jobsOn(w.runtime.store)));
-  deps.verify = async () => a.user.id;
-  const res = await w.call(get, 'GET', `/v1/jobs/${job.id}`, 'owner-context');
-  const visible = await res.json() as { state: string; reason: string };
-  assert.equal(res.status, 200); assert.equal(visible.state, 'queued'); assert.equal(visible.reason, 'workspace port not configured');
+  assert.equal(stored.state, 'done'); assert.equal(stored.paused, undefined); assert.equal(stored.reason, undefined);
+});
+
+// A minimal JPEG: SOI, one scan, EOI.
+const tinyJpeg = Buffer.from('ffd8ffda0008010100003f00ffd9', 'hex');
+async function uploadPhoto(blobs: ReturnType<typeof createBlobs>, user_id: string, photo_id: string) {
+  const { url } = blobs.target({ user_id, capture_id: `cap_${photo_id}`, photo_id, content_type: 'image/jpeg', max_bytes: 10000 });
+  await receiveUpload(blobs, url.split('/').pop()!, async () => tinyJpeg);
+}
+
+test('DELETE removes the person photo files and blob rows and leaves the other person photo', async t => {
+  const db = new DatabaseSync(':memory:'), store = kv(db), dir = mkdtempSync(join(tmpdir(), 'me-photos-'));
+  t.after(() => db.close());
+  const blobs = createBlobs({ kv: store, dir, origin: 'http://x', log: createLog({ src: 'test', build: 'test', sink: memorySink() }) });
+  const w = await world(undefined, blobs), a = await w.user('a'), b = await w.user('b');
+  await uploadPhoto(blobs, a.user.id, 'ph_a1'); await uploadPhoto(blobs, a.user.id, 'ph_a2'); await uploadPhoto(blobs, b.user.id, 'ph_b1');
+  assert.ok(await blobs.read(a.user.id, 'ph_a1')); assert.ok(existsSync(join(dir, 'blobs', a.user.id, 'ph_a1')));
+  assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 202);
+  assert.equal(existsSync(join(dir, 'blobs', a.user.id)), false, 'the person photo folder is gone');
+  assert.equal(await blobs.read(a.user.id, 'ph_a1'), undefined);
+  assert.equal(store.get('blobs', JSON.stringify([a.user.id, 'ph_a1'])), undefined, 'blob rows are gone');
+  assert.equal(store.get('blobs', JSON.stringify([a.user.id, 'ph_a2'])), undefined);
+  assert.ok(await blobs.read(b.user.id, 'ph_b1'), 'the other person photo stays');
+  assert.ok(store.get('blobs', JSON.stringify([b.user.id, 'ph_b1'])));
 });
 
 test('configured workspace purge uses data.ts to delete and scan only the deleted person', async () => {
@@ -133,9 +157,9 @@ test('a vault failure still attempts every sign-in, revokes sessions, tracks the
   const res = await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token);
   assert.equal(res.status, 503, 'failed vault cleanup must never be acknowledged as complete');
   const error = await res.json() as { job_id: string };
-  assert.deepEqual(attempted, refs, 'one failure cannot skip the remaining sign-ins');
+  assert.deepEqual(attempted, [...refs, `push/${a.user.id}`], 'one failure cannot skip the remaining sign-ins or push registration');
   assert.equal(await w.runtime.vault.get(refs[1]), undefined); assert.ok(await w.runtime.vault.get(other));
-  assert.equal(st.getJob(error.job_id)?.kind, 'delete_user'); assert.equal(st.getJob(error.job_id)?.state, 'queued');
+  assert.equal(st.getJob(error.job_id)?.kind, 'delete_user'); assert.equal(st.getJob(error.job_id)?.state, 'failed');
   assert.equal(st.getJob(error.job_id)?.error?.code, 'vault_delete_failed');
   assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 401);
   assert.ok(!w.sink.text().includes(privateDetail)); assert.ok(!JSON.stringify(error).includes(privateDetail));
@@ -209,6 +233,71 @@ test('PATCH notifications with a push token: push_registered, example key set, a
   assert.deepEqual(keys(b), { ...(shape('me.patch.notifications') as object), onboarding: keys(b.onboarding) }); assert.ok(!JSON.stringify(b).includes('ExponentPushToken'));
   assert.equal((await (await w.call(w.r.get, 'GET', '/v1/me', a.access_token)).json()).notification_pref.length, 1);
 });
+test('push token belongs in the vault behind a user ref, stays out of GET and export, and DELETE removes it', async () => {
+  const w = await world(), a = await w.user('push-owner'), token = crypto.randomUUID(), ref = `push/${a.user.id}`;
+  const res = await w.call(w.r.patch, 'PATCH', '/v1/me', a.access_token, { version: 1, push_token: token });
+  assert.equal(res.status, 200);
+  const user = await w.store.getUser(a.user.id);
+  assert.equal(user?.push_token_ref, ref);
+  assert.ok(!JSON.stringify(user).includes(token));
+  assert.deepEqual(await w.runtime.vault.get(ref), { cookies: [], origins: [], push_token: token });
+  const visible = await (await w.call(w.r.get, 'GET', '/v1/me', a.access_token)).text();
+  assert.ok(!visible.includes(token)); assert.ok(!visible.includes(ref));
+  const exp = await (await w.call(w.r.exp, 'POST', '/v1/me/export', a.access_token)).json() as { id: string };
+  const exported = await (await w.call(w.r.job, 'GET', `/v1/jobs/${exp.id}`, a.access_token)).text();
+  assert.ok(!exported.includes(token)); assert.ok(!exported.includes(ref));
+  assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 202);
+  assert.equal(await w.runtime.vault.get(ref), undefined);
+  assert.ok(!w.sink.text().includes(token));
+});
+
+test('stale push token patch writes nothing and concurrent patches store only the winning token', async () => {
+  const w = await world(), a = await w.user('push-race'), ref = `push/${a.user.id}`;
+  const tokens = [crypto.randomUUID(), crypto.randomUUID()];
+  const results = await Promise.all(tokens.map(push_token => w.call(w.r.patch, 'PATCH', '/v1/me', a.access_token, { version: 1, push_token })));
+  assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
+  const winner = results.findIndex(r => r.status === 200);
+  assert.deepEqual(await w.runtime.vault.get(ref), { cookies: [], origins: [], push_token: tokens[winner] });
+  const before = await w.runtime.vault.snapshot(ref);
+  assert.equal((await w.call(w.r.patch, 'PATCH', '/v1/me', a.access_token, { version: 1, push_token: crypto.randomUUID() })).status, 409);
+  assert.deepEqual(await w.runtime.vault.snapshot(ref), before);
+});
+
+test('DELETE racing the first push token PATCH removes the token even when its user snapshot has no ref', async () => {
+  const w = await world(), a = await w.user('push-delete-race'), token = crypto.randomUUID();
+  const ctx: Ctx = { user_id: a.user.id, visitor_id: null, request_id: 'push-delete-race', body: { version: 1, push_token: token }, log: deps.log,
+    params: {}, query: new URLSearchParams(), headers: new Headers() };
+  const [patch, deleted] = await Promise.all([
+    w.m.patch(ctx).catch((error: unknown) => {
+      assert.ok(error instanceof ApiError); assert.equal(error.code, 'stale'); return { status: 409 };
+    }),
+    w.m.delete(ctx),
+  ]);
+  assert.ok([200, 409].includes(patch.status)); assert.equal(deleted.status, 202);
+  assert.equal(await w.runtime.vault.get(`push/${a.user.id}`), undefined);
+});
+
+test('a push PATCH admitted before DELETE cannot recreate its token after vault cleanup', async () => {
+  const w = await world(), a = await w.user('push-admitted-before-delete');
+  const ctx: Ctx = { user_id: a.user.id, visitor_id: null, request_id: 'admitted-before-delete', body: { version: 1, push_token: crypto.randomUUID() }, log: deps.log,
+    params: {}, query: new URLSearchParams(), headers: new Headers() };
+  assert.equal((await w.m.delete(ctx)).status, 202);
+  await assert.rejects(w.m.patch(ctx), (error: unknown) => {
+    assert.ok(error instanceof ApiError); assert.equal(error.code, 'stale'); return true;
+  });
+  assert.equal(await w.runtime.vault.get(`push/${a.user.id}`), undefined);
+});
+
+test('a fresh sign-in after DELETE can register push again using the current user version', async () => {
+  const w = await world(), a = await w.user('push-returning');
+  assert.equal((await w.call(w.r.del, 'DELETE', '/v1/me', a.access_token)).status, 202);
+  const returning = await w.user('push-returning');
+  const current = await (await w.call(w.r.get, 'GET', '/v1/me', returning.access_token)).json() as { version: number };
+  const token = crypto.randomUUID();
+  const res = await w.call(w.r.patch, 'PATCH', '/v1/me', returning.access_token, { version: current.version, push_token: token });
+  assert.equal(res.status, 200);
+  assert.deepEqual(await w.runtime.vault.get(`push/${returning.user.id}`), { cookies: [], origins: [], push_token: token });
+});
 test('PATCH tutorial_seen matches its example key set', async () => {
   const w = await world(); const a = await w.user('a');
   assert.deepEqual(keys(await (await w.call(w.r.patch, 'PATCH', '/v1/me', a.access_token, { version: 1, tutorial_seen: true })).json()), shape('me.patch.tutorial_seen'));
@@ -242,10 +331,14 @@ test('delete ends the sessions: the token is 401 afterwards', async () => {
 });
 test('style get matches the example key set; patch edits, removes, bumps the version, and is 409 when stale', async () => {
   const w = await world(); const a = await w.user('a');
-  const g = await (await w.call(w.r.sget, 'GET', '/v1/me/style', a.access_token)).json(); assert.deepEqual(keys(g), shape('me.style.get'));
-  const body = { version: g.version, facets: [{ name: 'size', value: 'L', weight: 0.9, pinned: true }, { name: 'era', value: '1990s', remove: true }] };
+  const g = await (await w.call(w.r.sget, 'GET', '/v1/me/style', a.access_token)).json();
+  assert.deepEqual(Object.keys(g).sort(), Object.keys(shape('me.style.get') as Record<string, unknown>).sort());
+  assert.deepEqual(g.facets, [], 'a new person starts with no taste facets, never the example ones');
+  const added = await (await w.call(w.r.spatch, 'PATCH', '/v1/me/style', a.access_token, { version: g.version, facets: [{ name: 'size', value: 'L' }, { name: 'era', value: '1990s' }] })).json();
+  assert.equal(added.version, g.version + 1); assert.deepEqual(keys(added), shape('me.style.patch'));
+  const body = { version: added.version, facets: [{ name: 'size', value: 'L', weight: 0.9, pinned: true }, { name: 'era', value: '1990s', remove: true }] };
   const p = await w.call(w.r.spatch, 'PATCH', '/v1/me/style', a.access_token, body); assert.equal(p.status, 200);
-  const b = await p.json(); assert.deepEqual(keys(b), shape('me.style.patch')); assert.equal(b.version, g.version + 1);
+  const b = await p.json(); assert.deepEqual(keys(b), shape('me.style.patch')); assert.equal(b.version, added.version + 1);
   assert.equal(b.facets.find((f: { name: string }) => f.name === 'size').from, 'edited'); assert.ok(b.facets.find((f: { name: string }) => f.name === 'era').removed_at);
   assert.equal((await w.call(w.r.spatch, 'PATCH', '/v1/me/style', a.access_token, body)).status, 409);
 });

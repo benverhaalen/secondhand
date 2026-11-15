@@ -6,26 +6,32 @@ import type { ParamStore } from '../param/param.ts';
 import { SITES } from '../../../../spec/sites.mjs';
 export type { State, Fact } from './select.ts';
 
-export type Question = {
+// One clarifying question, shared by capture and the buying chat (spec/engines/capture.md section 4, "The question block").
+export type Ask = {
   id: string;
   field: string;
-  fields?: string[];
-  kind: AskKind|'shot';
-  options: {value: unknown; proposed: boolean; label?: string; rests_on?: string[]}[];
+  kind: AskKind;
+  words: string;
+  options: {value: unknown; proposed: boolean; label?: string; rests_on?: string[]; cites?: string[]}[];
   other: boolean;
   max_length?: number;
   unit?: string;
   units?: string[];
   parts?: string[];
-  shot?: {step: string; reason: 'retake'|'add'; for?:'studio'; zone?:string; flaw_kind?:string};
   why: 'required'|'confirm'|'value'|'only_you_know';
-  required_by: Target[];
-  unlocks: {required: number; ready_after: Target[]};
-  words: string;
+  replaces?: string;
   answer: {method: 'PATCH'|'POST'; path: string};
 };
+// Capture's question is an Ask plus what only capture has.
+export type Question = Omit<Ask, 'kind'> & {
+  kind: AskKind|'shot';
+  fields?: string[];
+  shot?: {step: string; reason: 'retake'|'add'; for?:'studio'; zone?:string; flaw_kind?:string};
+  required_by: Target[];
+  unlocks: {required: number; ready_after: Target[]};
+};
 type Resolved = {row: FieldRow; resolution: Resolution};
-type Candidate = {question: Question; rows: FieldRow[]};
+type Candidate = {question: Question; rows: FieldRow[]; rank?: number};
 type ShotGroup = {shot: NonNullable<Resolution['shot']>; rows: FieldRow[]};
 
 function siteFieldRows(state: State, captureRows: FieldRow[]): FieldRow[] {
@@ -168,7 +174,8 @@ function addUnlocks(candidates: Candidate[], resolved: Resolved[], rows: FieldRo
 }
 
 function orderQuestions(candidates: Candidate[], state: State, params: ParamStore): void {
-  const first = (candidate: Candidate) => candidate.question.field === 'type' ? 0 : candidate.question.field === 'lot_count' ? 1 : 2;
+  const first = ({question,rows}: Candidate) => question.field === 'type' ? 0 : question.field === 'lot_count' ? 1 : rows.some(row=>row.shapes) ? 2 : 3;
+  const rank = (candidate: Candidate) => candidate.rank ?? Math.min(...candidate.rows.map(row=>row.rank ?? Infinity));
   const entropy = (field: string) => {
     const scores=Object.values(state.candidate_detail?.[field] ?? {}).map(option=>option.c).filter(score=>score>0);
     const sum=scores.reduce((total,score)=>total+score,0);
@@ -183,8 +190,9 @@ function orderQuestions(candidates: Candidate[], state: State, params: ParamStor
     const required = b.question.unlocks.required - a.question.unlocks.required;
     const ready = b.question.unlocks.ready_after.length - a.question.unlocks.ready_after.length;
     const recommendation = recommended(b.rows) - recommended(a.rows);
+    const ranked = rank(a) < rank(b) ? -1 : rank(a) > rank(b) ? 1 : 0;
     const cost = effort(a.question) - effort(b.question);
-    return priority || information || required || ready || recommendation || cost || compare(a.question.field,b.question.field);
+    return priority || information || required || ready || recommendation || ranked || cost || compare(a.question.field,b.question.field);
   });
 }
 
@@ -229,6 +237,17 @@ export function plan(state: State, params: ParamStore) {
   const candidates = fieldQuestions(resolved,state,complete,shooting,siteRows);
   const {candidates:shotsToAsk} = shotQuestions(resolved,state,keys,shooting);
   candidates.push(...shotsToAsk);
+  const read=selected.read;
+  if(read && !shooting && !keys.includes(read.step) && state.lookups!=='running' &&
+    !state.kept.includes(read.step) && !state.refused.includes(read.step) &&
+    (selected.after ?? []).every(field=>['known','refused'].includes(fieldState(selected.rows.find(row=>row.field===field)!,state,keys,params).state))) {
+    const parts=resolved.filter(({row,resolution})=>row.field.startsWith('part.') && row.ways.some(way=>way.way==='asked') && resolution.state!=='known');
+    if(parts.length)candidates.push({rows:parts.map(({row})=>row),rank:0,question:{
+      id:`q_${state.capture_id}_${read.step}`,field:read.step,kind:'shot',options:[],other:false,
+      shot:{step:read.step,reason:'add'},why:'value',required_by:[],unlocks:{required:0,ready_after:[]},words:read.words,
+      answer:{method:'POST',path:`/v1/captures/${state.capture_id}/photos`},
+    }});
+  }
   if(state.studio?.requested && !shooting)for(const ask of state.studio.asks) {
     const step=studioStep(ask);
     if(ask.type==='measure' || state.kept.includes(step) || candidates.some(candidate=>candidate.question.shot?.for==='studio' && candidate.question.shot.step===step))continue;

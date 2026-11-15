@@ -1,7 +1,6 @@
 // The numbers behind the You dashboard (Ben 06:19: "I want to know my sales, I want to know my listings, I want to know how
 // they're doing ... how much I could earn"). Pure functions of the world, so the page draws and never computes.
 // Imports carry .ts so node --test reads this file without the app's bundler.
-import { PRODUCTS } from '../demo/market.ts';
 import { insights, records, type Item, type Listing, type Site, type World } from '../demo/index.ts';
 import { keep } from '../engines/valuation/keep.ts';
 
@@ -89,7 +88,7 @@ export function pulse(w: World): Pulse[] {
   };
   const sold = insights(w).by_site;
   const usualDays = (i: Item, l: Listing): number | null => l.market_standing?.outlook?.days_hi
-    ?? PRODUCTS.find(p => p.id === i.product_id)?.by_site.find(s => s.site === l.site)?.median_days
+    ?? w.products.find(p => p.id === i.product_id)?.by_site.find(s => s.site === l.site)?.median_days
     ?? sold.find(s => s.site === l.site)?.days_to_sell ?? null;
   const rows = items.map(i => {
     const ls = i.listings.filter(live);

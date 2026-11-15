@@ -133,6 +133,17 @@ test('wants: malformed field values name the validation failure', async () => {
   }
 });
 
+test('wants: invalid schedule minutes are refused before they can block recurring work', async () => {
+  const e = examples.find(e => e.name === 'wants.patch')!;
+  const before = store.get('want', 'usr_8f2k', 'want_3ss');
+  for (const schedule of [{}, { every_min: 0 }, { every_min: -1 }, { every_min: '30' }]) {
+    const response = await call(e, { body: { version: 1, schedule } });
+    assert.equal(response.status, 400, JSON.stringify(schedule));
+    assert.deepEqual((await response.json()).fields, ['schedule']);
+    assert.deepEqual(store.get('want', 'usr_8f2k', 'want_3ss'), before);
+  }
+});
+
 test('wants: owned Expo files bind auth and export the contract method', async () => {
   const { readFileSync } = await import('node:fs');
   for (const entry of manifest) {
@@ -218,6 +229,22 @@ test('watch: real matches and monitor checkpoints persist and paused wants do no
   assert.deepEqual(runWant(store, want.id, listings, [], opts).push, []);
 });
 
+test('watch: paused, ended and deleted wants do not write checkpoints or matches', () => {
+  for (const edits of [{ state: 'paused' }, { state: 'ended' }, { deleted: true }]) {
+    const row = store.get('want', 'usr_8f2k', 'want_3ss')!;
+    store.put('want', { ...row, state: 'active', ...edits });
+    const before = JSON.stringify(store.exportUser('usr_8f2k'));
+    runWant(store, row.id, [], [], { user_id: 'usr_8f2k', now: new Date(), localHour: 12, checked: { ebay: new Date().toISOString() } });
+    assert.equal(JSON.stringify(store.exportUser('usr_8f2k')), before, JSON.stringify(edits));
+  }
+});
+
+test('watch: an unavailable site cannot mark its stored matches gone', () => {
+  const match = store.get('match', 'usr_8f2k', 'mt_77')!;
+  runWant(store, 'want_3ss', [], [], { user_id: 'usr_8f2k', now: new Date(), localHour: 12, behind: [String(match.site)] });
+  assert.deepEqual(store.get('match', 'usr_8f2k', match.id), match);
+});
+
 test('watch: generated matches keep API money envelopes', async () => {
   const result = runWant(store, 'want_3ss', [{ id: 'ls_test', title: 'J97', route_id: 'test', condition: 'used', relation: 'same_product' as const, site: 'ebay', listing_id: 'api-money', url: 'https://ebay.com/itm/api-money', price_cents: 4000, delivered_cents: 4500, size: 'XL', also_on: [], shipping_estimated: false, shipping_cents: 500, tax_rate: 0 }], [], { user_id: 'usr_8f2k', now: new Date(), localHour: 12 });
   const response = await call(examples.find(e => e.name === 'wants.matches')!);
@@ -261,4 +288,28 @@ test('wants: file store reopening preserves seed versions and edits', async () =
     assert.equal(reopened.get('want', 'usr_8f2k', row.id)?.state, 'paused');
     assert.equal(reopened.get('want', 'usr_8f2k', row.id)?.version, 2);
   } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('want from the camera: product_id and capture_id are kept, and only the caller\'s own capture is accepted', async () => {
+  const { resetCaptures } = await import('./captures.ts');
+  resetCaptures(); // seeds cap_3n9q for usr_8f2k
+  const create = examples.find(e => e.name === 'wants.create')!;
+  const base = create.request!.body as Record<string, unknown>;
+  let n = 0;
+  const post = (body: unknown, token?: string) => call(create, { body, token, headers: { 'Idempotency-Key': 'camera_' + n++ } });
+  const r = await post({ ...base, product_id: 'pr_4hd1', capture_id: 'cap_3n9q' });
+  assert.equal(r.status, 201);
+  const made = await r.json();
+  assert.equal(made.product_id, 'pr_4hd1'); assert.equal(made.capture_id, 'cap_3n9q');
+  const read = await call(examples.find(e => e.name === 'wants.get')!, { path: '/v1/wants/' + made.id });
+  const stored = await read.json();
+  assert.equal(stored.product_id, 'pr_4hd1'); assert.equal(stored.capture_id, 'cap_3n9q');
+  const foreign = await post({ ...base, capture_id: 'cap_3n9q' }, 'other');
+  assert.equal(foreign.status, 404); assert.equal((await foreign.json()).code, 'not_found');
+  assert.equal(store.rows('want', { user_id: 'usr_other' }).length, 0);
+  assert.equal((await post({ ...base, capture_id: 'cap_missing' })).status, 404);
+  for (const bad of [{ product_id: 7 }, { product_id: '' }, { capture_id: 'cap 3n9q' }, { product_id: 'pr_4hd1; drop' }, { capture_id: null }]) {
+    const refused = await post({ ...base, ...bad });
+    assert.equal(refused.status, 400, JSON.stringify(bad)); assert.equal((await refused.json()).code, 'invalid');
+  }
 });

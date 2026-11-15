@@ -1553,7 +1553,7 @@ Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.
 Nate, build session (orchestrator), 2026-11-15 about 04:00 Central, after the integration lead found the benchmark's item set unfilled.
 > Oh wow, well ensure workers aren't going to get confused and all wait in a way that connects to it working, that they check through all docs and that you have expert data scientists and ai software engineers, databricks professional subagents, sweep over the spec of whats imagined and suggest improvements
 
-Used in: [who is waiting on what](../spec/plans/waiting.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+Used in: [who is waiting on what](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
 
 ## 2026-11-15 nate the reviewers know what we are trying to outperform, and the benchmark may run alongside
 Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages, the second a minute after the first.
@@ -1561,7 +1561,7 @@ Nate, build session (orchestrator), 2026-11-15 about 04:10 Central. Two messages
 
 > or let everything go its cool if they can benchmark at the same time
 
-Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/waiting.md).
+Used in: the three expert sweeps under `spec/plans/sweep/`; [who is waiting on what](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
 
 ## 2026-11-15 nano banana stays, app store coming soon, the voice waits
 Ben, project chat, 08:33 UTC, answering the image model, App Store and capture voice questions.
@@ -1586,7 +1586,7 @@ Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Po
 
 > just the poshmark one
 
-Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
 
 ## 2026-11-15 nate mercari under the person's approval, broad search through sites that already show it, ebay on the harness until the api is approved
 Nate, build session (orchestrator), 2026-11-15 about 05:15 Central, after the Mercari harness build quoted Mercari's rule against automated access.
@@ -1630,19 +1630,19 @@ Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages
 
 > read ebay pages anyway
 
-Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
+Used in: [what Ben's packets ask of the backend](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratorhow-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
 
 ## 2026-11-15 nate dimensions come from the published ones first, not from a required tape
 Nate, build session (orchestrator), 2026-11-15 about 06:30 Central, after the orchestrator relayed Ben's studio rule as "no AI redraw without a tape measurement".
 > So bens request wasn't to require that we rely on tape measurement, it was misinterpreted so please don't change that. Its only sensible to first rely on the published dimensions, if it was reliably identified, now too tables can be similar with a slight variation, but our system is built accurate enough to assess what certainty it is in each and intelligent generate ui inputs to clarify
 
-Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
+Used in: [what Ben's packets ask of the backend](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratorhow-we-take-these), [packet 67](../.agents/team/packets/team/67-nates-rulings-and-where-they-meet-bens-plans.md).
 
 ## 2026-11-15 nate the system always prices with fallbacks, and its power is what it weighs in real time
 Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the leads confirmed stronger forms of Ben's asks, among them a bar on automatic pricing that needed thirty sales in a cell.
 > Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
 
-Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+Used in: [what Ben's packets ask of the backend](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratorhow-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
 
 ## 2026-11-15 ben a bug may be fixed if the same system generalizes; claim the most each experiment allows without lying
 Ben, project timeline, 08:49 and 08:54 UTC, after the first StockX backtest and its fix. Two messages.
@@ -1725,7 +1725,7 @@ Used in: `research/data/nate/data-services-on-marketplace-apis.md` when it lands
 Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
 > Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
 
-Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
+Used in: the completion table on [the board](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
 
 ## 2026-11-15 nate correct the answers that come in, and check the engines' spec makes scientific sense and the real-time gathering works
 Nate, build session (orchestrator), 2026-11-15 about 11:30 Central.
@@ -1790,7 +1790,7 @@ Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-
 Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
 > Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
 
-Used in: [state of completion](../spec/plans/completion.md).
+Used in: [state of completion](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
 
 ## 2026-11-15 nate the apple account is his, and the first testflight build is the demo we improve
 Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is left out of this public file.
@@ -1995,7 +1995,7 @@ Used in: [packet 69](../.agents/team/packets/team/69-integration-handoff.md), [j
 Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
 > The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
 
-Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
+Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator`.
 
 ## 2026-11-15 nate show how the engine weighs what it learned, with genie answering and every way databricks helped
 Nate, orchestrator's session, 2026-11-15, about 07:45 Central.
@@ -2055,7 +2055,7 @@ Used in: `spec/engines/capture.md` §7 (the Swift capture module), `.agents/team
 Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
 > Lets wrap up models as they stand when finished on whats currently happening. End all extra sessions and ill archive. We'll review through all of the project. The ios build, website, backend system and every feature. Fully launch with the /goal to fully complete all aspects. Focus then on the presentation, highlighting everything, Which in a way will depend on how we market the site. I know ben did alot of work on that, and we'll get to it after everything wraps currently, we assess what works, what doesnt, whats left. Ensure every aspect of our half is finished, then wait on ben or help, then one will focus on finishing the site, the other testing the ui/ux, capture, and all app stuff. But the mac can test things humans dont need to do
 
-Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator` (the review).
 
 
 ## 2026-11-15 Shared header, icon-only navigation and lowercase display type
@@ -2306,3 +2306,446 @@ Ben, Codex:
 > yes i agree with this stat: "**84% fewer big pricing misses" save this but ensure to not leave out a link for more in depth into it.**
 
 The approved wording and its scope are in [How we measured pricing misses](pitch.md#how-we-measured-pricing-misses).
+## 2026-11-15 nate dupe's copies of listings already read are dropped, its new ones kept
+Nate, search lead's session, 2026-11-15, about 06:55 Central, after the app-wiring lead measured Dupe returning Poshmark listings the direct Poshmark read already had ("you called poshmark twice").
+> dupes arent considered if copies, if they are new then they are read as additional info, but duplicates from dupe are dropped
+
+Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search), SR11.
+
+## 2026-11-15 nate engine valuations drive the ai; google shopping through treg for ebay prices
+Nate, engines lead's session, 2026-11-15, about 06:50 Central, after the lead said rows that may not be modelled on price a shown range and never a fit.
+> why shouldnt valuation fit into the models? I though we could drive ai utilizing engine valuations
+
+> if it complicates things for a certain area, look like google shopping pages reveal the price of ebay products, im sure treg has something
+
+Used in: the engines lead's answer (engine outputs feed the conversation and our own sales calibrate the engine; the rights limit is only on fitting from rows a source's terms bar, [data use](../spec/data-use.md)); routed to the search lead as a source and to the data lead for the fits.
+
+## 2026-11-15 nate apify rows never fit a model
+Nate, engines lead's session, 2026-11-15, about 07:00 Central, answering "May Apify rows also be used to fit the nightly models?" (buttons "Yes, Apify too" and "Keep fits clean").
+> no keep fits clean
+
+Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1. Changed by Nate minutes later: [Apify rows may fit the models](#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate).
+
+## 2026-11-15 nate apify rows may fit the models; real-time scores per market on each platform, extremely accurate
+Nate, engines lead's session, 2026-11-15, about 07:05 Central. He changes the answer of a few minutes earlier ([apify rows never fit a model](#2026-11-15-nate-apify-rows-never-fit-a-model)), answering the same question, "May Apify rows also be used to fit the nightly models?".
+> Yes, Apify too
+
+> Make it extremly accurate we are benchmarking and showing depth and credibility with our realtime score metrics generated and assigned to each market within a specific platfrom
+
+Read by the engines lead: Apify rows may fit the nightly models. eBay content stays out of fits under eBay's terms ([data use](../spec/data-use.md)), including eBay rows that came through an Apify actor, until Nate says otherwise. The second line asks for real-time accuracy scores for each market (a platform and a kind of item), built in [valuation.md §9](../spec/engines/valuation.md#real-time-market-scores).
+
+## 2026-11-15 nate our own page read; is a website's read driven by the visitor's browser?
+Nate, orchestrator's session, 2026-11-15, about 08:05 Central, after the cross-source benchmark (our eBay page read against the paid actor).
+> lets do our page read, and for websites its driven with something using their browser of some sort?
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the search lead's rows.
+
+## 2026-11-15 nate understand how Databricks shapes dynamic pricing
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Understand how databricks shapes dynamic pricing https://www.databricks.com/blog/dynamic-pricing-airlines-how-ai-can-reshape-revenue-strategy
+
+Used in: [the retail mapping](../research/data/nate/databricks-retail-solutions.md).
+
+## 2026-11-15 nate check Ben's packets, address them, and prepare a wrap-up and fresh sessions
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central.
+> check packets too for any ben incoming messages, then launch a subagent to address it, prepare rest for a wrapup and fresh new sessions
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate yes to Google Lens through treg, as designed
+Nate, orchestrator's session, 2026-11-15, about 08:40 Central, answering "May a seller's photo go to Google Lens through treg, as designed?" (the design: only when the tag, label and barcode reads abstain, one crop of the item, pixels only, through a single-use address that expires in 120 s, capped at $0.003 a capture and $0.10 a day, nothing of the answer kept but our own candidate line).
+> yes
+
+Used in: [the capture design](../spec/engines/capture.md), [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate floating logos that burst into the site, and confirm every harness does every job
+Nate, the app-wiring lead's session, 2026-11-15, about 07:55 Central (machine clock), on the shop takeover with Depop and eBay reading.
+> This view sucks, it should be like floating logos around it, that click to expand into the browser session that links. Like the bubble fills the page white, blue, red, purple, and light blue. then the link loads on the platform , dont wait to fill it, like try to open the browser as soon as majority of screen is filled. Confirm the harnesses work for each of those sites to both search, engine and calculate on, and also monitor and manage and deliver analytics
+
+And, to "Wire the signed-in screens next?": "yes".
+
+Used in: the shop takeover's source bubbles (packet 81), the harness check (packet 83).
+
+## 2026-11-15 nate fix everything, fast
+Nate, server-core lead's session, 2026-11-15, about 08:30 Central, after the lead reported a commit that had overwritten the server's request-state fix.
+> LEts fix everything to be fast
+
+Read by the server-core lead as: land the fixes now and run the remaining queued ones at once rather than one after another. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md) (the restore ff56bbda and three workers started in parallel).
+
+## 2026-11-15 nate capture onboarding is line art on glass, one guide per shot
+Nate, the capture lead's session, 2026-11-15, about 13:30 UTC.
+> Ensure the capture onboarding is svg indicating what to do, line art with glass like shaded blurry background so you can still transparently see whats in the camera, similar to how apple measure places graphics telling people to move closer or further. For each product type selected, the onboarding then automatically is set to indicate the photo to take, they press once to dismiss the photo, and cpature the image to move on to the next of several or few more needed steps.
+
+Used in: [the capture design §7a](../spec/engines/capture.md#7a-the-shot-guide), [packet 90](../.agents/team/packets/team/90-capture-shot-guide-for-ben.md).
+
+## 2026-11-15 nate ensure these mistakes dont happen again
+Nate, the orchestrator's session, 2026-11-15, about 13:10 UTC, pasting the server-core lead's note that commit 8560d836 had put stale copies of 18 files over its request-state work.
+> ensure these mistakes dont happen again
+
+Used in: [the hooks](../.agents/hooks/stale-copy.mjs), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md) (a worker's branch lands by merge and no other way), [the git rules](../.agents/coordination.md#when-use-git-often).
+
+## 2026-11-15 nate the goal: finalize all systems, test, fix, get them realized
+Nate, the orchestrator's session, 2026-11-15, about 13:12 UTC, set as the session's goal.
+> is to finalize all systems, test, fix, get them realized
+
+Used in: [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate simulate full user experiences, verify by eye, natively too, and get the benchmarks perfect
+Nate, the orchestrator's session, 2026-11-15, about 13:30 UTC.
+> with the server getting hosted, begin simulating full user experiences, checking and visually verifying the features. Both natively with xcode, sending codex reviewers to drive the tests, and however you can audit and such to confirm and benchmark everything working. fixing yourself quickly and ingeniously to get benchmarks perfect\
+
+Used in: [the finalization spec, section 12](../spec/plans/finalization.md).
+
+## 2026-11-15 nate why do photos not show up, all data to the server, the app built to handle it
+Nate, the orchestrator's session, 2026-11-15, about 13:35 UTC, while the orchestrator walked `/shop` in the browser and no listing showed a photo. Two messages.
+> Why do photos not show up? ensure all data is sent to the server
+
+> ensure the app is built to handle the data, everything sends in, the behavior works correctly
+
+Used in: [the harness-to-row map](../app/src/edge/intel/public/search.ts) and [its test](../app/src/edge/intel/public/search-fields.test.ts).
+
+## 2026-11-15 nate visitor photos may reach the conversation, benchmarks good enough for the site, three free requests, open source with a companion MCP server
+Nate, the engines lead's session, 2026-11-15, about 13:37 UTC, answering the engines handoff's open questions (a visitor's photo reaching the conversation model before identify strips it; any market score or backtest figure on a public page).
+> thats ok for photos to reach, seeing any market score? yeah i want benchmarks great enough to put on the site. and lets put 3 requests free for every user just for the hackathon, with it free to download on github, open source, alongside with a companion mcp server to give everyones agent access to the secondhand search engine
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate three free requests in total for the hackathon, then a referral-link partner
+Nate, the engines lead's session, 2026-11-15, about 13:39 UTC, answering what counts as one of the three free requests and over what period (options were three searches a day, three in total, or three conversation turns a day).
+> 3 total for hackathon, with plans to parenter with a link referrel service or however best to say that
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate ben handles the sign-in proof, we validate the full backend
+Nate, the search lead's session, 2026-11-15, about 13:40 UTC, after the harness coverage table showed every monitor, manage and analytics verb waiting on a linked account.
+> ben will handle sign in proof, we are focusing on validating the full backend, chekcing and ensuring everything works,
+
+Used in: [harness coverage](../research/cross-cutting/nate/runs/harness-coverage-2026-11-15.md), [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate apify for facebook marketplace only; ebay through treg and our own pages
+Nate, the Databricks lead's session, 2026-11-15, about 13:40 UTC, while the lead was writing the rights rows for every live source (row DB11), which had allowed rows from any site read through an Apify actor.
+> apify for fb marketpalce only
+
+> we have treg for ebay and our own slow pages
+
+Read by the Databricks lead: an Apify row is a Facebook Marketplace row; a line from any other site through Apify has no rights row and is refused. eBay rows come through treg and our own page reads; eBay content still never fits a model, by any route ([data use](../spec/data-use.md)).
+
+Used in: [finalization.md DB11](../spec/plans/finalization.md), the rights brief `brief-dbx-rights-1`.
+
+## 2026-11-15 nate the clarifying question widgets belong in the intelligent ui too
+Nate, the orchestrator's session, 2026-11-15, about 13:50 UTC.
+> I think we can add those clarifying question widgest to the intelligent ui too
+
+Read by the orchestrator as: the generative clarifying-question widgets built for capture (prepopulated selects when the system is fairly sure) also appear in the buying chat's answers; one block shape and one drawn part for both. Sent to the capture lead and the engines lead.
+
+## 2026-11-15 nate fix the server to be up so photos work
+Nate, the server-core lead's session, 2026-11-15, about 13:45 UTC.
+> Fix the server to be up, so photos work, be efficient, fast, get things working and stop models if it means you can fix this so we can have capture, searching all features working and pushed to main
+
+Then, on sign-in: "are we using vercel auth? i can add sign in with google", and "whatever is the way to set up auth do it, i made a new cloud project".
+
+Read by the server-core lead as: redeploy main to the Fly app now, compose the photo store and the capture upload targets, and set up Google sign-in in the new Cloud project. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md).
+
+## 2026-11-15 nate organize, shut down what is finished, get it working yourself, check with Ben, keep testing with Codex
+Nate, the orchestrator's session, 2026-11-15, about 14:00 UTC.
+> Lets have you fully start to organize and shut down running subagents when completed. assess what works, you yourself get it working, check with ben, we continously test with codex andd such
+
+Used in: [the finalization spec, section 13](../spec/plans/finalization.md).
+## 2026-11-15 paired tags replace hand branding
+
+Ben, Codex chat:
+> use the tags and then create an icon for it and make it an svg and make it have a transparent background and then remove all the hand icon ideas and parts of the logos from the website in the repo and get the app icon to actually be the one with tags and align the tags once separated and isolated to be in expert ui ux practices in alignment vertically and horizontally to the left of the wordmark where an expert would put it also on the app too
+
+Used in: brand/mark.svg, brand/constitution.md C1, app/src/ui/brand-mark.tsx, app/app.json, web/components/chrome.tsx, brand/explore/web-home.
+
+## 2026-11-15 Google sign-in UI for Nate to connect
+
+Ben, same Codex chat:
+> add a sign in with google to the app ui that nate can wire on the backend
+
+Used in: app/src/you/sign-in.tsx and sign-in-wire.ts. The UI does not claim a session until the existing server exchange succeeds.
+
+## 2026-11-15 nate when the price cannot be set, the number of listings is the signal
+Nate, the search lead's session, 2026-11-15, about 14:03 UTC, answering whether Google Shopping rows (shown, never judged for the same product) should be filtered for display.
+> well, no, if we can't determine price, we maybe grab details on how many lsitings are there, and that indicates something, perhaps that none are being sold, that it was popular, theres alot there
+
+Used in: [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate systems working before the look
+Nate, the app's native-walks lead session, 2026-11-15, about 14:05 UTC, while the walks were reading screenshots against the brand card.
+> dont focus on ui as much as you should getting every system to work. then we can return
+
+Used in: section 6 of [finalization.md](../spec/plans/finalization.md) (the native walk table lists each failing system with its owner; the look findings are parked for Ben).
+
+## 2026-11-15 nate the browser sign-in window works end to end
+Nate, the app's native-walks lead session, 2026-11-15, about 13:40 UTC.
+> ensure the browser actions work, like the sesion window pops up for the user to authenticate, answer 2fa if needed, etc
+
+Used in: the connect walk in section 6 of [finalization.md](../spec/plans/finalization.md); `app/src/account/services.tsx`, `app/src/edge/connect/hosted.ts`.
+
+## 2026-11-15 nate check the lens capture is wired to the expo app
+Nate, the orchestrator's session, 2026-11-15, about 14:14 UTC.
+> Check the lens capture is also wired to the expo app, ben is testing and his model says its not wired
+
+Checked by the orchestrator on main the same minute: it is not wired. The app's photo step stops at an example upload address; identify and the Lens step are on Mac branches. Sent to the capture lead with a new order: identify merged as it is, the route join started at once, Lens behind it, a packet for Ben when the join lands.
+
+## 2026-11-15 nate working code reaches main regularly, and we develop with Opus directly
+Nate, the orchestrator's session, 2026-11-15, about 14:20 UTC.
+> Ensure all main pushes and fixes dont just live on the mac, but sync, that it regularly pushes the working code, we are being way too slow when audits and just full review to develop with you and opuses would fix this
+
+Read by the orchestrator as: work that passes lands on main at once instead of waiting on Mac branches for review rounds; an audit and one full review, then the orchestrator and the Opus leads write the code directly; Codex workers for bulk and for driving tests. Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate stop agents merging on top of each other; halt at good points; full focus on the needed fixes
+Nate, the orchestrator's session, 2026-11-15, about 14:24 UTC.
+> we need to stop agents from merging and working on top of eachother. ensure they halt at good poitns and we full focus on developing and carving out the needed fixes
+
+Acted on at once: every lead told to finish the step it is in, park the rest on its branch, write its handoff and stop; from then the orchestrator is the only one who merges to main, one change at a time.
+
+## 2026-11-15 nate a full packet of plans for Ben, then back to building and wiring the backend
+Nate, the orchestrator's session, 2026-11-15, about 14:35 UTC.
+> Give ben a full packet of plans, and ill compact and you will return to full /goal build and test and wire the backend to see it working
+
+Used in: [packet 97](../.agents/team/packets/team/97-the-plan-from-here-for-ben.md).
+
+*Orchestrator's note, 14:26 UTC by the machine clock:* the times on Nate's entries above from "organize, shut down what is finished" onward were written from memory and run up to fifteen minutes fast; their order is right.
+
+## 2026-11-15 nate add the keys, push everything to main, test every feature with leads and codex, benchmarks without eBay
+Nate, the orchestrator's session, 2026-11-15, between about 14:30 and 14:45 UTC by the machine clock, six messages in order. The first came with a pasted table of the variables each system needs (chat, email sign-in, browser reads, the photo lookup, Apify, eBay's API, Databricks).
+> WE HAVE NO TIME ADD THEM
+
+> great, ensure we push all to main, after fully seeing and just working and fixing it yourself
+
+> well address what tehy said needs fixing and do it, you are assured no conflicts so just go ahead
+
+> well finish whats not
+
+> just test all features, ensure they work, fully check all screens, all data, do it with leads and codex. did capture get everything needed. are all pipelines built? can we run benchmarks?
+
+> account for our benchmarks without ebay
+
+Acted on: four keys that exist on Nate's Windows machine were set on the Fly app by name through standard input (OPENROUTER_API_KEY, BROWSER_USE_API_KEY, TREG_TOKEN, APIFY_TOKEN), no value printed or written; the leads were put back to work as testers and fixers who do not merge; the benchmark is run with and without eBay.
+
+## 2026-11-15 nate every source by default, with a toggle to select; the env vars are in place
+Nate, the orchestrator's session, 2026-11-15, about 14:50 UTC by the machine clock, two messages.
+> default to all sources but have the toggle to select
+
+> all env vars are in place, all is great and prepared
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (one chip per source before the first ask, all picked; a tap leaves that source out of the search).
+
+## 2026-11-15 nate the system analyses its collective findings and knows how to read each, so the chat answers questions incredibly
+Nate, the Databricks lead's session, 2026-11-15, about 14:55 UTC, after the broad search benchmark started.
+> make the system more intelligent at first analyzing its collective findings and having understanding of what to interpret from each and how. Especially for the chats to answer questions incredibly
+
+Read by the Databricks lead: before the chat answers, code reads every source's rows for what they are (sold or asking, new or used, local or national, how literal the match, what the rights allow) and computes the findings across them; the model then explains those findings for the question asked. Used in: the findings spec draft `brief-eng-findings-1.md` in the orchestrator's notes, for the engines lead (who owns the chat).
+
+## 2026-11-15 nate that chat ui is so bad
+Nate, the orchestrator's session, 2026-11-15, about 14:47 UTC by the machine clock, with a screenshot of the shop after a search: the list rows drawn over the "More for sale" heading and the tiles, and the chat answer opening "I can't say what's selling most".
+> that chat ui is so bad
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (results laid out so nothing is drawn over anything else); the answer's words are the engines lead's (packet 70).
+
+## 2026-11-15 nate a pressed source logo expands and fills the screen
+Nate, the orchestrator's session, 2026-11-15, about 14:57 UTC by the machine clock.
+> so the way you click into each icon, and it expands then shrinks, have it expand and fill the screen
+
+Used in: [the burst](../app/src/ui/parts/source-float.tsx) and [the shop view](../app/src/buy/chat/shop-view.tsx): the colour grows until it covers the whole page, the site opens, and the colour stays until the person comes back to the app (or taps it).
+
+## 2026-11-15 nate the chat styles its answers with headers and tables, like Claude in chat
+Nate, the orchestrator's session, 2026-11-15, about 14:59 UTC by the machine clock, with a screenshot of a chat answer showing raw `**What failed**` and `- ` list marks.
+> These can have some sort of thing added similar to the widget framework to let it stylize its outputs. add headers, tables, and such, like claude in chat
+
+Used in: [the answer's markdown](../app/src/buy/chat/markdown.ts), drawn in [the shop view](../app/src/buy/chat/shop-view.tsx) (headings, bold, lists and tables); the engines lead keeps the model's markdown well formed (packet 70).
+
+## 2026-11-15 nate the filled colour folds back after five seconds or on return
+Nate, the orchestrator's session, 2026-11-15, about 14:59 UTC by the machine clock, after "have it expand and fill the screen".
+> well after a good 5 seconds, close it so when they return its their home, or on app redirect close it
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (`BURST_HOLD_MS`: the colour folds back five seconds after the site opens, or as soon as the app is active again, whichever is first).
+
+## 2026-11-15 nate the camera's guide animates like Apple's Measure, and the camera ask is bordered and focused
+Nate, the orchestrator's session, 2026-11-15, about 15:01 UTC by the machine clock, with a screenshot of `/camera?mode=worth` on the web: "Photograph the front" in the header, corner brackets, the "use your camera" text with Allow camera and Choose photos floating in the middle of the frame, "What is it?" under it.
+> the way it says photograph the front , can we fix this , there should be the svg animations that are like apples style with the measure app, the use your camera should , while custom styled, be bordered and focused more. Try to adhere this to better guideline design standards and professional ui's
+
+Used in: the camera screen (Ben's area); see the session started for it.
+
+## 2026-11-15 nate the story of the product, for the website and the video
+Nate, the orchestrator's session, 2026-11-15, about 15:09 UTC by the machine clock.
+> lets focus on now with all benchmarks established , things appearing impressive, remember focusing on the story of our product, how we are aimed around a problem first, to help users find an easy way to measure, manage, and monitor second hand selling, simplify the hasstle of listing items, tracking its performance, how to market it well and handle requests. Driven by an advanced agentic search engine or however to technically but understandably describe it exactly, official terms, built around data bricks to leverage their storage services, security, etc.. and extending feature sets across their retail front and other to provide/deliver/bring something better. With this engine, we've also empowered buyers with a unified search engine that takes any product query, or even interesting question, and utilizes broad, "deeply dug" (that is the prompt, "to dig deep", ) osint and opted in platform search aggregation to deliver market insights, sales trends, fashion statements and industry speculation. We give people a way to negoitate at public sales like garage sales, with an in hand accurate appraiser, assessing, similar or exact product listings offered on online sites, even determining if you want what the price will be. SEND THIS TO BEN FOR WEBSITE AND PERHAPS VIDEO
+
+Used in: [packet 98](../.agents/team/packets/team/98-the-story-for-the-site-and-video.md), for Ben's website and video.
+
+## 2026-11-15 nate does everything actually work, measured so we can show it
+Nate, the orchestrator's session, 2026-11-15, about 15:13 UTC by the machine clock.
+> very important, but can you assess this works, like perectly, desing and ui aside, do all the things actually work, in a way we can benchmark and show how we're impressive.
+
+Used in: the scorecard in [the finalization spec, section 13](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator); each lead measures its area on one main.
+
+## 2026-11-15 nate everything off the Mac, onto main, buildable for TestFlight
+Nate, the orchestrator's session, 2026-11-15, about 15:15 UTC by the machine clock.
+> lets get every off mac and focus now on bringing it all here completely and pushing it to main. assessing and delviering final code working and buildable on testflight /goal
+
+Used in: no new Mac or Codex work; each lead brings its finished branches to a Windows worktree and hands the orchestrator one `w/<area>-final` branch on GitHub; the orchestrator merges them to main. The iOS bundle and `expo-doctor` are checked on Windows; the native Release build is walked on the Mac simulator; EAS build and submit stay Nate's.
+## 2026-11-15 ben the Lens UI must work as implied
+
+Ben, Codex, 2026-11-15.
+
+> ensure theres an appropriate expert level ui that comes with the google lens feature and its appropriately integrated into the ui and actually works as the ui implied it should work and ensure its wired up to the ui
+
+After the agent reported the absent backend join and asked which result flow to preserve:
+
+> double check it should work if not, nate is working on it
+
+Used in: [Find UI and Lens integration status](../.agents/team/packets/team/20261115-lens-ui.md). Backend work stays with Nate; client integration is verified with controlled responses until his join lands.
+
+## 2026-11-15 ben wire the main selling flows
+
+Ben, Codex, 2026-11-15.
+
+> check the main flows of selling on the app and try to wire up as much as possible and create new ui screens that adhere to the brand constitution as well as being designed by an expert ui ux designer who also considers composition and user intent and familiarity too.
+
+Used in: [selling integration](../.agents/team/packets/team/20261115-selling-ui.md).
+
+## 2026-11-15 ben audit the whole selling composition
+
+Ben, Codex, 2026-11-15.
+
+> the listing preview site and review your item one and your sale one should be audited for coherence to the brand design and how the app should be designed and the expert ui ux principles that dont just extend to component design or ensuring pages fit the brand but also composition and all the little things that an expert ux psychologist would know. if you ever recognize pages on the site where they look shit like this fix them
+
+> use subagents to to do this, astra fast gpt6 high. so you can continue what you were working on before i came in
+
+> the choose a price page also needs to have the same edits done too
+
+> ensure when grabbing references you are grabbing the completely most upto date screenshots of the latest ui builds
+
+Applied to all four selling screens, using current rendered app screenshots and independently audited composition. Historical brand images establish the brand, not the current state of another app.
+
+## 2026-11-15 ben typography is the pre-push requirement
+
+Ben, Codex, 2026-11-15, while reviewing the selling UI work.
+
+> ensure that all font weight tests where every font of the same size has the same weight and typeface etc that those pass idc about the other tests though before pushing
+
+Applied to this selling/UI push: typography consistency must pass; other repository-check failures do not block this push. This does not change the standing repository rule for future work.
+
+## 2026-11-15 — Ben: audit unapproved intermediate screen layouts
+
+Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026.
+
+> some of those photos dont look like they use correct component styling and coloring and font use
+
+> actually all the screens that i never explicitly said anything about approving. most the in between non-main screens. the layout is weirdly spaced and an expert would rearrange it to be more intuitive. dont change any functionality though
+
+Scope: layout and component styling on unapproved intermediate screens. Preserve functionality and explicitly approved compositions.
+
+## 2026-11-15 — Ben: connect every UI to existing application capabilities
+
+Source: Ben's direct message in the selling UI chat; recorded November 15, 2026.
+
+> ensure all uis can effectively wire to actual app data and functionality that exists in the repo
+
+Scope: use existing repository data and action contracts. Keep unsupported backend capabilities explicit, and preserve intended interactions during layout changes.
+
+## 2026-11-15 — Ben: preserve UI and hand wiring findings to Nate
+
+Source: Ben's direct message in the selling UI chat; recorded November 15, 2026.
+
+> dont completely overhaul ui and remove things just send packets to nate about it all
+
+This narrows the preceding data-wiring request: retain existing screens and controls. Send the integration gaps to Nate as packets; do not replace screens or remove functionality to work around missing backend support.
+
+## 2026-11-15 nate merge everything to complete and working, then a packet for Ben on how it looks
+Nate, the orchestrator's session, 2026-11-15, about 15:31 and 15:34 UTC by the machine clock, two messages.
+> Prioritize merging everyhting to complete and working , push and send packet to ben with insight into what it currently looks like, and /fast to get it done, dont utilize subagents all the time even when you can just focus on it
+
+> You can easily identify on each error and why, utilize documentation and focused subagent sent to assist you
+
+Used in: the full check's failures, each diagnosed by one focused seat while the orchestrator merges; the packet to Ben after main is green.
+## 2026-11-15 — Ben: typography and spacing follow the brand
+
+Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026.
+
+> ensure you are using the right fonts in tune with the brand guidelines at certiain sizes
+
+> also ensure spacing is all up to standard with the brand
+
+
+## 2026-11-15 Large app headings and breathing room
+
+Ben, in the Secondhand UI chat, recorded 2026-11-15:
+
+> why is it not using the wordmark font for the big text??? also why is everything so squished and condensed
+
+Implementation reading: restore Clofie SemiBold for large app screen headings. Preserve text and monetary roles in PP Neue Montreal. Evaluate spacing in rendered screens; spacing-token compliance alone does not establish comfortable composition. Preserve existing controls and functionality.
+
+## 2026-11-15 nate benchmarks, readme and docs current, stale docs out; then audit and TestFlight
+Nate, the orchestrator's session, 2026-11-15, about 15:45 to 15:53 UTC by the machine clock, two messages.
+> Push the benchmarks, update the readme and docs to reflect where we are, and remove stale docs
+
+> Can you when fully realized its complete, send sonnets out now to triage and review and audit. and when passed complete or ready to at least see most features, upload to testflight so ben and I, part of the same team, can download it right from testflight app
+
+Used in: [bench/RESULTS.md](../bench/RESULTS.md), [README.md](../README.md); three Sonnet audits (server, app client, tests and release config); then an EAS production build and a TestFlight submission, which this message authorizes.
+## 2026-11-15 nate yes, wire Lens
+Nate, the capture lead's session, 2026-11-15, after the trace showed an app capture reaches identify with no tag text, no codes and no reader composed, and the question "Shall I wire Lens into the server now, switched on only by a TREG_TOKEN secret on Fly?".
+> Yes, wire Lens
+
+Used in: `app/src/edge/identify/compose.ts`, [the capture design](../spec/engines/capture.md) (the paid visual rung).
+
+## 2026-11-15 nate redeploy, three prompts a day, the site to Vercel, an MCP for the search engine, Lens and LiDAR
+Nate, the orchestrator's session, 2026-11-15, between about 15:53 and 16:13 UTC by the machine clock, separate messages.
+> Also send out a seperate subagent with mcp skills to build a complete mcp for any agent to use our intelligent aggregated secondhand marketplace search engine
+
+> Send the packet to ben, as well as our state
+
+> Go
+
+> Lens for the demo and showing how much more data we grab. we need everything perfected, we havent even tested lidar
+
+> try again keeps choices yes if they are trying again in the same create listing or appraisal section
+
+> what else needs fixing before testflight build, have a sonnet sent out to handle it
+
+> give me the commands to drop in terminal and ill click to add like you do
+
+> Redeploy now
+
+> well wait, cap spend to limit to 3 prompts per day per user
+
+> Push the production build of the site to vercel as well
+
+Used in: [mcp/](../mcp/README.md); packet [100](../.agents/team/packets/team/100-state-at-16-00-for-ben.md); the hosted server redeployed (Fly release v5); the chat's cap of three prompts a person a day (in the server audit fixes); the site deployed to Vercel production from main 5691203a.
+
+## 2026-11-15 nate reassess, docs current, pause, build for TestFlight; performance later on update branches
+Nate, the orchestrator's session, 2026-11-15, about 16:15 and 16:17 UTC by the machine clock, two messages.
+> Lets fully focus it. Before contining new things and abiding by your goal, lets reasses where we are, update docs, pause, and build to complete so we can upload to testflight
+
+> You can then continue improving perfformance in potential update branches
+
+Used in: [finalization §13](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), the state at 16:17 UTC; the leads hold, one deployer; later work lands from update branches after the build.
+
+## 2026-11-15 nate the chat answers with what has arrived
+Nate, the native-walks lead's session, 2026-11-15, about 16:15 UTC, relayed by that lead; on the chat answering before every source has come back.
+> that can be faster, if after 25 seconds, don have it,
+
+> no just keep whats there, we'll treat it like we do other responses where the ai begins outputting even though it hasnt recieved all outpuits yet
+
+Used in: the chat keeps answering from the rows that have arrived when asked. Separate from this: on the hosted server one answer counted 64 listings for a finished search of 346 (it read the stored copy of the frames, which leaves out rows we may not keep); that is for an update branch.
+
+## 2026-11-15 nate finalize everything is there a build
+Nate, the orchestrator's session, 2026-11-15, between about 16:20 and 16:36 UTC.
+> a card is addded to fly.io
+
+> can we set it to just google and apple
+
+> Finalize everything. is there a build uploadable and testable\
+
+> any dependencies i need to top off?
+
+Relayed by leads from their sessions the same hour:
+> does appraisal work? the chat?
+
+> Please fix the hosted server
+
+Then Nate pasted the EAS build's refusal: "Project archive is too big. Maximum allowed size is 2.0 GB."
+
+Used in: Sign in with Apple in the app (f88ad5ad); an appraise capture's finish starts a valuation and names the item (3c8b50b4); agent worktrees ignored so the EAS archive fits (f896b0fe). Google sign-in on the phone is not built.

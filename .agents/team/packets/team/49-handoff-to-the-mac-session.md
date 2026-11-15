@@ -14,7 +14,7 @@ The Windows machine (31 GB) crashed three times. Each time, thirteen sessions wi
 |---|---|
 | One writer in a checkout. A second session gets its own git worktree, or waits | thirteen sessions in one checkout lost uncommitted edits in a merge twice and fought over `index.lock` |
 | Commit the moment a piece passes, with explicit paths, then pull and push | a crash kept only what was committed |
-| One milestone at a time, in the order on [the board](../../../../spec/plans/board.md#milestones-the-order-of-the-build-since-2300-central-2026-11-14); each ends with a recorded real run before the next starts | Nate: "establishes and finalizes milestones being hit" ([words](../../../../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested-the-way-production-runs-with-milestones-that-are-finalised-as-they-are-hit)) |
+| One milestone at a time, in the order on [the board](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestratormilestones-the-order-of-the-build-since-2300-central-2026-11-14); each ends with a recorded real run before the next starts | Nate: "establishes and finalizes milestones being hit" ([words](../../../../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested-the-way-production-runs-with-milestones-that-are-finalised-as-they-are-hit)) |
 | At most two seats and two cloud browsers at once until the Mac has shown what it holds; measure before widening | no crash has been diagnosed past "too many processes" |
 | Run one test file at a time (`node --test --test-concurrency=1 <file>`); the full `node .agents/check.mjs` once, by the lead, before a push | every stream running the full check at once was part of the pile-up |
 | A gap is pushed past, not written around: a 403 to a plain fetch means open the page in a real browser and record it | seats wrote synthetic fixtures for eBay, Facebook and Mercari and stopped ([words](../../../../product/words.md#2026-11-14-nate-store-auth-through-browser-use-build-fewer-things-at-once-focus-on-the-browser-harnesses)) |
@@ -24,7 +24,7 @@ The Windows machine (31 GB) crashed three times. Each time, thirteen sessions wi
 1. Clone `main`. `npm ci` in `app/` and `npm install` in `db/`. `pip install -r jobs/requirements.txt`. Python 3.12 with `pytest`. Playwright's Chromium for the local browser tests.
 2. Nate sets two keys in the Mac's environment himself; neither is ever written to a file, a brief or a log, and both are checked by presence only: `OPENROUTER_API_KEY` (jev, in `app/src/edge/intel/jev.ts`) and `BROWSER_USE_API_KEY` (cloud browsers). Both were pasted into a chat on the Windows machine, so Nate should rotate them after the event.
 3. `databricks auth login --profile Nate` if the workspace is needed; the profile is Nate's own workspace ([checks](../../../../research/data/nate/workspace-checks.md)).
-4. Read, in this order: this packet, [the board](../../../../spec/plans/board.md), [the Browser Use Cloud reference](../../../../research/cross-cutting/nate/browser-use-cloud.md), `app/src/edge/browser/OPERATING.md`, `app/src/edge/harness/OPERATING.md`, `app/src/edge/harness/ENDPOINTS.md`.
+4. Read, in this order: this packet, [the board](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator), [the Browser Use Cloud reference](../../../../research/cross-cutting/nate/browser-use-cloud.md), `app/src/edge/browser/OPERATING.md`, `app/src/edge/harness/OPERATING.md`, `app/src/edge/harness/ENDPOINTS.md`.
 
 ## What Nate settled since packet 45
 
@@ -91,4 +91,4 @@ Those in [packet 45](45-handoff-to-the-build-session.md#protections-that-hold-wh
 
 ## Opening prompt for the Mac session
 
-> You are the orchestrator for Nate's side of secondhand, continuing on his Mac. Read `.agents/team/packets/team/49-handoff-to-the-mac-session.md` first and follow its "How to run it from here" table exactly: one writer per checkout, one milestone at a time, commit as each piece passes. Check `OPENROUTER_API_KEY` and `BROWSER_USE_API_KEY` by presence. Then run milestone M1 from `spec/plans/board.md` on Browser Use Cloud and report its numbers to Nate before starting M2. Record everything Nate says in `product/words.md` verbatim.
+> You are the orchestrator for Nate's side of secondhand, continuing on his Mac. Read `.agents/team/packets/team/49-handoff-to-the-mac-session.md` first and follow its "How to run it from here" table exactly: one writer per checkout, one milestone at a time, commit as each piece passes. Check `OPENROUTER_API_KEY` and `BROWSER_USE_API_KEY` by presence. Then run milestone M1 from `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator` on Browser Use Cloud and report its numbers to Nate before starting M2. Record everything Nate says in `product/words.md` verbatim.

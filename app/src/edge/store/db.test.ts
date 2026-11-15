@@ -9,9 +9,10 @@ import { dataPath, openDb, migrate, tx, db } from './db.ts';
 import { memorySink, observeLogs } from '../../../../log/index.js';
 
 function fixture(t: TestContext) {
-  const dir = mkdtempSync(join(tmpdir(), 'secondhand-db-'));
-  t.after(() => rmSync(dir, { recursive: true, force: true }));
-  return join(dir, 'nested', 'secondhand.db');
+  const dir = mkdtempSync(join(tmpdir(), 'secondhand-db-')), handles: DatabaseSync[] = [];
+  // Windows cannot remove a directory holding an open database, so the handles close before the removal.
+  t.after(() => { for (const handle of handles) if (handle.isOpen) handle.close(); rmSync(dir, { recursive: true, force: true }); });
+  return { path: join(dir, 'nested', 'secondhand.db'), handles };
 }
 
 test('transactions emit no timing lines and log a synchronous failure once', t => {
@@ -27,17 +28,19 @@ test('transactions emit no timing lines and log a synchronous failure once', t =
   assert.equal(entries[0].where, 'sqlite.tx');
 });
 
-test('dataPath chooses the explicit folder, test memory, development temp, and refuses unset production', () => {
+test('dataPath chooses the explicit folder, test memory, stated development temp, and refuses everything else', () => {
   assert.equal(dataPath({ SECONDHAND_DATA_DIR: '/data', NODE_TEST_CONTEXT: 'child-v8', NODE_ENV: 'production' }), join('/data', 'secondhand.db'));
   assert.equal(dataPath({ NODE_TEST_CONTEXT: 'child-v8', NODE_ENV: 'production' }), ':memory:');
-  assert.equal(dataPath({}), join(tmpdir(), 'secondhand-dev', 'secondhand.db'));
-  assert.throws(() => dataPath({ NODE_ENV: 'production' }), /^Error: SECONDHAND_DATA_DIR is required in production$/);
+  assert.equal(dataPath({ NODE_ENV: 'development' }), join(tmpdir(), 'secondhand-dev', 'secondhand.db'));
+  for (const env of [{}, { NODE_ENV: 'production' }, { NODE_ENV: 'staging' }, { NODE_ENV: '' }]) {
+    assert.throws(() => dataPath(env), /^Error: SECONDHAND_DATA_DIR is required unless NODE_ENV=development$/, JSON.stringify(env));
+  }
   assert.equal(db(), openDb(dataPath()));
 });
 
 test('openDb creates missing folders and shares configured handles across module copies, including memory', async t => {
-  const path = fixture(t), first = openDb(path);
-  t.after(() => first.close());
+  const { path, handles } = fixture(t), first = openDb(path);
+  handles.push(first);
   const copy: typeof import('./db.ts') = await import(new URL('./db.ts?cache-copy', import.meta.url).href);
   assert.equal(copy.openDb(path), first);
   assert.equal(copy.openDb(':memory:'), openDb(':memory:'));
@@ -48,8 +51,8 @@ test('openDb creates missing folders and shares configured handles across module
 });
 
 test('migrate records names once across handles and rolls back failed schema changes', t => {
-  const path = fixture(t), first = openDb(path), second = new DatabaseSync(path);
-  t.after(() => { first.close(); second.close(); });
+  const { path, handles } = fixture(t), first = openDb(path), second = new DatabaseSync(path);
+  handles.push(first, second);
   migrate(first, 'one', 'CREATE TABLE example (id TEXT); INSERT INTO example VALUES (\'first\');');
   migrate(second, 'one', 'INSERT INTO example VALUES (\'duplicate\');');
   assert.equal(second.prepare('SELECT count(*) AS n FROM example').get()?.n, 1);
@@ -111,4 +114,16 @@ test('a rejected Promise callback cannot terminate the process after tx refuses 
     setImmediate(() => handle.close());
   `, new URL('./db.ts', import.meta.url).href], { encoding: 'utf8', timeout: 10000 });
   assert.equal(child.status, 0, child.stderr);
+});
+
+
+test('a rollback failure is logged and never replaces the original transaction error', t => {
+  const handle = new DatabaseSync(':memory:');
+  const sink = memorySink(), stop = observeLogs(sink);
+  t.after(stop);
+  const original = new Error('original callback failure');
+  assert.throws(() => tx(handle, () => { handle.close(); throw original; }), error => error === original);
+  const entries: Record<string, unknown>[] = sink.lines.map(line => JSON.parse(line));
+  assert.ok(entries.some(entry => entry.where === 'sqlite.tx.rollback'));
+  assert.ok(entries.some(entry => entry.where === 'sqlite.tx'));
 });

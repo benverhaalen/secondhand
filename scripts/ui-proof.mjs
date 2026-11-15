@@ -20,7 +20,7 @@ function files(root, path) {
   const full = resolve(root, path);
   if (!existsSync(full)) return [];
   if (!statSync(full).isDirectory()) return [path];
-  return readdirSync(full).filter(p => p !== 'node_modules' && !p.startsWith('.')).flatMap(p => files(root, join(path, p)));
+  return readdirSync(full).filter(p => p !== 'node_modules' && !p.startsWith('.')).flatMap(p => files(root, `${path}/${p}`));
 }
 const snapshot = (root, source) => [...new Set([...INPUTS.flatMap(p => files(root, p)), ...(source && existsSync(resolve(root, source)) ? [source] : [])])].sort().map(p => stamp(root, p));
 

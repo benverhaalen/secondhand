@@ -139,13 +139,10 @@ function checkView(view, ctx) {
     // B14 off the app, a size of 32 and up is set at leading 1.1 and tracking -0.02em; the wordmark is -0.01em (Art. 6.4, 6.12)
     if (u > 1 && t.size >= 32 && t.lh !== undefined) { const want = mark ? -.01 : -.02;
       if (t.lh == null || Math.abs(t.lh - 1.1) > .02 || Math.abs(t.tr - want) > .003) E('B14', q, `is set at leading ${t.lh ?? 'normal'} and tracking ${t.tr}em: on a ${medium}${mark ? ' the wordmark' : ' a size of 32 and up'} is leading 1.1 and tracking ${want}em (Art. 6.12)`); }
-    // A7 where the display face goes
-    if (t.display && /[^\x20-\x7E‘’“”…]/.test(t.text)) E('A7', q, 'has letters the display face does not hold (it has no accents and one script): the text face takes this line (Art. 6)');
-    if (t.display && !mark) {
-      if (/\d/.test(t.text)) E('A7', q, 'sets a number in the display face: amounts and numbers are in the text face (Art. 6)');
-      if (t.size < 21 * u - .5) E('A7', q, `is the display face at ${t.size} px: it is for the wordmark and headings of ${21 * u} px and up (Art. 6)`);
-      if (t.lines > 1) E('A7', q, `is the display face on ${t.lines} lines: a display heading fits on one line (Art. 6)`);
-    }
+    const webHero = medium === 'web' && t.heroHeading;
+    const appHeading = medium === 'app' && near(t.size, 36);
+    if (t.display && !mark && !webHero && !appHeading) E('A7', q, 'uses the wordmark face outside an approved logo, app heading or public page headline (Art. 6)');
+    if (t.display && webHero && !t.lowercase && t.text.trim() !== t.text.trim().toLowerCase()) E('A7', q, 'the public headline in the wordmark face is lowercase (Art. 6)');
     // B7 every color is a token, and color is a ground, never ink
     if (!name) E('B7', q, `is colored ${t.color}, which is not a color in tokens.css: use var(--token)`);
     else if (!TEXT_INK.has(name)) E('B7', q, `is --${name} text: color is a ground, never ink. Text is ink, the second ink, or white on black, brick and the deep steps (Art. 5.1)`);
@@ -198,10 +195,6 @@ function checkView(view, ctx) {
   const peaks = text.filter(t => !isMark(t) && t.size > top + .5 && (!sheet.peak || t.size <= sheet.peak + .5));
   if (peaks.length > 1) E('B14', '', `has ${peaks.length} pieces of text above ${top} px: one peak number per view (C6)`);
   for (const t of peaks) if (!/\d/.test(t.text) || t.display) E('B14', short(t.text), `is above ${top} px and is not a number in the text face: only the one peak amount goes that large (C6)`);
-  // A7 one display heading per view besides the wordmark
-  // A heading with a second phrase, or one split across two pieces of markup, is one heading: count the blocks. A web window may show several sections.
-  const heads = text.filter(t => t.display && !isMark(t)), blocks = new Set(heads.map(t => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].block) return i; return t.el; }));
-  if (blocks.size > 1 && medium !== 'web') E('A7', '', `has ${blocks.size} display headings (${heads.map(t => short(t.text)).join(', ')}): one per view besides the wordmark (Art. 6)`);
   // B3 the wordmark's place
   for (const t of text.filter(isMark)) {
     if (t.text.trim() !== 'secondhand') E('B3', '', `the wordmark reads "${t.text.trim()}": it is "secondhand", lowercase (C1)`);
@@ -222,8 +215,9 @@ function checkView(view, ctx) {
     if (n && !['ink', 'on-color', 'page', 'white'].includes(n)) E('B32', '', `the wordmark is --${n}: it is black or white (C1)`);
     if (g.kind === 'tag' || g.kind === 'fill' && g.name !== 'page' && !(g.name === 'ink' && n !== 'ink')) E('B32', '', `the wordmark sits on ${g.name ? `--${g.name}` : 'a color'}: it goes on the page or the field (C1)`);
     const unit = t.size / 2, zone = [t.rect[0] - unit, t.rect[1] - unit, t.rect[2] + unit, t.rect[3] + unit], up = new Set(); for (let i = t.el; i >= 0; i = view.els[i].parent) up.add(i);
+    const brandPart = i => { for (; i >= 0; i = view.els[i].parent) if (view.els[i].part === 'brand-mark') return true; return false; };
     const near = [...text.filter(o => o !== t && hits(o.rect, zone)).map(o => short(o.text)),
-      ...view.els.filter((el, i) => !up.has(i) && el.part !== 'hand' && (el.paints || el.bg || el.borders.length) && hits(el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
+      ...view.els.filter((el, i) => !up.has(i) && !brandPart(i) && (el.paints || el.bg || el.borders.length) && hits(el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
     if (near.length) E('B32', '', `${[...new Set(near)].slice(0, 3).join(', ')} sits within ${unit} px of the wordmark: nothing but its ground comes within half its type size (C1)`);
   }
   // B33 logos in a row (C5): one height, one gap, none taller than the wordmark's type
@@ -300,7 +294,7 @@ function checkView(view, ctx) {
   const washed = washes.reduce((n, el) => n + Math.max(0, Math.min(el.rect[2], view.w) - Math.max(el.rect[0], 0)) * Math.max(0, Math.min(el.rect[3], view.h) - Math.max(el.rect[1], 0)), 0) / (view.w * view.h);
   if (view.share && view.share.color > 1 / 3 + washed && !view.bleed) E('B8', '', `is ${Math.round(view.share.color * 100)}% color${washed ? `, with a wash that covers ${Math.round(washed * 100)}%` : ''}: color covers at most a third of a view, not counting photos or the wash, unless the field fills it (Art. 5.2)`);
   // B37 off the app, a view is one of its medium's layouts and holds what that layout holds (Part III)
-  if (sheet.layouts) { const heads = text.filter(t => t.display && !isMark(t)).length, photos = view.els.filter(e => e.photo).length, rows = view.els.filter(e => e.part === 'row').length, nums = text.filter(t => !t.display && t.size >= top - .5).length, rest = text.filter(t => !isMark(t)).length;
+  if (sheet.layouts) { const heads = new Set(text.filter(t => t.heading != null && !isMark(t)).map(t => t.heading)).size, photos = view.els.filter(e => e.photo).length, rows = view.els.filter(e => e.part === 'row').length, nums = text.filter(t => !t.display && /\d/.test(t.text) && t.size >= top - .5).length, rest = text.filter(t => !isMark(t)).length;
     const holds = { title: [fields.length === 1 && view.bleed && heads === 1 && !photos && !rows && !nums, 'the field filling the view, with one heading'], statement: [heads === 1 && !photos && !rows && !nums && !view.bleed, 'one heading, with one line under it at most'],
       number: [nums === 1 && !heads && !photos && !rows, 'one number with the words that say what it is, and no heading'], list: [heads <= 1 && rows >= 2 && rows <= 6 && !photos && !nums, 'two to six rows, each a [row], under one heading at most'],
       item: [photos === 1 && !rows && !nums, 'one photo, with one heading or one line'], close: [marks.length === 1 && !rest && !photos, 'the wordmark alone'] }[view.layout];
@@ -409,7 +403,7 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
   // Every output carries the wordmark. An app screen may be a sheet, which has no navigation bar, so there it is a warning.
   if (!marks.some(m => m.length)) out.push((medium === 'app' ? warn : err)('B3', medium, medium === 'app' ? 'has no wordmark: a main screen carries "secondhand" in its navigation bar, and a sheet does not (C1)' : 'has no wordmark: every output carries "secondhand" in the display face (C1, Art. 14.2)'));
   // B31 things of one kind are one size, on every view of the output at one width
-  const kinds = new Map(); for (const v of facts.views) for (const el of v.els) if (el.part && el.part !== 'hand') { const k = `${v.canvas?.[0]} ${el.part}`; kinds.set(k, [...(kinds.get(k) ?? []), { el, view: v.index + 1 }]); }
+  const kinds = new Map(); for (const v of facts.views) for (const el of v.els) if (el.part && el.part !== 'brand-mark') { const k = `${v.canvas?.[0]} ${el.part}`; kinds.set(k, [...(kinds.get(k) ?? []), { el, view: v.index + 1 }]); }
   for (const [k, all] of kinds) { const part = k.split(' ')[1], set = (xs, i) => [...new Set(xs.map(x => Math.round(size(x.el)[i])))].sort((a, b) => a - b), spread = xs => Math.max(...xs) - Math.min(...xs) > 1;
     const hs = set(all, 1), ws = set(all.filter(x => x.el.fit !== 'content' && !x.el.logo), 0), at = `${new Set(all.map(x => x.view)).size > 1 ? 'views' : 'view'} ${[...new Set(all.map(x => x.view))].join(', ')}`;
     if (spread(hs)) out.push(err('B31', `${at} [${part}]`, `is ${hs.join(', ')} px tall in different places: things of one kind are one size, whatever is in them`));

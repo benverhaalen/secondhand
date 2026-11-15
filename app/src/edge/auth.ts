@@ -1,14 +1,17 @@
+import { emailSender } from './connect/email.ts';
 // App sign-in on the edge (connect.md "Signing in to secondhand"). How it runs:
 //   reads:   the bearer token (verifyAccess: one store read by SHA-256 of the token), a provider id token (one cached JWKS, one RS256 check), or an email code.
 //   sign-in: identify (verify proof) -> find or create user and identity -> mint access (1 h) + refresh (30 d) in one parallel write. Two store reads, one write.
-//   refresh: one atomic take of the old refresh session (second use finds nothing, so 401) -> mint a new pair in the same family.
+//   refresh: mark the old refresh used atomically; reuse revokes its whole family; mint a new pair in that family.
 //   email:   start hashes a 6-digit code (10 min, 5 tries); verify counts the try before it compares, in constant time, so parallel guesses cannot beat the cap.
 //   models:  none. Every decision here is a fixed rule; no language model reads anything. The only outside calls are the JWKS fetch (cached 1 h) and sendCode.
 //   breaks:  bad signature, aud, exp, nonce, iss, alg; JWKS key rotation; refresh replay and race; code guess flood; one token reading another user; expired tokens.
 import type { Log } from '../../../log/index.js';
+import type { DatabaseSync } from 'node:sqlite';
+import { db, migrate, tx } from './store/db.ts';
 import { ApiError, deps } from './api/http.ts';
+import { examplesServed } from './api/examples.ts';
 
-// Lakebase plus Better Auth replace memoryStore behind AuthStore later.
 export type Provider = 'apple' | 'google' | 'email';
 export type Notify = { event_kind: string; channel: string; on: boolean };
 export type User = {
@@ -32,28 +35,30 @@ export interface AuthStore {
   identitiesOf(user_id: string): Promise<Identity[]>;
   putSession(token_hash: string, s: Session): Promise<void>;
   getSession(token_hash: string): Promise<Session | null>;
-  takeSession(token_hash: string): Promise<Session | null>; // get and delete in one step
+  takeSession(token_hash: string): Promise<Session | null>; // refresh only: mark used; reuse drops its family. Retain used rows until expiry; dropFamily/dropUserSessions remove them.
   dropFamily(family: string): Promise<void>;
   dropUserSessions(user_id: string): Promise<void>;
   putCode(email_hash: string, c: CodeRec): Promise<void>;
+  peekCode(email_hash: string): Promise<CodeRec | null>; // read without spending a verify attempt
   tryCode(email_hash: string): Promise<CodeRec | null>; // counts one attempt, returns the record as counted
   dropCode(email_hash: string): Promise<void>;
   getStyle(user_id: string): Promise<Style>;
   putStyle(user_id: string, s: Style, expectedVersion: number): Promise<boolean>;
 }
 
+// A new person starts with no taste facets; only the example person gets the contract's, and only while examples are served.
 export const seedStyle = (user_id: string): Style => ({
   id: user_id.replace(/^usr_/, 'sp_'), edited_at: null, version: 1,
-  facets: [['brand', 'Carhartt', 0.82, 'sold', false], ['size', 'L', 0.74, 'kept', true], ['era', '1990s', 0.41, 'saved', false], ['price_band', '50-120', 0.36, 'bought', false]]
+  facets: user_id !== 'usr_8f2k' || !examplesServed() ? [] : [['brand', 'Carhartt', 0.82, 'sold', false], ['size', 'L', 0.74, 'kept', true], ['era', '1990s', 0.41, 'saved', false], ['price_band', '50-120', 0.36, 'bought', false]]
     .map(([name, value, weight, from, pinned]) => ({ name, value, weight, from, pinned, removed_at: null }) as Facet),
 });
 
 export function memoryStore() {
-  const users = new Map<string, User>(), ids = new Map<string, Identity>(), sessions = new Map<string, Session>();
+  const users = new Map<string, User>(), ids = new Map<string, Identity>(), sessions = new Map<string, Session & { used_at: number | null }>();
   const codes = new Map<string, CodeRec>(), styles = new Map<string, Style>();
   const c = <T>(v: T) => structuredClone(v); // callers never hold a live row, so a lost compare-and-set shows up as false
   const store: AuthStore & { dump(): unknown } = {
-    dump: () => ({ users: [...users.values()], ids: [...ids.values()], sessions: [...sessions.entries()], codes: [...codes.entries()] }),
+    dump: () => c({ users: [...users.values()], ids: [...ids.values()], sessions: [...sessions.entries()], codes: [...codes.entries()] }),
     async getUser(id) { const u = users.get(id); return u ? c(u) : null; },
     async createUser(u) { users.set(u.id, c(u)); styles.set(u.id, seedStyle(u.id)); },
     async putUser(u, v) { if (users.get(u.id)?.version !== v) return false; users.set(u.id, c(u)); return true; },
@@ -61,18 +66,121 @@ export function memoryStore() {
     async findByEmail(h) { const i = [...ids.values()].find((x) => x.email_hash === h); return i ? c(i) : null; },
     async addIdentity(i) { ids.set(`${i.provider}:${i.subject_hash}`, c(i)); },
     async identitiesOf(u) { return [...ids.values()].filter((i) => i.user_id === u).map(c); },
-    async putSession(h, s) { sessions.set(h, c(s)); },
-    async getSession(h) { const s = sessions.get(h); return s ? c(s) : null; },
-    async takeSession(h) { const s = sessions.get(h); sessions.delete(h); return s ? c(s) : null; },
-    async dropUserSessions(u) { for (const [h, s] of sessions) if (s.user_id === u) sessions.delete(h); },
+    async putSession(h, s) { sessions.set(h, { ...c(s), used_at: null }); },
+    async getSession(h) { const s = sessions.get(h); if (!s) return null; const { used_at, ...session } = s; return c(session); },
+    async takeSession(h) {
+      const s = sessions.get(h);
+      if (!s || s.kind !== 'refresh') return null;
+      if (s.used_at !== null) { for (const [key, row] of sessions) if (row.family === s.family) sessions.delete(key); return null; }
+      s.used_at = Date.now();
+      const { used_at, ...session } = s; return c(session);
+    },
+    async dropUserSessions(u) {
+      for (const [h, s] of sessions) if (s.user_id === u) sessions.delete(h);
+      for (const i of ids.values()) if (i.user_id === u && i.email_hash) codes.delete(i.email_hash);
+    },
     async dropFamily(f) { for (const [h, s] of sessions) if (s.family === f) sessions.delete(h); },
     async putCode(h, rec) { codes.set(h, c(rec)); },
+    async peekCode(h) { const r = codes.get(h); return r ? c(r) : null; },
     async tryCode(h) { const r = codes.get(h); if (!r) return null; r.attempts++; return c(r); },
     async dropCode(h) { codes.delete(h); },
     async getStyle(u) { return c(styles.get(u) ?? seedStyle(u)); },
     async putStyle(u, s, v) { if ((styles.get(u) ?? seedStyle(u)).version !== v) return false; styles.set(u, c(s)); return true; },
   };
   return store;
+}
+
+// Rests-on: spec/plans/server-store.md; review-server.md B1, B8, B9.
+export function sqliteAuthStore(handle: DatabaseSync): AuthStore {
+  migrate(handle, 'auth-1', `
+    CREATE TABLE users (id TEXT PRIMARY KEY, version INTEGER NOT NULL, body TEXT NOT NULL);
+    CREATE TABLE identities (provider TEXT, subject_hash TEXT, user_id TEXT NOT NULL, email_hash TEXT, linked_at TEXT NOT NULL, PRIMARY KEY(provider, subject_hash));
+    CREATE TABLE sessions (token_hash TEXT PRIMARY KEY, user_id TEXT NOT NULL, kind TEXT NOT NULL, expires_at INTEGER NOT NULL, family TEXT NOT NULL, used_at INTEGER NULL);
+    CREATE INDEX sessions_family ON sessions(family);
+    CREATE INDEX sessions_user ON sessions(user_id);
+    CREATE TABLE codes (email_hash TEXT PRIMARY KEY, hash TEXT NOT NULL, expires_at INTEGER NOT NULL, sent_at INTEGER NOT NULL, attempts INTEGER NOT NULL);
+    CREATE TABLE styles (user_id TEXT PRIMARY KEY, version INTEGER NOT NULL, body TEXT NOT NULL);
+  `);
+  const body = <T>(row: Record<string, unknown> | undefined): T | null => row ? JSON.parse(row.body as string) as T : null;
+  const identity = (row: Record<string, unknown> | undefined): Identity | null => row ? {
+    provider: row.provider as Provider, subject_hash: row.subject_hash as string, user_id: row.user_id as string,
+    linked_at: row.linked_at as string, ...(row.email_hash === null ? {} : { email_hash: row.email_hash as string }),
+  } : null;
+  const session = (row: Record<string, unknown> | undefined): Session | null => row ? {
+    user_id: row.user_id as string, kind: row.kind as Session['kind'], expires_at: row.expires_at as number, family: row.family as string,
+  } : null;
+  const code = (row: Record<string, unknown> | undefined): CodeRec | null => row ? {
+    hash: row.hash as string, expires_at: row.expires_at as number, sent_at: row.sent_at as number, attempts: row.attempts as number,
+  } : null;
+  const readSession = handle.prepare('SELECT * FROM sessions WHERE token_hash = ?');
+  const readCode = handle.prepare('SELECT * FROM codes WHERE email_hash = ?');
+  const dropFamily = handle.prepare('DELETE FROM sessions WHERE family = ?');
+  return {
+    async getUser(id) { return body<User>(handle.prepare('SELECT body FROM users WHERE id = ?').get(id)); },
+    async createUser(u) {
+      tx(handle, () => {
+        handle.prepare('INSERT INTO users (id, version, body) VALUES (?, ?, ?)').run(u.id, u.version, JSON.stringify(u));
+        const style = seedStyle(u.id);
+        handle.prepare('INSERT INTO styles (user_id, version, body) VALUES (?, ?, ?)').run(u.id, style.version, JSON.stringify(style));
+      });
+    },
+    async putUser(u, v) {
+      return handle.prepare('UPDATE users SET version = ?, body = ? WHERE id = ? AND version = ?').run(u.version, JSON.stringify(u), u.id, v).changes === 1;
+    },
+    async findIdentity(p, h) { return identity(handle.prepare('SELECT * FROM identities WHERE provider = ? AND subject_hash = ?').get(p, h)); },
+    async findByEmail(h) { return identity(handle.prepare('SELECT * FROM identities WHERE email_hash = ? LIMIT 1').get(h)); },
+    async addIdentity(i) {
+      handle.prepare(`INSERT INTO identities (provider, subject_hash, user_id, email_hash, linked_at) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(provider, subject_hash) DO UPDATE SET user_id = excluded.user_id, email_hash = excluded.email_hash, linked_at = excluded.linked_at`
+      ).run(i.provider, i.subject_hash, i.user_id, i.email_hash ?? null, i.linked_at);
+    },
+    async identitiesOf(u) { return handle.prepare('SELECT * FROM identities WHERE user_id = ?').all(u).map(row => identity(row)!); },
+    async putSession(h, s) {
+      handle.prepare(`INSERT INTO sessions (token_hash, user_id, kind, expires_at, family, used_at) VALUES (?, ?, ?, ?, ?, NULL)
+        ON CONFLICT(token_hash) DO UPDATE SET user_id = excluded.user_id, kind = excluded.kind, expires_at = excluded.expires_at, family = excluded.family, used_at = NULL`
+      ).run(h, s.user_id, s.kind, s.expires_at, s.family);
+    },
+    async getSession(h) { return session(readSession.get(h)); },
+    async takeSession(h) {
+      return tx(handle, () => {
+        const row = readSession.get(h);
+        if (!row || row.kind !== 'refresh') return null;
+        if (row.used_at !== null) { dropFamily.run(row.family); return null; }
+        handle.prepare('UPDATE sessions SET used_at = ? WHERE token_hash = ?').run(Date.now(), h);
+        return session(row);
+      });
+    },
+    async dropFamily(f) { dropFamily.run(f); },
+    async dropUserSessions(u) {
+      tx(handle, () => {
+        handle.prepare('DELETE FROM sessions WHERE user_id = ?').run(u);
+        handle.prepare('DELETE FROM codes WHERE email_hash IN (SELECT email_hash FROM identities WHERE user_id = ?)').run(u);
+      });
+    },
+    async putCode(h, c) {
+      handle.prepare(`INSERT INTO codes (email_hash, hash, expires_at, sent_at, attempts) VALUES (?, ?, ?, ?, ?)
+        ON CONFLICT(email_hash) DO UPDATE SET hash = excluded.hash, expires_at = excluded.expires_at, sent_at = excluded.sent_at, attempts = excluded.attempts`
+      ).run(h, c.hash, c.expires_at, c.sent_at, c.attempts);
+    },
+    async peekCode(h) { return code(readCode.get(h)); },
+    async tryCode(h) {
+      return tx(handle, () => {
+        handle.prepare('UPDATE codes SET attempts = attempts + 1 WHERE email_hash = ?').run(h);
+        return code(readCode.get(h));
+      });
+    },
+    async dropCode(h) { handle.prepare('DELETE FROM codes WHERE email_hash = ?').run(h); },
+    async getStyle(u) { return body<Style>(handle.prepare('SELECT body FROM styles WHERE user_id = ?').get(u)) ?? seedStyle(u); },
+    async putStyle(u, s, v) {
+      return tx(handle, () => {
+        const existing = handle.prepare('SELECT version FROM styles WHERE user_id = ?').get(u);
+        if ((existing?.version ?? seedStyle(u).version) !== v) return false;
+        handle.prepare(`INSERT INTO styles (user_id, version, body) VALUES (?, ?, ?)
+          ON CONFLICT(user_id) DO UPDATE SET version = excluded.version, body = excluded.body`).run(u, s.version, JSON.stringify(s));
+        return true;
+      });
+    },
+  };
 }
 
 const enc = new TextEncoder();
@@ -143,7 +251,8 @@ export type AuthOpts = {
   store: AuthStore; now: () => number;
   verifyApple: (identity_token: string, nonce: string) => Promise<Claims | null>;
   verifyGoogle: (id_token: string) => Promise<Claims | null>;
-  sendCode: (email: string, code: string) => Promise<void> | void;
+  sendCode?: (email: string, code: string) => Promise<void> | void;
+  generateCode?: () => string;
   log?: () => Log;
 };
 
@@ -206,22 +315,34 @@ export function createAuth(o: AuthOpts) {
     (await store.identitiesOf(user_id)).sort((a, b) => a.linked_at.localeCompare(b.linked_at)).map((i) => ({ provider: i.provider, linked_at: i.linked_at }));
 
   return {
+    senderReady: (): boolean => o.sendCode !== undefined,
     signInApple: (p: { identity_token: string; nonce: string }) => signIn('apple', p),
     signInGoogle: (p: { id_token: string }) => signIn('google', p),
     verifyEmail: (p: { email: string; code: string }) => signIn('email', p),
     async startEmail(p: { email: string }) {
-      const h = await emailHash(p.email), prev = await store.tryCode(h), t = now();
+      const sendCode = o.sendCode;
+      if (!sendCode) throw new ApiError('unavailable', 'no email sender is configured', 'send_code', { by: 'none' });
+      const h = await emailHash(p.email), prev = await store.peekCode(h), t = now();
       if (prev && t - prev.sent_at < RESEND_MS) throw new ApiError('rate_limited', 'a code was just sent', 'send_code', { by: 'auto', after_s: Math.ceil((RESEND_MS - (t - prev.sent_at)) / 1000) });
-      const code = code6();
+      const code = (o.generateCode ?? code6)();
       await store.putCode(h, { hash: await sha(`${h}:${code}`), expires_at: t + CODE_MS, sent_at: t, attempts: 0 });
       changed('email_code', h.slice(0, 8), 'sent');
-      await log().call('tool', 'send_code', { email: p.email }, () => o.sendCode(p.email, code));
+      await log().call('tool', 'send_code', { email_hash: h.slice(0, 8) }, async () => {
+        try { await sendCode(p.email, code); }
+        catch (error) {
+          const failure = new Error('email code delivery failed');
+          failure.name = error instanceof Error && /^[A-Za-z]{1,40}$/.test(error.name) ? error.name : 'Error'; // a vendor's name could carry text too
+          throw failure;
+        }
+      });
       return { sent: true as const, expires_at: iso(t + CODE_MS), resend_after_s: RESEND_MS / 1000 };
     },
     async refresh(p: { refresh_token: string }) {
-      const s = await store.takeSession(await sha(p.refresh_token));
+      const h = await sha(p.refresh_token), s = await store.takeSession(h);
       if (!s || s.kind !== 'refresh' || s.expires_at <= now()) throw unauth('refresh token expired or already used', 'refresh');
       const { access_token, refresh_token, expires_at } = await mint(s.user_id, s.family, false);
+      // A replay can drop the family while mint awaits its hashes and writes. Its retained used row is the revocation witness.
+      if (!(await store.getSession(h))) await store.dropFamily(s.family);
       return { access_token, refresh_token, expires_at };
     },
     async signOut(p: { refresh_token: string }) {
@@ -244,8 +365,24 @@ export function createAuth(o: AuthOpts) {
 
 export type Auth = ReturnType<typeof createAuth>;
 
-const logSend = async () => { /* the call is already logged by log.call; a real sender replaces this and never logs the code */ };
+let developmentCode = process.env.SECONDHAND_DEV_CODE;
+if (developmentCode !== undefined && (process.env.NODE_ENV === 'production' ||
+  process.env.NODE_ENV === 'development' && !/^[0-9]{6}$/.test(developmentCode))) {
+  throw new Error('SECONDHAND_DEV_CODE must be exactly six digits and cannot be set in production');
+}
+if (developmentCode !== undefined && process.env.NODE_ENV !== 'development') {
+  developmentCode = undefined;
+  deps.log.note('auth.dev_code_ignored');
+}
+let sender: AuthOpts['sendCode'] = developmentCode === undefined ? emailSender() : async (email) => {
+  deps.log.note('auth.dev_code', { email_hash: (await emailHash(email)).slice(0, 8) });
+};
+export function configureSender(fn: NonNullable<AuthOpts['sendCode']>): void { sender = fn; developmentCode = undefined; }
 
-export const store = memoryStore();
-export const auth = createAuth({ store, now: () => Date.now(), verifyApple: appleVerifier(), verifyGoogle: googleVerifier(), sendCode: logSend });
+export const store = sqliteAuthStore(db());
+export const auth = createAuth({
+  store, now: () => Date.now(), verifyApple: appleVerifier(), verifyGoogle: googleVerifier(),
+  get sendCode() { return sender; }, generateCode: () => developmentCode ?? code6(),
+});
+export const senderReady = auth.senderReady;
 deps.verify = auth.verifyAccess; // every route now verifies bearer tokens

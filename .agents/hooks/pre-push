@@ -1,0 +1,6 @@
+#!/bin/sh
+# Refuses a push holding a commit that puts back an older copy of a file. See .agents/hooks/stale-copy.mjs.
+# A shell that is not a login shell on the Mac has no node on its PATH; with none found the guard is skipped, out loud.
+PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+command -v node >/dev/null 2>&1 || { echo "stale-copy guard skipped: node is not on PATH" >&2; exit 0; }
+exec node "$(git rev-parse --show-toplevel)/.agents/hooks/stale-copy.mjs" --range "origin/main..HEAD"

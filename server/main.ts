@@ -4,24 +4,28 @@ import { once } from 'node:events';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { createLog } from '../log/index.js';
-import { ApiError, deps } from '../app/src/edge/api/http.ts';
-import { runtime } from '../app/src/edge/api/runtime.ts';
+import { requireProduction } from '../app/src/edge/store/secrets.ts';
 import { discover, match } from './routes.ts';
 import { toRequest, send } from './node-http.ts';
 import { startTicks } from './ticks.ts';
 
 const log = createLog({ src: 'server', build: process.env.BUILD_SHA ?? 'dev', sink: line => { process.stderr.write(line + '\n'); } });
-deps.log = log.child({}, 'edge.api');
 
 export async function start({
   port = Number(process.env.PORT ?? 8080), host = '0.0.0.0',
   tickEveryS = Number(process.env.SECONDHAND_TICK_S ?? 60), ticks = true,
 } = {}): Promise<{ url: string; close(): Promise<void> }> {
+  requireProduction();
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('port must be an integer from 0 to 65535');
   if (ticks && (!Number.isFinite(tickEveryS) || tickEveryS <= 0 || tickEveryS * 1000 > 2147483647)) throw new Error('tickEveryS must be positive and fit a Node timer');
+  const { ApiError, deps } = await import('../app/src/edge/api/http.ts');
+  const { runtime } = await import('../app/src/edge/api/runtime.ts');
+  deps.log = log.child({}, 'edge.api');
   const table = await discover(undefined, log);
   if ('recover' in runtime.store && typeof runtime.store.recover === 'function') {
-    const requeued = await runtime.store.recover();
+    const { exampleJobIds } = await import('../app/src/edge/api/jobs.ts');
+    const examples = exampleJobIds();
+    const requeued = await runtime.store.recover((job: { id: string }) => examples.has(job.id));
     log.note('server.recover', { requeued });
   }
   const active = new Map<IncomingMessage, AbortController>();

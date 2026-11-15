@@ -1,11 +1,13 @@
 // The only parts a screen is laid out with. Which one to reach for, and which separator means what, is in README.md beside this file.
-import { Children, createContext, isValidElement, useContext, type ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
-import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
+import { Children, createContext, isValidElement, useContext, useRef, useState, type ReactNode } from 'react';
+import { KeyboardAvoidingView, Platform, RefreshControl, StyleSheet, View } from 'react-native';
+import Animated from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { arrival, ContentOrder, departure, reflow } from './reveal';
 import { Nav, Wash } from './parts/chrome';
 import { TabNav, TabTitle, type TabNavProps } from './parts/tab-nav';
 import { Txt } from './text';
+import { log } from './log';
 import { OnGround, useColors } from './theme';
 import { radius, size, space } from './tokens.generated';
 
@@ -23,7 +25,7 @@ export const InTabs = createContext(false);
 // a page with a top has it, and a sheet or a full-screen moment, which have no nav, do not.
 // `name` and `state` mark the root (data-screen, data-state on the web) so tests and the gallery know which state is drawn.
 // `foot` is the page's one act pinned to the foot, 16 above the safe area (Art. 7.9), when it is not in the first 844.
-export function Screen({ children, nav, wash = nav != null, center = false, name, state, skip, sheet, foot }: {
+export function Screen({ children, nav, wash = nav != null, center = false, name, state, skip, sheet, foot, keyboard = false, refreshing = false, onRefresh }: {
   children: ReactNode;
   nav?: ReactNode;
   wash?: boolean;
@@ -35,54 +37,70 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
   // A catalog of parts, not a screen a person sees (the parts sheet): app-check judges each part there, but not what one view holds.
   sheet?: string;
   foot?: ReactNode;
+  keyboard?: boolean;
+  refreshing?: boolean;
+  onRefresh?: () => void | Promise<void>;
 }) {
   const c = useColors(), inset = useSafeAreaInsets(), inTabs = useContext(InTabs), below = inTabs ? 0 : inset.bottom;
   const marks = name || state || sheet ? ({ dataSet: { screen: name, state, skip, sheet } } as object) : {};
   const tab = isValidElement<TabNavProps>(nav) && nav.type === TabNav ? nav.props : null;
-  const y = useSharedValue(0);
   const top = wash ? inset.top : 0;
-  const onScroll = useAnimatedScrollHandler({ onScroll: e => { y.set(e.contentOffset.y); } });
+  const [pulling, setPulling] = useState(false);
+  const pending = useRef(false);
+  const content = Children.toArray(children);
+  const refresh = async () => {
+    if (!onRefresh || pending.current || refreshing) return;
+    pending.current = true; setPulling(true);
+    try { await onRefresh(); }
+    catch (error) { log.error('screen.refresh', error, { screen: name }); }
+    finally { pending.current = false; setPulling(false); }
+  };
   // A washed screen takes the top inset itself: the wash runs under the status bar and the content starts below it.
   // Without a wash the safe area keeps the top, so nothing is ever drawn under the clock (U9).
   return (
     <OnGround ground="page">
       <SafeAreaView {...marks} edges={wash ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
-        <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16}
+        {wash ? <Wash under={inset.top} /> : null}
+        <KeyboardAvoidingView enabled={keyboard && Platform.OS === 'ios'} behavior="padding" style={{ flex: 1 }}>
+        <Animated.ScrollView keyboardShouldPersistTaps={keyboard ? 'handled' : undefined} keyboardDismissMode={keyboard ? 'on-drag' : undefined} alwaysBounceVertical={onRefresh ? true : undefined}
+          refreshControl={onRefresh ? <RefreshControl refreshing={refreshing || pulling} onRefresh={refresh}
+            tintColor={c.ink} colors={[c.ink]} progressBackgroundColor={c.surface}
+            progressViewOffset={top + (nav ? size.navH + space.s2 : 0)}
+            accessibilityLabel="Refresh" accessibilityState={{ busy: refreshing || pulling }} /> : undefined}
           contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, wash && { paddingTop: inset.top }, !foot && { paddingBottom: space.s7 + below }, center && styles.center]}>
-          {wash ? <Wash under={inset.top} /> : null}
           {/* The pinned bar's place in the page, so at rest everything sits where an unpinned nav would put it. */}
           {tab ? <View style={styles.nav}><View style={{ height: size.navH, marginBottom: space.s2 }} /><TabTitle title={tab.title} action={tab.action} /></View>
             : nav ? <View style={styles.nav}>{nav}</View> : null}
-          <View style={[styles.content, center && styles.center]}>{children}</View>
+          <View style={[styles.content, center && styles.center]}>{content.map((child, index) => <ContentOrder.Provider key={isValidElement(child) && child.key != null ? child.key : index} value={index / content.length}>{child}</ContentOrder.Provider>)}</View>
         </Animated.ScrollView>
-        {tab ? <TopBar inbox={tab.inbox} y={y} top={top} /> : null}
+        {tab ? <TopBar inbox={tab.inbox} top={top} wash={wash} /> : null}
         {foot ? <View style={[styles.foot, { paddingBottom: space.s4 + below }]}>{foot}</View> : null}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </OnGround>
   );
 }
 
-function TopBar({ inbox, y, top }: { inbox?: TabNavProps['inbox']; y: { get(): number }; top: number }) {
+function TopBar({ inbox, top, wash }: { inbox?: TabNavProps['inbox']; top: number; wash: boolean }) {
   const c = useColors();
-  const ground = useAnimatedStyle(() => ({ opacity: interpolate(y.get(), [0, space.s3], [0, 1], 'clamp') }));
   return (
-    <>
-      <Animated.View {...({ dataSet: { part: 'top-bar' } } as object)} pointerEvents="box-none" style={[styles.topBar, { paddingTop: top }]}>
-        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: c.page }, ground]} />
-        <Nav inbox={inbox} />
-      </Animated.View>
-      {top ? <Animated.View pointerEvents="none" style={[styles.strip, { height: top, backgroundColor: c.page }, ground]} /> : null}
-    </>
+    <View {...({ dataSet: { part: 'top-bar' } } as object)} pointerEvents="box-none" style={[styles.topBar, { paddingTop: top }]}>
+      <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: c.page, overflow: 'hidden' }]}>
+        {wash ? <Wash under={top} /> : null}
+      </View>
+      <Nav inbox={inbox} />
+    </View>
   );
 }
 
 // One topic. Sections are told apart by space alone, never a line or a box. Cards in it sit 16 apart (Art. 7.8).
 export function Section({ title, children }: { title?: string; children: ReactNode }) {
+  const order = useContext(ContentOrder);
   return (
-    <View style={styles.section}>
+    <Animated.View entering={arrival(order)} layout={reflow} style={styles.section}>
       {title ? <Txt role="headline">{title}</Txt> : null}
       {children}
-    </View>
+    </Animated.View>
   );
 }
 
@@ -108,11 +126,11 @@ export function Row({ lead, trail, children }: { lead?: ReactNode; trail?: React
 
 // Rows of the same kind: messages, settings, sales. The hairline says "another one of these".
 export function List({ children }: { children: ReactNode }) {
-  const c = useColors();
+  const c = useColors(), rows = Children.toArray(children);
   return (
     <View>
-      {Children.toArray(children).map((child, i) => (
-        <View key={i} style={i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.rule }}>{child}</View>
+      {rows.map((child, i) => (
+        <Animated.View key={isValidElement(child) && child.key != null ? child.key : i} entering={arrival(i / rows.length)} exiting={departure} layout={reflow} style={i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.rule }}>{child}</Animated.View>
       ))}
     </View>
   );
@@ -130,10 +148,11 @@ export function Card({ children }: { children: ReactNode }) {
 
 // Photo tiles, in columns 16 apart (the Sell grid, L12).
 export function Grid({ columns, children }: { columns: number; children: ReactNode }) {
+  const tiles = Children.toArray(children);
   return (
     <View style={styles.grid}>
-      {Children.toArray(children).map((child, i) => (
-        <View key={i} style={{ width: `${100 / columns}%`, paddingHorizontal: space.s2, paddingBottom: space.s4 }}>{child}</View>
+      {tiles.map((child, i) => (
+        <Animated.View key={isValidElement(child) && child.key != null ? child.key : i} entering={arrival(Math.floor(i / columns) / Math.ceil(tiles.length / columns))} exiting={departure} layout={reflow} style={{ width: `${100 / columns}%`, paddingHorizontal: space.s2, paddingBottom: space.s4 }}>{child}</Animated.View>
       ))}
     </View>
   );
@@ -145,7 +164,6 @@ const styles = StyleSheet.create({
   withNav: { paddingTop: 0 },
   nav: { marginBottom: space.s2, zIndex: 1 },
   topBar: { position: 'absolute', top: 0, left: 0, right: 0, paddingHorizontal: space.gutter, paddingBottom: space.s2, zIndex: 2 },
-  strip: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 3 },
   content: { gap: GAP.section },
   center: { flexGrow: 1, justifyContent: 'center', alignItems: 'center' },
   section: { gap: GAP.cards },

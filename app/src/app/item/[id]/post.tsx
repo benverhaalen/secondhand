@@ -1,3 +1,4 @@
+import { SellerPublish } from '@/selling/publish';
 // The Post preview sheet (spec/pages.md §6.8): the listing as each site will show it, a blank where a site still needs a
 // field, and one Approve that says exactly what it will post ("Post at $235 on 2 sites"). Posting is the first public
 // act in the person's name, so it waits for that tap (the hand-off rule); once posted, Undo takes the listings down.
@@ -11,10 +12,9 @@
 // the ai one) and showing that live before going into a posting"). Enhance with AI waits for the LiDAR scan's
 // measurement, since a redraw is only held to its real size by it (Ben, 08:09; 09:09: "only allow this from lidar flow
 // too"; jobs/studio/check.py).
-import * as Linking from 'expo-linking';
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
 import { Approve, Blank, EmptyState, Guess, Icon, Line, List, MOTIONS, Photo, Pill, Row, Skeleton, Stack, Txt, log, type PhotoSrc } from '@/ui';
 import { ActionRow } from '@/ui/parts/action-row';
 import { Chips } from '@/ui/parts/chips';
@@ -40,18 +40,19 @@ const skip = (drawn: string) => [
 export default function ItemPost() {
   // ?fail=ebay makes that site fail when it posts; ?case=recall draws an item whose recall check failed.
   const { id, world, price, flip, fail, case: kase } = useLocalSearchParams<{ id: string; world?: string; price?: string; flip?: string; fail?: string; case?: string }>();
-  const { state } = useScreen();
+  const { state, demo } = useScreen();
+  if (!demo) return <SellerPublish id={String(id)} />;
   const found = state === 'failed' ? null : M.find(String(id), world);
   if (state === 'loading') {
     return (
-      <RouteSheet name="item-post" state="loading" skip={skip('loading')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="loading" skip={skip('loading')} title="review your listings" onClosed={() => router.back()}>
         <Stack gap="cards"><Skeleton of="card-item" /><Skeleton of="card-item" /></Stack>
       </RouteSheet>
     );
   }
   if (!found) {
     return (
-      <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="failed" skip={skip('failed')} title="review your listings" onClosed={() => router.back()}>
         <EmptyState title="Can’t open this item" line={state === 'failed' ? 'This item didn’t load' : 'This item is no longer available'}
           action={state === 'failed' ? { id: 'post-retry', label: 'Retry', onPress: () => router.replace(`/item/${id}/post` as Href) } : undefined} />
       </RouteSheet>
@@ -61,7 +62,7 @@ export default function ItemPost() {
   const m = M.momentOf(found.w, found.item);
   if (m === 'sold' || m === 'done') {
     return (
-      <RouteSheet name="item-post" state="empty" skip={skip('empty').replace('empty: a preview is of an item that exists; ', '')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="empty" skip={skip('empty').replace('empty: a preview is of an item that exists; ', '')} title="review your listings" onClosed={() => router.back()}>
         <EmptyState title="Sold. Nothing to post" />
       </RouteSheet>
     );
@@ -73,11 +74,8 @@ export default function ItemPost() {
 
 type Status = 'ready' | 'working' | 'done' | 'failed';
 
-// The site opens beside the app, so the preview is still here after (on the web, a new tab; expo-linking's web openURL
-// would replace this page).
 const openSite = (url: string) => {
-  if (Platform.OS === 'web') { globalThis.open?.(url, '_blank', 'noopener'); return; }
-  Linking.openURL(url).catch(e => log.error('item-post.myself', e));
+  openMarketplace(url).catch(e => log.error('item-post.myself', e));
 };
 
 function Post({ w, item, price, flipped, offline, fails, recalled }: {
@@ -96,6 +94,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
   const [need, setNeed] = useState(false);
   const [waiting, setWaiting] = useState(false);
   // Each site's own words and price, once the person edits them for that site only (ways-out §6.8).
+  const [photoSettings, setPhotoSettings] = useState(false);
   const [editing, setEditing] = useState<Site | null>(null);
   const [own, setOwn] = useState<Partial<Record<Site, { title?: string; price?: number }>>>({});
   const missing = M.fields(item).find(f => f.value === null);
@@ -128,7 +127,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
   // A failed recall check blocks the post and says why (pages §6.8): no Post, only the reason.
   if (recalled) {
     return (
-      <RouteSheet name="item-post" state="failed" skip={skip('failed')} title="Preview" onClosed={() => router.back()}>
+      <RouteSheet flow name="item-post" state="failed" skip={skip('failed')} title="review your listings" onClosed={() => router.back()}>
         <EmptyState title="Can’t post a recalled item" line="The maker recalled this model, and the sites take recalled items down." />
       </RouteSheet>
     );
@@ -150,10 +149,17 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
   );
 
   return (
-    <RouteSheet name="item-post" state={offline ? 'offline' : state} skip={skip(state)} title="Preview" foot={foot} onClosed={() => router.back()}>
+    <RouteSheet flow name="item-post" state={offline ? 'offline' : state} skip={skip(state)} title="review your listings" foot={foot} onClosed={() => router.back()}>
       {offline ? <Line><Icon name="refresh" size={12} tone="ink-2" /><Txt role="caption">{waiting ? 'Waiting for signal. It posts when you’re back.' : 'Offline. It posts when you’re back.'}</Txt></Line> : null}
       {need && needing && missing ? <Line><Icon name="alert-02" size={12} tone="brick" /><Txt role="caption">{`Fill in ${missing.name} first. ${needing === 1 ? '1 site needs' : `${needing} sites need`} it.`}</Txt></Line> : null}
-      {lookable ? (
+      <Stack>
+        <Row lead={<Photo src={cover} label={item.title} />}>
+          <Txt role="headline" lines={2}>{item.title}</Txt>
+          <Txt role="caption">{`${photos} ${photos === 1 ? 'photo' : 'photos'} · ${on.length} ${on.length === 1 ? 'marketplace' : 'marketplaces'}`}</Txt>
+        </Row>
+        {lookable ? <Line><Pill id="photo-settings" label={photoSettings ? 'Hide photo options' : 'Photo options'} kind="second" onPress={() => setPhotoSettings(x => !x)} /></Line> : null}
+      </Stack>
+      {lookable && photoSettings ? (
         <Stack>
           <Photo src={cover} label={look === 'original' ? 'Your photo' : look === 'clean' ? 'Your photo, cleaned up' : 'Your photo, enhanced with AI'} fit="fill" />
           <List>
@@ -168,6 +174,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
           </List>
         </Stack>
       ) : null}
+      <Txt role="headline">Where it will go</Txt>
       <Stack gap="cards">
         {planned.map(s => {
           const isOn = on.includes(s.site), form = LISTING_FORMS[s.site];
@@ -177,7 +184,7 @@ function Post({ w, item, price, flipped, offline, fails, recalled }: {
               <ListingPreview site={s.site} photo={cover} off={!isOn}
                 title={own[s.site]?.title ?? listingTitle(s.site, item.title, item.attributes)} price={priceOn(s.site)} keep={youKeep(s.site, priceOn(s.site))}
                 photos={`${shown < photos ? `First ${shown} of ${photos} photos` : `${photos} ${photos === 1 ? 'photo' : 'photos'}`}, ${form.cover === '1:1' ? 'square' : 'cropped taller'}${look === 'ai' ? ', AI cover marked' : ''}${form.title === 'description_line_1' ? '. The name opens the description' : ''}`}
-                needs={missing && isOn ? <Line><Blank id={`needs-${s.site}`} name={missing.name} value={blank} onChange={setBlank} look="body" /></Line> : undefined}
+                needs={missing && isOn ? <Line><Blank id={`needs-${s.site}`} live name={missing.name} value={blank} onChange={setBlank} look="body" /></Line> : undefined}
                 toggle={<Switch id={`post-${s.site}`} label="Post here" on={isOn} disabled={status === 'working'} onChange={o => setOn(x => (o ? [...x, s.site] : x.filter(y => y !== s.site)))} />} />
               {isOn && status === 'ready' ? (
                 editing === s.site ? (

@@ -42,3 +42,26 @@ test('the recorded Mercari sold search prices through the comps engine', () => {
   assert.ok(found.range.q50 !== null && found.range.q10! <= found.range.q50! && found.range.q50! <= found.range.q90!);
   assert.equal(found.state, 'too_few');   // five sales are a range to show with its comps, not a checked price
 });
+
+test('the age clock identifies whether it came from the sale or listing date', () => {
+  const [listed, sold, invalidSale] = toComps('mercari', [row('listed', 5000), row('sold', 5000, { sold_at: '2026-11-10T00:00:00Z' }), row('invalid', 5000, { sold_at: 'invalid' })], { query: 'jacket', condition: 'good' });
+  assert.equal(listed.dated_by, 'listed');
+  assert.equal(sold.dated_by, 'sold'); assert.equal(sold.sold_at, '2026-11-10T00:00:00Z');
+  assert.equal(invalidSale.dated_by, 'listed');
+});
+
+test('only Apify rows from a non-eBay site may model', () => {
+  const q = { query: 'jacket', condition: 'good' };
+  assert.equal(toComps('mercari', [row('harness', 5000)], q)[0].may_model, false);
+  assert.equal(toComps('poshmark', [row('apify', 5000, { via: 'apify' })], q)[0].may_model, true);
+  assert.equal(toComps('ebay', [row('ebay', 5000, { via: 'apify' })], q)[0].may_model, false);
+});
+
+test('listing dates survive conversion separately, including an invalid sale date', () => {
+  const [listed, sold, invalid] = toComps('mercari', [row('listed', 5000),
+    row('sold', 5000, { sold_at: '2026-11-10T00:00:00Z' }), row('invalid', 5000, { sold_at: 'invalid' })],
+    { query: 'jacket', condition: 'good' });
+  for (const comp of [listed, sold, invalid]) assert.equal(comp.listed_at, '2026-11-01T00:00:00Z');
+  const found = comparables({ condition: 'good' }, [listed], as_of);
+  assert.equal(found.comps[0].age_days, 14, 'age decay must still use the listing date');
+});

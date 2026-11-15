@@ -39,7 +39,7 @@ One JSON object per line, one per answer. Fixed 2026-11-15; ours and every rival
 | `sites[]` | the marketplaces the answer drew on |
 | `facts[]` | `{kind, count}` for the twelve kinds of row 2: `sold_prices, live_listings, official_price, discounts, product_reviews, seller_reviews, demand_trend, time_to_sell, fees_per_site, you_keep, same_item_elsewhere, price_history` |
 | `numbers[]` | `{name, value_cents, citation_id, evidence[]}`: row 3 counts the share with a citation or evidence |
-| `reads[]` | `{site, lane, ms, outcome, rows, warm}` from `searched[]`; lanes are `plain`, `cloud_browser`, `own_browser`, `official`, `mcp`; the first read of a site in a run is cold (`warm: false`), later reads warm; repeated job snapshots count once |
+| `reads[]` | `{site, lane, ms, outcome, rows, warm}` from `searched[]`; lanes are `plain`, `cloud_browser`, `own_browser`, `official`, `mcp`, `api`; the first read of a site in a run is cold (`warm: false`), later reads warm; repeated job snapshots count once |
 | `cost` | `{browser_s, proxy_bytes, model_calls, cents}`; missing usage and unknown rates stay null; rates and source lines live in [costs.mjs](costs.mjs), with cloud time billed by started minute per read |
 | `cited_facts` | count of `numbers[]` with a citation or evidence |
 | `lane` | `plain` on baseline records; per-site lanes are in `reads[]` |
@@ -47,7 +47,7 @@ One JSON object per line, one per answer. Fixed 2026-11-15; ours and every rival
 | `delist[]` | `{site, sold_at, ended_at}` for question `delist`, else null |
 | `raw_ref` | the saved raw answer, relative to the run folder |
 
-The added fields are optional when reading old records. The runner maps source lanes `public_page` to `plain` and `harness` to `cloud_browser`. Browser seconds come from browser-lane read times; proxy bytes and model calls require usage in the response’s `cost` object and otherwise remain null. An approximate account-day cost or a token price does not supply a per-read or per-call rate.
+The added fields are optional when reading old records. The runner maps source lanes `public_page` to `plain`, `harness` to `cloud_browser`, and `treg` and `apify` (paid third-party APIs, priced per call) to `api`. Browser seconds come from browser-lane read times; proxy bytes and model calls require usage in the response’s `cost` object and otherwise remain null. An approximate account-day cost or a token price does not supply a per-read or per-call rate.
 
 The baseline fetch is injected as `run({tool: 'baseline', fetch})`; tests use [the recorded Poshmark page](fixtures/run/poshmark.html), copied unchanged from `spec/fixtures/pages/poshmark.html`. Redirects are recorded without following them so each item makes at most one request. Missing queries produce `no_query` without a request.
 
@@ -69,7 +69,7 @@ A sale is used for row 7 only if it is dated after the record's `asked_at` (`sal
 
 | Date | Items | Result | Why |
 |---|---|---|---|
-| 2026-11-15 | 10 (the skeleton manifest) | row 1 coverage 0 of 10 (Wilson 95% 0 to 0.28) | every item has no `query` yet; the item set is a row in [waiting.md](../spec/plans/waiting.md) |
+| 2026-11-15 | 10 (the skeleton manifest) | row 1 coverage 0 of 10 (Wilson 95% 0 to 0.28) | every item has no `query` yet; the item set is a row in [waiting.md](../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) |
 | 2026-11-15 | 20 market items (`--set market`), in process | row 1 coverage 0 of 20 (Wilson 95% 0 to 0.16); 20 of 40 answers empty, 20 `needs_user` (valuation asks a signed-in user); row 2: 0 kinds; row 3: no numbers | the baseline before streaming search: `POST /v1/search` still reads one stub page seeded for one query (int-search-1 replaces it); command `node bench/run.mjs && node bench/score.mjs bench/out/<run_id>` |
 | 2026-11-15 09:10 UTC | 20 market items, in process, real public lanes from the Mac | row 1 still 0 of 20; per item the sources answered: Poshmark a hit (48 rows for `m-clothes-2`), Depop 403 with a block marker on a plain request, Mercari blocked (needs the person's linked account), Facebook `page_changed` (title and price missing); every Poshmark row was then dropped as `unresolved`; row 8 full answer p50 2.0 s, p95 4.0 s | the search dropped rows the identity model could not judge (no model key on that machine): fixed in int-search-1 to keep and label them; Depop's public search needs the harness's browser lane |
 | 2026-11-15 09:19 UTC | 20 market items, in process, real public lanes from the Mac, main at 8a7704ae | row 1 coverage 19 of 20 (Wilson 95% 0.76 to 0.99), answers drawing on 1 site (median); row 2: 1 kind of fact per item (live listings); row 3: 912 of 912 numbers carry evidence (each listing's URL); row 8 first answer p50 2.0 s, full answer p50 2.0 s and p95 4.0 s | Poshmark answers on a plain request; Depop moves to its harness lane, Mercari needs the person's account, Facebook and eBay are not built yet. Times are only as fine as the runner's 2 s poll of `GET /v1/jobs/:id`: the next runner reads the job's own frame times |

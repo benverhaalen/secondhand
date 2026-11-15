@@ -1,0 +1,143 @@
+{
+  "header": {
+    "source": "spec/examples/*.json; spec/items/**; app/src/demo/**; manifests named by spec/items/capture-real/2026-11-15.json",
+    "mark": "repo examples only; a full CC0 list (Wikidata) replaces this later",
+    "date": "2026-11-15"
+  },
+  "rows": [
+    {
+      "brand": "Adidas",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Amazon",
+      "aliases": [],
+      "data": "example",
+      "common_word": true
+    },
+    {
+      "brand": "Apple",
+      "aliases": [],
+      "data": "example",
+      "common_word": true
+    },
+    {
+      "brand": "Birkenstock",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Carhartt",
+      "aliases": [],
+      "data": "example",
+      "style": "^(?:B324|J97)$",
+      "style_source": [
+        "research/studio/ben/slides/runs/20261115-0652-43687372523/carhartt-pants/manifest.json#read.tag_text",
+        "research/identify/ben/build-plan.md#loop-2"
+      ],
+      "style_mark": "Only codes attested in repo sources; no inferred brand-wide format."
+    },
+    {
+      "brand": "Champion",
+      "aliases": [],
+      "data": "example",
+      "common_word": true
+    },
+    {
+      "brand": "Dr. Martens",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Dyson",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Fruit of the Loom",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Gildan",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Herman Miller",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "IKEA",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "KitchenAid",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "LEGO",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Le Creuset",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Levi's",
+      "aliases": [
+        "Levis",
+        "Levi Strauss",
+        "Levi\u2019s"
+      ],
+      "data": "example"
+    },
+    {
+      "brand": "New Balance",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Nike",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Nintendo",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Patagonia",
+      "aliases": [],
+      "data": "example",
+      "common_word": true
+    },
+    {
+      "brand": "Russell Athletic",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Sony",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "Steelcase",
+      "aliases": [],
+      "data": "example"
+    },
+    {
+      "brand": "lululemon",
+      "aliases": [],
+      "data": "example"
+    }
+  ]
+}

@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "exported_at": "2025-06-12T09:00:00Z",
+  "run_id": "fixture:db4-shape",
+  "code_version": "fixture:synthetic-code",
+  "params": [
+    {
+      "name": "valuation_sale_curve",
+      "scope": {
+        "kind": "bikes_sports",
+        "site": "ebay"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "reference": "median_adjusted_sold",
+        "days": [
+          7,
+          30,
+          90
+        ],
+        "bins": [
+          {
+            "ratio": 1,
+            "p": [
+              0.15,
+              0.35,
+              0.55
+            ]
+          }
+        ],
+        "t": [
+          12,
+          65,
+          140
+        ],
+        "n_events": 420,
+        "calibration_error": 0.04,
+        "price_blind": true,
+        "fitted_on": "dataset:fixture_auction",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:0",
+      "n_eff": 800,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    },
+    {
+      "name": "valuation_sale_curve",
+      "scope": {
+        "kind": "cards_collectibles",
+        "site": "ebay"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "reference": "median_adjusted_sold",
+        "days": [
+          7,
+          30,
+          90
+        ],
+        "bins": [
+          {
+            "ratio": 1,
+            "p": [
+              0.15,
+              0.35,
+              0.55
+            ]
+          }
+        ],
+        "t": [
+          30,
+          107,
+          null
+        ],
+        "n_events": 433,
+        "calibration_error": 0.04,
+        "price_blind": true,
+        "fitted_on": "dataset:fixture_auction",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:1",
+      "n_eff": 811,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    },
+    {
+      "name": "valuation_sale_curve",
+      "scope": {
+        "kind": "electronics",
+        "site": "ebay"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "reference": "median_adjusted_sold",
+        "days": [
+          7,
+          30,
+          90
+        ],
+        "bins": [
+          {
+            "ratio": 1,
+            "p": [
+              0.15,
+              0.35,
+              0.55
+            ]
+          }
+        ],
+        "t": [
+          14,
+          67,
+          142
+        ],
+        "n_events": 446,
+        "calibration_error": 0.04,
+        "price_blind": true,
+        "fitted_on": "dataset:fixture_auction",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:2",
+      "n_eff": 822,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    },
+    {
+      "name": "valuation_sale_curve",
+      "scope": {
+        "kind": "lighting_home",
+        "site": "ebay"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "reference": "median_adjusted_sold",
+        "days": [
+          7,
+          30,
+          90
+        ],
+        "bins": [
+          {
+            "ratio": 1,
+            "p": [
+              0.15,
+              0.35,
+              0.55
+            ]
+          }
+        ],
+        "t": [
+          15,
+          68,
+          143
+        ],
+        "n_events": 459,
+        "calibration_error": 0.04,
+        "price_blind": true,
+        "fitted_on": "dataset:fixture_auction",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:3",
+      "n_eff": 833,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    },
+    {
+      "name": "valuation_sale_curve",
+      "scope": {
+        "kind": "media",
+        "site": "ebay"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "reference": "median_adjusted_sold",
+        "days": [
+          7,
+          30,
+          90
+        ],
+        "bins": [
+          {
+            "ratio": 1,
+            "p": [
+              0.15,
+              0.35,
+              0.55
+            ]
+          }
+        ],
+        "t": [
+          16,
+          69,
+          144
+        ],
+        "n_events": 472,
+        "calibration_error": 0.04,
+        "price_blind": true,
+        "fitted_on": "dataset:fixture_auction",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:4",
+      "n_eff": 844,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    },
+    {
+      "name": "valuation_sale_curve",
+      "scope": {
+        "kind": "other",
+        "site": "ebay"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "reference": "median_adjusted_sold",
+        "days": [
+          7,
+          30,
+          90
+        ],
+        "bins": [
+          {
+            "ratio": 1,
+            "p": [
+              0.15,
+              0.35,
+              0.55
+            ]
+          }
+        ],
+        "t": [
+          17,
+          70,
+          145
+        ],
+        "n_events": 485,
+        "calibration_error": 0.04,
+        "price_blind": true,
+        "fitted_on": "dataset:fixture_auction",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:5",
+      "n_eff": 855,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    },
+    {
+      "name": "valuation_sale_curve",
+      "scope": {
+        "kind": "toys_lego",
+        "site": "ebay"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "reference": "median_adjusted_sold",
+        "days": [
+          7,
+          30,
+          90
+        ],
+        "bins": [
+          {
+            "ratio": 1,
+            "p": [
+              0.15,
+              0.35,
+              0.55
+            ]
+          }
+        ],
+        "t": [
+          18,
+          71,
+          146
+        ],
+        "n_events": 498,
+        "calibration_error": 0.04,
+        "price_blind": true,
+        "fitted_on": "dataset:fixture_auction",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:6",
+      "n_eff": 866,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    },
+    {
+      "name": "valuation_calibration",
+      "scope": {
+        "kind": "shoes",
+        "site": "stockx"
+      },
+      "family": "model_ref",
+      "value_or_hyperparams": {
+        "Q_g": 0.15,
+        "n": 800,
+        "hits": 640,
+        "split_at": "2025-01-15",
+        "holdout_n": 300,
+        "holdout_raw_coverage": 0.76,
+        "holdout_coverage": 0.82,
+        "nominal": 0.8,
+        "fitted_on": "dataset:fixture_shoes",
+        "use_scope": "hackathon_demo"
+      },
+      "prior": null,
+      "version": 1,
+      "fitted_on_ids_hash": "fixture:synthetic:rows:7",
+      "n_eff": 877,
+      "metric": null,
+      "held_out_score": null,
+      "guard_lo": null,
+      "guard_hi": null,
+      "status": "champion",
+      "frozen": false,
+      "promoted_at": "2025-06-12T09:00:00Z",
+      "origin": "fit",
+      "previous_version": null,
+      "keep": null,
+      "days_since_last": null,
+      "citation": "fixture:db4-shape:measures.valuation_fit"
+    }
+  ]
+}

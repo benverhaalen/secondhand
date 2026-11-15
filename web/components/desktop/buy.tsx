@@ -1,0 +1,21 @@
+'use client';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { Appraisals, Found } from './buy-history';
+import { useSearchParams } from 'next/navigation';
+import { jobFinished, useJob } from './job';
+import { Watch, WatchForm } from './watch';
+import { api, collection, message, type Job, type Offer, type Want } from '../../lib/desktop-api';
+import { Empty, ErrorNotice, Icon, Loading, Offers } from './primitives';
+import { useResource } from './state';
+
+export function Buy() {
+  const [query, setQuery] = useState(''), [jobId, setJobId] = useState<string>(), [busy, setBusy] = useState(false), [error, setError] = useState<string>(), [newWatch, setNewWatch] = useState(false), [selectedWatch, setSelectedWatch] = useState<Want>();
+  const watches = useResource('wants', signal => collection<Want>('/v1/wants', signal));
+  const params = useSearchParams();
+  const [view, setView] = useState(params.get('view') ?? 'tracked');
+  useEffect(() => { setQuery(params.get('q') ?? ''); setJobId(params.get('job') ?? undefined); }, [params]);
+  const tracked = useJob<{ results?: Offer[] }>(jobId), job = tracked.job;
+  async function search(e: React.FormEvent) { e.preventDefault(); if (!query.trim()) return; setBusy(true); setError(undefined); try { const data = await api<Job>('/v1/search', { text: query.trim() }); setJobId(data.id); window.history.replaceState(null, '', `/app/buy?q=${encodeURIComponent(query.trim())}&job=${encodeURIComponent(data.id)}`); } catch(e) { setError(message(e)); } finally { setBusy(false); } }
+  return <><div className="desk-page-heading"><h1>Find something used</h1><button className="desk-secondary" onClick={() => setNewWatch(true)}>Create a watch</button></div><form className="desk-search" onSubmit={search}><Icon name="search-01" /><input aria-label="Find an item or paste a link" value={query} onChange={e => setQuery(e.target.value)} placeholder="Find an item or paste a link" required /><button className="desk-primary" disabled={busy}>{busy ? 'Searching…' : 'Search'}</button></form><ErrorNotice error={error ?? tracked.error ?? (job?.state === 'failed' ? job.error?.message ?? 'Search could not finish. Try again.' : undefined)} retry={tracked.error ? tracked.retry : undefined} />{job && <section className="desk-section"><div className="desk-section-heading"><h2>Search results</h2>{!jobFinished(job.state) && <span role="status" className="desk-muted">Searching marketplaces…</span>}</div>{job.result?.results?.length ? <Offers offers={job.result.results} /> : job.state === 'done' ? <Empty title="No matches found"><p>Try a different name or save a watch.</p></Empty> : job.state === 'cancelled' ? <p className="desk-muted">Search cancelled.</p> : job.state !== 'failed' && <Loading />}</section>}<nav className="desk-filters desk-section" aria-label="Buying">{['tracked', 'appraised', 'found'].map(value => <button key={value} aria-pressed={view === value} onClick={() => setView(value)}>{value[0].toUpperCase() + value.slice(1)}</button>)}<Link className="desk-secondary" href={jobId ? `/app/buy/shop?search=${encodeURIComponent(jobId)}&q=${encodeURIComponent(query)}` : '/app/buy/shop'}>Shopping chat</Link></nav>{view === 'appraised' ? <Appraisals /> : view === 'found' ? <Found /> : <section className="desk-section"><h2>Looking for</h2><ErrorNotice error={watches.error} retry={watches.refresh} />{watches.loading && <Loading />}{watches.data?.length ? <div className="desk-watch-list">{watches.data.map(w => <button className="desk-watch" key={w.id} onClick={() => setSelectedWatch(w)}><span className="desk-watch-icon"><Icon name="search-01" /></span><span><span className="desk-watch-name">{w.text}</span><span className="desk-meta">{w.state === 'active' ? w.new_matches ? `${new Intl.NumberFormat().format(w.new_matches)} new ${w.new_matches === 1 ? 'match' : 'matches'}` : 'Watching for matches' : w.state}</span></span><span aria-hidden="true">→</span></button>)}</div> : watches.data && <Empty title="No saved watches"><p>Save what you want and the price you want to pay.</p><button className="desk-primary" onClick={() => setNewWatch(true)}>Create a watch</button></Empty>}</section>}{newWatch && <WatchForm initial={query} close={() => setNewWatch(false)} />}{selectedWatch && <Watch want={selectedWatch} close={() => setSelectedWatch(undefined)} />}</>;
+}

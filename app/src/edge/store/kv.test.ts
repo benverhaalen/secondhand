@@ -15,6 +15,19 @@ function fixture(t: TestContext) {
   return { a: kv(a, () => time), b: kv(b, () => time), advance: (ms: number) => { time += ms; } };
 }
 
+test('kv clear removes only its namespace across handles, including expired rows', t => {
+  const { a, b } = fixture(t);
+  a.set('idem', 'live', 'saved');
+  a.set('idem', 'expired', 'old', 0);
+  a.set('secret', 'live', 'synthetic');
+  b.clear('idem');
+  assert.equal(a.get('idem', 'live'), undefined);
+  assert.equal(a.sweep(), 0, 'clear also removes expired rows');
+  assert.equal(a.get('secret', 'live'), 'synthetic');
+  a.clear('idem');
+  assert.equal(b.add('idem', 'live', 'new'), true);
+});
+
 test('kv TTL expiry is visible across handles at the boundary and permanent keys survive sweep', t => {
   const { a, b, advance } = fixture(t);
   a.set('sessions', 'key', { count: 1 }, 50);

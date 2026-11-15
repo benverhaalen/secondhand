@@ -1,5 +1,6 @@
 // The contract examples (spec/examples/), loaded once. A route serves its example until its engine lands, through the same handler,
 // so the swap to the real answer is one line. Ben's client mock reads the same files.
+import { development } from '../store/db.ts';
 import auth from '../../../../spec/examples/auth.json' with { type: 'json' };
 import buy from '../../../../spec/examples/buy.json' with { type: 'json' };
 import captures from '../../../../spec/examples/captures.json' with { type: 'json' };
@@ -17,6 +18,12 @@ export type Example = {
   request?: { headers?: Record<string, string>; body?: unknown }; headers?: Record<string, string>; stream?: string; from_id?: number; content_type?: string;
 };
 export type Frame = { id?: string; event?: string; data?: Record<string, unknown>; comment?: string };
+
+export function examplesServed(env: Record<string, string | undefined> = process.env): boolean {
+  if (env.SECONDHAND_EXAMPLES === '1') return true;
+  if (env.SECONDHAND_EXAMPLES === '0') return false;
+  return development(env);
+}
 
 export const EXAMPLES: Example[] = [auth, buy, captures, errors, items, jobs, me, sell, today, you, routes].flatMap((f) => (f as { examples: Example[] }).examples);
 export const STREAMS: Record<string, Frame[]> = Object.fromEntries((jobs as { streams: { name: string; frames: Frame[] }[] }).streams.map((s) => [s.name, s.frames]));

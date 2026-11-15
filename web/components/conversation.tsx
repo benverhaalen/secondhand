@@ -51,7 +51,7 @@ export function Conversation({ home = false, review = false, initialTurns = [], 
     const controller = new AbortController();
     controls.current.set(turn.id, () => controller.abort());
     try {
-      const jobId = await ask(turn.text, turn.image, visitor(), turn.idempotencyKey, transportFetch, controller.signal);
+      const jobId = await ask(turn.text, turn.image, visitor(), turn.idempotencyKey, transportFetch, controller.signal, id => { visitor(id); });
       if (controller.signal.aborted) return;
       replace(turn.id, t => ({ ...t, jobId }));
       follow(turn.id, jobId);
@@ -135,10 +135,10 @@ export function Conversation({ home = false, review = false, initialTurns = [], 
     <form className="composer" onSubmit={event => { event.preventDefault(); send(); }}>
       <label className="sr-only" htmlFor={fieldId}>Ask about an item or a style</label>
       <textarea id={fieldId} rows={2} placeholder="Ask about an item or a style" value={draft} onChange={e => { setDraft(e.target.value); log.input('buy', 'ask.edit', { text_length: e.target.value.length }); }} onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(); } }} />
-      {preview && <div className="attached"><Photo src={preview} alt="Photo attached to your next ask" /><button className="secondary" type="button" onClick={removePhoto}>Remove photo</button></div>}
-      <div className="composer-actions"><input className="sr-only" tabIndex={-1} ref={fileInput} type="file" accept="image/*" aria-label="Choose a photo" onChange={event => { const file = event.target.files?.[0]; if (file) void attach(file); event.target.value = ''; }} /><button className="secondary" type="button" onClick={() => { log.input('buy', 'photo.choose'); fileInput.current?.click(); }}>Add photo</button><span className="muted photo-status" role="status">{photoBusy ? 'Opening photo…' : preview ? 'Photo attached' : ''}</span><button type="submit" className="primary" disabled={photoBusy || !draft.trim() && !preview}>Ask</button></div>
+      {preview && <div className="attached"><Photo src={preview} alt="Photo attached to your next question" /><button className="secondary" type="button" onClick={removePhoto}>Remove photo</button></div>}
+      <div className="composer-actions"><input className="sr-only" tabIndex={-1} ref={fileInput} type="file" accept="image/*" aria-label="Choose a photo" onChange={event => { const file = event.target.files?.[0]; if (file) void attach(file); event.target.value = ''; }} /><button className="secondary" type="button" onClick={() => { log.input('buy', 'photo.choose'); fileInput.current?.click(); }}>Add photo</button><span className="muted photo-status" role="status">{photoBusy ? 'Opening photo…' : preview ? 'Photo attached' : ''}</span><button className="primary" disabled={photoBusy || !draft.trim() && !preview}>Ask</button></div>
     </form>
-    {offline && <p className="notice" role="status">You’re offline. Your ask stays here.</p>}
+    {offline && <p className="notice" role="status">You’re offline. Your question stays here.</p>}
     {message && <p className="notice" role="status">{message}</p>}
     {home && turns.length === 0 && <div className="starters"><p className="muted">Try a recorded answer</p><button type="button" onClick={() => play('words-fixture-prices-counts')}>Find Carhartt work pants <span aria-hidden="true">→</span></button><button type="button" className="photo-starter" onClick={() => play('photo-fixture-prices-counts')}><Photo src="/garment.jpg" alt="Brown Carhartt work pants" /><span>Find pants like these</span><span aria-hidden="true">→</span></button><button type="button" onClick={() => play('trends-fixture-prices-counts')}>What are the latest fashion trends millenials are wearing, what about gen z <span aria-hidden="true">→</span></button></div>}
     <div className="turns">{turns.map(turn => <Turn key={turn.id} turn={turn} retry={() => {
@@ -146,7 +146,7 @@ export function Conversation({ home = false, review = false, initialTurns = [], 
       if (turn.recorded) { controls.current.get(turn.id)?.(); setTurns(old => old.filter(t => t.id !== turn.id)); play(turn.recorded); }
       else { const next = retryTurn(turn); replace(turn.id, () => next); void run(next); }
     }} />)}</div>
-    <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{turns.length > 0 ? turns.at(-1)?.status === 'running' ? 'Finding your answer' : ['failed', 'offline', 'rate_limited'].includes(turns.at(-1)?.status ?? '') ? 'The answer could not finish. Try again below.' : 'Your answer is ready below' : ''}</div>
+    <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{turns.length > 0 ? turns.at(-1)?.status === 'running' ? 'Finding your answer' : ['failed', 'offline', 'rate_limited'].includes(turns.at(-1)?.status ?? '') ? 'Couldn’t finish the answer. Try again below.' : 'Your answer is ready below' : ''}</div>
     {home && turns.length > 0 && <button className="secondary continue" type="button" onClick={continueTurn}>Continue <span aria-hidden="true">→</span></button>}
   </div>;
 }

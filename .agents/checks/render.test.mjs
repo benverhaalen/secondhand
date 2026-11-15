@@ -65,7 +65,7 @@ async function ids(body, medium = 'deck', level = 'error', theme = '') {
 test('render: a browser is here when the checks run in CI', () => { if (process.env.CI) assert.ok(pw, 'Playwright is not installed, so no rule was tested on a render'); });
 
 browserTest('render: a deck that follows the brand passes', { skip: !pw }, async () => {
-  assert.deepEqual(await ids(deck('<p class="h">What you keep</p><div><p class="b">You keep</p><p style="font-size:200px">$46.95</p></div>')), []);
+  assert.deepEqual(await ids(deck('<p class="h" style="font-family:var(--font-text);font-weight:500">What you keep</p><div><p class="b">You keep</p><p style="font-size:200px">$46.95</p></div>')), []);
 });
 
 const CASES = [
@@ -75,8 +75,8 @@ const CASES = [
   ['B13', 'book weight on a slide', deck('<p class="b" style="font-weight:400">Listed in a minute</p>'), /B13 .*the text face at weight 400: text is 500 everywhere/],
   ['B14', 'a size off the set', deck('<p style="font-size:28px">Listed in a minute</p>'), /B14 .*28 px/],
   ['B14', 'two peak numbers', deck('<p class="b">You keep</p><p style="font-size:200px">$46.95</p><p style="font-size:160px">$12</p>'), /B14 .*one peak number/],
-  ['A7', 'a number in the display face', deck('<p class="h">Sold in 3 days</p>'), /A7 .*number in the display face/],
-  ['A7', 'two display headings', deck('<p class="h">What you keep</p><p class="h">Where it sold</p>'), /A7 .*2 display headings/],
+  ['A7', 'a number in the display face', deck('<p class="h">Sold in 3 days</p>'), /A7 .*uses the wordmark face/],
+  ['A7', 'two display headings', deck('<p class="h">What you keep</p><p class="h">Where it sold</p>'), /A7 .*What you keep.*uses the wordmark face[\s\S]*A7 .*Where it sold.*uses the wordmark face/],
   ['B7', 'colored text', deck('<p class="b" style="color:var(--sky-deep)">Listed in a minute</p>'), /B7 .*--sky-deep text/],
   ['B7', 'a color that is not a token', deck('<div style="background:#ff0000;height:64px"></div>'), /B7 .*rgb\(255, 0, 0\)/],
   ['B6', 'text on a photo', deck(`<div style="position:relative"><img alt="A jacket" src="${PX}" style="width:800px;height:400px;display:block"><p class="b" style="position:absolute;top:32px;left:32px">Carhartt jacket</p></div>`), /B6 .*sits on a photo/],
@@ -109,7 +109,12 @@ const CASES = [
   ['B3', 'a wordmark that moves between post panels', '<section class="p" data-view><p class="m" style="font-size:40px;text-align:center">secondhand</p></section><section class="p" data-view><p class="m" style="font-size:40px;text-align:center;margin-top:96px">secondhand</p></section>', /B3 .*moves between views/, 'post'],
 ];
 // An app mock: the phone's own bars are skipped, a screen may be taller than the phone, a row may scroll past the margin, and text an ancestor clips is not on the page.
-const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;text-align:center">secondhand</p>${inner}</section>`;
+const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;padding-left:20px">secondhand</p>${inner}</section>`;
+browserTest('render: A7 permits the app heading face at 36 and rejects it for body text', { skip: !pw }, async () => {
+  const heading = '<p style="font-family:var(--font-display);font-weight:600;font-size:36px;margin:32px 20px">review your item</p>';
+  assert.deepEqual((await ids(app(heading), 'app')).filter(message => message.startsWith('A7 ')), []);
+  assert.ok((await ids(app(heading.replace('36px', '18px')), 'app')).some(message => message.startsWith('A7 ')));
+});
 browserTest('render: an app mock with a status bar, a tall screen, a scrolling row and clipped text passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(app(`<div style="overflow-x:auto;white-space:nowrap;padding:0 20px;margin-top:16px"><span style="font-size:15px">Draft</span>${'<span style="font-size:15px;padding:0 64px">Live</span>'.repeat(6)}</div>
     <div style="height:20px;overflow:hidden;padding:0 20px"><p style="font-size:15px;height:20px">Carhartt jacket</p><p style="font-size:15px">Hidden below the fold of its box</p></div>
@@ -124,7 +129,7 @@ browserTest('render: on an app screen a button label is medium, a small icon nee
 });
 browserTest('render: a price list, a kind whose width follows its words, and the scaled variables in media.css pass on a deck', { skip: !pw }, async () => {
   const row = (a, b) => `<div style="display:flex;gap:var(--ms-7);padding:var(--ms-3) 0"><span class="b">${a}</span><span><span class="b">${b}</span></span></div>`;
-  assert.deepEqual(await ids(deck(`<p class="h" style="font-size:var(--mt-heading)">What you keep</p><div>${row('Consignment', '$3')}${row('secondhand', '$17')}</div>
+  assert.deepEqual(await ids(deck(`<p class="h" style="font-size:var(--mt-heading);font-family:var(--font-text);font-weight:500">What you keep</p><div>${row('Consignment', '$3')}${row('secondhand', '$17')}</div>
     <div style="display:flex;gap:var(--ms-4)"><span class="b" data-part="chip" data-fit="content" style="background:var(--gray);border-radius:var(--mr-card);padding:var(--ms-2) var(--ms-4)">Shoes</span><span class="b" data-part="chip" data-fit="content" style="background:var(--gray);border-radius:var(--mr-card);padding:var(--ms-2) var(--ms-4)">Jackets</span></div>`)), []);
 });
 browserTest('render: a view with no color and no photo gets a warning that it reads as no brand', { skip: !pw }, async () => {
@@ -163,12 +168,12 @@ browserTest('render: a row under a solid bar, a toast that has faded out, a labe
     <p style="font-size:15px;opacity:0;font-family:Arial;padding:0 20px">Gone</p><span style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;font-family:Arial">For a screen reader</span>
     <div style="padding:16px 20px"><button style="${PILL};box-shadow:var(--focus-ring);border:1px solid var(--outline)">Accept $38</button>
     <button disabled style="font:500 15px var(--font-text);background:var(--gray);color:var(--ink-disabled);border:0;border-radius:var(--r-pill);padding:16px 32px;margin-top:16px">Send</button>
-    <h1 style="font:600 36px/1.125 var(--font-display);white-space:nowrap;margin-top:16px">Today <span style="color:var(--ink-2)">here</span></h1></div>`), 'app'), []);
+    <h1 style="font:500 36px/1.125 var(--font-text);white-space:nowrap;margin-top:16px">Today <span style="color:var(--ink-2)">here</span></h1></div>`), 'app'), []);
 });
 CASES.push(['B15', 'text that taps pass through, in a face that is not ours', deck('<p class="b" style="pointer-events:none;font-family:Arial">Listed in a minute</p>'), /B15 .*Arial/],
   ['B15', 'Inter named as a fallback', deck('<p class="b" style="font-family:var(--font-text), Inter">Listed in a minute</p>'), /B15 .*names Inter/],
   ['B13', 'italic text', deck('<p class="b" style="font-style:italic">Listed in a minute</p>'), /B13 .*is italic/],
-  ['A7', 'an accent in the display face', deck('<p class="h">Vêtements</p>'), /A7 .*does not hold/],
+  ['A7', 'an accent in the display face', deck('<p class="h">Vêtements</p>'), /A7 .*uses the wordmark face/],
   ['B16', 'words capitalized by CSS', deck('<p class="b" style="text-transform:capitalize">listed in a minute</p>'), /B16 .*capitalized by CSS/],
   ['B23', 'two hyphens used as a dash', deck('<p class="b">Sold -- fast</p>'), /B23 .*"--" as a dash/],
   ['B12', 'an amount in euros with the sign after it', deck('<div><p style="font-size:200px">46,95 €</p></div>'), /B12 .*nothing beside it/],
@@ -203,7 +208,7 @@ browserTest('render: a tile of a fixed size that ends long text with an ellipsis
     <img data-fill="photo" alt="A jacket" src="${PX}" style="width:72px;height:72px;flex:none;background:var(--gray)"><div style="min-width:0;flex:1"><p data-fill="title" style="${SLOT}">Nike Dunks</p>
     <p style="${SLOT}">Offer <span data-fill="amount">$38</span> from <span data-fill="name">Sam</span></p></div></div>`), 'app'), []);
 });
-const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px;text-align:center">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
+const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
 browserTest('render: a screen that draws a state and says why the others cannot happen passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(SCREEN('data-screen="about" data-state="typical" data-skip="new: it is the same on day one; empty: it holds no list; one: it holds no list; dense: it holds no list; loading: it is built in; failed: it is built in; offline: it is built in"'), 'app'), []);
 });
@@ -358,6 +363,13 @@ test('render: a row cut by the fold and text in a sideways scroller are judged w
 browserTest('render: a pressable photo tile drawn as a background image, with no icon, passes U1', { skip: !pw }, async () => {
   const found = await ids(app(`<div role="button" style="margin:16px 20px;width:167px;height:200px;cursor:pointer"><div data-photo aria-label="A jacket" style="width:167px;height:167px;border-radius:20px;background:url(${PX}) center/cover"></div><p style="font-size:15px">Carhartt jacket</p></div>`), 'app');
   assert.deepEqual(found.filter(o => /^U1 /.test(o)), []);
+});
+browserTest('render B32: a tag image inside the brand-mark wrapper belongs to the lockup', { skip: !pw }, async () => {
+  const body = `<section class="s" data-view><div style="display:flex;align-items:center;gap:8px"><span data-part="brand-mark" style="display:block;width:24px;height:24px;position:relative"><span style="display:block;height:0"><img src="${PX}" alt="" style="position:absolute;top:0;left:0;width:24px;height:24px"></span></span><p class="m">secondhand</p></div></section>`;
+  const found = await ids(body);
+  assert.deepEqual(found.filter(o => /^B32 /.test(o)), []);
+  const broken = await ids(body.replace('data-part="brand-mark"', ''));
+  assert.ok(broken.some(o => /^B32 /.test(o)));
 });
 // Each case renders in its own page of the one browser, so they run side by side.
 describe('render: in a real browser, side by side', { concurrency: 4 * availableParallelism() }, () => {

@@ -68,7 +68,8 @@ test('a busy machine gets one new call every few ticks, not a burst', async () =
   const calm = fake({ ms: 150 }), busy = fake({ ms: 150 }), jobs = () => plan(['a', 'b', 'c'].map(id => job(id)), { max: 3, ramp: 9 });
   await go(jobs(), calm);
   const done = await go(jobs(), busy, { probe: () => ({ load1: 99, cpu: 0, mem: 0, swap: 0 }) });
-  assert.ok(starts(calm)[2] - starts(calm)[0] < 15, 'a calm machine starts all three on one tick');
+  // Relative, not a wall-clock limit: a loaded machine stretches both, and a calm run must still be tighter than one busy gap.
+  assert.ok(starts(calm)[2] - starts(calm)[0] < starts(busy)[1] - starts(busy)[0], 'a calm machine starts all three on one tick');
   assert.ok(starts(busy)[1] - starts(busy)[0] >= 20 && starts(busy)[2] - starts(busy)[1] >= 20, `starts were ${starts(busy)}`);
   assert.equal(busy.peak(), 3, 'calls that are waiting on the server still overlap');
   assert.ok(done.held > 0);
@@ -125,7 +126,7 @@ test('a call is not fresh in a folder that holds files or sits in a repo, so nei
   assert.match(done.jobs[0].why, /already holds files/);
 
   const repo = mkdtempSync(join(tmpdir(), 'image-repo-'));
-  writeFileSync(join(repo, 'AGENTS.md'), 'rules');
+  writeFileSync(join(repo, 'AGENTS.md'), 'rules'); mkdirSync(join(repo, '.git'));
   await assert.rejects(go({ out: join(repo, 'runs'), jobs: [job('a')] }, f), /inside .*AGENTS\.md/s);
 });
 

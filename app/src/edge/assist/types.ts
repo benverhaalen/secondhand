@@ -2,7 +2,9 @@
 // tools.ts produces ToolResult; converse.ts consumes it, assigns ids r1..rn per turn, and settles an Answer.
 // A tool answers with rows, counts, dates and citation ids, never prose. The model computes nothing.
 
-export type ToolName = 'search_market' | 'value_item' | 'price_trend' | 'where_to_list' | 'market_store';
+import type { Ask } from '../../engines/capture/plan.ts';
+
+export type ToolName = 'search_market' | 'value_item' | 'price_trend' | 'where_to_list' | 'market_store' | 'ask_person';
 export type WidgetKind = 'price_range' | 'price_trend' | 'sites' | 'listings' | 'alternatives' | 'table' | 'sources';
 
 export interface ToolResult {
@@ -30,25 +32,27 @@ export interface WebSource { url: string; title: string; page_age?: string | nul
 
 export type Block =
   | { type: 'text'; text: string; web_sources?: number[] }
-  | { type: 'widget'; widget: WidgetKind; result_id: string };
+  | { type: 'widget'; widget: WidgetKind; result_id: string }
+  | { type: 'ask'; ask: Ask };
 
 export interface Usage { input_tokens: number; output_tokens: number; cache_read_input_tokens: number; web_searches: number; cost_usd: number; cost_source: 'provider' | 'price_table' }
 
 export interface Answer {
   state: 'answered' | 'refused' | 'failed';
   reason?: string;
+  not_built?: string[];
   blocks: Block[];
   results: Record<string, ToolResult>;
   sources: WebSource[];
   calls: ToolCallInfo[];
   gate: { checked: number; cut: number; cut_sentences: string[]; tags_removed: number };
   model: string;
-  effort: 'low' | 'medium' | 'high';
+  effort: 'low' | 'medium';
   usage: Usage;
   ms: { first_text: number | null; done: number };
 }
 
 export type AssistEvent =
-  | { event: 'assist.tool'; data: ToolCallInfo & { phase: 'start' | 'end' } }
+  | { event: 'assist.tool'; data: Omit<ToolCallInfo, 'input'> & { phase: 'start' | 'end' } }
   | { event: 'assist.text'; data: { delta: string } }
-  | { event: 'assist.settled'; data: Answer };
+  | { event: 'assist.settled'; data: Omit<Answer, 'calls'> & { calls: Omit<ToolCallInfo, 'input'>[] } };

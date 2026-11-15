@@ -30,6 +30,7 @@ import { bundle } from './checks/bundle.mjs';
 import { hermes } from './checks/hermes.mjs';
 import { standards } from './checks/standards.mjs';
 import { interactions } from './checks/interactions.mjs';
+import { pythonSuites } from '../scripts/python-suites.mjs';
 import { createLog } from '../log/index.js';
 import { fileSink } from '../log/node.js';
 
@@ -59,6 +60,8 @@ const results = [
   ...t('code', () => code(root, { files, changed })), ...t('parts', () => parts(root, { files })), ...t('screens', () => screens(root, { files })), ...t('picks', () => picks(root, { files })), ...t('motion', () => motion(root, { files })), ...t('rules', () => rules(root)),
   ...t('waysout', () => waysOut(root)), ...t('bundle', () => bundle(root, { files })), ...t('hermes', () => hermes(root, { files })), ...t('standards', () => standards(root, { files })), ...t('interactions', () => interactions(root, { files })),
   ...t('rests', () => rests(root, { commits: commitsSince(root, base) })), ...t('states', () => states(root, { commits: commitsSince(root, base) })),
+  // shortcut: locally the Python suites (about 3.5 min on Windows) run only when a change touches what they read; CI always runs them
+  ...t('python', () => process.env.CI || changed.some(f => /^(jobs|databricks|deploy|log|spec\/fixtures|app\/src\/engines|scripts\/python-suites)/.test(f)) ? pythonSuites(root) : []),
 ];
 // Keep each human in the loop on the other's work: research and packets that landed in the last day.
 const news = (git('log', '--since=24 hours ago', '--name-only', '--format=@%h %an %ar', '--', 'research/*/nate', 'research/*/ben', '.agents/team/packets') ?? '')

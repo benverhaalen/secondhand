@@ -10,9 +10,10 @@
 // The page's reasons and states are in app/behavior/want.json.
 // one at a time: want-quiet (alternatives of one state each; .agents/checks/screens.mjs S2)
 import * as Haptics from 'expo-haptics';
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import {
   ALL_SITES, CONDITIONS, conditionId, CUTS, coloursFor, draftOf, firstPass, kindOf, priceBounds, RADII, sizesFor, soldDots, wantFromWords, type How, type WantDraft,
 } from '@/buy/read';
@@ -129,7 +130,7 @@ function DemoWant() {
       <Stack gap="tight">
         {live.alerts.map(a => (
           <MatchCard key={a.id} id={`want-found-${a.id}`} title={a.title} photo={a.image} site={a.site} verdict="under" what="Listed at" amount={usd(a.price_cents)}
-            when={afterListing(a)} onPress={() => { Linking.openURL(a.url).catch(e => log.error('want.open_site', e, { site: a.site })); }} />
+            when={afterListing(a)} onPress={() => { openMarketplace(a.url).catch(e => log.error('want.open_site', e, { site: a.site })); }} />
         ))}
         {live.reached ? null : <Txt role="caption">Behind. Trying again.</Txt>}
       </Stack>

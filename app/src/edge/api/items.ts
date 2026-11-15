@@ -4,8 +4,8 @@ import { exampleHandler, manifestFor, fromEngine, fields, text, bool, version, m
 import { ApiError } from './http.ts';
 import { assembleCard, mergeAttribute, type CardPort, type CardRecord, type Attribute } from '../card/card.ts';
 import { planOf, HORIZON_DAYS, type PlanChoice, type Objective } from '../../engines/valuation/path.ts';
-import { example } from './examples.ts';
-import { runtime, createRuntime, seedExamples, engine, owned, checkVersion, publicRow } from './runtime.ts';
+import { example, examplesServed } from './examples.ts';
+import { runtime, createRuntime, seedExamples, engine, owned, checkVersion, publicRow, list, readable, EXAMPLE_USER } from './runtime.ts';
 import { memoryStore, type Row } from '../events/ports.ts';
 import { itemLimits, validateLimits, limitsView } from './rules.ts';
 import { write, logReceived } from '../events/intake.ts';
@@ -22,11 +22,11 @@ export const ports: CardPort & { write(user: string, row: CardRecord, expectedVe
   async read(user, id) {
     const row = runtime.store.get('item', user, id);
     if (!row || row.deleted) return undefined;
-    const attributes = row.attributes as ItemView['attributes'];
-    const photos = row.photos as ItemView['photos'];
+    const attributes = (Array.isArray(row.attributes) ? row.attributes : []) as ItemView['attributes'];
+    const photos = (Array.isArray(row.photos) ? row.photos : []) as ItemView['photos'];
     return {
       item: { id, user_id: user, state: String(row.state), title: String(row.title), quantity: Number(row.quantity), ...(row.product_id ? { product_id: String(row.product_id) } : {}) },
-      attributes: attributes.map(a => ({ ...a, confidence: 0, method: a.evidence[0]?.extractor_version ?? 'not_visible', at: a.evidence[0]?.captured_at ?? String(row.updated_at) })),
+      attributes: attributes.map(a => ({ ...a, confidence: 0, method: a.evidence?.[0]?.extractor_version ?? 'not_visible', at: a.evidence?.[0]?.captured_at ?? String(row.updated_at) })),
       photos: photos.map(p => ({ ...p, file_ref: p.id })),
       listings: runtime.store.rows('listing', { user_id: user, item_id: id }).filter(l => !l.import_preview).map(l => ({ id: l.id, site: String(l.site), state: String(l.state), required_fields: l.required_fields as string[] ?? [] })),
     };
@@ -51,22 +51,35 @@ type PlanChoicesView = Record<string, unknown> & { item_id: string; choices: (Re
 const choices = example('items.plan_choices').response as PlanChoicesView;
 export const planPorts = { async read(id: string): Promise<PlanChoicesView> { if (id !== choices.item_id) throw new Error('not_found'); return structuredClone(choices); } };
 export const handlers: Record<string, Handler> = {
-  'GET /v1/items': fromEngine(exampleHandler('GET /v1/items', undefined, undefined, async (ctx, seed) => {
-    const body = seed.body as { data: ItemView[]; next_cursor: string | null };
+  'GET /v1/items': engine(async ctx => {
+    const rows = runtime.store.rows('item', { user_id: ctx.user_id! }).filter(row => readable(row, ctx.user_id!));
     const data = [];
-    for (const row of runtime.store.rows('item', { user_id: ctx.user_id! }).filter(row => !row.deleted)) {
+    for (const row of rows) {
       const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
       const tile = selectFields((row.tile as Record<string, unknown> | undefined) ?? row, tileExamples);
-      data.push({ ...tile, ...(row.price_cents ? { price_cents: row.price_cents } : {}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
+      const cover=card.photos.find(photo=>typeof (photo as Record<string,unknown>).url==='string') as {url?:string}|undefined;
+      data.push({ ...tile, id: row.id, ...(row.price_cents ? { price_cents: row.price_cents } : {}), ...(cover?.url?{cover_photo_url:cover.url}:{}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
     }
-    return { ...seed, body: { ...body, data } };
-  })),
+    const sample = example('items.list').response as { data: { id: string }[]; next_cursor: string | null };
+    const exampleOnly = ctx.user_id === EXAMPLE_USER && examplesServed() && rows.every(row => row.data === 'example') && sample.data.every(tile => rows.some(row => row.id === tile.id));
+    if (exampleOnly && sample.next_cursor && ctx.query.get('cursor') === sample.next_cursor) {
+      const query = new URLSearchParams(ctx.query);
+      query.delete('cursor');
+      const offset = data.findIndex(row => row.id === sample.data.at(-1)?.id) + 1;
+      return { status: 200, body: list({ ...ctx, query }, data.slice(offset)) };
+    }
+    const body = list(ctx, data);
+    if (exampleOnly && !ctx.query.has('cursor') && body.next_cursor === null) body.next_cursor = sample.next_cursor;
+    return { status: 200, body };
+  }),
   'GET /v1/items/:id': engine(async (ctx) => {
     const row = owned('item', ctx, ctx.params.id);
     const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
     const body = selectFields(row, [view]);
     const limits = runtime.store.get('limits', ctx.user_id!, row.id);
     return { status: 200, body: { ...body, title: card.item.title, state: card.item.state, quantity: card.item.quantity,
+      ...(row.price_cents ? { price_cents: row.price_cents } : {}),
+      ...(typeof row.description === 'string' ? { description: row.description } : {}),
       attributes: card.attributes.map(a => selectFields(a, view.attributes)),
       missing_fields: [...new Set(card.listings.flatMap(l => l.missing_fields))],
       photos: card.photos.map(p => { const { file_ref, ...photo } = p; return photo; }),

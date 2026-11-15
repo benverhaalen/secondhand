@@ -15,7 +15,8 @@ export interface Reply {
 
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const block = (b: unknown): b is Block => object(b) && (b.type === 'text' && typeof b.text === 'string'
-  || b.type === 'widget' && typeof b.widget === 'string' && typeof b.result_id === 'string');
+  || b.type === 'widget' && typeof b.widget === 'string' && typeof b.result_id === 'string'
+  || b.type === 'ask' && object(b.ask) && typeof b.ask.id === 'string' && typeof b.ask.field === 'string' && typeof b.ask.words === 'string' && Array.isArray(b.ask.options));
 
 export function reply(frames: unknown[]): Reply {
   const out: Reply = { state: 'running', text: '', tools: [], blocks: null, results: {}, error: null, skipped: 0 };

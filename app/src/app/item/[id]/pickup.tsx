@@ -1,3 +1,4 @@
+import { SellerFulfillment } from '@/selling/fulfillment';
 // Pickup: a buyer collects a sold thing in person (spec/pages.md §6.9, spec/features/sold.md, spec/edge-cases.md §16).
 // Nothing is set up ahead and no calendar is read (decision "no fixed pickup windows", Ben 05:18 to 05:24). When a buyer
 // wants to meet, the person taps the days this week that work, drags a span on each, and picks a place: the saved spot or a
@@ -7,6 +8,7 @@
 // is locked). The two cases no world holds are asked for: `case=ask` (a buyer wants to meet) and `case=pick` (their pick).
 // Behavior: app/behavior/item/[id]/pickup.json.
 // one at a time: pickup-running-late (alternatives of one state each; .agents/checks/screens.mjs S2)
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Share } from 'react-native';
@@ -43,6 +45,8 @@ export default function Pickup() {
   // ?state= draws over the clearing world, whose chair has the only pickup (app/src/demo/screen.ts): empty is a buyer asking
   // to meet with nothing planned yet, one is their single pick to approve, typical the planned pickup, offline holds each tap.
   const s = useScreen();
+  const { order: orderId } = useLocalSearchParams<{ order?: string }>();
+  if (!s.demo) return <SellerFulfillment id={String(p.id)} order={orderId} pickup />;
   const asked = s.state;
   const w = p.world ? s.w : world('clearing');
   const item = itemById(w, p.id);
@@ -187,7 +191,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
             {/* The site's own picture of the thread where the time was agreed, to check ours against, and the way back to the
                 site (Ben, 06:19: "It should use screenshots from the site when you need to verify certain things like scheduling"). */}
             <Line>
-              {siteUrl ? <SiteLink id="pickup-site" site={order.site} onPress={() => { Linking.openURL(siteUrl).catch(e => log.error('pickup.open', e)); }} /> : null}
+              {siteUrl ? <SiteLink id="pickup-site" site={order.site} onPress={() => { openMarketplace(siteUrl).catch(e => log.error('pickup.open', e)); }} /> : null}
               <Pill id="pickup-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setOpen('copy')} />
             </Line>
           </Section>
@@ -222,7 +226,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
       )}
 
       <SiteCopy id="pickup-copy" open={open === 'copy'} site={order.site} onClose={() => setOpen(null)}
-        onOpen={() => { setOpen(null); if (siteUrl) Linking.openURL(siteUrl).catch(e => log.error('pickup.open', e)); }} />
+        onOpen={() => { setOpen(null); if (siteUrl) openMarketplace(siteUrl).catch(e => log.error('pickup.open', e)); }} />
 
       <Sheet open={open === 'another'} title="Suggest another time" onClose={() => setOpen(null)}>
         {open === 'another' ? (
@@ -233,7 +237,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
 
       <Sheet open={open === 'address'} title="Share your address" onClose={() => setOpen(null)}>
         <Txt role="body" tone="ink-2">{`${buyer} gets your address in the chat on the site`}</Txt>
-        <Blank id="pickup-address" name="Your address" value={address} onChange={setAddress} />
+        <Blank id="pickup-address" live name="Your address" value={address} onChange={setAddress} />
         <Approve id="pickup-send-address" does={`Send my address to ${short(buyer)}`} status={busy ? 'working' : 'ready'} step="Sending"
           onApprove={() => { if (address.trim()) tell(`Sent your address to ${buyer}`, () => setHome('sent')); }} />
       </Sheet>

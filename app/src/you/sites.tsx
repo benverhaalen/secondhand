@@ -1,3 +1,5 @@
+import { useLocalSearchParams } from 'expo-router';
+import { Services } from '@/account/services';
 // Your sites (spec/pages.md §6.16 Accounts; spec/features/connect.md): every site with its own logo and state, and the one act
 // each state allows. Linking one never blocks the rest. Anything where a site and our record disagree goes first, across every
 // site, each with Open on the site (Ben 05:18, audit every site from one app). A linked site opens its own page: what we read
@@ -11,6 +13,13 @@ import { PageStatus } from './page-status';
 import { drawn, PAGES, SITE_ORDER, useGo, useLinks, usePage, type LinkState } from './state';
 
 export function Sites() {
+  const params = useLocalSearchParams<{ world?: string; state?: string }>();
+  const go = useGo();
+  if (params.world || params.state) return <DemoSites />;
+  return <Screen name="you-connections" state="typical" nav={<Nav back={() => go.back()} />}><Txt role="heading">Your services</Txt><Services /></Screen>;
+}
+
+function DemoSites() {
   const { w, asked } = usePage(), go = useGo();
   // At ?state=loading or failed, the page itself loads at once and a site is mid-way instead: Mercari signing in, or its try timed out.
   const { links, link } = useLinks(w, asked === 'loading' ? { mercari: { state: 'loading', note: 'Signing in' } }

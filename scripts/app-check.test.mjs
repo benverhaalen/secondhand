@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { createServer } from 'node:http';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkPage, checkRoute, parseArgs, RENDERS, slug, washRule } from './app-check.mjs';
 import { find } from '../app/e2e/web.mjs';
@@ -83,7 +83,7 @@ test('app-check U8: a page with a top and no wash fails, a wash with no top fail
 
 test('app-check: isolated output is an option, not a route, and default output stays unchanged', () => {
   const got = parseArgs(['/buy', '--out', '/tmp/proof renders', '--json']);
-  assert.deepEqual(got.asked, ['/buy']); assert.equal(got.out, '/tmp/proof renders'); assert.ok(got.flags.has('--json'));
+  assert.deepEqual(got.asked, ['/buy']); assert.equal(got.out, resolve('/tmp/proof renders')); assert.ok(got.flags.has('--json'));
   assert.equal(parseArgs(['/buy']).out, RENDERS);
   assert.throws(() => parseArgs(['/buy', '--out']), /requires a directory/);
 });
