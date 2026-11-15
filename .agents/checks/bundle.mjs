@@ -6,6 +6,19 @@ const routePattern = /^app\/src\/app\/(?:.*\/)?[^/]*\+api\.ts$/;
 const testFile = /\.test\.ts$/;
 const extensions = ['', '.ts', '.tsx', '.js', '.mjs', '/index.ts'];
 
+// The non-type import and export specifiers of one file, parsed (the hermes check walks screens with it).
+export function imports(file, raw) {
+  const ts = createRequire(new URL('../../app/package.json', import.meta.url))('typescript');
+  const source = ts.createSourceFile(file, raw, ts.ScriptTarget.Latest, true, /.tsx$/.test(file) ? ts.ScriptKind.TSX : /.(m|c)?jsx?$/.test(file) ? ts.ScriptKind.JS : ts.ScriptKind.TS);
+  const out = [];
+  for (const node of source.statements) {
+    if (!(ts.isImportDeclaration(node) || ts.isExportDeclaration(node))) continue;
+    const typeOnly = ts.isImportDeclaration(node) ? node.importClause?.isTypeOnly : node.isTypeOnly;
+    if (!typeOnly && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) out.push(node.moduleSpecifier.text);
+  }
+  return out;
+}
+
 export function bundle(root, { files }) {
   let ts;
   try {
