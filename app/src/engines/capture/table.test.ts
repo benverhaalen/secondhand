@@ -103,3 +103,30 @@ test('colour list maximum lives in the table', () => {
   for(const rows of Object.values(table.fields))for(const row of rows)
     if(row.field==='colour')assert.equal(row.max,2);
 });
+
+test('components key that is not a kind throws a named error',()=>{
+  const t=structuredClone(table);t.components.electronics=t.components['electronics.desktops'];
+  assert.throws(()=>validateTable(t),/components key is not a kind: electronics/);
+});
+test('component label outside process and read step throws a named error',()=>{
+  const t=structuredClone(table);t.components['electronics.desktops'].parts[0].ways.find(w=>w.way==='label')!.view='absent';
+  assert.throws(()=>validateTable(t),/component label view.*absent/);
+});
+test('component after naming an unknown field throws a named error',()=>{
+  const t=structuredClone(table);t.components['electronics.desktops'].after=['absent'];
+  assert.throws(()=>validateTable(t),/component after.*absent/);
+});
+test('desktop rows validate using family process fallback without a types or class row',()=>{
+  assert.equal(table.types['electronics.desktops'],undefined);
+  assert.equal(table.family_class['electronics.desktops'],undefined);
+  validateTable(table);
+});
+test('components reject unknown families and keys with more than a family and kind',()=>{
+  for(const key of ['unknown.desktops','electronics.desktops.extra']) {
+    const t=structuredClone(table);t.components[key]=t.components['electronics.desktops'];
+    assert.throws(()=>validateTable(t),/components key is not a kind/);
+  }
+});
+test('each component read instruction passes copy lint',()=>{
+  for(const component of Object.values(table.components))if(component.read)assert.deepEqual(scan(component.read.words),[]);
+});

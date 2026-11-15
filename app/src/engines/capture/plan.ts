@@ -23,7 +23,7 @@ export type Question = {
   answer: {method: 'PATCH'|'POST'; path: string};
 };
 type Resolved = {row: FieldRow; resolution: Resolution};
-type Candidate = {question: Question; rows: FieldRow[]};
+type Candidate = {question: Question; rows: FieldRow[]; rank?: number};
 type ShotGroup = {shot: NonNullable<Resolution['shot']>; rows: FieldRow[]};
 
 function usedByLinkedSite(row: FieldRow, state: State): boolean {
@@ -145,16 +145,18 @@ function addUnlocks(candidates: Candidate[], resolved: Resolved[], rows: FieldRo
 }
 
 function orderQuestions(candidates: Candidate[], state: State, params: ParamStore): void {
-  const first = (question: Question) => question.field === 'type' ? 0 : question.field === 'lot_count' ? 1 : 2;
+  const first = ({question,rows}: Candidate) => question.field === 'type' ? 0 : question.field === 'lot_count' ? 1 : rows.some(row=>row.shapes) ? 2 : 3;
+  const rank = (candidate: Candidate) => candidate.rank ?? Math.min(...candidate.rows.map(row=>row.rank ?? Infinity));
   const recommended = (rows: FieldRow[]) => rows.reduce((count,row) => count + linked(targets(state),row.recommended).length,0);
   const effort = (question: Question) => bound(params,`capture_effort_${question.kind}`);
   candidates.sort((a,b) => {
-    const priority = first(a.question) - first(b.question);
+    const priority = first(a) - first(b);
     const required = b.question.unlocks.required - a.question.unlocks.required;
     const ready = b.question.unlocks.ready_after.length - a.question.unlocks.ready_after.length;
     const recommendation = recommended(b.rows) - recommended(a.rows);
+    const ranked = rank(a) < rank(b) ? -1 : rank(a) > rank(b) ? 1 : 0;
     const cost = effort(a.question) - effort(b.question);
-    return priority || required || ready || recommendation || cost || compare(a.question.field,b.question.field);
+    return priority || required || ready || recommendation || ranked || cost || compare(a.question.field,b.question.field);
   });
 }
 
@@ -197,6 +199,17 @@ export function plan(state: State, params: ParamStore) {
   const candidates = fieldQuestions(resolved,state,complete,shooting);
   const {candidates:shotsToAsk} = shotQuestions(resolved,state,keys,shooting);
   candidates.push(...shotsToAsk);
+  const read=selected.read;
+  if(read && !shooting && !keys.includes(read.step) && state.lookups!=='running' &&
+    !state.kept.includes(read.step) && !state.refused.includes(read.step) &&
+    (selected.after ?? []).every(field=>['known','refused'].includes(fieldState(selected.rows.find(row=>row.field===field)!,state,keys,params).state))) {
+    const parts=resolved.filter(({row,resolution})=>row.field.startsWith('part.') && row.ways.some(way=>way.way==='asked') && resolution.state!=='known');
+    if(parts.length)candidates.push({rows:parts.map(({row})=>row),rank:0,question:{
+      id:`q_${state.capture_id}_${read.step}`,field:read.step,kind:'shot',options:[],other:false,
+      shot:{step:read.step,reason:'add'},why:'value',required_by:[],unlocks:{required:0,ready_after:[]},words:read.words,
+      answer:{method:'POST',path:`/v1/captures/${state.capture_id}/photos`},
+    }});
+  }
   if(state.studio?.requested && !shooting)for(const ask of state.studio.asks) {
     const step=studioStep(ask);
     if(ask.type==='measure' || state.kept.includes(step) || candidates.some(candidate=>candidate.question.shot?.for==='studio' && candidate.question.shot.step===step))continue;

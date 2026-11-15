@@ -24,8 +24,10 @@ export function select(state: State, params: ParamStore) {
   for (const site of state.sites) if (!SITES.includes(site)) throw new Error(`unknown linked site ${site}`);
   const family = state.type ?? (suggestionPasses(state,params) ? state.suggestion!.family : 'other');
   const fallback = !state.type && !suggestionPasses(state,params) ? 'type_unsure' as const : null;
-  const kind = state.kind ?? null;
+  const kindKey = `${family}.${state.kind}`;
+  const kind = state.kind && [table.types,table.fields,table.components].some(rows=>Object.hasOwn(rows,kindKey)) ? state.kind : null;
   const key = `${family}.${kind}`;
+  const components = table.components[key];
   const small = bound(params,'capture_small_cm'), large = bound(params,'capture_large_cm');
   let inner = table.family_class[key] ?? table.family_class[family];
   if (!inner) inner = !state.rigid ? 'soft_goods' : state.extent_cm === undefined ? 'medium_hard' : state.extent_cm >= large ? 'large_bulky' : state.extent_cm >= small ? 'medium_hard' : 'small_hard';
@@ -50,6 +52,10 @@ export function select(state: State, params: ParamStore) {
     const i=merged.findIndex(r=>r.field===row.field);
     if(i<0)merged.push(row);else merged[i]=row;
   }
+  for (const [index, row] of (components?.parts ?? []).entries()) {
+    const {per_piece:_perPiece,...part} = structuredClone(row);
+    merged.push({...part,field:`part.${row.field}`,rank:index+1});
+  }
   const cls=classFor(inner);
   if(cls.dimensions)merged.push(structuredClone(cls.dimensions));
   if(state.studio?.requested) {
@@ -71,5 +77,7 @@ export function select(state: State, params: ParamStore) {
   const rows=merged.flatMap(row=>bundle && row.per_piece ? Array.from({length:pieces},(_,i)=>({...row,field:`${row.field}.${i+1}`,
     ways:row.ways.map(w=>({...w,...(w.view && ['seen','label','measured'].includes(w.way) ? {view:`${w.view}.${i+1}`} : {})}))})) : [row])
     .sort((a,b)=>compare(a.field,b.field));
-  return {family,kind,dimension_class,inner_class:bundle ? inner : null,fallback,process,rows,checks:[...cls.checks]};
+  return {family,kind,dimension_class,inner_class:bundle ? inner : null,fallback,process,rows,checks:[...cls.checks],
+    ...(components?.read ? {read:structuredClone(components.read)} : {}),
+    ...(components?.after ? {after:[...components.after]} : {})};
 }
