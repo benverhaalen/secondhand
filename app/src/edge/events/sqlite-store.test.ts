@@ -391,3 +391,13 @@ for (const copy of ['dump', 'exportUser'] as const) test(`${copy} holds one tran
   writer.insertJob({ ...job, idempotency_key: 'after-copy' });
   assert.equal(writer.jobs().length, 2, 'the copy releases its transaction');
 });
+
+test('recover requeues running jobs except those the caller keeps as they are', () => {
+  const st = sqliteStore(new DatabaseSync(':memory:'));
+  const running = (key: string) => st.insertJob({ ...job, idempotency_key: key, state: 'running' }).row;
+  const kept = running('example'), real = running('real');
+  assert.equal(st.recover(j => j.id === kept.id), 1);
+  assert.equal(st.getJob(kept.id)!.state, 'running');
+  assert.equal(st.getJob(real.id)!.state, 'queued');
+  assert.equal(st.recover(), 1, 'with no predicate every running job is requeued');
+});
