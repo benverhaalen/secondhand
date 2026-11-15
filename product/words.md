@@ -2749,3 +2749,13 @@ Relayed by leads from their sessions the same hour:
 Then Nate pasted the EAS build's refusal: "Project archive is too big. Maximum allowed size is 2.0 GB."
 
 Used in: Sign in with Apple in the app (f88ad5ad); an appraise capture's finish starts a valuation and names the item (3c8b50b4); agent worktrees ignored so the EAS archive fits (f896b0fe). Google sign-in on the phone is not built.
+
+## 2026-11-15 nate the engine page: digging through secondhand stores, calculated answers, a score per platform for the item
+Nate, session "production site read and the engine page", 2026-11-15, three messages while the page was built.
+> Avoid ai slop though, show locally everything before you push
+
+> explain with the site and adhere to the prompt that market intelligence meets strcutured, or accelerated, or optimized inference, whatever can symbolize the ingeniuity of design. but "Digging through second hand stores, making market insight calculated answers" and we show the possibilities for data and such as I outlined in another chat
+
+> wait but show complexity, realtime scores. Every platform has a scoring metric generated depending on teh specific item. AI is already incredible at the way it specializes around a user experience, but now it can be used to assist users at specializing their listing across an entire market of products. Each platform and its differences also weigh which is suggested to run on
+
+Used in: `web/app/engine/` (the Engine page of the site).

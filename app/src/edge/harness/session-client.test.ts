@@ -119,7 +119,7 @@ test('Mercari captures page responses without request interception', async () =>
   assert.equal(e.counts().routes, 0); await e.pool.close();
 });
 
-for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: link handle is owner checked, viewer is consumed once, finish verifies the account page and stops`, async () => {
+for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unknown account'}: link handle is owner checked, viewer is reopenable by its owner, finish verifies the account page and stops`, async () => {
   const f = setup();
   if (!existing) {
     await assert.rejects(f.service.startLink('poshmark', owner), /account/);
@@ -131,7 +131,7 @@ for (const existing of [false, true]) test(`${existing ? 'owned account' : 'unkn
   assert.equal(await f.service.liveView('person_b', handle), undefined);
   assert.equal(await f.service.finishLink('person_b', handle), undefined);
   assert.equal(await f.service.liveView(owner.user_id, handle), 'https://viewer.invalid/private');
-  assert.equal(await f.service.liveView(owner.user_id, handle), undefined);
+  assert.equal(await f.service.liveView(owner.user_id, handle), 'https://viewer.invalid/private', 'the owner can reopen the page while the link lives');
   assert.equal((await f.service.finishLink(owner.user_id, handle))?.ok, true);
   assert.equal((await f.registry.get(owner.user_id, owner.account_id))?.state, 'linked');
   assert.equal(f.counts().stops, 1); assert.equal(f.counts().exports, 0);

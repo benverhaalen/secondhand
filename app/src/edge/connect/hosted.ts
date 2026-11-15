@@ -41,7 +41,8 @@ function compose(apiKey: string) {
       .catch(() => { throw new Error('Profile service could not be reached'); });
     if (!response.ok && response.status !== 404) throw new Error('Profile service refused removal');
   };
-  const ttlMs = 5 * 60_000;
+  // A text or email code can take minutes; the cloud browser's timeout follows this window.
+  const ttlMs = 15 * 60_000;
   const client = sessionClient({ pool, registry, launcher, profileRoot, leases: runtime.leases, createProfile, deleteProfile, ttlMs, log });
   const pending = new Map<string, { user_id: string; account_id: string; previous: ProfileRow; timer: ReturnType<typeof setTimeout> }>();
   const starting = new Set<string>();
@@ -88,6 +89,7 @@ function compose(apiKey: string) {
     },
     async complete(user_id: string, handle: string) {
       const row = owner(user_id, handle);
+      if (await client.stillSigningIn(user_id, handle)) return { state: 'waiting', account_id: row.account_id };
       try {
         const result = await client.finishLink(user_id, handle);
         if (!result) throw notFound();
