@@ -197,6 +197,7 @@ Design and what is proved: [databricks-build.md](../databricks-build.md#9-what-i
 - [ ] the type suggestion contract and both ways of confirming it (tap, and skip when confident)
 - [ ] the per-type process table as data: instant, series, scan
 - [ ] the follow-up inputs as data, one input per field a type needs
+- [ ] the deterministic plan ([capture engine §11](../engines/capture.md#11-the-deterministic-plan)): one table by family and dimension class, field states, per-site form, one completeness check, the question planner. Proved 2026-11-15 (merge 929926f1): 86 engine tests pass and six item types (T-shirt, sneakers, handbag, phone, chair from an unsure first frame, a bundle of three) walk from first photo to done, run twice with identical output, `node --test --test-concurrency=1 app/src/engines/capture/walk.test.ts`. Questions to done: T-shirt 3 (type, condition, size), sneakers 4, handbag 5 (one refused), phone 5, chair 2, bundle 9. Ticked after the fresh review; next: close variants and studio asks (round 3), the routes (cap-routes-1)
 - [ ] the free note reader: confirms, marks a contradiction, adds; never re-asks; address, phone and payment never reach a listing
 - [ ] photo ph-1 to ph-6
 - [ ] proof per [capture](../engines/capture.md) sections 9 and 10: `python -m pytest jobs/photo` and `node --test app/src/engines/capture/`
