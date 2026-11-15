@@ -2,6 +2,18 @@
 
 Ben, 04:09: "i set everything up so it should just be able to run and i get a finished, professional, well designed, deep app (or website)". 04:10: "the system i created could be used to design any new page". This file is how one brief becomes a finished page with no one holding its hand. The loop itself is [frontend-standard §2](../../product/frontend-standard.md#2-build-the-loop); this file says how a builder runs it in this repo, today.
 
+## The method, and why it is the default
+
+Ben loved the dark mode Today at 02:18 ("whatever principles you used to tell if something should exist or not ... were stellar"; "how much did you find issues and audit compared to just using the design system"). What made it work, from his 01:16 notes and how it was refined:
+
+1. **Every element has to earn its place.** Before drawing, each thing on the screen was asked what the person loses without it. Most were cut. Minimal information, with the money and the deadline kept.
+2. **One kind, one size.** Every part got a fixed size whatever is inside it ("everything should be standardized size wise no matter whats in it"), and corners nest by arithmetic (36 less 16 is 20).
+3. **Measured, not eyeballed.** The real fonts were loaded, the screen was rendered at 390 x 844, and a script measured every box, gap, corner and contrast before Ben saw it. Optical errors were fixed by geometry: a corner inset of r − (r − p)/√2, ink instead of boxes.
+4. **Dark is a mirror of light.** Raised surfaces are lighter; separation comes from tone, not lines or shadows.
+5. **Every correction reaches everything.** A note on one card was applied to every card of its kind, and became a rule.
+
+Why other UI work fell short: image models drew whole screens and their sizes drifted; each thread kept its own mock and its own kit, so the same card looked different in three places; rules lived in documents with no script behind them (the logo rule only checked file shapes); and mocks reached Ben without passing the checks (one had 187 errors). So: one kit, no hand styling, no image-drawn UI, every rule a check, and nothing reaches Ben until its render passes.
+
 ## Read first, in this order
 
 1. [AGENTS.md](../../AGENTS.md) and [.agents/thinking.md](../thinking.md).
