@@ -56,6 +56,11 @@ export const deps: Deps = {
 };
 
 const DAY_MS = 24 * 3600 * 1000;
+export function resetRequestState(): void {
+  deps.kv.clear('idem');
+  deps.kv.clear('visit');
+}
+
 const id = (p: string) => `${p}${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
 
 // Matches "/v1/items/it_7c2m/attributes/size" against "/v1/items/:id/attributes/:name".
