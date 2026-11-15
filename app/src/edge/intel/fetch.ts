@@ -214,7 +214,7 @@ export function agentBrowserRenderer(o: { bin?: string } = {}): Renderer {
     if (signal.aborted) return rej(new Error('aborted'));
     const dir = mkdtempSync(join(tmpdir(), 'fr-')), f = join(dir, 'out'), fd = openSync(f, 'w');
     const cp = spawn(bin, args, { stdio: ['ignore', fd, 'ignore'], windowsHide: true });
-    const done = (e?: Error) => { clearTimeout(t); signal.removeEventListener('abort', stop); closeSync(fd); const out = e ? '' : readFileSync(f, 'utf8'); rmSync(dir, { recursive: true, force: true }); e ? rej(e) : res(out); };
+    const done = (e?: Error) => { clearTimeout(t); signal.removeEventListener('abort', stop); closeSync(fd); const out = e ? '' : readFileSync(f, 'utf8'); rmSync(dir, { recursive: true, force: true }); e ? rej(e) : res(out); }; // bundle-safe: reads the temp file the CLI wrote, not a repo file
     const stop = () => { cp.kill(); done(new Error('aborted')); };
     const t = setTimeout(() => { cp.kill(); done(new Error(`agent-browser ${args[2] ?? ''} timed out`)); }, ms);
     signal.addEventListener('abort', stop, { once: true });
