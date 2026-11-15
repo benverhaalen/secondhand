@@ -32,7 +32,7 @@ VISION = ["google/gemini-4-carbon", "google/gemini-4-hydrogen", "google/gemini-2
 # candidates per whole slide: Nano Banana 2.1 is fast and cheap (6.8 s, $0.037 in the smoke run), Gemini 3 Pro Image a
 # second opinion ($0.14); GPT image 2 took 95 s and is left out of the default
 CANDIDATES = [("google/gemini-nano-banana-2.1", 1), ("google/gemini-nano-banana-2.1", 2), ("google/gemini-nano-banana-2.1", 3),
-              ("google/gemini-3-pro-image", 1)]
+              ("google/gemini-nano-banana-2.1", 4), ("google/gemini-3-pro-image", 1)]
 SIDE = 1080
 
 IRONED = ("Freshly ironed means: the fabric lies smooth and flat across the whole body and sleeves. No crumpling, no fold "
@@ -142,7 +142,7 @@ def make_whole(slide: dict, look: dict, ks: dict, photos_by_id: dict, log: list)
         return {"model": model, "seed": seed, "raw": raw, "info": {k: v for k, v in info.items() if k != "usage"},
                 "cost": (info.get("usage") or {}).get("cost")}
 
-    with ThreadPoolExecutor(4) as ex:
+    with ThreadPoolExecutor(5) as ex:
         cands = list(ex.map(one, CANDIDATES))
     real_bytes = [jpeg(C.fit(src, 1024))] + [jpeg(C.fit(r["img"], 768)) for r in refs[:2]]
     for c in cands:

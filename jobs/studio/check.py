@@ -121,22 +121,38 @@ def box_mask(ref: np.ndarray, box) -> np.ndarray:
     return m
 
 
+def _lab(img):
+    return cv2.cvtColor(img, cv2.COLOR_RGB2LAB).astype(np.float32)
+
+
 def paste_print(ren: np.ndarray, hit: dict, box=None) -> np.ndarray:
-    """The real print's pixels, warped onto where the model drew it, matched to the render's light, feathered in.
-    The model's own letters are gone; the ones the buyer reads are the real ones."""
+    """The real print's ink, warped onto where the model drew it, and nothing around it.
+    Inside the print's box, ink is what is far from the fabric at the box's edge; the fabric between the letters stays
+    the render's, so no square patch shows. The ink keeps its real contrast to the fabric, moved to the render's light."""
     ref, H = hit["ref"], hit["H"]
-    m = box_mask(ref, box) if box else ink(ref, hit["pts"])
+    area = box_mask(ref, box) if box else ink(ref, hit["pts"])
+    if area.sum() == 0:
+        return ren
+    inner = cv2.erode(area, np.ones((15, 15), np.uint8))
+    ring = (area > 0) & (inner == 0)
+    lr = _lab(ref)
+    fab_ref = np.median(lr[ring], axis=0) if ring.sum() > 20 else np.median(lr[area > 0], axis=0)
+    diff = lr - fab_ref
+    far = np.sqrt((0.5 * diff[..., 0]) ** 2 + diff[..., 1] ** 2 + diff[..., 2] ** 2) > 18
+    inkm = (far & (area > 0)).astype(np.uint8)
+    inkm = cv2.morphologyEx(inkm, cv2.MORPH_OPEN, np.ones((3, 3), np.uint8))
+    inkm = cv2.dilate(inkm, np.ones((5, 5), np.uint8)) * 255
     h, w = ren.shape[:2]
     warped = cv2.warpPerspective(ref, H, (w, h), flags=cv2.INTER_AREA)
-    wm = cv2.warpPerspective(m, H, (w, h)) > 0
-    if wm.sum() < 50:
+    wink = cv2.warpPerspective(inkm, H, (w, h)) > 127
+    wring = cv2.warpPerspective(ring.astype(np.uint8) * 255, H, (w, h)) > 127
+    if wink.sum() < 30 or wring.sum() < 20:
         return ren
-    lw = cv2.cvtColor(warped, cv2.COLOR_RGB2LAB).astype(np.float32)
-    lr = cv2.cvtColor(ren, cv2.COLOR_RGB2LAB).astype(np.float32)
-    lw[wm] += (np.median(lr[wm], axis=0) - np.median(lw[wm], axis=0))  # one shift for the whole patch: contrast stays real
+    lren = _lab(ren)
+    lw = _lab(warped)
+    lw[wink] += np.median(lren[wring], axis=0) - fab_ref  # same offset from the fabric as on the real shirt
     warped = cv2.cvtColor(np.clip(lw, 0, 255).astype(np.uint8), cv2.COLOR_LAB2RGB)
-    f = cv2.GaussianBlur(wm.astype(np.float32), (0, 0), 4)
-    f = np.minimum(f * 1.6, 1.0)[..., None] * wm[..., None]
+    f = cv2.GaussianBlur(wink.astype(np.float32), (0, 0), 1.2)[..., None]
     return (warped * f + ren * (1 - f)).astype(np.uint8)
 
 
