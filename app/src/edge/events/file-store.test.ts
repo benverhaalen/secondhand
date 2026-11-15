@@ -168,3 +168,13 @@ test('operation ledger: rollback and refused envelopes leave memory and disk unc
   assert.equal(readFileSync(path, 'utf8'), before);
   assert.equal(s.get('operation', 'u1', operation.id)?.state, 'started');
 });
+
+
+test('system rows pass through the file store across tenants after reopening', t => {
+  const path = fixture(t), s = fileStore(path);
+  const a = s.put('account', { id: 'acc_a', user_id: 'usr_a', site: 'depop' });
+  const b = s.put('account', { id: 'acc_b', user_id: 'usr_b', site: 'ebay' });
+  const restarted = fileStore(path);
+  assert.deepEqual(restarted.systemRows('account'), [a, b]);
+  assert.deepEqual(restarted.systemRows('account', { site: 'depop' }), [a]);
+});

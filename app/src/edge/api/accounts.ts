@@ -22,11 +22,11 @@ async function readListings(ctx: Ctx, account: Row) {
     const at = new Date().toISOString();
     runtime.store.tx(() => {
       const cached = runtime.store.rows('listing', { user_id: ctx.user_id!, account_id: account.id, import_preview: true });
-      for (const row of cached) if (!result.data.some(current => current.external_id === row.external_id)) runtime.store.put('listing', { ...row, preview_current: false });
+      for (const row of cached) if (row.data !== `live:${account.site}` || !result.data.some(current => current.external_id === row.external_id)) runtime.store.put('listing', { ...row, preview_current: false });
       for (const row of result.data) {
-        const prior = cached.find(current => current.external_id === row.external_id);
-        const id = prior?.id ?? `ls_import_${account.id}_${row.external_id}`;
-        runtime.store.put('listing', { ...prior, ...row, id, user_id: ctx.user_id!, site: account.site, account_id: account.id, import_preview: true, preview_current: true, price_cents: { amount_cents: row.price_cents, currency: row.currency ?? 'USD' }, read_at: at, matches_item_id: prior?.matches_item_id ?? null });
+        const prior = cached.find(current => current.external_id === row.external_id && current.data === `live:${account.site}`);
+        const id = prior?.id ?? `ls_${crypto.randomUUID().replaceAll('-', '')}`;
+        runtime.store.put('listing', { ...prior, ...row, id, user_id: ctx.user_id!, data: `live:${account.site}`, site: account.site, account_id: account.id, import_preview: true, preview_current: true, price_cents: { amount_cents: row.price_cents, currency: row.currency ?? 'USD' }, read_at: at, matches_item_id: prior?.matches_item_id ?? null });
       }
       runtime.store.put('account', { ...account, read_at: at });
     });
@@ -40,12 +40,15 @@ export const handlers: Record<string, Handler> = {
     fields(ctx.body, { site: sites });
     if (!oneOf('ebay', 'depop')(ctx.body.site)) throw invalid('no connection route for this site');
     const seed = structuredClone(example(ctx.body.site === 'depop' ? 'accounts.connect.depop' : 'accounts.connect.ebay').response) as Row;
-    const prior = runtime.store.get('account', ctx.user_id!, seed.id);
+    const prior = runtime.store.rows('account', { user_id: ctx.user_id!, site: ctx.body.site })[0];
     const { token_ref, ...current } = prior ?? {};
-    runtime.store.put('account', { ...current, ...seed, user_id: ctx.user_id!, pending: false, deleted: false });
+    const id = prior?.id ?? `acc_${crypto.randomUUID().replaceAll('-', '')}`;
+    const connected = { ...seed, id };
+    if (seed.site === 'ebay' && object(seed.next)) connected.next = { ...seed.next, url: String(seed.next.url).replace(seed.id, id) };
+    runtime.store.put('account', { ...current, ...connected, user_id: ctx.user_id!, pending: false, deleted: false });
     if (typeof token_ref === 'string') await runtime.vault.delete(token_ref);
-    ctx.log.event('state.change', { entity: 'account', id: seed.id, to: 'paused' });
-    return { status: 201, body: seed };
+    ctx.log.event('state.change', { entity: 'account', id, to: 'paused' });
+    return { status: 201, body: connected };
   }),
   'GET /v1/accounts': engine(ctx => ({ status: 200, body: list(ctx, runtime.store.rows('account', { user_id: ctx.user_id! }).filter(row => !row.deleted && !row.pending).map(row => publicRow(row))) })),
   'GET /v1/accounts/:id/import-preview': engine(async ctx => {

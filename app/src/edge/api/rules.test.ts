@@ -40,7 +40,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   if (e.response === null) assert.equal(await r.text(), '');
   else assert.deepEqual(await r.json(), e.response);
 });
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
+for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && (e.endpoint.includes(':id') || e.name === 'rules.promote'))) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
@@ -111,6 +111,7 @@ test('rules: owned Expo files bind auth and export the contract method', async (
 test('limits update is read back from the Store and the previous version becomes stale', async () => {
   const update = examples.find(e => e.name === 'limits.put')!;
   assert.equal((await call(update)).status, 200);
+  assert.equal(runtime.store.get('limits', 'usr_8f2k', 'usr_8f2k')?.data, 'example', 'edits preserve seeded row provenance');
   const current = await (await call(examples.find(e => e.name === 'limits.get')!)).json();
   assert.equal(current.ask_every_time, true); assert.equal(current.items[0].floor_cents.amount_cents, 7500);
   assert.equal((await call(update)).status, 409);
@@ -144,4 +145,31 @@ test('a stale rule deletion leaves the rule active', async () => {
   const response = await call(examples.find(e => e.name === 'rules.delete')!, { path: '/v1/rules/ru_c1', headers: { 'If-Match': '0' } });
   assert.equal(response.status, 409); assert.equal((await response.json()).code, 'stale');
   assert.equal(runtime.store.get('rule', 'usr_8f2k', 'ru_c1')!.state, 'auto');
+});
+
+
+test('new people read default limits, create their limits and own rules with mutual isolation', async () => {
+  const byName = (name: string) => examples.find(e => e.name === name)!;
+  const read = await call(byName('limits.get'), { token: 'other' });
+  assert.equal(read.status, 200);
+  const defaults = await read.json();
+  assert.deepEqual(defaults, { handover: [], pickup_windows: [], saved_spot: null, ask_every_time: false, items: [], version: 0 });
+  assert.equal(runtime.store.get('limits', 'usr_other', 'usr_other'), undefined);
+  const update = { version: defaults.version, ask_every_time: true };
+  assert.equal((await call(byName('limits.put'), { token: 'other', body: update })).status, 200);
+  assert.equal((await call(byName('limits.put'), { token: 'other', body: update })).status, 409);
+  assert.equal(runtime.store.get('limits', 'usr_other', 'usr_other')?.data, undefined);
+  assert.equal((await (await call(byName('limits.get'), { token: 'other' })).json()).ask_every_time, true);
+  assert.equal((await (await call(byName('limits.get'))).json()).ask_every_time, false);
+  assert.deepEqual(await (await call(byName('rules.list'), { token: 'other' })).json(), { data: [], next_cursor: null });
+  const created = await call(byName('rules.promote'), { token: 'other', body: { kind: 'reply_other', scope: 'all' } });
+  assert.equal(created.status, 201);
+  const rule = await created.json();
+  assert.equal(runtime.store.get('rule', 'usr_other', rule.id)?.data, undefined);
+  assert.deepEqual((await (await call(byName('rules.list'), { token: 'other' })).json()).data.map((row: { id: string }) => row.id), [rule.id]);
+  assert.equal((await call(byName('rules.delete'), { path: '/v1/rules/' + rule.id })).status, 404);
+  assert.equal((await call(byName('rules.delete'), { token: 'other', path: '/v1/rules/ru_c1' })).status, 404);
+  assert.equal((await call(byName('rules.promote'), { token: 'other', headers: { 'Idempotency-Key': 'foreign-scope' }, body: { kind: 'reply_other', scope: 'it_7c2m' } })).status, 404);
+  assert.equal((await call(byName('rules.delete'), { token: 'other', path: '/v1/rules/' + rule.id })).status, 204);
+  assert.deepEqual(await (await call(byName('rules.list'), { token: 'other' })).json(), { data: [], next_cursor: null });
 });

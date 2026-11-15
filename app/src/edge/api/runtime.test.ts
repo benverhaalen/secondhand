@@ -125,3 +125,38 @@ test('runtime harness logs conform to the shared log contract', async () => {
     assert.equal(result.status, 0, result.stdout + result.stderr);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
+
+
+test('system account discovery finds every tenant after restart without route registration', async t => {
+  const { fileStore } = await import('../events/file-store.ts');
+  const dir = mkdtempSync(join(tmpdir(), 'secondhand-linked-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'store.json'), st = fileStore(path);
+  for (const user_id of ['usr_new', 'usr_another']) st.put('account', { id: 'acc_' + user_id, user_id, site: 'depop', token_ref: 'test/' + user_id });
+  st.put('account', { id: 'acc_missing', user_id: 'usr_new', site: 'depop', token_ref: 'test/missing' });
+  st.put('account', { id: 'acc_deleted', user_id: 'usr_new', site: 'depop', token_ref: 'test/usr_new', deleted: true });
+  const r = createRuntime(fileStore(path), log());
+  for (const user_id of ['usr_new', 'usr_another']) await r.vault.put('test/' + user_id, { cookies: [], origins: [] });
+  assert.deepEqual((await r.accounts.linked()).map(row => row.person_id).sort(), ['usr_another', 'usr_new']);
+  assert.deepEqual((await r.accounts.linked('usr_new')).map(row => row.account_id), ['acc_usr_new']);
+});
+
+test('route modules never call the system cross-tenant read', async () => {
+  const { readdirSync, readFileSync } = await import('node:fs');
+  const root = join(process.cwd(), 'app/src/edge/api');
+  for (const file of readdirSync(root, { recursive: true, withFileTypes: true })) {
+    if (!file.isFile() || !/\.[cm]?[jt]s$/.test(file.name) || file.name.endsWith('.test.ts') || file.name === 'runtime.ts') continue;
+    const path = join(file.parentPath, file.name);
+    assert.doesNotMatch(readFileSync(path, 'utf8'), /\bsystemRows\s*(?:<[^>]*>)?\s*\(/, path);
+  }
+});
+
+test('all seeded product rows keep example provenance through reseeding', () => {
+  const st = memoryStore(), r = createRuntime(st, log());
+  for (const table of ['item', 'listing', 'account', 'limits', 'rule'] as const) {
+    for (const row of st.rows(table, { user_id: 'usr_8f2k' })) assert.equal(row.data, 'example', table + ':' + row.id);
+  }
+  assert.ok(st.decisions().every(row => row.data === 'example'), 'seeded decisions carry example provenance');
+  createRuntime(r.store, log());
+  assert.equal(st.get('account', 'usr_8f2k', 'acc_dp1')?.data, 'example');
+});

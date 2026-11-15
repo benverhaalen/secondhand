@@ -356,13 +356,13 @@
     "type": "dimensions",
     "ways": [
      {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
       "way": "measured",
       "view": "scan",
       "min_conf": 0.8
-     },
-     {
-      "way": "lookup",
-      "min_conf": 0.9
      },
      {
       "way": "asked"
@@ -408,13 +408,13 @@
     "type": "dimensions",
     "ways": [
      {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
       "way": "measured",
       "view": "scan",
       "min_conf": 0.8
-     },
-     {
-      "way": "lookup",
-      "min_conf": 0.9
      },
      {
       "way": "asked"
@@ -453,13 +453,13 @@
     "type": "dimensions",
     "ways": [
      {
+      "way": "lookup",
+      "min_conf": 0.9
+     },
+     {
       "way": "measured",
       "view": "scan",
       "min_conf": 0.8
-     },
-     {
-      "way": "lookup",
-      "min_conf": 0.9
      },
      {
       "way": "asked"
