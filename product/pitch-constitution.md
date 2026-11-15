@@ -185,6 +185,8 @@ Ben, 06:40: show it working first, then the engineering. The three hard calls go
 
 **R10. Everything else lives in the answers.** [qa.md](qa.md) and [unique.md](unique.md) hold what we know; the pitch holds what we choose to say.
 
+**R11. Every number carries its why, and earns its place.** "just saying 70 20 isnt a why. also those numbers arent even helpful" ([Ben, 08:59](words.md#2026-11-15-ben-every-number-and-decision-says-why-the-stockx-statistic-is-how-much-more-money-than-the-median)). A number is shown only when it answers a question the person has (do I get more money, how soon, can I trust it), in their units: dollars, days, "8 in 10". A threshold such as "within 20%" is a method, never the headline. Behind every number, one tap away: the operation that produced it, the baseline and why it is fair, how many items and which, the file, what it does not show, and the result that would have made it false. From Ben's evidence rules in his get-hired repo: never round a mark up, built is not decided, the claim is chosen before the score is seen, and a qualifier stays only if dropping it would mislead. The worked template is [claims.md](../spec/plans/backtest/claims.md).
+
 ---
 
 ## Part VII. Before going on
