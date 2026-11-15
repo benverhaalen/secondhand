@@ -92,11 +92,11 @@ Detection facts are from [cloud-browsers-and-detection §2](../../research/repla
 |---|---|---|
 | eBay | Notification topics (order, offer, message) | rows whose `next_check_at` passed |
 | Depop | order webhooks | inbox and offers by sweep |
-| Poshmark, Mercari | sale email by Gmail push | sold page every 1 to 2 min; inbox by sweep |
+| Poshmark, Mercari | sale email by Gmail push | sold page and inbox by sweep, tiers in [card 15](../determinations/managing-and-buyers.md#15-when-to-check-again) |
 | Facebook | none found | everything by sweep |
 | Every site | the person's tap | |
 
-Each trigger becomes one `job` with an idempotency key; a repeat joins the running job. Then the lease, the policy check in code, the verb, the read-back, the event and trace, and either a decision or a new `next_check_at`. Starting values for `next_check_at`: pending offer or awaiting our reply, minutes; awaiting the buyer, 15 to 60 min; live with views or watchers, 1 to 2 h; quiet, 6 to 24 h; any event, now ([product.md](../product.md) §6, runtime).
+Each trigger becomes one `job` with an idempotency key; a repeat joins the running job. Then the lease, the policy check in code, the verb, the read-back, the event and trace, and either a decision or a new `next_check_at`. The tiers for `next_check_at` (floor, ceiling, and how a change shortens them) are owned by [managing and buyers card 15](../determinations/managing-and-buyers.md#15-when-to-check-again); any event sets it to now.
 
 ### Lease and pacing
 
@@ -196,4 +196,3 @@ None. The framework choice and the after-the-tap conflict are open in [product.m
 
 - A verb, or a named use of `read_stats`, that reads the seller's own active listings for `import`.
 - The risk line's text per site as a field on `account.capabilities`.
-- `reconcile`'s cadence (nightly per account and after relink) in the job table.

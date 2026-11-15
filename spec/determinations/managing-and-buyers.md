@@ -82,7 +82,7 @@ Shared rules for every card:
 | Rank | Source | Result on match | Why that rank |
 |---|---|---|---|
 | 1 | Locked list: home address, payment and refunds, moving a deal off-site, price below the floor, completing a purchase | `locked` | the person's own money and safety; never learned away ([product §5](../product.md#5-who-may-act)) |
-| 2 | Account state from [card 17](#17-whether-an-account-is-healthy-or-at-risk) is `paused`, `needs_signin` or `off` | `ask` (queued) | acting on a warned account risks the account |
+| 2 | Account state from [card 17](#17-whether-an-account-is-healthy-or-at-risk) is `paused` or `broken` (an unlinked account has no row, so nothing runs) | `ask` (queued) | acting on a warned or signed-out account risks the account |
 | 3 | Site terms for this verb, from [connect](../features/connect.md) | `ask` if the site bars unreviewed automation for it | eBay's User Agreement bars agents acting without human review (observed, [platform access](../../research/connect/nate/platform-access.md)) |
 | 4 | Limits: floor, pickup hours, saved spot, buy ceiling | `ask` with kind `price_below_floor` or `pickup_outside_hours` | outside what the person set |
 | 5 | Safety flags from cards [2](#2-whether-incoming-text-is-trying-to-instruct-the-agent) and [5](#5-how-likely-a-buyer-is-a-scam) | `ask` | a risky thread should not run on its own |
@@ -284,7 +284,7 @@ Shared rules for every card:
 
 ## 10. Which label and box
 
-**Determines**: the box, the declared weight and dimensions, and the label to buy or use.
+**Determines**: the box, the declared weight and dimensions, the label to buy or use, whether to offer insurance, and which labels print together.
 
 **Sources and weights**
 
@@ -303,6 +303,9 @@ Shared rules for every card:
 3. `billed = max(ceil(actual + packaging), ceil(L*W*H / 139))`; the dimensional term only where the carrier applies it.
 4. If the site gives a prepaid label: use it, choosing the weight class `>= billed`. Else the cheapest quote whose promised delivery meets the site's clock in [card 11](#11-the-ship-by-deadline-and-other-clocks).
 5. Declared weight is never below actual weight, since prepaid label access can be removed for it (observed, [shipping and pickup](../../research/sold/nate/shipping-and-pickup.md)).
+6. Address: the buyer's address is validated against the carrier before buying; a correction is shown, never applied silently.
+7. Insurance (*agent proposal*): offered when `price_cents` is above the carrier's included cover and the site's own protection does not cover the item; suggested amount is the sale price, up to the carrier's limit (Shopify offers up to $200, observed at [shopify.com/shipping](https://www.shopify.com/shipping), via the [suite map](../../research/cross-cutting/nate/shopify-suite-map.md)). Poshmark's prepaid label carries its own cover, so none is offered there (inferred).
+8. Batch: every order in `to_ship` whose label is bought or prepaid joins one print batch, sorted by the pick list in [card 23](#23-where-an-item-is-and-the-pick-list), one PDF in label-printer (4 by 6 in) or letter layout.
 
 **Why this method**: The overage falls on the seller on Mercari and Poshmark (observed), so the method rounds up and never declares low. The alternative, declare the item weight alone, is what produces the deductions.
 
@@ -348,9 +351,9 @@ Shared rules for every card:
 | Source | What it contributes | Weight or rank | Why that weight |
 |---|---|---|---|
 | Paid order read back from the site (API or page) | the sale | the only signal that counts | the site's record of payment |
-| Site webhook or notification (eBay ORDER_CONFIRMATION, Depop order.new) | trigger | starts a read | best effort, can be late or missing (observed, [platform access](../../research/connect/nate/platform-access.md)) |
+| Site webhook or notification (eBay ORDER_CONFIRMATION, Depop order.new) | trigger | starts a read | best effort, can be late or missing (observed, [crosspost and delist](../../research/list/ben/crosspost-and-delist.md): eBay's REST `ORDER_CONFIRMATION` topic and Depop's "best-effort" `order.new`) |
 | Email or SMS from the site | trigger | starts a read | spoofable; never proof ([email and notification detection](../../research/sold/nate/email-and-notification-detection.md)) |
-| Scheduled poll and 5-min reconcile | backstop | starts a read | catches what triggers miss |
+| Scheduled `check_due` order poll (tiers in [card 15](#15-when-to-check-again)) and the nightly `reconcile` | backstop | starts a read | catches what triggers miss |
 | The person marks it sold (Facebook, cash) | the sale | counts for sites without orders | no order exists to read |
 
 **Method**: any trigger sets the account's `next_check_at` to now ([card 15](#15-when-to-check-again)); the read classifies the order: `paid` is sold; `unpaid` is committed, which pauses other listings where the site allows; `cancelled` reverts. eBay is read from orders, since a sold listing can stay Active at quantity 0 (observed, [list](../features/list.md)).
@@ -385,7 +388,7 @@ Shared rules for every card:
 3. On Poshmark, void open offers first and pace 2 to 5 s per action.
 4. Retry 5 s, 15 s, 45 s, 2 min on the chosen route, then fall back to the cloud browser.
 5. A listing counts as down only after read-back.
-6. Red: any listing not read back as down 5 min after the sale read gives a `failed_delist` card.
+6. Red: any listing not read back as down 5 min after the sale read gives a `failed_delist` card. This card owns the 5 min value (a starting value): Ben's notes give 3 min ([crosspost and delist](../../research/list/ben/crosspost-and-delist.md)) and 6 min ([build plan](../../research/cross-cutting/ben/build-plan-posting-messages-ui.md)); 5 clears a 2 min poll plus Poshmark pacing and stays under the 10 min bar ([sold](../features/sold.md#design-choices)).
 
 **Why this method**: Steps 1 to 6 follow the [sold spec](../features/sold.md) and [crosspost and delist](../../research/list/ben/crosspost-and-delist.md) (observed in the spec). Ordering by instant-buy exposure is added here (inferred). The alternative, ending in a fixed site order, leaves the riskiest copy up for no reason.
 
@@ -430,11 +433,24 @@ Shared rules for every card:
 | Source | What it contributes | Weight or rank | Why that weight |
 |---|---|---|---|
 | Events (webhook, email hint, person opens the thread) | set to now | rank 1 | a fresh signal beats a schedule |
-| Tier floors and ceilings from the feature specs | bounds | rank 2 | messages 2 min with an open offer or a waiting buyer, 10 min active in 24 h, 2 h quiet; watch 5 min hot, 60 min quiet; sold 2 min poll on Poshmark and Mercari, reconcile 5 min; health 30 min ([messages](../features/messages.md), [watch](../features/watch.md), [sold](../features/sold.md), [connect](../features/connect.md)) |
+| Tier floors and ceilings, owned here (starting values, below) | bounds | rank 2 | one table, so [messages](../features/messages.md), [sold](../features/sold.md) and [connect](../features/connect.md) link here instead of stating their own |
 | Change seen on the last check | adapt within bounds | rank 3 | a revisit should follow how often a thing changes (asserted, web crawler revisit policy) |
 | Site pacing and account lease | delays | hard | one lease per account session, paced per site |
 
-**Method**: `interval_next = clamp(changed ? interval / 2 : interval * 1.5, floor_tier, ceil_tier)`; `next_check_at = min(now + interval_next, any event time)`. When jobs compete for one account's lease, run in this order: 1 sale read, 2 delist, 3 offer expiring within 1 h, 4 buyer waiting, 5 ship-by within 24 h, 6 hot want, 7 interest read, 8 quiet listing. Ties: earlier `next_check_at`.
+Tiers (*agent proposal*, starting values; they merge the earlier connect and messages cadences, which differed):
+
+| Row in this state | Floor | Ceiling |
+|---|---|---|
+| Open offer, or a buyer waiting on our reply | 1 min | 2 min |
+| Sold page on a site without sale events (Poshmark, Mercari) | 1 min | 2 min |
+| Thread active in the last 24 h, waiting on the buyer | 10 min | 60 min |
+| Live listing with views or watchers | 1 h | 2 h |
+| Quiet live listing or thread | 2 h | 24 h |
+| Want: hot, quiet ([watch](../features/watch.md)) | 5 min | 60 min |
+| Account health probe | 30 min | 30 min |
+| `reconcile`, a full compare per account | nightly, and right after a relink | |
+
+**Method**: `interval_next = clamp(changed ? interval / 2 : interval * 1.5, floor_tier, ceil_tier)`. The halving and the 1.5 stretch are *agent proposal* starting values: halving answers a burst within two checks, and 1.5 (less than doubling) climbs from floor to ceiling over several quiet checks so one quiet read does not lose a live thread; tune both from the check later below; `next_check_at = min(now + interval_next, any event time)`. When jobs compete for one account's lease, run in this order: 1 sale read, 2 delist, 3 offer expiring within 1 h, 4 buyer waiting, 5 ship-by within 24 h, 6 hot want, 7 interest read, 8 quiet listing. Ties: earlier `next_check_at`.
 
 **Why this method**: Halving on change and stretching on quiet is the plain adaptive rule; it stays inside the specs' tiers (inferred). Crosslisters poll every 5 to 30 min flat (Vendoo 10 min observed, others asserted, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)). The alternative, a fixed interval per tier, wastes reads on quiet items and misses bursts.
 
@@ -460,7 +476,7 @@ Shared rules for every card:
 | Cost per call | cost | rank 3 | cheapest among equally fast |
 | Recipe state ([replay](../features/replay.md)) | only `active` recipes | hard | `drifted` and `retired` are off |
 
-**Method**: among eligible routes, keep those whose success lower bound `>= 0.95`; pick the fastest median, ties to the cheaper. If none qualify, pick the highest success mean. Default order when data is thin (fewer than 20 calls): API, active recipe, browser ([replay](../features/replay.md)). On failure, fall back down that order; the job result records `{route, fell_back, ms}`. A challenge page stops all routes and sets the account `needs_signin`.
+**Method**: among eligible routes, keep those whose success lower bound `>= 0.95`; pick the fastest median, ties to the cheaper. If none qualify, pick the highest success mean. Default order when data is thin (fewer than 20 calls): API, active recipe, browser ([replay](../features/replay.md)). On failure, fall back down that order; the job result records `{route, fell_back, ms}`. A challenge page stops all routes and sets the account `broken`.
 
 **Why this method**: A lower bound rather than the mean keeps a route with 3 lucky calls from taking over (inferred); measured success, speed and freshness per tool is the [treg routing note](../../research/cross-cutting/nate/treg-tool-routing.md) design (observed in the note). The alternative, a fixed order, ignores that a recipe can beat the API on one site and drift on another.
 
@@ -474,20 +490,22 @@ Shared rules for every card:
 
 ## 17. Whether an account is healthy or at risk
 
-**Determines**: the account state (`linking`, `ok`, `degraded`, `needs_signin`, `paused`, `off`) and a risk flag for a site's seller standards.
+**Determines**: `account.health` (`ok`, `expiring`, `broken`, `paused`, from [product.md](../product.md)) and a risk flag for a site's seller standards. The earlier names map onto it: `needs_signin` is `broken`, `degraded` is `ok` with the risk flag raised, `linking` is the connect flow before the row exists, and `off` is an unlinked account (no row).
 
 **Sources and weights**
 
 | Source | What it contributes | Weight or rank | Why that weight |
 |---|---|---|---|
 | A warning or restriction from the site | `paused` | rank 1, hard | the site's own word; Poshmark mass suspensions in Nov 2025 (asserted, [platform access](../../research/connect/nate/platform-access.md)) |
-| Challenge page or sign-in failure | `needs_signin` | rank 2, hard | session lost |
-| Probe result every 30 min | `ok` or `degraded` | rank 3 | read works or not ([connect](../features/connect.md)) |
-| Error rate on actions in the last hour | `degraded` above 20% (start) | rank 4 | inferred |
-| Seller metrics against the site's published thresholds (cancel rate, late shipment, response time) | risk flag at 80% of a threshold | rank 5 | warns before the site acts; Poshmark freezes at 3% cancellations (asserted, [list](../features/list.md)) |
-| Our action rate against the site's pacing | slows the queue | rank 6 | Poshmark about one action per 2 to 5 s (inferred) |
+| Challenge page or sign-in failure | `broken` | rank 2, hard | session lost |
+| Token or saved session expiry within 7 days (start) | `expiring` | rank 3, hard | a relink before it breaks keeps jobs running (inferred) |
+| Probe result every 30 min | `ok`, or `broken` when a read fails twice running (start) | rank 4 | read works or not ([connect](../features/connect.md)) |
+| Error rate on actions in the last hour | risk flag above 20% (start) | rank 5 | inferred |
+| Our own engagement volume per site (shares, offers to likers, relists, ends) against the site's policy and our pace limit ([listing and marketing D26](listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)) | risk flag at 80% of our limit | rank 6 | Poshmark has an Excessive Listing Removal policy (May 2025) and a policy against unauthorised automation (observed, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)) |
+| Seller metrics against the site's published thresholds (cancel rate, late shipment, response time) | risk flag at 80% of a threshold | rank 7 | warns before the site acts; Poshmark: 3% rolling 90-day seller cancellations, a 24 hour restriction then a 14 day suspension (observed, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)) |
+| Our action rate against the site's pacing | slows the queue | rank 8 | Poshmark about one action per 2 to 5 s (inferred) |
 
-**Method**: first hard match sets the state; else the probe and error rate. `risk = max(metric_i / threshold_i)`; flag at `risk >= 0.8`. Paused stops every action on that site ([card 3](#3-whether-an-action-is-allowed-asked-or-locked)).
+**Method**: first hard match sets the state; else the probe. `risk = max(metric_i / threshold_i)` over the site's metrics, the error rate (threshold 20%) and our engagement volume (threshold our per-site limit); flag at `risk >= 0.8` (start). The per-site risk is shown on You > By site and beside every lever and bulk action that would add to it. Paused stops every action on that site ([card 3](#3-whether-an-action-is-allowed-asked-or-locked)).
 
 **Why this method**: The site's own warning outranks anything we infer, and a ratio to a published threshold is the only risk we can state without inventing a ban model (inferred). The alternative, a predicted ban probability, has no labelled data and the sites publish no ban rules.
 
@@ -624,6 +642,34 @@ Shared rules for every card:
 
 **Check later**: sales completed by the next buyer after a fall-through. Wrong if under a third of fall-throughs end in a sale within 48 h.
 
+## 23. Where an item is, and the pick list
+
+*agent proposal*
+
+**Determines**: the place shown for an item (`item.location {label, place?}`), the printable shelf label, and the order of the pick list when items sell.
+
+**Sources and weights**
+
+| Rank | Source | Why |
+|---|---|---|
+| 1 | The person's own entry: a `location.label` typed, picked from their saved places, or set by scanning a shelf label | they put it there |
+| 2 | The last place used in the same capture session (inferred) | people photograph a batch and shelve it together |
+| 3 | `seller_sku` and `quantity` from [product §3](../product.md) | the label shows both so a scan finds the row |
+
+Weights: a strict order, not a blend; rank 2 fills only an empty field and shows as a suggestion (starting rule).
+
+**Method**: each item gets a label with a code that opens its item page and its `seller_sku`, printed alone or as a sheet for a batch, the way Shopify's inventory labels and SKU barcodes work (observed, [suite map](../../research/cross-cutting/nate/shopify-suite-map.md)). On a sale ([card 12](#12-whether-a-sale-really-happened)), the item joins the pick list for the day: rows grouped by `location.label`, sorted by label text so a walk goes shelf by shelf, each row with the photo, title, buyer's site and ship-by time from [card 11](#11-the-ship-by-deadline-and-other-clocks). Scanning a label on the pick list marks it picked; the label batch in [card 10](#10-which-label-and-box) prints in the same order.
+
+**Why this method**: A typed label is what a small seller keeps (a bin, a shelf, "closet top"); a full warehouse bin model is more than the person asked for and can grow from the same field (inferred). The alternative, guessing location from photos, is wrong too often to trust for a sold item.
+
+**When it is not shown**: with no location set, the pick list shows "No place set" on that row and asks for it once on the item page; nothing is guessed.
+
+**How it is explained**: the place shows under the title on the item page and the pick list; no sentence.
+
+**Speed**: label and pick list render on request, under 1 s for 200 items (target).
+
+**Check later**: time from sale to "picked". Wrong if items with a place take as long to pick as items without one.
+
 ## Summary
 
 | # | Name | Owning feature | Main sources | Method in five words | Hide rule |
@@ -637,7 +683,7 @@ Shared rules for every card:
 | 7 | Offer answer | messages | floor, you-keep, price path, interest | decreasing concession, precise counter amount | auto in log only |
 | 8 | Pickup slot and booking | messages | hours, spot, calendar, buyer times | score slots inside allowed set | no hours, ask once |
 | 9 | Ship or meet | sold | order, setting, site, size | first match ordered list | shown when both possible |
-| 10 | Label and box | sold | measure, dim rule, site caps | round up, smallest fitting box | no measure, weigh first |
+| 10 | Label, box, insurance, batch | sold | measure, dim rule, site caps, sale price | round up, smallest box, batch print | no measure, weigh first |
 | 11 | Clocks | sold | order field, help pages | shorter clock, business days | default 3 days, said so |
 | 12 | Sale verified | sold | paid order read back | triggers start, read proves | always shown |
 | 13 | Delist set and red | sold, list | listings, exposure, routes | parallel jobs, exposure first, read-back | shown on item page |
@@ -650,6 +696,7 @@ Shared rules for every card:
 | 20 | Notify tier | today | deadline, stake, kind | first match, batch the rest | auto never pushes |
 | 21 | Today order | today | deadline, money, age | bucket, money, age sort | empty shows log |
 | 22 | Buyer queue | messages | commitment, scam tier, arrival | commit first then arrival | one buyer, no queue |
+| 23 | Location and pick list | sold | person's entry, session, sku | typed place, grouped walk order | no place, ask once |
 
 ### Cannot be made credibly now
 

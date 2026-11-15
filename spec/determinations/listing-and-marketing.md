@@ -42,6 +42,7 @@ Step 1, the determinations:
 | D23 | Whether a change helped | no |
 | D24 | Whether a site changed its ranking | yes (score.md) |
 | D25 | Claim check | yes (product.md) |
+| D26 | Engagement levers the agent runs on its own | no |
 
 ---
 
@@ -122,7 +123,7 @@ Step 1, the determinations:
 **Method**
 1. Candidates: for each horizon `T` in {7, 30, 90}, each start rung on the ladder (10th to 90th percentile in 5-point steps), each shipping option from D9. Arithmetic.
 2. Objective per candidate (from [price.md](../features/price.md)): `E_k = Σ_steps P(sale in step) × net(step price)`, with net from fees, shipping and processing, minus holding cost `h × expected days listed` (h = 0 by default; tuneable per person).
-3. Constraint: every price on the path `>= floor = max(lowest rung, cost + target profit, best non-sale route net)`.
+3. Constraint: every price on the path `>= floor`, with the floor from [money D14](money.md#d14-floor-and-always-accept), which holds the formula.
 4. Best = `argmax E_k` at the person's `T` (default 30). Ties: higher `P(sold within T)`, then lower start price.
 5. Form: each element set by its card; form does not change `P` unless [D12](#d12-stand-in-ranker-factors) holds a factor at probability 0.8 or more with a measured effect, in which case `P` is multiplied by that effect's lower bound. This keeps the number honest when form evidence is weak.
 6. Alternatives shown: the best plan for each other horizon, and the next best start rung for the chosen one.
@@ -161,7 +162,7 @@ Step 1, the determinations:
 4. Fill slots in order, then add remaining terms by descending score, while length `<= L_s`. Terms that would place a slot's key word past the visible 60 characters on eBay move left. No term twice; `NWT` only with tags seen.
 5. A model (Sonnet) joins the chosen terms in the chosen order into readable text; it may add only joining words. Haiku checks length, banned words and that every content word maps to a chosen term. Cached by fingerprint.
 
-**Why this method**: sites say listings match on title words and penalise stuffing (Poshmark blog 2024-11-26, Mercari help, *observed* in [ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md)), so the job is choosing backed words buyers use, in the visible part. A free-form model title is the competent alternative; it is fluent but not reproducible and can add unbacked words (*inferred*). No independent study of title words was found ([observing-rank §7](../../research/list/nate/observing-rank-and-performance.md), *not found*), so the weights are starting values.
+**Why this method**: sites say listings match on title words and penalise stuffing (Poshmark blog 2024-11-26, Mercari help, *observed* in [ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md)), so the job is choosing backed words buyers use, in the visible part. Ben's [scripts/listing-lint.mjs](../../scripts/listing-lint.mjs) builds and checks a title per site from the rules in [listing-seo.md](../../research/list/ben/listing-seo.md) (*observed*: the script exists with a test); it is the considered option for steps 3, 4 and the length check, with this card's winner scoring added to it rather than a second title builder (*agent proposal*). A free-form model title is the competent alternative; it is fluent but not reproducible and can add unbacked words (*inferred*). No independent study of title words was found ([observing-rank §7](../../research/list/nate/observing-rank-and-performance.md), *not found*), so the weights are starting values.
 
 **When it is not shown**: never hidden (a title is required); with fewer than 10 winners the score uses the template and attributes only, and the tap view says no pattern was used.
 
@@ -715,6 +716,35 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 
 **Check later**: buyer disputes about a stated fact on passed listings; more than 0.5% of sales means the matching is too loose.
 
+## D26 Engagement levers the agent runs on its own
+
+*agent proposal* for the whole card, from Nate's "a suite like shopify, and the better official option" ([words.md](../../product/words.md)).
+
+**Determines**: which of a site's own engagement levers the agent pulls without asking, how often, and where it stops to protect the account.
+
+**Sources and weights**: the site's lever and its stated rules (hard limit); the person's `limits` and the `rule` state for the lever's decision kind (hard limit); account risk per site, ranked by [managing-and-buyers card 13](managing-and-buyers.md#13-which-listings-come-down-in-what-order-and-when-a-failed-delist-turns-red) (gate); the lever's measured effect from [D23](#d23-whether-a-change-helped) where it exists, else none.
+
+| Site | Lever | Runs on its own when | Pace limit (starting value) | Account risk |
+|---|---|---|---|---|
+| Poshmark | share own listings to followers | the person turned it on; a session counts as engagement | 1 share per live listing a day, spread over the day, never bursts | high: Poshmark's policy against unauthorised automation and its Excessive Listing Removal policy (*observed*, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)) |
+| Poshmark, Mercari, eBay | offer to likers or watchers | [D17](#d17-offer-to-likers-or-watchers) passes and the offer is at or above `always_accept_cents` | D17's 7-day cooldown | low: a site-provided button |
+| Depop | refresh (edit to move up) | interest is behind plan per [D15](#d15-interest-against-plan) | once a week per listing | medium: no stated rule found |
+| Grailed | bump | the site's interval has passed; with a drop, D20 rounds it to 10% | the site's own interval | low: a site-provided button |
+| Facebook | Renew | the site offers it | the site's own interval | low |
+| eBay | Promoted Listings | never on its own: spend asks ([D18](#d18-promoted-listing)) | none | none |
+
+**Method** (first match, arithmetic): 1. The site lacks the lever in the harness capability table: none. 2. Account health is not `ok`, or managing-and-buyers card 13 shows the site at its risk flag: stop all levers on that site and notify. 3. The decision kind's `rule` is not `auto`: ask once, as a rule offer. 4. Run at the pace limit, logged per action, with the day's count against the limit shown.
+
+**Why this method**: sellers and crosslisters already run these levers, and Vendoo states auto-sharing brings "33% more sales" (a vendor claim, *asserted*, not checked; [shopify-suite-map.md](../../research/cross-cutting/nate/shopify-suite-map.md)). No independent study measures sharing ([What cannot be made credibly](#what-cannot-be-made-credibly)), so the pace stays slow and risk-bounded until D22 tests settle the effect (*inferred*). The alternative, a fast schedule like the closet-sharing bots, is what the Poshmark automation policy targets.
+
+**When it is not shown**: a site without the lever; a lever the person has not turned on shows only as an offer.
+
+**How it is explained**: "Shared your 24 Poshmark listings today, 1 each. Paused if Poshmark warns." Tap: the day's actions, the limit and the risk.
+
+**Speed**: runs inside `check_due` sweeps ([managing-and-buyers card 15](managing-and-buyers.md#15-when-to-check-again)); a share job kind is asked of product.md.
+
+**Check later**: matched pairs shared against not shared (D22) for sale within 30 days; with no lift after 200 pairs, sharing turns off by default. Any `site_warning` after a lever ran stops that lever on every account on the site until reviewed.
+
 ---
 
 ## All determinations
@@ -746,6 +776,7 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 | D23 | Did it help | score | arm counts, pooled prior | Posterior over noise floor bar | Cannot tell shown with counts |
 | D24 | Ranking changed | score | panel tau, controls, agreement | Tau drop beyond control floor | Panel under 100 queries |
 | D25 | Claim check | data, list | attributes, evidence, site rules | Split claims, match to facts | Pass shows nothing |
+| D26 | Engagement levers | list, today | site levers, limits, rule, risk | Paced levers inside risk limits | No lever or not turned on |
 
 ## What cannot be made credibly
 

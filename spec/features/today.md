@@ -40,6 +40,8 @@ Every number on a card is a guarded number with a `citation_id`; a hidden one sh
 | list | `relist` | site, days live | Relist, Not now (never Poshmark) |
 | list | `failed_post`, `failed_delist` | site, failed step | Retry, Do it myself |
 | list | `site_changed_listing` | field, before and after | Keep site's, Put mine back |
+| list | `bulk_action` (asked of product.md) | the action, each listing's before and after and keep, the ones left out and why ([list.md](list.md#changing-many-listings-at-once)) | Do all, Untick some, Cancel |
+| price | `end_unsold` (asked of product.md) | days live, the floor reached, the other routes ([money D15](../determinations/money.md#d15-markdown-path-stale-and-relist), [D19](../determinations/money.md#d19-sell-trade-in-donate-or-keep)) | End it, Bundle, Trade in or donate, Keep it up |
 | messages | `reply_other` | question, draft | Send, Edit, Not now, Always do this |
 | messages | `accept_offer` | offers, asking, you keep, expires | Accept, Counter $X, Decline, Always accept $X or more |
 | messages | `scam_warning` | reason | Block buyer, Reply with safety line, Ignore |
@@ -57,7 +59,7 @@ Every number on a card is a guarded number with a `citation_id`; a hidden one sh
 | measure | `measure_review` | numbers on the photo | Looks right, Fix |
 | studio | `studio_approve` | improved and real | Use improved, Use real, Redo |
 | sold | `ship_by` | buyer, deadline | Ship, Get a label |
-| sold | `buy_label` | carrier, cost | Buy label, Choose another |
+| sold | `buy_label` | carrier, cost, insurance offered, labels for the other orders due today | Buy label, Buy all due today, Choose another |
 | sold | `cancel_sale` | reason choices | Cancel with reason, Keep sale |
 | sold | `no_show` | appointment | Rebook, Next in line, Relist |
 | sold | `double_sale` | both orders | Keep first, Keep second |
@@ -76,6 +78,21 @@ Every number on a card is a guarded number with a `citation_id`; a hidden one sh
 | data | `rule_expiring` | rule, last used | Keep it, Let it lapse |
 
 Auto kinds (`answer_fact`, `counter_offer`, `decline_offer`, `offer_to_watchers`, `book_pickup`, `delist_after_sale`, `push_my_edit`) appear as cards only when their rule is in `ask`, else as log rows. Locked kinds take the person's tap every time. Exact action labels go through copy-lint and Ben's writing rules; owners may rename them.
+
+With two or more orders to pack, Today shows one pick list card above the `ship_by` cards: each order's item photo, `location.label`, box and label state, in shelf order, with Print labels and Print pick list ([managing-and-buyers card 23](../determinations/managing-and-buyers.md#23-where-an-item-is-and-the-pick-list), [sold.md](sold.md)). It is a view, not a decision kind. *agent proposal*
+
+## Automations, read as trigger, condition, action
+
+*agent proposal*, from Nate's "a suite like shopify, and the better official option" ([words.md](../../product/words.md)). Shopify Flow shows automations as trigger, condition, action ([shopify-suite-map §7](../../research/cross-cutting/nate/shopify-suite-map.md#7-flow-automation), *observed*). Here that is a way to read the existing `rule` and `limits`, not a second rule system:
+
+| Part | What it is here | Where it lives |
+|---|---|---|
+| When (trigger) | an event (an offer, a message, a sale, a site warning) or a `check_due` sweep reaching an age ([managing-and-buyers card 15](../determinations/managing-and-buyers.md#15-when-to-check-again)) | the decision kind's source event |
+| If (condition) | the person's `limits` (`floor_cents`, `always_accept_cents`, `pickup_windows`, `ask_every_time`) and the rule's `scope` (one item, a category, a site, everything) | `limits`, `rule.scope` |
+| Then (action) | the decision kind's action, for example accept, counter, markdown, relist, share | `rule.kind` |
+| Mode | asks, or does it and logs it | `rule.state` |
+
+You lists every rule in this form, for example "When an offer comes in, if it is $40 or more on the jacket, accept it. Does it and tells you." Editing the If changes `limits`; the When and Then are fixed by the kind. A person can start a rule here as well as from Always do this; it starts in `ask` unless the kind is promotable and the person picks does it, and locked kinds cannot be made. The stale steps in [money D15](../determinations/money.md#d15-markdown-path-stale-and-relist) and the levers in [listing D26](../determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own) are rules in this same form.
 
 ## The auto log
 
@@ -162,3 +179,5 @@ For Ben and Nate to mark.
 - `unbacked_claim` in [product.md §5](../product.md#decision-kinds-the-complete-list).
 - A notification rule beside `user.notification_pref`: which kinds push, which batch.
 - A log line for `message.new` in [events.json](../events.json).
+- `bulk_action` and `end_unsold` in [product.md §5](../product.md#decision-kinds-the-complete-list).
+- Creating a rule without a past decision: `POST /v1/rules {kind, scope, limits}` beside `{from_decision_id}`, and the trigger and condition text on `GET /v1/rules`.

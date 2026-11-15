@@ -34,6 +34,14 @@ Two rules hold for every card:
 | D21 | [Goal progress](#d21-goal-progress) | insights |
 | D22 | [Could earn across live items](#d22-could-earn-across-live-items) | insights |
 | D23 | [Sell-through and share of asking](#d23-sell-through-and-share-of-asking) | market, score |
+| D26 | [Year-end tax summary](#d26-year-end-tax-summary) | sold, insights |
+| D27 | [Profit by group](#d27-profit-by-group) | insights |
+| D28 | [Sell-down estimate](#d28-sell-down-estimate) | insights |
+| D29 | [Profit and loss for a period](#d29-profit-and-loss-for-a-period) | insights, sold |
+| D30 | [Slow movers and ABC ranking](#d30-slow-movers-and-abc-ranking) | insights, price |
+| D31 | [Own-listing cohorts by listing month](#d31-own-listing-cohorts-by-listing-month) | insights |
+| D32 | [Anomaly in a person's own figures](#d32-anomaly-in-a-persons-own-figures) | insights |
+| D33 | [Promotion return](#d33-promotion-return) | insights, list |
 
 ---
 
@@ -72,6 +80,12 @@ Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are 
 | measured or label (read code, tag) | 1.0 |
 | marketplace structured field | 0.9 |
 | inferred from photo or text by a model | 0.7 |
+
+**One rule per quantity** (*agent proposal*; this card owns these four, and [market-insight.md](market-insight.md), [data.md](../features/data.md) and [price.md](../features/price.md) link here):
+- Site weight: every site's sold row weighs w_type 1.0 (eBay, Mercari, Depop alike); our own orders 1.2. A site whose sold price is less certain is handled by w_extract and the Best Offer row, not by a lower site weight.
+- Sold against ask: an ask weighs 0 for value; it enters only the D5 cap and D10.
+- Recency: half-life 90 days, 30 in fast categories, cut at 365 days (the w_age table). A product-level index that needs a different half-life says why where it is defined.
+- Minimum basis to show a sold range: `n_eff >= 6` and at least 2 sold in 90 days. A plain count of 5 sales elsewhere is replaced by this rule.
 
 **Method**
 1. Retrieve candidates (model step: the embedding and the comp-text extractor, Claude Haiku 5.5 per [price.md](../features/price.md)). Filter by category and hard attributes, then rank by keyword plus embedding match ([valuation-engine.md](../../research/price/ben/valuation-engine.md) section 2).
@@ -229,18 +243,9 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 **Determines**: what the item cost new when it was sold, and what it costs new today if it is still sold.
 
-**Sources and weights**
+**Sources and weights**: one card owns them, [market-insight M2](market-insight.md#m2-retail-price-and-release-date). Money reads its two values, `launch_retail` and `price_new_today`, under those names. Two notes from this card go to M2's owner: archived pages (Wayback) for discontinued items, and Serper `google.serp.shopping` for price new today ([openrouter-and-treg.md](../../research/price/ben/openrouter-and-treg.md)).
 
-| Source | Contributes | Rank | Why |
-|---|---|---|---|
-| Brand's own store page, matched by GTIN or style code | list price and date read | 1 | the seller of record sets MSRP; matched by identifier, not image |
-| Authorized retailer page, same identifier | list price | 2 | official channel, may discount |
-| Archived page (Wayback) for discontinued items | list price at launch | 3 | the only record after delisting |
-| Shopping search results (Serper `google.serp.shopping`, [openrouter-and-treg.md](../../research/price/ben/openrouter-and-treg.md)) | current new offers | 4 | price new today, not MSRP |
-| GTIN databases | stated MSRP | 5 | often unsourced |
-| A model's recall | none | never alone | no citation possible |
-
-**Method**: `original_retail` = the median of rank-1 and rank-2 list prices dated within the first 90 days of the product's first appearance. If none, use rank 3, then rank 5. `price_new_today` = the minimum current new price from ranks 1, 2 and 4, matched by identifier, read within 7 days. A model only extracts the price and identifier from the page text.
+**Method**: M2's. Price uses `launch_retail` as the new-with-tags anchor and `price_new_today` in the D5 cap. A model only extracts the price and identifier from the page text.
 
 **Why this method**: retail anchors new-with-tags pricing and the D5 cap, and people ask "what did it cost?". An identifier match is used over an image match because it is an identifier (*inferred*). The alternative, the first search result, often returns a resale or a different variant.
 
@@ -294,11 +299,12 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 **Method** (arithmetic, cents)
 1. `base_s = price + (shipping if base includes it) + (tax if base includes it)`.
-2. `tax = price x tax_rate`. tax_rate is a starting 7%, later the sales-weighted destination rate from our orders (*asserted* placeholder).
+2. `tax = price x tax_rate`. tax_rate is a starting 7%, later the sales-weighted destination rate from our orders (unsourced placeholder: no source gives 7%).
 3. `fee_s = max(min_cents, fee_pct x base_s) + fixed_cents` (with eBay's tiers).
 4. `keep_s = price - fee_s - seller_shipping_s (D8) - boost_s - processing_s`.
 5. A net range applies the same function to the D5 low and high.
 6. Worked example, *observed* arithmetic from the note: a $20 shirt with $6 buyer-paid shipping keeps $16.06 on eBay and $18.69 on Depop.
+7. From a target keep to a list price per site: solve step 4 for the price. Ben's shortcut multipliers, "Depop target / 0.85, Poshmark target / 0.85, Mercari target x 1.18, eBay target x 1.10" ([packet list/31](../../.agents/team/packets/list/31-platform-fit.md), *asserted*), are the check on that solve: the formula is the calculation, and where the two differ by more than a site price ending the difference is listed under Check later, not hidden.
 
 **Why this method**: sites charge on different bases, so the same price gives a different keep: 13.6% of item plus shipping plus tax is not 13.6% of the price (*observed*). The alternative, a flat percent per site, gave Ben's $16.88, which holds only with no shipping in the base (*observed* in the note).
 
@@ -408,7 +414,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 **Sources and weights**: ladder rungs (D15), cost basis (D20, if given), target profit (0 for casual sellers, [appraise.md](../features/appraise.md)), and the best non-sale route (D19).
 
 **Method** (arithmetic)
-1. `floor_s = max(lowest rung, cost + target_profit_cents, best non-sale route keep)` ([price.md](../features/price.md) step 4).
+1. `floor_s = max(lowest rung reached, cost + user.target_profit_cents if set, best non-sale route keep)`. This is the one place the formula is written; [price.md](../features/price.md) and [listing-and-marketing.md](listing-and-marketing.md) link here.
 2. `always_accept_s` = the lowest rung p with `keep_s(p) >= E_k` (the expected keep of continuing the plan), and never below the floor.
 3. Offered at listing as "Always accept $X or more". Only unedited approvals count for autonomy.
 
@@ -434,6 +440,16 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 3. `E_k = sum over steps of P(sale in step) x keep_s(step price)`. Horizons: 7, 30 or 90 days.
 4. Stale: no sale by the plan's median days, and interest below `C_s` median at the same age.
 5. At stale: if the current price is at or below the p50 of `C_s`, relist (price is not the problem: visibility is). Otherwise move to the next rung, but never below the floor (D14).
+6. Stale at each age (*agent proposal*). `m` is the plan's median days to sell (D11 t50). Every step stays inside the person's `limits` (`floor_cents`, `ask_every_time`) and the `rule` state of its decision kind; a step outside them becomes an ask, never an action. The multiples are starting values to tune on the check below.
+
+| Age | Step | Decision kind |
+|---|---|---|
+| m | step 5: relist or the next rung, plus the site's own levers ([listing-and-marketing.md D26](listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)) | `relist` or `markdown` |
+| 1.5 m | an offer to watchers or likers at or above `always_accept_s` where the site has one | `offer_to_watchers` |
+| 2 m | add the next site in D12's set that the item is not on | `first_post` |
+| 3 m, or the path reached the floor | ask: end, bundle, trade in or donate, with D19's keep for each route | `price_below_floor` when the best route is a sale under the floor; otherwise an end the person confirms, a kind product.md does not have yet (`end_unsold`, asked of the lead) |
+
+Poshmark relist is never promotable ([price.md](../features/price.md)), so on Poshmark the age m step always asks.
 
 **Why this method**: a markdown that follows the price-speed curve lowers price only when time has shown the higher rung failed (*inferred*). The relist rule separates a pricing problem from a visibility problem, using interest relative to comparable listings of the same age. The alternative, a fixed 10% weekly cut, gives away margin on items that were only buried.
 
@@ -441,7 +457,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 
 **How it is explained**: "No sale in 12 days and fewer views than similar listings; dropping to $40." Tap: the ladder, the interest comparison and the next step.
 
-**Speed**: a nightly job checks every live item; nothing runs on demand.
+**Speed**: the `check_due` job runs each live item when its `next_check_at` is due ([managing-and-buyers.md card 15](managing-and-buyers.md#15-when-to-check-again)); nothing runs on demand.
 
 **Check later**: run an A/B on relist versus markdown at stale when the price is at or below p50. The rule is wrong if markdown sells sooner at equal or better keep.
 
@@ -607,17 +623,186 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 
 **Sources and weights**: sold and live counts per product or category per site in a window; ask and sold pairs where both are known.
 
-**Method** (arithmetic): `sell_through = sold / (sold + active)` over 90 days ([score.md](../features/score.md)). `share_of_asking = median(sold / final ask)` over pairs, with 6 or more pairs needed ([insights.md](../features/insights.md)).
+**Method** (arithmetic): sell-through is [market-insight M6](market-insight.md#m6-sell-through)'s method and name (30-day cohort); this card does not restate it. `share_of_asking = median(sold / final ask)` over pairs, with 6 or more pairs needed ([insights.md](../features/insights.md)). For one person's own listings the same M6 definition runs over their listings only: the denominator is items they listed in the window, an item posted to several sites counts once (one `item`, not one per `listing`), a delist after a sale on another site is not counted unsold, and the minimum basis is M6's own count, not D1's comps. By listing month it is [D31](#d31-own-listing-cohorts-by-listing-month).
 
 **Why this method**: these are the two figures resale sellers already read (*asserted*). Both are counts, so they can be checked by anyone. The alternative, raw sold counts, hides how much supply competes.
 
-**When it is not shown**: under 6 sales in 12 months or 2 in 90 days (the D1 rule), or panel coverage stale (`panel_stale`).
+**When it is not shown**: below the D1 minimum basis, or panel coverage stale (`panel_stale`).
 
 **How it is explained**: "About 4 in 10 listed ones sold in the last 3 months." Tap: the counts and their dates.
 
 **Speed**: kept ready per category and site, nightly.
 
 **Check later**: compare our counts against a site's own figure where one is published. It is wrong if they differ by more than 10 points.
+
+## D26 Year-end tax summary
+
+*agent proposal*. D24 and D25 are not used in this file.
+
+**Determines**: for one calendar year, what the person sold, what each site took, what reached them, and what they paid for the items where they told us, laid out so they or their preparer can file. It never says what is taxable (see Cannot be made credibly).
+
+**Sources and weights**: no weights; every line is a record.
+
+| Source | Contributes | Rank | Why |
+|---|---|---|---|
+| Our `order` rows: `price_cents`, `fees_cents`, `shipping_cents`, `payout_cents` ([sold.md](../features/sold.md)) | gross, fees, shipping, paid out | 1 | the record of each sale |
+| Site payout reports read back by `reconcile` ([connect.md](../features/connect.md#read-back-and-reconcile)) | the site's own figures | 1 | where they differ from ours, the site's figure is shown and the difference listed |
+| Refunds, returns and cancels from `refund` and `return_claim` decisions | money given back | 1 | lowers the year's gross |
+| Cost basis (D20) | what the item cost | 2 | only where recorded or `you_said`; never estimated |
+| Labels and supplies bought through the app ([managing-and-buyers.md card 10](managing-and-buyers.md#10-which-label-and-box)) | selling costs outside the keep | 1 | a record |
+| The site's own 1099-K, when the person adds it | the reported gross | check | sites report gross, not keep; the summary shows the bridge between them (*asserted*: the federal reporting threshold changed in 2025 and is to be confirmed at irs.gov before shipping) |
+
+**Method** (arithmetic, cents, per site and in total): `gross = sum price_cents + shipping_cents charged to buyers`; `minus refunds`; `fees = sum fees_cents`; `paid_out = sum payout_cents`; `basis = sum D20 basis on orders that have one`; `gain = paid_out - basis - outside selling costs`, only over orders with a basis, and the count of orders without one stated. The year is the payout date's year, with the sale date shown beside it. Exports as CSV and PDF through `export_user` ([data.md](../features/data.md)).
+
+**Why this method**: a preparer needs gross, fees and basis apart, and the site's 1099-K shows gross only, so a person who reads only that form can overstate what they made (*inferred*). The alternative, the sites' own year-end pages, splits the year across sites and leaves out basis (*inferred*).
+
+**When it is not shown**: with no sale in the year. Gain is left out for orders without a basis, and the line says how many.
+
+**How it is explained**: "2026: sold $3,120, sites took $410, $2,710 reached you; you told us what you paid for 31 of 44." Tap: each order, and the bridge from each site's gross to what reached the person.
+
+**Speed**: kept ready from order and payout events; the export runs on request.
+
+**Check later**: compare each site's yearly total with its 1099-K or payout report. It is wrong if any site's gross differs by more than $1.
+
+## D27 Profit by group
+
+*agent proposal*, asked for by the insights lead ([insights.md](../features/insights.md)).
+
+**Determines**: per group (category, brand or site), over a window, how much was kept and how much was made after cost.
+
+**Sources and weights**: `order` money lines (D9 actual keep), `item.cost` as D20's basis, the item's category and brand from identify. No weights.
+
+**Method** (arithmetic): per group, `kept = sum payout_cents`, `made = sum` of [D20](#d20-cost-basis-and-gain-or-loss) gain over orders with a known cost, plus the count of orders, the count with a cost, and the median days to sell. Categories are the D1 family level so they match the comps.
+
+**Why this method**: it answers "what is worth my time to source, and where to sell it", from records only (*inferred*). The alternative, profit from list prices, counts sales that never happened.
+
+**When it is not shown**: a group with no item of known cost shows `kept` only. The count of orders left out of `made` is always shown. A group with fewer than 3 orders in the window is folded into "Other" (a starting value).
+
+**How it is explained**: "Sneakers: $640 kept, $310 made over cost, 9 sales." Tap: the orders.
+
+**Speed**: kept ready from order events.
+
+**Check later**: the sum over categories equals D21's total kept for the same window, to the cent.
+
+## D28 Sell-down estimate
+
+*agent proposal*, asked for by the insights lead.
+
+**Determines**: how long the person's live items will take to sell down, and what they will have kept by then.
+
+**Sources and weights**: per live item, D10 `P_i(t)` over days and D9 keep; the person's planned D15 steps.
+
+**Method** (arithmetic, fixed seed): the [D22](#d22-could-earn-across-live-items) simulation run over days instead of one 30-day window. Report the day by which half, and by which 90%, of the counted items have sold, each as a p10 to p90 range, and the summed keep at those days. Items with hidden ranges are left out and counted.
+
+**Why this method**: it reuses D22's draws, so the two numbers can never disagree (*inferred*). The alternative, the average days to sell times the item count, ignores that a few slow items set the tail.
+
+**When it is not shown**: when over half the live value has D10 hidden ([insights.md](../features/insights.md)). A 90% day past 180 days is shown as "over 6 months".
+
+**How it is explained**: "Half sold in about 3 to 5 weeks, most by 3 months." Tap: the items, slowest first.
+
+**Speed**: nightly with D22, and on any listing change.
+
+**Check later**: realised half-sold days should fall inside the range 8 times in 10. It is wrong under 7 in 10.
+
+## D29 Profit and loss for a period
+
+*agent proposal*, asked for by the insights lead.
+
+**Determines**: for any period, every money line in and out, and what is left.
+
+**Sources and weights**: `order` money lines (fee by type, shipping, tax, refund, payout, promotion spend), `item.cost`, labels and supplies bought in the app. Each line carries its `source` (`site_report`, `computed` by D9, or `estimated`). No weights.
+
+**Method** (arithmetic, cents): `sales - refunds - fees (by type) - seller shipping - promotion spend - cost of items sold (D20, known cost only) - supplies = result`. Lines from [D9](#d9-what-you-keep-per-site) and [D20](#d20-cost-basis-and-gain-or-loss). [D26](#d26-year-end-tax-summary) is this card over one calendar year plus the bridge to each site's 1099-K. The export is a CSV of every line with its `source`, labelled a record, never tax advice.
+
+**Why this method**: the standard income statement order, so a preparer reads it without a key (*inferred*). The alternative, payouts only, hides what the sites took.
+
+**When it is not shown**: never hidden; a line whose source is `estimated` is marked. With no sale in the period, it says so.
+
+**How it is explained**: "October: $820 in sales, $112 in fees, $64 shipping, $290 for the items; $354 left." Tap: each line and its source.
+
+**Speed**: kept ready from order events; the export runs on request.
+
+**Check later**: the period's payouts equal the sum of the sites' payout reports. It is wrong if they differ by more than $1.
+
+## D30 Slow movers and ABC ranking
+
+*agent proposal*, asked for by the insights lead.
+
+**Determines**: which live items are least likely to sell soon, and which items make most of the person's money.
+
+**Sources and weights**: live `listing`, `valuation`, [D10](#d10-chance-of-sale-within-a-period-at-a-price) `P_i(30)`, days listed against [market M7](market-insight.md#m7-days-to-sell); D9 keep.
+
+**Method** (arithmetic): slow movers are ordered by `P_i(30)` lowest first (30 days is a starting window). ABC: rank live items by expected keep `P_i(30) x keep_i` (D9 at the list price); A is the items that make up the first 80% of the total, B the next 15%, C the last 5% (starting values, the usual Pareto split).
+
+**Why this method**: the chance of sale already folds in price and interest, so it ranks better than days listed alone (*inferred*). ABC is the split retailers use to spend attention where the money is (*asserted*).
+
+**When it is not shown**: an item with D10 hidden is listed apart as "can't tell yet", never ranked.
+
+**How it is explained**: "These 6 are least likely to sell this month." Tap: each item's chance, days listed and the move D15 would make.
+
+**Speed**: nightly with D22, and on any listing change.
+
+**Check later**: of items ranked in the slowest tenth, fewer should sell in 30 days than of any other tenth. It is wrong if the slowest tenth outsells the next.
+
+## D31 Own-listing cohorts by listing month
+
+*agent proposal*, asked for by the insights lead.
+
+**Determines**: for the items a person listed in each month, how they sold over time.
+
+**Sources and weights**: the person's own `listing` and `order` rows. No weights.
+
+**Method** (arithmetic): [market M6](market-insight.md#m6-sell-through)'s cohort definition, applied to the person's own listings grouped by month first listed: share sold by day 7, 30, 60 and 90, the [D23](#d23-sell-through-and-share-of-asking) share of asking, and total kept.
+
+**Why this method**: a cohort keeps a slow month from being hidden by a busy one (*inferred*). The alternative, a running sell-through, mixes old stock with new.
+
+**When it is not shown**: a cohort below M6's minimum.
+
+**How it is explained**: "Of what you listed in March, 6 in 10 sold within a month." Tap: the items.
+
+**Speed**: kept ready from listing and order events.
+
+**Check later**: each cohort's sold count equals the person's orders for those items.
+
+## D32 Anomaly in a person's own figures
+
+*agent proposal*, asked for by the insights lead.
+
+**Determines**: when the person's sales pace, fees, refunds or payout timing move outside their own usual band. Traffic per site is [listing D24](listing-and-marketing.md#d24-whether-a-site-changed-its-ranking)'s.
+
+**Sources and weights**: the person's daily series from D21, D9 and order events.
+
+**Method** (arithmetic): for each series, the expected band is the trailing 8-week median plus or minus 3 x 1.4826 x MAD for the same weekday (D1's outlier rule applied to time). A figure outside it on 2 days running is an anomaly. A fee share above the D9 prediction by more than $0.25 a sale (D9's own check) is one at once. A payout later than the site's stated schedule is one at once. Values are starting values.
+
+**Why this method**: median and MAD hold up with a few sales a week, where a mean and standard deviation swing on one big sale (*inferred*).
+
+**When it is not shown**: with under 8 weeks of history, or when the figure itself is hidden. It is a notice, never a decision ([insights.md](../features/insights.md)).
+
+**How it is explained**: "Fees on Depop ran $1.10 a sale higher than expected this week." Tap: the series and the band.
+
+**Speed**: daily.
+
+**Check later**: of anomalies raised, the share the person opens and acts on. It is wrong if under 1 in 5 over a quarter.
+
+## D33 Promotion return
+
+*agent proposal*, asked for by the insights lead.
+
+**Determines**: whether money spent promoting a listing came back.
+
+**Sources and weights**: spend per listing (eBay Promoted Listings, Depop Boost, Etsy Ads), the funnel, `order`; the lift from [listing D23](listing-and-marketing.md#d23-whether-a-change-helped) and the break-even in [listing D18](listing-and-marketing.md#d18-promoted-listing).
+
+**Method** (arithmetic): `return = (lift in P of sale x keep_s at the sale price) - spend`, with the lift and its range from listing D23 against matched unpromoted listings, and `keep_s` from D9 with the promotion fee in `boost_s`. Summed per site and period.
+
+**Why this method**: a promoted sale might have happened anyway, so return counts only the lift over matched listings (*inferred*). The alternative, revenue from promoted sales over spend, credits the promotion with every sale.
+
+**When it is not shown**: when listing D23 cannot tell the lift from noise: "too early to tell".
+
+**How it is explained**: "Promoting on eBay cost $14 this month and brought about $20 to $35 more." Tap: the matched listings.
+
+**Speed**: nightly.
+
+**Check later**: compare against an eBay holdout where the person allows one. It is wrong if the holdout lift falls outside our range.
 
 ---
 
@@ -631,7 +816,7 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 | D4 Site translation | price | cross-site same products | median cross-site price ratio | under 20 shared products |
 | D5 Fair value range | price | D1 to D4 | quantile model plus conformal | too_few_sales, too_wide |
 | D6 Calibration | price | held-out sales | Mondrian CQR with ACI tracker | not checked: parent, labelled |
-| D7 Original retail | price, market | brand pages by identifier | identifier-matched official list price | no identifier-matched page |
+| D7 Original retail | price, market | market-insight M2 | M2's method, read as `launch_retail` and `price_new_today` | M2's hide rule |
 | D8 Shipping | price | measure, rate tables | package size times site rates | no size, no default |
 | D9 You keep | price, sold | official fee pages | fee on site's real base | fee row over 30 days flagged |
 | D10 Chance of sale | price, score | sold and censored listings | cure model blended with KM | under 30 events or 5-point error |
@@ -647,7 +832,15 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 | D20 Basis and gain | insights | Buy orders, you said | payout minus recorded basis | no basis given |
 | D21 Goal progress | insights | payout events | sum paid-out keep only | no goal: total only |
 | D22 Could earn | insights | D9, D10 per item | simulate sum of live items | no item with a range |
-| D23 Sell-through, share of asking | market, score | counts, ask and sold pairs | sold over sold plus active | D1 rule or panel stale |
+| D23 Sell-through, share of asking | market, score | M6, ask and sold pairs | M6's cohort; median sold over ask | D1 rule or panel stale |
+| D26 Tax summary | sold, insights | orders, payouts, D20 | sums per site, gross to keep | no sale in the year |
+| D27 Profit by group | insights | orders, D20 | kept and made per category, brand, site | no known cost: kept only |
+| D28 Sell-down | insights | D10, D9, D22 draws | D22 simulation over days | over half live value with D10 hidden |
+| D29 Profit and loss | insights, sold | orders, D9, D20, spend | income statement lines | never; estimates marked |
+| D30 Slow movers, ABC | insights, price | D10, D9, M7 | lowest P(30); 80/15/5 split | D10 hidden |
+| D31 Own cohorts | insights | own listings, orders | M6 by listing month | below M6 minimum |
+| D32 Own anomaly | insights | D21, D9, orders | median and MAD band | under 8 weeks |
+| D33 Promotion return | insights, list | spend, listing D23, D18 | lift x keep minus spend | lift is noise |
 
 ## Cannot be made credibly
 
@@ -674,3 +867,9 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 | sold | offer events, payout reports with fee lines, refunds and cancellation costs, for D9, D16, D21 |
 | buy | delivered totals for listings, and Buy orders for D20 |
 | appraise | buy-back quote sources and their lock terms, for D19 |
+| market | the job that collects Serper shopping results and Keepa, named in [market.md](../features/market.md), for M2 and D7 |
+
+## Open
+
+- Trading-card pricing: graded cards price by grade and population, which D2's condition factors do not model; whether they get their own card is for Ben and Nate.
+- Ben's multipliers against the D9 solve (step 7): which one wins where they differ.

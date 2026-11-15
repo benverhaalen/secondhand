@@ -38,7 +38,7 @@ Lives in **Sell**, in the drafting area ([decisions](../../product/decisions.md#
 | Site | Title form | Photo order | Attributes to fill | Price path | Timing | Offers |
 |---|---|---|---|---|---|---|
 | eBay | brand, model, key aspects, 80 chars (asserted) | strongest first, up to 24 | every required and recommended aspect from Taxonomy, condition id and descriptors | price path; markdown by `revise`; relist on day 45 for max_return (new id) | `list_at` from the plan; scheduled listing where needed | Best Offer on for quick and balanced; offer to watchers by `answer_offer` |
-| Facebook | brand, item, size or model | strongest first, up to 10 (asserted) | condition, brand, category; size and colour where offered | price path by `revise` | `list_at`; counts against 20 new a month (asserted) | none on the site; messages carry offers |
+| Facebook | brand, item, size or model; 99 max (asserted), aim under 60 ([listing-seo](../../research/list/ben/listing-seo.md), [facebook-marketplace](../../research/list/ben/platforms/facebook-marketplace.md)) | strongest first, up to 10 (asserted) | condition, brand, category; size and colour where offered | price path by `revise` | `list_at`; counts against 20 new a month (asserted) | none on the site; messages carry offers |
 | Depop | no title; first line of the description | strongest first, up to 8 | department, product type, brand, size set, condition | price path by `revise` | `list_at` | offer to likers by `answer_offer` |
 | Poshmark | "Brand + Product Type + Key Attributes", 80 (asserted) | cover in 3:4, up to 16 | department, category, subcategory, size from the list, brand, NWT | price path by `revise`, paced | `list_at`; never relisted | offer to likers, paced |
 | Mercari | brand, item, key attribute, 80 (asserted) | strongest first, up to 12 | category three levels, brand, condition, size | price path by `revise` (edits over relists) | `list_at` | offer to likers |
@@ -60,6 +60,20 @@ The plan is recomputed when its `comp_set` goes stale (quick 7, balanced 30, max
 | A trial across consenting users' listings | asks, never promoted | `join_experiment` |
 
 Every revision is `revise` through the harness, read back, and logged with the plan's `citation_id`, so Undo restores the previous draft.
+
+## Changing many listings at once
+
+*agent proposal*, from Nate's "a suite like shopify, and the better official option" ([words.md](../../product/words.md)).
+
+The person picks listings (by hand, or by a filter: site, age, category, D30's slow movers in [money.md](../determinations/money.md#d30-slow-movers-and-abc-ranking)) and one action: reprice by a percent or to a rung, relist, end, send offers to likers or watchers, or turn a lever in [listing D26](../determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own) on or off. It is one decision, `bulk_action`, with a preview before anything is sent:
+
+- each listing's before and after, and what it would keep after fees ([money D9](../determinations/money.md#d9-what-you-keep-per-site));
+- the listings left out and why: below `floor_cents`, Poshmark relist, a site's daily pace, an account not `ok`;
+- the count per site and how long the paced run takes.
+
+The person approves all, unticks some, or cancels. Approved rows run as the usual `revise`, `relist`, `end` or `make_offer` jobs at each site's pace in [connect.md](connect.md); each row keeps its own decision kind for the record, so a `price_below_floor` row still asks on its own. Undo restores every row the run changed. A bulk action never promotes a rule.
+
+Sellers know this from Shopify's bulk editing (*observed*) and crosslisters' bulk relist and bulk offers (*asserted*) ([shopify-suite-map](../../research/cross-cutting/nate/shopify-suite-map.md)); the preview with what is left out is the part they lack (*inferred*).
 
 ## Data flow
 
@@ -111,7 +125,7 @@ Strategy moves suggested to chosen on the person's pick, chosen to running when 
 
 ## Harness and systems
 
-Jobs: `draft`, `post` (runs `post`, `revise`, `relist`), `delist` (runs `end`), `score_fit` and `rank_panel` (`read_stats`, `search`). Each runs in the one loop with the lease and pacing set in [connect.md](connect.md); the fast path for repeat tasks is [replay.md](replay.md).
+Jobs: `draft`, `post` (runs `post`, `revise`, `relist`), `delist` (runs `end`), and score's `observe_rank` and `score` (`read_stats`, `search`), named in [score.md](score.md). Each runs in the one loop with the lease and pacing set in [connect.md](connect.md); the fast path for repeat tasks is [replay.md](replay.md).
 
 | Piece | What it does here |
 |---|---|
@@ -195,6 +209,6 @@ Rules that protect people, unchanged: a home address goes out only on the person
 
 ## Needs from the shared model
 
-- `strategy.per_site[] {site, price_path[], floor_cents, title_form, photo_order[], attributes_to_fill[], list_at, offers_on, citation_id}`: neither product.md nor price.md defines it yet.
-- price.md's strategy states differ from product.md's; product.md's are used here.
+- `bulk_action` decision kind for the one-decision change set above.
+- A job kind for the engagement levers (for example `share`), per [listing D26](../determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own).
 - `listing.interest` as an event kind.

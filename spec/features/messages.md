@@ -69,7 +69,7 @@ Every check is logged as an event with counts and ids, never the text. You shows
 | Piece | Job here |
 |---|---|
 | Triggers | eBay Notification topics, Depop webhooks where granted, Gmail push or the forwarding hook. Each sets `next_check_at` to now on the matching conversation or account. |
-| Sweep | A scheduled Lakeflow job runs `poll_inbox` for every row whose `next_check_at` is due: 2 min with an open offer or a buyer waiting, 10 min for a thread active in 24 h, 2 h for a quiet listing. |
+| Sweep | A scheduled Lakeflow job runs `poll_inbox` for every row whose `next_check_at` is due, at the tiers in [managing and buyers card 15](../determinations/managing-and-buyers.md#15-when-to-check-again) (an open offer or a waiting buyer is the fastest tier). |
 | Harness ([product.md](../product.md#harnesses)) | `read_inbox`, `send_message`, `read_offers`, `answer_offer`; reads the site back after each act. One lease per account session, paced per site. |
 | Typed judgements | Intent and safety predicates; buyer text is data, wrapped and never followed. `claims_paid` checks the site's order state, never a screenshot ([messages-and-offers.md](../../research/messages/ben/messages-and-offers.md)). |
 | Plain code | Numbers in buyer text, counters, `you_keep_cents`, the policy check, the gate's deterministic matches. |
@@ -183,5 +183,4 @@ For Ben and Nate to mark.
 - `unbacked_claim` in [product.md §5](../product.md#decision-kinds-the-complete-list), owner messages, ask, not promotable.
 - `next_check_at` on `conversation`; `claim_check` fields as above.
 - Event names `claim.checked`, `message.new` and `trigger.received` in [events.json](../events.json).
-- Harness verbs `read_offers`, `answer_offer` (frame) against `list_offers`, `respond_offer` (product.md): one name.
 - The retention period for buyer message text.

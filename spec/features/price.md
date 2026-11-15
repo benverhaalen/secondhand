@@ -26,7 +26,7 @@ With too few sales the card says "Not enough sales to price this" and offers one
 | Predictors | photo quality; photo count; price relative to sold ([quality-and-value-classifiers](../../research/price/nate/quality-and-value-classifiers.md)) | price-to-median-sold ratio with count shrinkage; photo count; condition, drivers, site, age | relative price is the strongest published predictor; photo count is 0.788 against quality 0.032 (WSDM 2014) | feature importance on our own outcomes |
 | Days to sell | queue position; survival; cure model ([range-calibration](../../research/price/nate/range-calibration.md), [pricing-in-context](../../research/price/ben/pricing-in-context.md)) | cure model on censored listings, calibrated against Kaplan-Meier | many listings never sell; a plain survival fit overstates the chance of sale | calibration gap in the backtest |
 | Plan | fixed percent paths; one slider; a calculation per site from the comparable set ([scoring-and-ranker-inference](../../research/price/nate/scoring-and-ranker-inference.md)) | the calculation below, deterministic, cited, preselected | Nate's definition above | none: decided by Nate's words |
-| Floor on the site | our job lowers the price; the site's own tool ([platform-levers](../../research/list/nate/platform-levers.md)) | set the site's own floor where one exists (eBay auto-decline, Depop auto-respond, Mercari Smart Pricing), our `follow_up` job elsewhere | the site acts at once and without a session | a site tool that ignores its floor |
+| Floor on the site | our job lowers the price; the site's own tool ([platform-levers](../../research/list/nate/platform-levers.md)) | set the site's own floor where one exists (eBay auto-decline, Depop auto-respond, Mercari Smart Pricing), our `check_due` job elsewhere | the site acts at once and without a session | a site tool that ignores its floor |
 
 ## What it reads and writes
 
@@ -36,7 +36,7 @@ With too few sales the card says "Not enough sales to price this" and offers one
 | `comp` (Delta) | | each observation with `evidence {source_url, read_at, snapshot_ref, fingerprint, extractor_version, rights}`; sold, live or ended; days listed; search position when read from `search` |
 | `valuation` | | `per_site[]` of guarded numbers: range, net range, days to sell, each with `citation_id`, `state`, `hide_reason` |
 | `score` | quality, visibility and trend axes from `spec/features/score.md` | the financial axis, per plan and site |
-| `strategy` | | `suggested` per site, then `chosen` |
+| `strategy` | | `suggested` per site, then `chosen`, `running`, `ended` ([product.md](../product.md)) |
 | `limits` | | `floor_cents`, `always_accept_cents` per item |
 | `citation` | | one per number shown and one per plan |
 | `listing`, `offer`, `order` | outcomes for learning and the backtest | `event` per drop, relist and plan change |
@@ -50,7 +50,7 @@ Fee table: one row per site and version, `{site, fee_pct, fixed_cents, base: ite
 | item `researching` to `review` | the `valuate` job arrives, with a range or an abstain |
 | strategy `suggested` to `chosen` | person confirms a plan (`POST /v1/items/:id/strategy`) |
 | strategy `chosen` to `running` | first listing goes live |
-| item `live` to `stale` | patience runs out, defined once here: no sale by the plan's median days to sell for its objective (quick 7, balanced 30, max_return 90 days at most) and interest (watchers, likes, offers) below the comparable set's median at the same age |
+| item `live` to `stale` | patience runs out, defined once here: no sale by the plan's median days to sell for its objective (quick 7, balanced 30, max_return 90 days at most) and interest (watchers, likes, offers) below the comparable set's median at the same age; the step taken at each later age is [money D15](../determinations/money.md#d15-markdown-path-stale-and-relist), *agent proposal* |
 | item `stale` to `live` | a markdown, relist or new site |
 | item `live` or `stale` to `unsold` | the path reaches the floor and ends, or the person ends it; strategy `running` to `ended` |
 
@@ -59,14 +59,14 @@ Fee table: one row per site and version, `{site, fee_pct, fixed_cents, base: ite
 | Piece | Role |
 |---|---|
 | Lakeflow job `valuate` | stages `identify`, `find_sales`, `adjust`, `range`, `net`, `plans`, each `started, running, arrived, failed` |
-| Harness `search`, `read_sold` per site, Firecrawl | fetch comps; one job per account session (a lease) |
+| Harness `search` with a sold filter per site, Firecrawl | fetch comps; one job per account session (a lease) |
 | AI Search, pgvector and image vectors | match comps to `product` by text and look, backing off from model to family to category |
 | Claude Haiku 5.5 | turns comp listing text into comparable facts (condition, drivers, title form) |
 | Decisions API and Jev | typed "same product?" per comp ([decision](../../product/decisions.md#2026-11-14-typed-judgements-run-on-both-the-decisions-api-and-jev-and-our-labels-pick)) |
 | Claude Opus 5.5 | deep search only, and the plan's words |
 | Plain code | adjustment, quantile model, calibration, fees, net, days to sell, the plan calculation, floors, money in cents |
 | On-phone comp index | price owns it: recent comps per product in the app, for Glance in appraise |
-| Lakeflow job `follow_up` | runs drops and relists through the harness where a site has no floor tool |
+| Lakeflow job `check_due` | runs drops and relists through the harness where a site has no floor tool, when the item's `next_check_at` is due |
 
 **Range.** `adjusted = sold x condition x drivers x time`. Comps adjusted by more than about 25% are dropped. A LightGBM quantile model (q10, q50, q90) runs over adjusted comps from every site, with a site feature. CQR calibrates it to 80%, per category (crepes `MondrianCategorizer`), falling back to the parent category below about 1/alpha points, which is 10 at 80% (the fallback is *inferred*). An ACI tracker (gamma 0.005) adjusts each group as sales arrive. Display states:
 
@@ -74,7 +74,7 @@ Fee table: one row per site and version, `{site, fee_pct, fixed_cents, base: ite
 |---|---|---|
 | checked | the category's backtest coverage, lower 95% bound, is at least 70% at n of 30 or more | the range |
 | not checked yet | below that, parent group used | the parent's wider range, labelled |
-| hidden `too_few_sales` | under 6 sales in 12 months or 2 in 90 days | no number |
+| hidden `too_few_sales` | the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) | no number |
 | hidden `too_wide` | width over the point value | no number |
 
 **You keep.** `net = price - fee(base) - fixed - seller_shipping - processing`. Ben's $16.88 (eBay) and about $18.90 (Depop) on a $20 sale ([pitch-evidence](../../research/cross-cutting/ben/pitch-evidence.md)) hold with no shipping in the fee base. Nate's note puts shipping and tax in the base and gets $16.06 and $18.69 ([fees-and-taxes](../../research/price/nate/fees-and-taxes.md)). The engine uses each site's own base.
@@ -86,7 +86,7 @@ Fee table: one row per site and version, `{site, fee_pct, fixed_cents, base: ite
 1. Ladder: candidate prices `L_s` are the 10th to 90th percentiles of adjusted `C_s` in 5-point steps, rounded to the site's price endings.
 2. Speed: for each rung, `P(sold within d | rung, s)` comes from the cure model with the price-to-median ratio as input. With 10 or more comps in the rung, it is shrunk toward that rung's Kaplan-Meier estimate.
 3. Path: the start is `argmax over L_s of P(sold within T_k) x net_s(p)`. Each next rung follows at the rung's median days to sell, down to the floor. Expected net `E_k = sum over steps of P(sale in step) x net_s(step price)`.
-4. Floor: `floor_s = max(lowest rung reached, item cost + user.target_profit_cents if set, best non-sale route net from appraise)`.
+4. Floor: [money D14](../determinations/money.md#d14-floor-and-always-accept) holds the formula.
 5. Listing form: the winners are the top 10 by search position plus the fastest quarter of sold comps. For each feature f (title token order, photo count band, attributes filled, free shipping, weekday and hour posted, offers on), `lift_f = share(winners) - share(C_s)`. A feature is adopted when `lift_f > 0` with a two-proportion test p < 0.05 and at least 10 winners; otherwise the site default holds. A visibility factor from a site's `ranker_model` with probability 0.8 or more replaces the local lift.
 6. Other axes: a shown trend axis scales the ladder by its 30-day drift. A shown quality axis enters P through photo count. A hidden axis is left out and the plan says so. There is never a combined score while an axis is hidden.
 7. Best: horizon T = 30 days. Sell this week uses T = 7 and Get the most T = 90. The best plan is preselected. Ties go to higher P, then the lower price.
@@ -135,7 +135,7 @@ Every write sends an `Idempotency-Key`. Ids `val_`, `st_`, `cmp_`, `pr_`.
 | A source blocks or times out | the stage shows fewer sales | other sources carry it; the citation lists what ran |
 | Too few sales | "Not enough sales to price this" | one question or a deep search |
 | Comparable set shifts | plan updates with "prices on Depop moved down 8%" | the person keeps the old plan in one tap |
-| Site floor tool rejects a value | event `fell_back` | `follow_up` runs the path |
+| Site floor tool rejects a value | event `fell_back` | `check_due` runs the path |
 | Fee table out of date | `fee_table_version` older than 30 days flags the net | weekly fee check job |
 
 ## How we will know it works
