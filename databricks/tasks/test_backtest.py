@@ -273,6 +273,34 @@ def test_serverless_bundle_passes_workspace_root_to_both_jobs():
         assert '--contestants' not in job
 
 
+@pytest.mark.parametrize('option, expected', [([], '/Shared/secondhand/valuation-backtest'),
+                                              (['--experiment', '/Shared/custom backtest'], '/Shared/custom backtest')])
+def test_experiment_argument_reaches_mlflow(monkeypatch, option, expected):
+    from unittest.mock import MagicMock
+    class Stop(Exception):
+        pass
+    spark = MagicMock()
+    spark.sql.return_value.first.return_value = {'version': 1}
+    spark.table.return_value.where.return_value.collect.return_value = []
+    sql = MagicMock()
+    sql.SparkSession.getActiveSession.return_value = spark
+    mlflow = MagicMock()
+    mlflow.set_experiment.side_effect = Stop
+    monkeypatch.setitem(sys.modules, 'pyspark.sql', sql)
+    monkeypatch.setitem(sys.modules, 'mlflow', mlflow)
+    with pytest.raises(Stop):
+        b.main(option)
+    mlflow.set_experiment.assert_called_once_with(expected)
+
+
+def test_bundle_passes_experiment_resources():
+    import re
+    bundle = (ROOT / 'deploy/resources/learning.yml').read_text()
+    for job, resource in [('valuation_backtest', 'valuation_backtest_experiment'), ('param_walk', 'param_walk_experiment')]:
+        section = re.search(rf'^    {job}:\n(.*?)(?=^    \w+:|\Z)', bundle, re.M | re.S)[1]
+        assert f'--experiment, "${{resources.experiments.{resource}.name}}"' in section
+
+
 def test_current_market_model_cited_hides_distinguish_count_from_width():
     rows, est = sample()
     for i in range(8):
