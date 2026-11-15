@@ -1,4 +1,3 @@
-import { useScreen } from '@/demo/screen';
 // New, the ＋: the one way a thing gets in (spec/pages.md §6.4; app/behavior/new.json). The button grows into a circle of
 // the brand's field that covers the screen, and its four jobs rise out of it, centered (Ben, 11:29 and 11:32): Appraise an
 // item (what the secondhand market pays for it now), Sell an item (the draft), Track an item (watch for one secondhand, a
@@ -24,7 +23,6 @@ const SKIP = 'new: the same four jobs for a new person; empty: there are always 
 const isLink = (s: string) => /^https?:\/\/\S+$/i.test(s.trim());
 
 export default function New() {
-  const { demo } = useScreen();
   const params = useLocalSearchParams<{ sheet?: string; what?: string; link?: string; price?: string; ask?: string }>();
   const plus = usePlus();
   const [phase, setPhase] = useState<CirclePhase>('opening');
@@ -58,7 +56,6 @@ export default function New() {
   };
   // Each job ends where its camera ends: a draft to review, the value page, the matches.
   const go = () => {
-    if (!demo && sheet === 'sell') { router.replace('/camera?mode=sell' as Href); return; }
     if (sheet === 'sell') { if (ask && !asked) { setAsked(true); return; } router.replace(`/item/${DRAFT_ID}` as Href); return; }
     if (sheet === 'worth') { router.replace((match ? `/worth?product=${match.id}` : '/worth') as Href); return; }
     const q = match ? `${match.brand} ${match.model}` : what.trim();
@@ -66,7 +63,7 @@ export default function New() {
     router.replace((match ? `/product/${match.id}` : { pathname: '/search', params: { q } }) as Href);
   };
   const job = CHOICES.find(c => c.mode === sheet);
-  const goLabel = !demo && sheet === 'sell' ? 'Take photos' : sheet === 'sell' ? (asked && typedCents != null ? `List at ${usd(typedCents)}` : link ? 'Bring it in' : 'Make a draft')
+  const goLabel = sheet === 'sell' ? (asked && typedCents != null ? `List at ${usd(typedCents)}` : link ? 'Bring it in' : 'Make a draft')
     : sheet === 'worth' ? 'See what it’s worth' : sheet === 'track' ? 'Watch for it' : 'See what it is';
 
   return (
@@ -90,10 +87,9 @@ export default function New() {
       ) : null}
       <Sheet open={!!sheet} title={job?.label ?? ''} onClose={() => setSheet(null)}>
         <Blank id="type-field" name="What it is, or a link" value={what} onChange={v => { setWhat(v); setAsked(false); }} />
-        {!demo && sheet === 'sell' ? <Txt role="body">Start with photos. Importing an item from text or a link is not connected yet.</Txt> : null}
-        {demo && match ? <Txt role="caption">{`${match.brand} ${match.model}`}</Txt> : null}
-        {demo && sheet === 'sell' && !link ? <Blank id="type-price" name="Your price" numeric value={price} onChange={v => { setPrice(v); setAsked(false); }} /> : null}
-        {demo && asked && ask ? <Txt role="body">{ask}</Txt> : null}
+        {match ? <Txt role="caption">{`${match.brand} ${match.model}`}</Txt> : null}
+        {sheet === 'sell' && !link ? <Blank id="type-price" name="Your price" numeric value={price} onChange={v => { setPrice(v); setAsked(false); }} /> : null}
+        {asked && ask ? <Txt role="body">{ask}</Txt> : null}
         <FootButton id={`${sheet ?? 'sell'}-go`} label={goLabel} state={what.trim() ? 'idle' : 'disabled'} onPress={go} />
       </Sheet>
     </TakeoverPlace>

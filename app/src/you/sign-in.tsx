@@ -53,7 +53,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
       setError(failure instanceof ApiFailure && [400, 401, 422].includes(failure.status) ? 'That code did not work or has expired. Check it or request another.' : accountError(failure));
     } finally { setBusy(false); }
   };
-  return <Screen name="onboarding" state={busy ? 'loading' : error ? 'failed' : offline ? 'offline' : 'new'}
+  return <Screen keyboard name="onboarding" state={busy ? 'loading' : error ? 'failed' : offline ? 'offline' : 'new'}
     nav={<Nav back={phase === 'code' ? () => { setPhase('email'); setCode(''); setError(null); } : undefined} />}>
     <Stack gap="tight">
       <Txt role="heading">{phase === 'email' ? 'Welcome' : 'Check your email'}</Txt>
