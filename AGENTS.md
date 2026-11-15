@@ -27,7 +27,7 @@ The map is in [README.md](README.md). Read [product/vision.md](product/vision.md
 | Make something faster or cheaper | Skill `hillclimb`: poteto's playbook with `log/climb.mjs` as the harness. |
 | Before every push | `node .agents/check.mjs` (checks and tests). It must pass. |
 
-The skills live in `.agents/skills/` (Codex) and `.claude/skills/` (a link to the same files). Mark your own suggestions as *agent proposal*, and never move one to Decided yourself.
+The skills live in `.agents/skills/` (Codex) and `.claude/skills/` (a link to the same files). Mark your own suggestions as *agent proposal*, and never move one to Decided yourself. When you see a better way that serves the product and the constitutions, build it rather than wait to ask, and say what you changed (Ben, [06:40](product/words.md#2026-11-15-a-sale-and-a-match-ping-at-once-replies-start-as-drafts-and-agents-build-the-better-way)); taste, direction and scope still go to Ben or Nate, and his edits apply everywhere they touch.
 
 ## UI writing
 

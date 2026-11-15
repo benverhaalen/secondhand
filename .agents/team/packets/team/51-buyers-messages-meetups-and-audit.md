@@ -16,7 +16,7 @@ Where it is written: [edge cases §10 to §17](../../../../spec/edge-cases.md#10
 
 ## Messages you approve
 
-- `answer_fact` moves from `auto` to `ask`, promotable per question kind after 3 unedited sends. That is a change to product §5, so it is yours to accept or reshape.
+- Decided by Ben at 06:40 ([decision](../../../../product/decisions.md#2026-11-15-replies-to-buyers-start-as-drafts-the-person-approves)): `answer_fact` is `ask`, promotable per question kind after 3 unedited sends. product.md §5 is updated; the policy code and the examples are yours.
 - `user.auto_reply` per site: `drafts` (default), `answer`, `off`.
 - A reply draft carries `facts[] {attribute, value, source}` so the queue can show what it used.
 - `conversation.taken_over` (bool) stops automatic replies in that thread. The agent sets it itself, with `reason`, on: anger, an off-site or payment request, a return or claim, a question about an unconfirmed fact, or a price outside the plan.
