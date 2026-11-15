@@ -1,6 +1,6 @@
 # Assistant and generated inputs
 
-Status: specced 2026-11-15 for the buying conversation; building. Owner: Nate (backend), the buying-conversation lead. Packet topic: `assist`.
+Status: specced 2026-11-15; tools, loop and evaluation set merged as drafts, not yet joined to the route ([packet 78](../../.agents/team/packets/team/78-buying-conversation-handoff.md)). Owner: Nate (backend), the buying-conversation lead. Packet topic: `assist`.
 
 Spec of the asking side (agent proposal): [spec/features/assist.md](../../spec/features/assist.md). This page holds the answering side: the conversation a person types to or shows a photo to, and the tools it answers with.
 
