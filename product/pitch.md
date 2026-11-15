@@ -63,6 +63,34 @@ For a technical or Databricks judge who asks "how does it actually work?" Two mi
 6. **It earns its autonomy.** Every approval is a label. After three unedited approvals of the same kind, it offers "Always do this". Address, payment and off-site deals never become automatic.
 7. **Databricks holds the loop.** Live state in Lakebase, every event and comparable sale in Delta, photos in a volume, every model call through the gateway, every agent step as an MLflow trace that the app shows as Why?. Every number cites the rows it read and hides itself when they are too few. Each sale writes back its real price and days to sell, so the next price is better.
 
+## It's always you: AI that helps you, not AI that is you
+
+Ben, 06:40: "pitching about ai impersonation. its always you. also think about how people feel about ai. like its scary. let it help you. not impersonate you. not take you out of it. whether your in an office or just reselling your clothes on the internet its always good to have a human in the loop." *Agent proposal* for the lines.
+
+**Why it matters.** People are wary of AI that acts in their name. The fear is concrete: an assistant elsewhere, set to "Allow Always", took a lowball offer and sent a stranger to a seller's home. We answer it with rules in code, not reassurance.
+
+**The lines** (pick one as the tagline, use the rest in the talk):
+- "It's always you."
+- "Let AI help you, not be you."
+- "From the office to your closet: AI does the work, you make the calls."
+- "A human in the loop, built in, not bolted on."
+
+**What makes them true** (each is in the code or the spec; cite it if asked):
+- Code, not the model, decides anything about money, your address or a deal off the site; those three can never be automatic.
+- It sends only words you approved, or words built from your item's facts under a rule you set. A claim it can't back is held and shown to you.
+- It earns "Always do this" after you approve the same kind of thing three times without a change, and every automatic action has a Why? and a way out ([ways out](../spec/ways-out.md)).
+
+**The line to be careful with.** Replies go out from your account, so "it never impersonates you" is only true if an automatic message says it was sent with help. That choice is still open (disclosure, J3 in [the assessment](../spec/assessment.md)). Until it's decided, say "it speaks for you only in words you approved or by rules you set", not "it never impersonates you".
+
+## Security and open source
+
+Checked against the code on 2026-11-15. Say "built" for these; nothing here has run against a live account at scale.
+
+- **Your marketplace sign-ins live in a Databricks secret scope**, one key per account, named by a reference; never in the repo, a log or a trace (`app/src/edge/browser/auth.ts`; scope `vault` in [the bundle](../deploy/databricks.yml)). `node spec/log.mjs` fails a run whose log carries a secret, and a check on every push fails a commit that carries a key.
+- **Saved passwords are off by default** and never kept for eBay (eBay signs in with its own OAuth, so we never see that password). Only the sign-in job can read one, only after a session expires, and every read is logged (`app/src/edge/connect/password.ts`, with tests).
+- **The AI models never see your credentials.** Cookies go into the browser or a request header and nowhere else; when a page changes, a model reads the page's text to pick the right control, never the session (`app/src/edge/harness/fallback`). Say "AI model providers never see your credentials", not "no third party": the cloud browser host runs the browser your session is loaded into.
+- **Open source.** The whole project is public on GitHub under the Apache 2.0 licence (*observed* 2026-11-15). "Don't trust us; read how it treats your account."
+
 ## The new framing: it watches and manages your markets
 
 Ben, 06:01 ([words](words.md#2026-11-15-show-the-magic-clips-basement-demos-faster-loops-and-the-intelligence-engine)): "second hand monitors and manages markets for you... official apis and when and how. how there is low risk on your end. an intelligence engine... price anything you own against the market and for the purpose you want." *Agent proposal*. Each line below has the condition that keeps it true.
@@ -92,18 +120,18 @@ Ben, 06:01 ([words](words.md#2026-11-15-show-the-magic-clips-basement-demos-fast
 
 ## The three-minute version, with the demo
 
-Same order as the recommendation above, with times for a 3-minute slot. If the slot is 2 minutes, cut steps 4 and 5 to one sentence each.
+Ben, 06:40 ([words](words.md#2026-11-15-its-always-you-security-open-source-and-show-it-working-first)): show it working first, with real runs, and make it clear it's a working product and not a staged demo; then dig into the engineering. *Agent proposal* for the times.
 
-| Time | Say | Show |
-|---|---|---|
-| 0:00 | The $20 shirt: consignment pays $3, selling it yourself keeps $17 but rarely finishes; fewer than 1 in 10 cheap eBay listings sell within a month | the $3 against $17 card |
-| 0:25 | "secondhand is your second hand." | the app's Today |
-| 0:35 | Live: photograph one real item; it's identified, measured and priced per site, with what you keep on each | the camera, the plan with "you keep" per site, the clock running |
-| 1:20 | It skips the sites where it won't sell, and says why | the couch on Depop: avoid |
-| 1:35 | Post; the listing is live; a sale on one site takes it down on the rest | the read-back ticks, or the recorded run if live posting isn't in the gate |
-| 2:05 | Trust: it never sells below your minimum, never gives out your address; you approve exact replies | a held reply with its unbacked claim |
-| 2:25 | Proof: tap any number or fact and see where it came from; AI photos are checked against the original | Why? on the price; the photo side by side |
-| 2:45 | "Your second hand. Done in seconds." | the wordmark |
+| Time | Part | Say | Show |
+|---|---|---|---|
+| 0:00 | Theme and problem | "The theme says start digging. Most of us already have: a closet full of things worth money that never get sold. Consignment pays you $3 of a $20 sale; selling it yourself is five apps." | the $3 against $17 card |
+| 0:20 | **It works** | "Hand us anything you have on you." Photograph the judge's item, or ours if they have none: identified, measured, priced per site, with what you keep on each, and the sites it won't sell on | the camera, the plan, the clock on screen |
+| 1:00 | **It's real** | "That's a real post, on a real site." Open the live listing on a second phone; then the sale and the take-downs, live or the recorded run, said as one | the site's own page beside ours; [demo reel](demo-reel.md#1-the-evidence-is-the-clip) clips 7 and 11 |
+| 1:30 | **How we dug in** | "AI where it's good, code where it has to be exact." Code checks the money; every reply is matched to the item's facts; the photo check has no model in it and caught 173 of 174 planted lies; every order of two buyers paying, 931,406 of them, ends in a decision on screen | the held reply; the photo side by side; the checker in a terminal |
+| 2:20 | **It's always you** | "It helps you; it isn't you. Anything over your line waits for your tap. Your sign-ins sit in a Databricks secret scope, and the AI models never see them. And it's open source: read every line." | the offer card; the GitHub page |
+| 2:50 | Close | "secondhand. Let AI help you, not be you." | the wordmark |
+
+**Proving it isn't staged.** Three things a staged demo can't do: a judge's own item, the live listing open on the site itself, and the repo public with the benchmark run in front of them. If posting isn't live on the day, say "this part is a recording of a real run from [date]" before playing it.
 
 ## The table demo: science-fair judging
 

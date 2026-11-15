@@ -20,7 +20,7 @@ AI can already write a listing in seconds. That was never the hard part. The har
 
 ## Let's dig in
 
-We read the theme three ways. **Dig through what's buried:** the closet, the basement, the things worth money that nobody uses (eBay found its sellers had 36 sellable items at home on average). **Dig deep:** we didn't stop at the happy path. We checked every order of events for two buyers paying at once, 931,406 of them on four sites, and planted 174 lies in our own photos to test the photo check. **And keep judgment in charge:** secondhand does the work for you, but code checks your money and your address, and anything over your line waits for your tap. [If an organizer confirms the theme comes from the CAI dean's essay "Time to Dig", add one line linking it: a tool that is for you, not done to you.]
+We read the theme three ways. **Dig through what's buried:** the closet, the basement, the things worth money that nobody uses (eBay found its sellers had 36 sellable items at home on average). **Dig deep:** we didn't stop at the happy path. We checked every order of events for two buyers paying at once, 931,406 of them on four sites, and planted 174 lies in our own photos to test the photo check. **And keep judgment in charge:** secondhand does the work for you, but code checks your money and your address, and anything over your line waits for your tap. The theme comes from Dean Remzi Arpaci-Dusseau's essay ["Time to Dig"](https://cai.wisc.edu/2026/07/01/time-to-dig-founding-dean-essay/), which asks for technology that is "clearly for us", not done to us. That is the rule we built secondhand on: it's always you.
 
 ## What it does
 
@@ -38,6 +38,8 @@ You see one short list of decisions. Anything that touches your money, your addr
 
 ## How we built it
 
+**It's open source.** The whole project is public on GitHub under the Apache 2.0 licence. [Add the repo link.]
+
 [Say only what runs on the day; cut the rest or mark it "designed".]
 
 - **One record per item.** Every fact on an item (brand, size, a stain) keeps where it came from: a region of a photo, a line of the tag, a measurement, or "you said". Listings for every site are built from that record.
@@ -53,6 +55,7 @@ You see one short list of decisions. Anything that touches your money, your addr
 We didn't want an agent that acts alone. In September, an assistant on another platform, set to "Allow Always", accepted a lowball offer and sent a stranger to a seller's home. So:
 - **Code decides, the model words it.** Offers are checked against your minimum by plain code. Every sentence the agent wants to send is matched to a fact on your item first; a claim it can't back ("smoke-free home") is held and shown to you.
 - **It earns trust slowly.** After you approve the same kind of thing three times without changing it, it offers "Always do this". Your address, payments and off-site deals can never be automatic.
+- **Your sign-ins stay locked away.** Marketplace sessions live in a Databricks secret scope, never in a log or a prompt; the AI models never see them. Saved passwords are off unless you turn them on, and never kept for eBay.
 - **You can check everything.** Every automatic action has a Why? and a link to the same thing on the site.
 
 ## Challenges
