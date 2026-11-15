@@ -281,13 +281,13 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 
 | Role | Size | Face and weight | Ink |
 |---|---|---|---|
-| Caption, time, tab label | 13 | text 400 | ink-2 |
-| Body, list row, price in a row, card title | 15 | text 400 | ink |
+| Caption, time, tab label | 13 | text 500 | ink-2 |
+| Body, list row, a tile's title, a section label over cards | 15 | text 500 | ink, or ink-2 for a label |
 | Button label | 15 | text 500 | white on the pill, ink on the others |
-| Headline in a card or sheet; text you type | 18 | text 400 | ink |
+| A card's title; a section header over tiles and rows; text you type | 18 | text 500 | ink |
 | Wordmark | 21 | Clofie 600 | ink |
 | Screen title, one per view | 36 | Clofie 600 | ink |
-| The peak amount on a sale | 50 | text 400 | ink |
+| The amount at the top of a main tab; the peak amount on a sale | 50 | text 500 | ink |
 
 **Any language.** The same rules hold in every language: sentence case, two weights, the size steps, no exclamation marks, no em dashes. When a script is not covered by the text face, fall back to Noto Sans in that script at the matching weight (the stack is in `tokens.css`), and check that line breaks still fall between words or phrases, not inside them. Numbers, dates and currency follow the locale (`Intl.NumberFormat`), never a hard-coded US format. Length limits counted in words count 2 characters as a word in Chinese, Japanese and Korean. The display face is never used for a script it does not cover; the text face takes the role instead.
 
@@ -318,6 +318,13 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
    Gaps: 12 inside a card, 16 between cards, 32 between sections, 8 from the nav to what follows it. A thing in a card's corner that is not a photo starts 24 from the two edges, `--card-corner`, so it clears the 36 arc by 16; a photo is concentric and stays at 16.
 9. **The foot of a page** (agent proposal, R31; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "you need consider footers too. and spacing. and all the sub options that might need to be at the bottom of pages"). A page that scrolls ends with 32 and then the 34 of the home indicator. A bar pinned to the foot holds the page's one act and nothing else, in buttons of `--button-h`, 16 above the safe area, and a page has one only when its act is not in its first 844. What a person can do to the page's subject that is not today's decision sits in plain ruled rows at the end of the page, with the one that cannot be undone last.
 10. **One number first** (agent proposal, R31; Ben, [round 10](../product/words.md#2026-11-15-round-10-picks): "minimizing the amount of info and allowing the user to see more info if needed truly"). Where a sum stands behind an amount, the page shows the amount and one line that opens the sum. The sum is never open on arrival, except on a sale.
+
+11. **Three levels, each a step from the one it heads** (agent proposal; Ben, [09:44](../product/words.md#2026-11-15-the-app-looks-nothing-like-the-mocks-hierarchy-spacing-what-stacks-and-what-has-color): "it lacks hierarchy across generalized pages"). A page has at most three levels: its one focal thing (the screen title, or the amount on a main tab), sections, and the items in them. Text has one weight, so a level differs from the one under it by size or by ink, and by the space above it: a section header over cards titled at 18 is a 15 label in the second ink; over tiles and rows titled at 15 it is 18 in ink. A fourth level (a line of metadata under a section header, such as "Due first, today at 3 pm") is cut, or moved into the item it describes. Check U10.
+12. **The first thing to do comes early** (agent proposal; the approved Today put its first card at 205 on a phone). On a main tab, between the nav and the first item sit the number, its one line and at most one header. Anything else the top wants to say opens from that line (7.10). Check U11.
+13. **A screen asks for little at once** (agent proposal; the approved Today asked for six presses on its first screen; the app's asked for nine). At most seven buttons on the first screen. A card shows its buttons only while it holds the decision in front of the person; cards that can wait show their tag and fold into a pile. Check U12.
+14. **Stack, row or pile, and when color is earned** (agent proposal; Ben, 09:44: "why do some things stack. why do some have color"). Things read in order stack: a card's title, then its line; cards in a feed. Things the eye compares sit in a row: tiles, chips, the buttons of one card, two to four of one kind and never two kinds in one row. A pile (cards layered behind each other) holds three or more of one kind that can wait, and nothing else. Color has three jobs: the field marks the one thing first (one per view), a tag's fill tells states apart, and mint says money arrived. Two neighbors in one color mean one thing; a header and a tag on every item under it that say the same state spend color on nothing, so the tags say the kind in words or the header goes. Check U13.
+15. **A title is read whole** (agent proposal). A card's title is the thing's short name, which fits on one line at 18 ("Carhartt Detroit jacket"), not the listing title the sites hold. Check U14.
+16. **Judged as the phone shows it** (agent proposal; Ben, 09:30: "why the top is cut off"). A screen is checked at 390 by 844 with an iPhone's insets, 59 at the top and 34 at the foot. Nothing but the wash sits under the status bar; the wash runs under it to the top of the glass. Check U9.
 
 ### Article 8. Imagery
 

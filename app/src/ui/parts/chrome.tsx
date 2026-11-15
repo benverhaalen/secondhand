@@ -14,14 +14,16 @@ import { Count } from './small';
 
 // The wash (Art. 5, The wash): sky to mint at full strength under a fade to the page, behind the nav and the one summary
 // under it. 236 tall, it ends where the first card starts, and nothing below is tinted. It holds no card and no control.
-export function Wash() {
+// `under` is the status bar's height: the wash runs up under it, so the color reaches the top of the glass on a phone
+// instead of stopping at a white band (the phone audit, 2026-11-15: "why the top is cut off").
+export function Wash({ under = 0 }: { under?: number }) {
   const c = useColors();
   const fade = `linear-gradient(180deg, ${alpha(c.page, 0)} 0%, ${alpha(c.page, 0.25)} 45%, ${alpha(c.page, 0.8)} 80%, ${c.page} 100%)`;
   return (
     <View
       {...mark('wash')}
       pointerEvents="none"
-      style={{ position: 'absolute', top: 0, left: 0, right: 0, height: size.washH, backgroundColor: c.wash1, backgroundImage: `${fade}, linear-gradient(105deg, ${c.wash1}, ${c.wash2})` } as ViewStyle}
+      style={{ position: 'absolute', top: 0, left: 0, right: 0, height: size.washH + under, backgroundColor: c.wash1, backgroundImage: `${fade}, linear-gradient(105deg, ${c.wash1}, ${c.wash2})` } as ViewStyle}
     />
   );
 }

@@ -124,7 +124,7 @@ Each moment names its borrowed pattern, its timing and its fallback.
 | Item changes state (Draft→Live, Live→Sold) | Several per day | The tile moves to its new shelf (a FLIP via transform) and its pill crossfades | Photos and Reminders reorder | Pill changes; tile appears in the new shelf |
 | It sold | Rare, the peak | Tile settles into Sold, the field fills the screen once, success haptic and sound. No confetti or counters (brand C2, C6) | Apple Pay check and haptic | Haptic only |
 | Something failed | Rare | Red ✕ badge fades in once, warning haptic. No shaking or looping | iOS failed iMessage "Not Delivered" | Badge only |
-| Auto action done | Many per day | None. A quiet `AUTO` label and Undo in the log | Gmail "Sent. Undo" | Same |
+| Auto action done | Many per day | None. A quiet "Done for you" line and Undo in the log | Gmail "Sent. Undo" | Same |
 | Offer arrives (push) | Several per day | System notification; in app the card inserts at the top, `--t-select` | iMessage new message | Instant insert |
 
 ### Layout
@@ -183,7 +183,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: every item shown has its photo.
 - [ ] Block: each decision card names its full action set (primary, secondary, and More for the rest) and what happens if ignored.
 - [ ] Block: platforms appear as their real logos (in a white bubble on photos, bare elsewhere), never as written names or letter badges like e / D / M. Use `assets/platforms/`. Logos follow each brand's guidelines: unaltered colors and proportions, minimum size.
-- [ ] Block: every automatic action is labelled `AUTO` and can be undone.
+- [ ] Block: every automatic action says it was done for the person, in sentence case, and can be undone.
 - [ ] Block: no fake scarcity, guilt copy, confirmshaming or variable rewards ([psychology §9](../research/cross-cutting/ben/psychology.md)). A countdown shows only a deadline the card's data carries: an offer or listing expiry from the site, a ship-by date, a pickup time, or the Decision's own expiry ([spec](../spec/features/today.md)). Time left under 24 hours ("3h 40m", by the minute), a day and time beyond that, in secondary ink, never red, nothing that pulses ([Ben, 02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §4](../research/today/ben/today-wants-alerts-and-clickability.md#4-countdowns)).
 - [ ] Block: destructive or outward actions (post, delist, send an address) need a confirmation or an undo window. Never-alone actions always need the tap.
 
