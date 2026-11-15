@@ -50,6 +50,8 @@ export function fileStore(path: string): Store & { claims: Map<string, string> }
   const mutate = <T>(fn: () => T): T => depth ? fn() : store.tx(fn);
   const store: Store & { claims: Map<string, string> } = {
     claims: memory.claims,
+    deleteUser: user_id => mutate(() => memory.deleteUser(user_id)),
+    exportUser: user_id => memory.exportUser(user_id),
     put: (table, row) => mutate(() => memory.put(table, row)),
     get: (table, user_id, id) => memory.get(table, user_id, id),
     rows: (table, filter) => memory.rows(table, filter),
