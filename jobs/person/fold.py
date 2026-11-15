@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 
-from param.registry import MemoryStore
+from param.registry import MemoryStore, complete_row
 
 PRIORS = {  # market-wide starting values, the same as person.ts
     "person_posture": {"alpha": 2, "beta": 2},
@@ -60,9 +60,9 @@ def fold_person(store: MemoryStore, person: str, events: list[dict], at: str) ->
             out[trait] = (False, f"lost held-out: {score:.3f} against {live_score:.3f}")
             continue
         latest = max((r["version"] for r in store.history(trait, scope)), default=0)
-        row = store.propose({"name": trait, "scope": scope, "family": "beta", "value_or_hyperparams": post,
+        row = store.propose(complete_row({"name": trait, "scope": scope, "family": "beta", "value_or_hyperparams": post,
                              "prior": prior, "fitted_on_ids_hash": None, "n_eff": len(train), "metric": "log_loss",
-                             "held_out_score": score, "guard_lo": 0, "guard_hi": 1}, expect_version=latest)
+                             "held_out_score": score, "guard_lo": 0, "guard_hi": 1}), expect_version=latest)
         # the comparison above used the same held-out events for both; stored scores may come from older sets
         out[trait] = store.promote(trait, scope, row["version"], noise=float("-inf"), at=at)
     return out

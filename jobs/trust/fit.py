@@ -12,6 +12,7 @@ import math
 from dataclasses import dataclass
 
 from trust.params import resolve, value, prior_read
+from param.registry import complete_row
 SWITCH_N = resolve()['values']['trust_isotonic_n']
 NAME = "trust_calib"
 URI = "jobs/trust/fit.py"
@@ -164,9 +165,9 @@ def fit(store, rows: list[tuple[float, int]], at: str, person: str | None = None
     payload['score_model_version'] = score_model_version
     latest = max((r["version"] for r in store.history(NAME, scope)), default=0)
     payload["version"] = latest + 1
-    ch = store.propose({"name": NAME, "scope": scope, "family": "model_ref", "value_or_hyperparams": payload, "prior": None,
+    ch = store.propose(complete_row({"name": NAME, "scope": scope, "family": "model_ref", "value_or_hyperparams": payload, "prior": None,
                         "fitted_on_ids_hash": None, "n_eff": len(rows), "metric": "neg_brier_heldout", "held_out_score": score,
-                        "guard_lo": None, "guard_hi": None}, latest)
+                        "guard_lo": None, "guard_hi": None}), latest)
     ok, why = store.promote(NAME, scope, ch["version"], noise, at)
     return FitResult(cal["kind"], ch["version"], score, ok, why)
 
@@ -192,9 +193,9 @@ def watch(store, live: list[tuple[float, int]], at: str, person: str | None = No
 
 def _write(store, name, scope, family, payload, score, n, at, prior=None, promote=False, noise=0, metric='neg_decision_cost_share_heldout'):
     latest = max((r['version'] for r in store.history(name, scope)), default=0)
-    row = store.propose(dict(name=name, scope=scope, family=family, value_or_hyperparams=payload,
+    row = store.propose(complete_row(dict(name=name, scope=scope, family=family, value_or_hyperparams=payload,
         prior=prior, fitted_on_ids_hash=None, n_eff=n, metric=metric, held_out_score=score,
-        guard_lo=None, guard_hi=None), latest)
+        guard_lo=None, guard_hi=None)), latest)
     ok = store.promote(name, scope, row['version'], noise, at)[0] if promote else False
     return row['version'], ok
 

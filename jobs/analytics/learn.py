@@ -14,6 +14,7 @@ from scipy.optimize import minimize_scalar
 from scipy.special import gammaln
 from .site_effect import adjusted_probability, sale_effect, sufficient
 from .params import selected, value
+from param.registry import complete_row
 
 
 def _at(s):
@@ -99,9 +100,9 @@ def nightly(store, train, held, at, scope, *, seed, draws=None, min_ended=None, 
     boots = sorted(sum(rng.choices(diffs, k=len(diffs))) / len(diffs) for _ in range(draws))
     latest = max((r['version'] for r in store.history('site_effect.prior', scope)), default=0)
     score = -sum(_loss(p, r['y']) for r, p in zip(held, candidate))/len(held)
-    ch = store.propose(dict(name='site_effect.prior', scope=scope, family='model_ref', value_or_hyperparams=values,
+    ch = store.propose(complete_row(dict(name='site_effect.prior', scope=scope, family='model_ref', value_or_hyperparams=values,
                             prior=dict(m=value(params, 'sale_prior'), m_g=value(params, 'price_prior')), n_eff=len(held), metric='neg_logloss_30d', held_out_score=score,
-                            fitted_on_ids_hash=hashlib.sha256('\n'.join(sorted(r['id'] for r in train)).encode()).hexdigest()), latest)
+                            fitted_on_ids_hash=hashlib.sha256('\n'.join(sorted(r['id'] for r in train)).encode()).hexdigest())), latest)
     ok, why = (store.promote('site_effect.prior', scope, ch['version'], 0, at) if boots[int(value(params, 'interval_tail')*draws)] > 0 else (False, 'bootstrap noise'))
     if log:
         log.change('param', 'site_effect.prior', 'champion' if ok else 'challenger', version=ch['version'], seed=seed)
