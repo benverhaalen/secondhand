@@ -1104,6 +1104,41 @@ Ben, project chat, 05:37:
 
 Used in: [AGENTS.md](../AGENTS.md#how-to-work-here), [.agents/vendor/poteto/](../.agents/vendor/poteto/SOURCE.md), [.agents/skills/hillclimb](../.agents/skills/hillclimb/SKILL.md).
 
+## 2026-11-15 what could dock us points, mitigated everywhere
+Ben, thread "Prepare the pitch, Q&A and video" (relayed), 2026-11-15 05:36 UTC.
+> there are also a lot of things that could 'dock us points' when being compared to other projects. the goal in our project and our pitch and our website and our demos is to mitigate each one and show that we have thoroughly thought about it
+
+Used in: [qa.md](qa.md#where-judges-dock-points).
+
+## 2026-11-15 a demo that stuns, science-fair judging, and claims that change how judges see it
+Ben, project chat (relayed), 2026-11-15 05:41 UTC.
+> also figuring out the ranking of demoing capabilities. where we can show it to anyone live and it works so well and so fast that we just stun everyone. its so polished and so finished that judges question how we did it in 24 hours. it looks so un-ai slop. also the website should use expert ui ux practices for being viewed on mobile. also say like app store coming soon or something. the hackathon judging works in a science fair style. its very similar to last year's judging. 6 get chosen as finalists, then the prizes get judged as a whole from those. i also want to jot down claims we can make about the thing to try and improve how they view it. like one is we applied to the app store. one is the actual deployed site. one is having a video. one is having a really really well written devpost. i mean considering we can only live demo the app we really need the written portions to convey its use and what it does super well and super easily. we need to be personable. the judges should see us as a breath of fresh air. think of all the unique engineering weve done. we can also pitch about thinking about costs too. data. how we have humans in the loop and use graphics and examples to show how extensively we have thought about this. really communicate how sophisticated the technology we are using is.
+
+Used in: [pitch.md](pitch.md#the-table-demo-science-fair-judging), [devpost.md](devpost.md).
+
+## 2026-11-15 both sides in the demo, why people want it, and free as the business model
+Ben, thread "Prepare the pitch, Q&A and video", 2026-11-15 05:43 UTC.
+> i think showing buying and selling - both sides to capture as much of the audience as possible. we should know why people would die to download this. you have all this stuff. this is the easiest way to sell it, optimized to save you the most time and get you the most money, as cheaply as possible. and its completely free because this is how we propose this is a viable business model because of all the other business models. market research. where our market reach could be. where our market doesnt reach. here is what we need to make this viable. here are the hurdles we may run into. keeping it extremely honest
+
+Used in: [business.md](business.md), [pitch.md](pitch.md#what-to-show-ranked).
+
+## 2026-11-15 each audience, databricks depth, quant pricing, hot in context, and depop import
+Ben, project chat (relayed), 2026-11-15 05:47 UTC.
+> another point that can really help is how sophisticated we used databricks. think of software engineers and data scientists and product managers and solutions architects and recruiters who are looking at our product. what do each one of those audiences love to see we think like. how do we pitch this product live to be able to show the medium off super well. both the buying and selling features. from start to end. the most impressive thing is a seamless thing that works flawlessly. how as it scales we can effectively price literally any product along the market and heres how we propose using quant techniques to do so. we could possibly even implement this too. also the ai running its own business thing. like it can track and understand all the levers that increase how a post is doing. if its hot. what does that mean. its all in context. it means different things to different people. i use it on my actual depop account. another feature to create, i can use my existing depop listings and automated cross list them on all these platforms automated to them. also the settings should have app defaults and permission defaults too
+
+Used in: [showcase.md](showcase.md).
+
+## 2026-11-15 stop using my personal depop
+Ben, project chat (relayed), 2026-11-15 05:54 UTC.
+> hey stop using my personal dpop
+
+Used in: [showcase.md](showcase.md#6-bringing-existing-depop-listings-over).
+
+## 2026-11-15 show the magic: clips, basement demos, faster loops, and the intelligence engine
+Ben, project chat (relayed), 2026-11-15 06:01 UTC.
+> also did you ever fully flesh out the image creation thing. like for pants and sweatshirts and short sleeve and long sleeve clearly defining roughly what the image should look like when unwrinkled and what should be slide 1, slide 2, etc. and ensuring edge cases. defect photo is hard to do. where different graphics could be. how to effectively organize a slide of photos and generate them from not taking individual photos with the tool and then giving templates effectively to magically get each image beautified and perfected. ensure this capability on the backend actually works super well. also think of evidence to back the problem the best is just showing the magic of it. the different features and flows and letting the demos or the videos of them talk. us actually demoing them in the basement. try to make the demoing loops faster for website and app too. also think about how to visually convey how it works. use things like exa and firebase and treg x videos that they do to demo new features. here are some new notes second hand monitors and manages markets for you. explaining all our thought processes. official apis and when and how. how there is low risk on your end. an intelligence engine. more than just reselling clothes as we see this scale you can effectively create a way to price anything you own against the market and for the purpose you want.
+
+Used in: [demo-reel.md](demo-reel.md), [pitch.md](pitch.md#the-new-framing-it-watches-and-manages-your-markets).
 ## 2026-11-15 cross-list existing depop listings and price any product with quant techniques
 
 Ben, project chat, 05:47 UTC.
@@ -1124,10 +1159,50 @@ Ben, thread "Roll the UI system out everywhere", 06:19 UTC, on the first gallery
 Ben, same thread, 06:21 UTC.
 > also sometimes the gradient at the top of the screen is there or isnt there yk
 
+## 2026-11-15 the theme: let's dig in
+Ben, project chat (relayed), 2026-11-15 06:35 UTC.
+> also idk if anyone said this: but the theme is "Let's dig in" inspired by the book or essay from the uw madison person. but they talk about different ways to interpret this. so read it and think about the different ways to really tailor to this prompt. brainstorm the different ways where what we are doing is special. we should really have a section on whatever we do about this and tailor our presentation or pitch to judges using it.
+
+Used in: [theme.md](theme.md), [pitch.md](pitch.md#the-theme-lets-dig-in), [devpost.md](devpost.md).
+
+## 2026-11-15 it's always you, security, open source, and show it working first
+Ben, project chat (relayed), 2026-11-15 06:40 UTC.
+> also pitching about ai impersonation. its always you. also think about how people feel about ai. like its scary. let it help you. not impersonate you. not take you out of it. whether your in an office or just reselling your clothes on the internet its always good to have a human in the loop. some phrase like that, engineered in a way. advertise open source too in a way. can also talk about we are built on databricks security and how. even third party ai providers dont see your credentials. i confirm that is the essay. like there are a lot of ways we digged into this. used ai to solve problems in a unique way. dig deep into your closet. like think of all the ways and angles to take it. could be how we engineered it sophistically. i think in the pitch its probably good to obviously show how well it works and run through demos either live or recorded and actual ones and make sure its clear that its an actual working product not a staged demo. and then dive into the engineering behind everything.
+
+Used in: [pitch.md](pitch.md#its-always-you-ai-that-helps-you-not-ai-that-is-you), [pitch.md, security](pitch.md#security-and-open-source), [pitch.md, three minutes](pitch.md#the-three-minute-version-with-the-demo), [theme.md](theme.md), [devpost.md](devpost.md).
 ## 2026-11-15 a sale and a match ping at once, replies start as drafts, and agents build the better way
 Ben, thread "Map every feature and page so the build can start", 06:40 UTC, answering "Should a sale, and a watched item under your price, notify you right away?" and "Replies starting as drafts changes Nate's rule".
 > 1. yes. 2. yes do that. ensure the ui building completely understands all this and the ui system. and overall across all agents when they think theres a better way to do things for our purposes and constitution then do it. anything i have edit wise gets applied too.
 
+## 2026-11-15 you send it, and if a buyer asks it says so
+Ben, project chat (relayed), 2026-11-15 06:44 UTC, answering "Should automatic replies say they were sent with secondhand?"
+> no i mean if the user manually reads and chooses to send, the user then sends it. if the buyer asks then it can say
+
+Used in: [pitch.md](pitch.md#its-always-you-ai-that-helps-you-not-ai-that-is-you), [spec/features/messages.md](../spec/features/messages.md).
+
+## 2026-11-15 what did we do that nobody else has
+Ben, project chat (relayed), 2026-11-15 06:44 UTC.
+> also did you figure out any super unique ways that we ended up solving problems. ways that nobody really has done things before or a super unique way and why and how to exemplify that in the pitch or website etc
+
+Used in: [unique.md](unique.md), [pitch.md](pitch.md#whats-new-three-things-we-havent-seen-anyone-else-do), [devpost.md](devpost.md).
+## 2026-11-15 adjacent appraisal, risk and why this price
+
+Ben, thread "Frame the problems and beat competitors", 06:10 UTC.
+> i want you to help me work through the difference between actual problems. we can tell the value of the brand itself. say the nike brand adds x value. we can then tell those brands unique insights. also rarity. collect things for the brands. get the user the cheapest items. track earnings. maximize for the user's goals. also think about how we can benchmark against things like semrush serp where companies like salesforce (going and using things that these companies pay for - so find how much all these companies where the sponsors are possibly spending money) dupe.com vs thriftx. we compare to each of these. we say how we are different. the competitors. what we do. quantify it. show why our data is better. show how - not just say how - at scale we can provide insane value to businesses and consumers. also can talk about and quantify how this helps the earth. encouraging secondhand marketplace and everything happens. break all this down into like a few separate problems or find how our competitors pitch. can pitch both to consumers and to value to businesses. researching and using rdd and iae about finding all our consumers. across all ranges of products. its not just a secondhand site for consumers. can really expand our pitch over time. for example start small and really just keep wowing and wowing and wowing over time. use evidence cite it. be honest but confident about the possibility of scaling over time. how at a large scale we might be able to partner with these selling sites too? im not really sure to be honest. ok use rdd to seeded looped research our competitors. or other similar things. these are ideas. i want your opinion. you know the goals. we need to be humble and honest too. i think ive given you an alright idea on the problem. how consumers find value. can we go through all the problems and see whether or not someone would ask them. the ones you came up with.
+
+Ben, same thread, 06:32 UTC.
+> nate told me about it idk its fine if you cant get it. is there anything from this research where we can find the underlying mechanisms for how these all work and then possibly use them to improve our product? we can say our data collection is better using examples when we start to test
+
+Ben, same thread, 06:43 UTC.
+> what about what we do that we know competitors dont. how we engineered it better and can do more things and its all in one. maybe use rdd and iae and adjacent research think about insurance and other adjacent fields about how they appraise and see if based on our information there are any mechanisms to improve accuracy
+
+Ben, project chat, 06:46 UTC.
+> also see if insurance or quant or other appraisal and market type adjacent fields have any good mechanisms for evaluating certain things that we could take into account here. ways to quantify the risk of everything we are doing. or like reasons why we make decisions to price at whatever based on similar products and whats sold etc.
+
+Ben, thread "Frame the problems and beat competitors", 06:54 UTC, on the proposals in [risk-and-reconciliation.md](../research/price/ben/risk-and-reconciliation.md).
+> i like these apply them to the logic or the plans of logic of how the entire product should work
+
+Used in: [money D1, D2, D5, D6, D12, D13](../spec/determinations/money.md), [managing-and-buyers cards 17 and 18](../spec/determinations/managing-and-buyers.md#17-whether-an-account-is-healthy-or-at-risk), [market-insight M10](../spec/determinations/market-insight.md#m10-depreciation-by-category-and-brand), [appraise](../spec/features/appraise.md), [capture-shots](../spec/determinations/capture-shots.md).
 ## 2026-11-15 cross-listing prices are a choice, the reason in words first
 
 Ben, thread "Cross-list Depop listings and price with quant", 06:51 UTC.
@@ -1141,6 +1216,12 @@ Ben, project chat, 06:53 UTC.
 
 Used in: [research/list/ben/crosslist-pricing.md](../research/list/ben/crosslist-pricing.md), `SPREADS` in app/src/engines/listing/crosslist.ts.
 
+## 2026-11-15 a pitch constitution, ambiguous problems, and the judges' own logic
+Ben, project chat (relayed), 2026-11-15 06:59 UTC.
+> go through and find a bunch of ambigious problems that need solving with logic and how the product is made - similar to the cross posting thing. we have a lot of messy problems and places where this can fail and we need to have an answer about how we respond to all of them. so find them and use rdd research or iae and find adjacent fields. also consider the crowd in the pitch. without getting too specific or saying directly how to think about it in an insurance lens, our example should explain everything in a way where a guy whos worked in insurance his whole life kinda gets the logic. or databricks. or salesforce. but like making it super implicit. hidden in a way. but pulling from all these domains of the judges and explaining it in ways that make sense to them super easily. and showing we really thought through this problem and really have conviction about its usecase. i do worry that there is almost too many features to state all out loud and the process of thinking we went with building it is super important to how we explain it. we want to show that we think like a guy the companies need to hire. all implicit. maybe create a pitch constitution and build it out. like really should outline the multiple things we have and the why. understanding what i want out of this not what i say.
+
+Used in: [pitch-constitution.md](pitch-constitution.md), [pitch.md](pitch.md#the-three-minute-version-with-the-demo), [devpost.md](devpost.md).
+Used in: [spec/hard-calls.md](../spec/hard-calls.md), [hard-calls-references.md](../research/cross-cutting/ben/hard-calls-references.md), and on the pitch thread's branch, pitch-constitution.md.
 ## 2026-11-15 a new seller starts on same take-home
 
 Ben, thread "Cross-list Depop listings and price with quant", 07:00 UTC, tapped on a decision card. The question: "Which cross-listing price rule should a new seller start on?" The option he chose:
@@ -1182,6 +1263,38 @@ Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Cen
 
 > Now that we fixed the crash, ensure it doesnt happen again and perhaps push further now to handle more, not of course so much that it crashes either this computer or the mac but you understand how to effectively dispatch.
 
+## 2026-11-15 deep teal lead card in dark
+
+Ben, thread "Roll the UI system out everywhere", 07:10 UTC, tapped on a decision card after pointing back to his dark Today reference (research/today/ben/today-v3-light-dark.png). The question: "Make the lead card deep teal in dark mode, like your dark reference?" The option he chose:
+> Deep teal in dark: The lead card in dark goes deep teal with light text, as in the render. I change the brand rule and its check to match.
+
+Used in: [brand/constitution.md](../brand/constitution.md) Art. 5, State gradients rule 3; ledger A13; `stateGradient` in app/src/ui/paint.ts; `stateOf` in .agents/checks/render.mjs.
 ## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
 
 Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
+
+## 2026-11-15 proof without sales
+Ben, project chat (relayed), 2026-11-15 07:15 UTC.
+> theres a problem of how do we show or explain why our thing works and convince someone that it would get them sales effectively if we have no proof of sales or any of this because we are in a 24hr hackthon. brainstorm. see if rdd adjacent research could be helpful at all. how do we do our best to prove logic. and use comparison too.
+
+Used in: [proof-without-sales.md](proof-without-sales.md), [pitch.md](pitch.md#proof-without-sales), [qa.md](qa.md).
+
+## 2026-11-15 everything goes in the repo, and Nate gets the packets he needs
+
+Ben, project chat, 07:14 UTC.
+> ensure all information is continually added to the repo and that nate gets packets that he might need
+
+Used in: [research/cross-cutting/ben/market-and-competitors.md](../research/cross-cutting/ben/market-and-competitors.md), [packet 54](../.agents/team/packets/price/54-least-adjusted-comps-and-risk.md).
+## 2026-11-15 everything goes into the repo, and nate gets the packets he needs
+
+Ben, project chat, 07:14:
+> ensure all information is continually added to the repo and that nate gets packets that he might need
+
+Used in: [AGENTS.md](../AGENTS.md#how-to-work-here).
+
+Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to [product/pitch/market.md](pitch/market.md); the old path keeps a pointer.
+
+## 2026-11-15 a backtest that flatters truthfully, seasons and waves, and merge to main
+
+Ben, project chat, 07:18 UTC.
+> whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this

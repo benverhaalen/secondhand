@@ -49,7 +49,7 @@ For the sneakers: "This one sold for $40, yours has its box, so we count it as $
 
 **Site** ([D4](../../spec/determinations/money.md#d4-site-translation)). A site's own comps are used when it has at least 6 effective ones. Otherwise the app uses the median ratio between that site and a reference site over products sold on both within 90 days, widens the range by the ratio's spread, and labels it "estimated from other sites". Under 20 shared products it says "Not enough sales on Depop yet".
 
-A comp whose total adjustment exceeds 25% is dropped. Outliers beyond three scaled median deviations are dropped. The top 3 to 8 comps by weight are shown.
+A comp whose gross adjustment (every adjustment counted as a positive amount, so offsetting ones don't cancel) exceeds 25% is dropped. Comps that needed less adjustment count more. Outliers beyond three scaled median deviations are dropped. The top 3 to 8 comps by weight are shown.
 
 ## The range, and why you can trust its width
 
