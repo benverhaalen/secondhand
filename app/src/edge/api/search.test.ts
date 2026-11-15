@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, resetRequestState, route, visitorId } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
-import { handlers, manifest, ports, searchJobs } from './search.ts';
+import { checkSearchCounts, handlers, manifest, ports, searchJobs, type SearchStage } from './search.ts';
 import { readFileSync } from 'node:fs';
 import { jobs, getJob, jobEvents, memoryJobs, seedExamples } from './jobs.ts';
 import { SITES, type Site } from '../harness/protocol.ts';
@@ -21,6 +21,7 @@ import type { Found } from '../intel/answer.ts';
 import { memoryVault, memoryAccounts } from '../browser/auth.ts';
 import { createHarness, fakeAdapter, fakeManifest, fail } from '../harness/protocol.ts';
 import { mercariAdapters, type Page as MercariPage } from '../harness/sites/mercari/adapter.ts';
+import { readLedger } from '../harness/read-ledger.ts';
 
 let depopRead: () => Promise<PageResult>;
 const originalPorts = { ...ports };
@@ -55,6 +56,7 @@ beforeEach(() => {
   resetRequestState(); searchVisitor = visitorId(); deps.now = () => Date.now();
   _reset();
   searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 0 });
+  searchParams.declare({ name: 'search_late_window_ms', family: 'scalar', prior: 30000, guard_lo: 0 });
   depopRead = async () => blocked();
   const harness = createHarness({ adapters: [{ route_id: 'depop.search.page', manifest: fakeManifest('depop', 'search'),
     async run() {
@@ -1229,7 +1231,8 @@ test('SR6 foreign rows sort by match and price, dedupe normalized URLs and obey 
   assert.deepEqual(result.found.dropped_by_reason, { duplicate: 1, max_delivered_cents: 1 });
 });
 
-test('SR4 route eBay queue time counts from its own t0 for searches one second apart', async t => {
+test('SR4 route eBay queue time counts from its own t0 with no late window for searches one second apart', async t => {
+  searchParams.declare({ name: 'search_late_window_ms', family: 'scalar', prior: 0, guard_lo: 0 });
   t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 });
   t.mock.method(performance, 'now', () => Date.now());
   ports.sources = LIVE_SOURCES.filter(s => s.id === 'ebay'); ports.deadline_ms = 10000;
@@ -1247,6 +1250,186 @@ test('SR4 route eBay queue time counts from its own t0 for searches one second a
   assert.equal(settled.searched[0].outcome, 'timeout'); assert.ok(settled.ms.settled <= 10000);
   t.mock.timers.tick(20000); await flush();
   assert.deepEqual(starts, [1000], 'queued expired eBay read was sent');
+});
+
+describe('eBay bounded late reads', () => {
+  const flush = async () => { for (let i = 0; i < 100; i++) await Promise.resolve(); };
+  const row = { external_id: 'late-ebay', title: 'jeans', price_cents: 1000, currency: 'USD', url: 'https://ebay.com/itm/late' };
+  const saved = (id: string) => jobs.st.getJob(id)! as Omit<NonNullable<ReturnType<typeof jobs.st.getJob>>, 'stages' | 'result'> & {
+    fill_until?: string; stages: SearchStage[];
+    result: { results: { external_id: string }[]; found: Found; searched: { site: string; outcome: string }[] };
+  };
+  beforeEach(t => {
+    assert.ok('mock' in t);
+    t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 });
+    t.mock.method(performance, 'now', () => Date.now());
+    ports.sources = SOURCES.filter(s => s.id === 'ebay'); ports.deadline_ms = 1000;
+    ports.routed = () => true;
+    searchParams.declare({ name: 'search_late_window_ms', family: 'scalar', prior: 3000, guard_lo: 0 });
+  });
+  afterEach(() => { searchParams.declare({ name: 'search_late_window_ms', family: 'scalar', prior: 30000, guard_lo: 0 }); });
+
+  test('a slow eBay read two seconds after settle emits one late frame and persists its rows with balanced counts', async t => {
+    ports.sources = SOURCES.filter(s => ['ebay', 'dupe'].includes(s.id));
+    ports.dupe = { search: async () => ({ ok: true, data: { rows: [{ id: 'restricted', title: 'jeans', price_cents: 2000,
+      currency: 'USD', url: 'https://retail.test/restricted', commercial_link: true, attribution: 'Dupe.com', source_site: 'retail',
+      secondhand: true, keep_until: '2040-01-01T00:00:00Z' }], total: 1, dropped: 0, keep_until: '2040-01-01T00:00:00Z' } }) };
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      return { ok: true, data: [row, { ...row, external_id: 'sold', state: 'sold' }] };
+    } }] });
+    const job = await start(); await flush();
+    t.mock.timers.tick(1000); await flush(); await ended(job.id);
+    const settledAt = saved(job.id).stages.find(s => s.name === 'site:ebay')!;
+    assert.equal(settledAt.state, 'late');
+    assert.deepEqual(saved(job.id).result.results.map(r => r.external_id), ['restricted']);
+    t.mock.timers.tick(2000); await flush();
+    const frames = jobs.framesAfter(job.id, 0), late = frames.filter(f => f.event === 'answer.late');
+    assert.equal(late.length, 1, 'late eBay was aborted or landed twice');
+    assert.deepEqual((late[0].data.results as { external_id: string }[]).map(r => r.external_id), ['late-ebay']);
+    assert.equal(frames.indexOf(late[0]) > frames.findIndex(f => f.event === 'job.state' && f.data.state === 'done'), true);
+    const stage = saved(job.id).stages.find(s => s.name === 'site:ebay')!;
+    assert.equal(stage.state, 'late'); assert.equal(stage.ended_at, new Date().toISOString());
+    assert.equal(stage.found.results_found, 2); assert.equal(stage.found.dropped_by_reason.sold, 1);
+    assert.ok(saved(job.id).result.results.some(r => r.external_id === 'late-ebay'));
+    const { store } = await import('./store.ts');
+    assert.deepEqual((store.getJob(job.id)!.result as { results: { external_id: string }[] }).results.map(r => r.external_id), ['late-ebay'], 'late persistence bypassed the existing storage-rights filter');
+    for (const frame of frames) {
+      const answer = frame.data.answer as { found: Found } | undefined;
+      if (answer) assert.deepEqual(checkSearchCounts(answer.found), [], frame.event);
+    }
+  });
+
+  for (const window of [3000, 90000]) test(`fill_until is saved before done and keeps the later eBay or Facebook cutoff; window=${window}`, async t => {
+    searchParams.declare({ name: 'search_late_window_ms', family: 'scalar', prior: window, guard_lo: 0 });
+    ports.sources = SOURCES.filter(s => ['ebay', 'facebook'].includes(s.id));
+    const read = Promise.withResolvers<void>(), fill = Promise.withResolvers<void>();
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => { await read.promise; return { ok: true, data: [row] }; } }] });
+    ports.apify = { search: async () => { await fill.promise; return { ok: true, data: { rows: [], total: 0, dropped: 0 } }; } };
+    let fillAtDone: string | undefined;
+    const append = jobs.append;
+    t.mock.method(jobs, 'append', (...args: Parameters<typeof jobs.append>) => {
+      if (args[1] === 'job.state' && args[2].state === 'done') fillAtDone = saved(args[0]).fill_until;
+      return append(...args);
+    });
+    const response = await call(examples.find(e => e.name === 'search.text')!, { token: 'good', body: { text: 'combined late cutoffs' } });
+    const job = await response.json(); created.push(job.id); await flush();
+    t.mock.timers.tick(1000); await flush(); await ended(job.id);
+    assert.equal(fillAtDone, new Date(Math.max(1000 + 1000 + window, 2000 + 75000)).toISOString());
+    read.resolve(); fill.resolve(); await flush();
+  });
+
+  test('fill_until is saved before done while only eBay is pending', async t => {
+    const read = Promise.withResolvers<void>();
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => { await read.promise; return { ok: true, data: [row] }; } }] });
+    let fillAtDone: string | undefined;
+    const append = jobs.append;
+    t.mock.method(jobs, 'append', (...args: Parameters<typeof jobs.append>) => {
+      if (args[1] === 'job.state' && args[2].state === 'done') fillAtDone = saved(args[0]).fill_until;
+      return append(...args);
+    });
+    const job = await start(); await flush(); t.mock.timers.tick(1000); await flush(); await ended(job.id);
+    assert.equal(fillAtDone, new Date(5000).toISOString());
+    read.resolve(); await flush();
+  });
+
+  test('a non-lands_late source pending at settle is still aborted and counted as a timeout', async t => {
+    ports.sources = SOURCES.filter(s => s.id === 'poshmark');
+    let signal: AbortSignal | undefined;
+    ports.fetchPage = async (_url, opts) => {
+      signal = (opts as typeof opts & { signal?: AbortSignal }).signal;
+      return new Promise(() => {});
+    };
+    const job = await start(); await flush(); t.mock.timers.tick(1000); await flush(); await ended(job.id);
+    assert.equal(signal?.aborted, true);
+    assert.equal(saved(job.id).result.searched[0].outcome, 'timeout');
+    assert.equal(saved(job.id).fill_until, undefined);
+  });
+
+  test('an eBay read queued beyond its cutoff is cancelled as a timeout without pausing the next read', async t => {
+    ports.sources = ports.sources.map(s => ({ ...s, pace: { per_minute: 1e12, min_gap_ms: 0 } }));
+    const read = Promise.withResolvers<void>(); const queries: unknown[] = [];
+    const timedOut = readLedger.counts('ebay')[0]?.classes.timed_out ?? 0;
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async args => {
+      queries.push(args.q); if (args.q === 'holding the lane') await read.promise;
+      return { ok: true, data: [row] };
+    } }] });
+    const first = await start({ text: 'holding the lane' }); await flush();
+    const queued = await start({ text: 'queued past cutoff' }); await flush();
+    t.mock.timers.tick(1000); await flush(); await ended(queued.id);
+    t.mock.timers.tick(3000); await flush();
+    assert.deepEqual(queries, ['holding the lane']);
+    assert.equal(saved(queued.id).result.searched[0].outcome, 'timeout');
+    assert.equal(saved(queued.id).stages[0].error, undefined, 'queue timeout became a refusal');
+    assert.equal(readLedger.counts('ebay')[0].classes.timed_out, timedOut + 1);
+    assert.equal(readLedger.paused('ebay'), undefined, 'queue expiry paused eBay');
+    read.resolve(); await flush(); await ended(first.id);
+    const next = await start({ text: 'after cancelled slot' }); await flush();
+    t.mock.timers.tick(1); await flush(); await ended(next.id);
+    assert.deepEqual(queries, ['holding the lane', 'after cancelled slot']);
+    assert.equal(saved(next.id).result.searched[0].outcome, 'hit');
+  });
+
+  test('an eBay read started before its cutoff finishes under the harness timeout even after the window ends', async t => {
+    const read = Promise.withResolvers<void>(); let signal: AbortSignal | undefined;
+    ports.harness = createHarness({ timeoutMs: 6000, adapters: [{ ...fakeAdapter('ebay', 'search'), run: async (_args, s) => {
+      signal = s; await read.promise; return { ok: true, data: [row] };
+    } }] });
+    const job = await start(); await flush(); t.mock.timers.tick(1000); await flush(); await ended(job.id);
+    t.mock.timers.tick(3500); await flush();
+    const aborted = signal?.aborted; read.resolve(); await flush();
+    assert.equal(aborted, false, 'late cutoff aborted an already started read');
+    assert.equal(jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.late').length, 1);
+    assert.equal(saved(job.id).result.results[0].external_id, 'late-ebay');
+  });
+
+  test('stalled eBay admission expires at the late cutoff and never starts a read after it', async t => {
+    const admission = Promise.withResolvers<[]>(); let reads = 0;
+    ports.accounts = { linked: async () => admission.promise, byId: async () => undefined };
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => { reads++; return { ok: true, data: [row] }; } }] });
+    const response = await call(examples.find(e => e.name === 'search.text')!, { token: 'good' });
+    const job = await response.json(); created.push(job.id); await flush();
+    t.mock.timers.tick(1000); await flush(); await ended(job.id);
+    t.mock.timers.tick(3000); await flush();
+    const late = jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.late');
+    admission.resolve([]); await flush();
+    assert.equal(late.length, 1, 'stalled admission escaped the late cutoff');
+    assert.equal(saved(job.id).result.searched[0].outcome, 'timeout');
+    assert.equal(reads, 0, 'expired admission sent a read');
+  });
+
+  for (const failure of ['throw', 'blocked'] as const) test(`a late eBay ${failure} fails only its own stage and the job stays done`, async t => {
+    ports.sources = SOURCES.filter(s => ['ebay', 'poshmark'].includes(s.id));
+    ports.fetchPage = async () => page(fixture('poshmark'));
+    const read = Promise.withResolvers<void>();
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => {
+      await read.promise;
+      if (failure === 'throw') throw new Error('late read exploded');
+      return fail('blocked', 'eBay answered 403', { do: 'pause_session', site: 'ebay' });
+    } }] });
+    const job = await start(); await flush(); t.mock.timers.tick(1000); await flush(); await ended(job.id);
+    read.resolve(); await flush();
+    assert.equal(saved(job.id).state, 'done');
+    assert.equal(saved(job.id).stages.find(s => s.name === 'site:ebay')!.state, 'failed');
+    assert.equal(saved(job.id).stages.find(s => s.name === 'site:poshmark')!.state, 'arrived');
+    assert.equal(saved(job.id).result.results.length, 12);
+    assert.equal(jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.late').length, 1);
+  });
+
+  for (const late of [false, true]) test(`a second search joining a running public eBay read receives the same rows once; late=${late}`, async t => {
+    const read = Promise.withResolvers<void>(); let reads = 0;
+    ports.harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => { reads++; await read.promise; return { ok: true, data: [row] }; } }] });
+    const first = await start({ text: 'shared eBay query' }, visitorId()); await flush();
+    const second = await start({ text: 'shared eBay query' }, visitorId()); await flush();
+    if (late) { t.mock.timers.tick(1000); await flush(); await ended(first.id); await ended(second.id); }
+    read.resolve(); await flush();
+    for (const job of [first, second]) {
+      await ended(job.id);
+      assert.equal(saved(job.id).result.results[0]?.external_id, 'late-ebay');
+      assert.equal(jobs.framesAfter(job.id, 0).filter(f => f.event === (late ? 'answer.late' : 'answer.partial')).length, 1);
+    }
+    assert.equal(reads, 1, 'shared callers spent another read or pace slot');
+  });
 });
 
 test('SR6 a bad count is logged on frames and never throws at the person', async () => {
