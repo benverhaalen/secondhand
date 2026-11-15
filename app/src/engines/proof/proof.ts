@@ -1,6 +1,6 @@
 // The proof layer (spec/product.md §6 "The proof layer"): every fact carries `evidence`, every number shown is a guarded number with a `citation`.
 // An answer with no basis is refused, never returned as an answer. The thresholds come from param reads, never literals here.
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './sha256.ts';
 import type { ParamStore, Scope } from '../param/param.ts';
 import { resolve } from './params.ts';
 export { DECLARED as PROOF_PARAMS } from './params.ts';
@@ -56,7 +56,7 @@ function canonical(value: unknown): string {
 }
 
 function hash(value: unknown): string {
-  return createHash('sha256').update(canonical(value)).digest('hex');
+  return sha256Hex(canonical(value));
 }
 
 function validateRows(rows: BasisRow[]): void {
