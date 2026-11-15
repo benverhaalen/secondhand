@@ -6,14 +6,14 @@
     "who": "A new person, signed in a minute ago, with nothing linked or listed (world new); most often the person clearing out.",
     "how_often": "Once, and again only after signing out.",
     "came_to": "Get the first thing listed with the least setup.",
-    "costly_mistake": "A step that blocks: a site that will not sign in, or a question that could wait. Every site can be skipped, a failed sign-in says why and offers Try again, and Continue never waits for all five.",
-    "ways_out": "Skip for now with nothing linked; Skip on the pickup step with no spot; Later on the photo step goes to Today; a site's 2FA or captcha shows its own step, and a timeout gives Try again (spec/ways-out.md).",
+    "costly_mistake": "A step that blocks: a site that will not sign in, or a question that could wait. Every site can be skipped, a failed sign-in says why and offers Retry, and Continue never waits for all five.",
+    "ways_out": "Skip with nothing linked; Skip on the pickup step with no spot; Later on the photo step goes to Today; a site's 2FA or captcha shows its own step, and a timeout gives Retry (spec/ways-out.md).",
     "in_the_loop": "The person signs in on the site's own page; the password never reaches secondhand, and the page says so."
   },
   "states": [
     {
       "state": "new",
-      "shows": "the wordmark, one line on what the app does, and three choices: Continue with Apple, Continue with Google, Continue with email; no Skip, the step cannot be skipped"
+      "shows": "the wordmark, Sign in, and three choices: Continue with Apple, Continue with Google, Continue with email; no Skip, the step cannot be skipped"
     },
     {
       "state": "loading",
@@ -21,7 +21,7 @@
     },
     {
       "state": "failed",
-      "shows": "Couldn’t sign in with Try again; the three choices stay"
+      "shows": "Couldn’t sign in with Retry; the three choices stay"
     },
     {
       "state": "offline",
@@ -33,11 +33,11 @@
     },
     {
       "state": "code",
-      "shows": "the address the code went to, a 6-digit field, and Continue"
+      "shows": "the address the code went to, a 6-digit field, and Sign in"
     },
     {
       "state": "sites",
-      "shows": "signed in: the wordmark, 1 of 3, Your sites, the line that each is optional, five rows by logo each Not linked with Link, the password line, and Skip for now at the foot"
+      "shows": "signed in: the wordmark, 1 of 3, Your sites, the line that each is optional, five rows by logo each Not linked with Link, the password line, and Skip at the foot"
     },
     {
       "state": "sites-loading",
@@ -45,15 +45,15 @@
     },
     {
       "state": "sites-typical",
-      "shows": "a linked row says Linked with a check; the line counts the sites linked; the foot says Continue in black"
+      "shows": "a linked row says Linked with a check; the line that each is optional goes; the foot says Continue in black"
     },
     {
       "state": "sites-failed",
-      "shows": "Mercari's first try: Didn’t link, The code from your phone timed out, and Try again; the rest unchanged"
+      "shows": "Mercari's first try: Didn’t link, The code from your phone timed out, and Retry; the rest unchanged"
     },
     {
       "state": "pickup",
-      "shows": "Back, 2 of 3, Pickup spot, the line that it is optional and that days and times are picked when a buyer asks, never from the calendar; one field, A public place; the line on safe spots; Skip at the foot, Save spot once a place is typed"
+      "shows": "Back, 2 of 3, Pickup spot, the line that days and times are picked when a buyer asks; one field, A public place; the line on safe spots; Skip at the foot, Save spot once a place is typed"
     },
     {
       "state": "photo",
@@ -116,7 +116,7 @@
     },
     {
       "id": "signin-retry",
-      "control": "Try again",
+      "control": "Retry",
       "on_tap": "runs the sign-in again",
       "does": "tries again",
       "path": "/onboarding?state=failed"
@@ -137,7 +137,7 @@
     {
       "id": "link-mercari",
       "control": "Link (Mercari)",
-      "on_tap": "the first try times out at the code step and offers Try again; the second links",
+      "on_tap": "the first try times out at the code step and offers Retry; the second links",
       "does": "links the site",
       "logs": {
         "type": "change",
@@ -149,7 +149,7 @@
     },
     {
       "id": "onboarding-next",
-      "control": "Skip for now or Continue",
+      "control": "Skip or Continue",
       "on_tap": "goes to the pickup step, whatever is linked",
       "does": "goes to the pickup step",
       "path": "/onboarding?signed=1"
@@ -221,9 +221,9 @@
     "The spot is a blank field, A public place, with one line on where is safest (a police station's safe exchange zone, then a busy, lit store entrance); the address goes out only on its own tap later. A map of safe spots needs place data the demo does not have.",
     "No carousel and no promises: the first screen is the first task.",
     "The wordmark sits in the nav on the first step, which is the first screen a new person sees after sign-in; the photo step has Back instead.",
-    "Every site has its own state and act, and Continue works with none linked (Ben, 03:22). With none linked the foot reads Skip for now in gray; with one it reads Continue in black, so the black pill appears once there is something to continue with.",
+    "Every site has its own state and act, and Continue works with none linked (Ben, 03:22). With none linked the foot reads Skip in gray; with one it reads Continue in black, so the black pill appears once there is something to continue with.",
     "The import of found listings is left to Today as merge cards, so linking never waits on a scan.",
-    "Mercari's first Link in the demo times out at the code step, so the failed state and Try again can be seen.",
+    "Mercari's first Link in the demo times out at the code step, so the failed state and Retry can be seen.",
     "?state= draws each state of the first step: typical with one site linked, loading with one signing in, failed with Mercari's try timed out, offline with Waiting for signal. Empty, one and dense are skipped: first launch is only for a new person.",
     "Sign-in comes first and cannot be skipped (spec/features/connect.md, Signing in to secondhand). The 6-second hero loop is left for later (TODO in onboarding.tsx, spec/pages.md §6.1). The app has no client for /v1/auth yet, so the demo drives it: Apple and Google succeed after a short wait, and the email code accepts any 6 digits except 000000, which fails. ?signed=1 skips sign-in, and states typical, one, dense and empty imply a signed-in person."
   ]

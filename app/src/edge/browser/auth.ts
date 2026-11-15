@@ -37,7 +37,7 @@ export type AuthVault = {
 
 // The person's account rows that carry stored sign-in state. Only these are launched, warmed, swept or scheduled.
 export type LinkedAccount = { account_id: string; person_id: string; site: Site; token_ref: string };
-export type Accounts = { linked(person_id?: string): Promise<LinkedAccount[]>; byId(account_id: string): Promise<LinkedAccount | undefined> };
+export type Accounts = { linked(person_id?: string): Promise<LinkedAccount[]>; byId(account_id: string, person_id?: string): Promise<LinkedAccount | undefined> };
 
 export function memoryVault(): AuthVault & { size(): number } {
   const m = new Map<string, string>(); // serialised, so a caller mutating its copy never mutates the stored secret
@@ -59,7 +59,7 @@ export function memoryAccounts(rows: (LinkedAccount | Omit<LinkedAccount, 'token
     .filter((r): r is LinkedAccount => !!r);
   return {
     async linked(person_id) { return (await withState()).filter(r => !person_id || r.person_id === person_id); },
-    async byId(id) { return (await withState()).find(r => r.account_id === id); },
+    async byId(id, person_id) { return person_id ? (await withState()).find(r => r.account_id === id && r.person_id === person_id) : undefined; },
   };
 }
 

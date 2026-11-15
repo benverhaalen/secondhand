@@ -1,69 +1,72 @@
-Attributes: Application, 0x1021785b0, pid: 83657, label: 'secondhand'
+Attributes: Application, 0x10366f100, pid: 19948, label: 'secondhand'
 Element subtree:
- →Application, 0x1021785b0, pid: 83657, label: 'secondhand'
-    Window (Main), 0x102183100, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x10211c790, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x1021671b0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x10213ce40, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x10216a5d0, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x1021566b0, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x102181340, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x102159550, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x102164b00, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x102151010, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x1021662f0, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x1021603e0, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x10216f810, {{0.0, 0.0}, {402.0, 783.0}}
-                                  Other, 0x1021194d0, {{0.0, 0.0}, {402.0, 783.0}}
-                                    Other, 0x102153c70, {{0.0, 0.0}, {402.0, 783.0}}
-                                      Other, 0x10211c370, {{0.0, 0.0}, {402.0, 783.0}}
-                                        Other, 0x10217d160, {{0.0, 0.0}, {402.0, 783.0}}
-                                          Other, 0x1021637e0, {{0.0, 0.0}, {402.0, 783.0}}
-                                            Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 783.0}}
-                                              Other, 0x10216abd0, {{0.0, 0.0}, {402.0, 783.0}}
-                                                ScrollView, 0x10217fdc0, {{0.0, 0.0}, {402.0, 783.0}}
-                                                  Other, 0x102131330, {{0.0, 0.0}, {402.0, 783.0}}
-                                                    Other, 0x102174370, {{0.0, 0.0}, {402.0, 783.0}}
-                                                      Other, 0x102183440, {{0.0, 0.0}, {402.0, 298.0}}
-                                                      Other, 0x10212a620, {{20.0, 62.0}, {362.0, 48.0}}
-                                                        StaticText, 0x10218e1f0, {{20.0, 69.3}, {63.3, 41.3}}, label: 'Buy'
-                                                          StaticText, 0x102189b30, {{20.0, 69.3}, {63.3, 41.3}}, label: 'Buy'
-                                                        Button, 0x102189c50, {{342.0, 66.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 4 new'
-                                                      Other, 0x102189d70, {{20.0, 118.0}, {362.0, 48.0}}
-                                                      Button, 0x102189e90, {{68.0, 118.0}, {258.0, 48.0}}, identifier: 'buy-search', label: 'Find an item or paste a link'
-                                                      Button, 0x102189fb0, {{338.0, 122.0}, {40.0, 40.0}}, identifier: 'buy-search-camera', label: 'Search with a photo'
-                                                      Other, 0x10218a0d0, {{36.0, 132.0}, {20.0, 20.0}}
-                                                        Other, 0x10218a1f0, {{37.9, 133.9}, {16.2, 16.2}}
-                                                          Other, 0x10218a310, {{37.9, 133.9}, {14.6, 14.6}}
-                                                          Other, 0x10218a430, {{49.5, 145.5}, {4.6, 4.6}}
-                                                      StaticText, 0x10218a550, {{20.0, 198.0}, {362.0, 24.3}}, label: 'Looking for'
-                                                        StaticText, 0x10218a670, {{20.0, 198.0}, {362.0, 24.3}}, label: 'Looking for'
-                                                      Button, 0x10218a790, {{20.0, 238.3}, {362.0, 104.0}}, identifier: 'want-want_desk', label: 'Standing desk under $150 within 10 miles'
-                                                  Other, 0x10218a8b0, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                                    Other, 0x10218a9d0, {{396.0, 65.0}, {3.0, 715.0}}
-                                                  Other, 0x10218aaf0, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                    Other, 0x10218ac10, {{3.0, 777.0}, {396.0, 3.0}}
-                                                  Other, 0x10218ad30, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                                    Other, 0x10218ae50, {{396.0, 65.0}, {3.0, 715.0}}
-                                                  Other, 0x10218af70, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                    Other, 0x10218b090, {{3.0, 777.0}, {396.0, 3.0}}
-                                    Other, 0x10218b1b0, {{0.0, 0.0}, {402.0, 783.0}}
-                                      Other, 0x10218b2d0, {{0.0, 0.0}, {402.0, 783.0}}
-                                Other, 0x10218b3f0, {{0.0, 783.0}, {402.0, 91.0}}
-                                Other, 0x10218b510, {{16.0, 791.0}, {370.0, 62.0}}
-                                Button, 0x10218b630, {{20.0, 791.0}, {72.3, 62.0}}, identifier: 'tab-today', label: 'Today'
-                                Button, 0x10218b750, {{92.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-sell', label: 'Sell'
-                                Button, 0x10218b870, {{177.0, 798.0}, {48.0, 48.0}}, identifier: 'tab-new', label: 'New'
-                                Button, 0x10218b990, {{237.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-buy', label: 'Buy', Selected
-                                Button, 0x10218bab0, {{309.7, 791.0}, {72.3, 62.0}}, identifier: 'tab-you', label: 'You'
-                      Other, 0x10218bbd0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10218bcf0, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x10366f100, pid: 19948, label: 'secondhand'
+    Window (Main), 0x103639530, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x10363c930, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x103636ba0, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x103654e40, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x10364a580, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x10365c0f0, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x1036481c0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x10365cac0, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x103654a20, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x10366e950, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103635980, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x103654600, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10363cc70, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x10363d090, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x103636ee0, {{0.0, 0.0}, {402.0, 783.0}}
+                                  Other, 0x103639110, {{0.0, 0.0}, {402.0, 783.0}}
+                                    Other, 0x10363a310, {{0.0, 0.0}, {402.0, 783.0}}
+                                      Other, 0x10364dac0, {{0.0, 0.0}, {402.0, 783.0}}
+                                        Other, 0x1036496c0, {{0.0, 0.0}, {402.0, 783.0}}
+                                          Other, 0x1036541e0, {{0.0, 0.0}, {402.0, 783.0}}
+                                            Other, 0x103648e60, {{0.0, 0.0}, {402.0, 783.0}}
+                                              Other, 0x103641270, {{0.0, 0.0}, {402.0, 114.0}}
+                                                Button, 0x103663700, {{342.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 4 new'
+                                                StaticText, 0x10365c6a0, {{20.0, 75.3}, {118.7, 23.3}}, label: 'secondhand'
+                                                  StaticText, 0x10363f630, {{20.0, 75.3}, {118.7, 23.3}}, label: 'secondhand'
+                                              Other, 0x103676fe0, {{0.0, 0.0}, {402.0, 783.0}}
+                                                ScrollView, 0x103677100, {{0.0, 0.0}, {402.0, 783.0}}
+                                                  Other, 0x103677220, {{0.0, 0.0}, {402.0, 783.0}}
+                                                    Other, 0x103677340, {{0.0, 0.0}, {402.0, 783.0}}
+                                                      Other, 0x103677460, {{0.0, 0.0}, {402.0, 298.0}}
+                                                      Other, 0x103677580, {{20.0, 62.0}, {362.0, 96.0}}
+                                                        StaticText, 0x1036776a0, {{20.0, 123.7}, {29.3, 24.3}}, label: 'buy'
+                                                          StaticText, 0x1036777c0, {{20.0, 123.7}, {29.3, 24.3}}, label: 'buy'
+                                                      Other, 0x1036778e0, {{20.0, 166.0}, {362.0, 48.0}}
+                                                      Button, 0x103677a00, {{68.0, 166.0}, {258.0, 48.0}}, identifier: 'buy-search', label: 'Find an item or paste a link'
+                                                      Button, 0x103677b20, {{338.0, 170.0}, {40.0, 40.0}}, identifier: 'buy-search-camera', label: 'Search with a photo'
+                                                      Other, 0x103677c40, {{36.0, 180.0}, {20.0, 20.0}}
+                                                        Other, 0x103677d60, {{37.9, 181.9}, {16.2, 16.2}}
+                                                          Other, 0x103677e80, {{37.9, 181.9}, {14.6, 14.6}}
+                                                          Other, 0x103677fa0, {{49.5, 193.5}, {4.6, 4.6}}
+                                                      StaticText, 0x1036780c0, {{20.0, 246.0}, {362.0, 20.3}}, label: 'Looking for'
+                                                        StaticText, 0x1036781e0, {{20.0, 246.0}, {362.0, 20.3}}, label: 'Looking for'
+                                                      Button, 0x103678300, {{20.0, 278.3}, {362.0, 104.0}}, identifier: 'want-want_desk', label: 'Standing desk'
+                                                  Other, 0x103678420, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                                    Other, 0x103678540, {{396.0, 65.0}, {3.0, 715.0}}
+                                                  Other, 0x103678660, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x103678780, {{3.0, 777.0}, {396.0, 3.0}}
+                                                  Other, 0x1036788a0, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                                    Other, 0x1036789c0, {{396.0, 65.0}, {3.0, 715.0}}
+                                                  Other, 0x103678ae0, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x103678c00, {{3.0, 777.0}, {396.0, 3.0}}
+                                    Other, 0x103678d20, {{0.0, 0.0}, {402.0, 783.0}}
+                                      Other, 0x103678e40, {{0.0, 0.0}, {402.0, 783.0}}
+                                Other, 0x103678f60, {{0.0, 783.0}, {402.0, 91.0}}
+                                Other, 0x103679080, {{16.0, 791.0}, {370.0, 62.0}}
+                                Button, 0x1036791a0, {{20.0, 791.0}, {72.3, 62.0}}, identifier: 'tab-today', label: 'Today'
+                                Button, 0x1036792c0, {{92.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-sell', label: 'Sell'
+                                Button, 0x1036793e0, {{177.0, 798.0}, {48.0, 48.0}}, identifier: 'tab-new', label: 'New'
+                                Button, 0x103679500, {{237.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-buy', label: 'Buy', Selected
+                                Button, 0x103679620, {{309.7, 791.0}, {72.3, 62.0}}, identifier: 'tab-you', label: 'You'
+                      Other, 0x103679740, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103679860, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x1021785b0, pid: 83657, label: 'secondhand'
+ →Application, 0x10366f100, pid: 19948, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x10217dbe0, pid: 83657, label: 'secondhand'
+    Application, 0x10366f220, pid: 19948, label: 'secondhand'
   }

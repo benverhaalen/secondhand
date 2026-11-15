@@ -12,7 +12,7 @@ after(async () => { await app?.stop(); });
 const STATES = {
   typical: ['Linked', 'What we read', '4 live listings', '1 thread with buyers', 'What we did', 'Took this listing down because it sold on the other site. Checked on the site after', 'Changed there, not by us', 'Unlink'],
   mismatch: ['Doesn’t match', 'Brass desk lamp with cream shade', 'Open on the site'],
-  failed: ['Needs you', 'Try again', 'Nothing until you sign in again'],
+  failed: ['Needs you', 'Retry', 'Nothing until you sign in again'],
   new: ['Not linked', 'Link', 'What we did'],
   loading: [],
   offline: ['Waiting for signal', 'Linked', 'What we did'],

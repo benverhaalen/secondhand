@@ -101,7 +101,7 @@
       "state": "failed",
       "route": "/item/it_kindle/ship?state=failed",
       "shows": "This sale didn’t load",
-      "why": "the sale did not load; Try again asks again"
+      "why": "the sale did not load; Retry asks again"
     },
     {
       "state": "offline",

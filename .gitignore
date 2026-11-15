@@ -39,3 +39,6 @@ bench/out/
 
 # Vercel link for the web/ deploy
 .vercel
+
+# Written by scripts/app-check.mjs on a full run; regenerated, never committed (its inline colors fail the token check).
+features/app/gallery.html

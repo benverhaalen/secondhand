@@ -1,148 +1,148 @@
-Attributes: Application, 0x1021671b0, pid: 83775, label: 'secondhand'
+Attributes: Application, 0x103639530, pid: 19983, label: 'secondhand'
 Element subtree:
- →Application, 0x1021671b0, pid: 83775, label: 'secondhand'
-    Window (Main), 0x10213ce40, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x1021785b0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x102183100, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x10211c790, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x10217dbe0, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x10218aa10, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x10216a5d0, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x102194af0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x102183440, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10218e1f0, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x102174370, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x102131330, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x102153c70, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
-                                    ScrollView, 0x1021566b0, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x10216f810, {{0.0, -4.0}, {402.0, 1393.3}}
-                                        Other, 0x10217d160, {{0.0, -4.0}, {402.0, 1393.3}}
-                                          Other, 0x10218ff90, {{0.0, -4.0}, {402.0, 298.0}}
-                                          Other, 0x102151010, {{20.0, 58.0}, {362.0, 44.0}}
-                                            Button, 0x10216abd0, {{20.0, 60.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                          StaticText, 0x10211c370, {{20.0, 114.0}, {362.0, 41.3}}, label: 'Watching for'
-                                            StaticText, 0x1021637e0, {{20.0, 114.0}, {362.0, 41.3}}, label: 'Watching for'
-                                          Button, 0x10212a620, {{20.0, 159.3}, {300.7, 21.3}}, identifier: 'want-what', label: 'What to look for: Nike Dunk Low Grey Fog, men’s 10, under $80'
-                                          StaticText, 0x102164b00, {{20.0, 212.7}, {362.0, 24.3}}, label: 'Looking on 4 sites'
-                                            StaticText, 0x102181340, {{20.0, 212.7}, {362.0, 24.3}}, label: 'Looking on 4 sites'
-                                          Button, 0x10218add0, {{20.0, 253.0}, {66.0, 64.0}}, identifier: 'want-site-ebay', label: 'eBay, on', Selected
-                                          Button, 0x10217fdc0, {{92.3, 253.0}, {66.0, 64.0}}, identifier: 'want-site-mercari', label: 'Mercari, on', Selected
-                                          Button, 0x102159550, {{164.7, 253.0}, {66.0, 64.0}}, identifier: 'want-site-depop', label: 'Depop, on', Selected
-                                          Button, 0x1021603e0, {{237.3, 253.0}, {66.0, 64.0}}, identifier: 'want-site-facebook', label: 'Facebook Marketplace, on', Selected
-                                          Button, 0x1021194d0, {{309.7, 253.0}, {66.0, 64.0}}, identifier: 'want-site-poshmark', label: 'Poshmark, off'
-                                          StaticText, 0x1021662f0, {{20.0, 325.0}, {362.0, 18.3}}, label: 'Found 4 so far'
-                                            StaticText, 0x102195890, {{20.0, 325.0}, {362.0, 18.3}}, label: 'Found 4 so far'
-                                          StaticText, 0x1021959b0, {{20.0, 375.3}, {362.0, 24.3}}, label: 'Price, delivered'
-                                            StaticText, 0x102195ad0, {{20.0, 375.3}, {362.0, 24.3}}, label: 'Price, delivered'
-                                          StaticText, 0x102195bf0, {{20.0, 415.7}, {362.0, 24.3}}, label: '$64 to $80'
-                                            StaticText, 0x102195d10, {{20.0, 415.7}, {362.0, 24.3}}, label: '$64 to $80'
-                                          Other, 0x102195e30, {{20.0, 448.0}, {362.0, 82.3}}
-                                            Other, 0x102195f50, {{20.0, 448.0}, {362.0, 60.0}}, identifier: 'want-price', label: 'Price, delivered, $64 to $80'
-                                              Other, 0x102196070, {{186.0, 456.0}, {4.0, 4.0}}
-                                              Other, 0x102196190, {{210.0, 450.0}, {4.0, 4.0}}
-                                              Other, 0x1021962b0, {{186.0, 462.0}, {4.0, 4.0}}
-                                              Other, 0x1021963d0, {{194.0, 456.0}, {4.0, 4.0}}
-                                              Other, 0x1021964f0, {{194.0, 462.0}, {4.0, 4.0}}
-                                              Other, 0x102196610, {{202.0, 456.0}, {4.0, 4.0}}
-                                              Other, 0x102196730, {{210.0, 456.0}, {4.0, 4.0}}
-                                              Other, 0x102196850, {{226.0, 456.0}, {4.0, 4.0}}
-                                              Other, 0x102196970, {{226.0, 462.0}, {4.0, 4.0}}
-                                              Other, 0x102196a90, {{234.0, 462.0}, {4.0, 4.0}}
-                                              Other, 0x102196bb0, {{170.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x102196cd0, {{178.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x102196df0, {{186.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x102196f10, {{194.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x10218d3f0, {{202.0, 462.0}, {4.0, 4.0}}
-                                              Other, 0x10218d510, {{202.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x10218d630, {{210.0, 462.0}, {4.0, 4.0}}
-                                              Other, 0x10218d750, {{170.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x10218d870, {{178.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x10218d990, {{178.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x10218dab0, {{186.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x10218dbd0, {{186.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x1021930b0, {{194.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x1021931d0, {{194.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x1021932f0, {{202.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x102193410, {{210.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x102193530, {{202.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x1021937a0, {{210.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x1021938c0, {{210.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x1021939e0, {{218.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x102193b00, {{226.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x102193c20, {{234.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x102193d40, {{242.0, 468.0}, {4.0, 4.0}}
-                                              Other, 0x102193e60, {{218.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x102193f80, {{226.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x1021940a0, {{226.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x1021941c0, {{234.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x1021942e0, {{234.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x102194400, {{242.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x1021979c0, {{131.7, 484.0}, {24.0, 24.0}}, label: 'Lowest', value: $64
-                                              Other, 0x102197ae0, {{162.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x102197c00, {{199.7, 484.0}, {24.0, 24.0}}, label: 'Most', value: $80
-                                              Other, 0x102197d20, {{242.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x102193650, {{250.0, 474.0}, {4.0, 4.0}}
-                                              Other, 0x102198060, {{250.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x102198180, {{258.0, 480.0}, {4.0, 4.0}}
-                                              Other, 0x1021982a0, {{20.0, 492.0}, {362.0, 8.0}}
-                                              Other, 0x1021983c0, {{143.7, 492.0}, {68.0, 8.0}}
-                                            StaticText, 0x1021986e0, {{20.0, 512.0}, {362.0, 18.3}}, label: 'Each dot is a sale of the same one: 56 sold'
-                                              StaticText, 0x102198800, {{20.0, 512.0}, {362.0, 18.3}}, label: 'Each dot is a sale of the same one: 56 sold'
-                                          StaticText, 0x102198920, {{20.0, 562.3}, {362.0, 24.3}}, label: 'How it gets to you'
-                                            StaticText, 0x102198a40, {{20.0, 562.3}, {362.0, 24.3}}, label: 'How it gets to you'
-                                          Button, 0x102198b60, {{20.0, 602.7}, {61.3, 40.0}}, identifier: 'want-how-ship', label: 'Ship', Selected
-                                          Button, 0x102198c80, {{89.3, 602.7}, {76.7, 40.0}}, identifier: 'want-how-pickup', label: 'Pickup'
-                                          Button, 0x102198da0, {{174.0, 602.7}, {63.3, 40.0}}, identifier: 'want-how-both', label: 'Both'
-                                          StaticText, 0x102198ec0, {{20.0, 674.7}, {362.0, 24.3}}, label: 'Size'
-                                            StaticText, 0x102198fe0, {{20.0, 674.7}, {362.0, 24.3}}, label: 'Size'
-                                          Button, 0x102199100, {{20.0, 715.0}, {94.3, 40.0}}, identifier: 'want-size-system-mens', label: 'Men’s US', Selected
-                                          Button, 0x102199220, {{122.3, 715.0}, {116.3, 40.0}}, identifier: 'want-size-system-womens', label: 'Women’s US'
-                                          Button, 0x102199340, {{20.0, 767.0}, {57.7, 40.0}}, identifier: 'want-size-any', label: 'Any'
-                                          Button, 0x102199460, {{85.7, 767.0}, {40.0, 40.0}}, identifier: 'want-size-7', label: '7'
-                                          Button, 0x102199580, {{133.7, 767.0}, {51.7, 40.0}}, identifier: 'want-size-7.5', label: '7.5'
-                                          Button, 0x1021996a0, {{193.3, 767.0}, {41.3, 40.0}}, identifier: 'want-size-8', label: '8'
-                                          Button, 0x1021997c0, {{242.7, 767.0}, {53.0, 40.0}}, identifier: 'want-size-8.5', label: '8.5'
-                                          Button, 0x1021998e0, {{303.7, 767.0}, {41.3, 40.0}}, identifier: 'want-size-9', label: '9'
-                                          Button, 0x102199b50, {{20.0, 815.0}, {53.0, 40.0}}, identifier: 'want-size-9.5', label: '9.5'
-                                          Button, 0x102199c70, {{81.0, 815.0}, {46.7, 40.0}}, identifier: 'want-size-10', label: '10', Selected
-                                          Button, 0x102199d90, {{135.7, 815.0}, {58.7, 40.0}}, identifier: 'want-size-10.5', label: '10.5'
-                                          Button, 0x102199eb0, {{202.3, 815.0}, {42.3, 40.0}}, identifier: 'want-size-11', label: '11'
-                                          Button, 0x102199fd0, {{252.7, 815.0}, {54.0, 40.0}}, identifier: 'want-size-11.5', label: '11.5'
-                                          Button, 0x10219a0f0, {{314.7, 815.0}, {45.7, 40.0}}, identifier: 'want-size-12', label: '12'
-                                          Button, 0x10219a210, {{20.0, 863.0}, {57.7, 40.0}}, identifier: 'want-size-12.5', label: '12.5'
-                                          Button, 0x10219a330, {{85.7, 863.0}, {46.3, 40.0}}, identifier: 'want-size-13', label: '13'
-                                          StaticText, 0x10219a450, {{20.0, 935.0}, {362.0, 24.3}}, label: 'At least'
-                                            StaticText, 0x10219a570, {{20.0, 935.0}, {362.0, 24.3}}, label: 'At least'
-                                          Button, 0x10219a690, {{20.0, 975.3}, {124.7, 40.0}}, identifier: 'want-condition-new', label: 'New with tags'
-                                          Button, 0x10219a7b0, {{152.7, 975.3}, {90.3, 40.0}}, identifier: 'want-condition-like-new', label: 'Like new'
-                                          Button, 0x10219a8d0, {{251.0, 975.3}, {68.7, 40.0}}, identifier: 'want-condition-good', label: 'Good', Selected
-                                          Button, 0x10219a9f0, {{20.0, 1023.3}, {57.3, 40.0}}, identifier: 'want-condition-fair', label: 'Fair'
-                                          StaticText, 0x10219ab10, {{20.0, 1095.3}, {362.0, 24.3}}, label: 'Tell me'
-                                            StaticText, 0x10219ac30, {{20.0, 1095.3}, {362.0, 24.3}}, label: 'Tell me'
-                                          Button, 0x10219ad50, {{20.0, 1135.7}, {103.7, 40.0}}, identifier: 'want-alert-under', label: 'Under $80', Selected
-                                          Button, 0x10219ae70, {{131.7, 1135.7}, {116.7, 40.0}}, identifier: 'want-alert-available', label: 'Any new one'
-                                          StaticText, 0x102199a00, {{20.0, 1195.7}, {362.0, 18.3}}, label: 'Quiet'
-                                            StaticText, 0x10219b1b0, {{20.0, 1195.7}, {362.0, 18.3}}, label: 'Quiet'
-                                          Button, 0x10219b2d0, {{20.0, 1218.0}, {89.3, 21.3}}, identifier: 'want-quiet', label: 'Quiet hours: 10 pm to 7 am'
-                                          Button, 0x10219b3f0, {{20.0, 1283.3}, {105.3, 40.0}}, identifier: 'want-pause', label: 'Pause'
-                                          Button, 0x10219b510, {{133.3, 1283.3}, {90.0, 40.0}}, identifier: 'want-end', label: 'End'
-                                      Other, 0x10219b830, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 1%
-                                        Other, 0x10219b950, {{396.0, 67.0}, {3.0, 466.7}}
-                                      Other, 0x10219ba70, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x10219bb90, {{65.0, 868.0}, {272.0, 3.0}}
-                                      Other, 0x10219bcb0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 1%
-                                        Other, 0x10219bdd0, {{396.0, 67.0}, {3.0, 466.7}}
-                                      Other, 0x10219bef0, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x10219c010, {{65.0, 868.0}, {272.0, 3.0}}
-                      Other, 0x10219c130, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10219c250, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x103639530, pid: 19983, label: 'secondhand'
+    Window (Main), 0x103654e40, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x10365c0f0, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x103673c60, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x10364a580, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x103679620, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x1036496c0, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x103674c80, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x103663700, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x103648e60, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x103641270, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103674020, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x103674440, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10365cac0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x103654600, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x10366e950, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x10363f630, {{0.0, 0.0}, {402.0, 874.0}}
+                                    ScrollView, 0x103674860, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x103654a20, {{0.0, 0.0}, {402.0, 1393.3}}
+                                        Other, 0x10363a310, {{0.0, 0.0}, {402.0, 1393.3}}
+                                          Other, 0x103636ee0, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x1036481c0, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x103639110, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                          StaticText, 0x10363cc70, {{20.0, 118.0}, {362.0, 41.3}}, label: 'watching for'
+                                            StaticText, 0x10363d090, {{20.0, 118.0}, {362.0, 41.3}}, label: 'watching for'
+                                          Button, 0x1036541e0, {{20.0, 163.3}, {300.7, 21.3}}, identifier: 'want-what', label: 'What to look for: Nike Dunk Low Grey Fog, men’s 10, under $80'
+                                          StaticText, 0x103635980, {{20.0, 216.7}, {362.0, 24.3}}, label: 'Looking on 4 sites'
+                                            StaticText, 0x10365c6a0, {{20.0, 216.7}, {362.0, 24.3}}, label: 'Looking on 4 sites'
+                                          Button, 0x10364dac0, {{20.0, 257.0}, {66.0, 64.0}}, identifier: 'want-site-ebay', label: 'eBay, on', Selected
+                                          Button, 0x103673400, {{92.3, 257.0}, {66.0, 64.0}}, identifier: 'want-site-mercari', label: 'Mercari, on', Selected
+                                          Button, 0x103672fe0, {{164.7, 257.0}, {66.0, 64.0}}, identifier: 'want-site-depop', label: 'Depop, on', Selected
+                                          Button, 0x10367acc0, {{237.3, 257.0}, {66.0, 64.0}}, identifier: 'want-site-facebook', label: 'Facebook Marketplace, on', Selected
+                                          Button, 0x10367ade0, {{309.7, 257.0}, {66.0, 64.0}}, identifier: 'want-site-poshmark', label: 'Poshmark, off'
+                                          StaticText, 0x10367af00, {{20.0, 329.0}, {362.0, 18.3}}, label: 'Found 4 so far'
+                                            StaticText, 0x10367b020, {{20.0, 329.0}, {362.0, 18.3}}, label: 'Found 4 so far'
+                                          StaticText, 0x10367b140, {{20.0, 379.3}, {362.0, 24.3}}, label: 'Price, delivered'
+                                            StaticText, 0x10367b260, {{20.0, 379.3}, {362.0, 24.3}}, label: 'Price, delivered'
+                                          StaticText, 0x10367b380, {{20.0, 419.7}, {362.0, 24.3}}, label: '$64 to $80'
+                                            StaticText, 0x10367b4a0, {{20.0, 419.7}, {362.0, 24.3}}, label: '$64 to $80'
+                                          Other, 0x10367b5c0, {{20.0, 452.0}, {362.0, 82.3}}
+                                            Other, 0x10367b6e0, {{20.0, 452.0}, {362.0, 60.0}}, identifier: 'want-price', label: 'Price, delivered, $64 to $80'
+                                              Other, 0x10367b800, {{186.0, 460.0}, {4.0, 4.0}}
+                                              Other, 0x10367b920, {{210.0, 454.0}, {4.0, 4.0}}
+                                              Other, 0x10367ba40, {{186.0, 466.0}, {4.0, 4.0}}
+                                              Other, 0x10367bb60, {{194.0, 460.0}, {4.0, 4.0}}
+                                              Other, 0x10367bc80, {{194.0, 466.0}, {4.0, 4.0}}
+                                              Other, 0x10367bda0, {{202.0, 460.0}, {4.0, 4.0}}
+                                              Other, 0x10367bec0, {{210.0, 460.0}, {4.0, 4.0}}
+                                              Other, 0x10367bfe0, {{226.0, 460.0}, {4.0, 4.0}}
+                                              Other, 0x10367c100, {{226.0, 466.0}, {4.0, 4.0}}
+                                              Other, 0x10367c220, {{234.0, 466.0}, {4.0, 4.0}}
+                                              Other, 0x10367c340, {{170.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367c460, {{178.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367c580, {{186.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367c6a0, {{194.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367c7c0, {{202.0, 466.0}, {4.0, 4.0}}
+                                              Other, 0x10367c8e0, {{202.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367ca00, {{210.0, 466.0}, {4.0, 4.0}}
+                                              Other, 0x10367cb20, {{170.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367cc40, {{178.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367cd60, {{178.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367ce80, {{186.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367cfa0, {{186.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367d0c0, {{194.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367d1e0, {{194.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367d300, {{202.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367d420, {{210.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367d540, {{202.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367d7b0, {{210.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367d8d0, {{210.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367d9f0, {{218.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367db10, {{226.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367dc30, {{234.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367dd50, {{242.0, 472.0}, {4.0, 4.0}}
+                                              Other, 0x10367de70, {{218.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367df90, {{226.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367e0b0, {{226.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367e1d0, {{234.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367e2f0, {{234.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367e410, {{242.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367e530, {{131.7, 488.0}, {24.0, 24.0}}, label: 'Lowest', value: $64
+                                              Other, 0x10367e650, {{162.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367e770, {{199.7, 488.0}, {24.0, 24.0}}, label: 'Most', value: $80
+                                              Other, 0x10367e890, {{242.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367d660, {{250.0, 478.0}, {4.0, 4.0}}
+                                              Other, 0x10367ebd0, {{250.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367ecf0, {{258.0, 484.0}, {4.0, 4.0}}
+                                              Other, 0x10367ee10, {{20.0, 496.0}, {362.0, 8.0}}
+                                              Other, 0x10367ef30, {{143.7, 496.0}, {68.0, 8.0}}
+                                            StaticText, 0x10367f250, {{20.0, 516.0}, {362.0, 18.3}}, label: 'Each dot is a sale of the same one: 56 sold'
+                                              StaticText, 0x10367f370, {{20.0, 516.0}, {362.0, 18.3}}, label: 'Each dot is a sale of the same one: 56 sold'
+                                          StaticText, 0x10367f490, {{20.0, 566.3}, {362.0, 24.3}}, label: 'How it gets to you'
+                                            StaticText, 0x10367f5b0, {{20.0, 566.3}, {362.0, 24.3}}, label: 'How it gets to you'
+                                          Button, 0x10367f6d0, {{20.0, 606.7}, {61.3, 40.0}}, identifier: 'want-how-ship', label: 'Ship', Selected
+                                          Button, 0x10367f7f0, {{89.3, 606.7}, {76.7, 40.0}}, identifier: 'want-how-pickup', label: 'Pickup'
+                                          Button, 0x10367f910, {{174.0, 606.7}, {63.3, 40.0}}, identifier: 'want-how-both', label: 'Both'
+                                          StaticText, 0x10367fa30, {{20.0, 678.7}, {362.0, 24.3}}, label: 'Size'
+                                            StaticText, 0x10367fb50, {{20.0, 678.7}, {362.0, 24.3}}, label: 'Size'
+                                          Button, 0x10367fc70, {{20.0, 719.0}, {94.3, 40.0}}, identifier: 'want-size-system-mens', label: 'Men’s US', Selected
+                                          Button, 0x10367fd90, {{122.3, 719.0}, {116.3, 40.0}}, identifier: 'want-size-system-womens', label: 'Women’s US'
+                                          Button, 0x10367feb0, {{20.0, 771.0}, {57.7, 40.0}}, identifier: 'want-size-any', label: 'Any'
+                                          Button, 0x10367ffd0, {{85.7, 771.0}, {40.0, 40.0}}, identifier: 'want-size-7', label: '7'
+                                          Button, 0x1036800f0, {{133.7, 771.0}, {51.7, 40.0}}, identifier: 'want-size-7.5', label: '7.5'
+                                          Button, 0x103680210, {{193.3, 771.0}, {41.3, 40.0}}, identifier: 'want-size-8', label: '8'
+                                          Button, 0x103680330, {{242.7, 771.0}, {53.0, 40.0}}, identifier: 'want-size-8.5', label: '8.5'
+                                          Button, 0x103680450, {{303.7, 771.0}, {41.3, 40.0}}, identifier: 'want-size-9', label: '9'
+                                          Button, 0x1036806c0, {{20.0, 819.0}, {53.0, 40.0}}, identifier: 'want-size-9.5', label: '9.5'
+                                          Button, 0x1036807e0, {{81.0, 819.0}, {46.7, 40.0}}, identifier: 'want-size-10', label: '10', Selected
+                                          Button, 0x103680900, {{135.7, 819.0}, {58.7, 40.0}}, identifier: 'want-size-10.5', label: '10.5'
+                                          Button, 0x103680a20, {{202.3, 819.0}, {42.3, 40.0}}, identifier: 'want-size-11', label: '11'
+                                          Button, 0x103680b40, {{252.7, 819.0}, {54.0, 40.0}}, identifier: 'want-size-11.5', label: '11.5'
+                                          Button, 0x103680c60, {{314.7, 819.0}, {45.7, 40.0}}, identifier: 'want-size-12', label: '12'
+                                          Button, 0x103680d80, {{20.0, 867.0}, {57.7, 40.0}}, identifier: 'want-size-12.5', label: '12.5'
+                                          Button, 0x103680ea0, {{85.7, 867.0}, {46.3, 40.0}}, identifier: 'want-size-13', label: '13'
+                                          StaticText, 0x103680fc0, {{20.0, 939.0}, {362.0, 24.3}}, label: 'At least'
+                                            StaticText, 0x1036810e0, {{20.0, 939.0}, {362.0, 24.3}}, label: 'At least'
+                                          Button, 0x103681200, {{20.0, 979.3}, {124.7, 40.0}}, identifier: 'want-condition-new', label: 'New with tags'
+                                          Button, 0x103681320, {{152.7, 979.3}, {90.3, 40.0}}, identifier: 'want-condition-like-new', label: 'Like new'
+                                          Button, 0x103681440, {{251.0, 979.3}, {68.7, 40.0}}, identifier: 'want-condition-good', label: 'Good', Selected
+                                          Button, 0x103681560, {{20.0, 1027.3}, {57.3, 40.0}}, identifier: 'want-condition-fair', label: 'Fair'
+                                          StaticText, 0x103681680, {{20.0, 1099.3}, {362.0, 24.3}}, label: 'Tell me'
+                                            StaticText, 0x1036817a0, {{20.0, 1099.3}, {362.0, 24.3}}, label: 'Tell me'
+                                          Button, 0x1036818c0, {{20.0, 1139.7}, {103.7, 40.0}}, identifier: 'want-alert-under', label: 'Under $80', Selected
+                                          Button, 0x1036819e0, {{131.7, 1139.7}, {116.7, 40.0}}, identifier: 'want-alert-available', label: 'Any new one'
+                                          StaticText, 0x103680570, {{20.0, 1199.7}, {362.0, 18.3}}, label: 'Quiet'
+                                            StaticText, 0x103681d20, {{20.0, 1199.7}, {362.0, 18.3}}, label: 'Quiet'
+                                          Button, 0x103681e40, {{20.0, 1222.0}, {89.3, 21.3}}, identifier: 'want-quiet', label: 'Quiet hours: 10 pm to 7 am'
+                                          Button, 0x103681f60, {{20.0, 1287.3}, {105.3, 40.0}}, identifier: 'want-pause', label: 'Pause'
+                                          Button, 0x103682080, {{133.3, 1287.3}, {90.0, 40.0}}, identifier: 'want-end', label: 'End'
+                                      Other, 0x1036823a0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                        Other, 0x1036824c0, {{396.0, 65.0}, {3.0, 484.3}}
+                                      Other, 0x1036825e0, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x103682700, {{3.0, 834.0}, {393.0, 3.0}}
+                                      Other, 0x103682820, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                        Other, 0x103682940, {{396.0, 65.0}, {3.0, 484.3}}
+                                      Other, 0x103682a60, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x103682b80, {{3.0, 834.0}, {393.0, 3.0}}
+                      Other, 0x103682ca0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103682dc0, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x1021671b0, pid: 83775, label: 'secondhand'
+ →Application, 0x103639530, pid: 19983, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x10219d7b0, pid: 83775, label: 'secondhand'
+    Application, 0x1032a39f0, pid: 19983, label: 'secondhand'
   }

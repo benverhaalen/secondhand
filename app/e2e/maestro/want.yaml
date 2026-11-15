@@ -14,7 +14,7 @@ env:
     timeout: 15000
 - assertVisible: "Nike Dunk Low Grey Fog, men’s 10, under \\$80"
 - assertVisible: "Looking on 4 sites"
-- assertVisible: "Behind"
+- assertVisible: "Retrying"
 - assertVisible: "Found 4 so far"
 - assertVisible: "\\$64 to \\$80"
 - assertVisible: "Men’s US"
@@ -465,7 +465,7 @@ env:
 - extendedWaitUntil:
     visible: "Couldn’t load this want"
     timeout: 15000
-- assertVisible: "Try again"
+- assertVisible: "Retry"
 # want-retry: loads the page afresh
 - openLink: ${URL}/want?state=failed
 - extendedWaitUntil:
@@ -475,5 +475,5 @@ env:
 # State: offline
 - openLink: ${URL}/want?state=offline
 - extendedWaitUntil:
-    visible: "Waiting for signal\\. This is the last copy\\."
+    visible: "Waiting for signal; showing saved results\\."
     timeout: 15000

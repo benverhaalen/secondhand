@@ -15,7 +15,7 @@ export function QuestionCard({ id, where, question, options, pick, typed, onAnsw
   id: string;
   // Where the tree stopped: "Step 4 of 9: Facts a camera can’t see".
   where: string;
-  // One question; null when nothing is left to ask, and the card says so.
+  // One question; null when nothing is left to ask, and the caption says it is ready.
   question: string | null;
   options?: Chip[];
   pick?: string | null;
@@ -27,7 +27,7 @@ export function QuestionCard({ id, where, question, options, pick, typed, onAnsw
     <Surface kind="card" part="question-card" box={{ padding: size.cardPad, gap: space.s3 }}>
       <View style={{ gap: space.s1, paddingHorizontal: size.cardCorner - size.cardPad }}>
         <Txt role="caption">{where}</Txt>
-        <Txt role="headline">{question ?? 'Nothing left to ask'}</Txt>
+        {question ? <Txt role="headline">{question}</Txt> : null}
       </View>
       {question && options && onAnswer
         ? <Chips id={id} name={question} options={options} value={pick ?? null} onChange={onAnswer} other={typed ? {} : undefined} />

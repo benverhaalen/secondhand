@@ -29,6 +29,9 @@ jobs:
       # The bundle and hermes checks parse with app/'s own TypeScript, so app/ is installed first.
       - run: npm ci
         working-directory: app
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r jobs/requirements.txt
       # On a push, origin/main already is the pushed commit, so compare with the commit before the push.
       - run: node .agents/check.mjs
         env:

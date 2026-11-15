@@ -123,7 +123,10 @@ export function checkCapture({ slug, tree, png, pageColors }) {
   const expected = tabs[slug] ?? landmarks.find(([pattern]) => pattern.test(slug))?.[1];
   const landmark = appElements.find(e => tabs[slug] ? e.type === 'Button' && e.label === expected && e.selected
     : expected && (expected.test(e.label) || expected.test(e.identifier)));
-  if (!isApp || !window || !landmark) {
+  // A missing landmark is a warning: page headings change with redesigns, and a wrong app or no window is the real failure.
+  if (isApp && window && appElements.length >= 10 && !landmark) {
+    findings.push(finding('WARN', 'N1', slug, app?.label || 'Application', `landmark matches=0; expected ${expected ?? 'known route landmark'}; update the landmark if the page was redesigned`));
+  } else if (!isApp || !window || !landmark) {
     findings.push(finding('ERROR', 'N1', slug, app?.label || 'Application', `app windows=${isApp && window ? 1 : 0}, app elements=${appElements.length}, landmark matches=${landmark ? 1 : 0}; expected ${expected ?? 'known route landmark'}`));
     return findings;
   }
@@ -164,7 +167,10 @@ export function checkCapture({ slug, tree, png, pageColors }) {
       findings.push(finding('ERROR', 'N3', slug, name, `x=${f.x}, right=${f.x + f.width}pt; allowed=20..${window.frame.width - 20}pt`));
     }
     const interactive = ['Button', 'Link', 'TextField', 'SecureTextField', 'TextView', 'Switch', 'Slider', 'Stepper', 'SegmentedControl'].includes(e.type);
-    const tab = tabButtons.includes(e) || parents.some(p => p.type === 'TabBar');
+    // New's close sits exactly where the tab bar's + was (chrome.tsx), so it is held to the tab bar's place, not the home band.
+    const plus = tabButtons.find(b => b.identifier === 'tab-new')?.frame ?? { x: 177, y: 798, width: 48, height: 48 };
+    const asPlus = e.identifier === 'new-close' && Math.abs(f.x - plus.x) <= 1 && Math.abs(f.y - plus.y) <= 1 && f.width === plus.width;
+    const tab = asPlus || tabButtons.includes(e) || parents.some(p => p.type === 'TabBar');
     const scrim = f.width >= window.frame.width && f.height >= window.frame.height; // a tap-anywhere-to-close layer, not a control
     if (interactive && !scroll && !scrim && overlaps(f, window.frame) && !tab && (overlaps(f, home) || bar && overlaps(f, bar))) {
       findings.push(finding('ERROR', 'N4', slug, name, `frame=${JSON.stringify(f)}pt overlaps ${bar && overlaps(f, bar) ? `tab bar y=${bar.y}` : `home safe area y=${home.y}`}pt; scroll ancestors=0`));

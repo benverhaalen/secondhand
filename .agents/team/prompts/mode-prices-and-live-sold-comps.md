@@ -8,7 +8,7 @@ You are working in the secondhand repo. Read `AGENTS.md` and `.agents/skills/bui
 
 ## Why
 
-Ben, 09:09 ([words](product/words.md#2026-11-15-ben-pricing-modes-and-a-reason-for-every-number-backtests-wait-for-the-backend)): "our algorithm can price to sell. it can price to the market. can price other ways. shouldnt it end up showing what each of these toggles is meant to show?" and "so there is no public way to access mercari data? if its there lets use it its for a hackathon demo".
+Ben, 09:09 ([words](../../../product/words.md#2026-11-15-ben-pricing-modes-and-a-reason-for-every-number-backtests-wait-for-the-backend)): "our algorithm can price to sell. it can price to the market. can price other ways. shouldnt it end up showing what each of these toggles is meant to show?" and "so there is no public way to access mercari data? if its there lets use it its for a hackathon demo".
 
 Today the app's Plan prices its three modes itself, from the valuation range: fast = range low, sell = midpoint, best = range high (`app/src/item/model.ts` `priceFor`, about line 262). The engine defines them differently: the slider marks in `app/src/engines/valuation/posture.ts` (quick 0.15, balanced 0.5, max_return 0.85, on a q20 to q85 track of sold prices, capped by live asks, retail and the floor). `spec/plans/backtest/pricing-modes.md` §4 lists this as a disagreement. The fix is that the engine returns the mode prices and the app shows them, so the toggle shows the numbers the engine acts on. The UI thread has already said it will read `valuation.pace` and will read the prices once they exist.
 

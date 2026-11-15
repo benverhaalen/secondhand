@@ -1,51 +1,51 @@
-Attributes: Application, 0x1021265f0, pid: 84063, label: 'secondhand'
+Attributes: Application, 0x1032a2160, pid: 20017, label: 'secondhand'
 Element subtree:
- →Application, 0x1021265f0, pid: 84063, label: 'secondhand'
-    Window (Main), 0x1021671b0, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x1021785b0, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x102183100, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x10211c790, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x102197010, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x10218dc70, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x10218add0, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x10218ff90, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x1021566b0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x10219d7b0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10212a620, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x10217fdc0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x1021a8890, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x10217d160, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x10218e1f0, {{0.0, 0.0}, {402.0, 874.0}}
-                                    ScrollView, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
-                                      Other, 0x10216f810, {{0.0, 0.0}, {402.0, 874.0}}
-                                        Other, 0x102131330, {{0.0, 0.0}, {402.0, 874.0}}
-                                          Other, 0x102164b00, {{0.0, 0.0}, {402.0, 298.0}}
-                                          Other, 0x102153c70, {{20.0, 62.0}, {362.0, 44.0}}
-                                            Button, 0x10216abd0, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                          Other, 0x1021194d0, {{20.0, 126.0}, {72.0, 72.0}}
-                                            Other, 0x102151010, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                              Image, 0x102183440, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                            Other, 0x102181340, {{20.0, 126.0}, {72.0, 72.0}}
-                                          StaticText, 0x10211c370, {{104.0, 150.0}, {278.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                            StaticText, 0x1021662f0, {{104.0, 150.0}, {278.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
-                                          StaticText, 0x102174370, {{20.0, 242.0}, {362.0, 20.3}}, label: 'The sales didn’t load.'
-                                            StaticText, 0x1021637e0, {{20.0, 242.0}, {362.0, 20.3}}, label: 'The sales didn’t load.'
-                                          Button, 0x102159550, {{20.0, 274.3}, {101.0, 40.0}}, identifier: 'worth-retry', label: 'Try again'
-                                      Other, 0x1021603e0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x102196330, {{396.0, 65.0}, {3.0, 744.0}}
-                                      Other, 0x1021a21f0, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x1021a2310, {{65.0, 868.0}, {272.0, 3.0}}
-                                      Other, 0x1021a2430, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x1021a2550, {{396.0, 65.0}, {3.0, 744.0}}
-                                      Other, 0x1021a2670, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x1021a2790, {{65.0, 868.0}, {272.0, 3.0}}
-                      Other, 0x1021a28b0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x1021a29d0, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x1032a2160, pid: 20017, label: 'secondhand'
+    Window (Main), 0x10326e4a0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x10329a4b0, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x103271440, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x1032906a0, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x103292940, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x10327d5a0, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x103272f70, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x103278d00, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x103292ff0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x103276770, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10327bc40, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x10329cdc0, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10326eef0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x103271b60, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x103270d90, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x10327bfc0, {{0.0, 0.0}, {402.0, 874.0}}
+                                    ScrollView, 0x1032782b0, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x10326ffd0, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x10327b560, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x10327b8d0, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x10327a1a0, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x10327a510, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                          Other, 0x103279e20, {{20.0, 126.0}, {72.0, 72.0}}
+                                            Other, 0x103277be0, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                              Image, 0x103279750, {{20.0, 126.0}, {72.0, 72.0}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                            Other, 0x103279070, {{20.0, 126.0}, {72.0, 72.0}}
+                                          StaticText, 0x10328fc10, {{104.0, 150.0}, {278.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                            StaticText, 0x10326f5b0, {{104.0, 150.0}, {278.0, 24.3}}, label: 'Nike Dunk Low, Grey Fog, men’s 10'
+                                          StaticText, 0x10328b8d0, {{20.0, 242.0}, {362.0, 20.3}}, label: 'The sales didn’t load.'
+                                            StaticText, 0x10328b550, {{20.0, 242.0}, {362.0, 20.3}}, label: 'The sales didn’t load.'
+                                          Button, 0x103297a50, {{20.0, 274.3}, {101.0, 40.0}}, identifier: 'worth-retry', label: 'Try again'
+                                      Other, 0x103288770, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x103296cd0, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x103284440, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x10328bc60, {{3.0, 834.0}, {396.0, 3.0}}
+                                      Other, 0x10328cef0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x10328d290, {{396.0, 65.0}, {3.0, 772.0}}
+                                      Other, 0x103289ca0, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x10328c390, {{3.0, 834.0}, {396.0, 3.0}}
+                      Other, 0x103289910, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103289590, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x1021265f0, pid: 84063, label: 'secondhand'
+ →Application, 0x1032a2160, pid: 20017, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x10213ce40, pid: 84063, label: 'secondhand'
+    Application, 0x10328a020, pid: 20017, label: 'secondhand'
   }

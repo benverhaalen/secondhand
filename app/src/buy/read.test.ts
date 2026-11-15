@@ -1,10 +1,10 @@
 // node --test src/buy/read.test.ts: what the buy pages read from the demo world.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { SEARCH_DUNKS, type Site } from '../demo/index.ts';
+import { SEARCH_DUNKS, inMinutes, world, type Site } from '../demo/index.ts';
 import {
-  cardLine, coloursFor, cover, cutWords, firstPass, kindOf, monthLabel, offerAmounts, offerProblem, paysFor, priceBounds, priceWords, rank, searchFor, sizesFor, sizeWords,
-  soldDots, wantFromWords, wantTag,
+  RECENT_KEEP, cardLine, coloursFor, cover, cutWords, firstPass, kindOf, monthLabel, offerAmounts, offerProblem, paysFor, priceBounds, priceWords, rank, recent,
+  searchFor, sizesFor, sizeWords, soldDots, wantFromWords, wantTag,
 } from './read.ts';
 
 test('three offer amounts, whole dollars, lowest first, none over the asking price', () => {
@@ -110,4 +110,25 @@ test('a want from words reads who clothes are cut for, and only for clothes', ()
   assert.equal(cutWords('brewers jersey'), undefined);
   assert.equal(wantFromWords("men's brewers jersey L around $60").fit.cut, 'mens');
   assert.equal(wantFromWords("nike dunk men's 10").fit.cut, undefined, 'a shoe has sizes per cut, not a cut chip');
+});
+
+// Recent on Buy (spec/redesign/new-results.md, What Recent is): the last 20 lookups, newest first, none older than 90 days,
+// each saying what the lookup said and opening where it ended.
+test('Recent is the newest lookups first, without the ones past 90 days', () => {
+  assert.deepEqual(recent(world('flipper')).map(r => r.capture_id), ['cap_lk_f1', 'cap_lk_f2', 'cap_lk_f3', 'cap_lk_f4']);
+  assert.deepEqual(recent(world('new')), []);
+});
+
+test('an appraisal says its used range and opens the value page; a find says the product and opens its page', () => {
+  const [find, worth] = recent(world('clearing'));
+  assert.deepEqual({ name: find.short_name, says: find.says, opens: find.opens, key: find.key }, { name: 'Grey Nike sneakers', says: 'Nike Dunk Low', opens: '/product/pr_dunk', key: 'nike-dunks' });
+  assert.deepEqual({ name: worth.short_name, says: worth.says, opens: worth.opens }, { name: 'Carhartt jacket', says: '$85 to $115 used', opens: '/worth?product=pr_j97' });
+});
+
+test('Recent keeps 20 at most', () => {
+  const w = world('flipper'), one = w.lookups[0];
+  const many = Array.from({ length: 30 }, (_, i) => ({ ...one, capture_id: `cap_${i}`, at: inMinutes(-i) }));
+  const rows = recent({ ...w, lookups: many });
+  assert.equal(rows.length, RECENT_KEEP);
+  assert.equal(rows[0].capture_id, 'cap_0');
 });
