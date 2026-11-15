@@ -4,9 +4,46 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request } from 'node:http';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { test } from 'node:test';
 import { observeLogs } from '../log/index.js';
 import type { User } from '../app/src/edge/auth.ts';
+
+test('production start names every missing variable before discovery or listening', async () => {
+  const { start } = await import('./main.ts');
+  const names = ['NODE_ENV', 'SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY'] as const;
+  const previous = names.map(name => process.env[name]);
+  try {
+    process.env.NODE_ENV = 'production';
+    for (const name of names.slice(1)) delete process.env[name];
+    await assert.rejects(start({ port: -1, ticks: false }), {
+      message: `Missing production variables: ${names.slice(1).join(', ')}`,
+    });
+    const value = randomBytes(32).toString('hex');
+    process.env.DECISION_SIGNING_KEY = value;
+    await assert.rejects(start({ port: -1, ticks: false }), {
+      message: `Missing production variables: ${names.slice(1, -1).join(', ')}`,
+    });
+  } finally {
+    names.forEach((name, i) => {
+      if (previous[i] === undefined) delete process.env[name]; else process.env[name] = previous[i];
+    });
+  }
+});
+
+test('a fresh production entry reports all missing variables before database initialization', () => {
+  const env = { ...process.env, NODE_ENV: 'production' };
+  const names = ['SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY'];
+  delete env.NODE_TEST_CONTEXT;
+  for (const name of names) delete env[name];
+  const result = spawnSync(process.execPath, [fileURLToPath(new URL('./main.ts', import.meta.url))], { env, encoding: 'utf8' });
+  assert.ifError(result.error);
+  assert.equal(result.status, 1);
+  const errors = result.stderr.split('\n').filter(line => line.startsWith('{')).map(line => JSON.parse(line) as { event: string; error?: { msg: string } }).filter(line => line.event === 'error');
+  assert.equal(errors.length, 1);
+  assert.equal(errors[0].error?.msg, `Missing production variables: ${names.join(', ')}`);
+});
 
 test('one Node server shares sign-in state, rows and streams across route wrappers', { timeout: 15_000 }, async t => {
   const folder = await mkdtemp(join(tmpdir(), 'secondhand-server-'));

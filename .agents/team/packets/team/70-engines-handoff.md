@@ -28,7 +28,30 @@ Updated: 2026-11-15, about 08:30 Central, by the engines lead of the finalizatio
   eBay content, including eBay rows read through Apify, stays out of fits under eBay's terms. That is my reading, not overruled.
 - Spec: [valuation.md §9 "Real-time market scores"](../../../../spec/engines/valuation.md#real-time-market-scores) (the design, *agent proposal*, row EN7), and §2 rights (5a74d725).
 
-## Running on the Mac when this was written (judge them first)
+## Running on the Mac at the wrap-up, about 13:00 UTC (judge them first)
+
+Both workers were still running when Nate called the wrap-up, so their latest edits are uncommitted in the worktrees. When a worktree has `WORKER_REPORT.md`, read it, rerun its checks, commit the explicit paths on its branch, and only then review. Nothing on either branch is merged. The Mac's shared `app/node_modules` was rebuilt from main's lockfile at 12:54 UTC and now holds `@anthropic-ai/sdk`.
+
+Open review findings:
+- `w/eng-assist-1`: from review round 2 (scratchpad `review-bc2.md`), round 3 targets all of them, and none is verified fixed:
+  - hole B: "400 euros", "400 pounds", "400 EUR", "a 400-dollar jacket" and "50 cents" read as counts, so a count or the person's own number backs a price;
+  - A: "8-10", "2-3 days", "MA-1" and "COVID-19" read as negatives and cut good sentences;
+  - C: model numbers like A1466 and PS5 cut good sentences;
+  - a round with no token fields and no cost is priced at 0;
+  - number words: "Kennedy half dollar" and "100 percent sure" are cut;
+  - "Nov 15, 2026" is cut.
+- `w/eng-route-1`: no review yet.
+
+The ablation finished, and its result is in "True on main". Its outputs are on the Mac at `/tmp/ablate-en1/` (out.json, out.predictions.jsonl, out.log.jsonl). /tmp may be cleared, so the served engine's estimates were also copied, in the data lead's columns, to `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (41,988 lines, SHA-256 03acc610…). Tell the data lead if that file moves.
+
+## Waiting on Nate
+
+- Whether eBay rows read through an Apify actor may fit the models. Today they may not, by my reading of eBay's terms ([data use](../../../../spec/data-use.md)).
+- Whether a visitor's photo may reach the conversation model before the identify step can strip it to attributes. Until then a visitor's image gets 422.
+- Any real-time market score (EN7) or backtest figure on a public page or in the pitch needs both Nate and Ben to have seen it first.
+- The visitor turn cap `ASSIST_TURN_MAX_USD` 0.25 is an *agent proposal*. The daily cap of $5 is his.
+
+## Branches
 
 | Worktree, branch | Holds | Done when |
 |---|---|---|
@@ -80,7 +103,10 @@ Mac facts learned: the shared `app/node_modules` is stale (it lacks `@anthropic-
   - purpose `model` = may_model true at both levels and not expired, which fits read;
   - the writer refuses rows whose `may_store` is not true;
   - SV6 is mine.
-- **Data lead (DB4):** the export shape above. On the Apify rule's effect on DB1, I asked which way to set `may_model` for Apify rows; the answer is pending.
+  - At the wrap-up SV7 had not landed. Its brief is `srv-obs-1` (packet 86), and the next server lead sends the commit. Until then the route's stand-in port stays. The Apify ruling only flips the rows' `may_model`; the reader does not change.
+- **Data lead (DB4):** the export shape above, still in build on Mac branch `w/dbx-export-1`, unmerged; the sample file comes from it. Packet 71 adds a `measures.market_score` table per {site, kind} for EN7.
+- **`may_model` is set once, at write time** (agreed with the data lead at the wrap-up): Apify rows whose source site is not eBay get true, and every eBay row, direct or through an Apify actor, gets false (data-use.md:105). The loader, the views and every fit read only `may_model` and never re-derive it from the source. `use_scope` stays "hackathon_demo".
+  On our side, the place to set it is `app/src/engines/valuation/sold.ts`, which today writes `may_model: false` on every scraped row. A queue item for the next lead: change it for non-eBay Apify rows, with a test, and tell the next server lead, so the observation writer keeps the flag as given.
 - **App-wiring lead:** `POST /v1/assist`, auth visitor:
   - request `{surface:'buy', text ≤ 2000, history? ≤ 10 turns {role, text ≤ 4000}, search_job_id?, image? (person only), item_id?/want_id?/capture_id? (person only)}`;
   - it answers `202 {id, kind:'assist', state:'running', stages, stream}`;
@@ -95,6 +121,6 @@ Mac facts learned: the shared `app/node_modules` is stale (it lacks `@anthropic-
 ## Learned the hard way
 
 - A worker's "all pass" covers only the cases its tests build. Round 2's citation-isolation test passed because its bad rows were outliers. Ask for the adversarial case inside the good range.
-- The `Rests-on:` checker splits references on commas and spaces. A `;` becomes part of the anchor and fails the gate.
+- The `Rests-on:` checker splits references on commas and spaces. A `;` becomes part of the anchor and fails the gate. It also needs a `#heading` on any page with several sections. 41834691 went out without one; it is pushed, so it was left as it is.
 - A Codex worker cannot be steered mid-run. When a ruling changes the brief, stop it (`pkill -f "codex exec.*<worktree> "`), edit the brief, and restart with `AGAIN=1` and a note about the partial edits. That cost five minutes this session.
 - Text held per round keeps the gate whole, but the first words arrive at the end of a model round, not a sentence at a time. Revisit when BC3 streams search frames.
