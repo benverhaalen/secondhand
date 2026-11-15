@@ -339,7 +339,7 @@ function ThingSheet({ t, spot, drop, miss, editable, onPick }: { t: Thing; spot:
       {t.item.listings.filter(l => l.state === 'live').map(l => (
         <Line key={l.id}>
           <SiteBadge site={l.site} />
-          <Pill id={`open-site-${l.site}`} kind="second" icon="link-01" label="Open on the site" onPress={() => { log.event('user.input', { screen: 'gone-by', control: 'open-site', item: t.item.id, value: l.site }); Linking.openURL(l.url).catch(() => {}); }} />
+          <Pill id={`open-site-${l.site}`} kind="second" icon="link-01" label="Open on the site" onPress={() => { log.event('user.input', { screen: 'gone-by', control: 'open-site', item: t.item.id, value: l.site }); Linking.openURL(l.url).catch(e => log.error('gone-by.open-site', e, { item: t.item.id, site: l.site })); }} />
         </Line>
       ))}
       <FootButton id="open-item" kind="second" label="Open the item" onPress={() => router.push(`/item/${t.item.id}` as Href)} />
