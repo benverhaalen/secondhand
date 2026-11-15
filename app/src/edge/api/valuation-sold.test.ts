@@ -23,7 +23,7 @@ test('a valuation uses only its asking person linked Mercari account and logs a 
     query: 'carhartt hoodie', condition: 'good', error: (w, e) => errors.push(`${w}: ${String(e)}`),
   }).map(source => source(new AbortController().signal)))).flat();
   assert.deepEqual(await run('other'), []);
-  assert.equal(reads, 0); assert.match(errors[0], /mercari.*linked account required/);
+  assert.equal(reads, 0); assert.match(errors[0], /mercari.*needs_account/);
   const comps = await run('owner');
   assert.equal(reads, 1); assert.equal(comps.length, 5);
   assert.deepEqual(comps.filter(c => c.level === 'product').map(c => c.price_cents), [1300, 2959, 3495]);

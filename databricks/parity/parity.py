@@ -62,12 +62,13 @@ def compare(fixtures: list[dict], ts_out: list[dict], py_fn) -> list[dict]:
     rows = []
     for case in fixtures:
         ts, py = expected[case['case']], py_fn(case)
-        rows.append({'engine': case.get('engine', 'proof'), 'case': case['case'],
+        rows.append({'engine': case.get('engine', 'proof'), 'case': case['case'], 'input': case,
                      'ts_value': ts, 'py_value': py, 'equal': _equal(ts, py)})
     return rows
 
 
 def table_rows(results: list[dict], code_sha: str, checked_at) -> list[dict]:
-    return [{**row, 'ts_value': json.dumps(row['ts_value'], ensure_ascii=False, sort_keys=True),
-             'py_value': json.dumps(row['py_value'], ensure_ascii=False, sort_keys=True),
-             'code_sha': code_sha, 'checked_at': checked_at} for row in results]
+    return [{'engine': row['engine'], 'case': json.dumps(row['input'], ensure_ascii=True, sort_keys=True),
+             'ts_value': json.dumps(row['ts_value'], ensure_ascii=True, sort_keys=True),
+             'py_value': json.dumps(row['py_value'], ensure_ascii=True, sort_keys=True),
+             'equal': row['equal'], 'code_sha': code_sha, 'checked_at': checked_at} for row in results]

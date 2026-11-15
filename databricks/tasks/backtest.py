@@ -206,10 +206,12 @@ def require_snapshot_version(before, after):
 
 
 def log_training_input(mlflow, log, version):
-    dataset = log.call('mlflow', 'load_delta', {'table': 'secondhand.market.comp_for_model', 'version': int(version)},
-                       lambda: mlflow.data.load_delta(table_name='secondhand.market.comp_for_model', version=int(version)))
+    dataset = log.call('mlflow', 'load_delta', {'table': 'secondhand.market.comp', 'version': int(version)},
+                       lambda: mlflow.data.load_delta(table_name='secondhand.market.comp', version=int(version), name='comp_for_model'))
     log.call('mlflow', 'log_input', {'context': 'training', 'version': int(version)},
              lambda: mlflow.log_input(dataset, context='training'))
+    tags = {'input_filter': 'may_model = true', 'input_view': 'secondhand.market.comp_for_model'}
+    log.call('mlflow', 'input_tags', tags, lambda: mlflow.set_tags(tags))
 
 
 def main(argv=None):

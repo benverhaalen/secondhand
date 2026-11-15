@@ -142,3 +142,30 @@ test('an empty page completes without claiming first marketplace results', async
     assert.ok(records[0].full_at);
   }
 });
+
+test('served evidence captures the first miss per site, excludes sensitive headers, and leaves answers intact', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-served-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'one'},{id:'two',query:'two'},{id:'three',query:'three'}]}));
+  const calls=[], waits=[]; let search=0;
+  const rows=[
+    [{site:'poshmark',url:'https://example.test/one',outcome:'page_changed',ms:1,count:0},{site:'depop',url:'https://example.test/hit',outcome:'hit',ms:1,count:1}],
+    [{site:'poshmark',url:'https://example.test/two',outcome:'unknown',reason:'no listing card',ms:1,count:0}],
+    [{site:'depop',url:'https://example.test/three',outcome:'unknown',reason:'no listing card',ms:1,count:0}],
+  ];
+  const records=await run({manifestPath:path,outRoot:dir,sleep:async ms=>waits.push(ms),fetch:async(url,init)=>{calls.push({url,init}); return new Response('<html>served</html>',{status:201,headers:{'set-cookie':'secret','x-cookie-token':'secret','authorization':'secret','content-type':'text/html'}});},ask:async endpoint=>endpoint==='/v1/search'?reply({searched:rows[search++],results:[]}):reply({code:'unauthenticated'},401)});
+  const searches=records.filter(r=>r.question==='search');
+  assert.deepEqual(calls.map(c=>c.url),['https://example.test/one','https://example.test/three']);
+  assert.ok(calls.every(c=>c.init.method==='GET')); assert.deepEqual(waits,[1000,1000]);
+  assert.equal(searches[0].served_ref[0],'raw/one-poshmark-served.json'); assert.equal(searches[1].served_ref,undefined);
+  const served=JSON.parse(await readFile(join(dir,searches[0].run_id,searches[0].served_ref[0]),'utf8'));
+  assert.equal(served.status,201); assert.equal(served.final_url,'https://example.test/one'); assert.equal(served.body,'<html>served</html>'); assert.ok(!Number.isNaN(Date.parse(served.fetched_at)));
+  assert.deepEqual(served.headers,{'content-type':'text/html'}); assert.ok(searches.every(r=>r.ok && r.numbers.length===0 && r.facts.every(f=>f.count===0)));
+});
+
+test('a failed evidence fetch is logged without changing the answer or retrying the site', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-served-error-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'one'},{id:'two',query:'two'}]})); let calls=0;
+  const records=await run({manifestPath:path,outRoot:dir,sleep:async()=>{},fetch:async()=>{calls++; throw new Error('capture unavailable');},ask:async endpoint=>endpoint==='/v1/search'?reply({searched:[{site:'poshmark',url:'https://example.test/',outcome:'page_changed',ms:1,count:0}],results:[]}):reply({code:'unauthenticated'},401)});
+  assert.equal(calls,1); assert.ok(records.filter(r=>r.question==='search').every(r=>r.ok && !r.served_ref));
+  assert.match(await readFile(join(dir,records[0].run_id,'run.jsonl'),'utf8'),/capture unavailable/);
+});

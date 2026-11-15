@@ -13,7 +13,6 @@ import { radius, space } from '../tokens.generated';
 import { mark, money } from './mark';
 
 const PLOT = space.s9 * 2, HEAD = space.s7, AXIS = 44, BAR = space.s4, HALF = 9;
-const rules = new Intl.PluralRules('en-US');
 
 export function WeekChart({ weeks, top, axis, count }: {
   // label: "Sep 21" for the first week of a month, else the day ("28"). amount in dollars.
@@ -28,7 +27,7 @@ export function WeekChart({ weeks, top, axis, count }: {
   const c = useColors();
   const ticks = [top, top / 2, 0];
   const at = (amount: number) => Math.round((amount / top) * PLOT);
-  const noun = (n: number) => (rules.select(n) === 'one' ? count.one : count.many);
+  const noun = (n: number) => (n === 1 ? count.one : count.many);
   const cell = { flex: 1, alignItems: 'center', justifyContent: 'center' } as const;
   return (
     <View {...mark('week-chart')} accessibilityLabel={`${count.name} each week, ${axis.toLowerCase()}`} style={{ gap: space.s2 }}>

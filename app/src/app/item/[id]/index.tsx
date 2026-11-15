@@ -6,18 +6,23 @@
 import { router, useIsFocused, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import {
-  Amount, Approve, Blank, DecisionCard, EmptyState, FootButton, Guess, Icon, IconButton, Line, List, Nav, Photo, Pill, Row, Screen,
-  MOTIONS, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, Txt, UndoToast, type PhotoSrc, type TagState,
+  Amount, Approve, Blank, DecisionCard, EmptyState, FootButton, Grid, Guess, Icon, IconButton, Line, List, Nav, Photo, Pill, Row, Screen,
+  MOTIONS, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, Txt, UndoToast, log, type PhotoSrc, type TagState,
 } from '@/ui';
 import { ActionRow } from '@/ui/parts/action-row';
 import { Chips } from '@/ui/parts/chips';
 import { PhotoPager } from '@/ui/parts/photo-pager';
 import { QuestionCard } from '@/ui/parts/question-card';
 import { Switch } from '@/ui/parts/switch';
-import { day, ms, range, usd, youKeep, type Item, type World } from '@/demo';
+import { Tile } from '@/ui/parts/tile';
+import { WhySheet } from '@/ui/parts/why';
+import { KeepRow } from '@/ui/parts/worth';
+import { PRODUCTS, day, ms, range, usd, youKeep, type Item, type World } from '@/demo';
+import { correct } from '@/demo/capture-edges';
 import { morePhotos } from '@/demo/item-photos';
 import { photo as demoPhoto } from '@/demo/photos';
 import { useScreen } from '@/demo/screen';
+import { describe, descriptionWhy, fieldWhy, titleWhy, type FieldWhy } from '@/item/field-why';
 import * as M from '@/item/model';
 
 // An item's own data decides whether it is new, one, typical or dense, so a page says where the other three are drawn.
@@ -47,9 +52,13 @@ export default function ItemPage() {
   const found = state === 'failed' ? null : M.find(String(id), world);
   if (state === 'loading') return <Loading />;
   if (!found) {
+    // Didn't load: the one fix is to load it again (frontend-standard §4, Error). Gone: the way back to the list.
+    const action = state === 'failed'
+      ? { id: 'retry', label: 'Try again', onPress: () => router.replace(`/item/${id}${world ? `?world=${world}` : ''}` as Href) }
+      : { id: 'failed-sell', label: 'Go to Sell', onPress: () => router.replace('/sell' as Href) };
     return (
       <Screen name="item" state="failed" skip={skipFor('failed')} nav={<Nav back={back} />}>
-        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load." action={{ id: 'failed-sell', label: 'Go to Sell', onPress: () => router.replace('/sell' as Href) }} />
+        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load." action={action} />
       </Screen>
     );
   }
@@ -108,10 +117,26 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
   const [edits, setEdits] = useState<Record<string, string>>({});
   const [locked, setLocked] = useState<string[]>([]);
   const [field, setField] = useState<M.Field | null>(null);
+  // Review: the guesses the person opened and left as they were. Each turns to ink like an edit (pages §6.6 Review).
+  const [checked, setChecked] = useState<string[]>([]);
+  const [description, setDescription] = useState(() => describe(item));
+  const [whyField, setWhyField] = useState<FieldWhy | null>(null);
   const [sum, setSum] = useState(false);
   const [toast, setToast] = useState<Toast | null>(null);
   const [ended, setEnded] = useState<string | null>(null);
-  const [sheet, setSheet] = useState<'sold-elsewhere' | 'delete' | 'offers' | 'photos' | null>(null);
+  const [sheet, setSheet] = useState<'sold-elsewhere' | 'delete' | 'offers' | 'photos' | 'why' | 'split' | null>(null);
+  // Handed over is the page's, not the foot's: its Undo must outlive the foot, which the toast replaces (U: Undo works).
+  const [handed, setHanded] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [paid, setPaid] = useState(item.cost ? usd(item.cost.amount_cents) : '');
+  // Offline, a tap that would reach a site waits for signal and says so; nothing claims it is done (ways-out Everywhere,
+  // "I'm on bad signal"). `waiting` is what is queued, shown in place of the offline line.
+  const [waiting, setWaiting] = useState<string | null>(null);
+  const online = (what: string, act: () => void) => () => {
+    if (!offline) return act();
+    log.event('ui.show', { screen: 'item', state: 'waiting-for-signal', item: item.id, what });
+    setWaiting(what);
+  };
   // How the photos are shown: as taken, cleaned up (no model), or enhanced with AI, which is labeled (edge-cases §6).
   const [look, setLook] = useState<Look>('original');
 
@@ -127,18 +152,32 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
 
   // An ending the person can undo: shown as done, with Undo (the hand-off rule: undoable steps go ahead).
   const end = (id: string, done: string) => { setEnded(done); setToast({ id: `${id}-undo`, text: done, undo: () => { setEnded(null); setToast(null); } }); };
+  // A change that leaves the item as it is, with Undo: Pause, Sell one like this, Split.
+  const did = (id: string, done: string, undo: () => void = () => {}) => setToast({ id: `${id}-undo`, text: done, undo: () => { undo(); setToast(null); } });
+  const many2 = (n: number) => (n === 1 ? 'the listing' : `${n} listings`);
+  const product = PRODUCTS.find(p => item.product_id ? p.id === item.product_id : p.used_price.citation_id === item.valuation?.citation_id);
+  const whyOf = M.why(w, item);
+  const review = m === 'review';
+  const input = (control: string, value: string, same: boolean) => log.event('user.input', { screen: 'item', control, value: same ? 'confirmed' : value });
+  const setFieldValue = (f: M.Field, v: string) => {
+    const now = edits[f.id] ?? f.value, same = v === now;
+    input(`field-${f.attr.name}`, v, same);
+    if (same) setChecked(c => (c.includes(f.id) ? c : [...c, f.id]));
+    else setEdits(e => ({ ...e, [f.id]: spelled(f, v) }));
+  };
 
   // Under the Plan or Post sheet the page's act is out of reach behind the scrim, so it is not drawn: one act on screen (C4).
   const focused = useIsFocused();
   const foot = !focused ? null : toast ? <UndoToast id={toast.id} text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} />
-    : ended ? null : <Foot w={w} item={item} m={m} plan={plan} onDone={(t, undo) => setToast({ id: 'foot-undo', text: t, undo })} />;
+    : ended || handed ? null : <Foot w={w} item={item} m={m} plan={plan} online={online}
+      onHanded={() => { setHanded(true); setToast({ id: 'foot-undo', text: 'Handed over. Marked sold.', undo: () => { setHanded(false); setToast(null); } }); }} />;
 
   return (
     <Screen name="item" state={offline ? 'offline' : screenState(m, item)} nav={<Nav back={back} />} foot={foot}
       skip={focused ? skipFor(screenState(m, item)) : `${skipFor(screenState(m, item))}; ${UNDER(item.id)}`}>
         <Stack gap="cards">
           {offline ? (
-            <Line><Icon name="refresh" size={12} tone="ink-2" /><Txt role="caption">Offline. Changes send when you’re back.</Txt></Line>
+            <Line><Icon name="refresh" size={12} tone="ink-2" /><Txt role="caption">{waiting ? `Waiting for signal. ${waiting} goes when you’re back.` : 'Offline. Changes send when you’re back.'}</Txt></Line>
           ) : null}
           <Stack gap="tight">
             <PhotoPager photos={photos} label={title} faded={!!ended || m === 'kept' || m === 'unsold'} />
@@ -146,13 +185,16 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
           </Stack>
           <Stack gap="tight">
             <Line><Tag state={ended ? 'ended' : tag.state} word={ended ? 'Ended' : tag.word} /></Line>
-            {m === 'review'
-              ? <Line><Guess id="title" name="What it is" value={title} onChange={setTitle} look="body" /></Line>
-              : <Txt role="headline">{title}</Txt>}
+            {review ? (
+              <Row trail={<IconButton id="why-title" icon="information-circle" label="Why?" look="plain" onPress={() => setWhyField(titleWhy(item))} />}>
+                <Line><Guess id="title" name="What it is" value={title} look="body" onChange={v => { input('title', v, v === title); setTitle(v); }} /></Line>
+              </Row>
+            ) : <Txt role="headline">{title}</Txt>}
           </Stack>
         </Stack>
 
-        <Top w={w} item={item} m={m} head={head} openSum={() => setSum(true)} openOffers={() => setSheet('offers')}
+        <Top w={w} item={item} m={m} head={head} openSum={() => setSum(true)} openOffers={() => setSheet('offers')} online={online}
+          openWhy={whyOf && (m === 'sold' || m === 'done') ? () => setSheet('why') : undefined}
           onFill={(fid, v) => setEdits(e => ({ ...e, [fid]: v }))} />
 
         {rows.length ? (
@@ -166,20 +208,40 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
         {(m === 'live' || m === 'offer') && item.limits ? <PlanSection w={w} item={item} plan={plan} /> : null}
         {item.valuation?.state === 'shown' && m !== 'sold' && m !== 'done' ? (
           <Section title="Market">
-            <Txt role="body">{`Similar ones sold for ${range(item.valuation.range)} lately`}</Txt>
+            {/* Why? sits on the number it explains (pages.md §6.6, Actions on any moment). */}
+            <Row trail={whyOf ? <IconButton id="why" icon="information-circle" label="Why?" look="plain" onPress={() => setSheet('why')} /> : null}>
+              <Txt role="body">{`Similar ones sold for ${range(item.valuation.range)} lately`}</Txt>
+            </Row>
+            {product ? <List><ActionRow id="market-open" label="See the sales" line="Sold and for sale, on every site" onPress={() => router.push(`/product/${product.id}` as Href)} /></List> : null}
           </Section>
         ) : null}
 
         {fields.length || item.location ? (
           <Section title="Details">
             <List>
+              {/* Review: the listing's description is a guess too, written from the fields below (pages §6.6 Review). */}
+              {review ? (
+                <Row trail={<IconButton id="why-description" icon="information-circle" label="Why?" look="plain" onPress={() => setWhyField(descriptionWhy(item))} />}>
+                  <Txt role="caption">Description</Txt>
+                  <Line><Guess id="description" name="Description" value={description} look="body" onChange={v => { input('description', v, v === description); setDescription(v); }} /></Line>
+                </Row>
+              ) : null}
               {fields.map(f => (
-                <FieldLine key={f.id} f={f} value={edits[f.id] ?? f.value} locked={locked.includes(f.id)}
-                  onChange={v => setEdits(e => ({ ...e, [f.id]: v }))} onMore={() => setField(f)} />
+                <FieldLine key={f.id} f={f} value={edits[f.id] ?? f.value} locked={locked.includes(f.id)} checked={checked.includes(f.id)}
+                  onChange={v => setFieldValue(f, v)} onMore={() => setField(f)}
+                  onWhy={review ? () => setWhyField(fieldWhy(item, f, edits[f.id] ?? f.value)) : undefined} />
               ))}
               <Row>
                 <Txt role="caption">Where it is</Txt>
                 <Line><Guess id="field-where" name="Where it is" value={item.location.label} changed look="body" /></Line>
+              </Row>
+              {/* What you paid: optional and never asked (pages.md §6.6); it only feeds Records. */}
+              <Row>
+                <Txt role="caption">What you paid</Txt>
+                {paid
+                  ? <Line><Guess id="paid" name="What you paid" value={paid} changed numeric look="body" onChange={setPaid} /></Line>
+                  : <Line><Blank id="paid" name="What you paid" numeric look="body" onChange={setPaid} /></Line>}
+                <Txt role="caption">Only you see it, in your records</Txt>
               </Row>
             </List>
           </Section>
@@ -188,12 +250,17 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
         <Section>
           <List>
             <ActionRow id="photos" label="Photos" line="Clean up, add or change the cover" onPress={() => setSheet('photos')} />
+            {photos.length > 1 ? <ActionRow id="split" label="Split" line="Move photos to a new item" onPress={() => setSheet('split')} /> : null}
+            <ActionRow id="copy" label="Sell one like this" line="A copy without the photos"
+              onPress={() => did('copy', 'Made a copy. Add its photos from Sell.')} />
             {m !== 'sold' && m !== 'done' && !ended ? (
               <>
+                {live && !paused ? <ActionRow id="pause" label="Pause" line={`Hides ${many2(live)} until you resume`}
+                  onPress={online('Pause', () => { setPaused(true); did('pause', `Paused ${many2(live)}.`, () => setPaused(false)); })} /> : null}
                 <ActionRow id="sold-elsewhere" label="Sold elsewhere" line={endsLine} onPress={() => setSheet('sold-elsewhere')} />
-                {m !== 'kept' ? <ActionRow id="keep" label="Keep it" line={endsLine} onPress={() => end('keep', live ? `Kept. Took down ${live === 1 ? 'the listing' : `${live} listings`}.` : 'Kept.')} /> : null}
-                <ActionRow id="donated" label="Donated" line={endsLine} onPress={() => end('donated', live ? `Donated. Took down ${live === 1 ? 'the listing' : `${live} listings`}.` : 'Marked donated.')} />
-                {live ? <ActionRow id="end-all" label="End everywhere" line="Keeps the item as a draft" onPress={() => end('end-all', `Ended ${live === 1 ? 'the listing' : `${live} listings`}.`)} /> : null}
+                {m !== 'kept' ? <ActionRow id="keep" label="Keep it" line={endsLine} onPress={online('Keep it', () => end('keep', live ? `Kept. Took down ${many2(live)}.` : 'Kept.'))} /> : null}
+                <ActionRow id="donated" label="Donated" line={endsLine} onPress={online('Donated', () => end('donated', live ? `Donated. Took down ${many2(live)}.` : 'Marked donated.'))} />
+                {live ? <ActionRow id="end-all" label="End everywhere" line="Keeps the item as a draft" onPress={online('End everywhere', () => end('end-all', `Ended ${many2(live)}.`))} /> : null}
               </>
             ) : null}
             <ActionRow id="delete" label="Delete" refused={M.deleteBlocked(w, item) ?? undefined} line={endsLine ? `${endsLine} first` : 'Removes it and its photos'} onPress={() => setSheet('delete')} />
@@ -201,13 +268,19 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
         </Section>
 
         <FieldSheet f={field} value={field ? edits[field.id] ?? field.value : null} locked={!!field && locked.includes(field.id)}
-          onChange={v => field && setEdits(e => ({ ...e, [field.id]: v }))}
+          onChange={v => field && setEdits(e => ({ ...e, [field.id]: spelled(field, v) }))}
           onLock={on => field && setLocked(l => (on ? [...l, field.id] : l.filter(x => x !== field.id)))}
           onClose={() => setField(null)} />
         <SumSheet open={sum} head={head} rows={rows} onClose={() => setSum(false)} />
+        {/* Why? on a field: the reason first, then where it was read, a tap under it. */}
+        <WhySheet id="field-why" open={!!whyField} title={whyField?.title ?? ''} says={whyField?.says ?? ''} more="See the source"
+          numbers={<Txt role="body">{whyField?.source}</Txt>} onClose={() => setWhyField(null)} />
         <OffersSheet open={sheet === 'offers'} w={w} item={item} onClose={() => setSheet(null)} />
         <SoldElsewhere open={sheet === 'sold-elsewhere'} live={live} onClose={() => setSheet(null)}
-          onDone={text => { setSheet(null); end('sold-elsewhere', text); }} />
+          onDone={text => { setSheet(null); online('Sold elsewhere', () => end('sold-elsewhere', text))(); }} />
+        {whyOf ? <WhyItem open={sheet === 'why'} why={whyOf} onClose={() => setSheet(null)} /> : null}
+        <SplitSheet open={sheet === 'split'} photos={photos} title={title} onClose={() => setSheet(null)}
+          onSplit={n => { setSheet(null); did('split', `Moved ${many(n, 'photo', 'photos')} to a new item.`); }} />
         <DeleteSheet open={sheet === 'delete'} live={live} onClose={() => setSheet(null)} />
         <PhotosSheet open={sheet === 'photos'} photos={photos} title={title} live={live} scanned={M.scanned(item)} look={look} onLook={setLook} onClose={() => setSheet(null)} />
     </Screen>
@@ -215,8 +288,9 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
 }
 
 // The top of the page, by moment (pages.md §6.6). One number first, and one line that opens the sum (Art. 7.10).
-function Top({ w, item, m, head, openSum, openOffers, onFill }: {
-  w: World; item: Item; m: M.Moment; head: M.Headline | null; openSum: () => void; openOffers: () => void; onFill: (field: string, value: string) => void;
+function Top({ w, item, m, head, openSum, openOffers, openWhy, online, onFill }: {
+  w: World; item: Item; m: M.Moment; head: M.Headline | null; openSum: () => void; openOffers: () => void; openWhy?: () => void;
+  online: (what: string, act: () => void) => () => void; onFill: (field: string, value: string) => void;
 }) {
   if (m === 'researching') {
     return (
@@ -233,7 +307,7 @@ function Top({ w, item, m, head, openSum, openOffers, onFill }: {
     );
   }
   if (m === 'review') return <TreeTop w={w} item={item} onFill={onFill} />;
-  if (m === 'offer') return <OfferTop w={w} item={item} openOffers={openOffers} />;
+  if (m === 'offer') return <OfferTop w={w} item={item} openOffers={openOffers} online={online} />;
   if (m === 'kept' || m === 'unsold') {
     const v = item.valuation?.state === 'shown' ? item.valuation.range : null;
     if (!v) return null;
@@ -247,11 +321,16 @@ function Top({ w, item, m, head, openSum, openOffers, onFill }: {
   if (!head) return null;
   const sale = M.saleOf(w, item);
   const days = M.daysToSell(w, item);
+  // Slow: the one change worth the most says what it does for the sale (pages.md §3 Standing: "sells about 6 days sooner").
+  const slow = m === 'live' ? w.decisions.find(x => x.item_id === item.id && x.kind === 'markdown' && x.state === 'open') : undefined;
   return (
     <Stack gap="cards">
-      <Amount value={head.amount / 100} what={head.what} />
+      {openWhy
+        ? <Row trail={<IconButton id="why" icon="information-circle" label="Why?" look="plain" onPress={openWhy} />}><Amount value={head.amount / 100} what={head.what} /></Row>
+        : <Amount value={head.amount / 100} what={head.what} />}
+      {slow ? <Txt role="body">{slow.why}</Txt> : null}
       {m === 'done' && sale && days ? <Txt role="body">{`Sold for ${usd(sale.price_cents)} in ${days} ${days === 1 ? 'day' : 'days'}`}</Txt> : null}
-      <List><ActionRow id="open-sum" label={m === 'live' ? 'What each site keeps' : 'How it adds up'} onPress={openSum} /></List>
+      <List><ActionRow id="open-sum" label={m === 'live' ? 'What you get on each site' : 'How it adds up'} onPress={openSum} /></List>
       {m === 'sold' || m === 'done' ? <Clocks w={w} item={item} /> : null}
     </Stack>
   );
@@ -285,7 +364,7 @@ function TreeTop({ w, item, onFill }: { w: World; item: Item; onFill: (field: st
 // Offer: the card that asks, on the state's gradient because it is the one thing that needs the person here (C2, C4).
 // Counter opens the picker under it: three amounts, the middle one the agent's pick, then Something else. The send waits
 // for Approve, which says exactly what it sends.
-function OfferTop({ w, item, openOffers }: { w: World; item: Item; openOffers: () => void }) {
+function OfferTop({ w, item, openOffers, online }: { w: World; item: Item; openOffers: () => void; online: (what: string, act: () => void) => () => void }) {
   const o = M.offerOf(w, item)!;
   const best = o.offers[0];
   const listing = item.listings.find(l => l.id === best?.listing_id);
@@ -302,11 +381,17 @@ function OfferTop({ w, item, openOffers }: { w: World; item: Item; openOffers: (
   if (status === 'accepted') return <Approve id="accept-done" does="" status="done" done={`Accepted ${usd(best.amount_cents)}. The other listings are coming down.`} />;
   return (
     <Stack gap="cards">
-      <DecisionCard id="offer" kind="need" word="Offer" title={o.offers.length > 1 ? many(o.offers.length, 'offer', 'offers') : item.title} photo={demoPhoto(item.photos[0].key) as PhotoSrc} site={best.site}
-        fact={{ label: 'You keep', amount: best.you_keep_cents / 100 }} due={best.expires_at ? ms(best.expires_at) - now + Date.now() : undefined} lead
-        primary={{ id: 'accept', label: `Accept ${usd(best.amount_cents)}`, onPress: () => setStatus('accepted') }}
-        second={{ id: 'counter', label: 'Counter', onPress: () => setStatus('countering') }}
-        more={{ id: 'offer-more', label: 'All offers and Decline', onPress: openOffers }} />
+      <Stack gap="tight">
+        {/* The card opens the buyer's thread, where the offer came from (pages.md §6.6, Splits off: a thread). */}
+        <DecisionCard id="offer" kind="need" word="Offer" title={o.offers.length > 1 ? many(o.offers.length, 'offer', 'offers') : item.title} photo={demoPhoto(item.photos[0].key) as PhotoSrc} site={best.site}
+          fact={{ label: 'You get', amount: best.you_keep_cents / 100 }} due={best.expires_at ? ms(best.expires_at) - now + Date.now() : undefined} lead
+          onOpen={o.decision.conversation_id ? () => router.push(`/messages/${o.decision.conversation_id}` as Href) : undefined}
+          primary={{ id: 'accept', label: `Accept ${usd(best.amount_cents)}`, onPress: online(`Accept ${usd(best.amount_cents)}`, () => setStatus('accepted')) }}
+          second={{ id: 'counter', label: 'Counter', onPress: () => setStatus('countering') }}
+          more={{ id: 'offer-more', label: 'All offers and Decline', onPress: openOffers }} />
+        {/* A sale on the site can't be taken back, so the card says so before the tap (ways-out Everywhere, "That wasn't what I wanted"). */}
+        <Txt role="caption">Accepting sells it. It can’t be undone.</Txt>
+      </Stack>
       {status === 'countering' || status === 'sent' ? (
         <Stack>
           <Txt role="caption">{`Counter. Your lowest is ${usd(floor)}.`}</Txt>
@@ -315,8 +400,8 @@ function OfferTop({ w, item, openOffers }: { w: World; item: Item; openOffers: (
             onChange={(v, t) => { setChosen(v); if (t) setTyped(v); if (status === 'sent') setStatus('countering'); }} />
           {counterCents !== null ? (
             <Approve id="send-counter" does={under ? `Send ${usd(counterCents)}, under your lowest` : `Send ${usd(counterCents)} counter`}
-              status={status === 'sent' ? 'done' : 'ready'} done={`Sent ${usd(counterCents)}. You’d keep ${usd(youKeep(best.site, counterCents))}.`}
-              onApprove={() => setStatus('sent')} />
+              status={status === 'sent' ? 'done' : 'ready'} done={`Sent ${usd(counterCents)}. You’d get ${usd(youKeep(best.site, counterCents))}.`}
+              onApprove={online(`Send ${usd(counterCents)}`, () => setStatus('sent'))} />
           ) : null}
         </Stack>
       ) : null}
@@ -328,7 +413,10 @@ function OfferTop({ w, item, openOffers }: { w: World; item: Item; openOffers: (
 function Clocks({ w, item }: { w: World; item: Item }) {
   return (
     <List>
-      {M.clocks(w, item).map(c => (
+      {M.clocks(w, item).map(c => c.id === 'pickup' && !c.done ? (
+        // The pickup opens its sheet: the time, the spot and the buyer (pages.md §6.6, Splits off: Pickup).
+        <ActionRow key={c.id} id="open-pickup" label={c.label} line={c.at} onPress={() => router.push(`/item/${item.id}/pickup` as Href)} />
+      ) : (
         <Row key={c.id} lead={<Icon name={c.done ? 'tick-02' : 'clock-01'} tone={c.done ? 'ink' : 'ink-2'} />} trail={<Txt role="body" tone="ink-2">{c.at}</Txt>}>
           <Txt role="body">{c.label}</Txt>
         </Row>
@@ -377,15 +465,20 @@ function PlanSection({ w, item, plan }: { w: World; item: Item; plan: () => void
 
 // A field: its name, the value (a guess until the person touches it, or a blank), and where it came from. More opens
 // the field's sheet, where it can be locked so the agent never proposes a change (ways-out §6.6).
-function FieldLine({ f, value, locked, onChange, onMore }: { f: M.Field; value: string | null; locked: boolean; onChange: (v: string) => void; onMore: () => void }) {
+// In Review each field also has Why?: the reason it reads so, then its source (pages.md §6.6: "Why? on any field").
+// A guess the person opens and leaves as it is counts as checked: it turns to ink like one they changed.
+function FieldLine({ f, value, locked, checked, onChange, onMore, onWhy }: {
+  f: M.Field; value: string | null; locked: boolean; checked: boolean; onChange: (v: string) => void; onMore: () => void; onWhy?: () => void;
+}) {
   const mine = value !== f.value;
+  const more = <IconButton id={`more-${f.attr.name}`} icon="more-horizontal" label={`More about ${f.name}`} look="plain" onPress={onMore} />;
   return (
-    <Row trail={<IconButton id={`more-${f.attr.name}`} icon="more-horizontal" label={`More about ${f.name}`} look="plain" onPress={onMore} />}>
+    <Row trail={onWhy ? <Line><IconButton id={`why-${f.attr.name}`} icon="information-circle" label={`Why ${f.name}?`} look="plain" onPress={onWhy} />{more}</Line> : more}>
       <Txt role="caption">{f.name}</Txt>
       {value === null
         ? <Line><Blank id={`field-${f.attr.name}`} name={f.name} look="body" onChange={onChange} /></Line>
-        : <Line><Guess id={`field-${f.attr.name}`} name={f.name} value={value} changed={!f.guessed || mine} look="body" onChange={onChange} /></Line>}
-      <Txt role="caption">{[mine ? 'You changed it' : f.from, locked ? 'Locked' : null].filter(Boolean).join('. ')}</Txt>
+        : <Line><Guess id={`field-${f.attr.name}`} name={f.name} value={value} changed={!f.guessed || mine || checked} look="body" onChange={onChange} /></Line>}
+      <Txt role="caption">{[mine ? 'You changed it' : checked ? 'You checked it' : f.from, locked ? 'Locked' : null].filter(Boolean).join('. ')}</Txt>
     </Row>
   );
 }
@@ -416,11 +509,11 @@ function FieldSheet({ f, value, locked, onChange, onLock, onClose }: {
 function SumSheet({ open, head, rows, onClose }: { open: boolean; head: M.Headline | null; rows: M.SiteRow[]; onClose: () => void }) {
   const live = rows.filter(r => r.listing.state === 'live');
   return (
-    <Sheet open={open} title={live.length && !head?.sum.some(s => s.label === 'Sold for') ? 'What each site keeps' : 'How it adds up'} onClose={onClose}>
+    <Sheet open={open} title={live.length && !head?.sum.some(s => s.label === 'Sold for') ? 'What you get on each site' : 'How it adds up'} onClose={onClose}>
       <List>
         {head?.sum.some(s => s.label === 'Sold for')
           ? head.sum.map(s => (
-            <Row key={s.label} trail={<Txt role="body" tabular>{usd(s.amount)}</Txt>}><Txt role="body" tone={s.label === 'You keep' ? 'ink' : 'ink-2'}>{s.label}</Txt></Row>
+            <Row key={s.label} trail={<Txt role="body" tabular>{usd(s.amount)}</Txt>}><Txt role="body" tone={s.label.startsWith('You') ? 'ink' : 'ink-2'}>{s.label}</Txt></Row>
           ))
           : live.map(r => (
             <Row key={r.site} lead={<SiteBadge site={r.site} />} trail={<Txt role="body" tabular>{usd(r.keep)}</Txt>}>
@@ -441,7 +534,7 @@ function OffersSheet({ open, w, item, onClose }: { open: boolean; w: World; item
       <List>
         {(o?.offers ?? []).map(x => (
           <Row key={x.id} lead={<SiteBadge site={x.site} />} trail={<Txt role="body" tabular>{usd(x.amount_cents)}</Txt>}>
-            <Txt role="body">{`You’d keep ${usd(x.you_keep_cents)}`}</Txt>
+            <Txt role="body">{`You’d get ${usd(x.you_keep_cents)}`}</Txt>
           </Row>
         ))}
       </List>
@@ -528,7 +621,9 @@ function PhotosSheet({ open, photos, title, live, scanned, look, onLook, onClose
 
 // The page's one act at its foot, by moment: Plan it for a draft, the one change for a slow item, Ship it or Handed
 // over once sold, Sell again once kept (pages.md §6.6, the black pill column).
-function Foot({ w, item, m, plan, onDone }: { w: World; item: Item; m: M.Moment; plan: () => void; onDone: (text: string, undo: () => void) => void }) {
+function Foot({ w, item, m, plan, online, onHanded }: {
+  w: World; item: Item; m: M.Moment; plan: () => void; online: (what: string, act: () => void) => () => void; onHanded: () => void;
+}) {
   const [status, setStatus] = useState<'ready' | 'done'>('ready');
   if (m === 'review') return <FootButton id="plan-it" label="Plan it" onPress={plan} />;
   if (m === 'kept' || m === 'unsold') return <FootButton id="sell-again" label="Sell again" onPress={plan} />;
@@ -536,7 +631,7 @@ function Foot({ w, item, m, plan, onDone }: { w: World; item: Item; m: M.Moment;
     const sale = M.saleOf(w, item);
     const pickup = sale && w.appointments.find(a => a.order_id === sale.id && a.kind === 'pickup');
     if (pickup) {
-      return <Approve id="handed-over" does="Handed over" status={status} done="Handed over. Marked sold." onApprove={() => { setStatus('done'); onDone('Handed over', () => setStatus('ready')); }} onUndo={() => setStatus('ready')} />;
+      return <Approve id="handed-over" does="Handed over" onApprove={online('Handed over', onHanded)} />;
     }
     return <FootButton id="ship-it" label="Ship it" onPress={() => router.push(`/item/${item.id}/ship` as Href)} />;
   }
@@ -547,8 +642,60 @@ function Foot({ w, item, m, plan, onDone }: { w: World; item: Item; m: M.Moment;
     if (d && opt && d.money?.price_cents) {
       const n = M.liveListings(item).length;
       return <Approve id="lower" does={`${opt.label} on ${n} ${n === 1 ? 'site' : 'sites'}`} status={status}
-        done={`Lowered to ${usd(d.money.price_cents)} on ${n} ${n === 1 ? 'site' : 'sites'}`} onApprove={() => setStatus('done')} onUndo={() => setStatus('ready')} />;
+        done={`Lowered to ${usd(d.money.price_cents)} on ${n} ${n === 1 ? 'site' : 'sites'}`} onApprove={online(opt.label, () => setStatus('done'))} onUndo={() => setStatus('ready')} />;
     }
   }
   return null;
+}
+
+// A brand or a model typed with a slip is matched to the catalog before it is shown (edge-cases §3: "Carhart" is Carhartt).
+const spelled = (f: M.Field, v: string) => (f.attr.name === 'brand' || f.attr.name === 'model' ? correct(v) : v);
+
+// Why? on the item's numbers (pages.md §6.6): the reason in words, then the sales the range goes by and each site's fee, then
+// what the agent did on this item, each with its source and Undo where the site allows it.
+function WhyItem({ open, why, onClose }: { open: boolean; why: M.Why; onClose: () => void }) {
+  const [undone, setUndone] = useState<string[]>([]);
+  return (
+    <WhySheet id="why" open={open} title={why.title} says={why.says} basis={why.basis} onClose={onClose}
+      numbers={
+        <List>
+          {why.sales.map(x => <KeepRow key={`s-${x.site}`} site={x.site} line={`Sold for ${usd(x.low)} to ${usd(x.high)}`} note={many(x.count, 'sale', 'sales')} />)}
+          {why.fees.map(x => <KeepRow key={`f-${x.site}`} site={x.site} line={`${usd(x.price)} less ${usd(x.fee)} fee`} note={`Fee on ${x.on}`} keep={`You get ${usd(x.get)}`} />)}
+        </List>
+      }>
+      {why.events.length ? (
+        <Stack gap="tight">
+          <Txt role="caption">What happened</Txt>
+          <List>
+            {why.events.map(e => (
+              <Row key={e.id} lead={e.site ? <SiteBadge site={e.site} /> : undefined}
+                trail={e.undo && !undone.includes(e.id) ? <Pill id={`why-undo-${e.id}`} label="Undo" kind="second" onPress={() => setUndone(u => [...u, e.id])} /> : null}>
+                <Txt role="body" tone={undone.includes(e.id) ? 'ink-2' : 'ink'}>{undone.includes(e.id) ? `Undone. ${e.why}` : e.why}</Txt>
+                <Txt role="caption">{e.at}</Txt>
+              </Row>
+            ))}
+          </List>
+        </Stack>
+      ) : null}
+    </WhySheet>
+  );
+}
+
+// Split (ways-out §6.6, "These are two things"): the photos of the other thing move to a new item; nothing else changes.
+function SplitSheet({ open, photos, title, onClose, onSplit }: { open: boolean; photos: PhotoSrc[]; title: string; onClose: () => void; onSplit: (n: number) => void }) {
+  const [picked, setPicked] = useState<number[]>([]);
+  const n = picked.length;
+  return (
+    <Sheet open={open} title="Split" onClose={() => { setPicked([]); onClose(); }}>
+      <Txt role="caption">Pick the photos of the other thing</Txt>
+      <Grid columns={3}>
+        {photos.map((p, i) => (
+          <Tile key={i} id={`split-photo-${i + 1}`} title={`Photo ${i + 1}`} photo={p} select={picked.includes(i) ? 'picked' : 'on'}
+            onPress={() => setPicked(x => (x.includes(i) ? x.filter(y => y !== i) : [...x, i]))} />
+        ))}
+      </Grid>
+      <FootButton id="split-move" label={n ? `Move ${many(n, 'photo', 'photos')} to a new item` : 'Pick a photo'} state={n && n < photos.length ? 'idle' : 'disabled'}
+        onPress={() => { setPicked([]); onSplit(n); }} />
+    </Sheet>
+  );
 }

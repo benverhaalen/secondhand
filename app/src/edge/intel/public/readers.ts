@@ -9,7 +9,7 @@ export interface Row {
   id?: string; title?: string; price_cents?: number; currency?: string; url?: string;
   condition?: string; size?: string; listed_at?: string; image_url?: string; seller_hash?: string; sold?: true; sold_date?: string;
 }
-export type Read = ReturnType<typeof classifyRead<Row & Record<string, unknown>>>;
+export type Read = ReturnType<typeof classifyRead<Row & Record<string, unknown>>> & { dropped?: number };   // dropped: cards left out for a missing required field
 
 export const REQUIRED = ['id', 'title', 'price_cents', 'url'] as const;
 const FIELDS: Field[] = REQUIRED.map(name => ({ name, type: name === 'price_cents' ? 'number' : 'string', needs_session: false, required: true }) as Field);
