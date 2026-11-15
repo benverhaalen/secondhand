@@ -600,3 +600,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 > Have we looked at how our marketing engine and optimized way to list each product is powered. How does our system aid in the reselling and buying research included. What doesnt it help with yet
 
 > The engine should be built to weigh things in real time, not hardcode in methodologies, we need realtime collected data to then empower extremely accurate results
+
+## 2026-11-14 nate value from similar listings and demand, and worth knowing even if you never sell
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> We also look at existing listings similar to ours, what people are buying, what people are interested in, we can assess the best price it should be valued at. Even if the seller isn't interested, creating the listing is helpful in understanding what items you have are worth
