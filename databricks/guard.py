@@ -14,7 +14,7 @@ DATA_TABLES = ('observation', 'evidence', 'citation', 'guarded_number', 'claim_c
                'event', 'job', 'decision', 'storefront_snapshot', 'log_event')
 # Spark RLIKE uses Java's dot and $: exclude all Java line terminators inside
 # the source name, but accept one final terminator (including CRLF).
-DATA_PATTERN = re.compile(r'^(synthetic|example|dataset:[^\n\r\u0085\u2028\u2029]+|live:[^\n\r\u0085\u2028\u2029]+)(?:\r\n|[\n\r\u0085\u2028\u2029])?\Z')
+DATA_PATTERN = re.compile(r'^(synthetic|example|captured|dataset:[^\n\r\u0085\u2028\u2029]+|live:[^\n\r\u0085\u2028\u2029]+)(?:\r\n|[\n\r\u0085\u2028\u2029])?\Z')
 REFUSAL_SCHEMA = 'refused_at TIMESTAMP, job STRING, table_name STRING, row_id STRING, rule STRING, data STRING'
 
 
@@ -29,6 +29,7 @@ RULES = {
     'guarded_number_citation_fk': ('guarded_number', lambda r: r.get('state') == 'shown' and r.get('citation_id') is not None and r.get('_citation_exists') is not True),
     'guarded_number_basis_level': ('guarded_number', lambda r: (r.get('metric') or '').startswith('valuation.') and r.get('basis_level') not in BASIS_LEVELS),
     'claim_check_verdict': ('claim_check', lambda r: _outside(r.get('verdict'), ('pass', 'hold', 'abstain', 'contradicted'))),
+    'principal_map_unlogged_wildcard': ('principal_map', lambda r: r.get('user_id') == '*' and r.get('_break_glass_open') is not True),
     'decision_policy_mode': ('decision', lambda r: _outside(r.get('policy_mode'), ('auto', 'ask', 'locked', 'never'))),
     **{table + '_data': (table, lambda r: r.get('data') is not None and DATA_PATTERN.search(r['data']) is None)
        for table in DATA_TABLES},
@@ -36,6 +37,8 @@ RULES = {
 
 
 def _row_id(table, row):
+    if table == 'principal_map':
+        return row.get('principal')
     if table == 'log_event':
         return None if row.get('session') is None or row.get('seq') is None else f"{row['session']}:{row['seq']}"
     return row.get('id')

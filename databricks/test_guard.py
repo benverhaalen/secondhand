@@ -31,9 +31,11 @@ def test_rule_names_cannot_drift_between_door_net_and_status():
     assert set(re.findall(r"'([^']+)'", re.search(r'array\((.*?)\) AS rules', status, re.S)[1])) == set(guard.RULES)
     for column in ('violations_now', 'refusals_last_7_days', 'last_checked_at'):
         assert column in status
-    assert 'current_timestamp() AS last_checked_at' in status
+    assert 'checked_at AS last_checked_at' in status
+    assert 'secondhand.measures.guard_snapshot' in status
+    assert 'guard_violations' not in status
     assert 'INTERVAL 7 DAYS' in status
-    assert 'assert_true' in sql, 'the nightly net must fail its job'
+    assert 'assert_true' not in sql, 'only the Python task may assert after revocation'
 
 
 @pytest.mark.parametrize('level', [None, '', 'invented', 'Product', 'product '])
@@ -67,7 +69,7 @@ def test_provenance_matches_spark_java_regex_line_terminators(terminator):
         broken = {'id': 'fixture', 'data': prefix + 'before' + terminator + 'after'}
         assert guard.check('evidence', [broken]) == [
             {'table_name': 'evidence', 'row_id': 'fixture', 'rule': 'evidence_data'}]
-    for data in ('synthetic', 'example', 'live:fixture', 'dataset:fixture'):
+    for data in ('synthetic', 'example', 'captured', 'live:fixture', 'dataset:fixture'):
         # Java's $ can end immediately before a final line terminator.
         assert guard.check('evidence', [{'id': 'fixture', 'data': data + terminator}]) == []
 
@@ -75,18 +77,18 @@ def test_provenance_matches_spark_java_regex_line_terminators(terminator):
 def test_python_predicates_match_the_sql_net_including_nulls_and_citation_references():
     sql = (ROOT / 'databricks/sql/09_guard.sql').read_text()
     query = sql.split('\nAS\n', 1)[1].split(';', 1)[0]
-    query = query.replace('secondhand.core.', '').replace(' RLIKE ', ' REGEXP ')
+    query = query.replace('secondhand.core.', '').replace('secondhand.governance.', '').replace(' RLIKE ', ' REGEXP ')
     db = sqlite3.connect(':memory:')
     db.execute('PRAGMA case_sensitive_like = ON')
     db.create_function('regexp', 2, lambda pattern, value: None if value is None else bool(re.search(pattern, value)))
     db.create_function('concat', -1, lambda *xs: ''.join('' if x is None else str(x) for x in xs))
     tables = sorted({table for table in re.findall(r'FROM secondhand.core.(\w+)', sql)})
-    fields = ['id', 'state', 'citation_id', 'hide_reason', 'metric', 'basis_level', 'data', 'verdict', 'policy_mode', 'session', 'seq']
+    fields = ['id', 'state', 'citation_id', 'hide_reason', 'metric', 'basis_level', 'data', 'verdict', 'policy_mode', 'session', 'seq', 'principal', 'user_id', 'ended_at']
     all_rows = {}
     for table in tables:
         db.execute(f'CREATE TABLE {table} ({", ".join(fields)})')
         rows = []
-        for i, data in enumerate(['synthetic', 'example', 'dataset:fixture', 'live:fixture', '', 'dataset:', 'other', None]):
+        for i, data in enumerate(['synthetic', 'example', 'captured', 'dataset:fixture', 'live:fixture', '', 'dataset:', 'other', None]):
             rows.append(number(id=f'{table}_{i}', data=data, verdict='pass', policy_mode='ask', session=f's_{i}', seq=i))
         if table == 'guarded_number':
             for i, changes in enumerate([
@@ -107,6 +109,16 @@ def test_python_predicates_match_the_sql_net_including_nulls_and_citation_refere
         all_rows[table] = rows
         db.executemany(f'INSERT INTO {table} VALUES ({", ".join("?" for _ in fields)})',
                        [[row.get(k) for k in fields] for row in rows])
+    db.execute('CREATE TABLE principal_map (principal, user_id)')
+    db.execute('CREATE TABLE break_glass (principal, ended_at)')
+    db.executemany('INSERT INTO principal_map VALUES (?, ?)', [('rogue', '*'), ('audited', '*'), ('closed', '*'), ('owner', 'usr_fixture')])
+    db.executemany('INSERT INTO break_glass VALUES (?, ?)', [('audited', None), ('closed', '2026-11-15')])
+    all_rows['principal_map'] = [
+        {'principal': 'rogue', 'user_id': '*', '_break_glass_open': False},
+        {'principal': 'audited', 'user_id': '*', '_break_glass_open': True},
+        {'principal': 'closed', 'user_id': '*', '_break_glass_open': False},
+        {'principal': 'owner', 'user_id': 'usr_fixture', '_break_glass_open': False},
+    ]
     expected = sorted(db.execute(query).fetchall(), key=str)
     actual = sorted([(v['table_name'], v['row_id'], v['rule'], row.get('data'))
                      for table, rows in all_rows.items() for row in rows
