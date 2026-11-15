@@ -155,10 +155,12 @@ Timings, Release build, the same simulator, server on the same Mac. The tree is 
 
 | Measure | Samples | Result |
 |---|---|---|
-| Cold start, signed in: `simctl launch` to Today's tab bar | 7 | 1508 to 1559 ms, median 1541 ms |
-| Cold start, fresh install: launch to the sign-in field | 3 | 847 to 925 ms |
+| Cold start, signed in: `simctl launch` to Today's tab bar, 1.5 s after the kill | 7 | 1508 to 1559 ms, median 1541 ms (straight after a kill, once: 1779 ms) |
+| Cold start, fresh install: `simctl launch` to the sign-in field | 2 | 1441 and 1501 ms |
 | Search: Return key to the first source on screen | 10 | 275 to 304 ms, median 288 ms |
 | Search: Return key to the settled answer ("From N listings for sale now"), Dupe and Poshmark, five different live queries | 5 | 3377 to 5688 ms, median 3755 ms |
+
+A Codex reviewer (gpt-6.1-sol, high, read-only) audited every row against the step reports, trees and screenshots in `~/sh-walks/review/` on glados (its REVIEW.md): the screens support each row; the server statuses for A, C, E and F rest on a server log that a restart overwrote, so they are the lead's observation; and it caught the fresh-install figure, first written as a wait measured after `simctl launch` returned (847 to 925 ms), now measured the same way as the rest. The timing samples are in `~/sh-walks/timing-0803/` and `~/sh-walks/timing-0806/`.
 
 Against the hosted server: not yet run; `secondhand-api.fly.dev/healthz` did not answer at 14:10 UTC. The same walks rerun with `zsh scripts/ios-sim.sh <name> https://<host>` when the server lead names the address.
 
