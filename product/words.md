@@ -1790,3 +1790,9 @@ Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is 
 > its [his own name] my apple account, the testflight build is the demo for us to test and improve continously before we finalize. I expect we can continously improve the ui/ux and strive to fit the perfect presentation to ensure us winning the compeition
 
 Used in: [production readiness](../spec/plans/sweep/round-2/production-readiness.md), decisions 1 and 5.
+
+## 2026-11-15 nate wrap the leads up at a good spot, then spec from what we have
+Nate, build session (orchestrator), 2026-11-15 about 15:30 Central.
+> Everything you just ascertained, lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop, meanwhile, give me the full command to put into the terminal with the path for the p8 and everything prewritten
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "The spec pass".
