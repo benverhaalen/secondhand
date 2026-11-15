@@ -9,10 +9,10 @@
 // - act, in order: own decision (404), open (409 stale), version (409 stale), option exists (400), signature (400),
 //   the policy check (a rule may never answer a locked kind: 403 locked), then the answer: the decision goes to acting and,
 //   for a kind that acts on a site, one app.* event through intake becomes one job (stream 2's pipeline runs it).
-//   A kind with no outward step is answered at once.
+//   A kind with no mapped action is unavailable and stays open.
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { MODE_FOR } from '../events/policy.ts';
-import { write, logReceived, type Ingested } from '../events/intake.ts';
+import { write, logReceived } from '../events/intake.ts';
 import { validateEvent, type EventKind, type EventRow } from '../events/event.ts';
 import type { DecisionRow } from '../events/ports.ts';
 import { ApiError, requireFields, type Ctx } from './http.ts';
@@ -98,34 +98,28 @@ export function act(ctx: Ctx) {
     if (!signatureOk(d, option_id, signature)) throw new ApiError('invalid', 'signature expired or wrong', 'signature', { by: 'user' }, { fields: ['signature'] });
     if (via && via !== 'tap' && MODE_FOR[d.kind] === 'locked') throw new ApiError('locked', `${d.kind} needs the person's tap`, 'policy_check', { by: 'user' });
 
+    const action = Object.hasOwn(ACTION_FOR, d.kind) ? ACTION_FOR[d.kind] : undefined;
+    if (!action) throw new ApiError('unavailable', 'This decision action is not available yet', 'act');
     const now = new Date().toISOString();
-    const action = ACTION_FOR[d.kind];
-    let job: { id: string; kind: string; state: string; stages: unknown[] } | null = null;
-    let received: Ingested | null = null;
-    let event_id: string | null = null; // shortcut: an answer with no outward step writes no event row until stream 2 adds an answer kind
     const answered = { option_id, answered_at: now, edited: !!edit };
-    if (action) {
-      const event: Omit<EventRow, 'id'> = {
-        user_id: d.user_id, source: 'app', action, item_id: d.item_id, dedupe_key: `act:${d.id}:${versionOf(d)}`,
-        actor: 'user', why: `answered ${d.kind}`, observed_at: now, effective_at: now, trace_id: ctx.request_id,
-        payload: { decision_id: d.id, option_id, ...(edit ? { edit } : {}) },
-      };
-      const refused = validateEvent(event);
-      if (refused.length) throw new ApiError('invalid', `refused: ${refused.join(', ')}`, 'intake', { by: 'user' });
-      const r = received = write(store, event);
-      event_id = r.event.id;
-      job = { id: r.job.id, kind: r.job.kind, state: r.job.state, stages: r.job.stages.map((s) => ({ ...s, found: {} })) };
-      store.updateDecision(d.id, { state: 'acting', job_id: r.job.id, version: versionOf(d) + 1 });
-    } else {
-      store.updateDecision(d.id, { state: 'answered', version: versionOf(d) + 1 });
-    }
+    const event: Omit<EventRow, 'id'> = {
+      user_id: d.user_id, source: 'app', action, item_id: d.item_id, dedupe_key: `act:${d.id}:${versionOf(d)}`,
+      actor: 'user', why: `answered ${d.kind}`, observed_at: now, effective_at: now, trace_id: ctx.request_id,
+      payload: { decision_id: d.id, option_id, ...(edit ? { edit } : {}) },
+    };
+    const refused = validateEvent(event);
+    if (refused.length) throw new ApiError('invalid', `refused: ${refused.join(', ')}`, 'intake', { by: 'user' });
+    const received = write(store, event);
+    const event_id = received.event.id;
+    const job = { id: received.job.id, kind: received.job.kind, state: received.job.state, stages: received.job.stages.map((s) => ({ ...s, found: {} })) };
+    store.updateDecision(d.id, { state: 'acting', job_id: job.id, version: versionOf(d) + 1 });
     const after = store.decisions({ user_id: d.user_id }).find((x) => x.id === d.id)!;
     return {
       reply: { status: 200, body: { decision: { id: d.id, state: after.state, answered, version: versionOf(after) }, event_id, job } },
-      received, answer: { decision: d.id, option: option_id, edited: !!edit, job: job?.id },
+      received, answer: { decision: d.id, option: option_id, edited: !!edit, job: job.id },
     };
   });
-  if (result.received) logReceived(ctx.log, result.received);
+  logReceived(ctx.log, result.received);
   ctx.log.event('decision.answer', result.answer);
   return result.reply;
 }
