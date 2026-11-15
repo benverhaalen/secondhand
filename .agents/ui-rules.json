@@ -62,5 +62,10 @@
   { "id": "M1", "rule": "Reduce Motion is never overridden.", "kind": "check", "by": "picks:M1" },
   { "id": "M2", "rule": "A screen never sets a raw duration.", "kind": "check", "by": "picks:M2" },
   { "id": "M3", "rule": "No scroll listeners and no transition: all.", "kind": "check", "by": "picks:M3" },
-  { "id": "M4", "rule": "Every named motion has a reason.", "kind": "check", "by": "picks:M4" }
+  { "id": "M4", "rule": "Every named motion has a reason.", "kind": "check", "by": "picks:M4" },
+  { "id": "D1", "rule": "A photo has a faint inner edge.", "kind": "judge", "fail": "Fail if a photo with a white or pale edge bleeds into the page because it has no 1 px inner edge." },
+  { "id": "D2", "rule": "Fixed-width digits only where amounts line up or change.", "kind": "judge", "fail": "Fail if amounts in a column or an amount that updates in place use digits of uneven width, or fixed-width digits are used in running text." },
+  { "id": "D3", "rule": "Shapes are centered by eye.", "kind": "judge", "fail": "Fail if an icon or a glyph in a button or a circle looks off center, such as a play triangle or an arrow sitting to one side." },
+  { "id": "D4", "rule": "Headlines break evenly.", "kind": "judge", "fail": "Fail if a headline of two lines or more leaves one short word alone on its last line." },
+  { "id": "D5", "rule": "Words on a screen use the curly apostrophe and the ellipsis character.", "kind": "check", "by": "picks:D5" }
 ]
