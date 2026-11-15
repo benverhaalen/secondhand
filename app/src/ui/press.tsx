@@ -57,6 +57,8 @@ export function Press({ id, label, onPress, disabled = false, selected, expanded
       accessibilityRole={role}
       accessibilityLabel={label}
       accessibilityState={role === 'switch' ? { disabled, checked: !!checked } : { disabled, selected, expanded }}
+      // The web drops a false checked from accessibilityState, so a switch that is off says so itself.
+      aria-checked={role === 'switch' ? !!checked : undefined}
       disabled={disabled}
       hitSlop={hit}
       pressRetentionOffset={16}
