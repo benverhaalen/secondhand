@@ -1,6 +1,6 @@
 # Edge cases: where selling across five sites goes wrong, and what the app does
 
-*Agent proposal* from Ben and a mentor at 05:05 ([words](../product/words.md#2026-11-15-edge-cases-from-a-mentor-site-audiences-two-kinds-of-photo-enhancement-and-measuring-it-all)): two sites selling at once, different fees and payouts, typos, not knowing what a thing is, each site's audience, AI against plain photo fixes, and the auto-list tree "and when things break". Each row gives the behavior to build and where the spec already holds it. A row that changes a screen also has a way out in [ways-out.md](ways-out.md). Backend asks are in [packet 50](../.agents/team/packets/team/50-edge-cases-for-the-backend.md).
+*Agent proposal* from Ben and a mentor at 05:05 ([words](../product/words.md#2026-11-15-edge-cases-from-a-mentor-site-audiences-two-kinds-of-photo-enhancement-and-measuring-it-all)): two sites selling at once, different fees and payouts, typos, not knowing what a thing is, each site's audience, AI against plain photo fixes, and the auto-list tree "and when things break". Each row gives the behavior to build and where the spec already holds it. A row that changes a screen also has a way out in [ways-out.md](ways-out.md). Backend asks are in [packet 50](../.agents/team/packets/team/50-edge-cases-for-the-backend.md). Where two good answers conflict and the app has to choose, the call and its reasoning are in [hard-calls.md](hard-calls.md).
 
 ## 1. Two sites sell it at once
 
