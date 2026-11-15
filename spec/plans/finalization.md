@@ -138,12 +138,14 @@ The [coverage map](../../databricks/COVERAGE.md) (2026-11-15, read from the file
   | Research note, identifying an item from photos, with treg's prices | done (d5bf3ffe, 84dd5896) | [the note](../../research/identify/nate/identify-from-photos-2026-11.md); not given a fresh review |
   | Design: the identify job, the paid Lens rung (Nate: "yes"), classification, questions ordered by what they narrow | done (ab4aabb1, c616b4e7, 84dd5896, a062bac9) | [capture.md §5](../engines/capture.md#the-identify-job) |
   | Listing classification and the plan's new order | merged (dfcab2c6) | Mac: classify 14, plan 62, walk 11 byte-identical, captures 139; two review rounds |
-  | The identify engine | on `w/cap-identify-1`, round 3 running | the second review found five wrong facts on edge tags; needs round 3 green and a third review |
-  | The route join (identify as a job, site questions answerable, photos with text and codes, the Blobs upload target) | brief written, not started (`brief-cap-identify-2.txt`) | waits on the identify engine merging and the server lead's `blobs.ts` |
-  | Real uploads | agreed: the server lead's `Blobs` port | waits on `blobs.ts` landing |
-  | The question widgets, client verbs and dev screen | worker `cap-ask-1` running | overlaps Ben's `app/src/capture/client.ts` (packet 83): keep one client |
-  | The LiDAR module | on `w/cap-depth-1` (bcbff73c), Ben's packet 87 on main | geometry 9 and fallback 3 pass, unsigned iOS build succeeded; the fresh review says fix first (measurement on the ARKit queue, no depth noise in the tests) |
-  | Parts of one item (F17) | parked on `w/cap-parts-1` | three parser tests red; conflicts with dfcab2c6 in `plan.ts` and `select.ts` |
+  | The identify engine | on `w/cap-identify-1` (f5f1206a), round 3 green: parse 150, identify 62, ladder 10, Python twins 4, tsc clean (Mac) | a third fresh review that runs the parser on edge tags is running |
+  | The route join (identify as a job, site questions answerable, photos with text and codes, the Blobs upload target, editing a known fact for Ben's packet 83) | brief written, not started (`brief-cap-identify-2.txt`) | waits on the identify engine merging; the Blobs port is optional in it, so `blobs.ts` no longer blocks it |
+  | Real uploads | agreed: the server lead's `Blobs` port | `blobs.ts` not started (server lead's item 5); capture offered to build it |
+| The paid Lens step, as Nate approved it | worker `cap-lens-1` building (`brief-cap-lens-1.txt`): spend port, crop to pixels only, single-use 120 s address, replayed answers | a live call needs the server at a public address (hosting is Nate's) and his yes for that call |
+  | The question widgets, client verbs and dev screen | `cap-ask-1` parked, not merging: Ben's `live.tsx` already renders every question on his client, which matches the server | the proposed choice is not prefilled on Ben's screen: one line, packet 89 |
+| The shot guide (Nate: line art on glass, one per shot) | specified, [capture.md §7a](../engines/capture.md#7a-the-shot-guide), packet 90 for Ben | the look is Ben's; the depth module's `distance_m` is capture's, next round |
+  | The LiDAR module | on `w/cap-depth-1` (bcbff73c), Ben's packet 87 on main | round 2 building (`brief-cap-depth-2.txt`): measurement off the ARKit queue on a 3,000-point subsample, plane refit, noise tests, nearest cluster, `item_clipped` |
+  | Parts of one item (F17) | `w/cap-parts-1` with main merged in (d1c3b03f), round 2 building (`brief-cap-parts-1b.txt`) | the spec's binary-or-decimal size rule, and phone's pinned plan hash after the kind rename |
 
 - **The website waits until the system works**, as Nate said. A draft front for the buying conversation is parked on `w/buy-web-1`; it needs the server hosted before it can show anything real. A preview on Vercel is public, so it needs Nate's yes.
 
