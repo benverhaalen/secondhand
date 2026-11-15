@@ -202,7 +202,7 @@ function Sheetful() {
             <Tile id="p-t-picked" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} state="paid" word="Paid" select="picked" fact={{ label: 'In your bank' }} onPress={() => {}} />
           </Grid>
         </Shelf>
-        <Shelf id="p-kept" title="Kept" count={3} folded onOpen={() => {}} />
+        <Shelf id="p-kept" title="Kept" count={3} folded onFold={() => {}} />
       </Section>
 
       <Section title="Range, keep rows, choices (What's it worth)">

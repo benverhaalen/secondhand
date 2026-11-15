@@ -14,24 +14,31 @@
 // own, and two tiles of one kind would drift (Art. 7.8).
 //
 // Shelf: why it exists. Sell's shelves (pages §6.10) each need a header with their count and a way to see them all;
-// Section's title is a plain headline with no count and nothing to press. States: open with See all, open without
-// (everything shows), and folded (Unsold and Kept fold at the bottom: the header alone, with a chevron that opens it).
+// Section's title is a plain headline with no count and nothing to press. Every shelf folds and opens from its header
+// (Ben, 06:19: "the needs you and in progress parts they were collapsible"). States: open with See all, open without
+// (everything shows), and folded (the header alone, its count still showing, the chevron turned right).
 // A shelf holds a different number of tiles each time, so only its header is a part of one size (shelf-head, 24 tall);
 // the shelf itself is marked data-shelf, for tests.
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { View } from 'react-native';
+import Animated, { Easing, FadeIn, FadeOut, LinearTransition, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Icon } from '../icon';
+import { MOTIONS } from '../motion';
 import { Photo, type PhotoSrc } from '../photo';
 import { Press, slop } from '../press';
 import type { TagState } from '../states';
 import { Txt } from '../text';
 import { useColors } from '../theme';
-import { radius, size, space, type } from '../tokens.generated';
+import { motion, radius, size, space, type } from '../tokens.generated';
 import { FLAT, mark, type Site } from './mark';
 import { SiteBadge } from './small';
 import { Tag } from './tag';
 
-// The second line: what the number is, in secondary ink, then the number in ink ("Listed at $95", "You keep $62").
+// A shelf folds and opens in the select time: a small state change, ease-out, never past 500 ms (frontend-standard §3).
+const SHELF_MS = typeof MOTIONS.shelfFold.ms === 'number' ? MOTIONS.shelfFold.ms : motion.select;
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
+
+// The second line: what the number is, in secondary ink, then the number in ink ("Listed at $95", "You get $62").
 export type TileFact = { label: string; amount?: string };
 
 export function Tile({ id, title, photo, state, word, sites = [], fact, faded = false, select, price, onPress, children }: {
@@ -110,48 +117,50 @@ export function TileSkeleton() {
   );
 }
 
-export function Shelf({ id, title, count, onAll, folded, onOpen, children }: {
+export function Shelf({ id, title, count, onAll, folded = false, onFold, children }: {
   // The shelf's name in the data: needs_you, live, kept. It names the controls and data-shelf.
   id: string;
   title: string;
   count: number;
   // Present when the shelf shows only some of its things: "See all" opens the rest.
   onAll?: () => void;
-  // Folded: the header alone, and a tap opens it.
+  // Folded: the header alone. Its title, count and chevron are one press that folds and opens it (Ben, 06:19).
   folded?: boolean;
-  onOpen?: () => void;
+  onFold?: () => void;
   children?: ReactNode;
 }) {
-  // The header is one size whatever it holds: the content width by 24, the title and count left, its control right.
-  const words = (
-    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
-      <Txt role="headline">{title}</Txt>
-      <Txt role="headline" tone="ink-2">{String(count)}</Txt>
-    </View>
-  );
+  // The chevron turns a quarter, right when folded and down when open, the way a section in Files or Reminders does. The
+  // header is one size in both states, so folding moves nothing in it (U7); only what is under it comes and goes.
+  const turn = useSharedValue(folded ? 1 : 0);
+  useEffect(() => { turn.set(withTiming(folded ? 1 : 0, { duration: SHELF_MS, easing: EASE_OUT, reduceMotion: ReduceMotion.System })); }, [folded, turn]);
+  const chevron = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.get() * -90}deg` }] }));
   return (
-    <View {...({ dataSet: { shelf: id, folded: folded ? 'true' : 'false' } } as object)} style={{ gap: folded ? 0 : space.s4 }}>
-      {folded ? (
-        <Press id={`shelf-${id}-fold`} label={`${title}, ${count}`} onPress={onOpen} round={false} hit={slop(size.controlMin, size.siteBadge)}>
-          <View {...mark('shelf-head')} style={{ flexDirection: 'row', alignItems: 'center', height: size.siteBadge }}>
-            {words}
-            <Icon name="arrow-down-01" size={20} tone="ink-2" />
-          </View>
-        </Press>
-      ) : (
-        <View {...mark('shelf-head')} style={{ flexDirection: 'row', alignItems: 'center', height: size.siteBadge }}>
-          {words}
-          {onAll ? (
-            <Press id={`shelf-${id}-all`} label={`See all ${count}`} onPress={onAll} hit={slop(88, size.siteBadge)}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1, height: size.siteBadge }}>
-                <Txt role="body" tone="ink-2">See all</Txt>
-                <Icon name="arrow-right-01" size={20} tone="ink-2" />
-              </View>
-            </Press>
-          ) : null}
+    <Animated.View {...({ dataSet: { shelf: id, folded: folded ? 'true' : 'false' } } as object)} layout={LinearTransition.duration(SHELF_MS).easing(EASE_OUT).reduceMotion(ReduceMotion.System)}
+      style={{ gap: folded ? 0 : space.s4 }}>
+      <View {...mark('shelf-head')} style={{ flexDirection: 'row', alignItems: 'center', height: size.siteBadge }}>
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <Press id={`shelf-${id}-fold`} label={`${title}, ${count}, ${folded ? 'folded' : 'open'}`} onPress={onFold} round={false} hit={slop(size.controlMin, size.siteBadge)}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: size.siteBadge }}>
+              <Txt role="headline">{title}</Txt>
+              <Txt role="headline" tone="ink-2">{String(count)}</Txt>
+              <Animated.View style={chevron}><Icon name="arrow-down-01" size={20} tone="ink-2" /></Animated.View>
+            </View>
+          </Press>
         </View>
+        {onAll && !folded ? (
+          <Press id={`shelf-${id}-all`} label={`See all ${count}`} onPress={onAll} hit={slop(88, size.siteBadge)}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1, height: size.siteBadge }}>
+              <Txt role="body" tone="ink-2">See all</Txt>
+              <Icon name="arrow-right-01" size={20} tone="ink-2" />
+            </View>
+          </Press>
+        ) : null}
+      </View>
+      {folded ? null : (
+        <Animated.View entering={FadeIn.duration(SHELF_MS).easing(EASE_OUT).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(motion.feedback)}>
+          {children}
+        </Animated.View>
       )}
-      {folded ? null : children}
-    </View>
+    </Animated.View>
   );
 }
