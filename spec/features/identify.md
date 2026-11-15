@@ -95,7 +95,7 @@ Never "authentic": fake-risk goes to the person ("An owner's confidence is not a
 - Identify sends nothing to a buyer. Its confirmed attributes are what `claim_check` backs a listing's claims against in [list](list.md); a claim of "authentic" can never be backed, so it holds as `unbacked_claim`.
 
 ## Contract for the frontend
-Only [product §7](../product.md) endpoints: `POST /v1/captures/:id/finish` returns the jobs; `GET /v1/stream` carries `job.stage`; `GET /v1/jobs/:id` gives `job.result.candidates[]`; a `clarify` is answered at `POST /v1/decisions/:id/act`; a correction is `PATCH /v1/items/:id/attributes/:name`; `POST /v1/valuations` takes an outside URL.
+Only [product §7](../product.md) endpoints: `POST /v1/captures/:id/finish` returns the jobs; `GET /v1/stream` carries `job.stage`, each with real counts in `found{}` ([product.md §7](../product.md#7-contract-conventions)): text read, codes read, candidates found, from `route_call` records ([Nate](../../product/words.md#2026-11-14-nate-the-ui-shows-the-work-animation-and-findings-as-they-arrive)); `GET /v1/jobs/:id` gives `job.result.candidates[]`; a `clarify` is answered at `POST /v1/decisions/:id/act`; a correction is `PATCH /v1/items/:id/attributes/:name`; `POST /v1/valuations` takes an outside URL.
 
 ## Corrections become labels
 A candidate tap or a correction writes `owner_statement`; a return "not as described" writes `verified_correction` ([returns](../../research/sold/nate/trust-returns-disputes.md)); a specialist's verdict writes `specialist`. "An owner's correction is useful but not automatically ground truth" ([Nate](../../research/identify/nate/clarifying-inputs.md)). Gates are recomputed nightly per route from labels.
@@ -118,7 +118,7 @@ Run on the 100-item labelled set in [coverage](../coverage.md), plus Ben's 40 it
 | Untapped **Confirmed** precision | 99% or better | *agent proposal*; certainty principle |
 | Vision model with search alone, as a floor to beat | over 47.6% | VisBrowse-Bench Claude-4.6-Opus 47.6%, Pix2Fact Gemini-3.1-Pro 42.4% with search (*asserted*) |
 | Embedding route retrieval | R@1 near 80 on our products | SigLIP 2 on SOP, R@1 80.28 (*asserted*) |
-| Filled-field accuracy, top-4 recall, p50 time | 95%, 80%, 9 s or less | Ben's plan |
+| Filled-field accuracy, top-4 recall, p50 time | 95%, 80%, 9 s or less on an iPhone 15 Pro on LTE, warm (*agent proposal*, [assessment](../assessment.md)) | Ben's plan |
 | Questions per item | at most the cap; share of questions that changed the answer reported | arXiv 2504.16331 (*asserted*) |
 | Time to confirmed identity | p50 and p95 by kind | the cap test above |
 

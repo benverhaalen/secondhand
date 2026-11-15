@@ -17,6 +17,7 @@ At a garage sale, on a Facebook listing, holding a card, or looking at a box of 
 | 8 | "Your options" (a thing they own) | Sell, trade in, donate side by side: what they get, how long, effort |
 | 9 | **Deep**, on tap | the full research job; a Today card says when it lands |
 | 10 | "Bought it" | enter what you paid; an `owned` item with cost appears; "Sell this" moves it to capturing ([product](../product.md)) |
+| 11 | "Just value it" (a thing they own) | the item stays `owned` with its full [item card](item-card.md) and a draft listing ready; nothing is posted; it joins what your things are worth in [insights](insights.md) and a notice says when its value moves ([Nate](../../product/words.md#2026-11-14-nate-value-from-similar-listings-and-demand-and-worth-knowing-even-if-you-never-sell); *agent proposal*) |
 
 Casual is the default framing: "fair price", target profit 0 ([decision](../../product/decisions.md#2026-11-14-the-first-person-we-build-for-is-someone-clearing-their-own-things)). A reseller who sets `user.target_profit_cents` sees profit at the asking price. Batch: several photos in a row rank by profit per minute ([garage-sale](../../research/appraise/ben/garage-sale.md)).
 
@@ -54,6 +55,7 @@ Casual is the default framing: "fair price", target profit 0 ([decision](../../p
 | `match` `found` to `saved` | `save_match` answered |
 | `match` to `offered` | `buy_offer` answered |
 | new item `owned` | Bought it, or a `did_you_buy` yes |
+| item stays `owned`, card and draft kept | Just value it: the `valuate` job runs to Check, the draft is written, no `post` job is made |
 | `owned` to `capturing` | Sell this (`POST /v1/items/:id/sell`) |
 
 ## Systems underneath
@@ -108,7 +110,7 @@ flowchart LR
 
 | Call | Body | Returns |
 |---|---|---|
-| `POST /v1/valuations` | `{capture_id}` or `{url_ref}` | `202 {job_id}`; stages stream |
+| `POST /v1/valuations` | `{capture_id}` or `{url_ref}` | `202 {job_id}`; stages stream, each with real counts in `found{}` ([product.md §7](../product.md#7-contract-conventions)): sources searched, similar products found, sales weighed, sales used after filtering, from `route_call` and `citation` records ([Nate](../../product/words.md#2026-11-14-nate-the-ui-shows-the-work-animation-and-findings-as-they-arrive)) |
 | `GET /v1/valuations/:id` | | verdict, `max_pay_cents`, `per_site[]`, `check`, routes, each a guarded number |
 | `POST /v1/matches/:id/act` | `{action: save | offer, amount_cents?}` | a `save_match` or `buy_offer` decision; `422 outside_limits` |
 | `POST /v1/orders` | `{kind: purchase, valuation_id, cost}` | order and `owned` item |
@@ -141,7 +143,7 @@ flowchart LR
 
 | Bar | Source | Test |
 |---|---|---|
-| Glance p95 under 2 s, Check p95 under 10 s on mobile data | Ben's tiers ([appraisal-run](../../research/appraise/ben/appraisal-run.md)) | timed runs at a real garage sale |
+| Glance p95 under 2 s, Check p95 under 10 s on mobile data | Ben's tiers ([appraisal-run](../../research/appraise/ben/appraisal-run.md)) | 50 timed runs on LTE plus 50 on 5G, at a real garage sale (*agent proposal*) |
 | Range coverage and miss: the same pass rule as price ([money.md D6](../determinations/money.md#d6-range-calibration-and-display-state); *agent proposal*) | our own backtest. Underpriced AI 75.3% of 81 and FlipTip $28 on $100: published by the vendors, method not sound, see [the note](../../research/price/nate/published-price-tests-and-their-flaws.md) | the price backtest, restricted to appraisals |
 | Bought at or under `max_pay` resold at a profit at least 8 times in 10 | *agent proposal* | resale outcomes of Bought it items |
 | The one check moves the verdict more often than a fixed order | VOI | split test |

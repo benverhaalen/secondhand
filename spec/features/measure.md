@@ -88,7 +88,7 @@ Measure moves no item state. It runs as the `measure` job while the item is `res
 | Lakebase | attributes and evidence; Delta holds drags as labels |
 | MLflow 3 | the trace behind "why this number", carrying refs, never images |
 
-Free Edition has no GPU serving, so no cloud segmenter: masks come from the phone, and the pointing model is a hosted call through the gateway.
+The event workspace is a full workspace with GPU serving ([Nate](../../product/words.md#2026-11-14-nate-do-not-limit-the-product-to-fit-databricks)), so SAM 3 there is the cloud segmenter behind the phone's instant mask; the pointing model is a call through the gateway.
 
 ## Data flow
 

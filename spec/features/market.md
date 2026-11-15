@@ -51,9 +51,11 @@ Best tools for the catalog, not Databricks-bound: Shopify Catalog and Klarna for
 | Used median moved 10% or more over 14 days, at least 10 sold, and past the noise band in [M19](../determinations/market-insight.md#m19-when-a-followed-product-has-moved-enough-to-tell-its-follower) | weekly digest |
 | Release or restock | a retail comp with a new date | weekly digest; same day only if turned on |
 | Entered the category's top 10 risers | 2 weekly reads running | weekly digest |
+| An item you own: its value moved | the same M19 threshold on the product of an `owned` or live item, followed automatically | a `value_moved` notice in Today, batched |
+| An item you own: demand rose | watchers, saves or sold count on similar listings up past M19's noise band over 14 days | a `demand_rose` notice in Today, batched |
 | Nothing moved | | no digest |
 
-One digest card in Today, at most weekly, inside the push budget in [insights.md](insights.md), with mute and unfollow on it.
+Owned items are followed without a tap, so a kept thing still tells its owner when it is worth more or wanted more, with the citation behind it ([Nate](../../product/words.md#2026-11-14-nate-value-from-similar-listings-and-demand-and-worth-knowing-even-if-you-never-sell); *agent proposal*). One digest card in Today, at most weekly, inside the push budget in [insights.md](insights.md), with mute and unfollow on it.
 
 **Visitor to full user**: Follow, Save or Sell opens sign-up; the search, page and tapped follow carry over.
 
@@ -141,7 +143,7 @@ flowchart LR
 
 | Endpoint | Who | Returns |
 |---|---|---|
-| `POST /v1/search` (SSE) | all | per [spec/product.md](../product.md), with product_id when matched |
+| `POST /v1/search` (SSE) | all | per [spec/product.md](../product.md), with product_id when matched; each stage carries real counts in `found{}` ([product.md §7](../product.md#7-contract-conventions)), from `route_call` and `citation` records ([Nate](../../product/words.md#2026-11-14-nate-the-ui-shows-the-work-animation-and-findings-as-they-arrive)) |
 | `GET /v1/products/:id` | all | page blocks as guarded numbers |
 | `GET /v1/products/:id/history?range=` | all | series per source, eras |
 | `GET /v1/trends?category=&window=7d\|30d` | all | ranked rows |
@@ -195,7 +197,7 @@ Visitors and users as in the first table. Jobs write observations, snapshots and
 | Archived and other open-web pages carry their own site's terms | *inferred* | `rights` per source, enforced |
 | Sell-through has two formulas in circulation; [M6](../determinations/market-insight.md#m6-sell-through) owns the one used | *observed* | |
 | eBay Partner Network pays 1.5 to 4% ([buyer-side-actions-and-affiliate.md](../../research/watch/nate/buyer-side-actions-and-affiliate.md)) | *asserted* | network disclosure rules apply |
-| Free Edition limits compute for jobs and Genie ([what-databricks-rewards.md](../../research/data/nate/what-databricks-rewards.md)) | *observed* | |
+| The event workspace is a full workspace, so Free Edition compute limits for jobs and Genie do not apply ([Nate](../../product/words.md#2026-11-14-nate-do-not-limit-the-product-to-fit-databricks)) | *observed* | |
 
 Unmarked links are [market-intelligence.md](../../research/data/nate/market-intelligence.md). Rules that protect people hold regardless: no user id leaves in a share; a recalled product is marked; anything sent out passes a `claim_check`.
 
