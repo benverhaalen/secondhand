@@ -79,8 +79,10 @@ export function createClient(options: Options) {
   const logger = options.log ?? log, now = options.now ?? Date.now;
   // shortcut: the visitor id is memory only, so an app restart is a new visitor; the tokens persist in the vault.
   const session: Session = { token: null, refresh: null, visitor: null };
+  const listeners = new Set<() => void>();
+  const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener); }; };
   const store = options.vault ?? platformVault;
-  const keep = async (t: Tokens | null) => { session.token = t?.access_token ?? null; session.refresh = t?.refresh_token ?? null; await store.set(t); };
+  const keep = async (t: Tokens | null) => { session.token = t?.access_token ?? null; session.refresh = t?.refresh_token ?? null; await store.set(t); listeners.forEach(listener => listener()); };
   const ready = store.get().then(t => { if (t) { session.token = t.access_token; session.refresh = t.refresh_token; } },
     e => { logger.error('api.vault.read', e); });
 
@@ -221,7 +223,7 @@ export function createClient(options: Options) {
   const signIn = (t: Tokens) => keep(t);
   const signOut = () => keep(null);
 
-  return { call, search, jobFrames, session, signIn, signOut, ready };
+  return { call, search, jobFrames, session, signIn, signOut, ready, subscribe };
 }
 
 export const api = createClient({ origin: platformOrigin, fetch: platformFetch });

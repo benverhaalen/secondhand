@@ -30,6 +30,8 @@ Data on the Mac: `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (th
 
 ## The queue, in order (after the branches above)
 
+**First, ahead of everything (orchestrator, 2026-11-15 about 14:05 UTC):** the shop chat has no backend. `POST /v1/assist` is still `exampleHandler` (`app/src/edge/api/assist.ts:14`), so a signed-in person gets 404 and the chat shows "Couldn't answer that yet"; signed out it is 401 and the app logs `SH_CRASH shop.ask no token`. It is the first thing a judge touches after a search. No commit yet makes "What's selling and why" answer from the search's own rows. Order: judge `eng-assist-1` r4 and `eng-tools-1` (both finished with reports at about 14:05 UTC, uncommitted); land them; then one brief for `converse.ts` taking `onLate` and `POST /v1/assist` serving `assist.tool` / `assist.text` / `assist.settled` to the shop chat (`app/src/buy/chat/assist.ts`), in the agreed shape, with the visitor photo allowed, the two-person test and the visitor cap. Nate also wants the capture flow's clarifying-question widgets (prefilled choices when the system is fairly sure) in the chat's answers when a question is ambiguous (size, model year, new or used): agree the block shape with the capture lead (`local_b0ef7332-bb07-4ffe-a010-dc0d32f97279`) so the chat emits the same block and the app draws one part. His words are in product/words.md under that heading. `eng-en3-1` r2 and `eng-en7-1` also finished with reports; judge them after BC3.
+
 0. **EN6 round 2** in worktree `eng-en6-1` (`AGAIN=1`): (1) a parity case with a fractional `retail_weight` (cited retail prior, a kind band, rows at two levels, a recent variant anchor), since every case today has weight 0 or 1; (2) the new-with-tags retail cap (check.ts:90) still applies with no `retail_citation`: gate it on the citation; (3) the 100-cent floor again after calibration (check.ts:108: q10 100 with Q_g 1.0 gives 37 cents); (4) drop the `log.error` fallback for a logger without `note` (check.ts:83).
 1. **BC3, the route.** `converse.ts` takes `onLate` (after r4 lands): each late frame becomes a new result id, gated like the first; then `POST /v1/assist` in the shape agreed with the app-wiring lead (below), a two-person test, the $5 daily visitor cap. A visitor's photo is still 422 (Nate's open question).
 2. **EN2, the loop**, link by link in `scripts/realtime-proof.mjs` order: link 2, the route runs `gather` when `valuate` returns a need (`valuations.ts`); links 3 and 4, gather's steps call search through its handler; links 5 and 6 need SV7 (packet 86's `srv-obs-1`); link 7, citations resolve to stored rows (`memoryProof` needs a durable store); link 8, `updateContribution` from the valuation route; link 9, `cutOrder` and `contributionMean` read in gather's order. Each link updates its test in the same commit.
@@ -39,8 +41,9 @@ Data on the Mac: `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (th
 
 ## Waiting on Nate
 
-- Whether a visitor's photo may reach the conversation model before the identify step strips it to attributes. Until then a visitor's image is 422.
-- Any real-time market score (EN7) or backtest figure on a public page or in the pitch needs both Nate and Ben to have seen it first.
+- **Settled 2026-11-15** ([words](../../../../product/words.md#2026-11-15-nate-visitor-photos-may-reach-the-conversation-benchmarks-good-enough-for-the-site-three-free-requests-open-source-with-a-companion-mcp-server)): a visitor's photo may reach the conversation model ("thats ok for photos to reach"). BC3's route accepts `image` for a visitor, held to the same size and type checks as a person's; drop the 422.
+- Market scores and benchmarks: Nate wants them "great enough to put on the site". That makes EN7's accuracy the aim; each figure still goes up only after Ben and Nate have seen it, with Nate's yes for that page.
+- The same message asks for three free requests for every user for the hackathon, the repo free to download on GitHub as open source, and a companion MCP server that gives anyone's agent the search engine. None is engines work; it went to the orchestrator.
 - The visitor turn cap `ASSIST_TURN_MAX_USD` 0.25 is an *agent proposal*; the daily cap of $5 is his.
 - The sale-curve rule above and the 100-cent floor are *agent proposals*.
 
@@ -62,6 +65,7 @@ Data on the Mac: `~/secondhand-data/measures/engine_all_on-2026-11-15.jsonl` (th
   - `503 unavailable` when there is no key, `429 rate_limited` with `extra.cap: 'daily'` at the $5 visitor cap, `422` for bad input.
 
   Their client already sends this.
+- **Capture lead (the clarifying-question block, `Ask`):** shape in [capture.md §4, "The question block, shared with the buying chat"](../../../../spec/engines/capture.md) (789eb9f1), type exported from `app/src/engines/capture/plan.ts`: {id, field, kind, words, options [{value, label?, proposed, rests_on?}], other, max_length?, unit?, units?, parts?, why, answer {method, path}}; one drawn part in `app/src/ui/parts/` (Ben's). I agreed it with three additions for the chat: the answer goes as `POST /v1/assist` with `answer: {ask_id, field, value}` and text = the chosen label, with ids stable per question; `replaces?` names an earlier Ask it supersedes (a superseded answer gets 409); in the chat `rests_on` (or a separate `cites`, the capture lead's pick) is result ids, and labels pass the number gate. Their reply was pending at this handoff.
 - **Search lead:** frames in-process through `jobs.listen` and `framesAfter` (the shared note `eng-bc3-search-frames.md`); `group` ('platform' | 'osint') per source is coming; Google Shopping through treg was asked of them, with `may_model` false until a research note on Serper's and Google's terms.
 
 ## Learned the hard way

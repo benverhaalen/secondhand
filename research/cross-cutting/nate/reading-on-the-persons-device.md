@@ -80,3 +80,42 @@ observed from https://developer.apple.com/app-store/review/guidelines/ : 5.2.2, 
 
 ## Sources fetched
 All URLs above were fetched 2026-11-15 except: Depop help (403, search summary only), eBay US and Mercari (blocked), Facebook policy (not read), Flyp (404), Nifty (no content read). Scratch copies sit in the session scratchpad, untrusted.
+
+## SR13: terms, robots, pace and refusals for the device lane
+Added 2026-11-15 by the search lead (Claude Code, Opus), from a retrieval seat's evidence (Sonnet 5.5, fetched today), for [finalization SR13](../../../spec/plans/finalization.md#3-search-and-the-sources-lead-search). The design itself is in [protocol and adapters](../../../spec/engines/protocol-and-adapters.md) ("A read can run in five places"); this section adds only what that left open. Marks as above. Poshmark's, Meta's and Apple's pages were read through a summarising fetch, so their wording is *observed via summary*.
+
+**robots.txt for each search path** (fetched with curl today):
+
+| Site | Search path | Rule for `User-agent: *` |
+|---|---|---|
+| eBay | `/sch/` | `Disallow: /sch/` (*observed*) |
+| Poshmark | `/search` | `Disallow: /search` (*observed*) |
+| Mercari | `/search/` | not disallowed (*observed*) |
+| Facebook | `/marketplace/` | `Disallow: /`, and the file's header bars automated collection without written permission (*observed*) |
+| Dupe | `/search` | allowed; `/api/*` and `/redirect` disallowed (*observed*) |
+| Depop | `/search/` | not readable: Cloudflare answered 403 "Just a moment", not worked around |
+
+**Terms.** Every site's terms bar automated access without permission:
+- eBay User Agreement, effective June 28, 2026: no "robot, spider, scraper ... or other automated means", naming LLM-driven bots (*observed*).
+- Depop, read from its help-centre mirror because depop.com answered 403: section 6.2 bars mining, scraping or crawling, and bots (*observed*).
+- Poshmark 4(b): no technology "to collect" data (*observed via summary*).
+- Mercari Prohibited Conduct: "any robot ... or other automated means or interface not provided by us" (*observed*).
+- Meta Terms 3.2 and the Automated Data Collection Terms (*observed via summary*).
+
+None of the text read separates a person's own browser from a server (*not found*). Dupe's terms (section 13) license calling its interfaces to display results, but bar caching beyond what they permit, reselling the results as a dataset and training models on them (*observed*); `may_store: false` already follows this.
+
+**App stores.** Apple 5.2.2: an app that "displays content from a third-party service" must be permitted to under that service's terms (*observed via summary*). Google Play's minimum-functionality and deceptive-behavior pages hold no web view or scraping rule (*observed*), and its spam page was not read.
+
+**What it takes** (*observed* in the repo unless marked):
+- `react-native-webview` 14.0.1 is now in `app/package.json`, the version Expo's SDK 58 page recommends.
+- `injectJavaScript` can run on demand, and the page answers through `postMessage`, one string at a time, to `onMessage`.
+- No size limit for an injected script is documented (*not found*).
+- `parseListings` in `harness/listing-parser.ts` has no imports and uses only DOM APIs, RegExp and URL, and the server already sends it into a page as source (`public-client.ts`). So it could run in the web view unchanged (*inferred*; not tried on a device). The spec instead has the web view send the page and the server parse it. That keeps one parser version and lets the server check the result, so this note does not reopen that choice.
+
+**What it changes for pace and refusals:**
+- **Pace** (*inferred*). Each person's search would come from their own connection, so the server's shared eBay queue (6 a minute, 10 s apart, for everyone) would no longer hold up a person's own search. That queue is the likely cause of the 8.3 s cold full answer ([packet 88](../../../.agents/team/packets/team/88-search-handoff.md) section 3). In return, one public read would no longer serve everyone asking the same query (SR5): every person would read once.
+- **Refusals** (*asserted*: vendor and proxy blogs, no controlled test found). Bot vendors weigh the network class most, and a phone on a home or carrier network reads as a person where a data-centre browser gets challenged. eBay is reported on Akamai, Depop and Mercari on Cloudflare.
+- **The rule that binds this.** No bot check is solved, operated or routed around, and a refusal makes the site back off. Sending a read to the phone *because* the cloud browser was refused would route around that refusal. So a site paused on the cloud lane stays paused on the device lane, and a challenge shown in the web view is the person's to answer or leave, never retried by the app.
+- **Terms** (*inferred*). A script reading a page in the person's web view is still a program collecting the page, under every wording read. The device lane changes who makes the request, not whether the terms permit it, and Apple 5.2.2 makes that question part of App Review.
+
+**Agent proposal.** Do not build the device lane to gain pace or to get past refusals: on terms it is the same act, and on our own rule it must not be used to get past a refusal. Its honest use is the one the spec already names: reads of the person's own pages under their own sign-in while the app is open, with every challenge left to them. Whether to add it at all, and whether eBay's and Poshmark's robots rules change which signed-out reads we make, are Nate's calls; Nate already ruled to read eBay's pages ([words](../../../product/words.md#2026-11-15-nate-our-own-page-read-is-a-websites-read-driven-by-the-visitors-browser)).

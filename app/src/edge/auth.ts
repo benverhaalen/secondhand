@@ -1,3 +1,4 @@
+import { emailSender } from './connect/email.ts';
 // App sign-in on the edge (connect.md "Signing in to secondhand"). How it runs:
 //   reads:   the bearer token (verifyAccess: one store read by SHA-256 of the token), a provider id token (one cached JWKS, one RS256 check), or an email code.
 //   sign-in: identify (verify proof) -> find or create user and identity -> mint access (1 h) + refresh (30 d) in one parallel write. Two store reads, one write.
@@ -371,7 +372,7 @@ if (developmentCode !== undefined && process.env.NODE_ENV !== 'development') {
   developmentCode = undefined;
   deps.log.note('auth.dev_code_ignored');
 }
-let sender: AuthOpts['sendCode'] = developmentCode === undefined ? undefined : async (email) => {
+let sender: AuthOpts['sendCode'] = developmentCode === undefined ? emailSender() : async (email) => {
   deps.log.note('auth.dev_code', { email_hash: (await emailHash(email)).slice(0, 8) });
 };
 export function configureSender(fn: NonNullable<AuthOpts['sendCode']>): void { sender = fn; developmentCode = undefined; }

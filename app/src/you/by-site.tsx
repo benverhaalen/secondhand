@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useScreen } from '@/demo/screen';
 import { connectionState, insights, type Site } from '@/demo';
 import { Blank, Guess, Line, List, Nav, Screen, Section, Stack, Txt } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
@@ -11,11 +12,14 @@ const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', '
 // What the person typed as an amount, in cents, or null when it is not one.
 const cents = (typed: string) => { const v = Number(typed.replace(/[^0-9.]/g, '')); return typed.trim() && Number.isFinite(v) && v > 0 ? Math.round(v * 100) : null; };
 
-export function BySite({ embedded = false }: { embedded?: boolean } = {}) {
+export function BySite({ embedded = false, section = 'all', readOnlyGoal: requestedReadOnlyGoal = false }: { embedded?: boolean; section?: 'all' | 'sites' | 'worth' | 'goals'; readOnlyGoal?: boolean } = {}) {
   const { w, asked } = usePage(), go = useGo();
+  const { demo } = useScreen();
+  const readOnlyGoal = requestedReadOnlyGoal || !demo;
   const n = insights(w);
   const month = MONTH[Number(w.now.slice(5, 7)) - 1];
   const [target, setTarget] = useState<number | null>(w.goal?.target_cents ?? null);
+  const shownTarget = readOnlyGoal ? w.goal?.target_cents ?? null : target;
   const progress = n.goal?.progress_cents ?? 0;
   const things = w.items.filter(i => ['live', 'stale', 'kept', 'owned'].includes(i.state));
   const linked = (site: Site) => w.connections.some(c => c.site === site && connectionState(c) !== 'not_connected');
@@ -29,8 +33,8 @@ export function BySite({ embedded = false }: { embedded?: boolean } = {}) {
   const content = (
     <Stack gap="cards">
       <PageStatus asked={asked} what="your numbers">
-      <Trends w={w} go={go} />
-      <Section title="By site">
+      {section === 'all' ? <Trends w={w} go={go} /> : null}
+      {section === 'all' || section === 'sites' ? <Section title="By site">
         {n.by_site.length ? (
           <List>
             {n.by_site.map(s => (
@@ -43,9 +47,9 @@ export function BySite({ embedded = false }: { embedded?: boolean } = {}) {
         ) : (
           <Txt role="body" tone="ink-2">Each site you sell on shows here once it has a sale.</Txt>
         )}
-      </Section>
+      </Section> : null}
 
-      {things.length ? (
+      {(section === 'all' || section === 'worth') && things.length ? (
         <Section title="What your things are worth">
           <List>
             {things.map(i => (
@@ -56,7 +60,9 @@ export function BySite({ embedded = false }: { embedded?: boolean } = {}) {
         </Section>
       ) : null}
 
-      <Section title={`${month} goal`}>
+      {section === 'worth' && !things.length ? <Section title="What your things are worth"><Txt role="body" tone="ink-2">Item valuations appear here when available.</Txt></Section> : null}
+      {section === 'all' || section === 'goals' ? <Section title={`${month} goal`}>
+        {readOnlyGoal ? (shownTarget !== null ? <GoalBar label="Kept so far" kept={progress / 100} target={shownTarget / 100} /> : <Txt role="body" tone="ink-2">No goal set.</Txt>) : <>
         {target !== null ? <GoalBar label="Kept so far" kept={progress / 100} target={target / 100} /> : null}
         <List>
           <ListRow id="goal-row" label="Goal"
@@ -64,7 +70,8 @@ export function BySite({ embedded = false }: { embedded?: boolean } = {}) {
               ? <Guess id="goal-target" name="Goal" value={`${cash(target)} a month`} numeric changed onChange={setGoal} look="body" />
               : <Blank id="goal-target" name="Amount" numeric onChange={setGoal} look="body" />}</Line>} />
         </List>
-      </Section>
+        </>}
+      </Section> : null}
       </PageStatus>
     </Stack>
   );

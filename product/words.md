@@ -2375,3 +2375,37 @@ Nate, the orchestrator's session, 2026-11-15, about 13:35 UTC, while the orchest
 > ensure the app is built to handle the data, everything sends in, the behavior works correctly
 
 Used in: [the harness-to-row map](../app/src/edge/intel/public/search.ts) and [its test](../app/src/edge/intel/public/search-fields.test.ts).
+
+## 2026-11-15 nate visitor photos may reach the conversation, benchmarks good enough for the site, three free requests, open source with a companion MCP server
+Nate, the engines lead's session, 2026-11-15, about 13:37 UTC, answering the engines handoff's open questions (a visitor's photo reaching the conversation model before identify strips it; any market score or backtest figure on a public page).
+> thats ok for photos to reach, seeing any market score? yeah i want benchmarks great enough to put on the site. and lets put 3 requests free for every user just for the hackathon, with it free to download on github, open source, alongside with a companion mcp server to give everyones agent access to the secondhand search engine
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate three free requests in total for the hackathon, then a referral-link partner
+Nate, the engines lead's session, 2026-11-15, about 13:39 UTC, answering what counts as one of the three free requests and over what period (options were three searches a day, three in total, or three conversation turns a day).
+> 3 total for hackathon, with plans to parenter with a link referrel service or however best to say that
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate ben handles the sign-in proof, we validate the full backend
+Nate, the search lead's session, 2026-11-15, about 13:40 UTC, after the harness coverage table showed every monitor, manage and analytics verb waiting on a linked account.
+> ben will handle sign in proof, we are focusing on validating the full backend, chekcing and ensuring everything works,
+
+Used in: [harness coverage](../research/cross-cutting/nate/runs/harness-coverage-2026-11-15.md), [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate apify for facebook marketplace only; ebay through treg and our own pages
+Nate, the Databricks lead's session, 2026-11-15, about 13:40 UTC, while the lead was writing the rights rows for every live source (row DB11), which had allowed rows from any site read through an Apify actor.
+> apify for fb marketpalce only
+
+> we have treg for ebay and our own slow pages
+
+Read by the Databricks lead: an Apify row is a Facebook Marketplace row; a line from any other site through Apify has no rights row and is refused. eBay rows come through treg and our own page reads; eBay content still never fits a model, by any route ([data use](../spec/data-use.md)).
+
+Used in: [finalization.md DB11](../spec/plans/finalization.md), the rights brief `brief-dbx-rights-1`.
+
+## 2026-11-15 nate the clarifying question widgets belong in the intelligent ui too
+Nate, the orchestrator's session, 2026-11-15, about 13:50 UTC.
+> I think we can add those clarifying question widgest to the intelligent ui too
+
+Read by the orchestrator as: the generative clarifying-question widgets built for capture (prepopulated selects when the system is fairly sure) also appear in the buying chat's answers; one block shape and one drawn part for both. Sent to the capture lead and the engines lead.

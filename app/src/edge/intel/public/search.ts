@@ -15,7 +15,11 @@ import { createDupe, type DupeRow } from '../../harness/sites/dupe/adapter.ts';
 import { MAX_ITEMS, ROUTE_IDS, type ApifyRow, type Lane, type createApify } from '../../harness/sites/apify/adapter.ts';
 
 const dupe = createDupe({ log: createLog({ src: 'intel.dupe', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink }) });
-export type SearchRow = Row & { host?: string; converted?: boolean; may_store?: boolean; stock?: 'in_stock' | 'out_of_stock' | 'unknown' } & Partial<Omit<DupeRow, keyof Row | 'attribution'>> & { attribution?: DupeRow['attribution'] | ShoppingRow['attribution'] } & Partial<Pick<ApifyRow, 'via' | 'actor' | 'may_model' | 'use_scope'>>;
+export type SearchRow = Row & {
+  host?: string; converted?: boolean; may_store?: boolean; stock?: 'in_stock' | 'out_of_stock' | 'unknown';
+  shipping_cents?: number; price_high_cents?: number; buying_format?: string; bid_count?: number; best_offer?: boolean;
+  sold_count?: number; watchers?: number; ships_from?: string; sponsored?: boolean;
+} & Partial<Omit<DupeRow, keyof Row | 'attribution'>> & { attribution?: DupeRow['attribution'] | ShoppingRow['attribution'] } & Partial<Pick<ApifyRow, 'via' | 'actor' | 'may_model' | 'use_scope'>>;
 
 export type SiteOutcome = 'hit' | 'empty' | 'blocked' | 'timeout' | 'page_changed' | 'needs_account' | 'failed' | 'unknown';
 export interface SiteSearched { site: SourceSite; group: Source['group']; kind: Kind; url: string | null; outcome: SiteOutcome; ms: number; count: number; missing?: string[]; reason?: string; error_code?: string; pace?: Pace; dropped?: number; route_id?: string; fallback?: 'apify'; cost_usd_est?: number }
@@ -162,7 +166,7 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
   if (source.lane === 'public_page') return searchSite(source.site, query, kind, o);
   const account = await sourceAccount(source, o);
   const site = source.site;
-  const run = () => o.harness!.call<(SnapListing & { title?: string; slug?: string; condition?: string; size?: string; listed_at?: string; sold_at?: string; currency: string; url: string; host?: string; converted?: boolean })[]>(site, 'search', {
+  const run = () => o.harness!.call<(SnapListing & SearchRow & { slug?: string; sold_at?: string; seller_ref_hash?: string })[]>(site, 'search', {
     q: query, status: kind === 'sold' ? 'sold' : 'active', ...(account ? { account_id: account.account_id, person_id: o.person_id } : {}),
   }, { signal: o.signal });
   const result = o.log ? await o.log.call('tool', `${source.id}.search`, { account_id: account?.account_id }, run) : await run();
@@ -182,6 +186,7 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
   const rows = result.data.map(({ external_id, slug, state, sold_at, seller_ref_hash, ...rest }: (typeof result.data)[number] & { seller_ref_hash?: string }) => ({
     ...rest, id: external_id, title: rest.title ?? (site === 'depop' ? slug : undefined), sold_date: sold_at,
     ...(seller_ref_hash ? { seller_hash: seller_ref_hash } : {}), ...(state === 'sold' ? { sold: true as const } : {}) }));
+
   const read = classifyRead({ challenge: false, rows }, { site: source.site, fields });
   if (!read.ok && noListingCard(read.error)) return { rows: [], searched: { ...blocked('no listing card').searched, outcome: 'unknown', ms: result.meta.ms, dropped: rows.length } };
   if (!read.ok) return { rows: [], searched: { ...blocked(read.error.message).searched, outcome: 'page_changed', error_code: 'page_changed', ms: result.meta.ms, dropped: rows.length } };
