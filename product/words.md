@@ -793,3 +793,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate hooks for every app event: what we poll, what the platform triggers, sign-in by oauth where possible
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Figure out the best way to develop and establish hooks for each app event to be caught by the system. For the platforms being targetted, are there things we can build to poll, things that are triggered by the platform itself, ideally they just auth in to each site, using oauth
+
+## 2026-11-14 nate no depop partner access, so build an ai-driven workaround
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> We are not getting depop partner access, so I want you to create a workaround ,utilizing ai driven technology, take into account the frameworks and harnesses i showed you
