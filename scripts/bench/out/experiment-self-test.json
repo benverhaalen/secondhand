@@ -1,0 +1,1686 @@
+{
+ "data": "synthetic, not real",
+ "checks": {
+  "oracle_scores_100": true,
+  "random_comps_lose_to_product_median": true,
+  "planted_leak_refused": true
+ },
+ "report": {
+  "contestants": {
+   "oracle": {
+    "overall": {
+     "n": 296,
+     "priced": 296,
+     "hit_rate": 1.0,
+     "within_10": 1.0,
+     "within_20": 1.0,
+     "median_pct_off": 0.0,
+     "median_dollars_off": 0.0,
+     "bias": 0.0,
+     "sold_above_our_middle": 0.0,
+     "off_by_over_30": 0.0,
+     "coverage": 1.0,
+     "coverage_wilson_95": [
+      0.9872,
+      1.0
+     ]
+    },
+    "lift_vs_primary": {
+     "diff": 0.5799,
+     "lo": 0.5143,
+     "hi": 0.6438,
+     "n_items": 269,
+     "n_products": 62
+    },
+    "slices": {
+     "kind": {
+      "hoodie": {
+       "n": 62,
+       "priced": 62,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9417,
+        1.0
+       ]
+      },
+      "jacket": {
+       "n": 71,
+       "priced": 71,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9487,
+        1.0
+       ]
+      },
+      "jeans": {
+       "n": 43,
+       "priced": 43,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.918,
+        1.0
+       ]
+      },
+      "shorts": {
+       "n": 69,
+       "priced": 69,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9473,
+        1.0
+       ]
+      },
+      "t-shirt": {
+       "n": 51,
+       "priced": 51,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.93,
+        1.0
+       ]
+      }
+     },
+     "condition": {
+      "excellent": {
+       "n": 85,
+       "priced": 85,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9568,
+        1.0
+       ]
+      },
+      "fair": {
+       "n": 40,
+       "priced": 40,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9124,
+        1.0
+       ]
+      },
+      "good": {
+       "n": 144,
+       "priced": 144,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.974,
+        1.0
+       ]
+      },
+      "new_with_tags": {
+       "n": 27,
+       "priced": 27,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.8754,
+        1.0
+       ]
+      }
+     },
+     "site": {
+      "depop": {
+       "n": 76,
+       "priced": 76,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9519,
+        1.0
+       ]
+      },
+      "ebay": {
+       "n": 58,
+       "priced": 58,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9379,
+        1.0
+       ]
+      },
+      "mercari": {
+       "n": 68,
+       "priced": 68,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9465,
+        1.0
+       ]
+      },
+      "poshmark": {
+       "n": 94,
+       "priced": 94,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9607,
+        1.0
+       ]
+      }
+     },
+     "price_band_of_our_middle": {
+      "under_25": {
+       "n": 62,
+       "priced": 62,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9417,
+        1.0
+       ]
+      },
+      "25_to_100": {
+       "n": 216,
+       "priced": 216,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.9825,
+        1.0
+       ]
+      },
+      "100_to_500": {
+       "n": 18,
+       "priced": 18,
+       "hit_rate": 1.0,
+       "within_10": 1.0,
+       "within_20": 1.0,
+       "median_pct_off": 0.0,
+       "median_dollars_off": 0.0,
+       "bias": 0.0,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 0.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.8241,
+        1.0
+       ]
+      }
+     }
+    },
+    "primary_on_items_we_declined": null,
+    "primary_on_items_we_priced": {
+     "n": 296,
+     "priced": 269,
+     "hit_rate": 0.9088,
+     "within_10": 0.2007,
+     "within_20": 0.4201,
+     "median_pct_off": 0.248,
+     "median_dollars_off": 10.62,
+     "bias": -0.0176,
+     "sold_above_our_middle": 0.5204,
+     "off_by_over_30": 0.4164,
+     "coverage": 0.4424,
+     "coverage_wilson_95": [
+      0.3843,
+      0.5021
+     ]
+    },
+    "freeze_from_sale_date": 296
+   },
+   "random_comps": {
+    "overall": {
+     "n": 296,
+     "priced": 296,
+     "hit_rate": 1.0,
+     "within_10": 0.1351,
+     "within_20": 0.2804,
+     "median_pct_off": 0.4169,
+     "median_dollars_off": 16.54,
+     "bias": 0.0146,
+     "sold_above_our_middle": 0.4966,
+     "off_by_over_30": 0.6182,
+     "coverage": 0.5777,
+     "coverage_wilson_95": [
+      0.5208,
+      0.6326
+     ]
+    },
+    "lift_vs_primary": {
+     "diff": -0.1487,
+     "lo": -0.2316,
+     "hi": -0.0607,
+     "n_items": 269,
+     "n_products": 62
+    },
+    "slices": {
+     "kind": {
+      "hoodie": {
+       "n": 62,
+       "priced": 62,
+       "hit_rate": 1.0,
+       "within_10": 0.1613,
+       "within_20": 0.371,
+       "median_pct_off": 0.3124,
+       "median_dollars_off": 13.21,
+       "bias": -0.0363,
+       "sold_above_our_middle": 0.5484,
+       "off_by_over_30": 0.5,
+       "coverage": 0.7419,
+       "coverage_wilson_95": [
+        0.6212,
+        0.8345
+       ]
+      },
+      "jacket": {
+       "n": 71,
+       "priced": 71,
+       "hit_rate": 1.0,
+       "within_10": 0.0423,
+       "within_20": 0.1127,
+       "median_pct_off": 0.521,
+       "median_dollars_off": 38.16,
+       "bias": -0.5103,
+       "sold_above_our_middle": 0.9014,
+       "off_by_over_30": 0.8169,
+       "coverage": 0.3944,
+       "coverage_wilson_95": [
+        0.2889,
+        0.5106
+       ]
+      },
+      "jeans": {
+       "n": 43,
+       "priced": 43,
+       "hit_rate": 1.0,
+       "within_10": 0.1163,
+       "within_20": 0.3488,
+       "median_pct_off": 0.3401,
+       "median_dollars_off": 13.13,
+       "bias": 0.1209,
+       "sold_above_our_middle": 0.4186,
+       "off_by_over_30": 0.5116,
+       "coverage": 0.7907,
+       "coverage_wilson_95": [
+        0.6479,
+        0.8858
+       ]
+      },
+      "shorts": {
+       "n": 69,
+       "priced": 69,
+       "hit_rate": 1.0,
+       "within_10": 0.2174,
+       "within_20": 0.3333,
+       "median_pct_off": 0.3802,
+       "median_dollars_off": 10.41,
+       "bias": 0.3672,
+       "sold_above_our_middle": 0.2029,
+       "off_by_over_30": 0.5507,
+       "coverage": 0.5362,
+       "coverage_wilson_95": [
+        0.4198,
+        0.6489
+       ]
+      },
+      "t-shirt": {
+       "n": 51,
+       "priced": 51,
+       "hit_rate": 1.0,
+       "within_10": 0.1373,
+       "within_20": 0.2745,
+       "median_pct_off": 0.4546,
+       "median_dollars_off": 15.08,
+       "bias": 0.3593,
+       "sold_above_our_middle": 0.3333,
+       "off_by_over_30": 0.6667,
+       "coverage": 0.5098,
+       "coverage_wilson_95": [
+        0.3768,
+        0.6414
+       ]
+      }
+     },
+     "condition": {
+      "excellent": {
+       "n": 85,
+       "priced": 85,
+       "hit_rate": 1.0,
+       "within_10": 0.1765,
+       "within_20": 0.3059,
+       "median_pct_off": 0.3967,
+       "median_dollars_off": 15.91,
+       "bias": 0.0562,
+       "sold_above_our_middle": 0.4824,
+       "off_by_over_30": 0.5882,
+       "coverage": 0.5882,
+       "coverage_wilson_95": [
+        0.482,
+        0.6868
+       ]
+      },
+      "fair": {
+       "n": 40,
+       "priced": 40,
+       "hit_rate": 1.0,
+       "within_10": 0.05,
+       "within_20": 0.225,
+       "median_pct_off": 0.4634,
+       "median_dollars_off": 17.73,
+       "bias": 0.2533,
+       "sold_above_our_middle": 0.35,
+       "off_by_over_30": 0.7,
+       "coverage": 0.6,
+       "coverage_wilson_95": [
+        0.446,
+        0.7365
+       ]
+      },
+      "good": {
+       "n": 144,
+       "priced": 144,
+       "hit_rate": 1.0,
+       "within_10": 0.1319,
+       "within_20": 0.2708,
+       "median_pct_off": 0.4142,
+       "median_dollars_off": 16.53,
+       "bias": -0.0057,
+       "sold_above_our_middle": 0.5,
+       "off_by_over_30": 0.6181,
+       "coverage": 0.5486,
+       "coverage_wilson_95": [
+        0.4671,
+        0.6276
+       ]
+      },
+      "new_with_tags": {
+       "n": 27,
+       "priced": 27,
+       "hit_rate": 1.0,
+       "within_10": 0.1481,
+       "within_20": 0.3333,
+       "median_pct_off": 0.4244,
+       "median_dollars_off": 22.2,
+       "bias": -0.2987,
+       "sold_above_our_middle": 0.7407,
+       "off_by_over_30": 0.5926,
+       "coverage": 0.6667,
+       "coverage_wilson_95": [
+        0.4782,
+        0.8136
+       ]
+      }
+     },
+     "site": {
+      "depop": {
+       "n": 76,
+       "priced": 76,
+       "hit_rate": 1.0,
+       "within_10": 0.0921,
+       "within_20": 0.2368,
+       "median_pct_off": 0.427,
+       "median_dollars_off": 19.45,
+       "bias": -0.1151,
+       "sold_above_our_middle": 0.5526,
+       "off_by_over_30": 0.6184,
+       "coverage": 0.5395,
+       "coverage_wilson_95": [
+        0.4282,
+        0.6469
+       ]
+      },
+      "ebay": {
+       "n": 58,
+       "priced": 58,
+       "hit_rate": 1.0,
+       "within_10": 0.1379,
+       "within_20": 0.2931,
+       "median_pct_off": 0.3737,
+       "median_dollars_off": 14.02,
+       "bias": -0.0356,
+       "sold_above_our_middle": 0.5172,
+       "off_by_over_30": 0.6034,
+       "coverage": 0.6034,
+       "coverage_wilson_95": [
+        0.4749,
+        0.7191
+       ]
+      },
+      "mercari": {
+       "n": 68,
+       "priced": 68,
+       "hit_rate": 1.0,
+       "within_10": 0.2059,
+       "within_20": 0.3088,
+       "median_pct_off": 0.4291,
+       "median_dollars_off": 17.82,
+       "bias": 0.018,
+       "sold_above_our_middle": 0.4706,
+       "off_by_over_30": 0.6029,
+       "coverage": 0.5588,
+       "coverage_wilson_95": [
+        0.4408,
+        0.6705
+       ]
+      },
+      "poshmark": {
+       "n": 94,
+       "priced": 94,
+       "hit_rate": 1.0,
+       "within_10": 0.117,
+       "within_20": 0.2872,
+       "median_pct_off": 0.4246,
+       "median_dollars_off": 17.75,
+       "bias": 0.0531,
+       "sold_above_our_middle": 0.4574,
+       "off_by_over_30": 0.6383,
+       "coverage": 0.6064,
+       "coverage_wilson_95": [
+        0.5053,
+        0.6991
+       ]
+      }
+     },
+     "price_band_of_our_middle": {
+      "under_25": {
+       "n": 17,
+       "priced": 17,
+       "hit_rate": 1.0,
+       "within_10": 0.1765,
+       "within_20": 0.2941,
+       "median_pct_off": 0.4042,
+       "median_dollars_off": 14.51,
+       "bias": -0.4042,
+       "sold_above_our_middle": 0.8235,
+       "off_by_over_30": 0.6471,
+       "coverage": 0.5882,
+       "coverage_wilson_95": [
+        0.3601,
+        0.7839
+       ]
+      },
+      "25_to_100": {
+       "n": 278,
+       "priced": 278,
+       "hit_rate": 1.0,
+       "within_10": 0.1331,
+       "within_20": 0.2806,
+       "median_pct_off": 0.4169,
+       "median_dollars_off": 16.61,
+       "bias": 0.0307,
+       "sold_above_our_middle": 0.4784,
+       "off_by_over_30": 0.6151,
+       "coverage": 0.5755,
+       "coverage_wilson_95": [
+        0.5168,
+        0.6322
+       ]
+      },
+      "100_to_500": {
+       "n": 1,
+       "priced": 1,
+       "hit_rate": 1.0,
+       "within_10": 0.0,
+       "within_20": 0.0,
+       "median_pct_off": 0.9341,
+       "median_dollars_off": 65.39,
+       "bias": 0.9341,
+       "sold_above_our_middle": 0.0,
+       "off_by_over_30": 1.0,
+       "coverage": 1.0,
+       "coverage_wilson_95": [
+        0.2065,
+        1.0
+       ]
+      }
+     }
+    },
+    "primary_on_items_we_declined": null,
+    "primary_on_items_we_priced": {
+     "n": 296,
+     "priced": 269,
+     "hit_rate": 0.9088,
+     "within_10": 0.2007,
+     "within_20": 0.4201,
+     "median_pct_off": 0.248,
+     "median_dollars_off": 10.62,
+     "bias": -0.0176,
+     "sold_above_our_middle": 0.5204,
+     "off_by_over_30": 0.4164,
+     "coverage": 0.4424,
+     "coverage_wilson_95": [
+      0.3843,
+      0.5021
+     ]
+    },
+    "freeze_from_sale_date": 296
+   },
+   "product_90d_median": {
+    "overall": {
+     "n": 296,
+     "priced": 269,
+     "hit_rate": 0.9088,
+     "within_10": 0.2007,
+     "within_20": 0.4201,
+     "median_pct_off": 0.248,
+     "median_dollars_off": 10.62,
+     "bias": -0.0176,
+     "sold_above_our_middle": 0.5204,
+     "off_by_over_30": 0.4164,
+     "coverage": 0.4424,
+     "coverage_wilson_95": [
+      0.3843,
+      0.5021
+     ]
+    },
+    "lift_vs_primary": null,
+    "slices": {
+     "kind": {
+      "hoodie": {
+       "n": 62,
+       "priced": 57,
+       "hit_rate": 0.9194,
+       "within_10": 0.1404,
+       "within_20": 0.4211,
+       "median_pct_off": 0.2321,
+       "median_dollars_off": 11.31,
+       "bias": -0.1464,
+       "sold_above_our_middle": 0.6316,
+       "off_by_over_30": 0.386,
+       "coverage": 0.3684,
+       "coverage_wilson_95": [
+        0.2552,
+        0.4982
+       ]
+      },
+      "jacket": {
+       "n": 71,
+       "priced": 65,
+       "hit_rate": 0.9155,
+       "within_10": 0.2,
+       "within_20": 0.4154,
+       "median_pct_off": 0.2549,
+       "median_dollars_off": 20.39,
+       "bias": 0.0354,
+       "sold_above_our_middle": 0.4615,
+       "off_by_over_30": 0.4462,
+       "coverage": 0.4154,
+       "coverage_wilson_95": [
+        0.3036,
+        0.5366
+       ]
+      },
+      "jeans": {
+       "n": 43,
+       "priced": 38,
+       "hit_rate": 0.8837,
+       "within_10": 0.1316,
+       "within_20": 0.2368,
+       "median_pct_off": 0.3544,
+       "median_dollars_off": 14.85,
+       "bias": -0.0226,
+       "sold_above_our_middle": 0.5,
+       "off_by_over_30": 0.6053,
+       "coverage": 0.5263,
+       "coverage_wilson_95": [
+        0.3726,
+        0.6752
+       ]
+      },
+      "shorts": {
+       "n": 69,
+       "priced": 63,
+       "hit_rate": 0.913,
+       "within_10": 0.3175,
+       "within_20": 0.5556,
+       "median_pct_off": 0.1844,
+       "median_dollars_off": 4.41,
+       "bias": -0.0361,
+       "sold_above_our_middle": 0.5714,
+       "off_by_over_30": 0.2698,
+       "coverage": 0.5079,
+       "coverage_wilson_95": [
+        0.3876,
+        0.6273
+       ]
+      },
+      "t-shirt": {
+       "n": 51,
+       "priced": 46,
+       "hit_rate": 0.902,
+       "within_10": 0.1739,
+       "within_20": 0.3913,
+       "median_pct_off": 0.2815,
+       "median_dollars_off": 10.71,
+       "bias": 0.0978,
+       "sold_above_our_middle": 0.413,
+       "off_by_over_30": 0.4565,
+       "coverage": 0.413,
+       "coverage_wilson_95": [
+        0.2829,
+        0.5566
+       ]
+      }
+     },
+     "condition": {
+      "excellent": {
+       "n": 85,
+       "priced": 77,
+       "hit_rate": 0.9059,
+       "within_10": 0.2078,
+       "within_20": 0.4026,
+       "median_pct_off": 0.2827,
+       "median_dollars_off": 11.17,
+       "bias": -0.0829,
+       "sold_above_our_middle": 0.6104,
+       "off_by_over_30": 0.4545,
+       "coverage": 0.4286,
+       "coverage_wilson_95": [
+        0.324,
+        0.5399
+       ]
+      },
+      "fair": {
+       "n": 40,
+       "priced": 33,
+       "hit_rate": 0.825,
+       "within_10": 0.303,
+       "within_20": 0.5152,
+       "median_pct_off": 0.1952,
+       "median_dollars_off": 10.16,
+       "bias": 0.1668,
+       "sold_above_our_middle": 0.303,
+       "off_by_over_30": 0.3939,
+       "coverage": 0.4848,
+       "coverage_wilson_95": [
+        0.325,
+        0.6478
+       ]
+      },
+      "good": {
+       "n": 144,
+       "priced": 134,
+       "hit_rate": 0.9306,
+       "within_10": 0.2015,
+       "within_20": 0.4328,
+       "median_pct_off": 0.2352,
+       "median_dollars_off": 10.17,
+       "bias": 0.0192,
+       "sold_above_our_middle": 0.4701,
+       "off_by_over_30": 0.3806,
+       "coverage": 0.4478,
+       "coverage_wilson_95": [
+        0.3662,
+        0.5322
+       ]
+      },
+      "new_with_tags": {
+       "n": 27,
+       "priced": 25,
+       "hit_rate": 0.9259,
+       "within_10": 0.04,
+       "within_20": 0.28,
+       "median_pct_off": 0.3195,
+       "median_dollars_off": 16.63,
+       "bias": -0.2549,
+       "sold_above_our_middle": 0.8,
+       "off_by_over_30": 0.52,
+       "coverage": 0.4,
+       "coverage_wilson_95": [
+        0.234,
+        0.5926
+       ]
+      }
+     },
+     "site": {
+      "depop": {
+       "n": 76,
+       "priced": 70,
+       "hit_rate": 0.9211,
+       "within_10": 0.1714,
+       "within_20": 0.4,
+       "median_pct_off": 0.2513,
+       "median_dollars_off": 10.59,
+       "bias": -0.0204,
+       "sold_above_our_middle": 0.5143,
+       "off_by_over_30": 0.4,
+       "coverage": 0.4286,
+       "coverage_wilson_95": [
+        0.3194,
+        0.5452
+       ]
+      },
+      "ebay": {
+       "n": 58,
+       "priced": 51,
+       "hit_rate": 0.8793,
+       "within_10": 0.2353,
+       "within_20": 0.3922,
+       "median_pct_off": 0.2511,
+       "median_dollars_off": 10.39,
+       "bias": -0.0696,
+       "sold_above_our_middle": 0.6275,
+       "off_by_over_30": 0.3725,
+       "coverage": 0.451,
+       "coverage_wilson_95": [
+        0.3227,
+        0.5862
+       ]
+      },
+      "mercari": {
+       "n": 68,
+       "priced": 64,
+       "hit_rate": 0.9412,
+       "within_10": 0.1562,
+       "within_20": 0.375,
+       "median_pct_off": 0.239,
+       "median_dollars_off": 11.29,
+       "bias": 0.0056,
+       "sold_above_our_middle": 0.4844,
+       "off_by_over_30": 0.4375,
+       "coverage": 0.3906,
+       "coverage_wilson_95": [
+        0.2806,
+        0.5131
+       ]
+      },
+      "poshmark": {
+       "n": 94,
+       "priced": 84,
+       "hit_rate": 0.8936,
+       "within_10": 0.2381,
+       "within_20": 0.4881,
+       "median_pct_off": 0.2406,
+       "median_dollars_off": 10.75,
+       "bias": 0.0126,
+       "sold_above_our_middle": 0.4881,
+       "off_by_over_30": 0.4405,
+       "coverage": 0.4881,
+       "coverage_wilson_95": [
+        0.3841,
+        0.5932
+       ]
+      }
+     },
+     "price_band_of_our_middle": {
+      "under_25": {
+       "n": 46,
+       "priced": 46,
+       "hit_rate": 1.0,
+       "within_10": 0.2826,
+       "within_20": 0.5652,
+       "median_pct_off": 0.1755,
+       "median_dollars_off": 4.36,
+       "bias": -0.1001,
+       "sold_above_our_middle": 0.7174,
+       "off_by_over_30": 0.3261,
+       "coverage": 0.5652,
+       "coverage_wilson_95": [
+        0.4225,
+        0.6979
+       ]
+      },
+      "25_to_100": {
+       "n": 208,
+       "priced": 208,
+       "hit_rate": 1.0,
+       "within_10": 0.1827,
+       "within_20": 0.4038,
+       "median_pct_off": 0.2597,
+       "median_dollars_off": 11.68,
+       "bias": 0.0012,
+       "sold_above_our_middle": 0.5,
+       "off_by_over_30": 0.4183,
+       "coverage": 0.4375,
+       "coverage_wilson_95": [
+        0.3718,
+        0.5054
+       ]
+      },
+      "100_to_500": {
+       "n": 15,
+       "priced": 15,
+       "hit_rate": 1.0,
+       "within_10": 0.2,
+       "within_20": 0.2,
+       "median_pct_off": 0.4643,
+       "median_dollars_off": 40.71,
+       "bias": 0.4643,
+       "sold_above_our_middle": 0.2,
+       "off_by_over_30": 0.6667,
+       "coverage": 0.1333,
+       "coverage_wilson_95": [
+        0.0374,
+        0.3788
+       ]
+      },
+      "not_priced": {
+       "n": 27,
+       "priced": 0,
+       "hit_rate": 0.0
+      }
+     }
+    },
+    "primary_on_items_we_declined": {
+     "n": 27,
+     "priced": 0,
+     "hit_rate": 0.0
+    },
+    "primary_on_items_we_priced": {
+     "n": 269,
+     "priced": 269,
+     "hit_rate": 1.0,
+     "within_10": 0.2007,
+     "within_20": 0.4201,
+     "median_pct_off": 0.248,
+     "median_dollars_off": 10.62,
+     "bias": -0.0176,
+     "sold_above_our_middle": 0.5204,
+     "off_by_over_30": 0.4164,
+     "coverage": 0.4424,
+     "coverage_wilson_95": [
+      0.3843,
+      0.5021
+     ]
+    },
+    "freeze_from_sale_date": 296
+   },
+   "last_sale": {
+    "overall": {
+     "n": 296,
+     "priced": 294,
+     "hit_rate": 0.9932,
+     "within_10": 0.1905,
+     "within_20": 0.3435,
+     "median_pct_off": 0.3121,
+     "median_dollars_off": 11.87,
+     "bias": -0.0118,
+     "sold_above_our_middle": 0.5136,
+     "off_by_over_30": 0.5102,
+     "coverage": 0.0,
+     "coverage_wilson_95": [
+      0.0,
+      0.0129
+     ]
+    },
+    "lift_vs_primary": {
+     "diff": -0.0669,
+     "lo": -0.1222,
+     "hi": -0.0085,
+     "n_items": 269,
+     "n_products": 62
+    },
+    "slices": {
+     "kind": {
+      "hoodie": {
+       "n": 62,
+       "priced": 62,
+       "hit_rate": 1.0,
+       "within_10": 0.2097,
+       "within_20": 0.3871,
+       "median_pct_off": 0.2462,
+       "median_dollars_off": 13.14,
+       "bias": -0.039,
+       "sold_above_our_middle": 0.5323,
+       "off_by_over_30": 0.4194,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0583
+       ]
+      },
+      "jacket": {
+       "n": 71,
+       "priced": 71,
+       "hit_rate": 1.0,
+       "within_10": 0.2113,
+       "within_20": 0.3521,
+       "median_pct_off": 0.3429,
+       "median_dollars_off": 24.62,
+       "bias": 0.0115,
+       "sold_above_our_middle": 0.493,
+       "off_by_over_30": 0.5634,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0513
+       ]
+      },
+      "jeans": {
+       "n": 43,
+       "priced": 42,
+       "hit_rate": 0.9767,
+       "within_10": 0.119,
+       "within_20": 0.2381,
+       "median_pct_off": 0.3861,
+       "median_dollars_off": 14.79,
+       "bias": 0.0855,
+       "sold_above_our_middle": 0.4524,
+       "off_by_over_30": 0.6667,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0838
+       ]
+      },
+      "shorts": {
+       "n": 69,
+       "priced": 68,
+       "hit_rate": 0.9855,
+       "within_10": 0.2059,
+       "within_20": 0.3971,
+       "median_pct_off": 0.2532,
+       "median_dollars_off": 6.64,
+       "bias": -0.0414,
+       "sold_above_our_middle": 0.5294,
+       "off_by_over_30": 0.4265,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0535
+       ]
+      },
+      "t-shirt": {
+       "n": 51,
+       "priced": 51,
+       "hit_rate": 1.0,
+       "within_10": 0.1765,
+       "within_20": 0.2941,
+       "median_pct_off": 0.3125,
+       "median_dollars_off": 11.18,
+       "bias": -0.0298,
+       "sold_above_our_middle": 0.549,
+       "off_by_over_30": 0.5294,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.07
+       ]
+      }
+     },
+     "condition": {
+      "excellent": {
+       "n": 85,
+       "priced": 84,
+       "hit_rate": 0.9882,
+       "within_10": 0.1667,
+       "within_20": 0.3095,
+       "median_pct_off": 0.3486,
+       "median_dollars_off": 13.78,
+       "bias": 0.0081,
+       "sold_above_our_middle": 0.4881,
+       "off_by_over_30": 0.5595,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0437
+       ]
+      },
+      "fair": {
+       "n": 40,
+       "priced": 39,
+       "hit_rate": 0.975,
+       "within_10": 0.2051,
+       "within_20": 0.3333,
+       "median_pct_off": 0.3077,
+       "median_dollars_off": 11.8,
+       "bias": 0.2826,
+       "sold_above_our_middle": 0.2564,
+       "off_by_over_30": 0.5128,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0897
+       ]
+      },
+      "good": {
+       "n": 144,
+       "priced": 144,
+       "hit_rate": 1.0,
+       "within_10": 0.2222,
+       "within_20": 0.4028,
+       "median_pct_off": 0.2462,
+       "median_dollars_off": 10.62,
+       "bias": -0.0197,
+       "sold_above_our_middle": 0.5417,
+       "off_by_over_30": 0.4514,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.026
+       ]
+      },
+      "new_with_tags": {
+       "n": 27,
+       "priced": 27,
+       "hit_rate": 1.0,
+       "within_10": 0.0741,
+       "within_20": 0.1481,
+       "median_pct_off": 0.3261,
+       "median_dollars_off": 16.08,
+       "bias": -0.3261,
+       "sold_above_our_middle": 0.8148,
+       "off_by_over_30": 0.6667,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.1246
+       ]
+      }
+     },
+     "site": {
+      "depop": {
+       "n": 76,
+       "priced": 76,
+       "hit_rate": 1.0,
+       "within_10": 0.1447,
+       "within_20": 0.3553,
+       "median_pct_off": 0.2907,
+       "median_dollars_off": 11.98,
+       "bias": 0.0069,
+       "sold_above_our_middle": 0.5,
+       "off_by_over_30": 0.4868,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0481
+       ]
+      },
+      "ebay": {
+       "n": 58,
+       "priced": 58,
+       "hit_rate": 1.0,
+       "within_10": 0.2069,
+       "within_20": 0.3448,
+       "median_pct_off": 0.2553,
+       "median_dollars_off": 10.84,
+       "bias": -0.054,
+       "sold_above_our_middle": 0.569,
+       "off_by_over_30": 0.4138,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0621
+       ]
+      },
+      "mercari": {
+       "n": 68,
+       "priced": 68,
+       "hit_rate": 1.0,
+       "within_10": 0.1618,
+       "within_20": 0.2941,
+       "median_pct_off": 0.3265,
+       "median_dollars_off": 12.18,
+       "bias": 0.0076,
+       "sold_above_our_middle": 0.4853,
+       "off_by_over_30": 0.5588,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0535
+       ]
+      },
+      "poshmark": {
+       "n": 94,
+       "priced": 92,
+       "hit_rate": 0.9787,
+       "within_10": 0.2391,
+       "within_20": 0.3696,
+       "median_pct_off": 0.3406,
+       "median_dollars_off": 14.74,
+       "bias": -0.0049,
+       "sold_above_our_middle": 0.5109,
+       "off_by_over_30": 0.5543,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0401
+       ]
+      }
+     },
+     "price_band_of_our_middle": {
+      "under_25": {
+       "n": 63,
+       "priced": 63,
+       "hit_rate": 1.0,
+       "within_10": 0.1905,
+       "within_20": 0.3968,
+       "median_pct_off": 0.2985,
+       "median_dollars_off": 7.35,
+       "bias": -0.2289,
+       "sold_above_our_middle": 0.8571,
+       "off_by_over_30": 0.4921,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.0575
+       ]
+      },
+      "25_to_100": {
+       "n": 210,
+       "priced": 210,
+       "hit_rate": 1.0,
+       "within_10": 0.181,
+       "within_20": 0.3333,
+       "median_pct_off": 0.3121,
+       "median_dollars_off": 13.16,
+       "bias": 0.0494,
+       "sold_above_our_middle": 0.4429,
+       "off_by_over_30": 0.5095,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.018
+       ]
+      },
+      "100_to_500": {
+       "n": 21,
+       "priced": 21,
+       "hit_rate": 1.0,
+       "within_10": 0.2857,
+       "within_20": 0.2857,
+       "median_pct_off": 0.3739,
+       "median_dollars_off": 37.35,
+       "bias": 0.3739,
+       "sold_above_our_middle": 0.1905,
+       "off_by_over_30": 0.5714,
+       "coverage": 0.0,
+       "coverage_wilson_95": [
+        0.0,
+        0.1546
+       ]
+      },
+      "not_priced": {
+       "n": 2,
+       "priced": 0,
+       "hit_rate": 0.0
+      }
+     }
+    },
+    "primary_on_items_we_declined": {
+     "n": 2,
+     "priced": 0,
+     "hit_rate": 0.0
+    },
+    "primary_on_items_we_priced": {
+     "n": 294,
+     "priced": 269,
+     "hit_rate": 0.915,
+     "within_10": 0.2007,
+     "within_20": 0.4201,
+     "median_pct_off": 0.248,
+     "median_dollars_off": 10.62,
+     "bias": -0.0176,
+     "sold_above_our_middle": 0.5204,
+     "off_by_over_30": 0.4164,
+     "coverage": 0.4424,
+     "coverage_wilson_95": [
+      0.3843,
+      0.5021
+     ]
+    },
+    "freeze_from_sale_date": 296
+   },
+   "model": {
+    "overall": {
+     "n": 296,
+     "priced": 256,
+     "hit_rate": 0.8649,
+     "within_10": 0.2812,
+     "within_20": 0.5039,
+     "median_pct_off": 0.1972,
+     "median_dollars_off": 7.26,
+     "bias": 0.0121,
+     "sold_above_our_middle": 0.4961,
+     "off_by_over_30": 0.2969,
+     "coverage": 0.8398,
+     "coverage_wilson_95": [
+      0.7899,
+      0.8797
+     ]
+    },
+    "lift_vs_primary": {
+     "diff": 0.1026,
+     "lo": 0.0294,
+     "hi": 0.1753,
+     "n_items": 234,
+     "n_products": 61
+    },
+    "slices": {
+     "kind": {
+      "hoodie": {
+       "n": 62,
+       "priced": 44,
+       "hit_rate": 0.7097,
+       "within_10": 0.2273,
+       "within_20": 0.5,
+       "median_pct_off": 0.2012,
+       "median_dollars_off": 9.82,
+       "bias": 0.0148,
+       "sold_above_our_middle": 0.4773,
+       "off_by_over_30": 0.2955,
+       "coverage": 0.8409,
+       "coverage_wilson_95": [
+        0.7063,
+        0.9207
+       ]
+      },
+      "jacket": {
+       "n": 71,
+       "priced": 49,
+       "hit_rate": 0.6901,
+       "within_10": 0.2653,
+       "within_20": 0.4286,
+       "median_pct_off": 0.221,
+       "median_dollars_off": 15.82,
+       "bias": 0.0198,
+       "sold_above_our_middle": 0.4694,
+       "off_by_over_30": 0.3469,
+       "coverage": 0.8163,
+       "coverage_wilson_95": [
+        0.6864,
+        0.9002
+       ]
+      },
+      "jeans": {
+       "n": 43,
+       "priced": 43,
+       "hit_rate": 1.0,
+       "within_10": 0.2791,
+       "within_20": 0.5116,
+       "median_pct_off": 0.1959,
+       "median_dollars_off": 8.33,
+       "bias": -0.0524,
+       "sold_above_our_middle": 0.5349,
+       "off_by_over_30": 0.3488,
+       "coverage": 0.8372,
+       "coverage_wilson_95": [
+        0.7003,
+        0.9188
+       ]
+      },
+      "shorts": {
+       "n": 69,
+       "priced": 69,
+       "hit_rate": 1.0,
+       "within_10": 0.3623,
+       "within_20": 0.6087,
+       "median_pct_off": 0.1455,
+       "median_dollars_off": 3.55,
+       "bias": -0.0025,
+       "sold_above_our_middle": 0.5072,
+       "off_by_over_30": 0.1884,
+       "coverage": 0.8841,
+       "coverage_wilson_95": [
+        0.7875,
+        0.9401
+       ]
+      },
+      "t-shirt": {
+       "n": 51,
+       "priced": 51,
+       "hit_rate": 1.0,
+       "within_10": 0.2353,
+       "within_20": 0.4314,
+       "median_pct_off": 0.2195,
+       "median_dollars_off": 5.44,
+       "bias": 0.0103,
+       "sold_above_our_middle": 0.4902,
+       "off_by_over_30": 0.3529,
+       "coverage": 0.8039,
+       "coverage_wilson_95": [
+        0.6754,
+        0.8898
+       ]
+      }
+     },
+     "condition": {
+      "excellent": {
+       "n": 85,
+       "priced": 70,
+       "hit_rate": 0.8235,
+       "within_10": 0.3714,
+       "within_20": 0.5571,
+       "median_pct_off": 0.1549,
+       "median_dollars_off": 6.71,
+       "bias": 0.028,
+       "sold_above_our_middle": 0.4571,
+       "off_by_over_30": 0.2429,
+       "coverage": 0.8714,
+       "coverage_wilson_95": [
+        0.7734,
+        0.9309
+       ]
+      },
+      "fair": {
+       "n": 40,
+       "priced": 34,
+       "hit_rate": 0.85,
+       "within_10": 0.2941,
+       "within_20": 0.5,
+       "median_pct_off": 0.2014,
+       "median_dollars_off": 6.87,
+       "bias": -0.0641,
+       "sold_above_our_middle": 0.5882,
+       "off_by_over_30": 0.3529,
+       "coverage": 0.7647,
+       "coverage_wilson_95": [
+        0.6,
+        0.8756
+       ]
+      },
+      "good": {
+       "n": 144,
+       "priced": 126,
+       "hit_rate": 0.875,
+       "within_10": 0.2302,
+       "within_20": 0.4762,
+       "median_pct_off": 0.2114,
+       "median_dollars_off": 7.67,
+       "bias": 0.0144,
+       "sold_above_our_middle": 0.4921,
+       "off_by_over_30": 0.3095,
+       "coverage": 0.8413,
+       "coverage_wilson_95": [
+        0.7675,
+        0.8948
+       ]
+      },
+      "new_with_tags": {
+       "n": 27,
+       "priced": 26,
+       "hit_rate": 0.963,
+       "within_10": 0.2692,
+       "within_20": 0.5,
+       "median_pct_off": 0.1908,
+       "median_dollars_off": 10.84,
+       "bias": -0.021,
+       "sold_above_our_middle": 0.5,
+       "off_by_over_30": 0.3077,
+       "coverage": 0.8462,
+       "coverage_wilson_95": [
+        0.6647,
+        0.9385
+       ]
+      }
+     },
+     "site": {
+      "depop": {
+       "n": 76,
+       "priced": 60,
+       "hit_rate": 0.7895,
+       "within_10": 0.3167,
+       "within_20": 0.5,
+       "median_pct_off": 0.2012,
+       "median_dollars_off": 6.84,
+       "bias": 0.0222,
+       "sold_above_our_middle": 0.45,
+       "off_by_over_30": 0.35,
+       "coverage": 0.8,
+       "coverage_wilson_95": [
+        0.6822,
+        0.8817
+       ]
+      },
+      "ebay": {
+       "n": 58,
+       "priced": 51,
+       "hit_rate": 0.8793,
+       "within_10": 0.2353,
+       "within_20": 0.5098,
+       "median_pct_off": 0.1959,
+       "median_dollars_off": 5.3,
+       "bias": -0.0577,
+       "sold_above_our_middle": 0.5294,
+       "off_by_over_30": 0.1765,
+       "coverage": 0.8627,
+       "coverage_wilson_95": [
+        0.7428,
+        0.9319
+       ]
+      },
+      "mercari": {
+       "n": 68,
+       "priced": 62,
+       "hit_rate": 0.9118,
+       "within_10": 0.2903,
+       "within_20": 0.4355,
+       "median_pct_off": 0.2199,
+       "median_dollars_off": 9.74,
+       "bias": -0.049,
+       "sold_above_our_middle": 0.5484,
+       "off_by_over_30": 0.3387,
+       "coverage": 0.8226,
+       "coverage_wilson_95": [
+        0.7096,
+        0.8979
+       ]
+      },
+      "poshmark": {
+       "n": 94,
+       "priced": 83,
+       "hit_rate": 0.883,
+       "within_10": 0.2771,
+       "within_20": 0.5542,
+       "median_pct_off": 0.1732,
+       "median_dollars_off": 7.85,
+       "bias": 0.0249,
+       "sold_above_our_middle": 0.4699,
+       "off_by_over_30": 0.3012,
+       "coverage": 0.8675,
+       "coverage_wilson_95": [
+        0.7781,
+        0.9244
+       ]
+      }
+     },
+     "price_band_of_our_middle": {
+      "under_25": {
+       "n": 39,
+       "priced": 39,
+       "hit_rate": 1.0,
+       "within_10": 0.359,
+       "within_20": 0.641,
+       "median_pct_off": 0.1263,
+       "median_dollars_off": 3.18,
+       "bias": -0.0409,
+       "sold_above_our_middle": 0.5385,
+       "off_by_over_30": 0.1538,
+       "coverage": 0.8974,
+       "coverage_wilson_95": [
+        0.7642,
+        0.9594
+       ]
+      },
+      "25_to_100": {
+       "n": 207,
+       "priced": 207,
+       "hit_rate": 1.0,
+       "within_10": 0.2657,
+       "within_20": 0.4831,
+       "median_pct_off": 0.2064,
+       "median_dollars_off": 8.6,
+       "bias": 0.015,
+       "sold_above_our_middle": 0.4831,
+       "off_by_over_30": 0.3237,
+       "coverage": 0.8357,
+       "coverage_wilson_95": [
+        0.7792,
+        0.88
+       ]
+      },
+      "100_to_500": {
+       "n": 10,
+       "priced": 10,
+       "hit_rate": 1.0,
+       "within_10": 0.3,
+       "within_20": 0.4,
+       "median_pct_off": 0.2249,
+       "median_dollars_off": 31.5,
+       "bias": -0.1054,
+       "sold_above_our_middle": 0.6,
+       "off_by_over_30": 0.3,
+       "coverage": 0.7,
+       "coverage_wilson_95": [
+        0.3968,
+        0.8922
+       ]
+      },
+      "not_priced": {
+       "n": 40,
+       "priced": 0,
+       "hit_rate": 0.0
+      }
+     }
+    },
+    "primary_on_items_we_declined": {
+     "n": 40,
+     "priced": 35,
+     "hit_rate": 0.875,
+     "within_10": 0.1714,
+     "within_20": 0.4571,
+     "median_pct_off": 0.2291,
+     "median_dollars_off": 11.14,
+     "bias": -0.033,
+     "sold_above_our_middle": 0.5714,
+     "off_by_over_30": 0.3714,
+     "coverage": 0.3429,
+     "coverage_wilson_95": [
+      0.2083,
+      0.5085
+     ]
+    },
+    "primary_on_items_we_priced": {
+     "n": 256,
+     "priced": 234,
+     "hit_rate": 0.9141,
+     "within_10": 0.2051,
+     "within_20": 0.4145,
+     "median_pct_off": 0.2487,
+     "median_dollars_off": 10.54,
+     "bias": -0.0133,
+     "sold_above_our_middle": 0.5128,
+     "off_by_over_30": 0.4231,
+     "coverage": 0.4573,
+     "coverage_wilson_95": [
+      0.3946,
+      0.5213
+     ]
+    },
+    "freeze_from_sale_date": 296
+   }
+  },
+  "ceiling": {
+   "n": 0,
+   "within_20": null,
+   "min_peers": 3
+  },
+  "sentence": "within 20% of the sale price more often than the 90-day sold median"
+ }
+}
