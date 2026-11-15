@@ -51,7 +51,7 @@ The stack's look (Ben, 03:22): the cards under it fade (75%, then 40%), scale do
 
 ## 6. The tab you are on
 
-The current tab was marked only by darker ink, which Ben called "super faint". The render marks it the way Material 3's navigation bar does, with a pill behind the icon (*asserted*), plus an ink label in Medium. Inactive tabs stay secondary ink.
+The current tab was marked only by darker ink, which Ben called "super faint". The render marks it the way Material 3's navigation bar does, with a pill behind the icon (*asserted*). Brand ledger L29, which Ben picked in round 10, says the current tab is the filled icon with nothing under it, and Art. 6.9 keeps a label's weight the same in every state, so the label stays Book and the pill waits on Ben's pick.
 
 ## 7. Is a layered color readable?
 
