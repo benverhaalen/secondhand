@@ -5,15 +5,19 @@ This file decides which shots capture asks for, per item kind, in what order, an
 
 **The measure of a plan.** A plan is better when it reaches the facts a good listing needs in fewer seconds and with less extra input from the person. The person takes a few pictures; the product places them in each site's listing and writes each listing for that site's search. So every shot beyond the default has to earn its seconds, by the rule in [card 3 below](#3-whether-an-extra-shot-is-asked).
 
-**What stays as Ben decided.** The camera opens on the guided shot list, with talk mode one tap away ([decision](../../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)). The outline overlay comes from studio's templates ([capture-coaching §6.2](../../research/capture/ben/capture-coaching-and-frames.md)). Every listing photo is one 3:4 frame, 1200x1600, with the item inside a centred square ([card 8](#8-the-one-frame-and-each-sites-crop)).
+**How capture opens.** Ben decided the camera opens on the guided shot list, with talk mode one tap away ([decision](../../product/decisions.md#2026-11-14-capture-opens-on-the-guided-shot-list-talk-mode-is-one-tap-away)). Nate's later words replace the checklist with a type pick: "Now the camera opens on the shot checklist? no. The camera will be pressed, an onboarding tutorial of how to select the product type ... then each has a cpature process, either instant picture, series of pictures with specified frames like clothing tags, scanning for objects" ([words](../../product/words.md#2026-11-14-nate-finalised-the-intelligence-engine-the-listing-swarm-the-buying-engine-and-how-capture-works)). This file follows Nate's flow as the proposal: the person picks the type (suggested from the first frame, so it is one tap), and the plan below for that type is its capture process. The two openings stand side by side under [capture, Open for Ben and Nate](../features/capture.md#open-for-ben-and-nate) until they decide. Talk mode stays one tap away in either. The outline overlay comes from studio's templates ([capture-coaching §6.2](../../research/capture/ben/capture-coaching-and-frames.md)). Every listing photo is one 3:4 frame, 1200x1600, with the item inside a centred square ([card 8](#8-the-one-frame-and-each-sites-crop)).
 
 **Marks.** *observed* or *asserted* lines carry their source. Every number marked "start" is a starting value, to be replaced by the 30-item test in [adaptive-capture §10](../../research/capture/nate/adaptive-capture.md).
 
 ## Default plans by kind
 
+Each plan below is the capture process for one of the 14 types in [product.md](../product.md#3-the-data-model) (the `family` values), the type the person picked. A process is built from three step kinds, Nate's three: `instant` (one still, or two of a flat thing's sides), `series` (named frames in order, such as front, back, tag) and `scan` (a move-around for shape and dimensions, then the label still). The "Process" line under each type names its steps; the table gives the frames. Without LiDAR every `scan` step becomes the 8-still ring ([below](#on-a-phone-without-lidar)), so the person makes the same move. What follows the shots (more photos or generated ones, and the type's follow-up inputs) is in [capture](../features/capture.md#what-the-person-does-and-sees).
+
 Seconds are start values for one shot once the item is laid out or in place. Laying a garment out is counted once per item (about 20 s, start). "Settles" names the item-card fields and the determination that reads them. "Becomes" is the listing photo position under [card 21](seeing-the-item.md#21-which-frames-become-listing-photos-and-in-what-order). Every site takes the same frame through its own crop ([card 8](#8-the-one-frame-and-each-sites-crop)); per-site order and photo caps are list's. Each "Asked only when" line is applied through [card 3](#3-whether-an-extra-shot-is-asked); the shot is never part of the default.
 
 ### apparel: tops and dresses, trousers, outerwear
+
+Process: `series` front, back, tag. Without LiDAR: the same; nothing here uses depth.
 
 Default: front, back, tag. No side photos (Nate). The tag is in the default, on evidence:
 - It settles brand and size in one shot of about 8 s. Depop requires brand and size, Poshmark requires size, and eBay's clothing aspects are size, brand, colour and material (*observed*, [listing-fields §6](../../research/list/nate/listing-fields-by-platform.md)).
@@ -41,6 +45,8 @@ Asked only when:
 
 ### shoes
 
+Process: `scan`, then `series` size label, soles. Without LiDAR: the 8-still ring, length by lookup of the identified model.
+
 Default: one move-around scan, then the size label and the soles.
 
 | # | Shot | How | s | Settles | Becomes |
@@ -53,6 +59,8 @@ Shoe size is mandatory on the sites (*observed*, listing-fields §6), so the lab
 
 ### bags
 
+Process: `scan`, then `series` inside tab. Without LiDAR: the 8-still ring, dimensions by lookup, then a card laid beside the bag.
+
 Default: scan, then the inside tab.
 
 | # | Shot | How | s | Settles | Becomes |
@@ -64,6 +72,8 @@ The serial or date code sits on an interior tab (*observed*, identity-schema §3
 
 ### jewellery_watches: watches and jewellery
 
+Process: `series` front, back or stamp. Without LiDAR: the same; depth is not used.
+
 Under 10 cm and reflective: no scan. Depth is outside its bound and confident but wrong on metal ([adaptive-capture §9](../../research/capture/nate/adaptive-capture.md)).
 
 | # | Shot | How | s | Settles | Becomes |
@@ -74,6 +84,8 @@ Under 10 cm and reflective: no scan. Depth is outside its bound and confident bu
 Reference and serial sit on the case back or between the lugs (*observed*, identity-schema §4). Asked only when: the side with the crown, the clasp, a stamp macro (metal unsettled), a coin in frame for size (no reference to look up the case size).
 
 ### electronics: phones and laptops
+
+Process: `series` About screenshot, front with the screen on, back. Without LiDAR: the same.
 
 Screens act as mirrors, so depth is wrong and no scan is used ([adaptive-capture §9](../../research/capture/nate/adaptive-capture.md)). Dimensions come from the identified model by lookup.
 
@@ -87,6 +99,8 @@ Asked only when: the edges and ports (a card 12 candidate), the charger and box 
 
 ### electronics: headphones, cameras, consoles, audio
 
+Process: `scan`, then `series` model plate. Without LiDAR: the 8-still ring, dimensions by lookup.
+
 Default: scan, then the model plate. Glossy plastic weakens depth, so dimensions fall back to lookup when depth confidence is low.
 
 | # | Shot | How | s | Settles | Becomes |
@@ -98,6 +112,8 @@ Asked only when: the screen on (function unsettled), the ports, the accessories 
 
 ### furniture
 
+Process: `scan`. Without LiDAR: the 8-still ring; dimensions by lookup when the maker's model is found, else a typed width, depth and height, the one place a tape is asked, since a coin is too small against a sofa.
+
 Default: one scan, the shot Nate named.
 
 | # | Shot | How | s | Settles | Becomes |
@@ -107,6 +123,8 @@ Default: one scan, the shot Nate named.
 Asked only when: the maker's label (under the seat or inside a drawer; brand unsettled), a flaw close-up (card 12), a drawer open (condition of the inside unsettled).
 
 ### lighting_home: home goods, decor and lighting
+
+Process: `scan`, then `series` base. Without LiDAR: the 8-still ring with a card beside the piece.
 
 Default: scan, then the base or maker's mark. Glass, mirrors and chrome give wrong depth, so for those the plan is the still ring with a reference object ([card 7 below](#7-when-depth-gives-a-measurement-without-a-tape)).
 
@@ -119,6 +137,8 @@ Asked only when: chips and cracks close (card 12), the lamp lit (function unsett
 
 ### media: books and media
 
+Process: `instant` front cover and back with barcode. Without LiDAR: the same.
+
 No scan. The barcode does most of the work: an ISBN match fills the listing from the catalogue (*observed*, listing-fields §6).
 
 | # | Shot | How | s | Settles | Becomes |
@@ -129,6 +149,8 @@ No scan. The barcode does most of the work: an ISBN match fills the listing from
 Asked only when: the copyright page (edition unsettled among the candidates, *observed* source, identity-schema §9), the spine (wear unsettled), the disc or record surface (media condition), the inner sleeve or booklet (completeness).
 
 ### cards_collectibles: trading cards
+
+Process: `instant` front and back. Without LiDAR: the same.
 
 No scan, no measurements (identity-schema §10).
 
@@ -141,6 +163,8 @@ Asked only when: the four corners and edges, when the price gap between conditio
 
 ### toys_lego: toys and sets
 
+Process: `instant` box or set front for a boxed set; `scan` for a built set or a rigid toy over 10 cm, chosen by the first frame's extent. Without LiDAR: the 8-still ring, dimensions by lookup of the set number.
+
 | # | Shot | How | s | Settles | Becomes |
 |---|---|---|---|---|---|
 | 1 | Box or set front | Square-on at 40 to 60 cm, or a scan for a built set or a rigid toy over 10 cm. | 6 to 25 | set number (LEGO: on the box or booklet, *observed*, identity-schema §11), identity (card 9) | cover, all sites |
@@ -149,6 +173,8 @@ Asked only when: the contents laid out (completeness unsettled, [card 15](seeing
 
 ### appliances_tools: tools
 
+Process: `scan`, then `series` rating plate. Without LiDAR: the 8-still ring, dimensions by lookup of the model on the plate.
+
 | # | Shot | How | s | Settles | Becomes |
 |---|---|---|---|---|---|
 | 1 | Scan | One ring at 0.9 to 1.5 m. | 25 | kind, identity, dimensions, flaws | cover, sides, all sites |
@@ -156,7 +182,16 @@ Asked only when: the contents laid out (completeness unsettled, [card 15](seeing
 
 Asked only when: the battery and charger (completeness), a short running video (function unsettled), the blade or bit wear (card 12).
 
-**Kinds outside the brief's list.** Bikes and sports gear and baby gear take the rigid default, a scan then the identifier still: the serial under the bottom bracket for bikes (*observed*, identity-schema §12), the model and date label for baby gear, which also feeds the recall lookup ([capture facts](../features/capture.md#facts-to-know)).
+**Kinds outside the brief's list.** Bikes and sports gear and baby gear take the rigid default, a scan then the identifier still: the serial under the bottom bracket for bikes (*observed*, identity-schema §12), the model and date label for baby gear, which also feeds the recall lookup ([capture facts](../features/capture.md#facts-to-know)). Process for `bikes_sports`: `scan`, then `series` serial. Process for `baby_gear`: `scan`, then `series` model and date label. Without LiDAR, both: the 8-still ring, dimensions by lookup.
+
+### other
+
+Process: `instant` one front still; then `scan` only if the first frame shows a rigid item over 10 cm, else a `series` back still. Without LiDAR: the 8-still ring, dimensions by lookup, then a card beside it. The first still also goes to `capture_judge`, which may move the item to a named type; a move keeps every photo and adds that type's missing frames as `missing_shot` ([capture](../features/capture.md#what-the-person-does-and-sees)).
+
+| # | Shot | How | s | Settles | Becomes |
+|---|---|---|---|---|---|
+| 1 | Front | Square-on at 30 to 60 cm, or the scan for a rigid item over 10 cm. | 5 to 25 | kind ([card 1](seeing-the-item.md#1-item-kind)), identity (card 9), colour, flaws | cover, all sites |
+| 2 | Any label | Whatever mark the item carries, at 25 to 30 cm, asked only when card 4 sees text it cannot read. | 8 | brand, model (card 4) | label photo, all sites |
 
 ### On a phone without LiDAR
 
@@ -183,12 +218,13 @@ The easiest capture for a garment is the flat lay: front, back, tag. The answer 
 
 | source | what it contributes | weight or rank | why that weight |
 |---|---|---|---|
-| item kind ([card 1](seeing-the-item.md#1-item-kind)) | which table above | selects the plan | the plans are per kind |
+| the type the person picked, one tap on the type suggested from the first frame ([card 1](seeing-the-item.md#1-item-kind) on the phone) | which table above | selects the process | the processes are per type; the person's pick is `you_said`, so it outranks the suggestion |
+| `capture_judge` on the first kept still | moves the item to another type | override, raised as `category_unsure` when unsure | a wrong pick costs a retake; a swap keeps every photo |
 | LiDAR present on the phone | scan or the 8-still ring | switch | Object Capture needs LiDAR (*observed*) |
 | outline softness, extent under 10 cm, reflectivity from the first frames | swaps a scan for stills | override | soft, small and reflective items fail the scan ([adaptive-capture §9](../../research/capture/nate/adaptive-capture.md)) |
 
 **Method**
-1. Rule. Take the kind's default plan.
+1. Rule. Take the picked type's process.
 2. If the phone has no LiDAR, replace the scan with the 8-still ring.
 3. If the item is soft, under 10 cm, or reflective over most of its mask (depth confidence low on over 40% of the mask, start), replace the scan with stills and take dimensions by lookup or reference.
 
@@ -431,7 +467,7 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 
 | name | owning feature | main sources | method in five words | hide rule |
 |---|---|---|---|---|
-| 1 Which plan | capture | card 1, LiDAR, adaptive-capture §9 | kind's plan, swapped by limits | never shown as a list |
+| 1 Which plan | capture | the person's type pick, card 1's suggestion, LiDAR, adaptive-capture §9 | picked type's process, swapped by limits | never shown as a list |
 | 2 Shot worth | capture | listing-fields §6 and §7, score | value times unsettled, summed | never shown |
 | 3 Extra shot asked | capture | card 2, card 17 bar | worth over effort, 0.15 | nothing passes the bar |
 | 4 Seconds per shot | capture | start values, shot logs | median of measured seconds | never shown |
@@ -454,7 +490,7 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 - **Data**: `requirement_fold` weights per field, which replace card 2's start values.
 - **Measure**: card 11's budgets per field for the no-tape rule.
 - **Identify**: model dimensions by lookup for phones, reflective items and phones without LiDAR.
-- **Shared model** ([product.md](../product.md)): photo roles `care_label`, `detail`, `side`, `inside`, `sole`, `screenshot`; `requirement.seconds` and the effort unit per row.
+- **Shared model** ([product.md](../product.md)): `requirement.seconds` and the effort unit per row; `capture.type` (the picked family), `capture.suggested_type` and `capture.process[]` (each step `instant`, `series` or `scan` with its frames), as listed in [capture](../features/capture.md#needs-from-the-shared-model). The photo roles this page uses are already in product.md.
 
 ## What its parameters learn from (*agent proposal*)
 
