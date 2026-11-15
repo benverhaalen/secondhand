@@ -2206,3 +2206,25 @@ Nate, orchestrator's session, 2026-11-15, about 07:40 Central, answering "Run th
 Used in: [the finalization spec](../spec/plans/finalization.md#11-the-history-rewrite-after-judging).
 
 Note, 2026-11-15, 12:20 UTC, by the orchestrator: the Central times on this session's entries from "address every fix" to "the history rewrite runs after judging" were written late by its own miscount. By the machine clock those messages arrived between about 05:52 and 06:15 Central.
+
+## 2026-11-15 tab layout, manual capture, and Messages notifications
+
+Ben, Codex, November 15, 2026. Implementing; source: current UI request.
+
+> keep the secondhand on the left at the top always, same with messages on the right. remove the labels for today, sell, buy, you.
+
+> the top should have a pill button toggle. left is listings right is sales. under the sales one there should be options to sort by all, to ship, shipped, canceled, completed. under listings is all and active and drafts as the pill buttons that filter results. pause selling deserves to be inside settings.
+
+> there is also a pill toggle. tracked, appraised, found.
+
+> then the you page has dashboard and settings as the pill toggle at the top. the dashboard has all the cool visualizations from before and insights.
+
+> each section is only one box tall. so Needs You. Can Wait. Good to Know. and Other. but as there are more going to the right side rather than down. and its scrollable.
+
+> for now put the video mode into future plans, the user should have to manually click the photo button.
+
+> all notifications for the time being live in messages.
+
+> focus on doing these using the components and the structure of the ui. do not focus on writing new tests. or test driven design for these purposes. you are allowed to merge without ci.
+
+Implementation and integration handoff: [packet 83](../.agents/team/packets/team/83-ben-tab-and-capture-ui.md). These instructions replace older page-title, stacked-tier and push-notification UI decisions for this build.
