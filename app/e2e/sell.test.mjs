@@ -63,6 +63,44 @@ test('sell: the shelves come in their order', async () => {
   assert.deepEqual(titles, ORDER.filter(t => titles.includes(t)));
 });
 
+// Ben, 06:19: "on the sell site like the needs you and in progress parts they were collapsible".
+test('sell: every shelf folds and opens from its header, the count still showing, and the header does not move', async () => {
+  const screen = await app.open('/sell?world=clearing');
+  await screen.shows('Needs you');
+  const head = () => screen.page.locator('[data-shelf="needs_you"] [data-part="shelf-head"]').evaluate(e => { const r = e.getBoundingClientRect(); return [r.left, r.top, r.width, r.height].map(Math.round); });
+  const before = await head();
+  await screen.tap('shelf-needs_you-fold');
+  await screen.page.waitForFunction(() => document.querySelector('[data-shelf="needs_you"]')?.getAttribute('data-folded') === 'true');
+  // The tiles fade out in the feedback time, then leave.
+  await screen.page.waitForFunction(() => document.querySelectorAll('[data-shelf="needs_you"] [data-part="tile"]').length === 0, null, { timeout: 2000 });
+  assert.match(await screen.page.locator('[data-shelf="needs_you"] [data-part="shelf-head"]').innerText(), /Needs you\s*\d+/);
+  assert.deepEqual(await head(), before, 'the header stays where it was');
+  await screen.tap('shelf-needs_you-fold');
+  await screen.page.waitForFunction(() => document.querySelectorAll('[data-shelf="needs_you"] [data-part="tile"]').length > 0);
+});
+
+test('sell: Unsold and Kept start folded; every other shelf starts open', async () => {
+  const screen = await app.open('/sell?world=clearing');
+  await screen.shows('Needs you');
+  const folded = await screen.page.locator('[data-shelf]').evaluateAll(els => Object.fromEntries(els.map(e => [e.getAttribute('data-shelf'), e.getAttribute('data-folded')])));
+  for (const [id, f] of Object.entries(folded)) assert.equal(f, String(id === 'unsold' || id === 'kept'), id);
+});
+
+test('sell: a fold is remembered for the person, after leaving and after a reload', async () => {
+  const screen = await app.open('/sell?world=clearing');
+  await screen.tap('shelf-in_progress-fold');
+  await screen.tap('shelf-kept-fold');
+  await screen.tap('tile-it_jacket');
+  await screen.page.waitForURL(u => new URL(u).pathname === '/item/it_jacket', { timeout: 3000 });
+  await screen.page.goBack();
+  const read = () => screen.page.locator('[data-shelf]').evaluateAll(els => Object.fromEntries(els.map(e => [e.getAttribute('data-shelf'), e.getAttribute('data-folded')])));
+  await screen.page.waitForFunction(() => document.querySelector('[data-shelf="in_progress"]')?.getAttribute('data-folded') === 'true');
+  assert.equal((await read()).kept, 'false');
+  await screen.page.reload();
+  await screen.page.waitForFunction(() => document.querySelector('[data-shelf="in_progress"]')?.getAttribute('data-folded') === 'true');
+  assert.equal((await read()).kept, 'false');
+});
+
 test('sell: the flipper’s 64 things stay readable: each shelf shows at most two rows until See all', async () => {
   const screen = await app.open('/sell?world=flipper');
   await screen.shows('Needs you');

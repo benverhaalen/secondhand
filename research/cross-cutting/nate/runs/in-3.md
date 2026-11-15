@@ -1,6 +1,7 @@
 # Run trace: in-3
+Researched 2026-11-15 by Nate (original agent not recorded).
 
-Logs: in3.jsonl. 97 lines, 1 session(s), first line 2026-11-15T04:02:37.866Z.
+*Observed in the recorded local run:* Logs: in3.jsonl. 97 lines, 1 session(s), first line 2026-11-15T04:02:37.866Z.
 Total: 64503 ms.
 
 ## Steps

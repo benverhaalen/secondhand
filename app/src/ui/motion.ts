@@ -11,6 +11,7 @@ export const MOTIONS: Record<string, { why: Why; ms: number | 'spring' }> = {
   sheet: { why: 'origin', ms: motion.panel },
   select: { why: 'state', ms: motion.select },
   tileMoves: { why: 'state', ms: motion.select },
+  shelfFold: { why: 'state', ms: motion.select },     // a Sell shelf folds or opens from its header; the chevron turns (Ben, 06:19)
   fieldsFill: { why: 'progress', ms: motion.feedback },
   sold: { why: 'recognition', ms: 'spring' },
   drift: { why: 'recognition', ms: 'spring' },

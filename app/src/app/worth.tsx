@@ -6,7 +6,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Approve, Blank, Guess, Line, List, Nav, Photo, Pill, Row, Screen, Section, Sheet, Stack, Txt, type PhotoSrc } from '@/ui';
 import { Choice } from '@/ui/parts/chip';
-import { KeepRow, Range, RangeSkeleton } from '@/ui/parts/worth';
+import { KeepRow, Range, RangeSkeleton, SaleRow } from '@/ui/parts/worth';
 import { ago, connectionState, itemById, product, usd, youKeep, type Cents, type Site, type World } from '@/demo';
 import { useScreen } from '@/demo/screen';
 import type { PhotoKey } from '@/demo/photo-keys';
@@ -62,6 +62,8 @@ export default function Worth() {
   const [model, setModel] = useState('');
   const [deep, setDeep] = useState(false);
   const [sources, setSources] = useState(false);
+  // The sites whose sales the person left out as not the same thing (Ben, 06:19: "investigate ... human in the loop").
+  const [aside, setAside] = useState<Site[]>([]);
 
   const s = (params.item ? fromItem(w, params.item) : null) ?? fromProduct(stage === 'unsure' || model ? UNSURE : params.product ?? FRESH) ?? fromProduct(FRESH)!;
   const back = () => (router.canGoBack() ? router.back() : router.replace('/sell' as Href));
@@ -126,6 +128,11 @@ export default function Worth() {
     );
   }
 
+  // The value goes by the sales the person kept: with some left out, the range is the lowest to the highest of the rest.
+  const sold = s.sites.filter(r => r.low != null && r.high != null) as (Subject['sites'][number] & { low: Cents; high: Cents })[];
+  const counted = sold.filter(r => !aside.includes(r.site));
+  const by = !aside.length ? { low: s.low, high: s.high } : counted.length ? { low: Math.min(...counted.map(r => r.low)), high: Math.max(...counted.map(r => r.high)) } : null;
+  const toggle = (site: Site) => setAside(a => a.includes(site) ? a.filter(x => x !== site) : [...a, site]);
   const linked = w.connections.filter(c => connectionState(c) === 'connected').map(c => c.site);
   const rows = s.sites
     .map(r => ({ ...r, keepLow: r.low == null ? null : youKeep(r.site, r.low), keepHigh: r.high == null ? null : youKeep(r.site, r.high) }))
@@ -136,7 +143,7 @@ export default function Worth() {
   const sellTo = (s.itemId ? `/item/${s.itemId}` : '/camera') as Href;
   const valuable = !!s.itemId && !!itemById(w, s.itemId)?.attributes.some(a => VALUABLE.includes(a.name) && a.value != null);
   // More than 3 times the top of the sales, or under a third of the bottom (edge-cases §3).
-  const far = mine != null && (mine > 3 * s.high || mine < s.low / 3);
+  const far = mine != null && !!by && (mine > 3 * by.high || mine < by.low / 3);
   const priced = (v: string) => {
     const cents = Math.round(Number(v.replace(/[^\d.]/g, '')) * 100);
     setPricing(false); setSure(false); setMine(Number.isFinite(cents) && cents > 0 ? cents : null);
@@ -149,16 +156,17 @@ export default function Worth() {
       </Row>
 
       <Stack gap="cards">
-        <Range low={down(s.low)} high={up(s.high)} what={glance ? 'Rough guess' : 'What similar ones sold for lately'} />
-        {glance ? null : <Choice id="worth-sources" icon="store-01" label="See the sales" leads onPress={() => setSources(true)} />}
+        {by ? <Range low={down(by.low)} high={up(by.high)} what={glance ? 'Rough guess' : aside.length ? 'From the sales you kept' : 'What similar ones sold for lately'} />
+          : <Txt role="body">No sales left to go by. Put some back, or look deeper.</Txt>}
+        {glance ? null : <Choice id="worth-sources" icon="search-01" label="Check the sales" line={aside.length ? `${aside.length} left out` : 'Leave out any that aren’t the same'} leads onPress={() => setSources(true)} />}
       </Stack>
 
-      <Section title="You keep">
+      <Section title="You get">
         <List>
           {rows.map(r => (
             <KeepRow key={r.site} site={r.site}
-              keep={glance || r.keepLow == null || r.keepHigh == null ? undefined : `${down(r.keepLow)} to ${up(r.keepHigh)}`}
-              line={glance ? 'Checking' : r.keepLow == null ? 'Too few sales here' : r.days ? `Sells in about ${r.days} days` : 'After the fee'}
+              keep={glance || r.keepLow == null || r.keepHigh == null || aside.includes(r.site) ? undefined : `${down(r.keepLow)} to ${up(r.keepHigh)}`}
+              line={glance ? 'Checking' : r.keepLow == null ? 'Too few sales here' : aside.includes(r.site) ? 'Left out' : r.days ? `Sells in about ${r.days} days` : 'After the fee'}
               note={!glance && linked.length && !linked.includes(r.site) ? 'Not linked' : undefined} />
           ))}
         </List>
@@ -177,7 +185,7 @@ export default function Worth() {
       ) : far && !sure ? (
         // A price far from the sales asks once, with the range (edge-cases §3, "Oops, $500, I meant $50").
         <Stack>
-          <Txt role="body">{`Similar ones sold for ${down(s.low)} to ${up(s.high)}. Sell at ${usd(mine!)}?`}</Txt>
+          <Txt role="body">{`Similar ones sold for ${down(by!.low)} to ${up(by!.high)}. Sell at ${usd(mine!)}?`}</Txt>
           <Line gap="tight">
             <Pill id="worth-price-yes" label={`Sell at ${usd(mine!)}`} onPress={() => { setSure(true); router.push(sellTo); }} />
             <Pill id="worth-price-fix" kind="second" label="Change it" onPress={() => { setMine(null); setPricing(true); }} />
@@ -202,14 +210,19 @@ export default function Worth() {
         </Stack>
       )}
 
-      <Sheet open={sources} title="What similar ones sold for" onClose={() => setSources(false)}>
+      {/* The person checks the sales the value goes by: a tick per site, taken off when those sales aren't the same thing,
+          and the range above is worked out again from what they kept. Looking deeper is the agent's next step. */}
+      <Sheet open={sources} title="The sales it goes by" onClose={() => setSources(false)}>
+        {by ? <Range low={down(by.low)} high={up(by.high)} what={aside.length ? 'From the sales you kept' : `Checked ${ago(s.asOf, w.now).toLowerCase()}`} />
+          : <Txt role="body">No sales left to go by.</Txt>}
         <List>
           {s.sites.map(r => (
-            <KeepRow key={r.site} site={r.site} line={r.low == null || r.high == null ? 'Too few sales here' : 'Sold for'}
-              keep={r.low == null || r.high == null ? undefined : `${down(r.low)} to ${up(r.high)}`} />
+            <SaleRow key={r.site} id={`worth-sale-${r.site}`} site={r.site} counted={!aside.includes(r.site)} onToggle={() => toggle(r.site)}
+              sold={r.low == null || r.high == null ? undefined : `${down(r.low)} to ${up(r.high)}`}
+              line={r.low == null || r.high == null ? 'Too few sales here' : r.days ? `Sold in about ${r.days} days` : 'Sold lately'} />
           ))}
+          <Choice id="worth-sheet-deep" icon="search-01" label={deep ? 'Looking deeper' : 'Look deeper'} line={deep ? 'It lands on Today when it’s done.' : 'More sites and older sales. Takes a few minutes.'} disabled={deep} onPress={() => setDeep(true)} />
         </List>
-        <Txt role="caption">{`Checked ${ago(s.asOf, w.now).toLowerCase()}`}</Txt>
       </Sheet>
     </Screen>
   );

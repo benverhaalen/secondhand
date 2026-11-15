@@ -19,9 +19,9 @@ export function jobsOn(st: Store) {
   const s = {
     st,
     // `id` is kept when given: the example jobs have fixed ids, and the memory store's updateJob accepts an id patch.
-    put(j: Record<string, unknown> & { id?: string }, owner: string): JobRow {
+    put(j: Partial<JobRow> & Pick<JobRow, 'kind'>, owner: string): JobRow {
       const { id, ...rest } = j;
-      const { row } = st.insertJob({ event_id: 'seed', idempotency_key: `seed:${id ?? crypto.randomUUID()}`, args: {}, attempts: 0, trace_id: '', created_at: new Date(0).toISOString(), stages: [], state: 'queued', ...rest, user_id: owner } as Omit<JobRow, 'id'>);
+      const { row } = st.insertJob({ event_id: 'seed', idempotency_key: `seed:${id ?? crypto.randomUUID()}`, args: {}, attempts: 0, trace_id: '', created_at: new Date(0).toISOString(), stages: [], state: 'queued', ...rest, user_id: owner });
       return id ? st.updateJob(row.id, { id }) : row;
     },
     get: (id: string, who: string) => { const r = st.getJob(id); return r && owns(r, who) ? r : undefined; },
@@ -56,14 +56,14 @@ export const memoryJobs = () => jobsOn(memoryStore());
 // The contract examples as live data: each example job and stream frame lands in the store, keeping its own ids.
 export function seedExamples(s: JobStore) {
   for (const e of EXAMPLES) {
-    if (e.endpoint === 'GET /v1/jobs/:id' && e.status === 200) s.put(e.response as { id: string }, EXAMPLE_USER);
+    if (e.endpoint === 'GET /v1/jobs/:id' && e.status === 200) s.put(e.response as Partial<JobRow> & Pick<JobRow, 'id' | 'kind'>, EXAMPLE_USER);
   }
   for (const name of ['identify_then_valuate', 'visitor_search', 'user_stream']) {
     for (const f of STREAMS[name]) {
       if (!f.event || !f.id) continue;
       if (name === 'user_stream') { s.append(`user:${EXAMPLE_USER}`, f.event, f.data!, Number(f.id)); continue; }
       const jid = f.data!.job_id as string;
-      if (!s.st.getJob(jid)) s.put({ id: jid, kind: f.data!.kind ?? 'identify', state: 'running' }, name === 'visitor_search' ? EXAMPLE_VISITOR : EXAMPLE_USER);
+      if (!s.st.getJob(jid)) s.put({ id: jid, kind: (f.data!.kind ?? 'identify') as JobRow['kind'], state: 'running' }, name === 'visitor_search' ? EXAMPLE_VISITOR : EXAMPLE_USER);
       s.append(jid, f.event, f.data!, Number(f.id));
     }
   }
@@ -111,3 +111,14 @@ export const userStream = (s: JobStore = jobs): Handler => (ctx, req) => sse(s, 
 
 export const jobs: JobStore = jobsOn(store);
 seedExamples(jobs);
+
+export const routeHandlers = {
+  'GET /v1/jobs/:id': getJob(),
+  'GET /v1/jobs/:id/events': jobEvents(),
+  'GET /v1/stream': userStream(),
+};
+const routeAuth: Record<string, 'user' | 'visitor' | 'none'> = {
+  'GET /v1/jobs/:id': 'visitor',
+  'GET /v1/jobs/:id/events': 'visitor',
+};
+export const manifest = Object.keys(routeHandlers).map(endpoint => ({ endpoint, source: 'engine' as const, auth: routeAuth[endpoint] ?? 'user' as const }));

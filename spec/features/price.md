@@ -230,6 +230,7 @@ Everything else is an adjustment inside a choice, not a sixth choice: the floor,
 - Selling intents: may a batch carry one total floor that overrides each item's floor? May "Just checking" create a live listing at all? Is cost ever asked, or only offered to flippers? Should the default lean faster than Sell it for someone clearing out? May a `fallback` chosen at listing run with no card (making `end_unsold` promotable for that item), which is what "don't bother me" asks for?
 - Is the 30-day horizon the right default "best", or should the best plan follow this month's goal when one is set?
 - Should visitors see the financial axis on product pages when its range is "not checked yet"?
+- *Agent proposal:* M12's shown example is a price claim ("Coats usually sell for about 15% more in November"), but the evidence found is for how many sell, not price. Show count or speed lines until our rows pass a price factor, and make "within 20% of the sale against the eBay sold median" the headline accuracy number ([what-predicts-price-and-speed.md](../../research/price/ben/what-predicts-price-and-speed.md)).
 
 ## Needs from the shared model
 

@@ -1,0 +1,50 @@
+{
+  "route": "gone-by?at=offline",
+  "screen": "gone-by",
+  "states": [
+    "offline",
+    "new",
+    "empty",
+    "one",
+    "typical",
+    "dense",
+    "loading",
+    "failed"
+  ],
+  "skip": "",
+  "catalog": false,
+  "wash": false,
+  "status": "fail",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 1 \"Russell Athletic Chico State hoodie, ...\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 2 \"Marquette 74 Final Four tee, gold, XL\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 2 \"Nike Dunk Low, Grey Fog, men’s 10\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "error",
+      "id": "U1",
+      "where": "screen 2 <button>",
+      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
+    }
+  ]
+}

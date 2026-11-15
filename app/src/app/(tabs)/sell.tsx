@@ -3,7 +3,7 @@
 // world; the page only chooses what to show. Why each element is here is in app/behavior/(tabs)/sell.json, "decisions".
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Approve, EmptyState, FootButton, Grid, List, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
+import { Approve, EmptyState, FootButton, Grid, List, log, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile, TileSkeleton, type TileFact } from '@/ui/parts/tile';
 import { day, feed, pill, sellItem, shelves, unread, usd, type Item, type World } from '@/demo';
@@ -28,6 +28,22 @@ const ASKS: Record<string, string> = {
   leave_review: 'Rate buyer', share_address: 'Address', relist: 'Relist', buy_label: 'Label',
 };
 
+// Each shelf the person folds stays folded for them (Ben, 06:19: "collapsible"): in memory for the demo, and in the
+// browser's storage on the web so a reload keeps it. Unsold and Kept start folded: they are not for sale (pages §6.10).
+const FOLDED_FIRST = ['unsold', 'kept'];
+const MEMORY: Record<string, Record<string, boolean>> = {};
+const KEY = (who: string) => `sell.folds.${who}`;
+function readFolds(who: string): Record<string, boolean> {
+  if (MEMORY[who]) return MEMORY[who];
+  let kept: Record<string, boolean> = {};
+  try { const v = globalThis.localStorage?.getItem(KEY(who)); if (v) kept = JSON.parse(v); } catch (e) { log.error('sell.folds_read', e, { who }); kept = {}; }
+  return (MEMORY[who] = kept);
+}
+function writeFolds(who: string, folds: Record<string, boolean>) {
+  MEMORY[who] = folds;
+  try { globalThis.localStorage?.setItem(KEY(who), JSON.stringify(folds)); } catch (e) { log.error('sell.folds_write', e, { who }); }
+}
+
 // A value is a range said the way a friend says it, in whole dollars, widened outward so it never claims more (copy.md).
 const wholeRange = (r: { low: number; high: number }) => `${usd(Math.floor(r.low / 100) * 100)} to ${usd(Math.ceil(r.high / 100) * 100)}`;
 
@@ -39,7 +55,7 @@ function tileOf(w: World, it: Item): { state: TagState; word?: string; fact: Til
     : { label: 'Not listed' };
   const worth: TileFact = it.valuation?.state === 'shown' ? { label: 'Worth', amount: wholeRange(it.valuation.range) } : { label: 'Pricing' };
   const order = w.orders.find(o => o.item_id === it.id && o.kind === 'sale');
-  const kept: TileFact | null = order ? { label: 'You keep', amount: usd(order.price_cents - order.fees_cents - order.shipping_cents) } : null;
+  const kept: TileFact | null = order ? { label: 'You get', amount: usd(order.price_cents - order.fees_cents - order.shipping_cents) } : null;
   if (it.state === 'kept') return { state: 'ended', word: 'Kept', fact: worth };
   if (it.state === 'unsold') return { state: 'ended', word: 'Unsold', fact: listed, faded: true };
   const p = pill(w, it);
@@ -62,7 +78,7 @@ function tileOf(w: World, it: Item): { state: TagState; word?: string; fact: Til
       // bank. The tile carries the word and what lands; the dates and instant payout sit on the order, on the item page.
       if (!order || !kept) return { state: 'sold', fact: listed };
       const ready = order.clocks.release_at && order.clocks.release_at <= w.now;
-      const word = order.state === 'released' ? 'In your bank' : ready ? 'Ready on the site' : ['shipped', 'delivered', 'claim_window', 'handed_over'].includes(order.state) ? 'On its way' : 'You keep';
+      const word = order.state === 'released' ? 'In your bank' : ready ? 'Ready on the site' : ['shipped', 'delivered', 'claim_window', 'handed_over'].includes(order.state) ? 'On its way' : 'You get';
       return { state: order.state === 'released' ? 'paid' : 'sold', word: order.state === 'released' ? 'Paid' : undefined, fact: { label: word, amount: kept.amount } };
     }
     case 'Slow': return { state: 'stuck', word: 'Slow', fact: listed };
@@ -85,7 +101,9 @@ export default function Sell() {
   const [site, setSite] = useState<Site | null>(null);
   const [sort, setSort] = useState<Sort>('latest');
   const [sorting, setSorting] = useState(false);
-  const [opened, setOpened] = useState<string[]>([]);
+  const [folds, setFolds] = useState<Record<string, boolean>>(() => readFolds(name));
+  const isFolded = (id: string) => folds[id] ?? FOLDED_FIRST.includes(id);
+  const fold = (id: string) => { const next = { ...folds, [id]: !isFolded(id) }; setFolds(next); writeFolds(name, next); };
   // Select many, then one change for all (ways-out §6.10, "200 items").
   const [picking, setPicking] = useState(false);
   const [picked, setPicked] = useState<string[]>([]);
@@ -132,7 +150,7 @@ export default function Sell() {
   if (!selling.length) {
     // A new person and someone whose things have all gone see the same page: the camera is the one thing to point to.
     return (
-      <Screen name="sell" state={name === 'new' ? 'new' : 'empty'} nav={nav}>
+      <Screen name="sell" state={name === 'new' ? 'new' : 'empty'} wash nav={nav}>
         <EmptyState title="Nothing for sale" action={{ id: 'sell-empty-camera', label: 'Sell something', onPress: () => router.push('/camera' as Href) }} />
       </Screen>
     );
@@ -140,7 +158,7 @@ export default function Sell() {
   if (shown === 'failed') {
     // The list did not come back. Nothing is guessed: what failed, and one tap to try again (ways-out, Everywhere).
     return (
-      <Screen name="sell" state="failed" nav={nav}>
+      <Screen name="sell" state="failed" wash nav={nav}>
         <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Try again', onPress: () => setRetried(true) }} />
       </Screen>
     );
@@ -183,7 +201,7 @@ export default function Sell() {
       : undefined;
 
   return (
-    <Screen name="sell" state={state} nav={nav} foot={foot}>
+    <Screen name="sell" state={state} wash nav={nav} foot={foot}>
       <Stack>
         <Row trail={loading ? undefined : picking
           ? <Pill id="select-done" kind="second" label="Done" onPress={() => { setPicking(false); setPicked([]); }} />
@@ -208,9 +226,8 @@ export default function Sell() {
 
       {loading ? null : shelf === 'all' ? showing.map(s => {
         const items = order(s.items, s.id);
-        const folded = (s.id === 'unsold' || s.id === 'kept') && !opened.includes(s.id);
         return (
-          <Shelf key={s.id} id={s.id} title={s.title} count={items.length} folded={folded} onOpen={() => setOpened(o => [...o, s.id])}
+          <Shelf key={s.id} id={s.id} title={s.title} count={items.length} folded={isFolded(s.id)} onFold={() => fold(s.id)}
             onAll={items.length > PER_SHELF ? () => setShelf(s.id) : undefined}>
             <Grid columns={COLUMNS}>{items.slice(0, PER_SHELF).map(tile)}</Grid>
           </Shelf>

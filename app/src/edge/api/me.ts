@@ -84,3 +84,13 @@ export function makeMeHandlers(o: { store: AuthStore; auth: Auth; now: () => num
 }
 
 export const handlers = makeMeHandlers({ store: defaultStore, auth: defaultAuth, now: () => Date.now() });
+
+export const routeHandlers = {
+  'GET /v1/me': handlers.get,
+  'PATCH /v1/me': handlers.patch,
+  'DELETE /v1/me': handlers.delete,
+  'POST /v1/me/export': handlers.export,
+  'GET /v1/me/style': handlers.styleGet,
+  'PATCH /v1/me/style': handlers.stylePatch,
+};
+export const manifest = Object.keys(routeHandlers).map(endpoint => ({ endpoint, source: 'engine' as const, auth: 'user' as const }));

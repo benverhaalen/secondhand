@@ -58,7 +58,7 @@ export async function gate(
     opts.store.raiseDecision({
       user_id: opts.user_id, kind: 'unbacked_claim', subject: draft.subject, item_id: opts.item_id,
       why: `Nothing backs: ${claims.filter(c => c.state === 'unbacked').map(c => c.text).join('; ')}`,
-      options: [{ id: 'send_without', label: 'Send without it' }, { id: 'edit', label: 'Edit' }, { id: 'confirm_fact', label: "It's true" }],
+      options: [{ id: 'send_without', label: 'Send without it' }, { id: 'edit', label: 'Edit' }, { id: 'confirm_fact', label: "It’s true" }],
       suggested: 'send_without', deadline: opts.deadline,
     });
   }

@@ -25,7 +25,7 @@ export type ItemCard = {
   recall_flag?: boolean;
 };
 
-type Requirement = {
+export type Requirement = {
   item_kind: string;
   field: string;
   role: string;
@@ -64,7 +64,7 @@ function shorten(value: Attr['value'], max: number | null): Attr['value'] {
   return text.slice(0, max + 1).replace(/\S+$/, '').trimEnd();
 }
 
-export function buildListing(item: ItemCard, site: string, opts: Options) {
+export function buildListing(item: ItemCard, site: keyof typeof platformFit.platforms, opts: Options) {
   const profile = platformFit.platforms[site];
   const facts: Record<string, Attr['value']> = {};
   for (const [field, attr] of Object.entries(item.attrs)) {
@@ -104,7 +104,7 @@ export function buildListing(item: ItemCard, site: string, opts: Options) {
   };
 }
 
-export function buildAll(item: ItemCard, sites: string[], opts: Options) {
+export function buildAll(item: ItemCard, sites: (keyof typeof platformFit.platforms)[], opts: Options) {
   const listings = sites.map(site => buildListing(item, site, opts));
   const asks = new Map<string, { kind: 'clarify'; field: string; sites: string[] }>();
   for (const listing of listings) {

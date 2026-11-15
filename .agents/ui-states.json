@@ -116,7 +116,10 @@
         "link",
         "describe",
         "ask",
-        "valuable"
+        "valuable",
+        "sell",
+        "worth",
+        "find"
       ]
     },
     "job": {
@@ -188,6 +191,15 @@
     ],
     "screen unknown": [
       "What's it worth, the person said I don't know (spec/edge-cases.md §4)"
+    ],
+    "screen sell": [
+      "New: the Sell it sheet, words or a link into the sell job"
+    ],
+    "screen worth": [
+      "New: the What's it worth sheet, words or a link into the value job"
+    ],
+    "screen find": [
+      "New: the Find or buy it sheet, words or a link into the search job"
     ]
   }
 }

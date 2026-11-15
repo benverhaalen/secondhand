@@ -10,11 +10,19 @@
 // marketplace row puts the amount (copy.md, Gestalt). A site with too few sales shows no number and says so, so nothing
 // is ever guessed (appraise: "a route with no basis is hidden with its reason, never guessed"). States: a range, too few
 // sales (no amount), checking (Glance: the site is still being read), and a note under it ("Not linked").
+//
+// SaleRow: why it exists. The value is only as good as the sales it goes by, and the person knows their thing better than
+// a match does (Ben, 06:19: "investigate. Like human in the loop is very important"). One row per site's sales: the logo,
+// what they sold for, and a check the person can take off when those sales are not the same thing. The range is then
+// worked out again from the sales they kept. The whole row is the press, and it is one size ticked or not (U7).
+// States: counted (a filled check), left out (an empty ring, the words in secondary ink), too few sales (no check).
 import { View } from 'react-native';
+import { Icon } from '../icon';
+import { Press } from '../press';
 import { Txt } from '../text';
 import { useColors } from '../theme';
 import { radius, size, space } from '../tokens.generated';
-import { mark, type Site } from './mark';
+import { FLAT, mark, type Site } from './mark';
 import { SiteBadge } from './small';
 
 export function Range({ low, high, what }: { low: string; high: string; what: string }) {
@@ -56,4 +64,34 @@ export function KeepRow({ site, keep, line, note }: {
       {keep ? <Txt role="body">{keep}</Txt> : null}
     </View>
   );
+}
+
+export function SaleRow({ id, site, sold, line, counted, onToggle }: {
+  id: string;
+  site: Site;
+  // What they sold for here: "$68 to $92". None when there are too few sales to go by.
+  sold?: string;
+  // How it went: "Sold in about 6 days", "Too few sales here".
+  line: string;
+  counted: boolean;
+  onToggle?: () => void;
+}) {
+  const c = useColors();
+  const row = (
+    <View {...mark('sale-row', { site, counted: sold ? String(counted) : '' })} style={{ height: size.noticeH, flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
+      <SiteBadge site={site} />
+      <View style={{ flex: 1, gap: space.s1 }}>
+        <Txt role="body" tone={sold && counted ? 'ink' : 'ink-2'} lines={1}>{sold ? `Sold for ${sold}` : line}</Txt>
+        {sold ? <Txt role="caption" lines={1}>{counted ? line : 'Left out'}</Txt> : null}
+      </View>
+      {sold ? (
+        <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, backgroundColor: counted ? c.ink : c.surface,
+          borderWidth: 2, borderColor: counted ? c.ink : c.ink2, alignItems: 'center', justifyContent: 'center', ...FLAT }}>
+          {counted ? <Icon name="tick-02" size={12} tone="page" /> : null}
+        </View>
+      ) : null}
+    </View>
+  );
+  if (!sold) return row;
+  return <Press id={id} label={`Sales here, ${counted ? 'counted' : 'left out'}`} selected={counted} onPress={onToggle} round={false}>{row}</Press>;
 }

@@ -1378,3 +1378,57 @@ Ben, website thread, 07:51 UTC:
 > recall the original set of icons i denied. show me that again
 
 Read as Hugeicons, the app's set, whose waving hand round 11 showed beside the wordmark and Ben asked to be slimmer ([round 11](#2026-11-15-round-11-picks)). Used in: [boards/03-hands/poses.mjs](../brand/explore/web-home/boards/03-hands/poses.mjs).
+Used in (07:18 entry): [seasons-events-and-a-fair-backtest.md](../research/price/ben/seasons-events-and-a-fair-backtest.md), [money D6](../spec/determinations/money.md#d6-range-calibration-and-display-state) steps 6, 8 and 9, [market-insight M12](../spec/determinations/market-insight.md#m12-seasonality).
+
+## 2026-11-15 the backtest proves it works now and is where we tune, and trends reach past resale
+
+Ben, project chat (relayed), about 07:20 UTC.
+> also design the test to be fairly easy to conduct. choose the conditions, the sites, time period, products, but also dont limit yourself. i dont want to backtest yet i want to research any research that suggests trends we can use to improve our prediction models. think of any data we collect and how that correlates with the outcome we want
+
+Ben, project chat (relayed), about 07:21 UTC.
+> but also think and debate and possibly use research or applicable skills or rea at all knowing the data and the things that matter about accurate predictions and what metric we can use to prove our thing works. also tuning our algorithm. but backtesting yes. help design it well. consider its purpose and we need to defend and explain it well.
+
+Ben, project chat, 07:27 UTC.
+> the backtest should both test if our system works now as well as serve as a way to tune our model without overfitting. we can also use research and rdd and iae and theories if we get an interesting model output. but using backtest(s). tell me all the decisions youd make and why. what numbers look best for a backtest and designing a test to get statistics that are best. tell me what you think are the best statistics to prove what people have no clue about with our project. proof that our process works and that you should download and that our experiment was actually good. there could be experiment design or backtest etc skills. how would an expert designer and expert in this field understand the actual problem. what i want not what i say. and really well design this problem to create a credible but also great backtest. also a few different tests or a test that tests a lot of dimensions. and in a way where we can tune and test across categories etc.
+
+Ben, pitch thread, 07:28 UTC.
+> but also not just secondhand but general buying trends in the places where the products that relate to us are. supply and demand. donating times. when people donate vs buy new etc.
+
+Used in: [spec/plans/backtest/plan.md](../spec/plans/backtest/plan.md), [what-predicts-price-and-speed.md](../research/price/ben/what-predicts-price-and-speed.md).
+
+## 2026-11-15 check eBay's listing-help APIs and whether other sites have the same
+
+Ben, project chat, 07:41 UTC.
+> also take a peek at ebay seo guidance api and see if that is useful at all
+
+Ben, project chat, 07:42 UTC.
+> see if any of these end up improving our methodology. see if other sites have anything similar. see how to use them effectively
+
+Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), app/src/engines/listing/aspects.ts.
+
+## 2026-11-15 demo the buy side live, Nate posts and my phone pings
+
+Ben, project chat, 07:46 UTC.
+> another thing - i feel like demoing the buy feature live would be so cool. like notify me when someone posts whatever product for whatever price and make it super low, etc but like nate does it live on his phone and it then notifies me right then and there
+
+Used in: [live-buy-demo.md](live-buy-demo.md), [scripts/demo/stage-watch.mjs](../scripts/demo/stage-watch.mjs).
+
+## 2026-11-15 nate official APIs where they exist, the browser design as specced, ranking systems accounted for, Databricks perfected
+Nate, build session (orchestrator), 2026-11-15 between about 03:00 and 04:00 Central. Separate messages.
+> Lets focus on everything but the harnesses right now. What else is there thats being built.
+
+> Lets do this, continue with the way everything is built, not the private api endpoints, but at least take into account the ranking systems found
+
+> I dont want to violate tos or introduce problems to the users, send out subagents after updating each feature spec, to fix everything already built, to add more, to optimize and finish developing out all engines and harnesses
+
+> Ensure databricks is perfected, ensure we expemplify and really impress the databricks judges and employees. We already hope to position our safety and governance against the built in databricks, but ideally we extend and improve on everything they introduced, show our new features and such
+
+> The way you were speccing the browser automation was perfect before, utilize official apis as well for certain platforms, but dont limit us. we find everyhting and already approved how its not automation as the user opts in and is technically driving each intent
+
+> Send out and utilize the macs when you can ensure things are pushed and pulled so everything syncs
+## 2026-11-15 every AI feature, how we did it and how to prove it
+
+Ben, project chat, 07:53 UTC.
+> where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
+
+Used in: [features-proof.md](features-proof.md).

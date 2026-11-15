@@ -4,16 +4,11 @@
   "states": [
     "typical"
   ],
-  "skip": "new: the same three doors for a new person; empty: there are always three choices; one: there are always three; dense: there are only ever three; loading: nothing here waits on anything; failed: nothing here can fail, a link that will not come in fails on the draft; offline: a choice opens the camera, which keeps stills until signal returns",
+  "skip": "new: the same three jobs for a new person; empty: there are always three jobs; one: there are always three; dense: there are only ever three; loading: nothing here waits on anything; failed: nothing here can fail, a link that will not come in fails on the draft; offline: a job opens the camera, which keeps stills until signal returns",
   "catalog": false,
+  "wash": false,
   "status": "clean",
   "findings": [
-    {
-      "level": "warn",
-      "id": "L2",
-      "where": "screen",
-      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
-    },
     {
       "level": "warn",
       "id": "B3",

@@ -1,0 +1,32 @@
+{
+  "route": "gone-by?world=new",
+  "screen": "gone-by",
+  "states": [
+    "new",
+    "empty",
+    "one",
+    "typical",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "",
+  "catalog": false,
+  "wash": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "screen",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

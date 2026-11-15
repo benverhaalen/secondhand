@@ -1,0 +1,169 @@
+{
+ "objects": [
+  {
+   "id": 999002396,
+   "brand_id": 50,
+   "brand_name": "ASICS",
+   "active_status": "active",
+   "status": "STATUS_ONSALE",
+   "category_name": "Sneakers",
+   "listed_quantity": 2,
+   "created_at": "2026-11-14T01:26:54.180784Z",
+   "updated_at": "2026-11-14T01:27:06.170615Z",
+   "sizes": [
+    {
+     "name": "US 9",
+     "id": 6,
+     "quantity": 2,
+     "status": "STATUS_ONSALE",
+     "variant": "US 9"
+    }
+   ],
+   "user_id": 1000001,
+   "slug": "hd838b627-asics-gel-kayano-14-3d08",
+   "pricing": {
+    "currency": "USD",
+    "current_price": {
+     "total_price": "76.30",
+     "price_breakdown": {
+      "price": {
+       "amount": "76.30"
+      }
+     }
+    },
+    "original_price": {
+     "total_price": "109.00",
+     "price_breakdown": {
+      "price": {
+       "amount": "109.00"
+      },
+      "buyer_fee": {
+       "amount": "0.00"
+      },
+      "tax": {
+       "amount": "0.00",
+       "tax_type": "n/a"
+      },
+      "shipping": {
+       "amount": "5.99",
+       "shipping_boundary": "NATIONAL",
+       "shipping_id": "USPS"
+      }
+     }
+    },
+    "is_reduced": true
+   }
+  },
+  {
+   "id": 996993405,
+   "brand_id": 1673,
+   "brand_name": "Carhartt",
+   "active_status": "active",
+   "status": "STATUS_ONSALE",
+   "category_name": "Outerwear",
+   "listed_quantity": 13,
+   "created_at": "2026-11-12T18:44:12.340179Z",
+   "updated_at": "2026-11-13T18:54:06.598Z",
+   "sizes": [
+    {
+     "name": "M",
+     "id": 4,
+     "quantity": 13,
+     "status": "STATUS_ONSALE",
+     "variant": "M"
+    }
+   ],
+   "user_id": 1000001,
+   "slug": "h01826642-carhartt-black-full-zip-hooded-219a",
+   "pricing": {
+    "currency": "USD",
+    "current_price": {
+     "total_price": "64.05",
+     "price_breakdown": {
+      "price": {
+       "amount": "64.05"
+      }
+     }
+    },
+    "original_price": {
+     "total_price": "64.05",
+     "price_breakdown": {
+      "price": {
+       "amount": "64.05"
+      },
+      "buyer_fee": {
+       "amount": "0.00"
+      },
+      "tax": {
+       "amount": "0.00",
+       "tax_type": "n/a"
+      },
+      "shipping": {
+       "amount": "5.99",
+       "shipping_boundary": "NATIONAL",
+       "shipping_id": "USPS"
+      }
+     }
+    },
+    "is_reduced": false
+   }
+  },
+  {
+   "id": 996994038,
+   "brand_id": 50,
+   "brand_name": "ASICS",
+   "active_status": "active",
+   "status": "STATUS_ONSALE",
+   "category_name": "Sneakers",
+   "listed_quantity": 4,
+   "created_at": "2026-11-12T18:44:46.101776Z",
+   "updated_at": "2026-11-13T02:58:46.897Z",
+   "sizes": [
+    {
+     "name": "US 9",
+     "id": 6,
+     "quantity": 4,
+     "status": "STATUS_ONSALE",
+     "variant": "US 9"
+    }
+   ],
+   "user_id": 1000001,
+   "slug": "h8cd92993-black-sneakers-size-0031",
+   "pricing": {
+    "currency": "USD",
+    "current_price": {
+     "total_price": "89.00",
+     "price_breakdown": {
+      "price": {
+       "amount": "89.00"
+      }
+     }
+    },
+    "original_price": {
+     "total_price": "89.00",
+     "price_breakdown": {
+      "price": {
+       "amount": "89.00"
+      },
+      "buyer_fee": {
+       "amount": "0.00"
+      },
+      "tax": {
+       "amount": "0.00",
+       "tax_type": "n/a"
+      },
+      "shipping": {
+       "amount": "5.99",
+       "shipping_boundary": "NATIONAL",
+       "shipping_id": "USPS"
+      }
+     }
+    },
+    "is_reduced": false
+   }
+  }
+ ],
+ "page_info": {
+  "has_more": false
+ }
+}

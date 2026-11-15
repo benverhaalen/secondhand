@@ -94,7 +94,7 @@ const unauth = (message: string, step: string) => new ApiError('unauthenticated'
 export type Claims = { subject: string; email?: string; email_verified?: boolean };
 type Jwk = JsonWebKey & { kid?: string };
 type VerifierOpts = { fetch?: typeof globalThis.fetch; now?: () => number; audiences?: () => string[]; log?: () => Log };
-const ids = (name: string) => () => (process.env[name] ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+const ids = (name: string) => () => (process.env[name] ?? '').split(',').map((s: string) => s.trim()).filter(Boolean);
 const dec = (s: string) => Buffer.from(s, 'base64url').toString('utf8');
 
 function idTokenVerifier(o: VerifierOpts & { name: string; jwks: string; issuers: string[]; audiences: () => string[] }) {
@@ -111,7 +111,7 @@ function idTokenVerifier(o: VerifierOpts & { name: string; jwks: string; issuers
   return async (idToken: string, nonce?: string): Promise<Claims | null> => {
     const parts = idToken.split('.'); if (parts.length !== 3) return null;
     let head: { alg?: string; kid?: string }, c: Record<string, unknown>;
-    try { head = JSON.parse(dec(parts[0])); c = JSON.parse(dec(parts[1])); } catch { return null; }
+    try { head = JSON.parse(dec(parts[0])); c = JSON.parse(dec(parts[1])); } catch (e) { (o.log ?? (() => deps.log))().error('auth.verify', e); return null; }
     if (head?.alg !== 'RS256' || typeof head.kid !== 'string' || !c || typeof c !== 'object') return null;
     const find = (ks: Jwk[]) => ks.find((k) => k.kid === head.kid);
     let jwk = find(cache && now() - cache.at < HOUR ? cache.keys : await load());
@@ -120,7 +120,7 @@ function idTokenVerifier(o: VerifierOpts & { name: string; jwks: string; issuers
     try {
       const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
       if (!(await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, Buffer.from(parts[2], 'base64url'), enc.encode(`${parts[0]}.${parts[1]}`)))) return null;
-    } catch { return null; }
+    } catch (e) { (o.log ?? (() => deps.log))().error('auth.verify', e); return null; }
     const aud = ([] as unknown[]).concat(c.aud), want = o.audiences();
     if (!o.issuers.includes(c.iss as string) || !aud.some((a) => typeof a === 'string' && want.includes(a))) return null;
     if (typeof c.exp !== 'number' || c.exp * 1000 <= now() || typeof c.sub !== 'string' || !c.sub) return null;

@@ -1,5 +1,7 @@
+import { createLog, consoleSink } from '../../../log/index.js';
+const log = createLog({ src: 'probes.workspace.app.server', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 // T0-1 probe app on Databricks Apps: the front door (auth, an unauthenticated hook, SSE) and our real browser pool
-// (app/src/edge/browser/pool.ts and playwright.ts, copied into lib/ at deploy) on the app's own compute.
+// (app/src/edge/browser/pool.ts and playwright.ts) on the app’s own compute. Package with probes/workspace/prepare.mjs.
 // Public reads only, a polite few; no login, no account, nothing forged.
 import http from 'node:http';
 import { execFile } from 'node:child_process';
@@ -40,12 +42,12 @@ async function browser(n) {
   const inst = await ensureChromium();
   if (!inst.ok) return { install: inst };
   process.env.PLAYWRIGHT_BROWSERS_PATH = join(tmpdir(), 'pw');
-  const { createPool } = await import('./lib/pool.ts');
-  const { loadPlaywright, playwrightLauncher } = await import('./lib/playwright.ts');
+  const { createPool } = await import('../../../app/src/edge/browser/pool.ts');
+  const { loadPlaywright, playwrightLauncher } = await import('../../../app/src/edge/browser/playwright.ts');
   const pw = loadPlaywright();
   if (!pw) return { install: inst, error: 'playwright package not loadable' };
   const launcher = playwrightLauncher(pw);
-  const pool = createPool({ launcher, profileRoot: mkdtempSync(join(tmpdir(), 'profiles-')), publicConcurrency: n });
+  const pool = createPool({ launcher, profileRoot: mkdtempSync(join(tmpdir(), 'profiles-')), publicConcurrency: n, log });
   const m0 = process.memoryUsage().rss;
   const t = performance.now();
   await pool.warm(['acct_probe'], Math.min(2, n));
@@ -84,4 +86,4 @@ http.createServer(async (req, res) => {
     }
     json(res, 404, { error: 'not_found' });
   } catch (e) { json(res, 500, { error: String(e?.message ?? e).slice(0, 400) }); }
-}).listen(PORT, () => { console.log(`probe app on ${PORT}`); ensureChromium(); });
+}).listen(PORT, () => { log.note(`probe app on ${PORT}`); ensureChromium(); });

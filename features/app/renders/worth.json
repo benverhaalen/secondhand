@@ -11,6 +11,7 @@
   ],
   "skip": "empty: Worth is of one thing, so it has no list to be empty; one: it is always one thing; dense: one thing a page, so nothing piles up",
   "catalog": false,
+  "wash": false,
   "status": "clean",
   "findings": [
     {

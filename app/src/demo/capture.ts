@@ -2,14 +2,19 @@
 // tree in research/capture/ben/item-attributes-by-site.md §4, cut to the ones this jacket needs, as round 2 drew them:
 // Kind, Photos, Label, Measure, Condition). The person presses the shutter for every still and the app judges each one.
 // Nothing here reads the clock or a random number, so every render is the same. Feed photos are in capture-photos.ts.
+import { item, valuation } from './build.ts';
 import { PRODUCTS } from './market.ts';
+import type { Attribute, Item } from './types.ts';
 import type { World } from './world.ts';
 
 export type Mode = 'sell' | 'worth' | 'find';
 export type Stage = 'Kind' | 'Photos' | 'Label' | 'Measure' | 'Condition';
 export type FeedKey = 'front' | 'turn' | 'tag' | 'back';
-// A fact the listing needs. Until the camera finds it, the screen shows its name as a Blank.
-export type FactKey = 'brand' | 'model' | 'color' | 'size' | 'chest' | 'condition';
+// A fact the listing needs. Until the camera finds it, the screen shows its name as a Blank. The camera reads the union
+// of what every site asks for a jacket (research/capture/ben/item-attributes-by-site.md §3.1): each site's form takes
+// its own part of it when the listing is posted, so nothing is asked twice and nothing a site wants is missing (Ben,
+// 06:19: "collect the max amount of data and then you can kind of whittle it down for the purpose").
+export type FactKey = 'brand' | 'model' | 'color' | 'size' | 'chest' | 'condition' | 'department' | 'material' | 'style' | 'era' | 'length' | 'sleeve';
 // A point in the photo, 0 to 1 from its top left corner, where the camera found something.
 export type Spot = readonly [x: number, y: number];
 
@@ -37,6 +42,16 @@ export const FACTS: readonly { key: FactKey; name: string }[] = [
   { key: 'size', name: 'Size' },
   { key: 'chest', name: 'Pit to pit' },
   { key: 'condition', name: 'Condition' },
+  // Every site files a jacket under men's or women's first (eBay's Department, Depop's department, Mercari's level 1).
+  { key: 'department', name: 'Men’s or women’s' },
+  // eBay's Material aspect and Depop's per-type attribute; the rest put it in the description.
+  { key: 'material', name: 'Material' },
+  // Depop's style tags and eBay's Style aspect.
+  { key: 'style', name: 'Style' },
+  { key: 'era', name: 'Era' },
+  // eBay's optional Length and Sleeve Length aspects; everywhere else the description.
+  { key: 'length', name: 'Length' },
+  { key: 'sleeve', name: 'Sleeve' },
 ];
 
 // The jacket's product, so the count the camera says it is matching against is the market's own.
@@ -52,7 +67,7 @@ export const STEPS: readonly Step[] = [
   {
     stage: 'Kind', ask: 'Show the whole front', feed: 'front', outline: FRONT_OUTLINE, judgeMs: 1400,
     features: [[0.504, 0.302], [0.653, 0.449], [0.511, 0.38], [0.505, 0.525], [0.649, 0.414], [0.39, 0.32], [0.649, 0.315], [0.276, 0.57], [0.727, 0.57], [0.509, 0.68]],
-    finds: [{ fact: 'brand', value: 'Carhartt' }, { fact: 'color', value: 'Brown' }], pop: 'Carhartt',
+    finds: [{ fact: 'brand', value: 'Carhartt' }, { fact: 'color', value: 'Brown' }, { fact: 'department', value: 'Men’s' }, { fact: 'style', value: 'Workwear' }], pop: 'Carhartt',
   },
   {
     stage: 'Photos', ask: 'Turn it over', feed: 'turn', outline: TURN_OUTLINE, judgeMs: 1200,
@@ -62,12 +77,12 @@ export const STEPS: readonly Step[] = [
   {
     stage: 'Label', ask: 'Closer on the tag', feed: 'tag', outline: TAG_OUTLINE, judgeMs: 1200,
     features: [[0.519, 0.4], [0.519, 0.428], [0.519, 0.442], [0.53, 0.55], [0.79, 0.625], [0.325, 0.35], [0.855, 0.37]],
-    finds: [{ fact: 'size', value: 'L' }], pop: 'Size L',
+    finds: [{ fact: 'size', value: 'L' }, { fact: 'material', value: 'Cotton duck' }, { fact: 'era', value: '1990s' }], pop: 'Size L',
   },
   {
     stage: 'Measure', ask: 'Smooth it flat', feed: 'tag', outline: TAG_OUTLINE, judgeMs: 1200,
     features: [[0.065, 0.565], [0.25, 0.565], [0.5, 0.565], [0.75, 0.565], [0.98, 0.565], [0.1, 0.72], [0.93, 0.72]],
-    finds: [{ fact: 'chest', value: inches(24) }], pop: `${inches(24)} across`,
+    finds: [{ fact: 'chest', value: inches(24) }, { fact: 'length', value: inches(26) }, { fact: 'sleeve', value: inches(33) }], pop: `${inches(24)} across`,
   },
   {
     stage: 'Condition', ask: 'Closer on any wear', feed: 'back', outline: BACK_OUTLINE, judgeMs: 1200,
@@ -76,8 +91,8 @@ export const STEPS: readonly Step[] = [
   },
 ];
 
-// What each choice on New asks of the camera (pages §6.4): Sell this walks every stage, What's it worth needs what sets a
-// price, Find this needs what it is.
+// What each choice on New asks of the camera (pages §6.4): Sell it walks every stage, What's it worth needs what sets a
+// price, Find or buy it needs what it is.
 export const STAGES: Record<Mode, readonly Stage[]> = {
   sell: ['Kind', 'Photos', 'Label', 'Measure', 'Condition'],
   worth: ['Kind', 'Label', 'Condition'],
@@ -97,9 +112,25 @@ export function matching(n = PRODUCT.used_price.basis_count): string {
   return `Matching against ${new Intl.NumberFormat('en-US').format(n)} sold ${word}`;
 }
 
+// The draft the session makes: the jacket with every fact the stills read, waiting on the person's review. The item page's
+// Review moment is the review screen after capture (Ben, 06:19: "there should be like a review screen after that"): what it
+// is, each fact with where it came from, the sites it will post to, and the act. It lives in the edge world, so the
+// worlds people are drawn in keep their counts.
+export const DRAFT_ID = 'it_draft';
+const FROM_STAGE: Record<Stage, Attribute['source']> = { Kind: 'inferred', Photos: 'inferred', Label: 'label', Measure: 'measured', Condition: 'inferred' };
+const ATTR: Partial<Record<FactKey, string>> = { chest: 'pit_to_pit', condition: 'flaw.1' };
+export function draft(): Item {
+  const attrs = STEPS.flatMap(s => s.finds.map(f => [ATTR[f.fact] ?? f.fact, f.fact === 'chest' ? 610 : f.value, FROM_STAGE[s.stage]] as [string, string | number, Attribute['source']]));
+  return item({
+    id: DRAFT_ID, title: 'Carhartt Detroit Jacket, brown duck, L', key: 'carhartt-jacket', state: 'review', category: 'apparel', days: 0, where: 'Hall closet',
+    attrs, floor: 7000, value: valuation(PRODUCT.used_price.range.low, PRODUCT.used_price.range.high, PRODUCT.used_price.basis_count, ['ebay', 'depop'], 'ci_draft'),
+    sell: [{ site: 'ebay', price: 9800, state: 'none' }, { site: 'depop', price: 9500, state: 'none' }, { site: 'poshmark', price: 9900, state: 'none' }],
+  });
+}
+
 // Where each choice ends (pages §6.4, "Ends in").
 export const ENDS: Record<Mode, { label: string; to: string }> = {
-  sell: { label: 'Review the draft', to: '/sell' },
+  sell: { label: 'Review the draft', to: `/item/${DRAFT_ID}` },
   // What's it worth values the product the camera read, so the page shows the jacket that was shot.
   worth: { label: 'See what it’s worth', to: `/worth?product=${PRODUCT.id}` },
   find: { label: 'See matches', to: '/search' },
@@ -112,9 +143,9 @@ export function sameAs(w: World) {
 
 // The order New shows its three choices in: the last one used comes first (pages §6.4). Kept for the session.
 export const CHOICES: readonly { mode: Mode; label: string }[] = [
-  { mode: 'sell', label: 'Sell this' },
+  { mode: 'sell', label: 'Sell it' },
   { mode: 'worth', label: 'What’s it worth' },
-  { mode: 'find', label: 'Find this' },
+  { mode: 'find', label: 'Find or buy it' },
 ];
 let last: Mode = 'sell';
 export const lastMode = () => last;

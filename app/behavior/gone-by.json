@@ -1,0 +1,337 @@
+{
+  "screen": "gone-by",
+  "route": "/gone-by",
+  "open": "?at= sweeping | plan (default) | failed | offline | started | wednesday | done; ?world= clearing (default) | new | one | flipper | edge",
+  "frame": {
+    "who": "Clearing out (personas.md), moving: a room of their own things, most cheap, a few worth real money, and a date that will not move. Fire sale and Holding a minimum are in the same room (one Switch worth $225 sits beside a $14 hoodie).",
+    "how_often": "Once per move: the sentence is said once, the plan is approved once, and the page is opened a few times that week to see what is left. Today carries the one alarm in between.",
+    "came_to": "They'd say: 'sell or give away everything in this room by Friday.' They want: the room empty on moving morning without being involved again, no strangers at the door, money second (user-wants P1, P3, P5). What they do not want, though their words say it: a $100 jacket given away because Thursday came.",
+    "costliest_mistake": "Selling or giving away something they are taking (the Dunks), and a valuable thing going below its lowest or free without their tap. Second: a shipped sale on Thursday that cannot go out before the truck.",
+    "ways_out": "Change any price in place; move any thing between Sell, Give away and Keep, or leave it out (Not mine); change the moving day and the ending, each a guess until touched; pick pickup times per buyer, when they ask; Undo after the tap; nothing goes up without the tap; no site linked leads to linking; Back keeps the room as it was. Refused: below the lowest without a tap, the home address (both locked, spec/ways-out.md Refused on purpose).",
+    "in_the_loop": "One tap, on the plan, because posting is public in their name and sets prices (ui-build README, hand-off rule). After it the agent runs the plan inside the limits the tap set (drops to each lowest Wednesday, the ending Thursday) and shows each change done with Undo; it hands back only the one predicted miss on Wednesday, a thing worth keeping that won't sell in time."
+  },
+  "decisions": [
+    "A page, not a sheet or a Today card: it holds more than one decision (a fate per thing, the ending, the hours) and is opened again during the week (pages.md §1, Page).",
+    "The heading is the person's own words, 'Gone by Friday': the screen answers the sentence they said, and the date under it is a Guess because the agent inferred it from 'Friday'.",
+    "Things as photo tiles three across, grouped by fate (Sell, Give away, Already sold, Keeping): a room is recognised by sight before words (C3, L12), and the groups make the agent's split visible without a sentence (copy.md show, don't say).",
+    "Already-sold things are on the page: the room is not empty until they ship, and their ship-by day is the first deadline of the week.",
+    "The Dunks are Keeping without asking, from the person's own words on the item ('Still wear them'): the agent uses what it already knows instead of asking again (user-wants P3).",
+    "Give away below $15 kept at the low end of similar sales: a trip to a buyer costs more than it keeps (user-wants P1). Agent proposal; no source gives a threshold (user-wants, Choices for Ben and Nate).",
+    "Things already live keep their price until Wednesday at 9 am, then drop to the person's own lowest; the slow lamp takes the markdown its card already offered: the plan reaches the floor before the date and never crosses it (price.md Gone fast, the floor rule).",
+    "Shipping stops Wednesday at 8 pm and the last pickup is Thursday at 8 pm: a shipped sale must go out before moving morning, and the morning is for the truck. Agent inference; sites.mjs holds no ship-by clocks to compute it from.",
+    "No pickup hours on this page: when a buyer asks, the person taps the days and times that work (product/decisions.md, 2026-11-15, no fixed pickup windows). The plan sets only the last pickup, the evening before the move, which the agent never offers past. This replaced the first build's guess of three extra evenings.",
+    "The ending defaults to what they said (free), and the Wednesday card offers Pack it first for a thing worth keeping: the person said 'given away', but what they want is the room empty, not a $70 jacket handed to a stranger (ui-constitution Article 8, want over words). It is their tap, not a silent override.",
+    "Prices are Guesses under the tiles before the tap and plain text after: a price waits for the tap (ui-build README), and once approved it is theirs.",
+    "One black act at the foot, Approve, saying exactly what the tap does now ('Post 2 and lower 1'); what happens later is written in the Until Friday rows above it, each guess underlined.",
+    "Money is a caption ('You keep about $498 if all 5 sell'), not a 50 amount: for this person money is second (P1). The 50 amount appears once, on moving morning, as the outcome (copy.md peak-end).",
+    "The predicted miss is the only card on the page and takes the lead gradient: it is the one alarm worth a push (price.md Gone fast).",
+    "The Wednesday card's countdown is left off: the kit's countdown reads the device clock and zone, and showed Fri 2 AM for Thursday 8 pm in the render; the day is in the card's line instead.",
+    "Not mine is a fourth choice on every thing: a room has a roommate's things, and the camera cannot tell (ui-constitution Article 6, That's wrong).",
+    "No wash and no wordmark: a pushed page, reached from the camera or Today, with Back (pages.md §1)."
+  ],
+  "states": [
+    {
+      "state": "plan",
+      "open": "/gone-by",
+      "shows": "Post 2 and lower 1",
+      "then": "Tapping the foot button turns it busy while the plan posts, then the foot reads \"Posted 2, lowered 1\" with Undo beside it."
+    },
+    {
+      "state": "sweeping",
+      "open": "/gone-by?at=sweeping",
+      "shows": "Looking, 6 found",
+      "then": "The count climbs as the camera finds more, the Researching tags turn into ship-by dates, and the foot button becomes \"Post 2 and lower 1\" with the day and prices underlined."
+    },
+    {
+      "state": "posting",
+      "open": "/gone-by",
+      "reach": "Tap approve (\"Post 2 and lower 1\") on plan; it lasts until the site answers.",
+      "shows": "Posting",
+      "expected": true,
+      "then": "The foot button is busy and takes no second tap, then becomes \"Posted 2, lowered 1\" with Undo, or \"Try again\" if the site did not answer."
+    },
+    {
+      "state": "failed",
+      "open": "/gone-by?at=failed",
+      "shows": "The site didn’t answer, so nothing went up.",
+      "then": "Tapping \"Try again\" posts again, and when it works the error line goes and the foot reads \"Posted 2, lowered 1\"."
+    },
+    {
+      "state": "offline",
+      "open": "/gone-by?at=offline",
+      "shows": "Waiting for signal",
+      "then": "When the signal returns the plan posts by itself and the foot reads \"Posted 2, lowered 1\" with Undo."
+    },
+    {
+      "state": "started",
+      "open": "/gone-by?at=started",
+      "shows": "Posted 2, lowered 1",
+      "then": "Undo goes away after a short while, and through the week the tags on the tiles change as things sell, ship and get picked up."
+    },
+    {
+      "state": "wednesday",
+      "open": "/gone-by?at=wednesday",
+      "shows": "4 of 8 gone. Last pickup tomorrow at 8 pm.",
+      "then": "Choosing \"Pack it\" or \"Give it away\" removes the jacket card from the top and the jacket moves to the group that matches the choice."
+    },
+    {
+      "state": "done",
+      "open": "/gone-by?at=done",
+      "shows": "You kept, after fees",
+      "then": "Nothing more changes; every tile still opens its thing."
+    },
+    {
+      "state": "empty",
+      "open": "/gone-by?world=new",
+      "shows": "Nothing to clear here",
+      "then": "Tapping \"Scan the room\" opens the camera to sweep the room."
+    }
+  ],
+  "controls": [
+    {
+      "id": "nav-back",
+      "on": "plan",
+      "goes": "/",
+      "expected": true,
+      "on_tap": "Leaves the screen for the one the person came from; nothing is posted or changed.",
+      "control": "nav-back (plan)"
+    },
+    {
+      "id": "nav-back",
+      "on": "empty",
+      "goes": "/",
+      "expected": true,
+      "on_tap": "Leaves the screen for the one the person came from.",
+      "control": "nav-back (empty)"
+    },
+    {
+      "id": "moving",
+      "on": "plan",
+      "expected": true,
+      "on_tap": "Opens a sheet of moving days with Friday, Nov 20 marked as the current one; the plan behind stays as it was.",
+      "control": "moving (plan)"
+    },
+    {
+      "id": "moving-<choice id>",
+      "on": "plan",
+      "pattern": true,
+      "expected": true,
+      "on_tap": "Closes the sheet; the underlined day, the title (\"Gone by <day>\") and the dates under \"Until <day>\" all change to match the day picked.",
+      "control": "moving-<choice id> (plan)"
+    },
+    {
+      "id": "thing-<item id>",
+      "on": "plan",
+      "pattern": true,
+      "expected": true,
+      "on_tap": "Opens a sheet for that thing, named as the tile is labelled, with the choices to sell it, give it away or keep it; the current group is marked.",
+      "control": "thing-<item id> (plan)"
+    },
+    {
+      "id": "thing-it_switch",
+      "on": "plan",
+      "expected": true,
+      "on_tap": "Opens a sheet titled \"Nintendo Switch OLED, white, with dock\" with the choices to sell it, give it away or keep it; Sell is marked.",
+      "control": "thing-it_switch (plan)"
+    },
+    {
+      "id": "thing-it_dunks",
+      "on": "plan",
+      "expected": true,
+      "on_tap": "Opens a sheet titled \"Nike Dunk Low, Grey Fog, men’s 10\" with the choices to sell it, give it away or keep it; Keeping is marked.",
+      "control": "thing-it_dunks (plan)"
+    },
+    {
+      "id": "thing-<item id>-<choice id>",
+      "on": "plan",
+      "pattern": true,
+      "expected": true,
+      "on_tap": "Closes the sheet and moves the tile to the group picked (Sell, Give away or Keeping); the line \"You keep about $498 if all 5 sell\", the Today line and the foot button count again.",
+      "control": "thing-<item id>-<choice id> (plan)"
+    },
+    {
+      "id": "thing-it_switch",
+      "on": "sweeping",
+      "expected": true,
+      "on_tap": "Opens the same sheet for the Switch while the sweep is still running; the foot still reads \"Looking, 6 found\".",
+      "control": "thing-it_switch (sweeping)"
+    },
+    {
+      "id": "thing-it_switch",
+      "on": "started",
+      "expected": true,
+      "on_tap": "Opens the Switch, now tagged Live, with its price and where it is posted.",
+      "control": "thing-it_switch (started)"
+    },
+    {
+      "id": "thing-it_pants",
+      "on": "wednesday",
+      "expected": true,
+      "on_tap": "Opens the sold pants and shows \"You keep $38.14\"; there is nothing left to choose.",
+      "control": "thing-it_pants (wednesday)"
+    },
+    {
+      "id": "thing-it_jacket",
+      "on": "done",
+      "expected": true,
+      "on_tap": "Opens the jacket, which is coming with the person and is still for sale.",
+      "control": "thing-it_jacket (done)"
+    },
+    {
+      "id": "price-<item id>",
+      "on": "plan",
+      "pattern": true,
+      "expected": true,
+      "on_tap": "Opens a sheet of prices for that thing with the current price marked.",
+      "control": "price-<item id> (plan)"
+    },
+    {
+      "id": "price-it_switch",
+      "on": "plan",
+      "expected": true,
+      "on_tap": "Opens a sheet of prices for the Switch with $225 marked.",
+      "control": "price-it_switch (plan)"
+    },
+    {
+      "id": "price-it_jacket",
+      "on": "plan",
+      "expected": true,
+      "on_tap": "Opens a sheet of prices for the jacket with $95 marked.",
+      "control": "price-it_jacket (plan)"
+    },
+    {
+      "id": "price-<item id>-<choice id>",
+      "on": "plan",
+      "pattern": true,
+      "expected": true,
+      "on_tap": "Closes the sheet; the tile reads \"For\" and the price picked, and \"You keep about $498 if all 5 sell\" changes to the new total.",
+      "control": "price-<item id>-<choice id> (plan)"
+    },
+    {
+      "id": "price-it_switch",
+      "on": "failed",
+      "expected": true,
+      "on_tap": "Still opens the price sheet for the Switch, since nothing went up.",
+      "control": "price-it_switch (failed)"
+    },
+    {
+      "id": "ending",
+      "on": "plan",
+      "expected": true,
+      "on_tap": "Opens a sheet of what happens Thursday at 9 am to what is left, with \"What’s left goes up free\" marked.",
+      "control": "ending (plan)"
+    },
+    {
+      "id": "ending-<choice id>",
+      "on": "plan",
+      "pattern": true,
+      "expected": true,
+      "on_tap": "Closes the sheet and the underlined line under \"Thursday at 9 am\" reads the choice picked.",
+      "control": "ending-<choice id> (plan)"
+    },
+    {
+      "id": "ending",
+      "on": "started",
+      "expected": true,
+      "on_tap": "Opens the same sheet after posting; the choice can still be changed and the foot still reads \"Posted 2, lowered 1\".",
+      "control": "ending (started)"
+    },
+    {
+      "id": "ending",
+      "on": "wednesday",
+      "expected": true,
+      "on_tap": "Opens the same sheet under \"Tomorrow at 9 am\"; picking another choice changes the underlined line.",
+      "control": "ending (wednesday)"
+    },
+    {
+      "id": "approve",
+      "on": "plan",
+      "on_tap": "Posts the plan once: the button goes busy, then the foot reads \"Posted 2, lowered 1\" with Undo, the Switch's tag turns from New to Live, the Today line leaves \"Until Friday\", and the day and the prices can no longer be pressed.",
+      "control": "approve (plan)"
+    },
+    {
+      "id": "approve",
+      "on": "sweeping",
+      "on_tap": "Posts nothing while the sweep runs; the foot still reads \"Looking, 6 found\".",
+      "control": "approve (sweeping)"
+    },
+    {
+      "id": "approve",
+      "on": "failed",
+      "on_tap": "Tries the post again: the button goes busy, then \"The site didn’t answer, so nothing went up.\" is gone and the foot reads \"Posted 2, lowered 1\".",
+      "control": "approve (failed)"
+    },
+    {
+      "id": "approve",
+      "on": "offline",
+      "expected": true,
+      "on_tap": "Does not post a second time; the foot still reads \"Waiting for signal\".",
+      "control": "approve (offline)"
+    },
+    {
+      "id": "approve-undo",
+      "on": "started",
+      "expected": true,
+      "on_tap": "Takes the post back: the foot button reads \"Post 2 and lower 1\" again, the Switch's tag is New again and the Today line \"2 go up, 1 gets cheaper\" is back.",
+      "control": "approve-undo (started)"
+    },
+    {
+      "id": "miss-open",
+      "on": "wednesday",
+      "expected": true,
+      "on_tap": "Opens the jacket, titled \"Carhartt Detroit Jacket J97, brown duck, L\", the same as its tile would.",
+      "control": "miss-open (wednesday)"
+    },
+    {
+      "id": "miss-pack",
+      "on": "wednesday",
+      "expected": true,
+      "on_tap": "Takes the jacket off sale: the card at the top goes away and the jacket's tile appears under \"Coming with you\".",
+      "control": "miss-pack (wednesday)"
+    },
+    {
+      "id": "miss-free",
+      "on": "wednesday",
+      "expected": true,
+      "on_tap": "Puts the jacket up free: the card at the top goes away and the jacket's tile appears under \"Still here\" tagged Free.",
+      "control": "miss-free (wednesday)"
+    },
+    {
+      "id": "miss-more",
+      "on": "wednesday",
+      "expected": true,
+      "on_tap": "Opens a sheet with the other things to do about the jacket besides packing it or giving it away, such as lowering the price further.",
+      "control": "miss-more (wednesday)"
+    },
+    {
+      "id": "miss-more-<choice id>",
+      "on": "wednesday",
+      "pattern": true,
+      "expected": true,
+      "on_tap": "Closes the sheet, the card at the top goes away, and the jacket's tile shows the choice picked.",
+      "control": "miss-more-<choice id> (wednesday)"
+    },
+    {
+      "id": "scan",
+      "on": "empty",
+      "goes": "/scan",
+      "expected": true,
+      "on_tap": "Opens the camera to sweep the room.",
+      "control": "scan (empty)"
+    },
+    {
+      "id": "open-site-<site>",
+      "on": "plan",
+      "pattern": true,
+      "on_tap": "In a thing's sheet, one row for each site it is live on, by that site's logo: opens its listing on that site.",
+      "control": "open-site-<site> (plan)"
+    },
+    {
+      "id": "open-item",
+      "on": "plan",
+      "goes": "/item/it_jacket",
+      "on_tap": "In a thing's sheet: opens the thing's own page.",
+      "control": "open-item (plan)"
+    }
+  ]
+}

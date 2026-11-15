@@ -1,9 +1,9 @@
 // What the You tab, its pages and first launch share: which demo world is drawn, the words for a count, money in cents,
-// the weekly money kept, and how a change the person makes is logged. The pages read rows from the world and never type a number.
+// and how a change the person makes is logged. The pages read rows from the world and never type a number.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Platform } from 'react-native';
-import { connectionState, world, records, type AnyWorld, type Rule, type Site, type World } from '@/demo';
+import { connectionState, world, type AnyWorld, type Rule, type Site, type World } from '@/demo';
 import { useScreen, type ScreenState } from '@/demo/screen';
 import { log, money } from '@/ui';
 
@@ -43,22 +43,6 @@ export const plural = (n: number, one: string, many: string) => `${new Intl.Numb
 // Money is whole cents in the world; the parts format dollars in the person's locale.
 export const cash = (cents: number) => money(cents / 100);
 export const span = (r: { low: number; high: number }) => `${cash(r.low)} to ${cash(r.high)}`;
-
-// The weekly bars on You: money kept each week, Monday to Sunday in the person's zone, oldest first, up to this week.
-// research/today/ben/top-of-today-and-stacking.md §1: shown only once 3 weeks have a sale, so the chart always has a shape.
-const DAY = 864e5, OFFSET = -6 * 36e5; // America/Chicago in November (demo/format.ts)
-const monday = (t: number) => { const local = t + OFFSET, d = Math.floor(local / DAY), wd = (new Date(d * DAY).getUTCDay() + 6) % 7; return (d - wd) * DAY; };
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-export function weeks(w: World, count = 8): { label: string; cents: number; now: boolean }[] | null {
-  const rows = records(w), start = monday(Date.parse(w.now));
-  const out = Array.from({ length: count }, (_, i) => {
-    const from = start - (count - 1 - i) * 7 * DAY, d = new Date(from);
-    const cents = rows.filter(r => { const t = monday(Date.parse(r.date + 'T18:00:00Z')); return t === from; }).reduce((a, r) => a + r.kept_cents, 0);
-    return { from, cents, now: i === count - 1, day: d.getUTCDate(), month: d.getUTCMonth() };
-  });
-  if (out.filter(x => x.cents > 0).length < 3) return null;
-  return out.map((x, i) => ({ label: i === 0 || out[i - 1].month !== x.month ? `${MONTHS[x.month]} ${x.day}` : String(x.day), cents: x.cents, now: x.now }));
-}
 
 // A rule's name, said the way the person would ask for it. Kinds come from spec/product.md; an unknown kind reads its own words.
 const RULE_NAMES: Record<string, string> = {

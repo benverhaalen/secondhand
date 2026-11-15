@@ -9,7 +9,11 @@
 // Likely breaks, each tested: a cadence frozen as a constant; a param change not picked up; an expired
 // session that keeps sweeping or raises a second decision; a lease left held after a throw; a busy
 // lease that pushes the account a whole cadence back.
+import { mask } from '../../../../log/index.js';
 import type { Site } from './event.ts';
+import type { Accounts } from '../browser/auth.ts';
+import { sweepStorefronts, type SnapshotStore } from '../harness/storefront.ts';
+import type { Harness } from '../harness/protocol.ts';
 import type { Leases, Params } from './ports.ts';
 
 export interface Account { account_id: string; site: Site; user_id: string }
@@ -22,17 +26,38 @@ export function createScheduler(o: {
   runSweep: (a: Account) => Promise<SweepResult>;
   onStale: (a: Account) => void | Promise<void>; // as-1 markStale: one relink decision, jobs paused
   leaseTtlMs?: number;
+  storefront?: { accounts: Accounts; harness: Harness; store: SnapshotStore };
 }) {
   const due = new Map<string, number>(), paused = new Set<string>();
   const ttl = o.leaseTtlMs ?? 120_000;
 
   async function sweep(a: Account): Promise<'ran' | 'skipped' | 'stale'> {
+    const storefront = o.storefront;
+    if (storefront) {
+      const linked = await storefront.accounts.byId(a.account_id);
+      if (!linked || linked.person_id !== a.user_id || linked.site !== a.site) return 'skipped';
+    }
     const job = `sweep:${a.account_id}`;
-    if (!o.leases.take(a.account_id, job, ttl).ok) return 'skipped';
-    let r: SweepResult;
-    try { r = await o.runSweep(a); }
-    catch (e) { r = { ok: false, error: { code: (e as { code?: string }).code ?? 'error', message: String((e as Error).message) } }; }
-    finally { o.leases.give(a.account_id, job); }
+    const leased = await o.leases.withLease(a.account_id, job, ttl, async () => {
+      let r: SweepResult;
+      try {
+        r = await o.runSweep(a);
+        if (r.ok && storefront) {
+          // Recheck the link after the watcher read, and restrict the helper to this leased account.
+          const accounts: Accounts = { byId: id => storefront.accounts.byId(id), async linked() {
+            const linked = await storefront.accounts.byId(a.account_id);
+            return linked && linked.person_id === a.user_id && linked.site === a.site ? [linked] : [];
+          } };
+          const result = await sweepStorefronts({ ...storefront, accounts, now: () => new Date(o.now()) });
+          const failed = result.failed[0];
+          if (failed) r = { ok: false, error: { code: failed.code, message: 'storefront read failed' } };
+        }
+      }
+      catch (e) { r = sweepFailure(e); }
+      return r;
+    });
+    if (!leased.ok) return 'skipped';
+    const r = leased.value;
     if (!r.ok && r.error.code === 'auth_expired') { paused.add(a.account_id); await o.onStale(a); return 'stale'; }
     // any other failure keeps the cadence; the harness's own retry hints govern the calls inside the sweep
     due.set(a.account_id, o.now() + o.params.get('watch_cadence_s', { site: a.site, segment: o.stateOf(a) }) * 1000);
@@ -51,4 +76,9 @@ export function createScheduler(o: {
     paused: () => [...paused],
     nextDue: () => Object.fromEntries(due),
   };
+}
+
+export function sweepFailure(e: unknown): SweepResult {
+  const code = e && typeof e === 'object' && 'code' in e && typeof e.code === 'string' ? e.code : 'error';
+  return { ok: false, error: { code, message: JSON.stringify(mask({ message: e instanceof Error ? e.message : String(e) })) } };
 }

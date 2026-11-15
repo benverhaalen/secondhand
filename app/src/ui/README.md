@@ -44,6 +44,7 @@ See every part in every state at **`/dev/parts`** (light) and **`/dev/parts?sche
 | `Amount` | 50 + its line | `value`, `what` ("You keep, after fees"), `currency?` |
 | `Guess` | text 18 or 15 | `id`, `name`, `value`, `onChange?`, `changed?`, `look?: 'headline' \| 'body'`, `numeric?`. What the agent guessed: dotted underline until the person changes it, then solid. Tap edits in place |
 | `Blank` | text 18 or 15 | `id`, `name`, `value?`, `onChange?`, `look?`, `numeric?`. A field nobody knows yet: the name of what is missing on a solid line |
+| `GuessPick` (`@/ui/parts/pick`) | text 18 or 15 | `id`, `name`, `value` (a choice id), `choices: { id, label, does? }[]`, `onPick?`, `look?`, `changed?`, `lead?` (the word an amount needs: "For" $225, under the same line). A guess that is one of a few (an ending, which hours): reads like Guess, and a tap opens a sheet of the choices with what each does. `Choices` is that sheet's rows, for a screen that opens its own |
 | `Approve` | 350 x 48 | `id`, `does` (exactly what it will do: "Post at $45 on 2 sites"), `status?: 'ready' \| 'working' \| 'done' \| 'failed'`, `step?`, `done?`, `failed?`, `onApprove?`, `onUndo?`. Price, an address and a pickup always wait for this tap |
 | `Sheet` | full width, r20 top | `open`, `title?`, `onClose`, `children` |
 | `UndoToast` | 350 x 48 | `id`, `text`, `onUndo`, `onGone?` (after 5 s). One at a time |
@@ -59,41 +60,45 @@ See every part in every state at **`/dev/parts`** (light) and **`/dev/parts?sche
 | `Draft` | full width | `id`, `who`, `spans: Span[]`, `facts?: { text, from }[]`, `status?: 'ready' \| 'editing' \| 'sending' \| 'sent' \| 'failed'`, `lead?`, `hold?`, `failed?`, `onSend?`, `onChange?`, `onMine?`. The agent's reply held for a tap: guessed words dotted, solid once changed (`remark` works out which), a chip per fact with its source. Send, Edit, Take over |
 | `Composer` | full width, 40 tall and grows | `id`, `to`, `value`, `onChange`, `onSend`, `sending?`. The person's own message; Send waits for words |
 | `TimeSpan` | full width x 40, the day and words above | `id`, `day`, `words` ("2 to 4 pm"), `value: { start, end }` in half hours, `onChange`, `from?`, `to?`, `note?`. A span on one day, dragged by its two knobs; snaps to half hours |
-| `Tile` (parts/tile) | a grid column | `id`, `title`, `photo`, `state`, `word?`, `sites?`, `fact: { label, amount? }`, `faded?`, `select?: 'off' \| 'on' \| 'picked'`, `price?`, `onPress`. A thing in a photo grid: the tag on the photo's top left, site badges on its bottom right corner 4 apart |
-| `Shelf` (parts/tile) | header 24 | `id`, `title`, `count`, `onAll?` (See all), `folded?`, `onOpen?`, `children`. A section of a grid with its count |
+| `Tile` (parts/tile) | a grid column | `id`, `title`, `photo`, `state?`, `word?`, `sites?`, `fact?: { label, amount? }`, `faded?`, `select?: 'off' \| 'on' \| 'picked'`, `price?`, `onPress`, `children?`. A thing in a photo grid (Sell, a room's plan): the tag on the photo's top left, site badges on its bottom right corner 4 apart. No `state`: nothing is news, no tag. `children` is the screen's own second line in place of `fact`, outside the tile's button |
+| `Shelf` (parts/tile) | header 24 | `id`, `title`, `count`, `onAll?` (See all), `folded?`, `onFold?`, `children`. A section of a grid with its count; the header folds and opens it, the count showing either way |
 | `FilterRow`, `Chip` (parts/chip) | 40 tall | `FilterRow` scrolls sideways past the gutter. `Chip`: `id`, `label?`, `count?`, `icon?`, `site?` (the logo alone), `picked?`, `onPress`. One row of filters |
 | `Choice` (parts/chip) | 56 | `id`, `label`, `line?`, `icon?`, `picked?`, `leads?` (a chevron), `disabled?`, `onPress`. A row in a `List` that does one thing: a pick in a sheet, or a way out at a page's end |
 | `Range` (parts/worth) | 50 + its line | `low`, `high`, `what`. A value as a range, one piece of text that breaks at a space |
 | `KeepRow` (parts/worth) | 56 | `site`, `keep?`, `line`, `note?`. What the person keeps on one site; no `keep` when there are too few sales |
+| `WeekChart` (parts/week-chart) | content width x 160 + three caption rows | `weeks: { label, amount, n, now? }[]`, `top` (a round axis top, dollars), `axis` (its title: "After fees"), `count: { name, one, many }`. A bar per week on a titled dollar axis, the day, the month and the count under each week |
+| `MoneyBar` (parts/money-bar) | a 12 bar, then 56 rows | `parts: { id, label, detail?, value, low, high?, fill: 'lime' \| 'mint' \| 'sky', onPress }[]`. Shares of one amount on one scale; a range draws its unsure part in the quieter step of its hue; each part is a row with its swatch |
+| `StateBar` (parts/state-bar) | a 12 bar, then 72 tiles two to a row | `parts: { id, word, count, fill, icon, note? }[]`, `onOpen(id)`. Counts by state on one bar, then a tile per state with its swatch, count, word and icon |
+| `PulseRow`, `PulseKey` (parts/pulse-row) | a 72 photo row, then a row of counts | `PulseRow`: `id`, `title`, `photo`, `sites`, `price`, `line?`, `cells: { value, word, share, said, muted? }[]`, `onPress?`. Each count over a track with the usual as a tick in its middle. `PulseKey`: `text`, the same mark as a legend |
 
 ### New and the camera (`parts/takeover.tsx`, `parts/camera.tsx`)
-
+The camera draws on its bar (`useBar()`): ink black with page white on it in light, the dark page and its ink in dark, so nothing light covers the screen at night; a control on the bar is the bar's opposite, filled or at 12%. New grows in the brand field (`--field`, deep in dark) and its jobs are raised capsules on it; a job opens the camera out of its well on the bar.
 Both draw on the camera's bar (`useBar()`): ink black with page white on it in light, so the ＋ visibly becomes the circle; the dark page and its ink in dark, so nothing light covers the screen at night. A control on the bar is the bar's opposite, filled or at 12%.
 
 | Part | Size | Props |
 |---|---|---|
 | `TakeoverPlace` | the screen | `name`, `state`, `skip?`. New's root: `data-screen`, `data-state` and the states it does not draw |
-| `CircleStage` | a circle from a point to the whole screen | `origin`, `start?` (56), `phase: 'opening' \| 'open' \| 'closing' \| 'closed'`, `ground?: 'bar'`, `onSettled?`, `children?`. Grows out of what was touched in `newOpen`, shrinks back in `--t-select`. What is inside stays where it is on the screen |
+| `CircleStage` | a circle from a point to the whole screen | `origin`, `start?` (56), `phase: 'opening' \| 'open' \| 'closing' \| 'closed'`, `ground?: 'bar' \| 'field'` (the camera's bar, or `--field` over the whole screen), `onSettled?`, `children?`. Grows out of what was touched in `newOpen`, shrinks back in `--t-select`. What is inside stays where it is on the screen |
 | `PlusClose` | 56 circle where the ＋ is | `open`, `onPress`. Its ＋ turns 45° to × (`new-close`) |
-| `ChoiceColumn` | content width, standing 24 on the × | `ways?`, children (choices, bottom up) |
-| `ChoiceCapsule` | 350 x 88, a 56 icon well | `id`, `label`, `icon`, `lead?` (the last used: filled), `index`, `shown`, `onPress?`. Rises 30 ms after the one before |
-| `WaysOut`, `BarPill` | a wrapping line of 40 pills | `WaysOut`: `shown`, `count`, children. `BarPill`: `id`, `icon`, `label`, `onPress?` |
-| `Viewfinder` | the screen | `state`, `mode?`, `feed?` (the photo on the web), `live?` + `camera?` (the phone's camera), `blink?`, `top?`, `cloud?`, `bottom?`. `top` and `bottom` sit on solid bars |
+| `ChoiceColumn` | content width, centered between the top and the × | `count`, children (choices, bottom up). `useChoices(count)` gives its place and each well's center |
+| `ChoiceCapsule` | 350 x 88, a 56 icon well, a 40 pencil at its end | `id`, `label`, `icon`, `lead?` (the last used: filled), `index`, `shown`, `onPress?` (the camera), `onType?` (the same job from words or a link: `<id>-type`). Rises 30 ms after the one before |
+| `Viewfinder` | the screen | `state`, `mode?`, `feed?` (the photo on the web), `live?` + `camera?` (the phone's camera), `blink?`, `top?`, `cloud?`, `bottom?`, `framed?`, `facts?`. `top` and `bottom` sit on solid bars; `framed` draws the capture frame between them, with `facts` in it under the square |
+| `CaptureFrame` (`parts/camera-frame.tsx`) | the largest 3:4 upright between the bars | `top?`, `bottom?` (the bars' heights), `band?`, `sample?`. Outside dimmed, 20 corners of 2, the square ticked; `frameRect(area)` and `ASPECT` for the math (research/capture/ben/listing-photo-frame.md) |
 | `CameraBar` | 44 row | `left?`, `right?`, children (the bubbles) |
 | `CamButton` | 40 circle, the bar's opposite at 12% | `id`, `icon`, `label`, `onPress?` |
 | `CamWord` | 32 tall word and arrow | `id`, `label`, `onPress?` (Skip) |
 | `StageBubbles` | 22 each, 8 apart | `stages: { name, state: 'later' \| 'now' \| 'done' \| 'skipped' }[]`. Shape carries the state; done fills to a check in `stageDone` |
-| `Instruction` | 18/24, centered | `text`. Crossfades when it changes |
+| `Instruction` | 18/24, the text face, lines centered | `text`. Crossfades when it changes |
 | `FoundPop` | 44 tall, a 28 check | `text`, `to` (its bubble's center), `stay?`, `onLanded?`. Drops in 250 ms, holds 1.5 s (`HOLD`), flies 300 ms; a light haptic with it |
 | `PointCloud` | the screen | `outline`, `features` (0 to 1 in the photo), `phase: 'outline' \| 'gather' \| 'gone'`, `spread` (ms). Points land in clusters where features were found |
-| `Chips`, `FactChip`, `CamNote` | 32 tall surface bars | `FactChip`: `id`, `name`, `value?`, `onChange?`: a check and the value, or a `Blank` with the name. `CamNote`: `icon`, `text` |
+| `Chips`, `FactChip`, `CamNote` | 32 tall surface bars, one line that slides sideways | `FactChip`: `id`, `name`, `value?`, `onChange?`: a check and the value, or a `Blank` with the name. `CamNote`: `icon`, `text` |
 | `Modes` | 32 tall | `modes`, `current`, `onPick`. Sell, Worth, Find, the current one on the bar's opposite |
 | `Shutter`, `ShutterRow`, `CameraAct`, `CameraFoot` | 76 | `Shutter`: `id`, `waiting?`, `onPress?`. `CameraAct` (`id`, `label`, `onPress?`) holds the one act in the shutter's place once done |
 | `CameraOff` | the screen | `title`, `line`, `acts: { id, label, onPress? }[]`: the camera is off; the first act filled, the rest outlined |
 | `FixChip` (`parts/camera-fix.tsx`) | 32 tall surface chip | `id`, `label`, `on`, `onPress`. Clean up and Enhance with AI, side by side: a plus when off, a check when on |
 | `FeedSwatch` | | The camera's ground on the parts sheet only |
 
-Helpers: `useBar()` (the bar's colors and tones), `cue(event)` (the log, and `globalThis.__events` on the web), `haptic.light()` and `haptic.success()` (expo-haptics; logged on the web), `useCameraLayout()`, `usePlus()`, `wellCenter(i, plus)`, `onScreen(spot, screen)`.
+Helpers: `useBar()` (the bar's colors and tones), `cue(event)` (the log, and `globalThis.__events` on the web), `haptic.light()` and `haptic.success()` (expo-haptics; logged on the web), `useCameraLayout()`, `usePlus()`, `useChoices(count)`, `onScreen(spot, screen)`.
 
 Helpers: `money(amount)`, `timeLeft(due, now)`, `useMinute()` (a clock that ticks once a minute), `log` and `tap` (the app log), `MOTIONS` (every motion and its reason).
 

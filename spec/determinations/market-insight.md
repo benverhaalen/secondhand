@@ -291,19 +291,21 @@ What differs from D1 for a product-level index, and why: there are no per-item a
 
 **Determines**: in which months a category's prices and sales are usually higher or lower than the year's average.
 
-**Sources and weights**: rank 1, our sold counts and category index ([M14](#m14-a-category-price-index)) once 2 full years exist; rank 2, Keepa used price and Google Trends 5-year series for the category's head terms (*observed*, rolling 5-year window); rank 3, eBay sold data over at most 90 days is too short and is not used.
+**Sources and weights**: rank 1, our sold counts ([M5](#m5-how-many-sold-in-a-period)), new listings ([M4](#m4-how-many-are-for-sale-now)) and category index ([M14](#m14-a-category-price-index)) once 2 full years exist (3 preferred for events); rank 2, Keepa used price and Google Trends 5-year series for the category's head terms (*observed*, rolling 5-year window); rank 3, eBay sold data over at most 90 days is too short and is not used.
 
 **Method** (arithmetic): ratio to a centred 12-month moving average, per calendar month, averaged over all years present, normalised so the 12 factors average 1 (the classical decomposition behind X-11, *asserted*). The seasonal effect is shown only when the range of factors is larger than twice the spread of the same month across years.
 
-**Why this method**: it is transparent and needs no model; STL or X-13 is the alternative and handles a changing season better, but needs more years than we have (*inferred*).
+Dated events (*agent proposal*, [seasons-events-and-a-fair-backtest.md](../../research/price/ben/seasons-events-and-a-fair-backtest.md); Ben, [words](../../product/words.md#2026-11-15-a-backtest-that-flatters-truthfully-seasons-and-waves-and-merge-to-main)): next to the monthly factors, a named list of events, each with a window of days and its own effect on price, sold count and new listings. The effect is fitted on the weekly M14, M5 and M4 series as the deviation from that month's factor, as in Prophet (trend + season + events, *observed* form), because a fixed-date event such as Valentine's Day falls in the same month every year and the monthly factor already holds part of it. Events use our own data only after 24 months; before that they are not shown. Starting list: tax refund weeks (mid-February to April; *asserted* timing, from a paper read partly as a summary), Black Friday to Cyber Monday, the Christmas shipping cut-off, January, Valentine's Day, back to school, Prime Day, the February and September fashion weeks, Thanksgiving, and each product's release and restock dates ([M16](#m16-how-new-retail-releases-relate-to-used-supply-and-price)). An event is kept for a category only when its effect is larger than twice its spread across years; otherwise it is dropped, not shown. Events are measured on sold counts and new listings as well as price, because a wave can be in buying or in selling.
+
+**Why this method**: the monthly factors are transparent and need no model, and the event step is one regression whose coefficients each read as a sentence; STL or X-13 is the alternative and handles a changing season better, but needs more years than we have (*inferred*).
 
 **When it is not shown**: fewer than 24 months in the best source; season not larger than its noise, shown as "no clear season".
 
-**How it is explained**: "Coats usually sell for about 15% more in November than in May". Tap opens the 12 months and the years used.
+**How it is explained**: "Coats usually sell for about 15% more in November than in May". An event reads the same way, with what it means now: "Tax refunds start landing in two weeks; electronics usually sell faster then." Tap opens the wave chart: real prices, the shaded usual season, a pin per event, and the years used.
 
 **Speed**: kept ready, recomputed monthly.
 
-**Check later**: hold out the last year. Wrong if seasonal factors do not cut the error of a flat forecast.
+**Check later**: hold out the last year. Wrong if seasonal factors do not cut the error of a flat forecast. Each event is wrong for a category if adding it does not cut the held-out error; across an abrupt change (a fee change, a platform rule) the estimates are flagged, because backtest errors across a break are "essentially useless" (*observed*, Prophet paper).
 
 ## M13. A brand's or category's movement
 

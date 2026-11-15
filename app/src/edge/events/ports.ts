@@ -1,12 +1,15 @@
 // The ports stream 2 builds against, each with an in-memory fake. They stand in for db-1 (Lakebase tables),
 // hp-1/hp-2 (harness.call, session lease) and pr-1 (params) until those land; then each fake is swapped
 // for the real one behind the same shape. Design: app/src/edge/events/README.md.
+import { AsyncLocalStorage } from 'node:async_hooks';
+import { randomUUID } from 'node:crypto';
 import type { EventKind, EventRow, Site } from './event.ts';
 
 // ---- names (product.md §4 job kinds, §5 decision kinds; NEW ones are asked of the orchestrator) ----
 export type JobKind =
   | 'post' | 'delist' | 'send_message' | 'poll_inbox' | 'poll_orders' | 'reconcile' | 'score' | 'check_due'
-  | 'answer_offer' | 'make_offer' | 'sweep' | 'relink'; // last four NEW
+  | 'answer_offer' | 'make_offer' | 'sweep' | 'relink' // these four NEW
+  | 'identify' | 'valuate' | 'search';
 export type JobState = 'queued' | 'running' | 'done' | 'failed';
 export type Mode = 'auto' | 'ask' | 'locked';
 
@@ -80,7 +83,7 @@ export interface Store {
   // FOR UPDATE SKIP LOCKED: queued, not paused, not claimed; claimed rows are invisible to other claimers
   claimJobs(limit: number, worker: string): JobRow[];
   release(id: string): void; // a worker died or gave up its claim
-  jobs(filter?: Partial<Pick<JobRow, 'state' | 'account_id' | 'kind' | 'user_id' | 'item_id'>>): JobRow[];
+  jobs(filter?: Partial<Pick<JobRow, 'state' | 'account_id' | 'kind' | 'user_id' | 'item_id' | 'site'>>): JobRow[];
   events(filter?: Partial<Pick<EventRow, 'user_id' | 'item_id' | 'account_id'>>): EventRow[];
   // one open decision per (user_id, kind, subject); a repeat returns the open one with duplicate true
   raiseDecision(d: Omit<DecisionRow, 'id' | 'state'>): { row: DecisionRow; duplicate: boolean };
@@ -167,20 +170,49 @@ export function fakeHarness(scripts: Record<string, Script> = {}, delayMs = 0) {
 }
 
 // ---- the session lease: hp-2. One job drives an account's session at a time; busy answers 409. ----
+export type Leased<T> = { ok: true; value: T } | { ok: false; status: 409; held_by: string };
 export interface Leases {
+  withLease<T>(account_id: string, job_id: string, ttl_ms: number, run: () => Promise<T>): Promise<Leased<T>>;
   take(account_id: string, job_id: string, ttl_ms: number): { ok: true } | { ok: false; status: 409; held_by: string };
   give(account_id: string, job_id: string): void;
 }
 export function memoryLeases(now: () => number = Date.now): Leases {
   const held = new Map<string, { job_id: string; until: number }>();
-  return {
+  const scope = new AsyncLocalStorage<ReadonlyMap<string, string>>();
+  const leases: Leases = {
     take(a, j, ttl) {
       const h = held.get(a);
       if (h && h.job_id !== j && h.until > now()) return { ok: false, status: 409, held_by: h.job_id };
       held.set(a, { job_id: j, until: now() + ttl }); return { ok: true };
     },
     give(a, j) { if (held.get(a)?.job_id === j) held.delete(a); },
+    async withLease(a, job, ttl, run) {
+      const inherited = scope.getStore()?.get(a);
+      if (inherited) {
+        const current = held.get(a);
+        if (current?.job_id !== inherited || current.until <= now()) return { ok: false, status: 409, held_by: current?.job_id ?? '' };
+        const value = await run(), after = held.get(a);
+        return after?.job_id === inherited && after.until > now()
+          ? { ok: true, value } : { ok: false, status: 409, held_by: after?.job_id ?? '' };
+      }
+      const owner = `scope:${job}:${randomUUID()}`, taken = leases.take(a, owner, ttl);
+      if (!taken.ok) return taken;
+      let lost = false;
+      const owns = () => { const current = held.get(a); return current?.job_id === owner && current.until > now(); };
+      const renew = setInterval(() => {
+        if (!owns()) { lost = true; clearInterval(renew); return; }
+        if (!leases.take(a, owner, ttl).ok) lost = true;
+      }, Math.max(1, Math.floor(ttl / 3)));
+      renew.unref();
+      const owners = new Map(scope.getStore()); owners.set(a, owner);
+      try {
+        const value = await scope.run(owners, run);
+        return lost || !owns() ? { ok: false, status: 409, held_by: held.get(a)?.job_id ?? '' } : { ok: true, value };
+      }
+      finally { clearInterval(renew); leases.give(a, owner); }
+    },
   };
+  return leases;
 }
 
 // ---- params: pr-1. Every cadence, budget and threshold is read here with its scope, never a constant. ----

@@ -18,7 +18,7 @@ export type Role = keyof typeof ROLE;
 // on-ink: the label on the black pill or the count (C4). on-color: black on a state fill, in both modes.
 export type Tone = 'ink' | 'ink-2' | 'on-ink' | 'on-color';
 
-export function Txt({ role = 'body', tone, lines, tabular = false, label, children }: {
+export function Txt({ role = 'body', tone, lines, tabular = false, label, center = false, children }: {
   role?: Role;
   // ink-2 is the second ink: captions take it by default (Art. 6 roles).
   tone?: Tone;
@@ -27,6 +27,9 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, childr
   // Only for an amount that changes in place or sits in a column (Art. 6.7).
   tabular?: boolean;
   label?: string;
+  // Centered lines, for words that stand alone under something centered (the camera's instruction), so a second line
+  // centers too instead of starting at the left.
+  center?: boolean;
   children: ReactNode;
 }) {
   const c = useColors(), ground = useGround();
@@ -47,6 +50,7 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, childr
         fontWeight: Platform.OS === 'web' || !(r.display ? FACE.display : FACE.text) ? (r.display ? weight.display : weight.text) : undefined,
         fontVariant: tabular ? ['tabular-nums'] : undefined,
         color: ink,
+        textAlign: center ? 'center' : undefined,
         // Clofie sits .12 em above center in its line; it moves down where text cannot be trimmed (Art. 6.10).
         position: r.display ? 'relative' : undefined,
         top: r.display ? Math.round(r.fontSize * nudge.display) : undefined,

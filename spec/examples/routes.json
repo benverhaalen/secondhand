@@ -1,0 +1,626 @@
+{
+  "examples": [
+    {
+      "name": "routes.list",
+      "endpoint": "GET /v1/routes",
+      "path": "/v1/routes",
+      "auth": "user",
+      "status": 200,
+      "list": true,
+      "response": {
+        "data": [
+          {
+            "endpoint": "DELETE /v1/accounts/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
+            "endpoint": "DELETE /v1/follows/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
+            "endpoint": "DELETE /v1/me",
+            "source": "engine",
+            "auth": "user",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
+            "endpoint": "DELETE /v1/rules/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/accounts",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/accounts/:id/import-preview",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/appointments",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/citations/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/conversations",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/conversations/:id/messages",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/decisions",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/events",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/experiments",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/follows",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/index/:id",
+            "source": "example",
+            "auth": "visitor",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/insights",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/items",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/items/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/items/:id/plan-choices",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/jobs/:id",
+            "source": "engine",
+            "auth": "visitor",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/jobs/:id/events",
+            "source": "engine",
+            "auth": "visitor",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/limits",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/me",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/me/style",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/orders",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/orders/pick-list",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/out",
+            "source": "example",
+            "auth": "visitor",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/products/:id",
+            "source": "example",
+            "auth": "visitor",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/products/:id/history",
+            "source": "example",
+            "auth": "visitor",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/records",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/routes",
+            "auth": "user",
+            "source": "engine",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/rules",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/scores",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/scores/:id/basis",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/sites/:site/ranker",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/sources/health",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/stream",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/today",
+            "source": "engine",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/trends",
+            "source": "example",
+            "auth": "visitor",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
+            "endpoint": "GET /v1/wants",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/wants/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/wants/:id/matches",
+            "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PATCH /v1/captures/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "PATCH",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PATCH /v1/follows/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "PATCH",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PATCH /v1/items/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "PATCH",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PATCH /v1/items/:id/attributes/:name",
+            "source": "example",
+            "auth": "user",
+            "method": "PATCH",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PATCH /v1/me",
+            "source": "engine",
+            "auth": "user",
+            "method": "PATCH",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PATCH /v1/me/style",
+            "source": "engine",
+            "auth": "user",
+            "method": "PATCH",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PATCH /v1/wants/:id",
+            "source": "example",
+            "auth": "user",
+            "method": "PATCH",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/accounts",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/accounts/:id/import",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/assist",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/auth/apple",
+            "source": "engine",
+            "auth": "none",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/auth/email/start",
+            "source": "engine",
+            "auth": "none",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/auth/email/verify",
+            "source": "engine",
+            "auth": "none",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/auth/google",
+            "source": "engine",
+            "auth": "none",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/auth/link/apple",
+            "source": "engine",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/auth/link/email",
+            "source": "engine",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/auth/link/google",
+            "source": "engine",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/auth/refresh",
+            "source": "engine",
+            "auth": "none",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/auth/signout",
+            "source": "engine",
+            "auth": "none",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/captures",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/captures/:id/finish",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/captures/:id/photos",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/captures/:id/talk",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/compare",
+            "source": "example",
+            "auth": "visitor",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/conversations/:id/messages",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/decisions/:id/act",
+            "source": "engine",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/events/:id/undo",
+            "source": "engine",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/experiments/consent",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/follows",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/genie",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/items/:id/listings",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/items/:id/sell",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/items/:id/strategy",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/matches/:id/act",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/me/export",
+            "source": "engine",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/orders",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/orders/:id/handed-over",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/orders/:id/ship",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/orders/labels",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/rules",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/search",
+            "source": "example",
+            "auth": "visitor",
+            "method": "POST",
+            "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/valuations",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/wants",
+            "source": "example",
+            "auth": "user",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PUT /v1/goals/:month",
+            "source": "example",
+            "auth": "user",
+            "method": "PUT",
+            "needs_session": true
+          },
+          {
+            "endpoint": "PUT /v1/limits",
+            "source": "example",
+            "auth": "user",
+            "method": "PUT",
+            "needs_session": true
+          }
+        ],
+        "next_cursor": null
+      }
+    }
+  ]
+}
