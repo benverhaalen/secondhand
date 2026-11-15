@@ -15,7 +15,7 @@ Ben's numbers refer to the first list of 13. This page keeps his numbering; [fea
 | 7 | No double sales | 15 | "931,406 is not a number that means anything" |
 | 8 | Replies that can't overclaim | 12 | the review step |
 | 9 | Earned trust | 16 | the review step |
-| 10 | Hot and seasons | 18, 19 | RDD or similar research |
+| 10 | Hot and seasons | 18, 19 | dropped by Ben at 08:31 |
 | 11 | Buy alerts | 20, 21 | the Brewers jersey: is it actually true? |
 | 12 | Databricks | 25, 24, 27 | how we used it creatively, and what our use improved |
 | 13 | Cost | 29 | ROI at scale with every revenue stream: [roi.md](roi.md) |
@@ -72,11 +72,11 @@ Marks, as everywhere in the repo: **measured** (our code on fixed inputs, re-run
 | Prints | 14 matched points and NCC 0.45, covering half the print's box | below these a print was redrawn, not kept; the real print pixels are then pasted back |
 | Flaw | at least half the flaw's dark pixels remain | a stain that fades by half in a "nicer" photo is a lie by omission |
 
-**The numbers.** Measured on Ben's 19 real photos with planted lies: 173 of 174 caught; 76 of 76 no-AI cleanups within the color limit; the stretch hole found (16 of 38 caught) and fixed (38 of 38). It errs toward holding: 17 of 38 honest relights were held too, which costs the seller a nicer photo, never a true one. Model: Seedream 5.5 leads (four seeds), with one Nano Banana 2.1 candidate only as a fallback; see [what changed today](#what-changed-today).
+**The numbers.** Measured on Ben's 19 real photos with planted lies: 173 of 174 caught; 76 of 76 no-AI cleanups within the color limit; the stretch hole found (16 of 38 caught) and fixed (38 of 38). It errs toward holding: 17 of 38 honest relights were held too, which costs the seller a nicer photo, never a true one. Model: Nano Banana 2.1, four seeds, with Gemini 3 Pro Image as a second opinion (Ben, 08:33: "stay on nanobanana").
 
 **The human step.** You choose whether to redraw at all; you see the real photo beside the redraw; the redraw is marked as styled inside the app; and you approve the set before it posts.
 
-**Still unproven.** The check has run on our planted edits, not yet on a batch of real Seedream 5.5 renders, and Seedream 5.5 has not yet answered through OpenRouter (its page is live, the slug was missing from the model list this morning).
+**Still unproven.** The check has run on our planted edits, not yet on a batch of real Nano Banana renders.
 
 ---
 
@@ -215,27 +215,9 @@ So the sentence is: "If you list on four sites, a double sale happens about once
 
 ---
 
-## 10. Hot and seasons, with a real method
+## 10. Hot and seasons: dropped
 
-**What it does.** "3 offers in 2 days; similar ones take 9." What that means depends on your goal: for "sell fast" hold the price; for "best price" there's room. Demand is a sales rate per product that learns as sales arrive, multiplied by season and event terms ([velocity.py](../jobs/demand/velocity.py), [forecast.py](../jobs/demand/forecast.py)).
-
-**What was weak.** An event's effect (a holiday, a release, a team winning) was a hand-set multiplier in [events.py](../jobs/demand/events.py). Ben asked for research to reason about it properly.
-
-**What the research says.** The obvious design is a regression discontinuity in time: compare the weeks just before a date with the weeks just after. Hausman and Rapson (2018, NBER w23602) show why that misleads: when the series has its own trend, season or autocorrelation, estimates "may be biased if the time-series properties of the data are ignored", and the design is really an event study (*observed*, abstract). The fixes that hold up are a control group on the same calendar weeks, a narrow window, and placebo dates where nothing happened.
-
-**What we built today.** [event_effect.py](../jobs/demand/event_effect.py), tested in [test_event_effect.py](../jobs/demand/test_event_effect.py):
-- **Unit:** sales per listing-week, never raw sales, so more Brewers jerseys being listed after a win doesn't read as more demand. Weeks with no exposure are unknown, not zero.
-- **Difference in differences of log rates:** the group (Brewers jerseys) against a control (other MLB teams' jerseys) on the same weeks. A season that lifts every jersey cancels out.
-- **Interval:** var(log effect) ≈ 1/a + 1/b + 1/c + 1/d over the four sale counts, the standard rate-ratio approximation; 80% interval to match the rest of `demand/`.
-- **Placebo dates:** the same estimator at every date in the quiet weeks before. If any placebo moved as much, the event is not called an effect.
-- **Abstains** below 8 sales in any of the four cells.
-- Its output is the `effect` that `events.Event` takes, so measured effects replace hand-set ones.
-
-**The order of magnitude, honestly labelled.** After the Dodgers won the 2024 World Series, Fanatics' sales in the first 24 hours were 24% above the Dodgers' own 2020 title, 43% above the 2021 Braves and 24% above the 2016 Cubs (*observed*, MLB press release, 2024-11-01). That is new merchandise compared with past champions, not a resale effect with a control group. It tells us the spike is real and concentrated in the first day; our estimator measures the resale version once we have the weeks.
-
-**"Hot" against similar listings (features-proof 19).** A listing is compared with similar listings of the same age, and site comparisons count only the days a listing could actually sell. The cleanest design for "does this choice cause more sales" is the one Einav and colleagues used on eBay: the same item from the same seller listed two ways (*observed*, 2015). We get that naturally, because one item is listed on several sites at once.
-
-**The human step.** None needed for the number itself; it changes what the app suggests, and every price move still follows §3's rules.
+Ben, 08:31: "i dont care about hot items and seasons anymore. stop that." The event-effect estimator built earlier this morning is parked: it stays in `jobs/demand/event_effect.py` for the record, no job runs it, and this feature is out of the plans and the pitch. What already existed in `jobs/demand/` is untouched and unclaimed.
 
 ---
 
@@ -252,7 +234,7 @@ So the sentence is: "If you list on four sites, a double sale happens about once
 | Matched | the words say Brewers, the size fits, the delivered total is under your price | fixed 2026-11-15: sizes are normalized before comparing ("Large" is L, a jersey's 48 is L) in [watch.ts](../app/src/edge/watch/watch.ts) and the stage watcher; the stage watcher also reads the listing page, so a title without "Brewers" no longer misses |
 | Still there | the price and listing are re-checked before the ping | built |
 
-The Brewers thread (project chat) is measuring hit rate, latency and false matches across sites; the size gap above is sent to it. And demand matters to the buyer too: right after a win, §10's effect means more buyers chasing the same jerseys, so seconds of latency decide who gets one.
+The Brewers thread (project chat) is measuring hit rate, latency and false matches across sites; the size gap above is sent to it.
 
 **The human step.** It never buys. It pings at most three at a time, and you open the listing on the site and buy it yourself.
 
@@ -271,7 +253,6 @@ The test for every line: what would be worse without it, and how much.
 | **The evidence gate as a policy** (`claim_check`) | a reply is checked against the item's rows before release | Gateway service policies (Beta) return allow, deny or ask (*observed*); we add the check of each cited fact against its evidence rows |
 | **Sign-ins in a secret scope**, readable only by the sign-in job | the AI models never see your passwords | built in code; the workspace ACL is Nate's to confirm ([packet 60](../.agents/team/packets/data/60-pitch-claims-that-need-the-workspace.md)) |
 | **Market tables, nightly fits, the purge job** as one bundle | the whole data side deploys with one command | `deploy/databricks.yml`, built |
-| **Event effects measured, not set** (§10) | seasons and events come from sales with a control group | runs as a nightly job over the comp tables |
 
 Why Databricks for this rather than a plain database: the things we needed most (versioned tables we can read as of a date, row ids that survive rewrites, governed access by row, scheduled jobs next to the data, one record of model calls) are the platform's own primitives. We didn't bolt them on; we used them for the thing that matters to a seller, which is that every number can be rebuilt. Status: built in the bundle; a Lakebase project and an App were created on the workspace (*observed*); the live reads at the table are Nate's to make true before judging ([packet 60](../.agents/team/packets/data/60-pitch-claims-that-need-the-workspace.md)). Say "built" and "designed" exactly as that packet says.
 
@@ -280,9 +261,9 @@ Why Databricks for this rather than a plain database: the things we needed most 
 ## 13. Cost and ROI
 
 The full model, every revenue stream, Honey's economics as the anchor and the scale table are in [roi.md](roi.md), computed by [roi.mjs](../scripts/bench/roi.mjs). The short version:
-- One referred purchase earns about $0.94; listing an item costs about $0.05; studio $0.54 an item.
-- The base case loses $0.14 a person a month, all of it Depop watching. With Depop's partner API it earns $0.31, about $3.7M a year at 1M monthly users.
-- The break-even purchase rate (0.35 a month in the base case) is below what Poshmark buyers already do (0.525) and what Honey earned per user (0.52 purchases' worth).
+- One referred purchase earns about $0.94; listing an item costs about $0.05; studio $0.63 an item.
+- The base case loses $0.15 a person a month, all of it Depop watching, which runs as a signed-in sweep today. *Proposed:* Depop's partner API, which would make it earn $0.30, about $3.5M a year at 1M monthly users. We are not in that programme and have not applied.
+- The break-even purchase rate (0.36 a month in the base case) is below what Poshmark buyers already do (0.525) and what Honey earned per user (0.52 purchases' worth).
 
 ---
 
@@ -300,21 +281,22 @@ Ben: "depop is different from ebay. userbases are different. it might want to ha
 | Collectibles and cards go to Mercari and eBay | Mercari's growth comes from "Entertainment & Hobbies (especially collectibles and trading cards)" (*observed*, Mercari's reports, in [mercari.md](../research/list/ben/platforms/mercari.md)); cards up to 1 oz ship free until 2027-01-04 (*observed*) |
 | "ok" sites are offered as "more reach", off by default | fewer live copies means fewer double sales to unwind (§7) and fewer buyers to answer |
 
-**The Brewers jersey, traced.** A seller lists a Brewers jersey. `productType` sees "Brewers" and returns `fan_apparel` (or `vintage_clothing` if it says 1982). The verdicts: **eBay best** ("sports memorabilia and fan gear is core eBay"), **Depop good** (jerseys are a named Depop category), and **Facebook, Poshmark, Mercari ok** (Facebook for home-team buyers nearby). So it posts to eBay and Depop by default, offers Facebook as "more reach in Milwaukee", and after a World Series win §10's measured effect tells the price ladder to hold.
+**The Brewers jersey, traced.** A seller lists a Brewers jersey. `productType` sees "Brewers" and returns `fan_apparel` (or `vintage_clothing` if it says 1982). The verdicts: **eBay best** ("sports memorabilia and fan gear is core eBay"), **Depop good** (jerseys are a named Depop category), and **Facebook, Poshmark, Mercari ok** (Facebook for home-team buyers nearby). So it posts to eBay and Depop by default, offers Facebook as "more reach in Milwaukee".
 
 ---
 
 ## What changed today
 
 - **No tape, no AI redraw** ([check.py](../jobs/studio/check.py)): Ben's rule, with tests. The studio thread's packet 55 has the note for Nate.
-- **Seedream 5.5 leads the renders** ([slides_run.py](../jobs/studio/slides_run.py), [openrouter.py](../jobs/studio/openrouter.py)): four Seedream 5.5 seeds and one Nano Banana 2.1 fallback, where it was four Nano Banana and one Gemini 3 Pro. The [studio spec](../spec/features/studio.md), [slides note](../research/studio/ben/slides.md), [Databricks spec](../spec/databricks.md), [edge cases](../spec/edge-cases.md) and [Q&A](qa.md) now say the same. Not yet proven: whether OpenRouter answers for Seedream 5.5 (the page is live and priced at $0.02, the slug wasn't in the model list this morning). Runware serves it at the same price if not.
-- **Event effects measured, not hand-set** ([event_effect.py](../jobs/demand/event_effect.py)).
+- **Renders stay on Nano Banana 2.1.** Seedream 5.5 led for about an hour this morning; Ben chose Nano Banana at 08:33 and it was reverted. The [studio spec](../spec/features/studio.md), [slides note](../research/studio/ben/slides.md), [Databricks spec](../spec/databricks.md), [edge cases](../spec/edge-cases.md) and [Q&A](qa.md) say the same.
+- **Size matching in buy alerts** ([watch.ts](../app/src/edge/watch/watch.ts)): "Large" is L, and a jersey's 48 is L, ported from the Brewers trial.
+- **Hot and seasons dropped** (Ben, 08:31); the event-effect estimator built at 08:15 is parked, run by nothing.
 - **The cost and revenue model as code** ([roi.mjs](../scripts/bench/roi.mjs), [roi.md](roi.md)).
 
 ## Still open
 
-- Apply to Depop's partner programme: it decides whether free makes money (§13).
+- Depop: the signed-in sweep stays for now (Ben, 08:32). The partner programme is proposed in [roi.md](roi.md), not joined; meanwhile a 23-minute live cadence instead of 15 brings the base case to break-even (§13).
 - Calibrate per-kind percentages for the identify choices once each kind has about 30 confirmations (§1).
 - Run the 30-minute proofs: planted claims in replies (§8), the offer simulator, recalls; and the hands-on stopwatch with the chair and the headphones (§1).
 - Run the timed Brewers trial (waiting on Ben's OK, since it reads a Poshmark search page its robots.txt disallows) and put its numbers in §11.
-- Run the studio check on a batch of real Seedream 5.5 renders (§2).
+- Run the studio check on a batch of real Nano Banana renders (§2).

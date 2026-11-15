@@ -27,9 +27,8 @@ export const INPUTS = {
   // what an item costs us to list
   identify: { value: 0.035, unit: '$/item', mark: 'inferred', source: 'product/numbers.md "What it costs us": $0.015 to $0.06, midpoint' },
   post_and_delist: { value: 0.015, unit: '$/item', mark: 'inferred', source: 'product/numbers.md: post $0.003-0.012 plus delist $0.003-0.012, midpoints' },
-  seedream_image: { value: 0.02, unit: '$/image', mark: 'observed', source: 'openrouter.ai/bytedance-seed/seedream-5-5: from $0.02 an image, $0.008 per input image (2026-11-15)' },
-  seedream_input: { value: 0.008, unit: '$/image', mark: 'observed', source: 'same page; Runware lists the same $0.008 per reference image' },
-  nano_banana_candidate: { value: 0.037, unit: '$/image', mark: 'observed', source: 'research/studio/ben/slides.md: Nano Banana 2.1 rendered for $0.037 in the smoke run' },
+  nano_banana_candidate: { value: 0.037, unit: '$/image', mark: 'observed', source: 'research/studio/ben/slides.md: Nano Banana 2.1 rendered in 6.8 s for $0.037 in the smoke run' },
+  gemini_pro_candidate: { value: 0.14, unit: '$/image', mark: 'observed', source: 'research/studio/ben/slides.md: Gemini 3 Pro Image in 14.6 s for $0.14' },
   judge_read: { value: 0.005, unit: '$/read', mark: 'assumption', source: 'one vision read per candidate (jobs/studio/slides_run.py VISION); not billed yet' },
   // what watching for sales costs
   depop_live_day: { value: 0.10, unit: '$/account-day', mark: 'inferred', source: 'product/numbers.md: a signed-in Depop sweep every 15 min while live, about $0.10 a day' },
@@ -44,9 +43,9 @@ export const INPUTS = {
 };
 const v = k => INPUTS[k].value;
 
-// The studio as slides_run.py runs it: cover and back, each four Seedream 5.5 seeds with four inputs (photo, outline,
-// two print close-ups) plus one Nano Banana fallback, and one judge read per candidate.
-export const studioCostPerItem = () => 2 * (4 * (v('seedream_image') + 4 * v('seedream_input')) + v('nano_banana_candidate')) + 10 * v('judge_read');
+// The studio as slides_run.py runs it (Ben, 08:33: stay on Nano Banana): cover and back, each four Nano Banana 2.1 seeds and
+// one Gemini 3 Pro Image second opinion, and one judge read per candidate.
+export const studioCostPerItem = () => 2 * (4 * v('nano_banana_candidate') + v('gemini_pro_candidate')) + 10 * v('judge_read');
 
 const RATE = {
   ebay_fashion: () => v('ebay_fashion'), ebay_home: () => v('ebay_home'), ebay_electronics: () => v('ebay_electronics'),
