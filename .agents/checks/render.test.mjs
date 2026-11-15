@@ -7,6 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { words, allCaps, titleCase, sheetAgrees } from './render.mjs';
 import { scan } from '../../scripts/copy-lint.mjs';
 import { check, playwright } from '../../scripts/brand-check.mjs';
+import { mediaCss } from '../../scripts/media-css.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '../..');
 const constitution = readFileSync(join(root, 'brand/constitution.md'), 'utf8'), media = JSON.parse(readFileSync(join(root, 'brand/media.json'), 'utf8'));
@@ -17,7 +18,8 @@ test('render: words count two CJK characters as one, and case is read from the l
   assert.ok(allCaps('SOLD TODAY') && !allCaps('Sold today') && !allCaps('$38') && !allCaps('M'));
   assert.ok(titleCase('What You Keep Today') && !titleCase('What you keep today') && !titleCase('Carhartt Detroit'));
   const emoji = s => scan(s).some(h => h.id === 'S2');
-  assert.ok(emoji('Sold 🎉') && emoji('ok ✨') && emoji('🇺🇸') && !emoji('You keep $46.95 © ™ → 3×'));
+  assert.ok(emoji('Sold 🎉') && emoji('ok ✨') && emoji('🇺🇸') && emoji('1️⃣') && emoji('❤️') && !emoji('You keep $46.95 © ™ → 3×') && !emoji('#1 ↗'));
+  assert.deepEqual(scan('♥ ↗').map(h => h.id), ['S3', 'S3']);
 });
 
 test('render: brand/media.json holds the same numbers as Part III of the constitution, and a drift fails', () => {
@@ -25,6 +27,9 @@ test('render: brand/media.json holds the same numbers as Part III of the constit
   const drift = structuredClone(media); drift.post.margin.x = 80; drift.deck.words = 25;
   const bad = sheetAgrees(constitution, drift).map(o => `${o.where} ${o.msg}`).join('\n');
   assert.match(bad, /post margins disagrees/); assert.match(bad, /deck longest text disagrees/);
+  drift.deck.unit = 3; drift.post.act = true; drift.web.wordmark.sizes['390'] = [21, 48];
+  const worse = sheetAgrees(constitution, drift).map(o => `${o.where} ${o.msg}`).join('\n');
+  assert.match(worse, /deck unit disagrees/); assert.match(worse, /post "act" is true/); assert.match(worse, /web wordmark \(c1\) disagrees/);
   assert.match(sheetAgrees('# no table', media)[0].msg, /can't read the Part III media table/);
 });
 
@@ -40,11 +45,13 @@ const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--pa
 const TITLE = '<section class="s f" data-view><p class="m">secondhand</p><p class="b" style="margin-top:32px">Sell used things from one app</p></section>', END = '<section class="s" data-view><p class="m">secondhand</p></section>';
 const deck = mid => `${TITLE}<section class="s" data-view>${mid}</section>${END}`;
 let n = 0;
-async function ids(body, medium = 'deck') {
-  const f = join(dir, `${n++}.html`);
-  writeFileSync(f, `<!doctype html><meta charset="utf-8"><link rel="stylesheet" href="${pathToFileURL(join(root, 'brand/tokens.css')).href}"><style>${css}</style><body>${body}`);
-  return (await check(f, medium, { browser })).findings.filter(o => o.level === 'error').map(o => `${o.id} ${o.where} ${o.msg}`);
+async function ids(body, medium = 'deck', level = 'error') {
+  const f = join(dir, `${n++}.html`), link = name => `<link rel="stylesheet" href="${pathToFileURL(join(root, 'brand', name)).href}">`;
+  writeFileSync(f, `<!doctype html><html data-medium="${medium}"><meta charset="utf-8">${link('tokens.css')}${link('media.css')}<style>${css}</style><body>${body}`);
+  return (await check(f, medium, { browser })).findings.filter(o => o.level === level).map(o => `${o.id} ${o.where} ${o.msg}`);
 }
+// CI sets CI=true and installs a browser. There, a missing browser fails, so these tests can't be skipped without anyone seeing.
+test('render: a browser is here when the checks run in CI', () => { if (process.env.CI) assert.ok(pw, 'Playwright is not installed, so no rule was tested on a render'); });
 
 test('render: a deck that follows the brand passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(deck('<p class="h">What you keep</p><div><p class="b">You keep</p><p style="font-size:200px">$46.95</p></div>')), []);
@@ -84,7 +91,7 @@ const CASES = [
   ['B5', 'a flat two-stop gradient', deck('<div style="height:160px;background:linear-gradient(var(--sky),var(--mint))"></div>'), /B5 .*2 colors/],
   ['B5', 'a field of opposite colors', deck('<div style="height:160px;background:radial-gradient(at 0 0,var(--lilac),transparent 60%),radial-gradient(at 100% 100%,var(--marigold),transparent 60%),var(--lime)"></div>'), /B5 .*degrees apart/],
   ['B8', 'color over a third of the view', deck('<div style="position:absolute;inset:0 0 40% 0;background:var(--mint)"></div>'), /B8 .*60% color/],
-  ['B8', 'the field filling too many slides', `${TITLE}<section class="s f" data-view><p class="b">One</p></section><section class="s f" data-view><p class="b">Two</p></section>${END}`, /B8 .*fills 3 views|B4 .*3 views carry/],
+  ['B8', 'the field filling too many slides', `${TITLE}<section class="s f" data-view><p class="b">One</p></section><section class="s f" data-view><p class="b">Two</p></section>${END}`, /B8 .*fills 3 views/],
   ['B31', 'one kind of thing at two sizes', deck('<div data-part="card-item" style="height:160px;background:var(--gray)"></div><div data-part="card-item" style="height:200px;background:var(--gray)"></div>'), /B31 \S+ \S+ \[card-item\] is 160, 200 px tall/],
   ['B3', 'a wordmark that moves between post panels', '<section class="p" data-view><p class="m" style="font-size:40px;text-align:center">secondhand</p></section><section class="p" data-view><p class="m" style="font-size:40px;text-align:center;margin-top:96px">secondhand</p></section>', /B3 .*moves between views/, 'post'],
 ];
@@ -97,12 +104,53 @@ test('render: an app mock with a status bar, a tall screen, a scrolling row and 
 });
 CASES.push(['B15', 'a status bar marked in the middle of the screen', app('<div data-chrome style="margin:200px 20px 0;font:400 15px Arial">Not a status bar</div>'), /B15 .*Arial/, 'app'],
   ['B28', 'a slide taller than the deck', `<section class="s" data-view style="height:1400px"><p class="m">secondhand</p></section>`, /B28 .*1920 by 1400/]);
+const PILL = 'background:var(--ink);color:var(--page);border-radius:var(--r-pill);padding:16px 32px;font:500 15px var(--font-text);border:0';
+test('render: on an app screen a button label is medium, a small icon needs no words, a name in capitals is let through, and a sheet has no wordmark', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(app(`<div style="padding:16px 20px"><button style="${PILL}">Accept $38</button><p style="font-size:15px;margin-top:16px">IKEA</p><img alt="" src="${PX}" style="width:16px;height:16px;display:block"></div>`), 'app'), []);
+  assert.deepEqual(await ids('<section data-view style="width:390px;height:844px;padding:20px"><p style="font-size:18px">Change the price</p><div style="height:64px;background:var(--mint-tint);margin-top:16px"></div></section>', 'app'), []);
+});
+test('render: a price list, a kind whose width follows its words, and the scaled variables in media.css pass on a deck', { skip: !pw }, async () => {
+  const row = (a, b) => `<div style="display:flex;gap:var(--ms-7);padding:var(--ms-3) 0"><span class="b">${a}</span><span><span class="b">${b}</span></span></div>`;
+  assert.deepEqual(await ids(deck(`<p class="h" style="font-size:var(--mt-heading)">What you keep</p><div>${row('Consignment', '$3')}${row('secondhand', '$17')}</div>
+    <div style="display:flex;gap:var(--ms-4)"><span class="b" data-part="chip" data-fit="content" style="background:var(--gray);border-radius:var(--mr-card);padding:var(--ms-2) var(--ms-4)">Shoes</span><span class="b" data-part="chip" data-fit="content" style="background:var(--gray);border-radius:var(--mr-card);padding:var(--ms-2) var(--ms-4)">Jackets</span></div>`)), []);
+});
+test('render: a view with no color and no photo gets a warning that it reads as no brand', { skip: !pw }, async () => {
+  assert.match((await ids(deck('<p class="b">Listed in a minute</p>'), 'deck', 'warn')).join('\n'), /L2 view 2 is only black, white and gray/);
+});
+test('render: brand/media.css is what brand/media.json makes', () => {
+  assert.equal(readFileSync(join(root, 'brand/media.css'), 'utf8'), mediaCss(media, readFileSync(join(root, 'brand/tokens.css'), 'utf8')), 'run node scripts/media-css.mjs');
+});
+// A web page: no data-view, so each screenful is a view, at 1440 and at 390. The header sits on the 64 px margin and the footer wordmark is the hero's size.
+const web = main => `<header style="padding:16px 64px"><p class="m" style="font-size:21px">secondhand</p></header><main style="padding:48px 64px;min-height:1400px">${main}</main><footer style="padding:64px"><p class="m" style="font-size:var(--t-hero)">secondhand</p></footer>`;
+test('render: a web page passes at both widths', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(web('<p style="font-size:18px;max-width:600px">Sell used things from one app</p><div class="f" style="height:160px;margin-top:48px"></div>'), 'web'), []);
+});
+const STORY = last => `<section data-view style="width:1080px;height:1920px;padding:250px 96px 340px"><p style="font-size:48px">Listed in a minute</p><div class="f" style="height:480px;margin-top:96px"></div></section><section data-view style="width:1080px;height:1920px;display:grid;place-items:center">${last}</section>`;
+test('render: a story with the wordmark on its end card passes', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(STORY('<p class="m" style="font-size:120px">secondhand</p>'), 'story'), []);
+});
+CASES.push(['B9', 'an item with no photo', deck('<div data-item><p class="b">Carhartt jacket</p></div>'), /B9 .*item with no photo/],
+  ['B10', 'two black pills in one card', app(`<div data-part="card" style="margin:16px 20px"><div><button style="${PILL}">Accept $38</button></div><div style="margin-top:16px"><button style="${PILL}">Send a counter</button></div></div>`), /B10 .*\[card\] holds two black pills/, 'app'],
+  ['B10', 'a black pill with a round corner that is not the token', deck('<span class="b" style="display:inline-block;background:var(--ink);color:var(--page);border-radius:64px;padding:16px 32px">Accept $38</span>'), /B10 .*black pill/],
+  ['B13', 'medium weight on text that is not a button', app('<p style="font-size:15px;font-weight:500;padding:16px 20px">Carhartt jacket</p>'), /B13 .*not a button label/, 'app'],
+  ['B12', 'a band of color behind an amount', deck('<div><p class="b">You keep <span style="background:var(--lime)">$46.95</span></p></div>'), /B12 .*band of color/],
+  ['B16', 'a phrase in capitals', deck('<p class="b">SOLD TODAY</p>'), /B16 .*all capitals/],
+  ['B31', 'one kind of thing at two widths', deck('<div style="display:flex;gap:16px"><div data-part="tile" style="height:160px;width:160px;background:var(--gray)"></div><div data-part="tile" style="height:160px;width:240px;background:var(--gray)"></div></div>'), /B31 view 2 \[tile\] is 160, 240 px wide/],
+  ['B31', 'one kind of thing at two sizes on two slides', `${TITLE}<section class="s" data-view><div data-part="tile" style="height:160px;background:var(--gray)"></div></section><section class="s" data-view><div data-part="tile" style="height:240px;background:var(--gray)"></div></section>${END}`, /B31 views 2, 3 \[tile\] is 160, 240 px tall/],
+  ['B17', 'a photo that runs off the slide', deck(`<img alt="A jacket" src="${PX}" style="position:absolute;right:-200px;top:96px;width:800px;height:400px">`), /B17 .*200 px past the right edge/],
+  ['B17', 'a photo that stops in the margin', deck(`<img alt="A jacket" src="${PX}" style="position:absolute;right:40px;top:96px;width:800px;height:400px">`), /B17 .*stops 40 px from the right edge/],
+  ['B17', 'web text wider than the content width', web('<p style="font-size:18px;width:1300px">' + 'Sell used things from one app and keep what you make. '.repeat(8) + '</p>'), /B17 .*1200 px wide at most/, 'web'],
+  ['B3', 'a web footer wordmark at the wrong size for the width', web('<p style="font-size:18px">Sell used things</p>').replace('var(--t-hero)', '86.5px'), /B3 .*390 wide it is 21 or 50 px/, 'web'],
+  ['B30', 'too many words on a story frame', STORY('<p class="m" style="font-size:120px">secondhand</p>').replace('Listed in a minute', 'Used things sell faster with good photos and honest words'), /B30 .*10 words/, 'story'],
+  ['B3', 'a story wordmark before the end card', STORY('<p style="font-size:48px">Sold</p>').replace('<p style="font-size:48px">Listed', '<p class="m" style="font-size:120px;text-align:center;margin-bottom:96px">secondhand</p><p style="font-size:48px">Listed'), /B3 view 1 carries the wordmark/, 'story']);
 const LOGO = h => `<img alt="eBay" data-logo src="${PX}" style="height:${h}px;width:${h}px;margin-right:16px">`;
 CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-view><p class="m" style="display:inline-block;transform:rotate(-4deg);text-shadow:0 2px 4px var(--scrim)">secondhand</p></section>`, /B32 .*transformed and shadowed/],
   ['B32', 'a line crowding the wordmark', `<section class="s" data-view><p class="m">secondhand</p><p class="b">Sell used things</p></section>`, /B32 .*"Sell used things" sits within 32 px/],
   ['B32', 'the wordmark twice on a slide', `<section class="s" data-view><p class="m">secondhand</p><p class="m" style="margin-top:96px">secondhand</p></section>`, /B32 .*2 times/],
   ['B32', 'the wordmark on a gray box', `<section class="s" data-view><div style="background:var(--gray);padding:64px"><p class="m">secondhand</p></div></section>`, /B32 .*sits on --gray/],
-  ['B33', 'logos of two heights in a row', deck(`<div>${LOGO(48)}${LOGO(64)}</div>`), /B33 .*48, 64 px tall/]);
+  ['B33', 'logos of two heights in a row', deck(`<div>${LOGO(48)}${LOGO(64)}</div>`), /B33 .*48, 64 px tall/],
+  ['B33', 'a row of logos taller than the wordmark', deck(`<div>${LOGO(96)}${LOGO(96)}</div>`), /B33 .*96 px tall: none is taller/]);
+test('render: a logo standing alone where a photo would be passes at any size', { skip: !pw }, async () => assert.deepEqual(await ids(deck(`<div>${LOGO(160)}</div>`)), []));
 for (const [id, what, body, re, medium] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.

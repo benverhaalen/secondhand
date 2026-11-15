@@ -42,7 +42,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L34 | Gradients are a set by rule, and a larger set. They are written in code, and one can change into the next | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L35 | The black button's depth is a faint glow | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L36 | No emoji, anywhere | [ban all emojis](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
-| L37 | Things of one kind are one standard size, whatever is in them | [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
+| L37 | Things of a relatively similar size are one standard width and height, whatever is in them | [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis) |
 | L38 | The text face is PP Neue Montreal 2.6, Book and Medium, tailored to how it sits | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L39 | Live is blue, sold is mint, and needs you is yellow | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L40 | What separates: the six rules in constitution Art. 5. A box that holds content is open again as R29 | [round 10](../product/words.md#2026-11-15-round-10-picks), [the gray box](../product/words.md#2026-11-15-a-constitution-with-little-wiggle-room-the-heavy-black-the-black-outline-and-the-gray-box) |

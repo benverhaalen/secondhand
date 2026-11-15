@@ -707,6 +707,46 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14. The capture part answers the agent's question 9 and differs from Ben's decision that capture opens on the guided shot list.
 > Lets finalize that we are building a highly efficient and intelligent, jev and llm driven engine for intelligence aggregation, swarm intelligence specialized to when a listing is going to be made, analytics across a users entire second hand, the buying engine for browsing across all unified platforms and even official retailers + amazon, just checking whats available, able to even look at reviews if available, either from the ebay retailer or the product itself. Now the camera opens on the shot checklist? no. The camera will be pressed, an onboarding tutorial of how to select the product type, whether apparel, furniture, tech, whatever, then each has a cpature process, either instant picture, series of pictures with specified frames like clothing tags, scanning for objects to then determine dimensions. Each process is designed to be intutivie, and grant the system the least amount of needed clarification. Apparel having the tag gives the system the clothing, brand, and its size. It'll then ask for additional photos, or the ability to generate them from what it already confirmed the item to be. It might ask additional questions depending on the product type like indicate any conditional wear or a slider to choose between pristine and broken. Things of that nature, all should be designed and written out
 
+## 2026-11-14 nate build seats watch the real flow, and the design is guaranteed to work
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, while the backend build plan was being written.
+> When building, the subagents assigned to each feature have the ability to truly track and understand the flow of the app, how each feature is intended to work and how its currently specced, they can see how an agent responds on the targeted platform and how they act, the amount of time it takes, the information gathered. What should be extracted/found and that it is are things I guarantee will work, as I am a computer engineer and AI cofounder. You being the frontier model should understand that too, and I've mapped out the ways in which all systems can work as designed. This still means you have areas to follow the way I've thought, optimize the builds even further to really be accurate, to really perform well, to perfectly capture, populate the listings, to manage across the period their up and how they'll consider/what they'll consider. The features we give both buyers and sellers and how we deliver it, as well as the additional things we can still bring to the table
+
+## 2026-11-14 nate build seats work out how the agent operates before they build
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent wrote observed runs into the build plan.
+> Well before observing real runs, Im telling you the subagents can be intelligent enough and prompted, you should remind them, that they can understand before building it, how the subagent will actually be able to operate on the page, the pipelines for actions, the ways to build it to be efficient, intelligent, and capable of every needed feature to truly deliver a working and useful today product
+
+## 2026-11-14 nate understand and finalise how it is built, and tests that expect what breaks
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about how build seats should work.
+> Do you think this is worse? Im not stating you should lock in our subagents to a few specific behaviors, but like dont just guess and check, really understand and finalize the spec with how things should be built before we finish building. Then when testing in parallel the features that are finished building, the tests should already anticipate the things that likely break it, so in the case of an error its quickly identified
+
+## 2026-11-15 real data over made-up data, and what the voice pairs mean
+Ben, in the thread "Build the brand system for everything", 2026-11-15 02:01 UTC.
+> is there anything from the prompt that you would want to tell the agent that is the set the secondhand brand identity one? i think the apple marketing rule of made up data is up in the air for this because its more impressive with real data. what does the four voice pairs you are talking about mean
+
+## 2026-11-15 a standard for edge states, known and learned while building
+Ben, in the thread "Build the brand system for everything", 2026-11-15 02:03 UTC.
+> also im really concerned about how the system thinks about defining standard for different states. edge states. ones that aren't there in the original. and find a way to know these in it and continuously update and learn when building.
+
+## 2026-11-14 nate capture opens on the type pick, a confident suggestion may skip the tap, and the tutorial is animated steps
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering the capture questions.
+> Lets do on the type pick, A confident type suggestion can skip the tap entirely, but ideally the tap makes it easier to identify, we can try both ways. The tutorial will be a helpful step by step of animations for capturing the image, similar to other apps and how they show what to do like id verfiication platforms do sometimes
+
+## 2026-11-14 nate each type gets its own select for every field its process needs
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether electronics may have a fourth follow-up input.
+> yes electronics and all other needed fields that differ in the process get their own select type
+
+## 2026-11-14 nate pricing weighs every platform's top listings, official listings and credible discounts, with a slider and a free note
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> the system should aggregate all top listings from each second hand platform, all official market listings, if there are discounts from credible sources, all to help it weigh its suggested pricing, with a range of lowball to hard to negoitate the user can use a slider to select their preference. Theres also the option to type or text additional info before you generate the full listing, anything you want to add like where you got it, the user can even repeat things the system already identified
+
+## 2026-11-14 nate the price slider defaults to the middle
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether the price slider defaults to the middle or to the person's last choice.
+> default to the middle for the suggested option.
+
+## 2026-11-14 nate show what sold prices say, and expert research sessions that first name what must be determined
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the price slider was specified.
+> its probably also helpful to see what sold prices say. Ideally, I want expert /research sessions focusing on all things first identifying what needs to be determined, then how to best do it and all things to consider . From a professionals input
+
 ## 2026-11-15 round 10 picks
 Ben, on the round 10 picks page, saved 2026-11-15 01:53 UTC; he wrote "done with round 10." in the thread "Set the secondhand brand identity" at 01:58. He tapped four things: "Drop" under laid on a table, "Same weight, selected or not" under the tab label, "Yes, this rule" under what separates, and "PP Neue Montreal 2.6" under the font file. He left the four screens, the second hand, paper tags, the receipt, the color order and the gaps untapped. The quotes are the notes he typed.
 

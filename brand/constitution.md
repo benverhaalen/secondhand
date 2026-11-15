@@ -347,7 +347,7 @@ Each AI tell is paired with what to reach for, because banning one default moves
 | Canvas | 390 × 844 pt | 1440 wide desktop, 390 mobile | 1080 × 1350 | 1080 × 1920 | 1920 × 1080 |
 | A view is | One screen at one scroll position, or one sheet | One viewport at one scroll position | One slide | One frame | One slide |
 | Margins | 20 | 24 mobile, 64 desktop, 1200 max content | 72 | 96 sides; keep 250 top and 340 bottom clear of UI | 96 |
-| Wordmark (C1) | Nav bar, centered, 21 px | Header left, 21 px; footer 86.5 px at 1440 | Top or bottom center, 40 px, same place in a series | End card, centered, 120 px | Title slide and last slide only, 64 px |
+| Wordmark (C1) | Nav bar, centered, 21 px | Header left, 21 px; footer 86.5 px at 1440 and 50 px at 390, the hero's sizes | Top or bottom center, 40 px, same place in a series | End card, centered, 120 px | Title slide and last slide only, 64 px |
 | Field (C2) | The one card or band that needs you | The hero band | Background of one panel per carousel, or one band | One scene or the end card | Title slide and one key slide |
 | Item (C3) | Every item row and card | Real items in every example | The item is the post | Real item footage | Real screenshots and photos |
 | Act (C4) | One per decision | One per section | None (posts don't have buttons); a plain line instead | None | None |
@@ -355,7 +355,7 @@ Each AI tell is paired with what to reach for, because banning one default moves
 | Unit: the space and radius scales are multiplied by it (agent decision) | 1 | 1 | 3 | 3 | 2 |
 | Longest text | One sentence per card | Two short paragraphs per section | 20 words per slide | 8 words on screen at once | 15 words per slide |
 
-The numbers in this table are also in [media.json](media.json), which the checker reads. A test fails when the two differ, so change both in one commit. A view the field fills (a title slide, an end card, a sale) is exempt from the one-third color rule, and an output has as many of those as the Field row allows: two in a deck, one anywhere else.
+The numbers in this table are also in [media.json](media.json), which the checker reads. A test fails when the two differ, so change both in one commit. A post, a story and a deck take their sizes, margins and scaled gaps as variables from [media.css](media.css), which a script writes from media.json, so nothing off the app sets a raw number: `var(--mt-heading)`, `var(--ms-4)`, `var(--mr-card)`. How many views the field may fill is in Article 5.2 and the Field row. An app screen shown on a slide, a post or a page is a picture of the screen that passed its own check, placed as an image, never the screen's markup set again at another size.
 
 Post and video notes:
 - A carousel tells one story per slide in order: the item, what it is worth, where it sold, what you kept.
@@ -366,7 +366,7 @@ Post and video notes:
 
 ## Part IV. Checks
 
-Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-check.mjs](../scripts/brand-check.mjs) holds it on the rendered output, in any medium written as HTML: it measures the page in a browser and [render.mjs](../.agents/checks/render.mjs) fails what breaks the rule. **Script (source)** means a check that reads app code on every push. **Look** means one "Fail if" line handed to a fresh agent with the render and nothing else. Brand feel always goes to Ben. **Not built** means a script could hold it and none does yet, so it runs as a Look. Each row's holder is in [ui-rules.json](../.agents/ui-rules.json), and the repo check fails when that list and this table disagree. An image or a video frame with no HTML source gets the Looks only.
+Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-check.mjs](../scripts/brand-check.mjs) holds it on the rendered output, in any medium written as HTML: it measures the page in a browser and [render.mjs](../.agents/checks/render.mjs) fails what breaks the rule. It runs when someone makes an output, and its tests run on every push. **Look** means one "Fail if" line handed to a fresh agent with the render and nothing else. Brand feel always goes to Ben. **Not built** means a script could hold it and none does yet. Each row's holder is in [ui-rules.json](../.agents/ui-rules.json), and the repo check fails when that list and this table disagree. An image or a video frame with no HTML source gets the Looks only.
 
 | Id | Rule | Check | Runs |
 |---|---|---|---|
@@ -378,15 +378,15 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B6 | Text contrast (Art. 5.1) | Every text node ≥ 4.5:1 with what is behind it (≥ 3:1 at 24 px and up). On field, state and category fills, text is ink only. White text only on the black pill and brick | Script |
 | B7 | No colored text, lines or icons on white (Art. 5.1) | Computed `color`, `border-color`, SVG `stroke` on white grounds are black or black 65%, except logos, brick and the unread dot | Script |
 | B8 | Color ≤ one third of the view (Art. 5.2) | Pixel share that is non-neutral and non-photo ≤ 33%; translucent black counts as black. A view the field fills is exempt, and Part III caps how many an output has | Script |
-| B9 | Every item has a photo (C3) | Every item element contains an `img` with a non-empty `alt` | Script |
-| B10 | One black pill per decision (C4) | Count primary buttons per card ≤ 1 | Script |
+| B9 | Every item has a photo (C3) | Every element marked `data-item` holds a photo. Every photo and logo has `alt` text; an icon of 32 px or less may have `alt=""` | Script |
+| B10 | One black pill per decision (C4) | At most one black pill in a box and in a card (a `data-part`); none in a medium that has no buttons | Script |
 | B11 | Logos not names (C5) | No marketplace name as visible text where a logo slot exists; logo `aria-label` present | Not built |
-| B12 | Money: tabular, labelled, no highlight (C6) | Each amount has words in its group that say what it is | Script |
-| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {400, 500, 600}; 600 only in the display face; 500 only on buttons and the selected tab | Script |
+| B12 | Money says what it is, with no highlight (C6) | Each amount has words in its row or block that say what it is, and no band of color behind it | Script |
+| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {400, 500, 600}; 600 only in the display face; 500 only inside a button, a link or the selected tab | Script |
 | B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) | Script |
 | B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script |
-| B16 | Sentence case (Art. 6.5) | No string, other than logos and proper nouns, is all caps or title case | Script |
-| B17 | Spacing scale (Art. 7.1) | Every gap inside a component ∈ {0, 4, 8, 12, 16, 20, 24, 32, 48, 64}; canvas margins and safe areas come from Part III | Script |
+| B16 | Sentence case (Art. 6.5) | No phrase is all caps. One word in capitals and title case are warnings, because a name may be written that way | Script |
+| B17 | Spacing scale (Art. 7.1) | Every gap inside a component ∈ {0, 4, 8, 12, 16, 20, 24, 32, 48, 64}; canvas margins and safe areas come from Part III. Text stays inside the margins; a photo stays inside them or runs to the edge; web text is no wider than the content width | Script |
 | B18 | Inside tighter than between (Art. 7.2) | For each card, max internal gap < gap to its sibling | Not built |
 | B19 | No box in a box (Art. 7.3) | No bordered or filled element inside another bordered or filled element, except photos, buttons and state pills | Not built |
 | B20 | Radius scale (Art. 9.1) | Border radii ⊆ {0, 8, 14, 20, 999} | Script |
@@ -400,9 +400,11 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B28 | True scale (Art. 7.6) | App renders are 390 × 844 pt; images judged at 390 CSS px wide | Script |
 | B29 | Feel | Ben looks at it | Ben |
 | B30 | Longest text (Part III) | Words in a view ≤ the medium's limit, not counting the wordmark | Script |
-| B31 | Things of one kind are one size, whatever is in them (Ben, [words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)) | Every element with the same `data-part` name renders at one height, within 1 px | Script |
+| B31 | Things of one kind are one size, whatever is in them (Ben, [words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)) | Every element with the same `data-part` name renders at one height and one width on every view of the output, within 1 px. `data-fit="content"` lets a width follow its words | Script |
 | B32 | The wordmark's kit (C1; agent proposal, ledger R26) | Once per view; no transform, shadow, outline, stroke, filter, fade or motion; no fill or box of its own; ink or white, on the page or the field; nothing else within half its type size | Script |
-| B33 | Logos in a row (C5; agent proposal, ledger R26) | Logos that share a parent render at one height and one gap. A logo taller than the wordmark's type is a warning until R26 is picked | Script |
+| B33 | Logos in a row (C5; agent proposal, ledger R26) | Logos that share a parent render at one height and one gap, and none is taller than the wordmark's type. A logo standing alone is not a row | Script |
+
+**Marks the checker reads.** `data-view` on each slide, panel or frame (with none, each screenful is a view). `data-part="name"` on each kind of repeated thing: a card, a chip, a tile. `data-fit="content"` on a part whose width follows its words. `data-item` on anything that shows an item. `data-photo` on a photo that is not an `img`, and `data-logo` on a logo. `data-chrome` on the phone's own status bar and home bar in an app mock, which are skipped.
 
 A check that passes is not proof of taste ("scripts can't prove it looks good"). It is proof the rules were followed. Record results with the output.
 
