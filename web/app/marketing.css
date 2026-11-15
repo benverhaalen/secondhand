@@ -32,19 +32,25 @@
 .marketing-nav a:hover { background: var(--gray); color: var(--ink); }
 .marketing-nav a[aria-current="page"] { background: var(--tab-on); color: var(--ink); }
 .marketing-menu { display: none; position: relative; }
-.marketing-header-actions { display: flex; justify-self: end; align-items: center; gap: var(--s-7); white-space: nowrap; }
+.marketing-header-actions { display: flex; justify-self: end; align-items: center; gap: var(--s-3); white-space: nowrap; }
 .marketing-menu-panel { position: absolute; inset-inline-end: 0; top: calc(100% + var(--s-2)); z-index: 6; min-width: 12rem; padding: var(--s-2); border: 1px solid var(--rule); border-radius: var(--r-photo); background: var(--surface); box-shadow: var(--shadow-card); }
 .marketing-menu-actions { margin-top: var(--s-2); padding-top: var(--s-2); border-top: 1px solid var(--rule); }
 .marketing-menu-panel a { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); padding-inline: var(--s-4); min-height: var(--control-min); border-radius: var(--r-pill); text-decoration: none; }
 .marketing-menu-panel a:hover { background: var(--gray); }
 .marketing-menu-panel a[aria-current="page"] { background: var(--tab-on); }
 .marketing-menu-panel .marketing-menu-workspace { display: none; }
-.github-link { display: inline-flex; min-height: var(--control-min); align-items: center; gap: var(--s-1); font-size: var(--t-15); }
+.marketing-menu-services { display: flex; align-items: center; gap: var(--s-2); }
+.marketing-menu-services > a { justify-content: center; }
+.marketing-mcp-pending { color: var(--ink-disabled); cursor: default; }
+.github-link { display: inline-flex; width: var(--control-min); min-height: var(--control-min); align-items: center; justify-content: center; border-radius: var(--r-pill); }
+.github-link:hover { background: var(--gray); }
+.marketing-github-mark { display: block; width: var(--s-7); height: var(--s-7); }
+[data-theme="dark"] .marketing-github-mark { filter: invert(1); }
 .marketing-pill { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); width: fit-content; min-height: var(--button-h); padding: var(--s-3) var(--s-6); background: var(--ink); color: var(--page); border-radius: var(--r-pill); font-size: var(--t-15); line-height: var(--lh-15); text-decoration: none; white-space: nowrap; transition: background var(--t-feedback) var(--ease-out), transform var(--t-feedback) var(--ease-out); }
 .marketing-pill:hover, button.marketing-pill:not(:disabled):hover { background: var(--ink-press); }
 .marketing-pill:active { transform: scale(.98); }
 .marketing-pill-secondary { background: var(--gray); color: var(--ink); }
-.marketing-pill-secondary:hover, button.marketing-pill-secondary:not(:disabled):hover, .marketing-next-link[aria-current="page"] { background: var(--gray-press); }
+.marketing-pill-secondary:hover, button.marketing-pill-secondary:not(:disabled):hover { background: var(--gray-press); }
 /* One movable field per scene. The fade stays still so the text always sits on a dark ground. */
 .marketing-atmosphere {
   --atmosphere-1: var(--sky-deep);
@@ -195,12 +201,10 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
   .marketing-menu { display: block; }
   .marketing-menu-trigger { display: grid; place-items: center; color: var(--ink); background: var(--gray); width: var(--control-min); height: var(--control-min); padding: 0; border-radius: var(--r-pill); list-style: none; }
   .marketing-menu-trigger::-webkit-details-marker { display: none; }
-  .marketing-header-actions .marketing-next-link { padding-inline: var(--s-3); min-height: var(--control-min); }
 }
 @media (max-width: 440px) {
   .marketing-header-actions .marketing-avatar { display: none; }
   .marketing-menu-panel .marketing-menu-workspace { display: flex; }
-  .marketing-header-actions .marketing-next-link { font-size: var(--t-13); }
 }
 @media (max-width: 1100px) {
   .marketing-home, .marketing-header, .marketing-footer { --marketing-gutter: 32px; --marketing-heading: 36px; --marketing-phone: 200px; }
