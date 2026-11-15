@@ -2657,3 +2657,8 @@ Nate, the orchestrator's session, 2026-11-15, about 15:45 to 15:53 UTC by the ma
 > Can you when fully realized its complete, send sonnets out now to triage and review and audit. and when passed complete or ready to at least see most features, upload to testflight so ben and I, part of the same team, can download it right from testflight app
 
 Used in: [bench/RESULTS.md](../bench/RESULTS.md), [README.md](../README.md); three Sonnet audits (server, app client, tests and release config); then an EAS production build and a TestFlight submission, which this message authorizes.
+## 2026-11-15 nate yes, wire Lens
+Nate, the capture lead's session, 2026-11-15, after the trace showed an app capture reaches identify with no tag text, no codes and no reader composed, and the question "Shall I wire Lens into the server now, switched on only by a TREG_TOKEN secret on Fly?".
+> Yes, wire Lens
+
+Used in: `app/src/edge/identify/compose.ts`, [the capture design](../spec/engines/capture.md) (the paid visual rung).

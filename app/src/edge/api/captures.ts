@@ -20,6 +20,7 @@ import { classify, siteRows } from '../../engines/listing/classify.ts';
 import type { AspectsReply } from '../../engines/listing/aspects.ts';
 import type { Blobs } from '../store/blobs.ts';
 import { jobs } from './jobs.ts';
+import { lensOn, lensPortsFor } from '../identify/compose.ts';
 
 // The server composes ports on the same dependency object used by the API routes.
 export const deps = sharedDeps as typeof sharedDeps & {
@@ -370,7 +371,7 @@ function subscribeUploads(blobs:Blobs) {
   captures.subscriptions.add(blobs);
   blobs.onUploaded(event=> {
     const row=captures.rows.get(event.capture_id);
-    if (!row || row.user_id!==event.user_id || row.status==='judged' || row.visual_retry || !deps.identifyPorts?.visual ||
+    if (!row || row.user_id!==event.user_id || row.status==='judged' || row.visual_retry || !(deps.identifyPorts?.visual || !deps.identifyPorts && lensOn()) ||
       !row.photo_rows?.some(photo=>photo.id===event.photo_id && photo.role==='front')) return;
     const first=captures.identifyRuns.get(row.id);
     if (!first) return;
@@ -415,7 +416,9 @@ function startIdentify(row:CaptureRow, parent:Ctx['log']):Promise<void> {
         jobs.append(job.id,'job.stage',{job_id:job.id,...stage});
         log.stage(job.id,name,detail);
       }};
-      const result=await identify(input,deps.identifyPorts ?? {},captures.params,stageLog);
+      // A test or the server may set its own ports; otherwise Lens is composed when its token and public address exist.
+      const ports=deps.identifyPorts ?? lensPortsFor(row.id,{kv:deps.kv,log,now:deps.now,params:captures.params});
+      const result=await identify(input,ports,captures.params,stageLog);
       emptySet=result.set.length===0;
       const failed=result.stages.find(stage=>stage.state==='failed');
       if (failed) throw new Error(String(failed.found.reason ?? `identify ${failed.name} failed`));

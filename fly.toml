@@ -3,7 +3,8 @@
 # DECISION_SIGNING_KEY, SECONDHAND_VISITOR_KEY, SECONDHAND_VAULT_KEY
 # Optional vendor credentials (enable only the runtime paths Nate wants):
 # EBAY_CLIENT_ID, EBAY_CLIENT_SECRET, APIFY_TOKEN, BROWSER_USE_API_KEY,
-# OPENROUTER_API_KEY, DATABRICKS_HOST, DATABRICKS_WAREHOUSE_ID, DATABRICKS_TOKEN
+# OPENROUTER_API_KEY, DATABRICKS_HOST, DATABRICKS_WAREHOUSE_ID, DATABRICKS_TOKEN,
+# TREG_TOKEN (turns on the Lens visual step in identify: $0.003 a capture, $0.10 a day, capped in code)
 # Run one machine: fly scale count 1 (the watcher runs in-process).
 app = "secondhand-api" # Nate names the app when he creates it.
 primary_region = "ord"
