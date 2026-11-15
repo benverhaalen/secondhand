@@ -2317,3 +2317,9 @@ Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
 > Understand how databricks shapes dynamic pricing https://www.databricks.com/blog/dynamic-pricing-airlines-how-ai-can-reshape-revenue-strategy
 
 Used in: [the retail mapping](../research/data/nate/databricks-retail-solutions.md).
+
+## 2026-11-15 nate check Ben's packets, address them, and prepare a wrap-up and fresh sessions
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central.
+> check packets too for any ben incoming messages, then launch a subagent to address it, prepare rest for a wrapup and fresh new sessions
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
