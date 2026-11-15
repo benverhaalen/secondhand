@@ -23743,7 +23743,7 @@
         "type": "none",
         "when": "Never fires. Never on press-in or scroll."
       },
-      "freq": "constant",
+      "freq": "tens",
       "states": {
         "disabled": "Never while present.",
         "loading": "No asynchronous local work. Ignore a repeated navigation tap until its route mounts; never stack duplicate routes.",

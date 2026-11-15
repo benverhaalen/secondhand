@@ -1,0 +1,227 @@
+{
+  "route": "item/[id]/index",
+  "screen": "item",
+  "states": [
+    "one",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "empty: an item page always has an item, and with nothing known yet it is new; new: an item still being researched, /item/it_hoodie; typical: two sites and one photo, /item/it_jacket; dense: many photos or sites, /item/it_tee",
+  "catalog": false,
+  "wash": true,
+  "top": true,
+  "status": "fail",
+  "findings": [
+    {
+      "level": "error",
+      "id": "B20",
+      "where": "screen 1 <div>",
+      "msg": "has a 4px corner: corners on a app are 20, 36 or a pill (Art. 9.1)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "warn",
+      "id": "B15",
+      "where": "app",
+      "msg": "the brand faces are not on this machine, so line counts, widths and margins were measured in a fallback face. Put the files in fonts/ (gitignored) or set BRAND_FONTS"
+    },
+    {
+      "level": "error",
+      "id": "B31",
+      "where": "screen 2 [guess]",
+      "msg": "is 21, 81 px tall in different places: things of one kind are one size, whatever is in them"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"Steps 1 to 7 of 9 done. Ready to plan\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"$3 more here\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B5",
+      "where": "dark screen 1 [wash]",
+      "msg": "is a gradient built by hand: a gradient is a token used as it stands (var(--wash), var(--field)), never rebuilt (C2)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [photo]",
+      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 <div>",
+      "msg": "has a line of rgba(10, 10, 10, 0.08), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [question-card]",
+      "msg": "has a line of rgba(10, 10, 10, 0.08), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 2 \"No title here: the name opens the des...\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 2 \"$4 more here. Says “size L”. Photos c...\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 2 \"Description\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 2 \"Brand\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 2 \"From the photos\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 2 \"Color\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 2 \"Department\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Style\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Model\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Size\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"From the tag\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Material\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Era\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Pit to pit\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Measured\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Length\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Sleeve\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 3 \"Flaw\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 4 \"Where it is\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 4 \"What you paid\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 4 \"Only you see it, in your records\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 4 \"Clean up, add or change the cover\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 4 \"A copy without the photos\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 4 \"Removes it and its photos\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "U9",
+      "where": "screen",
+      "msg": "the nav starts at 0, under the status bar (59 on an iPhone): the screen keeps the top safe area, and only the wash runs under it"
+    }
+  ]
+}

@@ -92,10 +92,15 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "actions@users.noreply.github.com"
+          # Runs queue, so one can finish after the branch has moved on. If anything these renders are drawn from changed
+          # since this run's commit, they show old code: keep the branch's renders and let the newer run draw them.
+          git fetch -q origin "$GITHUB_REF_NAME"
+          if ! git diff --quiet "$GITHUB_SHA" FETCH_HEAD -- brand app/src app/assets app/package-lock.json .agents/checks scripts \
+              ':!brand/explore/web-home/boards/*/out' ':!brand/explore/web-home/hero/out' ':!brand/explore/web-home/app'; then
+            echo "the branch moved past $GITHUB_SHA in what the renders are drawn from; not committing stale renders"; exit 0
+          fi
           git add brand/explore/web-home/boards brand/explore/web-home/hero brand/explore/web-home/app
           git commit -m "test(web): section boards drawn in the brand faces" || exit 0
-          # Two runs can overlap: the newer run's renders win any clash over the same out/ files, since they are drawn
-          # from the newer code.
           git pull --no-rebase -X ours origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"
       # The renders are committed either way, so the failure can be seen; then the run fails (web.md W14).
       - name: Fail when a board or the hero broke a brand rule or drew in a fallback face

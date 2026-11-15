@@ -92,7 +92,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
     const body = await r.json(); created.push(body.id);
     const expected = e.response as { id: string; stages: { started_at: string }[]; stream: string };
     assert.deepEqual({ ...body, id: expected.id, stream: expected.stream,
-      stages: body.stages.map((s: Record<string, unknown>) => ({ ...s, started_at: expected.stages[0].started_at })) }, { ...expected, stages: [...expected.stages, { ...expected.stages[0], name: 'site:ebay' }] });
+      stages: body.stages.map((s: Record<string, unknown>) => ({ ...s, started_at: expected.stages[0].started_at })) }, { ...expected, stages: [...expected.stages, { ...expected.stages[0], name: 'site:facebook' }, { ...expected.stages[0], name: 'site:ebay' }] });
   }
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
@@ -204,7 +204,7 @@ test('202 is returned before any page answers, including a page that never resol
   assert.deepEqual(job.stages.map((s: { name: string }) => s.name), SOURCES.filter(s => s.on).map(s => `site:${s.id}`));
   assert.ok(job.stages.every((s: { state: string; found: Found }) => s.state === 'running' && s.found.results_found === 0));
   await new Promise(resolve => setImmediate(resolve));
-  assert.deepEqual([...started].sort(), ['poshmark'], 'Depop uses its harness and Facebook stays off');
+  assert.deepEqual([...started].sort(), ['poshmark'], 'Depop uses its harness and Facebook has no composed Apify port');
   assert.equal(jobs.st.getJob(job.id)?.state, 'running');
 });
 
@@ -216,7 +216,7 @@ test('site batches reach polling and a live SSE reader in landing order, with ex
   const res = await poll(job.id, 'vis_search01', true);
   const reader = res.body!.getReader();
   let early = '';
-  while ((early.match(/event: answer.partial/g) ?? []).length < 3) early += new TextDecoder().decode((await bounded(reader.read())).value); // Dupe, unlinked Mercari and the unconfigured eBay harness settle first
+  while ((early.match(/event: answer.partial/g) ?? []).length < 4) early += new TextDecoder().decode((await bounded(reader.read())).value); // Dupe, unlinked Mercari, unrouted Facebook and eBay settle first
   for (const site of ['depop', 'poshmark'] as const) {
     release.get(site)!(page(fixture(site)));
     const frames = [];
@@ -503,7 +503,7 @@ test('source rows control targets: eBay is on and a planted source runs without 
     { id: 'depop', on: true, needs_ask: false, reason: undefined },
     { id: 'poshmark', on: true, needs_ask: false, reason: undefined },
     { id: 'mercari', on: true, needs_ask: true, reason: undefined },
-    { id: 'facebook', on: false, needs_ask: false, reason: 'not built' },
+    { id: 'facebook', on: true, needs_ask: false, reason: undefined },
     { id: 'ebay', on: true, needs_ask: false, reason: undefined },
   ]);
   const planted = { pace: { per_minute: 1e12, min_gap_ms: 0 }, id: 'planted', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true } as const;
@@ -777,4 +777,93 @@ test('converted eBay cards keep their host and currency, follow USD rows and ign
   assert.deepEqual(foreign.price_cents, { amount_cents: 1, currency: 'GBP' });
   assert.equal(foreign.delivered_cents, null);
   assert.equal(saved.result.searched[0].pace.per_minute, 6);
+});
+
+test('a not-routed source cannot delay answer.settled or take the next runnable eBay pace slot', async () => {
+  ports.sources = [{ ...SOURCES.find(s => s.id === 'ebay')!, pace: { per_minute: 60, min_gap_ms: 1000 } }];
+  ports.harness = undefined;
+  ports.routed = () => false;
+  for (let i = 0; i < 2; i++) {
+    const job = await start({ text: `no route ${i}` }); await ended(job.id);
+    const saved = jobs.st.getJob(job.id)!;
+    const stage = saved.stages[0] as typeof saved.stages[number] & { error?: { code: string; message: string } };
+    assert.equal(stage.state, 'failed');
+    assert.equal(stage.error?.code, 'no_route');
+    assert.equal(stage.error?.message, 'no live route composed');
+    assert.ok(Date.parse(stage.ended_at!) - Date.parse(stage.started_at!) < 100, 'not-routed source delayed its stage');
+    const answer = jobs.framesAfter(job.id, 0).find(f => f.event === 'answer.settled')!.data.answer as { ms: { settled: number } };
+    assert.ok(answer.ms.settled < 100, 'not-routed source delayed answer.settled');
+  }
+  ports.harness = createHarness({ adapters: [{ route_id: 'ebay.search.page', manifest: fakeManifest('ebay', 'search'), run: async () => ({ ok: true, data: [] }) }] });
+  ports.routed = () => true;
+  const job = await start({ text: 'now routed' }); await ended(job.id);
+  const stage = jobs.st.getJob(job.id)!.stages[0];
+  assert.ok(Date.parse(stage.ended_at!) - Date.parse(stage.started_at!) < 100, 'no_route reserved a usable eBay pace slot');
+});
+
+test('a composition root that marks a harness site unrouted prevents its read even with a harness set', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'depop');
+  ports.routed = () => false;
+  depopRead = async () => { assert.fail('an unrouted harness site was read'); };
+  const job = await start(); await ended(job.id);
+  const stage = jobs.st.getJob(job.id)!.stages[0] as { error?: { code: string } };
+  assert.equal(stage.error?.code, 'no_route');
+});
+
+test('Apify rows keep may_model, use_scope and route through ranking, partials and settled answers', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'facebook');
+  const row = { id: 'facebook:demo', title: 'levi 501', currency: 'USD', price_cents: 1000, url: 'https://www.facebook.com/marketplace/item/demo',
+    via: 'apify', actor: 'apify~facebook-marketplace-scraper', may_model: false, use_scope: 'hackathon_demo' } as const;
+  let calls = 0;
+  ports.apify = { search: async () => { calls++; return { ok: true, data: { rows: [row], dropped: 0, total: 1 } }; } };
+  for (let i = 0; i < 2; i++) {
+    const job = await start(); await ended(job.id);
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.result.results.length, 1);
+    for (const result of [saved.result, ...jobs.framesAfter(job.id, 0).filter(f => f.event.startsWith('answer.')).map(f => f.data)]) {
+      const offer = result.results[0];
+      assert.deepEqual([offer.via, offer.actor, offer.may_model, offer.use_scope, offer.route_id], ['apify', row.actor, false, 'hackathon_demo', 'apify.facebook.search']);
+    }
+    assert.equal(saved.result.searched[0].cost_usd_est, 0.005);
+  }
+  assert.equal(calls, 2, 'a cached Apify batch hid a paid run from admission or freshness');
+});
+
+test('eBay fallback rows and answer frames carry the Apify route instead of the unavailable page route', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'ebay'); ports.harness = undefined; ports.routed = () => false;
+  ports.apify = { search: async lane => ({ ok: true, data: { rows: [{ id: 'ebay:demo', title: 'levi 501', currency: 'USD', price_cents: 1000,
+    url: 'https://www.ebay.com/itm/demo', via: 'apify', actor: lane === 'ebay' ? 'automation-lab~ebay-scraper' : 'apify~facebook-marketplace-scraper', may_model: false, use_scope: 'hackathon_demo' }], dropped: 0, total: 1 } }) };
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.result.results[0].route_id, 'apify.ebay.search');
+  assert.equal(saved.result.searched[0].fallback, 'apify');
+  for (const frame of jobs.framesAfter(job.id, 0).filter(f => f.event.startsWith('answer.'))) {
+    const answer = frame.data.answer as { searched: { route_id: string; fallback: string; cost_usd_est: number }[] };
+    assert.equal(answer.searched[0].route_id, 'apify.ebay.search'); assert.equal(answer.searched[0].fallback, 'apify'); assert.equal(answer.searched[0].cost_usd_est, 0.005);
+  }
+});
+
+test('an unrouted Mercari stage is no_route before account admission and never queries accounts', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'mercari'); ports.routed = () => false;
+  ports.accounts = { linked: async () => { assert.fail('an unrouted source waited for account admission'); }, byId: async () => undefined };
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.stages[0].state, 'failed'); assert.equal(saved.stages[0].error.code, 'no_route');
+  assert.equal(saved.stages[0].error.message, 'no live route composed');
+  assert.ok(Date.parse(saved.stages[0].ended_at) - Date.parse(saved.stages[0].started_at) < 100);
+});
+
+test('real Apify Facebook search rows retain their terms and unknown currency without inventing USD', async () => {
+  const { createApify } = await import('../harness/sites/apify/adapter.ts');
+  ports.sources = SOURCES.filter(s => s.id === 'facebook');
+  ports.apify = createApify({ token: 'fixture', log: deps.log, send: async () => ({ status: 200, headers: new Headers(),
+    text: async () => readFileSync(new URL('../harness/sites/apify/fixtures/facebook-search.json', import.meta.url), 'utf8') }) });
+  const job = await start({ text: 'office chair' }, 'vis_currency'); await ended(job.id);
+  const saved = await (await poll(job.id, 'vis_currency')).json();
+  assert.ok(saved.result.results.length > 0, 'currencyless Facebook rows were dropped');
+  for (const row of saved.result.results) {
+    assert.equal(row.price_cents, null, 'currencyless amount was emitted as valid Money');
+    assert.equal(row.delivered_cents, null);
+    assert.deepEqual([row.via, row.actor, row.may_model, row.use_scope], ['apify', 'apify~facebook-marketplace-scraper', false, 'hackathon_demo']);
+  }
 });

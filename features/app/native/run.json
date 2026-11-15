@@ -1,0 +1,302 @@
+{
+  "device": "iPhone 17 Pro",
+  "os": "iOS.26.3",
+  "appVersion": "1.0.0",
+  "when": "2026-11-15T11:08:12.674Z",
+  "routes": [
+    {
+      "slug": "buy-world-buyer",
+      "route": "/buy?world=buyer",
+      "png": "features/app/native/buy-world-buyer.png",
+      "tree": "features/app/native/buy-world-buyer.tree.txt"
+    },
+    {
+      "slug": "buy-world-new",
+      "route": "/buy?world=new",
+      "png": "features/app/native/buy-world-new.png",
+      "tree": "features/app/native/buy-world-new.tree.txt"
+    },
+    {
+      "slug": "camera",
+      "route": "/camera",
+      "png": "features/app/native/camera.png",
+      "tree": "features/app/native/camera.tree.txt"
+    },
+    {
+      "slug": "dev-parts",
+      "route": "/dev/parts",
+      "png": "features/app/native/dev-parts.png",
+      "tree": "features/app/native/dev-parts.tree.txt"
+    },
+    {
+      "slug": "gone-by-at-done",
+      "route": "/gone-by?at=done",
+      "png": "features/app/native/gone-by-at-done.png",
+      "tree": "features/app/native/gone-by-at-done.tree.txt"
+    },
+    {
+      "slug": "gone-by-at-failed",
+      "route": "/gone-by?at=failed",
+      "png": "features/app/native/gone-by-at-failed.png",
+      "tree": "features/app/native/gone-by-at-failed.tree.txt"
+    },
+    {
+      "slug": "gone-by-at-offline",
+      "route": "/gone-by?at=offline",
+      "png": "features/app/native/gone-by-at-offline.png",
+      "tree": "features/app/native/gone-by-at-offline.tree.txt"
+    },
+    {
+      "slug": "gone-by-at-started",
+      "route": "/gone-by?at=started",
+      "png": "features/app/native/gone-by-at-started.png",
+      "tree": "features/app/native/gone-by-at-started.tree.txt"
+    },
+    {
+      "slug": "gone-by-at-sweeping",
+      "route": "/gone-by?at=sweeping",
+      "png": "features/app/native/gone-by-at-sweeping.png",
+      "tree": "features/app/native/gone-by-at-sweeping.tree.txt"
+    },
+    {
+      "slug": "gone-by-at-wednesday",
+      "route": "/gone-by?at=wednesday",
+      "png": "features/app/native/gone-by-at-wednesday.png",
+      "tree": "features/app/native/gone-by-at-wednesday.tree.txt"
+    },
+    {
+      "slug": "gone-by-world-edge",
+      "route": "/gone-by?world=edge",
+      "png": "features/app/native/gone-by-world-edge.png",
+      "tree": "features/app/native/gone-by-world-edge.tree.txt"
+    },
+    {
+      "slug": "gone-by-world-flipper",
+      "route": "/gone-by?world=flipper",
+      "png": "features/app/native/gone-by-world-flipper.png",
+      "tree": "features/app/native/gone-by-world-flipper.tree.txt"
+    },
+    {
+      "slug": "gone-by-world-new",
+      "route": "/gone-by?world=new",
+      "png": "features/app/native/gone-by-world-new.png",
+      "tree": "features/app/native/gone-by-world-new.tree.txt"
+    },
+    {
+      "slug": "gone-by-world-one",
+      "route": "/gone-by?world=one",
+      "png": "features/app/native/gone-by-world-one.png",
+      "tree": "features/app/native/gone-by-world-one.tree.txt"
+    },
+    {
+      "slug": "gone-by",
+      "route": "/gone-by",
+      "png": "features/app/native/gone-by.png",
+      "tree": "features/app/native/gone-by.tree.txt"
+    },
+    {
+      "slug": "item-it_chair-pickup-case-ask",
+      "route": "/item/it_chair/pickup?case=ask",
+      "png": "features/app/native/item-it_chair-pickup-case-ask.png",
+      "tree": "features/app/native/item-it_chair-pickup-case-ask.tree.txt"
+    },
+    {
+      "slug": "item-it_chair-pickup-case-pick",
+      "route": "/item/it_chair/pickup?case=pick",
+      "png": "features/app/native/item-it_chair-pickup-case-pick.png",
+      "tree": "features/app/native/item-it_chair-pickup-case-pick.tree.txt"
+    },
+    {
+      "slug": "item-it_chair-pickup-case-soon",
+      "route": "/item/it_chair/pickup?case=soon",
+      "png": "features/app/native/item-it_chair-pickup-case-soon.png",
+      "tree": "features/app/native/item-it_chair-pickup-case-soon.tree.txt"
+    },
+    {
+      "slug": "item-it_chair-pickup-world-edge",
+      "route": "/item/it_chair/pickup?world=edge",
+      "png": "features/app/native/item-it_chair-pickup-world-edge.png",
+      "tree": "features/app/native/item-it_chair-pickup-world-edge.tree.txt"
+    },
+    {
+      "slug": "item-it_f016-ship-world-flipper-all-1",
+      "route": "/item/it_f016/ship?world=flipper&all=1",
+      "png": "features/app/native/item-it_f016-ship-world-flipper-all-1.png",
+      "tree": "features/app/native/item-it_f016-ship-world-flipper-all-1.tree.txt"
+    },
+    {
+      "slug": "item-it_kindle-ship-case-double",
+      "route": "/item/it_kindle/ship?case=double",
+      "png": "features/app/native/item-it_kindle-ship-case-double.png",
+      "tree": "features/app/native/item-it_kindle-ship-case-double.tree.txt"
+    },
+    {
+      "slug": "item-it_kindle-ship-world-edge",
+      "route": "/item/it_kindle/ship?world=edge",
+      "png": "features/app/native/item-it_kindle-ship-world-edge.png",
+      "tree": "features/app/native/item-it_kindle-ship-world-edge.tree.txt"
+    },
+    {
+      "slug": "messages-index",
+      "route": "/messages",
+      "png": "features/app/native/messages-index.png",
+      "tree": "features/app/native/messages-index.tree.txt"
+    },
+    {
+      "slug": "messages-world-edge",
+      "route": "/messages?world=edge",
+      "png": "features/app/native/messages-world-edge.png",
+      "tree": "features/app/native/messages-world-edge.tree.txt"
+    },
+    {
+      "slug": "messages-world-flipper",
+      "route": "/messages?world=flipper",
+      "png": "features/app/native/messages-world-flipper.png",
+      "tree": "features/app/native/messages-world-flipper.tree.txt"
+    },
+    {
+      "slug": "new",
+      "route": "/new",
+      "png": "features/app/native/new.png",
+      "tree": "features/app/native/new.tree.txt"
+    },
+    {
+      "slug": "onboarding",
+      "route": "/onboarding",
+      "png": "features/app/native/onboarding.png",
+      "tree": "features/app/native/onboarding.tree.txt"
+    },
+    {
+      "slug": "search-q-banjo-20case",
+      "route": "/search?q=banjo%20case",
+      "png": "features/app/native/search-q-banjo-20case.png",
+      "tree": "features/app/native/search-q-banjo-20case.tree.txt"
+    },
+    {
+      "slug": "search-q-nike-20dunk-20low-20grey-2010",
+      "route": "/search?q=nike%20dunk%20low%20grey%2010",
+      "png": "features/app/native/search-q-nike-20dunk-20low-20grey-2010.png",
+      "tree": "features/app/native/search-q-nike-20dunk-20low-20grey-2010.tree.txt"
+    },
+    {
+      "slug": "search-q-nike-20dunk-at-slow",
+      "route": "/search?q=nike%20dunk&at=slow",
+      "png": "features/app/native/search-q-nike-20dunk-at-slow.png",
+      "tree": "features/app/native/search-q-nike-20dunk-at-slow.tree.txt"
+    },
+    {
+      "slug": "search",
+      "route": "/search",
+      "png": "features/app/native/search.png",
+      "tree": "features/app/native/search.tree.txt"
+    },
+    {
+      "slug": "sell-state-failed",
+      "route": "/sell?state=failed",
+      "png": "features/app/native/sell-state-failed.png",
+      "tree": "features/app/native/sell-state-failed.tree.txt"
+    },
+    {
+      "slug": "sell-state-loading",
+      "route": "/sell?state=loading",
+      "png": "features/app/native/sell-state-loading.png",
+      "tree": "features/app/native/sell-state-loading.tree.txt"
+    },
+    {
+      "slug": "sell-state-offline",
+      "route": "/sell?state=offline",
+      "png": "features/app/native/sell-state-offline.png",
+      "tree": "features/app/native/sell-state-offline.tree.txt"
+    },
+    {
+      "slug": "tabs-buy",
+      "route": "/buy",
+      "png": "features/app/native/tabs-buy.png",
+      "tree": "features/app/native/tabs-buy.tree.txt"
+    },
+    {
+      "slug": "tabs-index",
+      "route": "/",
+      "png": "features/app/native/tabs-index.png",
+      "tree": "features/app/native/tabs-index.tree.txt"
+    },
+    {
+      "slug": "tabs-sell",
+      "route": "/sell",
+      "png": "features/app/native/tabs-sell.png",
+      "tree": "features/app/native/tabs-sell.tree.txt"
+    },
+    {
+      "slug": "tabs-you",
+      "route": "/you",
+      "png": "features/app/native/tabs-you.png",
+      "tree": "features/app/native/tabs-you.tree.txt"
+    },
+    {
+      "slug": "want-id-want_desk",
+      "route": "/want?id=want_desk",
+      "png": "features/app/native/want-id-want_desk.png",
+      "tree": "features/app/native/want-id-want_desk.tree.txt"
+    },
+    {
+      "slug": "want-id-want_dunk-world-buyer",
+      "route": "/want?id=want_dunk&world=buyer",
+      "png": "features/app/native/want-id-want_dunk-world-buyer.png",
+      "tree": "features/app/native/want-id-want_dunk-world-buyer.tree.txt"
+    },
+    {
+      "slug": "want-id-want_oven-world-buyer",
+      "route": "/want?id=want_oven&world=buyer",
+      "png": "features/app/native/want-id-want_oven-world-buyer.png",
+      "tree": "features/app/native/want-id-want_oven-world-buyer.tree.txt"
+    },
+    {
+      "slug": "want-q-brewers-20jersey-20around-20-2460",
+      "route": "/want?q=brewers%20jersey%20around%20%2460",
+      "png": "features/app/native/want-q-brewers-20jersey-20around-20-2460.png",
+      "tree": "features/app/native/want-q-brewers-20jersey-20around-20-2460.tree.txt"
+    },
+    {
+      "slug": "want-q-nike-20dunk-20low-20grey-2010",
+      "route": "/want?q=nike%20dunk%20low%20grey%2010",
+      "png": "features/app/native/want-q-nike-20dunk-20low-20grey-2010.png",
+      "tree": "features/app/native/want-q-nike-20dunk-20low-20grey-2010.tree.txt"
+    },
+    {
+      "slug": "want",
+      "route": "/want",
+      "png": "features/app/native/want.png",
+      "tree": "features/app/native/want.tree.txt"
+    },
+    {
+      "slug": "worth-state-failed",
+      "route": "/worth?state=failed",
+      "png": "features/app/native/worth-state-failed.png",
+      "tree": "features/app/native/worth-state-failed.tree.txt"
+    },
+    {
+      "slug": "worth-state-loading",
+      "route": "/worth?state=loading",
+      "png": "features/app/native/worth-state-loading.png",
+      "tree": "features/app/native/worth-state-loading.tree.txt"
+    },
+    {
+      "slug": "worth-state-offline",
+      "route": "/worth?state=offline",
+      "png": "features/app/native/worth-state-offline.png",
+      "tree": "features/app/native/worth-state-offline.tree.txt"
+    },
+    {
+      "slug": "worth",
+      "route": "/worth",
+      "png": "features/app/native/worth.png",
+      "tree": "features/app/native/worth.tree.txt"
+    },
+    {
+      "slug": "stage",
+      "route": "/item/it_stage/post?world=stage&flip=poshmark,mercari,facebook",
+      "png": "features/app/native/stage.png",
+      "tree": "features/app/native/stage.tree.txt"
+    }
+  ]
+}

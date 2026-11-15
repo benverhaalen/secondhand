@@ -1,0 +1,131 @@
+{
+  "provenance": [
+    "app/src/edge/harness/sites/mercari/fixtures/search-sold.json",
+    "app/src/edge/harness/sites/poshmark/fixtures/search-sold.html"
+  ],
+  "sources": {
+    "mercari": {
+      "rows": [
+        {
+          "external_id": "m23851589493",
+          "url": "https://www.mercari.com/us/item/m23851589493/",
+          "state": "sold",
+          "price_cents": 1200,
+          "currency": "USD",
+          "title": "Carhartt Sweatshirt",
+          "condition": "Good",
+          "size": "S (34-36)",
+          "brand": "Carhartt",
+          "listed_at": "2026-11-14T23:27:22.000Z"
+        },
+        {
+          "external_id": "m61595318131",
+          "url": "https://www.mercari.com/us/item/m61595318131/",
+          "state": "sold",
+          "price_cents": 1200,
+          "currency": "USD",
+          "title": "Carhartt Sweatshirt",
+          "condition": "Good",
+          "size": "S (4-6)",
+          "brand": "Carhartt",
+          "listed_at": "2026-11-14T23:22:33.000Z"
+        },
+        {
+          "external_id": "m51418191998",
+          "url": "https://www.mercari.com/us/item/m51418191998/",
+          "state": "sold",
+          "price_cents": 1300,
+          "currency": "USD",
+          "title": "Men’s large loose fit blue Carhartt hoodie",
+          "condition": "Like new",
+          "size": "L (42-44)",
+          "brand": "Carhartt",
+          "listed_at": "2026-11-15T00:16:20.000Z"
+        },
+        {
+          "external_id": "m10079961865",
+          "url": "https://www.mercari.com/us/item/m10079961865/",
+          "state": "sold",
+          "price_cents": 2959,
+          "currency": "USD",
+          "title": "Blue Carhartt Work Hoodie, Men’s XL, NWT",
+          "condition": "New",
+          "size": "XL (46-48)",
+          "brand": "Carhartt",
+          "listed_at": "2026-11-06T15:35:01.000Z"
+        },
+        {
+          "external_id": "m86058593730",
+          "url": "https://www.mercari.com/us/item/m86058593730/",
+          "state": "sold",
+          "price_cents": 3495,
+          "currency": "USD",
+          "title": "Carhartt Hoodie Mens 2XLT Gray Loose Fit Pullover Workwear Hooded Sweatshirt",
+          "condition": "Good",
+          "size": "Big 2X",
+          "brand": "Carhartt",
+          "listed_at": "2026-07-04T18:45:16.000Z"
+        }
+      ],
+      "outcome": "hit"
+    },
+    "poshmark": {
+      "rows": [
+        {
+          "id": "6aea39263fce2b083f4a6840",
+          "title": "Levi's 501 Original Fit Jeans W29 L30 Dark Indigo Rinse Wash",
+          "currency": "USD",
+          "url": "https://poshmark.com/listing/6aea39263fce2b083f4a6840",
+          "condition": "ug",
+          "listed_at": "2026-11-03T11:49:50-08:00",
+          "brand": "Levi's 501 Original Fit Jeans",
+          "price_cents": 1900,
+          "original_price_cents": 0,
+          "size": "29",
+          "likes": 6,
+          "comments": 0,
+          "shares": 0,
+          "sold": true,
+          "external_id": "6aea39263fce2b083f4a6840",
+          "state": "sold"
+        },
+        {
+          "id": "6ada70f6046d1fe2f62aa5ac",
+          "title": "Levi's 501 Jeans  Men's Straight-Leg Jeans in Deep Blue",
+          "currency": "USD",
+          "url": "https://poshmark.com/listing/6ada70f6046d1fe2f62aa5ac",
+          "listed_at": "2026-10-22T13:29:43-07:00",
+          "brand": "Levi's",
+          "price_cents": 1600,
+          "original_price_cents": 0,
+          "size": "501",
+          "likes": 1,
+          "comments": 0,
+          "shares": 3,
+          "sold": true,
+          "external_id": "6ada70f6046d1fe2f62aa5ac",
+          "state": "sold"
+        },
+        {
+          "id": "6abcef7656502b5c83658ef4",
+          "title": "Levi's 501 - 31x34",
+          "currency": "USD",
+          "url": "https://poshmark.com/listing/6abcef7656502b5c83658ef4",
+          "condition": "ug",
+          "listed_at": "2026-09-30T04:21:09-07:00",
+          "brand": "Levi's",
+          "price_cents": 1100,
+          "original_price_cents": 0,
+          "size": "501",
+          "likes": 2,
+          "comments": 0,
+          "shares": 2,
+          "sold": true,
+          "external_id": "6abcef7656502b5c83658ef4",
+          "state": "sold"
+        }
+      ],
+      "outcome": "hit"
+    }
+  }
+}

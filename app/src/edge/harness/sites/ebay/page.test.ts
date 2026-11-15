@@ -3,7 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { ebayPageAdapters, readItemPage, stillUpPage, URLS, PAGE_HOSTS, type PageClient, type EbayPage } from './adapter.ts';
+import { ebayPageAdapters, readItemPage, stillUpPage, URLS, PAGE_HOSTS, ebayListingSpec, searchRows, type PageClient, type EbayPage } from './adapter.ts';
 
 const html = (f: string) => readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8');
 const signal = new AbortController().signal;
@@ -45,7 +45,7 @@ test('search reads the real cards in integer cents and skips the placeholder car
   assert.equal(rows.length, 3);
   assert.deepEqual(rows[0], { external_id: '387080178732', item_id: '387080178732', title: 'Levi 501 XX Vintage 90s  50 x 32 blue dark',
     url: 'https://www.ebay.com/itm/387080178732', state: 'live', price_cents: 3900, currency: 'USD', host: 'www.ebay.com',
-    condition: 'Pre-Owned', size: '51 in x 32 in', brand: "Levi's", shipping_cents: 1002, ships_from: 'United States', best_offer: true, sponsored: true, rank: 1 });
+    condition: 'Pre-Owned', size: '51 in x 32 in', brand: "Levi's", shipping_cents: 1002, ships_from: 'United States', best_offer: true, sponsored: true, rank: 1, name_match: 'some' });
   assert.equal(rows[1]!.shipping_cents, 0);
   assert.equal(rows[1]!.buying_format, 'Buy It Now');
   assert.deepEqual(Reflect.get(r, 'yield'), { rows: 3, dropped: 0, facts: 48 });
@@ -215,4 +215,35 @@ test('an unknown seller is not_found; a bad username loads nothing', async () =>
   const bad = await run(c, 'read_storefront', { username: '../x' });
   assert.ok(!bad.ok && bad.error.code === 'policy_refused');
   assert.equal(seen.length, 1);
+});
+
+
+test('compact and HTML clients return the same search rows and yield, passing tokens with narrow false', async () => {
+  const bytes = html('page-search.html'), q = 'levis 501 jeans', parsed = searchRows(bytes, 'live', PAGE_HOSTS[0], { tokens: ['levis', '501', 'jeans'] })!;
+  let compact = 0;
+  const legacy: PageClient = { signed_in: false, page: async () => ({ status: 200, html: bytes }) };
+  const client: PageClient = { signed_in: false, page: async () => { throw new Error('compact client must not reload HTML'); },
+    listings: async (url, s, spec, ask) => {
+      compact++; assert.equal(url, URLS.search(q, false)); assert.equal(s, signal);
+      assert.deepEqual(spec, ebayListingSpec()); assert.deepEqual(ask, { tokens: ['levis', '501', 'jeans'], narrow: false });
+      return { status: 200, ...parsed };
+    } };
+  assert.deepEqual(await run(client, 'search', { q }), await run(legacy, 'search', { q })); assert.equal(compact, 1);
+});
+
+for (const status of [403, 404, 429, 500]) test(`compact and HTML client status ${status} maps to the same error`, async () => {
+  const base: PageClient = { signed_in: false, page: async () => ({ status, html: '' }) };
+  const parsed = { rows: [], total: 0, dropped: 0, facts: 0, narrowed_out: 0 };
+  assert.deepEqual(await run({ ...base, listings: async () => ({ status, ...parsed }) }, 'search', { q: '501' }), await run(base, 'search', { q: '501' }));
+});
+
+test('explicit narrowing is counted in both client paths and keeps page ranks', async () => {
+  const bytes = html('page-search.html'), q = 'original', ask = { tokens: ['original'], narrow: true };
+  const base: PageClient = { signed_in: false, page: async () => ({ status: 200, html: bytes }) };
+  const compact: PageClient = { ...base, listings: async (_url, _s, _spec, input) => { assert.deepEqual(input, ask); return { status: 200, ...searchRows(bytes, 'live', PAGE_HOSTS[0], input)! }; } };
+  const server = await run(base, 'search', { q, narrow: true });
+  assert.deepEqual(await run(compact, 'search', { q, narrow: true }), server);
+  assert.ok(server.ok); assert.equal((server.data as Record<string, unknown>[])[0]!.rank, 2);
+  assert.equal(Reflect.get(server, 'narrowed_out'), 2);
+  assert.deepEqual(Reflect.get(server, 'yield'), { rows: 1, dropped: 0, facts: 16 });
 });

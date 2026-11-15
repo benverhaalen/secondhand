@@ -1,0 +1,10 @@
+import { readFileSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const output = new URL('../.next/server/app/', import.meta.url);
+const html = readFileSync(new URL('states.html', output), 'utf8').replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, '');
+for (const state of ['empty', 'typing', 'photo_attached', 'running', 'answered', 'thin_data', 'refused', 'rate_limited', 'offline', 'failed', 'long_answer']) assert.ok(html.includes(`id="${state}"`), `Missing state: ${state}`);
+for (const widget of ['price_range', 'price_trend', 'sites', 'listings', 'alternatives', 'table', 'sources']) assert.ok(html.includes(`data-widget="${widget}"`), `Missing widget: ${widget}`);
+for (const text of ['Recorded answer', 'View SQL', 'Measured by us', 'From the web', 'noopener noreferrer']) assert.ok(html.includes(text), `Missing answer element: ${text}`);
+const home = readFileSync(new URL('index.html', output), 'utf8');
+assert.ok(home.includes('Find pants like these') && home.includes('/garment.jpg'), 'Missing photo starter');
+console.info('Static output includes all 11 states, all 7 widgets, evidence disclosures, safe link attributes, and photo starter.');

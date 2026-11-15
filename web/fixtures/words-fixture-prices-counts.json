@@ -1,0 +1,583 @@
+[
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r1",
+      "tool": "search_market",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r1",
+      "tool": "search_market",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "poshmark": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r2",
+      "tool": "value_item",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r2",
+      "tool": "value_item",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r3",
+      "tool": "price_trend",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r3",
+      "tool": "price_trend",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r4",
+      "tool": "where_to_list",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r4",
+      "tool": "where_to_list",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r5",
+      "tool": "search_market",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r5",
+      "tool": "search_market",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 8
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r6",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r6",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 14
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r7",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {},
+      "ms": 0,
+      "phase": "start"
+    }
+  },
+  {
+    "event": "assist.tool",
+    "data": {
+      "id": "r7",
+      "tool": "market_store",
+      "input": {},
+      "ok": true,
+      "counts": {
+        "count": 1
+      },
+      "ms": 1200,
+      "phase": "end"
+    }
+  },
+  {
+    "event": "assist.text",
+    "data": {
+      "delta": "Checking the jacket shap"
+    }
+  },
+  {
+    "event": "assist.text",
+    "data": {
+      "delta": "e and recent sold prices."
+    }
+  },
+  {
+    "event": "assist.settled",
+    "data": {
+      "state": "answered",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Look for the workwear cut and check the seams and hems before buying."
+        },
+        {
+          "type": "widget",
+          "widget": "listings",
+          "result_id": "r1"
+        },
+        {
+          "type": "text",
+          "text": "Similar pants in this recorded example sold around the middle mark."
+        },
+        {
+          "type": "widget",
+          "widget": "price_range",
+          "result_id": "r2"
+        },
+        {
+          "type": "widget",
+          "widget": "price_trend",
+          "result_id": "r3"
+        },
+        {
+          "type": "text",
+          "text": "If you already own one, compare what you get after fees."
+        },
+        {
+          "type": "widget",
+          "widget": "sites",
+          "result_id": "r4"
+        },
+        {
+          "type": "text",
+          "text": "These other work pants have a similar shape."
+        },
+        {
+          "type": "widget",
+          "widget": "alternatives",
+          "result_id": "r5"
+        },
+        {
+          "type": "widget",
+          "widget": "table",
+          "result_id": "r6"
+        },
+        {
+          "type": "widget",
+          "widget": "sources",
+          "result_id": "r7"
+        }
+      ],
+      "results": {
+        "r1": {
+          "tool": "search_market",
+          "ok": true,
+          "rows": [
+            {
+              "title": "Brown Carhartt work pants",
+              "price_cents": 7900,
+              "site": "poshmark",
+              "condition": "Good",
+              "image_url": "/garment.jpg",
+              "url": "https://example.invalid/fixture-listing",
+              "size": "M"
+            },
+            {
+              "title": "Carhartt canvas pants",
+              "price_cents": 8500,
+              "site": "mercari",
+              "condition": "Good",
+              "image_url": "/garment.jpg",
+              "url": "https://example.invalid/fixture-listing",
+              "size": "M"
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "14 fixture asking prices; no live listings.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "listings"
+          ],
+          "ms": 1200
+        },
+        "r2": {
+          "tool": "value_item",
+          "ok": true,
+          "rows": [
+            {
+              "q10_cents": 6200,
+              "q50_cents": 7800,
+              "q90_cents": 9600,
+              "count": 14
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "14 fixture sold prices across Poshmark and Mercari; recorded example.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "price_range"
+          ],
+          "ms": 1200
+        },
+        "r3": {
+          "tool": "price_trend",
+          "ok": true,
+          "rows": [
+            {
+              "p50_recent_cents": 7800,
+              "p50_prior_cents": 8400,
+              "change": -0.0714,
+              "count": 14
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "14 fixture sales in each period; recorded example.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "price_trend"
+          ],
+          "ms": 1200
+        },
+        "r4": {
+          "tool": "where_to_list",
+          "ok": true,
+          "rows": [
+            {
+              "site": "poshmark",
+              "keep_cents": 6240,
+              "p_sale_30": 0.63,
+              "days_to_sell": 18
+            },
+            {
+              "site": "mercari",
+              "keep_cents": 6790,
+              "p_sale_30": 0.52,
+              "days_to_sell": 24
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "Fixture fees and sale estimates; no measured sale curve.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "sites"
+          ],
+          "ms": 1200
+        },
+        "r5": {
+          "tool": "search_market",
+          "ok": true,
+          "rows": [
+            {
+              "title": "Canvas work pants",
+              "price_cents": 4100,
+              "site": "depop",
+              "condition": "Good",
+              "image_url": "/garment.jpg",
+              "url": "https://example.invalid/fixture-listing",
+              "size": "M"
+            },
+            {
+              "title": "Vintage carpenter pants",
+              "price_cents": 5300,
+              "site": "ebay",
+              "condition": "Good",
+              "image_url": "/garment.jpg",
+              "url": "https://example.invalid/fixture-listing",
+              "size": "M"
+            }
+          ],
+          "counts": {
+            "count": 8
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "8 fixture alternatives; asking prices, not sales.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "alternatives"
+          ],
+          "ms": 1200
+        },
+        "r6": {
+          "tool": "market_store",
+          "ok": true,
+          "rows": [
+            {
+              "style": "Work pants",
+              "site": "poshmark",
+              "count": 14,
+              "median_ask": "$79",
+              "sql": "SELECT style, site, count, median_ask FROM fixture_asks"
+            },
+            {
+              "style": "Carpenter pants",
+              "site": "depop",
+              "count": 9,
+              "median_ask": "$53",
+              "sql": "SELECT style, site, count, median_ask FROM fixture_asks"
+            }
+          ],
+          "counts": {
+            "count": 14
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "Fixture rows only; not connected to the market store.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "table"
+          ],
+          "ms": 1200
+        },
+        "r7": {
+          "tool": "market_store",
+          "ok": true,
+          "rows": [
+            {
+              "site": "example.invalid",
+              "title": "Fixture style report",
+              "url": "https://example.invalid/fixture-report",
+              "date": "2026-11-15"
+            }
+          ],
+          "counts": {
+            "count": 1
+          },
+          "as_of": "2026-11-15T12:00:00Z",
+          "citation_ids": [
+            "fixture-only"
+          ],
+          "basis": "Recorded source rows; imaginary report, not web evidence.",
+          "not_built": [
+            "Recorded fixture; no live market read."
+          ],
+          "widgets": [
+            "sources"
+          ],
+          "ms": 1200
+        }
+      },
+      "sources": [
+        {
+          "url": "https://example.invalid/fixture-report",
+          "title": "Fixture style report",
+          "page_age": "2026-11-15"
+        }
+      ],
+      "calls": [
+        {
+          "id": "r1",
+          "tool": "search_market",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "poshmark": 14
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r2",
+          "tool": "value_item",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 14
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r3",
+          "tool": "price_trend",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 14
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r4",
+          "tool": "where_to_list",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 14
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r5",
+          "tool": "search_market",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 8
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r6",
+          "tool": "market_store",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 14
+          },
+          "ms": 1200
+        },
+        {
+          "id": "r7",
+          "tool": "market_store",
+          "input": {},
+          "ok": true,
+          "counts": {
+            "count": 1
+          },
+          "ms": 1200
+        }
+      ],
+      "gate": {
+        "checked": 8,
+        "cut": 1,
+        "cut_sentences": [],
+        "tags_removed": 0
+      },
+      "model": "recorded-fixture",
+      "effort": "low",
+      "usage": {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "cache_read_input_tokens": 0,
+        "web_searches": 0,
+        "cost_usd": 0,
+        "cost_source": "provider"
+      },
+      "ms": {
+        "first_text": 1800,
+        "done": 6200
+      }
+    }
+  }
+]
