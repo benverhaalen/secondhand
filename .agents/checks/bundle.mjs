@@ -5,7 +5,7 @@ const routePattern = /^app\/src\/app\/(?:.*\/)?[^/]*\+api\.ts$/;
 const testFile = /\.test\.ts$/;
 const extensions = ['', '.ts', '.tsx', '.js', '.mjs', '/index.ts'];
 
-function imports(file, raw) {
+export function imports(file, raw) {
   const code = withoutStrings(file, raw), text = withoutComments(file, raw);
   const pattern = /\b(import|export)\s+(?!type\b)(?:(?:[^;'"`]*?\s+from\s*)?)(['"])([^'"\n]+)\2/g;
   return [...text.matchAll(pattern)].filter(m => /^(?:import|export)$/.test(code.slice(m.index, m.index + m[1].length))).map(m => m[3]);
