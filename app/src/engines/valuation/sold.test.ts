@@ -56,3 +56,12 @@ test('only Apify rows from a non-eBay site may model', () => {
   assert.equal(toComps('poshmark', [row('apify', 5000, { via: 'apify' })], q)[0].may_model, true);
   assert.equal(toComps('ebay', [row('ebay', 5000, { via: 'apify' })], q)[0].may_model, false);
 });
+
+test('listing dates survive conversion separately, including an invalid sale date', () => {
+  const [listed, sold, invalid] = toComps('mercari', [row('listed', 5000),
+    row('sold', 5000, { sold_at: '2026-11-10T00:00:00Z' }), row('invalid', 5000, { sold_at: 'invalid' })],
+    { query: 'jacket', condition: 'good' });
+  for (const comp of [listed, sold, invalid]) assert.equal(comp.listed_at, '2026-11-01T00:00:00Z');
+  const found = comparables({ condition: 'good' }, [listed], as_of);
+  assert.equal(found.comps[0].age_days, 14, 'age decay must still use the listing date');
+});

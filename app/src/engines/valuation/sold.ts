@@ -30,12 +30,12 @@ export function toComps(site: Comp['site'], rows: readonly SoldRow[], q: { query
   const want = words(q.query);
   const out: Comp[] = [];
   for (const r of rows) {
-    const id = text(r.external_id), price = r.price_cents, sold = isoDate(r.sold_at), at = sold ?? isoDate(r.listed_at);
+    const id = text(r.external_id), price = r.price_cents, sold = isoDate(r.sold_at), listed = isoDate(r.listed_at), at = sold ?? listed;
     if (r.state !== 'sold' || !id || !at || !(typeof price === 'number' && Number.isSafeInteger(price) && price > 0)) continue;
     const have = new Set(words(text(r.title) ?? ''));
     const level: Comp['level'] = want.length > 0 && want.every(w => have.has(w)) ? 'product' : 'family';
     const grade = GRADES[(text(r.condition) ?? '').toLowerCase()];
-    out.push({ comp_id: `${site}:${id}`, site, sold_at: at, dated_by: sold ? 'sold' : 'listed', price_cents: price, kind: 'sold', level, w_match: DEFAULTS.w_match[level],
+    out.push({ comp_id: `${site}:${id}`, site, sold_at: at, dated_by: sold ? 'sold' : 'listed', ...(listed ? { listed_at: listed } : {}), price_cents: price, kind: 'sold', level, w_match: DEFAULTS.w_match[level],
       condition: grade ?? q.condition, w_extract: grade ? DEFAULTS.w_extract.structured : DEFAULTS.w_extract.inferred,
       ...(text(r.size) ? { size: text(r.size) } : {}), may_model: r.via === 'apify' && site !== 'ebay', citation: text(r.url) ?? `${site}:${id}` });
   }

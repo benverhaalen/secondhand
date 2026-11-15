@@ -1,4 +1,5 @@
 // Rests-on: spec/product.md §7 Jobs and the event stream; features/assist/README.md "The route".
+import type { Ask } from '../../engines/capture/plan.ts';
 import type { Log } from '../../../../log/index.js';
 import type { ParamStore } from '../../engines/param/param.ts';
 import { sha256Hex } from '../../engines/proof/sha256.ts';
@@ -13,6 +14,7 @@ export interface TurnInput {
   history?: { role: 'user' | 'assistant'; text: string }[];
   image?: ConverseOptions['image'];
   search_job_id?: string;
+  answer?: { ask_id: string; field: string; value: unknown };
   item_id?: string;
   want_id?: string;
   capture_id?: string;
@@ -29,10 +31,12 @@ export interface RunTurnDeps {
   toolDeps?: ToolDeps;
   fetch?: typeof globalThis.fetch;
   converse?: typeof converse;
+  registerAsk?(ask: Ask): Ask;
 }
 
 function privateLog(base: Log, input: TurnInput): Log {
-  const secrets = [input.text, ...input.history?.map(turn => turn.text) ?? [], input.image?.data_base64 ?? ''].filter(Boolean)
+  const answerStrings = (value: unknown): string[] => typeof value === 'string' ? [value] : Array.isArray(value) ? value.flatMap(answerStrings) : [];
+  const secrets = [...answerStrings(input.answer?.value), ...(input.answer ? [JSON.stringify(input.answer.value)] : []), input.text, ...input.history?.map(turn => turn.text) ?? [], input.image?.data_base64 ?? ''].filter(Boolean)
     .map(raw => ({ raw, escaped: JSON.stringify(raw).slice(1, -1),
       replacement: raw === input.image?.data_base64 ? '[image]' : `[input ${sha256Hex(raw)}]` }));
   const clean = (value: unknown): unknown => {
@@ -84,6 +88,9 @@ export async function runTurn(job_id: string, input: TurnInput, deps: RunTurnDep
   } };
   const emit = (event: AssistEvent) => {
     if (!active) return;
+    if (event.event === 'assist.settled' && event.data.state !== 'failed' && deps.registerAsk) {
+      for (const block of event.data.blocks) if (block.type === 'ask') block.ask = deps.registerAsk(block.ask);
+    }
     if (event.event === 'assist.settled' && not_built.length) {
       event = { ...event, data: { ...event.data, not_built,
         blocks: [...event.data.blocks, ...not_built.map(text => ({ type: 'text' as const, text }))] } };
@@ -113,9 +120,10 @@ export async function runTurn(job_id: string, input: TurnInput, deps: RunTurnDep
       }
       const seed = input.search_job_id ? [await searchJobResult(input.search_job_id, { ...toolDeps, signal: ctl.signal })] : [];
       return (deps.converse ?? converse)({
-        text: input.text, image: input.image,
+        job_id, text: input.text, image: input.image,
+        answer_note: input.answer ? `answer to ${input.answer.ask_id}: ${input.answer.field} = ${JSON.stringify(input.answer.value)}` : undefined,
         history: input.history?.map(turn => ({ role: turn.role, content: turn.text })),
-        seed, late, ...configured, effort, max_cost_usd, now: deps.now, log, signal: ctl.signal, onEvent: emit,
+        seed, search_query: seed[0]?.query, late, ...configured, effort, max_cost_usd, now: deps.now, log, signal: ctl.signal, onEvent: emit,
         tools: deps.tools ?? { defs: TOOL_DEFS, run: (name, value, signal) => runTool(name, value, toolDeps, signal) },
       });
     };

@@ -680,3 +680,12 @@ test('a background revaluation error marks the returned job failed and logs its 
   assert.equal(jobs.get(id, 'usr_other')?.error?.code, 'unavailable');
   assert.match(sink.text(), /revaluation failed/);
 });
+
+test('a listed-dated comp is stored with its clock named, so no reader takes its listing date as a sale', async () => {
+  const { observationPort } = await import('./valuations.ts');
+  const rows: import('../events/observations.ts').ObservationInput[] = [];
+  const port = observationPort({ read: () => [], write: (_user, batch) => { rows.push(...batch); } }, 'usr_other', deps.log);
+  await port.write([{ ...comp(), dated_by: 'listed' as const }], { item_id: 'it_listing_clock', as_of: AS_OF });
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].payload.dated_by, 'listed', 'the stored payload says the date is a listing date');
+});

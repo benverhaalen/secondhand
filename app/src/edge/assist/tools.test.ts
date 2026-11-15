@@ -778,3 +778,82 @@ test('existing search reader waits for first answer and unsubscribes on abort be
     assert.equal(job.listeners.size, 0);
   }
 });
+
+test('search seeds retain full listed and site totals while rows stay capped, from settled or latest partial', async () => {
+  for (const event of ['answer.settled', 'answer.partial']) {
+    const frames: SseFrame[] = [{ id: 1, event, data: {
+      results: Array.from({ length: 84 }, (_, i) => offer('poshmark', i, 4000)), sites_pending: [],
+      ...(event === 'answer.settled' ? { found: { results_found: 90, results_used: 84, sites: { poshmark: 84 } } }
+        : { answer: { found: { results_found: 90, results_used: 84, sites: { poshmark: 84 } } } }),
+    } }, { id: 2, event: 'job.state', data: { state: 'done' } }];
+    const { d } = deps({ searchJob: { start: async () => ({ id: 'search' }), listen: () => () => {}, framesAfter: () => frames } });
+    const r = await searchJobResult('search', { ...d, signal: signal() });
+    assert.ok(r.rows.length <= 30);
+    assert.equal(r.counts.results_found, 90);
+    assert.equal(r.counts.results_used, 84);
+    assert.equal(r.counts.poshmark_found, 84);
+    assert.equal(r.counts.rows, r.counts.results_used);
+    assert.ok(r.counts.sample_rows < r.counts.rows);
+  }
+});
+
+test('round 4 search basis uses full totals, sites and the frame read time', async () => {
+  const job = script();
+  job.emit('answer.settled', { results: Array.from({ length: 84 }, (_, i) => offer((['poshmark', 'ebay', 'dupe'] as const)[i % 3], i)),
+    sites_pending: [], at: '2026-11-15T14:58:00Z', found: { results_used: 84, sites: { poshmark: 28, ebay: 28, dupe: 28 } } });
+  const r = await searchJobResult('script', { ...deps({ searchJob: job.port }).d, signal: signal() });
+  assert.equal(r.basis, '84 listings for sale now on poshmark, ebay and dupe, read 14:58 UTC');
+  assert.equal(r.as_of, '2026-11-15T14:58:00.000Z');
+});
+
+test('round 4 empty partial with every site pending waits for the first rows', async () => {
+  const job = script();
+  let resolved = false;
+  const pending = call('search_market', { query: 'jacket' }, deps({ searchJob: job.port }).d).then(r => { resolved = true; return r; });
+  await turn();
+  job.emit('answer.partial', { results: [], sites_pending: ['poshmark', 'ebay', 'dupe'] });
+  await turn();
+  assert.equal(resolved, false, 'an empty pending frame is not an answer');
+  job.emit('answer.partial', { results: [offer('poshmark', 1)], sites_pending: ['ebay', 'dupe'] });
+  assert.equal(listings(await pending).length, 1);
+});
+
+test('round 4 an empty settled search resolves even with pending sites', async () => {
+  const job = script();
+  const pending = call('search_market', { query: 'jacket' }, deps({ searchJob: job.port }).d);
+  await turn();
+  job.emit('answer.settled', { results: [], sites_pending: ['ebay'] });
+  assert.equal((await pending).ok, true);
+});
+
+test('round 4 counts and site summaries describe all 307 rows rather than the sample', async () => {
+  const job = script();
+  job.emit('answer.settled', { results: Array.from({ length: 307 }, (_, i) => offer((['poshmark', 'ebay', 'dupe'] as const)[i % 3], i)), sites_pending: [] });
+  const r = await searchJobResult('script', { ...deps({ searchJob: job.port }).d, signal: signal() });
+  assert.equal(r.counts.rows, 307);
+  assert.equal(r.counts.poshmark_n, 103);
+  assert.equal(r.counts.ebay_n, 102);
+  assert.equal(r.counts.dupe_n, 102);
+  assert.equal(r.rows.filter(row => row.kind === 'site_summary').reduce((n, row) => n + Number(row.total), 0), 307);
+  assert.ok(r.rows.length <= 30);
+});
+
+test('round 4 an empty pending search resolves only when its configured wait expires', { timeout: 1000 }, async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const job = script(), params = memoryStore();
+  params.declare({ name: 'assist_search_wait_ms', family: 'scalar', prior: 17 });
+  let resolved = false;
+  const pending = call('search_market', { query: 'jacket' }, deps({ searchJob: job.port, params }).d).then(r => { resolved = true; return r; });
+  await turn();
+  job.emit('answer.partial', { results: [], sites_pending: ['poshmark', 'ebay', 'dupe'] });
+  await turn();
+  assert.equal(resolved, false);
+  t.mock.timers.tick(16);
+  await turn();
+  assert.equal(resolved, false);
+  t.mock.timers.tick(1);
+  const r = await pending;
+  assert.equal(r.counts.rows, 0);
+  assert.equal(r.counts.sites_pending, 3);
+  assert.equal(job.listeners.size, 0);
+});
