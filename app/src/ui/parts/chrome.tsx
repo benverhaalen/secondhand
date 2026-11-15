@@ -116,7 +116,7 @@ export function TabBar({ current, badges = {}, onTab }: {
   // design"): a capsule 62 tall, 16 in from each side and 21 above the bottom of the glass, so its round ends follow the
   // phone's round corners instead of a flat bar with a line meeting them. It is told apart by tone (surface on the page),
   // not a line or a shadow. On a phone with no home bar it sits 12 above the edge.
-  const below = inset.bottom ? Math.max(inset.bottom - 13, space.s3) : space.s3;
+  const below = barBelow(inset.bottom);
   return (
     <OnGround ground="card">
       <View style={{ backgroundColor: c.page, paddingHorizontal: space.s4, paddingTop: space.s2, paddingBottom: below }}>
@@ -156,6 +156,12 @@ function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: strin
   );
 }
 
+// How far the capsule's foot sits above the bottom of the glass, and where New's circle is: the middle of the window, on
+// the capsule's middle line. New's close button (takeover.tsx) is drawn from this, so it lands exactly on the + it replaces.
+export const NEW_D = 48;
+export function barBelow(insetBottom: number) { return insetBottom ? Math.max(insetBottom - 13, space.s3) : space.s3; }
+export function newCenter(width: number, height: number, insetBottom: number) { return { x: width / 2, y: height - barBelow(insetBottom) - size.tabH / 2 }; }
+
 function NewSlot({ onPress }: { onPress: () => void }) {
   return (
     <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
@@ -169,7 +175,7 @@ function NewCircle({ pressed }: { pressed: boolean }) {
   const c = useColors();
   // Inside the capsule and centered in it, on the same middle line as every tab (Ben, 09:56: "the middle + circle isnt
   // aligned"). 48 across: the black that marks the one act that starts everything.
-  const d = 48;
+  const d = NEW_D;
   return (
     <View {...mark('new-button')} style={{ width: d, height: d, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: pressed ? c.inkPress : c.ink, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="add-01" tone="page" />

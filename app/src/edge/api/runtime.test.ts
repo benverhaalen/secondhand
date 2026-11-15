@@ -517,3 +517,47 @@ test('Mercari sold reads are registered but make no network call with live sites
     assert.equal(fetches, 0);
   } finally { globalThis.fetch = fetchBefore; }
 });
+
+test('runtime composes search harness, accounts and explicit unrouted sites; no token means no Apify port', async t => {
+  const { ports } = await import('./search.ts'); const previous = { ...ports };
+  t.after(() => Object.assign(ports, previous));
+  const liveSites = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (liveSites === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = liveSites; });
+  process.env.SECONDHAND_LIVE_SITES = '';
+  const r = createRuntime(memoryStore(), log());
+  assert.equal(ports.harness, r.harness); assert.equal(ports.accounts, r.accounts);
+  assert.equal(ports.routed('depop'), false); assert.equal(ports.routed('ebay'), false);
+  assert.equal(ports.apify, undefined, 'Apify was composed with no passed token');
+  createRuntime(memoryStore(), log(), { apifyToken: 'fixture-token' });
+  assert.ok(ports.apify, 'a passed token did not compose the Apify lane');
+});
+
+test('public clients route anonymous Depop and eBay reads with no live write site; runtime close closes them once', async t => {
+  const { ports } = await import('./search.ts'); const previous = { ...ports };
+  t.after(() => Object.assign(ports, previous));
+  const liveSites = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (liveSites === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = liveSites; });
+  process.env.SECONDHAND_LIVE_SITES = '';
+  let depopReads = 0, ebayReads = 0, closes = 0;
+  const publicClients = {
+    depop: { signed_in: false, doc: async () => { depopReads++; return { status: 200, html: readFileSync(new URL('../harness/sites/depop/fixtures/search.html', import.meta.url), 'utf8') }; },
+      json: async () => { assert.fail('public Depop search should read its page'); } },
+    ebay: { signed_in: false, page: async () => { ebayReads++; return { status: 200, html: readFileSync(new URL('../harness/sites/ebay/fixtures/page-search.html', import.meta.url), 'utf8') }; } },
+    close: async () => { closes++; },
+  };
+  const r = createRuntime(memoryStore(), log(), { publicClients });
+  assert.equal(ports.routed('depop'), true); assert.equal(ports.routed('ebay'), true);
+  for (const site of ['depop', 'ebay'] as const) {
+    const result = await r.harness.call(site, 'search', { q: 'levis 501 jeans' }); assert.ok(result.ok, JSON.stringify(result));
+  }
+  assert.equal(depopReads, 1); assert.equal(ebayReads, 1);
+  for (const [site, id] of [['depop', 'acc_dp1'], ['ebay', 'acc_eb1']] as const) {
+    const account = r.store.get('account', 'usr_8f2k', id)!;
+    r.store.put('account', { ...account, token_ref: `fixture/${site}` }); await r.vault.put(`fixture/${site}`, { cookies: [], origins: [] });
+    const result = await r.harness.call<{ dry: boolean }>(site, 'end', { account_id: id, person_id: 'usr_8f2k', external_id: '123456789012', offer_id: 'offer-demo', slug: 'seller-item', operation_id: `public-${site}`, dry: false });
+    assert.ok(result.ok, JSON.stringify(result)); assert.equal(result.data.dry, true, 'public reads enabled a live write');
+  }
+  assert.equal(depopReads, 1, 'a write reached Depop through the public client'); assert.equal(ebayReads, 1, 'a write reached eBay through the public client');
+  await Promise.all([r.close(), r.close()]); await r.close();
+  assert.equal(closes, 1, 'runtime close did not close the public client exactly once');
+});

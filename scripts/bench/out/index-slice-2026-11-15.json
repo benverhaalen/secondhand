@@ -1,0 +1,6041 @@
+{
+ "a11_by_kind": {
+  "clothes": {
+   "item_cells": 2,
+   "lower": 0.7640055395238604,
+   "measured_cells": 2,
+   "n_B": 328,
+   "n_O": 74,
+   "ratio": 2.392901116801782,
+   "ratio_lower": 2.1468583469597746,
+   "ratio_upper": 2.6671418553999757,
+   "se": 0.05535762586425395,
+   "state": "measured",
+   "tau_k": 0.7275703847678096,
+   "theta": 0.8725064862177981,
+   "upper": 0.9810074329117359,
+   "zero_width_cells": 0
+  },
+  "electronics": {
+   "item_cells": 3,
+   "lower": 0.7531935368480409,
+   "measured_cells": 3,
+   "n_B": 179,
+   "n_O": 192,
+   "ratio": 2.466320170998655,
+   "ratio_lower": 2.123771540974265,
+   "ratio_upper": 2.8641193596013736,
+   "se": 0.07629270082153396,
+   "state": "measured",
+   "tau_k": 0.24390206664088385,
+   "theta": 0.9027272304582474,
+   "upper": 1.052260924068454,
+   "zero_width_cells": 0
+  },
+  "furniture": {
+   "item_cells": 2,
+   "lower": 0.6144436667751942,
+   "measured_cells": 2,
+   "n_B": 50,
+   "n_O": 211,
+   "ratio": 2.6676879001059333,
+   "ratio_lower": 1.8486278603249526,
+   "ratio_upper": 3.849643773690965,
+   "se": 0.18712677319633678,
+   "state": "measured",
+   "tau_k": 0.6375273644115911,
+   "theta": 0.9812121422400143,
+   "upper": 1.3479806177048343,
+   "zero_width_cells": 0
+  },
+  "shoes": {
+   "item_cells": 5,
+   "lower": 0.08674851940535963,
+   "measured_cells": 5,
+   "n_B": 378,
+   "n_O": 126,
+   "ratio": 1.2364775464454958,
+   "ratio_lower": 1.0906223748651904,
+   "ratio_upper": 1.4018387648179826,
+   "se": 0.06403986196363415,
+   "state": "measured",
+   "tau_k": 0.26259099205357284,
+   "theta": 0.21226664885408256,
+   "upper": 0.3377847783028055,
+   "zero_width_cells": 0
+  },
+  "small_goods": {
+   "item_cells": 3,
+   "lower": 1.3315398737087276,
+   "measured_cells": 3,
+   "n_B": 63,
+   "n_O": 358,
+   "ratio": 4.206216258988346,
+   "ratio_lower": 3.7868702020006473,
+   "ratio_upper": 4.671999375112168,
+   "se": 0.05358347909834511,
+   "state": "measured",
+   "tau_k": 0.21200341930889532,
+   "theta": 1.436563492741484,
+   "upper": 1.5415871117742406,
+   "zero_width_cells": 0
+  }
+ },
+ "a11_by_kind_by_site": {
+  "clothes": {
+   "apify:ebay": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "apify:facebook": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "depop": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "ebay": {
+    "item_cells": 2,
+    "lower": 0.7640055395238604,
+    "measured_cells": 2,
+    "n_B": 328,
+    "n_O": 74,
+    "ratio": 2.392901116801782,
+    "ratio_lower": 2.1468583469597746,
+    "ratio_upper": 2.6671418553999757,
+    "se": 0.05535762586425395,
+    "state": "measured",
+    "tau_k": 0.7275703847678096,
+    "theta": 0.8725064862177981,
+    "upper": 0.9810074329117359,
+    "zero_width_cells": 0
+   },
+   "poshmark": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   }
+  },
+  "electronics": {
+   "depop": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "ebay": {
+    "item_cells": 2,
+    "lower": 0.7176837173647783,
+    "measured_cells": 2,
+    "n_B": 163,
+    "n_O": 175,
+    "ratio": 2.4105109895932926,
+    "ratio_lower": 2.0496800696069895,
+    "ratio_upper": 2.8348635072907578,
+    "se": 0.08273216149985951,
+    "state": "measured",
+    "tau_k": 0.2577839731660989,
+    "theta": 0.879838753904503,
+    "upper": 1.0419937904442276,
+    "zero_width_cells": 0
+   },
+   "poshmark": {
+    "item_cells": 1,
+    "lower": 0.6462296040133655,
+    "measured_cells": 1,
+    "n_B": 16,
+    "n_O": 17,
+    "ratio": 2.808988764044943,
+    "ratio_lower": 1.9083320800189811,
+    "ratio_upper": 4.134719506707793,
+    "se": 0.19724231842690862,
+    "state": "measured",
+    "tau_k": 0,
+    "theta": 1.0328245481301064,
+    "upper": 1.4194194922468473,
+    "zero_width_cells": 0
+   }
+  },
+  "furniture": {
+   "apify:ebay": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "apify:facebook": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "depop": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "ebay": {
+    "item_cells": 2,
+    "lower": 0.6144436667751942,
+    "measured_cells": 2,
+    "n_B": 50,
+    "n_O": 211,
+    "ratio": 2.6676879001059333,
+    "ratio_lower": 1.8486278603249526,
+    "ratio_upper": 3.849643773690965,
+    "se": 0.18712677319633678,
+    "state": "measured",
+    "tau_k": 0.6375273644115911,
+    "theta": 0.9812121422400143,
+    "upper": 1.3479806177048343,
+    "zero_width_cells": 0
+   },
+   "poshmark": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   }
+  },
+  "shoes": {
+   "depop": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "ebay": {
+    "item_cells": 4,
+    "lower": 0.1294069794408497,
+    "measured_cells": 4,
+    "n_B": 361,
+    "n_O": 104,
+    "ratio": 1.3015453184376227,
+    "ratio_lower": 1.138153234888204,
+    "ratio_upper": 1.4883937979698219,
+    "se": 0.06844147222701599,
+    "state": "measured",
+    "tau_k": 0.24006305559156305,
+    "theta": 0.26355226500580103,
+    "upper": 0.3976975505707524,
+    "zero_width_cells": 0
+   },
+   "poshmark": {
+    "item_cells": 1,
+    "lower": -0.5041681647323428,
+    "measured_cells": 1,
+    "n_B": 17,
+    "n_O": 22,
+    "ratio": 0.8620689655172427,
+    "ratio_lower": 0.6040078015046307,
+    "ratio_upper": 1.230386262324248,
+    "se": 0.18150416306840358,
+    "state": "measured",
+    "tau_k": 0,
+    "theta": -0.1484200051182718,
+    "upper": 0.20732815449579922,
+    "zero_width_cells": 0
+   }
+  },
+  "small_goods": {
+   "depop": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   },
+   "ebay": {
+    "item_cells": 3,
+    "lower": 1.3315398737087276,
+    "measured_cells": 3,
+    "n_B": 63,
+    "n_O": 358,
+    "ratio": 4.206216258988346,
+    "ratio_lower": 3.7868702020006473,
+    "ratio_upper": 4.671999375112168,
+    "se": 0.05358347909834511,
+    "state": "measured",
+    "tau_k": 0.21200341930889532,
+    "theta": 1.436563492741484,
+    "upper": 1.5415871117742406,
+    "zero_width_cells": 0
+   },
+   "poshmark": {
+    "item_cells": 0,
+    "measured_cells": 0,
+    "n_B": 0,
+    "n_O": 0,
+    "state": "not_known",
+    "zero_width_cells": 0
+   }
+  }
+ },
+ "benchmark_environment": {
+  "load_average": [
+   18.6533203125,
+   8.974609375,
+   5.720703125
+  ],
+  "logical_cpus": 16,
+  "platform": "darwin",
+  "python": "3.12.12"
+ },
+ "counts": {
+  "by_cell": {
+   "apify:ebay:unknown": 62,
+   "apify:facebook:unknown": 64,
+   "depop:unknown": 470,
+   "ebay:new": 3096,
+   "ebay:unknown": 36,
+   "ebay:used": 3195,
+   "poshmark:new": 140,
+   "poshmark:unknown": 86,
+   "poshmark:used": 474
+  },
+  "by_kind": {
+   "clothes": 2315,
+   "electronics": 618,
+   "furniture": 1372,
+   "shoes": 1886,
+   "small_goods": 1432
+  },
+  "by_site": {
+   "apify:ebay": 62,
+   "apify:facebook": 64,
+   "depop": 470,
+   "ebay": 6327,
+   "poshmark": 700
+  },
+  "display_only": 126,
+  "items": 20,
+  "may_model": 7497,
+  "rows": 7623
+ },
+ "input_sha256s": {
+  "manifest": "ce29f3b4303ed7a5a567e834a64ccced626499359daf348a02a8a1536fe0ccc6",
+  "match_spec": "b14ec2ae45092a90d8ba6e9fda7f6306a7340535212eff9f9c7ea8df45749aa4",
+  "rows": "7dd1a483be35dce02e0330c6d232ea4f67c95f45872fd54103defe8c14b00493",
+  "rows_2": "83cedf504f3792a61715bf341d593a78cfae67df8114c92152e79893169b522d"
+ },
+ "items": {
+  "m-clothes-1": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 10,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "n_B": 33,
+     "n_O": 2,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "critical_U": 1101,
+     "interval_method": "normal_mann_whitney_continuity_corrected",
+     "lower": -0.10069339155764467,
+     "n_B": 129,
+     "n_O": 23,
+     "ratio": 1.068832834544677,
+     "ratio_lower": 0.9042102288782149,
+     "ratio_upper": 1.25,
+     "se": 0.08261146501833021,
+     "separation_S": 0.007999432056208464,
+     "state": "measured",
+     "theta": 0.0665672442721128,
+     "upper": 0.2231435513142097
+    },
+    "poshmark:new": {
+     "n_B": 2,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 2,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 35,
+     "n_O": 7,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 48,
+     "ebay:new": 77,
+     "ebay:used": 403,
+     "poshmark:new": 2,
+     "poshmark:unknown": 2,
+     "poshmark:used": 72
+    },
+    "by_site": {
+     "depop": 48,
+     "ebay": 480,
+     "poshmark": 76
+    },
+    "grouped": 243,
+    "rows": 604
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 21,
+       "may_model_count": 21,
+       "median_ask_dollars": 50
+      },
+      "ebay:used": {
+       "count": 57,
+       "may_model_count": 57,
+       "median_ask_dollars": 27.99
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 50
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 35
+      },
+      "poshmark:used": {
+       "count": 21,
+       "may_model_count": 21,
+       "median_ask_dollars": 32
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 78,
+       "may_model_count": 78,
+       "median_ask_dollars": 31.98
+      },
+      "poshmark": {
+       "count": 23,
+       "may_model_count": 23,
+       "median_ask_dollars": 32
+      }
+     },
+     "count": 101,
+     "may_model_count": 101,
+     "median_ask_dollars": 31.99
+    },
+    "same_product": {
+     "by_cell": {
+      "depop:unknown": {
+       "count": 10,
+       "may_model_count": 10,
+       "median_ask_dollars": 24.875
+      },
+      "ebay:new": {
+       "count": 12,
+       "may_model_count": 12,
+       "median_ask_dollars": 61.75
+      },
+      "ebay:used": {
+       "count": 72,
+       "may_model_count": 72,
+       "median_ask_dollars": 27.47
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 70
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 40
+      },
+      "poshmark:used": {
+       "count": 14,
+       "may_model_count": 14,
+       "median_ask_dollars": 30.5
+      }
+     },
+     "by_site": {
+      "depop": {
+       "count": 10,
+       "may_model_count": 10,
+       "median_ask_dollars": 24.875
+      },
+      "ebay": {
+       "count": 84,
+       "may_model_count": 84,
+       "median_ask_dollars": 28.495
+      },
+      "poshmark": {
+       "count": 16,
+       "may_model_count": 16,
+       "median_ask_dollars": 32.5
+      }
+     },
+     "count": 110,
+     "may_model_count": 110,
+     "median_ask_dollars": 29
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 28.99
+      },
+      "ebay:used": {
+       "count": 23,
+       "may_model_count": 23,
+       "median_ask_dollars": 26
+      },
+      "poshmark:used": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 23
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 25,
+       "may_model_count": 25,
+       "median_ask_dollars": 26
+      },
+      "poshmark": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 23
+      }
+     },
+     "count": 32,
+     "may_model_count": 32,
+     "median_ask_dollars": 25
+    }
+   },
+   "item_missing_required": [],
+   "kind": "clothes",
+   "left_out": {
+    "accessory": 21,
+    "brand_excluded": 195,
+    "brand_rows_not_grouped": 79,
+    "disagrees": {
+     "material": 10
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "construction": 35,
+     "kind_type": 13,
+     "material": 142
+    },
+    "no_match_spec": 0,
+    "other_rows": 301,
+    "query_mismatch": 7,
+    "rows": 269,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 7,
+     "brand_rows_not_grouped": 14,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 19,
+      "kind_type": 12,
+      "material": 24
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 7,
+     "rows": 24,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 21,
+     "brand_excluded": 173,
+     "brand_rows_not_grouped": 65,
+     "disagrees": {
+      "material": 10
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 9,
+      "kind_type": 1,
+      "material": 105
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 0,
+     "rows": 215,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 15,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 7,
+      "material": 13
+     },
+     "no_match_spec": 0,
+     "other_rows": 37,
+     "query_mismatch": 0,
+     "rows": 30,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "levis",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 164,
+      "stated_rows": 199
+     },
+     "construction": {
+      "stated_rows": 143,
+      "support": {
+       "button_fly": 117,
+       "straight_leg": 76
+      }
+     },
+     "material": {
+      "rows": 87,
+      "stated_rows": 98
+     }
+    },
+    "construction": [
+     "button_fly",
+     "straight_leg"
+    ],
+    "decided_by": "code",
+    "kind_type": "jeans",
+    "material": "denim",
+    "size_class": "32x32",
+    "spans": {
+     "brand_norm": [
+      0,
+      6
+     ],
+     "brand_norm_field": "title",
+     "kind_type": [
+      24,
+      29
+     ],
+     "size_class": [
+      30,
+      35
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material",
+    "construction"
+   ]
+  },
+  "m-clothes-2": {
+   "a11": {
+    "apify:ebay:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "apify:facebook:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "depop:unknown": {
+     "n_B": 4,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "n_B": 15,
+     "n_O": 3,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "critical_U": 4170,
+     "interval_method": "normal_mann_whitney_continuity_corrected",
+     "lower": 1.3872948614534728,
+     "n_B": 199,
+     "n_O": 51,
+     "ratio": 4.61507692307693,
+     "ratio_lower": 4.004004004003999,
+     "ratio_upper": 5.3636363636363695,
+     "se": 0.07457839531986661,
+     "separation_S": 0.715481775002177,
+     "state": "measured",
+     "theta": 1.5293285358715778,
+     "upper": 1.67964217110735
+    },
+    "poshmark:new": {
+     "n_B": 2,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 1,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 20,
+     "n_O": 3,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "apify:ebay:unknown": 16,
+     "apify:facebook:unknown": 16,
+     "depop:unknown": 48,
+     "ebay:new": 39,
+     "ebay:used": 441,
+     "poshmark:new": 2,
+     "poshmark:unknown": 2,
+     "poshmark:used": 55
+    },
+    "by_site": {
+     "apify:ebay": 16,
+     "apify:facebook": 16,
+     "depop": 48,
+     "ebay": 480,
+     "poshmark": 59
+    },
+    "grouped": 307,
+    "rows": 619
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 2,
+       "may_model_count": 0,
+       "median_ask_dollars": 134
+      },
+      "ebay:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 349.99
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 499
+      },
+      "poshmark:used": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 302
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 2,
+       "may_model_count": 0,
+       "median_ask_dollars": 134
+      },
+      "ebay": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 349.99
+      },
+      "poshmark": {
+       "count": 5,
+       "may_model_count": 5,
+       "median_ask_dollars": 319
+      }
+     },
+     "count": 10,
+     "may_model_count": 8,
+     "median_ask_dollars": 307
+    },
+    "same_product": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 5,
+       "may_model_count": 0,
+       "median_ask_dollars": 299.99
+      },
+      "apify:facebook:unknown": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 85
+      },
+      "depop:unknown": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 275
+      },
+      "ebay:new": {
+       "count": 15,
+       "may_model_count": 15,
+       "median_ask_dollars": 299
+      },
+      "ebay:used": {
+       "count": 196,
+       "may_model_count": 196,
+       "median_ask_dollars": 299
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 450
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 210
+      },
+      "poshmark:used": {
+       "count": 16,
+       "may_model_count": 16,
+       "median_ask_dollars": 395
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 5,
+       "may_model_count": 0,
+       "median_ask_dollars": 299.99
+      },
+      "apify:facebook": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 85
+      },
+      "depop": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 275
+      },
+      "ebay": {
+       "count": 211,
+       "may_model_count": 211,
+       "median_ask_dollars": 299
+      },
+      "poshmark": {
+       "count": 18,
+       "may_model_count": 18,
+       "median_ask_dollars": 395
+      }
+     },
+     "count": 239,
+     "may_model_count": 233,
+     "median_ask_dollars": 299.98
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 90
+      },
+      "ebay:new": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 55
+      },
+      "ebay:used": {
+       "count": 51,
+       "may_model_count": 51,
+       "median_ask_dollars": 62.99
+      },
+      "poshmark:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 55
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 90
+      },
+      "ebay": {
+       "count": 54,
+       "may_model_count": 54,
+       "median_ask_dollars": 59.995
+      },
+      "poshmark": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 55
+      }
+     },
+     "count": 58,
+     "may_model_count": 57,
+     "median_ask_dollars": 59.995
+    }
+   },
+   "item_missing_required": [],
+   "kind": "clothes",
+   "left_out": {
+    "accessory": 1,
+    "brand_excluded": 219,
+    "brand_rows_not_grouped": 54,
+    "disagrees": {
+     "construction": 8
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "construction": 55,
+     "kind_type": 16,
+     "material": 26
+    },
+    "no_match_spec": 0,
+    "other_rows": 315,
+    "query_mismatch": 8,
+    "rows": 257,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "apify:ebay": {
+     "accessory": 0,
+     "brand_excluded": 7,
+     "brand_rows_not_grouped": 1,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 0,
+     "rows": 7,
+     "special_state": 0
+    },
+    "apify:facebook": {
+     "accessory": 0,
+     "brand_excluded": 7,
+     "brand_rows_not_grouped": 7,
+     "disagrees": {
+      "construction": 1
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 4,
+      "material": 2
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 0,
+     "rows": 8,
+     "special_state": 0
+    },
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 14,
+     "brand_rows_not_grouped": 20,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 20,
+      "kind_type": 14,
+      "material": 14
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 8,
+     "rows": 24,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 1,
+     "brand_excluded": 176,
+     "brand_rows_not_grouped": 25,
+     "disagrees": {
+      "construction": 3
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 14,
+      "kind_type": 2,
+      "material": 7
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 0,
+     "rows": 186,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 15,
+     "brand_rows_not_grouped": 1,
+     "disagrees": {
+      "construction": 4
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 17,
+      "material": 3
+     },
+     "no_match_spec": 0,
+     "other_rows": 35,
+     "query_mismatch": 0,
+     "rows": 32,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "carhartt",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 219,
+      "stated_rows": 236
+     },
+     "material": {
+      "rows": 58,
+      "stated_rows": 62
+     }
+    },
+    "construction": [
+     "blanket_lined"
+    ],
+    "decided_by": "code",
+    "kind_type": "jacket",
+    "material": "cotton_duck",
+    "size_class": "S",
+    "spans": {
+     "brand_norm": [
+      0,
+      8
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      94,
+      107
+     ],
+     "construction.blanket_lined": [
+      94,
+      107
+     ],
+     "kind_type": [
+      17,
+      23
+     ],
+     "size_class": [
+      72,
+      73
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material",
+    "construction"
+   ]
+  },
+  "m-clothes-3": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "n_B": 4,
+     "n_O": 1,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 158,
+     "n_O": 3,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 1,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 2,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 35,
+     "n_O": 0,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 48,
+     "ebay:new": 70,
+     "ebay:used": 410,
+     "poshmark:new": 2,
+     "poshmark:unknown": 3,
+     "poshmark:used": 74
+    },
+    "by_site": {
+     "depop": 48,
+     "ebay": 480,
+     "poshmark": 79
+    },
+    "grouped": 204,
+    "rows": 607
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:used": {
+       "count": 13,
+       "may_model_count": 13,
+       "median_ask_dollars": 49
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 13,
+       "may_model_count": 13,
+       "median_ask_dollars": 49
+      }
+     },
+     "count": 13,
+     "may_model_count": 13,
+     "median_ask_dollars": 49
+    },
+    "same_product": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 85.25
+      },
+      "ebay:used": {
+       "count": 158,
+       "may_model_count": 158,
+       "median_ask_dollars": 39.99
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 100
+      },
+      "poshmark:unknown": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 38.5
+      },
+      "poshmark:used": {
+       "count": 22,
+       "may_model_count": 22,
+       "median_ask_dollars": 49
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 162,
+       "may_model_count": 162,
+       "median_ask_dollars": 39.99
+      },
+      "poshmark": {
+       "count": 25,
+       "may_model_count": 25,
+       "median_ask_dollars": 48
+      }
+     },
+     "count": 187,
+     "may_model_count": 187,
+     "median_ask_dollars": 40.49
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 6
+      },
+      "ebay:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 20.24
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 19.12
+      }
+     },
+     "count": 4,
+     "may_model_count": 4,
+     "median_ask_dollars": 19.12
+    }
+   },
+   "item_missing_required": [],
+   "kind": "clothes",
+   "left_out": {
+    "accessory": 0,
+    "brand_excluded": 27,
+    "brand_rows_not_grouped": 102,
+    "disagrees": {
+     "kind_type": 270
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "construction": 14,
+     "kind_type": 30,
+     "material": 44
+    },
+    "no_match_spec": 0,
+    "other_rows": 305,
+    "query_mismatch": 40,
+    "rows": 301,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 3,
+     "brand_rows_not_grouped": 24,
+     "disagrees": {
+      "kind_type": 3
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 12,
+      "kind_type": 20,
+      "material": 19
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 18,
+     "rows": 24,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 0,
+     "brand_excluded": 19,
+     "brand_rows_not_grouped": 78,
+     "disagrees": {
+      "kind_type": 226
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 10,
+      "material": 24
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 21,
+     "rows": 236,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 5,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "kind_type": 41
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 2,
+      "material": 1
+     },
+     "no_match_spec": 0,
+     "other_rows": 41,
+     "query_mismatch": 1,
+     "rows": 41,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "patagonia",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 193,
+      "stated_rows": 198
+     },
+     "material": {
+      "rows": 159,
+      "stated_rows": 160
+     }
+    },
+    "construction": [
+     "quarter_zip"
+    ],
+    "decided_by": "code",
+    "kind_type": "sweater",
+    "material": "fleece",
+    "size_class": "S",
+    "spans": {
+     "brand_norm": [
+      0,
+      9
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      25,
+      36
+     ],
+     "construction.quarter_zip": [
+      25,
+      36
+     ],
+     "kind_type": [
+      17,
+      24
+     ],
+     "size_class": [
+      91,
+      92
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material",
+    "construction"
+   ]
+  },
+  "m-clothes-4": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 4,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 6,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 27,
+     "n_O": 0,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 48,
+     "ebay:new": 82,
+     "ebay:used": 287,
+     "poshmark:new": 5,
+     "poshmark:unknown": 7,
+     "poshmark:used": 56
+    },
+    "by_site": {
+     "depop": 48,
+     "ebay": 369,
+     "poshmark": 68
+    },
+    "grouped": 37,
+    "rows": 485
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 299
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 68
+      },
+      "poshmark:used": {
+       "count": 8,
+       "may_model_count": 8,
+       "median_ask_dollars": 41.5
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 10,
+       "may_model_count": 10,
+       "median_ask_dollars": 45.5
+      }
+     },
+     "count": 10,
+     "may_model_count": 10,
+     "median_ask_dollars": 45.5
+    },
+    "same_product": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 70
+      },
+      "poshmark:unknown": {
+       "count": 5,
+       "may_model_count": 5,
+       "median_ask_dollars": 62
+      },
+      "poshmark:used": {
+       "count": 19,
+       "may_model_count": 19,
+       "median_ask_dollars": 50
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 27,
+       "may_model_count": 27,
+       "median_ask_dollars": 59
+      }
+     },
+     "count": 27,
+     "may_model_count": 27,
+     "median_ask_dollars": 59
+    },
+    "similar_other_brand": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    }
+   },
+   "item_missing_required": [
+    "material"
+   ],
+   "kind": "clothes",
+   "left_out": {
+    "accessory": 0,
+    "brand_excluded": 203,
+    "brand_rows_not_grouped": 235,
+    "disagrees": {
+     "kind_type": 173
+    },
+    "item_record_missing": 8,
+    "missing": {
+     "construction": 58,
+     "kind_type": 23,
+     "material": 209
+    },
+    "no_match_spec": 0,
+    "other_rows": 213,
+    "query_mismatch": 2,
+    "rows": 213,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 23,
+     "brand_rows_not_grouped": 24,
+     "disagrees": {
+      "kind_type": 12
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 10,
+      "kind_type": 11,
+      "material": 24
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 1,
+     "rows": 24,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 0,
+     "brand_excluded": 149,
+     "brand_rows_not_grouped": 211,
+     "disagrees": {
+      "kind_type": 131
+     },
+     "item_record_missing": 8,
+     "missing": {
+      "construction": 43,
+      "kind_type": 12,
+      "material": 155
+     },
+     "no_match_spec": 0,
+     "other_rows": 158,
+     "query_mismatch": 1,
+     "rows": 158,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 31,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "kind_type": 30
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "construction": 5,
+      "material": 30
+     },
+     "no_match_spec": 0,
+     "other_rows": 31,
+     "query_mismatch": 0,
+     "rows": 31,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "lululemon",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 27,
+      "stated_rows": 31
+     }
+    },
+    "construction": [
+     "high_rise"
+    ],
+    "decided_by": "code",
+    "kind_type": "pants",
+    "material": null,
+    "size_class": "6",
+    "spans": {
+     "brand_norm": [
+      0,
+      9
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      16,
+      25
+     ],
+     "construction.high_rise": [
+      16,
+      25
+     ],
+     "kind_type": [
+      26,
+      30
+     ],
+     "size_class": [
+      40,
+      46
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material",
+    "construction"
+   ]
+  },
+  "m-electronics-1": {
+   "a11": {
+    "poshmark:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "brand_locked"
+    },
+    "poshmark:used": {
+     "n_B": 2,
+     "n_O": 0,
+     "state": "brand_locked"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "poshmark:unknown": 1,
+     "poshmark:used": 3
+    },
+    "by_site": {
+     "poshmark": 4
+    },
+    "grouped": 2,
+    "rows": 4
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:used": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 227
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 227
+      }
+     },
+     "count": 2,
+     "may_model_count": 2,
+     "median_ask_dollars": 227
+    },
+    "same_product": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    },
+    "similar_other_brand": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    }
+   },
+   "item_missing_required": [],
+   "kind": "electronics",
+   "left_out": {
+    "accessory": 0,
+    "brand_excluded": 0,
+    "brand_rows_not_grouped": 2,
+    "disagrees": {},
+    "item_record_missing": 0,
+    "missing": {},
+    "no_match_spec": 0,
+    "other_rows": 0,
+    "query_mismatch": 0,
+    "rows": 0,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 2,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 0,
+     "query_mismatch": 0,
+     "rows": 0,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "apple",
+    "capacity": null,
+    "condition_grade": null,
+    "consensus": {},
+    "construction": [],
+    "decided_by": "code",
+    "kind_type": null,
+    "material": null,
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      34,
+      39
+     ],
+     "brand_norm_field": "title"
+    }
+   },
+   "required_attributes": []
+  },
+  "m-electronics-2": {
+   "a11": {
+    "poshmark:new": {
+     "n_B": 2,
+     "n_O": 0,
+     "state": "brand_locked"
+    },
+    "poshmark:unknown": {
+     "n_B": 8,
+     "n_O": 0,
+     "state": "brand_locked"
+    },
+    "poshmark:used": {
+     "n_B": 8,
+     "n_O": 0,
+     "state": "brand_locked"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "poshmark:new": 2,
+     "poshmark:unknown": 8,
+     "poshmark:used": 12
+    },
+    "by_site": {
+     "poshmark": 22
+    },
+    "grouped": 18,
+    "rows": 22
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 470
+      },
+      "poshmark:unknown": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 341.5
+      },
+      "poshmark:used": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 200
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 350
+      }
+     },
+     "count": 7,
+     "may_model_count": 7,
+     "median_ask_dollars": 350
+    },
+    "same_product": {
+     "by_cell": {
+      "poshmark:unknown": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 270
+      },
+      "poshmark:used": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 266
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 11,
+       "may_model_count": 11,
+       "median_ask_dollars": 266
+      }
+     },
+     "count": 11,
+     "may_model_count": 11,
+     "median_ask_dollars": 266
+    },
+    "similar_other_brand": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    }
+   },
+   "item_missing_required": [],
+   "kind": "electronics",
+   "left_out": {
+    "accessory": 4,
+    "brand_excluded": 0,
+    "brand_rows_not_grouped": 0,
+    "disagrees": {},
+    "item_record_missing": 0,
+    "missing": {},
+    "no_match_spec": 0,
+    "other_rows": 0,
+    "query_mismatch": 0,
+    "rows": 0,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "poshmark": {
+     "accessory": 4,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 0,
+     "query_mismatch": 0,
+     "rows": 0,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "nintendo",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 8,
+      "stated_rows": 10
+     }
+    },
+    "construction": [],
+    "decided_by": "code",
+    "kind_type": null,
+    "material": null,
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      8
+     ],
+     "brand_norm_field": "title"
+    }
+   },
+   "required_attributes": []
+  },
+  "m-electronics-3": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 2,
+     "n_O": 1,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "critical_U": 630,
+     "interval_method": "exact_mann_whitney",
+     "lower": 1.1463140151940863,
+     "n_B": 19,
+     "n_O": 93,
+     "ratio": 7.0004000800160044,
+     "ratio_lower": 3.146573286643322,
+     "ratio_upper": 12.506253126563287,
+     "se": 0.3520190699377173,
+     "separation_S": 0.12654608775402446,
+     "state": "measured",
+     "theta": 1.9459673017100698,
+     "upper": 2.526228769349938
+    },
+    "ebay:unknown": {
+     "n_B": 15,
+     "n_O": 3,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "critical_U": 4977,
+     "interval_method": "normal_mann_whitney_continuity_corrected",
+     "lower": 0.6628091300471315,
+     "n_B": 144,
+     "n_O": 82,
+     "ratio": 2.264848837107557,
+     "ratio_lower": 1.9402350587646924,
+     "ratio_upper": 2.7086893102729745,
+     "se": 0.08511625982210265,
+     "separation_S": 0.3762648297483603,
+     "state": "measured",
+     "theta": 0.8175080181240189,
+     "upper": 0.9964648685497739
+    },
+    "poshmark:new": {
+     "n_B": 5,
+     "n_O": 10,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 16,
+     "n_O": 1,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "critical_U": 81,
+     "interval_method": "exact_mann_whitney",
+     "lower": 0.6931471805599454,
+     "n_B": 16,
+     "n_O": 17,
+     "ratio": 2.808988764044943,
+     "ratio_lower": 2,
+     "ratio_upper": 4.333333333333334,
+     "se": 0.19724231842690862,
+     "separation_S": 0.4839597514590134,
+     "state": "measured",
+     "theta": 1.0328245481301064,
+     "upper": 1.4663370687934272
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 28,
+     "ebay:new": 151,
+     "ebay:unknown": 22,
+     "ebay:used": 304,
+     "poshmark:new": 19,
+     "poshmark:unknown": 23,
+     "poshmark:used": 39
+    },
+    "by_site": {
+     "depop": 28,
+     "ebay": 477,
+     "poshmark": 81
+    },
+    "grouped": 424,
+    "rows": 586
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 320
+      },
+      "poshmark:unknown": {
+       "count": 8,
+       "may_model_count": 8,
+       "median_ask_dollars": 239.5
+      },
+      "poshmark:used": {
+       "count": 8,
+       "may_model_count": 8,
+       "median_ask_dollars": 204.5
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 19,
+       "may_model_count": 19,
+       "median_ask_dollars": 249
+      }
+     },
+     "count": 19,
+     "may_model_count": 19,
+     "median_ask_dollars": 249
+    },
+    "same_product": {
+     "by_cell": {
+      "depop:unknown": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 21.5
+      },
+      "ebay:new": {
+       "count": 19,
+       "may_model_count": 19,
+       "median_ask_dollars": 249.99
+      },
+      "ebay:unknown": {
+       "count": 15,
+       "may_model_count": 15,
+       "median_ask_dollars": 55.99
+      },
+      "ebay:used": {
+       "count": 144,
+       "may_model_count": 144,
+       "median_ask_dollars": 139.99
+      },
+      "poshmark:new": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 274
+      },
+      "poshmark:unknown": {
+       "count": 8,
+       "may_model_count": 8,
+       "median_ask_dollars": 275
+      },
+      "poshmark:used": {
+       "count": 8,
+       "may_model_count": 8,
+       "median_ask_dollars": 177.5
+      }
+     },
+     "by_site": {
+      "depop": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 21.5
+      },
+      "ebay": {
+       "count": 178,
+       "may_model_count": 178,
+       "median_ask_dollars": 139.645
+      },
+      "poshmark": {
+       "count": 18,
+       "may_model_count": 18,
+       "median_ask_dollars": 250
+      }
+     },
+     "count": 198,
+     "may_model_count": 198,
+     "median_ask_dollars": 145.945
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "depop:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 40
+      },
+      "ebay:new": {
+       "count": 93,
+       "may_model_count": 93,
+       "median_ask_dollars": 20.99
+      },
+      "ebay:unknown": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 39.99
+      },
+      "ebay:used": {
+       "count": 82,
+       "may_model_count": 82,
+       "median_ask_dollars": 61.355
+      },
+      "poshmark:new": {
+       "count": 10,
+       "may_model_count": 10,
+       "median_ask_dollars": 129.5
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 31
+      },
+      "poshmark:used": {
+       "count": 17,
+       "may_model_count": 17,
+       "median_ask_dollars": 66
+      }
+     },
+     "by_site": {
+      "depop": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 40
+      },
+      "ebay": {
+       "count": 178,
+       "may_model_count": 178,
+       "median_ask_dollars": 39.99
+      },
+      "poshmark": {
+       "count": 28,
+       "may_model_count": 28,
+       "median_ask_dollars": 70.5
+      }
+     },
+     "count": 207,
+     "may_model_count": 207,
+     "median_ask_dollars": 45
+    }
+   },
+   "item_missing_required": [],
+   "kind": "electronics",
+   "left_out": {
+    "accessory": 30,
+    "brand_excluded": 59,
+    "brand_rows_not_grouped": 38,
+    "disagrees": {},
+    "item_record_missing": 0,
+    "missing": {},
+    "no_match_spec": 0,
+    "other_rows": 303,
+    "query_mismatch": 35,
+    "rows": 96,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 1,
+     "brand_excluded": 2,
+     "brand_rows_not_grouped": 2,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 20,
+     "rows": 23,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 28,
+     "brand_excluded": 48,
+     "brand_rows_not_grouped": 35,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 237,
+     "query_mismatch": 10,
+     "rows": 59,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 1,
+     "brand_excluded": 9,
+     "brand_rows_not_grouped": 1,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 42,
+     "query_mismatch": 5,
+     "rows": 14,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "sony",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 160,
+      "stated_rows": 184
+     },
+     "construction": {
+      "stated_rows": 190,
+      "support": {
+       "noise_cancelling": 131,
+       "over_ear": 122,
+       "wireless": 173
+      }
+     }
+    },
+    "construction": [
+     "noise_cancelling",
+     "over_ear",
+     "wireless"
+    ],
+    "decided_by": "code",
+    "kind_type": "headphones",
+    "material": null,
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      4
+     ],
+     "brand_norm_field": "title",
+     "kind_type": [
+      16,
+      26
+     ]
+    }
+   },
+   "required_attributes": []
+  },
+  "m-electronics-4": {
+   "a11": {
+    "poshmark:unknown": {
+     "n_B": 1,
+     "n_O": 0,
+     "state": "brand_locked"
+    },
+    "poshmark:used": {
+     "n_B": 3,
+     "n_O": 0,
+     "state": "brand_locked"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "poshmark:unknown": 2,
+     "poshmark:used": 4
+    },
+    "by_site": {
+     "poshmark": 6
+    },
+    "grouped": 4,
+    "rows": 6
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:used": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 98.5
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 98.5
+      }
+     },
+     "count": 2,
+     "may_model_count": 2,
+     "median_ask_dollars": 98.5
+    },
+    "same_product": {
+     "by_cell": {
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 441
+      },
+      "poshmark:used": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 112
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 276.5
+      }
+     },
+     "count": 2,
+     "may_model_count": 2,
+     "median_ask_dollars": 276.5
+    },
+    "similar_other_brand": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    }
+   },
+   "item_missing_required": [],
+   "kind": "electronics",
+   "left_out": {
+    "accessory": 0,
+    "brand_excluded": 0,
+    "brand_rows_not_grouped": 2,
+    "disagrees": {},
+    "item_record_missing": 0,
+    "missing": {},
+    "no_match_spec": 0,
+    "other_rows": 0,
+    "query_mismatch": 0,
+    "rows": 0,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 2,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 0,
+     "query_mismatch": 0,
+     "rows": 0,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "amazon",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 3,
+      "stated_rows": 3
+     }
+    },
+    "construction": [],
+    "decided_by": "code",
+    "kind_type": null,
+    "material": null,
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      38,
+      44
+     ],
+     "brand_norm_field": "title"
+    }
+   },
+   "required_attributes": []
+  },
+  "m-furniture-1": {
+   "a11": {
+    "apify:ebay:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "apify:facebook:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 2,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "critical_U": 1200,
+     "interval_method": "normal_mann_whitney_continuity_corrected",
+     "lower": -0.3170586387016563,
+     "n_B": 17,
+     "n_O": 198,
+     "ratio": 1.2941104326019814,
+     "ratio_lower": 0.728288048008002,
+     "ratio_upper": 2.208640088901236,
+     "se": 0.2830192909287439,
+     "separation_S": 0.01066210855153817,
+     "state": "measured",
+     "theta": 0.25782353447900075,
+     "upper": 0.7923769817390198
+    },
+    "ebay:unknown": {
+     "n_B": 1,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 31,
+     "n_O": 1,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 0,
+     "n_O": 1,
+     "reason": "unknown condition",
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "apify:ebay:unknown": 16,
+     "apify:facebook:unknown": 16,
+     "depop:unknown": 11,
+     "ebay:new": 281,
+     "ebay:unknown": 1,
+     "ebay:used": 54,
+     "poshmark:new": 3,
+     "poshmark:unknown": 2
+    },
+    "by_site": {
+     "apify:ebay": 16,
+     "apify:facebook": 16,
+     "depop": 11,
+     "ebay": 336,
+     "poshmark": 5
+    },
+    "grouped": 273,
+    "rows": 384
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    },
+    "same_product": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 7,
+       "may_model_count": 0,
+       "median_ask_dollars": 599.11
+      },
+      "apify:facebook:unknown": {
+       "count": 5,
+       "may_model_count": 0,
+       "median_ask_dollars": 400
+      },
+      "ebay:new": {
+       "count": 17,
+       "may_model_count": 17,
+       "median_ask_dollars": 159
+      },
+      "ebay:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 249.99
+      },
+      "ebay:used": {
+       "count": 31,
+       "may_model_count": 31,
+       "median_ask_dollars": 500
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 7,
+       "may_model_count": 0,
+       "median_ask_dollars": 599.11
+      },
+      "apify:facebook": {
+       "count": 5,
+       "may_model_count": 0,
+       "median_ask_dollars": 400
+      },
+      "ebay": {
+       "count": 49,
+       "may_model_count": 49,
+       "median_ask_dollars": 459.96
+      }
+     },
+     "count": 61,
+     "may_model_count": 49,
+     "median_ask_dollars": 469.97
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 4,
+       "may_model_count": 0,
+       "median_ask_dollars": 113.745
+      },
+      "apify:facebook:unknown": {
+       "count": 6,
+       "may_model_count": 0,
+       "median_ask_dollars": 56
+      },
+      "depop:unknown": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 51.5
+      },
+      "ebay:new": {
+       "count": 198,
+       "may_model_count": 198,
+       "median_ask_dollars": 119.715
+      },
+      "ebay:used": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 329
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 198
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 4,
+       "may_model_count": 0,
+       "median_ask_dollars": 113.745
+      },
+      "apify:facebook": {
+       "count": 6,
+       "may_model_count": 0,
+       "median_ask_dollars": 56
+      },
+      "depop": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 51.5
+      },
+      "ebay": {
+       "count": 199,
+       "may_model_count": 199,
+       "median_ask_dollars": 119.74
+      },
+      "poshmark": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 198
+      }
+     },
+     "count": 212,
+     "may_model_count": 202,
+     "median_ask_dollars": 118.14
+    }
+   },
+   "item_missing_required": [],
+   "kind": "furniture",
+   "left_out": {
+    "accessory": 18,
+    "brand_excluded": 0,
+    "brand_rows_not_grouped": 34,
+    "disagrees": {
+     "material": 12
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 20,
+     "material": 34
+    },
+    "no_match_spec": 0,
+    "other_rows": 272,
+    "query_mismatch": 48,
+    "rows": 60,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "apify:ebay": {
+     "accessory": 1,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "material": 3
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 1,
+      "material": 1
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 4,
+     "rows": 4,
+     "special_state": 0
+    },
+    "apify:facebook": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 3,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "material": 2
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 2,
+     "rows": 2,
+     "special_state": 0
+    },
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "material": 1
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 5,
+      "material": 6
+     },
+     "no_match_spec": 0,
+     "other_rows": 11,
+     "query_mismatch": 9,
+     "rows": 9,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 16,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 31,
+     "disagrees": {
+      "material": 8
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 14,
+      "material": 22
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 30,
+     "rows": 41,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 1,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "material": 3
+     },
+     "no_match_spec": 0,
+     "other_rows": 5,
+     "query_mismatch": 3,
+     "rows": 4,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "herman_miller",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 31,
+      "stated_rows": 48
+     },
+     "kind_type": {
+      "rows": 30,
+      "stated_rows": 30
+     },
+     "material": {
+      "rows": 16,
+      "stated_rows": 16
+     }
+    },
+    "construction": [
+     "adjustable_arms"
+    ],
+    "decided_by": "code",
+    "kind_type": "task_chair",
+    "material": "mesh",
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      13
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      80,
+      101
+     ],
+     "construction.adjustable_arms": [
+      80,
+      101
+     ]
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-furniture-2": {
+   "a11": {
+    "apify:ebay:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "apify:facebook:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "critical_U": 133,
+     "interval_method": "exact_mann_whitney",
+     "lower": 0.9575335023039369,
+     "n_B": 33,
+     "n_O": 13,
+     "ratio": 4.678929765886291,
+     "ratio_lower": 2.6052626678336654,
+     "ratio_upper": 6.92602987193135,
+     "se": 0.2494268511939976,
+     "separation_S": 0.1066816807206475,
+     "state": "measured",
+     "theta": 1.5430694012747956,
+     "upper": 1.9352867589844074
+    },
+    "ebay:used": {
+     "n_B": 33,
+     "n_O": 3,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "apify:ebay:unknown": 16,
+     "apify:facebook:unknown": 16,
+     "depop:unknown": 3,
+     "ebay:new": 292,
+     "ebay:used": 44,
+     "poshmark:new": 2,
+     "poshmark:unknown": 1,
+     "poshmark:used": 1
+    },
+    "by_site": {
+     "apify:ebay": 16,
+     "apify:facebook": 16,
+     "depop": 3,
+     "ebay": 336,
+     "poshmark": 4
+    },
+    "grouped": 94,
+    "rows": 375
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    },
+    "same_product": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 4,
+       "may_model_count": 0,
+       "median_ask_dollars": 704.555
+      },
+      "apify:facebook:unknown": {
+       "count": 7,
+       "may_model_count": 0,
+       "median_ask_dollars": 350
+      },
+      "ebay:new": {
+       "count": 33,
+       "may_model_count": 33,
+       "median_ask_dollars": 1498
+      },
+      "ebay:used": {
+       "count": 33,
+       "may_model_count": 33,
+       "median_ask_dollars": 829
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 4,
+       "may_model_count": 0,
+       "median_ask_dollars": 704.555
+      },
+      "apify:facebook": {
+       "count": 7,
+       "may_model_count": 0,
+       "median_ask_dollars": 350
+      },
+      "ebay": {
+       "count": 66,
+       "may_model_count": 66,
+       "median_ask_dollars": 899
+      }
+     },
+     "count": 77,
+     "may_model_count": 66,
+     "median_ask_dollars": 829
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 45
+      },
+      "ebay:new": {
+       "count": 13,
+       "may_model_count": 13,
+       "median_ask_dollars": 299
+      },
+      "ebay:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 45
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 45
+      },
+      "ebay": {
+       "count": 16,
+       "may_model_count": 16,
+       "median_ask_dollars": 201.99
+      }
+     },
+     "count": 17,
+     "may_model_count": 16,
+     "median_ask_dollars": 152.99
+    }
+   },
+   "item_missing_required": [],
+   "kind": "furniture",
+   "left_out": {
+    "accessory": 29,
+    "brand_excluded": 1,
+    "brand_rows_not_grouped": 6,
+    "disagrees": {
+     "material": 111
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 45,
+     "material": 128
+    },
+    "no_match_spec": 0,
+    "other_rows": 263,
+    "query_mismatch": 6,
+    "rows": 246,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "apify:ebay": {
+     "accessory": 4,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "material": 6
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "material": 1
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 0,
+     "rows": 7,
+     "special_state": 0
+    },
+    "apify:facebook": {
+     "accessory": 0,
+     "brand_excluded": 1,
+     "brand_rows_not_grouped": 1,
+     "disagrees": {
+      "material": 3
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 3,
+      "material": 4
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 0,
+     "rows": 8,
+     "special_state": 0
+    },
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 3,
+      "material": 3
+     },
+     "no_match_spec": 0,
+     "other_rows": 3,
+     "query_mismatch": 2,
+     "rows": 3,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 25,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 5,
+     "disagrees": {
+      "material": 102
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 39,
+      "material": 116
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 4,
+     "rows": 224,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "material": 4
+     },
+     "no_match_spec": 0,
+     "other_rows": 4,
+     "query_mismatch": 0,
+     "rows": 4,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "steelcase",
+    "capacity": null,
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 33,
+      "stated_rows": 66
+     }
+    },
+    "construction": [
+     "adjustable_arms"
+    ],
+    "decided_by": "code",
+    "kind_type": "task_chair",
+    "material": "fabric",
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      9
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      69,
+      84
+     ],
+     "construction.adjustable_arms": [
+      69,
+      84
+     ],
+     "kind_type": [
+      18,
+      30
+     ],
+     "material": [
+      61,
+      67
+     ]
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-furniture-3": {
+   "a11": {
+    "ebay:new": {
+     "n_B": 31,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 17,
+     "n_O": 0,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "ebay:new": 102,
+     "ebay:used": 59
+    },
+    "by_site": {
+     "ebay": 161
+    },
+    "grouped": 48,
+    "rows": 161
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    },
+    "same_product": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 31,
+       "may_model_count": 31,
+       "median_ask_dollars": 122.47
+      },
+      "ebay:used": {
+       "count": 17,
+       "may_model_count": 17,
+       "median_ask_dollars": 84.9
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 48,
+       "may_model_count": 48,
+       "median_ask_dollars": 105
+      }
+     },
+     "count": 48,
+     "may_model_count": 48,
+     "median_ask_dollars": 105
+    },
+    "similar_other_brand": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    }
+   },
+   "item_missing_required": [],
+   "kind": "furniture",
+   "left_out": {
+    "accessory": 48,
+    "brand_excluded": 0,
+    "brand_rows_not_grouped": 45,
+    "disagrees": {
+     "material": 6
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 5,
+     "material": 14
+    },
+    "no_match_spec": 0,
+    "other_rows": 20,
+    "query_mismatch": 0,
+    "rows": 20,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "ebay": {
+     "accessory": 48,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 45,
+     "disagrees": {
+      "material": 6
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 5,
+      "material": 14
+     },
+     "no_match_spec": 0,
+     "other_rows": 20,
+     "query_mismatch": 0,
+     "rows": 20,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "ikea",
+    "capacity": null,
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 31,
+      "stated_rows": 48
+     }
+    },
+    "construction": [],
+    "decided_by": "code",
+    "kind_type": "armchair",
+    "material": "birch",
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      4
+     ],
+     "brand_norm_field": "title",
+     "kind_type": [
+      11,
+      19
+     ],
+     "material": [
+      20,
+      25
+     ]
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-furniture-4": {
+   "a11": {
+    "apify:ebay:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "apify:facebook:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "n_B": 30,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 9,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "apify:ebay:unknown": 14,
+     "apify:facebook:unknown": 16,
+     "depop:unknown": 8,
+     "ebay:new": 376,
+     "ebay:used": 34,
+     "poshmark:new": 1,
+     "poshmark:unknown": 3
+    },
+    "by_site": {
+     "apify:ebay": 14,
+     "apify:facebook": 16,
+     "depop": 8,
+     "ebay": 410,
+     "poshmark": 4
+    },
+    "grouped": 42,
+    "rows": 452
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    },
+    "same_product": {
+     "by_cell": {
+      "apify:ebay:unknown": {
+       "count": 2,
+       "may_model_count": 0,
+       "median_ask_dollars": 69.995
+      },
+      "apify:facebook:unknown": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 40
+      },
+      "ebay:new": {
+       "count": 30,
+       "may_model_count": 30,
+       "median_ask_dollars": 127.665
+      },
+      "ebay:used": {
+       "count": 9,
+       "may_model_count": 9,
+       "median_ask_dollars": 40
+      }
+     },
+     "by_site": {
+      "apify:ebay": {
+       "count": 2,
+       "may_model_count": 0,
+       "median_ask_dollars": 69.995
+      },
+      "apify:facebook": {
+       "count": 1,
+       "may_model_count": 0,
+       "median_ask_dollars": 40
+      },
+      "ebay": {
+       "count": 39,
+       "may_model_count": 39,
+       "median_ask_dollars": 109.91
+      }
+     },
+     "count": 42,
+     "may_model_count": 39,
+     "median_ask_dollars": 99.955
+    },
+    "similar_other_brand": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    }
+   },
+   "item_missing_required": [
+    "material"
+   ],
+   "kind": "furniture",
+   "left_out": {
+    "accessory": 7,
+    "brand_excluded": 3,
+    "brand_rows_not_grouped": 141,
+    "disagrees": {},
+    "item_record_missing": 252,
+    "missing": {
+     "kind_type": 15,
+     "material": 207
+    },
+    "no_match_spec": 0,
+    "other_rows": 268,
+    "query_mismatch": 7,
+    "rows": 268,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "apify:ebay": {
+     "accessory": 2,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 4,
+     "disagrees": {},
+     "item_record_missing": 6,
+     "missing": {
+      "material": 4
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 0,
+     "rows": 8,
+     "special_state": 0
+    },
+    "apify:facebook": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 7,
+     "disagrees": {},
+     "item_record_missing": 8,
+     "missing": {
+      "material": 8
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 0,
+     "rows": 8,
+     "special_state": 0
+    },
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {},
+     "item_record_missing": 1,
+     "missing": {
+      "kind_type": 7,
+      "material": 8
+     },
+     "no_match_spec": 0,
+     "other_rows": 8,
+     "query_mismatch": 7,
+     "rows": 8,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 5,
+     "brand_excluded": 3,
+     "brand_rows_not_grouped": 130,
+     "disagrees": {},
+     "item_record_missing": 233,
+     "missing": {
+      "kind_type": 7,
+      "material": 184
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 0,
+     "rows": 240,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {},
+     "item_record_missing": 4,
+     "missing": {
+      "kind_type": 1,
+      "material": 3
+     },
+     "no_match_spec": 0,
+     "other_rows": 4,
+     "query_mismatch": 0,
+     "rows": 4,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "ikea",
+    "capacity": null,
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 30,
+      "stated_rows": 39
+     }
+    },
+    "construction": [
+     "cube_count:8"
+    ],
+    "decided_by": "code",
+    "kind_type": "shelf_unit",
+    "material": null,
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      4
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      12,
+      15
+     ],
+     "construction.cube_count:8": [
+      12,
+      15
+     ],
+     "kind_type": [
+      16,
+      21
+     ]
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-shoes-1": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 7,
+     "n_O": 1,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "critical_U": 1742,
+     "interval_method": "normal_mann_whitney_continuity_corrected",
+     "lower": -0.029379770649608616,
+     "n_B": 202,
+     "n_O": 23,
+     "ratio": 1.250031253906739,
+     "ratio_lower": 0.9710476190476192,
+     "ratio_upper": 1.7352073572791953,
+     "se": 0.1480884416298789,
+     "separation_S": 0.04615004072730116,
+     "state": "measured",
+     "theta": 0.22316855412702807,
+     "upper": 0.5511269205395166
+    },
+    "ebay:used": {
+     "critical_U": 653,
+     "interval_method": "exact_mann_whitney",
+     "lower": -0.17226701042300085,
+     "n_B": 33,
+     "n_O": 53,
+     "ratio": 1.1009009009008994,
+     "ratio_lower": 0.8417543859649129,
+     "ratio_upper": 1.4975000000000003,
+     "se": 0.14695511771185418,
+     "separation_S": 0.007108808659492383,
+     "state": "measured",
+     "theta": 0.09612884542515943,
+     "upper": 0.40379705100746754
+    },
+    "poshmark:new": {
+     "n_B": 1,
+     "n_O": 2,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 5,
+     "n_O": 1,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "critical_U": 117,
+     "interval_method": "exact_mann_whitney",
+     "lower": -0.5415972824327433,
+     "n_B": 17,
+     "n_O": 22,
+     "ratio": 0.8620689655172427,
+     "ratio_lower": 0.5818181818181825,
+     "ratio_upper": 1.1851851851851867,
+     "se": 0.18150416306840358,
+     "separation_S": 0.05452246157334765,
+     "state": "measured",
+     "theta": -0.1484200051182718,
+     "upper": 0.16989903679539875
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 48,
+     "ebay:new": 347,
+     "ebay:used": 133,
+     "poshmark:new": 6,
+     "poshmark:unknown": 6,
+     "poshmark:used": 49
+    },
+    "by_site": {
+     "depop": 48,
+     "ebay": 480,
+     "poshmark": 61
+    },
+    "grouped": 367,
+    "rows": 589
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 70,
+       "may_model_count": 70,
+       "median_ask_dollars": 100
+      },
+      "ebay:used": {
+       "count": 24,
+       "may_model_count": 24,
+       "median_ask_dollars": 48.62
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 99
+      },
+      "poshmark:unknown": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 62
+      },
+      "poshmark:used": {
+       "count": 16,
+       "may_model_count": 16,
+       "median_ask_dollars": 50
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 94,
+       "may_model_count": 94,
+       "median_ask_dollars": 96.995
+      },
+      "poshmark": {
+       "count": 19,
+       "may_model_count": 19,
+       "median_ask_dollars": 50
+      }
+     },
+     "count": 113,
+     "may_model_count": 113,
+     "median_ask_dollars": 85.49
+    },
+    "same_product": {
+     "by_cell": {
+      "depop:unknown": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 54.99
+      },
+      "ebay:new": {
+       "count": 132,
+       "may_model_count": 132,
+       "median_ask_dollars": 110.095
+      },
+      "ebay:used": {
+       "count": 9,
+       "may_model_count": 9,
+       "median_ask_dollars": 42
+      },
+      "poshmark:unknown": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 39
+      },
+      "poshmark:used": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 18
+      }
+     },
+     "by_site": {
+      "depop": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 54.99
+      },
+      "ebay": {
+       "count": 141,
+       "may_model_count": 141,
+       "median_ask_dollars": 109.99
+      },
+      "poshmark": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 37.5
+      }
+     },
+     "count": 152,
+     "may_model_count": 152,
+     "median_ask_dollars": 108.995
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "depop:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 206.1
+      },
+      "ebay:new": {
+       "count": 23,
+       "may_model_count": 23,
+       "median_ask_dollars": 84.99
+      },
+      "ebay:used": {
+       "count": 53,
+       "may_model_count": 53,
+       "median_ask_dollars": 44
+      },
+      "poshmark:new": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 89.5
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 55
+      },
+      "poshmark:used": {
+       "count": 22,
+       "may_model_count": 22,
+       "median_ask_dollars": 52.5
+      }
+     },
+     "by_site": {
+      "depop": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 206.1
+      },
+      "ebay": {
+       "count": 76,
+       "may_model_count": 76,
+       "median_ask_dollars": 48.645
+      },
+      "poshmark": {
+       "count": 25,
+       "may_model_count": 25,
+       "median_ask_dollars": 55
+      }
+     },
+     "count": 102,
+     "may_model_count": 102,
+     "median_ask_dollars": 49.475
+    }
+   },
+   "item_missing_required": [],
+   "kind": "shoes",
+   "left_out": {
+    "accessory": 0,
+    "brand_excluded": 107,
+    "brand_rows_not_grouped": 22,
+    "disagrees": {
+     "material": 7
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 110,
+     "material": 125
+    },
+    "no_match_spec": 0,
+    "other_rows": 302,
+    "query_mismatch": 62,
+    "rows": 200,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 9,
+     "brand_rows_not_grouped": 17,
+     "disagrees": {
+      "material": 1
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 19,
+      "material": 21
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 12,
+     "rows": 23,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 0,
+     "brand_excluded": 91,
+     "brand_rows_not_grouped": 5,
+     "disagrees": {
+      "material": 4
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 89,
+      "material": 99
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 48,
+     "rows": 164,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 7,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "material": 2
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 2,
+      "material": 5
+     },
+     "no_match_spec": 0,
+     "other_rows": 38,
+     "query_mismatch": 2,
+     "rows": 13,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "nike",
+    "capacity": null,
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 203,
+      "stated_rows": 253
+     },
+     "construction": {
+      "stated_rows": 17,
+      "support": {
+       "low_top": 17
+      }
+     },
+     "kind_type": {
+      "rows": 61,
+      "stated_rows": 61
+     },
+     "material": {
+      "rows": 18,
+      "stated_rows": 19
+     }
+    },
+    "construction": [
+     "low_top"
+    ],
+    "decided_by": "code",
+    "kind_type": "sneaker",
+    "material": "leather",
+    "size_class": "us_10",
+    "spans": {
+     "brand_norm": [
+      0,
+      4
+     ],
+     "brand_norm_field": "title",
+     "size_class": [
+      75,
+      80
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-shoes-2": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "n_B": 0,
+     "n_O": 5,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 1,
+     "n_O": 6,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 5,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 2,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 5,
+     "n_O": 6,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 48,
+     "ebay:new": 156,
+     "ebay:used": 248,
+     "poshmark:new": 8,
+     "poshmark:unknown": 2,
+     "poshmark:used": 23
+    },
+    "by_site": {
+     "depop": 48,
+     "ebay": 404,
+     "poshmark": 33
+    },
+    "grouped": 30,
+    "rows": 485
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 175
+      },
+      "poshmark:used": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 108
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 125
+      }
+     },
+     "count": 3,
+     "may_model_count": 3,
+     "median_ask_dollars": 125
+    },
+    "same_product": {
+     "by_cell": {
+      "ebay:used": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 116
+      },
+      "poshmark:new": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 170
+      },
+      "poshmark:unknown": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 120.5
+      },
+      "poshmark:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 159
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 116
+      },
+      "poshmark": {
+       "count": 9,
+       "may_model_count": 9,
+       "median_ask_dollars": 159
+      }
+     },
+     "count": 10,
+     "may_model_count": 10,
+     "median_ask_dollars": 150.5
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 5,
+       "may_model_count": 5,
+       "median_ask_dollars": 151.99
+      },
+      "ebay:used": {
+       "count": 6,
+       "may_model_count": 6,
+       "median_ask_dollars": 161.24
+      },
+      "poshmark:used": {
+       "count": 6,
+       "may_model_count": 6,
+       "median_ask_dollars": 60.5
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 11,
+       "may_model_count": 11,
+       "median_ask_dollars": 151.99
+      },
+      "poshmark": {
+       "count": 6,
+       "may_model_count": 6,
+       "median_ask_dollars": 60.5
+      }
+     },
+     "count": 17,
+     "may_model_count": 17,
+     "median_ask_dollars": 134.99
+    }
+   },
+   "item_missing_required": [],
+   "kind": "shoes",
+   "left_out": {
+    "accessory": 4,
+    "brand_excluded": 179,
+    "brand_rows_not_grouped": 263,
+    "disagrees": {
+     "material": 1
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 31,
+     "material": 64
+    },
+    "no_match_spec": 0,
+    "other_rows": 207,
+    "query_mismatch": 9,
+    "rows": 190,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 22,
+     "brand_rows_not_grouped": 24,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 24,
+      "material": 17
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 2,
+     "rows": 24,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 4,
+     "brand_excluded": 144,
+     "brand_rows_not_grouped": 237,
+     "disagrees": {
+      "material": 1
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 7,
+      "material": 47
+     },
+     "no_match_spec": 0,
+     "other_rows": 164,
+     "query_mismatch": 7,
+     "rows": 153,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 13,
+     "brand_rows_not_grouped": 2,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 19,
+     "query_mismatch": 0,
+     "rows": 13,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "dr_martens",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 6,
+      "stated_rows": 11
+     }
+    },
+    "construction": [
+     "eight_eye"
+    ],
+    "decided_by": "code",
+    "kind_type": "boot",
+    "material": "leather",
+    "size_class": "us_9",
+    "spans": {
+     "brand_norm": [
+      0,
+      10
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      68,
+      73
+     ],
+     "construction.eight_eye": [
+      68,
+      73
+     ],
+     "kind_type": [
+      74,
+      78
+     ],
+     "material": [
+      60,
+      67
+     ],
+     "size_class": [
+      79,
+      84
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-shoes-3": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 18,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "critical_U": 72,
+     "interval_method": "exact_mann_whitney",
+     "lower": 0.4950150177393482,
+     "n_B": 33,
+     "n_O": 8,
+     "ratio": 2.37523226006228,
+     "ratio_lower": 1.6405228758169932,
+     "ratio_upper": 3.418314606741574,
+     "se": 0.18727872622972627,
+     "separation_S": 0.3712377633039063,
+     "state": "measured",
+     "theta": 0.8650952264155451,
+     "upper": 1.2291476245598751
+    },
+    "ebay:used": {
+     "critical_U": 669,
+     "interval_method": "exact_mann_whitney",
+     "lower": -0.015269803489072586,
+     "n_B": 93,
+     "n_O": 20,
+     "ratio": 1.200036673441075,
+     "ratio_lower": 0.9848461888164874,
+     "ratio_upper": 1.4785643070787629,
+     "se": 0.10365850960843585,
+     "separation_S": 0.02550589845279013,
+     "state": "measured",
+     "theta": 0.1823521175278664,
+     "upper": 0.39107155417599593
+    },
+    "poshmark:new": {
+     "n_B": 0,
+     "n_O": 1,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 4,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 15,
+     "n_O": 3,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 47,
+     "ebay:new": 183,
+     "ebay:used": 222,
+     "poshmark:new": 1,
+     "poshmark:unknown": 6,
+     "poshmark:used": 30
+    },
+    "by_site": {
+     "depop": 47,
+     "ebay": 405,
+     "poshmark": 37
+    },
+    "grouped": 195,
+    "rows": 489
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 17,
+       "may_model_count": 17,
+       "median_ask_dollars": 254.56
+      },
+      "ebay:used": {
+       "count": 43,
+       "may_model_count": 43,
+       "median_ask_dollars": 59.99
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 125
+      },
+      "poshmark:used": {
+       "count": 6,
+       "may_model_count": 6,
+       "median_ask_dollars": 80
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 60,
+       "may_model_count": 60,
+       "median_ask_dollars": 67
+      },
+      "poshmark": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 90
+      }
+     },
+     "count": 67,
+     "may_model_count": 67,
+     "median_ask_dollars": 69.99
+    },
+    "same_product": {
+     "by_cell": {
+      "depop:unknown": {
+       "count": 18,
+       "may_model_count": 18,
+       "median_ask_dollars": 44
+      },
+      "ebay:new": {
+       "count": 16,
+       "may_model_count": 16,
+       "median_ask_dollars": 234
+      },
+      "ebay:used": {
+       "count": 50,
+       "may_model_count": 50,
+       "median_ask_dollars": 69.995
+      },
+      "poshmark:unknown": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 56
+      },
+      "poshmark:used": {
+       "count": 9,
+       "may_model_count": 9,
+       "median_ask_dollars": 70
+      }
+     },
+     "by_site": {
+      "depop": {
+       "count": 18,
+       "may_model_count": 18,
+       "median_ask_dollars": 44
+      },
+      "ebay": {
+       "count": 66,
+       "may_model_count": 66,
+       "median_ask_dollars": 82.495
+      },
+      "poshmark": {
+       "count": 12,
+       "may_model_count": 12,
+       "median_ask_dollars": 67.5
+      }
+     },
+     "count": 96,
+     "may_model_count": 96,
+     "median_ask_dollars": 70
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 8,
+       "may_model_count": 8,
+       "median_ask_dollars": 102.48
+      },
+      "ebay:used": {
+       "count": 20,
+       "may_model_count": 20,
+       "median_ask_dollars": 51.245
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 78
+      },
+      "poshmark:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 50
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 28,
+       "may_model_count": 28,
+       "median_ask_dollars": 59.495
+      },
+      "poshmark": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 62.5
+      }
+     },
+     "count": 32,
+     "may_model_count": 32,
+     "median_ask_dollars": 59.495
+    }
+   },
+   "item_missing_required": [],
+   "kind": "shoes",
+   "left_out": {
+    "accessory": 3,
+    "brand_excluded": 159,
+    "brand_rows_not_grouped": 46,
+    "disagrees": {
+     "material": 4
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 87,
+     "material": 195
+    },
+    "no_match_spec": 0,
+    "other_rows": 277,
+    "query_mismatch": 26,
+    "rows": 245,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 11,
+     "brand_rows_not_grouped": 5,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 19,
+      "material": 24
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 10,
+     "rows": 24,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 3,
+     "brand_excluded": 142,
+     "brand_rows_not_grouped": 36,
+     "disagrees": {
+      "material": 4
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 67,
+      "material": 166
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 16,
+     "rows": 212,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 6,
+     "brand_rows_not_grouped": 5,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 1,
+      "material": 5
+     },
+     "no_match_spec": 0,
+     "other_rows": 13,
+     "query_mismatch": 0,
+     "rows": 9,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "new_balance",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 108,
+      "stated_rows": 141
+     },
+     "construction": {
+      "stated_rows": 5,
+      "support": {
+       "low_top": 5
+      }
+     },
+     "kind_type": {
+      "rows": 73,
+      "stated_rows": 73
+     },
+     "material": {
+      "rows": 21,
+      "stated_rows": 23
+     }
+    },
+    "construction": [
+     "low_top"
+    ],
+    "decided_by": "code",
+    "kind_type": "sneaker",
+    "material": "suede",
+    "size_class": "us_10",
+    "spans": {
+     "brand_norm": [
+      0,
+      11
+     ],
+     "brand_norm_field": "title",
+     "size_class": [
+      65,
+      70
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-shoes-4": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "n_B": 0,
+     "n_O": 10,
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 0,
+     "n_O": 10,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 9,
+     "n_O": 2,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 2,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 8,
+     "n_O": 3,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 48,
+     "ebay:new": 168,
+     "ebay:used": 56,
+     "poshmark:new": 26,
+     "poshmark:unknown": 4,
+     "poshmark:used": 21
+    },
+    "by_site": {
+     "depop": 48,
+     "ebay": 224,
+     "poshmark": 51
+    },
+    "grouped": 44,
+    "rows": 323
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 5,
+       "may_model_count": 5,
+       "median_ask_dollars": 130
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 182
+      },
+      "poshmark:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 80
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 9,
+       "may_model_count": 9,
+       "median_ask_dollars": 125
+      }
+     },
+     "count": 9,
+     "may_model_count": 9,
+     "median_ask_dollars": 125
+    },
+    "same_product": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 136
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 100
+      },
+      "poshmark:used": {
+       "count": 5,
+       "may_model_count": 5,
+       "median_ask_dollars": 162
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 10,
+       "may_model_count": 10,
+       "median_ask_dollars": 141
+      }
+     },
+     "count": 10,
+     "may_model_count": 10,
+     "median_ask_dollars": 141
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 10,
+       "may_model_count": 10,
+       "median_ask_dollars": 46.62
+      },
+      "ebay:used": {
+       "count": 10,
+       "may_model_count": 10,
+       "median_ask_dollars": 40.38
+      },
+      "poshmark:new": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 67.5
+      },
+      "poshmark:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 30
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 20,
+       "may_model_count": 20,
+       "median_ask_dollars": 42.875
+      },
+      "poshmark": {
+       "count": 5,
+       "may_model_count": 5,
+       "median_ask_dollars": 50
+      }
+     },
+     "count": 25,
+     "may_model_count": 25,
+     "median_ask_dollars": 43.99
+    }
+   },
+   "item_missing_required": [],
+   "kind": "shoes",
+   "left_out": {
+    "accessory": 2,
+    "brand_excluded": 214,
+    "brand_rows_not_grouped": 36,
+    "disagrees": {
+     "kind_type": 1,
+     "material": 5
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 70,
+     "material": 70
+    },
+    "no_match_spec": 0,
+    "other_rows": 268,
+    "query_mismatch": 4,
+    "rows": 243,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 22,
+     "brand_rows_not_grouped": 24,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 9,
+      "material": 13
+     },
+     "no_match_spec": 0,
+     "other_rows": 24,
+     "query_mismatch": 1,
+     "rows": 24,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 2,
+     "brand_excluded": 177,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "kind_type": 1,
+      "material": 5
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 58,
+      "material": 54
+     },
+     "no_match_spec": 0,
+     "other_rows": 224,
+     "query_mismatch": 3,
+     "rows": 204,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 15,
+     "brand_rows_not_grouped": 12,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 3,
+      "material": 3
+     },
+     "no_match_spec": 0,
+     "other_rows": 20,
+     "query_mismatch": 0,
+     "rows": 15,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "birkenstock",
+    "capacity": null,
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 9,
+      "stated_rows": 17
+     },
+     "kind_type": {
+      "rows": 16,
+      "stated_rows": 16
+     }
+    },
+    "construction": [],
+    "decided_by": "code",
+    "kind_type": "clog",
+    "material": "suede",
+    "size_class": "eu_42",
+    "spans": {
+     "brand_norm": [
+      0,
+      11
+     ],
+     "brand_norm_field": "title",
+     "material": [
+      19,
+      24
+     ],
+     "size_class": [
+      73,
+      78
+     ],
+     "size_class_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material"
+   ]
+  },
+  "m-small_goods-1": {
+   "a11": {
+    "ebay:new": {
+     "n_B": 23,
+     "n_O": 1,
+     "state": "not_known"
+    },
+    "ebay:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "n_B": 19,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 1,
+     "n_O": 0,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 2,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 5,
+     "n_O": 0,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "ebay:new": 226,
+     "ebay:unknown": 3,
+     "ebay:used": 97,
+     "poshmark:new": 4,
+     "poshmark:unknown": 5,
+     "poshmark:used": 11
+    },
+    "by_site": {
+     "ebay": 326,
+     "poshmark": 20
+    },
+    "grouped": 51,
+    "rows": 346
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:used": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 300
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 300
+      }
+     },
+     "count": 1,
+     "may_model_count": 1,
+     "median_ask_dollars": 300
+    },
+    "same_product": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 23,
+       "may_model_count": 23,
+       "median_ask_dollars": 350
+      },
+      "ebay:used": {
+       "count": 19,
+       "may_model_count": 19,
+       "median_ask_dollars": 225
+      },
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 400
+      },
+      "poshmark:unknown": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 355
+      },
+      "poshmark:used": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 347.5
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 42,
+       "may_model_count": 42,
+       "median_ask_dollars": 329.99
+      },
+      "poshmark": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 375
+      }
+     },
+     "count": 49,
+     "may_model_count": 49,
+     "median_ask_dollars": 329.99
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 108.83
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 108.83
+      }
+     },
+     "count": 1,
+     "may_model_count": 1,
+     "median_ask_dollars": 108.83
+    }
+   },
+   "item_missing_required": [],
+   "kind": "small_goods",
+   "left_out": {
+    "accessory": 24,
+    "brand_excluded": 182,
+    "brand_rows_not_grouped": 44,
+    "disagrees": {
+     "capacity": 38
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "capacity": 29,
+     "kind_type": 35,
+     "material_or_power": 218
+    },
+    "no_match_spec": 0,
+    "other_rows": 252,
+    "query_mismatch": 0,
+    "rows": 251,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "ebay": {
+     "accessory": 24,
+     "brand_excluded": 176,
+     "brand_rows_not_grouped": 44,
+     "disagrees": {
+      "capacity": 37
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "capacity": 21,
+      "kind_type": 33,
+      "material_or_power": 210
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 0,
+     "rows": 239,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 6,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "capacity": 1
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "capacity": 8,
+      "kind_type": 2,
+      "material_or_power": 8
+     },
+     "no_match_spec": 0,
+     "other_rows": 12,
+     "query_mismatch": 0,
+     "rows": 12,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "kitchenaid",
+    "capacity": "5_qt",
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 24,
+      "stated_rows": 48
+     },
+     "material": {
+      "rows": 3,
+      "stated_rows": 3
+     }
+    },
+    "construction": [
+     "tilt_head"
+    ],
+    "decided_by": "code",
+    "kind_type": "stand_mixer",
+    "material": "stainless",
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      10
+     ],
+     "brand_norm_field": "title",
+     "capacity": [
+      19,
+      26
+     ],
+     "construction": [
+      77,
+      86
+     ],
+     "construction.tilt_head": [
+      77,
+      86
+     ],
+     "kind_type": [
+      27,
+      38
+     ]
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material_or_power",
+    "capacity"
+   ]
+  },
+  "m-small_goods-2": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 0,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "critical_U": 2494,
+     "interval_method": "normal_mann_whitney_continuity_corrected",
+     "lower": 1.3905172031918163,
+     "n_B": 38,
+     "n_O": 165,
+     "ratio": 4.5272138583295805,
+     "ratio_lower": 4.016927083333334,
+     "ratio_upper": 5.048801060368717,
+     "se": 0.05832489747958279,
+     "separation_S": 0.6280671008411699,
+     "state": "measured",
+     "theta": 1.5101067079674815,
+     "upper": 1.6191508013117808
+    },
+    "ebay:used": {
+     "n_B": 7,
+     "n_O": 13,
+     "state": "not_known"
+    },
+    "poshmark:new": {
+     "n_B": 0,
+     "n_O": 6,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 0,
+     "n_O": 1,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 0,
+     "n_O": 0,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 4,
+     "ebay:new": 323,
+     "ebay:used": 157,
+     "poshmark:new": 23,
+     "poshmark:unknown": 1,
+     "poshmark:used": 3
+    },
+    "by_site": {
+     "depop": 4,
+     "ebay": 480,
+     "poshmark": 27
+    },
+    "grouped": 230,
+    "rows": 511
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    },
+    "same_product": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 38,
+       "may_model_count": 38,
+       "median_ask_dollars": 289.475
+      },
+      "ebay:used": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 180
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 45,
+       "may_model_count": 45,
+       "median_ask_dollars": 269.99
+      }
+     },
+     "count": 45,
+     "may_model_count": 45,
+     "median_ask_dollars": 269.99
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 165,
+       "may_model_count": 165,
+       "median_ask_dollars": 60.47
+      },
+      "ebay:used": {
+       "count": 13,
+       "may_model_count": 13,
+       "median_ask_dollars": 42.95
+      },
+      "poshmark:new": {
+       "count": 6,
+       "may_model_count": 6,
+       "median_ask_dollars": 138.5
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 59
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 178,
+       "may_model_count": 178,
+       "median_ask_dollars": 59.07
+      },
+      "poshmark": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 97
+      }
+     },
+     "count": 185,
+     "may_model_count": 185,
+     "median_ask_dollars": 59.99
+    }
+   },
+   "item_missing_required": [],
+   "kind": "small_goods",
+   "left_out": {
+    "accessory": 0,
+    "brand_excluded": 53,
+    "brand_rows_not_grouped": 195,
+    "disagrees": {
+     "capacity": 17,
+     "material_or_power": 19
+    },
+    "item_record_missing": 0,
+    "missing": {
+     "capacity": 6,
+     "kind_type": 4,
+     "material_or_power": 17
+    },
+    "no_match_spec": 0,
+    "other_rows": 271,
+    "query_mismatch": 7,
+    "rows": 86,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "capacity": 2
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "capacity": 2,
+      "kind_type": 4,
+      "material_or_power": 4
+     },
+     "no_match_spec": 0,
+     "other_rows": 4,
+     "query_mismatch": 4,
+     "rows": 4,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 0,
+     "brand_excluded": 43,
+     "brand_rows_not_grouped": 195,
+     "disagrees": {
+      "capacity": 13,
+      "material_or_power": 16
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "capacity": 2,
+      "material_or_power": 4
+     },
+     "no_match_spec": 0,
+     "other_rows": 240,
+     "query_mismatch": 1,
+     "rows": 62,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 10,
+     "brand_rows_not_grouped": 0,
+     "disagrees": {
+      "capacity": 2,
+      "material_or_power": 3
+     },
+     "item_record_missing": 0,
+     "missing": {
+      "capacity": 2,
+      "material_or_power": 9
+     },
+     "no_match_spec": 0,
+     "other_rows": 27,
+     "query_mismatch": 2,
+     "rows": 20,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "le_creuset",
+    "capacity": "5.5_qt",
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 38,
+      "stated_rows": 45
+     },
+     "material": {
+      "rows": 23,
+      "stated_rows": 35
+     }
+    },
+    "construction": [],
+    "decided_by": "code",
+    "kind_type": "dutch_oven",
+    "material": "enamelled_cast_iron",
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      10
+     ],
+     "brand_norm_field": "title",
+     "capacity": [
+      22,
+      28
+     ],
+     "kind_type": [
+      11,
+      21
+     ]
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material_or_power",
+    "capacity"
+   ]
+  },
+  "m-small_goods-3": {
+   "a11": {
+    "poshmark:new": {
+     "n_B": 4,
+     "n_O": 0,
+     "reason": "compatible-with sets can be counterfeits",
+     "state": "excluded"
+    },
+    "poshmark:unknown": {
+     "n_B": 1,
+     "n_O": 0,
+     "reason": "compatible-with sets can be counterfeits",
+     "state": "excluded"
+    },
+    "poshmark:used": {
+     "n_B": 4,
+     "n_O": 0,
+     "reason": "compatible-with sets can be counterfeits",
+     "state": "excluded"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "poshmark:new": 4,
+     "poshmark:unknown": 1,
+     "poshmark:used": 6
+    },
+    "by_site": {
+     "poshmark": 11
+    },
+    "grouped": 9,
+    "rows": 11
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 139
+      },
+      "poshmark:used": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 137.5
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 137.5
+      }
+     },
+     "count": 4,
+     "may_model_count": 4,
+     "median_ask_dollars": 137.5
+    },
+    "same_product": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 23.5
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 80
+      },
+      "poshmark:used": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 149
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 5,
+       "may_model_count": 5,
+       "median_ask_dollars": 80
+      }
+     },
+     "count": 5,
+     "may_model_count": 5,
+     "median_ask_dollars": 80
+    },
+    "similar_other_brand": {
+     "by_cell": {},
+     "by_site": {},
+     "count": 0,
+     "may_model_count": 0,
+     "median_ask_dollars": null
+    }
+   },
+   "item_missing_required": [
+    "kind_type",
+    "material_or_power"
+   ],
+   "kind": "small_goods",
+   "left_out": {
+    "accessory": 0,
+    "brand_excluded": 0,
+    "brand_rows_not_grouped": 2,
+    "disagrees": {},
+    "item_record_missing": 0,
+    "missing": {},
+    "no_match_spec": 0,
+    "other_rows": 0,
+    "query_mismatch": 0,
+    "rows": 0,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "poshmark": {
+     "accessory": 0,
+     "brand_excluded": 0,
+     "brand_rows_not_grouped": 2,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {},
+     "no_match_spec": 0,
+     "other_rows": 0,
+     "query_mismatch": 0,
+     "rows": 0,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "lego",
+    "capacity": null,
+    "condition_grade": "new",
+    "consensus": {
+     "condition_grade": {
+      "rows": 4,
+      "stated_rows": 8
+     }
+    },
+    "construction": [],
+    "decided_by": "code",
+    "kind_type": null,
+    "material": null,
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      4
+     ],
+     "brand_norm_field": "title"
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material_or_power"
+   ]
+  },
+  "m-small_goods-4": {
+   "a11": {
+    "depop:unknown": {
+     "n_B": 0,
+     "n_O": 4,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:new": {
+     "critical_U": 276,
+     "interval_method": "exact_mann_whitney",
+     "lower": 0.8932473377256951,
+     "n_B": 8,
+     "n_O": 118,
+     "ratio": 4.358785786395322,
+     "ratio_lower": 2.4430501930501918,
+     "ratio_upper": 6.0152195970430435,
+     "se": 0.22985855083446943,
+     "separation_S": 0.12358011452392385,
+     "state": "measured",
+     "theta": 1.4721935292167094,
+     "upper": 1.7942928569968153
+    },
+    "ebay:unknown": {
+     "n_B": 1,
+     "n_O": 2,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "ebay:used": {
+     "critical_U": 442,
+     "interval_method": "exact_mann_whitney",
+     "lower": 0.4700786414352507,
+     "n_B": 17,
+     "n_O": 75,
+     "ratio": 2.2406782593649983,
+     "ratio_lower": 1.6001200240047997,
+     "ratio_upper": 3.0923805763916326,
+     "se": 0.16807718518630443,
+     "separation_S": 0.16201120045611125,
+     "state": "measured",
+     "theta": 0.8067786143933624,
+     "upper": 1.128941207365564
+    },
+    "poshmark:new": {
+     "n_B": 1,
+     "n_O": 21,
+     "state": "not_known"
+    },
+    "poshmark:unknown": {
+     "n_B": 1,
+     "n_O": 3,
+     "reason": "unknown condition",
+     "state": "not_known"
+    },
+    "poshmark:used": {
+     "n_B": 3,
+     "n_O": 7,
+     "state": "not_known"
+    }
+   },
+   "counts": {
+    "by_cell": {
+     "depop:unknown": 33,
+     "ebay:new": 223,
+     "ebay:unknown": 10,
+     "ebay:used": 246,
+     "poshmark:new": 30,
+     "poshmark:unknown": 7,
+     "poshmark:used": 15
+    },
+    "by_site": {
+     "depop": 33,
+     "ebay": 479,
+     "poshmark": 52
+    },
+    "grouped": 261,
+    "rows": 564
+   },
+   "groups": {
+    "exact": {
+     "by_cell": {
+      "poshmark:new": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 250
+      }
+     },
+     "by_site": {
+      "poshmark": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 250
+      }
+     },
+     "count": 1,
+     "may_model_count": 1,
+     "median_ask_dollars": 250
+    },
+    "same_product": {
+     "by_cell": {
+      "ebay:new": {
+       "count": 8,
+       "may_model_count": 8,
+       "median_ask_dollars": 387.475
+      },
+      "ebay:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 95
+      },
+      "ebay:used": {
+       "count": 17,
+       "may_model_count": 17,
+       "median_ask_dollars": 179.99
+      },
+      "poshmark:unknown": {
+       "count": 1,
+       "may_model_count": 1,
+       "median_ask_dollars": 15
+      },
+      "poshmark:used": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 14
+      }
+     },
+     "by_site": {
+      "ebay": {
+       "count": 26,
+       "may_model_count": 26,
+       "median_ask_dollars": 212.49
+      },
+      "poshmark": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 14.5
+      }
+     },
+     "count": 30,
+     "may_model_count": 30,
+     "median_ask_dollars": 170.27
+    },
+    "similar_other_brand": {
+     "by_cell": {
+      "depop:unknown": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 28.75
+      },
+      "ebay:new": {
+       "count": 118,
+       "may_model_count": 118,
+       "median_ask_dollars": 79.99
+      },
+      "ebay:unknown": {
+       "count": 2,
+       "may_model_count": 2,
+       "median_ask_dollars": 84.95
+      },
+      "ebay:used": {
+       "count": 75,
+       "may_model_count": 75,
+       "median_ask_dollars": 74.99
+      },
+      "poshmark:new": {
+       "count": 21,
+       "may_model_count": 21,
+       "median_ask_dollars": 148
+      },
+      "poshmark:unknown": {
+       "count": 3,
+       "may_model_count": 3,
+       "median_ask_dollars": 194
+      },
+      "poshmark:used": {
+       "count": 7,
+       "may_model_count": 7,
+       "median_ask_dollars": 66
+      }
+     },
+     "by_site": {
+      "depop": {
+       "count": 4,
+       "may_model_count": 4,
+       "median_ask_dollars": 28.75
+      },
+      "ebay": {
+       "count": 195,
+       "may_model_count": 195,
+       "median_ask_dollars": 77.59
+      },
+      "poshmark": {
+       "count": 31,
+       "may_model_count": 31,
+       "median_ask_dollars": 119
+      }
+     },
+     "count": 230,
+     "may_model_count": 230,
+     "median_ask_dollars": 79.99
+    }
+   },
+   "item_missing_required": [],
+   "kind": "small_goods",
+   "left_out": {
+    "accessory": 33,
+    "brand_excluded": 28,
+    "brand_rows_not_grouped": 217,
+    "disagrees": {},
+    "item_record_missing": 0,
+    "missing": {
+     "kind_type": 5,
+     "material_or_power": 29
+    },
+    "no_match_spec": 0,
+    "other_rows": 296,
+    "query_mismatch": 2,
+    "rows": 66,
+    "special_state": 0
+   },
+   "left_out_by_site": {
+    "depop": {
+     "accessory": 10,
+     "brand_excluded": 4,
+     "brand_rows_not_grouped": 9,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 3,
+      "material_or_power": 7
+     },
+     "no_match_spec": 0,
+     "other_rows": 23,
+     "query_mismatch": 2,
+     "rows": 19,
+     "special_state": 0
+    },
+    "ebay": {
+     "accessory": 11,
+     "brand_excluded": 22,
+     "brand_rows_not_grouped": 207,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 1,
+      "material_or_power": 22
+     },
+     "no_match_spec": 0,
+     "other_rows": 239,
+     "query_mismatch": 0,
+     "rows": 44,
+     "special_state": 0
+    },
+    "poshmark": {
+     "accessory": 12,
+     "brand_excluded": 2,
+     "brand_rows_not_grouped": 1,
+     "disagrees": {},
+     "item_record_missing": 0,
+     "missing": {
+      "kind_type": 1
+     },
+     "no_match_spec": 0,
+     "other_rows": 34,
+     "query_mismatch": 0,
+     "rows": 3,
+     "special_state": 0
+    }
+   },
+   "record": {
+    "brand_norm": "dyson",
+    "capacity": null,
+    "condition_grade": "used",
+    "consensus": {
+     "condition_grade": {
+      "rows": 20,
+      "stated_rows": 29
+     }
+    },
+    "construction": [
+     "cordless"
+    ],
+    "decided_by": "code",
+    "kind_type": "stick_vacuum",
+    "material": null,
+    "size_class": null,
+    "spans": {
+     "brand_norm": [
+      0,
+      5
+     ],
+     "brand_norm_field": "title",
+     "construction": [
+      18,
+      26
+     ],
+     "construction.cordless": [
+      18,
+      26
+     ],
+     "kind_type": [
+      27,
+      33
+     ]
+    }
+   },
+   "required_attributes": [
+    "kind_type",
+    "material_or_power"
+   ]
+  }
+ },
+ "label": "development reading: asking prices on public search rows read 2026-11-15, one day, not sales",
+ "limitations": [
+  "Unknown condition and listed status supply no condition grade.",
+  "Item records keep manifest evidence and fill gaps from at least three admitted branded rows stating an attribute, with at least half supporting the value.",
+  "A scalar consensus tie at exactly half chooses the lexicographically first value; construction retains every mark supported by at least half.",
+  "Condition is not a matching attribute; ungraded rows are displayed in the site unknown cell and never measured.",
+  "Electronics has no required product-attribute set in A11; non-locked headphones use the supplied query clauses.",
+  "Search rows are observations, not deduplicated listings or a representative sample.",
+  "Exact intervals use the untied counting distribution; repeated prices make coverage conservative.",
+  "Kind summaries omit zero-width intervals because inverse-variance weights are undefined.",
+  "Timing is a local microbenchmark: parsing only and warm materialized lookups; excludes file IO and live reads.",
+  "No live-search timings were supplied, so an index-versus-live comparison cannot be measured.",
+  "Model agreement, registry fitting, forgetting and leave-one-brand-out pooling are outside this fixed-day slice."
+ ],
+ "measures": {
+  "coverage": {
+   "clothes": {
+    "all": {
+     "decided": 998,
+     "missing": {
+      "construction": 498,
+      "kind_type": 162,
+      "material": 1180
+     },
+     "rows": 2315,
+     "share": 0.43110151187904966
+    },
+    "apify:ebay": {
+     "decided": 11,
+     "missing": {
+      "construction": 4,
+      "material": 4
+     },
+     "rows": 16,
+     "share": 0.6875
+    },
+    "apify:facebook": {
+     "decided": 3,
+     "missing": {
+      "construction": 11,
+      "material": 6
+     },
+     "rows": 16,
+     "share": 0.1875
+    },
+    "depop": {
+     "decided": 0,
+     "missing": {
+      "construction": 135,
+      "kind_type": 101,
+      "material": 174
+     },
+     "rows": 192,
+     "share": 0
+    },
+    "ebay": {
+     "decided": 863,
+     "missing": {
+      "construction": 295,
+      "kind_type": 60,
+      "material": 872
+     },
+     "rows": 1809,
+     "share": 0.47705914870093974
+    },
+    "poshmark": {
+     "decided": 121,
+     "missing": {
+      "construction": 53,
+      "kind_type": 1,
+      "material": 124
+     },
+     "rows": 282,
+     "share": 0.42907801418439717
+    }
+   },
+   "electronics": {
+    "all": {
+     "decided": 618,
+     "missing": {},
+     "rows": 618,
+     "share": 1
+    },
+    "depop": {
+     "decided": 28,
+     "missing": {},
+     "rows": 28,
+     "share": 1
+    },
+    "ebay": {
+     "decided": 477,
+     "missing": {},
+     "rows": 477,
+     "share": 1
+    },
+    "poshmark": {
+     "decided": 113,
+     "missing": {},
+     "rows": 113,
+     "share": 1
+    }
+   },
+   "furniture": {
+    "all": {
+     "decided": 497,
+     "missing": {
+      "kind_type": 313,
+      "material": 816
+     },
+     "rows": 1372,
+     "share": 0.3622448979591837
+    },
+    "apify:ebay": {
+     "decided": 21,
+     "missing": {
+      "kind_type": 10,
+      "material": 25
+     },
+     "rows": 46,
+     "share": 0.45652173913043476
+    },
+    "apify:facebook": {
+     "decided": 9,
+     "missing": {
+      "kind_type": 9,
+      "material": 37
+     },
+     "rows": 48,
+     "share": 0.1875
+    },
+    "depop": {
+     "decided": 3,
+     "missing": {
+      "kind_type": 15,
+      "material": 17
+     },
+     "rows": 22,
+     "share": 0.13636363636363635
+    },
+    "ebay": {
+     "decided": 462,
+     "missing": {
+      "kind_type": 277,
+      "material": 727
+     },
+     "rows": 1243,
+     "share": 0.37168141592920356
+    },
+    "poshmark": {
+     "decided": 2,
+     "missing": {
+      "kind_type": 2,
+      "material": 10
+     },
+     "rows": 13,
+     "share": 0.15384615384615385
+    }
+   },
+   "shoes": {
+    "all": {
+     "decided": 779,
+     "missing": {
+      "kind_type": 702,
+      "material": 982
+     },
+     "rows": 1886,
+     "share": 0.41304347826086957
+    },
+    "depop": {
+     "decided": 19,
+     "missing": {
+      "kind_type": 140,
+      "material": 159
+     },
+     "rows": 191,
+     "share": 0.09947643979057591
+    },
+    "ebay": {
+     "decided": 647,
+     "missing": {
+      "kind_type": 532,
+      "material": 763
+     },
+     "rows": 1513,
+     "share": 0.42762723066754793
+    },
+    "poshmark": {
+     "decided": 113,
+     "missing": {
+      "kind_type": 30,
+      "material": 60
+     },
+     "rows": 182,
+     "share": 0.6208791208791209
+    }
+   },
+   "small_goods": {
+    "all": {
+     "decided": 856,
+     "missing": {
+      "capacity": 80,
+      "kind_type": 115,
+      "material_or_power": 528
+     },
+     "rows": 1432,
+     "share": 0.5977653631284916
+    },
+    "depop": {
+     "decided": 5,
+     "missing": {
+      "capacity": 2,
+      "kind_type": 24,
+      "material_or_power": 29
+     },
+     "rows": 37,
+     "share": 0.13513513513513514
+    },
+    "ebay": {
+     "decided": 801,
+     "missing": {
+      "capacity": 62,
+      "kind_type": 67,
+      "material_or_power": 451
+     },
+     "rows": 1285,
+     "share": 0.6233463035019455
+    },
+    "poshmark": {
+     "decided": 50,
+     "missing": {
+      "capacity": 16,
+      "kind_type": 24,
+      "material_or_power": 48
+     },
+     "rows": 110,
+     "share": 0.45454545454545453
+    }
+   }
+  },
+  "left_out": {
+   "capacity": 35,
+   "construction": 162,
+   "kind_type": 509,
+   "material": 1258,
+   "material_or_power": 264
+  },
+  "lookup_us": {
+   "lookups": 20000,
+   "lookups_per_item": 1000,
+   "p50": 0.08400093065574765,
+   "p95": 0.12500095181167126,
+   "per_item": {
+    "m-clothes-1": {
+     "p50": 0.08300048648379743,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-clothes-2": {
+     "p50": 0.08300048648379743,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-clothes-3": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-clothes-4": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-electronics-1": {
+     "p50": 0.12499731383286417,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-electronics-2": {
+     "p50": 0.08300048648379743,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-electronics-3": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-electronics-4": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-furniture-1": {
+     "p50": 0.08399729267694056,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-furniture-2": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-furniture-3": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-furniture-4": {
+     "p50": 0.08399729267694056,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-shoes-1": {
+     "p50": 0.08399729267694056,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-shoes-2": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-shoes-3": {
+     "p50": 0.08300048648379743,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-shoes-4": {
+     "p50": 0.08300048648379743,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-small_goods-1": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-small_goods-2": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-small_goods-3": {
+     "p50": 0.08300048648379743,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    },
+    "m-small_goods-4": {
+     "p50": 0.08400093065574765,
+     "p95": 0.12500095181167126,
+     "rows": 1000
+    }
+   },
+   "returned_rows": 2883000,
+   "rows": 20000
+  },
+  "record_ms": {
+   "all": {
+    "p50": 0.0268340008915402,
+    "p95": 0.04833400089410134,
+    "repetitions": 5,
+    "rows": 7623,
+    "run_p50_range": [
+     0.026666999474400654,
+     0.026999998226528987
+    ],
+    "run_p50s": [
+     0.0268340008915402,
+     0.02683300044736825,
+     0.026875000912696123,
+     0.026666999474400654,
+     0.026999998226528987
+    ]
+   },
+   "clothes": {
+    "p50": 0.027292000595480204,
+    "p95": 0.04691699723480269,
+    "repetitions": 5,
+    "rows": 2315,
+    "run_p50_range": [
+     0.027165999199496582,
+     0.02745799793046899
+    ],
+    "run_p50s": [
+     0.027292000595480204,
+     0.027375001081964,
+     0.027333000616636127,
+     0.027165999199496582,
+     0.02745799793046899
+    ]
+   },
+   "electronics": {
+    "p50": 0.014437500794883817,
+    "p95": 0.03787500099861063,
+    "repetitions": 5,
+    "rows": 618,
+    "run_p50_range": [
+     0.01393750062561594,
+     0.014437500794883817
+    ],
+    "run_p50s": [
+     0.014437500794883817,
+     0.014395500329555944,
+     0.014228999134502374,
+     0.014354498489410616,
+     0.01393750062561594
+    ]
+   },
+   "furniture": {
+    "p50": 0.036375000490807,
+    "p95": 0.049435451728641056,
+    "repetitions": 5,
+    "rows": 1372,
+    "run_p50_range": [
+     0.03587500032153912,
+     0.036375000490807
+    ],
+    "run_p50s": [
+     0.036375000490807,
+     0.036354500480229035,
+     0.03618749906308949,
+     0.036042001738678664,
+     0.03587500032153912
+    ]
+   },
+   "shoes": {
+    "p50": 0.02377050077484455,
+    "p95": 0.04869775239058072,
+    "repetitions": 5,
+    "rows": 1886,
+    "run_p50_range": [
+     0.023229498765431345,
+     0.02377050077484455
+    ],
+    "run_p50s": [
+     0.02377050077484455,
+     0.02366649823670741,
+     0.023332999262493104,
+     0.023229498765431345,
+     0.023291000616154633
+    ]
+   },
+   "small_goods": {
+    "p50": 0.026249999791616574,
+    "p95": 0.0476623510621721,
+    "repetitions": 5,
+    "rows": 1432,
+    "run_p50_range": [
+     0.026125000658794306,
+     0.02685450090211816
+    ],
+    "run_p50s": [
+     0.026249999791616574,
+     0.026125000658794306,
+     0.026687499484978616,
+     0.026707999495556578,
+     0.02685450090211816
+    ]
+   }
+  }
+ },
+ "records_note": "Per-row records (7623) are written only beside the private examples when the CLI runs; the repo keeps the aggregates."
+}
