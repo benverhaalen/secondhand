@@ -20,14 +20,832 @@
   ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "live",
+      "route": "/item/it_jacket",
+      "shows": "~Third cheapest of 14 like it. Should sell this week.",
+      "also": [
+        "Drops to $90 on Nov 16",
+        "Never under $70, your lowest",
+        "Similar ones sold for $85 to $115 lately"
+      ],
+      "why": "Live: each site’s row with its state, price, views and likes, the standing line, the plan’s next step and the Market block (pages §6.6)"
+    },
+    {
+      "state": "offer",
+      "route": "/item/it_jacket",
+      "shows": "2 offers",
+      "also": [
+        "~$81.55",
+        "Accept $85",
+        "Counter",
+        "21h 0m"
+      ],
+      "why": "an offer waiting tops the page with what they keep and the time left, the facts its push names (notifications.md, An offer you’d take)"
+    },
+    {
+      "state": "researching",
+      "route": "/item/it_hoodie",
+      "shows": "Finding out what it is",
+      "also": [
+        "Researching"
+      ],
+      "absent": [
+        "Plan it"
+      ],
+      "why": "Researching: the photos and the stages filling in; no black pill (pages §6.6)"
+    },
+    {
+      "state": "review",
+      "route": "/item/it_switch",
+      "shows": "Step 4 of 9: Facts a camera can’t see",
+      "also": [
+        "Do the Joy-Cons drift?",
+        "Plan it",
+        "Similar ones sold for $210 to $260 lately"
+      ],
+      "why": "Review: where the auto-list tree stopped, as one question on one card; Plan it is the pill (pages §6.6, edge-cases §7)"
+    },
+    {
+      "state": "slow",
+      "route": "/item/it_lamp",
+      "shows": "Slow",
+      "also": [
+        "Lower to $38 on 2 sites",
+        "Never under $30, your lowest"
+      ],
+      "why": "Live and Slow: the one change worth the most is the black pill (pages §6.6 and §3 Standing)"
+    },
+    {
+      "state": "sold-ship",
+      "route": "/item/it_kindle",
+      "shows": "Ship by Tuesday",
+      "also": [
+        "$61.12",
+        "~after fees",
+        "Taken down",
+        "Ship it"
+      ],
+      "why": "Sold: which site sold, what they keep, proof the others came down, Ship it (pages §6.6)"
+    },
+    {
+      "state": "sold-pickup",
+      "route": "/item/it_chair",
+      "shows": "Pickup today",
+      "also": [
+        "Pickup, Library parking lot, Main St",
+        "Handed over"
+      ],
+      "why": "Sold for a pickup: Handed over is the pill (pages §6.6)"
+    },
+    {
+      "state": "done",
+      "route": "/item/it_levis",
+      "shows": "Sold for $44 in 9 days",
+      "also": [
+        "Paid",
+        "$31.30"
+      ],
+      "why": "Done: what it sold for and how long it took (pages §6.6)"
+    },
+    {
+      "state": "kept",
+      "route": "/item/it_dunks",
+      "shows": "What it’s worth now",
+      "also": [
+        "$70 to $95",
+        "Sell again"
+      ],
+      "why": "Kept: worth $A to $B, Sell again (pages §6.6)"
+    },
+    {
+      "state": "unsold",
+      "route": null,
+      "missing": true,
+      "shows": "Sell again",
+      "why": "Done, unsold: pages §6.6 names the moment, and no demo world holds an unsold item to show it"
+    },
+    {
+      "state": "many-photos",
+      "route": "/item/it_tee",
+      "shows": "Marquette 74 Final Four tee, gold, XL",
+      "also": [
+        "Ship by Wednesday"
+      ],
+      "why": "eight photos, in a pager"
+    },
+    {
+      "state": "loading",
+      "route": "/item/it_jacket?state=loading",
+      "shows": "the skeleton of the photo, a card and a row; no title and no amounts",
+      "skeleton": true,
+      "absent": [
+        "Carhartt Detroit Jacket J97, brown duck, L",
+        "$81.55"
+      ],
+      "why": "frontend-standard §4 Loading"
+    },
+    {
+      "state": "didnt-load",
+      "route": "/item/it_jacket?state=failed",
+      "shows": "Can’t open this item",
+      "also": [
+        "It was deleted, or it didn’t load."
+      ],
+      "why": "frontend-standard §4 Error: what failed and the one fix; Try again is in the controls, missing"
+    },
+    {
+      "state": "not-found",
+      "route": "/item/nope",
+      "shows": "Can’t open this item",
+      "also": [
+        "Go to Sell"
+      ],
+      "why": "an item that is gone"
+    },
+    {
+      "state": "offline",
+      "route": "/item/it_jacket?state=offline",
+      "shows": "Offline. Changes send when you’re back.",
+      "also": [
+        "Accept $85"
+      ],
+      "why": "the last copy; each tap waits for signal (ways-out Everywhere, “I’m on bad signal”)"
     }
   ],
   "controls": [
     {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "id": "nav-back",
+      "control": "Back (chevron)",
+      "on_tap": "goes back; opened directly, to Sell",
+      "goes": "/sell"
+    },
+    {
+      "id": "offer-open",
+      "control": "the offer card",
+      "on_tap": "opens the buyer’s thread, where the offer came from (pages §6.6 Splits off: a thread)",
+      "goes": "/messages/cv_jd"
+    },
+    {
+      "id": "accept",
+      "control": "Accept $85",
+      "on_tap": "accepts the $85 offer; the other listings come down",
+      "shows": "Accepted $85. The other listings are coming down."
+    },
+    {
+      "id": "counter",
+      "control": "Counter",
+      "on_tap": "opens three amounts and Something else, with the lowest named",
+      "shows": "Counter. Your lowest is $70.",
+      "then": "counter-amount-9200"
+    },
+    {
+      "id": "counter-amount-8800",
+      "control": "$88",
+      "on_tap": "picks $88",
+      "after": [
+        "counter"
+      ],
+      "shows": "Send $88 counter"
+    },
+    {
+      "id": "counter-amount-9200",
+      "control": "$92",
+      "on_tap": "picks $92, the agent’s pick",
+      "after": [
+        "counter"
+      ],
+      "shows": "Send $92 counter"
+    },
+    {
+      "id": "counter-amount-9500",
+      "control": "$95",
+      "on_tap": "picks $95",
+      "after": [
+        "counter"
+      ],
+      "shows": "Send $95 counter"
+    },
+    {
+      "id": "counter-amount-other",
+      "control": "Something else",
+      "on_tap": "opens a field to type an amount",
+      "after": [
+        "counter"
+      ],
+      "then": "counter-amount-other-input"
+    },
+    {
+      "id": "counter-amount-typed",
+      "control": "the typed amount",
+      "on_tap": "picks the amount typed",
+      "after": [
+        "counter",
+        "counter-amount-other",
+        [
+          "counter-amount-other-input",
+          "90"
+        ]
+      ],
+      "shows": "Send $90 counter"
+    },
+    {
+      "id": "send-counter",
+      "control": "Send $92 counter",
+      "on_tap": "sends the counter",
+      "after": [
+        "counter"
+      ],
+      "shows": "~Sent $92."
+    },
+    {
+      "id": "offer-more",
+      "control": "⋯ on the offer",
+      "on_tap": "opens Offers: each offer with what they keep, and Decline both",
+      "shows": "Offers",
+      "then": "decline-all"
+    },
+    {
+      "id": "decline-all",
+      "control": "Decline both",
+      "on_tap": "declines both offers; the listings stay up",
+      "after": [
+        "offer-more"
+      ],
+      "shows": "Declined. The listings stay up."
+    },
+    {
+      "id": "decline-all-undo",
+      "control": "Undo",
+      "on_tap": "takes the decline back",
+      "after": [
+        "offer-more",
+        "decline-all"
+      ],
+      "gone": "Declined. The listings stay up."
+    },
+    {
+      "id": "open-plan",
+      "control": "Change the plan",
+      "on_tap": "opens the Plan sheet",
+      "goes": "/item/it_jacket/plan"
+    },
+    {
+      "id": "field-brand",
+      "control": "Brand: Carhartt",
+      "on_tap": "opens Brand to type over, in place",
+      "then": "field-brand-input"
+    },
+    {
+      "id": "more-brand",
+      "control": "⋯ beside Brand",
+      "on_tap": "opens Brand's More sheet, with Lock it",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-size",
+      "control": "Size: L",
+      "on_tap": "opens Size to type over, in place",
+      "then": "field-size-input"
+    },
+    {
+      "id": "more-size",
+      "control": "⋯ beside Size",
+      "on_tap": "opens Size's More sheet, with Lock it",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-color",
+      "control": "Color: Brown",
+      "on_tap": "opens Color to type over, in place",
+      "then": "field-color-input"
+    },
+    {
+      "id": "more-color",
+      "control": "⋯ beside Color",
+      "on_tap": "opens Color's More sheet, with Lock it",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-chest_width",
+      "control": "Chest: 24 in",
+      "on_tap": "opens Chest to type over, in place",
+      "then": "field-chest_width-input"
+    },
+    {
+      "id": "more-chest_width",
+      "control": "⋯ beside Chest",
+      "on_tap": "opens Chest's More sheet, with Lock it",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-flaw.1",
+      "control": "Flaw: Fraying on the left cuff",
+      "on_tap": "opens Flaw to type over, in place",
+      "then": "field-flaw.1-input"
+    },
+    {
+      "id": "more-flaw.1",
+      "control": "⋯ beside Flaw",
+      "on_tap": "opens Flaw's More sheet, with Lock it",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-where",
+      "control": "Where it is: Hall closet",
+      "on_tap": "opens Where it is to type over (mark where it is, pages §6.6)",
+      "then": "field-where-input"
+    },
+    {
+      "id": "sheet-field",
+      "control": "the value, in the More sheet",
+      "on_tap": "opens the value to type over",
+      "after": [
+        "more-brand"
+      ],
+      "then": "sheet-field-input"
+    },
+    {
+      "id": "lock-field",
+      "control": "Lock it",
+      "on_tap": "locks the field: the agent won’t change it or suggest a change; the caption says Locked",
+      "after": [
+        "more-brand"
+      ],
+      "shows": "From the tag. Locked"
+    },
+    {
+      "id": "field-done",
+      "control": "Done",
+      "on_tap": "closes the More sheet",
+      "after": [
+        "more-brand"
+      ],
+      "gone": "The agent won’t change it or suggest a change"
+    },
+    {
+      "id": "why",
+      "control": "Why? on a field or a number",
+      "on_tap": "opens the Why sheet: the item’s events with their sources and Undo (pages §6.6 Actions on any moment)",
+      "missing": true
+    },
+    {
+      "id": "photos",
+      "control": "Photos",
+      "on_tap": "opens the Photos sheet: Clean up, Enhance with AI, Use original, Add or retake",
+      "then": "clean-up"
+    },
+    {
+      "id": "clean-up",
+      "control": "Clean up switch",
+      "on_tap": "turns Clean up on; on a live item the change waits for an Approve naming the listings",
+      "after": [
+        "photos"
+      ],
+      "shows": "Update the photos on 2 listings"
+    },
+    {
+      "id": "enhance-ai",
+      "control": "Enhance with AI switch",
+      "on_tap": "turns Enhance with AI on; the change waits for an Approve naming the listings",
+      "after": [
+        "photos"
+      ],
+      "shows": "Update the photos on 2 listings"
+    },
+    {
+      "id": "use-original",
+      "control": "Use original",
+      "on_tap": "sets the photos back to the originals",
+      "after": [
+        "photos",
+        "clean-up"
+      ],
+      "then": "photos-done"
+    },
+    {
+      "id": "add-photos",
+      "control": "Add or retake",
+      "on_tap": "opens the camera to add or retake a photo",
+      "after": [
+        "photos"
+      ],
+      "goes": "/camera"
+    },
+    {
+      "id": "photos-done",
+      "control": "Done",
+      "on_tap": "closes the Photos sheet with nothing changed",
+      "after": [
+        "photos"
+      ],
+      "gone": "Use original"
+    },
+    {
+      "id": "photos-apply",
+      "control": "Update the photos on 2 listings",
+      "on_tap": "applies the pick to both live listings, with Undo",
+      "after": [
+        "photos",
+        "clean-up"
+      ],
+      "shows": "Updated on 2 listings"
+    },
+    {
+      "id": "photos-apply-undo",
+      "control": "Undo",
+      "on_tap": "takes the photo change back",
+      "after": [
+        "photos",
+        "clean-up",
+        "photos-apply"
+      ],
+      "gone": "Updated on 2 listings"
+    },
+    {
+      "id": "sold-elsewhere",
+      "control": "Sold elsewhere",
+      "on_tap": "opens Sold elsewhere, with an optional price",
+      "shows": "What it sold for, if you want it in your records",
+      "then": "elsewhere-done"
+    },
+    {
+      "id": "elsewhere-price",
+      "control": "Price",
+      "on_tap": "opens the price to type",
+      "after": [
+        "sold-elsewhere"
+      ],
+      "then": "elsewhere-price-input"
+    },
+    {
+      "id": "elsewhere-done",
+      "control": "Mark sold and end 2 listings",
+      "on_tap": "ends every listing and marks it sold",
+      "after": [
+        "sold-elsewhere"
+      ],
+      "shows": "Marked sold. Took down 2 listings."
+    },
+    {
+      "id": "sold-elsewhere-undo",
+      "control": "Undo",
+      "on_tap": "takes Sold elsewhere back",
+      "after": [
+        "sold-elsewhere",
+        "elsewhere-done"
+      ],
+      "gone": "Marked sold. Took down 2 listings."
+    },
+    {
+      "id": "keep",
+      "control": "Keep it",
+      "on_tap": "ends every listing and keeps it, with Undo",
+      "shows": "Kept. Took down 2 listings."
+    },
+    {
+      "id": "keep-undo",
+      "control": "Undo",
+      "on_tap": "takes Keep it back",
+      "after": [
+        "keep"
+      ],
+      "gone": "Kept. Took down 2 listings."
+    },
+    {
+      "id": "donated",
+      "control": "Donated",
+      "on_tap": "ends every listing and marks it donated, with Undo",
+      "shows": "Donated. Took down 2 listings."
+    },
+    {
+      "id": "donated-undo",
+      "control": "Undo",
+      "on_tap": "takes Donated back",
+      "after": [
+        "donated"
+      ],
+      "gone": "Donated. Took down 2 listings."
+    },
+    {
+      "id": "end-all",
+      "control": "End everywhere",
+      "on_tap": "ends both listings and keeps the item as a draft, with Undo",
+      "shows": "Ended 2 listings."
+    },
+    {
+      "id": "end-all-undo",
+      "control": "Undo",
+      "on_tap": "takes End everywhere back",
+      "after": [
+        "end-all"
+      ],
+      "gone": "Ended 2 listings."
+    },
+    {
+      "id": "delete",
+      "control": "Delete",
+      "on_tap": "asks first: Delete this item? Its photos go too",
+      "shows": "Delete this item?",
+      "then": "delete-confirm"
+    },
+    {
+      "id": "delete-confirm",
+      "control": "Delete and end 2 listings",
+      "on_tap": "ends the listings, deletes the item and goes to Sell",
+      "after": [
+        "delete"
+      ],
+      "goes": "/sell"
+    },
+    {
+      "id": "delete",
+      "control": "Delete, while a sale is open",
+      "on_tap": "refused: says Can’t delete while the sale is open, and asks nothing (ways-out §6.6 Delete)",
+      "route": "/item/it_chair",
+      "refused": true,
+      "gone": "Delete this item?"
+    },
+    {
+      "id": "pause",
+      "control": "Pause",
+      "on_tap": "pauses every listing of this item (pages §6.6 Actions on any moment: pause)",
+      "missing": true
+    },
+    {
+      "id": "paid",
+      "control": "What you paid",
+      "on_tap": "sets what the person paid, optional and never asked (pages §6.6 Actions on any moment)",
+      "missing": true
+    },
+    {
+      "id": "copy",
+      "control": "Sell one like this",
+      "on_tap": "copies the item without its photos (ways-out §6.6 “I have three of these”)",
+      "missing": true
+    },
+    {
+      "id": "split",
+      "control": "Split",
+      "on_tap": "moves photos to a new item (ways-out §6.6 “These are two things”)",
+      "missing": true
+    },
+    {
+      "id": "market-open",
+      "control": "Market",
+      "on_tap": "opens the product page (pages §6.6 Splits off: the product page)",
+      "missing": true
+    },
+    {
+      "id": "title",
+      "control": "What it is: Nintendo Switch OLED, white, with dock",
+      "on_tap": "opens the identity line to type over (ways-out §6.6 “It’s identified wrong”)",
+      "route": "/item/it_switch",
+      "then": "title-input"
+    },
+    {
+      "id": "ask-fact-joy_con_drift-no",
+      "control": "No",
+      "on_tap": "answers the stop; the field fills and the next stop takes the card’s place",
+      "route": "/item/it_switch",
+      "shows": "Every question answered. Ready to plan"
+    },
+    {
+      "id": "ask-fact-joy_con_drift-yes",
+      "control": "Yes",
+      "on_tap": "answers the stop; the field fills and the next stop takes the card’s place",
+      "route": "/item/it_switch",
+      "shows": "Every question answered. Ready to plan"
+    },
+    {
+      "id": "ask-fact-joy_con_drift-i-don-t-know",
+      "control": "I don’t know",
+      "on_tap": "answers that it isn’t known; the listing describes what can be seen",
+      "route": "/item/it_switch",
+      "shows": "Every question answered. Ready to plan"
+    },
+    {
+      "id": "field-model",
+      "control": "Model: HEG-001",
+      "on_tap": "opens Model to type over, in place",
+      "route": "/item/it_switch",
+      "then": "field-model-input"
+    },
+    {
+      "id": "more-model",
+      "control": "⋯ beside Model",
+      "on_tap": "opens Model's More sheet, with Lock it",
+      "route": "/item/it_switch",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-storage",
+      "control": "Storage: 64 GB",
+      "on_tap": "opens Storage to type over, in place",
+      "route": "/item/it_switch",
+      "then": "field-storage-input"
+    },
+    {
+      "id": "more-storage",
+      "control": "⋯ beside Storage",
+      "on_tap": "opens Storage's More sheet, with Lock it",
+      "route": "/item/it_switch",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-joy_con_drift",
+      "control": "Joy-Con drift: Joy-Con drift",
+      "on_tap": "opens Joy-Con drift to type over, in place",
+      "route": "/item/it_switch",
+      "then": "field-joy_con_drift-input"
+    },
+    {
+      "id": "more-joy_con_drift",
+      "control": "⋯ beside Joy-Con drift",
+      "on_tap": "opens Joy-Con drift's More sheet, with Lock it",
+      "route": "/item/it_switch",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-box",
+      "control": "Box: No",
+      "on_tap": "opens Box to type over, in place",
+      "route": "/item/it_switch",
+      "then": "field-box-input"
+    },
+    {
+      "id": "more-box",
+      "control": "⋯ beside Box",
+      "on_tap": "opens Box's More sheet, with Lock it",
+      "route": "/item/it_switch",
+      "then": "lock-field"
+    },
+    {
+      "id": "plan-it",
+      "control": "Plan it",
+      "on_tap": "opens the Plan sheet",
+      "route": "/item/it_switch",
+      "goes": "/item/it_switch/plan"
+    },
+    {
+      "id": "lower",
+      "control": "Lower to $38 on 2 sites",
+      "on_tap": "lowers the price on both sites, with Undo",
+      "route": "/item/it_lamp",
+      "shows": "Lowered to $38 on 2 sites"
+    },
+    {
+      "id": "lower-undo",
+      "control": "Undo",
+      "on_tap": "takes the lower back",
+      "route": "/item/it_lamp",
+      "after": [
+        "lower"
+      ],
+      "gone": "Lowered to $38 on 2 sites"
+    },
+    {
+      "id": "open-sum",
+      "control": "What each site keeps",
+      "on_tap": "opens the sum: each site’s price less its fee",
+      "route": "/item/it_lamp",
+      "shows": "$45 less $4.82 fee",
+      "then": "sum-done"
+    },
+    {
+      "id": "sum-done",
+      "control": "Done",
+      "on_tap": "closes the sum",
+      "route": "/item/it_lamp",
+      "after": [
+        "open-sum"
+      ],
+      "gone": "$45 less $4.82 fee"
+    },
+    {
+      "id": "field-material",
+      "control": "Material: Brass",
+      "on_tap": "opens Material to type over, in place",
+      "route": "/item/it_lamp",
+      "then": "field-material-input"
+    },
+    {
+      "id": "more-material",
+      "control": "⋯ beside Material",
+      "on_tap": "opens Material's More sheet, with Lock it",
+      "route": "/item/it_lamp",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-height",
+      "control": "Height: 18 in",
+      "on_tap": "opens Height to type over, in place",
+      "route": "/item/it_lamp",
+      "then": "field-height-input"
+    },
+    {
+      "id": "more-height",
+      "control": "⋯ beside Height",
+      "on_tap": "opens Height's More sheet, with Lock it",
+      "route": "/item/it_lamp",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-works",
+      "control": "Works: Yes",
+      "on_tap": "opens Works to type over, in place",
+      "route": "/item/it_lamp",
+      "then": "field-works-input"
+    },
+    {
+      "id": "more-works",
+      "control": "⋯ beside Works",
+      "on_tap": "opens Works's More sheet, with Lock it",
+      "route": "/item/it_lamp",
+      "then": "lock-field"
+    },
+    {
+      "id": "ship-it",
+      "control": "Ship it",
+      "on_tap": "opens the Ship sheet",
+      "route": "/item/it_kindle",
+      "goes": "/item/it_kindle/ship"
+    },
+    {
+      "id": "field-storage",
+      "control": "Storage: 16 GB",
+      "on_tap": "opens Storage to type over, in place",
+      "route": "/item/it_kindle",
+      "then": "field-storage-input"
+    },
+    {
+      "id": "more-storage",
+      "control": "⋯ beside Storage",
+      "on_tap": "opens Storage's More sheet, with Lock it",
+      "route": "/item/it_kindle",
+      "then": "lock-field"
+    },
+    {
+      "id": "field-battery",
+      "control": "Battery: Holds a charge for weeks",
+      "on_tap": "opens Battery to type over, in place",
+      "route": "/item/it_kindle",
+      "then": "field-battery-input"
+    },
+    {
+      "id": "more-battery",
+      "control": "⋯ beside Battery",
+      "on_tap": "opens Battery's More sheet, with Lock it",
+      "route": "/item/it_kindle",
+      "then": "lock-field"
+    },
+    {
+      "id": "handed-over",
+      "control": "Handed over",
+      "on_tap": "marks the chair handed over, with Undo",
+      "route": "/item/it_chair",
+      "then": "foot-undo"
+    },
+    {
+      "id": "foot-undo",
+      "control": "Undo",
+      "on_tap": "takes Handed over back",
+      "route": "/item/it_chair",
+      "after": [
+        "handed-over"
+      ],
+      "then": "handed-over"
+    },
+    {
+      "id": "open-pickup",
+      "control": "the pickup line",
+      "on_tap": "opens the Pickup sheet (pages §6.6 Splits off: Pickup)",
+      "route": "/item/it_chair",
+      "goes": "/item/it_chair/pickup",
+      "missing": true
+    },
+    {
+      "id": "sell-again",
+      "control": "Sell again",
+      "on_tap": "opens the Plan sheet",
+      "route": "/item/it_dunks",
+      "goes": "/item/it_dunks/plan"
+    },
+    {
+      "id": "failed-sell",
+      "control": "Go to Sell",
+      "on_tap": "goes to Sell",
+      "route": "/item/nope",
+      "goes": "/sell"
+    },
+    {
+      "id": "retry",
+      "control": "Try again",
+      "on_tap": "loads the item again (frontend-standard §4 Error: what failed and the one fix)",
+      "route": "/item/it_jacket?state=failed",
+      "goes": "/item/it_jacket",
+      "missing": true
     }
-  ]
+  ],
+  "route": "/item/it_jacket",
+  "back": "Back goes to the screen it came from; opened directly, to Sell."
 }

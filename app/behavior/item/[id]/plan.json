@@ -18,14 +18,306 @@
   ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/item/it_jacket/plan",
+      "shows": "What do you want?",
+      "also": [
+        "~About 4 to 9 days.",
+        "~$91.20",
+        "Similar ones sold for $85 to $115",
+        "~Posts at $95.",
+        "~$80.78",
+        "Not posting here",
+        "Nov 24: drops to $90"
+      ],
+      "absent": [
+        "Save: $95 on 2 sites"
+      ],
+      "why": "a live item’s plan: the five choices, the price with the sold range beside it, the lowest, each site with what it keeps, the drops; no foot until something changes"
+    },
+    {
+      "state": "one",
+      "route": "/item/it_chair/plan",
+      "shows": "~Posts at $35.",
+      "also": [
+        "~$31.25",
+        "Freight cost; local pickup only, which a local site does with no fee",
+        "A Home > Furniture category exists, but it ships only and its buyers want clothes",
+        "Not allowed here. Over the 15 lb cap, no pickup"
+      ],
+      "why": "a chair: one site posts, two are avoided with their reason, one is blocked (edge-cases §11)"
+    },
+    {
+      "state": "dense",
+      "route": "/item/it_jacket/plan?flip=facebook",
+      "shows": "Save: $95 on 3 sites",
+      "also": [
+        "~$84.83"
+      ],
+      "why": "three sites, Facebook added; the foot names the price and the count"
+    },
+    {
+      "state": "draft",
+      "route": "/item/it_switch/plan",
+      "shows": "Preview listings",
+      "also": [
+        "~$209.85",
+        "Not allowed here. Headphones, speakers and consoles are banned; cameras, film and lenses are allowed"
+      ],
+      "why": "a draft: the foot is Preview listings (pages §6.7 pill)"
+    },
+    {
+      "state": "researching",
+      "route": "/item/it_hoodie/plan",
+      "shows": "Stays at its price until you change it",
+      "why": "no price yet: Preview waits"
+    },
+    {
+      "state": "loading",
+      "route": "/item/it_jacket/plan?state=loading",
+      "shows": "the sheet’s skeleton under its heading",
+      "also": [
+        "Plan"
+      ],
+      "skeleton": true,
+      "absent": [
+        "What do you want?"
+      ],
+      "why": "the sheet’s skeleton over the item"
+    },
+    {
+      "state": "didnt-load",
+      "route": "/item/it_jacket/plan?state=failed",
+      "shows": "Can’t open this item",
+      "also": [
+        "It was deleted, or it didn’t load."
+      ],
+      "why": "what failed; Try again is in the controls, missing"
+    },
+    {
+      "state": "not-found",
+      "route": "/item/nope/plan",
+      "shows": "Can’t open this item",
+      "why": "the item is gone"
+    },
+    {
+      "state": "offline",
+      "route": "/item/it_jacket/plan?state=offline",
+      "shows": "Offline. Changes send when you’re back.",
+      "also": [
+        "What do you want?"
+      ],
+      "why": "the last copy; a save waits for signal (ways-out Everywhere)"
     }
   ],
   "controls": [
     {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "id": "sheet-scrim",
+      "control": "the dimmed item above the sheet",
+      "on_tap": "closes the sheet, back to the item",
+      "goes": "/item/it_jacket",
+      "at": [
+        195,
+        8
+      ]
+    },
+    {
+      "id": "choice-sell",
+      "control": "Sell it",
+      "on_tap": "picks Sell it (the default)",
+      "after": [
+        "choice-best"
+      ],
+      "shows": "~$91.20"
+    },
+    {
+      "id": "choice-fast",
+      "control": "Gone fast",
+      "on_tap": "picks Gone fast: the price moves to the bottom of the range",
+      "shows": "Save: $85 on 2 sites"
+    },
+    {
+      "id": "choice-best",
+      "control": "Best price",
+      "on_tap": "picks Best price: the price moves to the top of the range",
+      "shows": "Save: $115 on 2 sites"
+    },
+    {
+      "id": "choice-reserve",
+      "control": "Only at my price",
+      "on_tap": "picks Only at my price: no drops, never marked slow",
+      "shows": "Waits for your price. No drops, never marked slow."
+    },
+    {
+      "id": "choice-check",
+      "control": "Just checking",
+      "on_tap": "picks Just checking: every offer asks",
+      "shows": "Lists only where an offer doesn’t bind you. Every offer asks you."
+    },
+    {
+      "id": "gone-by",
+      "control": "the date, under Gone fast",
+      "on_tap": "sets the date it should be gone by (pages §6.7 row 4)",
+      "after": [
+        "choice-fast"
+      ],
+      "missing": true
+    },
+    {
+      "id": "price-track",
+      "control": "the price track with the sold prices as ticks",
+      "on_tap": "drags the price along the sold prices (pages §6.7 row 2, the posture slider)",
+      "missing": true
+    },
+    {
+      "id": "plan-price",
+      "control": "Price: $95",
+      "on_tap": "opens the price to type my own; the suggestion stays as one line beside it",
+      "then": "plan-price-input"
+    },
+    {
+      "id": "far-yes",
+      "control": "Yes, $500",
+      "on_tap": "confirms a typed price far outside the sold range; Save waits for it",
+      "after": [
+        "plan-price",
+        [
+          "plan-price-input",
+          "500"
+        ]
+      ],
+      "then": "save-plan"
+    },
+    {
+      "id": "plan-floor",
+      "control": "Lowest you take: $70",
+      "on_tap": "opens the lowest to type",
+      "then": "plan-floor-input"
+    },
+    {
+      "id": "plan-always",
+      "control": "Always accept at",
+      "on_tap": "opens Always accept to type",
+      "then": "plan-always-input"
+    },
+    {
+      "id": "accept-mode",
+      "control": "Ask me before every offer",
+      "on_tap": "sets accept mode to Ask me under any choice (ways-out §6.7)",
+      "missing": true
+    },
+    {
+      "id": "site-ebay",
+      "control": "eBay switch",
+      "on_tap": "skips eBay, kept as You skipped it",
+      "shows": "You skipped it"
+    },
+    {
+      "id": "site-depop",
+      "control": "Depop switch",
+      "on_tap": "skips Depop, kept as You skipped it",
+      "shows": "You skipped it"
+    },
+    {
+      "id": "site-facebook",
+      "control": "Facebook switch",
+      "on_tap": "adds Facebook, which the agent left out",
+      "shows": "Save: $95 on 3 sites"
+    },
+    {
+      "id": "site-depop",
+      "control": "Depop switch, avoided",
+      "on_tap": "adds an avoided site anyway (edge-cases §11)",
+      "route": "/item/it_chair/plan",
+      "shows": "Save: $35 on 2 sites"
+    },
+    {
+      "id": "drops",
+      "control": "Price drops switch",
+      "on_tap": "turns price drops off",
+      "shows": "Stays at its price until you change it"
+    },
+    {
+      "id": "fallback-ask",
+      "control": "Ask me",
+      "on_tap": "if it doesn’t sell, asks",
+      "after": [
+        "fallback-keep"
+      ],
+      "then": "save-plan"
+    },
+    {
+      "id": "fallback-donate",
+      "control": "Donate",
+      "on_tap": "if it doesn’t sell, donates",
+      "then": "save-plan"
+    },
+    {
+      "id": "fallback-keep",
+      "control": "Keep it",
+      "on_tap": "if it doesn’t sell, keeps it",
+      "then": "save-plan"
+    },
+    {
+      "id": "fallback-relist",
+      "control": "Relist",
+      "on_tap": "if it doesn’t sell, relists (never on Poshmark)",
+      "then": "save-plan"
+    },
+    {
+      "id": "handover-ship",
+      "control": "Ship",
+      "on_tap": "ships only",
+      "then": "save-plan"
+    },
+    {
+      "id": "handover-pickup",
+      "control": "Pickup",
+      "on_tap": "pickup only",
+      "then": "save-plan"
+    },
+    {
+      "id": "handover-both",
+      "control": "Either",
+      "on_tap": "ship or pickup",
+      "after": [
+        "handover-ship"
+      ],
+      "then": "save-plan"
+    },
+    {
+      "id": "save-plan",
+      "control": "Save: $95 on 3 sites",
+      "on_tap": "saves the plan to the live listings, with Undo",
+      "route": "/item/it_jacket/plan?flip=facebook",
+      "shows": "Saved. $95 on 3 sites."
+    },
+    {
+      "id": "save-plan-undo",
+      "control": "Undo",
+      "on_tap": "takes the save back",
+      "route": "/item/it_jacket/plan?flip=facebook",
+      "after": [
+        "save-plan"
+      ],
+      "gone": "Saved. $95 on 3 sites."
+    },
+    {
+      "id": "preview",
+      "control": "Preview listings",
+      "on_tap": "closes the plan and opens the Post preview with its price and sites",
+      "route": "/item/it_switch/plan",
+      "goes": "/item/it_switch/post"
+    },
+    {
+      "id": "plan-retry",
+      "control": "Try again",
+      "on_tap": "loads the plan again (frontend-standard §4 Error)",
+      "route": "/item/it_jacket/plan?state=failed",
+      "goes": "/item/it_jacket/plan",
+      "missing": true
     }
-  ]
+  ],
+  "route": "/item/it_jacket/plan",
+  "back": "The scrim or a drag down on the grabber closes the sheet, back to the item; the item’s Back is under the scrim."
 }
