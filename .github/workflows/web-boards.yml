@@ -38,6 +38,8 @@ jobs:
           fi
       - name: Draw the boards
         run: node brand/explore/web-home/boards/render.mjs brand/explore/web-home/boards/*/
+      - name: Draw every hand position in packs A, C and F
+        run: node brand/explore/web-home/boards/03-hands/poses.mjs
       - name: Check the hero on every screen, and record it
         run: |
           node brand/explore/web-home/hero/photos.mjs

@@ -23,7 +23,7 @@ header { color: var(--ink); }
 @media (max-width: 760px) { .cols { -webkit-mask-image: radial-gradient(ellipse 95% 44% at 50% 50%, rgb(0 0 0 / .08), rgb(0 0 0 / .25) 60%, rgb(0 0 0 / .6)); mask-image: radial-gradient(ellipse 95% 44% at 50% 50%, rgb(0 0 0 / .08), rgb(0 0 0 / .25) 60%, rgb(0 0 0 / .6)); } }
 .col { flex: none; width: var(--tile); position: relative; will-change: transform; }
 .tile { position: absolute; left: 0; width: var(--tile); height: var(--tile); border-radius: 20px; overflow: hidden; background: var(--surface); }
-.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(var(--soft)) saturate(.9) brightness(.82); transform: scale(1.06); transition: opacity 1.2s var(--ease-out); }
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(var(--soft)) saturate(.9) brightness(.7); transform: scale(1.06); transition: opacity 1.2s var(--ease-out); }
 .tint { position: absolute; inset: 0; background: var(--field); background-size: 220% 220%; opacity: .5; mix-blend-mode: soft-light; }
 :root { --tile: 168px; --soft: 3px; }
 @media (max-width: 760px) { :root { --tile: 104px; --soft: 2px; } }

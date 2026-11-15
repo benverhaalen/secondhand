@@ -87,3 +87,13 @@ test('sources: owned Expo files bind auth and export the contract method', async
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
 });
+
+test('source health reads the router engine rather than freezing its success rate', async () => {
+  const { ports } = await import('./sources.ts');
+  const health = ports.health;
+  try {
+    ports.health = (...args) => ({ ...health(...args), success: .5 });
+    const response = await call(examples.find(e => e.name === 'sources.health')!);
+    assert.equal((await response.json()).routes[0].success, .5);
+  } finally { ports.health = health; }
+});
