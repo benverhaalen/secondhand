@@ -57,6 +57,7 @@ export function LiveCapture({ mode }: { mode: string }) {
   const [studio, setStudio] = useState(false);
   // What the item is, asked first on its own page (Nate, words.md 2026-11-15); "Something else" leaves it to the photo.
   const [picked, setPicked] = useState(false);
+  const [family, setFamily] = useState<string | null>(null);
   const close = () => router.canGoBack() ? router.back() : router.replace('/' as Href);
 
   const run = async (label: string, operation: () => Promise<void>) => {
@@ -126,7 +127,7 @@ export function LiveCapture({ mode }: { mode: string }) {
   const pick = (type: string) => run('Saving', async () => {
     const current = capture ?? await start();
     setCapture(type === 'other' ? current : await setType(current, type));
-    setPicked(true);
+    setFamily(type); setPicked(true);
   });
   if (!picked) return <PickType mode={mode} busy={!!busy} error={error} onPick={pick} onClose={close} />;
 
@@ -152,7 +153,7 @@ export function LiveCapture({ mode }: { mode: string }) {
           <CameraAct id="cam-done" label={studio ? 'Prepare photos' : purpose === 'find' ? 'Find matches' : purpose === 'appraise' ? 'Appraise item' : 'Create draft'} onPress={finish} />
         </> : null}
       </CameraFoot>}>
-      {coaching ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}><ShotGuide step={guideStep} words={shotQuestion?.words} /></View> : null}
+      {coaching ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}><ShotGuide step={guideStep} family={family} words={shotQuestion?.words} /></View> : null}
       {needsPhoto && !permission?.granted && !error ? <CameraOff title="Use your camera" line="Take each photo when you are ready." acts={[{ id: 'camera-permission', label: 'Allow camera', onPress: () => permission?.canAskAgain === false ? void Linking.openSettings().catch(failure => setError(captureMessage(failure))) : void askPermission() }, { id: 'camera-library', label: 'Choose photos', onPress: library }]} /> : null}
       {error ? <CameraOff title="Could not continue" line={error} acts={[{ id: 'capture-retry', label: 'Try again', onPress: () => pending.length ? void run('Uploading photos', () => send(pending)) : refresh() }, { id: 'capture-error-close', label: 'Close', onPress: close }]} /> : null}
     </Viewfinder>
