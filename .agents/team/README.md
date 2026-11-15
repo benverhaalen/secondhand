@@ -9,6 +9,7 @@ Coordination stays inside the product repository. Read the relevant packet, not 
 - [42: the Expo app shell exists, and what changed on Nate's side since packet 40](packets/team/42-app-shell-and-nates-updates.md)
 - [43: design work for Ben, from Nate's side](packets/team/43-design-work-for-ben.md)
 - [45: handoff to the build session](packets/team/45-handoff-to-the-build-session.md)
+- [53: an open benchmark against the other tools](packets/team/53-open-benchmark.md)
 - [Original source excerpts](sources.md): consult relevant wording before consequential interpretation.
 - [Operating guide](../coordination.md): cadence, scoped helpers, human disagreements, git rules, and checks.
 

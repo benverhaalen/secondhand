@@ -12,27 +12,34 @@
     "The cards' words and order live in app/src/today/cards.ts, not in the screen, so they are tested in node and the item page can read the same card (one fact, one place).",
     "The person and the state are read through useScreen() (app/src/demo/screen.ts), so Today draws every state at /?state=<s> like every page; ?world=stops and ?fail=<decision ids> are Today's own extras, because the demo has no server to fail.",
     "On an offer card Accept leads (black when the card is the lead or due within the hour, C4) and the agent's counter is the second, though the data suggests the counter: the fact line shows what accepting keeps, and the person clearing out looks at what they keep, then accepts (pages §3).",
-    "On a pickup that asks for the home address, Keep the lot leads and Share address is the second: an address is shared only on the person's tap (decision 2026-11-14, locked), so the safe choice is the one the eye lands on.",
+    "On a pickup that asks for the home address, Meet in public leads and Send address is the second: an address is shared only on the person's tap (decision 2026-11-14, locked), so the safe choice is the one the eye lands on, and each pill says what happens (Ben 06:19: \"I don't really know what keep the lot means\").",
     "Every act holds about 5 s behind an Undo toast before it reaches the site (Gmail's undo send), so even a sent reply or an accept can be taken back in that window; after it, the log and the site's own limits apply.",
     "The batch of labels says what the tap spends (Labels cost $6.40), not what the sales keep, because the top slot already says that money (one fact, one place).",
     "The handled line names the most frequent thing the agent did and how many others ('Took 2 listings down, and 1 more'), never a bare count, because Ben called '3 need you, 11 handled' meaningless (ledger L13); it opens its log in a sheet, with Undo where the site still allows it.",
-    "The notices and the handled line are the last rows of Good to know, since they ask nothing; the tier label shows only where two tiers meet.",
+    "The notices and the handled line are the last rows of Good to know, since they ask nothing.",
     "A new person sees the next setup step in the top slot and one row, What's something worth?, instead of 'Nothing needs you': one display heading per view (A7), and 'needs you' means nothing before anything is listed.",
     "Two pills and More hold about 26 characters of label; past that the second pill drops its amount, then moves to More (the edge world's $10,999.99 offer ran past the corner).",
     "A queue opens full screen one item at a time (QueueView part); each Post leaves the stack, Not now keeps it as a draft, and the last one closes it and takes the card away.",
     "The relink card has no item, so it shows the item stuck on that site with the site's badge: the photo still leads (C3).",
-    "A thing sold on two sites is one card, Sold twice, with Keep the first as the one tap and Compare opening both sales side by side (site, buyer's price, what each keeps, what cancelling each costs); the top slot counts it once until the person picks (spec/edge-cases.md §1).",
+    "A thing sold on two sites is one card, Sold twice, with Keep first buyer as the one tap and Compare opening both sales side by side (site, buyer's price, what each keeps, what cancelling each costs); the top slot counts it once until the person picks (spec/edge-cases.md §1).",
     "Each stop on the auto-list tree is one card with one question in its fact line and the likely answer as the black pill, so a stopped tree costs a tap, never a restart; a retake opens the camera (spec/edge-cases.md §7). The stops world (/?world=stops) draws them all.",
     "Every card's More ends with I did this already, Open the chat and Open the item (ways-out, Today: 'I already did that on the site', 'None of these buttons').",
     "An amount typed under the person's lowest asks once in the sheet ('Under your lowest, $70. Tap again to send it.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona).",
     "One black pill per view (C4, DecisionCard): only the lead card, nearest its deadline, and any card due within the hour lead with black; every other card leads with the light fill.",
-    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Try again, and a card that failed is the failed state reached with ?fail=."
+    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Try again, and a card that failed is the failed state reached with ?fail=.",
+    "Every tier sits under its header with its count, always (Needs you now, When you can, Good to know), drawn with Sell's shelf head, so Today reads as organized as Sell (Ben 06:19: \"the sell one seems very organized and it's very easy to see like needs you in progress\"); the risk order holds inside each.",
+    "The lead card keeps its state gradient and says why over it, with a clock: Due first, today at 3 pm (Ben 06:19: \"I don't really know why the first entry is like colored\"). The color is the one card due soonest; nothing else is colored.",
+    "Money that reaches the person reads one way on every card, You get $81.55, after fees and shipping, beside the buyer's price on the pill (Ben 06:19: \"you keep this much money. There's probably a better way to word that\").",
+    "A buyer asking to pay off the site is tagged Possible scam, with Block and Say no (Ben 06:19: \"rather than careful, it could be like possibly a scam\").",
+    "The money at the top is the peak amount beside the photos of what sold, each with its site's badge, overlapped as a hand of cards (MoneyNews part), so the good news is the things, not a figure alone (Ben 06:19: \"the money sold thing ... is kind of like less\"; research/today/ben/top-of-today-and-stacking.md §1).",
+    "A sale on Today reads as its push does (spec/notifications.md, It sold): the Sold tag on the site's badge, the item, You get, and the ship-by clock.",
+    "Every card's More has Open on the site with a link icon, the card's site badge saying which site (Ben 06:19: \"you should always have a way to go back to the site\"). The wash is on Today whatever the top holds (Ben 06:21)."
   ],
   "states": [
     {
       "state": "typical",
       "route": "/?world=clearing",
-      "shows": "Since yesterday $97.33, then the pickup on the state gradient, the jacket's 2 offers, the scam warning and the signed-out site; When you can: 2 to ship, the Switch ready to post, the lamp's price, a question; Good to know: a review, two notices and the handled line"
+      "shows": "the wash; Since yesterday $97.33 beside the chair and the jacket that sold, each on its site; Needs you now 4: Due first, today at 3 pm over the pickup on its state gradient (Meet in public, Send address), the jacket's 2 offers (You get $81.55), Possible scam, the signed-out site; When you can: 2 to ship, the Switch ready to post, the lamp's price, a question; Good to know: a review, two notices and the handled line"
     },
     {
       "state": "new",
@@ -52,7 +59,7 @@
     {
       "state": "one",
       "route": "/?state=one",
-      "shows": "Since yesterday $97.33 and one card, the pickup on its state gradient with the one black pill, Keep the lot; nothing else"
+      "shows": "Since yesterday $97.33 and one card, the pickup on its state gradient with the one black pill, Meet in public; nothing else"
     },
     {
       "state": "loading",
@@ -102,7 +109,7 @@
     {
       "state": "stops",
       "route": "/?world=stops",
-      "shows": "Sold twice first (Both paid, $42 and $40; Keep the first, Compare), the top slot counting it once (3 sold), and one card per stop of the auto-list tree: a failed post, the site changed the price, a claim nothing backs, a blurry tag photo, Do the Joy-Cons drift?"
+      "shows": "Sold twice first (Both paid, $42 and $40; Keep first buyer, Compare), the top slot counting it once (3 sold), and one card per stop of the auto-list tree: a failed post, the site changed the price, a claim nothing backs, a blurry tag photo, Do the Joy-Cons drift?"
     }
   ],
   "controls": [
@@ -140,12 +147,12 @@
     },
     {
       "id": "dec_addr-spot",
-      "control": "Keep the lot",
+      "control": "Meet in public",
       "on_tap": "keeps the pickup at the library lot: Sending, then the card leaves with Undo"
     },
     {
       "id": "dec_addr-share",
-      "control": "Share address",
+      "control": "Send address",
       "on_tap": "sends the address only on this tap: Sending, then the card leaves with Undo"
     },
     {
@@ -287,7 +294,7 @@
     {
       "id": "dec_double-first",
       "world": "stops",
-      "control": "Keep the first, on the Sold twice card",
+      "control": "Keep first buyer, on the Sold twice card",
       "on_tap": "Cancelling the other, then the card leaves with Undo"
     },
     {
@@ -325,6 +332,11 @@
       "route": "/?state=failed",
       "control": "Try again, when Today did not load",
       "on_tap": "loads Today again"
+    },
+    {
+      "id": "dec_jacket-site",
+      "control": "Open on the site, in More",
+      "on_tap": "opens the jacket's listing on its site"
     }
   ],
   "back": "Today is a tab: it has no Back. The queue's Back closes the queue; a sheet closes on its scrim."

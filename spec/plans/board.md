@@ -248,6 +248,15 @@ Not started: launches with the first merges. Each stream lead runs its own engin
 - [ ] the real-item set scored per field
 - [ ] one full rehearsal of the path on the event workspace with real counts
 
+## 17 Open benchmark
+
+Asked by Nate ([packet 53](../../.agents/team/packets/team/53-open-benchmark.md), [spec](../benchmark.md)). Starts after the public search API exists.
+
+- [ ] the runner: `bench/run.mjs`
+- [ ] the scorer: `bench/score.mjs`
+- [ ] the rivals' records: `bench/rivals/`
+- [ ] the results file the website reads: `bench/out/results.json`
+
 ## Blocked
 
 (none)

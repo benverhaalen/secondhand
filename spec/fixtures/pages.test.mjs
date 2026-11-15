@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirHash, filesUnder, piiHits } from './frames/lib.mjs';
 
 const dir = fileURLToPath(new URL('./pages/', import.meta.url));
-const PINNED = { version: 1, sha256: 'd681c029e3fef3919c1597acb8990d3db7272ab4ffbb3e7c014dd54fc1e9efe6' };
+const PINNED = { version: 2, sha256: '829dd106e654fa187cd88ee0c579888e6f00b67048f8973945a8904dfc129f0c' };
 const manifest = JSON.parse(fs.readFileSync(`${dir}manifest.json`, 'utf8'));
 const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(dir + f)).digest('hex');
 const cents = (p) => Math.round(parseFloat(p.replace(/[^0-9.]/g, '')) * 100);
@@ -16,7 +16,7 @@ const unesc = (s) => s.replace(/&#x27;/g, "'").replace(/&quot;/g, '"').replace(/
 const EXTRACT = {
   ebay: [/<li class="s-item"><a class="s-item__link" href="([^"]+)"><div class="s-item__title">(.*?)<\/div><\/a><span class="s-item__price">(.*?)<\/span>/g, (m) => [m[1], m[2], m[3]]],
   facebook: [/<a href="(\/marketplace\/item\/[^"]+)"><span data-price>(.*?)<\/span><span data-title>(.*?)<\/span>/g, (m) => [m[1], m[3], m[2]]],
-  mercari: [/<a href="([^"]+)"><p data-testid="ItemName">(.*?)<\/p><\/a><span data-testid="ItemPrice">(.*?)<\/span>/g, (m) => [m[1], m[2], m[3]]],
+  mercari: [/<div id="m\d+" data-itemprice="(\d+)"[\s\S]*?href="([^"]+)"[\s\S]*?data-testid="ItemName"[^>]*>([^<]*)</g, (m) => [m[2], m[3], (Number(m[1]) / 100).toFixed(2)]],
   depop: [/<a aria-label="(.*?)" href="([^"]+)"><\/a><p aria-description="Price">(.*?)<\/p>/g, (m) => [m[2], m[1], m[3]]],
   poshmark: [/<a href="([^"]+)" class="tile-grid-redesign__meta-link"><span class="tile-grid-redesign__title"> (.*?) <\/span><span class="tile-grid-redesign__price-current"> (.*?) <\/span>/g, (m) => [m[1], m[2], m[3]]],
 };

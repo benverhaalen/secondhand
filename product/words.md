@@ -1203,3 +1203,47 @@ Ben, project chat (relayed), 2026-11-15 06:59 UTC.
 > go through and find a bunch of ambigious problems that need solving with logic and how the product is made - similar to the cross posting thing. we have a lot of messy problems and places where this can fail and we need to have an answer about how we respond to all of them. so find them and use rdd research or iae and find adjacent fields. also consider the crowd in the pitch. without getting too specific or saying directly how to think about it in an insurance lens, our example should explain everything in a way where a guy whos worked in insurance his whole life kinda gets the logic. or databricks. or salesforce. but like making it super implicit. hidden in a way. but pulling from all these domains of the judges and explaining it in ways that make sense to them super easily. and showing we really thought through this problem and really have conviction about its usecase. i do worry that there is almost too many features to state all out loud and the process of thinking we went with building it is super important to how we explain it. we want to show that we think like a guy the companies need to hire. all implicit. maybe create a pitch constitution and build it out. like really should outline the multiple things we have and the why. understanding what i want out of this not what i say.
 
 Used in: [pitch-constitution.md](pitch-constitution.md), [pitch.md](pitch.md#the-three-minute-version-with-the-demo), [devpost.md](devpost.md).
+## 2026-11-15 a new seller starts on same take-home
+
+Ben, thread "Cross-list Depop listings and price with quant", 07:00 UTC, tapped on a decision card. The question: "Which cross-listing price rule should a new seller start on?" The option he chose:
+> Same take-home: Default is same money everywhere; seller can switch rule once for the account and override per item.
+
+Used in: [decisions.md](decisions.md#2026-11-15-cross-listing-starts-on-same-take-home), `SPREADS` in app/src/engines/listing/crosslist.ts.
+
+## 2026-11-15 nate benchmark our intelligence engines against the others in the open
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15, early morning Central.
+> what is thriftx, a repo? I want to find things to benchmark our intelligence engines against, things to really show on our website how we are more reliable, accurate, and credible than these other systems. don't do just because of the eval for fact based pricing and such, but the swath of data that even paid enterprise sources don't. If there aren't things you can find, then list everything every competitor does, and we'll find aspects to what we can beat them on
+
+## 2026-11-15 nate show the benchmark as amounts, not tables of checks and crosses
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> exemplify and take reference from other public benchmarks and products that are of similar nature and compete, what do they show, tables with x's and check marks? we dont want that when it doesnt show enough, we want amount of items compared graphically shown, amount of time, price, accuracy or capability could be the x's and checkmarks
+
+## 2026-11-15 nate write the benchmark up in full and push it
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
+> write up a full md detailing it and push it in the repo
+
+## 2026-11-15 nate the Mac as extra compute, Claude driving here and Codex there, and no more crashes
+Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Central, as the Mac Studio came online over Tailscale. Separate messages.
+> Lets have you though finish what was paused. And fully prepare all streams at a good point to then get it up. You can even copy everything currently local if you want and get everything up, using it as an extra machine for compute and testing and such. Of course update things as you see fit
+
+> ensure codex is up to date, and our config is pristine, no biggie if not just port what works and ensure it is even base codex with the necessary skills and optimized token spend per task
+
+> I would say one problem is none of your streams on this device finished, or at least none I can see. I would check on these, you can still leverage this for main development and pass bulk huge tests and running sessions onto that
+
+> this node issue is something wrong with what or how we run what we do. Its crashing on my computer and takes up so much memory on my mac
+
+> review through everything, now you can also clear up the stale streams like stream 1, 12, 13, 10 that all stopped
+
+> Lets check through real quick, Ill sign into claude on mac, ideally claude here, codex there
+
+> Utilize the mac to also run tests, utilize runs of the browser and building harnesses, you can use claude, port over the full config for this project and such, its however you feel best to perform and execute it very well
+
+> ensure we continue focused development, planning, and orchestration driven by you claude on this computer
+
+> you can update and utilize docker, take advantage of the ram, see all aspects such compute can aid us in performance and efficiency when building, but dont let the fact that the other device isn't fully configured out to affect how we develop, how much we spend, it should optimally follow how you prompt and instruct it
+
+> Now that we fixed the crash, ensure it doesnt happen again and perhaps push further now to handle more, not of course so much that it crashes either this computer or the mac but you understand how to effectively dispatch.
+
+## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
+
+Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
