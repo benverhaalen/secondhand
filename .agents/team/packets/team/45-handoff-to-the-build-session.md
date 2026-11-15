@@ -18,6 +18,21 @@ Nate, about 21:00 Central on November 14: "the entire product must be finished b
 
 Run at the widest parallel width the plan allows from the first minute. A task that is late does not hold its wave if nothing depends on it. Tell Nate at each line of this table whether it was met.
 
+## Who builds what
+
+Nate: "Utilize codex too, sol and terra and even astra at times. 6.1 which you have access to, they can handle work alongside you, but should be understood to what extent you want your own family of models working" ([words](../../../../product/words.md#2026-11-14-nate-faster-than-the-proposed-timeline-with-codex-beside-claude)). The clock above is the outer bound; with both families running at full width the checkpoints should be met early. *Agent proposal* for the split:
+
+| Work | Goes to | Why |
+|---|---|---|
+| Orchestration, every design choice, the operating design of each site adapter, anything that touches money, floors, trust, secrets, sessions or a person's account | Claude: the Fable orchestrator, Opus where the approach must be found in the code | these carry the protections and the whole-product picture |
+| Specified tasks with owned files and a proving command that leave no design choice: the arithmetic engines (comps, keep, pair score, velocity, crops, stats normalising), scaffolds, fixtures, contract examples, test harnesses | Codex workers on Sol (GPT-6.1), run beside Claude's Sonnet seats so neither queue waits | scope-disciplined and parallel; half of the start-now page fits |
+| A second opinion on a risky diff, or a second attempt after a Claude seat fails twice | Codex, picked per case | a different family finds different faults |
+| Terra | whatever the Codex skill's roster says it is suited to on this machine: read the roster before the first dispatch, do not assume | not verified in this session |
+| Images: demo items, photo fixtures, planted-change pairs | Astra through the `image-gen` skill | the repo's rule for every generated image |
+| Review of every Codex-written change | a fresh Claude reviewer, with `node scripts/evidence.mjs brief` | Claude reviews Codex code; no change is reviewed by its writer |
+
+Send independent tasks to both families in the same message. A Codex task gets the same brief block, `rests`, check and breaks list as a Claude one.
+
 ## Start here
 
 1. [spec/README.md](../../../../spec/README.md): the index of everything below.
