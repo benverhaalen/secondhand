@@ -193,3 +193,4 @@ Nobody owns these. The first three need Ben; the rest can be assigned.
 | 07:14, 07:47 | Everything in the repo; packets for Nate | Done (standing) | [AGENTS.md](../AGENTS.md#how-to-work-here) |
 | 07:18 | Every decision to the project chat; merge to main | Done (standing) | project instructions |
 | 08:18 | Save Opus: fewer steps and tokens in the build | Ben | the coordinator's four cuts are waiting on his yes |
+| 08:43 | Research runs on Codex from now on, with nothing lost or redone | Assigned | Each thread hands off its remaining research at its next breakpoint ([words](../product/words.md#2026-11-15-research-moves-to-codex)) |

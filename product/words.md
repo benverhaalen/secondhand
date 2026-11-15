@@ -1591,3 +1591,8 @@ Ben, project chat, 08:42 and 08:43 UTC. Two messages.
 > switch research over to codex when you get the chance without setting the research back at all
 
 Used in: [live-buy-demo.md](live-buy-demo.md), [research/watch/ben/codex-briefs/cadence-and-market.md](../research/watch/ben/codex-briefs/cadence-and-market.md).
+## 2026-11-15 research moves to codex
+Ben, project chat, 08:43 UTC.
+> switch research over to codex when you get the chance without setting the research back at all
+
+Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
