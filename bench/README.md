@@ -5,9 +5,12 @@ The open benchmark's runner and scorer ([spec/benchmark.md](../spec/benchmark.md
 | Command | Does |
 |---|---|
 | `node bench/run.mjs` | asks our `/v1` API (in process, through the same contract layer a phone hits) every question for every item in `spec/items/manifest.json`; writes `bench/out/<run_id>/records.jsonl` and the raw answers under `raw/` |
+| `node bench/run.mjs --tool baseline` | one plain Poshmark search GET per item, using the existing reader to count cards; no harness or retries |
 | `node bench/run.mjs --base <url>` | the same over HTTP against a running edge, as a visitor |
+| `node bench/score.mjs bench/out/<run_id> --baseline bench/out/<baseline_run_id>` | score both runs together, tools alphabetical, with record paths relative to the primary run folder; both must use the same manifest bytes and item set |
 | `node bench/score.mjs bench/out/<run_id>` | rows 1, 2, 3, 8 and 10 into `bench/out/<run_id>/results.json`, each number with "n of N", a Wilson 95% interval where it is a share, nearest-rank p50 and p95 for times (never an average), and the record lines behind it |
-| `node --test bench/run.test.mjs bench/score.test.mjs` | the tests: 6 and 20 |
+| `node --test --test-concurrency=1 bench/run.test.mjs` | runner checks, using injected reads without a server or browser |
+| `node --test --test-concurrency=1 bench/score.test.mjs` | scorer checks, including old records and a separate baseline run |
 
 ## The record
 
@@ -23,9 +26,29 @@ One JSON object per line, one per answer. Fixed 2026-11-15; ours and every rival
 | `sites[]` | the marketplaces the answer drew on |
 | `facts[]` | `{kind, count}` for the twelve kinds of row 2: `sold_prices, live_listings, official_price, discounts, product_reviews, seller_reviews, demand_trend, time_to_sell, fees_per_site, you_keep, same_item_elsewhere, price_history` |
 | `numbers[]` | `{name, value_cents, citation_id, evidence[]}`: row 3 counts the share with a citation or evidence |
+| `reads[]` | `{site, lane, ms, outcome, rows, warm}` from `searched[]`; lanes are `plain`, `cloud_browser`, `own_browser`, `official`, `mcp`; the first read of a site in a run is cold (`warm: false`), later reads warm; repeated job snapshots count once |
+| `cost` | `{browser_s, proxy_bytes, model_calls, cents}`; missing usage and unknown rates stay null; rates and source lines live in [costs.mjs](costs.mjs), with cloud time billed by started minute per read |
+| `cited_facts` | count of `numbers[]` with a citation or evidence |
+| `lane` | `plain` on baseline records; per-site lanes are in `reads[]` |
 | `range` | `{low_cents, high_cents, as_of}` or null |
 | `delist[]` | `{site, sold_at, ended_at}` for question `delist`, else null |
 | `raw_ref` | the saved raw answer, relative to the run folder |
+
+The added fields are optional when reading old records. The runner maps source lanes `public_page` to `plain` and `harness` to `cloud_browser`. Browser seconds come from browser-lane read times; proxy bytes and model calls require usage in the response’s `cost` object and otherwise remain null. An approximate account-day cost or a token price does not supply a per-read or per-call rate.
+
+The baseline fetch is injected as `run({tool: 'baseline', fetch})`; tests use [the recorded Poshmark page](fixtures/run/poshmark.html), copied unchanged from `spec/fixtures/pages/poshmark.html`. Redirects are recorded without following them so each item makes at most one request. Missing queries produce `no_query` without a request.
+
+## Speed rows
+
+All are under row `8`, per tool, with nearest-rank p50 and p95, counts, samples and record references. `--baseline` adds a separately recorded run through the same scoring code.
+
+| Row | Meaning |
+|---|---|
+| `first`, `full` | seconds from request to first marketplace results and to the full answer, including missing-time counts |
+| `seconds_per_cited_fact` | full-answer seconds divided by `cited_facts`; zero-fact answers and missing measurements are listed separately |
+| `reads_by_lane[]` | read seconds grouped by site and lane |
+| `cold_warm[]` | read seconds per site for cold and warm reads |
+| `cost` | cents per answer; null or absent costs are counted and listed under `unknown` |
 
 A sale is used for row 7 only if it is dated after the record's `asked_at` (`saleUsable` in `score.mjs`).
 
