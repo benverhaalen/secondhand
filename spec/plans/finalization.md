@@ -198,3 +198,7 @@ Proofs rerun by the orchestrator, who wrote none of these fixes. Each line is *o
 - Python: `pytest` in `jobs/` passes with no collection error; `pytest databricks deploy` 441 passed, none failed. DB5's suites are green.
 - The gate: 3,751 tests, 3,725 pass, 18 fail; 230 static findings. Of the 18: four are search's (two in `search-latency.test.ts`, the cached-then-live refresh, the Mercari linked search), two are the fixture walk in `scripts/walk.test.mjs`, ten are rendered fixtures failing one brand rule (packet 84, Ben's), and two were this machine's setup (the assist tests without the Anthropic package, one capture test that calls `python`). The stale copy test was fixed on main minutes after this run (c300e169).
 - Type check: errors only for two packages missing from the Mac's shared modules, which were rebuilt from main's lockfile afterwards.
+
+**2026-11-15, 13:25 UTC, main at c725a381, Windows** (row EN1 and the proof):
+- The valuation tests: 205 of 205 pass (`app/src/engines/valuation/*.test.ts` and the valuations route's test).
+- `node scripts/realtime-proof.mjs`: 2 of 10 links work, up from 1 this morning. Link 1 (the check keeps the thin-basis level and note) now works; link 5 moved from "not built" to "built, not called"; links 2 to 9 are still built and not called. Its own test passes 13 of 13.
