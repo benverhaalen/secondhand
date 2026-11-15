@@ -16,7 +16,7 @@
   --on-field-2:  rgb(10 10 10 / .65);   /* secondary text on the field (5.3:1 on sky) */
   --sec-on-field: rgb(255 255 255 / .72); /* a second button on the field */
   /* the ring (Art. 5; Ben, round 8): eight light hues under one rule, in ring order. A field is three neighbors on it */
-  --lilac:       #DDCEFE;               /* no meaning yet. Not a state: under simulated deutan vision it sits .004 from sky (Art. 5, States) */
+  --lilac:       #DDCEFE;               /* no meaning yet. Under simulated deutan vision it sits .004 from sky (Art. 5) */
   --sky:         #A5E1FE;               /* state "live" (Ben, round 10) */
   --aqua:        #91EAE9;               /* the field only */
   --mint:        #A1EACB;               /* state "sold" (Ben, round 10) */
