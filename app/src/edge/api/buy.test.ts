@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
-import { deps, route, visitorId } from './http.ts';
+import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest } from './buy.ts';
 
@@ -53,7 +53,7 @@ for (const e of examples.filter(e => e.status < 400 && ['POST', 'PATCH', 'PUT'].
   }
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.startsWith('POST '))) test(e.name + ': reconnect replays same action and rejects changed body', async () => {
-  const headers = { 'Idempotency-Key': 'test_reconnect', ...(e.auth === 'visitor' ? { 'X-Visitor-Id': visitorId() } : {}) };
+  const headers = { 'Idempotency-Key': 'test_reconnect', ...(e.auth === 'visitor' ? { 'X-Visitor-Id': 'vis_worker01' } : {}) };
   const first = await call(e, { headers }), again = await call(e, { headers });
   assert.equal(again.status, first.status); assert.equal(await again.text(), await first.text());
   assert.equal(again.headers.get('Idempotent-Replayed'), 'true');

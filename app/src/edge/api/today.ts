@@ -8,18 +8,16 @@ import { queue } from '../today/today.ts';
 import type { Ctx } from './http.ts';
 import { view } from './decisions.ts';
 import { store } from './store.ts';
-import { db } from '../store/db.ts';
-import { kv } from '../store/kv.ts';
 
 export type Headline = { kind: 'kept_since_last_open' | 'next_setup_step'; value: unknown; label: string; sub: string; citation_id: string | null; state?: string; path?: string };
 export const headlinePort: { get: (user_id: string, since: string | null) => Headline | null | Promise<Headline | null> } = { get: () => null };
 
-const lastOpen = kv(db());
+const lastOpen = new Map<string, string>(); // shortcut: per process; moves to user.last_open_at in Lakebase with db-1
 
 export async function today(ctx: Ctx) {
   const user_id = ctx.user_id!;
   const nowMs = Date.now(), now = new Date(nowMs).toISOString();
-  const since = lastOpen.get<string>('last_open', user_id) ?? null;
+  const since = lastOpen.get(user_id) ?? null;
   const decisions = view(queue(store, { user_id, now }), nowMs);
   const headline = await headlinePort.get(user_id, since);
   const body: Record<string, unknown> = {
@@ -32,7 +30,7 @@ export async function today(ctx: Ctx) {
   };
   // never a zero: a kept amount of nothing is no headline
   if (headline && !(headline.kind === 'kept_since_last_open' && !(headline.value as { amount_cents?: number })?.amount_cents)) body.headline = headline;
-  lastOpen.set('last_open', user_id, now);
+  lastOpen.set(user_id, now);
   ctx.log.event('state.change', { entity: 'user', id: user_id, to: 'opened_today', open: decisions.length });
   return { status: 200, body };
 }

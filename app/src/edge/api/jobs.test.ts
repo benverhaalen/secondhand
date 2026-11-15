@@ -7,7 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { checkLog } from '../../../../spec/log.mjs';
 import type { JobRow } from '../events/ports.ts';
-import { ApiError, deps, resetRequestState, route, visitorId } from './http.ts';
+import { ApiError, deps, route } from './http.ts';
 import { EXAMPLES, STREAMS, example, examplesServed } from './examples.ts';
 import { getJob, jobEvents, jobsOn, memoryJobs, seedExamples, streamOpts, userStream, type JobStore, type SseFrame } from './jobs.ts';
 import { sqliteStore } from '../events/sqlite-store.ts';
@@ -57,7 +57,7 @@ test('prune drops ordinary search frames but never running search frames', () =>
 beforeEach(() => {
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.verify = async (t) => (t === 'good' ? 'usr_8f2k' : t === 'other' ? 'usr_other' : null);
-  resetRequestState(); deps.now = () => Date.now();
+  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
 });
 
 const seeded = () => { const s = memoryJobs(); seedExamples(s); return s; };
@@ -95,15 +95,14 @@ test('seeded example jobs answer their examples, and the stream formats frames a
 
 test('the wrong user gets 404, a visitor sees only its own vis_ jobs', async () => {
   const s = seeded(); const h = handlers(s);
-  const visitor = visitorId(), otherVisitor = visitorId();
-  s.put(job('job_mine'), 'usr_8f2k'); s.put(job('job_vis'), visitor);
+  s.put(job('job_mine'), 'usr_8f2k'); s.put(job('job_vis'), 'vis_abcdefgh1');
   assert.equal((await call(h.get, '/v1/jobs/job_mine')).status, 200);
   const other = await call(h.get, '/v1/jobs/job_mine', {}, 'other');
   assert.equal(other.status, 404); assert.equal((await other.json()).code, 'not_found');
   assert.equal((await call(h.events, '/v1/jobs/job_mine/events', {}, 'other')).status, 404);
-  const own = await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': visitor }, null);
+  const own = await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': 'vis_abcdefgh1' }, null);
   assert.equal(own.status, 200); await own.body!.cancel();
-  assert.equal((await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': otherVisitor }, null)).status, 404);
+  assert.equal((await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': 'vis_zzzzzzzz2' }, null)).status, 404);
   assert.equal((await call(h.events, '/v1/jobs/job_vis/events', {}, 'good')).status, 404); // a signed-in user does not see a visitor's job
 });
 

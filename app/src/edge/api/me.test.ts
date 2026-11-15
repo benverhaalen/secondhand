@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAuth, memoryStore } from '../auth.ts';
-import { deps, resetRequestState, route } from './http.ts';
+import { deps, route } from './http.ts';
 import { example } from './examples.ts';
 import { makeAuthHandlers } from './auth.ts';
 import { makeMeHandlers } from './me.ts';
@@ -21,7 +21,7 @@ async function world(workspace?: { db: Db; vault: Vault }) {
   const sink = memorySink(), log = createLog({ src: 'edge.me.test', build: 'test', sink });
   const runtime = createRuntime(eventStore(), log, { now: () => t });
   const auth = createAuth({ store, now: () => t, verifyApple: async (k) => ({ subject: k }), verifyGoogle: async () => null, sendCode: () => {} });
-  deps.verify = auth.verifyAccess; resetRequestState(); deps.now = () => t; deps.log = log;
+  deps.verify = auth.verifyAccess; deps.idem.clear(); deps.now = () => t; deps.log = log;
   const a = makeAuthHandlers(auth, store), m = makeMeHandlers({ store, auth, now: () => t, runtime, workspace });
   const r = {
     apple: route('POST /v1/auth/apple', a.apple, { auth: 'none' }), get: route('GET /v1/me', m.get), patch: route('PATCH /v1/me', m.patch), del: route('DELETE /v1/me', m.delete),

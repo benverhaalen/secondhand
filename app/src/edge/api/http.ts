@@ -3,10 +3,7 @@
 // Route files under app/src/app/v1/ stay thin: `export const GET = route('GET /v1/items/:id', handler)`.
 import { consoleSink, createLog } from '../../../../log/index.js';
 import { EXAMPLES, exampleFor, type Example } from './examples.ts';
-import { createHmac, randomInt, timingSafeEqual } from 'node:crypto';
-import { db } from '../store/db.ts';
-import { kv } from '../store/kv.ts';
-import { secret } from '../store/secrets.ts';
+import { memoryStore } from '../../engines/param/param.ts';
 
 export type Retry = { by: 'auto' | 'user' | 'none'; after_s?: number };
 export type Reply = { status: number; body?: unknown; headers?: Record<string, string> } | Response;
@@ -36,13 +33,16 @@ export type Deps = {
   verify: (token: string) => Promise<string | null>;
   log: Log;
   now: () => number;
-  kv: ReturnType<typeof kv>;
-  // shortcut: reset seams kept so the 17 existing route tests need no edit; new tests call resetRequestState().
-  idem: { clear(): void }; visits: { clear(): void };
+  idem: Map<string, { hash: string; status: number; body: string; headers: Record<string, string>; at: number }>;
+  visits: Map<string, { window: number; n: number }>;
   visitorPerMinute: number;
   connectingAddress: (req: Request) => string | null;
   started: boolean;
 };
+
+export const params = memoryStore();
+// Prior from the J2 brief: at most 10000 visitor addresses retained in one process.
+params.declare({ name: 'visitor_max_entries', family: 'scalar', prior: 10000, guard_lo: 1 });
 
 const peerHeader = process.env.SECONDHAND_PEER_HEADER;
 
@@ -50,9 +50,9 @@ export const deps: Deps = {
   verify: async () => null, // set by app/src/edge/auth.ts at import (bindAuth), so tests can swap it
   log: createLog({ src: 'edge.api', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }),
   now: () => Date.now(),
-  kv: kv(db()),
-  idem: { clear: () => deps.kv.clear('idem') },
-  visits: { clear: () => deps.kv.clear('visit') },
+  // shortcut: process memory until the Store has http_idempotency; lost on restart
+  idem: new Map(),
+  visits: new Map(),
   visitorPerMinute: 30,
   // Deployment must name a client-address header that the host overwrites.
   connectingAddress: (req) => peerHeader ? req.headers.get(peerHeader)?.trim() || null : null,
@@ -60,11 +60,6 @@ export const deps: Deps = {
 };
 
 const DAY_MS = 24 * 3600 * 1000;
-export function resetRequestState(): void {
-  deps.kv.clear('idem');
-  deps.kv.clear('visit');
-}
-
 const id = (p: string) => `${p}${crypto.randomUUID().replace(/-/g, '').slice(0, 16)}`;
 
 // Matches "/v1/items/it_7c2m/attributes/size" against "/v1/items/:id/attributes/:name".
@@ -88,29 +83,23 @@ function toResponse(reply: Reply, requestId: string): Response {
 
 const stripUserId = (o: Record<string, unknown>) => { delete o.user_id; return o; };
 
-const visitorMac = (nonce: string) => createHmac('sha256', secret('visitor')).update(nonce).digest('hex').slice(0, 20);
-export function visitorId(): string {
-  return acceptedVisitorId(null);
-}
-
-function acceptedVisitorId(given: string | null): string {
-  if (given && /^vis_[a-z0-9]{12}[a-f0-9]{20}$/.test(given)) {
-    const nonce = given.slice(4, 16);
-    if (timingSafeEqual(Buffer.from(given.slice(16)), Buffer.from(visitorMac(nonce)))) return given;
-  }
-  const alphabet = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  const nonce = Array.from({ length: 12 }, () => alphabet[randomInt(alphabet.length)]).join('');
-  return `vis_${nonce}${visitorMac(nonce)}`;
-}
-
 function visit(address: string) {
-  const n = deps.kv.incr('visit', address, 60000);
-  if (n > deps.visitorPerMinute) throw new ApiError('rate_limited', 'visitor bucket empty', 'edge', { by: 'auto', after_s: 60 });
+  const minute = Math.floor(deps.now() / 60000);
+  for (const [key, bucket] of deps.visits) {
+    if (bucket.window === minute) break;
+    deps.visits.delete(key);
+  }
+  const maximum = params.read('visitor_max_entries', {}).value;
+  if (typeof maximum !== 'number' || !Number.isInteger(maximum) || maximum < 1) throw new Error('invalid visitor_max_entries');
+  const bucket = deps.visits.get(address);
+  const n = bucket?.window === minute ? bucket.n + 1 : 1;
+  deps.visits.delete(address);
+  while (deps.visits.size > maximum || (!deps.visits.has(address) && deps.visits.size === maximum)) {
+    deps.visits.delete(deps.visits.keys().next().value!);
+  }
+  deps.visits.set(address, { window: minute, n });
+  if (n > deps.visitorPerMinute) throw new ApiError('rate_limited', 'visitor bucket empty', 'edge', { by: 'auto', after_s: 60 - Math.floor((deps.now() / 1000) % 60) });
 }
-
-type Idempotency = { hash: string; at: number } & (
-  { state: 'running' } | { state: 'finished'; status: number; body: string; headers: Record<string, string> }
-);
 
 export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' | 'visitor' | 'none' } = {}) {
   const [method, pattern] = endpoint.split(' ');
@@ -122,9 +111,6 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
     const log = deps.log.child({ req: request_id, route: pattern });
     log.event('request.start', { method });
     let res: Response;
-    let visitor_id: string | null = null;
-    let claimedSlot: string | null = null;
-    const storage = deps.kv;
     try {
       if (req.method !== method) throw new ApiError('invalid', `${req.method} on ${endpoint}`, 'route');
       const params = paramsOf(pattern, url.pathname) ?? {};
@@ -138,45 +124,37 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
       }
       const token = req.headers.get('Authorization')?.match(/^Bearer (.+)$/)?.[1] ?? null;
       const user_id = token ? await deps.verify(token) : null;
+      let visitor_id: string | null = null;
       if (mode === 'user' && !user_id) throw new ApiError('unauthenticated', token ? 'token expired or unknown' : 'no token', 'auth', { by: 'user' });
       if (mode === 'visitor' && !user_id) {
         const given = req.headers.get('X-Visitor-Id');
-        visitor_id = acceptedVisitorId(given);
+        visitor_id = given && /^vis_[a-z0-9]{8,32}$/.test(given) ? given : id('vis_');
+        // shortcut: a visitor id is rotatable by the client; set SECONDHAND_PEER_HEADER in deployment so the bucket is the host's client address
         visit(deps.connectingAddress(req) ?? visitor_id);
       }
       const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
 
       const key = method === 'POST' ? req.headers.get('Idempotency-Key') : null;
       const slot = key ? `${user_id ?? visitor_id ?? 'none'} ${endpoint} ${key}` : null;
-      const claimed = slot ? storage.add('idem', slot, { hash: raw, state: 'running', at: deps.now() }, DAY_MS) : false;
-      if (slot && !claimed) {
-        const seen = storage.get<Idempotency>('idem', slot)!;
+      const seen = slot ? deps.idem.get(slot) : undefined;
+      if (seen && deps.now() - seen.at < DAY_MS) {
         if (seen.hash !== raw) throw new ApiError('idempotency_mismatch', `key ${key} was used with a different body`, 'idempotency');
-        if (seen.state === 'running') throw new ApiError('stale', 'the same request is still running', 'idempotency', { by: 'auto', after_s: 1 });
         res = new Response(seen.body || null, { status: seen.status, headers: { ...seen.headers, 'Idempotent-Replayed': 'true' } });
       } else {
-        claimedSlot = slot;
         res = toResponse(await handler(ctx, req), request_id);
-        if (slot) {
-          if (res.status >= 500 || res.headers.get('Content-Type')?.split(';')[0].trim().toLowerCase() === 'text/event-stream') {
-            storage.delete('idem', slot);
-          } else {
-            const copy = res.clone(); const headers: Record<string, string> = {}; copy.headers.forEach((v, k) => { headers[k] = v; });
-            storage.set('idem', slot, { hash: raw, state: 'finished', status: res.status, body: await copy.text(), headers, at: deps.now() }, DAY_MS);
-          }
-          claimedSlot = null;
+        if (slot && res.status < 500) {
+          const copy = res.clone(); const headers: Record<string, string> = {}; copy.headers.forEach((v, k) => { headers[k] = v; });
+          deps.idem.set(slot, { hash: raw, status: res.status, body: await copy.text(), headers, at: deps.now() });
         }
       }
+      if (visitor_id) res.headers.set('X-Visitor-Id', visitor_id);
     } catch (e) {
-      if (claimedSlot) storage.delete('idem', claimedSlot);
       const err = e instanceof ApiError
         ? e.code === 'waking' && deps.started ? new ApiError('unavailable', e.message, e.failed_step, e.retry, e.extra) : e
         : new ApiError('unavailable', 'internal error', 'handler', { by: 'auto', after_s: 2 });
       if (!(e instanceof ApiError)) log.error('edge.api', e, { endpoint });
       res = Response.json(err.toJSON(), { status: err.status, headers: { 'X-Request-Id': request_id } });
     }
-    res.headers.set('X-Request-Id', request_id);
-    if (visitor_id) res.headers.set('X-Visitor-Id', visitor_id);
     deps.started = true;
     log.event('request.end', { status: res.status, ms: deps.now() - t0 });
     return res;

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createAuth, memoryStore } from '../auth.ts';
-import { deps, resetRequestState, route } from './http.ts';
+import { deps, route } from './http.ts';
 import { example } from './examples.ts';
 import { makeAuthHandlers } from './auth.ts';
 import { createLog, memorySink, observeLogs } from '../../../../log/index.js';
@@ -25,7 +25,7 @@ function world() {
     verifyGoogle: async (tok) => (tok.startsWith('google:') ? { subject: tok.slice(7), email: 'sam@example.com', email_verified: true } : null),
     sendCode: (_e, c) => { sent.push(c); },
   });
-  deps.verify = auth.verifyAccess; resetRequestState(); deps.now = () => t;
+  deps.verify = auth.verifyAccess; deps.idem.clear(); deps.now = () => t;
   const handle = new DatabaseSync(':memory:');
   const limits = kv(handle, () => t);
   const h = makeAuthHandlers(auth, store, limits);

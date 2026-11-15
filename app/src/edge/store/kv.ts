@@ -10,7 +10,6 @@ export function kv(db: DatabaseSync, now: () => number = Date.now) {
   const write = db.prepare(`INSERT INTO kv (ns, key, value, expires_at) VALUES (?, ?, ?, ?)
     ON CONFLICT(ns, key) DO UPDATE SET value = excluded.value, expires_at = excluded.expires_at`);
   const remove = db.prepare('DELETE FROM kv WHERE ns = ? AND key = ?');
-  const clear = db.prepare('DELETE FROM kv WHERE ns = ?');
   const encode = (value: unknown): string => {
     const encoded = JSON.stringify(value);
     if (encoded === undefined) throw new Error('KV value must be JSON serializable');
@@ -26,7 +25,6 @@ export function kv(db: DatabaseSync, now: () => number = Date.now) {
       write.run(ns, key, encode(value), ttl_ms === undefined ? null : now() + ttl_ms);
     },
     delete(ns: string, key: string): void { remove.run(ns, key); },
-    clear(ns: string): void { clear.run(ns); },
     take<T>(ns: string, key: string): T | undefined {
       return tx(db, () => { const value = get<T>(ns, key); remove.run(ns, key); return value; });
     },
