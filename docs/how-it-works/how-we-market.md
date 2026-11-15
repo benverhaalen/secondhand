@@ -90,7 +90,7 @@ flowchart LR
 - The effect of sharing, relisting for rank, or posting time, from published evidence.
 - A per-person verdict on sale rate, until about 1,500 listings per arm exist.
 - The lift from promotion on used goods, before pooled tests exist.
-- Facebook's title limit: sources say 99, 100 or 150, and D4 uses 60.
+- Facebook's title limit is three surfaces, not three values: the partner catalog takes 200 (65 recommended), the consumer form about 99 with a warning at 100, and 150 has no source ([settled note, row 11](../../research/watch/nate/open-items-settled-sites-and-rivals.md)). D4 uses 60.
 
 ## What is not settled
 

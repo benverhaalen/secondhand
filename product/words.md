@@ -645,6 +645,28 @@ Ben, project chat, 01:11 UTC, in full.
 Ben, project chat, 01:11 UTC, inside a longer message.
 > also with the brand specific things ensure somewhere in the instruction we end up being able to have the code understand each app. like if depop offers only last 24 hours, whatever depends on that fact should actually depend on that. deeply thought through software intention. finding where things could go wrong and why.
 
+## 2026-11-14 nate our own protocol, official apis last
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> We can really build this api to account for anything. We develop our own system utilizing the technologies we know are possible and have been done in the past. Lets build our own protocol, and fallback onto official at the end if we can't get it working. I know we can though. And so should you. You are not the genius and highly intelligent ai that can understand code at the source level, understand agents and all of their potential capbailities, the systems we can build, the things we can determine, the operations we can make easy for users
+
 ## 2026-11-15 standard sizes, darker dark colors, deslop skills, and ban all emojis
 Ben, thread "Critique the design system and plan dark mode", 01:16 UTC, on the dark mode render he was sent.
 > these dont use the fonts at all. also shouldn't the colors change to darker ones so we stay in a comfortable color range. also there is not really a standard width and height of the thing. everything should be standardized size wise no matter whats in it if there is a relatively similar size. use rdd and iae to find repos designed to 'deslop ui' mainly skills i think. but knowing how to create a cohesive system and actually using those rules. they arent used well enough right now as the offered $38 vs Nike dunks things dont have a standard size. think of everything deeply from a ux. what implicitly looks good to the human eye that a person doesn't notice at all. also ban all emojis. whenever the apple and hex type research lands about branding and enforcing strict rules and what rules to even enforce is something im not sure is known yet
+
+## 2026-11-14 nate search and information engines beside the protocol
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Do not hedge
+
+> Lets prepare for next session, run through everything with me. So with this established specialized protocol for every platform, we can also build established search and information engines to aggregate with https://www.firecrawl.dev/ and treg for all additional market research, also utilize thriftx. not scannning that site, but building osint powered intelligence and inforamtion gatherers. Extreemely fast. and efficient
+
+## 2026-11-14 nate spec in full how marketing strategies are weighed in real time and how collected data is used
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> So that solves all actions on every platform, we still need to have a clear way to weigh and realtime determine marketing strategies, how our data we collect will be usedd. all should be specced in full
+
+## 2026-11-14 nate win by launching something useful, working, fast, reliable and powerful
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> I feel certain things can be improved beyond what we have it at. Think throughout all of this how when we present, we will win for launching a truly useful, working, fast, reliable, and powerful tool all in one
+
+## 2026-11-14 nate what other engines are needed and what is not strong enough
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Beyond marketing, what other engines are needed, what are things not strong enough as it stands

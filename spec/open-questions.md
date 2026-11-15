@@ -2,6 +2,52 @@
 
 Status: a list kept by Nate's session, *agent proposal* throughout. Written 2026-11-14. Each item is something an agent introduced or found that only Ben or Nate can settle. Nothing here is decided. When one is answered, record the words in [product/words.md](../product/words.md), the decision in [product/decisions.md](../product/decisions.md), and remove the row.
 
+## For Ben, in person
+
+The 25 questions in the order to take them, each with the agent's recommendation and the row that holds its detail.
+
+Photos and studio:
+
+1. AI tag on exported photos ([J11](#for-both)): not the agent's to call; the spec works under either.
+2. Retouch by default or by choice ([J12](#for-both)): by choice, with Ben's levels as the menu.
+3. With no exported tag, who sees that a photo was improved ([B7](#for-ben)): the seller always; buyers are Ben's call.
+4. Studio's method ([B3](#for-ben)): Ben's ranked redraw, with the block kept for tag, label, serial and flaw photos.
+5. Are the touch-up levels and per-site defaults the standard ([B6](#for-ben)): yes.
+6. Does a pressed photo raise returns ([J17](#for-both)): measure on the first real items before any default.
+
+Capture:
+
+7. Care label and fabric close-up ([B10](#for-ben)): only when a fact is unsettled.
+8. 3D for clothes ([B8](#for-ben)): out of capture and listings; a model generated from the photos is an optional extra.
+9. Opens on the guided list, scan first for rigid items ([B4](#for-ben)): yes.
+
+Screens:
+
+10. Inline marks and pickers, about 24 catalog entries ([B9](#for-ben)): start with chips, range slider, colour swatches, product candidates and the dimension grid.
+11. Show the work: findings with real counts as the system searches (new, [B11](#for-ben)): beside the answer as it fills in, never blocking it.
+12. Where the market side lives ([B5](#for-ben)): inside Buy.
+13. Tighten "within the hour" for watch alerts ([B2](#for-ben)): yes, once measured.
+
+Rules for acting:
+
+14. Tell buyers an assistant is answering ([J3](#for-both)): a short note on the first automatic message, always honest if asked.
+15. Does the later decision cover the cloud browser ([J5](#for-both)): yes.
+16. Offers when buying ([J4](#for-both)): ask every time.
+17. Tests on people's own listings ([J7](#for-both)): opt in, per test.
+18. Inferred values in a site's structured fields ([J20](#for-both)): yes for search fields; never condition, size or authenticity.
+
+Money and structure:
+
+19. Target payout to a list price per site ([J10](#for-both)): the fee calculation, with the multipliers shown as what it produces.
+20. How it earns ([J6](#for-both)): referrals and anonymous market data; a referral never changes the order.
+21. Shopify's taxonomy as the spine ([J19](#for-both)): yes.
+22. Several things sold together ([J21](#for-both)): one card with parts.
+23. Which suite additions belong ([J18](#for-both)): order tracking and tax thresholds now; the rest only if resellers become a second audience.
+24. Background agent runtime ([J2](#for-both)): durable steps on Lakebase, after a one-hour trial of each.
+25. Repo structure ([J9](#for-both)): one AGENTS.md line pointing at `spec/`, plus the planned and reviewed statuses.
+
+Two things to tell Ben: his files disagree on Poshmark's minimum price ($15 and $3), and his notes cite a vendor's price test as established in seven places; the test was found unsound and is no longer relied on ([assessment](assessment.md#part-3-builder-confusions-quoted)).
+
 ## For Nate
 
 Answered 2026-11-14 ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)): the event provides a full workspace, so Free Edition limits are temporary; `spec/databricks.md` may be public; buy, insights, market, score and assist get feature pages.
@@ -11,13 +57,15 @@ Answered 2026-11-14 ([words](../product/words.md#2026-11-14-nate-answers-on-the-
 | N2 | Has the track published judging criteria? | Share them if so | What the demonstration leads with |
 | N4 | Install the official Databricks and MLflow skills into your harness for every session? The installer adds three local hooks; no network calls were found | Yes, for Claude Code only: `databricks aitools install --agents claude-code --scope global` | Whether future sessions have the skills without fetching them |
 | N5 | The explanations written for people are in a new top-level folder, [docs/how-it-works/](../docs/how-it-works/README.md). Say if they belong elsewhere | Keep it | Where the documentation lives |
-| N12 | The app reaches Databricks through server routes inside the Expo project ([app/README.md](../app/README.md)). A deployed build needs a host for those routes and a service identity in the workspace | EAS Hosting for the routes; a service principal if the workspace allows one (to be checked with N1) | Anything running off your laptop |
-| N7 | Sites without webhooks are detected mainly through the sale and message emails they send. May the product read a seller's mail for that? | Yes, with a narrow scope, and state it at connect time ([email-and-notification-detection.md](../research/sold/nate/email-and-notification-detection.md)) | How fast a sale or reply is seen on Poshmark, Mercari and Facebook |
 | N8 | Which real marketplace accounts carry the risk of automation? Nate: "im not sure which accounts are at risk when automated, so indicate that and we perhaps wont demo it" ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | Every automated action shows the account risk per site ([connect.md](features/connect.md)); automation on real accounts is left out of the demonstration unless Nate or Ben names an account | What is shown live |
 | N9 | Taking the marketplaces' apps apart to learn their ranking | Do not: ranking runs on their servers, so it would not show the algorithm. Controlled experiments on users' own listings instead ([score.md](features/score.md)) | Nothing is blocked by this |
 | N10 | The line on certainty: resolve identity, variant, size, measurements and visible condition and state them as confirmed; keep ranges for price and time to sell; say what was and was not checked for authenticity, function and hidden condition | Keep that line | Wording across every screen |
+| N13 | For each part the [readiness scorecard](assessment.md#might-work-needs-direction-13) rates 1 to 3 (LiDAR measuring, identify by image, logged-in writes, inline marks, the evidence gate, ranker inference, SSE through the App proxy, studio redraw, router demotion, delist speed, Object Capture, the market index), which way to make it work | Run the way the spec follows now beside its one-day test, and switch only on the test's result | The build order of those parts |
+| N14 | Does the service identity exist: `databricks service-principals list` on the chosen profile, `create` if it errors on permission ([assessment](assessment.md#12-open-questionsmd-37-rows)) | Run it on the second workspace probe | Hosting the routes on Databricks ([app/README.md](../app/README.md)) |
 
-Answered by Nate 2026-11-14 ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)); Ben has not been asked on the first four: the industry and product search engine is an API others can call; no paid tax service (delivered price carries a labelled estimate); a person's listings are not published as feeds, because secondhand is not a storefront; the agent shares and sends offers at whatever pace is best; Ben can build the Expo project (it needs a shared Expo organisation first).
+Answered by Nate 2026-11-14 ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)); Ben has not been asked on the first four: the industry and product search engine is an API others can call; no paid tax service (delivered price carries a labelled estimate); a person's listings are not published as feeds, because secondhand is not a storefront; the agent shares and sends offers at whatever pace is best.
+
+Answered by Nate 2026-11-14 ([words](../product/words.md#2026-11-14-nate-sale-emails-the-expo-account-where-routes-are-hosted-and-a-buy-page-shaped-by-your-style)), which removes N7, N11 and N12: sale emails are allowed, with the signed-in harness on each site as the first route and email as the fallback ([sold.md](features/sold.md)); Ben builds with Nate's Expo account; server routes are hosted on Databricks if possible, otherwise on the Next.js site, which can also be the edge a Databricks App needs in front of it ([app/README.md](../app/README.md)).
 
 ## For Ben
 
@@ -29,8 +77,9 @@ Answered by Nate 2026-11-14 ([words](../product/words.md#2026-11-14-nate-the-sea
 | B6 | Are your touch-up levels and the per-site default level ([packet 31](../.agents/team/packets/list/31-platform-fit.md): 1 on eBay, Depop, Poshmark and Mercari; 0 on Facebook, OfferUp and Grailed) canon? | Yes | Studio and list defaults |
 | B7 | With no AI tag on exported photos, does any surface still show that a photo was improved, and to whom (the seller only, or buyers too)? | The seller always sees it; buyers are yours to decide | Studio, list, the evidence check |
 | B10 | For clothing, are the care label and a fabric close-up always shot, or only when a fact is unsettled? Nate asked for front, back and the tag with the least extra input ([words](../product/words.md#2026-11-14-nate-front-back-and-tag-for-clothes-lidar-for-objects-the-least-extra-input)) | Only when unsettled ([capture-shots.md](determinations/capture-shots.md)) | The clothing shot list |
-| B8 | Is 3D for clothes in, labelled as a model, or out? Your pipeline note and [capture.md](features/capture.md) differ | In, labelled as a model | Capture modes |
-| B9 | The assistant asks through generated inputs: unclear words in a prompt are highlighted, and a tap opens the right control under the input ([Nate's words](../product/words.md#2026-11-14-nate-the-assistant-asks-through-inputs-not-questions)). The behaviour and contract are proposed in `spec/features/assist.md`; the components would be new entries in your catalog | Read the proposal and say which catalog entries you accept | The Ask sheet, search, capture |
+| B8 | Is 3D for clothes in, labelled as a model, or out? Your pipeline note and [capture.md](features/capture.md) differ | Out of capture and listings; a model generated from the photos is an optional extra | Capture modes |
+| B9 | The assistant asks through generated inputs: unclear words in a prompt are highlighted, and a tap opens the right control under the input ([Nate's words](../product/words.md#2026-11-14-nate-the-assistant-asks-through-inputs-not-questions)). The behaviour and contract are proposed in `spec/features/assist.md`; the components would be new entries in your catalog | Start with chips, range slider, colour swatches, product candidates and the dimension grid; every surface asks through this one `clarify` component | The Ask sheet, search, capture |
+| B11 | Show the work: the real counts each search or calculation stage reports (sources searched, similar listings found, prices weighed, sales kept after filtering) arrive as it runs. Do you want them shown, where, and animated how? | Beside the answer as it fills in, never blocking it; the animation is yours | Buy, market, appraise, price, identify, assist |
 | B4 | Capture: your "opens on the guided list, talk mode one tap away" and the joint "the item picks the mode" are read together as: always opens on the list; for rigid items the first step is the move-around scan | Confirm or correct ([capture.md](features/capture.md)) | The camera screen |
 | B5 | Where the market feature lives: trends and a Following shelf inside Buy, or a Market section in You | Inside Buy ([market.md](features/market.md)) | The Buy tab's layout |
 
@@ -54,7 +103,7 @@ Answered by Nate 2026-11-14 ([words](../product/words.md#2026-11-14-nate-the-sea
 | J20 | May a value the system inferred, not read or confirmed, go into a site's structured fields when the field is of medium importance? | Yes for search fields, never for condition, size or authenticity | How complete a listing is without asking |
 | J21 | Several things sold together: one item card, or one per piece? | One card for the lot, with pieces as parts | Capture and pricing of lots |
 | J22 | May the source router spend a small share of calls on paid routes it would not otherwise pick, to keep its measurements current? | Yes, capped per day | Cost of the registry |
-| J23 | On a product page, are listings ordered by the same rule as search results, or by score alone? | The same rule | Market and buy |
+| J23 | On a product page, are listings ordered by the same rule as search results, or by score alone? | The same rule; [buy.md](features/buy.md) and [market.md](features/market.md) are written to it | Market and buy |
 | J10 | One target payout turned into a list price per site: Ben's multipliers ([packet 31](../.agents/team/packets/list/31-platform-fit.md): Depop and Poshmark target / 0.85, Mercari x 1.18, eBay x 1.10) or the fee formula in [money.md](determinations/money.md)? | The fee formula is the calculation; the multipliers are shown as what it produces at typical prices | Every list price |
 | J9 | Repo structure: specs in `spec/features/` while AGENTS.md points at `features/<slug>/`; no status for planned or reviewed in `product/features.md`; the task board is one shared file | Add one line to AGENTS.md pointing at `spec/`; add the two statuses; keep the single board | How agents on both sides find and claim work |
 

@@ -148,6 +148,35 @@ export const PICKS = {
     return out;
   },
 
+  // Words on a screen use the real marks: a curly apostrophe and the ellipsis character.
+  D5: (root, { files }) => inWords(root, files, /[A-Za-z]'[a-z]|\.\.\./g,
+    m => `${m === '...' ? 'three dots' : `a straight apostrophe in "${m}"`}: on a screen, write ${m === '...' ? 'the ellipsis character …' : 'the curly apostrophe ’'} (brand-round-10.md §4)`, { phrases: true }),
+
+  // Motion is optional: the phone's Reduce Motion is never overridden.
+  M1: (root, { files }) => files.filter(APP).flatMap(f => { const text = withoutComments(f, read(root, f) ?? '');
+    return [...text.matchAll(/\bReduceMotion\.Never\b/g)].map(m => err(`${f}:${lineOf(text, m.index)}`, 'ReduceMotion.Never keeps an animation running for someone who turned motion off: give it a still version instead (frontend-standard §3, Optional)')); }),
+
+  // Every motion is named: a screen takes its duration from app/src/ui/motion.ts, never a raw number.
+  M2: (root, { files }) => files.filter(f => APP(f) && !f.startsWith('app/src/ui/')).flatMap(f => { const text = withoutComments(f, read(root, f) ?? '');
+    return [...text.matchAll(/\b(?:duration|delay)\s*:\s*\d+|\bwith(?:Timing|Delay)\s*\(\s*[^,()]*,?\s*\{?\s*\d{2,}/g)]
+      .map(m => err(`${f}:${lineOf(text, m.index)}`, `"${m[0].replace(/\s+/g, ' ')}" is a raw duration: use a named motion from app/src/ui/motion.ts, and add one there with its reason if none fits (frontend-standard §3)`)); }),
+
+  // Nothing listens to scroll or reads the scroll position by hand, and nothing animates every property.
+  M3: (root, { files }) => files.filter(f => (APP(f) || /^(?:site|web)\/.*\.(?:tsx?|jsx?|css)$/.test(f)) && !/\.test\./.test(f)).flatMap(f => { const text = f.endsWith('.css') ? read(root, f) ?? '' : withoutComments(f, read(root, f) ?? '');
+    return [...text.matchAll(/addEventListener\(\s*['"`](?:scroll|wheel)['"`]|\bwindow\.(?:scrollY|pageYOffset)\b|\bonscroll\s*=|transition\s*:\s*['"`]?all\b/g)]
+      .map(m => err(`${f}:${lineOf(text, m.index)}`, /transition/.test(m[0]) ? '"transition: all" animates every property: name transform or opacity (frontend-standard §3, Cheap to render)' : `${m[0]}: tie motion to scroll with a scroll timeline, an IntersectionObserver or Reanimated's scroll handler, never a listener (frontend-standard §3)`)); }),
+
+  // Every named motion says what it is for.
+  M4: (root, { files }) => {
+    const f = 'app/src/ui/motion.ts', text = read(root, f), WHY = ['feedback', 'origin', 'state', 'progress', 'story', 'recognition'];
+    if (text == null) return files.some(x => x.startsWith('app/src/ui/') && x.endsWith('.tsx')) ? [err(f, 'is missing: every motion in the app is named there with its reason (frontend-standard §3)')] : [];
+    const body = withoutComments(f, text), at = body.search(/export const MOTIONS\b[^=]*=\s*\{/);
+    if (at < 0) return [err(f, "can't read MOTIONS, so no motion's reason would be checked")];
+    return [...body.slice(at).matchAll(/^\s*['"]?([\w ]+)['"]?\s*:\s*\{([^}]*)\}/gm)]
+      .filter(m => !WHY.includes(m[2].match(/\bwhy\s*:\s*['"](\w+)['"]/)?.[1]))
+      .map(m => err(f, `the motion "${m[1]}" has no reason: say which of ${WHY.join(', ')} it is for, or remove it. "It looked good" is not one (frontend-standard §3, Purpose or nothing)`));
+  },
+
   // The behavior table comes before the behavior: every screen has one, written from the still screen.
   P5: (root, { files }) => files.filter(f => /^app\/src\/app\/.*\.tsx$/.test(f) && !/(^|\/)[_+][^/]*$|\+api\.|\.test\./.test(f)).flatMap(f => {
     const table = f.replace(/^app\/src\/app\//, 'app/behavior/').replace(/\.tsx$/, '.json'), raw = read(root, table);

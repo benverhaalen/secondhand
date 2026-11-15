@@ -17,8 +17,9 @@ Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md)
 - How fast must a delist land, platform by platform, before a second buyer can pay?
 
 ## Research
-All research for this feature: `research/sold/` (none yet)
-- Ben: `research/sold/ben/` (none yet)
+All research for this feature: `research/sold/`
+- Ben: [research/sold/ben/](../../research/sold/ben/)
+- Ben: [cheap-sale-detection.md](../../research/sold/ben/cheap-sale-detection.md). Sale signals per site ranked by cost, with no model tokens: eBay and Depop push, the public page as the free trigger in place of a signed-in poll, a tested DOM and socket watch for open sessions ([dom-watch/](../../research/sold/ben/dom-watch/watch.mjs)), and five server-side gaps for Nate.
 - Nate: [research/sold/nate/](../../research/sold/nate/)
 - Nate: [email-and-notification-detection.md](../../research/sold/nate/email-and-notification-detection.md). Whether sale and buyer-message notification emails detect events faster than browser polling on four marketplaces, and what each route costs.
 - Nate: [shipping-and-pickup.md](../../research/sold/nate/shipping-and-pickup.md). How an item gets from seller to buyer on five marketplaces, and what software can do to make shipping and pickup correct.

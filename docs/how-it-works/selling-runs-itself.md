@@ -117,8 +117,8 @@ If two buyers pay on two sites, a `double_sale` card names both and the cost of 
 
 - **Starting values.** The title weights, the three price paths and the free-shipping figure have no study behind them. Sell-through per plan on our own sales will decide.
 - **What no source can tell.** The sites' real ranking weights, whether sharing or relisting helps, the best hour to post, and the lift from promotion. The app shows none of these as fact.
-- **Sale detection.** The 2 minute lag for Poshmark and Mercari is inferred, and Facebook has no event source. Facebook's title limit is quoted as 99, 100 and 150, so the app aims for 60.
-- **The spec disagrees with itself in places.** Reconcile runs nightly in [connect](../../spec/features/connect.md) and every 5 minutes in sold. Check cadences differ between connect and messages. The red delist threshold is 5 minutes in sold, and 3 and 6 minutes in two research notes. The site clocks for cancelling and shipping conflict, and the plan recommends the shorter one.
+- **Sale detection.** The 2 minute lag for Poshmark and Mercari is inferred, and Facebook has no event source. Facebook's title limit is three surfaces, not three values: the partner catalog takes 200 (65 recommended), the consumer form about 99 with a warning at 100, and 150 has no source ([settled note, row 11](../../research/watch/nate/open-items-settled-sites-and-rivals.md)), so the app aims for 60.
+- **The spec disagrees with itself in places.** Cadences now sit in one place: `reconcile` runs nightly ([connect](../../spec/features/connect.md#read-back-and-reconcile)) and every other check follows `next_check_at` at the tiers in card 15. The delist bar is one value, owned by [sold](../../spec/features/sold.md#how-we-will-know-it-works). The site clocks for cancelling and shipping conflict, and the plan recommends the shorter one.
 - **Open choices.** Whether buyers are told an assistant is answering (one study found disclosure cut purchases by about 80%, against California and EU rules), and whether replay keeps its own spec.
 
 ## Where to read more
