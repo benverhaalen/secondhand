@@ -1,0 +1,18 @@
+# The index screen (app/behavior/index.json) on a phone or simulator: the same states as app/e2e/index.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/index.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/index.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+- openLink: ${URL}
+- extendedWaitUntil:
+    visible: "secondhand"
+    timeout: 30000
+# One of the table's states, once the backend answers or does not.
+- extendedWaitUntil:
+    visible: "Databricks connected: .*|Databricks not ready: .*|The server did not answer"
+    timeout: 15000
+# A control is found by its testID, the same id the web tests tap:  - tapOn: { id: "accept" }
