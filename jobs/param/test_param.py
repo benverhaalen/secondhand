@@ -56,3 +56,129 @@ def test_rollback_restores_previous_version():
 def test_unknown_scope_key_is_refused():
     with pytest.raises(ValueError, match="scope"):
         MemoryStore().propose(fit(scope={"city": "x"}), 0)
+
+
+PARITY = json.loads((pathlib.Path(__file__).parents[2] / 'app/src/engines/param/parity.json').read_text())
+
+
+@pytest.mark.parametrize('case', PARITY, ids=lambda c: c['name'])
+def test_parity(case):
+    s = MemoryStore()
+    for d in case['declare']:
+        s.declare(d)
+    assert len(case['ops']) == len(case['expect'])
+    for i, (op, expected) in enumerate(zip(case['ops'], case['expect'])):
+        label = f"{case['name']}, op {i} ({op['op']})"
+        try:
+            name = op.get('name', case['declare'][0]['name'])
+            scope, at = op.get('scope', {}), op.get('at', '2026-01-01')
+            d = next(d for d in case['declare'] if d['name'] == name)
+            def execute():
+                kind = op['op']
+                if kind == 'observe':
+                    return s.observe(name, scope, op['outcome'], at)
+                if kind == 'apply_gamma':
+                    def step(v, keep):
+                        return {'value': {'shape': v['shape'] * keep + op['weight'] * op['count'],
+                                          'rate': v['rate'] * keep + op['weight'] * op['exposure']}, 'weight': op['weight']}
+                    return s.apply(name, scope, step, at, op.get('days_since_last'))
+                if kind == 'propose':
+                    row = dict(name=name, scope=scope, family=d['family'], prior=d['prior'], value_or_hyperparams=op['value'], n_eff=40,
+                               fitted_on_ids_hash=None, metric=None, held_out_score=op['held_out_score'], guard_lo=d.get('guard_lo'), guard_hi=d.get('guard_hi'))
+                    return s.propose(row, op['expect_version'])
+                if kind == 'promote':
+                    return s.promote(name, scope, op['version'], op.get('noise', 0), at, op.get('champion_score'))
+                if kind == 'rollback':
+                    return s.rollback(name, scope, at)
+                if kind == 'freeze':
+                    return s.freeze(name, scope, op['on'])
+                return s.read(name, scope)
+            if op.get('error'):
+                with pytest.raises(VersionConflict):
+                    execute()
+            else:
+                result = execute()
+                if op.get('reason'):
+                    assert (result[1] if isinstance(result, tuple) else result['reason']) == op['reason'], label
+            actual = s.read(name, scope)
+            assert {k: actual[k] for k in ('version', 'from', 'scope')} == {k: expected[k] for k in ('version', 'from', 'scope')}, label
+            assert actual['n_eff'] == pytest.approx(expected['n_eff'], abs=1e-9, rel=0), label
+            assert actual['value'] == pytest.approx(expected['value'], abs=1e-9, rel=0), label
+        except Exception as error:
+            raise AssertionError(label) from error
+
+
+def test_model_apply_is_local_and_uses_elapsed_time():
+    s = MemoryStore()
+    s.declare({'name': 'P_accept', 'family': 'model_ref', 'prior': {'term': 0}, 'guard_hi': 0})
+    s.apply('P_accept', SCOPE, lambda v, keep: {'value': {'term': 4}, 'weight': 8}, '2026-01-01')
+    person = {**SCOPE, 'person': 'usr_1'}
+    s.apply('P_accept', person, lambda v, keep: {'value': {'term': v['term'] + 1}, 'weight': 1}, '2026-01-01')
+    s.apply('P_accept', person, lambda v, keep: {'value': {'term': v['term'] * keep}, 'weight': 2}, '2026-01-31')
+    assert s.read('P_accept', person)['value'] == {'term': 2.5}
+    assert s.read('P_accept', person)['n_eff'] == 2.5
+    assert s.read('P_accept', SCOPE)['value'] == {'term': 4}
+    with pytest.raises(ValueError, match='beta|gamma'):
+        s.observe('P_accept', person, {'success': 1, 'weight': 1}, AT)
+
+
+def test_gamma_freeze_guards_and_three_sold_comps():
+    s = MemoryStore()
+    s.declare({'name': 'velocity', 'family': 'gamma', 'prior': {'shape': 2, 'rate': 4}, 'guard_hi': 10})
+    for _ in range(3):
+        s.observe('velocity', {}, {'count': 1, 'exposure': 0, 'weight': 1, 'days_since_last': 30}, AT)
+    assert s.read('velocity', {})['value'] == {'shape': 2, 'rate': 0.5}
+    s.freeze('velocity', {}, True)
+    assert s.observe('velocity', {}, {'count': 1, 'exposure': 1, 'weight': 1}, AT)['reason'] == 'frozen'
+    s.freeze('velocity', {}, False)
+    assert s.observe('velocity', {}, {'count': 100, 'exposure': 0, 'weight': 1}, AT)['reason'] == 'guard'
+    assert s.read('velocity', {})['version'] == 3
+
+
+def test_promotion_only_writes_same_set_score_on_win():
+    s = MemoryStore()
+    s.propose(fit(held_out_score=0.9), 0)
+    s.promote('p_min_quick', SCOPE, 1, 0, AT)
+    s.propose(fit(held_out_score=0.5), 1)
+    assert s.promote('p_min_quick', SCOPE, 2, 0.01, AT, 0.6)[0] is False
+    assert s.history('p_min_quick', SCOPE)[0]['held_out_score'] == 0.9
+    assert s.promote('p_min_quick', SCOPE, 2, 0.01, AT, 0.4)[0] is True
+    assert s.history('p_min_quick', SCOPE)[0]['held_out_score'] == 0.4
+
+
+@pytest.mark.parametrize('family', ['beta', 'gamma'])
+def test_pooling_sparse_dense_person_and_kappa(family):
+    s = MemoryStore()
+    def value(m):
+        return {'alpha': 10 * m, 'beta': 10 * (1 - m)} if family == 'beta' else {'shape': 10 * m, 'rate': 10}
+    s.declare({'name': 'velocity', 'family': family, 'prior': value(0.8)})
+    for scope, mean, n in [(SCOPE, 0.8, 200), ({**SCOPE, 'person': 'usr_1'}, 0.2, 3), ({**SCOPE, 'person': 'usr_2'}, 0.1, 200)]:
+        s.propose(fit(name='velocity', scope=scope, family=family, prior=value(0.8), value_or_hyperparams=value(mean), n_eff=n), 0)
+        s.promote('velocity', scope, 1, 0, AT)
+    sparse = s.readPooled('velocity', {**SCOPE, 'person': 'usr_1'})
+    assert sparse['mean'] == pytest.approx((3 * 0.2 + 20 * 0.8) / 23)
+    assert sparse['versions'] == [1, 1]
+    assert abs(s.readPooled('velocity', {**SCOPE, 'person': 'usr_2'})['mean'] - 0.1) < 0.07
+    absent = s.readPooled('velocity', {**SCOPE, 'state': 'listed', 'person': 'usr_3'})
+    assert absent['mean'] == 0.8 and absent['versions'] == []
+    assert s.read('param_pool_kappa', {})['value'] == 20
+    s.propose(fit(name='param_pool_kappa', scope={}, value_or_hyperparams=40), 0)
+    s.promote('param_pool_kappa', {}, 1, 0, AT)
+    assert s.readPooled('velocity', {**SCOPE, 'person': 'usr_1'})['mean'] == pytest.approx((3 * 0.2 + 40 * 0.8) / 43)
+    assert s.readPooled('param_pool_kappa', {}) == s.read('param_pool_kappa', {})
+
+
+def test_pooling_recurses_shared_ancestors_but_person_stops_at_shared_scope():
+    s = MemoryStore()
+    s.declare({'name': 'sale_rate', 'family': 'gamma', 'prior': {'shape': 2, 'rate': 10}})
+    shared = {'kind': 'shoes', 'site': 'ebay', 'segment': 'boots'}
+    for scope, shape, n in [({}, 8, 20), ({'kind': 'shoes'}, 4, 40), (shared, 9, 3), ({**shared, 'person': 'usr_2'}, 1000, 200)]:
+        s.propose(fit(name='sale_rate', family='gamma', scope=scope, value_or_hyperparams={'shape': shape, 'rate': 10}, n_eff=n), 0)
+        s.promote('sale_rate', scope, 1, 0, AT)
+    parent = (40 * 0.4 + 20 * ((20 * 0.8 + 20 * 0.2) / 40)) / 60
+    result = s.readPooled('sale_rate', {**shared, 'state': 'listed'})
+    assert result['mean'] == pytest.approx((3 * 0.9 + 20 * parent) / 23)
+    assert result['versions'] == [1, 1, 1]
+    person = s.readPooled('sale_rate', {**shared, 'person': 'usr_1'})
+    assert person['mean'] == pytest.approx((3 * 0.9 + 20 * 0.2) / 23)
+    assert person['versions'] == [1]

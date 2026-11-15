@@ -177,17 +177,19 @@ One block per site. Recon its own data calls before page driving; use official A
 
 ## 13 Databricks
 
+Design and what is proved: [databricks-build.md](../databricks-build.md#9-what-is-proved). Every number below was read on Nate's workspace (`--profile Nate`) on 2026-11-15. Boxes stay unticked until a fresh reviewer has read the diffs.
 
 - [ ] T0-1 workspace checks on the event workspace; browsers use Browser Use Cloud
 - [ ] interface first: the `param`, `observation`, `evidence`, `citation` shapes with an in-memory fake
 - [ ] Lakebase tables and migrations for the canon
 - [ ] the `param` registry: versions, promote on a backtest win, rollback
 - [ ] per-event updates in the transaction that records the outcome
-- [ ] nightly refits as jobs, champion and challenger
-- [ ] the proof layer: guarded numbers, `claim_check`, `rights` tags
-- [ ] the secret scope for sessions and saved passwords
+- [ ] nightly refits as jobs, champion and challenger: deployed as `secondhand-nightly-fits`, at most 4 tasks at once (Free Edition allows 5); its first run waits on the `--root` fix (serverless runs a task file with no `__file__`)
+- [ ] the proof layer: guarded numbers, `claim_check`, `rights` tags. Python twin of proof.ts: 20 of 20 parity cases equal (`python -m pytest databricks/parity/test_parity.py`). Isolation by the catalog ABAC policy `sh_owner_only`: 7 of the example loader's 14 guarded numbers visible to Nate, all `usr_nate` (`SELECT user_id, count(*) FROM secondhand.core.guarded_number GROUP BY 1`). Handles masked by `sh_mask_handle` (`m***`). Policy sweep over `check()`: 480 answers, all 32 never-performed answers refused (`node databricks/policy-sweep.mjs`)
+- [ ] the market layer: pipeline `secondhand-market` holds 1,688,603 comps from 6 public sold sets (bronze 1,688,864; 261 dropped by expectations), 1,581,374 cleared for modelling (StockX and Mercari Kaggle), update f5f78337 (`SELECT source, count(*) FROM secondhand.market.comp GROUP BY source`)
+- [ ] the secret scope for sessions and saved passwords: bound to the bundle (`databricks bundle deployment bind vault secondhand --target dev --profile Nate`)
 - [ ] jobs for watchers, gathers and refits, with their triggers
-- [ ] deployed on the event workspace; the edge reaches it
+- [ ] deployed on the event workspace; the edge reaches it. On Nate's workspace: bundle deployed, target dev; setup job SUCCESS (`node deploy/deploy.mjs deploy --target dev --profile Nate`)
 
 ## 14 Capture and photo
 

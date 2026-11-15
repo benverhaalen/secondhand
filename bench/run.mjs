@@ -49,7 +49,8 @@ async function inProcess() {
   return makeAsk({dispatch: req=>{const pathname=new URL(req.url).pathname; const row=manifest.find(x=>x.method===req.method && paramsOf(x.endpoint.split(' ')[1],pathname)!==null); if(!row) return Promise.resolve(Response.json({code:'not_found'},{status:404})); if(!wrapped.has(row.endpoint)) wrapped.set(row.endpoint,route(row.endpoint,handlers[row.endpoint],{auth:row.auth})); return wrapped.get(row.endpoint)(req);}});
 }
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-export async function run({manifestPath='spec/items/manifest.json',outRoot='bench/out',ask,timeoutS=20,sleep=delay}={}) {
+export async function run({manifestPath='spec/items/manifest.json',outRoot='bench/out',set='market',ask,timeoutS=20,sleep=delay}={}) {
+  if (!['market','owned'].includes(set)) throw new Error('invalid set: '+set);
   const bytes=await readFile(manifestPath); const manifest=JSON.parse(bytes); const hash=createHash('sha256').update(bytes).digest('hex');
   const started=new Date(); const runId=started.toISOString().replace(/[:.]/g,'-')+'-ours'; const dir=join(outRoot,runId); await mkdir(join(dir,'raw'),{recursive:true}); const records=[]; let missing=0; const log=createLog({src:'bench.run',build:'dev',sink:fileSink(join(dir,'run.jsonl'))});
   ask ??= await inProcess();
@@ -82,7 +83,7 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
     const record={run_id:runId,tool:'secondhand',item_id:item.id,manifest_sha256:hash,question,asked_at:asked.toISOString(),first_at:first,full_at:full,ok:!error,error, ...mapper(error ? {} : responseBody ?? {}),delist:null,raw_ref:rawRef};
     log.change('benchmark_answer',`${item.id}:${question}`,error ?? 'done'); records.push(record); await appendFile(join(dir,'records.jsonl'),JSON.stringify(record)+'\n'); return {record,body:responseBody};
   }
-  for(const item of manifest.items) {
+  for(const item of manifest[set === 'market' ? 'market_items' : 'items']) {
     if(!item.query) {missing++; await question(item,'search',null,null,mapSearch,'no_query'); continue;}
     const search=await question(item,'search','/v1/search',{method:'POST',body:JSON.stringify({text:item.query})},mapSearch);
     const id=search.record.ok && (search.body?.product_id ?? search.body?.product?.id);
@@ -92,8 +93,8 @@ export async function run({manifestPath='spec/items/manifest.json',outRoot='benc
   log.end(); process.stdout.write(`${missing} items had no query\n`); return records;
 }
 if(process.argv[1] && import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
-  const args=process.argv.slice(2); let base,timeoutS=20;
-  for(let i=0;i<args.length;i++) {if(args[i]==='--base') base=args[++i]; else if(args[i]==='--timeout-s') timeoutS=Number(args[++i]); else if(args[i]!=='--in-process') throw new Error(`unknown argument: ${args[i]}`);}
+  const args=process.argv.slice(2); let base,timeoutS=20,set='market';
+  for(let i=0;i<args.length;i++) {if(args[i]==='--base') base=args[++i]; else if(args[i]==='--set') { if(!args[i+1] || args[i+1].startsWith('--')) throw new Error('missing set'); set=args[++i]; } else if(args[i]==='--timeout-s') timeoutS=Number(args[++i]); else if(args[i]!=='--in-process') throw new Error(`unknown argument: ${args[i]}`);}
   if(!Number.isFinite(timeoutS) || timeoutS<0) throw new Error('invalid timeout');
-  await run({timeoutS,ask:base?makeAsk({base}):undefined});
+  await run({timeoutS,set,ask:base?makeAsk({base}):undefined});
 }

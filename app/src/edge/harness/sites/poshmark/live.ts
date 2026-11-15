@@ -58,7 +58,7 @@ try {
   const ads = Object.fromEntries(poshmarkAdapters(client).map(a => [a.manifest.verb, a]));
   const timed = async (read: string, f: () => Promise<{ ok: boolean; data?: unknown; error?: unknown }>) => {
     const a = ms();
-    const r = await f().catch((e: Error) => ({ ok: false, error: e.message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 120) }));
+    const r: { ok: boolean; data?: unknown; error?: unknown } = await f().catch((e: Error) => ({ ok: false, error: e.message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 120) }));
     const count = Array.isArray(r.data) ? r.data.length : r.ok ? 1 : 0;
     log.note('live.read', { read, ok: r.ok, count, ms: ms() - a, ...(r.ok ? {} : { error: (r.error as { code?: string })?.code ?? r.error }) }); // the code only: a hint can carry a handle
     return r;
