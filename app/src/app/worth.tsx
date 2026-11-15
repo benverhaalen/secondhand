@@ -2,6 +2,7 @@
 // sold for (a range, from sold comparables only, with the sales one tap away), what they would keep on each site after
 // its fee, and the next step. Every number comes from the demo world's valuation or the market's sold data; a site with
 // too few sales shows none. Why each element is here is in app/behavior/worth.json, "decisions".
+// one at a time: worth-deep, worth-keep, worth-model-field, worth-sell (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import { Approve, Blank, Guess, Line, List, Nav, Photo, Pill, Row, Screen, Section, Sheet, Stack, Txt, type PhotoSrc } from '@/ui';

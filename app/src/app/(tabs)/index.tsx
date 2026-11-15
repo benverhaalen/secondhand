@@ -18,6 +18,7 @@ import {
 import { Shelf } from '@/ui/parts/tile';
 import { oneCardWorld, quietWorld, stopsWorld } from '@/today/stops';
 import { JOB_MS, TIER_LABEL, tiers as deriveTiers, backAt, cards as derive, entries as queueEntries, group, handledLine, log as autoLog, notices as deriveNotices, top as deriveTop, inbox, fit, sales as twoSales, single, type Action, type Card } from '@/today/cards';
+import { log } from '@/ui/log';
 
 type Status = { s: 'working' | 'failed'; step?: string; option?: string };
 type Toast = { id: string; text: string; undo: () => void };
@@ -90,7 +91,7 @@ export default function Today() {
   // One tap acts: the pressed pill shows the step, then the card leaves with Undo, or stays and says what failed.
   function act(c: Card, a: Action, value?: number) {
     if (a.do === 'open') return go(a.to);
-    if (a.do === 'site') { Linking.openURL(a.url).catch(() => setToast({ id: `${c.key}-site-failed`, text: 'The site did not open', undo: () => setToast(null) })); return; }
+    if (a.do === 'site') { Linking.openURL(a.url).catch(e => { log.error('today.open_site', e, { card: c.key }); setToast({ id: `${c.key}-site-failed`, text: 'The site did not open', undo: () => setToast(null) }); }); return; }
     if (a.do === 'queue') { setQueue({ card: c, total: c.ids.length }); setQueueStatus({ s: 'ready' }); return; }
     if (a.do === 'compare') { setCompare(c); return; }
     if (a.do === 'split') { setSplit(s => new Set(s).add(c.key)); return; }

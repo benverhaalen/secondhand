@@ -15,6 +15,7 @@ import { Surface } from '../surface';
 import { Txt } from '../text';
 import { useColors } from '../theme';
 import { motion, radius, space } from '../tokens.generated';
+import { log } from '../log';
 import { mark } from './mark';
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
@@ -63,7 +64,7 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children 
       <GestureHandlerRootView {...({ dataSet: { screen: name, state, skip } } as object)} style={{ flex: 1, justifyContent: 'flex-end' }}>
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: c.scrim }, scrim]}>
           {/* The scrim is not a button that gives way: a tap anywhere on it closes the sheet, as on iOS. */}
-          <View testID="sheet-scrim" accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true} onResponderRelease={close} />
+          <View testID="sheet-scrim" accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true} onResponderRelease={() => { log.event('user.input', { screen: name, control: 'sheet-scrim', value: 'close' }); close(); }} />
         </Animated.View>
         <Animated.View style={[{ maxHeight: height - insets.top - space.s6 }, panel]}>
           <Surface kind="sheet" part="sheet" box={{ flexShrink: 1 }}>

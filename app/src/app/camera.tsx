@@ -10,6 +10,7 @@
 // What people get wrong or do not know (spec/edge-cases.md §3, §4, §6, agent proposal): a typed brand shows as the catalog
 // spells it; "I don't know" is an answer; a maker's mark stops the quick path and suggests an appraisal; and Clean up and
 // Enhance with AI are two named choices, both off until picked.
+// one at a time: cam-close (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Linking, Platform } from 'react-native';

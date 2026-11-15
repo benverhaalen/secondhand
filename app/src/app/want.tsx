@@ -7,6 +7,7 @@
 // (the hand-off rule). A saved want saves each change at once with Undo and looks again at once. While it looks, the page
 // says so per site ("Looking on 5 sites", "4m ago", "Behind", "Found 6 so far"), and the person can leave at any time.
 // The page's reasons and states are in app/behavior/want.json.
+// one at a time: want-quiet (alternatives of one state each; .agents/checks/screens.mjs S2)
 import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';

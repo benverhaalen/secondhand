@@ -81,7 +81,7 @@ export default function Buy() {
   if (state === 'loading') return <Loading name="buy" nav={nav} />;
   if (state === 'failed') return <Failed name="buy" nav={nav} what="your list" again={href(w, '/buy')} />;
   return (
-    <Screen name="buy" state={state ?? (nothing ? (w.name === 'new' ? 'new' : 'empty') : 'typical')} nav={nav}
+    <Screen name="buy" state={state ?? (nothing ? (w.name === 'new' ? 'new' : 'empty') : 'typical')} wash nav={nav}
       foot={toast ? <UndoToast id={toast.id} text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} /> : undefined}>
       <SearchField id="buy-search" placeholder="Find an item or paste a link" onCamera={() => router.push(href(w, '/camera'))}
         onSubmit={q => router.push(href(w, `/search?q=${encodeURIComponent(q)}`))} />

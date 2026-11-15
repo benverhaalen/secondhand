@@ -4,6 +4,7 @@
 // (decision 2026-11-14, a price below your floor always asks). Ways out (ways-out §6.7): type my own price, skip a site,
 // price drops off, every adjustment open under any choice. Typing slips (edge-cases §3, agent proposal): a typed price
 // far outside what similar ones sold for asks once with the range; a lowest over the price is refused in place.
+// one at a time: plan-price (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Approve, Blank, EmptyState, FootButton, Guess, Icon, Line, List, Pill, Row, SiteBadge, Skeleton, Stack, Txt } from '@/ui';
@@ -93,7 +94,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
 
   const consequence = choice === 'check' ? 'Lists only where an offer doesn’t bind you. Every offer asks you.'
     : choice === 'reserve' ? 'Waits for your price. No drops, never marked slow.'
-    : [choice === start && outlook ? `About ${outlook.days_lo} to ${outlook.days_hi} days` : null, best !== null ? `You keep up to ${usd(best)}` : null].filter(Boolean).join('. ');
+    : [choice === start && outlook ? `About ${outlook.days_lo} to ${outlook.days_hi} days` : null, best !== null ? `You get up to ${usd(best)}` : null].filter(Boolean).join('. ');
 
   const foot = draft
     ? <PreviewButton disabled={!on.length || price === null || far} under={under} price={price} toPost={() => price !== null && toPost(price, flipped)} />
