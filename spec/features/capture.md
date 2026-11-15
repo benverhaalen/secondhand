@@ -206,7 +206,7 @@ No outward marketplace action happens here.
 
 ## How we will know it works
 
-Bars come from Ben's decision-tree targets ([decision-tree-capture](../../research/capture/ben/decision-tree-capture.md) §11) and published figures where they exist. The engine's tests and their commands are in [engines/capture §9](../engines/capture.md#9-proof).
+Bars come from Ben's decision-tree targets ([decision-tree-capture](../../research/capture/ben/decision-tree-capture.md) §11) and published figures where they exist. The engine's tests and their commands are in [engines/capture §9](../engines/capture.md#10-proof-today).
 
 | Claim | Bar | Source of the bar |
 |---|---|---|
