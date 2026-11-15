@@ -1,14 +1,15 @@
 // One reader per site: the site's own public signed-out search page in, rows out (engine doc §3.5, protocol-and-adapters §38).
 // A field the page did not carry is absent, never guessed. A page whose cards stopped carrying a required field is `page_changed`.
+import { state as poshmarkState, listingRow as poshmarkListingRow } from '../../harness/sites/poshmark/adapter.ts';
 import { classifyRead, fail } from '../../harness/protocol.ts';
 import type { Site, Field } from '../../harness/protocol.ts';
 
 export type Kind = 'search' | 'sold';
 export interface Row {
   id?: string; title?: string; price_cents?: number; currency?: string; url?: string;
-  condition?: string; image_url?: string; seller_hash?: string; sold?: true; sold_date?: string;
+  condition?: string; size?: string; listed_at?: string; image_url?: string; seller_hash?: string; sold?: true; sold_date?: string;
 }
-export type Read = ReturnType<typeof classifyRead<Row & Record<string, unknown>>>;
+export type Read = ReturnType<typeof classifyRead<Row & Record<string, unknown>>> & { dropped?: number };   // dropped: cards left out for a missing required field
 
 export const REQUIRED = ['id', 'title', 'price_cents', 'url'] as const;
 const FIELDS: Field[] = REQUIRED.map(name => ({ name, type: name === 'price_cents' ? 'number' : 'string', needs_session: false, required: true }) as Field);
@@ -137,14 +138,27 @@ export function searchUrl(site: Site, q: string, kind: Kind): string | null {
 export function readPage(site: Site, html: string, kind: Kind = 'search'): Read {
   const base = BASE[site];
   let rows: Row[]; let anchors: number;
-  if (site === 'offerup') ({ rows, anchors } = offerup(html, base));
+  const poshmarkGrid = site === 'poshmark' ? (poshmarkState(html)?.$_search as { gridData?: { data?: Record<string, unknown>[]; more?: { total?: number } } } | undefined)?.gridData : undefined;
+  if (poshmarkGrid && Array.isArray(poshmarkGrid.data)) {
+    rows = poshmarkGrid.more?.total === 0 ? [] : poshmarkGrid.data.map(o => {
+      const r = poshmarkListingRow(o);
+      return { id: r.external_id, title: r.title, price_cents: r.price_cents, currency: r.currency, url: r.url,
+        condition: r.condition, size: r.size, listed_at: r.listed_at, ...(r.state === 'sold' ? { sold: true as const } : {}) };
+    });
+    anchors = rows.length;
+  } else if (site === 'offerup') ({ rows, anchors } = offerup(html, base));
   else {
     const s = SPECS[site];
     rows = chunks(html, s.start).map(c => s.card(c)).map(r => (r.url ? { ...r, url: new URL(r.url, base).href } : r));
     anchors = (html.match(s.anchor) ?? []).length;
   }
-  const shaped = rows.map(r => ({ ...r, ...(kind === 'sold' ? { sold: true as const } : {}) })) as (Row & Record<string, unknown>)[];
+  const shaped = rows.map(r => ({ ...r, ...(kind === 'sold' && !poshmarkGrid ? { sold: true as const } : {}) })) as (Row & Record<string, unknown>)[];
   // Links present but no card read means the cards changed shape: every required field is missing.
   if (anchors > 0 && shaped.length === 0) return fail('page_changed', `missing ${REQUIRED.join(', ')}`, { do: 'author', missing: [...REQUIRED] });
-  return classifyRead({ challenge: false, rows: shaped }, { site, fields: FIELDS });
+  // The system always answers: a card missing a required field is dropped and counted, and the rest are returned. Only a page
+  // where no card carries every required field has changed shape (Nate, product/words.md 2026-11-15; before, one such card failed the page).
+  const whole = shaped.filter(r => REQUIRED.every(k => r[k] !== undefined && r[k] !== ''));
+  const read = classifyRead({ challenge: false, rows: whole.length > 0 ? whole : shaped }, { site, fields: FIELDS });
+  const dropped = whole.length > 0 ? shaped.length - whole.length : 0;
+  return read.ok && dropped > 0 ? { ...read, dropped } : read;
 }

@@ -44,7 +44,7 @@ function ChipInput({ id, name, numeric, onDone }: { id: string; name: string; nu
   const [text, setText] = useState('');
   return (
     <View {...mark('chip-input', { fit: 'content' })}
-      style={{ height: size.pillCardH, minWidth: space.s9 + space.s5, paddingHorizontal: space.s4, borderRadius: radius.pill, justifyContent: 'center', backgroundColor: c.surface, borderWidth: 1.5, borderColor: c.ink }}>
+      style={{ height: size.pillCardH, minWidth: space.s9 + space.s5, paddingHorizontal: space.s4, borderRadius: radius.pill, borderCurve: 'continuous', justifyContent: 'center', backgroundColor: c.surface, borderWidth: 1.5, borderColor: c.ink }}>
       <TextInput
         testID={id}
         accessibilityLabel={name}

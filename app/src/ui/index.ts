@@ -1,5 +1,5 @@
 // Everything a screen is built from. A screen imports from '@/ui' and nothing in react-native that draws (README.md).
-export { Card, GAP, Grid, Line, List, Row, Screen, Section, Stack } from './layout';
+export { Card, GAP, Grid, InTabs, Line, List, Row, Screen, Section, Stack } from './layout';
 export { Txt, type Role, type Tone } from './text';
 export { Icon, type IconName } from './icon';
 export { Photo, DEMO_PHOTOS, type DemoPhoto, type PhotoSrc } from './photo';

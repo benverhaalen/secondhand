@@ -5,7 +5,7 @@
 // Plus the rule every page keeps: no tap on screen goes to a control the table does not list (copied from index.test.mjs).
 import assert from 'node:assert/strict';
 import { before, after } from 'node:test';
-import { behavior, start } from './behavior.mjs';
+import { behavior, start, WAIT } from './behavior.mjs';
 
 export function tableTests(test, page, screenName) {
   const table = behavior(page);
@@ -16,21 +16,21 @@ export function tableTests(test, page, screenName) {
 
   for (const s of table.states) test(`${table.screen}: ${s.state} shows ${s.shows}`, async () => {
     const v = await app.open(s.route);
-    await v.page.locator(`[data-screen="${screenName}"]`).first().waitFor({ state: 'attached', timeout: 5000 });
-    await v.shows(s.shows, { timeout: 5000 });
+    await v.page.locator(`[data-screen="${screenName}"]`).first().waitFor({ state: 'attached', timeout: WAIT });
+    await v.shows(s.shows, { timeout: WAIT });
     for (const t of s.also ?? []) await v.shows(t);
-    for (const t of s.absent ?? []) assert.equal(await v.page.getByText(t, { exact: true }).count(), 0, `${t} should not show in ${s.state}`);
+    for (const t of s.absent ?? []) assert.equal(await v.count(t, { exact: true }), 0, `${t} should not show in ${s.state}`);
   });
 
   for (const c of table.controls) test(`${table.screen}: ${c.id} in ${c.in} ${c.does}`, async () => {
     const v = await app.open(route(c.in));
-    await v.page.locator(`[data-screen="${screenName}"]`).first().waitFor({ state: 'attached', timeout: 5000 });
+    await v.page.locator(`[data-screen="${screenName}"]`).first().waitFor({ state: 'attached', timeout: WAIT });
     for (const a of c.after ?? []) { await v.tap(a); await v.page.waitForTimeout(150); }
     await v.tap(c.id);
     await v.saw({ type: 'tap', id: c.id });
-    if (c.goes) await v.page.waitForURL(u => new URL(u).pathname === c.goes, { timeout: 5000 });
-    if (c.shows) await v.shows(c.shows, { timeout: 5000 });
-    if (c.then) await v.page.getByTestId(c.then).first().waitFor({ state: 'visible', timeout: 3000 });
+    if (c.goes) await v.page.waitForURL(u => new URL(u).pathname === c.goes, { timeout: WAIT });
+    if (c.shows) await v.shows(c.shows, { timeout: WAIT });
+    if (c.then) await v.page.getByTestId(c.then).first().waitFor({ state: 'visible', timeout: WAIT });
   });
 
   // Every tap the screen logs is a control the table lists, so nothing on screen does something nobody wrote down. Each
@@ -39,14 +39,14 @@ export function tableTests(test, page, screenName) {
   test(`${table.screen}: no tap goes to a control the table does not list`, async () => {
     const first = table.states[0], seen = [];
     const v = await app.open(first.route);
-    await v.shows(first.shows, { timeout: 5000 });
+    await v.shows(first.shows, { timeout: WAIT });
     const ids = [];
     for (const el of await v.page.locator(`[data-screen="${screenName}"] [data-testid]`).all())
       if (await el.isVisible()) ids.push(await el.getAttribute('data-testid'));
     await v.page.close();
     for (const id of [...new Set(ids)].filter(id => !/-input$/.test(id))) {
       const w = await app.open(first.route);
-      await w.shows(first.shows, { timeout: 5000 });
+      await w.shows(first.shows, { timeout: WAIT });
       await w.page.getByTestId(id).first().tap({ timeout: 1000 }).catch(() => {});
       seen.push(...(await w.events().catch(() => [])));
       await w.page.close();

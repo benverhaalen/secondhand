@@ -15,7 +15,7 @@ pageTests(test, table, () => app);
 test('ship: a thing sold on two sites offers no label', async () => {
   const s = await reach(app, table, { route: '/item/it_kindle/ship?case=double' });
   await s.shows('Sold on two sites');
-  assert.equal(await s.page.getByTestId('ship-print').count(), 0);
+  assert.equal(await s.countId('ship-print'), 0);
 });
 
 test('ship: the money shows its four words, and instant payout is offered with its fee but not picked', async () => {
@@ -23,7 +23,7 @@ test('ship: the money shows its four words, and instant payout is offered with i
   for (const w of ['Sold', 'On its way', 'Ready on the site', 'In your bank', 'Same day, $3']) await s.shows(w);
   // The free, standard payout is the one standing; same day shows only after its own tap.
   await s.shows('About 5 business days after that');
-  assert.equal(await s.page.getByText('The day it’s ready, for $3').count(), 0);
+  assert.equal(await s.count('The day it’s ready, for $3'), 0);
   await s.tap('payout-speed-today');
   await s.shows('The day it’s ready, for $3');
 });
@@ -31,15 +31,15 @@ test('ship: the money shows its four words, and instant payout is offered with i
 test('ship: no instant payout where the site states no fee', async () => {
   const s = await reach(app, table);
   await s.shows('In your bank');
-  assert.equal(await s.page.getByTestId('payout-speed-today').count(), 0);
+  assert.equal(await s.countId('payout-speed-today'), 0);
 });
 
 test('ship: offline, Buy label holds on its pill and nothing is printed', async () => {
   const s = await reach(app, table, { route: '/item/it_kindle/ship?state=offline' });
   await s.tap('ship-print');
   await s.page.waitForTimeout(1500);
-  assert.equal(await s.page.getByText('Waiting for signal').count(), 2);
-  assert.equal(await s.page.getByText('Label printed').count(), 0);
+  assert.equal(await s.count('Waiting for signal'), 2);
+  assert.equal(await s.count('Label printed'), 0);
 });
 
 test('ship: going without tracking says what it gives up', async () => {

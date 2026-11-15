@@ -182,6 +182,28 @@ def test_serverless_walk_has_no_file_global(serverless_entrypoint):
     serverless_entrypoint('databricks/tasks/param_walk.py', ['--root', str(ROOT)])
 
 
+@pytest.mark.parametrize('option, expected', [([], '/Shared/secondhand/param-walk'),
+                                              (['--experiment', '/Shared/custom walk'], '/Shared/custom walk')])
+def test_experiment_argument_reaches_mlflow(monkeypatch, option, expected):
+    from unittest.mock import MagicMock
+    class Stop(Exception):
+        pass
+    spark = MagicMock()
+    spark.sql.return_value.first.return_value = {'version': 1}
+    spark.table.return_value.where.return_value.collect.return_value = []
+    sql = MagicMock()
+    sql.SparkSession.getActiveSession.return_value = spark
+    mlflow = MagicMock()
+    mlflow.set_experiment.side_effect = Stop
+    monkeypatch.setitem(sys.modules, 'pyspark.sql', sql)
+    monkeypatch.setitem(sys.modules, 'delta.tables', MagicMock())
+    monkeypatch.setitem(sys.modules, 'mlflow', mlflow)
+    monkeypatch.setattr(p, 'walk', lambda rows, seed: {})
+    with pytest.raises(Stop):
+        p.main(option)
+    mlflow.set_experiment.assert_called_once_with(expected)
+
+
 def test_move_reasons_name_centered_paired_bootstrap_noise():
     out = p.walk(market()[:182 * 8], fit_fn=lambda rows, month: 90)
     judged = [m for m in out['moves'] if m['action'] == 'hold']

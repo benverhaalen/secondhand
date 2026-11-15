@@ -15,7 +15,7 @@ function accountJob(ctx: Ctx, account: Row, kind: 'import' | 'unlink', args: Rec
 }
 
 async function readListings(ctx: Ctx, account: Row) {
-  const result = await runtime.harness.call<Record<string, unknown>[]>(account.site as Site, 'read_listings', { account_id: account.id, shop_id: account.shop_id ?? account.id });
+  const result = await runtime.harness.call<Record<string, unknown>[]>(account.site as Site, 'read_listings', { account_id: account.id, person_id: ctx.user_id ?? undefined, shop_id: account.shop_id ?? account.id });
   if (!result.ok && !['no_route', 'policy_refused'].includes(result.error.code)) throw new ApiError('site_failed', result.error.message, 'read_listings', { by: 'user' });
   if (result.ok) {
     if (!Array.isArray(result.data) || !result.data.every(row => object(row) && typeof row.external_id === 'string' && typeof row.price_cents === 'number')) throw new ApiError('site_failed', 'listing response is not valid', 'read_listings', { by: 'user' });

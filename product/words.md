@@ -1709,6 +1709,12 @@ Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting t
 
 Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).
 
+## 2026-11-15 ben pricing modes and a reason for every number; backtests wait for the backend
+
+Ben, project chat, 2026-11-15 09:09 UTC. Full message; the earlier studio block records an excerpt.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too. also understand why companies pay for affiliate links. also consider pricing the different ways of pricing. our algorithm can price to sell. it can price to the market. can price other ways. shouldnt it end up showing what each of these toggles is meant to show? let nate do the nber stuff. so there is no public way to access mercari data? if its there lets use it its for a hackathon demo
+
+Used in: [pricing modes](../spec/plans/backtest/pricing-modes.md), [backtest plan](../spec/plans/backtest/plan.md#10-why-each-number-and-the-runs-that-wait-for-the-backend).
 ## 2026-11-15 nate use the platforms that sit on the ebay api or the like, and build on what they have proven
 Nate, build session (orchestrator), 2026-11-15 about 10:20 Central.
 > Well the aggregation or other platforms that utilize the ebay api or something of that nature can be used instead, perhaps for even more information, they might lend features proven we can piggy back on and drive to empower all engines.
@@ -1720,3 +1726,296 @@ Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
 > Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
 
 Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
+
+## 2026-11-15 nate correct the answers that come in, and check the engines' spec makes scientific sense and the real-time gathering works
+Nate, build session (orchestrator), 2026-11-15 about 11:30 Central.
+> Ensure all answers that come in are corrected. assess that the engines and how things are determined and weighted, is written out in a spec that makes research proven and scientific sense, that the realtime gathering of this works
+
+Used in: `spec/plans/sweep/science-audit.md` and `scripts/realtime-proof.mjs` when they land.
+
+## 2026-11-15 five reasons answered, cleo's style in the app's family, and site images through codex
+Ben, project chat, 09:23 UTC, answering the five rules that had no stated reason (D2, W1, W8, W10, W13).
+> scrap 1/d2. 2 yea keep this. 3. yes. cleos style more than layout just adapted to how the app's ui looks. they all should look like the same family. 4. yes. 5. site images through codex cli
+
+Used in: [demo D2](constitutions/demo.md), [web W1, W8, W10, W13](constitutions/web.md), [intent ledger](../spec/intent-ledger.md#constitution-reasons-still-needed).
+## 2026-11-15 nate production ready, the auditors once more, organize the repo, and prepare on the mac for testflight
+Nate, build session (orchestrator), 2026-11-15 about 11:45 to 11:55 Central. Two messages.
+> Get everything fully production ready and prepared, run the professional auditors across the app once more, understand how to apply the correct lenses to everything, organize the repo
+
+> We will prepare, rigorously and accurately on mac test to prepare for testflight in hands development
+
+Used in: the second round of audits under `spec/plans/sweep/round-2/`; [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 every designed thing uses the app's design system
+
+Ben, project chat, 09:25 UTC.
+> and can you ensure for all designed things everything is used right for any videos, or other pages, etc.
+
+Used in: [demo-reel.md](demo-reel.md#2-showing-how-it-works), [pitch-constitution.md](pitch-constitution.md#part-vii-before-going-on), [live-buy-demo.md](live-buy-demo.md).
+## 2026-11-15 nate valuation is critical, find where others hold the ebay data and harness onto it
+Nate, build session (orchestrator), 2026-11-15 about 12:20 Central, after the orchestrator reported that eBay's API licence bars using its content to model prices.
+> we need valuation, that is critical
+> Find a workaround, understand where other platforms utilize the api and have all ebay data so we can just harness onto that
+
+Used in: `research/price/nate/sold-price-sources-for-valuation.md` when it lands.
+
+## 2026-11-15 nate we own the backtests
+Nate, build session (orchestrator), 2026-11-15 about 12:30 Central, answering whether Ben's thread should own the backtest method and published runs.
+> we own backtests and such
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 ben research how depop and other resale apps estimate prices
+
+Ben, project chat, 2026-11-15 09:31 UTC.
+
+> i know depop does price estimates in there app, research that and similar reselling platforms that share similar features
+
+Used in: [how resale platforms suggest prices](../research/price/ben/platform-price-suggestions.md).
+## 2026-11-15 nate backtest as we build, and the steps for testflight
+Nate, build session (orchestrator), 2026-11-15 about 13:10 Central. Two messages.
+> Please also give me the steps to set up the bundler id and everything for expo to get testflight builds and everything set up
+
+> well lets backtest as we build to evaluate and improve, but keep building to fully optimized production
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate ben has given me the backend
+Nate, build session (orchestrator), 2026-11-15 about 13:20 Central.
+> Ben has given full reign for me to handle backend
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate mercari in real time, fix the search, and work every percent to perfection
+Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
+> Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
+
+Used in: [state of completion](../spec/plans/completion.md).
+
+## 2026-11-15 nate the apple account is his, and the first testflight build is the demo we improve
+Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is left out of this public file.
+> its [his own name] my apple account, the testflight build is the demo for us to test and improve continously before we finalize. I expect we can continously improve the ui/ux and strive to fit the perfect presentation to ensure us winning the compeition
+
+Used in: [production readiness](../spec/plans/sweep/round-2/production-readiness.md), decisions 1 and 5.
+
+## 2026-11-15 nate wrap the leads up at a good spot, then spec from what we have
+Nate, build session (orchestrator), 2026-11-15 about 15:30 Central.
+> Everything you just ascertained, lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop, meanwhile, give me the full command to put into the terminal with the path for the p8 and everything prewritten
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "The spec pass".
+
+## 2026-11-15 nate where are we not optimized, an expert lead for real-time adaptation, the bundle identifier, and sessions end before they fill
+Nate, build session (orchestrator), 2026-11-15 between about 15:45 and 16:00 Central. Three messages.
+> Where have we not optimized in speed, accuracy, all aspects to the retrieval and operations of data and such features and everything driven with our custom build pipelines and api protocols. /research and assess. Addtionally, fully focus an expert team lead to apply the relevant skills, research out and continously with codex address things to fit the realtime adapt to each specific platform product type engines, taking into account the data we can gather and calculate things against, combining things to create metrics, all researched and credibly proven
+
+> com.bnvg.secondhand
+
+> ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "A session ends before it fills"; `spec/plans/optimization-gaps.md`.
+
+## 2026-11-15 the app looks nothing like the mocks: hierarchy, spacing, what stacks and what has color
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:30 UTC (relayed from another thread).
+
+> so it doesnt look like the mocks you gave me why. figure it out from logging. use some sort of way to run automations on my actual phone with the app. and fix why like fonts arent loading and why the top is cut off. spacing is weird. it feels sloppy. incohesive. look at all the mocks you gave and audit and figure out why the implementation missed the mark and how to write tests to fix it. im confused how you got really good ui to look using code in one way but then on the actual app it looks so so ai slop and bad. also audit from like an expert in context too.
+
+Ben, same thread, 09:38 UTC.
+
+> all messages in here just feed to codex. identify where the example ones differ from the example ones i approved. find the ones i really liked and why. a problem i have is there is not really a super clear hierarchy for a lot of it. finding why it just looks nothing like code stuff that i actually approved. continuously auditing for the expert principles and the design constitution and the rules for how to write great code in the language for ui design like an expert. how to actually expertly do it
+
+Ben, same thread, 09:44 UTC.
+
+> my main critique is it lacks hierarchy across generalized pages. the spacing feels off and very ai sloppy. i feel like there is no consistency. why do some things stack. why do some have color. it all feels very random and unintentional and rules need to be written to make it intentional to how an expert would fix it
+
+Ben, same thread, 09:47 UTC.
+
+> wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
+
+Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
+
+## 2026-11-15 show how deep the project goes, and the novel ways we used the technology
+
+Ben, project chat, 09:57 UTC.
+> add more into it for dig deep how we created a project with absurd depth. also absurd depth in how we used the technologies and used them in a novel way.
+
+Used in: [devpost.md](devpost.md#how-deep-we-dug), [pitch.md](pitch.md#how-deep-we-dug).
+## 2026-11-15 every page earns its spot, a title on every tab, Today sorted differently, the bar and the plus
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:56 UTC.
+
+> audit how you are ensuring the whole app meets the standard of expert ui design and try and improve it. i recall the way i had prompted the dark mode original design had somehow created something that was actually good. for some reason those principles were lost. everything needs to earn its spot on the screen and all composure and structure and evaluating the app as a whole should ensure similar things have similar hierarchy and tests need to be written with this. also hopefully you have some sort of decision tree for figuring out what animations when or if an animation should play. also there are some fixes i have for things that make no sense to me. i think the today page should be sorted completely differently. i think the money thing at the top should change. the bottom bar looks odd with the iphone curves. the middle + circle isnt aligned. each page isnt designed for how the user would want to do something. it isnt designed like how a user would probably end up wanting to do things. everything feels cramped. i feel like the font weight hierarchy is not imposed. i think the second hand font isnt used enough. the today page should say today, the sell sell, the buy page, buy. then the main actions a user would want to do should be there. messages should just list the messages. also the gradient at the top of the screen is on some pages and not on others. think of how to group things in today better. the color makes no sense to me too. ensure there is no excessive text. recall all text needs to be written with the de claudish skill i hae in my harness.
+
+Ben, same thread, 09:59 UTC.
+
+> another note, i think that there should be lint rules and you should continue making lint rules based on what you see too. also like i think some things are just too small. like the little tags for pickup or offers etc. also you need to ensure that data can effectively wire up to the ui too. it should all feel familiar and be organized in a familiar way
+
+Ben, same thread, 10:00 UTC.
+
+> also what ui would you remove or what would you add to show rather than tell. and improve hierarchy and coherence. note down on the screens all the issues with cohesiveness and a combined brand family and where it wasnt enforced and trying to improve all those checks and rules that are deterministic and not just a prompt
+
+Ben, same thread, 10:01 UTC.
+
+> the scale and organization of each page is completely intentional and standard to apple iphone design
+## 2026-11-15 nate how credible and research-proven are our scorers, real time against 2012 to 2013, and proving we beat the other tools
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> So with this prompt, I was focused on you establishing how our engines are credible and accurate. Theres value to realtime vs 2012 to 2013. We research current market data, so I wanted you to assess how credible and research proven our scorers and such deterministic system we had in place were. What are the ways we can. /research  to understand what would make it such. What would help us easily prove or exhibit outperfroming competitors and other tools in our depth of research, and how we aid people.
+
+Used in: `spec/engines/credibility.md`.
+
+## 2026-11-15 nate fresh leads replace the ones with heavy context
+Nate, orchestrator's session, 2026-11-15, about 04:30 Central.
+> get all new leads in replacing old ones with very heavy context windows
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills).
+
+## 2026-11-15 nate the trial workspace is the one the judges see
+Nate, the Databricks lead's session, 2026-11-15, about 04:00 Central, as that lead relayed it to the orchestrator (not heard first hand).
+> thats what we have, yeah lets do the trial
+
+Used in: [packet 71](../.agents/team/packets/team/71-databricks-handoff.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate the dashboard is rebuilt before any deploy
+Nate, orchestrator's session, 2026-11-15, about 05:00 Central, asked whether to force the Databricks deploy before the dashboard is rebuilt.
+> Rebuild first
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 71](../.agents/team/packets/team/71-databricks-handoff.md).
+
+## 2026-11-15 nate apify is set up for the hackathon
+Nate, orchestrator's session, 2026-11-15, about 05:10 Central, with a screenshot of his Apify console (the Facebook Marketplace scraper and an eBay listings and prices scraper). Asked whether the token he typed should be set and whether this is his go on third-party feeds.
+> You set it, ill rotate after hackathon
+
+Read by the orchestrator (agent proposal, until he says otherwise): a go to use those two Apify actors as sources for the hackathon demo, labelled as such and never modelled on. Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate ebay and facebook through apify, integrated selectively, not only apis
+Nate, orchestrator's session, 2026-11-15, about 05:15 Central, after the Apify token was set.
+> Now you have access to both ebay pricing, listings, etc, and facebook marketplace, alot of possible sources we should selectively integrate, improve benchmarks, of course not just utilizing apis
+
+Used in: `app/src/edge/harness/sites/apify/` (in build), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate not focused on old data unless it holds relevance
+Nate, adaptation lead's session, 2026-11-15, evening Central, on the NBER eBay 2012 to 2013 backtests.
+> i dont like that you're still focused on such old data, unless it can hold some relevance
+
+Used in: [spec/engines/adaptation.md §4](../spec/engines/adaptation.md#4-how-each-is-proved-before-it-is-trusted), [spec/engines/credibility.md](../spec/engines/credibility.md#what-data-can-prove-what).
+
+## 2026-11-15 page jobs, every control's intended action, iPhone standards, and two skills turned into checks
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 10:07 UTC.
+
+> look at the main states of the page. what each purpose should serve and the features each needs and then how an expert designer would design those broadly especially user flows and then use those to audit and fix and create checks on each of the actual implemented pages
+
+Ben, same thread, 10:08 UTC.
+
+> like that part in the loop where its supposed to point out the intended action in specifics. not just this button is supposed to go back, to where, how fast, what animation, all the time? how does it react to being pressed, haptics? but do this for all interactive states. and use codex to do it. alongside all this
+
+Ben, same thread, 10:11 UTC.
+
+> something else i think there needs to be some standards too. like for apple iphone design. fonts can only be so small. all text has to pass claudish pass. each text of the same size has the same font and the same numbers attached to it. same curves on everything. general states and general components are only things allowed. everything is contained and designed and hierarched like how an expert would so nothing breaks. quantifying things being crowded. text and fonts and weights not matching the design style. when things are too close. when distances are inconsistent. using deslopping ai skills too to know better ui specifics. principles that great ui design has and then tailoring tests to this scenario
+
+Ben, same thread, 10:13 UTC.
+
+> use this skill and write checks around it. https://github.com/Appllama/appllama-skills/blob/main/skills/appllama-app-design-skill/
+
+Ben, same thread, 10:14 UTC.
+
+> do the same with this: https://paste.rachel.systems/ukogokijaz.md
+
+Used in: [.agents/vendor/appllama](../.agents/vendor/appllama/SOURCE.md), `scripts/standards.mjs`, `.agents/checks/standards.mjs`.
+
+## 2026-11-15 nate how credibility should be weighed, and the value we bring truly defined
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> well how do you believe credibility should be weighed. The literature lays out alot and its important you assess that it's proven how we deliver things. That the value our system brings is truly defined
+
+Used in: [spec/engines/credibility.md](../spec/engines/credibility.md#how-credibility-is-weighed).
+
+## 2026-11-15 nate identify the product, find the same thing off brand, and learn whether the brand matters
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> Its important we develop the feature of the system being able to identify the product and what it is, and find off brand similar types of the same quality, material, but different brand, and developing insights on whether people care more about the specific main brand or not
+
+Used in: `spec/engines/adaptation.md` (the brand measure, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+Ben, same thread, 10:27 UTC.
+
+> each page should have one purpose. not sure if this is defined. for more detailed actions you can go into specific pages. like profile shouldnt have analytics, linking services, tracking things, settings, different types of settings. it should have simple ways to visualize and understand intutitively and go to each thing. also something im noticing is a lot of clutter
+
+Ben, same thread, 10:30 UTC.
+
+> thinking of all possible interaction states. scrolling up. like because you have 4 parts on the bottom where a user can go to and they look relatively similar, they should be layed out relatively similar in similar primitives you know. but i want you to spawn a few codex agents to do work in parallel and faster for each type of page. understanding what it is and what it isnt. using the principles from those skills to assess and redesign it effectively to fit the skills and the primitives and cohesive family as a whole
+
+Ben, same thread, 10:31 UTC.
+
+> ensuring each checks against what is planned feature wise for each and also noting down what is left to be wired up and such
+
+Used in: [features/app/page-jobs.json](../features/app/page-jobs.json), `scripts/page-jobs.mjs` (J1 to J5).
+## 2026-11-15 nate host the server output on the website's vercel deployment
+Nate, orchestrator's session, 2026-11-15, about 06:15 Central, asked whether the device test should run against a dev client on the LAN or a hosted server.
+> Lets host the server output sure, we can host it on the next.js deployment with vercel the website will live on
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md). The deploy itself is still asked each time.
+
+## 2026-11-15 nate parse more from each read instead of reading one by one
+Nate, orchestrator's session, 2026-11-15, about 06:25 Central, after hearing that eBay is held to one read every ten seconds.
+> well instead of reading one by one, can we build the system to parse and even more effectively ascertain info
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate parsing and decisions driven by code, not a model reading each one
+Nate, orchestrator's session, 2026-11-15, about 06:50 Central.
+> we can parse and build things to be deterministicially or code driven no? would that be more optimized?
+
+Used in: `spec/engines/market-index.md` (the attribute extractor, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate we read everything; the Poshmark rule is only about share, like and repost
+Nate, adaptation lead's session, 2026-11-15, morning Central, correcting a reading limited to Poshmark.
+> no not just reading poshmark. I meant we only were to apply that one rule to make the poshmark specific things like sharing and liking user inputs the ai agent tells the user to do for best marketing insights. We read everything
+
+Used in: [spec/engines/market-index.md §1](../spec/engines/market-index.md#1-what-may-be-kept-per-source), [spec/engines/adaptation.md](../spec/engines/adaptation.md).
+
+## 2026-11-15 nate retrieval proven first, then the engines, then a presentation the judges understand, with databricks shown
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central.
+> Ensure it being wired in is efficiently and expertly evaluated. We;ll establish that we have the full outperforming data retreival built and efficient, benchmarked, and proven amazing. Then we move on to the engines for determining and driving how we calculate and adapt in realtime, which ive already asked we reserach and credibly write up to bolster all of the system and its architecture. When we present it needs to be clear, impressive, and understood by the judges, with databricks utilization also exemplified as that is a track we are entering
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `bench/README.md` (the retrieval evaluation).
+
+## 2026-11-15 nate no bench reruns until the latency blunders are fixed
+Nate, third integration lead's session, 2026-11-15, morning Central, on the full-answer jump to 9.99 s.
+> dont rerun benches until we have perfectly optimized to correct such blunders like the jump in latency
+
+Used in: [packet 69](../.agents/team/packets/team/69-integration-handoff.md), [joins.md J12](../spec/plans/joins.md#named-fixes-in-build-order): the bench reruns only after an in-process latency test of the composed search passes.
+
+## 2026-11-15 nate the system picks the platform a listing will do best on, or lists on both
+Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
+> The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
+
+Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
+
+## 2026-11-15 nate show how the engine weighs what it learned, with genie answering and every way databricks helped
+Nate, orchestrator's session, 2026-11-15, about 07:45 Central.
+> So we should exemplify how the engine we built to deliver and determinstically weigh aggregated and learned product information from official and second hand retailers. like if databricks builds stuff for genie to be able to answer questions than we can show off the product, exhbit all the ways databricks helped, the feature set it offered to us, how we expanded on it, and optimized to create what we present
+
+Used in: `databricks/DEMO.md`, `databricks/genie/market.json`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate technology is valued by its parts too, and a custom build is a clarifying question
+Nate, orchestrator's session, 2026-11-15, about 07:55 Central.
+> Also for technology, a userful thing when its being captured and identified, is for the system to perhaps determine the value of its individual pieces. like a desktop computer can have the system understand the ram, of course if its a custom build, I imagine that will be a clarifying question, and stuff like that
+
+Used in: [packet 72](../.agents/team/packets/team/72-capture-handoff.md) (the queue's parts row), `spec/engines/capture.md` (when specced).
+
+## 2026-11-15 nate start new leads as needed and work to complete everything
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Start all new leads as you see fit, evaluate, fix, address, and efficiently work to complete everything
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md) (the orchestrator starts a replacement lead when one hands off, without asking each time).
+
+## 2026-11-15 nate apify stays out of the latency path; store it and feed the engines from the store
+Nate, orchestrator's session, 2026-11-15, about 08:25 Central.
+> well we dont read apify in full if it affects latency, we can store stuff to then be generated and build the system to aid the models and ai engines in how the data is automatically given to them
+
+Used in: `spec/engines/market-index.md` (MI1, MI2), [packet 69](../.agents/team/packets/team/69-integration-handoff.md) (the Facebook source row).
+
+## 2026-11-15 nate a listing parser dropped onto each site's page, narrowing by type or keyword and checking the name
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central, continuing "we can parse and build things to be deterministicially or code driven".
+> that includes the way we scrape browsers, the system could drop like a listing parser onto every site with the listing that also narrows by the type or keyword and checks for the name, just things to improve accuracy, and efficeincy.
+
+Used in: `app/src/edge/harness/public-client.ts` (the in-page parser, when built), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).

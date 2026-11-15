@@ -1,4 +1,10 @@
 // Rests-on: spec/product.md §3, §5, §6 Harnesses, §7; spec/examples/{items,sell,you}.json.
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { cdpLauncher, localChrome, type CdpPw } from '../browser/cdp.ts';
+import { createPool, type Launcher } from '../browser/pool.ts';
+import { linkedSearch, readSearchPage, type BrowserPage } from '../harness/sites/mercari/linked.ts';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
@@ -6,10 +12,16 @@ import { example } from './examples.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { fromEngine, pagination, object, integer, invalid } from './captures.ts';
 import { memoryVault, type Accounts, type LinkedAccount } from '../browser/auth.ts';
-import { createHarness, fail, isWrite } from '../harness/protocol.ts';
+import { createHarness, fail, isWrite, type Adapter, type Harness } from '../harness/protocol.ts';
+import { createSiteService } from '../harness/service.ts';
 import { depopAdapters, API, type Client } from '../harness/sites/depop/adapter.ts';
+import { ebayAdapters, ebayPageAdapters, type PageClient } from '../harness/sites/ebay/adapter.ts';
+import { poshmarkAdapters } from '../harness/sites/poshmark/adapter.ts';
+import { mercariAdapters } from '../harness/sites/mercari/adapter.ts';
 import { memoryLeases, memoryParams, type Row, type Table, type Store, type JobRow } from '../events/ports.ts';
 import { createPipeline } from '../events/pipeline.ts';
+import { createWatcher, type WatchedListing } from '../events/watcher.ts';
+import { SITES as WATCH_SITES, type Snapshot } from '../events/event.ts';
 import { check } from '../events/policy.ts';
 import { SITES } from '../harness/names.ts';
 
@@ -50,11 +62,14 @@ export function seedExamples(st: Store) {
   });
 }
 
-export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink })) {
+export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
+  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number;
+} = {}) {
+  const now = options.now ?? Date.now;
   seedExamples(st);
   // shortcut: session state is process-local until the Databricks secret-scope AuthVault joins.
   const vault = memoryVault();
-  const accounts: Accounts = {
+  const accounts: Accounts & { byId(id: string, person_id?: string): Promise<LinkedAccount | undefined> } = {
     async linked(person_id) {
       const rows = person_id ? st.rows('account', { user_id: person_id }) : st.systemRows('account');
       const linked = await Promise.all(rows.map(async row => {
@@ -63,9 +78,14 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       }));
       return linked.filter((row): row is LinkedAccount => row !== undefined);
     },
-    async byId(id) { return (await accounts.linked()).find(row => row.account_id === id); },
+    async byId(id: string, person_id?: string) { return person_id ? (await accounts.linked(person_id)).find(row => row.account_id === id) : undefined; },
   };
-  const live = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('depop');
+  const personScope = new AsyncLocalStorage<string>();
+  const scopedAccounts: Accounts = { ...accounts, byId: id => accounts.byId(id, personScope.getStore()) };
+  // A route never receives system accounts.
+  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async id => (await accounts.linked()).find(row => row.account_id === id) };
+  const liveSites = new Set((process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/));
+  const live = liveSites.has('depop');
   const client: Client = {
     signed_in: false,
     async doc(url, signal) {
@@ -80,21 +100,160 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return { status: res.status, body: res.ok ? await res.json() : null };
     },
   };
-  const adapters = depopAdapters(client).map(adapter => live || isWrite(adapter.manifest.verb) ? adapter : {
-    ...adapter, async run() { return fail('no_route', 'Depop live reads are disabled', { do: 'handoff', url: 'https://www.depop.com/' }); },
+  const unavailable = async (): Promise<never> => { throw new Error('site session transport is not composed'); };
+  const ebayLive = liveSites.has('ebay');
+  const ebayPageClient: PageClient = ebayLive ? options.ebayPageClient ?? {
+    signed_in: false,
+    async page(url, signal) {
+      const res = await fetch(url, { signal });
+      return { status: res.status, html: await res.text() };
+    },
+  } : { signed_in: false, page: unavailable };
+  // shortcut: waiting.md "The harness wired to itself": browser profiles and eBay credentials
+  // have no runtime transport yet. Keep their real dry-write adapters and explicit offline reads.
+  const offlineClient: Client = { signed_in: false, doc: unavailable, json: unavailable };
+  const adapters = options.adapters ?? [
+    ...depopAdapters(client),
+    ...poshmarkAdapters(offlineClient),
+    ...mercariAdapters({ signed_in: false, page: unavailable }),
+    ...ebayAdapters({ env: 'production', app_token: async () => undefined, user_token: async () => ({ ok: false }), send: unavailable }),
+    ...ebayPageAdapters(ebayPageClient),
+  ].map(adapter => (adapter.manifest.site === 'depop' && live) || (adapter.manifest.site === 'ebay' && ebayLive) || isWrite(adapter.manifest.verb) ? adapter : {
+    ...adapter, async run() { return fail('no_route', `${adapter.manifest.site} live reads are unavailable`, { do: 'handoff', url: '' }); },
   });
+  const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');
+  let mercariPool: ReturnType<typeof createPool<BrowserPage>> | undefined;
+  const mercari = linkedSearch({ accounts: scopedAccounts, async read(account_id, url, signal) {
+    if (!liveMercari) throw new Error('Mercari live reads are disabled');
+    if (!mercariPool) {
+      const executablePath = process.env.SECONDHAND_CHROME_PATH;
+      if (!executablePath) throw new Error('Mercari needs SECONDHAND_CHROME_PATH for its linked browser');
+      const profileRoot = join(process.env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-linked-browsers');
+      const pw = createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
+      const launcher = cdpLauncher(pw, localChrome({ executablePath, scratch: join(profileRoot, 'anonymous') })) as Launcher<BrowserPage>;
+      mercariPool = createPool({ launcher, profileRoot, accounts: scopedAccounts, vault, leases: memoryLeases(), log });
+    }
+    const result = await mercariPool.dispatch({ account_id, user_id: personScope.getStore(), job_id: crypto.randomUUID(), run: page => readSearchPage(page, url, signal, log) });
+    if (!result.ok) throw new Error(result.message);
+    return result.value;
+  } });
+  adapters.push(mercari);
   const harnessLog: Log = { ...log, call(kind, name, input, fn, describe) { return log.call(kind === 'harness' ? 'tool' : kind, name, input, fn, describe); } };
-  const harness = createHarness({ adapters, accounts, log: harnessLog });
-  const leases = memoryLeases();
+  const services = new Map(SITES.map(site => [site, createSiteService(site, adapters.filter(a => a.manifest.site === site), {
+    concurrency: 1, store: st, data: liveSites.has(site) ? `live:${site}` : 'synthetic', log: harnessLog, now,
+  })]));
+  // Run the protocol's account/operation gate before entering a service, then preserve
+  // the service's envelope (including fallback route, observations and stored write result).
+  const gate = createHarness({ accounts: scopedAccounts, now, adapters: adapters.map(adapter => ({
+    ...adapter, async run() { return { ok: true as const, data: null }; },
+  })) });
+  const harness: Harness = { async call(site, verb, args = {}) {
+    return personScope.run(typeof args.person_id === 'string' ? args.person_id : '', async () => {
+    const admitted = await gate.call(site, verb, args);
+    if (!admitted.ok) return admitted;
+    const account = typeof args.account_id === 'string' ? await accounts.byId(args.account_id, typeof args.person_id === 'string' ? args.person_id : undefined) : undefined;
+    if (account && args.user_id !== undefined && args.user_id !== account.person_id)
+      return { ...fail('policy_refused', 'account belongs to another person', { do: 'raise_decision', kind: 'link_account' }), meta: admitted.meta };
+    if (isWrite(verb) && !liveSites.has(site)) {
+      args = { ...args, dry: true };
+      log.note('marketplace write forced dry', { site, verb, operation_id: args.operation_id });
+    }
+    return services.get(site)!.call(verb, { ...args,
+      ...(isWrite(verb) && account && { user_id: account.person_id }),
+    });
+    });
+  } };
+  const leases = memoryLeases(now);
   const cadence: Record<string, number> = {};
   for (const site of SITES) for (const [state, seconds] of Object.entries({ hot: 90, live: 900, quiet: 3600 })) cadence[`watch_cadence_s@${site}/${state}`] = seconds;
   const params = memoryParams({ watch_cadence_s: 900, job_lease_ttl_ms: 120000, delist_max_attempts: 3 }, cadence);
+  const listings = (user_id: string): WatchedListing[] => st.systemRows('listing').flatMap(row => {
+    if (row.user_id !== user_id || row.deleted || row.import_preview || typeof row.item_id !== 'string'
+      || typeof row.account_id !== 'string' || typeof row.external_id !== 'string' || typeof row.state !== 'string'
+      || !(WATCH_SITES as readonly unknown[]).includes(row.site)) return [];
+    return [{ listing_id: row.id, item_id: row.item_id, account_id: row.account_id, external_id: row.external_id,
+      site: row.site as WatchedListing['site'], state: row.state }];
+  });
+  class AccountSnapshots extends Map<string, Snapshot> {
+    constructor() {
+      super();
+      for (const account of st.systemRows('account')) if (account.watch_snapshot && !account.deleted)
+        super.set(account.id, account.watch_snapshot as Snapshot);
+    }
+    override set(account_id: string, snapshot: Snapshot) {
+      const account = st.get('account', snapshot.user_id, account_id);
+      if (!account) throw new Error(`snapshot account missing: ${account_id}`);
+      st.put('account', { ...account, watch_snapshot: snapshot });
+      return super.set(account_id, snapshot);
+    }
+  }
+  const snapshots = new AccountSnapshots();
+  const cents = (value: unknown) => integer(value) ? value : object(value) && integer(value.amount_cents) ? value.amount_cents : undefined;
+  const watcherKinds = new Set(['poll_orders', 'poll_inbox', 'answer_offer', 'delist', 'reconcile', 'relink']);
+  const watcherOwns = (job: JobRow) => {
+    const event = st.events({ user_id: job.user_id }).find(event => event.id === job.event_id);
+    const saleDelist = job.kind === 'delist' && event?.actor === 'auto' && typeof event.payload?.sold_listing_id === 'string';
+    return watcherKinds.has(job.kind) && !!event && (event.source !== 'app' || saleDelist);
+  };
+  // shortcut: Store.claimJobs has no predicate port. Claim and release synchronously so
+  // each worker executes only its own jobs, without a head-of-queue job starving the other.
+  function claimJobs(limit: number, worker: string, watching: boolean) {
+    let kept = 0;
+    return st.claimJobs(st.jobs().length, worker).filter(job => {
+      if (watcherOwns(job) === watching && kept < limit) { kept++; return true; }
+      st.release(job.id);
+      return false;
+    });
+  }
+  const watcherStore: Store = { ...st, claimJobs: (limit, worker) => claimJobs(limit, worker, true),
+    raiseDecision(decision) {
+      const job = decision.job_id ? st.getJob(decision.job_id) : undefined;
+      const midpoint = job?.kind === 'answer_offer' && job.args.decided_by === 'negotiation' && job.args.response === 'counter'
+        && (decision.kind === 'counter_offer' || decision.kind === 'price_below_floor');
+      return st.raiseDecision({ ...decision, ...(midpoint && {
+        why: 'No acceptance model weighed this; the counter is the midpoint inside your limits.',
+      }) });
+    },
+  };
+  const watcher = createWatcher({ store: watcherStore, harness, accounts: systemAccounts, leases, params, log, now, snapshots,
+    listings: {
+      byExternal: (user_id, site, external_id) => listings(user_id).find(row => row.site === site && row.external_id === external_id),
+      ofItem: (user_id, item_id) => listings(user_id).filter(row => row.item_id === item_id),
+    },
+    limits: { of(user_id, item_id) {
+      const limits = st.get('limits', user_id, item_id);
+      if (st.get('limits', user_id, user_id)?.ask_every_time === true || limits?.accept_mode === 'ask_all') return undefined;
+      const item = st.get('item', user_id, item_id);
+      const ask_cents = cents(limits?.ask_cents) ?? cents(item?.price_cents);
+      let floor_cents = cents(limits?.floor_cents), always_accept_cents = cents(limits?.always_accept_cents);
+      const conditions = st.rows('rule', { user_id }).filter(row => !row.deleted && row.state === 'auto'
+        && row.kind === 'accept_offer' && (row.scope === 'all' || row.scope === item_id) && object(row.limits));
+      for (const rule of conditions) {
+        const condition = rule.limits as Record<string, unknown>;
+        const floor = cents(condition.floor_cents), threshold = cents(condition.always_accept_cents);
+        if (floor !== undefined && floor_cents !== undefined) floor_cents = Math.max(floor_cents, floor);
+        if (threshold !== undefined && always_accept_cents !== undefined) always_accept_cents = Math.max(always_accept_cents, threshold);
+      }
+      return ask_cents !== undefined && floor_cents !== undefined && always_accept_cents !== undefined
+        ? { ask_cents, floor_cents, always_accept_cents } : undefined;
+    } },
+    // shortcut: replace NaN with pAccept({site, kind, ask_cents, offer_cents, days_listed, buyer_tier, round?}, store) -> {p, basis_level, param_versions} from the engines lead.
+    pAccept: () => NaN,
+    // Hazard omitted until the engines lead supplies its port; the watcher's tier cadence applies.
+    readArgs(account) {
+      const row = st.get('account', account.user_id, account.account_id)!;
+      // shortcut: spec/plans/waiting.md "A site handle on the account row" is still open.
+      // Pass stored handles only; a secondhand account id is never a marketplace handle.
+      return { person_id: account.user_id, ...Object.fromEntries(['shop_id', 'username', 'seller_id'].flatMap(key =>
+        typeof row[key] === 'string' || typeof row[key] === 'number' ? [[key, row[key]]] : [])) };
+    },
+  });
   // Pipeline's policy port carries prices but no tenant/item; keep the claimed job in its async scope.
   const running = new AsyncLocalStorage<JobRow>();
   const worker = 'edge.runtime';
   const pipelineStore: Store = { ...st, claimJobs() { const job = running.getStore(); return job ? [job] : []; } };
   const pipeline = createPipeline({
-    store: pipelineStore, harness, leases, params, log, worker, now: Date.now,
+    store: pipelineStore, harness: { call: (site, verb, args) => harness.call(site, verb as Parameters<Harness['call']>[1], { ...args, person_id: running.getStore()?.user_id }) }, leases, params, log, worker, now,
     engines: {
       async unlink() { return { unlinked: true }; },
       async import(job) {
@@ -130,9 +289,9 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return result;
     },
   });
-  return { store: st, vault, accounts, harness, leases, params, pipeline: {
+  return { store: st, vault, accounts, harness, leases, params, watcher, pipeline: {
     async runOnce(limit: number) {
-      const claimed = st.claimJobs(limit, worker);
+      const claimed = claimJobs(limit, worker, false);
       await Promise.all(claimed.map(job => running.run(job, () => pipeline.runOnce(1))));
       return claimed.length;
     },
@@ -150,7 +309,7 @@ export function checkVersion(row: Row, expected: unknown) {
   if (expected !== row.version) throw new ApiError('stale', 'the resource changed', 'version_check', { by: 'user' }, { current: { version: row.version } });
 }
 export function publicRow(row: Row, includeVersion = false) {
-  const { user_id, version, data, deleted, pending, token_ref, read_at, purchases, import_preview, account_id, item_id, required_fields, ...view } = row;
+  const { user_id, version, data, deleted, pending, token_ref, read_at, purchases, import_preview, account_id, item_id, required_fields, watch_snapshot, ...view } = row;
   return { ...view, ...(includeVersion ? { version } : {}) };
 }
 export function engine(handler: Handler): Handler {

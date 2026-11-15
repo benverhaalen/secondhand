@@ -1,0 +1,337 @@
+{
+  "source": "jobs/demand/velocity.py:velocity; scipy.stats.gamma.ppf; shape/rate, sales per week",
+  "cases": [
+    {
+      "id": "small-0.1",
+      "prior": {
+        "shape": 0.1,
+        "rate": 2
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 0.1,
+        "rate": 2,
+        "mean": 0.05,
+        "p10": 3.036524181371603e-11,
+        "p90": 0.1330772768694185,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "small-0.3",
+      "prior": {
+        "shape": 0.3,
+        "rate": 0.05
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 0.3,
+        "rate": 0.05,
+        "mean": 5.999999999999999,
+        "p10": 0.006474492436468654,
+        "p90": 17.696215467204887,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "small-0.8",
+      "prior": {
+        "shape": 0.8,
+        "rate": 100
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 0.8,
+        "rate": 100,
+        "mean": 0.008,
+        "p10": 0.0005298182180017688,
+        "p90": 0.019452584157780978,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "exponential",
+      "prior": {
+        "shape": 1,
+        "rate": 2
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 1,
+        "rate": 2,
+        "mean": 0.5,
+        "p10": 0.05268025782891318,
+        "p90": 1.151292546497023,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "two",
+      "prior": {
+        "shape": 2,
+        "rate": 2
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 2,
+        "rate": 2,
+        "mean": 1.0,
+        "p10": 0.26590580419480603,
+        "p90": 1.9448600849337145,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "kind-worked-example",
+      "prior": {
+        "shape": 4,
+        "rate": 2
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 4,
+        "rate": 2,
+        "mean": 2.0,
+        "p10": 0.8723847814124557,
+        "p90": 3.340391534127932,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "large-1000",
+      "prior": {
+        "shape": 1000,
+        "rate": 2
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 1000,
+        "rate": 2,
+        "mean": 500.0,
+        "p10": 479.84696636441663,
+        "p90": 520.367154006845,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "large-10000",
+      "prior": {
+        "shape": 10000,
+        "rate": 17
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 10000,
+        "rate": 17,
+        "mean": 588.2352941176471,
+        "p10": 580.7094632382198,
+        "p90": 595.7863160984809,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "small-rate",
+      "prior": {
+        "shape": 4,
+        "rate": 0.001
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 4,
+        "rate": 0.001,
+        "mean": 4000.0,
+        "p10": 1744.7695628249114,
+        "p90": 6680.783068255864,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "large-rate",
+      "prior": {
+        "shape": 40,
+        "rate": 100000
+      },
+      "weeks": [],
+      "expected": {
+        "shape": 40,
+        "rate": 100000,
+        "mean": 0.0004,
+        "p10": 0.00032138922234087574,
+        "p90": 0.00048289101807633513,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "two-weeks",
+      "prior": {
+        "shape": 4,
+        "rate": 2
+      },
+      "weeks": [
+        {
+          "sold": 3,
+          "exposure": 1,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 3,
+          "exposure": 1,
+          "season": 1.0,
+          "capped": false
+        }
+      ],
+      "expected": {
+        "shape": 9.751012129614013,
+        "rate": 3.9170040432046713,
+        "mean": 2.4894056840534393,
+        "p10": 1.5378686180238506,
+        "p90": 3.5500232033471275,
+        "lower_bound": false,
+        "censored_weeks": 0
+      }
+    },
+    {
+      "id": "eight-week-half-life",
+      "prior": {
+        "shape": 4,
+        "rate": 2
+      },
+      "weeks": [
+        {
+          "sold": 8,
+          "exposure": 1,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 0,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        }
+      ],
+      "expected": {
+        "shape": 8.0,
+        "rate": 2.5,
+        "mean": 3.2,
+        "p10": 1.8624472707592012,
+        "p90": 4.708365784619221,
+        "lower_bound": false,
+        "censored_weeks": 8
+      }
+    },
+    {
+      "id": "season-and-censoring",
+      "prior": {
+        "shape": 2,
+        "rate": 2
+      },
+      "weeks": [
+        {
+          "sold": 4,
+          "exposure": 1,
+          "season": 2,
+          "capped": false
+        },
+        {
+          "sold": 7,
+          "exposure": 0,
+          "season": 1.0,
+          "capped": false
+        },
+        {
+          "sold": 2,
+          "exposure": 0.5,
+          "season": 1.0,
+          "capped": false
+        }
+      ],
+      "expected": {
+        "shape": 7.363585661014858,
+        "rate": 4.181792830507429,
+        "mean": 1.760868115535351,
+        "p10": 0.9970972996357482,
+        "p90": 2.626728180212048,
+        "lower_bound": false,
+        "censored_weeks": 1
+      }
+    },
+    {
+      "id": "lower-bound",
+      "prior": {
+        "shape": 4,
+        "rate": 2
+      },
+      "weeks": [
+        {
+          "sold": 240,
+          "exposure": 1,
+          "season": 1.0,
+          "capped": true
+        }
+      ],
+      "expected": {
+        "shape": 244.0,
+        "rate": 3.0,
+        "mean": 81.33333333333333,
+        "p10": 74.73594698532062,
+        "p90": 88.07345741029367,
+        "lower_bound": true,
+        "censored_weeks": 0
+      }
+    }
+  ]
+}

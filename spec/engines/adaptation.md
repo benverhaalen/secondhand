@@ -1,0 +1,208 @@
+# Adaptation: measures that make each engine fit the site and the kind of item
+
+Status: *agent proposal*, the adaptation lead, 2026-11-15, from [Nate](../../product/words.md#2026-11-15-nate-where-are-we-not-optimized-an-expert-lead-for-real-time-adaptation-the-bundle-identifier-and-sessions-end-before-they-fill): "fit the realtime adapt to each specific platform product type engines, taking into account the data we can gather and calculate things against, combining things to create metrics, all researched and credibly proven". How credible the engines are today, and how we show it, is in [credibility.md](credibility.md); this page is the measures.
+
+A measure here is a number the system computes from fields it can read, that an engine reads to change its answer for a site and a kind of item. Each one has: a definition, the fields it needs, an estimator suited to sparse, censored and mixed data, how it updates in real time as a `param` ([real-time weights](../product.md#real-time-weights-agent-proposal)), what it changes, and how it is proved. A measure is trusted only after its test on data passes; until then it is registered with status `proposed` and no engine reads it.
+
+Labels: *sourced* (a repo file or a page read today says it), *inferred* (this lead's reading), *not found*.
+
+## 1. The data we can actually read
+
+The full table, per site, verb and field with the line that extracts each, is [readable-fields-by-site.md](../../research/list/nate/readable-fields-by-site.md) (*sourced* from the adapters in `app/src/edge/harness/sites/`, 2026-11-15). The summary that the measures stand on:
+
+| Field | eBay | Poshmark | Mercari | Depop | Dupe |
+|---|---|---|---|---|---|
+| Asking price | live (page) | live | live | live | live |
+| Live or sold state, now | live (page still-up) | live | live | live | no |
+| Sold search | sign-in only (page); API needs Limited Release | live, `sold_out` | live | none (`no_route`) | no |
+| Sold price as its own field | API only (Insights, fixture) | no: the sold row shows the price at sale | no: same | no | no |
+| Sale date | API only (fixture) | no | no | no | no |
+| Listed date | API (fixture); not on page search | live | live | live (one listing) | no |
+| Likes or watchers, public | watchers on the item page (live) | likes, comments, shares (live) | likes (live) | likes (live) | no |
+| Views, impressions | sign-in API, 7-day window (fixture) | sign-in, not extracted | sign-in, not extracted | sign-in, not extracted | no |
+| Offers | sign-in API (fixture) | sign-in (guessed path) | sign-in (guessed op) | sign-in (guessed path) | no |
+| Own orders with price | sign-in API (fixture) | sign-in (guessed) | sign-in (guessed) | sign-in (guessed) | no |
+| Condition, size, brand | not on page search | live | live | brand only | no |
+| Seller sold count, rating | live (storefront page) | sold count (live) | live | live | no |
+| Shipping price | no | no | no | one listing (live) | no |
+| Rank, promoted mark, photo count, category, price-drop history | **not extracted on any site** | | | | |
+
+What the terms let us do (*sourced*, quoted in the full table): eBay's API licence bars using its content "to suggest or model prices", so eBay API rows never train a weight; eBay page reads run under Nate's ruling; every site is read ([Nate](../../product/words.md#2026-11-15-nate-we-read-everything-the-poshmark-rule-is-only-about-share-like-and-repost): "We read everything"), and the one Poshmark rule is that share, like and repost are suggestions the person taps; Dupe may be displayed but its rows are not kept.
+
+Four facts shape everything below (*inferred* from the table):
+
+1. **No public read gives a sale date.** A time to sell can still be measured: a listing read live at time `t0` with listed date `L`, and read again sold at `t1`, sold at an age between `t0 − L` and `t1 − L`. That is an interval-censored, left-truncated observation, a standard case in survival analysis. The person's own listings, read at the watcher's cadence, give this cleanly.
+2. **A public "sold" price on Poshmark, Mercari and Depop is the last asking price, not what the buyer paid.** On eBay's Best Offer data, bargained sales close at 0.727 of the list price on average (*sourced*: Backus, Blake, Larsen and Tadelis 2020, Table I, read by the retriever, [measures-literature.md](../../research/price/nate/measures-literature.md) §1). A comp from those sites overstates the sale by whatever an accepted offer took off.
+3. **Engagement is public but differs by site:** Poshmark likes, Mercari likes, Depop likes, eBay watchers. One weight for "watchers or likes" across sites, as demand uses today (0.15, `jobs/demand/params.py`), treats them as the same thing.
+4. **Rank and promoted marks are not extracted anywhere**, so no measure of a lever's lift on rank can be built yet; it would need the parser first.
+
+## 2. The measures
+
+### Notation
+
+`s` site; `k` kind of item (the canon `kind`), with `f` a family inside it; `u` a person; a listing `i` has asking price `a_i`, listed date `L_i`, age `t` in days since `L_i`, first read by us at age `t0_i`; `m̂_i` our valuation's q50 for the item, frozen at the listing's first read; price position `x_i = ln(a_i / m̂_i)`; age bands `j ∈ {0–1, 2–3, 4–7, 8–14, 15–30, 31–60, 61–90, 91+}` days, band `j` covering ages `[start_j, end_j)`.
+
+How the measures live in the registry (*sourced*: `app/src/engines/param/param.ts`): rows are scoped by `kind`, `site`, `segment`, `person`, `state`, and evidence forgets with a 30-day half-life. **Beta and Gamma rows** update on each observation (`observe`) and pool toward the parent scope on read (`readPooled`, κ = the learnable `POOL_KAPPA`, prior 20). **Model rows** (a fitted coefficient) do neither: they are refitted nightly and promoted on a held-out win. Age and price-position cells go into `segment` as `age:<band>` or `pos:<band>`; the parent of a segment cell is the same site and kind without it. Valuation's ±50% guard does not fit these rows (it would hold a prior of 0 at 0 forever), so each A row states its own guard below.
+
+### The first ten
+
+| # | Measure | Definition | Fields it needs | Estimator, and why it suits the data | Row and guard | Prior | Changes | Proof (§4) |
+|---|---|---|---|---|---|---|---|---|
+| A1 | **Sale hazard by site, kind and age** | `λ_{s,k,j}`: sales per listing-day at risk in band `j`. For a live listing of age `t0`, `P(sold by t0 + T given live at t0) = 1 − exp(−∫_{t0}^{t0+T} λ(t) dt)`, the integral summing `λ_j` over the days of each band in the window | listed date; live, sold, ended or gone at each read | Piecewise-exponential survival (Holford 1980), the continuous-time cousin of the discrete-time model (Allison 1982). Exposure starts at our first read, which handles listings we only meet part-way (left truncation). Unsold listings add days at risk and no event, so they are counted, not dropped. A sale seen between two reads is split over the bands it could fall in, weighted by `λ_j` times exposure (one EM step, Turnbull's idea) | Gamma (`shape` += sales, `rate` += days at risk); guard `λ ∈ [1/3650, 1]` per day | the parent cell; at the top Gamma(1, 30), one sale a month | valuation D10 and D11; marketing (which site); recommendation (sell now) | P1 |
+| A2 | **Price-position effect** | `β_{s,k}` in `λ_{s,k,j}(x) = λ_{s,k,j} · exp(β_{s,k} · x)`, with `x` read from our valuation as frozen at first read, never a later price | A1's fields plus `m̂` at first read | Poisson regression with log exposure as offset, partially pooled across sites within a kind (Gelman and Hill 2007) | model row, nightly; guard `β ∈ [−5, 1]` | `−0.45`, wide (sd 0.5): by analogy only to Genesove and Mayer (2001), whose gap is the seller's loss exposure on housing, not ask against market (*inferred*) | valuation's ladder (the chance at each rung); marketing's start price | P1 |
+| A3 | **Offer share** | `π_{s,k,j}`: the share of sales in band `j` closed by an accepted offer | the person's own orders with their offers | Beta-binomial per cell, pooled | Beta; guard `[0.01, 0.99]` | Beta(1.5, 3.5), a weak guess: Backus et al. give per-listing and per-thread rates (about 80% of listings get no offer; 45% of threads agree), which do not convert to a share of sales without the sale rate (*inferred*) | negotiation; valuation's keep | P2 |
+| A4 | **Offer discount** | `δ_{s,k,j} = E[p_sold / a given a sale by offer in band j]`, `a` the last ask we read | the person's own orders and offers | Beta with fractional outcomes: a sale with ratio `r = min(1, p/a)` adds `r` to `α` and `1 − r` to `β`; the ratio is clamped at observe, since `observe` does not check it (param.ts) | Beta; guard `[0.3, 1]` | Beta(7.3, 2.7), mean 0.727: bargained price over list on eBay Best Offer, 2012–13 (Backus et al. 2020, Table I), a published figure used as a starting value, labelled as eBay's | negotiation's counter and anchor | P2 |
+| A5 | **Ask-to-sale gap for public sold rows** | `g_{s,k} = 1 − π_{s,k} · (1 − δ_{s,k})`: the expected ratio of what the buyer paid to the price a public sold row shows, assuming sales not by offer close at the ask | A3, A4 | derived. At the priors, `g = 1 − 0.3 × 0.273 = 0.918` | derived on read | from the priors until the site has its own A3 and A4 | valuation: a Poshmark, Mercari or Depop sold comp enters the basis at `price × g` (AD1). D4's site ratios are then computed on corrected prices, so the gap is not counted twice | P2. That eBay's offer behaviour carries to other sites is *inferred* and untested until P2 |
+| A6 | **Expected keep per listing** | `K_{s,k}(a, T) = P(sold by T given a) · (a · g − fee_s(a · g)) − listing_fee_s`: the money in hand by `T`, net of fees, with the sale fee charged only on a sale | A1, A2, A5, the fee rows (money D9) | derived | derived on read | none | marketing's site plan and the ladder; "what you keep" per site with its chance. Example: `P` 0.2, $100 ask, `g` 1, 13% fee, no listing fee: `K` = $17.40 | scored on P2's realised keep |
+| A7 | **Engagement value per site** | `γ_{s,k}`: the log hazard ratio per unit of `ln(1 + e / max(t, 1))`, `e` the likes (watchers on eBay) read at age `t` | likes or watchers at two or more reads of the same listing | time-varying covariate in A2's Poisson model, per site, pooled within kind | model row, nightly; guard `[−1, 2]` | 0 | demand's engagement signal per site (AD3); the watcher's stale step | P1 only: no other data has likes over time |
+| A8 | **Family price index and the age of a comparable** | `I_f(τ)` repeat-sales log index; `h_f`, the half-life of a comp's weight | sold price and date, product id | repeat sales (Bailey, Muth and Nourse 1963; Case and Shiller 1989), one-sided for live use (science audit correction 9) | per sale | 0 drift; `h_f` 90 days | valuation D3 and `w_age` | **owned by the engines lead** (`eng-valuation-2`). Registered here; its proof is theirs |
+| A9 | **Photo count effect** | `ρ_{s,k}`: log hazard ratio per photo band (1, 2–3, 4–6, 7+) | photo count | covariate in A2's model | model row; guard `[−1, 1]` | 0 | photo engine (how many shots per site and kind) | P1, once photo count is extracted (AD7): **no adapter reads it today** |
+| A10 | **Seller history effect** | `η_{s,k}`: log hazard ratio for a seller with under 10 past sales | the seller's sold count (storefront, live on all four sites) | covariate in A2's model | model row; guard `[−2, 1]` | 0 | platform analytics: what a new account on a site can expect | P1 |
+
+### A11: whether the brand matters
+
+From [Nate](../../product/words.md#2026-11-15-nate-identify-the-product-find-the-same-thing-off-brand-and-learn-whether-the-brand-matters): "find off brand similar types of the same quality, material, but different brand, and developing insights on whether people care more about the specific main brand or not". Three joined pieces: what the item is apart from its brand (the attribute record), finding the same thing under another brand (a search mode), and the measure. The first two are named fixes AD9 to AD12 below, built as code ([market-index.md §2](market-index.md#2-the-record-each-row-gets-code-first)); the measure is here. Revised after a fresh review (15 findings, 2026-11-15).
+
+**The attribute record.** Two items are the same kind of thing at the same quality when they agree on the attributes the kind requires. The record holds `kind`, `material`, `construction` (the build that sets quality: welt or cemented sole, solid wood or veneer, enamelled cast iron or steel), `quality_tier` (a stated grade, where the kind has one), `size_class`, and `condition` (with its grade: Poshmark's `nwt`, `nwot`, `uln`, `ug` are kept apart). Brand, model and colour are kept beside it, not in it. What each source gives today (*sourced*: [the field inventory](../../research/list/nate/readable-fields-by-site.md); capture's fields in [fields-by-kind.md](../determinations/fields-by-kind.md)):
+
+| Attribute | eBay page | Poshmark | Mercari | Depop | Dupe | Capture |
+|---|---|---|---|---|---|---|
+| kind | title text only | title text only | title text only | slug text only | title text only | the kind vote |
+| material | title text only | title text only | title text only | slug text only | title text only | `material` and, for apparel, `fabric`, read from the label |
+| construction | title text only | title text only | title text only | no | title text only | not a field |
+| quality tier | no | no | no | no | no | not a field |
+| size class | no | `size`, free text ("501", "OS", "29") | `size` | no | no | `size_label` and measurements |
+| condition | no | `condition` | `condition` | no | `secondhand` flag, unreliable for eBay rows | condition axes |
+| brand (kept beside) | title | `brand`, free text ("Vintage Levis 501") | `brand` | `brand` | title | the tag, `rn_ca` |
+
+So the only fields any site gives are size and condition (Poshmark and Mercari), both free text. Kind is a field on no site. Material and construction are words in a title, and quality tier is nowhere. The record is built by code over the title and fields, with a brand alias normaliser and a size-class parser per kind (AD9), before any model.
+
+**Required attributes per kind.** A row missing a required attribute is left out of the matched set, and the number left out is reported beside every figure. A row counts as agreeing only on attributes it states.
+
+| Kind | Required to match |
+|---|---|
+| clothes | kind (the garment type), material, one construction mark the item has (for example blanket lined, quarter zip, high rise), condition grade |
+| shoes | kind (sneaker, boot, clog), material (leather, suede, canvas), condition grade |
+| furniture | kind (task chair, armchair, shelf unit), material (mesh, fabric, wood), condition grade |
+| small goods | kind (stand mixer, dutch oven, stick vacuum), material or power where it sets quality (enamelled cast iron; cordless), capacity class, condition grade |
+| electronics | none: a phone, console or e-reader is brand-locked, and it says so |
+
+**The measure.** For a kind `k`, a brand `b`, and a cell `c` (one channel, official retail or secondhand, one site and one condition grade, so used is compared only with used of the same grade and a retailer's new price never with a person's ask; [market-index.md §1](market-index.md#1-what-may-be-kept-per-source)):
+
+- `B` = rows of brand `b` (after the alias normaliser) for the item's model, matched at `exact` or `likely_same_model`;
+- `O` = rows whose required attributes all agree with the item's record, whose normalised brand is not `b`, labelled `similar_other_brand`. `B` is one model; `O` is an attribute set across models and brands, so the figure is **the model against its attribute set**, and it is named that way;
+- the **brand premium** `θ_{k,b,c}`: the Hodges-Lehmann shift of log price, the median of all pairwise differences `ln p_i − ln p_j` for `i ∈ B`, `j ∈ O`, with its distribution-free 95% interval from the Mann-Whitney statistic (Hodges and Lehmann 1963; Bauer 1972; method references, not fetched). Exact at small samples, unlike a bootstrap of medians. Shown as `e^θ`, "asks so many times what the matched set asks";
+- the **kind's answer**: the precision-weighted mean of the pooled premiums `θ̃` of its measured brands, with `τ_k`, their spread, beside it. A kind with a high mean and a small `τ_k` is one where brand reliably moves the ask; a mean near 0 says the brand barely matters at matched attributes;
+- **separation** `S`, reported only as a diagnostic: between-group over total sum of squares of log price across `B ∪ O`. It says how cleanly the two groups part, not how large the premium is (a 10% premium between two tight groups gives `S` near 1), so it is never the headline.
+
+Where rows carry them, the same comparison is made for time to sell (A1's hazard, from the panel P1) and for likes per day since listing (AD12).
+
+| Part | A11 |
+|---|---|
+| Fields | price, normalised brand, the attribute record, condition grade, site, the match label |
+| Estimator, and why | Hodges-Lehmann shift on log price with its Mann-Whitney interval: robust to long-tailed asks, multiplicative, and exact at the small counts a single search gives |
+| Pooling | in the A11 job, not through `readPooled` (which pools Beta and Gamma rows only): `θ̃ = (θ/se² + μ_k/τ_k²) / (1/se² + 1/τ_k²)`, where `se` is read from the interval, and `μ_k`, `τ_k` are the kind's mean and spread over its other brands (leave one out). Below 3 other brands, `μ_k` is the prior 0 and `τ_k` the prior 0.5 |
+| Row and update | a `normal` row `{mean: θ̃, sd}` in the registry, name `brand_premium`, scope `{kind, site, segment: "brand:<b>|cond:<grade>"}` (brand is not a scope key, so it lives in `segment`), refitted nightly by the A11 job from stored rows, each row weighted by the registry's forgetting `0.5^(age/30 days)` inside the estimator, since `decay` ages only Beta and Gamma rows |
+| Prior | mean 0, sd 0.5 |
+| Guard | at least `brand_premium_min_side` rows on each side (a param, prior 8), every required attribute stated and agreeing, the match label stated; otherwise "not known yet", with the counts and the rows left out. Where no off-brand set can exist at the record (a specific phone, a console, an e-reader), "brand-locked" instead of a number. A set sold as "compatible with" a trademarked toy line is excluded: it can be a counterfeit |
+| Changes | recommendation and style: "the same thing for less" shows `e^θ` and the matched rows; listing: whether the title leads with the brand or with the material and build; capture: ask for the brand only in kinds where it moves the ask; valuation: an off-brand row enters a thin basis only once the L3 test below passes (until then `in_basis` is false) |
+| Proof | below |
+
+**What it can and cannot claim.**
+
+- It can say, with counts and an interval: on a stated site and day, used Carhartt Detroit jackets ask `e^θ` times what used blanket-lined cotton-duck work jackets of other brands ask, on `n_B` against `n_O` listings, with the rows left out for missing attributes. That is a fact about asking prices at matched observed attributes.
+- It cannot say buyers pay that. Asking is not sold; a public sold row on Poshmark, Mercari or Depop shows the last ask, not what was paid (A5).
+- It cannot say the brand causes the gap, nor which way the rest leans. `θ` is the brand plus whatever unmeasured quality travels with it, **in either direction**: a better-built maker in `O` pulls it down, fakes or optimistic sellers in `B` push it up. It is not a bound. Bronnenberg et al. (2015) show why the distinction matters: for physically identical headache remedies, pharmacists choose the national brand 9% of the time against 26% for the average shopper, so part of a brand premium can be what buyers do not know rather than what the item is (*sourced*, abstract).
+- "People care about the brand" is an inference from revealed asks and, later, sell-through. It is not a survey. Steenkamp, van Heerde and Geyskens (2010), from 22,623 respondents in 23 countries, find the premium people will pay runs through the quality they perceive the brand to have (*sourced*, abstract). Our measure sees the outcome of that perception, not the perception.
+- Search results are a sample of what is listed and shown first, not of what exists.
+
+**How it is proved, on current data only.**
+
+1. *Development reading, now:* the benchmark's market items, branded rows from the composed product's search over every source it reaches (Dupe read live and shown, never kept, so not counted), off-brand rows from the same search with the attribute query and the brand left out, per item, cell and kind, with counts, intervals and rows left out. Labelled a development reading. Four items are left out as brand-locked or excluded: the iPhone 13, the Switch OLED, the Kindle Paperwhite, and the LEGO set.
+2. *Stability:* on a later day, using only listings that were not in the first day's rows. For each item-cell above the guard on both days: the sign of `θ` agrees, and both intervals are narrower than 0.4 in log price (a factor of about 1.5). Bar: both hold for at least 80% of item-cells; the widths are published either way. (Overlap of intervals is not the bar: a second unbiased estimate lands inside a first 95% interval about 83% of the time whatever the truth; Cumming and Maillardet 2006, recalled by the reviewer, not fetched.)
+3. *Asks against sales:* the premium on sold rows (eBay sold through the person's session or Insights when approved; on Poshmark, sold at the last ask) against the premium on live asks. If they differ beyond both intervals, the live-ask premium is reported as what sellers hope, not what sells.
+4. *Use (L3):* a branded item has a thin basis when its own `n_eff` is under valuation's `k`. On items like that which then sell, with a realised sale price (the person's own orders, P2, or an eBay sold row), compare the absolute log error of the valuation with and without off-brand comps divided by `e^θ̃`. Pass: the paired 95% interval of the difference lies below 0 on at least 30 items. Only this rung lets `θ` change a price a person sees.
+
+The research behind it is in [brand-premium-sources.md](../../research/price/nate/brand-premium-sources.md).
+
+### Registered and not proposed for trust now
+
+| Measure | Why not now | What would change it |
+|---|---|---|
+| Site translation ratio (valuation D4) | no current data with the same product sold on two sites | identity-matched products in P1 and P2 |
+| Lever lift: a price drop, a Poshmark share, a promoted slot | our own action changes what we observe, so only a randomised choice gives the effect; no site states a measured effect (*sourced*: ranking-levers note). A price drop is visible in P1 as a lower ask on re-read, but who drops and when is the seller's choice, so P1 shows association only | a randomised plan on the person's own listings, with Nate's go per site, scored by inverse propensity (Horvitz-Thompson; Dudík, Langford and Li 2011) |
+| Seasonality by kind | needs at least two years of current data to tell a season from a trend | P1 and P2 over time; until then no seasonal effect |
+| Rank or promoted position effect | rank and promoted marks are not extracted by any adapter | AD7 first |
+
+## 3. The research behind each
+
+Every source, with what it used and what it shows, is in [measures-literature.md](../../research/price/nate/measures-literature.md), marked READ, excerpt or abstract.
+
+| Measure | Rests on | How far it supports our use |
+|---|---|---|
+| A1 | Holford (1980) piecewise-exponential model and Allison (1982) discrete-time event histories (excerpt); Kaplan and Meier (1958); Turnbull (1976) for interval-censored data (method reference, not fetched) | established methods. The one-step interval split is our own simplification of Turnbull's estimator, *inferred* adequate when reads are a few days apart; P1's synthetic test checks it |
+| A2 | Genesove and Mayer (2001), list price and sale hazard on Boston condos (abstract only); Carrillo (2012) treats withdrawn listings as censored (excerpt) | the form is established for housing; that it carries to resale goods is our hypothesis, which P1 tests |
+| A3, A4 | Backus et al. (2020), 88.4M eBay Best Offer listings, 2012–13: bargained price 0.727 of list, about 80% of listings get no offer, 45% of threads agree, 0.70 collectibles against 0.79 electronics (read by the retriever; Table II partly garbled) | a published figure used as a starting value, nothing more; today's levels come only from P2 |
+| A5, A6 | our own composition of A1 to A4 with the fee rows | **our own and unproven** |
+| A7 | Yuan et al. (SIGIR 2011): sale prediction rose from 64% at listing to 80% with demand observations added (excerpt) | shows engagement is informative; says nothing per site. Our per-site claim is unproven |
+| A8 | Bailey, Muth and Nourse (1963); Case and Shiller (1989) | established; the engines lead's test decides |
+| A9, A10 | Backus et al. (2020): more photos, a faster first offer (Fig. VII) | association only: a seller who adds photos may differ in other ways |
+| Pooling, forgetting | Efron and Morris (1975): James-Stein cut total squared error from 17.56 to 5.01 on 18 batters (excerpt); West and Harrison (1997) on discounting; Garivier and Moulines (2011) on discounted bandits (abstract) | established |
+
+## 4. How each is proved before it is trusted
+
+On today's market, not on old data ([Nate](../../product/words.md#2026-11-15-nate-not-focused-on-old-data-unless-it-holds-relevance): "i dont like that you're still focused on such old data, unless it can hold some relevance"). The 2012–13 eBay set is not run. Its one use is Backus et al.'s published figures as starting values for A3 and A4, labelled as eBay's, which the person's own offers replace as they arrive. That the code computes each measure correctly is proved on synthetic markets with known answers, as the backtest runner's self-test already does for valuation. That the measure is *right* is proved only on the three current sources below. The rules are those of [credibility.md](credibility.md#what-would-make-the-scorers-credible): a proper score, a paired comparison on the same listings, the simple rule as the bar, counts and intervals by cell.
+
+**S0: the code, on synthetic markets.** Each estimator recovers a known truth within its interval: a two-kind market with hazards 0.02 and 0.10 a day; interval-censored sales from reads 1 to 7 days apart; listings first met part-way through their life; a competing "ended unsold" risk; offers that take exactly 20% on half of sales. A listing still live at the end of observation is censored there, never dropped. This proves the arithmetic, not the market.
+
+**P1: the live panel, on every site ([Nate](../../product/words.md#2026-11-15-nate-we-read-everything-the-poshmark-rule-is-only-about-share-like-and-repost): "We read everything").** Every listing the product's own searches return for the [benchmark's](../benchmark.md) fixed items enters the panel at its first read, with its ask, listed date, likes or watchers, the seller's sold count, and our valuation frozen at that moment. It is re-read with the site's still-up read every two to three days, at the site's pace, until it is sold, ended or gone, or 60 days pass. What it gives today: A1 by site, kind and age; A2; A7, the only source with likes over time; A10; the price drops sellers make; and, as a by-product, a score of our own valuation against what happened (credibility exhibit 3). What it cannot give: the price a buyer paid on Poshmark, Mercari or Depop (only the last ask), so not A3 or A4.
+
+- *Design.* Listings entering in the first two weeks fit; listings entering in weeks three and four are tested, with follow-up to day 60 of the panel. Contestants on the same test listings: B0, one hazard for every site; B1, per site and kind, unpooled; A1, pooled by site, kind and age; then A1 with A2, A7 and A10 added one at a time.
+- *Primary score:* log loss of "sold within 14 days of first read", weighted by the inverse probability of censoring. Brier, the 30-day horizon once follow-up allows, and a 10-bin calibration table are reported beside it. Valuation's D10 bar (AUC of at least 0.6, calibration within 5 points; [valuation.md §9](valuation.md#9-proof)) is reported too, since AD2 replaces D10's curve only if A1 meets it.
+- *Ending is a competing risk.* A seller who ends a listing that looks unlikely to sell makes ending depend on the hazard. So both are reported: the net chance assuming the person keeps it listed (ending censored, which overstates the chance when ending is informative), and the observable cumulative incidence of sale with ending as a competing event (Aalen-Johansen). A listing that vanishes without a sold mark is censored at its last live read; valuation's D10 counts it as a fractional sale instead, and one rule for both is a named fix (AD2).
+- *Pass bar.* The by-product paired bootstrap 95% lower bound of the gain in the primary score over the contestant without the measure is above 0 pooled, and no site with 200 or more test listings is worse after Holm's correction. A measure that fails is dropped and recorded here.
+- *Size.* To read `P(sold within 14 days)` to about ±0.07 in a cell takes about 150 to 200 listings (*inferred*, binomial). Four sites and five families at 200 each is 4,000 listings and about 40,000 reads over 30 days; two sites, about half that.
+
+**P2: the person's own account (waits on M6, one linked account).** Their listings, offers and orders give the true sale price beside the ask: A3, A4 and A5 per site, and A6's realised keep. Scored the same way, on answers frozen before each outcome.
+
+**P3: the 2026 public-licence sets as level checks.** `ebay_comps_cc0` (570 sold, August to September 2026), `mercari_apify_ccby` (462, October 2026) and `goodwill_cc0` (2,678 hammer prices) are current, but their `may_model` is false (*sourced*: [datasets.md](../plans/backtest/datasets.md), the data-for-proof sweep). They may check a level, such as whether a family's sold prices sit where A5 and the valuation say, and never set a weight.
+
+## 5. What gets built, once the proofs pass
+
+Nothing below starts until this page has had a fresh review (packet 55, the spec pass) and S0's tests are written first.
+
+1. **A measures registry as data**, `spec/measures.mjs`: one row per measure with `name`, `definition`, `fields`, `scope`, `row` (Beta, Gamma, model, derived), `prior`, `guard`, `estimator`, `consumers`, `status` (`proposed`, `proved`, `dropped`, with the run that decided it). A check fails when an engine reads a measure whose status is not `proved`.
+2. **The computation**, `app/src/engines/measures/` with its Python twin in `jobs/measures/` and one shared parity fixture: A1's exposure and event bookkeeping (interval split, left truncation, censoring at the end of observation), A3 and A4's fractional Beta updates with the clamp, A5 and A6 as pure functions of the rows. Each read through a port (`measures.read(name, scope)`) so an engine never imports the harness or the store.
+3. **The panel's scorer**, `jobs/measures/panel.py`, reading the panel's `observation` rows and printing P1's table. The panel's recorder (first read, re-reads at pace) belongs to the watcher and harness, so it is a named fix (AD8), not built here.
+
+## 6. Named fixes for the engines that should consume them
+
+Sent to the orchestrator for each owning lead; this page does not edit their code. Each lands only after its measure is `proved`.
+
+| Fix | Engine | Change | Test |
+|---|---|---|---|
+| AD1 | valuation | a sold comp from Poshmark, Mercari or Depop enters the basis at `price × g_{s,k}` (A5), not at its shown price; `price_type` `sold_at_ask` names such a row; D4's ratios are computed on corrected prices | a Poshmark sold comp at $100 with `g` 0.918 enters at $91.80; an eBay Insights sold row is unchanged |
+| AD2 | valuation | D10's chance of sale reads A1 and A2 by site and kind, conditional on the listing's current age, if A1 meets D10's bar in P1; one rule for a vanished listing in both | the ladder's chance at a rung changes when only `site` changes; a 20-day-old listing reads a different chance from a new one |
+| AD3 | demand | the engagement signal becomes one row per site (likes on Poshmark, Mercari and Depop, watchers on eBay), each starting at today's 0.15 (`jobs/demand/params.py`), moved by A7 once proved. Whether to start lower is the demand owner's call | two sites with the same likes count give different engagement weights once A7 differs |
+| AD4 | negotiation | the counter and `P_accept`'s anchor read A3 and A4 at `(site, kind, age band)`; D13's `d_s,cat`, a median of `(ask − sold)/ask` over all sales, becomes `1 − g_{s,k}` (A5), not A4 | two offers on the same item listed 3 and 45 days read different anchors |
+| AD5 | marketing | the site plan ranks sites by A6 | an item with the same price on two sites is planned for the site with the higher `K` |
+| AD6 | platform analytics | expected sales for a new account read A10 | a seller with 2 past sales gets a lower expected count than one with 50, same item |
+| AD7 | harness (orchestrator) | extract photo count, category, rank and the promoted mark where the page shows them | a recorded search page yields rank 1 to n and the promoted flag |
+| AD8 | watcher and harness (integration, orchestrator) | the panel recorder: every listing a product search returns is stored as an `observation` at first read with our frozen valuation, and re-read with still-up at the site's pace until it resolves | a listing read live then sold yields one interval-censored sale with both read times |
+| AD9 | identity (engines) | the attribute record per row, built by code (market-index §2): a brand alias normaliser ("Vintage Levis 501" to `levis`), a size-class parser per kind ("32x32", "W32 L32", "US 10", "EU 42", "OS"), and a word list per kind for kind, material and construction, each value with its evidence span. `reconcile` gains the level `similar_other_brand`, decided on the kind's required attributes with brand, model and colour left out, and it runs **before** the `wrong_item` cut (`reconcile.ts:46`, score below 0.50), which would otherwise drop every other-brand row first. It carries which attributes agreed; `in_basis` is false; `rank()` shows it as a new relation `similar`, not as `same_product` (`search.ts:74`) | "Wrangler cowboy cut jeans 32x32 medium wash" against a Levi's 501 32x32 record is `similar_other_brand` with kind, material and size agreeing; "Levi's 505 32x32" is `same_family_other_variant`; "Wrangler corduroy pants 32x32" is not similar (material disagrees); "Wrangler jeans" with no size is not similar for a record that requires size, and is counted as left out |
+| AD10 | capture | material and construction read from the label or asked once, and only in kinds whose attribute record needs them | a jacket with a readable fabric label is never asked its material; one without is asked once |
+| AD11 | search (integration) | a search can carry the attribute record and a `brand: other` mode: the query is built from the attributes, rows whose title or normalised brand is the item's brand are dropped, and each row is labelled with how it matched and which attributes agreed. Every source is read; Dupe rows are shown and never kept | a `brand: other` search for a Le Creuset record returns no row whose title or normalised `brand` is Le Creuset, and every row carries its match label |
+| AD12 | search (integration) | search result rows keep the `likes` and `listed_at` the readers parse: Poshmark and Mercari search parse both, Depop search parses `likes` only (its `listed_at` comes from the one-listing read). `candidates()` and `rank()` in `search.ts` drop them today | a Poshmark and a Mercari row in a `/v1/search` result carry `likes` and `listed_at`; a Depop row carries `likes` |
+
+## 7. What is proved first
+
+1. **S0** for A1, A3, A4, A5 and A6: the synthetic markets above, written as failing tests first. Needs nothing but the repo.
+2. **P1**, once AD8 lands: A1 against B0 and B1, then A2, A7 and A10 one at a time.
+3. **P2**, once one account is linked: A3, A4, A5, A6.
+4. **A11, development reading**, today, on the benchmark's market items from public Poshmark and Dupe rows; then its stability on a second day.
+
+## Not found
+
+- A published measured effect of any marketplace lever on time to sell (ranking-levers note).
+- An eBay watcher-count or Poshmark-likes effect size in the literature (measures-literature.md, "Not found").
+- Whether an eBay item page shows the accepted Best Offer price to the public (the page read extracts price, state and watchers only).

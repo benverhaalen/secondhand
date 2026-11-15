@@ -1,7 +1,7 @@
 // The behavior of New, the ＋ (app/behavior/new.json), on the web build. Written from the table before the behavior.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { behavior, controlTests, start } from './behavior.mjs';
+import { behavior, controlTests, start, WAIT } from './behavior.mjs';
 
 const table = behavior('new');
 let app;
@@ -73,7 +73,7 @@ test('new: each choice opens the camera in its own mode', async () => {
   for (const mode of ['sell', 'worth', 'find']) {
     const s = await app.open('/new');
     await s.tap(`new-${mode}`);
-    await s.page.waitForURL(u => new URL(u).pathname === '/camera' && new URL(u).searchParams.get('mode') === mode, { timeout: 3000 });
+    await s.page.waitForURL(u => new URL(u).pathname === '/camera' && new URL(u).searchParams.get('mode') === mode, { timeout: WAIT });
     await s.page.close();
   }
 });
@@ -96,14 +96,14 @@ test('new: misspelled words show the product they name, spelled right, in every 
 test('new: words in What’s it worth open the value page for the product they name', async () => {
   const s = await app.open(`/new?sheet=worth&what=${JACKET}`);
   await s.tap('worth-go');
-  await s.page.waitForURL(u => new URL(u).pathname === '/worth' && new URL(u).searchParams.get('product') === 'pr_j97', { timeout: 3000 });
+  await s.page.waitForURL(u => new URL(u).pathname === '/worth' && new URL(u).searchParams.get('product') === 'pr_j97', { timeout: WAIT });
   await s.page.close();
 });
 
 test('new: words in Find or buy it search for the product they name, spelled right', async () => {
   const s = await app.open(`/new?sheet=find&what=${JACKET}`);
   await s.tap('find-go');
-  await s.page.waitForURL(u => new URL(u).pathname === '/search' && /Carhartt Detroit Jacket/.test(new URL(u).searchParams.get('q') ?? ''), { timeout: 3000 });
+  await s.page.waitForURL(u => new URL(u).pathname === '/search' && /Carhartt Detroit Jacket/.test(new URL(u).searchParams.get('q') ?? ''), { timeout: WAIT });
   await s.page.close();
 });
 
@@ -114,14 +114,14 @@ test('new: a price far outside the sold range asks once with the range, and the 
   await s.shows('Similar ones sold for $85 to $115. List at $500?');
   assert.equal(s.path(), '/new', 'the first tap only asks');
   await s.tap('sell-go');
-  await s.page.waitForURL(u => new URL(u).pathname === '/item/it_draft', { timeout: 3000 });
+  await s.page.waitForURL(u => new URL(u).pathname === '/item/it_draft', { timeout: WAIT });
   await s.page.close();
 });
 
 test('new: a price inside the sold range asks nothing', async () => {
   const s = await app.open(`/new?sheet=sell&what=${JACKET}&price=98`);
   await s.tap('sell-go');
-  await s.page.waitForURL(u => new URL(u).pathname === '/item/it_draft', { timeout: 3000 });
+  await s.page.waitForURL(u => new URL(u).pathname === '/item/it_draft', { timeout: WAIT });
   await s.page.close();
 });
 

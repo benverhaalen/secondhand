@@ -57,7 +57,7 @@ A row with `may_model: false` (eBay rows, per [data use](../data-use.md)) can be
 |---|---|---|
 | 1. Retrieve candidates: product id match, then embedding nearest neighbours on image and title within the category | D1 | model (the embedding index; deterministic at query) |
 | 2. Extract the variant, condition, size and defects of each candidate | D1 | model (Claude Haiku, structured output, evidence span per field; `w_extract` 0.7 for its fields) |
-| 3. Weight: `w = w_type x w_match x w_age x w_extract`; drop junk; back off one level while `n_eff < 6` | D1 | arithmetic, with learned values (§4) |
+| 3. Weight: `w = w_type x w_match x w_age x w_extract`; drop junk; blend down the fallback order by `n_eff / (n_eff + k)` (§3 "The fallback order") | D1 | arithmetic, with learned values (§4) |
 | 4. Adjust for condition and size, then for time | D2, D3 | arithmetic, with learned values |
 | 5. Drop comps beyond `ln 1.25` of their adjustment, and outliers past `3 x 1.4826 x MAD` on log price | D1 | arithmetic |
 | 6. Quantiles q10, q50, q90, overall and per site | D5 | model (LightGBM quantile heads); before it is trained, weighted quantiles of the comps |
@@ -211,6 +211,32 @@ The rows are data the marketplaces released themselves. The terms of the sites' 
 Every result names its dataset, the date range of its sales and the families it covers. No sentence built on these says "accuracy on today's market". Families with no released data at all (Depop, Poshmark, Mercari and Facebook sales; furniture; one-off and unbranded items) are listed in the result as a gap, not left out.
 
 Two current sources fill the gap later, both inside the rules. One is the person's own sales read through their linked accounts, frozen before the sale through the `duel-record` and `duel-score` commands in the runner. The other is eBay's official APIs once developer keys exist ([waiting](../plans/waiting.md)), with the API licence's bar on modelling prices respected: such rows are scored against, never fitted on.
+
+### Development reading: the ablation of 2026-11-15
+
+A development reading on `dataset:stockx_2019`, not for a public page or the pitch until Nate and Ben have both seen it. Test sales of 2018-11-01 to 2019-02-13, **41,988 sales**, every contestant on the same items, all basis levels pooled (variant, product and family; this dataset has no kind or prior rows), calibration from 2018-09-01 (10,671 sales). Run on the Mac by `PYTHONPATH=jobs ./.venv/bin/python -m valuation.ablate --rows <stockx rows> --calibrate-from 2018-09-01 --test-from 2018-11-01` (`jobs/valuation/ablate.py`, branch `w/eng-valuation-2`, 2,368 s). Input SHA-256 `02fe1413…028cf` (decompressed). Each lettered row is that one change alone on the engine before; "all" is every change on. Within 20% is PPE20; range holds is the share of sales inside the conformal-widened 80% range, with its Wilson 95% interval; width is the median range width over the middle.
+
+| Contestant | Priced | Median error | Within 20% | Range holds | Width |
+|---|---|---|---|---|---|
+| engine before (served at the stop) | 99.1% | 6.25% | 87.1% | 85.7% | 27.7% |
+| A: the anchor (the variant's last K sales, time-adjusted) | 99.1% | 4.48% | 91.6% | 87.8% | 21.8% |
+| B: a per-family D3 index | 99.1% | 6.22% | 91.0% | 90.5% | 31.9% |
+| C: fitted size ratios | 99.0% | 6.25% | 87.3% | 85.9% | 27.7% |
+| D: the age half-life per family (30 or 90 days, chosen on calibration sales) | 99.2% | 5.33% | 92.5% | 84.7% | 24.5% |
+| E: the fallback blend (§3) | 100% | 6.32% | 87.6% | 84.7% | 28.7% |
+| F: one unit per physical item | 99.1% | 6.25% | 87.1% | 85.7% | 27.7% |
+| **all on** | **100%** | **3.89%** | **96.0%** | **86.0% (85.6 to 86.3)** | **22.7%** |
+| last sale | 98.7% | 3.25% | 97.4% | 79.8% | 14.5% |
+| product 90-day median | 98.5% | 5.76% | 89.1% | 82.7% | 27.2% |
+| market model, product-anchored (`market.py`) | 94.6% | 3.29% | 98.5% | 79.2% | 13.6% |
+
+Paired on the items both priced, by product-blocked bootstrap: all-on against last sale, within 20% −1.0 points (95% −1.4 to −0.7), median error 3.85% against 3.25% on 41,452 items; against the 90-day median, +7.4 points (5.7 to 9.0), 3.83% against 5.76% on 41,350.
+
+What it says. The anchor bought most of the gain, the per-family half-life the next. The index widened the range without moving the middle. Size ratios and one unit per item did nothing here: the dataset's product id includes the size, and nothing is cross-posted. The blend's effect is that every item is priced. The all-on engine beats the 90-day median a seller looks up and still trails last sale by a point, so the answer carries the last sale beside the range (the adaptation lead's C1, [credibility.md](credibility.md)). The range over-covers: 86.0% against the 80% it states, with its Wilson interval wholly above 85%, so D6's cell rule would not call it checked. That is a named fix below, not a reason to hold the merge; the engine before over-covered as much.
+
+Named fixes from this reading, each judged by a rerun of the same command on the same items:
+- **V-AB1, the range over-covers.** Measure: overall coverage inside 75% to 85% with its Wilson interval, width at most 22.7%. Likely cause: the calibration groups pool scores across basis levels, and the anchor's tighter middle is widened by misses from before it existed; group by basis level as well (science audit (a)) and recalibrate on the anchored engine's own misses.
+- **V-AB2, close the last point to last sale.** Measure: paired within-20% difference against last sale with its lower bound above 0. Candidates in order: the anchor's K and its weight `k_anchor` refitted per family, then blending the product-anchored market model as a contestant level.
 
 The fixed set: 100 real items, frozen with their sale prices and dates, spread over the price bands and over eBay, Poshmark, Depop, Mercari and Facebook, kept out of every fit.
 

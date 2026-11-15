@@ -31,7 +31,7 @@ export function ColourSwatches({ id, swatches, value, onChange }: {
     <View key={sid} style={{ width: COL, alignItems: 'center' }}>
       <Press id={`${id}-${sid}`} label={name} selected={picked} onPress={() => onChange(sid)}>
         <View {...mark('swatch', { picked: picked ? 'true' : 'false' })} style={{ width: COL, alignItems: 'center', gap: space.s1 }}>
-          <View style={{ width: RING, height: RING, borderRadius: radius.pill, borderWidth: 2, borderColor: picked ? c.ink : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: RING, height: RING, borderRadius: radius.pill, borderCurve: 'continuous', borderWidth: 2, borderColor: picked ? c.ink : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
             {disc}
           </View>
           <Txt role="caption" tone={picked ? 'ink' : 'ink-2'} lines={1}>{name}</Txt>

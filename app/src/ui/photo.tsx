@@ -35,11 +35,11 @@ export function Photo({ src, label, fit = 'card', faded = false }: {
   const c = useColors();
   const box = fit === 'card' ? { width: size.photoCard, height: size.photoCard } : { width: '100%' as const, aspectRatio: 1 };
   return (
-    <View {...({ dataSet: { part: fit === 'card' ? 'photo-card' : 'photo' } } as object)} style={[box, { borderRadius: radius.photo, overflow: 'hidden', backgroundColor: c.gray }]}>
+    <View {...({ dataSet: { part: fit === 'card' ? 'photo-card' : 'photo' } } as object)} style={[box, { borderRadius: radius.photo, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: c.gray }]}>
       {src != null ? (
         <Image source={source(src)} alt={label} accessibilityLabel={label} contentFit="cover" style={{ width: '100%', height: '100%', filter: faded ? 'grayscale(1)' : undefined }} />
       ) : null}
-      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius.photo, borderWidth: 1, borderColor: c.rule, backgroundColor: c.photoVeil }} />
+      <View pointerEvents="none" style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: radius.photo, borderCurve: 'continuous', borderWidth: 1, borderColor: c.rule, backgroundColor: c.photoVeil }} />
     </View>
   );
 }

@@ -43,7 +43,7 @@
       {
         "value": {
           "alpha": 9.0,
-          "beta": 3.0
+          "beta": 3
         },
         "version": 2,
         "n_eff": 2.0,
@@ -95,8 +95,8 @@
       },
       {
         "value": {
-          "alpha": 6.3639610306789285,
-          "beta": 2.414213562373095
+          "alpha": 8.707106781186548,
+          "beta": 3
         },
         "version": 2,
         "n_eff": 1.7071067811865475,
@@ -148,8 +148,8 @@
       },
       {
         "value": {
-          "alpha": 4.5,
-          "beta": 2.0
+          "alpha": 8.5,
+          "beta": 3
         },
         "version": 2,
         "n_eff": 1.5,
@@ -201,8 +201,8 @@
       },
       {
         "value": {
-          "alpha": 1.125,
-          "beta": 1.25
+          "alpha": 8.125,
+          "beta": 3
         },
         "version": 2,
         "n_eff": 1.125,
@@ -387,7 +387,7 @@
     ]
   },
   {
-    "name": "guard refusal leaves prior",
+    "name": "guard clamps the read and retains the observation",
     "declare": [
       {
         "name": "assist_span_open",
@@ -407,18 +407,19 @@
           "success": 1,
           "weight": 1000
         },
-        "reason": "guard"
+        "reason": "clamped",
+        "anomaly": true
       }
     ],
     "expect": [
       {
         "value": {
-          "alpha": 8,
-          "beta": 2
+          "alpha": 858.5,
+          "beta": 151.5
         },
-        "version": 0,
-        "n_eff": 0,
-        "from": "prior",
+        "version": 1,
+        "n_eff": 1000,
+        "from": "row",
         "scope": {}
       }
     ]
@@ -483,8 +484,8 @@
       },
       {
         "value": {
-          "shape": 3,
-          "rate": 4
+          "shape": 4,
+          "rate": 6
         },
         "version": 3,
         "n_eff": 2,
@@ -1487,6 +1488,1162 @@
         },
         "version": 3,
         "n_eff": 3,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "rollback skips event rows keep_evidence=False",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 24,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "rollback skips event rows keep_evidence=True",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 24,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 5
+        },
+        "version": 4,
+        "n_eff": 44,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "read decays only evidence after 90 idle days",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 1,
+          "weight": 8
+        },
+        "at": "2026-01-01"
+      },
+      {
+        "op": "read",
+        "as_of": "2026-04-01"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 16,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 8,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "rollback retained evidence uses explicit event clock not calendar time",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1,
+        "at": "2026-01-01"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 1,
+          "weight": 1,
+          "days_since_last": 0
+        }
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 19,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 41,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 19,
+          "beta": 2
+        },
+        "version": 3,
+        "n_eff": 41,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "explicit beta forgetting discounts posterior and implicit aging restores the idle prior",
+    "declare": [
+      {
+        "name": "route_success",
+        "family": "beta",
+        "prior": {
+          "alpha": 9,
+          "beta": 1
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 0,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "success": 1,
+          "weight": 1,
+          "days_since_last": 30
+        }
+      },
+      {
+        "op": "read",
+        "as_of": "2026-01-31"
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-04-01",
+        "outcome": {
+          "success": 1,
+          "weight": 1,
+          "days_since_last": 0
+        }
+      },
+      {
+        "op": "read",
+        "as_of": "2126-01-01"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 5.5,
+          "beta": 1.5
+        },
+        "version": 2,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 7.25,
+          "beta": 1.25
+        },
+        "version": 2,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 7.25,
+          "beta": 1.25
+        },
+        "version": 3,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8.25,
+          "beta": 1.25
+        },
+        "version": 4,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 1
+        },
+        "version": 4,
+        "n_eff": 0,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "explicit gamma apply discounts posterior and implicit aging restores the idle prior",
+    "declare": [
+      {
+        "name": "sale_rate",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "observe",
+        "at": "2026-01-01",
+        "outcome": {
+          "count": 4,
+          "exposure": 2,
+          "weight": 1
+        }
+      },
+      {
+        "op": "apply_gamma",
+        "at": "2026-01-01",
+        "count": 1,
+        "exposure": 2,
+        "weight": 1,
+        "days_since_last": 30
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "count": 0,
+          "exposure": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "read",
+        "as_of": "2126-01-01"
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 6,
+          "rate": 6
+        },
+        "version": 1,
+        "n_eff": 1,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 2,
+        "n_eff": 1.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 3,
+          "rate": 4.5
+        },
+        "version": 3,
+        "n_eff": 0.75,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 2,
+          "rate": 4
+        },
+        "version": 3,
+        "n_eff": 0,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fit v5 rollback restores replaced event v4 exactly keep_evidence=False",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "held_out_score": 0.9,
+        "expect_version": 4
+      },
+      {
+        "op": "promote",
+        "version": 5,
+        "at": "2026-01-31"
+      },
+      {
+        "op": "rollback",
+        "at": "2026-03-02",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 45,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "version": 5,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "first fit rollback restores event-only history keep_evidence=False",
+    "declare": [
+      {
+        "name": "sale_rate",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "apply_gamma",
+        "count": 1,
+        "exposure": 0.5,
+        "weight": 2
+      },
+      {
+        "op": "propose",
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "held_out_score": 0.5,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fit v2 rollback restores fit v1 without replay keep_evidence=False",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "propose",
+        "value": 0.9,
+        "held_out_score": 0.8,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": false
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.9,
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fit v5 rollback restores replaced event v4 exactly keep_evidence=True",
+    "declare": [
+      {
+        "name": "assist_span_open",
+        "family": "beta",
+        "prior": {
+          "alpha": 8,
+          "beta": 2
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 1,
+          "weight": 2
+        }
+      },
+      {
+        "op": "observe",
+        "outcome": {
+          "success": 0,
+          "weight": 3
+        }
+      },
+      {
+        "op": "observe",
+        "at": "2026-01-31",
+        "outcome": {
+          "success": 0,
+          "weight": 0
+        }
+      },
+      {
+        "op": "propose",
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "held_out_score": 0.9,
+        "expect_version": 4
+      },
+      {
+        "op": "promote",
+        "version": 5,
+        "at": "2026-01-31"
+      },
+      {
+        "op": "rollback",
+        "at": "2026-03-02",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 8,
+          "beta": 2
+        },
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 2
+        },
+        "version": 2,
+        "n_eff": 42,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 10,
+          "beta": 5
+        },
+        "version": 3,
+        "n_eff": 45,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 18,
+          "beta": 2
+        },
+        "version": 5,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "alpha": 9,
+          "beta": 3.5
+        },
+        "version": 4,
+        "n_eff": 22.5,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "first fit rollback restores event-only history keep_evidence=True",
+    "declare": [
+      {
+        "name": "sale_rate",
+        "family": "gamma",
+        "prior": {
+          "shape": 2,
+          "rate": 4
+        }
+      }
+    ],
+    "ops": [
+      {
+        "op": "apply_gamma",
+        "count": 1,
+        "exposure": 0.5,
+        "weight": 2
+      },
+      {
+        "op": "propose",
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "held_out_score": 0.5,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 8,
+          "rate": 6
+        },
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": {
+          "shape": 4,
+          "rate": 5
+        },
+        "version": 1,
+        "n_eff": 2,
+        "from": "row",
+        "scope": {}
+      }
+    ]
+  },
+  {
+    "name": "fit v2 rollback restores fit v1 without replay keep_evidence=True",
+    "declare": [
+      {
+        "name": "p_min_quick",
+        "family": "scalar",
+        "prior": 0.6
+      }
+    ],
+    "ops": [
+      {
+        "op": "propose",
+        "value": 0.7,
+        "held_out_score": 0.5,
+        "expect_version": 0
+      },
+      {
+        "op": "promote",
+        "version": 1
+      },
+      {
+        "op": "propose",
+        "value": 0.9,
+        "held_out_score": 0.8,
+        "expect_version": 1
+      },
+      {
+        "op": "promote",
+        "version": 2
+      },
+      {
+        "op": "rollback",
+        "at": "2026-01-31",
+        "keep_evidence": true
+      }
+    ],
+    "expect": [
+      {
+        "value": 0.6,
+        "version": 0,
+        "n_eff": 0,
+        "from": "prior",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.9,
+        "version": 2,
+        "n_eff": 40,
+        "from": "row",
+        "scope": {}
+      },
+      {
+        "value": 0.7,
+        "version": 1,
+        "n_eff": 40,
         "from": "row",
         "scope": {}
       }

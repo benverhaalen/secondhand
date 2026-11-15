@@ -9,6 +9,7 @@ import { Txt } from '../text';
 import { Theme, useColors, useScheme } from '../theme';
 import { motion, radius, size, space } from '../tokens.generated';
 import { Pill } from './buttons';
+import { log } from '../log';
 import { mark } from './mark';
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
@@ -23,7 +24,8 @@ export function Sheet({ open, title, onClose, children }: { open: boolean; title
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
           <Animated.View entering={FadeIn.duration(ms).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(motion.select)} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: c.scrim }}>
             {/* The scrim is not a button that gives way: a tap anywhere on it closes the sheet, as on iOS. */}
-            <View accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true} onResponderRelease={onClose} />
+            <View testID="sheet-scrim" accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true}
+              onResponderRelease={() => { log.event('user.input', { screen: 'sheet', control: 'sheet-scrim', value: title ?? 'close' }); onClose(); }} />
           </Animated.View>
           <Animated.View entering={SlideInDown.duration(ms).easing(EASE_OUT).reduceMotion(ReduceMotion.System)} exiting={SlideOutDown.duration(motion.select)}>
             <Surface kind="sheet" part="sheet" box={{ paddingHorizontal: space.gutter, paddingTop: space.s6, paddingBottom: space.s8, gap: space.s4 }}>
@@ -50,12 +52,12 @@ export function UndoToast({ id, text, onUndo, onGone }: { id: string; text: stri
 function ToastBody({ id, text, onUndo }: { id: string; text: string; onUndo: () => void }) {
   const c = useColors();
   return (
-    <View {...mark('toast')} accessibilityLiveRegion="polite" style={{ height: size.buttonH, borderRadius: radius.pill, backgroundColor: c.ink, paddingLeft: space.s5, paddingRight: space.s1, flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
+    <View {...mark('toast')} accessibilityLiveRegion="polite" style={{ height: size.buttonH, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink, paddingLeft: space.s5, paddingRight: space.s1, flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
       <View style={{ flex: 1 }}><Txt role="body" tone="on-ink" lines={1}>{text}</Txt></View>
       <Press id={id} label="Undo" onPress={onUndo}>
         {({ pressed }) => (
           // A filled pill, one step lighter than the toast, because whatever acts looks pressable (U1).
-          <View style={{ height: size.pillCardH, paddingHorizontal: space.s4, borderRadius: radius.pill, backgroundColor: c.inkPress, opacity: pressed ? 0.8 : 1, justifyContent: 'center' }}>
+          <View style={{ height: size.pillCardH, paddingHorizontal: space.s4, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.inkPress, opacity: pressed ? 0.8 : 1, justifyContent: 'center' }}>
             <Txt role="body" tone="on-ink">Undo</Txt>
           </View>
         )}
@@ -80,17 +82,17 @@ export function EmptyState({ title, line, action }: { title: string; line?: stri
 // The screen shows it only after about 150 ms of waiting, and keeps it at least 300 ms (frontend-standard §3, Loading).
 export function Skeleton({ of }: { of: 'card-decision' | 'card-item' | 'notice' }) {
   const c = useColors();
-  const bar = (w: number | `${number}%`, h: number) => <View style={{ width: w, height: h, borderRadius: radius.pill, backgroundColor: c.gray }} />;
-  if (of === 'notice') return <View {...mark('notice', { skeleton: 'true' })} style={{ height: size.noticeH, borderRadius: radius.pill, backgroundColor: c.gray }} />;
+  const bar = (w: number | `${number}%`, h: number) => <View style={{ width: w, height: h, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} />;
+  if (of === 'notice') return <View {...mark('notice', { skeleton: 'true' })} style={{ height: size.noticeH, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} />;
   const row = (
     <View style={{ flexDirection: 'row', height: size.photoCard, gap: space.s3 }}>
-      <View style={{ width: size.photoCard, height: size.photoCard, borderRadius: radius.photo, backgroundColor: c.gray }} />
+      <View style={{ width: size.photoCard, height: size.photoCard, borderRadius: radius.photo, borderCurve: 'continuous', backgroundColor: c.gray }} />
       <View style={{ flex: 1, justifyContent: 'space-between', paddingVertical: space.s1 }}>{bar(64, size.tagH - 4)}{bar('70%', 14)}{bar('50%', 12)}</View>
     </View>
   );
   return (
     <View {...mark(of, { skeleton: 'true' })} accessibilityLabel="Loading"
-      style={{ height: of === 'card-decision' ? size.cardDecisionH : size.cardItemH, padding: size.cardPad, gap: space.s3, borderRadius: radius.card, borderWidth: 1, borderColor: c.cardEdge, backgroundColor: c.surface }}>
+      style={{ height: of === 'card-decision' ? size.cardDecisionH : size.cardItemH, padding: size.cardPad, gap: space.s3, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: c.cardEdge, backgroundColor: c.surface }}>
       {row}
       {of === 'card-decision' ? <View style={{ flexDirection: 'row', gap: space.s2 }}>{bar(120, size.pillCardH)}{bar(96, size.pillCardH)}</View> : null}
     </View>

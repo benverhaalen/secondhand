@@ -15,6 +15,22 @@ const rows = (n: number, at = '2026-11-10T00:00:00.000Z'): BasisRow[] =>
   Array.from({ length: n }, (_, i) => ({ id: `obs_${i}`, source: i % 2 ? 'ebay' : 'mercari', at, price_cents: 4000 + i * 100 }));
 const RULES = { min_n_eff: 6, max_age_days: 14 };
 
+test('guarded number constructors can omit basis_level and notes independently', () => {
+  const legacy: proof.GuardedNumber = { value: 45, basis_count: 8, as_of: NOW, citation_id: 'cit_legacy', state: 'shown' };
+  const numbers: proof.GuardedNumber[] = [legacy, { ...legacy, basis_level: 'family' }, { ...legacy, notes: ['too_few'] }];
+  assert.deepEqual(numbers.map(g => g.basis_level ?? 'variant'), ['variant', 'family', 'variant']);
+  assert.deepEqual(numbers.map(g => g.notes ?? []), [[], [], ['too_few']]);
+});
+
+test('guard and guardWith still populate basis_level and notes on shown numbers', () => {
+  const a = answer(45, rows(8), cite, NOW);
+  for (const g of [guard(a, RULES), proof.guardWith(undefined, {}, a).guarded]) {
+    assert.equal(g.state, 'shown');
+    assert.equal('basis_level' in g && g.basis_level, 'variant');
+    assert.deepEqual('notes' in g && g.notes, []);
+  }
+});
+
 test('refused: an answer with no basis is not an answer', () => {
   assert.deepEqual(answer(42, [], cite, NOW), { ok: false, refused: 'no_basis' });
   assert.deepEqual(answer(42, [{ id: 'obs_1', source: 'ebay', at: 'not a date' }], cite, NOW), { ok: false, refused: 'no_basis' });
@@ -38,20 +54,27 @@ test('the basis hash does not depend on row order and changes with a price', () 
   assert.notEqual(basisHash(r), basisHash([{ ...r[0], price_cents: 1 }, ...r.slice(1)]));
 });
 
-test('age shown: a stale basis is hidden as stale with its age set', () => {
+test('age shown: a stale basis stays shown with a stale note and its age set', () => {
   const a = answer(45, rows(10, '2026-10-01T00:00:00.000Z'), cite, NOW);
   assert.ok(a.ok);
   assert.equal(a.basis.age_days, 45);
   const g = guard(a, RULES);
-  assert.deepEqual([g.state, g.hide_reason], ['hidden', 'stale']);
+  assert.equal(g.state, 'shown');
+  assert.deepEqual('notes' in g && g.notes, ['stale']);
+  assert.equal(g.hide_reason, undefined);
 });
 
-test('a thin basis hides as too_few; a range wider than its middle hides as too_wide; a good one shows', () => {
-  assert.equal(guard(answer(45, rows(3), cite, NOW), RULES).hide_reason, 'too_few');
-  assert.equal(guard(answer({ lo: 10, hi: 90 }, rows(10), cite, NOW), RULES).hide_reason, 'too_wide');
+test('thin and wide numbers stay shown with notes; a good one has no notes', () => {
+  const thin = guard(answer(45, rows(3), cite, NOW), RULES);
+  assert.equal(thin.state, 'shown');
+  assert.deepEqual('notes' in thin && thin.notes, ['too_few']);
+  const wide = guard(answer({ lo: 10, hi: 90 }, rows(10), cite, NOW), RULES);
+  assert.equal(wide.state, 'shown');
+  assert.deepEqual('notes' in wide && wide.notes, ['too_wide']);
   const g = guard(answer({ lo: 40, hi: 50 }, rows(10), cite, NOW), RULES);
   assert.equal(g.state, 'shown');
   assert.equal(g.basis_count, 10);
+  assert.deepEqual('notes' in g && g.notes, []);
 });
 
 test('observations are append-only in the fake and filter by kind and site', () => {
@@ -167,7 +190,8 @@ test('guardWith reads scoped proof params and cites both versions without mutati
     store.promote(name, scope, p.version, 0, NOW);
   }
   const second = proof.guardWith(store, scope, a);
-  assert.equal(second.guarded.hide_reason, 'too_few');
+  assert.equal(second.guarded.state, 'shown');
+  assert.deepEqual('notes' in second.guarded && second.guarded.notes, ['too_few', 'stale']);
   assert.deepEqual(second.param_versions, { proof_min_n_eff: 1, proof_max_age_days: 1 });
   assert.ok(second.citation);
   assert.deepEqual(second.citation.param_versions, second.param_versions);
@@ -176,7 +200,9 @@ test('guardWith reads scoped proof params and cites both versions without mutati
   assert.equal(a.citation.param_versions.proof_min_n_eff, 0);
   assert.equal(proof.guardWith(store, { site: 'mercari' }, a).guarded.state, 'shown');
   const stale = answer(45, rows(10), cite, NOW);
-  assert.equal(proof.guardWith(store, scope, stale).guarded.hide_reason, 'stale');
+  const g = proof.guardWith(store, scope, stale).guarded;
+  assert.equal(g.state, 'shown');
+  assert.deepEqual('notes' in g && g.notes, ['stale']);
 });
 
 
@@ -221,12 +247,16 @@ test('guardWith supports priors and refused answers, and keeps other calculation
 
 test('a basis older than the age limit by one millisecond is stale', () => {
   const at = new Date(Date.parse(NOW) - 14 * 86_400_000 - 1).toISOString();
-  assert.equal(guard(answer(45, rows(8, at), cite, NOW), RULES).hide_reason, 'stale');
+  const g = guard(answer(45, rows(8, at), cite, NOW), RULES);
+  assert.equal(g.state, 'shown');
+  assert.deepEqual('notes' in g && g.notes, ['stale']);
 });
 
 test('range width is checked without overflow or underflow for finite bounds', () => {
-  assert.equal(guard(answer({ lo: 1e307, hi: 1.7e308 }, rows(8), cite, NOW), RULES).hide_reason, 'too_wide');
-  assert.equal(guard(answer({ lo: 0, hi: Number.MIN_VALUE }, rows(8), cite, NOW), RULES).hide_reason, 'too_wide');
+  const wide = guard(answer({ lo: 1e307, hi: 1.7e308 }, rows(8), cite, NOW), RULES);
+  assert.deepEqual('notes' in wide && wide.notes, ['too_wide']);
+  const tiny = guard(answer({ lo: 0, hi: Number.MIN_VALUE }, rows(8), cite, NOW), RULES);
+  assert.deepEqual('notes' in tiny && tiny.notes, ['too_wide']);
 });
 
 
@@ -254,7 +284,9 @@ test('guardWith distinguishes scoped champions that share local version numbers'
   const ebay = proof.guardWith(store, { site: 'ebay' }, a);
   const mercari = proof.guardWith(store, { site: 'mercari' }, a);
   assert.deepEqual(ebay.param_versions, mercari.param_versions);
-  assert.equal(ebay.guarded.state, 'hidden');
+  assert.equal(ebay.guarded.state, 'shown');
+  assert.deepEqual('notes' in ebay.guarded && ebay.guarded.notes, ['too_few']);
+  assert.deepEqual('notes' in mercari.guarded && mercari.guarded.notes, []);
   assert.equal(mercari.guarded.state, 'shown');
   assert.notEqual(ebay.citation?.id, mercari.citation?.id);
 });
@@ -273,7 +305,9 @@ test('guardWith records which fallback row supplied a local param version', () =
   add({ site: 'ebay' }, 7);
   const after = proof.guardWith(store, { site: 'ebay' }, a);
   assert.deepEqual(before.param_versions, after.param_versions);
-  assert.equal(before.guarded.state, 'hidden');
+  assert.equal(before.guarded.state, 'shown');
+  assert.deepEqual('notes' in before.guarded && before.guarded.notes, ['too_few']);
+  assert.deepEqual('notes' in after.guarded && after.guarded.notes, []);
   assert.equal(after.guarded.state, 'shown');
   assert.notEqual(before.citation?.id, after.citation?.id);
 });
@@ -283,4 +317,152 @@ test('a range exactly as wide as its middle is shown', () => {
   for (const value of [{ lo: 1, hi: 3 }, { lo: 40, hi: 120 }]) {
     assert.equal(guard(answer(value, rows(8), cite, NOW), RULES).state, 'shown');
   }
+});
+
+test('answer defaults to variant and carries each caller-named fallback level through guardWith', () => {
+  const a = answer(45, rows(1), cite, NOW);
+  assert.ok(a.ok);
+  assert.equal(a.basis_level, 'variant');
+  for (const basis_level of ['variant', 'product', 'family', 'kind', 'prior', 'site_curve']) {
+    const a = answer(45, rows(1), cite, NOW, [], { basis_level });
+    assert.ok(a.ok);
+    assert.equal(a.basis_level, basis_level);
+    const { guarded } = proof.guardWith(undefined, {}, a);
+    assert.equal(guarded.state, 'shown');
+    assert.equal('basis_level' in guarded && guarded.basis_level, basis_level);
+  }
+});
+
+test('guard retains every thin, stale and wide note together without a hide reason', () => {
+  const g = guard(answer({ lo: 10, hi: 90 }, rows(1, '2026-10-01T00:00:00Z'), cite, NOW), RULES);
+  assert.equal(g.state, 'shown');
+  assert.equal(g.hide_reason, undefined);
+  assert.deepEqual('notes' in g && g.notes, ['too_few', 'stale', 'too_wide']);
+});
+
+test('only missing basis or an explicit conflict hides a number', () => {
+  assert.deepEqual(guard(answer(45, [], cite, NOW), RULES), { state: 'hidden', hide_reason: 'source_gap', basis_count: 0 });
+  for (const basis of [[], rows(8)]) {
+    const a = answer(45, basis, cite, NOW, [], { conflict: true });
+    assert.deepEqual(proof.guardWith(undefined, {}, a).guarded, { state: 'hidden', hide_reason: 'conflict', basis_count: 0 });
+  }
+});
+
+const levels = (): proof.LadderLevel<number>[] => ['variant', 'product', 'family', 'kind', 'prior'].map((basis_level, i) => ({
+  basis_level, value: 100 - i * 10, rows: rows(1).map(r => ({ ...r, id: `${basis_level}_${r.id}` })),
+}));
+
+test('removing rows walks five fallback levels, staying shown with each level named and its notes', () => {
+  const input = levels();
+  for (let i = 0; i < input.length; i++) {
+    const a = proof.ladder(input, cite, NOW);
+    assert.ok(a.ok, `no answer at ${input[i].basis_level}`);
+    const g = guard(a, RULES);
+    assert.equal(g.state, 'shown', `hidden at ${input[i].basis_level}`);
+    assert.equal('basis_level' in g && g.basis_level, input[i].basis_level);
+    assert.deepEqual('notes' in g && g.notes, ['too_few']);
+    input[i].rows = [];
+  }
+  assert.deepEqual(guard(proof.ladder(input, cite, NOW), RULES), { state: 'hidden', hide_reason: 'source_gap', basis_count: 0 });
+});
+
+test('ladder blends numeric values recursively by each level\'s effective evidence, not raw row count', () => {
+  const input = levels().slice(0, 3);
+  input[0].rows = rows(2).map((r, i) => ({ ...r, weight: i ? 0 : 1 }));
+  const a = proof.ladder(input, cite, NOW);
+  assert.ok(a.ok);
+  const parent = 90 / 7 + 80 * (6 / 7);
+  assert.ok(Math.abs(a.value - (100 / 7 + parent * (6 / 7))) < 1e-12);
+  assert.equal(a.basis.n_eff, 1);
+  assert.equal(a.basis.count, 2);
+  assert.equal(a.basis_level, 'variant');
+});
+
+test('ladder skips unstated or empty levels, preserves zero, and does not blend ranges', () => {
+  const input = levels();
+  input[0].value = null;
+  input[1].value = undefined;
+  input[2].rows = [];
+  input[3].value = 0;
+  input[4].value = 0;
+  const a = proof.ladder(input, cite, NOW);
+  assert.ok(a.ok);
+  assert.equal(a.value, 0);
+  assert.equal(a.basis_level, 'kind');
+  const range = { lo: 10, hi: 90 };
+  const b = proof.ladder([{ basis_level: 'family', rows: rows(1), value: range }], cite, NOW);
+  assert.ok(b.ok);
+  assert.deepEqual(b.value, range);
+  const g = guard(b, RULES);
+  assert.equal(g.state, 'shown');
+  assert.deepEqual('notes' in g && g.notes, ['too_few', 'too_wide']);
+  assert.deepEqual(proof.ladder([], cite, NOW), { ok: false, refused: 'no_basis' });
+});
+
+test('ladder reads scoped proof_blend_k and freezes the parent evidence, values and param version in its citation', () => {
+  const store = memoryStore();
+  const scope = { kind: 'shoes' };
+  const input = levels().slice(0, 2);
+  const snapshot = structuredClone(input);
+  const a = proof.ladder(input, cite, NOW, [], { store, scope });
+  assert.ok(a.ok);
+  assert.ok(Math.abs(a.value - (100 / 7 + 90 * (6 / 7))) < 1e-12);
+  assert.equal(a.citation.param_versions.proof_blend_k, 0);
+  assert.deepEqual(a.citation.basis_ids, input.flatMap(l => l.rows.map(r => r.id)).sort());
+  assert.deepEqual(input, snapshot);
+  const p = store.propose({ name: 'proof_blend_k', scope, family: 'scalar', value_or_hyperparams: 3, prior: 6,
+    fitted_on_ids_hash: null, n_eff: 10, metric: null, held_out_score: 1, guard_lo: null, guard_hi: null }, 0);
+  store.promote(p.name, scope, p.version, 0, NOW);
+  const b = proof.ladder(input, cite, NOW, [], { store, scope });
+  assert.ok(b.ok);
+  assert.equal(b.value, 92.5);
+  assert.equal(b.citation.param_versions.proof_blend_k, 1);
+  assert.notEqual(b.citation.id, a.citation.id);
+  input[1].rows[0].price_cents! += 1;
+  const c = proof.ladder(input, cite, NOW, [], { store, scope });
+  assert.ok(c.ok);
+  assert.notEqual(c.citation.id, b.citation.id);
+  input[1].value = 70;
+  const d = proof.ladder(input, cite, NOW, [], { store, scope });
+  assert.ok(d.ok);
+  assert.notEqual(d.citation.id, c.citation.id);
+  assert.equal(b.citation.param_versions.proof_blend_k, 1);
+});
+
+test('ladder rejects invalid numeric values and weights at the boundary', () => {
+  for (const value of [NaN, Infinity, -Infinity]) {
+    const input = levels(); input[0].value = value;
+    assert.throws(() => proof.ladder(input, cite, NOW), /value.*finite/);
+  }
+  const invalid = levels(); invalid[0].rows[0].weight = -1;
+  assert.throws(() => proof.ladder(invalid, cite, NOW), /weight/);
+});
+
+test('a level with refused evidence cannot hide another stated level', () => {
+  for (const index of [0, 1, 4]) {
+    const input = levels(); input[index].rows[0].at = 'invalid';
+    const a = proof.ladder(input, cite, NOW);
+    assert.ok(a.ok, `invalid date at level ${index} discarded valid evidence`);
+    assert.equal(a.basis_level, index === 0 ? 'product' : 'variant');
+    assert.equal(guard(a, RULES).state, 'shown');
+  }
+  const input = levels(); input.forEach(l => { l.rows[0].at = 'invalid'; });
+  assert.deepEqual(proof.ladder(input, cite, NOW), { ok: false, refused: 'no_basis' });
+});
+
+test('guardWith preserves the blend version and reads only the note thresholds', () => {
+  const store = memoryStore();
+  const scope = { kind: 'shoes' };
+  proof.ladder(levels(), cite, NOW, [], { store, scope });
+  const p = store.propose({ name: 'proof_blend_k', scope, family: 'scalar', value_or_hyperparams: 3, prior: 6,
+    fitted_on_ids_hash: null, n_eff: 10, metric: null, held_out_score: 1, guard_lo: null, guard_hi: null }, 0);
+  store.promote(p.name, scope, p.version, 0, NOW);
+  const a = proof.ladder(levels(), cite, NOW, [], { store, scope });
+  const g = proof.guardWith(undefined, {}, a);
+  assert.equal(g.citation?.param_versions.proof_blend_k, 1);
+  const independent = { ...store, read: (name: string, s: Parameters<typeof store.read>[1]) => {
+    assert.notEqual(name, 'proof_blend_k', 'a note-only guard read an unrelated blend parameter');
+    return store.read(name, s);
+  } };
+  assert.equal(proof.guardWith(independent, {}, a).guarded.state, 'shown');
 });

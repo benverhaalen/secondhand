@@ -3,6 +3,7 @@
 // Each row is the listing's photo, its site's logo, the read of its price against the fair range, and what it costs
 // delivered. Visitors can search; watching asks them to sign in at that moment (ways-out §6.17).
 // The page's reasons and states are in app/behavior/search.json.
+// one at a time: search-box (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams } from 'expo-router';
 import { cardLine, rank, searchFor } from '@/buy/read';
 import { Failed, OfflineLine } from '@/buy/states';

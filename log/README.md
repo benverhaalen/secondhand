@@ -167,3 +167,15 @@ node log/climb.mjs <out>/logs/*.jsonl              # an image-gen run: job waits
 - Agents working on this repo keep large command output in `.harness/logs/` (also ignored). Session transcripts are kept by each person's own setup, outside git.
 
 Retire this page's wiring steps as each program lands and its own code becomes the example.
+
+## Crashes
+
+`crash.js` observes the shared logger's masked entries. `native.js` appends them synchronously to `Documents/secondhand-crashes.jsonl`; each line keeps the shared `ts`, `session`, `seq`, `src`, `level` and `event` fields. Errors also print as `SH_CRASH <entry>`. The app boundary supplies Expo's file and lifecycle adapters, records render failures, and offers **Try again**. Global errors chain to the previous handler; Hermes unhandled rejections are recorded too.
+
+Open `secondhand://dev/crashes` for errors and preceding navigation, input, call and lifecycle entries. Existing shared-log calls supply breadcrumbs; screens that do not log their actions cannot supply them. Shared masking and large-field blob summaries still apply. Native crashes and OS terminations cannot be recorded by a JS handler.
+
+To upload on launch or foreground, run `node log/receive.mjs 8787` on the Mac and set `EXPO_PUBLIC_API_URL=http://<Mac-address>:8787` before building. This local development receiver writes `logs/phone/uploaded-crashes.jsonl`. It is unauthenticated: use it only on a trusted development network. Successful uploads are acknowledged in `Documents/secondhand-crashes-sent.jsonl`, without deleting history. Uploads include shared entries through the latest pending crash; failed sends retry next launch or foreground. Delivery can repeat after an interrupted acknowledgement; deduplicate by `(session, seq)` when reading uploaded records.
+
+Run `node scripts/phone-crashes.mjs <device-id> [console-file]` to collect device records and native reports under git-ignored `logs/phone/`. The collector parses `.ips` JSON header and body, prints time and exception type, and reads embedded `Unhandled JS Exception: ...` reasons. Otherwise it matches device entries or supplied console lines in the same timestamp second; it leaves the reason absent when none match. An exact-second match is a correlation, not proof of causation.
+
+Checks: `node --test log/crash.test.mjs log/receive.test.mjs scripts/phone-crashes.test.mjs`. Device collection, Release persistence and recovery still require a phone run. The local receiver's HTTP listener also needs a run outside the restricted agent sandbox.

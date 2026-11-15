@@ -94,6 +94,10 @@ After the demo, say these three, each with its 5-second proof ([unique.md](uniqu
 
 The canonical list of every feature worth showing is [features-proof.md](features-proof.md). It has 29 features, each checked against the code, with what it does, how it works in plain words and in the code, its proof mark (measured, observed, built, designed), the proof still to run, and one line to say. It also ranks what goes in the three minutes, at the booth, on the website, and only in answers to questions.
 
+## How deep we dug
+
+When a judge asks "how much is really here?" or "what did you do with the tech?", the answer, with every count and a link to each file, is the "How deep we dug" section of [devpost.md](devpost.md#how-deep-we-dug). Two halves: how the project was made (44 decisions with their reasons, 314 quotes from Ben and Nate, 227 research notes with every claim marked, 23 checks that fail the build, about 2,900 tests, a backtest designed before any data) and technology used in ways we haven't seen (a model checker for one item on four sites, AI photos measured against the tape, a price that refuses when sales are thin, identification that measures its own doubt, site readers that repair themselves, Databricks as the home of every learned number, Codex as an image pipeline with a judge). Pick one from each half; don't recite the list.
+
 ## Proof without sales
 
 We have no month of sales, so we prove the parts of a sale instead, and say so first: "We can't show you a month of sales from a 24-hour hackathon, and we won't pretend to. Here's what we can show." The ranked list of proofs to run before 1 pm, and the comparisons, are in [proof-without-sales.md](proof-without-sales.md).

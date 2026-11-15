@@ -48,6 +48,8 @@ def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None =
     inputs = sorted(Path(p) for p in inputs)
     seen = []
     for p in inputs:
+        if expect is not None and p.name not in expect:
+            raise ValueError(f"{p.name}: input filename is not pinned in sources.json")
         digest = sha256(p)
         if expect and p.name in expect and expect[p.name] != digest:
             raise ValueError(f"{p.name}: sha256 {digest} is not the frozen {expect[p.name]}")
@@ -56,38 +58,30 @@ def freeze(source: str, inputs: list[Path], out_dir: Path, expect: dict | None =
     dropped: dict = {}
     reader = READERS[source]
     rows = reader(inputs, dropped) if source in MULTI_FILE else (r for p in inputs for r in reader(p, dropped))
+    n, by_type, by_kind = 0, {}, {}
+    first = last = None
     out_dir.mkdir(parents=True, exist_ok=True)
-    body_hash = hashlib.sha256()
-    n, by_type, by_kind, lo, hi = 0, {}, {}, None, None
-    with open(out_dir / "rows.csv.gz", "wb") as f:   # mtime 0 and no filename: the same rows give the same bytes
+    with open(out_dir / "rows.csv.gz", "wb") as f:
         with gzip.GzipFile(filename="", fileobj=f, mode="wb", mtime=0) as g:
-            def write(line: str) -> None:
-                b = line.encode()
-                body_hash.update(b)
-                g.write(b)
-            text = io.StringIO()
-            w = csv.DictWriter(text, fieldnames=COLUMNS, lineterminator="\n")
-            w.writeheader()
-            for r in rows:
-                if share < 1.0 and not in_sample(r["product_id"] or r["row_id"], share):
-                    dropped["not_in_sample"] = dropped.get("not_in_sample", 0) + 1
-                    continue
-                w.writerow(r)
-                if text.tell() > 1 << 20:
-                    write(text.getvalue())
-                    text.seek(0)
-                    text.truncate()
-                n += 1
-                by_type[r["price_type"]] = by_type.get(r["price_type"], 0) + 1
-                by_kind[r["kind"]] = by_kind.get(r["kind"], 0) + 1
-                if r["at"]:
-                    lo, hi = min(lo or r["at"], r["at"]), max(hi or r["at"], r["at"])
-            write(text.getvalue())
+            with io.TextIOWrapper(g, encoding="utf-8", newline="") as text:
+                w = csv.DictWriter(text, fieldnames=COLUMNS, lineterminator="\n")
+                w.writeheader()
+                for r in rows:
+                    if share < 1.0 and not in_sample(r["product_id"] or r["row_id"], share):
+                        dropped["not_in_sample"] = dropped.get("not_in_sample", 0) + 1
+                        continue
+                    w.writerow(r)
+                    n += 1
+                    by_type[r["price_type"]] = by_type.get(r["price_type"], 0) + 1
+                    by_kind[r["kind"]] = by_kind.get(r["kind"], 0) + 1
+                    if r["at"]:
+                        first = min(first, r["at"]) if first else r["at"]
+                        last = max(last, r["at"]) if last else r["at"]
     manifest = {
         "source": source, "licence": LICENCE[source], "may_model": MAY_MODEL[source], "code_commit": _commit(),
-        "inputs": seen, "output": {"file": "rows.csv.gz", "sha256": body_hash.hexdigest(), "columns": list(COLUMNS)},
+        "inputs": seen, "output": {"file": "rows.csv.gz", "sha256": sha256(out_dir / "rows.csv.gz"), "columns": list(COLUMNS)},
         "rows": n, "by_price_type": dict(sorted(by_type.items())), "by_kind": dict(sorted(by_kind.items())),
-        "at_range": [lo, hi] if lo else None, "dropped": dict(sorted(dropped.items())),
+        "at_range": [first, last] if first else None, "dropped": dict(sorted(dropped.items())),
     }
     if share < 1.0:
         manifest["sample"] = {"share": share, "unit": "product_id (row_id when empty)", "rule": "sha256(key)[:8] < share * 2^64"}

@@ -6,24 +6,21 @@ move these facets (isolation). The only pooled input is `offsets`, passed in exp
 from __future__ import annotations
 
 import statistics
+import math
+from .params import resolve, resolved
+from .evidence import publish
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 
-# (taste, size) start weights per source, spec §2. A sold item is 0/0 here: the expert note counts it for neither
-# taste nor current size (the spec gives 0.2 and 0.4).
-START = {
-    "want": (1.0, 1.0), "you_said": (1.0, 1.0), "save": (0.8, 0.6), "follow": (0.6, 0.0),
-    "purchase": (0.5, 0.8), "kept": (0.4, 0.8), "sold": (0.0, 0.0), "not_for_me": (0.0, 0.0),
-}
+# Compatibility projection of the declared §2 priors; calculations use resolved params.
+START = {s: (resolve()['values']['style_'+s+'_taste'], resolve()['values']['style_'+s+'_size'])
+         for s in ('want','you_said','save','follow','purchase','kept','sold','not_for_me')}
 # spec `from` enum has no want / you_said; they map to saved (a requested name, not edited in spec)
 FROM = {"want": "saved", "you_said": "saved", "save": "saved", "follow": "followed", "purchase": "bought",
         "kept": "kept", "sold": "sold"}
 TASTE_NAMES = ("brand", "category", "colour", "era", "price_band")
-SOURCING_DAYS = 30
-CHILD_HALF_LIFE_DAYS = 91.0  # guess: about 3 months; tune on real child histories
 LETTERS = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"]
-SIZE_SHARE, MIN_EVENTS, MIN_DAYS = 0.7, 3, 2
 
 
 @dataclass(frozen=True)
@@ -64,7 +61,7 @@ def _rank(size):
 
 def _label(kind, value):
     if kind == "L":
-        return LETTERS[min(max(int(round(value)), 0), len(LETTERS) - 1)]
+        return LETTERS[min(max(math.floor(value + 0.5), 0), len(LETTERS) - 1)]
     return f"{value:g}"
 
 
@@ -75,9 +72,10 @@ def _norm(size, brand, category, offsets):
     return _label(r[0], r[1] - offsets.get((brand, category), 0)), r
 
 
-def pool_offsets(people_modes: dict, min_people: int = 5) -> dict:
+def pool_offsets(people_modes: dict, min_people=None, *, params=None) -> dict:
     """{person: {(brand, category): size label}} -> {(brand, category): median steps from that person's own category mean}.
     A pair needs `min_people` people who own another brand in the same category, so one person's numbers are never "pooled"."""
+    min_people = resolved(params)["values"]["style_offset_people"] if min_people is None else min_people
     seen = defaultdict(list)
     for modes in people_modes.values():
         by_cat = defaultdict(list)
@@ -95,22 +93,26 @@ def pool_offsets(people_modes: dict, min_people: int = 5) -> dict:
 
 
 def _days(now, at):
-    return max(0.0, (now - at).total_seconds() / 86400)
+    return (now - at).total_seconds() / 86400  # Fixed unit conversion: seconds per day.
 
 
-def event_weights(e: Event, table: dict) -> tuple[float, float]:
+def event_weights(e: Event, table: dict, sourcing_days=None, as_of=None) -> tuple[float, float]:
     """(taste, size) for one event after the sourcing and sold rules."""
     if e.sold or e.source == "sold":
-        return 0.0, 0.0
-    if e.source == "purchase" and e.listed_at is not None and e.listed_at - e.at <= timedelta(days=SOURCING_DAYS):
+        return table["sold"]
+    if e.source == "purchase" and e.listed_at is not None and (as_of is None or e.listed_at<=as_of) and e.listed_at - e.at <= timedelta(days=resolved(None)["values"]["style_sourcing_days"] if sourcing_days is None else sourcing_days):
         return 0.0, 0.0
     return table[e.source]
 
 
-def compute(events, now: datetime, *, weights: dict | None = None, k: float = 2.0, offsets: dict | None = None,
-            children=frozenset()) -> Result:
-    table = {**START, **(weights or {})}
-    events = list(events)
+def compute(events, now: datetime, *, weights: dict | None = None, k: float | None = None, offsets: dict | None = None,
+            children=frozenset(), params=None, shared_facets=()) -> Result:
+    params = resolved(params)
+    v = params['values']
+    k = v['style_affinity_k'] if k is None else k
+    table = {s: (v['style_'+s+'_taste'],v['style_'+s+'_size']) for s in START}
+    table.update(weights or {})
+    events = sorted((e for e in events if e.at <= now), key=lambda e:(e.at,e.id))
     if len({e.person for e in events}) > 1:
         raise ValueError("compute takes one person's events")
     offsets = offsets or {}
@@ -119,40 +121,64 @@ def compute(events, now: datetime, *, weights: dict | None = None, k: float = 2.
     penalties: dict = {}
     for e in events:
         if e.source == "not_for_me":
-            d = 0.5 ** (_days(now, e.at) / 365)
+            d = 0.5 ** (_days(now, e.at) / v['style_half_life_days'])
             if e.attrs.get("cluster"):
                 key = f"cluster:{e.attrs['cluster']}"
-                penalties[key] = penalties.get(key, 0.0) - 1.0 * d
+                penalties[key] = penalties.get(key, 0.0) - v['style_cluster_penalty'] * d
             if e.attrs.get("brand"):
                 key = f"brand:{e.attrs['brand']}"
-                penalties[key] = penalties.get(key, 0.0) - 0.3 * d
+                penalties[key] = penalties.get(key, 0.0) - v['style_brand_penalty'] * d
             continue
-        wt, ws = event_weights(e, table)
+        wt, ws = event_weights(e, table, v['style_sourcing_days'], now)
         age = _days(now, e.at)
         if wt > 0:
             for name in TASTE_NAMES:
                 if e.attrs.get(name) is not None:
-                    taste[(e.recipient, name, e.attrs[name])].append((e, wt * 0.5 ** (age / 365)))
+                    taste[(e.recipient, name, e.attrs[name])].append((e, wt * 0.5 ** (age / v['style_half_life_days'])))
         if ws > 0 and e.attrs.get("size") is not None and e.attrs.get("category") is not None:
             n = _norm(e.attrs["size"], e.attrs.get("brand"), e.attrs["category"], offsets)
             if n:
-                half = CHILD_HALF_LIFE_DAYS if e.recipient in children else 365.0
+                half = v['style_child_half_life_days'] if e.recipient in children else v['style_half_life_days']
                 sizes[(e.recipient, e.attrs["category"])].append((e, ws * 0.5 ** (age / half), n[0], n[1]))
-    unassigned, skip = _unassigned(sizes)
+    unassigned, skip = _unassigned(sizes, v['style_unassigned_steps'])
     facets = []
     for (rec, name, value), rows in taste.items():
         rows = [r for r in rows if r[1] > 0 and r[0].id not in skip]  # an unassigned purchase waits: not taste either
-        if len(rows) < MIN_EVENTS or max(r[0].at for r in rows) - min(r[0].at for r in rows) < timedelta(days=MIN_DAYS):
+        if not rows:
             continue
         a = sum(c for _, c in rows)
         by_src = defaultdict(float)
         for e, c in rows:
             by_src[e.source] += c
-        facets.append({"name": name, "value": value, "weight": a / (a + k), "a": a, "from": FROM[max(by_src, key=by_src.get)],
-                       "count": len(rows), "recipient": rec, "pinned": False, "removed_at": None})
+        # Lexical source names break equal contribution ties.
+        facets.append({"name": name, "value": value, "weight": a / (a + k), "a": a, "from": FROM[max(sorted(by_src), key=by_src.get)],
+                       "count": len(rows), "recipient": rec, "pinned": False, "removed_at": None,
+                       **publish({'weight':a/(a+k),'count':len(rows)}, [_basis(e,c) for e,c in rows], now, params, metric='facet')})
     for (rec, cat), rows in sizes.items():
-        facets += _size_facets(rec, cat, [r for r in rows if r[0].id not in skip])
-    facets.sort(key=lambda f: (f["recipient"] or "", f["name"], str(f["value"]), f.get("brand") or ""))
+        facets += _size_facets(rec, cat, [r for r in rows if r[0].id not in skip], now, params)
+    own = {(f['recipient'],f['name'],str(f['value']),f.get('brand'),f.get('category')):f for f in facets}
+    shared_by={(f.get('recipient'),f['name'],str(f['value']),f.get('brand'),f.get('category')):f for f in shared_facets
+               if not f.get('removed_at')}
+    for key in sorted(own.keys() | shared_by.keys(),key=repr):
+        local, shared=own.get(key), shared_by.get(key)
+        n=local['count'] if local else 0
+        blend=n/(n+v['style_event_blend'])
+        if local and local['name']!='size':
+            dates=[datetime.fromisoformat(b['at']) for b in local['citation']['basis']]
+            span=_days(max(dates),min(dates))+1  # Fixed inclusive span: same-day evidence occupies one day.
+            blend*=span/(span+v['style_day_blend'])
+        weight=blend*(local['weight'] if local else 0)+(1-blend)*(shared['weight'] if shared else 0)
+        base=dict(local or shared)
+        base.setdefault("recipient",key[0])
+        base.setdefault("pinned",False)
+        base.setdefault("removed_at",None)
+        basis=(local['citation']['basis'] if local else [])
+        if shared:
+            basis=basis+[dict(id='shared:'+repr(key),facet=shared)]
+        base.update(weight=weight, **publish({'weight':weight,'count':base['count']},basis,now,params,metric='facet_blend',basis_level='person' if n else 'prior'))
+        own[key]=base
+    facets=list(own.values())
+    facets.sort(key=lambda f: (f["recipient"] or "", f["name"], str(f["value"]), f.get("brand") or "", f.get("category") or ""))
     return Result(facets, unassigned, penalties)
 
 
@@ -167,7 +193,7 @@ def _mode(rows, key):
     return top, tally[top] / sum(tally.values()), count[top]
 
 
-def _unassigned(sizes):
+def _unassigned(sizes, steps):
     """A purchase with no recipient more than one step from the category mode, with no second event on that size, waits."""
     out, skip = [], set()
     for (rec, cat), rows in sizes.items():
@@ -181,28 +207,34 @@ def _unassigned(sizes):
                 continue
             m = _mode(others, lambda o: o[2])
             ref = next((o[3] for o in others if o[2] == m[0]), None) if m else None
-            if ref and ref[0] == rank[0] and abs(ref[1] - rank[1]) > 1:
+            if ref and ref[0] == rank[0] and abs(ref[1] - rank[1]) > steps:
                 out.append({"event": e.id, "category": cat, "size": e.attrs["size"]})
                 skip.add(e.id)
     return out, skip
 
 
-def _size_facets(rec, cat, rows):
-    def make(m, brand):
+def _basis(e, contribution):
+    return dict(id=e.id,source=e.source,at=e.at,attrs=e.attrs,contribution=contribution)
+
+
+def _size_facets(rec, cat, rows, now, params):
+    v=params['values']
+    def make(m, brand, defining):
         src = defaultdict(float)
-        for r in rows:
+        for r in defining:
             src[r[0].source] += r[1]
-        return {"name": "size", "value": m[0], "weight": m[1], "from": FROM[max(src, key=src.get)], "count": m[2],
-                "recipient": rec, "pinned": False, "removed_at": None, "category": cat, "brand": brand}
+        return {"name": "size", "value": m[0], "weight": m[1], "from": FROM[max(sorted(src), key=src.get)], "count": m[2],
+                "recipient": rec, "pinned": False, "removed_at": None, "category": cat, "brand": brand,
+                **publish({'weight':m[1],'count':m[2]},[_basis(r[0],r[1]) for r in defining],now,params,metric='size')}
     m = _mode(rows, lambda r: r[2])
-    if m and m[1] >= SIZE_SHARE and m[2] >= MIN_EVENTS:
-        return [make(m, None)]
+    if m and m[1] >= v['style_size_share']:
+        return [make(m, None, rows)]
     out = []
     for brand in sorted({r[0].attrs.get("brand") for r in rows} - {None}):  # brand sizes differ: keep each brand's own
         sub = [r for r in rows if r[0].attrs.get("brand") == brand]
         raw = _mode(sub, lambda r: str(r[0].attrs["size"]).strip().upper())
-        if raw and raw[1] >= SIZE_SHARE and raw[2] >= MIN_EVENTS:
-            out.append(make(raw, brand))
+        if raw and raw[1] >= v['style_size_share']:
+            out.append(make(raw, brand, sub))
     return out
 
 

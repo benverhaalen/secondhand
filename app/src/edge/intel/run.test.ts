@@ -1,6 +1,6 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { _reset, allEnded, outsideCallCount, runPlan, type Plan, type Route, type PlanTarget } from './run.ts';
+import { _reset, allEnded, outsideCallCount, runPlan, type Plan, type Route, type PlanTarget, searchParams } from './run.ts';
 import { checkAnswer, type AnswerEvent, type Fact } from './answer.ts';
 
 beforeEach(() => _reset());
@@ -74,4 +74,65 @@ test('index facts answer at once, before any target', async () => {
   assert.equal(seen[0], 'answer.partial');
   assert.ok(a.ms.first! < 10);
   assert.equal(a.facts[0]!.name, 'ask_range');
+});
+
+
+test('request-only routes are shared in flight but never enter the run cache', async () => {
+  const r = { ...route('dupe.search.api', 1), cache: false };
+  await Promise.all([runPlan(plan([target('dupe', [r])])), runPlan(plan([target('dupe', [r])]))]);
+  assert.equal(outsideCallCount(), 1);
+  await runPlan(plan([target('dupe', [r])]));
+  assert.equal(outsideCallCount(), 2, 'Dupe rows must not survive the request in the run cache');
+});
+
+test('search_cache_max evicts the oldest inserted entry, including after a cache hit', async () => {
+  const prior = searchParams.read('search_cache_max', {}).value;
+  searchParams.declare({ name: 'search_cache_max', family: 'scalar', prior: 2 });
+  try {
+    const ask = (id: string) => runPlan(plan([target(id, [route(id, 1)])]));
+    await ask('oldest'); await ask('second'); await ask('oldest'); await ask('third');
+    const calls = outsideCallCount();
+    await ask('second'); assert.equal(outsideCallCount(), calls, 'second entry is retained');
+    await ask('oldest'); assert.equal(outsideCallCount(), calls + 1, 'oldest entry was evicted');
+  } finally { searchParams.declare({ name: 'search_cache_max', family: 'scalar', prior }); }
+});
+
+test('20 searches share the Poshmark lane pace across plans; another site gets its own slot', async t => {
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 });
+  const starts: number[] = [];
+  const pace = { per_minute: 20, min_gap_ms: 3000 };
+  const read: Route = { route_id: 'public.poshmark', host: 'poshmark.com', site: 'poshmark', lane: 'public_page', pace, p95_ms: 10,
+    async run() { starts.push(Date.now()); return { outcome: 'hit', rows: [{}] }; } };
+  const flush = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
+  const results = Array.from({ length: 20 }, (_, i) => runPlan(plan([
+    { ...target(String(i), [read], 20), query: `query ${i}` },
+  ], { settled_ms: 1 })));
+  await flush();
+  const other = runPlan(plan([target('other', [{ ...read, route_id: 'ebay.search.page', host: 'ebay.com', site: 'ebay', lane: 'harness',
+    async run() { return { outcome: 'hit', rows: [{}] }; } }])], { settled_ms: 1 }));
+  await flush();
+  assert.equal((await other).searched[0].outcome, 'hit', 'eBay never queues behind Poshmark');
+  for (let i = 1; i < 20; i++) { t.mock.timers.tick(3000); await flush(); }
+  const answers = await Promise.all(results);
+  await allEnded();
+  assert.equal(starts.length, 20, 'a queued read still runs after the settlement budget');
+  assert.ok(starts.slice(1).every((start, i) => start - starts[i] >= 3000));
+  assert.ok(answers.every(a => a.searched[0]?.outcome === 'hit'), 'waiting for a slot does not spend the read deadline');
+});
+
+test('a paced route reports its applied pace and gets its full deadline after the slot', async () => {
+  const read: Route = { ...route('paced', 5), site: 'poshmark', lane: 'public_page', pace: { per_minute: 6000, min_gap_ms: 25 }, cache: false };
+  const ask = (query: string) => runPlan(plan([{ ...target('p', [read], 15), query }], { settled_ms: 100 }));
+  const first = await ask('first'), second = await ask('second');
+  assert.equal(second.searched[0].outcome, 'hit');
+  assert.deepEqual(second.searched[0].pace, read.pace);
+  assert.deepEqual(first.searched[0].pace, read.pace);
+});
+
+test('fallbacks share the target active-read budget rather than receiving a fresh deadline', async () => {
+  const first = { ...route('fails', 30, 'blocked'), p95_ms: 1000 };
+  const second = route('too_late', 40);
+  const a = await runPlan(plan([target('one_budget', [first, second], 50)], { settled_ms: 1000 }));
+  assert.deepEqual(a.searched.map(s => s.outcome), ['blocked', 'timeout']);
+  assert.equal(a.facts.length, 0);
 });

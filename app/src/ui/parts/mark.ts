@@ -17,6 +17,11 @@ export function money(amount: number, currency = 'USD'): string {
   return new Intl.NumberFormat(undefined, { style: 'currency', currency, minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 }).format(amount);
 }
 
+// "1 sale", "4 sales": a count agrees with its noun. English only, by hand: Hermes on iOS has no Intl.PluralRules, and
+// calling it threw "undefined cannot be used as a constructor" every time You opened on the phone (2026-11-15).
+export const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat().format(n)} ${n === 1 ? one : many}`;
+export const noun = (n: number, one: string, many: string) => (n === 1 ? one : many);
+
 // Time left, said calmly (frontend-standard §5, Honesty): under a day "3h 40m", by the minute; beyond that a day and an hour.
 export function timeLeft(due: number, now: number): string {
   const min = Math.max(0, Math.round((due - now) / 60000));

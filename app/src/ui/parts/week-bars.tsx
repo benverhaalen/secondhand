@@ -20,7 +20,7 @@ export function WeekBars({ weeks }: { weeks: { label: string; amount: number; no
       <View style={{ height: TALL, flexDirection: 'row', alignItems: 'flex-end', gap: space.s2 }}>
         {weeks.map((w, i) => (
           <View key={i} accessibilityLabel={`Week of ${w.label}: ${money(w.amount)}`} style={{ flex: 1, height: top > 0 && w.amount > 0 ? Math.max(STUB, Math.round((w.amount / top) * TALL)) : STUB,
-            borderRadius: radius.pill,
+            borderRadius: radius.pill, borderCurve: 'continuous',
             backgroundColor: w.amount > 0 ? (w.now ? c.ink : c.ink2) : c.rule }} />
         ))}
       </View>

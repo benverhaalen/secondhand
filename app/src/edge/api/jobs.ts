@@ -4,6 +4,7 @@ import { memoryStore, type JobRow, type Store } from '../events/ports.ts';
 import { ApiError, type Handler } from './http.ts';
 import { EXAMPLES, STREAMS } from './examples.ts';
 import { store } from './store.ts';
+import { searchParams } from '../intel/run.ts';
 
 export type SseFrame = { id: number; event: string; data: Record<string, unknown> };
 export const streamOpts = { heartbeatMs: 15000 };
@@ -16,6 +17,7 @@ export type ApiJobRow = Omit<JobRow, 'kind'> & { kind: JobRow['kind'] | 'assist'
 export function jobsOn(st: Store) {
   const claimedSeedIds = new Set<string>();
   const assistJobs = new Map<string, ApiJobRow>();
+  const ended = new Map<string, number>();
   const readJob = (id: string): ApiJobRow | undefined => assistJobs.get(id) ?? st.getJob(id);
   const log = new Map<string, SseFrame[]>(), ears = new Map<string, Set<() => void>>();
   const wake = (key: string) => [...(ears.get(key) ?? [])].forEach((f) => f());
@@ -38,16 +40,22 @@ export function jobsOn(st: Store) {
       if (j.kind === 'assist') {
         const row: ApiJobRow = { event_id: 'seed', idempotency_key: `seed:${j.id}`, args: {}, attempts: 0, trace_id: '', created_at: new Date(0).toISOString(), stages: [], state: 'queued', ...j, id: j.id ?? `job_${crypto.randomUUID().replaceAll('-', '')}`, kind: 'assist', user_id: owner };
         assistJobs.set(row.id, row);
+        if (TERMINAL.has(row.state)) ended.set(row.id, Date.now());
         return row;
       }
       const { id, ...rest } = { ...j, kind: j.kind };
       const { row } = st.insertJob({ event_id: 'seed', idempotency_key: `seed:${id ?? crypto.randomUUID()}`, args: {}, attempts: 0, trace_id: '', created_at: new Date(0).toISOString(), stages: [], state: 'queued', ...rest, user_id: owner });
-      return id ? st.updateJob(row.id, { id }) : row;
+      const saved = id ? st.updateJob(row.id, { id }) : row;
+      if (TERMINAL.has(saved.state)) ended.set(saved.id, Date.now());
+      return saved;
     },
     update(id: string, patch: Partial<Omit<ApiJobRow, 'kind'>>) {
       const row = assistJobs.get(id);
-      if (row) { const next = { ...row, ...patch }; assistJobs.set(id, next); return next; }
-      return st.updateJob(id, patch);
+      const next = row ? { ...row, ...patch } : st.updateJob(id, patch);
+      if (row) assistJobs.set(id, next);
+      if (patch.state && TERMINAL.has(patch.state) && !ended.has(id)) ended.set(id, Date.now());
+      else if (patch.state && !TERMINAL.has(patch.state)) ended.delete(id);
+      return next;
     },
     finish(id: string, result: unknown) {
       const row = readJob(id);
@@ -69,11 +77,25 @@ export function jobsOn(st: Store) {
       const list = log.get(key) ?? []; log.set(key, list);
       const f = { id: id ?? (list.at(-1)?.id ?? 0) + 1, event, data };
       list.push(f);
-      if (event === 'job.state' && typeof data.state === 'string' && readJob(key)) s.update(key, { state: data.state as JobRow['state'] });
+      if (event === 'job.state' && typeof data.state === 'string' && readJob(key)) {
+        s.update(key, { state: data.state as JobRow['state'] });
+        if (TERMINAL.has(data.state) && typeof data.at === 'string') ended.set(key, Date.parse(data.at));
+      }
       wake(key);
       return f;
     },
     framesAfter: (key: string, after: number) => (log.get(key) ?? []).filter((f) => f.id > after),
+    prune(now: number) {
+      const ttl = (searchParams.read('search_frame_ttl_s', {}).value as number) * 1000;
+      for (const [id, at] of ended) {
+        if (now - at <= ttl || !TERMINAL.has(readJob(id)?.state ?? '')) continue;
+        log.delete(id);
+        ears.delete(id);
+        assistJobs.delete(id);
+        claimedSeedIds.delete(id);
+        ended.delete(id);
+      }
+    },
     listen(key: string, fn: () => void) {
       const set = ears.get(key) ?? new Set<() => void>(); ears.set(key, set); set.add(fn);
       return () => { set.delete(fn); };

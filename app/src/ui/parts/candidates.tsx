@@ -26,7 +26,7 @@ export function CandidateRow({ id, c: cand, calibrated, onPick }: { id: string; 
       <View {...mark('candidate', { odds: cand.odds.toFixed(3) })} style={{ height: H, flexDirection: 'row', alignItems: 'center', gap: space.s3 }}>
         <View style={{ flex: 1, gap: space.s1 }}>
           <Txt role="body" lines={1}>{cand.name}</Txt>
-          <View style={{ height: BAR, borderRadius: BAR, backgroundColor: c.gray, overflow: 'hidden' }}>
+          <View style={{ height: BAR, borderRadius: BAR, borderCurve: 'continuous', backgroundColor: c.gray, overflow: 'hidden' }}>
             <View style={{ width: `${Math.max(2, Math.round(cand.odds * 100))}%`, height: BAR, backgroundColor: c.ink }} />
           </View>
           <Txt role="caption" lines={1}>{cand.seen}</Txt>

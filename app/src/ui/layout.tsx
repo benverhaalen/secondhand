@@ -1,7 +1,7 @@
 // The only parts a screen is laid out with. Which one to reach for, and which separator means what, is in README.md beside this file.
-import { Children, type ReactNode } from 'react';
+import { Children, createContext, useContext, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Wash } from './parts/chrome';
 import { Txt } from './text';
 import { OnGround, useColors } from './theme';
@@ -11,11 +11,17 @@ import { radius, space } from './tokens.generated';
 // tight 8: parts of one thing. group 12: things in one group. cards 16: cards one under another. section 32: topics.
 export const GAP = { tight: space.s2, group: space.s3, cards: space.s4, section: space.s7 } as const;
 
+// True inside the four tabs: their tab bar keeps the home bar's inset, so a screen there does not keep it again. A pushed
+// page has no bar under it, so its foot and its last line keep the inset themselves (the phone audit, 2026-11-15: pinned
+// acts sat at 810 to 858 on an 874 screen, inside the home indicator, on about 11 screens).
+export const InTabs = createContext(false);
+
 // The whole view: the safe area, the 20 gutter, one scroll. `nav` sits first, 8 above what follows (Art. 7.8).
-// `wash` draws the header gradient behind the nav (Art. 5, The wash): main screens with news at the top only.
+// The wash is under every nav (U8; Ben, 09:56: "the gradient at the top of the screen is on some pages and not on others"):
+// a page with a top has it, and a sheet or a full-screen moment, which have no nav, do not.
 // `name` and `state` mark the root (data-screen, data-state on the web) so tests and the gallery know which state is drawn.
 // `foot` is the page's one act pinned to the foot, 16 above the safe area (Art. 7.9), when it is not in the first 844.
-export function Screen({ children, nav, wash = false, center = false, name, state, skip, sheet, foot }: {
+export function Screen({ children, nav, wash = nav != null, center = false, name, state, skip, sheet, foot }: {
   children: ReactNode;
   nav?: ReactNode;
   wash?: boolean;
@@ -28,17 +34,19 @@ export function Screen({ children, nav, wash = false, center = false, name, stat
   sheet?: string;
   foot?: ReactNode;
 }) {
-  const c = useColors();
+  const c = useColors(), inset = useSafeAreaInsets(), inTabs = useContext(InTabs), below = inTabs ? 0 : inset.bottom;
   const marks = name || state || sheet ? ({ dataSet: { screen: name, state, skip, sheet } } as object) : {};
+  // A washed screen takes the top inset itself: the wash runs under the status bar and the content starts below it.
+  // Without a wash the safe area keeps the top, so nothing is ever drawn under the clock (U9).
   return (
     <OnGround ground="page">
-      <SafeAreaView {...marks} edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
-        <ScrollView contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, center && styles.center]}>
-          {wash ? <Wash /> : null}
+      <SafeAreaView {...marks} edges={wash ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
+        <ScrollView contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, wash && { paddingTop: inset.top }, !foot && { paddingBottom: space.s7 + below }, center && styles.center]}>
+          {wash ? <Wash under={inset.top} /> : null}
           {nav ? <View style={styles.nav}>{nav}</View> : null}
           <View style={[styles.content, center && styles.center]}>{children}</View>
         </ScrollView>
-        {foot ? <View style={styles.foot}>{foot}</View> : null}
+        {foot ? <View style={[styles.foot, { paddingBottom: space.s4 + below }]}>{foot}</View> : null}
       </SafeAreaView>
     </OnGround>
   );
@@ -117,7 +125,7 @@ const styles = StyleSheet.create({
   section: { gap: GAP.cards },
   row: { flexDirection: 'row', alignItems: 'center', gap: GAP.group, paddingVertical: space.s3 },
   rowBody: { flex: 1, gap: space.s1 },
-  card: { borderWidth: 1, borderRadius: radius.card, padding: space.s4, gap: GAP.group },
+  card: { borderWidth: 1, borderRadius: radius.card, borderCurve: 'continuous', padding: space.s4, gap: GAP.group },
   grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -space.s2 },
   foot: { paddingHorizontal: space.gutter, paddingTop: space.s3, paddingBottom: space.s4 },
 });

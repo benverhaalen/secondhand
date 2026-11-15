@@ -7,8 +7,10 @@ import { mercariAdapters, type Page as MercariPage } from '../../harness/sites/m
 import { createFetcher } from '../fetch.ts';
 import type { FetchOpts, PageResult } from '../fetch.ts';
 import { readPage, searchUrl, BASE } from './readers.ts';
-import { searchAll, searchSite, searchSource } from './search.ts';
+import { searchAll as runSearchAll, searchSite, searchSource, type SearchOpts } from './search.ts';
 import { SOURCES } from './sources.ts';
+
+const searchAll = (query: string, opts: SearchOpts = {}) => runSearchAll(query, { sources: SOURCES.filter(s => s.id !== 'dupe'), ...opts });
 
 const FX = new URL('../../../../../spec/fixtures/pages/', import.meta.url);
 const fx = (n: string) => readFileSync(new URL(n, FX), 'utf8');
@@ -82,22 +84,24 @@ test('searchAll queries approved public sources in parallel and maps outcomes pe
     await new Promise(r => setTimeout(r, 40));
     live--;
     const site = SITES.find(s => url.startsWith(BASE[s]))!;
+    if (site === 'offerup') return page(OFFERUP);
     if (site === 'facebook') return page('<html><form action="/login">Log in</form></html>');
     if (site === 'depop') return page(fx('depop.html').replace(/aria-description="Price"/g, 'x="1"'));
     return page(fx(`${site}.html`));
   };
   const t0 = performance.now();
-  const r = await searchAll('levi 501', { fetchPage });
-  assert.equal(peak, 3);
+  const r = await searchAll('levi 501', { fetchPage, sources: [...SOURCES.filter(s => s.id !== 'dupe'),
+    { pace: { per_minute: 20, min_gap_ms: 3000 }, id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
+  assert.equal(peak, 2);
   assert.ok(performance.now() - t0 < 40 * 3);
   const by = Object.fromEntries(r.searched.map(s => [s.site, s]));
-  assert.deepEqual(Object.keys(by).sort(), ['depop', 'facebook', 'poshmark']);
-  assert.deepEqual(requested.map(url => SITES.find(site => url.startsWith(BASE[site]))).sort(), ['depop', 'facebook', 'poshmark']);
-  assert.equal(by.facebook!.outcome, 'blocked');
-  assert.equal(by.depop!.outcome, 'page_changed');
-  assert.deepEqual(by.depop!.missing, ['price_cents']);
+  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'offerup', 'poshmark']);
+  assert.deepEqual(requested.map(url => SITES.find(site => url.startsWith(BASE[site]))).sort(), ['offerup', 'poshmark']);
+  assert.equal(by.facebook, undefined);
+  assert.equal(by.depop!.outcome, 'failed');
+  assert.equal(by.depop!.error_code, 'no_route');
   assert.equal(by.poshmark!.outcome, 'hit');
-  assert.equal(r.results.length, by.poshmark!.count);
+  assert.equal(r.results.length, by.poshmark!.count + by.offerup!.count);
   assert.ok(r.results.every(x => x.row.id && x.row.price_cents !== undefined));
 });
 
@@ -114,17 +118,14 @@ test('individual readers retain blocked, timeout and OfferUp hit outcomes outsid
   assert.equal(hit.rows.length, 2);
 });
 
-test('eBay stays present and off with its reason, even for a person asking directly', async () => {
-  const ebay = SOURCES.find(source => source.id === 'ebay');
-  assert.ok(ebay);
-  assert.equal(ebay.on, false);
-  assert.equal(ebay.reason, 'page lane not built');
-  const fetchPage = async (): Promise<PageResult> => { assert.fail('disabled eBay must not fetch'); };
+test('eBay active search is enabled only through its browser harness', async () => {
+  const ebay = SOURCES.find(source => source.id === 'ebay')!;
+  assert.equal(ebay.on, true); assert.equal(ebay.lane, 'harness'); assert.equal(ebay.needs_ask, false);
+  const fetchPage = async (): Promise<PageResult> => { assert.fail('eBay never uses anonymous page fetch'); };
   const direct = await searchSource(ebay, 'levi 501', 'search', { caller: 'person', fetchPage });
   assert.deepEqual(direct.rows, []);
-  assert.equal(direct.searched.outcome, 'blocked');
-  assert.equal(direct.searched.reason, ebay.reason);
-  assert.deepEqual(await searchAll('levi 501', { caller: 'person', sites: ['ebay'], fetchPage }), { results: [], searched: [] });
+  assert.equal(direct.searched.outcome, 'failed');
+  assert.equal(direct.searched.error_code, 'no_route');
 });
 
 test('Mercari uses only the asking person’s linked account and never anonymous page fetch', async () => {
@@ -146,8 +147,8 @@ test('Mercari uses only the asking person’s linked account and never anonymous
   ]) {
     const denied = await searchAll('carhartt hoodie', { ...opts, ...overrides, caller: 'person' });
     assert.deepEqual(denied.results, []);
-    assert.equal(denied.searched[0]!.outcome, 'blocked');
-    assert.equal(denied.searched[0]!.reason, 'linked account required');
+    assert.equal(denied.searched[0]!.outcome, 'needs_account');
+    assert.equal(denied.searched[0]!.reason, "needs the person's account");
   }
   assert.equal(reads, 0);
   const allowed = await searchAll('carhartt hoodie', { ...opts, caller: 'person' });
@@ -158,15 +159,16 @@ test('Mercari uses only the asking person’s linked account and never anonymous
   assert.ok(allowed.results.every(result => result.site === 'mercari'));
 });
 
-test('searchAll with kinds search+sold: sites without sold are empty with a reason, not a request', async () => {
+test('searchAll with search+sold never fetches Depop pages and reports its unavailable harness', async () => {
   const urls: string[] = [];
   const r = await searchAll('levi 501', { sites: ['depop', 'poshmark', 'ebay'], kinds: ['search', 'sold'], fetchPage: async u => { urls.push(u); return page(fx('poshmark.html')); } });
-  assert.deepEqual(urls.sort(), [searchUrl('depop', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'sold')].sort());
-  assert.ok(r.searched.every(s => s.site !== 'ebay'));
+  assert.deepEqual(urls.sort(), [searchUrl('poshmark', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'sold')].sort());
+  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'search')!.error_code, 'no_route');
+  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'sold')!.outcome, 'needs_account');
   assert.equal(r.searched.find(s => s.site === 'poshmark' && s.kind === 'sold')!.outcome, 'hit');
   const d = r.searched.find(s => s.site === 'depop' && s.kind === 'sold')!;
-  assert.equal(d.outcome, 'empty');
-  assert.match(d.reason!, /sold/);
+  assert.equal(d.outcome, 'failed');
+  assert.equal(d.error_code, 'no_route');
 });
 
 test('429 backs off (Retry-After clamped to the ceiling) and then reads the page', async () => {
@@ -198,11 +200,18 @@ test('depop: a marked-down card reads the discounted price, not the full one (se
   assert.equal(read.ok && read.data[0].price_cents, 1900);
 });
 
-test('offerup reader never passes on a price too long to be whole cents: the field gate reports the page', () => {
+test('a card missing a required field is dropped and counted, the rest are returned, and a price too long to be whole cents is never passed on', () => {
   const page = `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify({ props: { pageProps: { searchFeedResponse: { looseTiles: [
     { listing: { listingId: 'big', title: 'x', price: '9'.repeat(400), conditionText: null, image: null } },
     { listing: { listingId: 'ok', title: 'y', price: '12.50', conditionText: null, image: null } },
   ] } } } })}</script>`;
   const r = readPage('offerup', page);
-  assert.ok(!r.ok && r.error.code === 'page_changed', JSON.stringify(r).slice(0, 200)); // before: ok, with price_cents Infinity
+  assert.ok(r.ok, JSON.stringify(r).slice(0, 200));
+  assert.deepEqual(r.data.map(x => [x.id, x.price_cents]), [['ok', 1250]]);   // before: the whole page failed, or passed Infinity on
+  assert.equal(r.dropped, 1);
+  // one priced card among unpriced ones on a real recorded page: the priced one comes back, the page is not failed
+  let n = 0;
+  const partly = fx('depop.html').replace(/<p aria-description="Price">[^<]*<\/p>/g, m => (n++ === 0 ? m : ''));
+  const d = readPage('depop', partly);
+  assert.ok(d.ok && d.data.length === 1 && d.dropped === n - 1, JSON.stringify(d).slice(0, 200));
 });

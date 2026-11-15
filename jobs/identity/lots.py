@@ -1,5 +1,6 @@
 """A lot stays one comp/card and its total never becomes a piece's price."""
 import re
+from identity.validation import money
 
 
 def is_lot(comp):
@@ -11,6 +12,9 @@ def is_lot(comp):
 
 
 def lot_card(comp, *, identified_parts=()):
+    for field in ('price_cents', 'shipping_cents', 'tax_cents'):
+        if comp.get(field) is not None:
+            money(comp[field], field)
     if not is_lot(comp):
         return dict(comp)
     return {**comp, "lot_parts": list(identified_parts or comp.get("lot_parts", ())),

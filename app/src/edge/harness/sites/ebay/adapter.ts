@@ -1,8 +1,9 @@
 // eBay site harness: eBay's documented developer APIs behind the kernel Adapter (spec/engines/protocol-and-adapters.md §1, §9).
-// Every verb is an endpoint route. Reads parse untrusted replies at the boundary; writes are dry by default and a dry write
+// The API verbs are endpoint routes; search and read_storefront also have page routes for while no keyset exists. Reads parse untrusted replies at the boundary; writes are dry by default and a dry write
 // returns the exact documented request with the token as a placeholder, sending nothing. Tokens live behind account.token_ref
 // (connect/ebay.ts through the vault port) and never enter a row, a plan or a log. Sources and dates: README.md.
 import { createHash } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { offerExpiresAt, sellerOffer, fact } from '../../../../../../spec/sites.mjs';
 import type { Snapshot, SnapListing, SnapMessage, SnapOffer, SnapOrder } from '../../../events/event.ts';
@@ -206,11 +207,125 @@ async function readStorefront(c: Client, a: CallArgs, s: AbortSignal): Promise<A
 // Matched on the title and the first 20k characters of a document; a match is blocked and the page is never parsed.
 export const CHALLENGE = /just a moment|verify you are human|are you a robot|press (and|&) hold|unusual traffic|captcha|attention required|access denied|pardon our interruption|security measure/i;
 const W = HOSTS.production.www;
+// Search hosts in order: the next is tried only when one answers eBay's "Error Page" (runs/ebay-when-it-serves.md, regional sites).
+// A regional host shows US items at a price converted into its own currency, so its rows carry that currency and converted: true.
+export const PAGE_HOSTS = [
+  { www: W, params: {}, converted: false },
+  { www: 'https://www.ebay.co.uk', params: { _salic: '1', LH_LocatedIn: '1' }, converted: true }, // eBay's own filter: items located in the United States
+] as const;
+export const HOST_PAUSE_MS = 5000; // the one regional 403 came late in a run, so hosts are not tried back to back
 export const URLS = {
-  search: (q: string, sold: boolean) => `${W}/sch/i.html?${new URLSearchParams({ _nkw: q, ...(sold ? { LH_Sold: '1', LH_Complete: '1' } : {}) })}`,
+  search: (q: string, sold: boolean, host = 0) => `${PAGE_HOSTS[host]!.www}/sch/i.html?${new URLSearchParams({ _nkw: q, ...PAGE_HOSTS[host]!.params, ...(sold ? { LH_Sold: '1', LH_Complete: '1' } : {}) })}`,
   item: (id: string) => `${W}/itm/${encodeURIComponent(id)}`,
   store: (user: string) => `${W}/usr/${encodeURIComponent(user)}`,
 };
+
+// One loaded document. challenge: the browser saw a bot check. Nothing on the page is intercepted (README.md, Public pages).
+export type EbayPage = { status: number; html: string; challenge?: boolean };
+// signed_in: the client carries the person's linked eBay sign-in; only sold search needs it.
+export type PageClient = { signed_in: boolean; page(url: string, signal: AbortSignal): Promise<EbayPage> };
+const changed = (what: string) => fail('page_changed', `${what} is not where the page kept it`, { do: 'author', missing: [what] });
+const titleOf = (h: string) => h.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? '';
+const text = (h: string, sep = '') => h.replace(/<[^>]*>/g, sep).replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&amp;/g, '&').trim();
+const SYMBOL: Record<string, string> = { $: 'USD', '£': 'GBP' };
+// "$39.00", "US $39.00" or "£25.00" to { cents, currency }; a range keeps its low end.
+const pagePrice = (v: string | undefined) => {
+  const m = v?.replaceAll('&pound;', '£').match(/([$£])\s?([\d,]+\.\d{2})/);
+  return m ? { cents: cents(m[2]!.replaceAll(',', '')), currency: SYMBOL[m[1]!] } : undefined;
+};
+const int = (v: string | undefined) => (v ? Number(v.replaceAll(',', '')) : undefined);
+const isErrorPage = (p: EbayPage) => /^error page\b/i.test(titleOf(p.html));
+
+async function loadPage(c: PageClient, url: string, s: AbortSignal): Promise<{ ok: true; html: string } | Failed> {
+  return judge(await c.page(url, s), url);
+}
+function judge(p: EbayPage, url: string): { ok: true; html: string } | Failed {
+  if (p.challenge || CHALLENGE.test(titleOf(p.html)) || CHALLENGE.test(p.html.slice(0, 20000))) return fail('blocked', 'eBay showed a check the person must pass', { do: 'pause_session', site });
+  if (/^sign in or register\b/i.test(titleOf(p.html))) return relink(); // an anonymous visitor asking for sold listings gets this page
+  if (p.status === 404) return fail('not_found', `the page answered 404`, { do: 'reconcile', searched: [url] });
+  if (p.status === 429) return fail('rate_limited', 'the page answered 429', { do: 'retry_after', after_s: 60 });
+  if (p.status >= 400 || isErrorPage(p)) return fail('blocked', `the page answered ${p.status}${isErrorPage(p) ? ', eBay\'s error page' : ''}`, { do: 'pause_session', site });
+  return { ok: true, html: p.html };
+}
+
+// Result cards above the "Results matching fewer words" divider; the leading card without data-item-pos is eBay's placeholder.
+// undefined: the results heading is gone, so the page changed.
+function searchRows(h: string, state: 'live' | 'sold', host: (typeof PAGE_HOSTS)[number]): Obj[] | undefined {
+  const cut = h.split('srp-river-answer--REWRITE_START')[0]!;
+  const head = cut.match(/<h1[^>]*srp-results-heading[^>]*>([\s\S]*?)<\/h1>/)?.[1];
+  if (head === undefined) return undefined;
+  if (/^0\s+results/.test(text(head)) || /No exact matches found/.test(cut)) return [];
+  const li = [...cut.matchAll(/<li\b[^>]*data-listingid="(\d+)"[^>]*>/g)];
+  return li.flatMap((m, i) => {
+    if (!/data-item-pos=/.test(m[0])) return [];
+    const card = cut.slice(m.index, li[i + 1]?.index), id = m[1]!;
+    const title = card.match(/class="s-card__title"[^>]*>\s*<span[^>]*>([\s\S]*?)<\/span>/)?.[1];
+    const price = pagePrice(card.match(/s-card__price"[^>]*>([^<]*)/)?.[1]);
+    // url: the listing on ebay.com, the same id on every host. host: which eBay site served the row.
+    return [clean({ external_id: id, item_id: id, title: title && text(title), url: URLS.item(id), state, price_cents: price?.cents, currency: price?.currency,
+      converted: host.converted || undefined, host: new URL(host.www).host })];
+  });
+}
+
+// Sold search needs the person's sign-in on every host; the regional sites are not a way around it.
+async function searchPage(c: PageClient, a: CallArgs, s: AbortSignal): Promise<AdapterResult> {
+  const q = str(a.q), sold = a.status === 'sold';
+  if (!q) return refuse('missing_input', 'the search page needs q');
+  if (sold && !c.signed_in) return relink(); // eBay shows sold listings only to a signed-in person
+  for (let i = 0; i < PAGE_HOSTS.length; i++) {
+    if (i) await delay(HOST_PAUSE_MS, undefined, { signal: s });
+    const url = URLS.search(q, sold, i), p = await c.page(url, s);
+    if (isErrorPage(p) && i + 1 < PAGE_HOSTS.length) continue;
+    const r = judge(p, url); if (!r.ok) return r;
+    const rows = searchRows(r.html, sold ? 'sold' : 'live', PAGE_HOSTS[i]!);
+    return rows ? classifyRead({ challenge: false, rows }, MP.search) : changed('srp-results-heading');
+  }
+  return changed('PAGE_HOSTS'); // unreachable: the last host never continues
+}
+
+const ldJson = (h: string): Obj[] => [...h.matchAll(/<script[^>]*application\/ld\+json[^>]*>([\s\S]*?)<\/script>/g)].flatMap(m => {
+  try { const v: unknown = JSON.parse(m[1]!); return isObj(v) ? [v] : []; } catch (e) { return [{ '@type': 'unparsed', error: String(e) }]; } // kept so a missing Product names it
+});
+const AVAILABILITY: Record<string, 'live' | 'sold' | 'ended'> = { InStock: 'live', LimitedAvailability: 'live', InStoreOnly: 'live', OutOfStock: 'sold', SoldOut: 'sold', Discontinued: 'ended' };
+
+// One listing from /itm/<id>: the schema.org Product eBay embeds. Not a kernel verb; search and the live check use it.
+// shortcut: OutOfStock, SoldOut and Discontinued were not observed on a recorded page; record an ended listing to confirm them.
+export async function readItemPage(c: PageClient, id: string, s: AbortSignal): Promise<AdapterResult> {
+  if (!/^\d+$/.test(id)) return refuse('missing_input', 'an eBay item id is all digits');
+  const url = URLS.item(id);
+  const r = await loadPage(c, url, s); if (!r.ok) return r;
+  const blocks = ldJson(r.html), prod = blocks.find(o => o['@type'] === 'Product');
+  if (!prod) return changed(blocks.some(o => o['@type'] === 'unparsed') ? 'JSON-LD Product (a block did not parse)' : 'JSON-LD Product');
+  const offer = isObj(prod.offers) ? prod.offers : list(prod.offers)[0];
+  const state = AVAILABILITY[str(at(offer, 'availability'))?.replace(/^https?:\/\/schema\.org\//, '') ?? ''];
+  if (!state) return changed('JSON-LD offers.availability');
+  const out = classifyRead({ challenge: false, rows: [clean({ external_id: id, item_id: id, title: str(prod.name), url, state, price_cents: cents(str(at(offer, 'price'))),
+    currency: str(at(offer, 'priceCurrency')), watchers: int(r.html.match(/x-watch-heart-btn-text">(\d[\d,]*)</)?.[1]) })] }, MP.search);
+  return out.ok ? { ok: true, data: out.data[0] } : out;
+}
+
+export async function stillUpPage(c: PageClient, id: string, s: AbortSignal): Promise<AdapterResult<{ state: 'live' | 'sold' | 'ended' | 'gone' }>> {
+  const r = await readItemPage(c, id, s);
+  if (!r.ok) return r.error.code === 'not_found' ? { ok: true, data: { state: 'gone' } } : r;
+  const st = at(r.data, 'state');
+  return st === 'live' || st === 'sold' || st === 'ended' ? { ok: true, data: { state: st } } : changed('state');
+}
+
+// The public seller profile /usr/<user>: feedback, items sold, followers, member since. Live listings are not counted there.
+async function storefrontPage(c: PageClient, a: CallArgs, s: AbortSignal): Promise<AdapterResult> {
+  const user = str(a.username);
+  if (!user || !/^[\w.\-]+$/.test(user)) return refuse('missing_input', 'read_storefront needs an eBay username');
+  const url = URLS.store(user);
+  const r = await loadPage(c, url, s); if (!r.ok) return r;
+  if (/this user was not found/i.test(r.html)) return fail('not_found', 'no eBay user by that name', { do: 'reconcile', searched: [url] });
+  const card = r.html.match(/str-seller-card__store-stats[\s\S]*?(?=str-seller-card__buttons|$)/)?.[0];
+  if (!card) return changed('str-seller-card__store-stats');
+  const t = text(card, ' ').replace(/\s+/g, ' '), about = text(r.html.match(/str-about-description__seller-info[\s\S]*?<\/section>/)?.[0] ?? '', ' ').replace(/\s+/g, ' ');
+  const fb = t.match(/([\d.]+)% positive feedback \(([\d,]+)\)/);
+  const out = classifyRead({ challenge: false, rows: [clean({ rating: num(fb?.[1]), review_count: int(fb?.[2]), sold_count: int(t.match(/([\d,]+) items sold/)?.[1]),
+    followers: int(t.match(/([\d,]+) followers?/)?.[1]), joined_at: about.match(/Member since: ([A-Z][a-z]{2} \d{1,2}, \d{4})/)?.[1] })] }, MP.read_storefront);
+  return out.ok ? { ok: true, data: out.data[0] } : out;
+}
 
 // --- account reads: user token through token_ref ---
 
@@ -383,7 +498,8 @@ const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'an
       now: a.now ? new Date(String(a.now)) : (c.now?.() ?? new Date()), promised_elsewhere: a.promised_elsewhere === true }) as { ok: boolean; why?: string };
     if (!r.ok) return refuse('seller_offer', r.why ?? 'refused');
     const f = underFloor(a, ints(a.offer_cents)); if (f) return f;
-    const days = (fact('offer.seller.expires_h', 'ebay') as number) / 24;
+    const HOURS_A_DAY = 24;
+    const days = (fact('offer.seller.expires_h', 'ebay') as number) / HOURS_A_DAY;
     return { dry: true, url: `${H(c).www}/sh/lst/active`, steps: ['send the offer to every interested buyer of the listing'],
       request: { calls: [json('POST', `${H(c).api}/sell/negotiation/v1/send_offer_to_interested_buyers`, { allowCounterOffer: false, offerDuration: { unit: 'DAY', value: days },
         offeredItems: [{ listingId: listing, price: money(ints(a.offer_cents)!), quantity: 1 }] })] } };
@@ -442,6 +558,23 @@ const RUN: Record<Verb, (c: Client, a: CallArgs, s: AbortSignal) => Promise<Adap
 
 export function ebayAdapters(client: Client): Adapter[] {
   return (Object.keys(RUN) as Verb[]).map(verb => ({ route_id: `ebay.${verb}.endpoint`, manifest: M[verb], run: (a, s) => RUN[verb](client, a, s) }));
+}
+
+// The page lane, by Nate's decision of 2026-11-15 ("read ebay pages anyway", README.md, Public pages); the API replaces it the day keys exist.
+// Register after ebayAdapters: the endpoint answers no_route without a keyset and the kernel falls to the page route.
+const page = (verb: 'search' | 'read_storefront', o: Parameters<typeof manifest>[1]): Manifest => ({ ...manifest(verb, { ...o, per_minute: 6 }), route_kind: 'page' });
+export const MP = {
+  search: page('search', { session: 'public', version: '0.1.0', input: { q: 'string', status: 'string' }, fixture_ref: 'page-search.html',
+    fields: [...ITEM.map(f => (f.name === 'sold_at' ? { ...f, needs_session: true } : f)), F('converted', 'boolean', { opt: true }), F('host', 'string', { opt: true })] }),
+  read_storefront: page('read_storefront', { session: 'public', version: '0.1.0', input: { username: 'string' }, fixture_ref: 'page-store.html',
+    fields: [F('rating', 'number', { opt: true }), F('review_count', 'number', { opt: true }), F('active_count', 'number', { opt: true }), F('sold_count', 'number', { opt: true }),
+      F('followers', 'number', { opt: true }), F('joined_at', 'string', { opt: true })] }),
+};
+export function ebayPageAdapters(c: PageClient): Adapter[] {
+  return [
+    { route_id: 'ebay.search.page', manifest: MP.search, run: (a, s) => searchPage(c, a, s) },
+    { route_id: 'ebay.read_storefront.page', manifest: MP.read_storefront, run: (a, s) => storefrontPage(c, a, s) },
+  ];
 }
 
 // --- the watch snapshot (app/src/edge/events/event.ts): a section that was not read stays undefined ---

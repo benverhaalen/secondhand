@@ -17,6 +17,7 @@ import { Surface } from '../surface';
 import { Txt } from '../text';
 import { useColors } from '../theme';
 import { motion, radius, space } from '../tokens.generated';
+import { log } from '../log';
 import { mark } from './mark';
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
@@ -77,7 +78,7 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children 
           <Surface kind="sheet" part="sheet" box={{ flexShrink: 1 }}>
             <GestureDetector gesture={pan}>
               <View style={{ paddingTop: space.s2, paddingHorizontal: space.gutter, paddingBottom: space.s4, gap: space.s4 }}>
-                <View {...mark('grabber')} style={{ alignSelf: 'center', width: space.s7, height: space.s1, borderRadius: radius.pill, backgroundColor: c.inkDisabled }} />
+                <View {...mark('grabber')} style={{ alignSelf: 'center', width: space.s7, height: space.s1, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.inkDisabled }} />
                 <Txt role="headline">{title}</Txt>
               </View>
             </GestureDetector>

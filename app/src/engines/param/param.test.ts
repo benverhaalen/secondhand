@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { regressions } from './regressions.ts';
 import { readFileSync } from 'node:fs';
 import { cached, lineage, memoryStore, VersionConflict, type Param } from './param.ts';
 
@@ -87,10 +88,10 @@ test('a conjugate update moves a beta mean, weighted, and a frozen scope does no
   assert.equal(s.observe('assist_span_open', { site: 'depop' }, { success: 0, weight: 5 }, AT).reason, 'frozen');
 });
 
-test('a conjugate update that would push a beta mean past its guard is not applied', () => {
+test('a conjugate update past its guard keeps counts and clamps the read', () => {
   const s = store();
   const r = s.observe('assist_span_open', {}, { success: 1, weight: 1000 }, AT);
-  assert.deepEqual([r.applied, r.reason], [false, 'guard']);
+  assert.deepEqual([r.applied, r.reason], [true, 'clamped']);
 });
 
 test('the 60 s cache serves a read until its time runs out', () => {
@@ -120,25 +121,25 @@ test('implicit elapsed time halves old counts; explicit elapsed time wins; out-o
   const s = store();
   s.observe('assist_span_open', {}, { success: 1, weight: 2 }, DAY0);
   const r = s.observe('assist_span_open', {}, { success: 0, weight: 1 }, DAY30);
-  assert.deepEqual(r.read.value, { alpha: 5, beta: 2 });
+  assert.deepEqual(r.read.value, { alpha: 9, beta: 3 });
   assert.equal(r.read.n_eff, 2);
-  assert.deepEqual(s.observe('assist_span_open', {}, { success: 1, weight: 1 }, DAY0).read.value, { alpha: 6, beta: 2 });
-  assert.deepEqual(s.observe('assist_span_open', {}, { success: 0, weight: 1, days_since_last: 0 }, DAY30).read.value, { alpha: 6, beta: 3 });
+  assert.deepEqual(s.observe('assist_span_open', {}, { success: 1, weight: 1 }, DAY0).read.value, { alpha: 10, beta: 3 });
+  assert.deepEqual(s.observe('assist_span_open', {}, { success: 0, weight: 1, days_since_last: 0 }, DAY30).read.value, { alpha: 10, beta: 4 });
 });
 
-test('gamma sold comps update shape and exposure, freeze and guards refuse writes', () => {
+test('gamma sold comps with implicit elapsed time decay evidence while retaining the prior', () => {
   const s = memoryStore();
   s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 2 });
-  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
-  assert.deepEqual(s.read('velocity', {}).value, { shape: 2, rate: 1 });
-  assert.equal(s.read('velocity', {}).version, 2, 'third update breaches the rate guard');
+  for (const at of [DAY0, DAY30, '2026-03-02T00:00:00Z']) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1 }, at);
+  assert.deepEqual(s.read('velocity', {}).value, { shape: 3.75, rate: 4 });
+  assert.equal(s.read('velocity', {}).version, 3, 'all three observations are retained');
 });
 
 test('gamma apply and observe share the update path; frozen gamma stays unchanged', () => {
   const s = memoryStore();
   s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 } });
-  for (let i = 0; i < 3; i++) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, DAY0);
-  assert.deepEqual(s.read('velocity', {}).value, { shape: 2 * 0.5 ** 3 + 1.75, rate: 0.5 });
+  for (const at of [DAY0, DAY30, '2026-03-02T00:00:00Z']) s.observe('velocity', {}, { count: 1, exposure: 0, weight: 1 }, at);
+  assert.deepEqual(s.read('velocity', {}).value, { shape: 3.75, rate: 4 });
   s.freeze('velocity', {}, true);
   assert.equal(s.observe('velocity', {}, { count: 1, exposure: 1, weight: 1 }, DAY30).reason, 'frozen');
   assert.equal(s.read('velocity', {}).version, 3);
@@ -209,3 +210,53 @@ test('pooling recursively weighs every permitted ancestor and the prior, skippin
   assert.ok('mean' in r && Math.abs(r.mean - (3 * 0.9 + 20 * kind) / 23) < 1e-12);
   assert.ok('versions' in r && r.versions.length === 3 && r.n_eff === 3);
 });
+
+for (const [name, check] of Object.entries(regressions)) test(name, () => check(memoryStore()));
+
+for (const keep_evidence of [false, true]) {
+  test(`rollback of fit v5 restores replaced event v4 exactly (keep_evidence=${keep_evidence})`, () => {
+    const s = store(), name = 'assist_span_open', scope = { site: 'depop' };
+    s.propose(fit({ name, family: 'beta', prior: { alpha: 8, beta: 2 }, value_or_hyperparams: { alpha: 8, beta: 2 } }), 0);
+    s.promote(name, scope, 1, 0, DAY0);
+    s.observe(name, scope, { success: 1, weight: 2 }, DAY0);
+    s.observe(name, scope, { success: 0, weight: 3 }, DAY0);
+    s.observe(name, scope, { success: 0, weight: 0 }, DAY30);
+    const previous = s.rows(name, scope).find((r) => r.version === 4)!;
+    assert.deepEqual(previous.value_or_hyperparams, { alpha: 9, beta: 3.5 });
+    assert.equal(previous.n_eff, 22.5);
+    s.propose(fit({ name, family: 'beta', value_or_hyperparams: { alpha: 18, beta: 2 }, held_out_score: 0.9 }), 4);
+    assert.equal(s.promote(name, scope, 5, 0, DAY30).promoted, true);
+    assert.equal(s.rows(name, scope).at(-1)!.previous_version, 4);
+    const at = '2026-03-02T00:00:00Z';
+    assert.deepEqual(s.rollback(name, scope, at, keep_evidence), { ...previous, promoted_at: at });
+    assert.deepEqual(s.read(name, scope), { value: previous.value_or_hyperparams, n_eff: previous.n_eff, version: 4, from: 'row', scope });
+    assert.equal(s.rows(name, scope).length, 5);
+    assert.deepEqual(s.rows(name, scope).filter((r) => r.status === 'champion').map((r) => r.version), [4]);
+  });
+
+  test(`rollback of the first fit restores its event-only model history (keep_evidence=${keep_evidence})`, () => {
+    const s = memoryStore(), name = 'P_accept', scope = { site: 'depop' };
+    s.declare({ name, family: 'model_ref', prior: { term: 0 } });
+    s.apply(name, scope, () => ({ value: { term: 4 }, weight: 8 }), DAY0);
+    const previous = s.rows(name, scope)[0];
+    s.propose(fit({ name, scope, family: 'model_ref', prior: { term: 0 }, value_or_hyperparams: { term: 9 } }), 1);
+    assert.equal(s.promote(name, scope, 2, 0, DAY30).promoted, true);
+    assert.equal(s.rows(name, scope)[1].previous_version, 1);
+    assert.deepEqual(s.rollback(name, scope, DAY30, keep_evidence), { ...previous, promoted_at: DAY30 });
+    assert.deepEqual(s.read(name, scope), { value: { term: 4 }, version: 1, n_eff: 8, from: 'row', scope });
+    assert.equal(s.rows(name, scope).length, 2);
+    assert.deepEqual(s.rows(name, scope).filter((r) => r.status === 'champion').map((r) => r.version), [1]);
+  });
+
+  test(`a second rollback of fit v2 over fit v1 has no earlier promoted version (keep_evidence=${keep_evidence})`, () => {
+    const s = store(), name = 'p_min_quick', scope = { site: 'depop' };
+    s.propose(fit(), 0);
+    s.promote(name, scope, 1, 0, DAY0);
+    s.propose(fit({ value_or_hyperparams: 0.9, held_out_score: 0.8 }), 1);
+    s.promote(name, scope, 2, 0, DAY0);
+    assert.equal(s.rollback(name, scope, DAY30, keep_evidence).version, 1);
+    assert.throws(() => s.rollback(name, scope, DAY30, keep_evidence), /earlier promoted/);
+    assert.equal(s.read(name, scope).version, 1);
+    assert.equal(s.rows(name, scope).length, 2);
+  });
+}

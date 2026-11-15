@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en" data-medium="web">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>secondhand: speed and the lakehouse, graphics draft</title>
+<link rel="stylesheet" href="../../brand/tokens.css">
+<script>
+  // Theme: ?theme=dark or ?theme=light wins, else the system setting. tokens.css reads data-theme.
+  (function () {
+    var q = new URLSearchParams(location.search).get('theme');
+    var dark = q ? q === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    if (dark) document.documentElement.dataset.theme = 'dark';
+  })();
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--page); color: var(--ink); font-family: var(--font-text); font-weight: var(--w-text); font-size: var(--t-15); line-height: var(--lh-15); }
+  p, h1, h2, h3 { margin: 0; font-weight: inherit; }
+  .wrap { max-width: calc(1200px + 2 * var(--s-6)); margin-inline: auto; padding-inline: var(--s-6); }
+  @media (min-width: 768px) { .wrap { max-width: calc(1200px + 2 * var(--s-9)); padding-inline: var(--s-9); } }
+
+  .wordmark { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--t-21); line-height: var(--lh-21); letter-spacing: var(--tr-21); color: var(--ink); }
+  header { padding-block: var(--s-6); }
+  footer { padding-block: var(--s-9); }
+  footer .wordmark { font-size: var(--t-hero); line-height: 1.1; letter-spacing: -0.02em; }
+  .proposal { color: var(--ink-2); max-width: 60ch; padding-bottom: var(--s-8); }
+
+  main > section { padding-block: var(--s-9); border-top: 1px solid var(--rule); }
+  section.headline { border-top: 0; padding-top: 0; }
+  .field { background: var(--field); color: var(--on-field); border-radius: var(--r-card); padding: var(--s-7) var(--s-6); }
+  @media (min-width: 768px) { .field { padding: var(--s-9); } }
+  h1 { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--t-hero); line-height: 1.1; letter-spacing: -0.02em; white-space: nowrap; color: var(--on-field); }
+  h2 { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--t-section); line-height: 1.1; letter-spacing: -0.02em; white-space: nowrap; margin-bottom: var(--s-7); }
+  h3 { font-size: var(--t-18); line-height: var(--lh-18); margin: var(--s-8) 0 var(--s-4); }
+  h2 + h3 { margin-top: 0; }
+
+  .figs { display: grid; gap: var(--s-7); margin-top: var(--s-8); }
+  @media (min-width: 768px) { .figs { grid-template-columns: repeat(3, 1fr); gap: var(--s-6); } }
+  .fig { font-size: var(--t-section); line-height: 1.1; letter-spacing: -0.02em; color: var(--on-field); }
+  .figs p + p { margin-top: var(--s-2); color: var(--on-field-2); }
+  .field .cap { color: var(--on-field-2); margin-top: var(--s-8); }
+
+  .cap { color: var(--ink-2); max-width: 60ch; margin-top: var(--s-6); }
+  .fill { max-width: 60ch; margin-top: var(--s-3); }
+
+  svg { display: block; width: 100%; overflow: visible; }
+  svg text { font-family: var(--font-text); font-weight: var(--w-text); font-size: var(--t-15); fill: var(--ink); }
+  svg .t2 { fill: var(--ink-2); }
+  .tk { stroke: var(--rule); stroke-width: 2; }
+  .dot { fill: var(--ink); }
+  .bar { stroke: var(--ink); stroke-width: 8; stroke-linecap: round; }
+  .ring { fill: var(--page); stroke: var(--ink); stroke-width: 2; }
+  .empty { fill: var(--page); stroke: var(--ink-2); stroke-width: 1.5; }
+  .box { fill: none; stroke: var(--ink-2); stroke-width: 1.5; }
+  .solid { fill: var(--ink); }
+  .stem { stroke: var(--ink-2); stroke-width: 1.5; }
+</style>
+</head>
+<body>
+<div data-view>
+<header class="wrap"><p class="wordmark">secondhand</p></header>
+
+<main class="wrap">
+  <p class="proposal">Agent proposal, for Ben to rule on. Every figure here is a first reading from 2026-11-15. Anything else is drawn empty and reads not run yet.</p>
+
+  <!-- 1. Headline: the run's three counted figures, on the one field -->
+  <section class="headline" aria-labelledby="f1">
+    <div class="field">
+      <h1 id="f1">Measured</h1>
+      <div class="figs">
+        <div><p class="fig">2.0 s</p><p>to a full answer, p50</p></div>
+        <div><p class="fig">4.0 s</p><p>to a full answer, p95</p></div>
+        <div><p class="fig">0 of 20</p><p>items covered</p></div>
+      </div>
+      <p class="cap">First benchmark run over the real lanes, 20 named products, 2026-11-15. Coverage is 0 because a fault dropped every row found. The fix is in progress; this is a miss, not a pass.</p>
+    </div>
+  </section>
+
+  <!-- 2. A search against a clock -->
+  <section aria-labelledby="f2">
+    <h2 id="f2">Against a clock</h2>
+    <svg height="432" role="img" aria-label="A search on a 0 to 12 second clock. Full answer at 2.0 seconds p50 and 4.0 seconds p95. First answer, both baselines and each site's landing are not recorded yet.">
+      <text x="0" y="16">Full answer: 2.0 s p50, 4.0 s p95</text>
+      <line class="tk" x1="2%" x2="98%" y1="34" y2="34"/>
+      <line class="bar" x1="18%" x2="34%" y1="34" y2="34"/>
+      <circle class="dot" cx="18%" cy="34" r="6"/><circle class="dot" cx="34%" cy="34" r="6"/>
+
+      <text x="0" y="64">First answer: not run yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="82" y2="82"/>
+
+      <text x="0" y="112">A person by hand: not run yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="130" y2="130"/>
+
+      <text x="0" y="160">One plain request: not run yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="178" y2="178"/>
+
+      <image href="../../assets/platforms/square/depop.png" x="0" y="201" width="20" height="20" role="img" aria-label="Depop"/><text x="28" y="216" class="t2">Not recorded yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="234" y2="234"/>
+      <image href="../../assets/platforms/square/ebay.png" x="0" y="249" width="20" height="20" role="img" aria-label="eBay"/><text x="28" y="264" class="t2">Not recorded yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="282" y2="282"/>
+      <image href="../../assets/platforms/square/facebook.png" x="0" y="297" width="20" height="20" role="img" aria-label="Facebook Marketplace"/><text x="28" y="312" class="t2">Not built</text>
+      <line class="tk" x1="2%" x2="98%" y1="330" y2="330"/>
+      <image href="../../assets/platforms/square/mercari.png" x="0" y="345" width="20" height="20" role="img" aria-label="Mercari"/><text x="28" y="360" class="t2">Not recorded yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="378" y2="378"/>
+      <image href="../../assets/platforms/square/poshmark.png" x="0" y="393" width="20" height="20" role="img" aria-label="Poshmark"/><text x="28" y="408" class="t2">Not recorded yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="426" y2="426"/>
+    </svg>
+    <svg height="24" aria-hidden="true">
+      <text x="2%" y="20" class="t2">0 s</text>
+      <text x="50%" y="20" class="t2" text-anchor="middle">6 s</text>
+      <text x="98%" y="20" class="t2" text-anchor="end">12 s</text>
+    </svg>
+    <p class="cap">One run, 20 named products, 2026-11-15. The bar runs from p50 to p95.</p>
+    <p class="fill">To fill the rest: each site's first_at and full_at from the run's records.jsonl, and the two baselines timed on the same 20 products.</p>
+  </section>
+
+  <!-- 3. Read time per site, by lane -->
+  <section aria-labelledby="f3">
+    <h2 id="f3">Time per site</h2>
+
+    <h3>Plain request</h3>
+    <svg height="40" role="img" aria-label="Plain request: not run on any site yet. Depop refuses it.">
+      <text x="0" y="16">Every site: not run yet. Depop refuses it.</text>
+      <line class="tk" x1="2%" x2="98%" y1="34" y2="34"/>
+    </svg>
+
+    <h3>Cloud browser</h3>
+    <svg height="280" role="img" aria-label="Cloud browser, one reading each, on a 0 to 12 second scale: Depop search 1.8 s, one listing 0.78 s, still-listed check 0.29 s; Poshmark search about 2.5 s; Mercari search 5 to 6 s; eBay search 9.6 s from cold.">
+      <image href="../../assets/platforms/square/depop.png" x="0" y="1" width="20" height="20" role="img" aria-label="Depop"/><text x="28" y="16">Search: 1.8 s</text>
+      <line class="tk" x1="2%" x2="98%" y1="34" y2="34"/><circle class="dot" cx="16.4%" cy="34" r="6"/>
+      <image href="../../assets/platforms/square/depop.png" x="0" y="49" width="20" height="20" role="img" aria-label="Depop"/><text x="28" y="64">One listing: 0.78 s</text>
+      <line class="tk" x1="2%" x2="98%" y1="82" y2="82"/><circle class="dot" cx="8.24%" cy="82" r="6"/>
+      <image href="../../assets/platforms/square/depop.png" x="0" y="97" width="20" height="20" role="img" aria-label="Depop"/><text x="28" y="112">Still-listed check: 0.29 s</text>
+      <line class="tk" x1="2%" x2="98%" y1="130" y2="130"/><circle class="dot" cx="4.32%" cy="130" r="6"/>
+      <image href="../../assets/platforms/square/poshmark.png" x="0" y="145" width="20" height="20" role="img" aria-label="Poshmark"/><text x="28" y="160">Search: about 2.5 s</text>
+      <line class="tk" x1="2%" x2="98%" y1="178" y2="178"/><circle class="dot" cx="22%" cy="178" r="6"/>
+      <image href="../../assets/platforms/square/mercari.png" x="0" y="193" width="20" height="20" role="img" aria-label="Mercari"/><text x="28" y="208">Search: 5 to 6 s, 4 s our wait</text>
+      <line class="tk" x1="2%" x2="98%" y1="226" y2="226"/><line class="bar" x1="42%" x2="50%" y1="226" y2="226"/>
+      <image href="../../assets/platforms/square/ebay.png" x="0" y="241" width="20" height="20" role="img" aria-label="eBay"/><text x="28" y="256">Search, cold: 9.6 s</text>
+      <line class="tk" x1="2%" x2="98%" y1="274" y2="274"/><circle class="dot" cx="78.8%" cy="274" r="6"/>
+    </svg>
+
+    <h3>The person's own browser</h3>
+    <svg height="88" role="img" aria-label="A local browser: eBay search 4.2 s. Other sites not run yet.">
+      <image href="../../assets/platforms/square/ebay.png" x="0" y="1" width="20" height="20" role="img" aria-label="eBay"/><text x="28" y="16">Search, local browser: 4.2 s</text>
+      <line class="tk" x1="2%" x2="98%" y1="34" y2="34"/><circle class="dot" cx="35.6%" cy="34" r="6"/>
+      <text x="0" y="64" class="t2">Other sites: not run yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="82" y2="82"/>
+    </svg>
+
+    <h3>An official interface</h3>
+    <svg height="88" role="img" aria-label="Official interfaces: eBay's is built and not run yet. Dupe's published interface takes 1.4 to 5.4 seconds for 40 rows.">
+      <image href="../../assets/platforms/square/ebay.png" x="0" y="1" width="20" height="20" role="img" aria-label="eBay"/><text x="28" y="16" class="t2">Built, not run yet</text>
+      <line class="tk" x1="2%" x2="98%" y1="34" y2="34"/>
+      <text x="0" y="64">Dupe, 40 rows: 1.4 to 5.4 s</text>
+      <line class="tk" x1="2%" x2="98%" y1="82" y2="82"/><line class="bar" x1="13.2%" x2="45.2%" y1="82" y2="82"/>
+    </svg>
+    <svg height="24" aria-hidden="true">
+      <text x="2%" y="20" class="t2">0 s</text>
+      <text x="50%" y="20" class="t2" text-anchor="middle">6 s</text>
+      <text x="98%" y="20" class="t2" text-anchor="end">12 s</text>
+    </svg>
+    <p class="cap">One reading per mark, 2026-11-15. The local browser ran on our machine, not yet on a person's own device. Mercari's 4 s is a fixed wait we set, so most of its time is ours to cut.</p>
+    <p class="fill">To fill it: p50 and p95 per site and lane, cold against warm, from repeated runs.</p>
+
+    <h3>Questions before a listing</h3>
+    <svg height="280" role="img" aria-label="Questions asked per kind of item: bundle of three 9, handbag 5, phone 5, sneakers 4, T-shirt 3, chair 2.">
+      <text x="0" y="16">Bundle of three: 9</text>
+      <line class="tk" x1="2%" x2="98%" y1="34" y2="34"/><line class="bar" x1="2%" x2="98%" y1="34" y2="34"/>
+      <text x="0" y="64">Handbag: 5</text>
+      <line class="tk" x1="2%" x2="98%" y1="82" y2="82"/><line class="bar" x1="2%" x2="55.33%" y1="82" y2="82"/>
+      <text x="0" y="112">Phone: 5</text>
+      <line class="tk" x1="2%" x2="98%" y1="130" y2="130"/><line class="bar" x1="2%" x2="55.33%" y1="130" y2="130"/>
+      <text x="0" y="160">Sneakers: 4</text>
+      <line class="tk" x1="2%" x2="98%" y1="178" y2="178"/><line class="bar" x1="2%" x2="44.67%" y1="178" y2="178"/>
+      <text x="0" y="208">T-shirt: 3</text>
+      <line class="tk" x1="2%" x2="98%" y1="226" y2="226"/><line class="bar" x1="2%" x2="34%" y1="226" y2="226"/>
+      <text x="0" y="256">Chair: 2</text>
+      <line class="tk" x1="2%" x2="98%" y1="274" y2="274"/><line class="bar" x1="2%" x2="23.33%" y1="274" y2="274"/>
+    </svg>
+    <p class="cap">Choosing the next question takes 0.10 ms at p50 and 0.29 ms at p95, over 47 states. First reading, 2026-11-15.</p>
+  </section>
+
+  <!-- 4. Marketplace by action -->
+  <section aria-labelledby="f4">
+    <h2 id="f4">Proved, or not</h2>
+    <svg height="232" role="img" aria-label="Marketplace by action. Depop, Mercari and Poshmark: search proved live, signed-in reads and writes proved on recorded pages. eBay: search proved live, sold search needs sign-in, writes through the official interface not run. Facebook Marketplace: not built.">
+      <text x="12%" y="16" class="t2">Search</text>
+      <text x="42%" y="16" class="t2">Signed in</text>
+      <text x="72%" y="16" class="t2">Writes</text>
+
+      <image href="../../assets/platforms/square/depop.png" x="0" y="46" width="20" height="20" role="img" aria-label="Depop"/>
+      <svg x="12%" y="56" overflow="visible"><circle class="dot" cx="6" cy="0" r="6"/><text x="18" y="5">live</text></svg>
+      <svg x="42%" y="56" overflow="visible"><circle class="ring" cx="6" cy="0" r="6"/><circle class="dot" cx="6" cy="0" r="2"/><text x="18" y="5">recorded</text></svg>
+      <svg x="72%" y="56" overflow="visible"><circle class="ring" cx="6" cy="0" r="6"/><circle class="dot" cx="6" cy="0" r="2"/><text x="18" y="5">recorded</text></svg>
+
+      <image href="../../assets/platforms/square/ebay.png" x="0" y="86" width="20" height="20" role="img" aria-label="eBay"/>
+      <svg x="12%" y="96" overflow="visible"><circle class="dot" cx="6" cy="0" r="6"/><text x="18" y="5">live</text></svg>
+      <svg x="42%" y="96" overflow="visible"><circle class="ring" cx="6" cy="0" r="6"/><text x="18" y="5">sign-in</text></svg>
+      <svg x="72%" y="96" overflow="visible"><circle class="empty" cx="6" cy="0" r="6"/><text x="18" y="5" class="t2">not run</text></svg>
+
+      <image href="../../assets/platforms/square/facebook.png" x="0" y="126" width="20" height="20" role="img" aria-label="Facebook Marketplace"/>
+      <svg x="12%" y="136" overflow="visible"><circle class="empty" cx="6" cy="0" r="6"/><text x="18" y="5" class="t2">not built</text></svg>
+      <svg x="42%" y="136" overflow="visible"><circle class="empty" cx="6" cy="0" r="6"/><text x="18" y="5" class="t2">not built</text></svg>
+      <svg x="72%" y="136" overflow="visible"><circle class="empty" cx="6" cy="0" r="6"/><text x="18" y="5" class="t2">not built</text></svg>
+
+      <image href="../../assets/platforms/square/mercari.png" x="0" y="166" width="20" height="20" role="img" aria-label="Mercari"/>
+      <svg x="12%" y="176" overflow="visible"><circle class="dot" cx="6" cy="0" r="6"/><text x="18" y="5">live</text></svg>
+      <svg x="42%" y="176" overflow="visible"><circle class="ring" cx="6" cy="0" r="6"/><circle class="dot" cx="6" cy="0" r="2"/><text x="18" y="5">recorded</text></svg>
+      <svg x="72%" y="176" overflow="visible"><circle class="ring" cx="6" cy="0" r="6"/><circle class="dot" cx="6" cy="0" r="2"/><text x="18" y="5">recorded</text></svg>
+
+      <image href="../../assets/platforms/square/poshmark.png" x="0" y="206" width="20" height="20" role="img" aria-label="Poshmark"/>
+      <svg x="12%" y="216" overflow="visible"><circle class="dot" cx="6" cy="0" r="6"/><text x="18" y="5">live</text></svg>
+      <svg x="42%" y="216" overflow="visible"><circle class="ring" cx="6" cy="0" r="6"/><circle class="dot" cx="6" cy="0" r="2"/><text x="18" y="5">recorded</text></svg>
+      <svg x="72%" y="216" overflow="visible"><circle class="ring" cx="6" cy="0" r="6"/><circle class="dot" cx="6" cy="0" r="2"/><text x="18" y="5">recorded</text></svg>
+    </svg>
+    <p class="cap">Live: proved against the real site. Recorded: proved on a recorded page only. eBay's sold search needs sign-in, and its official interface is built and not run yet. On Poshmark, share, like and repost are handed to the person. As of 2026-11-15.</p>
+
+    <h3>How much is real</h3>
+    <svg height="88" role="img" aria-label="62 of 86 endpoints answer from engines. 11 of 15 stages of the end-to-end walk are real.">
+      <text x="0" y="16">62 of 86 endpoints answer from engines</text>
+      <rect class="box" x="0" y="28" width="100%" height="12"/><rect class="solid" x="0" y="28" width="72.09%" height="12"/>
+      <text x="0" y="64">11 of 15 walk stages are real</text>
+      <rect class="box" x="0" y="76" width="100%" height="12"/><rect class="solid" x="0" y="76" width="73.33%" height="12"/>
+    </svg>
+    <p class="cap">Counted 2026-11-15.</p>
+  </section>
+
+  <!-- 5. One number, opened -->
+  <section aria-labelledby="f5">
+    <h2 id="f5">A price, opened</h2>
+    <svg height="232" role="img" aria-label="A price opened into its citation, the listings under it and a recompute from the table's history. Not run yet.">
+      <line class="stem" x1="6" x2="6" y1="8" y2="200"/>
+      <circle class="empty" cx="6" cy="8" r="6"/>
+      <text x="24" y="13">A price on screen: not run yet</text>
+      <text x="24" y="35" class="t2">core.guarded_number</text>
+      <circle class="empty" cx="6" cy="72" r="6"/>
+      <text x="24" y="77">The citation under it</text>
+      <text x="24" y="99" class="t2">core.citation</text>
+      <circle class="empty" cx="6" cy="136" r="6"/>
+      <text x="24" y="141">The sold listings under that</text>
+      <text x="24" y="163" class="t2">core.observation, each at its Delta version</text>
+      <circle class="empty" cx="6" cy="200" r="6"/>
+      <text x="24" y="205">The same price, recomputed</text>
+      <text x="24" y="227" class="t2">measures.why over the table's history</text>
+    </svg>
+    <p class="fill">To fill it: one live number_id, opened with measures.why in the workspace.</p>
+
+    <h3>How close the prices came</h3>
+    <svg height="136" role="img" aria-label="On 16,193 released sales: 93.8% valued within 20% of the sale; median error 5.6%; 62.2% of sales inside the stated range, against a target of 80%, a miss.">
+      <text x="0" y="16">Within 20% of the sale: 93.8%</text>
+      <line class="tk" x1="2%" x2="98%" y1="34" y2="34"/><line class="bar" x1="2%" x2="92.05%" y1="34" y2="34"/>
+      <text x="0" y="64">Median error: 5.6%</text>
+      <line class="tk" x1="2%" x2="98%" y1="82" y2="82"/><line class="bar" x1="2%" x2="7.38%" y1="82" y2="82"/>
+      <text x="0" y="112">Inside the stated range: 62.2%, target 80%</text>
+      <line class="tk" x1="2%" x2="98%" y1="130" y2="130"/><line class="bar" x1="2%" x2="61.71%" y1="130" y2="130"/>
+      <line class="stem" x1="78.8%" x2="78.8%" y1="120" y2="140"/>
+    </svg>
+    <p class="cap">16,193 sales from a released sneaker dataset (StockX), January to February 2019. First reading, 2026-11-15. The range missed its target: it is drawn too narrow, and the upright line marks where it should reach.</p>
+  </section>
+
+  <!-- 6. The weight that learned -->
+  <section aria-labelledby="f6">
+    <h2 id="f6">A weight learns</h2>
+    <svg height="296" role="img" aria-label="One tunable's history: starting value, observations, promotions with held-out scores, a rollback, today's value. Not run yet.">
+      <line class="stem" x1="6" x2="6" y1="8" y2="264"/>
+      <circle class="empty" cx="6" cy="8" r="6"/>
+      <text x="24" y="13">Starting value</text>
+      <text x="24" y="35" class="t2">not run yet</text>
+      <circle class="empty" cx="6" cy="72" r="6"/>
+      <text x="24" y="77">Each observation that moved it</text>
+      <text x="24" y="99" class="t2">not run yet</text>
+      <circle class="empty" cx="6" cy="136" r="6"/>
+      <text x="24" y="141">Each promotion, with its held-out score</text>
+      <text x="24" y="163" class="t2">not run yet</text>
+      <circle class="empty" cx="6" cy="200" r="6"/>
+      <text x="24" y="205">A rollback</text>
+      <text x="24" y="227" class="t2">not run yet</text>
+      <circle class="empty" cx="6" cy="264" r="6"/>
+      <text x="24" y="269">The value served today</text>
+      <text x="24" y="291" class="t2">not run yet</text>
+    </svg>
+    <p class="fill">To fill it: core.param history, read through change data feed, for one tunable.</p>
+  </section>
+
+  <!-- 7. Which level answered -->
+  <section aria-labelledby="f7">
+    <h2 id="f7">Which level</h2>
+    <svg height="232" role="img" aria-label="Share of shown numbers served by each level: the item's own comparables, product, family, kind, starting value. Not run yet.">
+      <text x="0" y="16">The item's own comparables</text>
+      <line class="tk" x1="0" x2="100%" y1="34" y2="34"/>
+      <text x="0" y="64">The product</text>
+      <line class="tk" x1="0" x2="100%" y1="82" y2="82"/>
+      <text x="0" y="112">The family</text>
+      <line class="tk" x1="0" x2="100%" y1="130" y2="130"/>
+      <text x="0" y="160">The kind</text>
+      <line class="tk" x1="0" x2="100%" y1="178" y2="178"/>
+      <text x="0" y="208">The starting value</text>
+      <line class="tk" x1="0" x2="100%" y1="226" y2="226"/>
+    </svg>
+    <p class="cap">The share of shown numbers each level served, week by week. Not run yet.</p>
+    <p class="fill">To fill it: basis_level on core.guarded_number, counted by week. The mix should move toward the item's own as sales arrive.</p>
+  </section>
+
+  <!-- 8. The pipeline as a funnel -->
+  <section aria-labelledby="f8">
+    <h2 id="f8">Rows kept</h2>
+    <svg height="136" role="img" aria-label="207,203 rows in, 207,185 kept, 99,956 used for modelling.">
+      <text x="0" y="16">207,203 rows in</text>
+      <rect class="solid" x="0" y="28" width="100%" height="12"/>
+      <text x="0" y="64">207,185 kept by the expectations</text>
+      <rect class="solid" x="0" y="76" width="99.99%" height="12"/>
+      <text x="0" y="112">99,956 used for modelling</text>
+      <rect class="box" x="0" y="124" width="100%" height="12"/><rect class="solid" x="0" y="124" width="48.24%" height="12"/>
+    </svg>
+    <p class="cap">The secondhand-market pipeline, 2026-11-15. 18 rows were not kept. All 99,956 modelled rows are one released dataset of sneaker sales (StockX, 2017 to 2019). Four sources stay out of modelling: Grailed 2021, which is a third party's scrape, and three small 2026 sets.</p>
+  </section>
+
+  <!-- 9. Ours beside the platform's -->
+  <section aria-labelledby="f9">
+    <h2 id="f9">Two layers</h2>
+    <svg height="232" role="img" aria-label="Three safety rules, each with what Databricks gives and what this layer adds.">
+      <text x="0" y="16">Where a number came from</text>
+      <text x="0" y="38" class="t2">Databricks: lineage, table to table</text>
+      <text x="0" y="60">Ours: down to the rows under it</text>
+      <text x="0" y="104">Whether a number shows</text>
+      <text x="0" y="126" class="t2">Databricks: row filters and masks</text>
+      <text x="0" y="148">Ours: its guard state, as governed data</text>
+      <text x="0" y="192">When a weight moves</text>
+      <text x="0" y="214" class="t2">Databricks: grants and Delta versions</text>
+      <text x="0" y="236">Ours: held-out promotion, kept like a registry</text>
+    </svg>
+    <p class="cap">From the architect's table in spec/plans/sweep/databricks.md. The live policies are not read yet.</p>
+    <p class="fill">To fill it: each rule checked against the workspace's live grants, filters and masks.</p>
+  </section>
+
+  <!-- 10. What was never done -->
+  <section aria-labelledby="f10">
+    <h2 id="f10">Never done</h2>
+    <svg height="184" role="img" aria-label="32 of 32 never-automated actions refused on every site. 10 of 10 planted false claims held. 10 of 10 clean drafts passed. Refusals by rule not run yet.">
+      <text x="0" y="16">32 of 32 never-automated actions refused</text>
+      <rect class="solid" x="0" y="28" width="100%" height="12"/>
+      <text x="0" y="64">10 of 10 planted false claims held</text>
+      <rect class="solid" x="0" y="76" width="100%" height="12"/>
+      <text x="0" y="112">10 of 10 clean drafts passed</text>
+      <rect class="solid" x="0" y="124" width="100%" height="12"/>
+      <text x="0" y="160" class="t2">Each refusal by rule: not run yet</text>
+      <rect class="box" x="0" y="172" width="100%" height="12"/>
+    </svg>
+    <p class="cap">Policy sweep: 480 answers, every site. Claim check: 20 drafts. Both 2026-11-15.</p>
+    <p class="fill">To fill it: core.decision, counted by rule, from live use.</p>
+  </section>
+</main>
+
+<footer class="wrap"><p class="wordmark">secondhand</p></footer>
+</div>
+</body>
+</html>

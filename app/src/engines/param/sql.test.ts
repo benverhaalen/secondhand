@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { regressions } from './regressions.ts';
+import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { memoryStore, VersionConflict } from './param.ts';
@@ -11,6 +13,7 @@ const AT = '2026-11-14T22:00:00-06:00';
 
 const db = new PGlite();
 await migrate(db);
+await migrate(db, fileURLToPath(new URL('./', import.meta.url)));
 // The PGlite superuser bypasses row security, so every store runs as a plain role.
 await db.exec('create role app_api nologin; grant all on all tables in schema public to app_api; grant all on all sequences in schema public to app_api;');
 
@@ -144,7 +147,7 @@ test('the outcome-transaction rule: observe in a rolled-back transaction leaves 
   assert.deepEqual([r.value, r.version], [{ alpha: 8, beta: 3 }, 1]);
 });
 
-test('frozen scope does not move; a guard breach is not applied', async () => {
+test('frozen scope does not move; a guard breach keeps counts', async () => {
   await reset();
   await run(null, (s) => s.observe('assist_span_open', D, { success: 0, weight: 1 }, AT));
   await run(null, (s) => s.freeze('assist_span_open', D, true));
@@ -152,8 +155,8 @@ test('frozen scope does not move; a guard breach is not applied', async () => {
   assert.deepEqual([f.applied, f.reason, f.read.version], [false, 'frozen', 1]);
   await run(null, (s) => s.freeze('assist_span_open', D, false));
   const g = await run(null, (s) => s.observe('assist_span_open', {}, { success: 1, weight: 1000 }, AT));
-  assert.deepEqual([g.applied, g.reason], [false, 'guard']);
-  assert.equal((await db.query("select count(*)::int n from param where scope = '{}'")).rows[0].n, 0);
+  assert.deepEqual([g.applied, g.reason], [true, 'clamped']);
+  assert.equal((await db.query("select count(*)::int n from param where scope = '{}'")).rows[0].n, 1);
 });
 
 test('an undeclared param is Unknown, and observe refuses a non-beta family', async () => {
@@ -179,14 +182,14 @@ test('SQL gamma observe, model apply, freeze and guard preserve transactional sc
   await reset();
   await run('usr_1', async (s) => {
     s.declare({ name: 'velocity', family: 'gamma', prior: { shape: 2, rate: 4 }, guard_hi: 10 });
-    for (let i = 0; i < 3; i++) await s.observe('velocity', D, { count: 1, exposure: 0, weight: 1, days_since_last: 30 }, AT);
-    assert.deepEqual((await s.read('velocity', D)).value, { shape: 2, rate: 0.5 });
+    for (const at of ['2026-01-01', '2026-01-31', '2026-03-02']) await s.observe('velocity', D, { count: 1, exposure: 0, weight: 1 }, at);
+    assert.deepEqual((await s.read('velocity', D)).value, { shape: 3.75, rate: 4 });
     const person = { ...D, person: 'usr_1' };
     await s.apply('velocity', person, (v) => ({ value: v, weight: 3 }), AT);
     assert.equal((await s.read('velocity', D)).n_eff, 1.75);
     await s.freeze('velocity', person, true);
     assert.equal((await s.observe('velocity', person, { count: 1, exposure: 1, weight: 1 }, AT)).reason, 'frozen');
-    assert.equal((await s.observe('velocity', D, { count: 100, exposure: 0, weight: 1 }, AT)).reason, 'guard');
+    assert.equal((await s.observe('velocity', D, { count: 100, exposure: 0, weight: 1 }, AT)).reason, 'clamped');
     s.declare({ name: 'P_accept', family: 'model_ref', prior: { term: 0 }, guard_hi: 0 });
     await s.apply('P_accept', person, () => ({ value: { term: 2 }, weight: 1 }), '2026-01-01');
     await s.apply('P_accept', person, (v, keep) => ({ value: { term: (v as { term: number }).term * keep + 1 }, weight: 1 }), '2026-01-31');
@@ -257,4 +260,49 @@ test('SQL pooling recurses through shared ancestors and excludes another person 
     assert.ok('mean' in person && Math.abs(person.mean - (3 * 0.9 + 20 * 0.2) / 23) < 1e-12);
     assert.ok('versions' in person && person.versions.length === 1);
   });
+});
+
+for (const [name, check] of Object.entries(regressions)) test(name, async () => {
+  await reset();
+  await run(null, check);
+});
+
+
+test('B5 migration refuses ambiguous preexisting post-fit event history', async () => {
+  await db.exec(`begin;
+    create temporary table param (name text, scope jsonb, version integer, status text, fitted_on_ids_hash text, held_out_score numeric, promoted_at timestamptz);
+    insert into param values ('assist_span_open', '{}', 1, 'retired', 'fit_hash', 0.5, '2026-01-01'),
+      ('assist_span_open', '{}', 2, 'retired', null, 0.5, '2026-01-02'),
+      ('assist_span_open', '{}', 3, 'champion', null, 0.5, '2026-01-03');`);
+  try {
+    await assert.rejects(db.exec(readFileSync(new URL('./0001_param_origin.sql', import.meta.url), 'utf8')), /ambiguous param history/);
+  } finally {
+    await db.exec('rollback');
+  }
+});
+
+for (const keep_evidence of [true, false]) test(`fit rollback restores the existing event champion without inserting a version (keep_evidence=${keep_evidence})`, async () => {
+  await reset();
+  const rollbackAt = '2026-11-16T12:00:00.000Z';
+  await run(null, async (s) => {
+    await s.propose(fit({ name: 'assist_span_open', family: 'beta', value_or_hyperparams: { alpha: 8, beta: 2 }, prior: { alpha: 8, beta: 2 } }), 0);
+    await s.promote('assist_span_open', D, 1, 0, AT);
+    await s.observe('assist_span_open', D, { success: 0, weight: 2, days_since_last: 0 }, AT);
+    await s.propose(fit({ name: 'assist_span_open', family: 'beta', value_or_hyperparams: { alpha: 18, beta: 2 }, prior: { alpha: 8, beta: 2 }, held_out_score: 0.8 }), 2);
+    await s.promote('assist_span_open', D, 3, 0, AT);
+    await s.propose(fit({ name: 'assist_span_open', family: 'beta', value_or_hyperparams: { alpha: 28, beta: 2 }, prior: { alpha: 8, beta: 2 }, held_out_score: 0.7 }), 3);
+  });
+  const before = await run(null, (s) => s.rows('assist_span_open', D));
+  const restored = { ...before[1], status: 'champion', promoted_at: rollbackAt };
+  await run(null, async (s) => {
+    assert.deepEqual(await s.rollback('assist_span_open', D, rollbackAt, keep_evidence), restored);
+    assert.deepEqual(await s.rows('assist_span_open', D), [before[0], restored, { ...before[2], status: 'retired' }, before[3]]);
+  }, false);
+  assert.deepEqual(await run(null, (s) => s.rows('assist_span_open', D)), before, 'rolling back the transaction undoes both champion status changes');
+  await run(null, async (s) => {
+    assert.deepEqual(await s.rollback('assist_span_open', D, rollbackAt, keep_evidence), restored);
+  });
+  assert.deepEqual(await run(null, (s) => s.rows('assist_span_open', D)), [before[0], restored, { ...before[2], status: 'retired' }, before[3]]);
+  const read = await run(null, (s) => s.read('assist_span_open', D));
+  assert.deepEqual([read.version, read.value, read.n_eff], [2, before[1].value_or_hyperparams, before[1].n_eff]);
 });

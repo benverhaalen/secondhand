@@ -120,14 +120,14 @@ test('connect persists an unlinked account and unlink revokes it before the job 
   const account = runtime.store.get('account', 'usr_8f2k', 'acc_dp1')!;
   assert.ok(account); assert.equal(account.token_ref, undefined);
   assert.equal(account.data, 'example', 'reconnect preserves seeded row provenance');
-  assert.equal(await runtime.accounts.byId(account.id), undefined);
+  assert.equal(await runtime.accounts.byId(account.id, 'usr_8f2k'), undefined);
   const prior = runtime.store.get('account', 'usr_8f2k', 'acc_po1')!;
   runtime.store.put('account', { ...prior, token_ref: 'test/session' });
   await runtime.vault.put('test/session', { cookies: [], origins: [] });
-  assert.ok(await runtime.accounts.byId(prior.id));
+  assert.ok(await runtime.accounts.byId(prior.id, 'usr_8f2k'));
   const reply = await call(examples.find(e => e.name === 'accounts.unlink')!);
   assert.equal(reply.status, 202);
-  assert.equal(await runtime.accounts.byId(prior.id), undefined);
+  assert.equal(await runtime.accounts.byId(prior.id, 'usr_8f2k'), undefined);
   const job = runtime.store.getJob((await reply.json()).id)!;
   assert.equal(job.account_id, prior.id); assert.equal(job.kind, 'unlink');
 });
@@ -136,7 +136,7 @@ test('import preview calls the harness and labels the stored fallback', async ()
   const { runtime } = await import('./runtime.ts');
   const before = runtime.harness.call;
   let calls = 0;
-  runtime.harness.call = async (...args) => { calls++; assert.equal(args[0], 'depop'); assert.equal(args[1], 'read_listings'); assert.equal(args[2]?.account_id, 'acc_dp1'); return before(...args); };
+  runtime.harness.call = async (...args) => { calls++; assert.equal(args[0], 'depop'); assert.equal(args[1], 'read_listings'); assert.equal(args[2]?.account_id, 'acc_dp1'); assert.equal(args[2]?.person_id, 'usr_8f2k', 'the preview passes its person, or the scoped gate refuses it'); return before(...args); };
   try {
     const response = await call(examples.find(e => e.name === 'accounts.import_preview')!);
     assert.equal(response.status, 200); assert.equal(calls, 1);
@@ -176,7 +176,7 @@ test('a delayed unlink job cannot revoke a newer sign-in on the same account', a
   runtime.store.put('account', { ...row, token_ref: 'test/new-session' });
   await runtime.vault.put('test/new-session', { cookies: [], origins: [] });
   await runtime.pipeline.runOnce(1);
-  assert.ok(await runtime.accounts.byId('acc_dp1'));
+  assert.ok(await runtime.accounts.byId('acc_dp1', 'usr_8f2k'));
 });
 
 test('offline linked preview reports no_route, and a stale unlink leaves the link intact', async () => {
@@ -188,7 +188,7 @@ test('offline linked preview reports no_route, and a stale unlink leaves the lin
   assert.deepEqual(await preview.json(), examples.find(e => e.name === 'accounts.import_preview')!.response);
   const response = await call(examples.find(e => e.name === 'accounts.unlink')!, { path: '/v1/accounts/acc_dp1', headers: { 'If-Match': String(linked.version! - 1) } });
   assert.equal(response.status, 409); assert.equal((await response.json()).code, 'stale');
-  assert.ok(await runtime.accounts.byId('acc_dp1'));
+  assert.ok(await runtime.accounts.byId('acc_dp1', 'usr_8f2k'));
 });
 
 

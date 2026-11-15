@@ -4,13 +4,14 @@
 // still pay for (live, delistFailed, posting). The dedupe key is `delist:<listing_id>`, so a repeat sale event or
 // a second confirmation never doubles a job. The jobs run in parallel in the pipeline, one per account session,
 // each `end` verb held through its read-back. A public "sold" mark alone never delists: confirmed is required.
-// settle() closes one delist job from its harness envelope: ok or not_found (already gone) is delisted; an expired
+// settle() closes one delist job from its harness envelope: a dry plan asks; non-dry ok or not_found is delisted; an expired
 // session is paused by as-1 (never dropped, never failed); anything else retries up to `delist_max_attempts`
 // (param, prior 3), then fails and raises one `failed_delist` decision for that listing.
 // Poshmark early delist is Nate's call (sold.md, open); until he decides, Poshmark is delisted like every site,
 // at the pace its harness manifest sets.
 // Likely breaks, each tested: delist on an unconfirmed sale; the sold listing delisted; a double fan-out;
 // a failed site never surfaced; a stale account's job dropped or marked failed.
+import { ORDER_STATES, type OrderState } from '../orders/orders.ts';
 import { write, logReceived, type LogLike } from '../events/intake.ts';
 import type { Site } from '../events/event.ts';
 import type { JobRow, Params, Store } from '../events/ports.ts';
@@ -35,10 +36,28 @@ export function fanOut(store: Store, log: LogLike, s: {
   return { jobs: done.map(r => r.job) };
 }
 
-type Envelope = { ok: true } | { ok: false; error: { code: string; message: string } };
+type Envelope = { ok: true; data?: unknown } | { ok: false; error: { code: string; message: string } };
 
 export function settle(store: Store, log: LogLike, params: Params, job: JobRow, env: Envelope):
-  'delisted' | 'retry' | 'failed' | 'paused' {
+  'delisted' | 'planned' | 'retry' | 'failed' | 'paused' {
+  if (env.ok && env.data !== null && typeof env.data === 'object' && 'dry' in env.data && env.data.dry === true) {
+    const current = store.getJob(job.id)!;
+    const old = current.stages.find(stage => stage.name === 'end');
+    // The shared Stage union is awaiting the product.md §4 planned state.
+    const stage = { ...old, name: 'end', state: 'planned' as JobRow['stages'][number]['state'], result: env.data, ended_at: new Date().toISOString() };
+    store.updateJob(job.id, { state: 'done', result: { planned: true, plan: env.data },
+      stages: old ? current.stages.map(s => s === old ? stage : s) : [...current.stages, stage] });
+    log.event('job.stage', { job: job.id, stage: 'end', state: 'planned' });
+    log.event('job.state', { job: job.id, kind: job.kind, state: 'done', planned: true });
+    const kind = typeof job.args.decision_kind === 'string' ? job.args.decision_kind : 'delist_after_sale';
+    const decision = store.raiseDecision({
+      user_id: job.user_id, kind, subject: job.listing_id ?? job.item_id ?? job.id, item_id: job.item_id, job_id: job.id,
+      why: 'Planned only. The listing is still on the site.',
+      options: [{ id: 'yes', label: 'End it on the site' }, { id: 'no', label: 'Not now' }], suggested: 'yes',
+    });
+    if (!decision.duplicate) log.event('decision.open', { decision: decision.row.id, kind, tier: 'ask' });
+    return 'planned';
+  }
   if (env.ok || env.error.code === 'not_found') {
     store.updateJob(job.id, { state: 'done', result: { listing_state: 'delisted' } });
     return 'delisted';
@@ -57,4 +76,13 @@ export function settle(store: Store, log: LogLike, params: Params, job: JobRow, 
   });
   if (!d.duplicate) log.event('decision.open', { decision: d.row.id, kind: 'failed_delist', tier: 'ask' });
   return 'failed';
+}
+
+export function confirmedOrder(store: Store, job: JobRow): boolean {
+  const { order_id, sold_listing_id } = job.args;
+  if (job.kind !== 'delist' || typeof order_id !== 'string' || typeof sold_listing_id !== 'string'
+    || !job.item_id || !job.listing_id || job.listing_id === sold_listing_id) return false;
+  const order = store.get('order', job.user_id, order_id);
+  return !!order && order.kind === 'sale' && order.item_id === job.item_id && order.listing_id === sold_listing_id
+    && ORDER_STATES.includes(order.state as OrderState) && order.state !== 'cancelled' && order.state !== 'refunded';
 }

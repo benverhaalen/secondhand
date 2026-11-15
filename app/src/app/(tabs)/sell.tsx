@@ -1,9 +1,11 @@
 // Sell: everything the person sells, as photo tiles in shelves by state (pages §6.10; decision: the Sell tab is a photo
 // grid with state pills), filtered by one row (Ben, round 11). Every number and word about a thing comes from the demo
 // world; the page only chooses what to show. Why each element is here is in app/behavior/(tabs)/sell.json, "decisions".
+// one at a time: bulk-approve (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Approve, EmptyState, FootButton, Grid, List, log, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
+import { TabNav } from '@/ui/parts/tab-nav';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile, TileSkeleton, type TileFact } from '@/ui/parts/tile';
 import { day, feed, pill, sellItem, shelves, unread, usd, type Item, type World } from '@/demo';
@@ -146,7 +148,7 @@ export default function Sell() {
     );
   };
 
-  const nav = <Nav inbox={{ count: unread(w) }} />;
+  const nav = <TabNav title="Sell" inbox={{ count: unread(w) }} />;
   if (!selling.length) {
     // A new person and someone whose things have all gone see the same page: the camera is the one thing to point to.
     return (
@@ -206,7 +208,7 @@ export default function Sell() {
         <Row trail={loading ? undefined : picking
           ? <Pill id="select-done" kind="second" label="Done" onPress={() => { setPicking(false); setPicked([]); }} />
           : <Pill id="sell-select" kind="second" label="Select" onPress={() => setPicking(true)} />}>
-          <Txt role="heading">Sell</Txt>
+          {null}
         </Row>
         {loading ? null : <FilterRow>
           <Chip id="filter-sort" icon="sorting-01" label={sortChip} onPress={() => setSorting(true)} />
@@ -250,7 +252,7 @@ export default function Sell() {
 
       <Sheet open={changing} title={`${picked.length} selected`} onClose={() => { setChanging(false); setChange(null); }}>
         <List>
-          <Choice id="bulk-keep" icon="tick-02" label="Keep" line="Ends listings. Sell again any time." picked={change === 'keep'} onPress={() => setChange('keep')} />
+          <Choice id="bulk-keep" icon="tick-02" label="Keep it" line="Ends listings. Sell again any time." picked={change === 'keep'} onPress={() => setChange('keep')} />
           <Choice id="bulk-donated" icon="package" label="Donated" line="Ends listings, keeps the value" picked={change === 'donated'} onPress={() => setChange('donated')} />
           <Choice id="bulk-sold_elsewhere" icon="money-03" label="Sold elsewhere" line="Ends listings, counts the sale" picked={change === 'sold_elsewhere'} onPress={() => setChange('sold_elsewhere')} />
           <Choice id="bulk-delete" icon="cancel-01" label="Delete" line={blocked.length ? `${blocked.length} ${blocked.length === 1 ? 'has an open order and stays' : 'have open orders and stay'}` : 'Removes them and their photos. No undo.'} picked={change === 'delete'} onPress={() => setChange('delete')} />

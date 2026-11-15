@@ -7,15 +7,24 @@ throwing away sales or mutating the underlying observations.
 from copy import deepcopy
 from datetime import datetime
 from statistics import mean
+import math
+from .params import selected, value
 
 
-def beside(site, ours, site_figure, gap_bar=.1, log=None):
+def beside(site, ours, site_figure, gap_bar=None, log=None, *, params=None):
+    params = selected(params)
+    gap_bar = value(params, "gap_rate") if gap_bar is None else gap_bar
     flags = set(ours['flags'])
     missing = ours.get('value') is None or site_figure is None or site_figure.get('value') is None
     if missing:
         flags.add('not_reported')
     gap = None if missing else abs(ours['value'] - site_figure['value'])
-    flagged = gap is not None and gap > gap_bar + 1e-12
+    unit = ours.get('unit', 'ratio')
+    if site_figure and site_figure.get('unit', unit) != unit:
+        raise ValueError('comparison units differ')
+    if gap is not None and not math.isfinite(gap):
+        raise ValueError('comparison values must be finite')
+    flagged = unit == 'ratio' and gap is not None and gap > gap_bar and not math.isclose(gap, gap_bar, rel_tol=0, abs_tol=math.ulp(gap_bar))
     if flagged:
         flags.add('data_quality')
         if log:
@@ -36,7 +45,7 @@ def own_figure(orders, site, metric):
         definition = 'mean days from payment to shipment since linked'
     else:
         raise ValueError(f'unknown metric {metric}')
-    return dict(value=mean(values) if values else None, definition=definition, basis_count=len(values),
+    return dict(unit='days' if metric == 'ship_days' else 'ratio', value=mean(values) if values else None, definition=definition, basis_count=len(values),
                 flags=['not_reported'] if not values or len(values) != len(rows) else [])
 
 
