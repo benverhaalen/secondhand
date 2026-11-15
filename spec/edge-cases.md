@@ -79,11 +79,17 @@ The mentor's concern is that an AI-made photo can misstate the item. So the two 
 |---|---|---|
 | What it does | crop, straighten, exposure, white balance, background blur from a mask (level 0, no generative model) | redraws light, background, and creases at level 2 (Seedream or Nano Banana) |
 | Can it change the item | no: the item's pixels are only adjusted, never redrawn | it can, so every result is checked against the original, and a vanished flaw, changed tag text or changed protected area blocks it ([studio § The check](features/studio.md#the-check)) |
-| Label | none needed | marked as AI in the app, and on the site where the site asks |
+| Label | none needed | tracked as AI in the app and in the render record; no AI tag on the exported photo (Ben, [23:18](../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)) |
 | Default | offered first, one tap, can be reset | off; the person picks Generate ([studio § Retouch](features/studio.md#retouch-chosen-by-the-person)) |
 | Way out | Use original | Use original; Never suggest edits ([ways out §6.5](ways-out.md#65-camera)) |
 
 Stands: both specced as levels 0 to 2 and Generate; presenting Clean up as its own named choice is *new*.
+
+**Proving an enhanced photo does not lie** (Ben, 05:18: "how do we prove it ... is there any way to measure it or benchmark it"). Three layers, cheapest first:
+
+1. **The check on every photo.** Each AI result is compared with its original before it can be used: the item's outline, the text on the tag read twice and compared, each confirmed flaw box, and the colour inside the item mask. A vanished flaw, changed tag text or a changed protected area blocks it ([studio § The check](features/studio.md#the-check)). The numbers are kept in the render record.
+2. **A benchmark we can run tonight.** Take 30 real item photos. For each, make two edits on purpose that would be lies (erase a stain, change a size on the tag) and one honest edit (light only). The check must block every lie and pass every honest edit. Report the counts: lies caught out of 60, honest edits passed out of 30. That is a number a judge can read in one line.
+3. **Show it.** Before and after on a slider, with the flaw boxes drawn on both, and a lie the check caught beside the message it gave.
 
 ## 7. The auto-list tree, and where it breaks
 
@@ -129,8 +135,133 @@ Every stop is a card with one question, so a stopped tree costs a tap, not a res
 | Things | bulky (a sofa) | local sites only; shipping sites marked avoid with the reason | specced (platform-fit) |
 | Place | the buyer is in another country | out of scope for the demo; listings are set to ship within the US | *open* |
 
+## 10. Every variable of an item, and where it can go wrong
+
+An item is one record, and each listing is built from it ([item-card](features/item-card.md)). These are the variables a person or a buyer cares about.
+
+| Variable | Who sets it | Where it goes wrong | What the app does |
+|---|---|---|---|
+| What it is | identify, the person confirms | two look alike; nobody knows (§4) | candidates; "I don't know" is an answer |
+| Condition and flaws | identify, the person confirms each flaw | a flaw the photos miss; the person wants it hidden | a close-up of each flaw is asked for; a flaw is never hidden (refused, [ways out](ways-out.md#refused-on-purpose)) |
+| Size and measurements | the tag, LiDAR, a typed number | tag and measurement disagree; vanity sizing | both shown; measured wins in the listing, with the tag size beside it |
+| Photos | the person; clean-up or AI only on a pick | blur, clutter, a stock photo, too few for a site | gates at capture; per-site count and order; §6 |
+| Title and description | the agent drafts per site, the person can edit and lock | a typo, a claim we cannot back, keyword stuffing a site punishes | spelling fixed from the catalog (§3); `claim_check`; each site's title form |
+| Price, floor, always accept | the plan, the person | a typo (§3); floor above price; below the floor | sanity ask; refused in place; `price_below_floor` always asks |
+| Where it is listed | platform-fit, the person | a couch on Depop | §11 |
+| Ship or pickup | the plan from size, weight and the person's choice | too heavy for a site's label; pickup for something small and far away | the box and weight from the measurements; a site's weight cap ends that site; pickup only on local sites |
+| Returns terms | each site's own rules and, on eBay, the seller's choice | the person assumes they can refuse a return | shown on the plan per site in one line ("Poshmark: no returns unless not as described") |
+| Quantity | the person | two of one thing | §1 |
+| Where it is in the house | the person, or a shelf label | can't find it after it sells | the pick list ([sold](features/sold.md)) |
+| What it cost | never asked; offered to resellers | Records shows a gain that isn't one | cost and inherited basis (§2) |
+
+## 11. Which sites to skip, and the person can still choose
+
+A site gets a thing only where its buyers want it and the site allows it ([platform-fit.json](../research/list/ben/platforms/platform-fit.json)). A couch is `best` on Facebook, `avoid` on eBay, Depop and Mercari, and `blocked` on Poshmark (over the 15 lb cap, no pickup). On the plan, an avoided site is greyed with its reason in one line ("Depop ships only, and its buyers want clothes"), and a tap adds it anyway. A blocked site cannot be added, and says why. A person who keeps adding an avoided site for a kind of thing is a signal for platform-fit, not an error. Stands: specced (verdicts and reasons); the one-line reason on the plan is in [pages §6.7](pages.md#67-plan-sheet-from-the-item).
+
+## 12. How a sale is seen, and what stands in for it
+
+Nate's mechanism, per site ([sold § systems](features/sold.md)): eBay by the signed-in order read (and its signed push where it fires); Depop by a signed-in watcher on the notification feed and orders; Poshmark and Mercari by a public listing page check every 1 to 2 minutes, which costs no session, confirmed by the signed-in read; Facebook by the person marking it sold or a signed-in watch of the orders page. About 2 minutes everywhere but Facebook.
+
+| Proxy | What it means | How it is used |
+|---|---|---|
+| The listing page shows sold or out of stock | sold, almost always | triggers the signed-in read at once |
+| An order appears | sold and paid | the sale itself |
+| An offer was accepted | committed, maybe not paid | the others pause, not delist |
+| A buyer message "just bought it" | likely sold | a read at once, never a sale on its own |
+| The listing vanished | sold, removed by the site, or ended by the person | a read decides which; a removal raises `site_warning` |
+| A payout arrived | the sale settled | closes the order's money stage |
+
+No proxy alone moves an item to sold. Only an order read back from the site does, so a guess never delists anything.
+
+## 13. How a tap here becomes an action on the site
+
+Example: an offer on Depop, approved in our app.
+
+1. The offer reaches us through the Depop watcher (the notification feed in the person's signed-in session) and becomes an `accept_offer` card with what you keep.
+2. The person taps Accept. The tap is recorded with the card's version, so a stale card cannot act.
+3. Plain code checks the policy: the offer is at or above the floor, the item is not sold elsewhere, the account is healthy.
+4. The harness runs `respond_offer` on Depop inside the person's own session, the same request Depop's site makes when the person taps Accept there, at a person's pace ([protocol §3.7](engines/protocol-and-adapters.md#37-depop-without-partner-access-agent-proposal)). It carries an `operation_id`, so a retry never accepts twice.
+5. The harness reads the offer back. Only when Depop shows it accepted does the card close as done. If the read disagrees, the card stays with what Depop shows and Try again or Open on Depop.
+
+Every site works this way. eBay uses its own API for offers; the others use the person's session. A site we cannot reach becomes a one-tap handoff that opens the site.
+
+## 14. Taking a listing down
+
+| Case | What happens | Stands |
+|---|---|---|
+| It sold on one site | every other listing comes down on its own, fastest-buyable first | specced |
+| The person ends it on one site or all | End here, End everywhere; read back on each site | specced |
+| Many at once | select, End | specced (`bulk_action`) |
+| An offer is open on the listing | the offer is declined or voided first, then the listing ends | specced (Poshmark voids first) |
+| Poshmark | ending is "not for sale" or delete; a delete loses the likes, so it is not-for-sale unless the person asks | *new* (the choice) |
+| Coming back | relist where the site allows it, never on Poshmark (a new listing there instead) | specced |
+| The end fails | red after 5 minutes, Try again or Open on the site | specced |
+
+## 15. The buyer side, and where it breaks
+
+| Case | What the app does | Stands |
+|---|---|---|
+| The listing sells before the person taps Buy | "Gone" on the card; a saved one asks "Did you buy it?" | specced |
+| The price changed since it was found | the card shows the new price and the change | *new* |
+| A seller never replies to an offer or question | the offer's own expiry is shown; after it, the card offers the next match | *new* |
+| It could be fake | the deal check flags a price too good for the condition and missing proof; on eBay, whether it goes through authentication | specced (deal check) |
+| What it costs delivered | price, shipping, buyer fees and tax per site | specced (M26) |
+| Can it be returned | each result shows the site's returns line and whether buyer protection covers it (Facebook local pickup has none) | specced |
+| The seller asks to be paid outside the site | a scam warning, and the reason protection ends | specced |
+| It arrives not as described | the site's case flow with the deadline in a card, and the listing's photos saved at the time it was found as evidence | evidence at find time *new* |
+| Meeting a seller | the same safety rules as selling (§16) | *new* |
+
+## 16. Meeting up safely
+
+Ben, 05:18: "recommendations and best practices for meeting up places. where to meet up. when. try to keep people safe". Facts here are *asserted* from common police and platform advice unless linked.
+
+| Rule | What the app does |
+|---|---|
+| Where | suggests a public place first: a police station's safe exchange zone where the town has one, then a busy, lit, public spot (a store entrance, a coffee shop). Never the person's home unless they choose it, and the address goes out only on its own tap (`share_address` is locked) |
+| When | daylight hours by default; a time after dark asks first |
+| Bulky things | for a sofa, the porch or garage, with the item ready, and a reminder to have someone with you |
+| Who knows | "Share my plan" sends the place, time and buyer's profile to a contact the person picks |
+| Arrival | the buyer taps On my way before the person leaves; Running late on both sides; a no-show is rebooked or the next in line is asked |
+| Payment | cash counted on the spot, or the site's own payment; never a payment app from a stranger, never "I sent too much, send it back" (the FTC's named scams, [user-wants 9](../research/cross-cutting/ben/user-wants.md#twelve-principles-for-this-user)) |
+| Calendar | once a meetup is approved, Add to Google Calendar or Add to Apple Calendar writes it; the app never reads a calendar | *new* ([decision](../product/decisions.md#2026-11-15-no-fixed-pickup-windows-tap-the-days-and-times-that-work-and-approve-the-buyers-pick)) |
+
+**How the time is chosen** ([decision](../product/decisions.md#2026-11-15-no-fixed-pickup-windows-tap-the-days-and-times-that-work-and-approve-the-buyers-pick), Ben 05:18 to 05:24). Nothing is set up ahead, and the app never reads the person's calendar.
+
+1. A buyer wants to meet. A sheet opens: the next seven days as chips, and under each day picked, a time span to drag (it snaps to half hours; after dark asks first). Below, the place: the saved spot, or a safe spot from the map.
+2. The agent writes to the buyer the way a person would, from what was tapped: "I'm free Mon 6 to 8 or Fri 3 to 4. Library parking lot on Main works for me. Does either suit you?" Never a list of slots, never a form. In Draft for me it waits for a tap like any reply.
+3. The buyer's answer comes back as a card: **who is coming** (their name on the site, photo, rating and number of reviews, how long they have been on the site, and their messages so far), the time they picked, and the place. Approve, Suggest another (back to the sheet), or Decline.
+4. Once approved: Add to Google Calendar or Add to Apple Calendar writes the event (time, place, the buyer's name, a link back to the thread). Writing an event needs no reading of the calendar. If the time moves, the card offers to update the event.
+5. On the day: On my way from the buyer, Running late from either side, Share my plan with a contact, and the no-show path.
+
+**Proof the agent got it right** (Ben, 05:24: "using actual images of the messages from the site"). After the agent sends or reads a message on a site, the harness saves a screenshot of that thread as the site shows it (`evidence.snapshot_ref`, already on every written fact). The thread in our app has See it on Depop, which opens that image with its time, so the person sees what the buyer actually saw and said, not only our copy of it.
+
+## 17. What we control, and what each site does
+
+| We control | The site controls |
+|---|---|
+| what the person sees, in what order, and the words | the money: we never hold it, and payouts are the site's |
+| what is posted, edited, ended, and when (inside each site's rules) | whether a listing is allowed, ranked or removed |
+| every message we draft, and whether it waits for a tap | the buyer, and what they do |
+| reminders for every clock, and the evidence for a case | refunds, returns and case outcomes (`refund` is locked: only the person, on the site's flow) |
+| what we store, and deleting it | the account: warnings, limits, suspensions |
+
+What matters for credibility on each site, and how the app protects it (*asserted* from each site's seller programs unless linked; [trust](../research/sold/nate/trust-returns-disputes.md)):
+
+| Site | What buyers trust | What the app does about it |
+|---|---|---|
+| eBay | feedback score and percentage; no transaction defects; on-time shipping and tracking | never cancels for out-of-stock if it can be avoided (§1); `ship_by` counts to the handling time; tracking always uploaded |
+| Depop | star reviews; fast shipping | ship-by cards; a drafted thank-you |
+| Poshmark | Love Notes; average ship time | ship-by cards; labels batched |
+| Mercari | ratings; shipping within the 3-day window | the countdown to Mercari's own cutoff |
+| Facebook | ratings, a profile with history, response time | replies fast (drafts wait for one tap); no-shows handled politely |
+
+## 18. Questions we will be asked
+
+The list for the pitch and the website's FAQ is in [questions.md](questions.md).
+
 ## Open for Ben and Nate
 
 - The price at which nothing runs on its own (§8): $500 as the default?
 - The "estate" mark and its tone (§4).
 - Whether Clean up is offered by default on every photo, or only when a photo fails a gate.
+- Whether automatic replies start as drafts the person approves, then earn "answer for me" (§ messages in [ways-out](ways-out.md#63-messages)).

@@ -1,16 +1,331 @@
 {
   "screen": "(tabs)/index",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "Today: what needs me, and how am I doing. The money kept since the last look, one feed of decisions in three tiers, the notices, and one quiet line for what the agent did on its own.",
+  "frame": [
+    "Who: everyone with something waiting; leans to the person clearing out their own things (primary persona), held up by the flipper's 40-card day and the new person's empty first launch.",
+    "How often: the most-seen screen, opened from launch, the tab and every push, several times a day; each card is answered in one tap, so every card has the same shape and the same four states.",
+    "What they came to do: see in a second whether it is working (the top slot) and whether anything needs them (the first card, nearest its deadline), then answer and leave.",
+    "Where a mistake costs most: an offer or a pickup that expires unseen, an address or a price sent without the person's tap, and an act that cannot be taken back. So deadlines lead, the safe choice is the black pill on a pickup, and every act holds 5 s with Undo before it reaches the site.",
+    "Ways out (spec/ways-out.md, Today): Later on every card (back before its deadline), More holds the rest of the actions and the way to the item or the chat, a batch can go One by one, the agent's amount can be changed in a sheet, and a held tap waits for signal. The person stays in the loop at every price, address and pickup: those wait for a tap, and what the agent did alone is one quiet line that opens its log with Undo."
+  ],
+  "decisions": [
+    "The cards' words and order live in app/src/today/cards.ts, not in the screen, so they are tested in node and the item page can read the same card (one fact, one place).",
+    "The person and the state are read through useScreen() (app/src/demo/screen.ts), so Today draws every state at /?state=<s> like every page; ?world=stops and ?fail=<decision ids> are Today's own extras, because the demo has no server to fail.",
+    "On an offer card Accept leads (black when the card is the lead or due within the hour, C4) and the agent's counter is the second, though the data suggests the counter: the fact line shows what accepting keeps, and the person clearing out looks at what they keep, then accepts (pages §3).",
+    "On a pickup that asks for the home address, Keep the lot leads and Share address is the second: an address is shared only on the person's tap (decision 2026-11-14, locked), so the safe choice is the one the eye lands on.",
+    "Every act holds about 5 s behind an Undo toast before it reaches the site (Gmail's undo send), so even a sent reply or an accept can be taken back in that window; after it, the log and the site's own limits apply.",
+    "The batch of labels says what the tap spends (Labels cost $6.40), not what the sales keep, because the top slot already says that money (one fact, one place).",
+    "The handled line names the most frequent thing the agent did and how many others ('Took 2 listings down, and 1 more'), never a bare count, because Ben called '3 need you, 11 handled' meaningless (ledger L13); it opens its log in a sheet, with Undo where the site still allows it.",
+    "The notices and the handled line are the last rows of Good to know, since they ask nothing; the tier label shows only where two tiers meet.",
+    "A new person sees the next setup step in the top slot and one row, What's something worth?, instead of 'Nothing needs you': one display heading per view (A7), and 'needs you' means nothing before anything is listed.",
+    "Two pills and More hold about 26 characters of label; past that the second pill drops its amount, then moves to More (the edge world's $10,999.99 offer ran past the corner).",
+    "A queue opens full screen one item at a time (QueueView part); each Post leaves the stack, Not now keeps it as a draft, and the last one closes it and takes the card away.",
+    "The relink card has no item, so it shows the item stuck on that site with the site's badge: the photo still leads (C3).",
+    "A thing sold on two sites is one card, Sold twice, with Keep the first as the one tap and Compare opening both sales side by side (site, buyer's price, what each keeps, what cancelling each costs); the top slot counts it once until the person picks (spec/edge-cases.md §1).",
+    "Each stop on the auto-list tree is one card with one question in its fact line and the likely answer as the black pill, so a stopped tree costs a tap, never a restart; a retake opens the camera (spec/edge-cases.md §7). The stops world (/?world=stops) draws them all.",
+    "Every card's More ends with I did this already, Open the chat and Open the item (ways-out, Today: 'I already did that on the site', 'None of these buttons').",
+    "An amount typed under the person's lowest asks once in the sheet ('Under your lowest, $70. Tap again to send it.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona).",
+    "One black pill per view (C4, DecisionCard): only the lead card, nearest its deadline, and any card due within the hour lead with black; every other card leads with the light fill.",
+    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Try again, and a card that failed is the failed state reached with ?fail=."
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/?world=clearing",
+      "shows": "Since yesterday $97.33, then the pickup on the state gradient, the jacket's 2 offers, the scam warning and the signed-out site; When you can: 2 to ship, the Switch ready to post, the lamp's price, a question; Good to know: a review, two notices and the handled line"
+    },
+    {
+      "state": "new",
+      "route": "/?state=new",
+      "shows": "Next step, Link a site, and the What's something worth? row; no money, no cards, never $0.00"
+    },
+    {
+      "state": "dense",
+      "route": "/?state=dense",
+      "shows": "Since this morning $137.97, three offers, a label, 5 to ship as one batch card, 40 to post drawn as a stack, the photos to approve, a notice and the handled line"
+    },
+    {
+      "state": "empty",
+      "route": "/?state=empty",
+      "shows": "Nothing needs you, with no money at the top, no notices and no handled line"
+    },
+    {
+      "state": "one",
+      "route": "/?state=one",
+      "shows": "Since yesterday $97.33 and one card, the pickup on its state gradient with the one black pill, Keep the lot; nothing else"
+    },
+    {
+      "state": "loading",
+      "route": "/?state=loading",
+      "shows": "two card skeletons and a notice skeleton in the cards' exact sizes, and no top slot"
+    },
+    {
+      "state": "working",
+      "route": "/?world=clearing",
+      "shows": "after a tap, the pressed pill shows the step (Accepting, Sending, 1 of 2) and its other pill is disabled"
+    },
+    {
+      "state": "done",
+      "route": "/?world=clearing",
+      "shows": "the card leaves, the cards under it close the gap, and an Undo toast says what happened ('Accepted $85'); Undo brings the card back"
+    },
+    {
+      "state": "failed",
+      "route": "/?world=clearing&fail=dec_jacket",
+      "shows": "the card stays with a Failed tag, says what failed ('The site did not answer') and offers Retry"
+    },
+    {
+      "state": "did not load",
+      "route": "/?state=failed",
+      "shows": "Today didn’t load and Try again, with no money and no cards; Try again draws Today"
+    },
+    {
+      "state": "batch failed",
+      "route": "/?world=clearing&fail=dec_lbl2",
+      "shows": "Buy 2 labels counts 1 of 2, 2 of 2; the label that went leaves, the card stays with the one that failed and Retry"
+    },
+    {
+      "state": "queue",
+      "route": "/?world=flipper",
+      "shows": "Review 40 opens one item full screen: Ready to post, 1 of 40, the photo over a stack, the title, the price dotted as a guess, the sites, Not now, Edit, and Post at the price on its sites"
+    },
+    {
+      "state": "offline",
+      "route": "/?state=offline",
+      "shows": "the last copy under a Waiting for signal line; a tap is taken and the pill says Waiting for signal"
+    },
+    {
+      "state": "break",
+      "route": "/?world=edge",
+      "shows": "a 150-character title cut with an ellipsis, a $10,999.99 offer whose Counter drops its amount, 99+ messages, a card already working, two failed cards with Retry"
+    },
+    {
+      "state": "stops",
+      "route": "/?world=stops",
+      "shows": "Sold twice first (Both paid, $42 and $40; Keep the first, Compare), the top slot counting it once (3 sold), and one card per stop of the auto-list tree: a failed post, the site changed the price, a claim nothing backs, a blurry tag photo, Do the Joy-Cons drift?"
     }
   ],
   "controls": [
     {
-      "control": "Inbox",
-      "on_tap": "opens Messages"
+      "id": "nav-inbox",
+      "control": "Messages, top right, with its count",
+      "on_tap": "opens messages",
+      "goes": "/messages"
+    },
+    {
+      "id": "top-news",
+      "control": "The money kept since the last look",
+      "on_tap": "opens You",
+      "goes": "/you"
+    },
+    {
+      "id": "top-setup",
+      "world": "new",
+      "control": "Next step, Link a site",
+      "on_tap": "opens setup",
+      "goes": "/onboarding"
+    },
+    {
+      "id": "empty-worth",
+      "world": "new",
+      "control": "What's something worth?",
+      "on_tap": "opens the camera",
+      "goes": "/camera"
+    },
+    {
+      "id": "dec_addr-open",
+      "control": "The pickup card itself",
+      "on_tap": "opens the chair",
+      "goes": "/item/it_chair"
+    },
+    {
+      "id": "dec_addr-spot",
+      "control": "Keep the lot",
+      "on_tap": "keeps the pickup at the library lot: Sending, then the card leaves with Undo"
+    },
+    {
+      "id": "dec_addr-share",
+      "control": "Share address",
+      "on_tap": "sends the address only on this tap: Sending, then the card leaves with Undo"
+    },
+    {
+      "id": "dec_addr-more",
+      "control": "More on the pickup card",
+      "on_tap": "opens a sheet with Later, Open the chat, Open the item"
+    },
+    {
+      "id": "dec_jacket-open",
+      "control": "The jacket's offer card",
+      "on_tap": "opens the jacket",
+      "goes": "/item/it_jacket"
+    },
+    {
+      "id": "dec_jacket-acc",
+      "control": "Accept $85",
+      "on_tap": "Accepting, then the card leaves and the toast says Accepted $85 with Undo"
+    },
+    {
+      "id": "dec_jacket-ctr",
+      "control": "Counter $92",
+      "on_tap": "Sending, then the card leaves and the toast says Countered at $92"
+    },
+    {
+      "id": "dec_jacket-more",
+      "control": "More on the offer card",
+      "on_tap": "opens a sheet with Counter another amount, Decline both, Later, Open the chat, Open the item"
+    },
+    {
+      "id": "dec_jacket-amount",
+      "control": "Counter another amount, in More",
+      "on_tap": "opens a sheet with the agent's $92 dotted; changing it and tapping Counter sends that amount"
+    },
+    {
+      "id": "dec_jacket-later",
+      "control": "Later, in More",
+      "on_tap": "the card leaves and the toast says when it comes back, before its deadline"
+    },
+    {
+      "id": "dec_jacket-go-chat",
+      "control": "Open the chat, in More",
+      "on_tap": "opens the buyer's thread",
+      "goes": "/messages/cv_jd"
+    },
+    {
+      "id": "dec_scam-block",
+      "control": "Block Alex",
+      "on_tap": "Blocking, then the card leaves with Undo"
+    },
+    {
+      "id": "dec_relink-relink",
+      "control": "Sign in again",
+      "on_tap": "opens the accounts page",
+      "goes": "/you/accounts"
+    },
+    {
+      "id": "batch-buy_label-all",
+      "control": "Buy 2 labels",
+      "on_tap": "counts 1 of 2, 2 of 2, then the card leaves with '2 labels ready'; a label that fails stays on the card"
+    },
+    {
+      "id": "batch-buy_label-split",
+      "control": "One by one",
+      "on_tap": "shows the two labels as a card each"
+    },
+    {
+      "id": "dec_post-post",
+      "control": "Post to 2 sites",
+      "on_tap": "Posting, then the card leaves with Undo"
+    },
+    {
+      "id": "dec_post-edit",
+      "control": "Edit first",
+      "on_tap": "opens the Switch",
+      "goes": "/item/it_switch"
+    },
+    {
+      "id": "dec_mark-lower",
+      "control": "Lower to $38",
+      "on_tap": "Changing, then the card leaves with Undo"
+    },
+    {
+      "id": "dec_reply-send",
+      "control": "Send reply",
+      "on_tap": "Sending, then the card leaves with Undo"
+    },
+    {
+      "id": "dec_reply-edit",
+      "control": "Edit, on the question card",
+      "on_tap": "opens the thread",
+      "goes": "/messages/cv_pd"
+    },
+    {
+      "id": "dec_review-leave",
+      "control": "Leave 5 stars",
+      "on_tap": "Posting, then the card leaves with Undo"
+    },
+    {
+      "id": "nt_sw",
+      "control": "Switch OLED prices rose 4% this week",
+      "on_tap": "opens the Switch",
+      "goes": "/item/it_switch"
+    },
+    {
+      "id": "handled",
+      "control": "Took 2 listings down, and 1 more",
+      "on_tap": "opens Done for you: each thing the agent did, with Undo where it still can be undone"
+    },
+    {
+      "id": "log-all",
+      "control": "Everything it did, in the log sheet",
+      "on_tap": "opens the automation log",
+      "goes": "/you/automation"
+    },
+    {
+      "id": "queue-first_post-review",
+      "world": "flipper",
+      "control": "Review 40",
+      "on_tap": "opens the queue full screen at 1 of 40"
+    },
+    {
+      "id": "queue-approve",
+      "world": "flipper",
+      "control": "Post at the price on its sites, in the queue",
+      "on_tap": "Posting, then the next one comes up and the stack shrinks; 2 of 40"
+    },
+    {
+      "id": "queue-skip",
+      "world": "flipper",
+      "control": "Not now, in the queue",
+      "on_tap": "keeps it as a draft and shows the next one"
+    },
+    {
+      "id": "nav-back",
+      "world": "flipper",
+      "control": "Back, in the queue",
+      "on_tap": "closes the queue; the card shows what is left"
+    },
+    {
+      "id": "dec_double-first",
+      "world": "stops",
+      "control": "Keep the first, on the Sold twice card",
+      "on_tap": "Cancelling the other, then the card leaves with Undo"
+    },
+    {
+      "id": "dec_double-compare",
+      "world": "stops",
+      "control": "Compare",
+      "on_tap": "opens Sold twice: each site, the buyer's price, what you keep and what cancelling costs"
+    },
+    {
+      "id": "dec_double-keep-first",
+      "world": "stops",
+      "control": "Keep workpants_jo’s, cancel canvasfan’s, in Compare",
+      "on_tap": "keeps the first sale and cancels the second through the site"
+    },
+    {
+      "id": "dec_fact-no",
+      "world": "stops",
+      "control": "No drift, on Do the Joy-Cons drift?",
+      "on_tap": "saves the answer and the card leaves; the tree carries on"
+    },
+    {
+      "id": "dec_retake-take",
+      "world": "stops",
+      "control": "Retake the tag",
+      "on_tap": "opens the camera",
+      "goes": "/camera"
+    },
+    {
+      "id": "dec_jacket-elsewhere",
+      "control": "I did this already, in More",
+      "on_tap": "Checking the site, then the card leaves with Undo"
+    },
+    {
+      "id": "retry",
+      "route": "/?state=failed",
+      "control": "Try again, when Today did not load",
+      "on_tap": "loads Today again"
     }
-  ]
+  ],
+  "back": "Today is a tab: it has no Back. The queue's Back closes the queue; a sheet closes on its scrim."
 }

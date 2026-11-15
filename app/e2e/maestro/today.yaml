@@ -1,0 +1,43 @@
+# Today (app/behavior/(tabs)/index.json) on a phone or simulator: the same states as app/e2e/today.test.mjs, in the default
+# world (clearing). Expo Go, with npx expo start running:  maestro test app/e2e/maestro/today.yaml
+# A development build:  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/today.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+- openLink: ${URL}
+- extendedWaitUntil:
+    visible: "secondhand"
+    timeout: 30000
+# typical: the money kept since the last look, the tiers, the cards.
+- assertVisible: "Since yesterday"
+- assertVisible: "2 sold, after fees"
+- assertVisible: "Keep the lot"
+- assertVisible: "Accept \\$85"
+# working, then done: the pill shows the step, the card leaves, the toast offers Undo.
+- tapOn: { id: "dec_jacket-acc" }
+- assertVisible: "Accepting"
+- extendedWaitUntil:
+    visible: "Accepted \\$85"
+    timeout: 4000
+- tapOn: { id: "dec_jacket-undo" }
+- assertVisible: { id: "dec_jacket-open" }
+# More opens the rest of the actions; Counter another amount shows the agent's guess.
+- tapOn: { id: "dec_jacket-more" }
+- assertVisible: "Counter another amount"
+- tapOn: { id: "dec_jacket-amount" }
+- assertVisible: { id: "amount-value" }
+- tapOn: "Close"
+# The handled line opens what the agent did on its own.
+- scrollUntilVisible:
+    element: { id: "handled" }
+- tapOn: { id: "handled" }
+- assertVisible: "Done for you"
+- tapOn: "Close"
+# A card opens its item; messages open from the nav.
+- scrollUntilVisible:
+    element: { id: "dec_addr-open" }
+    direction: UP
+- tapOn: { id: "nav-inbox" }

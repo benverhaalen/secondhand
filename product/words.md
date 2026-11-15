@@ -1115,3 +1115,35 @@ Used in: [board 2](../brand/explore/web-home/boards/02-ambient/board.json).
 ## 2026-11-15 the photo templates, demos that let the magic talk, and "monitors and manages markets for you"
 Ben, project chat, 06:01 UTC.
 > also did you ever fully flesh out the image creation thing. like for pants and sweatshirts and short sleeve and long sleeve clearly defining roughly what the image should look like when unwrinkled and what should be slide 1, slide 2, etc. and ensuring edge cases. defect photo is hard to do. where different graphics could be. how to effectively organize a slide of photos and generate them from not taking individual photos with the tool and then giving templates effectively to magically get each image beautified and perfected. ensure this capability on the backend actually works super well. also think of evidence to back the problem the best is just showing the magic of it. the different features and flows and letting the demos or the videos of them talk. us actually demoing them in the basement. try to make the demoing loops faster for website and app too. also think about how to visually convey how it works. use things like exa and firebase and treg x videos that they do to demo new features. here are some new notes second hand monitors and manages markets for you. explaining all our thought processes. official apis and when and how. how there is low risk on your end. an intelligence engine. more than just reselling clothes as we see this scale you can effectively create a way to price anything you own against the market and for the purpose you want.
+## 2026-11-15 who judges it, guarantees, the buyer side, messages you approve, meetups, audit every site, and no fixed pickup schedule
+Ben, project chat, 2026-11-15 05:18 UTC.
+> i did the actions secret. i really think we need to think about the problems and who is judging and or using our thing. think from reasoning about it all. worries. what we guarantee and how. things that are impressive to databricks too or just about the data side. also the ai side of things. also cost too. and then future business model and possible blockers to it all. some features i hope you didnt forget that i came up with. think about all the different things with an item. there are so many variables and different points. where is it listed, the photos, the description of it all, if its going to be shipped if its fine for pickup if that is good. also for the buyer side i feel like i havent talked as closely with you about all that - like all the buyer features and all the places those could break and what we do then. what we can control on our site vs not. refunds. like understanding what's out of our control. what matters on certain sites to credibility. managing automated messages and the right ui for all that. recommendations and best practices for meeting up places. where to meet up. when. try to keep people safe with the app. adding things to your calendar. i think you should be able to quickly answer questions with messages too in some way where you approve exact messages in a ui and you stay fully in the loop and can escalate and audit it all when necessary. i dont like the schedule setting decision because i feel like it ends up probably creating a lot of problems. also taking down posts too is an important feature. there is a lot a lot of edge cases that need to be covered in all this. and in a plan before we go present we should be able to answer most of them. also in the plans before its over we should create a pitch video. really continue thinking. also im not sure the mechanism nate has had for monitoring our own stuff. how we know when something has sold and if there are any proxies for it. and how say on depop my approved action can turn into an approved offer. ensuring a user can go audit wherever whenever from one app what is happening in the other apps. the ai should also suggest apps to maybe not list on. of course the user can if they want. but like a couch shouldn't be on depop. you need to understand the profile of the sales and the enviroment on the platforms so so so well. another thing is how do we prove the ai enhancement is not lying about photos. how do we prove it. is there any way to measure it or benchmark it. or just show it to a judge. we should def have an faq section. where people can learn more on the site.
+
+## 2026-11-15 pickup times by a touch picker
+Ben, thread "Map every feature and page so the build can start", 05:21 UTC, answering the card "Replace the fixed pickup windows with what?".
+> i think with the decision, what is the easiest way. probably a dynamic ui selector. some intutive touch way to interact.
+
+## 2026-11-15 a want built by touch that runs while you are away
+Ben, project chat, 2026-11-15 05:20 UTC.
+> also, when agents are working in the background. some things take a bit. you can leave and come back. like i hope you effectively can implement super well the buying polling thing. i want a brewers jersey and i want it around a price. i can adjust my range etc. i can say shipped or pickup or both etc. color. the dynamic ui is really helpful here. i think ive probably prompted about all this too already
+
+## 2026-11-15 no calendar in the app: pick days and times, see who is coming, add it to a calendar after
+Ben, thread "Map every feature and page so the build can start", 05:24 UTC.
+> i dont want the user's calendar to be in the app at all. you can select days of the upcoming week that are fine and approve a time if they send. like the agent could respond im free at these times this week in like a humanized sounding way. like Mon 6-8 or Fri 3-4p or something. like not mechanical or engineeringly. but then the user can add it to the calendar too. it also should allow them to see who is coming to buy. set a location. the local pickup stuff could be super useful too. but adding to google or ical could be really cool once its planned. ensuring agents dont mess up too is good. so using actual images of the messages from the site
+
+## 2026-11-15 hill-climb what the logs found slow
+
+Ben, project chat, 05:05:
+> try to speed up what logging found slowed things down hiilclimb it using the hillclimbing skills from either poteto or like the claude hillclimb skill or docs type thing
+
+Used in: [log/README.md](../log/README.md#hill-climb), the render and image-gen speedups of 2026-11-15.
+## 2026-11-15 notifications reasoned from business, ux, psychology and personas
+Ben, project chat, 2026-11-15 05:23 UTC.
+> also i hope youve thought about notifications and all that. what info needs to be in them. whats useful. everything from a business entrepreneur ui ux psychology and persona type thing.
+
+## 2026-11-15 a skill i name that is not in the repo gets fetched
+
+Ben, project chat, 05:37:
+> if i tell you about a skill and its not in the repo i probably want you to fetch it
+
+Used in: [AGENTS.md](../AGENTS.md#how-to-work-here), [.agents/vendor/poteto/](../.agents/vendor/poteto/SOURCE.md), [.agents/skills/hillclimb](../.agents/skills/hillclimb/SKILL.md).

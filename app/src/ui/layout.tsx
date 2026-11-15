@@ -15,17 +15,21 @@ export const GAP = { tight: space.s2, group: space.s3, cards: space.s4, section:
 // `wash` draws the header gradient behind the nav (Art. 5, The wash): main screens with news at the top only.
 // `name` and `state` mark the root (data-screen, data-state on the web) so tests and the gallery know which state is drawn.
 // `foot` is the page's one act pinned to the foot, 16 above the safe area (Art. 7.9), when it is not in the first 844.
-export function Screen({ children, nav, wash = false, center = false, name, state, foot }: {
+export function Screen({ children, nav, wash = false, center = false, name, state, skip, sheet, foot }: {
   children: ReactNode;
   nav?: ReactNode;
   wash?: boolean;
   center?: boolean;
   name?: string;
   state?: string;
+  // The states this screen cannot be in, each with why: "offline: nothing here reaches the network; new: ...". B35 reads it.
+  skip?: string;
+  // A catalog of parts, not a screen a person sees (the parts sheet): app-check judges each part there, but not what one view holds.
+  sheet?: string;
   foot?: ReactNode;
 }) {
   const c = useColors();
-  const marks = name || state ? ({ dataSet: { screen: name, state } } as object) : {};
+  const marks = name || state || sheet ? ({ dataSet: { screen: name, state, skip, sheet } } as object) : {};
   return (
     <OnGround ground="page">
       <SafeAreaView {...marks} edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>

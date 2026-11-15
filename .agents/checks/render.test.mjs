@@ -1,4 +1,5 @@
-import { test, before, after } from 'node:test';
+import { test, describe, before, after } from 'node:test';
+import { availableParallelism } from 'node:os';
 import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -320,4 +321,21 @@ CASES.push(['B5', 'a state gradient whose colors are mixed by two amounts', NEED
   ['B5', 'a state gradient paler than two days out', NEED(STATE(.8)), /B5 .*\[card-decision\] is a gradient built by hand/, 'app'],
   ['B6', 'the ink of the dark field on a state gradient, which stays light', NEED(STATE(.3), '<p style="font-size:15px;color:var(--on-field)">Nike Dunk Low</p>'), /B6 .*"Nike Dunk Low" is .* on a state gradient: it stays light in dark/, 'app', 'dark'],
   ['U1', 'a tag that is its own button inside a card', NEED(STATE(0), '<button data-part="tag" style="height:20px;padding:0 8px;border:0;border-radius:999px;font:500 13px var(--font-text);background:var(--marigold-tint);color:var(--on-color)">Offer</button>'), /U1 .*\[tag\] that looks pressable/, 'app']);
-for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+// From the kit (rollout thread, 05:31): a Press wrapper whose pill is its one child that fills it, and a large amount whose
+// line height is shorter than the face's content area, so the range box pokes out of its part while the ink stays in.
+test('render: a pill drawn on the child of its pressable, and a large amount whose ink stays in its part, pass', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(app('<div role="button" style="margin:16px 20px;width:160px;height:48px;cursor:pointer"><div style="width:160px;height:48px;border-radius:999px;background:var(--gray);display:grid;place-items:center"><span style="font-size:15px">Counter</span></div></div>'), 'app'), []);
+  assert.deepEqual((await ids(app('<div data-part="amount" style="margin:16px 20px;height:52px;overflow:visible"><span style="font-size:50px;line-height:52px;display:block">$46.95</span></div>'), 'app')).filter(o => o.startsWith('B34')), []);
+});
+CASES.push(['U1', 'a pressable whose child fill covers only part of it', app('<div role="button" style="margin:16px 20px;width:160px;height:48px;cursor:pointer"><div style="width:80px;height:24px;background:var(--gray)"><span style="font-size:15px">Counter</span></div></div>'), /U1 .*no fill and no outline/, 'app']);
+// From the Sell builder (05:47): a grid of tiles with a hot tag on two of them under one decision card, and a logo on each tile.
+const HOT = '<span data-part="tag" style="display:inline-block;height:20px;padding:0 8px;border-radius:999px;font-size:13px;color:var(--on-color);background:var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))">Hot</span>';
+test('render: tag gradients on tiles under a field are not more fields, and logos on separate tiles are not one row', { skip: !pw }, async () => {
+  const tile = `<div style="width:167px;height:96px;padding:12px;background:var(--gray);border-radius:20px">${HOT}${HOT.replace('var(--hot-2) linear-gradient(120deg,var(--hot-1),var(--hot-2))', 'linear-gradient(var(--sky),var(--mint))')}<img alt="eBay" data-logo src="${pathToFileURL(join(root, 'assets/platforms/square/ebay.png')).href}" style="width:20px;height:20px;display:block;margin-top:12px"></div>`;
+  const found = await ids(app(`<div class="f" style="margin:16px 20px;height:96px"></div><div style="display:flex;gap:16px;margin:0 20px">${tile}${tile}</div>`), 'app');
+  assert.deepEqual(found.filter(o => /^B(4|33) /.test(o)), []);
+});
+// Each case renders in its own page of the one browser, so they run side by side.
+describe('render: each rule fails on the output it exists to catch', { concurrency: availableParallelism() }, () => {
+  for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
+});

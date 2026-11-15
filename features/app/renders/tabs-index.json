@@ -1,0 +1,25 @@
+{
+  "route": "(tabs)/index",
+  "screen": "today",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "one",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}
