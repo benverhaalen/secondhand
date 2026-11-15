@@ -2,7 +2,7 @@
 
 Researched 2026-11-15 by Ben (Claude Code, thread "Resolve the product's ambiguous problems"). Feeds [spec/hard-calls.md](../../../spec/hard-calls.md). Method: RDD with IAE. For each messy problem, name its general structure, assume a field already solved that structure, find the mechanism, and give it a job here. The approved insurance, quant and appraisal mechanisms in the pitch thread's `market.md` (project files, `secondhand-pitch/market.md`) are not repeated; this note covers the problems they did not.
 
-Ben, 06:59: "find a bunch of ambigious problems that need solving with logic and how the product is made ... use rdd research or iae and find adjacent fields" ([words](../../../product/words.md#2026-11-15-find-the-ambiguous-problems-answer-them-from-adjacent-fields-and-a-pitch-constitution)).
+Ben, 06:59: "find a bunch of ambigious problems that need solving with logic and how the product is made ... use rdd research or iae and find adjacent fields" ([words](../../../product/words.md#2026-11-15-a-pitch-constitution-ambiguous-problems-and-the-judges-own-logic)).
 
 **Marks.** *Observed*: the page was opened this session and says it (quotes are verbatim). *Asserted*: from memory or a search title, not reopened. *Inferred*: our reasoning.
 

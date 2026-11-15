@@ -1,6 +1,6 @@
 # Hard calls: where there is no obvious right answer, and what the app does
 
-*Agent proposal* from Ben at 06:59 ([words](../product/words.md#2026-11-15-find-the-ambiguous-problems-answer-them-from-adjacent-fields-and-a-pitch-constitution)): the messy problems where the product has to make a judgment call or can fail, each answered with the reasoning first and the numbers underneath. [edge-cases.md](edge-cases.md) lists what goes wrong; this file covers the cases where two good answers conflict and someone has to choose. Each answer borrows a mechanism from a field that already solved the same structure; the sources and their marks are in [hard-calls-references.md](../research/cross-cutting/ben/hard-calls-references.md) (R1 to R19). What only Ben or Nate can settle is in [open-questions.md](open-questions.md#for-both) (J46 to J52).
+*Agent proposal* from Ben at 06:59 ([words](../product/words.md#2026-11-15-a-pitch-constitution-ambiguous-problems-and-the-judges-own-logic)): the messy problems where the product has to make a judgment call or can fail, each answered with the reasoning first and the numbers underneath. [edge-cases.md](edge-cases.md) lists what goes wrong; this file covers the cases where two good answers conflict and someone has to choose. Each answer borrows a mechanism from a field that already solved the same structure; the sources and their marks are in [hard-calls-references.md](../research/cross-cutting/ben/hard-calls-references.md) (R1 to R19). What only Ben or Nate can settle is in [open-questions.md](open-questions.md#for-both) (J46 to J52).
 
 ## The logic underneath
 
@@ -247,4 +247,4 @@ On eBay the card shows where the account stands: "1 of 2 cases this period."
 
 ## Backend asks
 
-Fields and endpoints these calls need are in [packet 53](../.agents/team/packets/team/53-hard-calls-for-the-backend.md).
+Fields and endpoints these calls need are in [packet 54](../.agents/team/packets/team/54-hard-calls-index.md), which points to the packets for posting (55), offers and sales (56) and decision kinds (57).

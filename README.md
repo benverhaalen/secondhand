@@ -10,7 +10,6 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [product/features.md](product/features.md) | Every feature with its status and owner | Both |
 | [product/decisions.md](product/decisions.md) | Dated log of what Ben and Nate agreed | Both |
 | [product/pitch.md](product/pitch.md) | How secondhand is pitched: the problem in numbers, five narratives, the recommended order | Both; *agent proposal* until picked |
-| [product/pitch-constitution.md](product/pitch-constitution.md) | The rules every pitch piece follows: judgment over features, one item's life, the logic each judge hears without being told | Agents; Ben picks |
 | [product/words.md](product/words.md) | Ben's and Nate's exact product words, the source everything else cites | Append only |
 | [features/](features/) | One living page per feature | Whoever owns the feature |
 | [spec/](spec/README.md) | The canon, one spec per feature, the engines, the method cards, the build plans, and the checked model of an item's life | Agents propose; Ben and Nate decide |
