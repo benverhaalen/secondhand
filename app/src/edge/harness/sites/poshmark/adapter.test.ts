@@ -134,7 +134,8 @@ for (const [verb, args] of Object.entries(WRITE_ARGS)) {
     assert.equal(p.dry, true);
     assert.match(p.url, /^https:\/\/poshmark\.com\//);
     assert.match(p.steps.at(-1)!, /^stop before/);
-    assert.equal(code(await run(verb as Verb, { ...args, operation_id: 'op', dry: false })).code, 'auth_expired');
+    // save and relist are the person's to tap on Poshmark: the page is handed over, never a relink
+    assert.equal(code(await run(verb as Verb, { ...args, operation_id: 'op', dry: false })).code, ['save', 'relist'].includes(verb) ? 'no_route' : 'auth_expired');
     assert.equal(code(await run(verb as Verb, { ...args, operation_id: 'op', dry: false }, client({ signed_in: true }))).code, 'no_route');
   });
 }
@@ -145,6 +146,12 @@ test('share is dry by default behind the same gate', async () => {
   assert.match((r.data as { steps: string[] }).steps.at(-1)!, /^stop before/);
   assert.equal(code(await share(client({ signed_in: true }), { listing_external_id: 'x', dry: false })).code, 'no_route');
   assert.equal(code(await share(client(), {})).code, 'policy_refused');
+  // share, save and relist are the person's to tap: a real call hands over the page, signed in or not, and never asks to relink
+  for (const c of [client(), client({ signed_in: true })]) {
+    assert.equal(code(await share(c, { listing_external_id: 'x', dry: false })).code, 'no_route');
+    assert.equal(code(await run('save', { listing_external_id: 'x', operation_id: 'op', dry: false }, c)).code, 'no_route');
+    assert.equal(code(await run('relist', { listing_external_id: 'x', person_asked: true, operation_id: 'op', dry: false }, c)).code, 'no_route');
+  }
 });
 
 test('no write sets a price under the floor', async () => {

@@ -1,7 +1,8 @@
 // Local contracts only; the lead validates and runs the bundle on the workspace.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, mkdtempSync, writeFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
@@ -13,6 +14,41 @@ const bundle = () => read('deploy/databricks.yml');
 const market = (name) => read(`databricks/pipelines/market/${name}.sql`);
 const resourceFiles = () => ['deploy/databricks.yml', ...readdirSync(join(root, 'deploy/resources')).filter(f => f.endsWith('.yml')).map(f => `deploy/resources/${f}`)];
 const block = (text, key, indent) => text.match(new RegExp(`^${' '.repeat(indent)}${key}:\\n([\\s\\S]*?)(?=^ {0,${indent}}\\S|$(?![\\s\\S]))`, 'm'))?.[1] ?? '';
+
+const validatePaths = (text, file, base = root) => {
+  const pipelines = block(text, 'pipelines', 2);
+  for (const match of pipelines.matchAll(/\b(?:path|include):\s*\[?["']?([^\s,"'\[\]}]+)/g)) {
+    assert.doesNotMatch(match[1], /(^|[^*])\*(?!\*)/, `${file}: pipeline libraries require a double asterisk '**'`);
+  }
+  let paths = 0;
+  // Minimal fallback when yaml is absent: inspect all supported path keys, including flow mappings.
+  for (const match of text.matchAll(/\b(python_file|path|include):\s*\[?["']?([^\s,"'\[\]}]+)/g)) {
+    const value = match[2];
+    if (match[1] === 'include' && !value.includes('*')) continue;
+    const target = resolve(base, dirname(file), value);
+    if (value.includes('*')) {
+      const folder = target.slice(0, target.indexOf('*')).replace(/[\\/]$/, '');
+      assert.ok(existsSync(folder), `${file}: glob folder missing: ${value}`);
+      const suffix = value.endsWith('/**') ? '.sql' : target.slice(target.lastIndexOf('*') + 1);
+      assert.ok(readdirSync(folder, { withFileTypes: true }).some(f => f.isFile() && f.name.endsWith(suffix)), `${file}: empty glob: ${value}`);
+    } else assert.ok(existsSync(target), `${file}: missing path: ${value}`);
+    paths++;
+  }
+  return paths;
+};
+
+test('pipeline glob validation rejects single stars in every library and requires SQL', (t) => {
+  const base = mkdtempSync(join(tmpdir(), 'pipeline-glob-'));
+  t.after(() => rmSync(base, { recursive: true, force: true }));
+  const pipeline = (value) => `resources:\n  pipelines:\n    first:\n      libraries:\n        - glob: { include: "./**" }\n    second:\n      libraries:\n        - glob: { include: "${value}" }\n`;
+  writeFileSync(join(base, 'readme.txt'), 'no SQL');
+  assert.throws(() => validatePaths(pipeline('./**'), 'pipeline.yml', base), /empty glob/);
+  writeFileSync(join(base, 'source.sql'), 'SELECT 1;');
+  assert.equal(validatePaths(pipeline('./**'), 'pipeline.yml', base), 2);
+  for (const value of ['./*.sql', './**/*.sql', './*/**']) {
+    assert.throws(() => validatePaths(pipeline(value), 'pipeline.yml', base), /double asterisk/);
+  }
+});
 
 test('bundle uses secondhand and includes market resources and synced SQL', () => {
   assert.match(block(block(bundle(), 'variables', 0), 'catalog', 2), /default: secondhand\b/);
@@ -30,19 +66,7 @@ test('all bundle task files and pipeline globs resolve relative to their declari
   for (const file of resourceFiles()) {
     const text = read(file);
     if (yaml) assert.ok(yaml.parse(text), `${file}: invalid YAML`);
-    // Minimal fallback when yaml is absent: inspect all supported path keys, including flow mappings.
-    for (const match of text.matchAll(/\b(python_file|path|include):\s*\[?["']?([^\s,"'\[\]}]+)/g)) {
-      const value = match[2];
-      if (match[1] === 'include' && !value.includes('*')) continue;
-      const target = resolve(root, dirname(file), value);
-      if (value.includes('*')) {
-        const folder = target.slice(0, target.indexOf('*')).replace(/[\\/]$/, '');
-        assert.ok(existsSync(folder), `${file}: glob folder missing: ${value}`);
-        const suffix = target.slice(target.lastIndexOf('*') + 1);
-        assert.ok(readdirSync(folder).some(f => f.endsWith(suffix)), `${file}: empty glob: ${value}`);
-      } else assert.ok(existsSync(target), `${file}: missing path: ${value}`);
-      paths++;
-    }
+    paths += validatePaths(text, file);
   }
   assert.ok(paths >= 14, 'expected nine folds, purge, three SQL tasks and a pipeline glob');
 });
@@ -85,6 +109,10 @@ test('layout is idempotent, commented and split into exactly six complete statem
   }
   for (const name of ['raw', 'market', 'measures']) assert.ok(parts.some(p => p.startsWith(`CREATE SCHEMA IF NOT EXISTS secondhand.${name} `)), name);
   for (const name of ['landing', 'captures', 'snapshots']) assert.ok(parts.some(p => p.startsWith(`CREATE VOLUME IF NOT EXISTS secondhand.raw.${name} `)), name);
+});
+
+test('pipeline libraries use a recursive glob', () => {
+  assert.match(read('deploy/resources/market.yml'), /include: \.\.\/\.\.\/databricks\/pipelines\/market\/\*\*\s*$/m);
 });
 
 test('pipeline uses only modern declarations and has one file per dataset', () => {

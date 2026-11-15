@@ -10,7 +10,7 @@ import { secrets } from '../.agents/checks/secrets.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, '..');
-const SYNCED = ['deploy', 'jobs'];
+const SYNCED = ['deploy', 'jobs', 'databricks', 'log'];
 
 const slug = (h) => h.toLowerCase().replace(/[^a-z0-9 -]/g, '').trim().replace(/\s+/g, '-');
 

@@ -1552,3 +1552,10 @@ Ben, project chat, 08:33 UTC, answering the image model, App Store and capture v
 > stay on nanobanana for 1. 2. coming soon. 3. wait on the voice, plan for later.
 
 Used in: [intent ledger](../spec/intent-ledger.md), [photo F7](constitutions/photo.md), [demo D7](constitutions/demo.md).
+## 2026-11-15 nate poshmark share, like and repost are suggested and the person taps
+Nate, build session (orchestrator), 2026-11-15 about 04:40 Central, after the Poshmark harness build reported that Poshmark's terms name automated liking, sharing and reposting. Two messages.
+> well lets have suggestions for liking sharing, reposting and such, or the things we can't automate we link directly, or even pull up an in app browser ideally for them to do it
+
+> just the poshmark one
+
+Used in: [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections), [who is waiting on what](../spec/plans/waiting.md).
