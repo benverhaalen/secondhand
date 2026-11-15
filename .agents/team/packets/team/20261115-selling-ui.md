@@ -1,6 +1,6 @@
 # Selling UI integration
 
-Owner: Ben. Agent: Codex. Updated: 2026-11-15. Base: 6b8f5b46; integration with current main follows.
+Owner: Ben. Agent: Codex. Updated: 2026-11-15. Base: 6a63c801; integration with current main follows.
 
 [Ben's request](../../../../product/words.md#2026-11-15-ben-wire-the-main-selling-flows): check and wire the main selling flows, with screens following the brand constitution and familiar interaction patterns.
 
@@ -20,6 +20,6 @@ The handoff exports title, description, quantity, attributes and asking price. P
 
 ## Verification
 
-Eight dark-mode browser scenarios use controlled service responses: inventory edit/price/reopen, version conflict/reload failure, capture-to-owned-draft, valuation success/failure, live-price protection, nullable-fee sale/fulfillment, copy/site handoff and dirty price dismissal. This proves client wiring, not a live marketplace transaction. Owned item API suite: 72 tests. Typecheck and scoped lint are recorded after integration. Phone screenshots inspected at 390 pixels; overflow checked at 320 pixels. Native camera/keyboard, system back gestures and marketplace-account operation were not demonstrated on a device.
+Ten dark-mode browser scenarios use controlled service responses: inventory edit/price/reopen, version conflict/reload failure, capture-to-owned-draft, valuation success/failure, live-price protection, nullable-fee sale/fulfillment, copy/site handoff and dirty price dismissal. This proves client wiring, not a live marketplace transaction. Owned item API suite: 73 tests. Typecheck and scoped lint are recorded after integration. Phone screenshots inspected at 390 pixels; overflow checked at 320 pixels. Native camera/keyboard, system back gestures and marketplace-account operation were not demonstrated on a device.
 
-[UI rationale](../../../../brand/screens/selling.run.md). Whole-repository checker has unrelated failures; no push exception is inferred from earlier brand/sign-in authorization.
+[UI rationale](../../../../brand/screens/selling.run.md). Ben explicitly permits this push with typography checks passing regardless of other check failures. The rendered typography suite covers approved face, weight, line-height and tracking signatures in light and dark, including inputs. Broader unapproved secondary-screen layout audit is in progress; functionality and approved main-tab/New compositions are protected.

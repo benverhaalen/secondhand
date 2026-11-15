@@ -13,10 +13,10 @@ import { SellerField } from './field';
 export function SellerPrice({ id }: { id: string }) {
   const state = useSellerItem(id);
   const [linkError, setLinkError] = useState<string | null>(null);
-  if (state.loading || !state.data) return <RouteSheet name="seller-price" title="Choose a price" state={state.error ? 'failed' : 'loading'} onClosed={() => router.back()}>
+  if (state.loading || !state.data) return <RouteSheet flow name="seller-price" title="Choose a price" state={state.error ? 'failed' : 'loading'} onClosed={() => router.back()}>
     <EmptyState title={state.error ? 'Could not open your item' : 'Opening your item'} line={state.error ?? undefined} action={state.error ? { id: 'seller-price-retry', label: 'Retry', onPress: state.reload } : undefined} />
   </RouteSheet>;
-  if (state.data.item.listings.some(listing => listing.state === 'live')) return <RouteSheet name="seller-price" title="Your listing price" state="typical" onClosed={() => router.back()}>
+  if (state.data.item.listings.some(listing => listing.state === 'live')) return <RouteSheet flow name="seller-price" title="Your listing price" state="typical" onClosed={() => router.back()}>
     <Txt role="body">Change live prices on the selling site.</Txt>
     {linkError ? <Txt role="body">{linkError}</Txt> : null}
     {state.data.item.listings.filter(listing => listing.state === 'live' && listing.url.startsWith('https://')).map(listing => <FootButton key={listing.id} id={`seller-live-price-${listing.id}`} kind="second" label={`Open ${listing.site} listing`} onPress={() => { void Linking.openURL(listing.url).catch(failure => { log.error('selling.live_price', failure); setLinkError('The listing did not open. Retry.'); }); }} />)}
@@ -67,11 +67,13 @@ function PriceForm({ data, reload }: { data: SellerItem; reload(): Promise<void>
   const hasRange = low && high && low.amount_cents >= 0 && high.amount_cents >= low.amount_cents && result?.range?.state !== 'hidden';
   const back = () => router.canGoBack() ? router.back() : router.replace(`/item/${item.id}` as Href);
   const dirty = price !== (data.price ? String(data.price.amount_cents / 100) : '');
-  return <RouteSheet name="seller-price" title="Choose a price" state={saving || pricing ? 'loading' : 'typical'} onClosed={back} beforeClose={() => { if (saving) return false; if (dirty) { setLeaving(true); return false; } return true; }}
+  return <RouteSheet flow keyboard name="seller-price" title="Choose a price" state={saving || pricing ? 'loading' : 'typical'} onClosed={back} beforeClose={() => { if (saving) return false; if (dirty) { setLeaving(true); return false; } return true; }}
     foot={<FootButton id="seller-price-save" label="Save and preview" state={saving ? 'working' : 'idle'} onPress={save} />}>
     <Row lead={<Photo src={item.photos[0]?.key} label={item.title || 'Your item'} />}><Txt role="headline">{item.title || 'Your item'}</Txt></Row>
-    <SellerField id="seller-price" label={`Asking price (${currency})`} value={price} onChange={setPrice} numeric disabled={saving} />
-    <Txt role="caption" tone="ink-2">Fees and shipping are set on the selling site.</Txt>
+    <Stack gap="tight">
+      <SellerField id="seller-price" label={`Asking price (${currency})`} value={price} onChange={setPrice} numeric amount disabled={saving} />
+      <Txt role="caption">Fees and shipping are set on the selling site.</Txt>
+    </Stack>
     <Section title="Price guidance">
       {job?.state === 'done' ? hasRange ? <Stack gap="tight">
         <Txt role="headline">{`${showMoney(low)} to ${showMoney(high)}`}</Txt>

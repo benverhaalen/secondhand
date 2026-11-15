@@ -26,6 +26,15 @@ function fixture() {
   } };
 }
 
+async function screenshot(page, name) {
+  if (!process.env.SELLING_SCREENSHOTS) return;
+  const screen = { review: 'seller-review', price: 'seller-price', preview: 'seller-publish', sale: 'seller-fulfillment' }[name];
+  await page.waitForFunction(screen => [...document.querySelectorAll(`[data-screen="${screen}"] [data-photo] img`)].some(img => img.complete && img.naturalWidth > 0 && img.getBoundingClientRect().width > 0), screen);
+  await page.evaluate(() => document.fonts.ready);
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: `${process.env.SELLING_SCREENSHOTS}/${name}.png` });
+}
+
 test('a real draft can be reviewed, saved, priced and prepared without claiming it was published', async () => {
   const f = fixture();
   const v = await app.open('/sell', { api: f.api });
@@ -33,17 +42,21 @@ test('a real draft can be reviewed, saved, priced and prepared without claiming 
   await v.tap('seller-edit');
   await v.page.getByTestId('seller-title-input').fill('Carhartt Detroit jacket');
   await v.page.getByTestId('seller-quantity-input').fill('2');
-  if (process.env.SELLING_SCREENSHOTS) { await v.page.waitForTimeout(500); await v.page.screenshot({ path: `${process.env.SELLING_SCREENSHOTS}/review.png`, fullPage: true }); }
+  await v.page.waitForTimeout(500);
+  const attribute = await v.page.getByText('Large', { exact: true }).filter({ visible: true }).boundingBox();
+  const instruction = await v.page.getByText('Check these details when you finish on the selling site.', { exact: true }).boundingBox();
+  assert.ok(instruction.y >= attribute.y + attribute.height, 'Read-only details and their instruction must not overlap after editing');
+  await screenshot(v.page, 'review');
   await v.tap('seller-save');
   await v.page.waitForURL('**/item/owned_item/plan');
   assert.equal(f.item.title, 'Carhartt Detroit jacket');
   assert.equal(f.item.quantity, 2);
   await v.page.getByTestId('seller-price-input').fill('52.50');
-  if (process.env.SELLING_SCREENSHOTS) { await v.page.waitForTimeout(500); await v.page.screenshot({ path: `${process.env.SELLING_SCREENSHOTS}/price.png` }); }
+  await screenshot(v.page, 'price');
   await v.tap('seller-price-save');
   await v.page.waitForURL('**/item/owned_item/post');
   await v.shows('Finish on a site');
-  if (process.env.SELLING_SCREENSHOTS) { await v.page.waitForTimeout(500); await v.page.screenshot({ path: `${process.env.SELLING_SCREENSHOTS}/preview.png` }); }
+  await screenshot(v.page, 'preview');
   assert.equal(f.item.price_cents.amount_cents, 5250);
   assert.equal(f.item.state, 'review');
   assert.deepEqual(f.writes.map(edit => edit.version), [4, 5]);
@@ -144,12 +157,13 @@ test('sales with unknown fees remain visible and fulfillment never invents a pay
   const sale = { id: 'sale_own', kind: 'sale', item_id: f.item.id, site: 'ebay', state: 'to_ship', price_cents: money(4500), fees_cents: null, shipping_cents: money(500), payout_cents: null };
   const v = await app.open('/sell', { api: { ...f.api, '/v1/orders': { data: [sale], next_cursor: null } } });
   await v.tap('sell-page-sales');
-  await v.shows('To ship · Net pending');
+  await v.shows('To ship · Payout pending');
   await v.tap('sale-sale_own');
-  await v.shows('Net pending');
+  await v.shows('Payout');
+  assert.equal(await v.count('You get', { exact: true }), 0);
   assert.equal(await v.countId('buy-label'), 0);
   await v.shows('Open selling site');
-  if (process.env.SELLING_SCREENSHOTS) { await v.page.waitForTimeout(500); await v.page.screenshot({ path: `${process.env.SELLING_SCREENSHOTS}/sale.png` }); }
+  await screenshot(v.page, 'sale');
   await v.page.close();
 });
 
@@ -161,10 +175,37 @@ test('sales with unknown fees remain visible and fulfillment never invents a pay
   await v.shows('$35.00 to $55.00');
   await v.shows('Rough estimate from comparable items.');
   await v.page.getByTestId('seller-price-input').fill('60');
-  await v.page.getByTestId('sheet-scrim').click({ position: { x: 10, y: 5 } });
+  await v.tap('selling-back');
   await v.shows('Leave without saving?');
   await v.tap('seller-price-keep');
   assert.equal(await v.page.getByTestId('seller-price-input').inputValue(), '60');
   assert.equal(f.writes.length, 0);
+  await v.page.close();
+});
+
+ test('multiple sales require a choice and a refunded sale never asks for shipping', async () => {
+  const f = fixture();
+  const first = { id: 'sale_first', kind: 'sale', item_id: f.item.id, site: 'ebay', state: 'to_ship', price_cents: money(4500), fees_cents: null, shipping_cents: money(500), payout_cents: null };
+  const second = { ...first, id: 'sale_refund', state: 'refunded', external_order_id: 'order-refunded' };
+  const v = await app.open('/item/owned_item/ship', { api: { ...f.api, '/v1/orders': { data: [first, second], next_cursor: null } } });
+  await v.shows('Choose a sale');
+  assert.equal(await v.countId('sale-open-site'), 0);
+  await v.tap('sale-choose-sale_refund');
+  await v.shows('Refunded');
+  await v.shows('order-refunded');
+  await v.shows('View the sale record on the selling site.');
+  assert.equal(await v.count('Manage delivery, labels and tracking on the selling site.', { exact: true }), 0);
+  await v.page.close();
+});
+
+ test('typing during review entry keeps read-only details separate from their instruction', async () => {
+  const f=fixture();
+  const v=await app.open('/item/owned_item/edit',{api:f.api});
+  await v.page.getByTestId('seller-title-input').fill('Carhartt Detroit jacket');
+  await v.page.getByTestId('seller-quantity-input').fill('2');
+  await v.page.waitForTimeout(1000);
+  const attribute=await v.page.locator('[data-screen="seller-review"]').getByText('Large',{exact:true}).boundingBox();
+  const instruction=await v.page.locator('[data-screen="seller-review"]').getByText('Check these details when you finish on the selling site.',{exact:true}).boundingBox();
+  assert.ok(instruction.y >= attribute.y + attribute.height,'Detail instruction must sit below the fixed attribute row after typing');
   await v.page.close();
 });

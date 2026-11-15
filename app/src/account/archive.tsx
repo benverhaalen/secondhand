@@ -6,7 +6,7 @@ import { useLiveData } from '@/data/live';
 import { FootButton, List, Nav, Pill, Screen, Stack, Txt, log } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { useColors } from '@/ui/theme';
-import { space, type } from '@/ui/tokens.generated';
+import { space, type, weight } from '@/ui/tokens.generated';
 import { FACE } from '@/ui/fonts';
 import { accountError } from './session';
 
@@ -63,7 +63,7 @@ export function Archive({ accountId }: { accountId: string }) {
       <Txt role="body">Enter the Depop shop to import. This selects a public shop; it does not verify that you own it.</Txt>
       <TextInput accessibilityLabel="Depop username" value={username} onChangeText={setUsername} autoCapitalize="none" autoCorrect={false}
         editable={!busy} onSubmitEditing={() => { if (username.trim()) void load(username.trim()); }} placeholder="Depop username" placeholderTextColor={c.ink2}
-        style={{ ...type.t21, fontFamily: FACE.text, color: c.ink, paddingVertical: space.s3, borderBottomWidth: 1, borderBottomColor: c.rule }} />
+        style={{ ...type.t18, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: c.ink, paddingVertical: space.s3, borderBottomWidth: 1, borderBottomColor: c.rule }} />
       <FootButton id="archive-preview" label="Preview archive" state={busy ? 'working' : username.trim() ? 'idle' : 'disabled'} onPress={() => load(username.trim())} />
     </Stack> : null}
     {busy ? <Txt role="body">{job ? `Import ${progress || 'in progress'}…` : 'Reading your listings…'}</Txt> : null}

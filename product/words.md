@@ -2577,3 +2577,35 @@ Ben, Codex, 2026-11-15.
 > check the main flows of selling on the app and try to wire up as much as possible and create new ui screens that adhere to the brand constitution as well as being designed by an expert ui ux designer who also considers composition and user intent and familiarity too.
 
 Used in: [selling integration](../.agents/team/packets/team/20261115-selling-ui.md).
+
+## 2026-11-15 ben audit the whole selling composition
+
+Ben, Codex, 2026-11-15.
+
+> the listing preview site and review your item one and your sale one should be audited for coherence to the brand design and how the app should be designed and the expert ui ux principles that dont just extend to component design or ensuring pages fit the brand but also composition and all the little things that an expert ux psychologist would know. if you ever recognize pages on the site where they look shit like this fix them
+
+> use subagents to to do this, astra fast gpt6 high. so you can continue what you were working on before i came in
+
+> the choose a price page also needs to have the same edits done too
+
+> ensure when grabbing references you are grabbing the completely most upto date screenshots of the latest ui builds
+
+Applied to all four selling screens, using current rendered app screenshots and independently audited composition. Historical brand images establish the brand, not the current state of another app.
+
+## 2026-11-15 ben typography is the pre-push requirement
+
+Ben, Codex, 2026-11-15, while reviewing the selling UI work.
+
+> ensure that all font weight tests where every font of the same size has the same weight and typeface etc that those pass idc about the other tests though before pushing
+
+Applied to this selling/UI push: typography consistency must pass; other repository-check failures do not block this push. This does not change the standing repository rule for future work.
+
+## 2026-11-15 — Ben: audit unapproved intermediate screen layouts
+
+Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026.
+
+> some of those photos dont look like they use correct component styling and coloring and font use
+
+> actually all the screens that i never explicitly said anything about approving. most the in between non-main screens. the layout is weirdly spaced and an expert would rearrange it to be more intuitive. dont change any functionality though
+
+Scope: layout and component styling on unapproved intermediate screens. Preserve functionality and explicitly approved compositions.

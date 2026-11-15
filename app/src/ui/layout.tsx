@@ -1,6 +1,6 @@
 // The only parts a screen is laid out with. Which one to reach for, and which separator means what, is in README.md beside this file.
 import { Children, createContext, isValidElement, useContext, useRef, useState, type ReactNode } from 'react';
-import { RefreshControl, StyleSheet, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, StyleSheet, View } from 'react-native';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { arrival, ContentOrder, departure, reflow } from './reveal';
@@ -25,7 +25,7 @@ export const InTabs = createContext(false);
 // a page with a top has it, and a sheet or a full-screen moment, which have no nav, do not.
 // `name` and `state` mark the root (data-screen, data-state on the web) so tests and the gallery know which state is drawn.
 // `foot` is the page's one act pinned to the foot, 16 above the safe area (Art. 7.9), when it is not in the first 844.
-export function Screen({ children, nav, wash = nav != null, center = false, name, state, skip, sheet, foot, refreshing = false, onRefresh }: {
+export function Screen({ children, nav, wash = nav != null, center = false, name, state, skip, sheet, foot, keyboard = false, refreshing = false, onRefresh }: {
   children: ReactNode;
   nav?: ReactNode;
   wash?: boolean;
@@ -37,6 +37,7 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
   // A catalog of parts, not a screen a person sees (the parts sheet): app-check judges each part there, but not what one view holds.
   sheet?: string;
   foot?: ReactNode;
+  keyboard?: boolean;
   refreshing?: boolean;
   onRefresh?: () => void | Promise<void>;
 }) {
@@ -60,7 +61,8 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
     <OnGround ground="page">
       <SafeAreaView {...marks} edges={wash ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
         {wash ? <Wash under={inset.top} /> : null}
-        <Animated.ScrollView alwaysBounceVertical={onRefresh ? true : undefined}
+        <KeyboardAvoidingView enabled={keyboard && Platform.OS === 'ios'} behavior="padding" style={{ flex: 1 }}>
+        <Animated.ScrollView keyboardShouldPersistTaps={keyboard ? 'handled' : undefined} keyboardDismissMode={keyboard ? 'on-drag' : undefined} alwaysBounceVertical={onRefresh ? true : undefined}
           refreshControl={onRefresh ? <RefreshControl refreshing={refreshing || pulling} onRefresh={refresh}
             tintColor={c.ink} colors={[c.ink]} progressBackgroundColor={c.surface}
             progressViewOffset={top + (nav ? size.navH + space.s2 : 0)}
@@ -73,6 +75,7 @@ export function Screen({ children, nav, wash = nav != null, center = false, name
         </Animated.ScrollView>
         {tab ? <TopBar inbox={tab.inbox} top={top} wash={wash} /> : null}
         {foot ? <View style={[styles.foot, { paddingBottom: space.s4 + below }]}>{foot}</View> : null}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </OnGround>
   );

@@ -47,7 +47,7 @@ export function LiveSales({ filter, sort }: { filter: string; sort: string }) {
       : entries.length ? <List>{entries.map(sale => {
         const item = w.items.find(item => item.id === sale.item_id), payout = moneyOf(sale.payout_cents);
         return <ListRow key={sale.id} id={`sale-${sale.id}`} label={item?.title || 'Sold item'} photo={item?.photos[0]?.key ?? null}
-          detail={`${saleStatus(sale)} · ${payout ? `You get ${showMoney(payout)}` : 'Net pending'}`}
+          detail={`${saleStatus(sale)} · ${payout ? `You get ${showMoney(payout)}` : 'Payout pending'}`}
           onPress={() => router.push(`/item/${sale.item_id}/${sale.state === 'pickup_booked' ? 'pickup' : 'ship'}?order=${encodeURIComponent(sale.id)}` as Href)} />;
       })}</List> : <EmptyState title="No sales here yet" />}
     {!state.loading ? <FootButton id="sales-refresh" label="Refresh sales" kind="second" onPress={state.reload} /> : null}

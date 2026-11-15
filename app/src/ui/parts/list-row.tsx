@@ -23,9 +23,10 @@ import { Image } from 'expo-image';
 // 56 = the notice height; 76 = 56 and one more caption line (18) plus the 2 between them, rounded to the 4 grid.
 const ONE = size.noticeH, TWO = size.noticeH + space.s5;
 
-export function ListRow({ id, label, detail, lead, site, photo, value, tabular = false, trail, onPress, tone = 'ink' }: {
+export function ListRow({ id, label, accessibilityLabel, detail, lead, site, photo, value, tabular = false, trail, onPress, tone = 'ink' }: {
   id: string;
   label: string;
+  accessibilityLabel?: string;
   detail?: string;
   lead?: IconName;
   site?: Site;
@@ -56,7 +57,7 @@ export function ListRow({ id, label, detail, lead, site, photo, value, tabular =
   );
   if (!onPress) return body(false);
   return (
-    <Press id={id} label={[label, value, detail].filter(Boolean).join(', ')} onPress={onPress} round={false}>
+    <Press id={id} label={accessibilityLabel ?? [label, value, detail].filter(Boolean).join(', ')} onPress={onPress} round={false}>
       {({ pressed }) => body(pressed)}
     </Press>
   );
