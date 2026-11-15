@@ -10,7 +10,7 @@ const hooks = registerHooks({ resolve(specifier, context, next) {
 } });
 const { ApiFailure, createClient } = await import('../api/client.ts');
 const { memoryVault } = await import('../api/vault.ts');
-const { emailSignIn, why } = await import('./sign-in-wire.ts');
+const { emailSignIn, why, googleAuthUrl, googleCode, googleIdToken, GOOGLE_IOS_REDIRECT } = await import('./sign-in-wire.ts');
 hooks.deregister();
 
 const issued = { access_token: 'a1', refresh_token: 'r1', expires_at: '2026-11-15T13:00:00Z', created: true, user: { id: 'usr_1', auth_methods: ['email'] } };
@@ -86,4 +86,18 @@ test('Apple sends the identity token and the raw nonce, and stores only the issu
   assert.equal(await vault.get(), null);
   assert.equal(await appleSignIn(async () => ({ identity_token: 'apple-test-token', nonce: 'raw-nonce' }), client), true);
   assert.equal((await vault.get())?.access_token, issued.access_token);
+});
+
+test('Google on the iPhone: the page asks for a code with PKCE, only our state is accepted, and the code is traded for an id token', async () => {
+  const url = new URL(googleAuthUrl('chal', 'st1'));
+  assert.equal(url.searchParams.get('redirect_uri'), GOOGLE_IOS_REDIRECT);
+  assert.equal(url.searchParams.get('code_challenge_method'), 'S256');
+  assert.equal(googleCode(`${GOOGLE_IOS_REDIRECT}?state=st1&code=c9&scope=email`, 'st1'), 'c9');
+  assert.throws(() => googleCode(`${GOOGLE_IOS_REDIRECT}?state=other&code=c9`, 'st1'));
+  assert.throws(() => googleCode(`${GOOGLE_IOS_REDIRECT}?error=access_denied&state=st1`, 'st1'), /access_denied/);
+  let sent = '';
+  const token = await googleIdToken('c9', 'v1', async (_u, init) => { sent = String(init?.body); return new Response(JSON.stringify({ id_token: 'idt' })); });
+  assert.equal(token, 'idt');
+  assert.match(sent, /code_verifier=v1/);
+  await assert.rejects(googleIdToken('c9', 'v1', async () => new Response(JSON.stringify({ error: 'invalid_grant' }), { status: 400 })), /invalid_grant/);
 });

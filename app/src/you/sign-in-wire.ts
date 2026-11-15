@@ -33,6 +33,31 @@ export const requestGoogleIdToken: GoogleTokenProvider = async () => {
   throw new GoogleSignInUnavailable('Google sign-in is not available yet. Continue with email.');
 };
 
+// Google on an iPhone: the iOS OAuth client (Google accepts its reversed-id return address; the other id in fly.toml is the web client).
+// Authorization code with PKCE; an iOS client needs no secret to trade the code for an id token.
+export const GOOGLE_IOS_ID = '599008877776-7t6d8jiuipqovrpejs5dvvpfnu8ji8lh';
+export const GOOGLE_IOS_CLIENT = `${GOOGLE_IOS_ID}.apps.googleusercontent.com`;
+export const GOOGLE_IOS_REDIRECT = `com.googleusercontent.apps.${GOOGLE_IOS_ID}:/oauthredirect`;
+export function googleAuthUrl(challenge: string, state: string): string {
+  return 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({ client_id: GOOGLE_IOS_CLIENT, redirect_uri: GOOGLE_IOS_REDIRECT,
+    response_type: 'code', scope: 'openid email', code_challenge: challenge, code_challenge_method: 'S256', state, prompt: 'select_account' }).toString();
+}
+// The code from Google's return address, only when its state is ours; Google's own refusal is thrown.
+export function googleCode(returned: string, state: string): string {
+  const query = new URLSearchParams(returned.split('?')[1]?.split('#')[0] ?? '');
+  if (query.get('error')) throw new Error(`Google refused: ${query.get('error')}`);
+  const code = query.get('code');
+  if (query.get('state') !== state || !code) throw new Error('Google returned an unexpected answer');
+  return code;
+}
+export async function googleIdToken(code: string, verifier: string, fetchImpl: typeof fetch = fetch): Promise<string> {
+  const reply = await fetchImpl('https://oauth2.googleapis.com/token', { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ client_id: GOOGLE_IOS_CLIENT, code, code_verifier: verifier, grant_type: 'authorization_code', redirect_uri: GOOGLE_IOS_REDIRECT }).toString() });
+  const body = await reply.json() as { id_token?: string; error?: string };
+  if (!reply.ok || !body.id_token) throw new Error(`Google token exchange failed (${reply.status} ${body.error ?? ''})`);
+  return body.id_token;
+}
+
 export async function googleSignIn(requestIdToken: GoogleTokenProvider = requestGoogleIdToken, client: Client = api): Promise<boolean> {
   const id_token = await requestIdToken();
   if (!id_token) return false;

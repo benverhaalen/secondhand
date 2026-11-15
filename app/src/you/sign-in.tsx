@@ -5,6 +5,7 @@ import { accountError } from '@/account/session';
 import { FootButton, Nav, Pill, Screen, Stack, Txt, log } from '@/ui';
 import { appleSignIn, emailSignIn, googleSignIn, GoogleSignInUnavailable, type GoogleTokenProvider } from './sign-in-wire';
 import { requestAppleToken } from './apple';
+import { requestGoogleIdTokenIos } from './google';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { Platform } from 'react-native';
 import { GoogleSignInButton } from '../ui/parts/google-sign-in';
@@ -19,6 +20,8 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
   const [googleBusy, setGoogleBusy] = useState(false);
   const busy = emailBusy || googleBusy;
   const offline = asked === 'offline';
+  // On the iPhone sign-in is Apple or Google only (Nate); email stays on the web.
+  const ios = Platform.OS === 'ios';
   const email = address.trim(), valid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const wait = Math.max(0, Math.ceil((resendAt - now) / 1000));
   useEffect(() => {
@@ -36,7 +39,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
   const signInWithGoogle = async () => {
     if (busy || offline) return;
     setGoogleBusy(true); setError(null);
-    try { if (await googleSignIn(requestGoogleToken)) await onDone(); }
+    try { if (await googleSignIn(requestGoogleToken ?? (ios ? requestGoogleIdTokenIos : undefined))) await onDone(); }
     catch (failure) {
       log.error('sign-in.google', failure instanceof ApiFailure ? new Error(`Google sign-in failed (${failure.status})`) : new Error('Google provider unavailable'));
       setError(failure instanceof GoogleSignInUnavailable ? 'Google sign-in is not available yet. Continue with email.' : accountError(failure));
@@ -67,14 +70,15 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     nav={<Nav back={phase === 'code' ? () => { setPhase('email'); setCode(''); setError(null); } : undefined} />}>
     <Stack gap="tight">
       <Txt role="heading">{phase === 'email' ? 'Welcome' : 'Check your email'}</Txt>
-      <Txt role="body" tone="ink-2">{phase === 'email' ? 'Sign in with Google or get a code by email.' : `Enter the code sent to ${email}.`}</Txt>
+      <Txt role="body" tone="ink-2">{phase === 'code' ? `Enter the code sent to ${email}.` : ios ? 'Sign in with Apple or Google.' : 'Sign in with Google or get a code by email.'}</Txt>
     </Stack>
     {phase === 'email' ? <>
       {Platform.OS === 'ios' ? <AppleAuthentication.AppleAuthenticationButton buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN} buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE} cornerRadius={22} style={{ width: 188, height: 44, alignSelf: 'center' }} onPress={() => void signInWithApple()} /> : null}
       <GoogleSignInButton busy={googleBusy} disabled={emailBusy || offline} onPress={signInWithGoogle} />
-      <Txt center tone="ink-2">or use your email</Txt>
+      {ios ? null : <Txt center tone="ink-2">or use your email</Txt>}
+      {ios && error ? <Txt role="body">{error}</Txt> : null}
     </> : null}
-    <Stack gap="group">
+    {ios ? null : <Stack gap="group">
       <AccountField kind={phase} value={phase === 'email' ? address : code} disabled={busy}
         onChange={value => { setError(null); if (phase === 'email') setAddress(value); else setCode(value.replace(/\D/g, '').slice(0, 6)); }}
         onSubmit={phase === 'email' ? send : verify} />
@@ -86,6 +90,6 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
         onPress={phase === 'email' ? send : verify} />
       {phase === 'code' ? <Pill id="signin-resend" kind="second" label={wait ? `Resend in ${wait}s` : 'Send another code'}
         state={busy || wait > 0 ? 'disabled' : 'idle'} onPress={send} /> : null}
-    </Stack>
+    </Stack>}
   </Screen>;
 }
