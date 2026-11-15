@@ -29,7 +29,7 @@ All rows are *agent proposal*.
 
 | Choice | Options considered | Picked | Why | What would change it |
 |---|---|---|---|---|
-| How axes combine | one weighted score; four separate axes; expected value only ([scoring note](../../research/price/nate/scoring-and-ranker-inference.md)) | four separate axes per site, plus one combined "worth listing here" line only when all four are shown | no source gives axis weights; a combined number would hide which part is weak | a measured weight fit against our own sell-through |
+| How axes combine | one weighted score; four separate axes; expected value only ([scoring note](../../research/price/nate/scoring-and-ranker-inference.md)) | four separate axes per site; whether a combined "worth listing here" line exists is open ([product §9](../product.md), "may the axes combine into one score"), and if allowed it shows only when all four are shown | no source gives axis weights; a combined number would hide which part is weak | Ben and Nate's answer, then a measured weight fit against our own sell-through |
 | Stand-in for a site's ranker | correlational factor studies; a pointwise model; a pairwise or Plackett-Luce learning-to-rank model with a posterior per factor ([ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md), [scoring note](../../research/price/nate/scoring-and-ranker-inference.md)) | Plackett-Luce on observed orderings per site and category, with a probability and an effect size per factor | only the rank is visible; a posterior gives the range people see | held-out agreement that never beats the control-pair floor |
 | What counts as a real difference | any rank change; a control-pair noise floor ([observing-rank-and-performance.md](../../research/list/nate/observing-rank-and-performance.md)) | two identical queries run side by side set the floor; a difference below it is not evidence | ranking is personalised and noisy | none; this is the floor for every visibility claim |
 | Experiment design | randomised parallel tests; before and after on one listing; matched pairs across sellers ([scoring note](../../research/price/nate/scoring-and-ranker-inference.md)) | matched pairs where items match; before and after otherwise, labelled as such; one change at a time | eBay revise allows title, photos and a lower price but no split test; one-of-a-kind items interfere | a site that offers split tests to sellers |
@@ -82,11 +82,23 @@ Hide rules, one per axis:
 
 | Axis | Range from | Basis shown | Hidden when |
 |---|---|---|---|
-| Financial | [price.md](price.md) | its sales count and window | price.md abstains (under 6 sales in 12 months or 2 in 90 days) |
+| Financial | [price.md](price.md) | its sales count and window | price.md abstains: below the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) and [D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site) |
 | Quality | classifier probability with Mondrian coverage | which fields were present | the gate fails |
 | Visibility | posterior interval on rank or impression share | panel size, days observed, noise floor | held-out agreement not above the floor, panel older than a day, or a change notice up |
 | Trend | change point or drift flag with run length | window and detector | series shorter than burn-in, or a change notice up for that site |
-| Combined | expected value: P(sale within horizon) x net minus holding cost | each axis's basis | any axis hidden |
+
+The combined line is not an axis. Whether it exists waits on [product §9](../product.md) ("may the axes combine into one score"). If allowed: expected value, chance of sale within a horizon ([money D10](../determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price)) times what you keep ([D9](../determinations/money.md#d9-what-you-keep-per-site)) less holding cost, with its weights as starting values, unsourced, shown to the person; hidden when any axis is hidden. A card for it goes in money.md before it ships.
+
+## Axes
+
+Each axis shares its figures with the [analytics suite](insights.md#analytics-suite-agent-proposal), so a listing's line and the You tab never disagree.
+
+| Axis | Figure it shares | Owner of the method |
+|---|---|---|
+| Financial | could earn, price range, slow movers, sell-down | [money D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site), [D10](../determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price), [D22](../determinations/money.md#d22-could-earn-across-live-items) |
+| Quality | the funnel's fix lines and the stale notice | [listing D10](../determinations/listing-and-marketing.md#d10-listing-quality-and-its-fixes), [D15](../determinations/listing-and-marketing.md#d15-interest-against-plan) |
+| Visibility | the funnel's views by site, promotion against result, the traffic anomaly | [listing D13](../determinations/listing-and-marketing.md#d13-predicted-visibility-per-site), [D18](../determinations/listing-and-marketing.md#d18-promoted-listing), [D24](../determinations/listing-and-marketing.md#d24-whether-a-site-changed-its-ranking) |
+| Trend | sell-through, days to sell, cohorts | [market M6](../determinations/market-insight.md#m6-sell-through), [M7](../determinations/market-insight.md#m7-days-to-sell) |
 
 ## Systems underneath
 
@@ -173,7 +185,7 @@ Model self-confidence is never the measure ([product.md](../product.md)).
 | Own-listing analytics come from eBay Sell Analytics getTrafficReport; no route confirmed for Depop, Poshmark, Mercari or Facebook | [scoring note](../../research/price/nate/scoring-and-ranker-inference.md) | none |
 | eBay content never gets `train` or `cross_site_price` | [product.md](../product.md) | the stand-in for eBay trains only on our own observations of order, not on eBay content fields |
 | Collecting result pages for the panel is outside some sites' terms; this is recorded, not a limit ([decision](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)) | [ranking-algorithms.md](../../research/list/nate/ranking-algorithms.md) | the `evidence.rights` tags are enforced and the panel runs only where they allow |
-| eBay publishes no sell-through formula; ours is sold / (sold + active) over the window, stated in the citation's `definition_version` | *observed* help page, formula *asserted*, [open-facts-money-and-markets.md](../../research/price/nate/open-facts-money-and-markets.md) | none |
+| eBay publishes no sell-through formula; ours is [market M6](../determinations/market-insight.md#m6-sell-through)'s, stated in the citation's `definition_version` | *observed* help page, [open-facts-money-and-markets.md](../../research/price/nate/open-facts-money-and-markets.md) | none |
 | Any open-internet source may feed the evidence ledger (marketplace pages, price-history sites, retail and brand pages, archives, trend sources); each observation carries its source and `rights` tags | Nate's sources rule, 2026-11-14 | each source's terms are enforced through the same tags |
 | Factor studies in search ranking are correlational | *asserted*, scoring note | none |
 | Databricks data profiling detects drift between windows or against a baseline | *observed*, https://docs.databricks.com/aws/en/data-governance/unity-catalog/data-quality-monitoring/data-profiling/ | none |
@@ -182,9 +194,18 @@ Model self-confidence is never the measure ([product.md](../product.md)).
 | Taking a marketplace app apart would not reveal ranking, which runs on its servers | [agent note in words](../../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms) | none; not proposed |
 | A test on a real account carries risk to that account per site | [product.md](../product.md) | shown per site before the person opts in |
 
-Each score must never claim: that a factor weight is the site's real weight; a causal effect from rank correlation; that one site's finding holds on another; a visibility line while a notice is up or the panel is stale; a combined line while any axis is hidden; a sale probability with no comparables; that a before-and-after test was randomised.
+Each score must never claim: that a factor weight is the site's real weight; a causal effect from rank correlation; that one site's finding holds on another; a visibility line while a notice is up or the panel is stale; a combined line before Ben and Nate allow one ([product §9](../product.md)) or while any axis is hidden; a sale probability with no comparables; that a before-and-after test was randomised.
 
 ## Demo path
+
+*agent proposal*: one run that shows every part of the engine on real data, with every step in the event log.
+
+1. A finished draft scores on every connected site; the rows arrive one by one, and a site without enough searches says so.
+2. One line opens to its basis ("from 41 sales in 90 days") and its `citation` recomputes to the same value.
+3. A quality fix is applied in one tap and the draft rows change.
+4. A seller who opted in sees a live test start ("Testing a new first photo until Friday"), logged and undoable, never under the floor.
+5. A recorded panel shift is replayed: the three signals agree, the `ranker_changed` notice goes up on every affected listing, and visibility reads "Can't say right now" until it clears.
+6. The You tab shows the same figures the lines rest on ([Axes](#axes)).
 
 For Ben and Nate to mark.
 

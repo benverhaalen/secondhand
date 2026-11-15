@@ -32,7 +32,9 @@ Deletion is required by Apple 5.1.1(v) ([privacy](../../research/cross-cutting/n
 
 ```mermaid
 flowchart LR
-  P["site page or API"] -->|"Firecrawl or eBay API on edge: snapshot and observation written"| O["Delta observation, Volume snapshot"]
+  R["Lakebase route_table"] -->|"router on the edge worker: route picked, route_call logged"| P["site page, API or vendor"]
+  P -->|"chosen route on the edge worker: snapshot and observation written"| O["Delta observation, Volume snapshot"]
+  O -->|"Lakeflow fold every few minutes and nightly truth check: route_day_stat, route_table updated"| R
   O -->|"extractor in Lakeflow job: comp with evidence and rights"| C["Delta comp"]
   C -->|"dqx check in pipeline: comp kept or held"| M["Delta metric view rollup"]
   M -->|"guarded_query in FastAPI on Apps: citation written"| Z["Delta citation, Lakebase score"]
@@ -49,8 +51,8 @@ Fields are product's, not repeated here. Money and states read Lakebase, never D
 
 | Store | Holds | Flows to |
 |---|---|---|
-| Lakebase | `user, account, item, attribute, photo, capture, job, valuation, strategy, listing, conversation, message, offer, order, sale_receipt, decision, rule, limits, want, match, appointment, goal, event, label, claim_check, score, experiment, arm, follow` | Delta by change feed |
-| Delta | `observation`, `comp` (append-only, no user id), `citation`, `ranker_model` data, `event` and `label` history, experiment results, rollups | Lakebase by synced tables of gold views only (a price range per product) |
+| Lakebase | `user, account, item, attribute, photo, capture, job, valuation, strategy, listing, conversation, message, offer, order, sale_receipt, decision, rule, limits, want, match, appointment, goal, event, label, claim_check, score, experiment, arm, follow`, and the router's `route_table`, `route_rule_version` | Delta by change feed |
+| Delta | `observation`, `comp` (append-only, no user id), `citation`, `route_call`, `route_day_stat`, `route_truth`, `ranker_model` data, `event` and `label` history, experiment results, rollups | Lakebase by synced tables of gold views only (a price range per product) |
 | Volume | `raw.photos`, page snapshots, masks, depth | paths on `photo`, `observation` |
 | AI Search | product, comp, and per-person approved-example indexes; self-managed embeddings | rebuilt from Delta |
 
@@ -66,11 +68,11 @@ An `event` is written in the same transaction as the change it records. Message 
 
 | Metric | Hidden when | Bands and words | Source (mark) |
 |---|---|---|---|
-| Sold range | under 5 sales: show the sales | low 5 to 9, medium 10 to 29, high 30 or more; never mixes sold and asking | [product §8](../product.md); [market intelligence](../../research/data/nate/market-intelligence.md), aiplannermail (*observed*) |
+| Sold range | below the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) and [D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site): show the sales | display state per [money D6](../determinations/money.md#d6-range-calibration-and-display-state); never mixes sold and asking | [market intelligence](../../research/data/nate/market-intelligence.md), aiplannermail (*observed*) |
 | Asking range | under 6 live listings | "Asking prices of N live listings" | same |
 | Price history | under 3 snapshots on different days | "Seen since [date]: [low] to [high]. We started watching on [date]." | same |
 | Old data | a read older than two weeks is dropped; before that, marked "OLD DATA" with its date | | same |
-| Score axis | too few comparables; interval wider than the value; rank agreement not above the noise floor; ranker-change flag up | one `score` row per axis; no combined score if any axis hidden | [scoring](../../research/price/nate/scoring-and-ranker-inference.md) (*inferred*) |
+| Score axis | too few comparables; interval wider than the value; rank agreement not above the noise floor; ranker-change flag up | one `score` row per axis; a combined line only if Ben and Nate allow the axes to combine ([product §9](../product.md)), and never with an axis hidden | [scoring](../../research/price/nate/scoring-and-ranker-inference.md) (*inferred*) |
 
 **Citation.** `guarded_query` does five steps: read the metric view; collect `basis_ids`; read each input table's version; read the rights tags of every basis row; write `citation {metric, filters, table_versions[], definition_version, code_version, computed_at, basis_ids[]}` and return its id. `GET /v1/citations/:id` opens it. Because `comp` and `observation` are append-only, recompute filters on `basis_ids` and `observed_at`, so it does not depend on Delta history, which defaults to 7 days (*observed*, [databricks.md](../databricks.md) §5.1). Mutable inputs need raised retention or an append-only copy.
 
@@ -86,6 +88,20 @@ An `event` is written in the same transaction as the change it records. Message 
 | `claim_check` | row per draft | history | a stage inside `send_message`, `post` and draft jobs, not a job kind |
 
 `claim_check`: an extract-only model splits the text into claims; plain code matches each to an `attribute` or `evidence`; the verdict is `pass`, `hold` or `abstain`. A hold opens decision `unbacked_claim` ([product §5](../product.md)).
+
+## Source registry and router (*agent proposal*)
+
+Nate: "https://treg.to/ exemplifies just one way data is aggregated, but we can make our own and even more specialized, all built on data bricks in an impressive way" ([words](../../product/words.md#2026-11-14-nate-our-own-aggregation-more-specialized-on-databricks)). Treg routes a call to the cheapest working tool; ours also knows item kinds, sites and what a comp needs, and ranks routes on whether their data later proved right. Databricks has no multi-provider fetcher registry and no source reliability or reconciliation (*observed*, [aggregated search](../../research/data/nate/port-aggregated-search.md)), so we build that layer and keep it in Databricks stores.
+
+**Registry.** One `route_table` row per (site, need, route): need is a harness verb or a comp need (`sold`, `asking`, `retail`, `trend`, `identify`). Each row holds what it returns (fields: price type, sold date, best offer flag, condition, photos), kind (`official_api, own_account, browser, treg_direct, treg_routed, other_vendor`), unit cost and its basis, `ok_7d`, `hit_7d`, p50 and p95 ms, measured freshness (median lag from `sold_at` or `listed_at_source` to `read_at`), coverage per category and item kind, rights tags, `right_90d`, fallback order, state, and `seed_source`. Columns follow the [treg design](../../research/cross-cutting/nate/treg-tool-routing.md) (*inferred*); the fetcher shape (transform query, extract, transform data) is OpenBB's, Apache-2.0 (*observed*, [aggregated search](../../research/data/nate/port-aggregated-search.md)).
+
+**Router.** Plain code on the edge worker, called by every harness verb and comp read. It filters routes that return what the need requires (a comp needs sold price with date and condition, per [money D1](../determinations/money.md#d1-comparable-set-and-weights)) and whose rights allow the use, then orders them: the person's own account first when it is healthy ([managing 16](../determinations/managing-and-buyers.md#16-which-route-to-use), [17](../determinations/managing-and-buyers.md#17-whether-an-account-is-healthy-or-at-risk)), then lowest `unit_cost / (ok_7d x hit_7d x right_90d)`, then seed order. A cost ceiling holds per observation and per batch. It falls back on transport failure, 429 or an empty or wrong verdict, never on another 4xx. Every attempt writes a `route_call` row and an event (`route`, `fell_back`, `ms`); every result writes an `observation` with evidence, and `comp.source_route` is the `route_id`. Results from several routes merge by fingerprint, SearXNG style (AGPL, pattern only, *observed*, same source); a need's maximum age follows Jina's per-question freshness table idea (same source).
+
+**Proved right.** A nightly Lakeflow job writes `route_truth`: each route's comps against later truth (our own sales, a second route's sold read, a re-read of the same listing). `right_90d` is the share that agreed within the D5 range. Starting values, unsourced: demote when the short-window ok rate is under half the 7-day rate, drop after 2 failed probes, `right_90d` starts at 1 until 20 checks exist.
+
+**Where it runs.** `route_table` and `route_rule_version` (reviewed rule changes, a kill switch; rules only reorder) in Lakebase; `route_call`, `route_day_stat`, `route_truth` in Delta, folded by Lakeflow; job kind `route_probe` on Databricks Jobs sends one known query per route each hour (a starting value). Outside Databricks, because they do the job better: treg for routed vendor calls, Apify actors and SoldComps for sold history, Firecrawl or crawl4ai for page reads, serper and serpapi for search, scrapecreators for Facebook, the eBay Browse API, Discogs and PriceCharting for category anchors, Exa for watch and page search, OpenRouter for model calls, and a cloud browser for the own signed-in route. Seed routes, costs and success rates per site are in [comps sources](../../research/price/ben/comps-sources-live.md) and [openrouter and treg](../../research/price/ben/openrouter-and-treg.md) (*observed* where they say so); treg publishes no freshness figure (*observed*), so ours is measured.
+
+**Health page.** `GET /v1/sources/health` and a screen behind it: per site and need, each route's state, ok, hit, right rate, p95, cost per useful result, freshness, last error and the fallback order now in force; a dropped or killed route says why. People see only the line their number rests on ("from eBay sold, read 2 hours ago").
 
 ## Platform pieces, judged
 
@@ -113,10 +129,11 @@ Fits in Free Edition: the build, for a person's own use, with the 24 hour restar
 
 | Moves | Trigger |
 |---|---|
-| `job` `started, running, arrived, failed` | the worker, with the trace id |
+| `job` `queued, running, done, failed`; its stages `started, running, arrived, failed` | the worker, with the trace id |
 | `label` `proposed, in_use, retired` | evaluation proposes; a developer approves the threshold; the person approves a promotion |
 | `claim_check` verdict `pass, hold, abstain` | the check |
-| Delete request `requested, running, done, failed` | the person's tap; each store reports a stage |
+| `delete_user` job `queued, running, done, failed` | the person's tap; each store reports a stage |
+| `route_table.state` `active, demoted, dropped, kill` | the fold and the short-window guard; `kill` only by a developer |
 
 ## Contract for the frontend
 
@@ -127,6 +144,7 @@ Fits in Free Edition: the build, for a person's own use, with the 24 hour restar
 | `GET /v1/citations/:id` | what a number rests on |
 | `POST /v1/me/export`, `DELETE /v1/me` | `export_user`, `delete_user` jobs |
 | `GET /v1/jobs/:id/events`, `GET /v1/stream` | SSE; polling `GET /v1/jobs/:id` always works |
+| `GET /v1/sources/health?site=&need=` | per route: state, ok_7d, hit_7d, right_90d, p95_ms, cost per useful result, freshness, last error, fallback order |
 
 ## Who may act
 
@@ -164,6 +182,8 @@ Fits in Free Edition: the build, for a person's own use, with the 24 hour restar
 | Rights tags work | a fixture with `may_model` false never reaches a prompt (logged now) | (*agent proposal*) |
 | Re-extraction is free | 50 stored snapshots re-read with zero page fetches | (*agent proposal*) |
 | Every change has an event | `node spec/log.mjs` on a real run: zero state changes without a line | (*agent proposal*) |
+| Every outside call is logged | a day of real runs: every `observation` has a `route_call`, and every fallback a reason | (*agent proposal*) |
+| The router learns | a route forced to fail in a fixture is demoted within one fold and its calls move to the next route | (*agent proposal*) |
 | Deletion is whole | after `DELETE /v1/me`, a scan by user id finds zero rows in every store | (*agent proposal*) |
 | Sync and wake are quick | p95 sync, wake time and SSE lag measured | [coverage](../coverage.md) row 2 |
 
@@ -192,3 +212,4 @@ Rules that stay: a home address only on the person's tap, buyers' personal data 
 - `observation` as a Delta table with `evidence` fields, and `rights_mode` (log, enforce) as one setting.
 - Endpoints `POST /v1/ask` and `GET /v1/me/data`; `retention_class` on every entity.
 - `rights.would_block` as an event action; `claim_check` and `citation` joined to `event.trace_id`.
+- Entities `route_table`, `route_rule_version`, `route_call`, `route_day_stat`, `route_truth`; `comp.source_route` and `candidate.source_route` hold a `route_id`; job kind `route_probe`; endpoint `GET /v1/sources/health`.
