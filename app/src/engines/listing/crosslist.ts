@@ -13,7 +13,8 @@ import { keep, priceForKeep, type FeeSite } from '../valuation/keep.ts';
 // The marketplaces (app/src/edge/harness/names.ts SITES); an engine does not import from the server edge.
 export type Site = 'ebay' | 'facebook' | 'depop' | 'poshmark' | 'mercari' | 'offerup' | 'grailed';
 // The harness `post` verb, as the edge hands it in: harness.call(site, 'post', args).
-export type Post = (site: Site, args: { operation_id: string } & Record<string, unknown>) => Promise<{ ok: boolean }>;
+// The edge's harness reads a write back before it answers; outcome_unknown means it could not tell, so never re-post.
+export type Post = (site: Site, args: { operation_id: string } & Record<string, unknown>) => Promise<{ ok: boolean; error?: { code: string } }>;
 
 export type SourceListing = {
   site: Site;
@@ -24,6 +25,7 @@ export type SourceListing = {
   description: string;
   price_cents: number;            // what a buyer pays now (the discounted price when there is one)
   list_price_cents?: number;      // the struck-through price, when discounted
+  floor_cents?: number;           // the lowest the person takes on the source site (Depop: auto_negotiate_offer_price)
   currency: string;
   brand?: string;
   size?: string;
@@ -130,8 +132,9 @@ export type SiteDraft = {
   site: Site;
   verdict: string;
   reason: string;
-  action: 'post' | 'offer' | 'warn' | 'never';   // post by default, offer is opt-in, warn and never are not posted
+  action: 'post' | 'offer' | 'warn' | 'never' | 'live';   // post by default, offer is opt-in; warn, never and live (already listed there) are not posted
   price_cents?: number;
+  floor_cents?: number;
   keep_cents?: number;
   listing?: ReturnType<typeof buildListing>;
 };
@@ -150,6 +153,7 @@ export type PlanOptions = {
   target_keep_cents?: (l: SourceListing) => number | undefined;   // e.g. the price engine's q50 payout; else the source's keep
   posted_before?: (site: Site) => boolean;
   promoted?: boolean;
+  live_on?: (l: SourceListing, site: Site) => boolean;            // already listed there (merge_items found a match)
 };
 
 export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
@@ -158,6 +162,7 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
   const source = feeSite(l.site);
   const target = opts.target_keep_cents?.(l) ?? (source ? keep(source, l.price_cents).keep_cents : l.price_cents);
   const card = toItemCard(l);
+  const floorKeep = l.floor_cents === undefined ? undefined : source ? keep(source, l.floor_cents).keep_cents : l.floor_cents;
   const verdicts = [
     ...r.post.map((e: { platform: string; verdict: string; reason: string }) => ({ ...e, action: 'post' as const })),
     ...r.offer.map((e: { platform: string; verdict: string; reason: string }) => ({ ...e, action: 'offer' as const })),
@@ -169,13 +174,17 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
     const site = e.platform as Site;
     const base: SiteDraft = { site, verdict: e.verdict, reason: e.reason, action: e.action };
     const fs = feeSite(site);
+    if (opts.live_on?.(l, site)) return { ...base, action: 'live' };
     if (e.action === 'never' || !fs) return base;
     const price_cents = priceForKeep(fs, target);
-    const listing = buildListing(card, site, {
-      rows: opts.rows, price_cents, floor_cents: price_cents,
+    // The person's floor carries over as the same keep on every site (decisions: "you set the lowest you'd take").
+    const floor_cents = floorKeep === undefined ? undefined : Math.min(price_cents, priceForKeep(fs, floorKeep));
+    const built = buildListing(card, site, {
+      rows: opts.rows, price_cents, floor_cents: floor_cents ?? 0,
       posted_before: opts.posted_before?.(site) ?? false, promoted: opts.promoted ?? false,
     });
-    return { ...base, price_cents, keep_cents: keep(fs, price_cents).keep_cents, listing };
+    const listing = floor_cents === undefined ? { ...built, missing: [...built.missing, 'floor'], ready: false } : built;
+    return { ...base, price_cents, floor_cents, keep_cents: keep(fs, price_cents).keep_cents, listing };
   });
 
   const asks = new Map<string, { kind: 'clarify'; field: string; sites: Site[] }>();
@@ -190,8 +199,13 @@ export function planItem(l: SourceListing, opts: PlanOptions): ItemPlan {
   };
 }
 
-export function planCrosslist(listings: SourceListing[], opts: PlanOptions): ItemPlan[] {
-  return listings.filter(l => l.state === 'active').map(l => planItem(l, opts));
+// Fees and prices here are US dollars (money D9), so a listing in another currency is skipped with its reason.
+export function planCrosslist(listings: SourceListing[], opts: PlanOptions) {
+  const active = listings.filter(l => l.state === 'active');
+  return {
+    plans: active.filter(l => l.currency === 'USD').map(l => planItem(l, opts)),
+    skipped: active.filter(l => l.currency !== 'USD').map(l => ({ external_id: l.external_id, why: `priced in ${l.currency}, not USD` })),
+  };
 }
 
 export const operationId = (plan: ItemPlan, site: Site) => `crosslist:${plan.source.site}:${plan.source.external_id}:${site}`;
@@ -199,14 +213,14 @@ export const operationId = (plan: ItemPlan, site: Site) => `crosslist:${plan.sou
 // Posts each ready draft the person approved. `approved(plan, site)` is the first_post decision's answer; a site with no
 // answer is not posted. The harness never replays a write with the same operation_id, so running this twice is safe.
 export async function postCrosslist(plans: ItemPlan[], post: Post, approved: (plan: ItemPlan, site: Site) => boolean) {
-  const results: { source_id: string; site: Site; state: 'posted' | 'not_ready' | 'not_approved' | 'failed'; reply?: { ok: boolean } }[] = [];
+  const results: { source_id: string; site: Site; state: 'posted' | 'not_ready' | 'not_approved' | 'failed' | 'reconcile'; reply?: Awaited<ReturnType<Post>> }[] = [];
   for (const plan of plans) for (const d of plan.sites) {
     if (d.action !== 'post' && d.action !== 'offer') continue;
     const source_id = plan.source.external_id;
     if (!d.listing?.ready) { results.push({ source_id, site: d.site, state: 'not_ready' }); continue; }
     if (!approved(plan, d.site)) { results.push({ source_id, site: d.site, state: 'not_approved' }); continue; }
     const reply = await post(d.site, { operation_id: operationId(plan, d.site), listing: d.listing, source_url: plan.source.url });
-    results.push({ source_id, site: d.site, state: reply.ok ? 'posted' : 'failed', reply });
+    results.push({ source_id, site: d.site, state: reply.ok ? 'posted' : reply.error?.code === 'outcome_unknown' ? 'reconcile' : 'failed', reply });
   }
   return results;
 }

@@ -38,26 +38,27 @@ const estimate = new Map(active.map((l, i) => [l.external_id, priced.estimates[i
 // The person's own Depop price sets the payout every site keeps (their price is their call); with --market the market's
 // median sale does instead. Either way the range is shown beside it.
 const atMarket = process.argv.includes('--market');
-const plans = planCrosslist(listings, {
+const { plans, skipped } = planCrosslist(listings, {
   rows, linked: ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'],
-  target_keep_cents: l => { const e = estimate.get(l.external_id); return atMarket && e ? keep('depop', e.q50_cents).keep_cents : undefined; },
+  target_keep_cents: l => { const e = estimate.get(l.external_id); return atMarket && e?.shown ? keep('depop', e.median_cents).keep_cents : undefined; },
 });
-const verdict = (price, e) => (price < e.q10_cents ? 'under the market' : price > e.q90_cents ? 'over the market' : 'in the market range');
+const verdict = (price, e) => (!e.shown ? `no range shown (${e.hidden})` : price < e.low_cents ? 'under the market' : price > e.high_cents ? 'over the market' : 'in the market range');
 
 const usd = c => (c === undefined ? '-' : `$${(c / 100).toFixed(2)}`);
 if (asJson) {
-  console.log(JSON.stringify({ synthetic_market: synthetic, backtest: priced.backtest, refused, plans, estimates: Object.fromEntries(estimate) }, null, 1));
+  console.log(JSON.stringify({ synthetic_market: synthetic, backtest: priced.backtest, refused, skipped, plans, estimates: Object.fromEntries(estimate) }, null, 1));
 } else {
   console.log(`market: ${synthetic ? 'SYNTHETIC (jobs/valuation/synthetic.py), not real sales' : compsFile}; ${priced.n_sold} sold rows`);
   const bt = priced.backtest;
   console.log(`backtest on the newest ${bt.n_test} sales: 80% range held ${(bt.coverage * 100).toFixed(0)}%; median error ${(bt.median_ape * 100).toFixed(0)}% vs ${(bt.median_ape_category_median * 100).toFixed(0)}% for the category median`);
-  console.log(`imported ${listings.length} (${active.length} active, ${listings.length - active.length} sold kept as comps), refused ${refused.length}\n`);
+  console.log(`imported ${listings.length} (${active.length} active, ${listings.length - active.length} sold kept as comps), refused ${refused.length}, skipped ${skipped.length}\n`);
   for (const p of plans) {
     const e = estimate.get(p.source.external_id);
     console.log(`${p.source.title}  [${p.product_type}]`);
-    console.log(`  yours ${usd(p.source.price_cents)} on depop, ${verdict(p.source.price_cents, e)} · 80% range ${usd(e.q10_cents)}–${usd(e.q90_cents)}, median ${usd(e.q50_cents)} · level ${e.level} · sell-through ${e.liquidity.sell_through ?? '-'} · keep ${usd(p.target_keep_cents)} on every site`);
+    console.log(`  yours ${usd(p.source.price_cents)} on depop, ${verdict(p.source.price_cents, e)} · 80% range ${usd(e.low_cents)}–${usd(e.high_cents)}, median ${usd(e.median_cents)} · level ${e.level} · ${e.similar_12m} similar sales in 12 months · sell-through ${e.liquidity.sell_through ?? '-'} · keep ${usd(p.target_keep_cents)} on every site`);
     for (const d of e.drivers) console.log(`    ${d.term} ${d.premium >= 0 ? '+' : ''}${(d.premium * 100).toFixed(0)}% ${d.relative_to}`);
-    for (const d of p.sites) console.log(`  ${d.site.padEnd(9)} ${d.action.padEnd(5)} ${usd(d.price_cents).padStart(8)}  ${d.listing ? (d.listing.ready ? 'ready' : `needs ${d.listing.missing.join(', ')}`) : d.reason}  ${d.listing?.title ?? ''}`);
+    for (const c of e.comps.slice(0, 3)) console.log(`    comp ${c.site} ${c.sold_at} sold ${usd(c.price_cents)} → ${usd(c.adjusted_cents)} for this item today`);
+    for (const d of p.sites) console.log(`  ${d.site.padEnd(9)} ${d.action.padEnd(5)} ${usd(d.price_cents).padStart(8)} floor ${usd(d.floor_cents).padStart(8)}  ${d.listing ? (d.listing.ready ? 'ready' : `needs ${d.listing.missing.join(', ')}`) : d.reason}  ${d.listing?.title ?? ''}`);
     console.log('');
   }
 }

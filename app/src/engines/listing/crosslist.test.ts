@@ -10,7 +10,7 @@ const LINKED: Site[] = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'];
 const tee = (over: Partial<SourceListing> = {}): SourceListing => ({
   site: 'depop', external_id: '101', url: 'https://www.depop.com/products/x/', state: 'active',
   title: 'Vintage 90s Champion Wisconsin Badgers reverse weave tee', description: 'Vintage 90s Champion Wisconsin Badgers reverse weave tee\n#vintage #badgers',
-  price_cents: 3000, currency: 'USD', brand: 'Champion', size: 'L', condition: 'good', colours: ['red'], department: 'menswear',
+  price_cents: 3000, floor_cents: 2400, currency: 'USD', brand: 'Champion', size: 'L', condition: 'good', colours: ['red'], department: 'menswear',
   category: 'tshirts', tags: ['vintage', 'badgers'], photos: ['p0', 'p1', 'p2'], ...over,
 });
 
@@ -30,7 +30,7 @@ test('a site the person did not link gets no draft', () => {
 });
 
 test('sold listings are comps, not cross-listed', () => {
-  assert.equal(planCrosslist([tee({ state: 'sold' }), tee({ external_id: '102' })], { rows, linked: LINKED }).length, 1);
+  assert.equal(planCrosslist([tee({ state: 'sold' }), tee({ external_id: '102' })], { rows, linked: LINKED }).plans.length, 1);
 });
 
 test('product type routes by what the listing says', () => {
@@ -50,11 +50,44 @@ test('a missing size is asked once across the sites that require it, and those d
 test('posting runs only for ready, approved drafts, with one operation id per listing and site', async () => {
   const calls: { site: Site; op: unknown }[] = [];
   const post: Post = async (site, args) => { calls.push({ site, op: args.operation_id }); return { ok: true }; };
-  const plans = planCrosslist([tee()], { rows, linked: LINKED });
+  const { plans } = planCrosslist([tee()], { rows, linked: LINKED });
   const none = await postCrosslist(plans, post, () => false);
   assert.equal(calls.length, 0);
   assert.ok(none.every(r => r.state === 'not_approved' || r.state === 'not_ready'));
   const res = await postCrosslist(plans, post, (_p, site) => site === 'ebay');
   assert.deepEqual(calls, [{ site: 'ebay', op: operationId(plans[0], 'ebay') }]);
   assert.equal(res.find(r => r.site === 'ebay')?.state, 'posted');
+});
+
+test('the floor keeps the same payout on every site; with no floor the draft asks for one and is not ready', () => {
+  const plan = planItem(tee(), { rows, linked: LINKED });
+  const floorKeep = keep('depop', 2400).keep_cents;
+  for (const d of plan.sites.filter(d => d.floor_cents !== undefined)) {
+    assert.ok((d.floor_cents as number) <= (d.price_cents as number));
+    assert.equal(d.listing?.price_cents, d.price_cents, 'the floor never raises the price');
+  }
+  assert.ok(floorKeep < plan.target_keep_cents);
+  const none = planItem(tee({ floor_cents: undefined }), { rows, linked: LINKED });
+  assert.ok(none.asks.some(a => a.field === 'floor'));
+  assert.ok(none.sites.every(d => !d.listing || d.listing.ready === false));
+});
+
+test('a listing priced in another currency is skipped with its reason', () => {
+  const { plans, skipped } = planCrosslist([tee({ currency: 'GBP' })], { rows, linked: LINKED });
+  assert.equal(plans.length, 0);
+  assert.match(skipped[0].why, /GBP/);
+});
+
+test('a site where the item is already live gets no draft', () => {
+  const plan = planItem(tee(), { rows, linked: LINKED, live_on: (_l, site) => site === 'ebay' });
+  const ebay = plan.sites.find(d => d.site === 'ebay');
+  assert.equal(ebay?.action, 'live');
+  assert.equal(ebay?.listing, undefined);
+});
+
+test('a post whose outcome is unknown is reconciled, not marked failed or posted', async () => {
+  const { plans } = planCrosslist([tee()], { rows, linked: LINKED });
+  const post: Post = async () => ({ ok: false, error: { code: 'outcome_unknown' } });
+  const res = await postCrosslist(plans, post, (_p, site) => site === 'ebay');
+  assert.equal(res.find(r => r.site === 'ebay')?.state, 'reconcile');
 });
