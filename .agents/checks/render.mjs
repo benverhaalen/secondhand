@@ -62,7 +62,7 @@ function gradientKind(el, pal) {
   const held = tokens.find(([n, t]) => t.raw === g.raw && (n.startsWith('wash') || t.base === g.base))?.[0] ?? tokens.find(([n, t]) => alike(g.raw, t.raw) && (n.startsWith('wash') || same(rgba(g.base), rgba(t.base))))?.[0];
   if (held) return held.startsWith('wash') ? 'wash' : held.startsWith('field') ? 'field' : 'token';
   if (stateOf(g, pal)) return 'state';
-  const names = g.colors.map(c => pal.name(c)), hues = new Set(names.map(n => n && hueOf(n)));
+  const names = g.colors.map(c => pal.name(c) ?? pal.light?.name(c) ?? null), hues = new Set(names.map(n => n && hueOf(n)));
   if (names.length && names.every(n => /^hot-[12]$/.test(n ?? '')) && new Set(names).size === 2) return 'tag';
   return hues.size === 1 && !hues.has(undefined) && !hues.has(null) && names.some(n => n.endsWith('-tint')) ? 'tag' : 'built';
 }
@@ -227,8 +227,9 @@ function checkView(view, ctx) {
   for (const logos of rows) { const hs = logos.map(l => Math.round(l.rect[3] - l.rect[1])), cap = markSizes[0];
     if (Math.max(...hs) - Math.min(...hs) > 1) E('B33', '', `logos in one row are ${[...new Set(hs)].sort((a, b) => a - b).join(', ')} px tall: logos in a row share one height (C5)`);
     if (cap && logos.length > 1 && Math.max(...hs) > cap + 1) E('B33', '', `a logo is ${Math.max(...hs)} px tall: none is taller than the wordmark's type, ${cap} px on a ${medium} (C5)`);
-    // The gap is read inside one box: logos on one line in two different cards are not spaced against each other.
-    for (const p of new Set(logos.map(l => l.parent))) { const line = logos.filter(l => l.parent === p).sort((a, b) => a.rect[0] - b.rect[0]), gaps = line.slice(1).map((l, i) => Math.round(l.rect[0] - line[i].rect[2]));
+    // The gap is read inside one box: logos on one line in two different cards are not spaced against each other,
+    // and a logo whose box was not measured has no row to be spaced in.
+    for (const p of new Set(logos.map(l => l.parent).filter(p => p >= 0))) { const line = logos.filter(l => l.parent === p).sort((a, b) => a.rect[0] - b.rect[0]), gaps = line.slice(1).map((l, i) => Math.round(l.rect[0] - line[i].rect[2]));
       if (gaps.length > 1 && Math.max(...gaps) - Math.min(...gaps) > 1) E('B33', '', `logos in one row sit ${[...new Set(gaps)].join(', ')} px apart: one gap (C5)`); } }
   // longest text
   const count = text.filter(t => !isMark(t)).reduce((n, t) => n + words(t.text), 0);
@@ -267,7 +268,9 @@ function checkView(view, ctx) {
     // gradients
     if (el.gradient) { const kind = gradientKind(el, pal), held = Object.keys(pal.grads).filter(n => !n.endsWith('-mesh')).map(n => `var(--${n})`).join(', ');
       if (kind === 'built') E('B5', q, `is a gradient built by hand: a gradient is a token used as it stands${held ? ` (${held})` : ''}, never rebuilt (C2)`);
-      if (kind === 'field' || kind === 'built' || kind === 'state') fields.push(el);
+      // A tag is a chip, not a ground, so its gradient is not a field (B4 counts grounds); B5 still holds it to its tokens.
+      let chip = false; for (let j = view.els.indexOf(el); j >= 0 && !chip; j = view.els[j].parent) chip = view.els[j].part === 'tag';
+      if ((kind === 'field' || kind === 'built' || kind === 'state') && !chip) fields.push(el);
       if (kind === 'wash') washes.push(el);
     }
   }
