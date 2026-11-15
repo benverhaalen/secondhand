@@ -1,8 +1,28 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { memoryStore } from '../../param/param.ts';
 import { candidates, conformal_set, action, label, bound } from './ladder.ts';
+
+const pythonPath = (exists: (path: URL) => boolean): URL|undefined => ['.venv/bin/python', '.venv/Scripts/python.exe']
+  .map(path => new URL(`../../../../../${path}`, import.meta.url)).find(exists);
+const pythonCheck = (exists: (path: URL) => boolean): {path?: URL; skip?: string} => {
+  const path = pythonPath(exists);
+  return path ? {path} : {skip: 'Python declarations not checked: neither .venv/bin/python nor .venv/Scripts/python.exe exists'};
+};
+
+test('the Python declaration check finds either virtualenv layout', () => {
+  for (const layout of ['.venv/bin/python', '.venv/Scripts/python.exe']) {
+    assert.equal(pythonPath(path => path.href.endsWith(layout))?.href, new URL(`../../../../../${layout}`, import.meta.url).href);
+  }
+});
+test('missing virtualenv Python gives an explicit skip reason', () => {
+  const choice = pythonCheck(() => false);
+  assert.equal(choice.path, undefined);
+  assert.equal(choice.skip, 'Python declarations not checked: neither .venv/bin/python nor .venv/Scripts/python.exe exists');
+});
 
 test('invalid rungs and similarities cannot enter the ladder', () => {
   for (const rung of [0, 5, 1.5, NaN]) assert.throws(() => candidates([{rung, product: 'a', s: 1}]));
@@ -42,11 +62,13 @@ test('invalid conformal scores and empty rung evidence are rejected', () => {
   assert.throws(() => label('a', {a: [0.5, new Set()]}, false));
 });
 
-test('priors come from declarations with the Python identity names', () => {
+test('priors come from declarations with the Python identity names', t => {
   const store = memoryStore();
   assert.equal(bound(store, 'identity_q_kind'), 0.6);
   assert.equal(bound(store, 'identity_max_pick'), 4);
-  const python: unknown = JSON.parse(execFileSync('./.venv/bin/python', ['-c',
+  const choice = pythonCheck(existsSync);
+  if (!choice.path) {t.skip(choice.skip); return;}
+  const python: unknown = JSON.parse(execFileSync(fileURLToPath(choice.path), ['-c',
     'import json; from jobs.identity.params import DECLARED; print(json.dumps({row["name"]: row["prior"] for row in DECLARED}))'],
     {cwd: new URL('../../../../../', import.meta.url), encoding: 'utf8'}));
   assert.ok(typeof python === 'object' && python !== null);

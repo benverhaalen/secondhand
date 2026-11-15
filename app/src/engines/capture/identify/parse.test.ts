@@ -18,11 +18,11 @@ test('Carhartt RN and lexicon survive while translated cotton is counted once', 
   const out = garment('carhartt-pants');
   assert.ok(out.brands.some(b => b.brand === 'Carhartt' && b.s === 1 && b.rule === 'rn'));
   assert.ok(out.brands.some(b => b.brand === 'Carhartt' && b.s === 0.9 && b.rule === 'brand_lexicon'));
-  for (const [name, value] of Object.entries({size_label: '38x36', fabric: '100% cotton', origin: 'Mexico'}))
+  for (const [name, value] of Object.entries({fabric: '100% cotton', origin: 'Mexico'}))
     assert.deepEqual(field(out, name).map(f => f.value), [value]);
   assert.equal(out.style_code, undefined);
   assert.deepEqual(field(out, 'colour'), []);
-  assert.equal(field(out, 'size_label')[0]?.rule, 'waist_length');
+  assert.deepEqual(field(out, 'size_label'), []);
   assert.ok(out.facts.every(f => f.source === 'label' && f.confidence === 0 && f.rule));
 });
 
@@ -84,7 +84,7 @@ test('a percentage beside a sizing-system label cannot become a shoe size', () =
 
 test('possessive brand and department endings cannot become size S', () => {
   for (const line of ["Levi's", 'Levi’s']) assert.equal(field(parseTag([{line, confidence: 1}]), 'size_label').length, 0);
-  assert.equal(field(parseTag([{line: "Levi's 38 X 36", confidence: 1}]), 'size_label')[0]?.value, '38x36');
+  assert.deepEqual(field(parseTag([{line: "Levi's 38 X 36", confidence: 1}]), 'size_label'), []);
   assert.equal(field(parseTag([{line: "MEN'S\nXL", confidence: 1}]), 'size_label')[0]?.value, 'XL');
 });
 
@@ -102,13 +102,13 @@ test('common English brand words require capitals or a brand cue even in demo ti
 
 const tag = (line: string) => parseTag([{line, confidence: 1}]);
 for (const [line, expected] of [
-  ['Made in Viet Nam', ['Viet Nam']], ['Made in Vietnam', ['Viet Nam']],
+  ['Made in Viet Nam', ['Vietnam']], ['Made in Vietnam', ['Vietnam']],
   ['Made in USA', ['United States']], ['Made in U.S.A.', ['United States']],
   ['Made in the USA of imported fabric', ['United States']], ['Made in the USA of imported materials', ['United States']],
-  ['Made in China, Assembled in USA', ['China']], ['Made in China and Vietnam', ['China', 'Viet Nam']],
+  ['Made in China, Assembled in USA', ['China']], ['Made in China and Vietnam', ['China', 'Vietnam']],
   ['Made in Italy, fabric from Japan', ['Italy']], ['Made in China, Made in USA', ['China', 'United States']],
   ['Made in UK', ['United Kingdom']], ['Made in UAE', ['United Arab Emirates']], ['Made in PRC', ['China']],
-  ['Made in Hong Kong', ['Hong Kong']], ['Made in Korea', ['Korea, Republic of']],
+  ['Made in Hong Kong', ['Hong Kong']], ['Made in Korea', ['South Korea']],
   ['Hecho en México', ['Mexico']], ['Fabriqué au Mexique', ['Mexico']], ['Fabriqué en France', ['France']],
   ['Made in Atlantis', []], ['Made in Chinaland', []], ['Made in United', []],
   ['Assembled in USA', []], ['fabric from Japan', []],
@@ -166,3 +166,70 @@ test('capital common-word tag heading can share its line with a style or size', 
 test('unrelated company cue cannot turn a care sentence into a common-word brand', () => {
   for (const line of ['Wash with apple juice. Acme Co.', 'WASH WITH APPLE JUICE', 'APPLE JUICE STAIN']) assert.deepEqual(matchBrands(line), []);
 });
+
+for (const line of ['50% cotton 50% modal', '80% cotton 20% lyocell', '60% cotton', '0% cotton', '100% cotton 0% polyester', '100% cotton 10%', '100% cotton 10% modal', '60% cotton 60% polyester', '100% cotton 100% cotton', '50% cotton 50% cotton'])
+  test(`incomplete, unknown or zero fibre percentages cannot state fabric: ${line}`, () => {
+    assert.deepEqual(field(tag(line), 'fabric'), []);
+  });
+for (const [line, value] of [['60% cotton 40% poly', '60% cotton, 40% polyester'], ['88% polyamide 12% elastane', '88% polyamide, 12% elastane']])
+  test(`known fibre aliases complete the whole composition: ${line}`, () => {
+    assert.deepEqual(field(tag(line), 'fabric').map(fact => fact.value), [value]);
+  });
+test('an incomplete translation cannot borrow percentages from another language group', () => {
+  assert.deepEqual(field(tag('60% cotton 40% polyester\n60% coton'), 'fabric'), []);
+});
+test('unknown percentages on another line cannot disappear from a language group', () => {
+  assert.deepEqual(field(tag('100% cotton\n50% modal'), 'fabric'), []);
+});
+
+for (const line of ['Nike EU42', 'Nike US10', 'Nike UK8', 'Nike W32', 'Nike L34', 'Nike SS23', 'Nike FW22 Size M', 'Nike AW21', 'Nike SP24', 'Nike FA23', 'Nike HO22', 'Nike SU23', 'Nike Size EU42'])
+  test(`size systems, waist markers and seasons cannot state a style: ${line}`, () => {
+    assert.equal(tag(line).style_code, undefined);
+    assert.deepEqual(field(tag(line), 'style_code'), []);
+  });
+for (const line of ['Size S/M', 'Size M/L', 'S/M', 'M/L', 'Size S / M', 'M/Size L', 'Size M-L', 'Size M - L', 'Size S/M\nM'])
+  test(`letter size beside a range separator cannot state one size: ${line}`, () => {
+    assert.deepEqual(field(tag(line), 'size_label'), []);
+  });
+for (const line of ['Made in China or Vietnam', 'Made in Vietnam/China', 'Made in USA/Mexico', 'Made in China, Vietnam or Mexico', 'Made in China, Vietnam/Mexico'])
+  test(`alternative countries cannot state an origin: ${line}`, () => assert.deepEqual(field(tag(line), 'origin'), []));
+for (const alias of ['Congo, Democratic Republic', 'DR Congo', 'DRC', 'Congo, The Democratic Republic of the'])
+  test(`long Congo alias cannot truncate to the other Congo: ${alias}`, () => {
+    assert.deepEqual(field(tag(`Made in ${alias}`), 'origin').map(fact => fact.value), ['Democratic Republic of the Congo']);
+  });
+for (const line of ['Made in Georgia', 'Made in Georgia, USA'])
+  test(`Georgia without a country cue cannot state origin: ${line}`, () => assert.deepEqual(field(tag(line), 'origin'), []));
+for (const line of ['Made in Republic of Georgia', 'Made in Georgia, Tbilisi', 'Made in Georgia\nTbilisi'])
+  test(`explicit country cue disambiguates Georgia: ${line}`, () => {
+    assert.deepEqual(field(tag(line), 'origin').map(fact => fact.value), ['Georgia']);
+  });
+for (const line of ['Tbilisi', 'Republic of Georgia'])
+  test(`Georgia origin confidence includes its required country cue: ${line}`, () => {
+    const out = parseTag([{line: 'Made in Georgia', confidence: 1}, {line, confidence: 0}]);
+    assert.deepEqual(field(out, 'origin').map(fact => [fact.value, fact.confidence]), [['Georgia', 0]]);
+  });
+
+for (const [alias, expected] of [
+  ['Korea, Republic of', 'South Korea'], ['South Korea', 'South Korea'], ['Viet Nam', 'Vietnam'],
+  ['Turkey', 'Turkey'], ['Türkiye', 'Turkey'], ['England', 'United Kingdom'], ['Scotland', 'United Kingdom'], ['Wales', 'United Kingdom'],
+  ['Great Britain', 'United Kingdom'], ['Russia', 'Russia'], ['Russian Federation', 'Russia'],
+  ['Czech Republic', 'Czechia'], ['Czechia', 'Czechia'], ['Holland', 'Netherlands'],
+  ['Republic of the Congo', 'Republic of the Congo'], ['Macau', 'Macau'], ['Ivory Coast', 'Ivory Coast'],
+]) test(`country spellings yield the seller display name: ${alias}`, () => {
+  assert.deepEqual(field(tag(`Made in ${alias}`), 'origin').map(fact => fact.value), [expected]);
+});
+test('every country has a display name that the parser emits', () => {
+  const table = JSON.parse(readFileSync(new URL('./countries.json', import.meta.url), 'utf8')) as {rows: {code: string; name: string; display_name?: string}[]};
+  for (const row of table.rows) {
+    assert.ok(row.display_name?.trim(), row.code);
+    if (row.code !== 'GE') assert.deepEqual(field(tag(`Made in ${row.name}`), 'origin').map(fact => fact.value), [row.display_name], row.code);
+  }
+});
+
+for (const line of ['Lot 28x30', 'B324 BLK 38 X 36', "Levi's 38 X 36"])
+  test(`unlabelled dimensions among other tokens cannot state waist length: ${line}`, () => assert.deepEqual(field(tag(line), 'size_label'), []));
+for (const [line, expected] of [['28x30', '28x30'], ['Size 28x30', '28x30'], ['Sz: 28 × 30', '28x30'], ['W32 L34', '32x34'], ['Nike W32 L34', '32x34']])
+  test(`waist length needs a size line, label or both markers: ${line}`, () => {
+    assert.deepEqual(field(tag(line), 'size_label').map(fact => fact.value), [expected]);
+    assert.equal(tag(line).style_code, undefined);
+  });

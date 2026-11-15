@@ -31,9 +31,9 @@ for (const row of record.items) test(`${row.item}: the real tag confirms its bra
   assert.equal(out.set[0]?.brand, {'carhartt-pants': 'Carhartt', 'chico-hoodie': 'Russell Athletic', 'marquette-tee': 'Fruit of the Loom'}[row.item]);
   assert.ok(out.set[0].rests_on.some(line => line.includes('on the tag')));
   assert.ok(out.facts.every(fact => fact.confidence === 0 && capture.photos.some(photo => photo.key === fact.ref)));
-  const expected = {'carhartt-pants': ['38x36', 'Mexico'], 'chico-hoodie': ['XXL', 'Mexico'], 'marquette-tee': ['XL', 'Honduras']}[row.item];
+  const expected = {'carhartt-pants': [null, 'Mexico'], 'chico-hoodie': ['XXL', 'Mexico'], 'marquette-tee': ['XL', 'Honduras']}[row.item];
   assert.ok(expected);
-  assert.deepEqual(out.facts.filter(fact => fact.field === 'size_label').map(fact => fact.value), [expected[0]]);
+  assert.deepEqual(out.facts.filter(fact => fact.field === 'size_label').map(fact => fact.value), expected[0] ? [expected[0]] : []);
   assert.deepEqual(out.facts.filter(fact => fact.field === 'origin').map(fact => fact.value), [expected[1]]);
   if (row.item === 'carhartt-pants') assert.equal(out.set[0].model, undefined);
   assert.deepEqual(calls, []);
@@ -61,6 +61,54 @@ test('code abstention opens visual search but visual evidence cannot enter the c
 });
 
 function untrusted(value: unknown): never { return value as never; }
+for (const [cause, bad] of [
+  ['null photo', null], ['non-object photo', 42], ['missing role', {key: 'bad'}],
+  ['non-string role', {key: 'bad', role: 42}], ['missing key', {role: 'tag'}],
+  ['empty key', {key: ' ', role: 'tag'}], ['empty role', {key: 'bad', role: ''}],
+  ['non-string file reference', {key: 'bad', role: 'front', file_ref: 42}],
+] as const) test(`${cause} is dropped with a reason while valid photos still run in order`, async () => {
+  const {log, sink} = logger();
+  const calls: string[] = [];
+  const photos = [
+    {key: 'z', role: 'tag', text: [{line: 'Size M', confidence: 1}]}, bad,
+    {key: 'b', role: 'front'}, {key: 'a', role: 'front'},
+  ];
+  const out = await identify({...input, photos: untrusted(photos)}, {
+    barcode: async photo => {calls.push(photo.key); return [];},
+    visual: async photo => {assert.equal(photo.key, 'a'); return [];},
+  }, memoryStore(), log);
+  assert.deepEqual(calls, ['a', 'b', 'z']);
+  assert.equal(out.stages.length, 4);
+  assert.ok(out.facts.some(fact => fact.field === 'size_label' && fact.value === 'M'));
+  const errors = sink.lines.map(line => JSON.parse(line)).filter(row => row.event === 'error');
+  assert.equal(errors.length, 1);
+  assert.ok(sink.text().includes('photo'));
+  log.end();
+  assert.deepEqual(checkLog(sink.text()).problems, []);
+});
+for (const photos of [null, {}, undefined]) test(`non-array photos ${JSON.stringify(photos)} cannot discard the model stage`, async () => {
+  const {log, sink} = logger();
+  const out = await identify({...input, photos: untrusted(photos)}, {model: async () => ({brand: 'Nike'})}, memoryStore(), log);
+  assert.equal(out.stages.length, 4);
+  assert.equal(out.others[0]?.brand, 'Nike');
+  assert.ok(sink.text().includes('photos must be an array'));
+  log.end();
+  assert.deepEqual(checkLog(sink.text()).problems, []);
+});
+test('sparse photos are dropped with a reason without losing populated entries', async () => {
+  const {log, sink} = logger();
+  const photos: unknown[] = Array(2);
+  photos[1] = input.photos[1];
+  const out = await identify({...input, photos: untrusted(photos)}, {}, memoryStore(), log);
+  assert.ok(out.facts.some(fact => fact.value === 'XL'));
+  assert.ok(sink.lines.some(line => JSON.parse(line).event === 'error'));
+});
+for (const line of ['Nike EU42', 'Nike SS23', 'Nike FW22 Size M'])
+  test(`a size or season cannot confirm a model through tag evidence: ${line}`, async () => {
+    const out = await identify({...input, photos: [{key: 'tag', role: 'tag', text: [{line, confidence: 1}]}]}, {}, memoryStore(), logger().log);
+    assert.equal(out.set[0]?.brand, 'Nike');
+    assert.equal(out.set[0]?.model, undefined);
+  });
 const empty: IdentifyInput = {capture_id: 'cap_boundary', family: null, photos: [{key: 'front', role: 'front'}, {key: 'tag', role: 'tag'}]};
 const codePhoto = {key: 'front', role: 'front', codes: [{symbology: 'UPC-A', payload: '012345678905'}]};
 for (const [cause, text] of [['confidence outside unit interval', [{line: 'x', confidence: 2}]], ['non-string line', [{line: 42, confidence: 1}]], ['non-array text', {}]] as const)

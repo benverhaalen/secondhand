@@ -32,9 +32,9 @@ export function matchBrands(text: string, line = 0): Brand[] {
 type Fibre = {name: string; language?: string};
 const fibres: Record<string, Fibre> = {
   cotton: {name: 'cotton', language: 'en'}, coton: {name: 'cotton', language: 'fr'}, algodon: {name: 'cotton', language: 'es'},
-  polyester: {name: 'polyester'}, poliester: {name: 'polyester', language: 'es'},
+  polyester: {name: 'polyester'}, poly: {name: 'polyester', language: 'en'}, poliester: {name: 'polyester', language: 'es'},
   wool: {name: 'wool', language: 'en'}, laine: {name: 'wool', language: 'fr'}, lana: {name: 'wool', language: 'es'},
-  nylon: {name: 'nylon'}, elastane: {name: 'elastane'}, spandex: {name: 'spandex'}, rayon: {name: 'rayon'},
+  nylon: {name: 'nylon'}, polyamide: {name: 'polyamide'}, elastane: {name: 'elastane'}, spandex: {name: 'spandex'}, rayon: {name: 'rayon'},
   viscose: {name: 'viscose'}, linen: {name: 'linen', language: 'en'}, silk: {name: 'silk', language: 'en'}, acrylic: {name: 'acrylic', language: 'en'},
   leather: {name: 'leather', language: 'en'}, cashmere: {name: 'cashmere'},
 };
@@ -47,13 +47,13 @@ function commonWordTag(word: string, before: string, after: string): boolean {
   return word === word.toUpperCase() && after.trim().split(/\s+/).every(token => !token ||
     /^(?:size|sz|style|no|art|model|item|US|UK|EU|XXXL|XXL|XXS|XL|XS|S|M|L|\d{1,5}|[x×]|[A-Z]{1,3}\d{2,5})[:.#]?$/i.test(token) || Object.hasOwn(colourRows, token.toUpperCase()));
 }
-const countryRows = countries.rows.flatMap(row => [row.name, ...row.aliases].map(name => ({name: row.name, token: folded(name)})))
+const countryRows = countries.rows.flatMap(row => [row.name, row.display_name, ...row.aliases].map(name => ({code: row.code, name: row.display_name, token: folded(name)})))
   .sort((a, b) => b.token.length - a.token.length);
-function countryAt(text: string): {value: string; length: number}|undefined {
+function countryAt(text: string): {code: string; value: string; length: number}|undefined {
   const article = /^the\s+/.exec(text)?.[0].length ?? 0;
   const rest = text.slice(article);
   const row = countryRows.find(row => rest.startsWith(row.token) && !/[\p{L}\p{N}]/u.test(rest[row.token.length] ?? ''));
-  return row ? {value: row.name, length: article + row.token.length} : undefined;
+  return row ? {code: row.code, value: row.name, length: article + row.token.length} : undefined;
 }
 
 export function parseTag(input: unknown): Parsed {
@@ -63,8 +63,10 @@ export function parseTag(input: unknown): Parsed {
     facts.push({field, value, source: 'label', confidence: Math.min(...supporting.map(i => lines[i].confidence)), rule});
   };
   const sizes: {value: string; rule: string; span: Span}[] = [];
-  const origins: {value: string; line: number}[] = [];
+  const origins: {value: string; lines: number[]}[] = [];
   const fabric: {value: string; n: number; name: string; language: string; line: number}[] = [];
+  let uncertainSize = false, uncertainOrigin = false, uncertainFabric = false;
+  const georgiaCountryLines = lines.flatMap(({line}, index) => /\brepublic of georgia\b|\btbilisi\b/.test(folded(line)) ? [index] : []);
   lines.forEach(({line}, index) => {
     for (const [rule, pattern] of [['rn', /\bRN\s*#?\s*(\d{4,6})\b/gi], ['ca', /\bCA\s*#?\s*(\d{5,6})\b/gi]] as const)
       for (const match of line.matchAll(pattern)) {
@@ -75,10 +77,15 @@ export function parseTag(input: unknown): Parsed {
     brands.push(...matchBrands(line, index));
     for (const match of line.matchAll(/(?<![\p{L}\p{N}'’])(?:XXXL|XXL|XXS|XL|XS|S|M|L|\d{2,3}\s*[x×]\s*\d{2,3})(?![\p{L}\p{N}'’])/giu)) {
       const before = line.slice(0, match.index);
-      const rule = /\d/.test(match[0]) ? 'waist_length' : line.trim().toUpperCase() === match[0].toUpperCase() ? 'size_own_line'
+      const after = line.slice(match.index + match[0].length);
+      if (!/\d/.test(match[0]) && (/[/\-]\s*$/.test(before) || /^\s*[/\-]/.test(after))) {uncertainSize = true; continue;}
+      const context = line.trim().toUpperCase() === match[0].toUpperCase() ? 'size_own_line'
         : /\b(?:Size|Sz)\s*[:.]?\s*$/i.test(before) ? 'size_label' : /\b(?:US|UK|EU)\s*$/i.test(before) ? 'size_system' : undefined;
+      const rule = /\d/.test(match[0]) ? context === 'size_own_line' || context === 'size_label' ? 'waist_length' : undefined : context;
       if (rule) sizes.push({value: /\d/.test(match[0]) ? match[0].replace(/\s/g, '').replace('×', 'x').toLowerCase() : match[0].toUpperCase(), rule, span: span(index, match.index, match[0])});
     }
+    for (const match of line.matchAll(/\bW\s*(\d{2,3})\s+L\s*(\d{2,3})\b/gi))
+      sizes.push({value: `${match[1]}x${match[2]}`, rule: 'waist_length', span: span(index, match.index, match[0])});
     for (const match of line.matchAll(/\b(?:US|UK|EU)\s*(\d{1,2}(?:\.5)?)(?![\d.%])\b|\b(\d{1,2}(?:\.5)?)\s*(?:US|UK|EU)\b/gi))
       sizes.push({value: match[1] ?? match[2], rule: 'size_system', span: span(index, match.index, match[0])});
     const normalized = folded(line);
@@ -86,27 +93,30 @@ export function parseTag(input: unknown): Parsed {
       let rest = normalized.slice(match.index + match[0].length);
       let country = countryAt(rest);
       while (country) {
-        origins.push({value: country.value, line: index});
+        if (country.code === 'GE' && !georgiaCountryLines.length) uncertainOrigin = true;
+        origins.push({value: country.value, lines: country.code === 'GE' ? [index, ...georgiaCountryLines] : [index]});
         rest = rest.slice(country.length);
-        const separator = /^\s*(?:,\s*(?:and\s+)?|and\s+|&\s*)/.exec(rest);
+        const separator = /^\s*(?:,\s*(?:(?:and|or)\s+)?|(?:and|or)\s+|[&/]\s*)/.exec(rest);
         if (!separator) break;
+        if (/\bor\b|\//.test(separator[0])) uncertainOrigin = true;
         rest = rest.slice(separator[0].length);
         country = countryAt(rest);
       }
     }
-    const percentages = [...line.matchAll(/\b(\d+(?:\.\d+)?)%\s*([\p{L}]+)\b/gu)];
-    const language = percentages.map(match => fibres[folded(match[2])]?.language).find(value => value !== undefined) ?? 'en';
+    const percentages = [...line.matchAll(/(?<![\d.])([+-]?(?:\d+(?:\.\d+)?|\.\d+))\s*%\s*([\p{L}]+)?/gu)];
+    if (percentages.length !== [...line.matchAll(/%/g)].length) uncertainFabric = true;
+    const language = percentages.map(match => fibres[folded(match[2] ?? '')]?.language).find(value => value !== undefined) ?? 'en';
     for (const match of percentages) {
-      const fibre = fibres[folded(match[2])];
-      if (!fibre) continue;
+      const fibre = fibres[folded(match[2] ?? '')];
+      if (!fibre || Number(match[1]) <= 0) {uncertainFabric = true; continue;}
       fabric.push({value: `${Number(match[1])}% ${fibre.name}`, n: Number(match[1]), name: fibre.name, language: fibre.language ?? language, line: index});
     }
   });
-  if (new Set(sizes.map(size => size.value)).size === 1) add('size_label', sizes[0].value, sizes[0].rule, sizes.map(size => size.span.line));
-  for (const value of new Set(origins.map(origin => origin.value))) add('origin', value, 'made_in', origins.filter(origin => origin.value === value).map(origin => origin.line));
+  if (!uncertainSize && new Set(sizes.map(size => size.value)).size === 1) add('size_label', sizes[0].value, sizes[0].rule, sizes.map(size => size.span.line));
+  if (!uncertainOrigin) for (const value of new Set(origins.map(origin => origin.value))) add('origin', value, 'made_in', origins.filter(origin => origin.value === value).flatMap(origin => origin.lines));
   if (fabric.length) {
-    const groups = [...new Set(fabric.map(f => f.language))].map(lang => [...new Map(fabric.filter(f => f.language === lang).map(f => [f.value, f])).values()]);
-    const valid = groups.every(group => group.reduce((sum, f) => sum + f.n, 0) <= 100);
+    const groups = [...new Set(fabric.map(f => f.language))].map(lang => fabric.filter(f => f.language === lang));
+    const valid = !uncertainFabric && groups.every(group => new Set(group.map(f => f.name)).size === group.length && group.reduce((sum, f) => sum + f.n, 0) === 100);
     const compositions = groups.map(group => [...new Set(group.map(f => f.value))].sort().join(', '));
     if (valid && new Set(compositions).size === 1) add('fabric', [...new Set(groups[0].map(f => f.value))].join(', '), 'fibre_percentages', fabric.map(f => f.line));
   }
@@ -115,6 +125,8 @@ export function parseTag(input: unknown): Parsed {
   tokens.forEach((token, index) => {
     if (!/^[A-Z]{1,3}\d{2,5}$/.test(token.value) || /^(RN|CA)\d/.test(token.value)) return;
     const ownLine = lines[token.span.line].line;
+    if (/^(?:(?:US|UK|EU|W|L)\d+|(?:SS|FW|AW|SP|FA|HO|SU)\d{2})$/.test(token.value) ||
+      sizes.some(size => size.span.line === token.span.line && token.span.start < size.span.end && size.span.start < token.span.end)) return;
     const postcode = [...ownLine.matchAll(/\b[A-Z]{1,2}\d[A-Z\d]?\s*\d[A-Z]{2}\b/g)].some(match => token.span.start >= match.index && token.span.end <= match.index + match[0].length);
     if (postcode) return;
     if (/%/.test(ownLine.slice(token.span.end, token.span.end + 1)) || /(?:\bRN|\bCA)\s*#?\s*$/i.test(ownLine.slice(0, token.span.start)) || /\bP\.?\s*O\.?\s*Box\s*$/i.test(ownLine.slice(0, token.span.start))) return;

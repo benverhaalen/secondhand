@@ -23,7 +23,24 @@ const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
 
 // Rests-on: spec/engines/capture.md sections 5, 6, 7; jobs/identity/ladder.py.
 export async function identify(input: IdentifyInput, ports: IdentifyPorts, params: ParamStore, log: Log): Promise<IdentifyResult> {
-  const photos = [...input.photos].sort((a, b) => compare(a.role, b.role) || compare(a.key, b.key));
+  let photos: Photo[] = [];
+  try {
+    if (!Array.isArray(input.photos)) throw new TypeError('photos must be an array');
+    photos = Array.from(input.photos).flatMap((photo, index) => {
+      try {
+        if (!object(photo)) throw new TypeError('photo must be an object');
+        if (typeof photo.key !== 'string' || !photo.key.trim()) throw new TypeError('photo key must be a non-empty string');
+        if (typeof photo.role !== 'string' || !photo.role.trim()) throw new TypeError('photo role must be a non-empty string');
+        if (photo.file_ref !== undefined && typeof photo.file_ref !== 'string') throw new TypeError('photo file_ref must be a string');
+        return [photo];
+      } catch (error) {
+        log.error('identify.photo', error, {capture_id: input.capture_id, index});
+        return [];
+      }
+    }).sort((a, b) => compare(a.role, b.role) || compare(a.key, b.key));
+  } catch (error) {
+    log.error('identify.photos', error, {capture_id: input.capture_id});
+  }
   log.input('capture', 'identify', {capture_id: input.capture_id, family: input.family, kind: input.kind,
     photos: photos.map(photo => ({key: photo.key, role: photo.role, text: photo.text, codes: barcodeSummary(photo.codes)}))});
   const scope: Scope = input.family ? {kind: input.kind ? `${input.family}.${input.kind}` : input.family} : {};
