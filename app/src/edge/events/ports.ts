@@ -76,7 +76,7 @@ export const JOB_FOR: Record<EventKind, JobKind> = {
 };
 
 // ---- the store: db-1's event, job, outbox and decision tables ----
-export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer', 'operation'] as const;
+export const TABLES = ['item', 'listing', 'account', 'limits', 'rule', 'want', 'match', 'order', 'conversation', 'offer', 'operation', 'observation'] as const;
 export type Table = (typeof TABLES)[number];
 export type Row = { id: string; user_id: string; version?: number } & Record<string, unknown>;
 export interface StoreState {
