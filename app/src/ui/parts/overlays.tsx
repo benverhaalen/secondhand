@@ -66,7 +66,7 @@ function ToastBody({ id, text, onUndo }: { id: string; text: string; onUndo: () 
   );
 }
 
-// An empty screen: what is not here yet and the one way to start. The headline of a moment is Clofie (Art. 6); no big
+// An empty screen: what is not here yet and the one way to start. No big
 // icon over it (Art. 10.3), and it starts on the left edge like every other heading (Art. 7.5).
 export function EmptyState({ title, line, action }: { title: string; line?: string; action?: { id: string; label: string; onPress?: () => void } }) {
   return (

@@ -1,5 +1,5 @@
 // Every word on screen goes through this, so size, face and tone come from the brand and nowhere else (Art. 6).
-// There is no size prop: a size is a role. Text is one weight, 500, at every size; Clofie 600 sets only the 21 and 36 roles.
+// There is no size prop: a size is a role. Text is one weight, 500, at every size; Clofie 600 sets the wordmark.
 import type { ReactNode } from 'react';
 import { Platform, Text } from 'react-native';
 import { FACE } from './fonts';
@@ -7,12 +7,13 @@ import { useColors, useGround } from './theme';
 import { nudge, type, weight } from './tokens.generated';
 
 const ROLE = {
-  caption: { ...type.t13, display: false },   // a caption, a time, a tab label
-  body: { ...type.t15, display: false },      // rows, buttons, a card's fact line
-  headline: { ...type.t18, display: false },  // a card's title; text you type
-  title: { ...type.t21, display: true },      // the wordmark, the headline of a moment
-  heading: { ...type.t36, display: true },    // the screen title, one per view
-  amount: { ...type.t50, display: false },    // the peak amount
+  caption: type.t13,
+  body: type.t15,
+  headline: type.t18,
+  title: type.t21,
+  heading: type.t36,
+  amount: type.t50,
+  wordmark: type.t21,
 } as const;
 export type Role = keyof typeof ROLE;
 // on-ink: the label on the black pill or the count (C4). on-color: black on a state fill, in both modes.
@@ -37,7 +38,8 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
   const t = tone ?? (role === 'caption' ? 'ink-2' : 'ink');
   const quiet = t === 'ink-2';
   const ink = t === 'on-ink' ? c.page : t === 'on-color' ? c.onColor : ground === 'field' ? (quiet ? c.onField2 : c.onField) : quiet ? c.ink2 : c.ink;
-  const face = r.display ? FACE.display : FACE.text;
+  const wordmark = role === 'wordmark';
+  const face = wordmark ? FACE.display : FACE.text;
   return (
     <Text
       // The role on the web (data-role), so the composition checks read a page's levels (scripts/composition.mjs).
@@ -51,14 +53,14 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
         letterSpacing: 'letterSpacing' in r ? r.letterSpacing : 0,
         // The loaded face, or the platform's own when the brand files are missing (scripts/fonts.mjs says which).
         ...(face ? { fontFamily: `${face}` } : {}),
-        fontWeight: Platform.OS === 'web' || !face ? (r.display ? weight.display : weight.text) : undefined,
+        fontWeight: Platform.OS === 'web' || !face ? (wordmark ? weight.display : weight.text) : undefined,
         fontVariant: tabular ? ['tabular-nums'] : undefined,
         color: ink,
         textAlign: center ? 'center' : undefined,
-        textTransform: r.display ? 'lowercase' : undefined,
+        textTransform: wordmark ? 'lowercase' : undefined,
         // Clofie sits .12 em above center in its line; it moves down where text cannot be trimmed (Art. 6.10).
-        position: r.display ? 'relative' : undefined,
-        top: r.display ? Math.round(r.fontSize * nudge.display) : undefined,
+        position: wordmark ? 'relative' : undefined,
+        top: wordmark ? Math.round(r.fontSize * nudge.display) : undefined,
       }}>
       {children}
     </Text>
