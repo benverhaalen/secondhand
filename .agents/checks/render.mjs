@@ -311,7 +311,7 @@ function checkView(view, ctx) {
   if (view.share && view.share.color < .005 && !view.els.some(e => e.photo)) W('L2', '', 'is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)');
   // U6 a site's logo is its saved square icon (ledger L17; Ben, 03:49: "you should always use the icdons you grabbed"). A picture whose file or alt names a marketplace, or that sits where a logo goes, comes from assets/platforms/square/.
   for (const el of view.els) { if (el.src == null) continue; const file = el.src.split(/[?#]/)[0], site = SITE_NAME[(file.match(SITE_FILE) ?? [])[1]?.toLowerCase()] ?? (SITES.test(el.alt ?? '') && (el.alt ?? '').trim().split(/\s+/).length <= 2 ? SITES.exec(el.alt)[0] : null);
-    if ((site || el.logo) && !/assets\/platforms\/square\/[a-z]+\.png$/.test(file)) E('U6', `<${el.tag}${el.alt ? ` "${el.alt}"` : ''}>`, `shows ${file.startsWith('data:') ? 'an inline picture' : file.split('/').slice(-3).join('/')} as ${site ? `the ${site} logo` : 'a logo'}: a site's logo is its saved square icon, assets/platforms/square/${(site ?? 'site').toLowerCase().split(' ')[0]}.png (ledger L17)`); }
+    if ((site || el.logo) && !/assets\/platforms\/square\/[a-z]+(?:\.[0-9a-f]{20,32})?\.png$/.test(file)) E('U6', `<${el.tag}${el.alt ? ` "${el.alt}"` : ''}>`, `shows ${file.startsWith('data:') ? 'an inline picture' : file.split('/').slice(-3).join('/')} as ${site ? `the ${site} logo` : 'a logo'}: a site's logo is its saved square icon, assets/platforms/square/${(site ?? 'site').toLowerCase().split(' ')[0]}.png (ledger L17)`); }
   // U7 a state changes how a thing looks, never where it or its neighbours sit (Ben, 03:49: "when the gray box is there, things are moving over"). scripts/brand-check.mjs moves the current mark to each sibling and measures.
   for (const s of view.shifts ?? []) E('U7', `"${s.who}"`, `moves ${s.by} px when ${s.how}: a state changes how a thing looks, never where it or its neighbours sit. Give every item the same box in every state (fixed slots, the state drawn inside or behind)`);
   view.fields = fields.length;
@@ -382,7 +382,7 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
   if (sheet.fields && withField > sheet.fields) out.push(err('B4', medium, `${withField} views carry the field: a ${medium} uses it on ${sheet.fields} at most (Part III)`));
   const bleeds = facts.views.filter(v => v.bleed).length, most = sheet.fields ?? 1;
   if (bleeds > most) out.push(err('B8', medium, `the field fills ${bleeds} views: it fills ${most} at most on a ${medium}, and sits on one card or band everywhere else (C2, Part III)`));
-  if (facts.fontsLoaded === false) out.push(warn('B15', medium, 'the brand faces are not installed on this machine, so line counts, widths and margins were measured in a fallback face'));
+  if (facts.fontsLoaded === false) out.push((facts.fontsRequired ? err : warn)('B15', medium, facts.fontsRequired ? 'the brand faces in BRAND_FONTS did not load, so nothing was measured in them: check the folder holds the Clofie and PP Neue Montreal files' : 'the brand faces are not on this machine, so line counts, widths and margins were measured in a fallback face. Put the files in fonts/ (gitignored) or set BRAND_FONTS'));
   return out;
 }
 

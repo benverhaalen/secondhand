@@ -1,0 +1,16 @@
+{
+  "screen": "item/[id]/pickup",
+  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "states": [
+    {
+      "state": "stub",
+      "shows": "the nav and the screen title"
+    }
+  ],
+  "controls": [
+    {
+      "control": "Back",
+      "on_tap": "goes back to the screen it came from"
+    }
+  ]
+}

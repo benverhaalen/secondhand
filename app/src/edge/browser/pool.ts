@@ -8,11 +8,13 @@
 import { join } from 'node:path';
 import type { Log } from '../../../../log/index.js';
 import type { Accounts, AuthVault, StorageState } from './auth.ts';
+import { PROFILES } from '../harness/platform.ts';
+import type { Site } from '../harness/protocol.ts';
 
 export type PoolPage = { close(): Promise<void> };
 export type PoolContext<P extends PoolPage = PoolPage> = { newPage(): Promise<P>; close(): Promise<void>; onClose(fn: () => void): void;
   loadState?(s: StorageState): Promise<void>; exportState?(): Promise<StorageState> };
-export type LaunchOptions = { headless: true; proxy?: { server: string } };
+export type LaunchOptions = { headless: boolean; proxy?: { server: string } };
 export type Launcher<P extends PoolPage = PoolPage> = {
   persistent(profileDir: string, opts: LaunchOptions): Promise<PoolContext<P>>;   // one account's profile, kept on disk
   anonymous(opts: LaunchOptions): Promise<PoolContext<P>>;                         // a throwaway context on the shared browser
@@ -20,10 +22,10 @@ export type Launcher<P extends PoolPage = PoolPage> = {
 // Where an account's steady address comes from (a proxy in the person's region); undefined means this host's own address.
 export type AddressBook = (account_id: string) => string | undefined;
 
-export type Task<P extends PoolPage, T> = { account_id?: string; job_id: string; run(page: P): Promise<T> };
+export type Task<P extends PoolPage, T> = { account_id?: string; site?: Site; job_id: string; run(page: P): Promise<T> };
 export type Dispatched<T> = { ok: true; value: T; ms: number; warm: boolean } | { ok: false; status: 409 | 'not_linked' | 'error'; message: string; ms: number };
 
-type Slot<P extends PoolPage> = { ctx: Promise<PoolContext<P>>; ready: boolean; dead: boolean; leasedBy?: string; lastUsed: number; loaded?: boolean };
+type Slot<P extends PoolPage> = { ctx: Promise<PoolContext<P>>; ready: boolean; dead: boolean; leasedBy?: string; lastUsed: number; loaded?: boolean; headless?: boolean };
 
 export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts: linked, vault, address = () => undefined, maxAccounts = 32,
   publicConcurrency = 8, log, now = () => performance.now() }: {
@@ -35,20 +37,21 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
   const waiting: (() => void)[] = [];
   let launches = 0;
 
-  const opts = (account_id?: string): LaunchOptions => {
-    const server = account_id ? address(account_id) : undefined;
-    return server ? { headless: true, proxy: { server } } : { headless: true };
+  // A site whose profile says headed gets a real window; everything else runs headless.
+  const opts = (account_id?: string, site?: Site): LaunchOptions => {
+    const server = account_id ? address(account_id) : undefined, headless = !(site && PROFILES[site].headed);
+    return server ? { headless, proxy: { server } } : { headless };
   };
   const profileDir = (account_id: string) => join(profileRoot, encodeURIComponent(account_id));
 
-  function slotFor(account_id: string): Slot<P> {
+  function slotFor(account_id: string, site?: Site): Slot<P> {
     const have = accounts.get(account_id);
     if (have && !have.dead) return have;
     evictIdle();
     const slot: Slot<P> = { ctx: Promise.resolve(null as never), ready: false, lastUsed: now(), dead: false };
     launches++;
     // A restart relaunches the same directory, so the login survives; a site that logged us out answers auth_expired in its adapter.
-    slot.ctx = launcher.persistent(profileDir(account_id), opts(account_id)).then(c => { slot.ready = true; c.onClose(() => { slot.dead = true; }); return c; },
+    slot.ctx = launcher.persistent(profileDir(account_id), opts(account_id, site)).then(c => { slot.ready = true; c.onClose(() => { slot.dead = true; }); return c; },
       e => { slot.dead = true; throw e; });
     accounts.set(account_id, slot);
     return slot;
@@ -62,17 +65,25 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     void idle[1].ctx.then(c => c.close(), () => undefined);
   }
 
-  function publicSlot(): (Slot<P> & { busy: boolean }) | undefined {
+  function publicSlot(site?: Site): (Slot<P> & { busy: boolean }) | undefined {
     for (let i = publicSlots.length - 1; i >= 0; i--) if (publicSlots[i].dead) publicSlots.splice(i, 1);
-    const free = publicSlots.find(s => !s.busy);
+    const headless = opts(undefined, site).headless;
+    const free = publicSlots.find(s => !s.busy && s.headless === headless);
     if (free) return free;
-    return publicSlots.length < publicConcurrency ? launchPublic() : undefined;
+    if (publicSlots.length < publicConcurrency) return launchPublic(site);
+    // Full: close an idle slot of the other kind to make room, so a headed site is never starved by headless ones.
+    const idle = publicSlots.findIndex(s => !s.busy);
+    if (idle < 0) return undefined;
+    const [old] = publicSlots.splice(idle, 1);
+    void old.ctx.then(c => c.close(), () => undefined);
+    return launchPublic(site);
   }
 
-  function launchPublic(): Slot<P> & { busy: boolean } {
+  function launchPublic(site?: Site): Slot<P> & { busy: boolean } {
     launches++;
-    const s: Slot<P> & { busy: boolean } = { ctx: Promise.resolve(null as never), ready: false, busy: false, dead: false, lastUsed: now() };
-    s.ctx = launcher.anonymous(opts()).then(c => { s.ready = true; c.onClose(() => { s.dead = true; }); return c; }, e => { s.dead = true; throw e; });
+    const o = opts(undefined, site);
+    const s: Slot<P> & { busy: boolean } = { ctx: Promise.resolve(null as never), ready: false, busy: false, dead: false, lastUsed: now(), headless: o.headless };
+    s.ctx = launcher.anonymous(o).then(c => { s.ready = true; c.onClose(() => { s.dead = true; }); return c; }, e => { s.dead = true; throw e; });
     publicSlots.push(s);
     return s;
   }
@@ -91,25 +102,32 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
         if (!acct) return { ok: false, status: 'not_linked', message: 'this account is not linked', ms: now() - t0 };
         const before = accounts.get(task.account_id);
         const warm = !!before && !before.dead && before.ready;
-        const slot = slotFor(task.account_id);
-        // One job drives an account's session at a time; a second job is told 409 at once, never queued into the first's steps.
-        if (slot.leasedBy && slot.leasedBy !== task.job_id) return { ok: false, status: 409, message: `account busy with ${slot.leasedBy}`, ms: now() - t0 };
+        const slot = slotFor(task.account_id, acct.site);
+        // One task drives an account's session at a time, even two tasks of one job: the second is told 409 at once.
+        if (slot.leasedBy) return { ok: false, status: 409, message: `account busy with ${slot.leasedBy}`, ms: now() - t0 };
         slot.leasedBy = task.job_id;
+        let ran = false;
         try {
           const ctx = await slot.ctx;
           if (!slot.loaded && ctx.loadState && vault) { const st = await vault.get(acct.token_ref); if (st) await ctx.loadState(st); }
           slot.loaded = true;
           const value = await runOn(slot.ctx, task);
+          ran = true;
           return { ok: true, value, ms: now() - t0, warm };
         } finally {
-          // The sign-in goes back to the vault at the end of every lease, so a cloud browser or a host move loses nothing.
-          const ctx = slot.ready && !slot.dead ? await slot.ctx : undefined;
-          if (ctx?.exportState && vault) await ctx.exportState().then(st => vault.put(acct.token_ref, st), () => undefined);
+          // The sign-in goes back to the vault after a lease that loaded and ran cleanly, so a cloud browser or a host move loses
+          // nothing. Never after a failed load or run, and never a state with no cookies over one that has them (a logout or an
+          // expiry must not erase the stored sign-in; the adapter reports auth_expired and the person relinks).
+          const ctx = ran && slot.ready && !slot.dead ? await slot.ctx : undefined;
+          if (ctx?.exportState && vault) await ctx.exportState().then(async st => {
+            const had = await vault.get(acct.token_ref);
+            if (st.cookies.length || !had?.cookies.length) await vault.put(acct.token_ref, st);
+          }, () => undefined);
           slot.leasedBy = undefined; slot.lastUsed = now();
         }
       }
-      let s = publicSlot();
-      while (!s) { await new Promise<void>(r => waiting.push(r)); s = publicSlot(); }
+      let s = publicSlot(task.site);
+      while (!s) { await new Promise<void>(r => waiting.push(r)); s = publicSlot(task.site); }
       const warm = s.ready;
       s.busy = true;
       try { const value = await runOn(s.ctx, task); return { ok: true, value, ms: now() - t0, warm }; }
@@ -127,7 +145,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     // Launch the person's linked profiles (and the public contexts) ahead of any call, so the first dispatch is warm.
     // An id that is not linked is skipped: warming never launches a site the person did not link.
     async warm(account_ids: string[], publicSlotsWanted = Math.min(2, publicConcurrency)) {
-      for (const id of account_ids) if (linked && await linked.byId(id)) slotFor(id);
+      for (const id of account_ids) { const a = linked && await linked.byId(id); if (a) slotFor(id, a.site); }
       while (publicSlots.length < publicSlotsWanted) launchPublic();
       await Promise.allSettled([...[...accounts.values()].map(s => s.ctx), ...publicSlots.map(s => s.ctx)]);
     },

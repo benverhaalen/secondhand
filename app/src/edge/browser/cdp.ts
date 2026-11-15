@@ -27,7 +27,7 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
     const ep = await source.open(profileDir, opts);
     let browser: CdpBrowser;
     try { browser = await pw.chromium.connectOverCDP(ep.cdpUrl, { timeout: 30_000 }); }
-    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/wss?:\/\/\S+/g, '[cdp]')}`); }
+    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`); }
     const ctx = browser.contexts()[0] ?? await browser.newContext();
     let closed = false;
     const closers: (() => void)[] = [];
@@ -57,7 +57,7 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
 
 // A local Chrome on a kept profile, the debugging port bound to 127.0.0.1 and chosen by Chrome (port 0), read from DevToolsActivePort.
 // The port has no authentication (browser-use README), so it never binds beyond loopback.
-export function localChrome({ executablePath, scratch, headless = true, spawnFn = spawn, readyMs = 15_000 }: {
+export function localChrome({ executablePath, scratch, headless, spawnFn = spawn, readyMs = 15_000 }: {
   executablePath: string; scratch: string; headless?: boolean; spawnFn?: typeof spawn; readyMs?: number;
 }): BrowserSource {
   let n = 0;
@@ -68,7 +68,7 @@ export function localChrome({ executablePath, scratch, headless = true, spawnFn 
       mkdirSync(dir, { recursive: true });
       rmSync(join(dir, 'DevToolsActivePort'), { force: true });
       const args = [`--user-data-dir=${dir}`, '--remote-debugging-port=0', '--remote-debugging-address=127.0.0.1', '--no-first-run',
-        '--no-default-browser-check', ...(headless ? ['--headless=new'] : []), ...(opts.proxy ? [`--proxy-server=${opts.proxy.server}`] : []), 'about:blank'];
+        '--no-default-browser-check', ...((headless ?? opts.headless) ? ['--headless=new'] : []), ...(opts.proxy ? [`--proxy-server=${opts.proxy.server}`] : []), 'about:blank'];
       const child = spawnFn(executablePath, args, { stdio: 'ignore' });
       const exited = new Promise<void>(r => { if (child.exitCode !== null) r(); else child.once('exit', () => r()); });
       // Wait for Chrome to exit so its profile lock and cookie store are released before anyone reopens or removes the directory.
@@ -114,4 +114,11 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
       return { cdpUrl, live_url, stop: async () => { await fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).catch(() => undefined); } };
     },
   };
+}
+
+// The one place the pool's browser is chosen: a Browser Use Cloud browser when BROWSER_USE_API_KEY is present (read by presence,
+// passed only to the header), else a local Chrome on this host (SECONDHAND_CHROME, or the default Windows install path).
+export function sourceFromEnv(env: Record<string, string | undefined> = process.env, scratch = join(process.cwd(), '.browser-scratch')): BrowserSource {
+  if (env.BROWSER_USE_API_KEY) return browserUseCloud({ apiKey: env.BROWSER_USE_API_KEY });
+  return localChrome({ executablePath: env.SECONDHAND_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe', scratch });
 }

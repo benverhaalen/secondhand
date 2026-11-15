@@ -14,6 +14,18 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/pw" --no-save playwright@1.63.0
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
           echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+      # The brand faces are licensed and the repo is public, so they live in the secret BRAND_FONTS (a base64 tar of two
+      # subset woff files, made on Ben's machine) and are unpacked outside the checkout. Without the secret the render
+      # checks run in a fallback face and say so; with it, faces that fail to load fail the check.
+      - name: Unpack the brand faces
+        env:
+          BRAND_FONTS_B64: ${{ secrets.BRAND_FONTS }}
+        run: |
+          if [ -n "$BRAND_FONTS_B64" ]; then
+            mkdir -p "$RUNNER_TEMP/fonts"
+            printf '%s' "$BRAND_FONTS_B64" | base64 -d | tar xzf - -C "$RUNNER_TEMP/fonts"
+            echo "BRAND_FONTS=$RUNNER_TEMP/fonts" >> "$GITHUB_ENV"
+          fi
       # On a push, origin/main already is the pushed commit, so compare with the commit before the push.
       - run: node .agents/check.mjs
         env:
@@ -26,3 +38,26 @@ jobs:
           path: logs/check-*.jsonl
           retention-days: 30
           if-no-files-found: ignore
+
+  # Every app screen on its real web render: the brand checks on each route, then the behavior tests (app/e2e/README.md).
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm, cache-dependency-path: app/package-lock.json }
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --prefix "$RUNNER_TEMP/pw" --no-save playwright@1.63.0
+          "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
+          echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
+      - run: npm ci
+        working-directory: app
+      - run: npx expo export --platform web
+        working-directory: app
+      - run: node scripts/app-check.mjs --dark --sheet
+      - run: node --test "app/e2e/*.test.mjs"
+        if: ${{ !cancelled() }}
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with: { name: app-screens, path: features/app/ }

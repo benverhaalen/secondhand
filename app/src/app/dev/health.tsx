@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { isHealth, type Health } from '@/health';
-import { Screen, Stack } from '@/ui/layout';
-import { Txt } from '@/ui/text';
+import { Screen, Stack, Txt } from '@/ui';
 
 // Development placeholder until the first real screen lands: shows whether the backend answers.
 export default function Index() {
@@ -13,7 +12,7 @@ export default function Index() {
     <Screen center>
       <Stack gap="tight">
         <Txt>secondhand</Txt>
-        <Txt quiet>{line(health)}</Txt>
+        <Txt tone="ink-2">{line(health)}</Txt>
       </Stack>
     </Screen>
   );

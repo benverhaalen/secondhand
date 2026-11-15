@@ -2,21 +2,45 @@
 import { Children, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { color, radius, space } from './tokens.generated';
+import { Wash } from './parts/chrome';
 import { Txt } from './text';
+import { OnGround, useColors } from './theme';
+import { radius, space } from './tokens.generated';
 
-// Space carries meaning: the closer two things sit, the more they belong together.
-export const GAP = { tight: space.s2, group: space.s3, section: space.s7 } as const;
+// Space carries meaning: the closer two things sit, the more they belong together (Art. 7.2, 7.8).
+// tight 8: parts of one thing. group 12: things in one group. cards 16: cards one under another. section 32: topics.
+export const GAP = { tight: space.s2, group: space.s3, cards: space.s4, section: space.s7 } as const;
 
-export function Screen({ children, center = false }: { children: ReactNode; center?: boolean }) {
+// The whole view: the safe area, the 20 gutter, one scroll. `nav` sits first, 8 above what follows (Art. 7.8).
+// `wash` draws the header gradient behind the nav (Art. 5, The wash): main screens with news at the top only.
+// `name` and `state` mark the root (data-screen, data-state on the web) so tests and the gallery know which state is drawn.
+// `foot` is the page's one act pinned to the foot, 16 above the safe area (Art. 7.9), when it is not in the first 844.
+export function Screen({ children, nav, wash = false, center = false, name, state, foot }: {
+  children: ReactNode;
+  nav?: ReactNode;
+  wash?: boolean;
+  center?: boolean;
+  name?: string;
+  state?: string;
+  foot?: ReactNode;
+}) {
+  const c = useColors();
+  const marks = name || state ? ({ dataSet: { screen: name, state } } as object) : {};
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={[styles.body, center && styles.center]}>{children}</ScrollView>
-    </SafeAreaView>
+    <OnGround ground="page">
+      <SafeAreaView {...marks} edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
+        <ScrollView contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, center && styles.center]}>
+          {wash ? <Wash /> : null}
+          {nav ? <View style={styles.nav}>{nav}</View> : null}
+          <View style={[styles.content, center && styles.center]}>{children}</View>
+        </ScrollView>
+        {foot ? <View style={styles.foot}>{foot}</View> : null}
+      </SafeAreaView>
+    </OnGround>
   );
 }
 
-// One topic. Sections are told apart by space alone, never a line or a box.
+// One topic. Sections are told apart by space alone, never a line or a box. Cards in it sit 16 apart (Art. 7.8).
 export function Section({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <View style={styles.section}>
@@ -26,8 +50,13 @@ export function Section({ title, children }: { title?: string; children: ReactNo
   );
 }
 
-export function Stack({ gap = 'group', children }: { gap?: 'tight' | 'group'; children: ReactNode }) {
+export function Stack({ gap = 'group', children }: { gap?: 'tight' | 'group' | 'cards'; children: ReactNode }) {
   return <View style={{ gap: GAP[gap] }}>{children}</View>;
+}
+
+// Small things side by side that wrap when they run out of room: tags, a pair of buttons outside a card, chips.
+export function Line({ gap = 'tight', children }: { gap?: 'tight' | 'group'; children: ReactNode }) {
+  return <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: GAP[gap] }}>{children}</View>;
 }
 
 // Reads the way every marketplace row reads: what it is, then the words, then the amount or the action.
@@ -43,38 +72,48 @@ export function Row({ lead, trail, children }: { lead?: ReactNode; trail?: React
 
 // Rows of the same kind: messages, settings, sales. The hairline says "another one of these".
 export function List({ children }: { children: ReactNode }) {
+  const c = useColors();
   return (
     <View>
       {Children.toArray(children).map((child, i) => (
-        <View key={i} style={i > 0 && styles.hairline}>{child}</View>
+        <View key={i} style={i > 0 && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: c.rule }}>{child}</View>
       ))}
     </View>
   );
 }
 
-// A border means "this asks you something". Nothing else gets one.
+// A border means "this asks you something", for a question that is not one of the fixed cards. Nothing else gets one.
 export function Card({ children }: { children: ReactNode }) {
-  return <View style={styles.card}>{children}</View>;
+  const c = useColors();
+  return (
+    <OnGround ground="card">
+      <View style={[styles.card, { backgroundColor: c.surface, borderColor: c.cardEdge }]}>{children}</View>
+    </OnGround>
+  );
 }
 
+// Photo tiles, in columns 16 apart (the Sell grid, L12).
 export function Grid({ columns, children }: { columns: number; children: ReactNode }) {
   return (
     <View style={styles.grid}>
       {Children.toArray(children).map((child, i) => (
-        <View key={i} style={{ width: `${100 / columns}%`, padding: space.s1 }}>{child}</View>
+        <View key={i} style={{ width: `${100 / columns}%`, paddingHorizontal: space.s2, paddingBottom: space.s4 }}>{child}</View>
       ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: color.page },
-  body: { paddingHorizontal: space.gutter, paddingVertical: space.s6, gap: GAP.section },
+  body: { paddingHorizontal: space.gutter, paddingBottom: space.s7, flexGrow: 1 },
+  bare: { paddingTop: space.s6 },
+  withNav: { paddingTop: 0 },
+  nav: { marginBottom: space.s2, zIndex: 1 },
+  content: { gap: GAP.section },
   center: { flexGrow: 1, justifyContent: 'center', alignItems: 'center' },
-  section: { gap: GAP.group },
+  section: { gap: GAP.cards },
   row: { flexDirection: 'row', alignItems: 'center', gap: GAP.group, paddingVertical: space.s3 },
   rowBody: { flex: 1, gap: space.s1 },
-  hairline: { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: color.rule },
-  card: { borderWidth: 1, borderColor: color.rule, borderRadius: radius.card, padding: space.s4, gap: GAP.group },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', margin: -space.s1 },
+  card: { borderWidth: 1, borderRadius: radius.card, padding: space.s4, gap: GAP.group },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', marginHorizontal: -space.s2 },
+  foot: { paddingHorizontal: space.gutter, paddingTop: space.s3, paddingBottom: space.s4 },
 });

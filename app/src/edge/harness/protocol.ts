@@ -120,9 +120,12 @@ export function createHarness({ adapters, accounts, log, timeoutMs = 20_000, now
     const has = hasVerb(site, verb);
     if (has !== true) return { ...fail('no_route', has.absent, { do: 'handoff', url: siteUrl(site, verb) }), meta: meta(undefined, t0, false) };
     // Linked accounts only: a call on an account the person did not link (or has no stored sign-in for) runs nothing.
-    if (accounts && typeof args.account_id === 'string') {
-      const a = await accounts.byId(args.account_id);
-      if (!a || a.site !== site) return { ...fail('policy_refused', `account ${args.account_id} is not linked on ${site}`, { do: 'raise_decision', kind: 'link_account' }), meta: meta(undefined, t0, false) };
+    if (accounts) {
+      const id = typeof args.account_id === 'string' ? args.account_id : undefined;
+      const a = id ? await accounts.byId(id) : undefined;
+      const signedIn = (routes.get(`${site}.${verb}`) ?? []).some(r => r.manifest.session === 'signed_in');
+      if ((id && (!a || a.site !== site)) || (!id && signedIn))
+        return { ...fail('policy_refused', `${id ? `account ${id}` : 'no account'} is not linked on ${site}`, { do: 'raise_decision', kind: 'link_account' }), meta: meta(undefined, t0, false) };
     }
     if (isWrite(verb) && !args.operation_id)
       return { ...fail('policy_refused', 'a write needs operation_id', { do: 'raise_decision', kind: 'missing_operation_id' }), meta: meta(undefined, t0, false) };
