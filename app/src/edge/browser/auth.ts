@@ -2,6 +2,27 @@
 // The state is a secret: it lives only in the secret scope (the vault port), never in a repo file, a log, a trace or a table.
 import { SITES, type Site } from '../harness/protocol.ts';
 import { memoryStore, type Store, type Row } from '../events/ports.ts';
+import { PROFILES as PLATFORM_PROFILES } from '../harness/platform.ts';
+
+// Orchestrator's plain-browser observations, signed out, 2026-11-15: eBay /mys/home
+// redirected to signin.ebay.com/ws/eBayISAPI.dll (password input); Poshmark
+// /user/account-info to /login (password input); Depop /settings/ to /login/.
+// Confirm these account routes signed in on the first real link. Mercari /mypage/
+// returned HTTP 403, title "Just a moment...", before any redirect: its behavior
+// is unobserved. Its login marker is asserted from the existing login URL.
+// A bot check never proves either signed-in or signed-out state.
+function linkProfile(site: 'ebay' | 'poshmark' | 'depop' | 'mercari', account_url: string,
+  login_url = PLATFORM_PROFILES[site].login!) {
+  return { ...PLATFORM_PROFILES[site], login: login_url, login_url, account_url, sign_in_markers: [login_url] };
+}
+
+// Cloud-link profiles extend the shared platform data without changing adapter routes.
+export const PROFILES = {
+  ebay: linkProfile('ebay', 'https://www.ebay.com/mys/home', 'https://signin.ebay.com/'),
+  poshmark: linkProfile('poshmark', 'https://poshmark.com/user/account-info'),
+  depop: linkProfile('depop', 'https://www.depop.com/settings/'),
+  mercari: linkProfile('mercari', 'https://www.mercari.com/mypage/'),
+};
 
 export type Cookie = { name: string; value: string; domain: string; path: string; expires: number; httpOnly: boolean; secure: boolean; sameSite: 'Strict' | 'Lax' | 'None' };
 export type StorageState = { cookies: Cookie[]; origins: { origin: string; localStorage: { name: string; value: string }[] }[] };

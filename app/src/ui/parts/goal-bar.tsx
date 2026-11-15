@@ -18,8 +18,8 @@ export function GoalBar({ label, kept, target }: { label: string; kept: number; 
         <View style={{ flex: 1 }}><Txt role="body" lines={1}>{label}</Txt></View>
         <Txt role="body" tone="ink-2">{`${money(kept)} of ${money(target)}`}</Txt>
       </View>
-      <View style={{ height: space.s2, borderRadius: radius.pill, backgroundColor: c.gray, overflow: 'hidden' }}>
-        <View style={{ width: `${Math.round(share * 1000) / 10}%`, height: '100%', borderRadius: radius.pill, backgroundColor: c.ink }} />
+      <View style={{ height: space.s2, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray, overflow: 'hidden' }}>
+        <View style={{ width: `${Math.round(share * 1000) / 10}%`, height: '100%', borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink }} />
       </View>
     </View>
   );

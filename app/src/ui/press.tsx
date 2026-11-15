@@ -72,7 +72,7 @@ export function Press({ id, label, onPress, disabled = false, selected, expanded
             {typeof children === 'function' ? children({ pressed: st.pressed, hovered: !!st.hovered, focused: !!st.focused }) : children}
             {st.focused && (byKey || Platform.OS !== 'web') ? (
               // Focus: 2 px ink ring outside a 2 px gap in the page color (Art. 5, Interaction).
-              <View pointerEvents="none" style={{ position: 'absolute', top: -4, left: -4, right: -4, bottom: -4, borderRadius: round ? radius.pill : radius.card, borderWidth: 2, borderColor: c.ink }} />
+              <View pointerEvents="none" style={{ position: 'absolute', top: -4, left: -4, right: -4, bottom: -4, borderRadius: round ? radius.pill : radius.card, borderCurve: 'continuous', borderWidth: 2, borderColor: c.ink }} />
             ) : null}
           </Animated.View>
         );

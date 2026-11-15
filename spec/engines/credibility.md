@@ -13,6 +13,69 @@ Labels: *sourced* (a file in this repo or a page fetched today says it, named in
 
 What this means for a public claim today: the only honest one is the StockX line in [claims.md](../plans/backtest/claims.md#the-strongest-honest-line-today), scoped to StockX deadstock sneakers and to the nightly model. Nothing about used goods, about other sites, or about the app as served can be claimed yet.
 
+## How credibility is weighed
+
+*Agent proposal*, the adaptation lead, for [Nate](../../product/words.md#2026-11-15-nate-how-credibility-should-be-weighed-and-the-value-we-bring-truly-defined): "how do you believe credibility should be weighed ... its important you assess that it's proven how we deliver things. That the value our system brings is truly defined."
+
+**Credibility belongs to a claim, not to a method or a system.** A claim is a quantity, for a population (site, kind, basis level), at a time, against a baseline. "Our range holds 80%" is not a claim. "On eBay page reads of used apparel in November 2026, at the family basis level, 78 of 100 sales fell inside our 80% range" is. Each claim is weighed by the highest rung its evidence has reached, and is stated no higher.
+
+| Rung | What the evidence is | What it proves | What it cannot prove |
+|---|---|---|---|
+| L0 | a primary source says this method suits data of this shape | that the choice is reasonable | anything about our results: the 294 papers Kapoor and Narayanan found had sound-looking methods too |
+| L1 | the code recovers a known truth on a synthetic market | that the arithmetic is right | anything about any market |
+| L2 | a frozen-as-of backtest on released real sales, scored once on a locked window | that the method works on that market, in that period | today; another site; our own sources |
+| L3 | answers frozen before the outcome, on today's listings, scored when they resolve | that the product is right on today's market, for the cells measured | that it beats anyone else |
+| L4 | L3, with named rivals asked the same day about the same items, scored paired | that we are more accurate than they are | that a person is better off |
+| L5 | a randomised comparison on people's own listings: our plan against their own plan or the site's suggestion | that we caused the difference in money kept or days to sell | anything beyond the people and sites in it |
+
+The rules for weighing:
+
+1. **The literature is L0 and the prior, never the proof.** It tells us what a valid test looks like (a proper score, a paired test, a locked window) and how large an effect is plausible (Backus et al.'s 0.727, Genesove and Mayer's hazard slope). Those numbers start a `param`. They are never shown to a person as a fact about their item. A method carried from another domain (housing to resale) is a hypothesis until it reaches L2 or L3 in ours.
+2. **A higher rung overrides a lower one.** When L3 disagrees with L2, L3 wins and L2 is recorded as not carrying to today. When a measure fails at L3 it is dropped, whatever its literature says.
+3. **Nothing transfers between cells for free.** StockX sneakers do not vouch for used apparel on Poshmark. A thin cell may borrow from its parent, as the registry pools, but the claim then names the parent's evidence and the borrowing.
+4. **Beat the strongest simple rule, not a straw man.** The bar is the best of last sale, the 90-day median, the site's own suggestion and the person's own first price, on the same items. A win over "no discount" or "one rate for everything" tests the code. It supports no claim.
+5. **Report the share of the reachable gap we close,** not only the raw error: `skill = (S_base − S_ours) / (S_base − S_ceiling)`, where `S` is a proper score, `S_base` the strongest simple rule's and `S_ceiling` the market's own noise (repeat sales of the same thing: on StockX 99.7% within 20%, [claims.md](../plans/backtest/claims.md)). This is the forecasting literature's skill score (Murphy 1988; a method reference, not fetched). On StockX, against the 90-day median and taking "within 20%" as the score, the nightly model's skill is `(97.5 − 89.4) / (99.7 − 89.4) = 0.79` (*inferred* from claims.md's figures). It closed about four fifths of the gap to the market's own noise.
+6. **Every figure carries its rung, its count and its interval**, and the rows we lose are published beside the rows we win ([benchmark.md](../benchmark.md) rule 5). C4 below enforces it.
+
+Where we stand by these rules: valuation is at L2 on one market. Every other scorer is at L0 or L1. Nothing is at L3, L4 or L5.
+
+## The value we bring, defined
+
+Accuracy is not the value. A better price estimate is worth something only if it changes what the person does (the ask, the site, the offer they accept) and that change improves what they end up with. So value is defined on outcomes, against what the same person would have done without us.
+
+For one item `i` of person `u`:
+
+`ΔV_i = (k_i − k_i^cf) − c_u · (d_i − d_i^cf) − w_u · (h_i − h_i^cf) + ℓ_i`
+
+| Symbol | Meaning | How it is measured |
+|---|---|---|
+| `k_i` | money kept: the sale price less the site's fees and the shipping the seller paid, in cents; 0 if unsold by the horizon | the person's own orders (P2) |
+| `d_i` | days from listing to sale, censored at the horizon | the person's own listings |
+| `h_i` | the person's hours: photographing, writing, crosslisting, answering, delisting | timed in the app; for the counterfactual, the person's own estimate (*asserted* by them) |
+| `ℓ_i` | loss avoided: a scam blocked, a sale below the floor refused, a double sale prevented | trust and delist records, counted only where the threat is confirmed |
+| `c_u` | what a day of waiting costs this person | their goal (quick, balanced, max return), read from `marketing_holding_cost_<goal>` (`app/src/engines/marketing/params.ts:6-8`), scoped per person |
+| `w_u` | what an hour is worth to them | asked, never assumed |
+| `·^cf` | the counterfactual: what this person would have done without our plan | **only a randomised comparison gives it (L5)**: on consenting people's items, a fair coin picks our plan or their own first plan (or the site's suggestion), both at or above the person's floor |
+
+The headline value is the mean of `ΔV` over items with its 95% interval, with its parts beside it (money, days, hours, losses avoided) and the unsold share in each arm. Each engine's share comes from what it changes:
+
+| Engine | The value it delivers | The outcome that shows it | Rung needed to claim it |
+|---|---|---|---|
+| valuation and the ladder | an ask that sells at or above the floor within the person's horizon, without leaving money behind | `k` and `d` against the person's own first price; the share sold in under 24 hours (a sign the ask was low) and the share unsold at the horizon (too high) | L5 for "more money", L3 for "accurate" |
+| time to sell | a chance of sale the person can plan on | calibration on the panel and on their listings | L3 |
+| marketing (which site, which plan) | the site where this item does best | `k` and `d` against a single-site plan | L5 |
+| negotiation | more kept per accepted offer, without losing the buyer | keep per offer against accepting the first offer at or above the floor, by off-policy weighting on logged offers | L5, or L3 with a stated off-policy estimator |
+| trust | scams stopped, honest buyers not lost | precision and recall on labelled threads | L3 |
+| intelligence and search | answers other tools cannot give: sold prices across sites, sources per number, freshness | benchmark rows 1 to 6 and 9 | L4 |
+| crosslisting and delist | hours saved, no double sale | `h` and the double-sale count against the person's manual routine | L3 for time, L4 against crosslisters |
+
+What this asks of the build, as named fixes:
+
+- **C5 (integration).** A value ledger per person: every plan we proposed, what the person chose, the outcome, and the arm it was in, written as `observation` rows. Test: an item's `ΔV` can be recomputed from the ledger alone.
+- **C6 (marketing, with Nate's go per site).** The randomised comparison: on items whose owner opted in, a coin decides between our plan and their own first plan, both above the floor. It is never used below the floor or on an item the person marks urgent, and the person sees both plans. Test: the arm is recorded before the listing goes live, and an item can never be in both arms.
+
+The choice of `c_u` and `w_u`, and whether people are asked to opt in to the comparison, are Nate's.
+
 ## Scorer by scorer
 
 Grades: **method** (a primary source fits the use), **real data** (run on released or live sales, with the dataset named), **beats the baseline** (paired, on the same items, with an interval), **today** (checked on answers frozen before a current sale).
@@ -89,7 +152,7 @@ Each is sent to the orchestrator for the owning lead; none is edited here.
 - **C1 (engines, integration).** Until the served valuation beats last sale on the StockX windows, the app shows last sale and the 90-day median beside our range with their counts, rather than a middle we know is worse. Test: on the backtest, the served middle's median error ≤ last sale's, else the card leads with last sale.
 - **C2 (integration).** Freeze every served valuation (`basis_hash`, `param_versions`, time, site, kind, `basis_level`) to a `forecast` record before any outcome is known, and resolve it from still-up reads of the person's own listings. Test: a forecast written after its listing's sale date is refused.
 - **C3 (engines).** Add time to sell and the offer discount as contestants in the runner, scored with log loss and the interval score, censored listings included through IPCW, so the panel's and the person's own rows can be scored there. Test: the self-test's synthetic market with known hazard is recovered within its interval.
-- **C4 (everyone).** Every published accuracy figure carries its dataset, market, kind, `basis_level`, count and interval, and the on-market or off-market split. A figure pooled across basis levels is not published. Test: a check in `.agents/checks/` fails on an accuracy figure in `spec/` or `brand/` without a dataset and a count.
+- **C4 (everyone).** Every published accuracy figure carries its rung (L0 to L5), dataset, market, kind, `basis_level`, count and interval, and the on-market or off-market split. A figure pooled across basis levels is not published. Test: a check in `.agents/checks/` fails on an accuracy figure in `spec/` or `brand/` without a dataset and a count.
 
 ## Decisions that are Nate's
 

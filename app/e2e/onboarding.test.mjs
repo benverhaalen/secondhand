@@ -23,7 +23,7 @@ const STATES = {
   'sites-failed': { path: SIGNED, taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out', 'Try again'], state: 'failed' },
   'sites-offline': { path: '/onboarding?state=offline&signed=1', shows: ['Waiting for signal', 'Your sites', 'Skip for now'], state: 'offline' },
   pickup: { path: SIGNED, taps: ['onboarding-next'], shows: ['2 of 3', 'Pickup spot', 'A public place', 'Skip'] },
-  photo: { path: SIGNED, taps: ['onboarding-next', 'onboarding-pickup-next'], shows: ['3 of 3', 'First photo', 'Later', 'Take a photo'] },
+  photo: { path: SIGNED, taps: ['onboarding-next', 'onboarding-pickup-next'], shows: ['3 of 3', 'First photo', 'Not now', 'Take a photo'] },
 };
 
 test('onboarding: every state in the behavior table has a test here', () => {

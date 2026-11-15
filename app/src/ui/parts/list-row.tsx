@@ -62,7 +62,7 @@ export function ListRow({ id, label, detail, lead, site, value, tabular = false,
 function Logo({ site }: { site: Site }) {
   const c = useColors();
   return (
-    <View {...mark('site-logo')} accessibilityLabel={SITES[site].name} style={{ width: size.pillCardH, height: size.pillCardH, borderRadius: radius.pill, overflow: 'hidden', backgroundColor: c.surface }}>
+    <View {...mark('site-logo')} accessibilityLabel={SITES[site].name} style={{ width: size.pillCardH, height: size.pillCardH, borderRadius: radius.pill, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: c.surface }}>
       <Image source={SITES[site].logo} alt={SITES[site].name} accessibilityLabel={SITES[site].name} style={{ width: '100%', height: '100%' }} contentFit="cover" />
     </View>
   );

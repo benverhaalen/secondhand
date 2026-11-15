@@ -39,10 +39,11 @@ function checkWidget(widget) {
     return;
   }
   const { spec } = widget;
-  assert.equal(spec.version, { counter: 2, table: 2, bar: 3, line: 3 }[spec.widgetType],
+  assert.equal(spec.version, { counter: 2, table: 2, bar: 3, line: 3, 'filter-single-select': 2, 'custom-vega-viz': 1 }[spec.widgetType],
     `${widget.name}: wrong widget version`);
   const fields = widget.queries.flatMap(q => q.query.fields.map(f => f.name));
-  assert.deepEqual([...new Set(fields)].sort(), [...new Set(encodedFields(spec.encodings))].sort(),
+  const templated = [...JSON.stringify(spec.encodings).matchAll(/\{\{(\w+)\}\}/g)].map(m => m[1]);
+  assert.deepEqual([...new Set(fields)].sort(), [...new Set([...encodedFields(spec.encodings), ...templated])].sort(),
     `${widget.name}: field-name mismatch (no selected fields)`);
 }
 
@@ -60,7 +61,7 @@ function knownRelations() {
 }
 
 function checkRelations(query, relations) {
-  const clean = query.replace(/'([^']|'')*'/g, "''").replace(/--[^\n]*/g, '').replaceAll('`', '');
+  const clean = query.replace(/'([^']|'')*'/g, "''").replace(/--[^\n]*/g, '').replace(/`[^`]*`/g, 'x');
   const ctes = new Set([...clean.matchAll(/(?:WITH|,)\s*(\w+)\s+AS\s*\(/gi)].map(m => m[1].toLowerCase()));
   for (const m of clean.matchAll(/\b(?:FROM|JOIN)\s+(?:LATERAL\s+)?([\w.]+)/gi)) {
     const name = m[1].toLowerCase();
@@ -98,8 +99,8 @@ test('rejects 0-100 percentages while allowing empty and fractional results', ()
 
 test('dashboard parses and every widget has matching fields and supported versions', () => {
   const d = dashboard();
-  assert.equal(d.pages.length, 7);
-  assert.deepEqual(d.uiSettings.theme.visualizationColors, ['#0072B2', '#E69F00', '#009E73', '#CC79A7', '#D55E00']);
+  assert.equal(d.pages.length, 2, 'the story on one page and the data on a second');
+  assert.equal(d.uiSettings.genieSpace.enablementMode, 'ENABLED');
   const names = new Set();
   for (const w of widgets(d)) {
     assert.match(w.name, /^[\w-]{1,60}$/);
@@ -107,6 +108,32 @@ test('dashboard parses and every widget has matching fields and supported versio
     checkWidget(w);
     for (const q of w.queries ?? []) assert.ok(d.datasets.some(s => s.name === q.query.datasetName), `${w.name}: missing dataset`);
   }
+});
+
+test('every figure says where it comes from, and every headline figure carries its count', () => {
+  const d = dashboard();
+  for (const w of widgets(d).filter(w => w.spec)) {
+    if (w.spec.widgetType.startsWith('filter')) continue;
+    assert.ok(w.spec.frame?.title && w.spec.frame?.description, `${w.name}: title and description name the data`);
+    assert.doesNotMatch(JSON.stringify(w.spec.frame), /—|n=|p50|accuracy on live/i, `${w.name}: plain words`);
+    assert.equal(w.spec.encodings.value?.formatTemplate, undefined, `${w.name}: the counter truncates a template; use the stat widget`);
+    if (w.spec.widgetType === 'custom-vega-viz') assert.deepEqual(w.spec.encodings.fields.map(f => f.fieldName), ['value_label', 'sub_label'], w.name);
+  }
+  const stats = sql(d, 'stats');
+  for (const key of ['cited', 'rebuilt', 'ours_range', 'locked', 'refused', 'held_back', 'allowed'])
+    assert.match(stats, new RegExp(`'${key}'.*concat\\('of `), `${key}: its count reads "of N"`);
+  assert.match(stats, /coalesce\(concat\(format_number\(within_20 \* 100, 1\), '%'\), 'Too few'\)/, 'a null rate reads Too few, never 0%');
+});
+
+test('the metric view guards every rate the way the app does: null under 30 shown', () => {
+  const view = read('sql/13_metrics.sql');
+  assert.match(view, /CREATE OR REPLACE VIEW secondhand\.measures\.valuation_metrics\s+WITH METRICS\s+LANGUAGE YAML/);
+  assert.match(view, /PARTITION BY source ORDER BY started_at DESC, run_id DESC/);
+  const rates = [...view.matchAll(/- name: (Within 20 percent|Median error|Range held the sale)\n\s+expr: (.+)/g)];
+  assert.equal(rates.length, 3);
+  for (const [, name, expr] of rates) assert.match(expr, /^CASE WHEN COUNT_IF\(shown\) >= 30 THEN .+ END$/, name);
+  const d = dashboard();
+  for (const name of ['stats', 'price_band', 'price_range', 'price_week']) assert.match(sql(d, name), /FROM valuation_metrics/);
 });
 
 test('every dataset references existing relations and queryLines concatenate safely', () => {
@@ -141,38 +168,6 @@ test('GRID_V1 rows fill twelve columns without gaps or overlapping rows', () => 
   }
 });
 
-test('percent datasets execute as fractions, weight citation counts, and leave missing evidence null', () => {
-  const d = dashboard();
-  const db = new DatabaseSync(':memory:');
-  try {
-    db.exec(`CREATE TABLE headline_latest (run_id TEXT, source TEXT, started_at TEXT, contestant TEXT, within_20 REAL, coverage REAL);
-      CREATE TABLE citation_coverage (data TEXT, shown_numbers INT, shown_with_citation INT, share REAL);
-      CREATE TABLE recompute_check (equal BOOLEAN);
-      CREATE TABLE parity_check (equal BOOLEAN);`);
-    const percent = widgets(d).filter(w => w.spec?.encodings.value?.format?.type === 'number-percent');
-    assert.equal(percent.length, 7);
-    for (const w of percent) {
-      const query = sql(d, w.queries[0].query.datasetName);
-      for (const row of db.prepare(query).all()) checkPercent(row[w.spec.encodings.value.fieldName], w.name);
-    }
-    db.exec(`INSERT INTO headline_latest VALUES
-      ('old', 'a', '2025-01-01', 'model', .1, .2),
-      ('new', 'b', '2026-01-01', 'product_90d_median', .6, .7),
-      ('new', 'b', '2026-01-01', 'model', .8, .9);
-      INSERT INTO citation_coverage VALUES ('dataset:a', 10, 5, .5), ('live:b', 90, 90, 1), ('synthetic', 900, 0, 0);
-      INSERT INTO recompute_check VALUES (1), (0);
-      INSERT INTO parity_check VALUES (1), (1), (0), (0);`);
-    const expected = { primary_within_20: .6, primary_coverage: .7, model_within_20: .8, model_coverage: .9, citation_share: .95, recompute_share: .5, parity_share: .5 };
-    for (const w of percent) {
-      const rows = db.prepare(sql(d, w.queries[0].query.datasetName)).all();
-      assert.equal(rows.length, 1, `${w.name}: counter must have one row`);
-      const value = rows[0][w.spec.encodings.value.fieldName];
-      checkPercent(value, w.name);
-      assert.equal(value, expected[w.name], `${w.name}: wrong denominator or backtest run`);
-    }
-  } finally { db.close(); }
-});
-
 test('dashboard views keep lineage, latest runs, historical claims and CDF postimages', () => {
   const views = statements(read('sql/10_dashboard.sql'));
   for (const v of views) assert.match(v, /^CREATE OR REPLACE VIEW secondhand\.measures\.\w+\s+COMMENT '[\s\S]+?'\s+AS\s/i);
@@ -203,37 +198,6 @@ test('funnel counts fully dropped sources as zero kept, not unknown', () => {
     const counts = Object.fromEntries(rows.map(r => [r.source, [r.bronze, r.dropped, r.kept, r.modelled, r.excluded_from_models]]));
     assert.deepEqual(counts, { dropped: [2, 2, 0, 0, 0], kept: [3, 1, 2, 1, 1] });
   } finally { db.close(); }
-});
-
-test('accuracy compares common bands and exposes counts, coverage and error per cell', () => {
-  const d = dashboard();
-  const cell = sql(d, 'accuracy').match(/concat\((.*?)\) AS cell/s)?.[1];
-  assert.ok(cell, 'accuracy needs a shared cell key');
-  assert.doesNotMatch(cell, /priced|contestant/, 'counts must not split the contestant comparison');
-  const details = widgets(d).find(w => w.name === 'accuracy_cells');
-  assert.ok(details, 'per-cell accuracy details are missing');
-  for (const field of ['source', 'kind', 'price_band', 'contestant', 'n', 'priced', 'within_20', 'coverage', 'median_ape']) {
-    assert.ok(details.queries[0].query.fields.some(f => f.name === field), field);
-    assert.ok(sql(d, 'accuracy').includes(field), field);
-  }
-  const gap = widgets(d).find(w => w.name === 'valuation_gaps').multilineTextboxSpec.lines.join('');
-  for (const name of ['Depop', 'Poshmark', 'Mercari', 'Facebook', 'furniture', 'one-off', 'unbranded']) assert.ok(gap.includes(name), name);
-});
-
-test('thin cells, governance, proof and empty benchmark are represented honestly', () => {
-  const d = dashboard();
-  assert.match(sql(d, 'accuracy'), /WHERE NOT too_few/);
-  assert.match(sql(d, 'accuracy'), /priced/);
-  assert.match(sql(d, 'lineage'), /length\(trim\(target_table_full_name\)\) > 0/);
-  assert.match(sql(d, 'guard'), /count\(\*\) AS violations FROM guard_violations/);
-  for (const name of ['bench_coverage', 'bench_speed', 'bench_cited']) {
-    assert.match(sql(d, name), new RegExp(`FROM ${name}`));
-    assert.doesNotMatch(sql(d, name), /VALUES|UNION|coalesce/i);
-  }
-  assert.ok(widgets(d).some(w => w.name === 'valuation_claim' && w.queries[0].query.fields.some(f => f.name === 'claim')));
-  const governance = widgets(d).find(w => w.name === 'governance_promises').multilineTextboxSpec.lines.join('');
-  assert.match(governance, /Promise \| Databricks feature \| What we add/);
-  assert.match(governance, /designed/i);
 });
 
 test('bundle declares the portable dashboard and both existing experiment paths', () => {

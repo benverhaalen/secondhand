@@ -156,6 +156,18 @@ The result that counts: realised keep per offer against the midpoint champion, p
 
 The fixed set: 50 real offer threads, frozen with their outcomes, across eBay, Poshmark, Depop and Mercari. For the buying side, 10 real buys must close at or under `max_pay` in at least 8 of 10.
 
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Negotiation section of [audit.md](audit.md) was checked against the code. 27 of 32 are closed. These 5 are still open, worst first.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| NG-A1 | The nightly fit publishes the promoted `P_accept` and `q_return`, but nothing in TypeScript loads them. Counters are scored with whatever `pAccept` the caller passes, not the learned model. | `app/src/engines/negotiation/policy.ts:62` (`offerFromRegistry` reads only `negotiation_policy`); `jobs/negotiation/fit.py:155` | Add a loader that reads the champion `P_accept` and `q_return` payloads (terms, weights, label) by scope and builds the two functions. `offerFromRegistry` uses them when present. | Write a `P_accept` champion row with global term logit(0.9) and zero weights into a memory store. `offerFromRegistry` on a 10000 ask and 6000 offer returns candidates with `p_accept` 0.9 (inside the p bounds). With no row it returns the champion midpoint with `p_accept` null. A parity fixture: TS predict equals Python `Logistic.predict` on 5 rows within 1e-9. |
+| NG-A2 | The person's learned traits never reach the posture. `offerFromRegistry` takes `posture` as an argument, and no caller reads `person_posture` or `person_policy_agree`. | `policy.ts:62`; `app/src/engines/person/person.ts:65` | Resolve posture from the person's `person_posture` read and the site's category policy before `offer()`. | A person with 10 `posture_chosen` events at 0.9 gets a higher `accept_line_cents` than a new person on the same state (floor 5000, always_accept 9000). A second person's events change nothing. |
+| NG-A3 | A settled outcome updates only the in-memory row. No call persists the outcome or refreshes the model read. | `app/src/engines/negotiation/outcome.ts:28` (`settle`) | In the same call as `settle`, hand the settled row to a writer the Python fold reads, and invalidate the reader. | Settle one accepted round. The writer is called once with the outcome id and `accepted: 1`, and the cached reader is invalidated. Settling the same round again with the same response calls the writer zero times. |
+| NG-A4 | `online_update` defaults `days` to 0 and the model stores no event time, so forgetting disappears unless the caller supplies elapsed days. | `jobs/negotiation/fit.py:90` | Store `last_event_at` in the model payload. Require the event time. Derive `days` from it. | A model last updated at day 0, updated again at day 30 with the same row: precision is halved before the new information is added. A call with no event time raises. |
+| NG-A5 | No watcher-hour Beta exists. Watcher outcomes do not update scoped send-hour posteriors, and nothing uses them to schedule the next send. | `jobs/negotiation/fit.py:90` (the only online path); `negotiation.md` lines 73 and 88 | Record watcher offer outcomes into a Beta per (scope, hour of week). The scheduler picks the hour with the best posterior mean. | Three accepted watcher offers at hour 19 on ebay give Beta(4,1), mean 0.8, against 0.5 at hour 3. The next send is scheduled at hour 19. Another person's outcomes do not move it. |
+
 ## 10. Build tasks
 
 The paths are proposed. Tasks 1, 2 and 4 run in parallel; 3 needs 1 and 2; 5 needs 3.
