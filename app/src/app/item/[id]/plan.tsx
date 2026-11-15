@@ -11,6 +11,7 @@
 // Under the choice, the three ways to price side by side, each with its price, what you get and how fast it sells
 // when that is known (Ben, 09:09: "shouldnt it end up showing what each of these toggles is meant to show?";
 // M.priceModes), so the trade is seen before picking, not after. The picked one is in ink with a tick.
+// one at a time: plan-price (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';

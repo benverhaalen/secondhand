@@ -79,7 +79,7 @@ test('worth: each site row says what the person keeps there, after fees, never m
 test('worth: glance is labelled rough and offers no next step yet', async () => {
   const screen = await app.open('/worth?stage=glance');
   await screen.shows('Rough guess');
-  assert.equal(await screen.page.getByTestId('worth-sell').count(), 0);
+  assert.equal(await screen.countId('worth-sell'), 0);
 });
 
 test('worth: Keep it, then Undo', async () => {
@@ -93,7 +93,7 @@ test('worth: Keep it, then Undo', async () => {
 test('worth: a typed model number gives the value when the photo was not enough', async () => {
   const screen = await app.open('/worth?stage=unsure');
   await screen.shows('Which one is it?');
-  assert.equal(await screen.page.getByTestId('worth-sell').count(), 0, 'no next step without a number');
+  assert.equal(await screen.countId('worth-sell'), 0, 'no next step without a number');
   await screen.tap('worth-model-field');
   const input = screen.page.getByTestId('worth-model-field-input');
   await input.fill('HEG-001');
@@ -107,7 +107,7 @@ test('worth: I don’t know leads on to selling, with no number', async () => {
   await screen.tap('worth-unknown');
   await screen.shows('No number yet');
   assert.equal(await screen.page.getByText(/^\$[\d,]+ to \$[\d,]+$/).count(), 0);
-  assert.equal(await screen.page.getByTestId('worth-sell').count(), 1);
+  assert.equal(await screen.countId('worth-sell'), 1);
 });
 
 // edge-cases §3, "Oops, $500, I meant $50": a price far from the sales asks once, with the range and the price on the button.
@@ -120,11 +120,11 @@ test('worth: a typed price far from the sales asks once', async () => {
   await input.press('Enter');
   await screen.shows(/^Similar ones sold for \$[\d,]+ to \$[\d,]+\. Sell at \$5,000(\.00)?\?$/);
   await screen.tap('worth-price-fix');
-  assert.equal(await screen.page.getByTestId('worth-price-yes').count(), 0);
+  assert.equal(await screen.countId('worth-price-yes'), 0);
   await screen.tap('worth-price-field');
   await input.fill('60');
   await input.press('Enter');
-  assert.equal(await screen.page.getByTestId('worth-price-yes').count(), 0, 'a price inside the sales asks nothing');
+  assert.equal(await screen.countId('worth-price-yes'), 0, 'a price inside the sales asks nothing');
 });
 
 test('worth: the break content holds: a huge range and a long title stay on the screen', async () => {

@@ -16,6 +16,7 @@ import { ago, itemById, ms, thread, usd, when, world, youKeep, type Conversation
 import { draftFor, waitingOn } from '@/demo/inbox';
 import { photo } from '@/demo/photos';
 import { useScreen, type ScreenState } from '@/demo/screen';
+import { log } from '@/ui/log';
 
 // The states a thread cannot be in, each with why (B35, app/src/demo/screen.ts).
 const SKIP = 'new: a thread exists only once a buyer writes, so a person who has done nothing has none to open; '
@@ -28,7 +29,7 @@ const TAG: Partial<Record<Item['state'], TagState>> = { live: 'live', stale: 'st
 // A name inside a button is cut to fit the 1 to 3 words a button holds (copy.md).
 const short = (name: string) => (name.length <= 12 ? name : 'them');
 // Opens the thing on its site, in the site's app when it is installed.
-const openSite = (url: string) => { Linking.openURL(url).catch(() => {}); };
+const openSite = (url: string) => { Linking.openURL(url).catch(e => log.error('message.open_site', e)); };
 
 type Said = { id: string; kind: 'mine' | 'drafted' | 'note'; text: string };
 type Open = null | { kind: 'more' } | { kind: 'snapshot' } | { kind: 'why'; msg: Msg } | { kind: 'counter'; offer: Offer } | { kind: 'offer-more'; offer: Offer };
