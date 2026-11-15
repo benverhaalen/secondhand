@@ -1367,3 +1367,13 @@ Ben, pitch thread, 07:28 UTC.
 > but also not just secondhand but general buying trends in the places where the products that relate to us are. supply and demand. donating times. when people donate vs buy new etc.
 
 Used in: [spec/plans/backtest/plan.md](../spec/plans/backtest/plan.md), [what-predicts-price-and-speed.md](../research/price/ben/what-predicts-price-and-speed.md).
+
+## 2026-11-15 check eBay's listing-help APIs and whether other sites have the same
+
+Ben, project chat, 07:41 UTC.
+> also take a peek at ebay seo guidance api and see if that is useful at all
+
+Ben, project chat, 07:42 UTC.
+> see if any of these end up improving our methodology. see if other sites have anything similar. see how to use them effectively
+
+Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), app/src/engines/listing/aspects.ts.

@@ -133,15 +133,20 @@ Changed:
 
 Reconciled with the pitch thread's D6 and M12 changes: their seasonal naive baseline, error-ratio skill, two populations, frozen run and calendar-off run are kept as written. Their dated events (M12) enter this test as one more ablation (21), with event choice refit before each frozen date as their step 9 requires. One difference: their M12 example line is a price claim, and the evidence found so far is for counts, not prices ([what-predicts-price-and-speed.md §8](../../../research/price/ben/what-predicts-price-and-speed.md#8-season-lines-a-person-reads)).
 
-## 5. Build tasks, when Ben says go
+## 5. The runner, built
 
-| Task | Owns | Proves with |
-|---|---|---|
-| bt-1 Row loader for the CSV fields in the note §6, with the cluster dedupe and truth rules | `jobs/valuation/rows.py`, test | `python -m pytest jobs/valuation/test_rows.py` |
-| bt-2 Estimate freezing over `market.fit` per origin, with the baselines tuned the same way | `jobs/valuation/freeze.py`, test | planted leak refused; oracle hits ceiling |
-| bt-3 The cube: PPE20, tail share, skill score, hit rate and abstain value in `_summary`, Benjamini-Hochberg on exploratory cells | `backtest.py`, `test_backtest.py` | `python -m pytest jobs/valuation/test_backtest.py` |
-| bt-4 Ablations, leave-one-kind-out and the four planted cases | `jobs/valuation/ablate.py`, test | shuffled comps no better than baseline |
-| bt-5 The one command and the one-page result, logged through `log/` | `scripts/bench/backtest.mjs` or `.py` | `node spec/log.mjs` on its log |
+[jobs/valuation/experiment.py](../../../jobs/valuation/experiment.py), tested by `python3 -m pytest jobs/valuation/test_experiment.py` (run from the repo root or `jobs/`).
+
+| Command | Does |
+|---|---|
+| `python3 scripts/bench/backtest.py self-test` | Decision 23 on the synthetic market: the oracle scores 100%, random comps lose to the product median, a planted leak is refused. Exit code 1 if any fails |
+| `python3 scripts/bench/backtest.py backtest --rows R --test-from D --out O` | Freezes every contestant per test sale (the day before listing, or before the sale when no listing date, counted), refits per month with the 7-day gap, and writes the report: closeness three ways, bias, tail, coverage with Wilson, hit rate, the baseline on items we declined, the paired within-20% lift with a by-product interval, slices by kind, condition, site and price band, the ceiling, and the pre-written sentence |
+| `python3 scripts/bench/backtest.py duel-record --live L --rows R --out duel.json` | Freezes every contestant's answer for live listings, with a sha256 of the file |
+| `python3 scripts/bench/backtest.py duel-score --duel duel.json --outcomes O` | Scores only sales dated after the record; counts refused, ended and still live |
+
+Rows follow `FIELDS` in the runner (the schema sent to the sold-data thread). Contestants today: the 90-day product median (primary), the last sale, the Python market model, and the two controls. The real engine plugs in as one more class with `fit` and `predict`.
+
+Not built yet: the family median and seasonal naive baselines, leave-one-kind-out, ablation switches, Holm and Benjamini-Hochberg, speed odds in the duel, and a loader for the Kaggle text-only test.
 
 ## 6. Fresh review, 2026-11-15
 
