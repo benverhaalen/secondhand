@@ -7,8 +7,12 @@ import { SYSTEM } from './prompt.ts';
 import { resolveTags, stripTags } from './widgets.ts';
 import type { Answer, AssistEvent, ToolCallInfo, ToolName, ToolResult, Usage, WebSource } from './types.ts';
 
+const INPUT_PER_MILLION = 2;
 export const PRICE_TABLE = Object.freeze({
-  input_per_million: 2, output_per_million: 10, cache_read_per_million: 0.10, web_search: 0.01,
+  input_per_million: INPUT_PER_MILLION, output_per_million: 10, cache_read_per_million: 0.10, web_search: 0.01,
+  // Anthropic's 5-minute cache writes cost 1.25 times base input:
+  // https://platform.claude.com/docs/en/build-with-claude/prompt-caching#pricing
+  cache_creation_per_million: INPUT_PER_MILLION * 1.25,
 });
 
 export interface StreamClient {
@@ -53,16 +57,18 @@ export function clientFromEnv(env: { ANTHROPIC_API_KEY?: string; OPENROUTER_API_
 
 function usageOf(message: Message): Usage {
   const usage = message.usage as Message['usage'] & { cost?: number };
-  const { input_tokens, output_tokens } = usage;
+  const input_tokens = usage.input_tokens ?? 0, output_tokens = usage.output_tokens ?? 0;
   const cache_read_input_tokens = usage.cache_read_input_tokens ?? 0;
+  const cache_creation_input_tokens = usage.cache_creation_input_tokens ?? 0;
   const web_searches = usage.server_tool_use?.web_search_requests ?? 0;
-  const providerCost = typeof usage.cost === 'number' && Number.isFinite(usage.cost) ? usage.cost : undefined;
+  const providerCost = typeof usage.cost === 'number' && Number.isFinite(usage.cost) && usage.cost >= 0 ? usage.cost : undefined;
   return {
     input_tokens, output_tokens, cache_read_input_tokens, web_searches,
     cost_usd: providerCost ?? (
       input_tokens * PRICE_TABLE.input_per_million / 1e6
       + output_tokens * PRICE_TABLE.output_per_million / 1e6
       + cache_read_input_tokens * PRICE_TABLE.cache_read_per_million / 1e6
+      + cache_creation_input_tokens * PRICE_TABLE.cache_creation_per_million / 1e6
       + web_searches * PRICE_TABLE.web_search
     ),
     cost_source: providerCost !== undefined ? 'provider' : 'price_table',
@@ -71,13 +77,27 @@ function usageOf(message: Message): Usage {
 
 const TAGS = /\[(?:price_range|price_trend|sites|listings|alternatives|table|sources):[^\]\r\n]*\]/g;
 const ISO_DATE = /\d{4}-\d{2}-\d{2}(?:[Tt ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:[Zz]|[+-]\d{2}:?\d{2})?)?/;
-const NUMBERS = new RegExp(`(?<![\\w])(?:${ISO_DATE.source}|(?:\\$\\s*)?-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)(?:\\s*(?:%|percent\\b|per\\s+cent\\b|dollars\\b|USD\\b))?)`, 'gi');
+const MONTH = '(?:January|February|March|April|May|June|July|August|September|October|November|December)';
+const WRITTEN_DATE = new RegExp(`(?:${MONTH}\\s+\\d{1,2},\\s+\\d{4}|\\d{1,2}\\s+${MONTH}\\s+\\d{4})`, 'i');
+const MONEY = /US\$|USD|\$|€|£|dollars?\b|bucks?\b/i;
+const NUMBERS = new RegExp(`(?:${ISO_DATE.source}|${WRITTEN_DATE.source}|(?:(?:US\\$|USD|[$€£])\\s*)?-?(?:\\d+(?:,\\d{3})*(?:\\.\\d+)?|\\.\\d+)(?:\\s*(?:%|percent\\b|per\\s+cent\\b|dollars?\\b|bucks?\\b|USD\\b))?)`, 'gi');
+const NUMBER_WORD = '(?:one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|thousand|million|dozen|half)';
+const MONEY_OR_PERCENT_WORD = '(?:dollars?|bucks?|percent|per\\s+cent|cents)';
+const WORD_FIGURE = new RegExp(`\\b(?:${NUMBER_WORD}[\\s-]+${MONEY_OR_PERCENT_WORD}|${MONEY_OR_PERCENT_WORD}[\\s-]+${NUMBER_WORD})\\b`, 'i');
 const DATE_CONTEXT = /\b(?:in|since|by|from|until|of|January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\s*$/i;
 const UNIT_WORD = /^\s*(?:cm|mm|km|m|inches?|feet|ft|yards?|miles?|grams?|kg|kilograms?|pounds?|lbs?|oz|ounces?|dollars?|USD|percent|per\s+cent|items?|listings?|rows?|comps?|sales?|units?|pieces?|people|buyers?|sellers?|days?|weeks?|months?|years?|hours?|minutes?|seconds?)\b/i;
 const SENTENCES = new Intl.Segmenter('en', { granularity: 'sentence' });
 export const MAX_TOOL_USES_PER_ROUND = 4;
 
 function dateToken(raw: string): string | null {
+  if (WRITTEN_DATE.test(raw)) {
+    const parts = raw.replace(',', '').split(/\s+/);
+    const month = parts.find(part => /^[a-z]/i.test(part))!;
+    const months = 'January February March April May June July August September October November December'.split(' ');
+    const day = parts.find(part => /^\d{1,2}$/.test(part))!;
+    raw = `${parts[2]}-${String(months.findIndex(value => value.toLowerCase() === month.toLowerCase()) + 1).padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  if (raw.length > 10 && !/(?:z|[+-]\d{2}:?\d{2})$/i.test(raw)) raw += 'Z';
   const day = new Date(raw.slice(0, 10)), parsed = new Date(raw);
   if (!Number.isFinite(day.getTime()) || !Number.isFinite(parsed.getTime())
     || day.toISOString().slice(0, 10) !== raw.slice(0, 10)) return null;
@@ -86,21 +106,31 @@ function dateToken(raw: string): string | null {
 }
 
 function numberToken(raw: string): string | null {
-  const value = Number(raw.replace(/dollars|USD|percent|per\s+cent|[$,%\s]/gi, ''));
+  const value = Number(raw.replace(/US\$|dollars?|bucks?|USD|percent|per\s+cent|[$€£,%\s]/gi, ''));
   if (!Number.isFinite(value)) return null;
-  const unit = /\$|dollars|USD/i.test(raw) ? 'usd' : /%|percent|per\s+cent/i.test(raw) ? 'pct' : 'n';
+  const unit = /€/.test(raw) ? 'eur' : /£/.test(raw) ? 'gbp' : MONEY.test(raw) ? 'usd' : /%|percent|per\s+cent/i.test(raw) ? 'pct' : 'n';
   return `${unit}${String(value).replace('-', 'm').replace('.', 'p')}`;
 }
 
 function numbers(text: string): string[] {
   const prose = text.replace(TAGS, '');
+  let previous: { end: number; unit: string } | undefined;
   return [...prose.matchAll(NUMBERS)].flatMap(match => {
     const raw = match[0];
-    if (ISO_DATE.test(raw)) return [dateToken(raw) ?? 'dateinvalid'];
+    if (ISO_DATE.test(raw) || WRITTEN_DATE.test(raw)) {
+      previous = undefined;
+      return [dateToken(raw) ?? 'dateinvalid'];
+    }
     const after = prose.slice(match.index + raw.length);
     if (/^\d{4}$/.test(raw) && DATE_CONTEXT.test(prose.slice(0, match.index))
       && !/\w/.test(after[0] ?? '') && !UNIT_WORD.test(after)) return [];
-    const token = numberToken(raw);
+    let token = numberToken(raw);
+    const connector = previous ? prose.slice(previous.end, match.index) + (raw.startsWith('-') ? '-' : '') : '';
+    if (token?.startsWith('n') && previous && /^(?:usd|eur|gbp)$/.test(previous.unit)
+      && /^\s*(?:-|–|to)\s*$/i.test(connector)) {
+      token = previous.unit + numberToken(raw.replace(/^-/, ''))!.slice(1);
+    }
+    previous = { end: match.index + raw.length, unit: token?.match(/^[a-z]+/)?.[0] ?? '' };
     return token ? [token] : [];
   });
 }
@@ -114,7 +144,7 @@ function figureFacts(value: unknown, key: string): string[] {
     }
     return tokens;
   }
-  if (typeof value === 'string' && /\$|%|\b(?:dollars|USD|percent|per\s+cent)\b/i.test(value)) return numbers(value);
+  if (typeof value === 'string' && (MONEY.test(value) || /%|\b(?:percent|per\s+cent)\b/i.test(value))) return numbers(value);
   return [];
 }
 
@@ -161,15 +191,24 @@ async function checkedDraft(message: Message | undefined, answer: Answer, text: 
     draft += block.text;
   }
   const tokens = [...new Set([...toolFacts(answer.results),
-    ...[...numbers(text), ...citedFacts].filter(token => !token.startsWith('date')),
-    dateToken(new Date(now).toISOString().slice(0, 10))!])];
+    ...numbers(text).filter(token => token.startsWith('n') || (token.startsWith('date') && token !== 'dateinvalid')),
+    ...citedFacts.filter(token => !token.startsWith('date')),
+    // shortcut: no person time zone; upgrade when the request carries one.
+    ...[now, now - 12 * 60 * 60 * 1000].map(time => dateToken(new Date(time).toISOString().slice(0, 10))!)])];
   const facts = tokens.map((value, index) => ({ attribute_id: `number${index}`, name: 'number', value }));
   let kept = '';
   const keptSpans: CitedSpan[] = [];
   for (const { segment: sentence, index } of SENTENCES.segment(draft)) {
     const claims = numbers(sentence).map(text => ({ text, kind: 'number' }));
-    if (claims.length) {
+    const wordFigure = WORD_FIGURE.test(sentence.replace(TAGS, ''));
+    if (claims.length || wordFigure) {
       answer.gate.checked++;
+      if (wordFigure) {
+        answer.gate.cut++;
+        answer.gate.cut_sentences.push(sentence.trim());
+        log.note('assist.gate', { reason: 'number_words' });
+        continue;
+      }
       const verdict = await gate({ subject: 'assist', text: claims.map(c => c.text).join(' ') }, facts, [], () => claims, { log });
       if (verdict.verdict !== 'pass') {
         answer.gate.cut++;
@@ -242,7 +281,6 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
   };
   const toolEvent = (call: ToolCallInfo, phase: 'start' | 'end') => o.onEvent?.({ event: 'assist.tool', data: { ...publicCall(call), phase } });
   let resultId = 0, early = false;
-  let final: Message | undefined;
   const pendingWeb: PendingWeb = new Map();
   try {
     o.log.input('buy', 'assist', { length: o.text.length, image_attached: Boolean(o.image), text_hash: sha256Hex(o.text) });
@@ -255,16 +293,17 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
     if (!Number.isInteger(maxRounds) || maxRounds < 1) throw new Error('max_rounds must be a positive integer');
     for (let round = 0; round < maxRounds; round++) {
       o.signal.throwIfAborted();
-      if (answer.usage.cost_usd >= o.max_cost_usd) {
+      if (!(answer.usage.cost_usd < o.max_cost_usd)) {
         early = true;
         answer.reason = 'cost_cap';
         break;
       }
       const roundStart = o.now();
-      final = await o.log.call('model', o.model, { round: round + 1, effort: o.effort, message_count: messages.length }, async () => {
+      const final = await o.log.call('model', o.model, { round: round + 1, effort: o.effort, message_count: messages.length }, async () => {
         try {
           const stream = o.client.messages.stream({
-            model: o.model, max_tokens: 16000,
+            model: o.model, max_tokens: Math.max(1024, Math.min(16000,
+              Math.floor((o.max_cost_usd * 1e6 - answer.usage.cost_usd * 1e6) / PRICE_TABLE.output_per_million))),
             system: [{ type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } }], messages,
             tools: [...o.tools.defs, { type: 'web_search_20260209', name: 'web_search', max_uses: 3 }],
             output_config: { effort: o.effort }, thinking: { type: 'adaptive' },
@@ -291,6 +330,7 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
       for (const key of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'web_searches', 'cost_usd'] as const) answer.usage[key] += usage[key];
       if (usage.cost_source === 'provider') answer.usage.cost_source = 'provider';
       await collectWeb(final, answer, o, toolEvent, pendingWeb, roundStart);
+      await checkedDraft(final, answer, o.text, o.log, o.now());
       if (final.stop_reason === 'refusal') {
         answer.state = 'refused';
         answer.reason = final.stop_details?.category ?? 'refusal';
@@ -343,7 +383,6 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
       }
     }
     await closeWeb(pendingWeb, answer.reason ?? 'missing_result', o, toolEvent);
-    await checkedDraft(final, answer, o.text, o.log, o.now());
     if (early) answer.blocks.push({ type: 'text', text: 'The answer stopped early.' });
     o.log.note('assist.gate', { ...answer.gate, cut_sentences: undefined, early_count: early ? 1 : 0 });
   } catch (error) {
@@ -354,7 +393,7 @@ export async function converse(o: ConverseOptions): Promise<Answer> {
   }
   answer.ms.done = o.now() - started;
   o.log.event('state.change', { entity: 'assist', id: 'assist', to: answer.state, reason: answer.reason, ms: answer.ms.done });
-  o.onEvent?.({ event: 'assist.settled', data: { ...answer, calls: answer.calls.map(publicCall) } });
+  o.onEvent?.({ event: 'assist.settled', data: { ...answer, gate: { ...answer.gate, cut_sentences: [] }, calls: answer.calls.map(publicCall) } });
   return answer;
 }
 

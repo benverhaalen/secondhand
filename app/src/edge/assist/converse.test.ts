@@ -154,10 +154,10 @@ test('numbers attached to units are gated, and only standalone years are exempt'
   assert.equal(prose(answer), 'The length is 4.5cm. In 2026.');
 });
 
-test('a number in this turn’s own text passes, while history alone supplies no facts', async () => {
+test('this turn backs counts, while money and history alone supply no facts', async () => {
   const t = setup('numbers', { text: 'My budget is $45', history: [{ role: 'user', content: 'I saw $999 before' }] });
   t.options.tools.run = async () => ({ ...result, rows: [], counts: {} });
-  assert.equal((await t.run()).gate.cut, 1);
+  assert.equal((await t.run()).gate.cut, 2);
   assert.deepEqual(t.requests[0].messages[0], t.options.history?.[0]);
 });
 
@@ -424,6 +424,11 @@ test('unbacked streamed money never reaches assist.text but a clean sentence doe
   const t = setup('answer', { client: recording.client });
   const answer = await t.run();
   assert.ok(!streamed(t.events).includes('$412'));
+  for (const event of t.events) assert.ok(!JSON.stringify(event).includes('$412'), event.event);
+  assert.deepEqual(answer.gate.cut_sentences, ['It costs $412.']);
+  const settled = t.events.find(e => e.event === 'assist.settled');
+  assert.ok(settled?.event === 'assist.settled');
+  assert.deepEqual(settled.data.gate, { ...answer.gate, cut_sentences: [] });
   assert.match(streamed(t.events), /Let me check the listings/);
   assert.equal(prose(answer), 'Let me check the listings.');
   assert.ok(answer.ms.first_text !== null && answer.ms.first_text < answer.ms.done);
@@ -458,7 +463,7 @@ test('ISO dates and timestamps are whole tokens backed only by result dates or t
   }
   const recording = replay([textMessage('Today is 2026-11-15. Next is 2026-11-16.')]);
   const t = setup('answer', { client: recording.client, now: () => Date.parse('2026-11-15T20:00:00Z'), text: 'My note says 2026-11-16' });
-  assert.equal(prose(await t.run()), 'Today is 2026-11-15.');
+  assert.equal(prose(await t.run()), 'Today is 2026-11-15. Next is 2026-11-16.');
   const timestamp = await backedText('Read at 2026-11-14T12:30:00Z. Read at 2026-11-14T13:30:00Z.', { ...result, rows: [{ read_at: '2026-11-14T12:30:00Z' }] });
   assert.equal(timestamp.answer.gate.cut, 1);
   assert.equal(prose(timestamp.answer), 'Read at 2026-11-14T12:30:00Z.');
@@ -510,4 +515,204 @@ test('malformed model or person dates are held without losing clean text', async
     assert.equal(streamed(t.events).trim(), 'Let me check the listings.', date);
     assert.equal(answer.gate.cut, 1, date);
   }
+});
+
+for (const join of ['-', '–', ' to ']) test(`money range joined by ${join} cannot borrow its upper end from a count`, async () => {
+  const text = `Most sell for $85${join}120.`;
+  const low = { ...result, rows: [{ price_cents: 8500 }], counts: { sold: 120 } };
+  const held = await backedText(text, low);
+  assert.deepEqual(held.answer.gate.cut_sentences, [text]);
+  assert.ok(!streamed(held.events).includes('120'));
+  const backed = await backedText(text, { ...low, rows: [...low.rows, { price_cents: 12000 }] });
+  assert.equal(backed.answer.gate.cut, 0);
+  assert.equal(prose(backed.answer), text);
+});
+
+test('person text backs only counts and valid dates, never money or percentages', async () => {
+  for (const [text, claim] of [
+    ['Is $400 fair for this?', 'Comparable sales put it at $400.'],
+    ['Is 12% realistic?', 'The share is 12%.'],
+  ]) {
+    const recording = replay([textMessage(claim)]);
+    const t = setup('answer', { client: recording.client, text });
+    assert.deepEqual((await t.run()).gate.cut_sentences, [claim]);
+  }
+  const recording = replay([textMessage('You have 7 items. Sold on 2026-11-12.')]);
+  const t = setup('answer', { client: recording.client, text: 'I have 7 items sold on 2026-11-12' });
+  assert.equal((await t.run()).gate.cut, 0);
+});
+
+function continuingRound(usage: Partial<Message['usage']> & { cost?: number }) {
+  const message = fixture('one-tool')[0];
+  message.usage = { ...message.usage, ...usage };
+  return message;
+}
+
+test('negative provider cost falls back to table pricing and cannot postpone the cap', async () => {
+  const recording = replay([
+    continuingRound({ cost: -1, input_tokens: 0, output_tokens: 20000, cache_read_input_tokens: 0 }),
+    ...Array.from({ length: 5 }, () => continuingRound({ cost: 0.2 })),
+  ]);
+  const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
+  assert.equal(recording.requests.length, 2);
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.usage.cost_usd, 0.4);
+});
+
+test('missing token counts default to zero and table pricing still reaches the cap', async () => {
+  const message = continuingRound({ output_tokens: 20000, cache_read_input_tokens: 0 });
+  Reflect.deleteProperty(message.usage, 'input_tokens');
+  const recording = replay(Array.from({ length: 6 }, () => structuredClone(message)));
+  const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
+  assert.equal(recording.requests.length, 2);
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.usage.input_tokens, 0);
+  assert.equal(answer.usage.cost_usd, 0.4);
+  const missingOutput = textMessage('Done.');
+  Reflect.deleteProperty(missingOutput.usage, 'output_tokens');
+  assert.equal((await setup('answer', { client: replay([missingOutput]).client }).run()).usage.output_tokens, 0);
+});
+
+test('non-finite accumulated cost reaches the cap', async () => {
+  const recording = replay(Array.from({ length: 6 }, () => continuingRound({ output_tokens: NaN })));
+  const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
+  assert.equal(recording.requests.length, 1);
+  assert.equal(answer.reason, 'cost_cap');
+});
+
+test('cache creation costs 1.25 times input pricing and counts toward the cap', async () => {
+  const recording = replay(Array.from({ length: 6 }, () => continuingRound({
+    input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0, cache_creation_input_tokens: 100000,
+  })));
+  const answer = await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
+  assert.equal(recording.requests.length, 1);
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.usage.cost_usd, 0.25);
+});
+
+test('each round sizes max_tokens from remaining output budget, bounded by 1024 and 16000', async () => {
+  const recording = replay([continuingRound({ cost: 0.2 }), textMessage('Done.')]);
+  await setup('answer', { client: recording.client, max_cost_usd: 0.25 }).run();
+  assert.deepEqual(recording.requests.map(request => request.max_tokens), [16000, 5000]);
+  const small = replay([textMessage('Done.')]);
+  await setup('answer', { client: small.client, max_cost_usd: 0.001 }).run();
+  assert.equal(small.requests[0].max_tokens, 1024);
+});
+
+for (const spelling of ['USD 412', 'USD412', 'US$412', '€412', '£412', '412 bucks', 'approx412']) {
+  test(`unbacked ${spelling} cannot borrow a plain count`, async () => {
+    const { answer, events } = await backedText(`It costs ${spelling}.`, { ...result, rows: [], counts: { sold: 412 } });
+    // A glued plain count still needs evidence, unlike a currency figure.
+    if (spelling === 'approx412') {
+      assert.equal(answer.gate.checked, 1);
+      assert.equal(answer.gate.cut, 0);
+      assert.equal((await backedText(`It costs ${spelling}.`)).answer.gate.cut, 1);
+    } else {
+      assert.equal(answer.gate.cut, 1);
+      assert.ok(!streamed(events).includes('412'));
+    }
+  });
+}
+
+test('currency spellings match cited figures only in their own unit', async () => {
+  const usd = { ...result, rows: [{ price_cents: 41200 }] };
+  for (const spelling of ['USD 412', 'USD412', 'US$412', '412 bucks']) {
+    assert.equal((await backedText(`It costs ${spelling}.`, usd)).answer.gate.cut, 0, spelling);
+  }
+  for (const symbol of ['€', '£']) {
+    assert.equal((await backedText(`It costs ${symbol}412.`, usd)).answer.gate.cut, 1, symbol);
+    const matching = { ...result, rows: [{ price: `${symbol}412` }] };
+    assert.equal((await backedText(`It costs ${symbol}412.`, matching)).answer.gate.cut, 0, symbol);
+    const other = { ...result, rows: [{ price: `${symbol === '€' ? '£' : '€'}412` }] };
+    assert.equal((await backedText(`It costs ${symbol}412.`, other)).answer.gate.cut, 1, symbol);
+  }
+});
+
+for (const [label, count] of [['4k', 4], ['32x32', 32]] as const) {
+  test(`${label} keeps its current count matching`, async () => {
+    const text = `The size is ${label}.`;
+    assert.equal((await backedText(text, { ...result, counts: { size: count } })).answer.gate.cut, 0);
+    assert.equal((await backedText(text, { ...result, counts: {} })).answer.gate.cut, 1);
+  });
+}
+
+test('month-first and day-first dates match a whole result date', async () => {
+  const returned = { ...result, rows: [{ sold_at: '2026-11-15' }] };
+  const { answer } = await backedText('Sold November 15, 2026. Sold 15 November 2026. Sold November 14, 2026.', returned);
+  assert.equal(answer.gate.checked, 3);
+  assert.deepEqual(answer.gate.cut_sentences, ['Sold November 14, 2026.']);
+  assert.equal(prose(answer), 'Sold November 15, 2026. Sold 15 November 2026.');
+});
+
+test('today accepts UTC and UTC-12 dates without accepting tomorrow', async () => {
+  const recording = replay([textMessage('Today is 2026-11-14. Today is 2026-11-15. Today is 2026-11-16.')]);
+  const t = setup('answer', { client: recording.client, now: () => Date.parse('2026-11-15T02:00:00Z') });
+  const answer = await t.run();
+  assert.deepEqual(answer.gate.cut_sentences, ['Today is 2026-11-16.']);
+  assert.equal(prose(answer), 'Today is 2026-11-14. Today is 2026-11-15.');
+});
+
+test('naive date-times are UTC regardless of the server time zone', async () => {
+  const originalZone = process.env.TZ;
+  process.env.TZ = 'America/Chicago';
+  try {
+    for (const date of ['2026-11-15 10:00', '2026-11-15T10:00:00Z']) {
+      const { answer } = await backedText(`Read at ${date}.`, { ...result, rows: [{ read_at: '2026-11-15 10:00' }] });
+      assert.equal(answer.gate.cut, 0, date);
+    }
+  } finally {
+    if (originalZone === undefined) delete process.env.TZ;
+    else process.env.TZ = originalZone;
+  }
+});
+
+test('cuts in a tool_use round remain in answer.gate exactly once', async () => {
+  const first = continuingRound({});
+  first.content.unshift({ type: 'text', text: 'It costs $412.', citations: null });
+  const recording = replay([first, textMessage('Let me check the listings.')]);
+  const t = setup('answer', { client: recording.client });
+  const answer = await t.run();
+  assert.deepEqual(answer.gate, { checked: 1, cut: 1, cut_sentences: ['It costs $412.'], tags_removed: 0 });
+  for (const event of t.events) assert.ok(!JSON.stringify(event).includes('$412'));
+});
+
+test('cuts on a continued round stopped by the cap are counted once', async () => {
+  const first = continuingRound({ cost: 0.3 });
+  first.content.unshift({ type: 'text', text: 'It costs $412.', citations: null });
+  const t = setup('answer', { client: replay([first]).client, max_cost_usd: 0.25 });
+  const answer = await t.run();
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.gate.cut, 1);
+  assert.deepEqual(answer.gate.cut_sentences, ['It costs $412.']);
+});
+
+test('number words next to money or percent words are held and the reason is logged', async () => {
+  for (const text of ['It sells for four hundred dollars.', 'It sells for a dozen bucks.',
+    'The share is half percent.', 'The share is twenty per cent.', 'It costs dollars five.']) {
+    const t = setup('answer', { client: replay([textMessage(`${text} Let me check.`)]).client });
+    const answer = await t.run();
+    assert.equal(answer.gate.checked, 1, text);
+    assert.deepEqual(answer.gate.cut_sentences, [text]);
+    assert.equal(prose(answer), 'Let me check.');
+    assert.match(t.sink.text(), /number_words/);
+    for (const event of t.events) assert.ok(!JSON.stringify(event).includes(text));
+  }
+});
+
+test('prompt tells the model to write every figure in digits', () => {
+  assert.match(SYSTEM, /Write every figure in digits\./);
+});
+
+test('a later tool fact cannot erase a streamed cut when the cap ends the turn', async () => {
+  const first = continuingRound({ cost: 0.3 });
+  first.content.unshift({ type: 'text', text: 'It costs $412. Let me check.', citations: null });
+  const t = setup('answer', { client: replay([first]).client, max_cost_usd: 0.25 });
+  t.options.tools.run = async () => ({ ...result, rows: [{ price_cents: 41200 }] });
+  const answer = await t.run();
+  assert.equal(answer.reason, 'cost_cap');
+  assert.equal(answer.gate.checked, 1);
+  assert.deepEqual(answer.gate.cut_sentences, ['It costs $412.']);
+  assert.equal(answer.gate.cut, 1);
+  assert.doesNotMatch(prose(answer), /\$412/);
+  for (const event of t.events) assert.ok(!JSON.stringify(event).includes('$412'));
 });
