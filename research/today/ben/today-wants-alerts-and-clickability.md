@@ -3,7 +3,7 @@ Researched 2026-11-15 by Ben (Claude Code, thread "Roll the UI system out everyw
 
 Ben, 02:18 ([words](../../../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks)): highlight the money and the key facts, use countdowns for time, make the ship notice lead to an action, think about the content "from the user want not need", what a user would want on Today, alerts a person "perks up" at instead of "slop like depops", and who our customers are next to the apps they already use. Every design line is an *agent proposal*. The mock is in the project files (`secondhand-brand/today-v3/`); its values are in [dark-mode-and-size-system.md](../../cross-cutting/ben/dark-mode-and-size-system.md).
 
-Marks: *observed* (opened and read, through a fetch helper that paraphrases), *asserted* (a source claims it without method, or from memory), *inferred* (our reasoning), *measured* (a script or a headless render).
+Marks: *observed* (opened and read through a fetch helper; words in quotation marks are as the helper returned them and may be paraphrased), *asserted* (a source claims it without method, or from memory), *inferred* (our reasoning), *measured* (a script or a headless render).
 
 ## 1. Who opens the app, next to what they already use
 
@@ -25,7 +25,7 @@ What the four share (*inferred*): money that is certain and effort that is small
 | Slot | What | Why it is there | Want it serves |
 |---|---|---|---|
 | Header | Wordmark centered (Ben, [20:17](../../../product/words.md#2026-11-14-constitutions)), messages at the top right with a count ([decision](../../../product/decisions.md#2026-11-14-all-messages-live-behind-a-chat-icon-with-a-count)) | Familiar: a centered title with one trailing button is the iOS nav bar | Know there is nothing hidden |
-| Money | "$96.20" at 36, "Kept this week, 3 sold" under it | The Uber notebook: the number people open a money app for. Take-home, never gross (user-wants principle 2) | Money, and stuff gone |
+| Money (*open*: ledger R40, and the spec puts goal progress on You) | "$96.20" at 36, "Kept this week, 3 sold" under it | Ben asked for the money to stand out (02:18). The Uber notebook: the number people open a money app for. Take-home, never gross (user-wants principle 2). Airbnb moved earnings off its Today into Insights, which argues the other way | Money, and stuff gone |
 | Decisions | One card per open Decision, soonest deadline first ([spec](../../../spec/features/today.md)) | Each card: a kind tag, a countdown, the photo with its site, the item, what you keep, the full action set | Nothing lost by ignoring the app |
 | Notices | A row per thing that asks nothing but is good to know, ending in a chevron: "Your Patagonia fleece went up $12" (`value_moved`) | Opens the item. Money moving toward you is the one notice worth space | Perk up |
 
@@ -66,7 +66,7 @@ What follows (*inferred*): the "ship" banner had an X, which says "dismiss me", 
 
 ## 6. Color blindness
 
-Ben is color blind (02:18). Simulated with Machado et al. 2009 at full severity (*measured*): state fills stay .056 to .182 apart in Oklab under protanopia and deuteranopia, with sold mint and needs-you marigold the closest pair at .068 to .071. So a state is a word, an icon and a color, never the color alone. A dark yellow is brown by physics (sRGB caps lime at chroma .09 near L .4), so in dark mode yellow and lime never fill a ground; the dark field is sky, mint and aqua. The simulated render is `secondhand-brand/today-v3/today-color-blind-sim.png`.
+Ben is color blind (02:18). Simulated with Machado et al. 2009 at full severity (*measured*): the four state fills stay .056 to .182 apart in Oklab under protanopia and deuteranopia. The closest pair is paid lime and needs-you marigold at .056 (deuteranopia); the pair on Today, sold mint and needs-you marigold, is .068 to .071. So a state is a word, an icon and a color, never the color alone. A dark yellow is brown by physics (sRGB caps lime at chroma .09 near L .4), so in dark mode yellow and lime never fill a ground; the dark field is sky, mint and aqua. The simulated render is `secondhand-brand/today-v3/today-color-blind-sim.png`.
 
 ## Limits
 

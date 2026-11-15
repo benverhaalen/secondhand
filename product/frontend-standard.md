@@ -13,7 +13,7 @@ Ask these in order. A later question never rescues an earlier failure.
 1. **Job.** What is the one thing this screen is for, and what is the next action? If you can't say it in one sentence, stop and fix the screen's job, not its look.
 2. **Familiar.** Which app the user already knows does this job, and what do we keep from it? (Jakob's law.) If none, the pattern needs a written reason.
 3. **Shown, not said.** Cover all the text. Can you still tell the item's state and the next action from photos, pills, badges, numbers and position?
-4. **Attention.** Blur or squint. The first thing you see is the thing that matters most; the second is the next action. One primary action per decision.
+4. **Attention.** Blur or squint. The first thing you see is the thing that matters most; the second is the next action. One primary action per decision. Whatever acts looks pressable and nothing else does (§5).
 5. **Honest.** Every number has a source, every automatic action is labelled and undoable, nothing invented, no fake urgency.
 6. **Motion.** Does anything move? Each movement must explain a cause and effect the user would otherwise miss. Otherwise delete it.
 7. **Words.** Run the anti-claudish pass: `node scripts/copy-lint.mjs` (C1 to C12 in copy.md). Labels 1 to 3 words, no paragraphs, no em dashes.
@@ -151,13 +151,13 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: the screen's job and next action fit in one sentence.
 - [ ] Block: one primary action per decision (at most one per card), black and in thumb reach. Destructive actions are never primary.
 - [ ] Flag: the borrowed app is named in the screen's contract. Any custom gesture has a visible fallback.
-- [ ] Block: what does something looks pressable, and nothing else does. A button is a filled pill. A row or notice that opens a screen ends in a chevron (Apple's disclosure indicator). A card that opens its item is raised and the whole card is its target. Tags, counts and countdowns are flat. A dismiss X is never the only control on something that needs an action ([Ben, 02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §5](../research/today/ben/today-wants-alerts-and-clickability.md#5-clickability)).
+- [ ] Block: whatever acts looks pressable, and nothing else does. Buttons take the styles of brand C4 and L5. A row or notice that opens a screen ends in a chevron (Apple's disclosure indicator). A decision card that opens its item takes the depth of brand Art. 9 and the whole card is its target; grid tiles keep their own rule (L12). Tags, counts and countdowns are flat. A dismiss X is never the only control on something that needs an action ([Ben, 02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §5](../research/today/ben/today-wants-alerts-and-clickability.md#5-clickability)).
 
 ### Show, don't say
 - [ ] Block: the cover-the-text test passes (state and next action still readable).
 - [ ] Block: no sentence explains something a pill, badge, number or photo already shows.
 - [ ] Flag: more than one sentence on a card.
-- [ ] Block: a decision card says what kind it is before its title, with a kind tag: a word, an icon and its state color. A deadline sits on the card whose buttons meet it, never in a banner of its own ([note §2](../research/today/ben/today-wants-alerts-and-clickability.md#2-what-today-shows-in-order)).
+- [ ] Block: a decision card names what it is about before its title, with a tag: a word and an icon ("Offer", "Sold"). Which color each kind's tag takes is open in the brand ledger. A deadline sits on the card whose buttons meet it, never in a banner of its own ([note §2](../research/today/ben/today-wants-alerts-and-clickability.md#2-what-today-shows-in-order)).
 - [ ] Flag: in a card's detail line only the money the person keeps is in ink; the rest is secondary ink. Weight stays Book (medium is for buttons, brand Art. 6).
 
 ### Attention
@@ -173,7 +173,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: each decision card names its full action set (primary, secondary, and More for the rest) and what happens if ignored.
 - [ ] Block: platforms appear as their real logos (in a white bubble on photos, bare elsewhere), never as written names or letter badges like e / D / M. Use `assets/platforms/`. Logos follow each brand's guidelines: unaltered colors and proportions, minimum size.
 - [ ] Block: every automatic action is labelled `AUTO` and can be undone.
-- [ ] Block: no fake scarcity, guilt copy, confirmshaming or variable rewards ([psychology §9](../research/cross-cutting/ben/psychology.md)). A countdown shows only a real deadline set by a site, a buyer or a carrier: time left under 24 hours ("3h 40m", by the minute), a day and time beyond that, never red, nothing that pulses ([Ben, 02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §4](../research/today/ben/today-wants-alerts-and-clickability.md#4-countdowns)).
+- [ ] Block: no fake scarcity, guilt copy, confirmshaming or variable rewards ([psychology §9](../research/cross-cutting/ben/psychology.md)). A countdown shows only a deadline the card's data carries: an offer or listing expiry from the site, a ship-by date, a pickup time, or the Decision's own expiry ([spec](../spec/features/today.md)). Time left under 24 hours ("3h 40m", by the minute), a day and time beyond that, in secondary ink, never red, nothing that pulses ([Ben, 02:18](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §4](../research/today/ben/today-wants-alerts-and-clickability.md#4-countdowns)).
 - [ ] Block: destructive or outward actions (post, delist, send an address) need a confirmation or an undo window. Never-alone actions always need the tap.
 
 ### Words (anti-claudish)
@@ -196,7 +196,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: inputs are at least 16 px, which prevents iOS zoom.
 - [ ] Block: VoiceOver labels exist on icon-only controls and state pills, and a pill reads as "Live on eBay", not "green dot".
 - [ ] Block: the layout holds at the largest Dynamic Type size.
-- [ ] Block: no state is shown by hue alone; every state color comes with a word and an icon. Renders are also checked under simulated protanopia and deuteranopia (Machado 2009), and no dark ground sits in the yellow to olive band, which reads brown. Ben is color blind ([words](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §6](../research/today/ben/today-wants-alerts-and-clickability.md#6-color-blindness)).
+- [ ] Block: state follows brand Art. 5's States rule (a word or an icon, never color alone), and renders are also checked under simulated protanopia and deuteranopia (Machado 2009). Two state colors in one view stay at least .056 apart in Oklab, the closest pair the four state fills have today, so a new color can't come closer. No dark ground has OKLCH hue 70 to 115 with L under .5: it reads brown. Ben is color blind ([words](words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks), [note §6](../research/today/ben/today-wants-alerts-and-clickability.md#6-color-blindness)).
 
 ### Character
 - [ ] Block: tokens only, with the real fonts and Hugeicons rendered. The check is on the rendered result, not the CSS.
