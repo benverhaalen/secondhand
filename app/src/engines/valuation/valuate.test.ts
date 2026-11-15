@@ -5,6 +5,9 @@ import { check } from './check.ts';
 import { fromResolved, nEff, type Comp } from './comps.ts';
 import { DECLARED, resolve } from './params.ts';
 import { memoryStore, type ParamStore, type Scope } from '../param/param.ts';
+import fs from 'node:fs/promises';
+import { fittedReader } from '../param/export.ts';
+import { onOurSale } from './aci.ts';
 
 const as_of = '2026-11-15T00:00:00Z';
 const ago = (days: number) => new Date(Date.parse(as_of) - days * 86400000).toISOString();
@@ -210,4 +213,79 @@ test('an empty basis with a promoted zero sample threshold still requests fresh 
   const { ctx } = setup(); promote(ctx.params, 'min_n_eff', 0);
   const out = await valuate(item, ctx);
   assert.equal(out.gather?.reason, 'stale');
+});
+
+async function fitted(ctx: ValuateCtx, scopes: string[] = ['hackathon_demo']) {
+  let pending: Promise<unknown> = Promise.resolve(); const notes: unknown[] = [];
+  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-latest.json', import.meta.url).pathname, scopes,
+    log: { ...ctx.log, timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; },
+      note: (...args) => { notes.push(args); } } });
+  ctx.fitted.loaded(); await pending; return notes;
+}
+const sneakers: ValuationItem = { ...item, kind: 'sneakers', sites: [{ site: 'mercari' }] };
+const mercariSales = () => sales(8).map(c => ({ ...c, site: 'mercari' as const }));
+
+test('exported site-free calibration checks a cited sneakers range and names its run in the citation', async () => {
+  const { ctx } = setup(mercariSales()); await fitted(ctx);
+  const { valuation } = await valuate(sneakers, ctx);
+  assert.equal(valuation.range.group, 'export:fixture:DB4:2026-11-15:sneakers');
+  assert.equal(valuation.range.state, 'checked');
+  assert.ok(JSON.stringify(valuation.citation).includes('fixture:DB4:2026-11-15 measures:fixture.calibration'));
+});
+
+test('exported calibration never bypasses thin basis, checked minimum, coverage, or Wilson thresholds', async () => {
+  const thin = setup(mercariSales().slice(0, 2)); await fitted(thin.ctx);
+  assert.equal((await valuate(sneakers, thin.ctx)).valuation.range.state, 'not_checked_yet');
+  for (const [path, value] of [['checked_min_n', 201], ['coverage_min', .81], ['coverage_max', .79], ['checked_wilson_min', .9]] as const) {
+    const { ctx } = setup(mercariSales()); await fitted(ctx);
+    promote(ctx.params, path, value, { kind: 'sneakers' });
+    const { valuation } = await valuate(sneakers, ctx);
+    assert.match(valuation.range.group!, /^export:/);
+    assert.equal(valuation.range.state, 'not_checked_yet', path);
+  }
+});
+
+test('scope exclusion logs once and leaves valuation identical to no fitted reader', async () => {
+  const baseline = await valuate(sneakers, setup(mercariSales()).ctx);
+  const { ctx } = setup(mercariSales()); const notes = await fitted(ctx, []);
+  assert.deepEqual(await valuate(sneakers, ctx), baseline);
+  assert.deepEqual(await valuate(sneakers, ctx), baseline);
+  assert.equal(notes.length, 2);
+});
+
+test('jeans never uses a sneakers calibration and depop never uses mercari curve', async () => {
+  const { ctx } = setup(mercariSales()); await fitted(ctx);
+  assert.equal((await valuate({ ...sneakers, kind: 'jeans' }, ctx)).valuation.range.group, null);
+  const { valuation } = await valuate({ ...sneakers, sites: [{ site: 'depop' }] }, ctx);
+  assert.equal(valuation.per_site[0].p_sale, null);
+});
+
+test('our exact group takes over only at conformal_parent_min; parent and other person scores never take over', async () => {
+  const { ctx } = setup(mercariSales()); ctx.person = 'person:test'; await fitted(ctx);
+  const group = { kind: 'sneakers', person: ctx.person };
+  for (let i = 0; i < 40; i++) onOurSale(ctx.params, { kind: 'sneakers' }, { q10: 4000, q90: 5000 }, 4500, as_of);
+  for (let i = 0; i < 29; i++) onOurSale(ctx.params, group, { q10: 4000, q90: 5000 }, 4500, as_of);
+  assert.match((await valuate(sneakers, ctx)).valuation.range.group!, /^export:/);
+  onOurSale(ctx.params, group, { q10: 4000, q90: 5000 }, 4500, as_of);
+  assert.equal((await valuate(sneakers, ctx)).valuation.range.group, JSON.stringify(group));
+  const other = await valuate(sneakers, { ...ctx, person: 'person:other' });
+  assert.match(other.valuation.range.group!, /^export:/);
+});
+
+test('a refresh in flight does not delay valuate or discard the previous calibration', async t => {
+  const { ctx } = setup(mercariSales()); let now = 0, pending: Promise<unknown> = Promise.resolve();
+  ctx.fitted = fittedReader({ path: new URL('../param/fixtures/export-latest.json', import.meta.url).pathname,
+    scopes: ['hackathon_demo'], now: () => now, every_ms: 10,
+    log: { ...ctx.log, note: () => {}, timed: (_name, fn) => { const result = fn(); pending = Promise.resolve(result); return result; } } });
+  ctx.fitted.loaded(); await pending; const baseline = await valuate(sneakers, ctx);
+  const read = fs.readFile; let release!: () => void;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  t.mock.method(fs, 'readFile', async (...args: Parameters<typeof read>) => { await gate; return read(...args); });
+  now = 11;
+  try {
+    const result = await Promise.race([valuate(sneakers, ctx), new Promise<never>((_resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('valuate waited for fitted refresh')), 1000); timer.unref();
+    })]);
+    assert.deepEqual(result, baseline);
+  } finally { release(); await pending; }
 });

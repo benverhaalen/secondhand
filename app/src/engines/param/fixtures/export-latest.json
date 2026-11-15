@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "exported_at": "2026-11-14T23:00:00Z",
+  "run_id": "fixture:DB4:2026-11-15",
+  "code_version": "fixture-only",
+  "params": [
+    {
+      "name": "valuation_calibration", "family": "model_ref", "scope": { "kind": "sneakers" },
+      "value_or_hyperparams": { "Q_g": 0.1, "n": 200, "hits": 160, "nominal": 0.8, "fitted_on": "dataset:stockx_2019", "use_scope": "hackathon_demo" },
+      "prior": null, "version": 1, "fitted_on_ids_hash": "fixture-input-hash", "n_eff": 200,
+      "metric": "coverage", "held_out_score": 0.8, "guard_lo": null, "guard_hi": null,
+      "status": "champion", "frozen": false, "promoted_at": "2026-11-14T23:00:00Z", "origin": "fit",
+      "previous_version": null, "keep": null, "days_since_last": null,
+      "citation": "fixture:DB4:2026-11-15 measures:fixture.calibration"
+    },
+    {
+      "name": "valuation_calibration", "family": "model_ref", "scope": { "kind": "sneakers", "site": "stockx" },
+      "value_or_hyperparams": { "Q_g": 0.2, "n": 200, "hits": 160, "nominal": 0.8, "fitted_on": "dataset:stockx_2019", "use_scope": "hackathon_demo" },
+      "prior": null, "version": 1, "fitted_on_ids_hash": "fixture-input-hash", "n_eff": 200,
+      "metric": "coverage", "held_out_score": 0.8, "guard_lo": null, "guard_hi": null,
+      "status": "champion", "frozen": false, "promoted_at": "2026-11-14T23:00:00Z", "origin": "fit",
+      "previous_version": null, "keep": null, "days_since_last": null,
+      "citation": "fixture:DB4:2026-11-15 measures:fixture.calibration_stockx"
+    },
+    {
+      "name": "valuation_sale_curve", "family": "model_ref", "scope": { "kind": "sneakers", "site": "mercari" },
+      "value_or_hyperparams": { "reference": "median_adjusted_sold", "days": [7, 30, 90], "bins": [{ "ratio": 1, "p": [0.3, 0.6, 0.85] }], "t": null, "n_events": 200, "calibration_error": 0.02, "fitted_on": "dataset:nber_ebay_bo", "use_scope": "hackathon_demo" },
+      "prior": null, "version": 1, "fitted_on_ids_hash": "fixture-input-hash", "n_eff": 200,
+      "metric": "calibration_error", "held_out_score": 0.02, "guard_lo": null, "guard_hi": null,
+      "status": "champion", "frozen": false, "promoted_at": "2026-11-14T23:00:00Z", "origin": "fit",
+      "previous_version": null, "keep": null, "days_since_last": null,
+      "citation": "fixture:DB4:2026-11-15 measures:fixture.sale_curve_mercari"
+    },
+    {
+      "name": "valuation_sale_curve", "family": "model_ref", "scope": { "kind": "sneakers", "site": "stockx" },
+      "value_or_hyperparams": { "reference": "median_adjusted_sold", "days": [7, 30, 90], "bins": [{ "ratio": 1, "p": [0.2, 0.5, 0.8] }], "t": [10, 30, 75], "n_events": 200, "calibration_error": 0.03, "fitted_on": "dataset:nber_ebay_bo", "use_scope": "hackathon_demo" },
+      "prior": null, "version": 1, "fitted_on_ids_hash": "fixture-input-hash", "n_eff": 200,
+      "metric": "calibration_error", "held_out_score": 0.03, "guard_lo": null, "guard_hi": null,
+      "status": "champion", "frozen": false, "promoted_at": "2026-11-14T23:00:00Z", "origin": "fit",
+      "previous_version": null, "keep": null, "days_since_last": null,
+      "citation": "fixture:DB4:2026-11-15 measures:fixture.sale_curve_stockx"
+    },
+    {
+      "name": "brand_premium", "family": "model_ref", "scope": { "kind": "sneakers" },
+      "value_or_hyperparams": { "ratio": 1.2, "lo": 1.1, "hi": 1.3, "n_cells": 40, "as_of": "2026-11-14T23:00:00Z", "fitted_on": "dataset:stockx_2019", "use_scope": "hackathon_demo" },
+      "prior": null, "version": 1, "fitted_on_ids_hash": "fixture-input-hash", "n_eff": 40,
+      "metric": "ratio", "held_out_score": 1.2, "guard_lo": null, "guard_hi": null,
+      "status": "champion", "frozen": false, "promoted_at": "2026-11-14T23:00:00Z", "origin": "fit",
+      "previous_version": null, "keep": null, "days_since_last": null,
+      "citation": "fixture:DB4:2026-11-15 measures:fixture.brand_premium"
+    },
+    {
+      "name": "valuation_calibration", "family": "model_ref", "scope": { "kind": "malformed" },
+      "value_or_hyperparams": { "Q_g": -1, "n": 1, "hits": 2, "nominal": 0.8, "fitted_on": "fixture:malformed", "use_scope": "hackathon_demo" },
+      "prior": null, "version": 1, "fitted_on_ids_hash": "fixture-input-hash", "n_eff": 1,
+      "metric": "coverage", "held_out_score": 0, "guard_lo": null, "guard_hi": null,
+      "status": "champion", "frozen": false, "promoted_at": "2026-11-14T23:00:00Z", "origin": "fit",
+      "previous_version": null, "keep": null, "days_since_last": null,
+      "citation": "fixture:DB4:2026-11-15 measures:fixture.malformed"
+    }
+  ]
+}
