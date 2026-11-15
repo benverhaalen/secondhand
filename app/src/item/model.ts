@@ -115,6 +115,12 @@ function mode(xs: number[]): number {
   return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0] ?? 0;
 }
 
+// Whether the LiDAR scan measured the item, which is what lets the AI redraw run: a redraw is held to the item's real
+// size, and only the scan is trusted for it (Ben, 09:09: "only allow this from lidar flow too"; jobs/studio/plan.py relays
+// only when measured_by is "lidar"). In the app only the scan writes source 'measured' (engines/capture/fields.ts: the
+// measured way needs has_lidar); a size the person typed is 'you_said', one off a label 'label', a published one 'spec'.
+export const scanned = (it: Item) => it.attributes.some(a => a.source === 'measured' && a.value !== null);
+
 // How many photos the item has: its own, plus the shots after the cover that Ben's real items carry.
 export const photoCount = (it: Item) => it.photos.length + (it.photos[0] ? MORE_SHOTS[it.photos[0].key]?.length ?? 0 : 0);
 
