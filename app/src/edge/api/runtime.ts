@@ -87,7 +87,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   const personScope = new AsyncLocalStorage<string>();
   const scopedAccounts: Accounts = { ...accounts, byId: id => accounts.byId(id, personScope.getStore()) };
   // A route never receives system accounts.
-  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async id => (await accounts.linked()).find(row => row.account_id === id) };
+  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async (id, person_id) => (await accounts.linked(person_id)).find(row => row.account_id === id) };
   const liveSites = new Set((process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/));
   const unavailable = async (): Promise<never> => { throw new Error('site session transport is not composed'); };
   // shortcut: waiting.md "The harness wired to itself": browser profiles and eBay credentials
