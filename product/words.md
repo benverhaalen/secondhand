@@ -632,3 +632,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate build the backend together, not low, then a fresh session builds every feature without ui
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > lets just build together the backedn system, which I will correct the design of if I identify that its lackluster, of course you as the expert who also has a great handle on the up to date state of technologies, how ai can search, find, and determine anything, Lets not build so low. Lets go one by one. Prepare next session after fully finalizing this, then Ill wrap up and properly prepare for a fresh new session to follow the specs and parallel build out every feature ready and working and testable without ui
+
+## 2026-11-14 nate our own harness over official apis, and opencli
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> i would actually argue we dont harness onto official api's at least not when we can optimize actions and agent handling and reading to send back data on these platforms with our own ingenuitey. https://github.com/jackwener/opencli
