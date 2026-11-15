@@ -877,3 +877,7 @@ Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:22 UTC, on the v5
 ## 2026-11-14 nate custom platform harnesses on browser use and jev, an instant hosted browser session for every action
 Nate, build session (orchestrator), 2026-11-14 about 21:35 Central, as the stream sessions were being launched.
 > These should be made fast, efficient, utilize the databricks skills, create custom platform harnesses that utilize browser use, jev ultrafast, to target and wrap around each platform efficiently and instantly, creating pipelines and actions for each app action, engine search, requested information, to be automatically sent out for the proper instant background cloud hosted browser session. Even parallel launching multiple at the same time for efficiency. All built around every platform to find everything and act on everything too, populate listings for the user, delist, relist, delete, confirm trade, works in real time to automate all as stated
+
+## 2026-11-15 compose screens from the brand system and layer ai photos
+Ben, thread "Shape the app one decision at a time", 2026-11-15 03:24 UTC, on the image loop's camera round, relayed to the thread "Roll the UI system out everywhere".
+> no i dont like this you should combine the brand system created with ai photo gens and layer it rather than telling the photo gen to actually generate the ui. you should piece them together yourself. generate an ai image to be a placeholder for camera feed.
