@@ -1,0 +1,17 @@
+{
+  "platforms": [
+    "apple",
+    "android"
+  ],
+  "apple": {
+    "modules": [
+      "MarketplaceLinksModule"
+    ],
+    "podspecPath": "MarketplaceLinks.podspec"
+  },
+  "android": {
+    "modules": [
+      "expo.modules.marketplacelinks.MarketplaceLinksModule"
+    ]
+  }
+}

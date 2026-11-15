@@ -1,6 +1,6 @@
 # Pitch
 
-How secondhand is told to judges and to users. The [pitch constitution](pitch-constitution.md) governs how it's told; this file holds the material. Every number links to [pitch-evidence.md](../research/cross-cutting/ben/pitch-evidence.md) or [problem-and-pitch.md](../research/cross-cutting/ben/problem-and-pitch.md), where it carries its mark. Everything here is an *agent proposal* until Ben picks; nothing changes the [decisions](decisions.md) (selling leads; appraise and buy are add-ons).
+How secondhand is told to judges and to users. The [pitch constitution](pitch-constitution.md) governs how it's told; this file holds the material. Numbers link to their evidence: [pitch-evidence.md](../research/cross-cutting/ben/pitch-evidence.md), [problem-and-pitch.md](../research/cross-cutting/ben/problem-and-pitch.md), or the named benchmark report. Everything here is an *agent proposal* until Ben picks; the pricing headline below is Ben-approved; nothing changes the [decisions](decisions.md) (selling leads; appraise and buy are add-ons).
 
 Ben's two meanings of the name, 19:15 ([words](words.md#2026-11-14-pitch-and-structure)):
 1. **Your second hand.** It does the actions for you, the way an AI agent does.
@@ -43,7 +43,7 @@ Not five pitches: one, with each narrative doing the job it is best at.
 
 ## The theme: "Let's dig in"
 
-The readings, the likely source and the lines to say are in [theme.md](theme.md). Open with: "The theme says start digging. Most of us already have: there's a closet or a basement full of things worth money that never get sold. secondhand is the tool that digs in for you, and leaves the decisions to you." Don't name the essay until an organizer confirms it.
+The readings and source confirmed by Ben are in [theme.md](theme.md); the three beats shared by the website, Devpost and video are in [Shared message](#shared-message-for-the-website-devpost-and-video). Open with: "The theme says start digging. Most of us already have: there's a closet or a basement full of things worth money that never get sold. secondhand is the tool that digs in for you, and leaves the decisions to you."
 
 ## The simplest pitch
 
@@ -191,6 +191,26 @@ Two people: one demos, one watches the judge's face and takes the hard question 
 ## Claims we can make, and what makes each true
 
 Ben asked for claims that change how judges see the project. Each is said only when its condition holds on the day ([qa.md honesty gate](qa.md#before-you-say-it-the-honesty-gate)).
+
+### Pricing evidence
+
+**84% fewer big pricing misses** is the headline Ben approved. The full line is: "In our historical StockX pricing benchmark, our research model made 84% fewer big pricing misses than the same shoe's 90-day sold-price median: 1.5% versus 9.8% on the same 39,707 sneaker sales." A big miss means an estimate more than 20% from the actual sale price.
+
+The [exact report](https://github.com/benverhaalen/secondhand/blob/main/scripts/bench/out/backtest-stockx.json) records `contestants.model.within_20_on_shared_items`: 0.984561916034956 for the model and 0.901679804568464 for the median, with 39,707 shared sales across 660 products. Their miss rates are 1.5438% and 9.8320%; the relative reduction rounds to 84%. Use the paired comparison, not the baseline's 89.1% accuracy across a different set of sales.
+
+This was the November 2018 to February 2019 development window, where we found and fixed the model's missing product anchor. The fixed model then reached 97.5% within 20% of the sale price versus 90.5% for the median, on 35,862 paired sneaker sales across eight unseen months. Both runs use deadstock StockX sneakers and the offline research model. [Unseen-month results](../scripts/bench/out/backtest-stockx-2018-03-to-10.json). [Claims ledger](../spec/plans/backtest/claims.md). The headline measures historical pricing accuracy only; it does not establish seller savings, sale speed, performance on used goods, or the live app's accuracy.
+
+### Shared message for the website, Devpost and video
+
+Use the same three beats, with the benchmark as evidence inside the third:
+
+1. **Dig through your closet.** Start with the thing someone meant to sell and never did. secondhand's goal is to turn those unused things into sales, with less work for the owner. Selling leads; buying and appraisal use the same market research.
+2. **Dig into the complex tooling.** Show one item moving through the intended workflow, then open the machinery behind a decision: comparable sales, marketplace fees, a photo checked against the original, or a second buyer caught by the model checker. Show which parts ran and which are still being connected. The owner reads and sends replies and keeps control of consequential decisions.
+3. **Dig into what we got wrong.** Show the failure and the change it caused. Our first pricing model missed which shoe it was; anchoring to that product's recent sales led to the scoped **84% fewer big pricing misses** result above. Our photo check once hid stretching when it aligned images; a planted failure exposed the hole. This is how "Let's dig in" lands: a familiar problem, the engineering underneath it, and evidence that changed our work.
+
+The website can lead with the closet and link the pricing result to its report. Devpost can explain the failure, fix and benchmark limits. The video can show the item first, one engineering decision second, and the measured result with "historical StockX benchmark" on screen. Keep money and time saved as goals until measured with actual sellers; keep the 84% attached to pricing misses.
+
+### Other claims
 
 | Claim | True when | Status 2026-11-15 06:00 UTC |
 |---|---|---|

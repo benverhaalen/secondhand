@@ -74,3 +74,8 @@ Verification limits: no server, browser, network, deployment or git writes were 
 `/signin` and `/signup` accept email codes. With a Google OAuth web client configured, they also offer the Google Identity Services button. Both call the existing auth endpoints through the same-origin `/v1` rewrite. Set `SECONDHAND_API_ORIGIN` for the web build and add the public web origin to `SECONDHAND_WEB_ORIGINS` on the API when it runs on another origin.
 
 For Google, set `NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID` in the web build and include the same client ID in the API’s `GOOGLE_CLIENT_IDS`. Register the public origin with that Google web client. Email requires the API’s configured email sender. Browser sessions use the API’s HttpOnly refresh cookie. The web client does not save tokens in browser storage.
+
+
+### Brand fonts
+
+Both licensed faces are optional local files. Set `SECONDHAND_FONTS` to their folder or put them in `fonts/` at the repository root before building. Browser clients load fonts from the website, including on Windows. When the licensed files are absent, the bundled Hanken Grotesk and Outfit supply the text and wordmark respectively.

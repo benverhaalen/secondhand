@@ -81,7 +81,7 @@ Ben first asked for two designs "not specifically prompted to look a certain way
 | One thing | Give one element nearly all the size, color and contrast | Every action, made smaller, not removed | App and site |
 | Hands on it | Let the person act on the item itself: drag, swipe or pinch | A tap that does the same | App |
 | Photo as hero | The item photo takes most of the screen and everything else shrinks to fit it | The price and the next action in view | App and site |
-| Brand signature | With the name covered it could only be secondhand: the gradient, Clofie and the hues are structure, not decoration | Photos untinted and first | App and site |
+| Brand signature | With the name covered it could only be secondhand: the gradient, paired tags and color roles carry the brand | Photos untinted and first | App and site |
 | First action | The main action is reachable at first glance, with no scroll | What the person needs to trust it | App |
 | Alive | The still frame shows what moves and why | Nothing delays reading or the first tap | Site |
 

@@ -12,7 +12,7 @@
 import { copyFileSync, existsSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 export const DEST = join(root, 'app/assets/fonts');
@@ -20,11 +20,12 @@ export const DEST = join(root, 'app/assets/fonts');
 // Each face the app uses: the name fonts.ts reads, and the names the same file ships under from the foundry.
 export const FACES = [
   { file: 'ppneuemontreal-medium.otf', as: ['ppneuemontreal-medium.otf', 'PPNeueMontreal-Medium.otf', 'NeueMontreal-Medium.otf'], role: 'text (every word)' },
-  { file: 'Clofie-SemiBold.ttf', as: ['Clofie-SemiBold.ttf', 'clofie-semibold.ttf', 'Clofie-SemiBold.otf'], role: 'display (the wordmark and screen titles)' },
+  { file: 'Clofie-SemiBold.ttf', as: ['Clofie-SemiBold.ttf', 'clofie-semibold.ttf', 'Clofie-SemiBold.otf'], role: 'display (the wordmark)' },
 ];
 
 export function sources(env = process.env) {
-  return [env.SECONDHAND_FONTS, join(root, 'fonts'), join(homedir(), 'Library/Fonts'), join(homedir(), '.local/share/fonts')]
+  return [env.SECONDHAND_FONTS, join(root, 'fonts'), join(homedir(), 'Library/Fonts'), join(homedir(), '.local/share/fonts'),
+    env.LOCALAPPDATA && join(env.LOCALAPPDATA, 'Microsoft', 'Windows', 'Fonts')]
     .filter(d => d && existsSync(d) && statSync(d).isDirectory());
 }
 
@@ -55,7 +56,7 @@ export const OPEN = [
 ];
 export const openMissing = (base = root) => OPEN.flatMap(o => [o.app, o.web]).filter(p => !existsSync(join(base, p)));
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const check = process.argv.includes('--check');
   const got = install();
   for (const f of got) process.stdout.write(f.ok ? `ok  ${f.file}  ${f.from}\n` : `missing  ${f.file}  (${f.role})\n`);

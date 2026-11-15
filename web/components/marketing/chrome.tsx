@@ -16,13 +16,13 @@ export function AccountAccess({ label, className = '' }: { label: string; classN
 }
 
 function Mark() {
-  return <Link className="marketing-lockup" href="/" aria-label="secondhand home"><img src="/brand/mark.svg" alt="" width="21" height="24" /><span>secondhand</span></Link>;
+  return <Link className="marketing-lockup" href="/" aria-label="secondhand home"><picture className="marketing-logo-symbol"><img className="marketing-mark-dark" src="/brand/mark.svg" alt="" width="18" height="21" /><img className="marketing-mark-light" src="/brand/mark-light.svg" alt="" width="18" height="21" /></picture><span>secondhand</span></Link>;
 }
 
 export function MarketingHeader({ current }: { current: string }) {
   const session = useSyncExternalStore(subscribeToSession, sessionSnapshot, () => undefined);
   useEffect(() => { void getSession().catch(() => undefined); }, []);
-  return <header className="marketing-header"><div className="marketing-wrap marketing-header-row">
+  return <header className={current === '/buy' ? 'marketing-header marketing-header-in-flow' : 'marketing-header'}><div className="marketing-wrap marketing-header-row">
     <Mark />
     <nav className="marketing-nav" aria-label="Main">{pages.map(([url, label]) => <Link key={url} href={url} aria-current={current === url ? 'page' : undefined}>{label}</Link>)}</nav>
     <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <span aria-hidden="true">↗</span></a>{session ? <Link className="marketing-avatar" aria-label="Open your workspace" href="/app">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary" />}</div>
@@ -34,5 +34,5 @@ export function MarketingFooter() {
 }
 
 export function isMarketingRoute(path: string) {
-  return ['/', '/how-it-works', '/features', '/data-use', '/faq', '/whats-next', '/signin', '/signup', '/account'].includes(path);
+  return ['/', '/how-it-works', '/features', '/data-use', '/faq', '/whats-next', '/signin', '/signup', '/account', '/buy'].includes(path);
 }

@@ -12,7 +12,6 @@
 .hero {
   padding: calc(var(--s-9) * 2 + var(--s-8)) 0 calc(var(--s-9) + var(--s-8));
   text-align: center;
-  background: linear-gradient(180deg, transparent, var(--page)), var(--field);
 }
 .eyebrow {
   font-size: var(--t-15);
@@ -49,7 +48,7 @@
 .page a {
   transition: color var(--t-feedback) var(--ease-out), background-color var(--t-feedback) var(--ease-out);
 }
-.page a:hover { color: var(--ink-2); }
+.page a:not(.pill):hover { color: var(--ink-2); }
 .page a:active { opacity: .8; }
 .readingLayout {
   display: grid;
@@ -121,26 +120,12 @@
 .textLink { margin-top: var(--s-3); margin-right: var(--s-6); }
 .next {
   text-align: center;
-  background: linear-gradient(180deg, transparent, var(--page)), var(--field);
+  background: var(--surface);
   padding-block: calc(var(--s-9) + var(--s-7));
 }
 .next h2 { font-size: var(--t-section); line-height: 1.15; letter-spacing: var(--tr-50); }
 .next p { margin-top: var(--s-5); font-size: var(--t-18); color: var(--on-field-2); line-height: 1.5; }
-.pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: var(--button-h);
-  gap: var(--s-2);
-  margin-top: var(--s-7);
-  padding: var(--s-3) var(--s-6);
-  border-radius: var(--r-pill);
-  background: var(--ink);
-  color: var(--page);
-  font-size: var(--t-15);
-  text-decoration: none;
-}
-.page .pill:hover { background: var(--ink-press); color: var(--page); }
+.pill { margin-top: var(--s-7); }
 @media (max-width: 1100px) {
   .wrap { width: calc(100% - var(--s-8) * 2); }
   .readingLayout { grid-template-columns: 208px minmax(0, 1fr); column-gap: var(--s-8); }

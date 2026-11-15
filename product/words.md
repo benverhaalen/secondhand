@@ -2516,3 +2516,27 @@ Nate, the orchestrator's session, 2026-11-15, about 14:47 UTC by the machine clo
 > that chat ui is so bad
 
 Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (results laid out so nothing is drawn over anything else); the answer's words are the engines lead's (packet 70).
+
+## 2026-11-15 nate a pressed source logo expands and fills the screen
+Nate, the orchestrator's session, 2026-11-15, about 14:57 UTC by the machine clock.
+> so the way you click into each icon, and it expands then shrinks, have it expand and fill the screen
+
+Used in: [the burst](../app/src/ui/parts/source-float.tsx) and [the shop view](../app/src/buy/chat/shop-view.tsx): the colour grows until it covers the whole page, the site opens, and the colour stays until the person comes back to the app (or taps it).
+
+## 2026-11-15 nate the chat styles its answers with headers and tables, like Claude in chat
+Nate, the orchestrator's session, 2026-11-15, about 14:59 UTC by the machine clock, with a screenshot of a chat answer showing raw `**What failed**` and `- ` list marks.
+> These can have some sort of thing added similar to the widget framework to let it stylize its outputs. add headers, tables, and such, like claude in chat
+
+Used in: [the answer's markdown](../app/src/buy/chat/markdown.ts), drawn in [the shop view](../app/src/buy/chat/shop-view.tsx) (headings, bold, lists and tables); the engines lead keeps the model's markdown well formed (packet 70).
+
+## 2026-11-15 nate the filled colour folds back after five seconds or on return
+Nate, the orchestrator's session, 2026-11-15, about 14:59 UTC by the machine clock, after "have it expand and fill the screen".
+> well after a good 5 seconds, close it so when they return its their home, or on app redirect close it
+
+Used in: [the shop view](../app/src/buy/chat/shop-view.tsx) (`BURST_HOLD_MS`: the colour folds back five seconds after the site opens, or as soon as the app is active again, whichever is first).
+
+## 2026-11-15 nate the camera's guide animates like Apple's Measure, and the camera ask is bordered and focused
+Nate, the orchestrator's session, 2026-11-15, about 15:01 UTC by the machine clock, with a screenshot of `/camera?mode=worth` on the web: "Photograph the front" in the header, corner brackets, the "use your camera" text with Allow camera and Choose photos floating in the middle of the frame, "What is it?" under it.
+> the way it says photograph the front , can we fix this , there should be the svg animations that are like apples style with the measure app, the use your camera should , while custom styled, be bordered and focused more. Try to adhere this to better guideline design standards and professional ui's
+
+Used in: the camera screen (Ben's area); see the session started for it.
