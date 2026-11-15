@@ -1,4 +1,5 @@
-import { api, ApiFailure } from '@/api/client';
+import { api, ApiFailure, type Fetch } from '@/api/client';
+import { fetch } from '@/api/fetch';
 import type { Question, plan } from '@/engines/capture/plan';
 
 export type Capture = {
@@ -28,7 +29,7 @@ export const requestStudio = (capture: Capture) => api.call<Capture>(`PATCH /v1/
   body: { version: capture.version, generate: true },
 });
 
-export async function uploadStills(capture: Capture, stills: Still[]): Promise<Capture> {
+export async function uploadStills(capture: Capture, stills: Still[], uploadFetch: Fetch = fetch): Promise<Capture> {
   const bytes = stills.map(still => Uint8Array.from(atob(still.base64), character => character.charCodeAt(0)));
   const signed = await api.call<{ photos: Upload[]; capture: Capture }>(`POST /v1/captures/${encodeURIComponent(capture.id)}/photos`, {
     body: { photos: stills.map((still, index) => ({ role: still.role, step: still.step, key: still.step, content_type: still.type, bytes: bytes[index].length })) },
@@ -38,7 +39,7 @@ export async function uploadStills(capture: Capture, stills: Still[]): Promise<C
     throw new Error('Photo uploads are not connected yet. Your photos are still here; try again when the service is ready.');
   }
   await Promise.all(signed.photos.map(async (photo, index) => {
-    const response = await fetch(photo.upload.url, { method: photo.upload.method, headers: { 'Content-Type': stills[index].type }, body: new Blob([bytes[index]], { type: stills[index].type }) });
+    const response = await uploadFetch(photo.upload.url, { method: photo.upload.method, headers: { 'Content-Type': stills[index].type }, body: bytes[index] });
     if (!response.ok) throw new Error('A photo did not upload. Your photos are still here; try again.');
   }));
   return readCapture(capture.id);

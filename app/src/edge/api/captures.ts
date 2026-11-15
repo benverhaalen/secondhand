@@ -115,13 +115,16 @@ export type CaptureRow = { id: string; user_id: string; item_id: string; version
 const open = example('captures.open').response as {id: string; item_id: string; created_at: string; picker: string[]};
 const linkedSites = (example('accounts.list').response as {data: {site: string}[]}).data
   .map(account => account.site).filter((site): site is Site => SITES.includes(site));
-const params = memoryStore();
-params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
-export const captureRows = new Map<string, CaptureRow>();
-const identifyRuns=new Map<string,Promise<void>>();
-let captureGeneration=0;
-let captureNumber = 0;
-let exampleOpened = false;
+function liveCaptures() {
+  const params = memoryStore();
+  params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
+  return {rows:new Map<string,CaptureRow>(),identifyRuns:new Map<string,Promise<void>>(),
+    generation:0,number:0,exampleOpened:false,subscriptions:new WeakSet<Blobs>(),params};
+}
+const shared = globalThis as { __secondhandCaptures?: ReturnType<typeof liveCaptures> };
+const firstLoad = shared.__secondhandCaptures === undefined;
+const captures = shared.__secondhandCaptures ??= liveCaptures();
+export const captureRows = captures.rows;
 function initial(body: Record<string, unknown>, id: string, item_id: string): State {
   const device = body.device as {has_lidar?: boolean; object_capture?: boolean} | undefined;
   const has_lidar = device?.has_lidar ?? false;
@@ -135,28 +138,28 @@ function initial(body: Record<string, unknown>, id: string, item_id: string): St
     kept: [], retakes: {}, facts: {}, lookups: 'none', refused: [] };
 }
 export function resetCaptures() {
-  captureGeneration++;identifyRuns.clear();
-  captureRows.clear();
-  captureNumber = 0; exampleOpened = false;
+  captures.generation++;captures.identifyRuns.clear();
+  captures.rows.clear();
+  captures.number = 0; captures.exampleOpened = false;
   const state=initial(example('captures.open').request!.body as Record<string, unknown>,open.id,open.item_id);
-  captureRows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
+  captures.rows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
 }
-resetCaptures();
+if (firstLoad) resetCaptures();
 function read(ctx: Ctx): CaptureRow {
   return ownedCapture(ctx.user_id!,ctx.params.id);
 }
 function ownedCapture(user_id: string, capture_id: string): CaptureRow {
-  const row = captureRows.get(capture_id);
+  const row = captures.rows.get(capture_id);
   if (!row || row.user_id !== user_id) throw new ApiError('not_found', 'capture not found', 'read');
   return row;
 }
 function effectiveState(row: CaptureRow): State {
   const state=row.state;
   return state.lookups==='running' && (state.lookups_at===undefined ||
-    deps.now()-Date.parse(state.lookups_at)>=bound(params,'capture_lookup_wait_s')*1000) ? {...state,lookups:'done'} : state;
+    deps.now()-Date.parse(state.lookups_at)>=bound(captures.params,'capture_lookup_wait_s')*1000) ? {...state,lookups:'done'} : state;
 }
 function view(row: CaptureRow) {
-  const next = plan(effectiveState(row), params);
+  const next = plan(effectiveState(row), captures.params);
   return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose, intent: row.intent ?? 'sell',
     type: row.state.type, suggested_type: row.state.suggestion?.family ?? null, picker: open.picker,
     process: next.process, coverage: {needed: next.process.map(step => step.key).filter(key => !row.state.kept.includes(key)), kept: [...row.state.kept]},
@@ -290,7 +293,7 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
     writable(current);
     validateJobResult(result);
     if (result.kind==='identify') for (const fact of result.facts ?? []) {
-      const definition=select(current.state,params).rows.find(row=>row.field===fact.field);
+      const definition=select(current.state,captures.params).rows.find(row=>row.field===fact.field);
       if (!definition || !validValue(definition,fact.value)) throw invalid('identify fact does not fit field row',[fact.field]);
     }
     if (result.kind==='photo_score') for (const photo of result.photos)
@@ -328,9 +331,9 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
       row.studio_plan=structuredClone(result.plan);
       if (state.studio?.requested) studioPlan(row,result.plan);
     } else {
-      const selected=select(state,params);
+      const selected=select(state,captures.params);
       const keys=selected.process.map(step=>step.key);
-      const minimum=params.read('capture_label_sharp_min',{}).value as number;
+      const minimum=captures.params.read('capture_label_sharp_min',{}).value as number;
       for (const photo of result.photos) {
         if (!['tag','care_label','screenshot'].includes(photo.role) || photo.parts.sharpness>=minimum) continue;
         for (const field of selected.rows) if (!state.facts[field.field] && field.ways.some(way=>way.way==='label' && way.view && viewsFor(way.view,keys).includes(photo.key)))
@@ -340,7 +343,7 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
     }
     row.version++; row.updated_at=new Date(deps.now()).toISOString();
     const body=view(row);
-    captureRows.set(capture_id,row);
+    captures.rows.set(capture_id,row);
     if (current.status!==row.status) log.event('state.change',{entity:'capture',id:capture_id,was:current.status,to:row.status,kind:result.kind});
     return body;
   } catch (error) {
@@ -355,34 +358,33 @@ function validAnswer(state:State, field:string, value:unknown, definition?:Field
   return rows.length>0 && rows.every(row=>row.allowed ? row.allowed.includes(value as string) : text(value) && value.length<=(row.max_length ?? Infinity));
 }
 function classifyCapture(state:State) {
-  const selected=select(state,params);
-  state.site_rows=siteRows(classify({family:selected.family,kind:state.kind ?? selected.family,attrs:state.facts},state.sites,{params,aspects:deps.listingAspects}));
+  const selected=select(state,captures.params);
+  state.site_rows=siteRows(classify({family:selected.family,kind:state.kind ?? selected.family,attrs:state.facts},state.sites,{params:captures.params,aspects:deps.listingAspects}));
 }
 export function pendingIdentify(user_id:string, capture_id:string):Promise<void>|undefined {
   ownedCapture(user_id,capture_id);
-  return identifyRuns.get(capture_id);
+  return captures.identifyRuns.get(capture_id);
 }
-const subscriptions=new WeakSet<Blobs>();
 function subscribeUploads(blobs:Blobs) {
-  if (subscriptions.has(blobs)) return;
-  subscriptions.add(blobs);
+  if (captures.subscriptions.has(blobs)) return;
+  captures.subscriptions.add(blobs);
   blobs.onUploaded(event=> {
-    const row=captureRows.get(event.capture_id);
+    const row=captures.rows.get(event.capture_id);
     if (!row || row.user_id!==event.user_id || row.status==='judged' || row.visual_retry || !deps.identifyPorts?.visual ||
       !row.photo_rows?.some(photo=>photo.id===event.photo_id && photo.role==='front')) return;
-    const first=identifyRuns.get(row.id);
+    const first=captures.identifyRuns.get(row.id);
     if (!first) return;
     const retry=first.then(()=> {
-      const current=captureRows.get(row.id);
+      const current=captures.rows.get(row.id);
       if (!current || current.user_id!==event.user_id || current.status==='judged' || current.visual_retry || !current.identify_empty) return;
       current.visual_retry=true;
       return startIdentify(current,deps.log);
     }).catch(error=>deps.log.error('capture.upload_identify',error));
-    identifyRuns.set(row.id,retry);
+    captures.identifyRuns.set(row.id,retry);
   });
 }
 function startIdentify(row:CaptureRow, parent:Ctx['log']):Promise<void> {
-  const generation=captureGeneration;
+  const generation=captures.generation;
   const started_at=new Date(deps.now()).toISOString();
   const job=jobs.start({id:`job_${crypto.randomUUID().replaceAll('-','')}`,kind:'identify',item_id:row.item_id,args:{capture_id:row.id},state:'running',created_at:started_at},row.user_id);
   row.identify_job_id=job.id;row.state.lookups='running';row.state.lookups_at=started_at;
@@ -393,7 +395,7 @@ function startIdentify(row:CaptureRow, parent:Ctx['log']):Promise<void> {
   const task=new Promise<void>(resolve=>setImmediate(resolve)).then(async()=> {
     let emptySet:boolean|undefined;
     try {
-      if (generation!==captureGeneration) throw new ApiError('stale','capture changed','state_check');
+      if (generation!==captures.generation) throw new ApiError('stale','capture changed','state_check');
       const snapshot=structuredClone(row);
       const blobs=photoStore();
       const input:IdentifyInput={capture_id:row.id,family:snapshot.state.type ?? snapshot.state.suggestion?.family ?? null,
@@ -413,12 +415,12 @@ function startIdentify(row:CaptureRow, parent:Ctx['log']):Promise<void> {
         jobs.append(job.id,'job.stage',{job_id:job.id,...stage});
         log.stage(job.id,name,detail);
       }};
-      const result=await identify(input,deps.identifyPorts ?? {},params,stageLog);
+      const result=await identify(input,deps.identifyPorts ?? {},captures.params,stageLog);
       emptySet=result.set.length===0;
       const failed=result.stages.find(stage=>stage.state==='failed');
       if (failed) throw new Error(String(failed.found.reason ?? `identify ${failed.name} failed`));
-      if (generation!==captureGeneration || ownedCapture(row.user_id,row.id).identify_job_id!==job.id) throw new ApiError('stale','capture changed','state_check');
-      const rows=select(ownedCapture(row.user_id,row.id).state,params).rows;
+      if (generation!==captures.generation || ownedCapture(row.user_id,row.id).identify_job_id!==job.id) throw new ApiError('stale','capture changed','state_check');
+      const rows=select(ownedCapture(row.user_id,row.id).state,captures.params).rows;
       const facts=result.facts.flatMap(fact=> {
         const definition=rows.find(row=>row.field===fact.field);
         const value=definition?.type==='list' ? [fact.value] : fact.value;
@@ -435,8 +437,8 @@ function startIdentify(row:CaptureRow, parent:Ctx['log']):Promise<void> {
       log.job(job.id,'identify','done');
     } catch (error) {
       const reason=error instanceof ApiError && error.code==='stale' ? 'stale' : error instanceof Error ? error.message : 'identify failed';
-      const current=captureRows.get(row.id);
-      if (generation===captureGeneration && current && current.user_id===row.user_id && current.status!=='judged' && current.identify_job_id===job.id) {
+      const current=captures.rows.get(row.id);
+      if (generation===captures.generation && current && current.user_id===row.user_id && current.status!=='judged' && current.identify_job_id===job.id) {
         if (current.identify_empty===undefined && emptySet!==undefined) current.identify_empty=emptySet;
         current.state.lookups='done';current.version++;current.updated_at=new Date(deps.now()).toISOString();
       }
@@ -447,7 +449,7 @@ function startIdentify(row:CaptureRow, parent:Ctx['log']):Promise<void> {
     }
   });
   const pending=task.catch(error=>log.error('capture.identify_background',error));
-  identifyRuns.set(row.id,pending);
+  captures.identifyRuns.set(row.id,pending);
   return pending;
 }
 
@@ -469,12 +471,12 @@ export const handlers: Record<string, Handler> = {
       const {ports}=await import('./items.ts');
       if (!await ports.read(ctx.user_id!,ctx.body.item_id as string)) throw new ApiError('not_found','item not found','read');
     }
-    const id=ctx.user_id==='usr_8f2k' && !exampleOpened ? open.id : `cap_${++captureNumber}`;
-    if (id===open.id) exampleOpened=true;
-    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${captureNumber}`);
+    const id=ctx.user_id==='usr_8f2k' && !captures.exampleOpened ? open.id : `cap_${++captures.number}`;
+    if (id===open.id) captures.exampleOpened=true;
+    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${captures.number}`);
     const state=initial(body,id,item_id), created_at=new Date(deps.now()).toISOString();
     const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined,intent:(ctx.body.intent as CaptureRow['intent']) ?? 'sell'};
-    captureRows.set(id,row);
+    captures.rows.set(id,row);
     ctx.log.event('state.change',{entity:'capture',id,was:null,to:row.status});
     return {status:201,body:view(row)};
   }),
@@ -490,14 +492,14 @@ export const handlers: Record<string, Handler> = {
         !Array.isArray(photo.text) || photo.text.length>200 || !photo.text.every(line=>object(line) && typeof line.line==='string' && line.line.length>=1 && line.line.length<=200 && probability(line.confidence)))) throw answerError('text');
       if (photo.codes!==undefined && (!Array.isArray(photo.codes) || photo.codes.length>10 || !photo.codes.every(code=>object(code) && text(code.symbology) && typeof code.payload==='string' && code.payload.length>=1 && code.payload.length<=64))) throw answerError('codes');
     }
-    const wasShooting=plan(effectiveState(row),params).status==='shooting';
+    const wasShooting=plan(effectiveState(row),captures.params).status==='shooting';
     const retake=(ctx.body.photos as Photo[]).some(photo=>row.state.kept.includes(photo.key ?? photo.step) && ['tag','care_label','size_label'].includes(photo.role));
     subscribeUploads(photoStore());
     // shortcut: depth_ref and pose_ref are validated but not stored, store them when integration adds the photo table (F5).
     const uploads=(example('captures.photos').response as {photos:{upload:{expires_at:string}}[]}).photos;
     const photos=(ctx.body.photos as Photo[]).map(photo=> {
       const key=photo.key ?? photo.step;
-      const selected=select(row.state,params);
+      const selected=select(row.state,captures.params);
       const reads=(photo.reads ?? []).filter(read=> {
         const definition=selected.rows.find(field=>field.field===read.field);
         const reason=!definition?'no field row':read.value!==null && !validValue(definition,read.value)?'value does not fit field row':undefined;
@@ -536,7 +538,7 @@ export const handlers: Record<string, Handler> = {
       return {id,role:photo.role,step:photo.step,upload};
     });
     write(ctx,row,'uploading');
-    if (retake || wasShooting && select(row.state,params).process.every(step=>row.state.kept.includes(step.key))) startIdentify(row,ctx.log);
+    if (retake || wasShooting && select(row.state,captures.params).process.every(step=>row.state.kept.includes(step.key))) startIdentify(row,ctx.log);
     return {status:201,body:{photos,capture:view(row)}};
   }),
   'PATCH /v1/captures/:id': captureHandler('PATCH /v1/captures/:id', ctx=> {
@@ -552,17 +554,17 @@ export const handlers: Record<string, Handler> = {
     } else {
       const answer=(ctx.body.answer ?? ctx.body.edit) as {field:string;value:unknown;ask_id?:string}|undefined;
       field=answer?.field ?? ctx.body.refuse as string;
-      const current=plan(effectiveState(row),params);
+      const current=plan(effectiveState(row),captures.params);
       if (answer?.ask_id!==undefined && !current.questions.some(q=>q.id===answer.ask_id && q.field===field)) throw new ApiError('stale','the question changed','question_check');
       if (ctx.body.edit) {
-        const selected=select(row.state,params);
+        const selected=select(row.state,captures.params);
         const definition=selected.rows.find(r=>r.field===field);
-        const held=definition ? fieldState(definition,row.state,selected.process.map(step=>step.key),params).fact?.value :
+        const held=definition ? fieldState(definition,row.state,selected.process.map(step=>step.key),captures.params).fact?.value :
           row.state.facts[field]?.value ?? row.state.site_rows?.find(r=>r.field===field && row.state.sites.includes(r.site))?.value;
         if (held===undefined || held===null) throw answerError(field);
       } else if (!current.questions.some(q=>q.field===field && q.kind!=='shot')) throw answerError(field);
       if (answer) {
-        const definition=select(row.state,params).rows.find(r=>r.field===field);
+        const definition=select(row.state,captures.params).rows.find(r=>r.field===field);
         if (!validAnswer(row.state,field,answer.value,definition)) throw answerError(field);
         row.state.facts[field]={value:structuredClone(answer.value),source:'you_said',confidence:1,confirmed:true};
         row.state.refused=row.state.refused.filter(refused=>refused!==field);
@@ -570,7 +572,7 @@ export const handlers: Record<string, Handler> = {
       } else row.state.refused.push(field);
     }
     if (field) ctx.log.note('capture field updated',{field});
-    write(ctx,row,plan(effectiveState(row),params).status==='shooting'?'shooting':row.status,field?{field}:{});
+    write(ctx,row,plan(effectiveState(row),captures.params).status==='shooting'?'shooting':row.status,field?{field}:{});
     return {status:200,body:{...view(row),item:{id:row.state.item_id,category:row.state.type}}};
   }),
   'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', async ctx=> {
@@ -595,7 +597,7 @@ export const handlers: Record<string, Handler> = {
       row=read(ctx);writable(row);
     }
     const at=new Date(deps.now()).toISOString();
-    const state=effectiveState(row), selected=select(state,params), keys=selected.process.map(step=>step.key);
+    const state=effectiveState(row), selected=select(state,captures.params), keys=selected.process.map(step=>step.key);
     const sources:Record<Fact['source'],Attribute['source']>={label:'label',measured:'measured',lookup:'spec',you_said:'you_said',seen:'inferred',derived:'inferred'};
     const kinds:Record<Fact['source'],AttributeEvidence['kind']>={you_said:'owner',label:'label_text',measured:'depth',lookup:'lookup',seen:'image_region',derived:'image_region'};
     await ctx.log.call('db','capture.finish_item',{item_id:row.item_id},()=> {
@@ -604,7 +606,7 @@ export const handlers: Record<string, Handler> = {
         const attributes=[...(current?.attributes as Attribute[] ?? [])];
         for (const field of selected.rows) {
           if (field.field==='type' || field.field==='lot_count') continue;
-          const resolution=fieldState(field,state,keys,params);
+          const resolution=fieldState(field,state,keys,captures.params);
           if (resolution.state!=='known') continue;
           const fact=resolution.fact!;
           const next:Attribute={name:field.field,value:structuredClone(fact.value),source:sources[fact.source],confidence:fact.confidence,
