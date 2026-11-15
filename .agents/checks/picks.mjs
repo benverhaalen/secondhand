@@ -122,6 +122,10 @@ export const PICKS = {
   // The filled button is black with depth, never pure black.
   L25: (root) => { const t = tokens(root); return /^(?:#0{3}|#0{6}|black|rgb\(0[ ,]+0[ ,]+0\))$/i.test(t?.light.ink ?? '') ? [err(TOKENS, `--ink is ${t.light.ink}: the black is never flat pure black (ledger L25)`)] : []; },
 
+  // The text face is PP Neue Montreal 2.6: it is the first family the brand values name.
+  L38: (root) => { const t = tokens(root); if (!t) return []; const first = (t.light['font-text'] ?? '').split(',')[0].trim().replace(/^["']|["']$/g, '');
+    return first === 'PP Neue Montreal' ? [] : [err(TOKENS, `--font-text starts with "${first}": the text face is PP Neue Montreal 2.6, Book and Medium (ledger L38)`)]; },
+
   // The palette is one family: every hue's tint, fill and deep are built the same way, with the hue kept.
   L33: (root) => {
     const t = tokens(root); if (!t) return [];

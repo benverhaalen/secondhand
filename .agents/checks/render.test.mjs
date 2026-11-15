@@ -143,6 +143,25 @@ CASES.push(['B9', 'an item with no photo', deck('<div data-item><p class="b">Car
   ['B3', 'a web footer wordmark at the wrong size for the width', web('<p style="font-size:18px">Sell used things</p>').replace('var(--t-hero)', '86.5px'), /B3 .*390 wide it is 21 or 50 px/, 'web'],
   ['B30', 'too many words on a story frame', STORY('<p class="m" style="font-size:120px">secondhand</p>').replace('Listed in a minute', 'Used things sell faster with good photos and honest words'), /B30 .*10 words/, 'story'],
   ['B3', 'a story wordmark before the end card', STORY('<p style="font-size:48px">Sold</p>').replace('<p style="font-size:48px">Listed', '<p class="m" style="font-size:120px;text-align:center;margin-bottom:96px">secondhand</p><p style="font-size:48px">Listed'), /B3 view 1 carries the wordmark/, 'story']);
+// Edge states. The checker refills every slot marked data-fill with each piece of extreme content in .agents/ui-states.json and checks the view again.
+const SLOT = 'font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+test('render: a tile of a fixed size that ends long text with an ellipsis and keeps its photo slot passes with every extreme', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(app(`<div data-part="tile" data-item style="margin:16px 20px;width:350px;height:72px;display:flex;gap:12px;overflow:hidden">
+    <img data-fill="photo" alt="A jacket" src="${PX}" style="width:72px;height:72px;flex:none;background:var(--gray)"><div style="min-width:0;flex:1"><p data-fill="title" style="${SLOT}">Nike Dunks</p>
+    <p style="${SLOT}">Offer <span data-fill="amount">$38</span> from <span data-fill="name">Sam</span></p></div></div>`), 'app'), []);
+});
+const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px;text-align:center">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
+test('render: a screen that draws a state and says why the others cannot happen passes', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(SCREEN('data-screen="about" data-state="typical" data-skip="empty: it holds no list; one: it holds no list; dense: it holds no list; loading: it is built in; failed: it is built in; offline: it is built in"'), 'app'), []);
+});
+CASES.push(['B34', 'a chip that grows with its words', app('<div data-part="chip" style="margin:16px 20px;display:inline-block;background:var(--gray);padding:8px 12px"><span data-fill="title" style="font-size:15px">Nike Dunks</span></div>'), /B34 view 1 with short-title \[chip\] goes from/, 'app'],
+  ['B34', 'a long title cut off with no ellipsis', app('<div data-part="chip" style="margin:16px 20px;width:200px;height:36px;background:var(--gray)"><p data-fill="title" style="font-size:15px;white-space:nowrap;overflow:hidden">Nike Dunks</p></div>'), /B34 view 1 with long-title .*cut off by its box with no ellipsis/, 'app'],
+  ['B34', 'a long title that spills out of its tile', app('<div data-part="chip" style="margin:16px 20px;width:200px;height:36px;background:var(--gray);white-space:nowrap"><span data-fill="title" style="font-size:15px">Nike Dunks</span></div>'), /B34 view 1 with long-title .*spills out of \[chip\]/, 'app'],
+  ['B34', 'a tile that collapses when its photo is missing', app(`<div data-part="tile" data-item style="margin:16px 20px;width:350px"><img data-fill="photo" alt="A jacket" src="${PX}" style="width:100%;display:block"></div>`), /B34 view 1 with no-photo \[tile\] goes from 350 by 350 to/, 'app'],
+  ['B34', 'a long amount that runs over the words beside it', app('<div style="margin:16px 20px;position:relative;height:20px"><span data-fill="amount" style="font-size:15px;position:absolute;left:0">$38</span><span style="font-size:15px;position:absolute;left:40px">offered today</span></div>'), /B34 view 1 with big-amount .*runs over "offered today"/, 'app'],
+  ['B35', 'a screen drawn in one state only', SCREEN('data-screen="today" data-state="typical"'), /B35 screen "today" is not drawn in the states empty, one, dense, loading, failed, offline/, 'app'],
+  ['B35', 'a state nobody has listed', SCREEN('data-screen="today" data-state="haunted"'), /B35 screen "today" is drawn in the state "haunted", which is not on the list/, 'app'],
+  ['B35', 'a job drawn only while it runs', SCREEN('', '<p data-job="pricing" data-state="running" style="font-size:15px;margin-top:16px">Pricing on eBay</p>'), /B35 job "pricing" is not drawn in the states started, arrived, failed, slow/, 'app']);
 const LOGO = h => `<img alt="eBay" data-logo src="${PX}" style="height:${h}px;width:${h}px;margin-right:16px">`;
 CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-view><p class="m" style="display:inline-block;transform:rotate(-4deg);text-shadow:0 2px 4px var(--scrim)">secondhand</p></section>`, /B32 .*transformed and shadowed/],
   ['B32', 'a line crowding the wordmark', `<section class="s" data-view><p class="m">secondhand</p><p class="b">Sell used things</p></section>`, /B32 .*"Sell used things" sits within 32 px/],

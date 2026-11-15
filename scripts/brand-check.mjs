@@ -22,8 +22,10 @@ export function playwright() {
 }
 
 // Runs in the page. Everything it returns is plain data.
-function measure({ index, rect, faces, medium }) {
+function measure({ index, rect, faces, medium, kinds = [] }) {
   const [vx, vy, vw, vh] = rect, els = [], texts = [], ids = new Map();
+  // A thing that names itself and the state it is drawn in: data-job="pricing" data-state="running". The kinds are the keys of "states" in .agents/ui-states.json.
+  const marksOf = el => el.dataset.state == null && !kinds.some(k => el.dataset[k]) ? null : { state: el.dataset.state ?? null, skip: el.dataset.skip ?? '', names: Object.fromEntries(kinds.filter(k => el.dataset[k]).map(k => [k, el.dataset[k]])) };
   const first = s => s.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase();
   const inView = r => r.width > 0 && r.height > 0 && r.right > vx && r.left < vx + vw && r.bottom > vy && r.top < vy + vh;
   const rel = r => [r.left - vx, r.top - vy, r.right - vx, r.bottom - vy].map(v => Math.round(v * 10) / 10);
@@ -32,11 +34,14 @@ function measure({ index, rect, faces, medium }) {
   // The phone's own status bar and home bar in an app mock are not ours to set. Only the top and bottom strips can be marked.
   const chrome = el => { const c = medium === 'app' && el.closest('[data-chrome]'); if (!c) return false; const r = c.getBoundingClientRect(); return r.bottom <= vy + 60 || r.top >= vy + vh - 40; };
   // The part of a box that its scrolling or clipping ancestors let through.
-  const clipped = (el, box) => { let { left, top, right, bottom } = box, scroller = false;
+  // cut: a box that hides its overflow (not one that scrolls) took part of it away. dots: that box ends cut text with an ellipsis or a line clamp.
+  const clipped = (el, box) => { let { left, top, right, bottom } = box, scroller = false, cut = false, dots = false;
     for (let a = el; a && a !== document.documentElement; a = a.parentElement) { const s = getComputedStyle(a); if (s.overflowX === 'visible' && s.overflowY === 'visible') continue;
-      const r = a.getBoundingClientRect(); scroller ||= /auto|scroll/.test(s.overflowX);
-      if (s.overflowX !== 'visible') { left = Math.max(left, r.left); right = Math.min(right, r.right); } if (s.overflowY !== 'visible') { top = Math.max(top, r.top); bottom = Math.min(bottom, r.bottom); } }
-    return { left, top, right, bottom, width: right - left, height: bottom - top, scroller }; };
+      const r = a.getBoundingClientRect(), was = [left, top, right, bottom]; scroller ||= /auto|scroll/.test(s.overflowX);
+      if (s.overflowX !== 'visible') { left = Math.max(left, r.left); right = Math.min(right, r.right); } if (s.overflowY !== 'visible') { top = Math.max(top, r.top); bottom = Math.min(bottom, r.bottom); }
+      const lost = was[2] - was[0] - Math.max(0, right - left) > 1 && /hidden|clip/.test(s.overflowX) || was[3] - was[1] - Math.max(0, bottom - top) > 1 && /hidden|clip/.test(s.overflowY);
+      if (lost && !scroller && !a.hasAttribute('data-view')) { cut = true; dots ||= s.textOverflow === 'ellipsis' || (s.webkitLineClamp ?? 'none') !== 'none'; } }
+    return { left, top, right, bottom, width: right - left, height: bottom - top, scroller, cut, dots }; };
   for (const el of document.querySelectorAll('body, body *')) {
     const cs = getComputedStyle(el); if (!shown(el, cs) || chrome(el)) continue;
     const r = el.getBoundingClientRect(); if (!inView(r)) continue;
@@ -47,7 +52,7 @@ function measure({ index, rect, faces, medium }) {
       colors: [...new Set([...(bi.match(/rgba?\([^)]*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
-    els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), fit: el.dataset.fit ?? null, rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
+    els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
       alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
@@ -62,7 +67,7 @@ function measure({ index, rect, faces, medium }) {
     const range = document.createRange(); range.selectNodeContents(n);
     // A line set tighter than its glyph box (line-height under about 1.2) is measured as the line, so a heading that starts on a margin is on it.
     const lh = parseFloat(cs.lineHeight), line = r => { const cut = lh && r.height > lh ? (r.height - lh) / 2 : 0; return { left: r.left, right: r.right, top: r.top + cut, bottom: r.bottom - cut, width: r.width, height: r.height - 2 * cut }; };
-    const rs = [...range.getClientRects()].map(r => clipped(p, line(r))).filter(inView); if (!rs.length) continue;
+    const all = [...range.getClientRects()].map(r => clipped(p, line(r))), rs = all.filter(inView); if (!rs.length) continue;
     const box = { left: Math.min(...rs.map(r => r.left)), top: Math.min(...rs.map(r => r.top)), right: Math.max(...rs.map(r => r.right)), bottom: Math.max(...rs.map(r => r.bottom)) };
     // What is behind the text, read at the middle of a line that can be seen. Text nothing shows at any point is not on the page.
     const ground = []; let seen = false;
@@ -87,6 +92,7 @@ function measure({ index, rect, faces, medium }) {
     texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, weight: Number(cs.fontWeight), family: cs.fontFamily,
       display: family === faces.display, textFace: family === faces.text, color: cs.color, upper: cs.textTransform === 'uppercase',
       lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control,
+      cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, full: rel(range.getBoundingClientRect()),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
   return { index, w: vw, h: vh, els, texts };
@@ -107,9 +113,9 @@ async function share({ png, photos, w, h }) {
 }
 
 // Opens the output at each of the medium's canvas sizes and measures every view.
-export async function collect(file, { medium, sheet, tokensCss, browser }) {
+export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
-  const views = []; let colors, fontsLoaded = true;
+  const views = [], stressed = []; let colors, fontsLoaded = true;
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
     await page.goto(pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
@@ -125,25 +131,39 @@ export async function collect(file, { medium, sheet, tokensCss, browser }) {
       return [f.text, f.display].every(face => ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`)) && ['monospace', 'serif'].every(fb => w(`40px "${face}", ${fb}`) === w(`40px "${face}", ${fb === 'serif' ? 'monospace' : 'serif'}`))); }, got.faces);
     const marked = await page.evaluate(() => document.querySelectorAll('[data-view]').length);
     const steps = marked || Math.min(12, Math.ceil(await page.evaluate(() => document.documentElement.scrollHeight) / canvas[1]));
-    for (let i = 0; i < steps; i++) {
+    // Measures view i as it stands now. With a screenshot it also reads the share of color.
+    const shot = async (i, index, old) => {
       const rect = await page.evaluate(({ i, marked, h }) => {
-        if (!marked) { scrollTo(0, i * h); return [0, 0, innerWidth, innerHeight]; }
+        if (!marked) { scrollTo({ top: i * h, behavior: 'instant' }); return [0, 0, innerWidth, innerHeight]; }
         const el = document.querySelectorAll('[data-view]')[i]; el.scrollIntoView({ block: 'start', inline: 'start', behavior: 'instant' });
         const r = el.getBoundingClientRect(); return [r.left, r.top, r.width, r.height]; }, { i, marked, h: canvas[1] });
       // A screen that scrolls is measured whole: the window grows to its height for this view.
       const tall = sheet.scrolls && marked && rect[3] > canvas[1] + 1;
       if (tall) { await page.setViewportSize({ width: canvas[0], height: Math.ceil(rect[3]) }); await page.evaluate(i => document.querySelectorAll('[data-view]')[i].scrollIntoView({ block: 'start', inline: 'start', behavior: 'instant' }), i); }
       if (tall) { const r = await page.evaluate(i => { const b = document.querySelectorAll('[data-view]')[i].getBoundingClientRect(); return [b.left, b.top, b.width, b.height]; }, i); rect.splice(0, 4, ...r); }
-      const view = await page.evaluate(measure, { index: views.length, rect, faces: got.faces, medium });
-      const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], tall ? Math.ceil(rect[3]) : canvas[1]) };
-      const png = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`;
-      view.share = await page.evaluate(share, { png, photos: view.els.filter(e => e.photo).map(e => e.rect), w: clip.width, h: clip.height });
-      views.push({ ...view, canvas, medium });
+      const view = await page.evaluate(measure, { index, rect, faces: got.faces, medium, kinds });
+      view.marks = marked ? await page.evaluate(({ i, kinds }) => { const d = document.querySelectorAll('[data-view]')[i].dataset; return d.state == null && !kinds.some(k => d[k]) ? null : { state: d.state ?? null, skip: d.skip ?? '', names: Object.fromEntries(kinds.filter(k => d[k]).map(k => [k, d[k]])) }; }, { i, kinds }) : null;
+      if (old) view.share = old.share;
+      else { const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], tall ? Math.ceil(rect[3]) : canvas[1]) };
+        const png = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`;
+        view.share = await page.evaluate(share, { png, photos: view.els.filter(e => e.photo).map(e => e.rect), w: clip.width, h: clip.height }); }
       if (tall) await page.setViewportSize({ width: canvas[0], height: canvas[1] });
+      return { ...view, canvas, medium };
+    };
+    const mine = [];
+    for (let i = 0; i < steps; i++) { const v = await shot(i, views.length); views.push(v); mine.push(v); }
+    // The same views again with each piece of extreme content from .agents/ui-states.json put into the slots marked data-fill, then put back.
+    for (const c of marked ? cases : []) {
+      const slots = await page.evaluate(c => { const slots = [...document.querySelectorAll(`[data-fill="${c.fill}"]`)];
+        window.__undo = slots.map(el => { if (c.fill !== 'photo') { const was = { el, html: el.innerHTML }; el.textContent = c.value; return was; }
+          const img = el.matches('img') ? el : el.querySelector('img') ?? el, was = { el: img, src: img.getAttribute('src'), bg: img.style.backgroundImage }; img.removeAttribute('src'); img.style.backgroundImage = 'none'; return was; });
+        return slots.map(el => [...document.querySelectorAll('[data-view]')].findIndex(v => v.contains(el))); }, c);
+      for (const i of [...new Set(slots)].filter(i => i >= 0)) stressed.push({ ...await shot(i, mine[i].index, mine[i]), stress: c });
+      await page.evaluate(() => { for (const u of window.__undo ?? []) { if ('html' in u) u.el.innerHTML = u.html; else { if (u.src != null) u.el.setAttribute('src', u.src); u.el.style.backgroundImage = u.bg; } } });
     }
     await page.close();
   }
-  return { views, colors, fontsLoaded };
+  return { views, stressed, colors, fontsLoaded };
 }
 
 export async function check(file, medium, { browser } = {}) {
@@ -152,8 +172,9 @@ export async function check(file, medium, { browser } = {}) {
   const pw = browser ? null : playwright(); if (!browser && !pw) throw new Error('Playwright is not installed here, so nothing can be rendered');
   const b = browser ?? await pw.chromium.launch();
   try {
-    const facts = await collect(file, { medium, sheet, tokensCss: readFileSync(join(root, 'brand/tokens.css'), 'utf8'), browser: b });
-    return { facts, findings: judge(facts, { medium, sheet, scales: scales(readFileSync(join(root, 'brand/constitution.md'), 'utf8')), colors: facts.colors }) };
+    const states = JSON.parse(readFileSync(join(root, '.agents/ui-states.json'), 'utf8'));
+    const facts = await collect(file, { medium, sheet, tokensCss: readFileSync(join(root, 'brand/tokens.css'), 'utf8'), browser: b, cases: states.content, kinds: Object.keys(states.states) });
+    return { facts, findings: judge(facts, { medium, sheet, scales: scales(readFileSync(join(root, 'brand/constitution.md'), 'utf8')), colors: facts.colors, states: states.states }) };
   } finally { if (!browser) await b.close(); }
 }
 

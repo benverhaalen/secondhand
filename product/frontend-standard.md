@@ -124,7 +124,7 @@ Screens are built from the fixed parts in [app/src/ui](../app/src/ui/README.md),
 
 ## 4. States every screen must design
 
-Each screen is audited in all of these (Vercel guidelines; IAE "plausible extreme content"):
+Each screen is audited in all of these (Vercel guidelines; IAE "plausible extreme content"). A script holds the list in [.agents/ui-states.json](../.agents/ui-states.json) with the extreme content to try, and `node scripts/brand-check.mjs` fails a mock that names its screen and leaves a state out (brand checks B34 and B35):
 
 - **Empty:** why it's empty, plus the one action that fills it.
 - **One item.**
