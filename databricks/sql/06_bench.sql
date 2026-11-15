@@ -15,7 +15,11 @@ CREATE TABLE IF NOT EXISTS secondhand.measures.bench_record (
   error STRING COMMENT 'Recorded error, or null.',
   range_json STRING COMMENT 'Recorded range as JSON, or null.',
   delist_json STRING COMMENT 'Recorded delist entries as JSON, or null.',
-  raw_ref STRING COMMENT 'Reference to the saved raw answer.'
+  raw_ref STRING COMMENT 'Reference to the saved raw answer.',
+  cost_cents DOUBLE COMMENT 'Cost per answer in cents, or null when unknown.',
+  browser_s DOUBLE COMMENT 'Browser seconds used, or null when unknown.',
+  proxy_bytes BIGINT COMMENT 'Proxy bytes used, or null when unknown.',
+  model_calls BIGINT COMMENT 'Model calls used, or null when unknown.'
 ) COMMENT 'Benchmark answer records.';
 
 CREATE TABLE IF NOT EXISTS secondhand.measures.bench_number (
@@ -52,6 +56,21 @@ CREATE TABLE IF NOT EXISTS secondhand.measures.bench_site (
   site STRING COMMENT 'Site used by the answer.'
 ) COMMENT 'Sites used by benchmark answers.';
 
+CREATE TABLE IF NOT EXISTS secondhand.measures.bench_read (
+  run_id STRING COMMENT 'Benchmark run identifier.',
+  tool STRING COMMENT 'Tool asked.',
+  item_id STRING COMMENT 'Item asked about.',
+  question STRING COMMENT 'Question asked.',
+  data STRING COMMENT 'Dataset identifier derived from the manifest hash.',
+  position INT COMMENT 'Zero-based position in the reads array.',
+  site STRING COMMENT 'Site read.',
+  lane STRING COMMENT 'Access lane used for the read.',
+  ms DOUBLE COMMENT 'Read duration in milliseconds.',
+  outcome STRING COMMENT 'Recorded read outcome.',
+  rows BIGINT COMMENT 'Number of rows returned by the read.',
+  warm BOOLEAN COMMENT 'False for the first read of a site in a run, true thereafter.'
+) COMMENT 'Per-site reads in benchmark answers.';
+
 CREATE TABLE IF NOT EXISTS secondhand.measures.bench_load_report (
   run_id STRING COMMENT 'Benchmark run identifier from the folder.',
   data STRING COMMENT 'Dataset identifier, null when no valid records were loaded.',
@@ -66,6 +85,33 @@ CREATE OR REPLACE VIEW secondhand.measures.bench_coverage
 COMMENT 'Answers and answer share per run and tool.' AS
 SELECT run_id, tool, min(asked_at) AS asked_at, count(*) AS asked, count_if(ok) AS ok,
        count_if(ok) / nullif(count(*), 0) AS ok_share
+FROM secondhand.measures.bench_record
+GROUP BY run_id, tool;
+
+CREATE OR REPLACE VIEW secondhand.measures.bench_by_site
+COMMENT 'Read coverage, rows and cold and warm seconds per run, tool, site and lane.' AS
+WITH runs AS (
+  SELECT run_id, tool, min(asked_at) AS asked_at
+  FROM secondhand.measures.bench_record
+  GROUP BY run_id, tool
+)
+SELECT r.run_id, r.tool, r.site, r.lane, min(runs.asked_at) AS asked_at,
+       count(*) AS reads, count_if(r.outcome = 'ok') AS answered,
+       1.0 * count_if(r.outcome = 'ok') / nullif(count(*), 0) AS answered_share,
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CASE WHEN r.outcome = 'ok' THEN r.rows END) AS median_rows,
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CASE WHEN r.warm = false THEN r.ms END) / 1000.0 AS cold_p50_s,
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY CASE WHEN r.warm = true THEN r.ms END) / 1000.0 AS warm_p50_s,
+       count_if(r.warm = false) AS cold_reads, count_if(r.warm = true) AS warm_reads
+FROM secondhand.measures.bench_read r
+JOIN runs ON r.run_id = runs.run_id AND r.tool = runs.tool
+GROUP BY r.run_id, r.tool, r.site, r.lane;
+
+CREATE OR REPLACE VIEW secondhand.measures.bench_cost
+COMMENT 'Known and unknown cost per answer by run and tool.' AS
+SELECT run_id, tool, count(*) AS answers,
+       count(cost_cents) AS answers_with_cost,
+       percentile_cont(0.5) WITHIN GROUP (ORDER BY cost_cents) AS median_cents_per_answer,
+       count_if(cost_cents IS NULL) AS unknown_cost
 FROM secondhand.measures.bench_record
 GROUP BY run_id, tool;
 

@@ -117,6 +117,16 @@ The fixed set: the team's own accounts, frozen as one table version: 150 real en
 | 6 Beside | our ship time and cancel rate match Posh Stats on the team's accounts within 10 points |
 | 7 Speed | By site under 300 ms at p95 |
 
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Platform analytics section of [audit.md](audit.md) was checked against the code. 27 of 30 are closed. These 3 are still open, worst first.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| PA-A1 | The nightly fit publishes `site_effect.prior`, but `compare` and `placement` take their prior from the declared `sale_prior` and `price_prior` params and never read the promoted row. | `jobs/analytics/site_effect.py:66` and `:110`; `jobs/analytics/learn.py:102` | Resolve `m` and `m_g` from the `site_effect.prior` champion at the scope, else the declared prior. | Promote a prior with m = 2 for a scope. `sale_effect` with O 3, E 1 has shape 5, rate 3, mean 1.667. With the default m = 5 it is 1.333. `param_versions` carries the `site_effect.prior` version. |
+| PA-A2 | `fold_events` replays events and returns a result. No order or listing transaction applies it, and the per-person `site_effect.sale` and `site_effect.price` params are not written. | `jobs/analytics/learn.py:24` | Apply each sale and end event as an observation in the outcome transaction and invalidate the reader. | Apply one sale event. A read of `site_effect.sale` at the person's scope is version 1 with that event's weight. It equals a replay by `fold_events`. Another person's scope is unchanged. |
+| PA-A3 | The site timezone, counter and metric definitions are a second table in code, not read from the reviewed site facts. | `jobs/analytics/normalise.py:43` | Load each site's analytics definitions from the allowed fact source. | For every site, `SITES[site]` equals the reviewed fact. Changing the mercari timezone in the fact source moves `_window` by that many hours. |
+
 ## 10. Build tasks
 
 Code under `jobs/analytics/`, each task in the [task shape](../plans/README.md#2-the-task-shape) when planned; all build in parallel against the frozen fixture.

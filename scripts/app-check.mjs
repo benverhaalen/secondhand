@@ -15,6 +15,7 @@ import { scales } from '../.agents/checks/brand.mjs';
 import { find, routes, serve } from '../app/e2e/web.mjs';
 import { compose, INSETS, insetScript, snapshot } from './composition.mjs';
 import { measure, signatures, standards, typeAcross } from './standards.mjs';
+import { JOBS, judgeJob, observe, tabsAlike } from './page-jobs.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 export const RENDERS = join(root, 'features/app/renders');
@@ -85,6 +86,8 @@ export async function checkPage(url, { browser, dark = false } = {}) {
 
 // Each route's type signatures, so one run can say when a size is set two ways across the app (U15).
 export const typeSeen = {};
+// Each tab's frame (where its head sits, where its content starts), so one run can hold the tabs to one family (J5).
+export const frameSeen = {};
 
 // How the first screen is composed, judged with the phone's insets (scripts/composition.mjs, Art. 7.11 to 7.16).
 export async function checkComposition(url, { browser, route, typical = true }) {
@@ -94,7 +97,9 @@ export async function checkComposition(url, { browser, route, typical = true }) 
     await page.goto(url, { waitUntil: 'load' }); await settle(page);
     const m = await page.evaluate(measure);
     typeSeen[route] = signatures({ texts: m.texts.filter(t => !t.bar) });
-    return [...compose(await page.evaluate(snapshot, { insetTop: INSETS.top }), { route, typical }), ...standards(m)];
+    const row = JOBS[route], seen = await page.evaluate(observe, row ?? {}), job = row ? judgeJob(seen, row, { route, typical }) : [];
+    if (typical) frameSeen[route] = seen.frame;
+    return [...compose(await page.evaluate(snapshot, { insetTop: INSETS.top }), { route, typical }), ...standards(m), ...job];
   } finally { await page.close(); }
 }
 
@@ -209,7 +214,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       say(`${n ? `${n} error(s)` : 'ok'}  features/app/renders/${slug(got.route)}${got.screens ? '{.png,-dark.png,.json}' : '.json'}`);
     }
     // U15 across the app: the same size set two ways on two screens is the same break as on one.
-    const across = report.length > 1 ? typeAcross(typeSeen) : [];
+    const across = report.length > 1 ? [...typeAcross(typeSeen), ...tabsAlike(frameSeen)] : [];
     if (across.length) { say('\nthe whole app'); for (const f of across) say(line(f)); }
     let sheet = null, gallery = null;
     if (flags.has('--sheet') && report.length) {
