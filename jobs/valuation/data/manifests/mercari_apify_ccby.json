@@ -1,0 +1,60 @@
+{
+  "source": "mercari_apify_ccby",
+  "licence": "CC BY 4.0, attribution malekoweis/resale-market-data; collected from Mercari by a scraping actor",
+  "may_model": false,
+  "code_commit": "b40085dc8cbd4e95937435792b156b73c7915d6a",
+  "inputs": [
+    {
+      "file": "mercari-us-sold-listings.csv",
+      "bytes": 151910,
+      "sha256": "58639886c8f8bc271663fc3845701843ceb54758f8a408762f4306ba571bf1d2"
+    }
+  ],
+  "output": {
+    "file": "rows.csv.gz",
+    "sha256": "ec2ac4aeb46f2ebd3e13455a36bf84d6d7c3ca3bee498538cef0b5fb101f27bf",
+    "columns": [
+      "row_id",
+      "source",
+      "licence",
+      "site",
+      "url",
+      "kind",
+      "product_id",
+      "family_id",
+      "cluster_id",
+      "brand",
+      "category",
+      "condition",
+      "size",
+      "era",
+      "title",
+      "photo_count",
+      "seller_feedback",
+      "price_type",
+      "price_cents",
+      "buyer_shipping_cents",
+      "listed_at",
+      "at",
+      "best_offer",
+      "views",
+      "watchers",
+      "may_model",
+      "at_ask",
+      "priced_from_our_number",
+      "description",
+      "retail_cents",
+      "released_at",
+      "region"
+    ]
+  },
+  "rows": 462,
+  "by_price_type": {
+    "sold": 462
+  },
+  "by_kind": {
+    "electronics": 462
+  },
+  "at_range": null,
+  "dropped": {}
+}

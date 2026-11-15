@@ -1,0 +1,137 @@
+{
+  "source": "ebay_comps_cc0",
+  "licence": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); collected from eBay by a scraping actor",
+  "may_model": false,
+  "code_commit": "b40085dc8cbd4e95937435792b156b73c7915d6a",
+  "inputs": [
+    {
+      "file": "castiron.csv",
+      "bytes": 4108,
+      "sha256": "93286015539bd1a119ea0f9bb9994529f4261f7a913353601336ee05b6a87cba"
+    },
+    {
+      "file": "corningware-cw_cornflower.csv",
+      "bytes": 4445,
+      "sha256": "b5ccfab55e910023801d2833fe29cfa004fe9991c8d15913e82b15630a0d5b55"
+    },
+    {
+      "file": "corningware-cw_generic.csv",
+      "bytes": 7556,
+      "sha256": "ab0014a79e44de421e2e00a3720193750619a5eb9506649999c702429491ba41"
+    },
+    {
+      "file": "corningware-cw_marj.csv",
+      "bytes": 4371,
+      "sha256": "b6367b191b2128f9daac4f97c00491c943ac93892aeb33c6219465778482f849"
+    },
+    {
+      "file": "fiesta.csv",
+      "bytes": 4258,
+      "sha256": "d6781eb0ae61832ac0a65a13f4c3815fe683057c97ff426a3b3261a453a8dee3"
+    },
+    {
+      "file": "hotwheels-lot.csv",
+      "bytes": 4144,
+      "sha256": "76aa6821bc90543d2dfe94429a656347269e36a34659dad28fd53257e80bcbeb"
+    },
+    {
+      "file": "hotwheels-redline.csv",
+      "bytes": 3816,
+      "sha256": "d0ab5241814428e0085ce4c8d2cf5a2820c59788fc762382f0988087c2bfe769"
+    },
+    {
+      "file": "lecreuset.csv",
+      "bytes": 4047,
+      "sha256": "038de800ca3494b336d3a24ca5af1659327115b721b1d7fd133f26bb06c60885"
+    },
+    {
+      "file": "pyrex.csv",
+      "bytes": 4043,
+      "sha256": "ec0892d6d737b437fb1642b82b61270d328725b8b2b079ae74ec990a210f2f17"
+    },
+    {
+      "file": "retro-video-games-cib.csv",
+      "bytes": 9454,
+      "sha256": "7a45024b1055a31c47b9a399b00f5c1df4915fa271438f293528e9ecb5e07d23"
+    },
+    {
+      "file": "retro-video-games-lots.csv",
+      "bytes": 8338,
+      "sha256": "b065400adeecd785ad1836d6c88203610fb9956d219aca1627d456dcbcb58000"
+    },
+    {
+      "file": "sewing-machines-featherweight.csv",
+      "bytes": 4284,
+      "sha256": "6c4c638ece875a3f357a72c03bac84b6b005d561f1c3593c08aa66fcb5e500f8"
+    },
+    {
+      "file": "sewing-machines-generic.csv",
+      "bytes": 8259,
+      "sha256": "6fe3dff6329b4a2a5ba9d691a979d0ad99062ef9bff475b7190b13b3a7d245ca"
+    },
+    {
+      "file": "sewing-machines-treadle.csv",
+      "bytes": 4321,
+      "sha256": "57125ea60f6f0b7c411895b12ce11c1e8dc4e3fecd8803d97f19e5a8d6b5e8a4"
+    },
+    {
+      "file": "sterling.csv",
+      "bytes": 3966,
+      "sha256": "22e3ae0b03efc9f3799ab27488526b2abb112f1875cc45d3a90fddaa8f22aff4"
+    }
+  ],
+  "output": {
+    "file": "rows.csv.gz",
+    "sha256": "ad22b343db2162fc6f18a2860252537d01fa49928a5742f5e7604612b55df75c",
+    "columns": [
+      "row_id",
+      "source",
+      "licence",
+      "site",
+      "url",
+      "kind",
+      "product_id",
+      "family_id",
+      "cluster_id",
+      "brand",
+      "category",
+      "condition",
+      "size",
+      "era",
+      "title",
+      "photo_count",
+      "seller_feedback",
+      "price_type",
+      "price_cents",
+      "buyer_shipping_cents",
+      "listed_at",
+      "at",
+      "best_offer",
+      "views",
+      "watchers",
+      "may_model",
+      "at_ask",
+      "priced_from_our_number",
+      "description",
+      "retail_cents",
+      "released_at",
+      "region"
+    ]
+  },
+  "rows": 570,
+  "by_price_type": {
+    "sold": 570
+  },
+  "by_kind": {
+    "appliances_tools": 90,
+    "jewellery_watches": 30,
+    "lighting_home": 330,
+    "media": 60,
+    "toys_lego": 60
+  },
+  "at_range": [
+    "2026-08-23",
+    "2026-09-18"
+  ],
+  "dropped": {}
+}

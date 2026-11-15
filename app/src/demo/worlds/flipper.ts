@@ -60,7 +60,7 @@ const offers = [0, 3, 7].map((n, i) => offerIn(`of_f${i}`, `cv_f${i}`, live[n].l
 const offerCards: Decision[] = offers.map((o, i) => decision({
   id: `dec_fo${i}`, kind: 'accept_offer', item_id: live[[0, 3, 7][i]].id, site: o.site, feed: 'now', group_form: 'single', deadline: o.expires_at, offer_ids: [o.id], conversation_id: o.conversation_id,
   why: `Offer of ${usd(o.amount_cents)}. Your lowest is ${usd(live[[0, 3, 7][i]].limits!.floor_cents)}.`, money: { offer_cents: o.amount_cents, you_keep_cents: o.you_keep_cents },
-  options: [{ id: 'acc', label: `Accept ${usd(o.amount_cents)}`, does: `You keep ${usd(o.you_keep_cents)}.` }, { id: 'dec', label: 'Decline', does: 'The listing stays up.' }], suggested: 'acc', allow_other: true,
+  options: [{ id: 'acc', label: `Accept ${usd(o.amount_cents)}`, does: `You get ${usd(o.you_keep_cents)}.` }, { id: 'dec', label: 'Decline', does: 'The listing stays up.' }], suggested: 'acc', allow_other: true,
 }));
 
 export const flipper: World = {

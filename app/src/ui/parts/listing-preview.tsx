@@ -43,7 +43,7 @@ export function ListingPreview({ site, photo, title, price, keep, photos, audien
           <Txt role="body" lines={2} tone={off ? 'ink-2' : 'ink'}>{title}</Txt>
           <View style={{ flexDirection: 'row', gap: space.s2 }}>
             <Txt role="body" tone={off ? 'ink-2' : 'ink'}>{money(price / 100)}</Txt>
-            <Txt role="body" tone="ink-2" lines={1}>{`You keep ${money(keep / 100)}`}</Txt>
+            <Txt role="body" tone="ink-2" lines={1}>{`You get ${money(keep / 100)}`}</Txt>
           </View>
         </View>
         <View style={{ justifyContent: 'center' }}>{toggle}</View>

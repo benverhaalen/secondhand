@@ -46,7 +46,7 @@ const keepAt = (t: Thing, cents: number) => youKeep(t.site ?? 'ebay', cents, t.s
 function prices(t: Thing, agent: number) {
   const step = agent >= 10000 ? 2500 : agent >= 4000 ? 1000 : 500;
   const low = Math.max(t.lowest ?? 0, agent - step);
-  const row = (c: number, what: string) => ({ id: String(c), label: usd(c), does: `You keep ${usd(keepAt(t, c))}.${what}` });
+  const row = (c: number, what: string) => ({ id: String(c), label: usd(c), does: `You get ${usd(keepAt(t, c))}.${what}` });
   return [...(low < agent ? [row(low, ' Likelier to sell before you move.')] : []), row(agent, ''), row(agent + step, ' Less likely to sell before you move.')];
 }
 // Under the person's lowest, for the thing that will miss: about a fifth off, in round dollars. Only their tap sets it.
@@ -199,7 +199,7 @@ export default function GoneBy() {
         </>
       ) : (
         <>
-          <Group title="Sell" note={forSale.length ? `You keep about ${about(forSale.reduce((a, t) => a + (t.keep ?? 0), 0))} ${forSale.length === 1 ? 'if it sells' : `if all ${forSale.length} sell`}` : undefined} things={forSale} onOpen={setOpen} asks={asks} guessed={guessed} onAsk={price} fixed={!editing} />
+          <Group title="Sell" note={forSale.length ? `You get about ${about(forSale.reduce((a, t) => a + (t.keep ?? 0), 0))} ${forSale.length === 1 ? 'if it sells' : `if all ${forSale.length} sell`}` : undefined} things={forSale} onOpen={setOpen} asks={asks} guessed={guessed} onAsk={price} fixed={!editing} />
           <Group title="Give away" things={group('give')} onOpen={setOpen} asks={asks} guessed={guessed} onAsk={price} fixed={!editing} />
           <Group title="Already sold" things={group('sold')} onOpen={setOpen} asks={asks} guessed={guessed} onAsk={price} fixed />
           <Group title="Keeping" things={group('keep')} onOpen={setOpen} asks={asks} guessed={guessed} onAsk={price} fixed={!editing} />
@@ -268,8 +268,8 @@ function Caption({ t, fixed, agent, changed, onAsk }: { t: Thing; fixed: boolean
   if (t.fate === 'keep') return line(t.item.kept_reason ?? 'Keeping');
   if (t.now === 'given') return line('Picked up');
   if (t.fate === 'give') return line('Pickup only');
-  if (t.now === 'found' || t.ask == null) return line(t.fate === 'sold' && t.keep != null ? `You keep ${usd(t.keep)}` : 'Pricing');
-  if (t.fate === 'sold' || t.now === 'gone' || t.now === 'ship' || t.now === 'pickup') return line(`You keep ${usd(t.keep ?? 0)}`);
+  if (t.now === 'found' || t.ask == null) return line(t.fate === 'sold' && t.keep != null ? `You get ${usd(t.keep)}` : 'Pricing');
+  if (t.fate === 'sold' || t.now === 'gone' || t.now === 'ship' || t.now === 'pickup') return line(`You get ${usd(t.keep ?? 0)}`);
   // Still for sale once the plan runs: its price, with the word that says what the amount is (C6).
   if (fixed) return line(`For ${usd(t.ask)}`);
   // A price is one of a few steps, not a number to type: each step says what the person keeps.
@@ -324,7 +324,7 @@ function ThingSheet({ t, spot, drop, miss, editable, onPick }: { t: Thing; spot:
   const sold = t.fate === 'sold' || ['gone', 'ship', 'pickup'].includes(t.now);
   // In order of what the person ends up with: money, the thing, nothing, and last, not theirs to decide.
   const choices = [
-    ...(miss && t.lowest != null ? [{ id: 'lower', label: `Lower it to ${usd(under(t.lowest))}`, does: `Under your lowest of ${usd(t.lowest)}. You keep ${usd(keepAt(t, under(t.lowest)))}.` }] : []),
+    ...(miss && t.lowest != null ? [{ id: 'lower', label: `Lower it to ${usd(under(t.lowest))}`, does: `Under your lowest of ${usd(t.lowest)}. You get ${usd(keepAt(t, under(t.lowest)))}.` }] : []),
     { id: 'sell', label: miss ? `Leave it at ${usd(t.ask ?? 0)}` : 'Sell it', does: miss ? 'It stays up until the last pickup.' : t.ask && t.lowest ? `At ${usd(t.ask)}, down to ${usd(t.lowest)} by ${drop}.` : 'At the price similar ones sell for.' },
     { id: 'keep', label: 'Keep it', does: live ? 'Comes with you. Comes off every site.' : 'Comes with you.' },
     { id: 'give', label: 'Give it away', does: `Free for pickup at ${spot}.${live ? ' Comes off the other sites.' : ''}` },
@@ -333,7 +333,7 @@ function ThingSheet({ t, spot, drop, miss, editable, onPick }: { t: Thing; spot:
   return (
     <Stack>
       <Txt role="body" tone="ink-2">{t.why}</Txt>
-      {sold && t.keep != null ? <Txt role="body">{`You keep ${usd(t.keep)}`}</Txt> : null}
+      {sold && t.keep != null ? <Txt role="body">{`You get ${usd(t.keep)}`}</Txt> : null}
       {editable && !sold ? <Choices id={miss ? 'miss-more' : `thing-${t.item.id}`} choices={choices} value={t.fate} onPick={f => onPick(f as Pick)} /> : null}
       {/* A way back to each site it is live on, by the site's logo, never its name in words (Ben, 06:19: "always have a way to go back to the site"). */}
       {t.item.listings.filter(l => l.state === 'live').map(l => (

@@ -1,0 +1,205 @@
+{
+  "mercari_kaggle": {
+    "what": "Mercari Price Suggestion Challenge train.tsv (Kaggle, 2017-18)",
+    "official": "https://www.kaggle.com/competitions/mercari-price-suggestion-challenge/data (Kaggle login and rules acceptance)",
+    "mirror": {
+      "repo": "https://github.com/xzachx/Kaggle-Mercari",
+      "commit": "9b039f462e22f341407bec5cf691c69295d964d0",
+      "path": "input/train.tsv.7z",
+      "sha256": "7eda9f14751d48447cf7caf5e8de04388124b2cbe9e00dd8fad5164d2fd0aa2e",
+      "same_blob_in": [
+        "github.com/gdayal80/mercari",
+        "github.com/Ashutosh-Shukla-zz/Mercari-Price-Suggestion-Kaggle-challenge"
+      ]
+    },
+    "files": [
+      {
+        "file": "train.tsv",
+        "sha256": "94b24fbecca842140b6276e9da43ce66be3b56b4b991375228802a74050fe471"
+      }
+    ]
+  },
+  "stockx_2019": {
+    "what": "StockX Data Contest 2019 workbook, sheet 'Raw Data'",
+    "official": "emailed by StockX to contest entrants, February 2019; no official download page found",
+    "mirror": {
+      "repo": "https://github.com/sealuwee/stockx-eda-2019",
+      "commit": "4be02ae9e4bdc8ebc34d90724aec859e5aef3843",
+      "path": "StockX-Data-Contest-2019.xlsx"
+    },
+    "files": [
+      {
+        "file": "StockX-Data-Contest-2019.xlsx",
+        "sha256": "79195c8e8c062f7440ab16229e4d857337dffea511423f271293e60e7d33037f"
+      }
+    ]
+  },
+  "grailed_2021": {
+    "what": "103,537 Grailed sold listings scraped by a third party, file dated 2021-01-27",
+    "official": "none",
+    "mirror": {
+      "repo": "https://github.com/albertfrantz/grailed_sold_data",
+      "commit": "be5be58724c6edbc15d558eb1e51cd3141730574",
+      "path": "grailed_sold_data.zip",
+      "sha256": "885868d74bf882d71a4f944474e023acfe11584a82431be62835c9c44e0a4018"
+    },
+    "files": [
+      {
+        "file": "grailed_sold_data.csv",
+        "sha256": "2ec35a2b4beff41b11888437d3e21c3593ee1b2d7e0d505f0f563c1dae666a05"
+      }
+    ]
+  },
+  "nber_ebay_bo": {
+    "what": "eBay Best Offer listings, May 2012 to June 2013 (Backus, Blake, Larsen, Tadelis, QJE 2020)",
+    "official": "https://www.nber.org/research/data/best-offer-sequential-bargaining",
+    "mirror": null,
+    "download": "http://data.nber.org/data/bargaining/anon_bo_lists.csv.gz",
+    "files": []
+  },
+  "ebay_comps_cc0": {
+    "what": "570 eBay sold rows, September 2026, 15 keyword files",
+    "official": "https://github.com/silentdirectivellc-hub/ebay-sold-comps",
+    "mirror": {
+      "repo": "https://github.com/silentdirectivellc-hub/ebay-sold-comps",
+      "commit": "03d2186398f3f79d08bb23449e9e1382348100cc",
+      "path": "data/*.csv (not goodwill-*)"
+    },
+    "files": [
+      {
+        "file": "castiron.csv",
+        "sha256": "93286015539bd1a119ea0f9bb9994529f4261f7a913353601336ee05b6a87cba"
+      },
+      {
+        "file": "corningware-cw_cornflower.csv",
+        "sha256": "b5ccfab55e910023801d2833fe29cfa004fe9991c8d15913e82b15630a0d5b55"
+      },
+      {
+        "file": "corningware-cw_generic.csv",
+        "sha256": "ab0014a79e44de421e2e00a3720193750619a5eb9506649999c702429491ba41"
+      },
+      {
+        "file": "corningware-cw_marj.csv",
+        "sha256": "b6367b191b2128f9daac4f97c00491c943ac93892aeb33c6219465778482f849"
+      },
+      {
+        "file": "fiesta.csv",
+        "sha256": "d6781eb0ae61832ac0a65a13f4c3815fe683057c97ff426a3b3261a453a8dee3"
+      },
+      {
+        "file": "hotwheels-lot.csv",
+        "sha256": "76aa6821bc90543d2dfe94429a656347269e36a34659dad28fd53257e80bcbeb"
+      },
+      {
+        "file": "hotwheels-redline.csv",
+        "sha256": "d0ab5241814428e0085ce4c8d2cf5a2820c59788fc762382f0988087c2bfe769"
+      },
+      {
+        "file": "lecreuset.csv",
+        "sha256": "038de800ca3494b336d3a24ca5af1659327115b721b1d7fd133f26bb06c60885"
+      },
+      {
+        "file": "pyrex.csv",
+        "sha256": "ec0892d6d737b437fb1642b82b61270d328725b8b2b079ae74ec990a210f2f17"
+      },
+      {
+        "file": "retro-video-games-cib.csv",
+        "sha256": "7a45024b1055a31c47b9a399b00f5c1df4915fa271438f293528e9ecb5e07d23"
+      },
+      {
+        "file": "retro-video-games-lots.csv",
+        "sha256": "b065400adeecd785ad1836d6c88203610fb9956d219aca1627d456dcbcb58000"
+      },
+      {
+        "file": "sewing-machines-featherweight.csv",
+        "sha256": "6c4c638ece875a3f357a72c03bac84b6b005d561f1c3593c08aa66fcb5e500f8"
+      },
+      {
+        "file": "sewing-machines-generic.csv",
+        "sha256": "6fe3dff6329b4a2a5ba9d691a979d0ad99062ef9bff475b7190b13b3a7d245ca"
+      },
+      {
+        "file": "sewing-machines-treadle.csv",
+        "sha256": "57125ea60f6f0b7c411895b12ce11c1e8dc4e3fecd8803d97f19e5a8d6b5e8a4"
+      },
+      {
+        "file": "sterling.csv",
+        "sha256": "22e3ae0b03efc9f3799ab27488526b2abb112f1875cc45d3a90fddaa8f22aff4"
+      }
+    ]
+  },
+  "goodwill_cc0": {
+    "what": "ShopGoodwill closed auctions, June to September 2026",
+    "official": "https://github.com/silentdirectivellc-hub/ebay-sold-comps",
+    "mirror": {
+      "repo": "https://github.com/silentdirectivellc-hub/ebay-sold-comps",
+      "commit": "03d2186398f3f79d08bb23449e9e1382348100cc",
+      "path": "data/goodwill-*.csv"
+    },
+    "files": [
+      {
+        "file": "goodwill-costume-jewelry-2026-06.csv",
+        "sha256": "62818d27418687fcbae1d9e75d462ca20e608333d500855b02c5d32dbf323dab"
+      },
+      {
+        "file": "goodwill-depression-glass-2026-06.csv",
+        "sha256": "bf97a755f987f4dbb46b5d20e6d702f06dea3efaaf972fbce26921cfa4957d4f"
+      },
+      {
+        "file": "goodwill-film-camera-2026-06.csv",
+        "sha256": "d6b138b5025ed94516a9f49ad12f4d07dd94862b951e673acc3b387f667198c5"
+      },
+      {
+        "file": "goodwill-fishing-lure-2026-08.csv",
+        "sha256": "da2b5af1f8b19715bbaf053d0f06a73313d36d86f77a05bf47d2e98eeafa5b19"
+      },
+      {
+        "file": "goodwill-fishing-reel-2026-07.csv",
+        "sha256": "c733008c6f8727d452de6701e7dcf93c602eadd5f2251d4ae1ce034ff3af434b"
+      },
+      {
+        "file": "goodwill-fishing-rod-2026-07.csv",
+        "sha256": "49947e23029dcb45a0b21d88007a21011f92c3b25dbc6f553c082f143cfecd80"
+      },
+      {
+        "file": "goodwill-fly-reel-2026-09.csv",
+        "sha256": "c629a4535ea9469cdd8dc20cc2fbcc6ca1be4f03582fffc908523415250cd5ff"
+      },
+      {
+        "file": "goodwill-heddon-vintage-tackle-2026-09.csv",
+        "sha256": "e454c94b12177f8408b16a9cf9972ecab4867b58a92fb924f341deebfbc0e81b"
+      },
+      {
+        "file": "goodwill-lego-2026-06.csv",
+        "sha256": "656e6b4da413039a37b1c4cb35547627c62ae93ed9c3d7e66309c476ce0b8c2e"
+      },
+      {
+        "file": "goodwill-pocket-watch-2026-06.csv",
+        "sha256": "258ec3d30041956fe0e447f33a88a079b53c2c53ba4aca01e159fdc359c4dc97"
+      },
+      {
+        "file": "goodwill-tackle-box-2026-08.csv",
+        "sha256": "a82e27aa010a153c745bd7ad8d72207b1313a9de4e6a682e7d62f98d8739a143"
+      },
+      {
+        "file": "goodwill-vinyl-records-2026-06.csv",
+        "sha256": "0e261cd0a82011c2522482b1b3bc48cd99c023a7ced2f3841c3a9933ac4c7f7c"
+      }
+    ]
+  },
+  "mercari_apify_ccby": {
+    "what": "462 Mercari US results for Nintendo Switch searches, October 2026, sold and on sale",
+    "official": "https://github.com/malekoweis/resale-market-data",
+    "mirror": {
+      "repo": "https://github.com/malekoweis/resale-market-data",
+      "commit": "bb14775f95331d4cf8f3e683ca1cf688a21a6de8",
+      "path": "data/mercari-us-sold-listings.csv"
+    },
+    "files": [
+      {
+        "file": "mercari-us-sold-listings.csv",
+        "sha256": "58639886c8f8bc271663fc3845701843ceb54758f8a408762f4306ba571bf1d2"
+      }
+    ]
+  }
+}
