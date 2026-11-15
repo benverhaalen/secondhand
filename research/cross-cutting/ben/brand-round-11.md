@@ -183,4 +183,20 @@ Measured on Ben's Mac on 2026-11-15 from the outlines of each file, in font unit
 - The 1.0 file has no ½ and no fractions, and its fixed-width digits come from the font-tnum patch (observed, and in [neue-montreal-file.md](neue-montreal-file.md)).
 - The paid PP Neue Montreal family has a Regular between Book and Medium (asserted, from memory; not read today).
 
-Open as R42 in the [ledger](../../../brand/ledger.md).
+Is there a reason to prefer the halfway weight? Ben, 2026-11-15 03:23 UTC: "i think with font weights i like 500 unless you have a researched back reason to choose 450". The same stroke was measured on three screen faces in the cloud container on 2026-11-15, with fontTools, in units of 1000 (observed):
+
+| Face | Stroke of the l | Stroke of the I |
+|---|---|---|
+| Inter Regular | 88 | 93 |
+| Inter Display Regular | 83 | 88 |
+| Inter Medium | 107 | 111 |
+| Liberation Sans Regular (drawn to Arial's widths) | 88 | 93 |
+| DejaVu Sans Book | 90 | 99 |
+
+- An ordinary Regular for screens has a stroke of 83 to 90. PP Book, at 65, is 26% under Inter Regular. The older Regular, at 80, is 9% under. PP Medium, at 98, is 11% over, and still under Inter Medium (inferred from the two tables).
+- So 450 and 500 sit about as far from an ordinary Regular, on either side. Nothing measured favors 450.
+- In pixels: PP Medium at 15 px has a stroke of 1.47 px, which is what Inter Regular has at 17 px (1.50 px), the size iOS uses for body text (the 17 is asserted, from memory; Inter stands in for the system face, which was not measured). The app's text is smaller than that, at 13 and 15, so the heavier weight keeps the stroke where a reader is used to it (inferred).
+- Medium is the same family and version as before, with all 742 glyphs, ½ and its own fixed-width digits (observed). The older Regular has none of that.
+- No legibility study was read for this. That is the gap: the case rests on measurement and on what the files hold.
+
+Closed as L38 in the [ledger](../../../brand/ledger.md): Medium everywhere.

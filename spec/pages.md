@@ -92,36 +92,21 @@ Standing is judged against the intent the person picked. A listing set to "Only 
 
 ## 4. The top slot
 
-Ben: "the money also might be a little too blank ... you could say earned this week ... it could be dynamic ... a new user probably doesnt want to see 0.00" ([words](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)). The one summary under Today's header (the wash holds it, [constitution](../brand/constitution.md)) picks the first row that is true. It never shows a zero.
+**Decided** by Ben at 03:17 ([decision](../product/decisions.md#2026-11-15-the-top-of-today-shows-money-kept-since-you-last-looked-only-when-there-is-some)): the slot under the wordmark shows money kept since the person last opened the app, labeled ("Since yesterday", the amount, "2 sold, after fees"), and taps through to You. When nothing is new since the last open there is no slot. A new person sees their next setup step ("Link Depop"). Never $0.00. Totals and the weekly chart live on You.
 
-| # | When | It shows | Taps to |
-|---|---|---|---|
-| 1 | money released in the last 7 days | "Earned this week $96.20", under it "3 sold" | You |
-| 2 | sold in the last 7 days, not yet released | "On its way $41.00", "arrives Tue" | the order |
-| 3 | a goal is set this month | "$180 of $300 this month" | Goals |
-| 4 | live items, no sale this week | "Could earn $120 to $160", "from 6 live" (a guarded range; hidden if any item is still learning) | Sell |
-| 5 | only drafts or owned items | "Your things are worth $A to $B" | What your things are worth |
-| 6 | only wants | "Watching 3", "1 under your price" | Buy |
-| 7 | setup not finished | the next setup step ("Link Depop"), from `onboarding.done_steps` | that step |
-| 8 | nothing yet | no number. The slot invites the first thing: "What's it worth?" opening the camera in appraise mode | Camera |
+The server picks so web and phone agree: `GET /v1/today` returns `headline {kind, value, label, sub, citation_id}` with `kind` `kept_since_last_open` or `next_setup_step`, or no `headline` at all. It needs `user.last_open_at`, set when Today opens (§8).
 
-Row 1 falls back to "Earned this month" when this week had no release but the month did. The "Roll the UI system out everywhere" thread drew the same slot from the UI side ([buttons-taps-corners-new-camera §5 and §6](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md)); the order of rows is Ben's to settle.
+The other rows this map first proposed (on its way, goal, could earn, worth, watching, "What's it worth?" for nothing yet) are not in the slot. Their numbers belong on You, and "What's it worth?" stays the empty state's invitation in §6.2.
 
-**A narrower alternative** from that thread ([top of Today and stacking](../research/today/ben/top-of-today-and-stacking.md), *agent proposal* on Ben's card): the top shows only money kept since the person last looked, and only when there is some; a new person sees the next setup step; the totals and a weekly chart live on You. It is rows 1 and 7 of the ladder above with "since you last looked" as the window, and the rest moved to You. Whichever Ben picks, the server still chooses, so the contract adds `user.last_open_at` and a headline kind `kept_since_last_open`.
+## 5. Today: one feed, ordered by what ignoring a card costs
 
-The server picks the row so web and phone agree: `GET /v1/today` returns `headline {kind, value, label, sub, citation_id}` (§8).
+Ben asked to debate stacking cards as a queue you tap to fan out ([words](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)). The "Roll the UI system out everywhere" thread carried it to this shape ([today feed and card states](../research/today/ben/today-feed-and-card-states.md), *agent proposal* on Ben's card):
 
-## 5. Today: a list, with stacks only for same-kind groups
+- **One feed in three tiers**, by what ignoring a card costs: `now` (money or a promise within a day), `when_you_can`, `good_to_know`. A label shows only where two tiers meet. Inside a tier, soonest deadline first.
+- **Each decision kind has one form** when several are open: `single` (each carries its own deadline or risk, like `accept_offer`), `batch` (one action for all, like `buy_label`: "Print 3 labels"), or `queue` (each needs its own look and none is due within a day, like `first_post`; drawn as a stack with "1 of 40", opened one at a time full screen). Anything due within a day never stacks. The table of all 40 kinds is [§3 of that note](../research/today/ben/today-feed-and-card-states.md#3-every-card-kind-its-form-and-its-states).
+- **Every card moves through the same states**: open, working (the pressed button shows the step from `job.stage`), done (leaves, with Undo), failed (stays, with what failed and Retry).
 
-Ben asked to debate stacking cards as a queue you tap to fan out ([words](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)).
-
-| Option | Strong at | Weak at |
-|---|---|---|
-| A. One list, soonest deadline first (the spec today) | every deadline visible at once; familiar (iOS notification list, Airbnb host Today) | five offers on the same jacket take five cards |
-| B. One deck, one card at a time (a queue you swipe) | focus; fast triage | hides how many are waiting and which is due first; a missed deadline sits under the top card |
-| C. A list where same-kind cards for one item, or many low-stakes cards of one kind, collapse into a stack that fans out on tap (iOS grouped notifications) | the count stays visible, nothing urgent hides, five offers become one stack "5 offers on the Carhartt jacket" | one more interaction to learn, but it is the iOS one |
-
-**Recommendation: C.** A stack forms only for the same item and kind, or for three or more notices of one kind. A same-kind group takes one of two forms ([top of Today and stacking](../research/today/ben/top-of-today-and-stacking.md), *agent proposal* on Ben's card): a **batch card** when one action covers all of them ("3 to ship", Print 3 labels), or a **queue card**, drawn as a stack with "1 of 40", when each needs its own look; it opens them one at a time, full screen. Anything due within a day never stacks. The stack's top card carries the best option (the highest offer). This is a structure call for the UI loop to draw; the backend sends `group_key`, `group_rank` and `group_form` (`batch` or `queue`) on each decision so web and phone stack the same way (§8).
+The tier and form are per kind and fixed, so the server sends them and web and phone agree: `tier` and `group_form` on each decision kind, and `group_key` and `group_rank` on each decision (§8).
 
 ## 6. The pages
 
@@ -140,7 +125,7 @@ The order is Ben's: accounts first, then the sites you use, then pickups and not
 | **5. Email for sales** | why: "Poshmark and Mercari tell you a sale by email" | Connect Gmail (read only) · Skip | specced: `POST /v1/accounts {site: email}` | sale detection reads the sold page only |
 | **6. Pickups** | your pickup windows on a week strip, a public meetup spot on a map; or "Ask me every time" | set, skip | specced: `PUT /v1/limits` | asks the first time a pickup is needed |
 | **7. Notifications** | the three kinds that interrupt (an offer you'd take, a deadline within the hour, a sale) and that the rest is batched | Allow · Not now | new: `PATCH /v1/me {notification_pref}`; Expo push token registration | batched only |
-| **then Today** | empty Today with the top slot's row 7 | | | |
+| **then Today** | empty Today with the next setup step in the top slot | | | |
 
 Every step after sign-in says why it asks and can be skipped. Resume: `GET /v1/me` returns `onboarding {done_steps[]}` so a person who leaves at step 4 comes back to step 4 (new).
 
@@ -150,7 +135,7 @@ Every step after sign-in says why it asks and can be skipped. Resume: `GET /v1/m
 |---|---|
 | For | everyone; "what needs me, and how am I doing" |
 | Opens from | launch, the tab, any push |
-| Shows, in order | header (wordmark, messages icon with count) · the top slot (§4) · Decision cards, soonest deadline first, stacked by §5 · notices (value moved, demand rose, rule expiring) as rows ending in a chevron |
+| Shows, in order | header (wordmark, messages icon with count) · the top slot (§4) · Decision cards in the three tiers of §5, single, batch or queue by kind · notices (value moved, demand rose, rule expiring) as rows ending in a chevron |
 | Each decision card | kind tag, countdown when there is a deadline, photo with its site logo, one sentence, the money (you keep), the full action set with one black pill for the suggested option ([today spec](features/today.md)) |
 | Actions | act on a card (one tap); open the card's item or thread; Edit the suggestion (does not count toward Always do this); Always do this when offered; dismiss a notice |
 | Splits off | the item page, a thread, the Ship and Pickup sheets, Counter (sheet), the rule log (from You) |
@@ -329,8 +314,8 @@ Sent to Nate as [packet 47](../.agents/team/packets/team/47-what-the-pages-need-
 | A second sign-in method | You > Account | `POST /v1/auth/link/{apple,google,email}` |
 | Web sessions | the website | cookie or token storage on the web, CORS for the site's origin, Apple and Google web client ids (the edge's call) |
 | Push deep links | every push | `{kind, decision_id?, item_id?, path}` in the push payload, so a tap opens the right page |
-| The top slot | Today, You | `headline {kind, value, label, sub, citation_id}` on `GET /v1/today`; `user.last_open_at`, set when Today opens, for the `kept_since_last_open` kind |
-| Stacks | Today | `group_key`, `group_rank` and `group_form` (`batch`, `queue`) on each decision; nothing due within a day is grouped |
+| The top slot (decided) | Today | `headline {kind, value, label, sub, citation_id}` on `GET /v1/today`, `kind` `kept_since_last_open` or `next_setup_step`, absent when nothing is new; `user.last_open_at`, set when Today opens |
+| Tiers and stacks | Today | per decision kind: `tier` (`now`, `when_you_can`, `good_to_know`) and `group_form` (`single`, `batch`, `queue`); per decision: `group_key`, `group_rank`; nothing due within a day is grouped |
 | Facts one at a time, and the comp count, while the camera is open | Camera | a `fact.found` frame per attribute (name, value or blank, source) and `found.comps` on the identify and valuate job streams |
 | Seller intent | Plan, standing, every automatic move | on `limits` per item: `plan_choice`, `gone_by?`, `fallback`, `markdown_on`, `accept_mode`, `review_at?` ([price](features/price.md#selling-intents)) |
 | Standing | tiles, item, Today | `listing.market_standing {word, place {rank, of}, outlook, fix?, citation_id}` (not `standing`, which the canon's `strategy` already uses for its standing levers), judged against the intent ([score](features/score.md#standing-against-the-market)) |
@@ -378,6 +363,6 @@ Ben, 02:52: "theres a lot i probably missed so i need to know again. all the fea
 | Seller intents: a minimum, a fire sale, keep unless my price | 02:46 | Plan, standing | yes |
 | Onboarding: Apple, Google, email, then the sites you use | 02:46 | §6.1 | yes |
 | Stacked cards that fan out | 02:46 | §5 | yes |
-| "Earned this week", dynamic, no $0.00 for a new user | 02:46 | §4 | yes |
+| "Earned this week", dynamic, no $0.00 for a new user | 02:46 | §4, decided as money since you last looked | yes |
 | Button sizing, tap areas, the countdown's inset from the corner | 02:46 | the UI system | no: these are rules for the "Roll the UI system out everywhere" thread, not page content |
 | Treg, more marketplaces, hot-items pricing model, own page monitor | [ideas board](../ideas/README.md) | after the product works | not in scope here |
