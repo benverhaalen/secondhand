@@ -1688,3 +1688,9 @@ Nate, build session (orchestrator), 2026-11-15 about 09:20 Central, with a link 
 > https://browser-use.com/showcase
 
 Used in: [the open benchmark, speed that means something](../spec/benchmark.md#speed-that-means-something-and-what-the-lakehouse-adds).
+
+## 2026-11-15 nate ebay's regional sites reach us listings
+Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting the orchestrator's reading of Browser Use's eBay benchmark page.
+> No it shows that ebay.com doesnt work but ebay.co.uk , ebay.de, ebay.ie , and ebay.be work, which we can still probably use to access us listings and such, even sign in
+
+Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).
