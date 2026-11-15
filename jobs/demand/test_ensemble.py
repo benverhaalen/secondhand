@@ -37,6 +37,17 @@ def test_bad_record_drops_weight():
     assert abs(brier([0.9], [1]) - 0.01) < 1e-12
 
 
+def test_record_needs_twenty_post_cutoff_questions():
+    r = Record()
+    r.resolve(0.9, 1, created="2025-01-01", model_cutoff="2026-06-01")
+    assert r.summary()["resolved"] == 0
+    for _ in range(19):
+        r.resolve(0.9, 1, created="2026-07-01", model_cutoff="2026-06-01")
+    assert r.summary() == {"brier": None, "resolved": 19}
+    r.resolve(0.9, 1, created="2026-07-01", model_cutoff="2026-06-01")
+    assert r.summary()["brier"] is not None
+
+
 def test_ensemble_never_enters_D():
     proxies = {"sold": Proxy(recent=20, base=10), "watchers": Proxy(recent=30, base=30)}
     w = {"sold": 1.0, "watchers": 0.6}
