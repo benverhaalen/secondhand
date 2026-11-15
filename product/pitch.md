@@ -86,6 +86,10 @@ Ben, 06:40: "pitching about ai impersonation. its always you. also think about h
 
 After the demo, say these three, each with its 5-second proof ([unique.md](unique.md), with what we checked for each): we proved a double sale can't go unnoticed (931,406 states; the broken version fails in 6 steps); AI photos are checked by math, not more AI, with every flaw protected (173 of 174); a reply can't say what your item doesn't back (the held "smoke-free home"). Say "we haven't seen", never "first ever".
 
+## Every feature, how it works, and its proof
+
+The canonical list of every feature worth showing is [features-proof.md](features-proof.md). It has 29 features, each checked against the code, with what it does, how it works in plain words and in the code, its proof mark (measured, observed, built, designed), the proof still to run, and one line to say. It also ranks what goes in the three minutes, at the booth, on the website, and only in answers to questions.
+
 ## Proof without sales
 
 We have no month of sales, so we prove the parts of a sale instead, and say so first: "We can't show you a month of sales from a 24-hour hackathon, and we won't pretend to. Here's what we can show." The ranked list of proofs to run before 1 pm, and the comparisons, are in [proof-without-sales.md](proof-without-sales.md).

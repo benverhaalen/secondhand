@@ -1398,3 +1398,9 @@ Nate, build session (orchestrator), 2026-11-15 between about 03:00 and 04:00 Cen
 > The way you were speccing the browser automation was perfect before, utilize official apis as well for certain platforms, but dont limit us. we find everyhting and already approved how its not automation as the user opts in and is technically driving each intent
 
 > Send out and utilize the macs when you can ensure things are pushed and pulled so everything syncs
+## 2026-11-15 every AI feature, how we did it and how to prove it
+
+Ben, project chat, 07:53 UTC.
+> where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
+
+Used in: [features-proof.md](features-proof.md).
