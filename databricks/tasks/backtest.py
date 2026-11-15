@@ -55,7 +55,7 @@ def to_runner_rows(spark_rows):
             row[key] = int(float(row[key])) if row[key] is not None else None
         for key, default in experiment.FLAGS.items():
             row[key] = experiment._flag(raw.get(key), default)
-        for key in ('at', 'listed_at'):
+        for key in ('at', 'listed_at', 'released_at'):
             row[key] = _timestamp_string(row[key], row['source'])
         rows.append(row)
     return rows

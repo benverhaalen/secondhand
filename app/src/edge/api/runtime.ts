@@ -15,7 +15,7 @@ import { memoryVault, type Accounts, type LinkedAccount } from '../browser/auth.
 import { createHarness, fail, isWrite, type Adapter, type Harness } from '../harness/protocol.ts';
 import { createSiteService } from '../harness/service.ts';
 import { depopAdapters, API, type Client } from '../harness/sites/depop/adapter.ts';
-import { ebayAdapters } from '../harness/sites/ebay/adapter.ts';
+import { ebayAdapters, ebayPageAdapters, type PageClient } from '../harness/sites/ebay/adapter.ts';
 import { poshmarkAdapters } from '../harness/sites/poshmark/adapter.ts';
 import { mercariAdapters } from '../harness/sites/mercari/adapter.ts';
 import { memoryLeases, memoryParams, type Row, type Table, type Store, type JobRow } from '../events/ports.ts';
@@ -63,7 +63,7 @@ export function seedExamples(st: Store) {
 }
 
 export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
-  adapters?: Adapter[]; now?: () => number;
+  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number;
 } = {}) {
   const now = options.now ?? Date.now;
   seedExamples(st);
@@ -97,6 +97,14 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     },
   };
   const unavailable = async (): Promise<never> => { throw new Error('site session transport is not composed'); };
+  const ebayLive = liveSites.has('ebay');
+  const ebayPageClient: PageClient = ebayLive ? options.ebayPageClient ?? {
+    signed_in: false,
+    async page(url, signal) {
+      const res = await fetch(url, { signal });
+      return { status: res.status, html: await res.text() };
+    },
+  } : { signed_in: false, page: unavailable };
   // shortcut: waiting.md "The harness wired to itself": browser profiles and eBay credentials
   // have no runtime transport yet. Keep their real dry-write adapters and explicit offline reads.
   const offlineClient: Client = { signed_in: false, doc: unavailable, json: unavailable };
@@ -105,7 +113,8 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     ...poshmarkAdapters(offlineClient),
     ...mercariAdapters({ signed_in: false, page: unavailable }),
     ...ebayAdapters({ env: 'production', app_token: async () => undefined, user_token: async () => ({ ok: false }), send: unavailable }),
-  ].map(adapter => (adapter.manifest.site === 'depop' && live) || isWrite(adapter.manifest.verb) ? adapter : {
+    ...ebayPageAdapters(ebayPageClient),
+  ].map(adapter => (adapter.manifest.site === 'depop' && live) || (adapter.manifest.site === 'ebay' && ebayLive) || isWrite(adapter.manifest.verb) ? adapter : {
     ...adapter, async run() { return fail('no_route', `${adapter.manifest.site} live reads are unavailable`, { do: 'handoff', url: '' }); },
   });
   const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');

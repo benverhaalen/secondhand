@@ -52,6 +52,25 @@ def test_spark_adapter_matches_csv_loader_timestamps_flags_and_fields(tmp_path):
     assert set(b.to_runner_rows([spark_row])[0]) == set(e.FIELDS)
 
 
+@pytest.mark.parametrize('source, timestamps', [
+    ('stockx_2019', ('2019-01-01', '2019-01-02', '2018-12-01')),
+    ('synthetic', ('2019-01-01T00:00:00Z', '2019-01-02T00:00:00Z', '2018-12-01T00:00:00Z')),
+])
+def test_spark_timestamps_match_csv_and_hash(tmp_path, source, timestamps):
+    keys = ('listed_at', 'at', 'released_at')
+    raw = {'row_id': 'one', 'source': source, **dict(zip(keys, timestamps))}
+    path = tmp_path / 'rows.csv'
+    with path.open('w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=list(raw))
+        writer.writeheader()
+        writer.writerow(raw)
+    loaded = e.load(str(path))
+    spark_row = {**raw, **dict(zip(keys, (datetime(2019, 1, 1), datetime(2019, 1, 2), datetime(2018, 12, 1))))}
+    converted = b.to_runner_rows([spark_row])
+    assert converted == loaded
+    assert b.rows_hash(converted) == b.rows_hash(loaded)
+
+
 def test_float_money_never_leaves_backtest_tables():
     rows, est = sample()
     records = b.estimates_table([est], rows, 'run')

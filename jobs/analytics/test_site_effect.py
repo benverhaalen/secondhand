@@ -30,15 +30,16 @@ def test_worked_posterior_and_no_data_prior():
         sale_effect(1, -1)
 
 
-def test_value_draws_seeded_verdict_requires_ended_basis():
+def test_value_draws_seeded_verdict_blends_ended_basis():
     sites = dict(ebay=dict(O=100, E=10, u=[.1]*100, P=.7, fair_p50=60, market_mean=0, sigma=.05, ended=4, flags=[]),
                  poshmark=dict(O=1, E=50, u=[-.1], P=.1, fair_p50=60, market_mean=0, sigma=.05, ended=50, flags=['late']))
-    a = compare(sites, lambda site, price: price * .8, seed=3)
-    assert a == compare(sites, lambda site, price: price * .8, seed=3)
-    assert a['verdict'] == 'too close to call'
+    a = compare(sites, lambda site, price: math.floor(price * .8 + .5), seed=3)
+    assert a == compare(sites, lambda site, price: math.floor(price * .8 + .5), seed=3)
+    assert a['verdict'] == 'ebay'
+    assert a['sites']['ebay']['basis_level'] == 'kind'
     assert a['sites']['poshmark']['flags'] == ['late']
     sites['ebay']['ended'] = 5
-    assert compare(sites, lambda site, price: price * .8, seed=3)['verdict'] == 'ebay'
+    assert compare(sites, lambda site, price: math.floor(price * .8 + .5), seed=3)['verdict'] == 'ebay'
 
 
 def test_sign_check_requires_seven_days_overlap():
