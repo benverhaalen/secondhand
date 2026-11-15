@@ -67,5 +67,18 @@ export async function send(res: ServerResponse, response: Response, signal: Abor
     throw failure;
   }
   if (cancelError !== undefined) throw cancelError;
+  // A lingering close, as nginx does: an answer marked Connection: close while the client is still uploading would close
+  // a socket with unread bytes; TCP resets it and the client loses the answer ("fetch failed", a 404 with no body). So the
+  // rest of the body is discarded (never kept) until it ends or LINGER_MS passes, then the response ends and the socket
+  // closes. The web-stream adapter's own listener is dropped first: it pauses the request whenever nothing reads it.
+  const req = res.req as IncomingMessage | undefined;
+  if (req && !req.complete && !req.readableEnded && !req.destroyed && !res.destroyed && String(res.getHeader('connection')).toLowerCase() === 'close') {
+    req.removeAllListeners('data'); req.on('data', () => {}); req.resume();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    await Promise.race([once(req, 'end').catch(() => {}), once(req, 'close').catch(() => {}), new Promise<void>(done => { timer = setTimeout(done, LINGER_MS); })]);
+    clearTimeout(timer);
+  }
   if (!res.destroyed && !res.writableEnded) res.end();
 }
+
+export const LINGER_MS = 2_000;
