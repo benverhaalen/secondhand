@@ -253,7 +253,7 @@ For Ben and Nate to mark.
 4. **Business.** Receipts, links and measured capture data could carry value as resale proof or paid data; no model is picked.
 5. **Care label and fabric close-up.** Answered by Nate on 2026-11-14 ("agreed"); Ben's agreement not recorded ([words](../../product/words.md#2026-11-14-nate-answers-to-the-first-ten-questions-for-ben)): the care label and fabric close-up are shot only when a fact is unsettled ([capture-shots](../determinations/capture-shots.md)).
 6. **Retouch and screens.** Capture keeps real frames; retouch is off by default and runs only when the person taps Generate ([studio](studio.md#retouch-chosen-by-the-person)). All screens and design work, the tutorial and the type picker included, go to Ben ([packet 43](../../.agents/team/packets/team/43-design-work-for-ben.md)).
-7. **Follow-ups for electronics.** Condition, works, and signed out reach the cap of 3; a laptop with a charger would need a fourth. Does the cap hold, with the charger read from a frame, or may electronics take four?
+7. **Follow-ups for electronics.** Condition, works, and signed out reach the cap of 3; a laptop with a charger would need a fourth. Does the cap hold, with the charger read from a frame, or may electronics take four? Answered by Nate on 2026-11-14; Ben's agreement not recorded ([words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)): "yes electronics and all other needed fields that differ in the process get their own select type". So the cap of 3 does not bind where a type's process needs another field: each such field gets its own input of the fitting kind, still preselected where a photo or a lookup gives the value.
 
 ## Needs from the shared model
 

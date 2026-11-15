@@ -719,6 +719,21 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about how build seats should work.
 > Do you think this is worse? Im not stating you should lock in our subagents to a few specific behaviors, but like dont just guess and check, really understand and finalize the spec with how things should be built before we finish building. Then when testing in parallel the features that are finished building, the tests should already anticipate the things that likely break it, so in the case of an error its quickly identified
 
+<<<<<<< HEAD
 ## 2026-11-14 nate capture opens on the type pick, a confident suggestion may skip the tap, and the tutorial is animated steps
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering the capture questions.
 > Lets do on the type pick, A confident type suggestion can skip the tap entirely, but ideally the tap makes it easier to identify, we can try both ways. The tutorial will be a helpful step by step of animations for capturing the image, similar to other apps and how they show what to do like id verfiication platforms do sometimes
+||||||| 1cdd7fc
+=======
+## 2026-11-15 real data over made-up data, and what the voice pairs mean
+Ben, in the thread "Build the brand system for everything", 2026-11-15 02:01 UTC.
+> is there anything from the prompt that you would want to tell the agent that is the set the secondhand brand identity one? i think the apple marketing rule of made up data is up in the air for this because its more impressive with real data. what does the four voice pairs you are talking about mean
+
+## 2026-11-15 a standard for edge states, known and learned while building
+Ben, in the thread "Build the brand system for everything", 2026-11-15 02:03 UTC.
+> also im really concerned about how the system thinks about defining standard for different states. edge states. ones that aren't there in the original. and find a way to know these in it and continuously update and learn when building.
+>>>>>>> 9518137a4dc6c5c4beba2888e1c8ced7f99c6bbe
+
+## 2026-11-14 nate each type gets its own select for every field its process needs
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering whether electronics may have a fourth follow-up input.
+> yes electronics and all other needed fields that differ in the process get their own select type
