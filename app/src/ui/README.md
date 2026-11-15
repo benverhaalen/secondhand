@@ -23,7 +23,7 @@ See every part in every state at **`/dev/parts`** (light) and **`/dev/parts?sche
 |---|---|---|
 | `Txt` | `role?: 'caption' \| 'body' \| 'headline' \| 'title' \| 'heading' \| 'amount'`, `tone?: 'ink' \| 'ink-2' \| 'on-ink' \| 'on-color'`, `lines?`, `tabular?`, `label?` | 13, 15, 18, 21 Clofie, 36 Clofie, 50. One weight, 500. `heading` is the screen title, one per view. `tabular` only for an amount that changes in place or sits in a column. On a field the ink follows by itself |
 | `Icon` | `name: IconName`, `size?: 12 \| 20 \| 24`, `tone?`, `filled?`, `label?` | Hugeicons Stroke Rounded. A name not in `icons.generated.ts` does not compile: add it in `scripts/icons-to-ts.mjs` |
-| `Photo` | `src?: PhotoSrc`, `label`, `fit?: 'card' \| 'fill'`, `faded?` | 72 in a card, or square at column width. Corner 20, inner edge, dark veil. `src` is a demo name (`'nike-dunks'`, see `DEMO_PHOTOS`), a URL or a `require()` |
+| `Photo` | `src?: PhotoSrc`, `label`, `fit?: 'card' \| 'row' \| 'fill'`, `faded?` | 72 in a card, 40 as a `ListRow`'s lead (round, as a site's logo is there), or square at column width. Corner 20, inner edge, dark veil. `src` is a demo name (`'nike-dunks'`, see `DEMO_PHOTOS`), a URL or a `require()` |
 | `Press` | `id`, `label?`, `onPress?`, `disabled?`, `selected?`, `hit?`, `children` (node or `({pressed}) => node`) | Every pressable thing. Scale .97 spring, 44 hit area (`slop(w, h, gap)`), focus ring, and it logs `{ type: 'tap', id }` to the app log and `globalThis.__events` on web. Parts use it; a screen rarely needs it |
 | `Surface` | `kind: 'card' \| 'gray' \| 'field' \| 'sheet'` | For parts only |
 | `Theme` | `scheme: 'light' \| 'dark'` | The parts sheet and state gradients only. Screens follow the system |

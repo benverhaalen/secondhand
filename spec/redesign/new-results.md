@@ -41,5 +41,5 @@ Recent is a list on Buy, under the search field, of the last 20 lookups (finds a
 |---|---|---|
 | Track mode | The camera has a Track mode, which reads Kind and Label and ends on `/want?q=` with the demo product's name | Pass `product_id` and `capture_id` to the want, once item 3 lands |
 | Find mode | It ends on `/product/pr_j97`, the demo product | Use the confirmed product from identify |
-| Recent on Buy | not built | A `Shelf` of `ListRow`s under `buy-search`, fed by `GET /v1/lookups`, with its empty state (no shelf at all) |
+| Recent on Buy | Built on demo lookups (`app/src/buy/read.ts`, `recent`): under the search field, three rows, See all in place, remove and Clear with Undo | Feed it from `GET /v1/lookups` (it needs `short_name`, what the camera read), send deletes after the Undo window, drop an appraisal when it is kept |
 | Ben's order | The four stand Appraise, Sell, Track, Find until one is used. After that, the last used comes first (pages §6.4) | Persist the last used per person, not per session |
