@@ -1,6 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
+import { existsSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { memoryStore, forget, type ParamStore, type Scope } from '../param/param.ts';
 import { decide, type OfferState } from './choose.ts';
 import { offerFromRegistry, switchPolicy } from './policy.ts';
@@ -79,7 +82,7 @@ test('ordered outcomes move the very next counter; forgetting, held-out promotio
   assert.equal(store.read('P_accept', scope).n_eff, 20 * forget(30));
   assert.equal(store.rows('P_accept', scope).length, versionsBefore + 1, 'one forgetting transition, no fake outcome');
   const previousAnswer = answer(), previousModel = structuredClone(fitted(store));
-  const cases = JSON.parse(execFileSync('./.venv/bin/python', ['jobs/negotiation/test_learn_parity.py', '--nightly'], {
+  const cases = JSON.parse(execFileSync(existsSync('./.venv/bin/python') ? './.venv/bin/python' : 'python', ['jobs/negotiation/test_learn_parity.py', '--nightly'], {
     input: JSON.stringify({ model: previousModel, row: { site: s.site, category: scope.segment, features: x } }), encoding: 'utf8',
   })) as { worse: NightlyCase; better: NightlyCase };
   function publish(c: NightlyCase) {
@@ -199,5 +202,7 @@ test('learning records its input, parameter transition and errors through log/',
   assert.equal(lines.filter(line => line.event === 'state.change').length, 4);
   assert.ok(lines.filter(line => line.event === 'state.change').every(line => line.scope?.site === scope.site));
   assert.equal(lines.filter(line => line.event === 'error').length, 1);
-  execFileSync(process.execPath, ['spec/log.mjs', '/dev/stdin'], { input: sink.text(), encoding: 'utf8' });
+  const logFile = join(mkdtempSync(join(tmpdir(), 'learn-log-')), 'run.jsonl'); // a file, not /dev/stdin, so Windows runs it too
+  writeFileSync(logFile, sink.text());
+  execFileSync(process.execPath, ['spec/log.mjs', logFile], { encoding: 'utf8' });
 });
