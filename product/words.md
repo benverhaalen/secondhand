@@ -837,3 +837,7 @@ Ben, project chat, 02:52 UTC.
 ## 2026-11-14 nate the entire product is finished by 3 am, with leeway to 7 am
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about 21:00 Central.
 > When you say tonights settled items, understand that the entire product must be finished by 3 am, with some leeway up to 7 am
+
+## 2026-11-14 nate faster than the proposed timeline, with codex beside claude
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> I imagine we will move even faster than the proposed timeline given the way we can orchestrate and drive optimized subagents. Utilize codex too, sol and terra and even astra at times. 6.1 which you have access to, they can handle work alongside you, but should be understood to what extent you want your own family of models working
