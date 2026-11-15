@@ -79,7 +79,7 @@ function findPaths(value: unknown, expected: unknown, path: (string | number)[] 
   }
   return found;
 }
-function anchors(capture: Capture, value: unknown): Source[] {
+export function anchors(capture: Capture, value: unknown): Source[] {
   const found: Source[] = capture.dom.filter(node => node.text === String(value)).map(node => ({ kind: 'dom', ref: node.ref }));
   found.push(...findPaths(capture.embedded, value).map(path => ({ kind: 'embedded' as const, path })));
   for (const raw of capture.network) {
