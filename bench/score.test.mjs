@@ -25,6 +25,27 @@ function planted(t, records = rows(), manifest = fs.readFileSync(path.join(fixtu
 const refs = (...lines) => lines.map(line => `records.jsonl:${line}`);
 const close = (a,b) => assert.ok(Math.abs(a-b)<1e-9, `${a} != ${b}`);
 
+test('coverage requires content in an ok record and counts empty ok records', t => {
+  const [base] = rows();
+  const record = (item_id, facts, numbers, extra = {}) => ({...base, item_id, facts, numbers, ...extra});
+  const zero = [{kind:'sold_prices',count:0}];
+  const records = [
+    record('clothes-1',zero,[]),
+    record('clothes-2',[{kind:'sold_prices',count:1}],[]),
+    record('clothes-2',zero,[]),
+    record('shoes-1',zero,[{name:'price',value_cents:null,citation_id:null,evidence:[]}]),
+    record('shoes-2',[{kind:'sold_prices',count:1}],[],{ok:false,error:'failed'}),
+  ];
+  const {run,manifestPath} = planted(t,records);
+  const row = scoreRun(run,manifestPath,'owned').tools[0].rows['1'];
+  assert.equal(row.coverage.n,2);
+  assert.equal(row.coverage.of,4);
+  assert.deepEqual(row.sites.items.map(item=>item.item_id),['clothes-2','shoes-1']);
+  assert.equal(row.empty.n,2);
+  assert.equal(row.empty.of,5);
+  assert.deepEqual(row.empty.records,refs(1,3));
+});
+
 test('planted rows 1, 2, 3, 8 and 10 have hand-computed scores', t => {
   const {run,manifestPath} = planted(t);
   const result = scoreRun(run, manifestPath, 'owned');

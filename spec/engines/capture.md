@@ -194,7 +194,7 @@ A question is data the UI renders with no logic of its own:
 - `answer` is the call that answers it: `PATCH /v1/captures/:id` with `{version, type}`, `{version, answer: {field, value}}` or `{version, refuse: field}`, which writes the attribute as `you_said` with owner evidence and returns the next plan; `POST /v1/captures/:id/photos` for a shot. A later correction on the item card stays `PATCH /v1/items/:id/attributes/:name`.
 - `words` come from the row's `ask` text, fixed per field and checked by `scripts/copy-lint.mjs` in the table's test. An eBay aspect with no row ([aspects.ts](../../app/src/engines/listing/aspects.ts)) gets `"<Aspect name>?"`. No model writes a question; if one ever rewrites `words`, the field, kind and options stay as planned and the result passes the same lint.
 
-**Which questions, in which order.** A field gets a question when it is `proposed`, or `missing` with `asked` among its ways, or when its next way is a view: a kept view that failed to read it gets a `shot` retake (at most 2, card 17), and a view outside the process gets a `shot` only when a linked site requires the field. Never asked: a `known` or `waiting` field, a `refused` one, condition when the purpose is `find`. The order is a total sort:
+**Which questions, in which order.** A field gets a question when it is `proposed`, or `missing` with `asked` among its ways, or when its next way is a view: a kept view that failed to read it gets a `shot` retake (at most 2, card 17), and a view outside the process gets a `shot` only when a linked site requires the field. Never asked: a `known` or `waiting` field, a `refused` one, condition when the purpose is `find`, and a field no linked site requires or recommends. While shots are still pending, only the type, the piece count and a retake of a kept shot are asked; the rest waits, because a later frame can still settle or change it. A known value that a linked site's form rejects (`formValue` says `invalid`) is asked again with no proposal. A field with fixed `values` is a pick over them; free text is only for a field with neither values nor candidates. The order is a total sort:
 1. `type`, then `lot_count`: their answers change which fields exist;
 2. `unlocks.required`, most first;
 3. `ready_after`, most sites first;
@@ -202,7 +202,7 @@ A question is data the UI renders with no logic of its own:
 5. effort, least first: `yes_no` and `pick_one` 1, `pick_many` 2, `number_with_unit` and `text` 3, `shot` 4;
 6. the field name.
 
-**The cap.** A field a linked site requires is always asked until it is known or refused (Nate: every needed field gets its own select, [words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). Questions for fields no linked site requires stop at 3 per item, counting those already answered; `capture_question_cap` is a `param` row with prior 3.
+**The cap.** A field a linked site requires is always asked until it is known or refused (Nate: every needed field gets its own select, [words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). Questions for fields no linked site requires stop at 3 per item, counting those of this plan already answered or refused; `capture_question_cap` is a `param` row with prior 3.
 
 **The stop.** `status` is `shooting` while a process step is not kept, `asking` while a question remains, and `done` when none does. At `done` every field not known keeps its state as the reason the item card shows.
 
