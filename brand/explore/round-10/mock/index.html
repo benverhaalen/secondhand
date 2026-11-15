@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>secondhand screens, round 10</title>
+<link rel="stylesheet" href="../../../tokens.css">
+<!-- fonts.local.css is not in git (brand/README.md). It names the font files on this machine. Without it the faces fall back. -->
+<link rel="stylesheet" href="fonts.local.css">
+<link rel="stylesheet" href="screens.css">
+<style>
+  body { margin: 0; background: var(--gray); color: var(--ink); font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text); }
+  .bar { position: sticky; top: 0; z-index: 9; display: flex; flex-wrap: wrap; gap: var(--s-2); padding: var(--s-3) var(--s-5); background: var(--page); border-bottom: var(--card-border); }
+  .bar button { height: var(--control-min); padding: 0 var(--s-4); border-radius: var(--r-pill); border: 1px solid var(--outline); background: var(--page); color: var(--ink); font: inherit; font-weight: var(--w-medium); cursor: pointer; }
+  .bar button[aria-pressed="true"] { background: var(--ink); color: var(--page); }
+  .wall { display: flex; flex-wrap: wrap; gap: var(--s-6); padding: var(--s-6) var(--s-5); align-items: flex-start; }
+  .wall figure { margin: 0; display: flex; flex-direction: column; gap: var(--s-2); }
+  .wall figcaption { font-size: var(--t-13); color: var(--ink-2); }
+  .bare { background: var(--page); }
+  .bare .bar, .bare figcaption { display: none; }
+  .bare .wall { padding: 0; gap: 0; }
+</style>
+<div class="bar" id="bar"></div>
+<div class="wall" id="wall"></div>
+<script src="icons.js"></script>
+<script src="screens.js"></script>
+<script>
+  // ?only=today shows one screen with nothing around it, for a screenshot. ?touches=hand,tags turns touches on.
+  const q = new URLSearchParams(location.search), only = q.get('only'), on = new Set((q.get('touches') || '').split(',').filter(Boolean));
+  const wall = document.getElementById('wall'), bar = document.getElementById('bar');
+  if (only) document.body.classList.add('bare');
+  for (const [k, make] of Object.entries(SH.screens)) if (!only || only === k) {
+    const f = document.createElement('figure'); f.innerHTML = make() + `<figcaption>${SH.titles[k]}</figcaption>`; wall.append(f);
+  }
+  const apply = () => document.querySelectorAll('.sh').forEach(s => SH.touches.forEach(([k]) => s.classList.toggle('t-' + k, on.has(k))));
+  const button = (label, pressed, tap) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.setAttribute('aria-pressed', pressed); b.onclick = () => tap(b); bar.append(b); };
+  SH.touches.forEach(([k, name]) => button(name, on.has(k), b => { on.has(k) ? on.delete(k) : on.add(k); b.setAttribute('aria-pressed', on.has(k)); apply(); }));
+  button('Show measurements', false, b => b.setAttribute('aria-pressed', document.body.classList.toggle('measure')));
+  apply();
+</script>
