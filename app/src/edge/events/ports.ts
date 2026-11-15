@@ -37,6 +37,7 @@ export interface JobRow {
 
 export interface DecisionRow {
   id: string;
+  data?: 'synthetic' | 'example' | `dataset:${string}` | `live:${string}` | 'captured';
   user_id: string;
   kind: string; // product.md §5 decision kinds
   subject: string; // what it is about (item, account, listing); one open decision per (kind, subject)
@@ -87,6 +88,8 @@ export interface Store {
   put<T extends Row>(table: Table, row: T): T;
   get<T extends Row>(table: Table, user_id: string, id: string): T | undefined;
   rows<T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>): T[];
+  // Cross-tenant read for system work; never called from a route handler.
+  systemRows<T extends Row>(table: Table, filter?: Record<string, unknown>): T[];
   beginOperation(op: { id: string; user_id: string; site: string; verb: string; sku_hash?: string; data: 'synthetic' | 'example' | `dataset:${string}` | `live:${string}`; at: string }): { row: Row; duplicate: boolean };
   settleOperation(user_id: string, id: string, patch: { state: 'done' | 'unknown'; envelope?: unknown; attempts?: number; at: string }): Row;
   // unique (user_id, dedupe_key); a repeat returns the first row with duplicate true
@@ -145,6 +148,8 @@ export function memoryStore(initial?: StoreState): Store & { claims: Map<string,
     get: <T extends Row>(table: Table, user_id: string, id: string) =>
       rows[table]?.find(r => r.id === id && r.user_id === user_id) as T | undefined,
     rows: <T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>) =>
+      (rows[table] ?? []).filter(r => Object.entries(filter).every(([key, value]) => r[key] === value)) as T[],
+    systemRows: <T extends Row>(table: Table, filter: Record<string, unknown> = {}) =>
       (rows[table] ?? []).filter(r => Object.entries(filter).every(([key, value]) => r[key] === value)) as T[],
     beginOperation(op) {
       const old = s.get('operation', op.user_id, op.id);

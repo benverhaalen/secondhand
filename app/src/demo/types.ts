@@ -38,6 +38,8 @@ export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cen
 
 export type Item = {
   id: string; state: ItemState; title: string; category: KindFamily; product_id?: string;
+  // The kind of thing as platform-fit.json types it (fan_apparel, sneakers), when it is narrower than the family.
+  kind?: string;
   cost?: { amount_cents: Cents; date: string; source: 'purchase' | 'bought_it' | 'you_said' };
   origin: 'capture' | 'purchase' | 'import' | 'folder'; location: { label: string }; quantity: number; group_id?: string;
   note?: string; kept_reason?: string; photos: Photo[]; attributes: Attribute[]; valuation?: Valuation; limits?: ItemLimits;

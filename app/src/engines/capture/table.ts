@@ -4,17 +4,18 @@ import { FAMILIES, type Step } from './process.ts';
 import type { ParamStore } from '../param/param.ts';
 
 export type Site = 'ebay' | 'facebook' | 'depop' | 'poshmark' | 'mercari';
+export type Target = Site|'studio';
 export type Way = {way: 'seen'|'label'|'measured'|'derived'|'lookup'|'asked'; view?: string; from?: string; min_conf?: number};
 export type AskKind = 'pick_one'|'pick_many'|'number_with_unit'|'yes_no'|'text';
 export type FieldRow = {
   field: string; type: 'text'|'enum'|'number'|'bool'|'list'|'dimensions'; values?: (string|number)[]; unit?: string;
-  ways: Way[]; confirm: 'auto'|'tap'|'always'; required: Site[]|'all'; recommended: Site[]|'all';
+  ways: Way[]; confirm: 'auto'|'tap'|'always'; required: Target[]|'all'; recommended: Target[]|'all';
   ask?: {kind: AskKind; words: string; units?: string[]; parts?: string[]}; per_piece?: boolean; note?: string;
   site_names?: Partial<Record<Site, {name?: string; max_length: number|null}>>;
 };
 export type DimensionClass = 'flat_garment'|'footwear'|'bag'|'small_hard'|'medium_hard'|'large_bulky'|'soft_goods'|'set_bundle';
 export type ClassRow = {checks: string[]; weight: string; dimensions?: FieldRow};
-export type Table = { version: number; types: Record<string, Step[]>; no_lidar: Record<string, unknown>;
+export type Table = { version: number; steps: Record<'group'|'front_still',Step>; types: Record<string, Step[]>; no_lidar: Record<string, unknown>;
   family_class: Record<string, Exclude<DimensionClass,'set_bundle'>|null>;
   classes: Record<Exclude<DimensionClass,'set_bundle'>,ClassRow> & {set_bundle: {wraps: string; lot_count: FieldRow}};
   fields: Record<string, FieldRow[]> };
@@ -46,11 +47,12 @@ export function validateTable(input: unknown): Table {
 export const table = validateTable(data);
 export const classFor = (name: Exclude<DimensionClass,'set_bundle'>): ClassRow => table.classes[name];
 export const rowsFor = (key: string): FieldRow[] => structuredClone(table.fields[key] ?? []);
-export function linked(sites: Site[], requirement: Site[]|'all'): Site[] {
-  return sites.filter(site => requirement === 'all' || requirement.includes(site));
+export function linked(sites: Target[], requirement: Target[]|'all'): Target[] {
+  return sites.filter(site => requirement === 'all' ? site !== 'studio' : requirement.includes(site));
 }
 const PRIORS = {capture_preselect_floor:.5, assist_preselect_margin:.2, capture_large_cm:120, capture_small_cm:10,
   capture_auto_accept:.95, capture_type_auto_floor:.9, capture_type_auto_margin:.5, capture_max_retakes:2, capture_question_cap:3,
+  capture_dims_match_cm:2, capture_dims_match_pct:.03,
   capture_effort_yes_no:1, capture_effort_pick_one:1, capture_effort_pick_many:2,
   capture_effort_number_with_unit:3, capture_effort_text:3, capture_effort_shot:4} as const;
 export function bound(params: ParamStore, name: keyof typeof PRIORS): number {

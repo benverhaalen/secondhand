@@ -46,3 +46,15 @@ test('failed Object Capture ring waits and retakes the substituted view', () => 
   s.facts.dimensions={value:null,source:'measured',confidence:0,unknown_reason:'not_read',step:'ring'};
   assert.deepEqual(fieldState(row,s,['ring','inside_tab'],params).shot,{step:'ring',reason:'retake'});
 });
+test('dimension variant tolerance uses max of cm and percent and reads tuned params', () => {
+ const s=state({type:'furniture',kept:['scan'],lookups:'done',variants:{dimensions:[{label:'Small',value:{width:20,height:200},p:.5},{label:'Large',value:{width:40,height:300},p:.5}]},facts:{dimensions:{value:{width:22,height:205},source:'measured',confidence:.9}}});
+ const row=select(s,params).rows.find(row=>row.field==='dimensions')!;
+ const result=fieldState(row,s,['scan'],params);assert.equal(result.state,'known');assert.equal(result.fact!.confidence,1);assert.deepEqual(result.fact!.value,{width:20,height:200});
+ const tuned={...params,read:(name:string,scope:Parameters<typeof params.read>[1])=>({...params.read(name,scope),...(['capture_dims_match_cm','capture_dims_match_pct'].includes(name)?{value:0}:{})})};
+ assert.equal(fieldState(row,s,['scan'],tuned).reason,'variants');
+});
+test('known lookup dimensions survive variants with their original confidence', () => {
+ const s=state({type:'furniture',kept:['scan'],variants:{dimensions:[{label:'Small',value:{width:120},p:.55},{label:'Large',value:{width:140},p:.45}]},facts:{dimensions:{value:{width:130},source:'lookup',confidence:.96}}});
+ const row=select(s,params).rows.find(row=>row.field==='dimensions')!;
+ const result=fieldState(row,s,['scan'],params);assert.equal(result.state,'known');assert.deepEqual(result.fact,s.facts.dimensions);
+});
