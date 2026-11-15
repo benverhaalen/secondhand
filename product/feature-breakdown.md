@@ -263,7 +263,7 @@ Why Databricks for this rather than a plain database: the things we needed most 
 The full model, every revenue stream, Honey's economics as the anchor and the scale table are in [roi.md](roi.md), computed by [roi.mjs](../scripts/bench/roi.mjs). The short version:
 - One referred purchase earns about $0.94; listing an item costs about $0.05; studio $0.63 an item.
 - The base case loses $0.15 a person a month, all of it Depop watching, which runs as a signed-in sweep today. *Proposed:* Depop's partner API, which would make it earn $0.30, about $3.5M a year at 1M monthly users. We are not in that programme and have not applied.
-- The break-even purchase rate (0.36 a month in the base case) is below what Poshmark buyers already do (0.525) and what Honey earned per user (0.52 purchases' worth).
+- The break-even purchase rate (0.36 a month in the base case) is below what Poshmark buyers already do (0.525 a month). That is a buyer's habit, not proof they would buy through us; Honey's revenue per user was dropped as a check because it mixes years ([market research](../research/cross-cutting/ben/revenue-market.md)).
 
 ---
 

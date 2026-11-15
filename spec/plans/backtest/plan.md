@@ -295,4 +295,6 @@ Built the same day, on the coordinator's instruction under Ben's standing rule t
 3. **This is not a claim we may make.** The bug was found by looking at this test window, so StockX is now a tuned set. The claim needs the locked month of a dataset nobody has looked at, which is what the ledger in the next build step enforces.
 4. The pre-written sentence the runner printed, "within 20% of the sale price 98% of the time, against 90% for the 90-day sold median", is shown here only as the format; it must not leave this page.
 
+The unchanged code on StockX months nobody looked at (March to October 2018), and what each dataset lets us claim, are in [claims.md](claims.md); how the price is built and what it reads, in [how-we-price.md](how-we-price.md).
+
 The other sources cannot be scored by this runner yet: Grailed, Mercari (Kaggle and Apify) have no sale dates; the eBay and Goodwill CC0 rows are dated but marked `may_model: false` and have no product ids. Mercari Kaggle needs the text-only loader (section 2, the public benchmark).

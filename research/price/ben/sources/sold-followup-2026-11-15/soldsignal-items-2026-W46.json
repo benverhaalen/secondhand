@@ -1,0 +1,479 @@
+{
+  "week": "2026-W46",
+  "updated": "2026-11-09",
+  "license": "CC BY 4.0",
+  "terms": "https://www.aiplannermail.com/terms/",
+  "source": "https://www.aiplannermail.com",
+  "items": [
+    {
+      "slug": "air-jordan-4-bred-reimagined",
+      "name": "Air Jordan 4 Retro 'Bred Reimagined'",
+      "category": "sneakers",
+      "price": 247.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/air-jordan-4-bred-reimagined.json",
+      "page": "https://www.aiplannermail.com/sneakers/air-jordan-4-bred-reimagined/"
+    },
+    {
+      "slug": "air-jordan-4-white-cement-2025",
+      "name": "Air Jordan 4 Retro 'White Cement' (2025)",
+      "category": "sneakers",
+      "price": 286.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/air-jordan-4-white-cement-2025.json",
+      "page": "https://www.aiplannermail.com/sneakers/air-jordan-4-white-cement-2025/"
+    },
+    {
+      "slug": "air-jordan-5-wolf-grey-2026",
+      "name": "Air Jordan 5 Retro 'Wolf Grey' (2026)",
+      "category": "sneakers",
+      "price": 312.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/air-jordan-5-wolf-grey-2026.json",
+      "page": "https://www.aiplannermail.com/sneakers/air-jordan-5-wolf-grey-2026/"
+    },
+    {
+      "slug": "air-jordan-11-gamma-blue-2025",
+      "name": "Air Jordan 11 Retro 'Gamma Blue' (2025)",
+      "category": "sneakers",
+      "price": 353.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/air-jordan-11-gamma-blue-2025.json",
+      "page": "https://www.aiplannermail.com/sneakers/air-jordan-11-gamma-blue-2025/"
+    },
+    {
+      "slug": "air-jordan-11-space-jam-2026",
+      "name": "Air Jordan 11 Retro 'Space Jam' (2026)",
+      "category": "sneakers",
+      "price": 495.5,
+      "priceType": "SOLD",
+      "sampleSize": 10,
+      "href": "https://www.aiplannermail.com/api/v1/items/air-jordan-11-space-jam-2026.json",
+      "page": "https://www.aiplannermail.com/sneakers/air-jordan-11-space-jam-2026/"
+    },
+    {
+      "slug": "air-jordan-1-high-chicago-lost-found",
+      "name": "Air Jordan 1 Retro High OG 'Chicago Lost & Found'",
+      "category": "sneakers",
+      "price": 295.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/air-jordan-1-high-chicago-lost-found.json",
+      "page": "https://www.aiplannermail.com/sneakers/air-jordan-1-high-chicago-lost-found/"
+    },
+    {
+      "slug": "travis-scott-air-force-1-ice-blue",
+      "name": "Travis Scott x Nike Air Force 1 Low '07 'Ice Blue'",
+      "category": "sneakers",
+      "price": 585.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/travis-scott-air-force-1-ice-blue.json",
+      "page": "https://www.aiplannermail.com/sneakers/travis-scott-air-force-1-ice-blue/"
+    },
+    {
+      "slug": "travis-scott-jordan-1-low-mocha",
+      "name": "Travis Scott x Air Jordan 1 Low OG 'Mocha'",
+      "category": "sneakers",
+      "price": 2109.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/travis-scott-jordan-1-low-mocha.json",
+      "page": "https://www.aiplannermail.com/sneakers/travis-scott-jordan-1-low-mocha/"
+    },
+    {
+      "slug": "asics-gel-kayano-14-black-cream",
+      "name": "ASICS Gel-Kayano 14 'Black Cream'",
+      "category": "sneakers",
+      "price": 169.5,
+      "priceType": "SOLD",
+      "sampleSize": 12,
+      "href": "https://www.aiplannermail.com/api/v1/items/asics-gel-kayano-14-black-cream.json",
+      "page": "https://www.aiplannermail.com/sneakers/asics-gel-kayano-14-black-cream/"
+    },
+    {
+      "slug": "yeezy-boost-350-v2-bone",
+      "name": "adidas Yeezy Boost 350 V2 'Bone'",
+      "category": "sneakers",
+      "price": 203.0,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/yeezy-boost-350-v2-bone.json",
+      "page": "https://www.aiplannermail.com/sneakers/yeezy-boost-350-v2-bone/"
+    },
+    {
+      "slug": "nintendo-switch-oled",
+      "name": "Nintendo Switch OLED (console)",
+      "category": "gaming",
+      "price": 170,
+      "priceType": "SOLD",
+      "sampleSize": 19,
+      "href": "https://www.aiplannermail.com/api/v1/items/nintendo-switch-oled.json",
+      "page": "https://www.aiplannermail.com/gaming/nintendo-switch-oled/"
+    },
+    {
+      "slug": "nintendo-switch-lite",
+      "name": "Nintendo Switch Lite (console)",
+      "category": "gaming",
+      "price": 100,
+      "priceType": "SOLD",
+      "sampleSize": 37,
+      "href": "https://www.aiplannermail.com/api/v1/items/nintendo-switch-lite.json",
+      "page": "https://www.aiplannermail.com/gaming/nintendo-switch-lite/"
+    },
+    {
+      "slug": "ps5-slim",
+      "name": "PlayStation 5 Slim (console)",
+      "category": "gaming",
+      "price": 450,
+      "priceType": "SOLD",
+      "sampleSize": 5,
+      "href": "https://www.aiplannermail.com/api/v1/items/ps5-slim.json",
+      "page": "https://www.aiplannermail.com/gaming/ps5-slim/"
+    },
+    {
+      "slug": "meta-quest-3-512gb",
+      "name": "Meta Quest 3 (512 GB)",
+      "category": "gaming",
+      "price": 375.0,
+      "priceType": "SOLD",
+      "sampleSize": 6,
+      "href": "https://www.aiplannermail.com/api/v1/items/meta-quest-3-512gb.json",
+      "page": "https://www.aiplannermail.com/gaming/meta-quest-3-512gb/"
+    },
+    {
+      "slug": "xbox-series-x",
+      "name": "Xbox Series X (console)",
+      "category": "gaming",
+      "price": 515.0,
+      "priceType": "SOLD",
+      "sampleSize": 12,
+      "href": "https://www.aiplannermail.com/api/v1/items/xbox-series-x.json",
+      "page": "https://www.aiplannermail.com/gaming/xbox-series-x/"
+    },
+    {
+      "slug": "pokemon-prismatic-evolutions-elite-trainer-box",
+      "name": "Pokemon Prismatic Evolutions Elite Trainer Box",
+      "category": "collectibles",
+      "price": 110,
+      "priceType": "SOLD",
+      "sampleSize": 21,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-prismatic-evolutions-elite-trainer-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-prismatic-evolutions-elite-trainer-box/"
+    },
+    {
+      "slug": "pokemon-151-booster-bundle",
+      "name": "Pokemon Scarlet & Violet 151 Booster Bundle",
+      "category": "collectibles",
+      "price": 149.0,
+      "priceType": "SOLD",
+      "sampleSize": 8,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-151-booster-bundle.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-151-booster-bundle/"
+    },
+    {
+      "slug": "labubu-big-into-energy-blind-box",
+      "name": "Pop Mart Labubu 'Big Into Energy' (single blind box)",
+      "category": "collectibles",
+      "price": 37,
+      "priceType": "SOLD",
+      "sampleSize": 51,
+      "href": "https://www.aiplannermail.com/api/v1/items/labubu-big-into-energy-blind-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/labubu-big-into-energy-blind-box/"
+    },
+    {
+      "slug": "labubu-have-a-seat-blind-box",
+      "name": "Pop Mart Labubu 'Have a Seat' (single blind box)",
+      "category": "collectibles",
+      "price": 35.15,
+      "priceType": "SOLD",
+      "sampleSize": 63,
+      "href": "https://www.aiplannermail.com/api/v1/items/labubu-have-a-seat-blind-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/labubu-have-a-seat-blind-box/"
+    },
+    {
+      "slug": "stanley-quencher-40oz",
+      "name": "Stanley Quencher H2.0 FlowState Tumbler (40 oz)",
+      "category": "collectibles",
+      "price": 50,
+      "priceType": "SOLD",
+      "sampleSize": 29,
+      "href": "https://www.aiplannermail.com/api/v1/items/stanley-quencher-40oz.json",
+      "page": "https://www.aiplannermail.com/collectibles/stanley-quencher-40oz/"
+    },
+    {
+      "slug": "rolex-submariner-date-126610ln",
+      "name": "Rolex Submariner Date 126610LN",
+      "category": "watches",
+      "price": 15887.5,
+      "priceType": "ASK",
+      "sampleSize": 32,
+      "href": "https://www.aiplannermail.com/api/v1/items/rolex-submariner-date-126610ln.json",
+      "page": "https://www.aiplannermail.com/watches/rolex-submariner-date-126610ln/"
+    },
+    {
+      "slug": "rolex-daytona-126500ln",
+      "name": "Rolex Cosmograph Daytona 126500LN",
+      "category": "watches",
+      "price": 35000.0,
+      "priceType": "ASK",
+      "sampleSize": 36,
+      "href": "https://www.aiplannermail.com/api/v1/items/rolex-daytona-126500ln.json",
+      "page": "https://www.aiplannermail.com/watches/rolex-daytona-126500ln/"
+    },
+    {
+      "slug": "rolex-gmt-master-ii-pepsi-126710blro",
+      "name": "Rolex GMT-Master II 'Pepsi' 126710BLRO",
+      "category": "watches",
+      "price": 26000.0,
+      "priceType": "ASK",
+      "sampleSize": 33,
+      "href": "https://www.aiplannermail.com/api/v1/items/rolex-gmt-master-ii-pepsi-126710blro.json",
+      "page": "https://www.aiplannermail.com/watches/rolex-gmt-master-ii-pepsi-126710blro/"
+    },
+    {
+      "slug": "rolex-datejust-41-126334",
+      "name": "Rolex Datejust 41 126334",
+      "category": "watches",
+      "price": 15924.5,
+      "priceType": "ASK",
+      "sampleSize": 40,
+      "href": "https://www.aiplannermail.com/api/v1/items/rolex-datejust-41-126334.json",
+      "page": "https://www.aiplannermail.com/watches/rolex-datejust-41-126334/"
+    },
+    {
+      "slug": "rolex-explorer-36-124270",
+      "name": "Rolex Explorer 36 124270",
+      "category": "watches",
+      "price": 9699.0,
+      "priceType": "ASK",
+      "sampleSize": 35,
+      "href": "https://www.aiplannermail.com/api/v1/items/rolex-explorer-36-124270.json",
+      "page": "https://www.aiplannermail.com/watches/rolex-explorer-36-124270/"
+    },
+    {
+      "slug": "omega-speedmaster-moonwatch-310-30-42-50-01-001",
+      "name": "Omega Speedmaster Moonwatch 310.30.42.50.01.001",
+      "category": "watches",
+      "price": 6750.0,
+      "priceType": "ASK",
+      "sampleSize": 23,
+      "href": "https://www.aiplannermail.com/api/v1/items/omega-speedmaster-moonwatch-310-30-42-50-01-001.json",
+      "page": "https://www.aiplannermail.com/watches/omega-speedmaster-moonwatch-310-30-42-50-01-001/"
+    },
+    {
+      "slug": "tudor-black-bay-58-m79030n",
+      "name": "Tudor Black Bay 58 M79030N",
+      "category": "watches",
+      "price": 4143.5,
+      "priceType": "ASK",
+      "sampleSize": 16,
+      "href": "https://www.aiplannermail.com/api/v1/items/tudor-black-bay-58-m79030n.json",
+      "page": "https://www.aiplannermail.com/watches/tudor-black-bay-58-m79030n/"
+    },
+    {
+      "slug": "cartier-tank-must-large-wsta0041",
+      "name": "Cartier Tank Must Large WSTA0041",
+      "category": "watches",
+      "price": 3552.0,
+      "priceType": "ASK",
+      "sampleSize": 27,
+      "href": "https://www.aiplannermail.com/api/v1/items/cartier-tank-must-large-wsta0041.json",
+      "page": "https://www.aiplannermail.com/watches/cartier-tank-must-large-wsta0041/"
+    },
+    {
+      "slug": "seiko-prospex-spb143",
+      "name": "Seiko Prospex SPB143",
+      "category": "watches",
+      "price": 974.0,
+      "priceType": "ASK",
+      "sampleSize": 11,
+      "href": "https://www.aiplannermail.com/api/v1/items/seiko-prospex-spb143.json",
+      "page": "https://www.aiplannermail.com/watches/seiko-prospex-spb143/"
+    },
+    {
+      "slug": "ugg-tasman-slipper",
+      "name": "UGG Tasman Slipper",
+      "category": "fashion",
+      "price": 70,
+      "priceType": "SOLD",
+      "sampleSize": 49,
+      "href": "https://www.aiplannermail.com/api/v1/items/ugg-tasman-slipper.json",
+      "page": "https://www.aiplannermail.com/fashion/ugg-tasman-slipper/"
+    },
+    {
+      "slug": "ugg-classic-ultra-mini-boot",
+      "name": "UGG Classic Ultra Mini Boot",
+      "category": "fashion",
+      "price": 79.05,
+      "priceType": "SOLD",
+      "sampleSize": 27,
+      "href": "https://www.aiplannermail.com/api/v1/items/ugg-classic-ultra-mini-boot.json",
+      "page": "https://www.aiplannermail.com/fashion/ugg-classic-ultra-mini-boot/"
+    },
+    {
+      "slug": "lululemon-define-jacket",
+      "name": "lululemon Define Jacket",
+      "category": "fashion",
+      "price": 61.0,
+      "priceType": "SOLD",
+      "sampleSize": 44,
+      "href": "https://www.aiplannermail.com/api/v1/items/lululemon-define-jacket.json",
+      "page": "https://www.aiplannermail.com/fashion/lululemon-define-jacket/"
+    },
+    {
+      "slug": "lululemon-scuba-oversized-half-zip",
+      "name": "lululemon Scuba Oversized Half-Zip Hoodie",
+      "category": "fashion",
+      "price": 50,
+      "priceType": "SOLD",
+      "sampleSize": 21,
+      "href": "https://www.aiplannermail.com/api/v1/items/lululemon-scuba-oversized-half-zip.json",
+      "page": "https://www.aiplannermail.com/fashion/lululemon-scuba-oversized-half-zip/"
+    },
+    {
+      "slug": "ray-ban-meta-smart-glasses",
+      "name": "Ray-Ban Meta Smart Glasses (Gen 1 and Gen 2)",
+      "category": "gaming",
+      "price": 250.0,
+      "priceType": "SOLD",
+      "sampleSize": 16,
+      "href": "https://www.aiplannermail.com/api/v1/items/ray-ban-meta-smart-glasses.json",
+      "page": "https://www.aiplannermail.com/gaming/ray-ban-meta-smart-glasses/"
+    },
+    {
+      "slug": "meta-quest-3s",
+      "name": "Meta Quest 3S (VR headset)",
+      "category": "gaming",
+      "price": 198,
+      "priceType": "SOLD",
+      "sampleSize": 9,
+      "href": "https://www.aiplannermail.com/api/v1/items/meta-quest-3s.json",
+      "page": "https://www.aiplannermail.com/gaming/meta-quest-3s/"
+    },
+    {
+      "slug": "beats-studio-pro",
+      "name": "Beats Studio Pro (headphones)",
+      "category": "gaming",
+      "price": 115.74,
+      "priceType": "SOLD",
+      "sampleSize": 11,
+      "href": "https://www.aiplannermail.com/api/v1/items/beats-studio-pro.json",
+      "page": "https://www.aiplannermail.com/gaming/beats-studio-pro/"
+    },
+    {
+      "slug": "pokemon-destined-rivals-elite-trainer-box",
+      "name": "Pokemon Destined Rivals Elite Trainer Box",
+      "category": "collectibles",
+      "price": 110,
+      "priceType": "SOLD",
+      "sampleSize": 5,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-destined-rivals-elite-trainer-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-destined-rivals-elite-trainer-box/"
+    },
+    {
+      "slug": "labubu-exciting-macaron",
+      "name": "Pop Mart Labubu 'Exciting Macaron' (single blind box)",
+      "category": "collectibles",
+      "price": 38.58,
+      "priceType": "SOLD",
+      "sampleSize": 71,
+      "href": "https://www.aiplannermail.com/api/v1/items/labubu-exciting-macaron.json",
+      "page": "https://www.aiplannermail.com/collectibles/labubu-exciting-macaron/"
+    },
+    {
+      "slug": "jellycat-bartholomew-bear",
+      "name": "Jellycat Bartholomew Bear (medium)",
+      "category": "collectibles",
+      "price": 52.23,
+      "priceType": "SOLD",
+      "sampleSize": 42,
+      "href": "https://www.aiplannermail.com/api/v1/items/jellycat-bartholomew-bear.json",
+      "page": "https://www.aiplannermail.com/collectibles/jellycat-bartholomew-bear/"
+    },
+    {
+      "slug": "pokemon-prismatic-evolutions-booster-bundle",
+      "name": "Pokemon Prismatic Evolutions Booster Bundle",
+      "category": "collectibles",
+      "price": 65.55,
+      "priceType": "SOLD",
+      "sampleSize": 17,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-prismatic-evolutions-booster-bundle.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-prismatic-evolutions-booster-bundle/"
+    },
+    {
+      "slug": "pokemon-delta-reign-elite-trainer-box",
+      "name": "Pokemon Mega Evolution Delta Reign Elite Trainer Box",
+      "category": "collectibles",
+      "price": 85.5,
+      "priceType": "SOLD",
+      "sampleSize": 56,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-delta-reign-elite-trainer-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-delta-reign-elite-trainer-box/"
+    },
+    {
+      "slug": "pokemon-perfect-order-elite-trainer-box",
+      "name": "Pokemon Mega Evolution Perfect Order Elite Trainer Box",
+      "category": "collectibles",
+      "price": 69.99,
+      "priceType": "SOLD",
+      "sampleSize": 11,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-perfect-order-elite-trainer-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-perfect-order-elite-trainer-box/"
+    },
+    {
+      "slug": "pokemon-chaos-rising-elite-trainer-box",
+      "name": "Pokemon Mega Evolution Chaos Rising Elite Trainer Box",
+      "category": "collectibles",
+      "price": 68.75,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-chaos-rising-elite-trainer-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-chaos-rising-elite-trainer-box/"
+    },
+    {
+      "slug": "pokemon-pitch-black-elite-trainer-box",
+      "name": "Pokemon Mega Evolution Pitch Black Elite Trainer Box",
+      "category": "collectibles",
+      "price": 65,
+      "priceType": "SOLD",
+      "sampleSize": 13,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-pitch-black-elite-trainer-box.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-pitch-black-elite-trainer-box/"
+    },
+    {
+      "slug": "pokemon-ascended-heroes-booster-bundle",
+      "name": "Pokemon Mega Evolution Ascended Heroes Booster Bundle",
+      "category": "collectibles",
+      "price": 69.99,
+      "priceType": "SOLD",
+      "sampleSize": 11,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-ascended-heroes-booster-bundle.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-ascended-heroes-booster-bundle/"
+    },
+    {
+      "slug": "pokemon-destined-rivals-booster-bundle",
+      "name": "Pokemon Destined Rivals Booster Bundle",
+      "category": "collectibles",
+      "price": 58.66,
+      "priceType": "SOLD",
+      "sampleSize": 5,
+      "href": "https://www.aiplannermail.com/api/v1/items/pokemon-destined-rivals-booster-bundle.json",
+      "page": "https://www.aiplannermail.com/collectibles/pokemon-destined-rivals-booster-bundle/"
+    },
+    {
+      "slug": "ugg-tazz-platform-slipper",
+      "name": "UGG Tazz Platform Slipper",
+      "category": "fashion",
+      "price": 79.45,
+      "priceType": "SOLD",
+      "sampleSize": 32,
+      "href": "https://www.aiplannermail.com/api/v1/items/ugg-tazz-platform-slipper.json",
+      "page": "https://www.aiplannermail.com/fashion/ugg-tazz-platform-slipper/"
+    }
+  ]
+}

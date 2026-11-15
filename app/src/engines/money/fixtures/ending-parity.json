@@ -1,0 +1,229 @@
+[
+  {
+    "name": "under twenty",
+    "cents": 1250,
+    "lo": 0,
+    "hi": 2000,
+    "expected": 1200,
+    "endings": [
+      0,
+      100,
+      200,
+      300,
+      400,
+      500,
+      600,
+      700,
+      800,
+      900,
+      1000,
+      1100,
+      1200,
+      1300,
+      1400,
+      1500,
+      1600,
+      1700,
+      1800,
+      1900,
+      2000
+    ]
+  },
+  {
+    "name": "threshold",
+    "cents": 2000,
+    "lo": 1800,
+    "hi": 3000,
+    "expected": 2000,
+    "endings": [
+      1800,
+      1900,
+      2000,
+      2500,
+      2800
+    ]
+  },
+  {
+    "name": "over twenty",
+    "cents": 6100,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": 6500,
+    "endings": [
+      6500,
+      6800,
+      7500,
+      7800
+    ]
+  },
+  {
+    "name": "midpoint",
+    "cents": 7100,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": 6800
+  },
+  {
+    "name": "tie down",
+    "cents": 7150,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": 6800
+  },
+  {
+    "name": "above tie",
+    "cents": 7151,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": 7500
+  },
+  {
+    "name": "lo above hi",
+    "cents": 7000,
+    "lo": 8000,
+    "hi": 6000,
+    "expected": null,
+    "endings": []
+  },
+  {
+    "name": "no ending",
+    "cents": 6200,
+    "lo": 6000,
+    "hi": 6400,
+    "expected": null,
+    "endings": []
+  },
+  {
+    "name": "distant lower bound leaves empty window",
+    "cents": 100,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": null
+  },
+  {
+    "name": "distant upper bound leaves empty window",
+    "cents": 99000,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": null
+  },
+  {
+    "name": "posture floor has no ending within $10 of original cents",
+    "cents": 6499.5,
+    "lo": 7000,
+    "hi": 9000,
+    "expected": null
+  },
+  {
+    "name": "ending exactly $10 above original cents is included",
+    "cents": 6500,
+    "lo": 7000,
+    "hi": 9000,
+    "expected": 7500
+  },
+  {
+    "name": "ending exactly $10 below original cents is included",
+    "cents": 8800,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": 7800
+  },
+  {
+    "name": "ending half a cent beyond lower window is excluded",
+    "cents": 8800.5,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": null
+  },
+  {
+    "name": "exact",
+    "cents": 6800,
+    "lo": 6800,
+    "hi": 6800,
+    "expected": 6800,
+    "endings": [
+      6800
+    ]
+  },
+  {
+    "name": "custom",
+    "cents": 7350,
+    "lo": 7000,
+    "hi": 8000,
+    "rule": {
+      "above_cents": 2000,
+      "digits": [
+        3,
+        9
+      ]
+    },
+    "expected": 7300,
+    "endings": [
+      7300,
+      7900
+    ]
+  },
+  {
+    "name": "negative refused",
+    "cents": -1,
+    "lo": 0,
+    "hi": 1000,
+    "error": true
+  },
+  {
+    "name": "negative bound refused",
+    "cents": 500,
+    "lo": -1,
+    "hi": 1000,
+    "error": true
+  },
+  {
+    "name": "half cent below tie",
+    "cents": 7149.5,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": 6800
+  },
+  {
+    "name": "half cent above tie",
+    "cents": 7150.5,
+    "lo": 6000,
+    "hi": 8000,
+    "expected": 7500
+  },
+  {
+    "name": "fractional bounds exclude adjacent endings",
+    "cents": 7100.25,
+    "lo": 6500.5,
+    "hi": 7799.5,
+    "expected": 6800,
+    "endings": [
+      6800,
+      7500
+    ]
+  },
+  {
+    "name": "fractional interval contains no whole cent",
+    "cents": 6800.5,
+    "lo": 6800.1,
+    "hi": 6800.9,
+    "expected": null,
+    "endings": []
+  },
+  {
+    "name": "large finite singleton",
+    "cents": 100000000000000000000,
+    "lo": 100000000000000000000,
+    "hi": 100000000000000000000,
+    "rule": {
+      "above_cents": 2000,
+      "digits": [
+        0
+      ]
+    },
+    "expected": 100000000000000000000,
+    "endings": [
+      100000000000000000000
+    ]
+  }
+]

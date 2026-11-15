@@ -32,7 +32,7 @@ Ben: "plan to use however nate builds the harness to end up doing the demo. im h
 
 **What we never do.** No alert that a real listing didn't cause. No timer that fakes a find. The stage cadence and the instant path are both real code reading a real listing; only the rate is turned up, and we say so if asked.
 
-**The cadence lever.** How often a want checks a site trades money and site load against the chance the listing sells first. Codex is researching the numbers (time-to-sale for underpriced listings, cost per read on each route, sharing across users, ROI at 1, 5, 15 and 60 minutes) into [research/watch/ben/cadence-levers.md](../research/watch/ben/cadence-levers.md); the brief is [here](../research/watch/ben/codex-briefs/cadence-and-market.md).
+**The cadence lever.** How often a want checks a site trades money and site load against the chance the listing sells first. Codex's answer ([cadence-levers.md](../research/watch/ben/cadence-levers.md), brief [here](../research/watch/ben/codex-briefs/cadence-and-market.md)): an hour gives a new listing a 30-minute average head start over us (57 min at p95); 5 minutes cuts that to 2.5 for 12 times the reads. On Nate's warm cloud browser the reads themselves are about $0.29 to $0.36 per unshared search a month at 5 minutes; the page's bytes cost more than the browser time if they go through a residential proxy. No measured optimum exists yet, so the product starts at the spec's adaptive 5 to 60 minutes and buys speed only where it pays; our own cross-listed posts match at once (*inferred*).
 
 ## Which site
 

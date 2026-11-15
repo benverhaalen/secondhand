@@ -2,7 +2,6 @@
 // Every weight, threshold and cap is a declared `param` prior and is read through the param store, never from this table.
 // Prints are salted SimHash of a normalised message; no text is kept (product.md `script_print`).
 import { createHash } from 'node:crypto';
-import type { Declared, ParamStore } from '../param/param.ts';
 import type { Site } from '../listing/crosslist.ts';
 
 export const GROUPS = ['facebook_local', 'facebook_shipped', 'ebay', 'poshmark', 'mercari', 'depop', 'offerup', 'grailed'] as const;
@@ -11,60 +10,24 @@ export type Group = (typeof GROUPS)[number];
 export const groupOf = (site: Site, local = false): Group => (site === 'facebook' ? (local ? 'facebook_local' : 'facebook_shipped') : site);
 
 // Scored signals: card 5's weights are the prior (§2). `by` is who reads it: code, adapter or the model.
-export const SCORED = {
-  off_platform: { w: 2.0, by: 'model' }, ship_elsewhere: { w: 1.5, by: 'model' }, link_early: { w: 1.0, by: 'code' },
-  new_account: { w: 0.7, by: 'adapter' }, urgency_no_question: { w: 0.5, by: 'model' }, good_history: { w: -1.5, by: 'adapter' },
-  third_party_collects: { w: 1.5, by: 'model' }, site_banner: { w: 2.0, by: 'adapter' }, script_print_hit: { w: 1.0, by: 'code' },
-  burst_same_text: { w: 0.7, by: 'code' },
-} as const;
-export type Scored = keyof typeof SCORED;
-export const SCORED_NAMES = Object.keys(SCORED) as Scored[];
-
-// Model predicates; a model failure never reads as absent (decide.ts turns it into ask).
-export const HARD_MODEL = ['asks_code', 'overpay_or_shipping_label', 'claims_paid', 'asks_address_phone'] as const;
-export const PREDICATES = [...new Set<string>([...HARD_MODEL, ...SCORED_NAMES.filter((s) => SCORED[s].by === 'model')])];
-export const THRESH0 = (p: string) => (p === 'asks_code' ? 0.1 : 0.2); // messages-and-offers start values
-
-export const R0 = 0.04; // a signal's honest rate in all threads until the counts say otherwise
-export const STRENGTH = 20; // threads the prior is worth
-
-const beta = (name: string, a: number, b: number, lo = 0.001, hi = 0.95): Declared => ({ name, family: 'beta', prior: { alpha: a, beta: b }, guard_lo: lo, guard_hi: hi, metric: 'beta' });
-const num = (name: string, prior: unknown, lo?: number, hi?: number): Declared => ({ name, family: 'scalar', prior, guard_lo: lo, guard_hi: hi });
-
-// Every number the trust engine reads, declared once with its written prior.
-export const TRUST_PARAMS: Declared[] = [
-  ...SCORED_NAMES.flatMap((s): Declared[] => {
-    const q0 = R0 * Math.exp(SCORED[s].w);
-    return [beta(`trust_q.${s}`, STRENGTH * q0, STRENGTH * (1 - q0)), beta(`trust_r.${s}`, STRENGTH * R0, STRENGTH * (1 - R0))];
-  }),
-  ...PREDICATES.map((p) => num(`trust_thr.${p}`, THRESH0(p), 0, 1)),
-  num('trust_b', -4.0), num('trust_m_ask', 0.1), num('trust_c_tap', 1.0), num('trust_delta', 0.0538),
-  num('trust_warn_gap', 0.5), num('trust_loss_min', 20), num('trust_p_block', 0.95),
-  { name: 'trust_calib', family: 'model_ref', prior: { uri: 'none', version: 0, kind: 'none', n: 0, positives: 0, ece: 1 } },
-  num('trust_gate_n', 300), num('trust_gate_pos', 30), num('trust_gate_ece', 0.05),
-  num('trust_seller_cap', 0.05), num('trust_label_sellers', 3),
-  num('trust_print_hamming', 3), num('trust_print_min', 3), num('trust_print_tokens', 8),
-  num('trust_burst_n', 5), num('trust_new_days', 30), num('trust_good_buys', 10), num('trust_urgent_usd', 200),
-  num('trust_weight_band', 0.5), num('trust_isotonic_n', 1000),
-  num('trust_retention_days', 30),
-  // no-show (card 6)
-  beta('trust_ns_b', 1, 4), num('trust_ns_confirm', 1.0), num('trust_ns_ask', 3.0), num('trust_ns_wait_min', 15),
-  // account health and pace
-  num('trust_flag_m', 0.8, 0, 1), beta('trust_pace', 1, 99, 0, 1), num('trust_pace_ceiling', 0.01), beta('trust_dispute', 1, 1, 0, 1), num('trust_dispute_show', 10),
-  // counterfeit
-  num('trust_cf_brands', ['chanel', 'louis vuitton', 'gucci', 'prada', 'nike', 'jordan', 'yeezy', 'rolex', 'coach', 'hermes']),
-  num('trust_cf_posh_floor_usd', 500), num('trust_cf_ebay_shoes_usd', 75), num('trust_cf_price_ratio', 0.6), num('trust_cf_young_days', 30),
-  // recall
-  num('trust_recall_max_delta', 500),
-];
-export const declareTrust = (s: ParamStore) => TRUST_PARAMS.forEach((d) => s.declare(d));
-
+export { SCORED, SCORED_NAMES, HARD_MODEL, PREDICATES, THRESH0, type Scored } from './params.ts';
+import { SCORED, SCORED_NAMES, PREDICATES } from './params.ts';
+export { declareTrust, DECLARED as TRUST_PARAMS, R0, STRENGTH } from './params.ts';
+import { numeric, priors, type Values } from './params.ts';
+import { cents, dollarsToCents } from './money.ts';
 export type Reading = { signal: string; present: boolean; evidence_span: string; extractor: 'code' | 'model'; model_version: string | null; confidence: number };
 const code = (signal: string, present: boolean, span = ''): Reading => ({ signal, present, evidence_span: span, extractor: 'code', model_version: null, confidence: 1 });
 
 // The extractor's raw output against each predicate's learned threshold: present when confidence reaches it.
 export function readModel(raw: { signal: string; confidence: number; span: string }[], thr: (p: string) => number, version: string): Reading[] {
-  return raw.map((r) => ({ signal: r.signal, present: r.confidence >= thr(r.signal), evidence_span: r.span, extractor: 'model', model_version: version, confidence: r.confidence }));
+  return raw.map(r => {
+    if (!PREDICATES.includes(r.signal)) throw new RangeError('signal');
+    if (!Number.isFinite(r.confidence) || r.confidence < 0 || r.confidence > 1) throw new RangeError('confidence');
+    if (!r.span.trim()) throw new RangeError('span');
+    const threshold = thr(r.signal);
+    if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) throw new RangeError('threshold');
+    return { signal: r.signal, present: r.confidence >= threshold, evidence_span: r.span, extractor: 'model' as const, model_version: version, confidence: r.confidence };
+  });
 }
 
 // --- links ---
@@ -127,17 +90,17 @@ export function printOf(text: string, salt: string, strip: string[] = [], minTok
 }
 export const hamming = (a: bigint, b: bigint) => { let x = a ^ b, n = 0; while (x) { n += Number(x & 1n); x >>= 1n; } return n; };
 // The salt rotates monthly; for 7 days after a rotation the old month's counts are looked up too, so no count resets on the first.
-export function saltsFor(iso: string): string[] {
+export function saltsFor(iso: string, values: Values = priors()): string[] {
   const d = new Date(iso);
   const m = (x: Date) => `trust-${x.getUTCFullYear()}-${String(x.getUTCMonth() + 1).padStart(2, '0')}`;
   const prev = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() - 1, 1));
-  return d.getUTCDate() <= 7 ? [m(d), m(prev)] : [m(d)];
+  return d.getUTCDate() <= numeric(values)('trust_salt_overlap_days') ? [m(d), m(prev)] : [m(d)];
 }
 
 export type Buyer = { age_days: number | null; ratings: number; good_purchases: number };
 export type Msg = { id: string; thread_id: string; site: Site; n: number; text: string; at: string };
 export type Ctx = {
-  buyer: Buyer; banner: boolean; urgent: boolean; price_usd: number;
+  buyer: Buyer; banner: boolean; urgent: boolean; price_usd?: number; price_cents?: number;
   printHits: { sellers: number; buyers: number }; sameTextListings10m: number; // counts the script_print lookup returned
   p: (name: string) => number;                                                  // param reads
 };
@@ -147,6 +110,7 @@ const GIFT = /\b(?:pay|paying|paid|payment|send|sending|use|using|buy)\b[^.?!]{0
 
 // Step 1 of §3: every code and adapter signal for one message. The model reads the rest.
 export function codeSignals(m: Msg, c: Ctx): Reading[] {
+  const price_cents = c.price_cents === undefined ? dollarsToCents(c.price_usd, 'price_usd') : cents(c.price_cents, 'price_cents');
   const g = guardLinks(m.text, m.site);
   const young = c.buyer.age_days === null || c.buyer.age_days < c.p('trust_new_days') || c.buyer.ratings === 0;
   const gift = m.text.match(GIFT);
@@ -156,7 +120,7 @@ export function codeSignals(m: Msg, c: Ctx): Reading[] {
     code('gift_crypto_wire', gift !== null, gift?.[0] ?? ''),
     code('new_account', young), code('good_history', c.buyer.good_purchases >= c.p('trust_good_buys')),
     code('site_banner', c.banner),
-    code('urgency_no_question', c.urgent && c.price_usd > c.p('trust_urgent_usd')),
+    code('urgency_no_question', c.urgent && price_cents > c.p('trust_urgent_cents')),
     code('script_print_hit', c.printHits.sellers >= c.p('trust_print_min') && c.printHits.buyers >= c.p('trust_print_min')),
     code('burst_same_text', c.sameTextListings10m >= c.p('trust_burst_n')),
   ];

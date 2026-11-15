@@ -1,4 +1,6 @@
 """The experiment runner (spec/plans/backtest/plan.md): the test of the test first (decision 23), then the scores."""
+import json
+
 import pytest
 
 from valuation import experiment, synthetic
@@ -76,6 +78,10 @@ def test_metrics_measure_closeness_the_side_we_miss_on_and_the_range():
     assert m["within_10"] == 0.5 and m["within_20"] == 0.75 and m["off_by_over_30"] == 0.0
     assert m["bias"] == pytest.approx(0.075) and m["median_pct_off"] == pytest.approx(0.125)   # signed against absolute
     assert m["sold_above_our_middle"] == 0.25 and m["coverage"] == 0.5
+    # Money, honest on sold-only data: listed at our middle, 3 of 4 would have sat above what the buyer paid; the one
+    # under left $0.15; and a sale only happens at or below the price a buyer paid, so 85 of the 400 is the floor.
+    assert m["priced_above_the_sale"] == 0.75 and m["left_on_table_per_sale_dollars"] == pytest.approx(0.0375)
+    assert m["sell_now_floor_share"] == pytest.approx(85 / 400)
     assert experiment._metrics(pairs, min_n=30)["too_few"]
 
 
@@ -128,3 +134,25 @@ def test_the_report_carries_every_number_the_page_shows(report):
         assert m["overall"][k] is not None, k
     assert set(m["slices"]) == {"kind", "condition", "site", "month", "price_band_of_our_middle"}
     assert report["sentence"].startswith("On ")
+
+
+def test_the_ledger_refuses_a_second_look_at_the_locked_month_and_scores_replay_from_the_log(rows, tmp_path):
+    import csv
+    path, book = tmp_path / "rows.csv", str(tmp_path / "ledger.jsonl")
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    args = ["backtest", "--rows", str(path), "--ledger", book, "--sample", "60"]
+    experiment.main(args + ["--test-from", "2026-07-01T00:00:00Z", "--test-to", "2026-09-01T00:00:00Z"])
+    with pytest.raises(ValueError, match="already"):
+        experiment.main(args + ["--test-from", "2026-08-01T00:00:00Z", "--locked"])      # tuning already saw August
+    _, brief = experiment.main(args + ["--test-from", "2026-09-01T00:00:00Z", "--locked"])
+    with pytest.raises(ValueError, match="already"):
+        experiment.main(args + ["--test-from", "2026-10-01T00:00:00Z"])                  # a look inside the locked window
+    _, again = experiment.main(args + ["--test-from", "2026-10-01T00:00:00Z", "--deviation", "scorer bug fixed"])
+    book_lines = [json.loads(x) for x in open(book)]
+    assert [x["locked"] for x in book_lines] == [False, True, False] and book_lines[-1]["deviation"] == "scorer bug fixed"
+    assert book_lines[0]["settings"]["model"]["ANCHOR_K"] == 5 and len(book_lines[0]["rows_sha256"]) == 64
+    _, replay = experiment.main(["rescore", "--log", brief["log"], "--rows", str(path)])
+    assert replay["contestants"] == brief["contestants"]

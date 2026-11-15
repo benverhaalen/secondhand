@@ -9,10 +9,19 @@ CREATE TABLE IF NOT EXISTS secondhand.governance.principal_map (
   user_id STRING NOT NULL COMMENT 'The secondhand user whose rows that principal may read.'
 ) COMMENT 'Which secondhand person a workspace principal is. The row filter reads it; nobody else is mapped, so nobody else sees a row.';
 
+-- Agent proposal: maintenance alone writes a temporary user_id = '*' mapping, paired with this audit window.
+CREATE TABLE IF NOT EXISTS secondhand.governance.break_glass (
+  id STRING NOT NULL COMMENT 'Unique maintenance window id.',
+  principal STRING NOT NULL COMMENT 'The workspace principal receiving temporary access.',
+  reason STRING NOT NULL COMMENT 'Why maintenance needs access to every row.',
+  started_at TIMESTAMP NOT NULL COMMENT 'When the maintenance window started.',
+  ended_at TIMESTAMP COMMENT 'When access was revoked; null while open or if revocation failed.'
+) COMMENT 'Agent proposal: audited temporary maintenance access through the wildcard principal mapping.';
+
 CREATE OR REPLACE FUNCTION secondhand.governance.owner_only(row_user_id STRING)
 RETURNS BOOLEAN
-COMMENT 'Row filter: a row is visible to the principal mapped to its user_id. user_id null is a shared row (a global param).'
-RETURN row_user_id IS NULL OR EXISTS (SELECT 1 FROM secondhand.governance.principal_map m WHERE m.principal = current_user() AND m.user_id = row_user_id);
+COMMENT 'Row filter: a row is visible to the principal mapped to its user_id. user_id null is a shared row (a global param). Agent proposal: a principal mapped to user_id ''*'' sees every row during audited maintenance.'
+RETURN row_user_id IS NULL OR EXISTS (SELECT 1 FROM secondhand.governance.principal_map m WHERE m.principal = current_user() AND (m.user_id = row_user_id OR m.user_id = '*'));
 
 CREATE OR REPLACE FUNCTION secondhand.governance.mask_handle(handle STRING)
 RETURNS STRING

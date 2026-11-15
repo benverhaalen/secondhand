@@ -64,9 +64,10 @@
     ],
     "codebook": {
       "file": "Codebook.xlsx",
-      "sha256": "3fa5e83046ac29e610cf2bcf02fd85682f93f3608c689c5a434d794c65bb6516"
-    },
-    "subset_rule": "Count rows with item_price set per non-empty anon_product_id. Keep products with at least 30 sold rows whose meta_categ_id is in rows.py _EBAY_KIND. Per kind keep at most 80 products, ordered by smallest sha256 of the UTF-8 product id (product id breaks ties). Retain all sold and ended-unsold listings of kept products, in input order; drop invalid dates and rows without a price. Products spanning kinds must rank in the smallest 80 in every kind; products with any unmapped meta category are excluded."
+      "sha256": "3fa5e83046ac29e610cf2bcf02fd85682f93f3608c689c5a434d794c65bb6516",
+      "repository_file": "research/price/ben/sources/sold-followup-2026-11-15/Codebook.xlsx",
+      "repository_sha256": "35ccde1c33c89cb7e425996f84c032e44a12903e528901bc8ce2da19425718df"
+    }
   },
   "ebay_comps_cc0": {
     "what": "570 eBay sold rows, September 2026, 15 keyword files",

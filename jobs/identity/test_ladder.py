@@ -1,7 +1,9 @@
 """id-2: the capture ladder and its conformal set (identity §3.A; expert session: C = {c >= 1 - q_hat}, misses at 1)."""
 import numpy as np
 
-from identity.ladder import Hit, action, calibrate, candidates, conformal_set, label, nonconformity
+from identity.ladder import (
+    STARTING_ODDS, Hit, action, calibrate, candidates, conformal_set, expected_calibration_error, fit_odds, label, nonconformity, odds,
+)
 
 ALPHA = 0.10
 
@@ -59,3 +61,46 @@ def test_worked_example_and_actions():
     s = conformal_set(c, q_hat=0.40)  # threshold 0.60: only black
     assert s == ["black"] and action(s) == "confirm"
     assert action(["a", "b"]) == "pick" and action([]) == "ask" and action(list("abcde")) == "ask"
+
+
+# The odds a person sees beside each candidate (Ben, 08:09: "potential probabilities on it all ... ranked by most likely").
+# c is a ladder score, not a probability; temperature scaling (Guo et al. 2017) with a "none of these" logit turns the
+# scores into odds that are fitted on what people actually confirmed, so a shown 70% is right about 70% of the time.
+
+
+def labelled(n, seed, t, b):
+    """Captures whose truth is drawn from the odds model itself, so a fit must recover t and b."""
+    rng = np.random.default_rng(seed)
+    out = []
+    for _ in range(n):
+        cands = candidates([Hit(rung=int(rng.choice([1, 2, 3, 4])), product=f"p{k}", s=float(rng.uniform(0.2, 1.0))) for k in range(4)])
+        p, p_none = odds(cands, t, b)
+        names = list(p) + [None]
+        truth = names[rng.choice(len(names), p=[*p.values(), p_none])]
+        out.append((cands, truth))
+    return out
+
+
+def test_odds_rank_like_the_ladder_and_sum_to_one_with_none():
+    c = candidates([Hit(2, "black", 0.82), Hit(3, "black", 0.91), Hit(3, "blue", 0.89)])
+    p, p_none = odds(c, *STARTING_ODDS)
+    assert list(p) == ["black", "blue"] and p["black"] > p["blue"] > 0
+    assert abs(sum(p.values()) + p_none - 1) < 1e-9
+
+
+def test_fit_recovers_the_temperature_and_none_logit():
+    t, b, _ = fit_odds(labelled(3000, 7, t=0.12, b=0.55))
+    assert abs(t - 0.12) < 0.03 and abs(b - 0.55) < 0.08
+
+
+def test_fitted_odds_are_calibrated_on_held_out_captures():
+    train, test = labelled(3000, 8, 0.12, 0.55), labelled(3000, 9, 0.12, 0.55)
+    t, b, _ = fit_odds(train)
+    fitted = expected_calibration_error(test, t, b)
+    overconfident = expected_calibration_error(test, 0.02, 0.55)
+    assert fitted < 0.03 < overconfident
+
+
+def test_too_few_labels_keep_the_starting_odds():
+    t, b, n = fit_odds(labelled(20, 10, 0.12, 0.55))
+    assert (t, b) == STARTING_ODDS and n == 20

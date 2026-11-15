@@ -4,10 +4,17 @@
 // Each site's preview is the listing its own buyers want, not one copied five times (edge-cases §5, agent proposal): its
 // title written for them and one line on who buys there. Each has its own switch (ways-out §6.8: "just eBay for now"); a
 // site that fails says what failed and offers Retry, Skip, or Post it myself, and the others stay up.
+//
+// When the studio has already run on the photos, the cover sits on top with its two switches, Clean up and Enhance with
+// AI, and every site's preview changes with them as they are flipped, so the difference is seen live before anything
+// posts (Ben, 08:12: "photos before after done already ... quickly toggle on off the beautification (both the non ai and
+// the ai one) and showing that live before going into a posting"). Enhance with AI waits for the LiDAR scan's
+// measurement, since a redraw is only held to its real size by it (Ben, 08:09; 09:09: "only allow this from lidar flow
+// too"; jobs/studio/check.py).
 import * as Linking from 'expo-linking';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Approve, Blank, EmptyState, Icon, Line, List, MOTIONS, Pill, Skeleton, Stack, Txt, log, type PhotoSrc } from '@/ui';
+import { Approve, Blank, EmptyState, Icon, Line, List, MOTIONS, Photo, Pill, Row, Skeleton, Stack, Txt, log, type PhotoSrc } from '@/ui';
 import { ActionRow } from '@/ui/parts/action-row';
 import { Chips } from '@/ui/parts/chips';
 import { ListingPreview } from '@/ui/parts/listing-preview';
@@ -15,7 +22,7 @@ import { RouteSheet } from '@/ui/parts/route-sheet';
 import { Switch } from '@/ui/parts/switch';
 import { usd, youKeep, type Item, type Site, type World } from '@/demo';
 import { AUDIENCE, LISTING_FORMS, listingTitle } from '@/demo/listing-forms';
-import { photo as demoPhoto } from '@/demo/photos';
+import { hasStudio, photo as demoPhoto, studio, type Look } from '@/demo/photos';
 import { useScreen } from '@/demo/screen';
 import * as M from '@/item/model';
 
@@ -67,7 +74,14 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
   const priceOn = (site: Site) => price ?? item.listings.find(l => l.site === site)?.price_cents ?? M.priceFor(item, 'sell') ?? 0;
   const prices = on.map(priceOn);
   const photos = M.photoCount(item);
-  const cover = item.photos[0] ? demoPhoto(item.photos[0].key) as PhotoSrc : null;
+  const key = item.photos[0]?.key;
+  const lookable = !!key && hasStudio(key);
+  // A redraw is held to the scan, so it needs a LiDAR measurement of the thing (M.scanned).
+  const measured = M.scanned(item);
+  const [clean, setClean] = useState(lookable);
+  const [ai, setAi] = useState(lookable && measured);
+  const look: Look = ai && measured ? 'ai' : clean ? 'clean' : 'original';
+  const cover = key ? (lookable ? studio(key, look) : demoPhoto(key)) as PhotoSrc : null;
   // A site whose listing already failed once in the data fails again here, so the failed state is drawn from data.
   const willFail = (s: Site) => item.listings.some(l => l.site === s && l.state === 'postFailed');
 
@@ -93,6 +107,21 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
   return (
     <RouteSheet name="item-post" state={offline ? 'offline' : state} skip={skip(state)} title="Preview" foot={foot} onClosed={() => router.back()}>
       {offline ? <Line><Icon name="refresh" size={12} tone="ink-2" /><Txt role="caption">Offline. It posts when you’re back.</Txt></Line> : null}
+      {lookable ? (
+        <Stack>
+          <Photo src={cover} label={look === 'original' ? 'Your photo' : look === 'clean' ? 'Your photo, cleaned up' : 'Your photo, enhanced with AI'} fit="fill" />
+          <List>
+            <Row trail={<Switch id="look-clean" label="Clean up" on={clean} disabled={status === 'working'} onChange={setClean} />}>
+              <Txt role="body">Clean up</Txt>
+              <Txt role="caption">Light only. The color stays true</Txt>
+            </Row>
+            <Row trail={<Switch id="look-ai" label="Enhance with AI" on={ai && measured} disabled={!measured || status === 'working'} onChange={setAi} />}>
+              <Txt role="body" tone={measured ? 'ink' : 'ink-2'}>Enhance with AI</Txt>
+              <Txt role="caption">{measured ? 'Redrawn, then checked against your photos and scan' : 'Scan it with LiDAR first'}</Txt>
+            </Row>
+          </List>
+        </Stack>
+      ) : null}
       <Stack gap="cards">
         {planned.map(s => {
           const isOn = on.includes(s.site), form = LISTING_FORMS[s.site];
@@ -101,7 +130,7 @@ function Post({ w, item, price, flipped, offline }: { w: World; item: Item; pric
             <Stack key={s.site} gap="tight">
               <ListingPreview site={s.site} photo={cover} off={!isOn}
                 title={listingTitle(s.site, item.title, item.attributes)} audience={AUDIENCE[s.site]} price={priceOn(s.site)} keep={youKeep(s.site, priceOn(s.site))}
-                photos={`${shown < photos ? `First ${shown} of ${photos} photos` : `${photos} ${photos === 1 ? 'photo' : 'photos'}`}, ${form.cover === '1:1' ? 'square' : 'cropped taller'}${form.title === 'description_line_1' ? '. The name opens the description' : ''}`}
+                photos={`${shown < photos ? `First ${shown} of ${photos} photos` : `${photos} ${photos === 1 ? 'photo' : 'photos'}`}, ${form.cover === '1:1' ? 'square' : 'cropped taller'}${look === 'ai' ? ', AI cover marked' : ''}${form.title === 'description_line_1' ? '. The name opens the description' : ''}`}
                 needs={missing && isOn ? <Line><Blank id={`needs-${s.site}`} name={missing.name} value={blank} onChange={setBlank} look="body" /></Line> : undefined}
                 toggle={<Switch id={`post-${s.site}`} label="Post here" on={isOn} disabled={status === 'working'} onChange={o => setOn(x => (o ? [...x, s.site] : x.filter(y => y !== s.site)))} />} />
               {failed.includes(s.site) ? (

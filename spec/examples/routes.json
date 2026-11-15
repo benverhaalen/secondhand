@@ -11,7 +11,7 @@
         "data": [
           {
             "endpoint": "DELETE /v1/accounts/:id",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "DELETE",
             "needs_session": true
@@ -32,21 +32,21 @@
           },
           {
             "endpoint": "DELETE /v1/rules/:id",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "DELETE",
             "needs_session": true
           },
           {
             "endpoint": "GET /v1/accounts",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "GET",
             "needs_session": true
           },
           {
             "endpoint": "GET /v1/accounts/:id/import-preview",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "GET",
             "needs_session": true
@@ -54,6 +54,13 @@
           {
             "endpoint": "GET /v1/appointments",
             "source": "example",
+            "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/captures/:id",
+            "source": "engine",
             "auth": "user",
             "method": "GET",
             "needs_session": true
@@ -158,7 +165,7 @@
           },
           {
             "endpoint": "GET /v1/limits",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "GET",
             "needs_session": true
@@ -228,7 +235,7 @@
           },
           {
             "endpoint": "GET /v1/rules",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "GET",
             "needs_session": true
@@ -305,7 +312,7 @@
           },
           {
             "endpoint": "PATCH /v1/captures/:id",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "PATCH",
             "needs_session": true
@@ -319,7 +326,7 @@
           },
           {
             "endpoint": "PATCH /v1/items/:id",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "PATCH",
             "needs_session": true
@@ -354,14 +361,14 @@
           },
           {
             "endpoint": "POST /v1/accounts",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
           },
           {
             "endpoint": "POST /v1/accounts/:id/import",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
@@ -438,21 +445,21 @@
           },
           {
             "endpoint": "POST /v1/captures",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
           },
           {
             "endpoint": "POST /v1/captures/:id/finish",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
           },
           {
             "endpoint": "POST /v1/captures/:id/photos",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
@@ -529,7 +536,7 @@
           },
           {
             "endpoint": "POST /v1/items/:id/strategy",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
@@ -578,7 +585,7 @@
           },
           {
             "endpoint": "POST /v1/rules",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "POST",
             "needs_session": true
@@ -613,7 +620,7 @@
           },
           {
             "endpoint": "PUT /v1/limits",
-            "source": "example",
+            "source": "engine",
             "auth": "user",
             "method": "PUT",
             "needs_session": true

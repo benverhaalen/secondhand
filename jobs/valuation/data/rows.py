@@ -156,14 +156,17 @@ def _grailed_kind(category: str) -> str:
     return "apparel"
 
 
-# eBay meta categories (2012-13 tree) into kind families; verified against Codebook.xlsx, bo_lists.
+# NBER Codebook.xlsx, bo_lists D56:D93; plan decision 30 kinds (README has counts and limits).
+# https://back.nber.org/appendix/w24306/bargaining/Codebook.xlsx (read 2026-11-15).
 _EBAY_KIND = {
-    "1": "cards_collectibles", "220": "toys_lego", "237": "toys_lego", "260": "cards_collectibles", "267": "media",
-    "281": "jewellery_watches", "293": "electronics", "550": "lighting_home", "619": "other", "625": "electronics",
-    "870": "lighting_home", "888": "bikes_sports", "1249": "electronics", "11116": "cards_collectibles",
-    "11232": "media", "11233": "media", "11450": "apparel", "11700": "lighting_home", "12576": "appliances_tools",
-    "2984": "baby_gear", "15032": "electronics", "58058": "electronics", "64482": "cards_collectibles",
-    "20081": "lighting_home", "26395": "other", "45100": "other", "99": "other", "1281": "other", "14339": "other",
+    "1": "cards_collectibles", "99": "other", "220": "toys_lego", "237": "toys_lego",
+    "260": "cards_collectibles", "267": "other", "281": "other", "293": "electronics",
+    "316": "other", "550": "other", "619": "other", "625": "electronics", "870": "other",
+    "888": "other", "1249": "electronics", "1281": "other", "1305": "other", "2984": "other",
+    "3252": "other", "6000": "other", "10542": "other", "11116": "cards_collectibles",
+    "11232": "other", "11233": "other", "11450": "apparel", "11700": "other", "12576": "other",
+    "14339": "other", "15032": "electronics", "20081": "other", "26395": "other",
+    "45100": "cards_collectibles", "58058": "electronics", "64482": "cards_collectibles", "172008": "other",
 }
 _EBAY_CONDITION = {"1000": "new", "1500": "new_other", "1750": "new_with_defects", "2000": "manufacturer_refurbished",
                    "2500": "seller_refurbished", "2750": "like_new", "3000": "used", "4000": "very_good",
@@ -193,9 +196,12 @@ def nber_rows(raw, dropped: dict):
         except ValueError:
             _drop(dropped, "invalid_date")
             continue
+        if not sold and end > "2013-06-30":
+            _drop(dropped, "unsold_end_after_observation")
+            continue
         yield _row(
             row_id=f"nber_ebay_bo-{r['anon_item_id']}", source="nber_ebay_bo", licence=LICENCE["nber_ebay_bo"],
-            site="ebay", kind=_EBAY_KIND.get(r["meta_categ_id"], "other"), product_id=r["anon_product_id"] or "",
+            site="ebay", kind=_EBAY_KIND.get(str(_int(r["meta_categ_id"])), "other"), product_id=r["anon_product_id"] or "",
             category=r["meta_categ_id"], condition=_EBAY_CONDITION.get(str(_int(r["item_cndtn_id"])), ""),
             photo_count=_int(r["photo_count"]), seller_feedback=_int(r["fdbk_score_start"]),
             price_type="sold" if sold else "ended_unsold",
@@ -264,15 +270,15 @@ def mercari_apify_ccby(path: Path, dropped: dict):
 
 
 LICENCE = {
-    "mercari_kaggle": "Kaggle competition data (Mercari Price Suggestion Challenge); rules unread, non-commercial research use asserted",
+    "mercari_kaggle": "Kaggle Mercari Price Suggestion Challenge, Specific Rules A: competition use only (public search index, read 2026-11-15); used for the hackathon demo on Ben's call, 2026-11-15 09:09",
     "stockx_2019": "StockX Data Contest 2019, released by StockX for public analysis; no licence stated",
     "grailed_2021": "third-party scrape, no licence; Grailed's terms bar scraping and ML extraction",
     "nber_ebay_bo": "cleared for public release by eBay.com, research purposes (NBER); cite Backus et al. 2020 QJE",
     "ebay_comps_cc0": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); collected from eBay by a scraping actor",
-    "goodwill_cc0": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API, its terms unread",
+    "goodwill_cc0": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API; terms (Ownership, License, Acceptable Use) restrict reuse and automated extraction (read 2026-11-15)",
     "mercari_apify_ccby": "CC BY 4.0, attribution malekoweis/resale-market-data; collected from Mercari by a scraping actor",
 }
-# True only where the marketplace itself released the rows (research/price/ben/sold-datasets.md, "may_model").
+# True for marketplace-released rows whose terms allow this research use, and for Kaggle Mercari on Ben's call (sold-datasets.md, follow-up).
 MAY_MODEL = {"mercari_kaggle": True, "stockx_2019": True, "nber_ebay_bo": True, "grailed_2021": False,
              "ebay_comps_cc0": False, "goodwill_cc0": False, "mercari_apify_ccby": False}
 

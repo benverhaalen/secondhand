@@ -314,7 +314,8 @@ def fit(rows: list[dict], alpha: float = ALPHA, calib: float = CALIB) -> Model:
             y = r["price_cents"]
             s = max(math.log(lo / y), math.log(y / hi))
             scores.setdefault(_level(r, "category") + key, []).append(s)
-            scores.setdefault("*" + key, []).append(s)
+            if key:
+                scores.setdefault("*" + key, []).append(s)
             scores.setdefault("*", []).append(s)
         for g, s in scores.items():
             if g == "*" or len(s) >= MIN_GROUP:

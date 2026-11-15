@@ -51,6 +51,27 @@ An empty result is ok and empty.
 
 The current licence page was not fetched (it returned 403). Read it before production use. The harness keeps hashes, not buyer names, so a deletion notice has little to remove. The deletion subscription is still required before the first user call.
 
+## Public pages: not served (2026-11-15)
+
+The page lane exists by Nate's decision of 2026-11-15, "read ebay pages anyway" (`product/words.md`), and the official API replaces it the day keys exist. It is not built: eBay refused every public page we asked for, so there were no real pages to record or parse.
+
+| Read | Plain request (Chrome UA) | Browser Use Cloud (US proxy, `solveCaptchas: false`) |
+|---|---|---|
+| search `/sch/i.html?_nkw=levis+501` | 403, 1,739 B, ~110 ms | 403, 1,892 B, 504 ms |
+| sold search (`&LH_Sold=1&LH_Complete=1`) | 403, ~110 ms | 403, 394 ms |
+| zero-result search | not tried | 403, 356 ms |
+| listing `/itm/100000000001` | not tried | 403, 317 ms (a 404 was expected) |
+| listing, ended listing, storefront `/usr/<name>` | no item id to visit | no item id to visit |
+
+Every 403 was the same page, titled "Error Page | eBay", with the text "SORRY Something went wrong on our end" and a reference id. It is not a captcha. We did not retry, change the browser, or try another proxy, because that would be routing around a block. `recon.ts` records the pages again: `node --no-warnings app/src/edge/harness/sites/ebay/recon.ts <out-dir> [query]`, with the out-dir outside the repo. `adapter.ts` exports the `URLS` and `CHALLENGE` it uses. Run note: `research/cross-cutting/nate/runs/ad-ebay-page.md`.
+
+**Terms, all read 2026-11-15.**
+- [robots.txt](https://www.ebay.com/robots.txt), version `v30.2_COM_August_2026`, `User-agent: *` group: `Disallow: /sch/`, `Disallow: /sch/i.html?_nkw=`, `Disallow: /sch/i.html?*_nkw=*&`, `Disallow: /*_kw`. Plain `/itm/<id>`, `/str/<name>` and `/usr/<name>` are not disallowed (only query variants such as `/itm/*_nkw`, `/itm/*_pgn=`, `/str/*_sacat`, `/usr/*/followers`).
+- The robots.txt header: "The use of robots or other automated means to access the eBay site without the express permission of eBay is strictly prohibited", "Automated scraping, buy-for-me agents, LLM-driven bots, … is strictly prohibited", and "Approved enterprise integrations must use our official API and comply with our API License Agreement".
+- [User Agreement](https://www.ebay.com/help/policies/member-behaviour-policies/user-agreement?id=4259), "effective as of June 28, 2026": you may not "use any robot, spider, scraper, data mining tools, data gathering and extraction tools, or other automated means (including, without limitation buy-for-me agents, LLM-driven bots, or any end-to-end flow that attempts to place orders without human review) to access our Services for any purpose, except with the prior express permission of eBay".
+
+Until keys exist, a public read with no keyset answers `no_route` with a handoff to the eBay page, as above. The kernel now moves to the next route on `no_route` (`protocol.ts`), so a page route can sit behind the API route with no change here once one can be built.
+
 ## Nate's setup: keyset and RuName
 
 1. Sign in at [developer.ebay.com](https://developer.ebay.com) and join the Developers Program.
