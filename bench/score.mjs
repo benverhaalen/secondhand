@@ -153,11 +153,13 @@ function delists(records) {
 
 function scoreTool(tool, records, itemsToScore) {
   const all = refs(records);
+  const carriesAnswer = record => record.facts.some(fact=>fact.count>=1) || record.numbers.length>0;
+  const empty = records.filter(record=>record.ok && !carriesAnswer(record));
   const answered = itemsToScore.map(item => {
     const matches = records.filter(r=>r.item_id===item.id);
     return { item_id:item.id, matches, ok:matches.filter(r=>r.ok) };
   });
-  const covered = answered.filter(item=>item.ok.length);
+  const covered = answered.filter(item=>item.ok.some(carriesAnswer));
   const sites = covered.map(item=>({
     item_id:item.item_id,
     sites:metric(new Set(item.ok.flatMap(r=>r.sites)).size,item.ok.length,item.matches.length,refs(item.ok)),
@@ -176,6 +178,7 @@ function scoreTool(tool, records, itemsToScore) {
   return { tool, rows: {
     '1': {
       coverage:share(covered.length,itemsToScore.length,all),
+      empty:{ n:empty.length, of:records.length, records:empty.length ? refs(empty) : all },
       sites:{ median:metric(median(sites.map(s=>s.sites.value)),sites.length,itemsToScore.length,covered.length ? refs(covered.flatMap(i=>i.ok)) : all), items:sites },
     },
     '2': { items, median:metric(median(items.map(i=>i.kinds.value)),items.length,itemsToScore.length,all), max:metric(Math.max(...items.map(i=>i.kinds.value)),items.length,itemsToScore.length,all) },
