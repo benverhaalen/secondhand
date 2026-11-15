@@ -199,7 +199,7 @@ export function plan(state: State, params: ParamStore) {
   candidates.push(...shotsToAsk);
   if(state.studio?.requested && !shooting)for(const ask of state.studio.asks) {
     const step=studioStep(ask);
-    if(ask.type==='measure' || state.kept.includes(step))continue;
+    if(ask.type==='measure' || state.kept.includes(step) || candidates.some(candidate=>candidate.question.shot?.for==='studio' && candidate.question.shot.step===step))continue;
     candidates.push({rows:[],question:{
       id:`q_${state.capture_id}_studio_${step}`,field:step,kind:'shot',options:[],other:false,
       shot:{step,reason:'add',for:'studio',...(ask.zone?{zone:ask.zone}:{}),...(ask.kind?{flaw_kind:ask.kind}:{})},

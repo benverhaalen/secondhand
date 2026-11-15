@@ -12,6 +12,17 @@ after(async () => { await app?.stop(); });
 // A switch is pressed by a click on its button, so the test does not wait on the sheet's entrance animation.
 const flip = (s, id) => s.page.getByTestId(id).tap({ force: true });
 const covers = s => s.page.locator('[data-part="listing-preview"] [data-part="photo-card"] img').evaluateAll(els => els.map(e => e.getAttribute('src')));
+// The switch says it moved, then the covers are read once the image has swapped: a photo cross-fades, so the old one
+// can still be in the page for a moment after the tap.
+const flipped = (s, id, on) => s.page.waitForSelector(`[data-testid="${id}"] [data-part="switch"][data-on="${on}"]`);
+async function coversOnce(s, not) {
+  for (let i = 0; i < 50; i++) {
+    const now = await covers(s);
+    if (now.length && now.every(src => src !== not)) return now;
+    await s.page.waitForTimeout(100);
+  }
+  return covers(s);
+}
 
 test('post: one draft goes to all five sites with one tap that says so', async () => {
   const s = await app.open(STAGE);
@@ -26,10 +37,12 @@ test('post: Clean up and Enhance with AI change every site’s cover live', asyn
   const ai = await covers(s);
   assert.equal(new Set(ai).size, 1, 'every site shows the same cover');
   await flip(s, 'look-ai');
-  const clean = await covers(s);
+  await flipped(s, 'look-ai', false);
+  const clean = await coversOnce(s, ai[0]);
   assert.notEqual(clean[0], ai[0], 'turning the AI off shows the cleaned-up photo');
   await flip(s, 'look-clean');
-  const original = await covers(s);
+  await flipped(s, 'look-clean', false);
+  const original = await coversOnce(s, clean[0]);
   assert.notEqual(original[0], clean[0], 'turning Clean up off shows the photo as shot');
   await s.page.close();
 });

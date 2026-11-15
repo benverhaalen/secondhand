@@ -45,7 +45,7 @@ const reply: Handler = async ctx => {
   const normalise = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
   const backed = checked.verdict === 'pass' && checked.claims.every(claim => facts.some(fact =>
     normalise(claim.text) === normalise(fact.value) || normalise(claim.text) === normalise(fact.name + ': ' + fact.value)));
-  ctx.log.change('claim_check', row.id, backed ? 'pass' : 'hold', { claims_count: checked.claims.length });
+  ctx.log.event('state.change', { entity: 'claim_check', id: row.id, to: backed ? 'pass' : 'hold', claims_count: checked.claims.length });
   if (!backed) throw new ApiError('outside_limits', 'reply has unbacked claims', 'claim_check', { by: 'user' });
   const now = new Date().toISOString();
   const result = st.tx(t => {

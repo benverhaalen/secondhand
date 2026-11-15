@@ -1417,7 +1417,10 @@ Ben, studio thread, 08:14 UTC.
 Ben, studio thread, 09:00 UTC.
 > how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
 
-Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
+Ben, project chat (relayed), 09:09 UTC, the parts about the studio.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too.
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md) ("Why each number"), jobs/studio/plan.py (`relay_measured`).
 
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
@@ -1610,6 +1613,17 @@ Ben, project chat, 08:43 UTC.
 
 Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
 
+## 2026-11-15 the hero from the reference, four-finger hands, stop-motion sprites and a lean site workflow
+Ben, project chat, 08:31 UTC, relayed to the website thread.
+> ensure to update the workflow too for the website making too but apply it to that scenario then. for the hugeicons the hands i want you to use are hugeicons but for the default static hand i want the four finger03. for creating animations, they dont have to be crazy smooth. like stop motion like. let codex through cli handle all the generation. it should be making sprites essentially or like short animations. pick only a couple that should be done. the dap is one. the wave. pulling on something maybe. ensure the icons are aligned. the website should look super close to that one website reference i was talking about as far as the hero goes in the pills and the layout. think of a way to make the wordmark text use color or some way to improve it. ensure all written text aheres to the anti slop claudish skill or rules i have. i dont like how the top bar is black. it should really really try to use the brand guidelines and constitution well. add more of the gradient type look. the 'secondhand' text in the hero area should have the hands on either side too. and the hands should be on each side of it. another note, it looks like there is a shadow behind just the text. i want like a semi transparent overlay with a moving gradient that slowly changes color. also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+Used in: [the website's workflow](../brand/explore/web-home/README.md), [the hero](../brand/explore/web-home/hero/index.html), [the sprites](../brand/explore/web-home/sprites/).
+
+## 2026-11-15 the depop partner api is a proposal, never a claim
+Ben, project chat, 08:32 UTC.
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+Used in: [intent ledger](../spec/intent-ledger.md).
 ## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
 Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
 > not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
@@ -1642,6 +1656,13 @@ Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the or
 > you havent worked out far enough, ebay does work in cases, I've seen it used
 
 Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+## 2026-11-15 ben ui idea images through codex, the app's photo model through the api key
+Ben, project thread on UI flows, 09:04 and 09:05 UTC, after the demo's AI cover was kept on Nano Banana. Two messages.
+> for the photo model in creating ui ideas, use codex. for using a model inside the app for improving photos, use the api key
+
+> nano banana in api key
+
+Used in: [app flows, photos](app-flows.md#photos-before-and-after-live).
 
 ## 2026-11-15 every why explained, numbers that help, and a statistic we can defend
 Ben, project chat, 08:59 UTC.
@@ -1666,3 +1687,50 @@ Nate, build session (orchestrator), 2026-11-15 about 08:20 to 08:45 Central. Two
 > Well we only really need to read right? we can't have the dom substrate run on the ios phone can we? understand and engineer around this
 
 Used in: the read-lanes design, `spec/engines/protocol-and-adapters.md` when it is written.
+
+## 2026-11-15 nate browser use's own benchmark shows a way through on ebay
+Nate, build session (orchestrator), 2026-11-15 about 09:00 Central. Two messages, each a link.
+> https://browser-use.com/benchmarks/consumer/sites/ebay Here, theres a work around
+
+> https://browser-use.com/benchmarks/consumer
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 nate benchmark numbers that mean something, and graphics that show what we build on databricks
+Nate, build session (orchestrator), 2026-11-15 about 09:20 Central, with a link to Browser Use's showcase.
+> account as well for these and more ways to utilize browser use as inspiration to optimize and then position how we can benchmark numbers that mean something how fast it is, start to imagine designs for graphics that also exhibit how we build on databricks leverage and really expand the potential of the platform
+> https://browser-use.com/showcase
+
+Used in: [the open benchmark, speed that means something](../spec/benchmark.md#speed-that-means-something-and-what-the-lakehouse-adds).
+
+## 2026-11-15 nate ebay's regional sites reach us listings
+Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting the orchestrator's reading of Browser Use's eBay benchmark page.
+> No it shows that ebay.com doesnt work but ebay.co.uk , ebay.de, ebay.ie , and ebay.be work, which we can still probably use to access us listings and such, even sign in
+
+Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).
+
+## 2026-11-15 nate use the platforms that sit on the ebay api or the like, and build on what they have proven
+Nate, build session (orchestrator), 2026-11-15 about 10:20 Central.
+> Well the aggregation or other platforms that utilize the ebay api or something of that nature can be used instead, perhaps for even more information, they might lend features proven we can piggy back on and drive to empower all engines.
+
+Used in: `research/data/nate/data-services-on-marketplace-apis.md` when it lands.
+
+## 2026-11-15 nate turn on the captcha solver if it solves problems, and assess completion as a percent
+Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
+> Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
+
+Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
+
+## 2026-11-15 nate correct the answers that come in, and check the engines' spec makes scientific sense and the real-time gathering works
+Nate, build session (orchestrator), 2026-11-15 about 11:30 Central.
+> Ensure all answers that come in are corrected. assess that the engines and how things are determined and weighted, is written out in a spec that makes research proven and scientific sense, that the realtime gathering of this works
+
+Used in: `spec/plans/sweep/science-audit.md` and `scripts/realtime-proof.mjs` when they land.
+
+## 2026-11-15 nate production ready, the auditors once more, organize the repo, and prepare on the mac for testflight
+Nate, build session (orchestrator), 2026-11-15 about 11:45 to 11:55 Central. Two messages.
+> Get everything fully production ready and prepared, run the professional auditors across the app once more, understand how to apply the correct lenses to everything, organize the repo
+
+> We will prepare, rigorously and accurately on mac test to prepare for testflight in hands development
+
+Used in: the second round of audits under `spec/plans/sweep/round-2/`; [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).

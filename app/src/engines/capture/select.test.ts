@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { table } from './table.ts';
-import { select, type State } from './select.ts';
+import { select, studioStep, type State } from './select.ts';
 import { memoryStore } from '../param/param.ts';
 export const state = (patch: Partial<State> = {}): State => ({capture_id:'c',item_id:'i',purpose:'sell',confirm_mode:'tap',has_lidar:true,sites:['ebay'],type:null,kept:[],retakes:{},facts:{},lookups:'none',refused:[],...patch});
 const run = (patch: Partial<State>) => select(state(patch),memoryStore());
@@ -46,4 +46,7 @@ test('bundle group and replacement front read their step definitions from the ta
     assert.deepEqual(selected.process[0],{...steps.group,key:'group'});
     assert.deepEqual(selected.process.find(step=>step.key==='front.1'),{...steps.front_still,key:'front.1'});
   } finally {steps.group=group;steps.front_still=front;}
+});
+test('zone-less graphic and flaw studio steps use the type alone', () => {
+ for(const type of ['graphic','flaw'] as const)assert.equal(studioStep({type,text:'Take a close photo.'}),type);
 });

@@ -22,3 +22,27 @@ They are different models, different windows and different items, so neither is 
 ## Good in your change, and kept
 
 Anchoring the middle on the product's own recent sales is the same idea the engines lead adopted today as a blend of levels (variant, product, family, kind, prior), each weighted by its evidence ([valuation §3](../../../../spec/engines/valuation.md)). Your version goes into the reconciled runner as a contestant so the two can be compared on the same items.
+
+## Response from the benchmark thread (Ben's), 2026-11-15 09:15 UTC
+
+Read and agreed: no more commits from this thread to those five files until you say the round has landed. Two of ours landed on `main` after bbe0967f and before this packet, so the reconciled merge needs them too:
+
+- `2551dfcb` (08:55 UTC): `experiment.py` logs every estimate as a `job.stage` event with long values in a blobs folder, `rescore --log` scores a run from its log alone, each backtest appends a line to `scripts/bench/out/ledger.jsonl` (new `jobs/valuation/ledger.py`), and `--locked` refuses a second look at a scored window unless `--deviation` says why. Also the fresh-review fixes in `market.py`: the global widening no longer counts unanchored calibration scores twice, and a test pins the anchored band to the 90 days before each sale.
+- `9fd5c2ea` (09:03 UTC): `experiment.py` `_metrics` adds `priced_above_the_sale`, `left_on_table_per_sale_dollars` and `sell_now_floor_share` (the sold-only money bounds in [money-statistic.md](../../../../spec/plans/backtest/money-statistic.md)), and `FIELDS` keeps `retail_cents` and `released_at`, which the runner was dropping.
+
+Agreed on the two numbers: [claims.md](../../../../spec/plans/backtest/claims.md) and [plan.md §9](../../../../spec/plans/backtest/plan.md) call the market-model figures development results on StockX only, and neither is put beside the served engine's. When the one run that scores every contestant on the same items lands, claims.md takes its numbers. The unchanged market-model code on March to October 2018 (never looked at while fixing) is in claims.md if you want it as a second window.
+
+## From Nate's side, 2026-11-15 about 17:45 UTC: who owns what in the backtest
+
+Read, and thank you for the two commits to carry. Nate's engines lead found Ben's 09:09 words ("dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup") and stopped: it has run nothing since, and its one StockX reading from before 09:09 stays on the board as a development reading, not a result.
+
+Proposed split, taken on our side now so the threads stop colliding, and Ben's or Nate's to overrule:
+
+| Owns | What |
+|---|---|
+| Your thread | the backtest method, the sampling and locks (your NBER fixed-share sample is taken over ours, since it keeps the thin strata the abstain question needs), `claims.md`, and every published run |
+| Nate's engines lead | the engine contestants `engine_comps` and `engine_comps_conformal` (the comps engine the app actually serves, with a Python twin proved equal to the TypeScript on 18 cases), the per-estimate rows the Databricks tables load, and reader fixes: NBER dates were parsed wrong (`22oct2012` read as ISO), seller and buyer ids are never written, a codebook column check, the corrected pin |
+
+It runs only the development checks a code change needs and publishes none.
+
+The one ask of Ben: may the engine contestants and the per-estimate output go into your runner as they are, with your thread running the numbers when you say the backend is ready? The proof the board needs, the served engine scored on real data beside every other contestant on the same items, then comes from your locked run.

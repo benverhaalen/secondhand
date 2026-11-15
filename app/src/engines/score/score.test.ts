@@ -1,33 +1,69 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { successScore, type ScoreInput } from './score.ts';
+import { successScore, type ScoreInput, type Utility } from './score.ts';
 import { memoryStore } from '../param/param.ts';
-function fixture(): ScoreInput {
+function fixture(): ScoreInput & {best: Utility} {
   const params = memoryStore();
-  params.declare({ name: 'score_bands', family: 'model_ref', prior: { cuts: [35, 60, 85] } });
+  params.declare({ name: 'score_bands', family: 'model_ref', prior: null });
+  const model = params.propose({ name: 'score_bands', scope: {site:'ebay'}, family: 'model_ref', value_or_hyperparams: {cuts:[35,60,85]}, prior:null, fitted_on_ids_hash:null, n_eff:100, metric:'brier', held_out_score:0, guard_lo:null, guard_hi:null }, 0);
+  params.promote('score_bands', {site:'ebay'}, model.version, 0, '2026-11-15');
   return { listing_id: 'l1', as_of: '2026-11-15T00:00:00Z', site: 'ebay', floor_cents: 4000, objective: 'balanced', plan_choice: 'sell',
     now: { expected_keep_cents: 4000, expected_days: 10, holding_cost_cents: 10 }, best: { expected_keep_cents: 5000, expected_days: 10, holding_cost_cents: 10 },
     axes: ['financial', 'quality', 'visibility', 'trend'].map(axis => ({ axis, state: 'shown', value: .8, citation_id: `citation:${axis}` })),
-    basis: [{ id: 'sold1', source: 'fixture:sold', at: '2026-11-14', price_cents: 5000 }], params, log: { timed: (_n, fn) => fn() } };
+    basis: Array.from({length:6}, (_,i) => ({ id: `sold${i}`, source: 'fixture:sold', at: '2026-11-14', price_cents: 5000 })), params, log: { timed: (_n, fn) => fn() } };
 }
 test('no sale yet is provisional and score opens to utility parts and citations', () => {
   const out = successScore(fixture()); assert.equal(out.state, 'shown'); assert.equal(out.provisional, true);
   assert.equal(out.value, Math.round(100 * 3900 / 4900));
   assert.equal(out.parts.now.keep_cents, 4000); assert.equal(out.parts.now.holding_cents, 100); assert.ok(out.citation_id);
 });
+test('success names the weakest supplied utility or axis basis', () => {
+  const x = fixture();
+  const out = successScore({...x,now:{...x.now,basis_level:'product'},best:{...x.best!,basis_level:'family'},
+    axes:x.axes.map(a => ({...a,basis_level:'kind'}))});
+  assert.equal(out.state,'shown'); assert.equal(out.basis_level,'kind');
+  assert.equal(successScore({...x,basis_level:'prior'}).basis_level,'prior');
+  assert.equal(successScore(x).basis_level,'variant');
+});
+test('a prior utility without sales or axes still gives a score with no fabricated citation', () => {
+  const out = successScore({...fixture(),basis_level:'prior',basis:[],axes:[]});
+  assert.equal(out.state,'shown'); assert.equal(out.value,Math.round(100*3900/4900));
+  assert.equal(out.basis_level,'prior'); assert.equal(out.citation_id,null);
+});
+test('invalid basis level is refused by name', () => {
+  assert.throws(() => successScore({...fixture(),basis_level:'category'} as unknown as ScoreInput),/basis_level/);
+});
 test('refund rescored from net kept and actual days', () => {
   const x = fixture(); x.receipt = { keep_cents: 5000, refund_cents: 0, days: 10 };
   const before = successScore(x); const after = successScore({ ...x, receipt: { ...x.receipt, refund_cents: 2000 } });
   assert.equal(before.provisional, false); assert.ok(after.value! < before.value!); assert.equal(after.parts.now.keep_cents, 3000);
 });
-test('a hidden axis hides the combined score and band', () => {
+test('a hidden axis leaves the available utility score shown', () => {
   const x = fixture(); x.axes[2].state = 'hidden';
-  const out = successScore(x); assert.equal(out.state, 'hidden'); assert.equal(out.value, null); assert.equal(out.band, 'still_learning');
+  const out = successScore(x); assert.equal(out.state, 'shown'); assert.equal(out.value, Math.round(100 * 3900 / 4900)); assert.equal(out.band, 'on_track');
 });
-test('best unavailable or missing axis cannot publish a number', () => {
-  const x = fixture(); x.best.expected_keep_cents = 0;
-  assert.equal(successScore(x).value, null);
-  assert.equal(successScore({ ...fixture(), axes: [] }).value, null);
+test('unavailable best hides while missing axes retain a utility score', () => {
+  const out = successScore({ ...fixture(), best: null });
+  assert.equal(out.value, null);
+  assert.equal(out.state, 'hidden');
+  assert.equal(out.hide_reason, 'source_gap');
+  assert.equal(successScore({ ...fixture(), axes: [] }).state, 'shown');
+});
+test('zero and negative best utilities stay shown with the bounded utility ratio', () => {
+  for (const expected_keep_cents of [0,100]) {
+    const out = successScore({...fixture(),best:{expected_keep_cents,expected_days:10,holding_cost_cents:10}});
+    assert.equal(out.state,'shown'); assert.equal(out.value,expected_keep_cents===0 ? 0 : 100);
+  }
+  const x = fixture();
+  assert.equal(successScore({...x,now:{expected_keep_cents:0,expected_days:15,holding_cost_cents:10},
+    best:{expected_keep_cents:0,expected_days:10,holding_cost_cents:10}}).value,100);
+});
+test('unlabelled zero placeholders without price evidence mean best is unavailable', () => {
+  const empty = {expected_keep_cents:0,expected_days:0,holding_cost_cents:0};
+  const x = {...fixture(),now:empty,best:empty,basis:[],axes:[]};
+  assert.equal(successScore(x).state,'hidden');
+  assert.equal(successScore(x).hide_reason,'source_gap');
+  assert.equal(successScore({...x,basis_level:'prior'}).state,'shown');
 });
 test('planted price fix below floor is never recommended', () => {
   const x = fixture(); x.changes = [{ kind: 'markdown', price_cents: 100, projected: { ...x.best } }, { kind: 'agent_revision', projected: { ...x.best, expected_keep_cents: 4800 } }];
@@ -50,21 +86,35 @@ test('F7: an invalid floor cannot authorize a markdown to zero', () => {
   assert.equal(successScore({ ...fixture(), floor_cents: 0 }).state, 'shown');
 });
 
-test('F8: fractional holding costs publish whole cent utility parts', () => {
-  const x = fixture();
-  x.now = { expected_keep_cents: 4000.3, expected_days: 3.3, holding_cost_cents: 10.6 };
-  const out = successScore(x);
-  for (const parts of [out.parts.now, out.parts.best]) {
-    for (const [name, value] of Object.entries(parts))
-      if (name.endsWith('_cents')) assert.ok(Number.isInteger(value), name);
+test('fractional money in utility and projections refuses with its field', () => {
+  for (const field of ['expected_keep_cents', 'holding_cost_cents']) {
+    const x = fixture();
+    assert.throws(() => successScore({...x, now: {...x.now, [field]: .5}}), new RegExp(field));
+    assert.throws(() => successScore({...x, changes:[{kind:'agent_revision', projected:{...x.best, [field]: .5}}]}), new RegExp(field));
   }
 });
 
-test('F8: a winning change publishes whole cent projections', () => {
+test('thin and stale proof retain success while projections keep their guards', () => {
   const x = fixture();
-  x.changes = [{ kind: 'agent_revision', projected: { expected_keep_cents: 4900.4, expected_days: 1, holding_cost_cents: 10.6 } }];
-  const change = successScore(x).change;
-  assert.ok(change);
-  assert.ok(Number.isInteger(change.projected.expected_keep_cents));
-  assert.ok(Number.isInteger(change.projected.holding_cost_cents));
+  assert.equal(successScore({ ...x, basis: x.basis.slice(0, 1) }).state, 'shown');
+  assert.equal(successScore({ ...x, basis: Array.from({length: 6}, (_,i) => ({id: `old${i}`, source: 'sold', at: '2020-01-01'})) }).state, 'shown');
+});
+test('markdown needs a price and tied changes use kind then price', () => {
+  const x = fixture();
+  assert.equal(successScore({ ...x, changes: [{kind: 'markdown', projected: x.best}] }).change, null);
+  const changes = [{kind: 'markdown' as const, price_cents: 4500, projected: x.best}, {kind: 'agent_revision' as const, projected: x.best}];
+  assert.deepEqual(successScore({...x, changes}).change, successScore({...x, changes: [...changes].reverse()}).change);
+});
+
+test('invalid change money refuses at the boundary even with hidden axes', () => {
+  const x = fixture();
+  for (const price_cents of [-1,.5,NaN,Infinity]) assert.throws(() => successScore({...x,axes:[],changes:[{kind:'markdown',price_cents,projected:x.best}]}),/price_cents/);
+});
+test('proof guard reads champion thresholds and records their versions', () => {
+  const x = fixture();
+  x.params!.declare({name:'proof_min_n_eff',family:'scalar',prior:6});
+  const row = x.params!.propose({name:'proof_min_n_eff',family:'scalar',scope:{site:x.site},value_or_hyperparams:1,prior:6,n_eff:10,fitted_on_ids_hash:null,metric:'coverage',held_out_score:1,guard_lo:0,guard_hi:null},0);
+  x.params!.promote(row.name,row.scope,row.version,0,x.as_of);
+  const out = successScore({...x,basis:x.basis.slice(0,1)});
+  assert.equal(out.state,'shown'); assert.equal(out.citation?.param_versions.proof_min_n_eff,1);
 });
