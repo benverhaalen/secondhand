@@ -26,15 +26,17 @@ export function seedExamples(st: Store) {
   };
   st.tx(() => {
     const card = response('items.get');
+    if (typeof card.id !== 'string') throw new Error('example item has no id');
     const tiles = response('items.list').data as Row[];
-    seed('item', { ...card, tile: tiles.find(row => row.id === card.id), strategy_options: { fast: response('items.strategy').strategies } } as Row);
+    seed('item', { ...card, id: card.id, user_id: EXAMPLE_USER, tile: tiles.find(row => row.id === card.id), strategy_options: { fast: response('items.strategy').strategies } });
     for (const tile of (response('items.list').data as Row[])) seed('item', { attributes: [], photos: [], listings: [], ...tile, tile });
     for (const listing of card.listings as Row[]) seed('listing', { ...listing, item_id: card.id, account_id: listing.site === 'ebay' ? 'acc_eb1' : 'acc_dp1', required_fields: ['chest_width'] });
     const preview = response('accounts.import_preview');
     for (const listing of preview.listings as Record<string, unknown>[]) seed('listing', { ...listing, id: `ls_import_${listing.external_id}`, account_id: preview.account_id, site: preview.site, import_preview: true, read_at: preview.read_at });
     for (const account of response('accounts.list').data as Row[]) seed('account', account);
     const depop = response('accounts.connect.depop');
-    seed('account', { ...depop, pending: true, read_at: preview.read_at, purchases: preview.purchases });
+    if (typeof depop.id !== 'string') throw new Error('example account has no id');
+    seed('account', { ...depop, id: depop.id, user_id: EXAMPLE_USER, pending: true, read_at: preview.read_at, purchases: preview.purchases });
     const limits = response('limits.get');
     const { items, ...userLimits } = limits;
     seed('limits', { ...userLimits, id: EXAMPLE_USER });

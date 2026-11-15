@@ -164,6 +164,13 @@ One block per site. Recon its own data calls before page driving; use official A
 - [ ] proof: higher bands sell more often on the fixed set
 - [ ] all of it: `node --test app/src/engines/` and `python -m pytest jobs/valuation jobs/negotiation`
 
+Engines lead's record, 2026-11-15. Nothing here is ticked until a fresh reviewer has read the diff.
+- Audit: [spec/engines/audit.md](../engines/audit.md) holds 384 defects across 13 engines, against 8 rules (deterministic, whole cents, no hard-coded tunable, guarded and cited, twins agree, real time, one name and unit, edges). Fix workers per engine; this list grows as each merges.
+- Valuation accuracy on released data, `dataset:stockx_2019` (new deadstock sneakers, sales of 2019-01-01 to 2019-02-13), the served engine `engine_comps`: 16,193 sales, 99.9% priced, median error 5.6%, within 20% 93.8%, median range width 15.5%, coverage of q10 to q90 62.2% (Wilson 61.4 to 62.9) against 80%. Open fault: the raw range is too narrow; the conformal step needs its calibration window (in flight). Command: `python3 scripts/bench/backtest.py backtest --rows <stockx csv> --test-from 2019-01-01 --contestants engine_comps,engine_comps_conformal --cells C` on fe4e2bf. Not comparable with the product-anchored model's 98% (a different contestant and window); both go into one run on the same items.
+- Twins proved equal on shared fixtures: comps D1 to D5, 18 cases (`node --test app/src/engines/valuation/comps.parity.test.ts`, `pytest jobs/valuation/test_comps_parity.py`); the param registry, 17 cases (`node --test app/src/engines/param/parity.test.ts`, `pytest jobs/param`); the trust sigmoid, Platt and isotonic (`calibration.parity.test.ts`, `jobs/trust/test_calibration_parity.py`).
+- Real time: both param stores forget at one 30-day half-life, computed from timestamps when the caller passes none (before: the Lakebase store used a 21-day half-life, and person and trust weights never forgot). Command: `node --test app/src/engines/param/sql.test.ts`.
+- Defects found and closed: the claim check passed a negated claim as backed ("not wool, real cashmere" against wool). Fixed in 2889bab8: 20 drafts, 10 planted false claims all held, 10 clean all passed (`node --test app/src/edge/gate/claims.test.ts`). Limit: a false value outside fields-by-kind's lists is held as unbacked, not labelled contradicted. Trust mixed cents and dollars in its loss (100 times wrong), closed in 610edcec. Two citations of different metrics shared an id, closed in 764e1b1. Champion offers were accepted under a firm posture, closed in 1d59b81. Rollback undid one observation instead of restoring the fitted champion: found in review, fix in flight.
+
 ## 12 Scoring: knowledge
 
 

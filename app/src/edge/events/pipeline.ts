@@ -28,6 +28,15 @@ export interface PipelineLog {
   error(where: string, e: unknown, fields?: Record<string, unknown>): unknown;
   event(name: string, fields?: Record<string, unknown>, level?: string): unknown;
 }
+export type EngineSettlement =
+  | { settle: 'pause'; err: { code: string; message: string } }
+  | { settle: 'later'; after_s: number; err?: { code: string; message: string } }
+  | { settle: 'fail'; err: { code: string; message: string } };
+
+function engineSettlement(value: unknown): value is EngineSettlement {
+  return !!value && typeof value === 'object' && 'settle' in value && ['pause', 'later', 'fail'].includes(String(value.settle));
+}
+
 export type Engine = (job: JobRow) => unknown | Promise<unknown>;
 export interface PipelineDeps {
   store: Store; harness: HarnessLike; leases: Leases; params: Params; log: PipelineLog;
@@ -218,6 +227,12 @@ export function createPipeline(d: PipelineDeps) {
       const h = HANDLERS[j.kind];
       if (!h) throw new Stop({ k: 'fail', err: { code: 'no_handler', message: `no_handler: ${j.kind}` } });
       const result = await h(ctx, store.getJob(j.id)!);
+      if (engineSettlement(result)) {
+        if (result.settle === 'later' && result.err) store.updateJob(j.id, { error: result.err });
+        if (result.settle === 'later') settle(store.getJob(j.id)!, { k: 'later', after_s: result.after_s });
+        else settle(store.getJob(j.id)!, { k: result.settle, err: result.err });
+        return;
+      }
       store.updateJob(j.id, { state: 'done', result });
       log.job(j.id, j.kind, 'done');
     } catch (e) {

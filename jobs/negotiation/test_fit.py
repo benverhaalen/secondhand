@@ -84,3 +84,47 @@ def test_person_scope_refuses_foreign_or_unowned_rows(split, owner):
     with pytest.raises(ValueError, match='person scope'):
         nightly(training, held, Logistic({'global': -1.}, [1.]), store, {'person': 'owner'}, '2026-11-15')
     assert not store.rows
+
+
+def test_prediction_does_not_require_outcome_label():
+    assert Logistic({}, [0]).predict({'site': 'ebay', 'category': 'jacket', 'features': [1]}) == .5
+
+
+def test_return_calibration_validates_returned_not_accepted():
+    data = [{k: v for k, v in r.items() if k != 'accepted'} for r in rows()]
+    model = fit(data, Logistic({}, [0]), 'returned')
+    assert np.isfinite(log_loss(model, data, 'returned'))
+    with pytest.raises(ValueError, match='returned'):
+        calibration_error(model, [{**data[0], 'returned': 2}], 'returned')
+
+
+def test_scoped_probability_and_missing_parameter():
+    from negotiation.params import resolve, DECLARED
+    priors = {d['name']: d['prior'] for d in DECLARED}
+    params = resolve(lambda name, scope: {'value': .4 if name == 'negotiation_p_lo' else priors[name], 'version': 7}, {'site': 'ebay'})
+    model = Logistic({'global': -100}, [0], params=params)
+    assert model.predict(rows()[0]) == .4
+    assert model.payload()['param_versions']['negotiation_p_lo'] == 7
+    del params['values']['negotiation_p_lo']
+    with pytest.raises(ValueError, match='missing negotiation_p_lo'):
+        model.predict(rows()[0])
+
+
+def test_shared_logistic_and_half_life():
+    import json
+    from pathlib import Path
+    from negotiation.fit import half_life
+    f = json.loads((Path(__file__).resolve().parents[2] / 'app/src/engines/negotiation/twins.json').read_text())
+    for c in f['logistic']:
+        assert Logistic(c['terms'], c['weights']).predict(c['row']) == pytest.approx(c['expected'], abs=1e-12)
+    for c in f['decay']:
+        assert half_life(c['days']) == pytest.approx(c['expected'], abs=1e-12)
+
+
+@pytest.mark.parametrize('value', [0, 1])
+def test_return_prior_requires_finite_log_odds(value):
+    from negotiation.params import resolve, validate
+    p = resolve()
+    p['values']['negotiation_q_return'] = value
+    with pytest.raises(ValueError, match='negotiation_q_return'):
+        validate(p)

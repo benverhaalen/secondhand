@@ -1653,13 +1653,30 @@ Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the or
 > you havent worked out far enough, ebay does work in cases, I've seen it used
 
 Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+## 2026-11-15 ben ui idea images through codex, the app's photo model through the api key
+Ben, project thread on UI flows, 09:04 and 09:05 UTC, after the demo's AI cover was kept on Nano Banana. Two messages.
+> for the photo model in creating ui ideas, use codex. for using a model inside the app for improving photos, use the api key
 
+> nano banana in api key
+
+Used in: [app flows, photos](app-flows.md#photos-before-and-after-live).
+
+## 2026-11-15 every why explained, numbers that help, and a statistic we can defend
+Ben, project chat, 08:59 UTC.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [evidence constitution](constitutions/evidence.md), [price constitution](constitutions/price.md).
 ## 2026-11-15 nate there is a way to use browser use cloud we are not considering
 Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eBay finding.
 > Theres some way to browser use cloud you aren't considering
 
 Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
 
+## 2026-11-15 ben every number and decision says why; the StockX statistic is how much more money than the median
+Ben, project timeline, 08:59 UTC, after the 20 and 80 targets were explained.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [pitch constitution R11](pitch-constitution.md#part-vi-rules), [the money statistic](../spec/plans/backtest/money-statistic.md).
 ## 2026-11-15 nate build on firecrawl or a substrate that reads the dom, we only need to read, and it cannot run on the phone
 Nate, build session (orchestrator), 2026-11-15 about 08:20 to 08:45 Central. Two messages.
 > We can build something off of firecrawl to develop it in a way that reduces the bot detect, or a substrate like built to pipe in and retrieve from the dom
@@ -1667,3 +1684,11 @@ Nate, build session (orchestrator), 2026-11-15 about 08:20 to 08:45 Central. Two
 > Well we only really need to read right? we can't have the dom substrate run on the ios phone can we? understand and engineer around this
 
 Used in: the read-lanes design, `spec/engines/protocol-and-adapters.md` when it is written.
+
+## 2026-11-15 nate browser use's own benchmark shows a way through on ebay
+Nate, build session (orchestrator), 2026-11-15 about 09:00 Central. Two messages, each a link.
+> https://browser-use.com/benchmarks/consumer/sites/ebay Here, theres a work around
+
+> https://browser-use.com/benchmarks/consumer
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.

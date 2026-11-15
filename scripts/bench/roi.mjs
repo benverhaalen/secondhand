@@ -23,7 +23,7 @@ export const INPUTS = {
   mix: { value: { ebay: 0.45, network_resale: 0.25, amazon_retail: 0.15, etsy: 0.05, facebook: 0.10 }, unit: 'share', mark: 'assumption', source: 'eBay holds most used-goods listings with a public programme; Facebook is local cash' },
   // anchors for how often people buy
   poshmark_orders_per_buyer_year: { value: 6.3, unit: 'orders', mark: 'asserted', source: 'Value Investors Club on the Poshmark S-1: "an average of 6.3 orders from active buyers in 2019"' },
-  honey_rev_per_mau_month: { value: 100e6 / 17e6 / 12, unit: '$', mark: 'inferred', source: 'Honey ~$100M revenue in 2018 (PayPal CEO, via productmint, asserted) over 17M monthly users (Honey, asserted)' },
+  honey_rev_per_mau_month: { value: 100e6 / 17e6 / 12, unit: '$', mark: 'inferred', source: 'Honey ~$100M revenue in 2018 (Fortune 2019-11-21, PayPal-supplied, asserted) over ~17M monthly users (PayPal announcement 2019-11-20, asserted). Mixed years and all revenue, not commissions only: a scale reference, never a check on our purchase rate (research/cross-cutting/ben/revenue-market.md §1)' },
   // what an item costs us to list
   identify: { value: 0.035, unit: '$/item', mark: 'inferred', source: 'product/numbers.md "What it costs us": $0.015 to $0.06, midpoint' },
   post_and_delist: { value: 0.015, unit: '$/item', mark: 'inferred', source: 'product/numbers.md: post $0.003-0.012 plus delist $0.003-0.012, midpoints' },
@@ -38,7 +38,7 @@ export const INPUTS = {
   platform_per_mau: { value: 0.02, unit: '$/MAU-month', mark: 'assumption', source: 'storage, rows and logs per active person; replace with the first bill' },
   // paid extras (business.md: everything else stays free)
   studio_price: { value: 0.99, unit: '$/item', mark: 'assumption', source: 'product/business.md: studio photos are the one paid feature; price not set' },
-  plan_price: { value: 9.99, unit: '$/month', mark: 'assumption', source: 'product/business.md: a reseller plan under the crosslisters (one listed at $39.99, asserted)' },
+  plan_price: { value: 9.99, unit: '$/month', mark: 'assumption', source: 'product/business.md proposal. Competes with Flyp at $9/month and Vendoo Starter at $14.99/month (pricing pages read 2026-11-15, observed, research/cross-cutting/ben/revenue-market.md §2), not only a $39.99 crosslister' },
   consignment_keeps: { value: 0.85, unit: 'share', mark: 'observed', source: 'product/business.md: ThredUp keeps 85% of a $20 sale' },
 };
 const v = k => INPUTS[k].value;
@@ -115,7 +115,7 @@ const money = x => (Math.abs(x) >= 1000 ? `$${Math.round(x).toLocaleString('en-U
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   console.log(`One referred purchase at the $${v('aov_resale')} resale order value earns ${money(perPurchase())} blended.`);
   console.log(`Studio costs ${money(studioCostPerItem())} an item as the run is built (2 slides x 5 candidates).`);
-  console.log(`Honey's anchor: ${money(v('honey_rev_per_mau_month'))} per monthly user per month (2018).\n`);
+  console.log(`Honey for scale: ${money(v('honey_rev_per_mau_month'))} per monthly user per month (2018 revenue over 2019 users; all revenue, not a purchase-rate check).\n`);
   console.log('| per MAU per month | ' + Object.keys(SCENARIOS).join(' | ') + ' |');
   console.log('|---|' + Object.keys(SCENARIOS).map(() => '---').join('|') + '|');
   const rows = Object.fromEntries(Object.entries(SCENARIOS).map(([k, s]) => [k, perMau(s)]));
