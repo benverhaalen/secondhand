@@ -24,6 +24,7 @@ test('every row points at something that exists in its world', () => {
     for (const c of w.conversations) if (c.item_id) assert.ok(items.has(c.item_id), `${n} ${c.id}`);
     const convs = new Set(w.conversations.map(c => c.id));
     for (const m of w.messages) assert.ok(convs.has(m.conversation_id), `${n} ${m.id}`);
+    for (const l of w.lookups) assert.ok(w.products.some(p => p.id === l.product_id), `${n} ${l.capture_id} -> ${l.product_id}`);
   }
 });
 

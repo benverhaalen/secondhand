@@ -3,7 +3,7 @@
 import type { Pill, SellItem } from '../sell/grid.ts';
 import { NOW, day, ms } from './format.ts';
 import type {
-  Appointment, Cents, Connection, ConnectionState, Conversation, Decision, Feed, Goal, Item, Limits, LogEvent, Match, Message, Notice,
+  Appointment, Cents, Connection, ConnectionState, Conversation, Decision, Feed, Goal, Item, Limits, LogEvent, Lookup, Match, Message, Notice,
   OnboardingStep, Offer, Order, Product, RetailOffer, Rule, SearchResult, Site, StyleFacet, User, Want,
 } from './types.ts';
 
@@ -12,7 +12,7 @@ export type World = {
   name: WorldName | string; now: string; user: User; connections: Connection[]; items: Item[]; offers: Offer[]; orders: Order[];
   appointments: Appointment[]; conversations: Conversation[]; messages: Message[]; decisions: Decision[]; notices: Notice[];
   events: LogEvent[]; rules: Rule[]; limits: Limits; goal: Goal | null; style: StyleFacet[];
-  wants: Want[]; matches: Match[]; products: Product[]; searches: SearchResult[]; retail: RetailOffer[];
+  wants: Want[]; matches: Match[]; products: Product[]; searches: SearchResult[]; retail: RetailOffer[]; lookups: Lookup[];
 };
 
 export const connectionState = (c: Connection): ConnectionState =>
