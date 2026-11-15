@@ -1,6 +1,6 @@
 // Rests-on: spec/examples/{auth,buy,captures,jobs,me,routes}.json; server/proof.test.ts.
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, before, test, type TestContext } from 'node:test';
@@ -71,7 +71,15 @@ function checks() {
     finish() { assert.deepEqual(failures, [], failures.join('\n')); },
   };
 }
+// JOURNEY_TIMINGS=<file> writes every request's route, status and time to headers, for the benchmark table.
+const timings: { endpoint: string; status: number; ms: number }[] = [];
+after(async () => { if (process.env.JOURNEY_TIMINGS) await writeFile(process.env.JOURNEY_TIMINGS, JSON.stringify(timings)); });
 async function request(method: string, path: string, headers: Record<string, string> = {}, body?: unknown): Promise<Response> {
+  const started = performance.now(), response = await send(method, path, headers, body);
+  timings.push({ endpoint: walkedRoute(method, path) ?? `${method} ${path.split('?')[0]}`, status: response.status, ms: performance.now() - started });
+  return response;
+}
+function walkedRoute(method: string, path: string): string | undefined {
   const pathname = path.split('?')[0];
   const foundRoute = [...routeManifest].sort((a, b) => (a.endpoint.match(/:/g)?.length ?? 0) - (b.endpoint.match(/:/g)?.length ?? 0)).find(row => {
     const [verb, pattern] = row.endpoint.split(' ');
@@ -79,6 +87,9 @@ async function request(method: string, path: string, headers: Record<string, str
     return verb === method && parts.length === segments.length && segments.every((part, i) => part.startsWith(':') || part === parts[i]);
   });
   if (foundRoute) walked.add(foundRoute.endpoint);
+  return foundRoute?.endpoint;
+}
+async function send(method: string, path: string, headers: Record<string, string>, body?: unknown): Promise<Response> {
   const req = new Request((server?.url ?? 'http://journey.test') + path, {
     method, redirect: 'manual', headers: { 'Content-Type': 'application/json', ...headers },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(8_000),
