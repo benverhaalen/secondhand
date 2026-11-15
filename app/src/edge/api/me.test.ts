@@ -308,10 +308,14 @@ test('delete ends the sessions: the token is 401 afterwards', async () => {
 });
 test('style get matches the example key set; patch edits, removes, bumps the version, and is 409 when stale', async () => {
   const w = await world(); const a = await w.user('a');
-  const g = await (await w.call(w.r.sget, 'GET', '/v1/me/style', a.access_token)).json(); assert.deepEqual(keys(g), shape('me.style.get'));
-  const body = { version: g.version, facets: [{ name: 'size', value: 'L', weight: 0.9, pinned: true }, { name: 'era', value: '1990s', remove: true }] };
+  const g = await (await w.call(w.r.sget, 'GET', '/v1/me/style', a.access_token)).json();
+  assert.deepEqual(Object.keys(g).sort(), Object.keys(shape('me.style.get') as Record<string, unknown>).sort());
+  assert.deepEqual(g.facets, [], 'a new person starts with no taste facets, never the example ones');
+  const added = await (await w.call(w.r.spatch, 'PATCH', '/v1/me/style', a.access_token, { version: g.version, facets: [{ name: 'size', value: 'L' }, { name: 'era', value: '1990s' }] })).json();
+  assert.equal(added.version, g.version + 1); assert.deepEqual(keys(added), shape('me.style.patch'));
+  const body = { version: added.version, facets: [{ name: 'size', value: 'L', weight: 0.9, pinned: true }, { name: 'era', value: '1990s', remove: true }] };
   const p = await w.call(w.r.spatch, 'PATCH', '/v1/me/style', a.access_token, body); assert.equal(p.status, 200);
-  const b = await p.json(); assert.deepEqual(keys(b), shape('me.style.patch')); assert.equal(b.version, g.version + 1);
+  const b = await p.json(); assert.deepEqual(keys(b), shape('me.style.patch')); assert.equal(b.version, added.version + 1);
   assert.equal(b.facets.find((f: { name: string }) => f.name === 'size').from, 'edited'); assert.ok(b.facets.find((f: { name: string }) => f.name === 'era').removed_at);
   assert.equal((await w.call(w.r.spatch, 'PATCH', '/v1/me/style', a.access_token, body)).status, 409);
 });

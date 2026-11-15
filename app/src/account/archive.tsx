@@ -3,7 +3,7 @@ import { TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { api } from '@/api/client';
 import { useLiveData } from '@/data/live';
-import { FootButton, List, Nav, Photo, Pill, Row, Screen, Stack, Txt, log } from '@/ui';
+import { FootButton, Line, List, Nav, Photo, Pill, Row, Screen, Stack, Txt, log } from '@/ui';
 import { useColors } from '@/ui/theme';
 import { space, type, weight } from '@/ui/tokens.generated';
 import { FACE } from '@/ui/fonts';
@@ -56,7 +56,7 @@ export function Archive({ accountId }: { accountId: string }) {
   };
   return <Screen name="archive-import" state={busy ? 'loading' : error ? 'failed' : 'ready'} nav={<Nav inbox={{ count: 0 }} />}
     onRefresh={busy ? undefined : () => load()}
-    foot={preview && !preview.needs_username ? <Stack gap="tight"><FootButton id="archive-import" label={`Import ${selected.size} items`} state={busy ? 'working' : selected.size ? 'idle' : 'disabled'} onPress={importSelected} /><Pill id="archive-back" kind="second" label="Back" onPress={() => router.back()} /></Stack> : undefined}>
+    foot={preview && !preview.needs_username ? <FootButton id="archive-import" label={`Import ${selected.size} items`} state={busy ? 'working' : selected.size ? 'idle' : 'disabled'} onPress={importSelected} /> : undefined}>
     <Stack gap="tight"><Txt role="heading">Import your archive</Txt><Txt role="body" tone="ink-2">Bring listings into your Secondhand account. Choose where to publish them later.</Txt></Stack>
     {preview?.needs_username ? <Stack>
       <Txt role="body">Enter the Depop shop to import. This selects a public shop; it does not verify that you own it.</Txt>
@@ -74,6 +74,6 @@ export function Archive({ accountId }: { accountId: string }) {
         trail={<Pill id={`select-${row.external_id}`} label={selected.has(row.external_id) ? 'Selected' : 'Select'} kind="second" state={busy ? 'disabled' : 'idle'} onPress={() => setSelected(prior => { const next = new Set(prior); if (next.has(row.external_id)) next.delete(row.external_id); else next.add(row.external_id); return next; })} />}><Txt role="body">{row.title || `Listing ${row.external_id}`}</Txt><Txt role="caption">{`${row.price_cents.currency} ${(row.price_cents.amount_cents / 100).toFixed(2)} · ${row.state}${row.matches_item_id ? ' · Already imported' : ''}`}</Txt></Row>)}</List>
     </Stack> : null}
     {error ? <Stack><Txt role="body">{error}</Txt><Pill id="archive-retry" kind="second" label={job && !['done', 'failed'].includes(job.state) ? 'Check import' : 'Try again'} onPress={job && !['done', 'failed'].includes(job.state) ? resume : () => load(username.trim())} /></Stack> : null}
-    {(!preview || preview.needs_username) ? <Pill id="archive-back" kind="second" label="Back" onPress={() => router.back()} /> : null}
+    <Line><Pill id="archive-back" kind="second" label="Back" onPress={() => router.back()} /></Line>
   </Screen>;
 }

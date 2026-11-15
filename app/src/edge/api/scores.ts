@@ -1,11 +1,11 @@
 // Rests-on: spec/product.md §7 Resources; spec/examples/.
 import { ApiError, type Handler } from './http.ts';
 import { ports as geniePorts, citationOwners } from './genie.ts';
-import { exampleHandler, manifestFor, fromEngine, fields, text, bool, oneOf, invalid, reference, sites } from './captures.ts';
+import { exampleHandler as contractExample, manifestFor, fromEngine, fields, text, bool, oneOf, invalid, reference, sites } from './captures.ts';
 
 import { successScore, type ScoreInput } from '../../engines/score/score.ts';
 import { memoryStore } from '../../engines/param/param.ts';
-import { example } from './examples.ts';
+import { example, examplesServed } from './examples.ts';
 const params = memoryStore();
 // Prior from spec/features/score.md, success score bands; reads stay in the shared registry.
 params.declare({ name: 'score_bands', family: 'model_ref', prior: { cuts: [35, 60, 85] } });
@@ -25,6 +25,14 @@ const citation: Handler = (ctx, req) => {
   const { definition_version, ...rest } = found;
   return { status: 200, body: { ...rest, definition_version: Number(definition_version), basis_count: found.basis_ids.length } };
 };
+
+function exampleHandler(...args: Parameters<typeof contractExample>): Handler {
+  const handler = contractExample(...args);
+  return (ctx, req) => {
+    if (ctx.user_id !== 'usr_8f2k' || !examplesServed()) throw new ApiError('unavailable', 'Scores and experiments are not available yet', 'read');
+    return handler(ctx, req);
+  };
+}
 
 export const handlers: Record<string, Handler> = {
   'GET /v1/scores': fromEngine(exampleHandler('GET /v1/scores', c => { if (!oneOf('listing', 'item', 'product', 'match')(c.query.get('subject_type')) || !text(c.query.get('subject_id'))) throw invalid('subject_type and subject_id are required'); reference(c.query.get('subject_id'), ['ls_e81']); }, undefined, async (ctx, seed) => {

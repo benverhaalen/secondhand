@@ -36,7 +36,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
-  assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
+  assert.equal(r.status, 503); assert.equal((await r.json()).code, 'unavailable');
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.includes(':id'))) test(e.name + ': unknown resource is 404', async () => {
   const pattern = e.endpoint.split(' ')[1].split('/'), parts = e.path.split('?')[0].split('/');
@@ -87,3 +87,32 @@ test('records: owned Expo files bind auth and export the contract method', async
     if (entry.auth === 'visitor') assert.ok(source.includes("auth: 'visitor'"), relative);
   }
 });
+
+for (const e of examples.filter(e => e.status < 400 && !(false))) {
+  test(e.name + ': two real people receive only the unavailable error, even with examples enabled', async t => {
+    const previous = process.env.SECONDHAND_EXAMPLES;
+    t.after(() => { if (previous === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = previous; });
+    process.env.SECONDHAND_EXAMPLES = '1';
+    deps.verify = async token => token === 'good' ? 'usr_real_one' : token === 'other' ? 'usr_real_two' : null;
+    for (const token of ['good', 'other']) {
+      const headers = { 'Idempotency-Key': 'unbuilt-' + e.name };
+      for (const body of [e.request?.body, e.request?.body, { ...((e.request?.body ?? {}) as object), changed: true }]) {
+        if (e.endpoint.startsWith('GET ') && body !== undefined) continue;
+        const r = await call(e, { token, headers, body });
+        assert.equal(r.status, 503, e.endpoint);
+        const answer = await r.json();
+        assert.deepEqual(Object.keys(answer).sort(), ['code', 'failed_step', 'message', 'retry']);
+        assert.equal(answer.code, 'unavailable'); assert.equal(answer.retry.by, 'none');
+        assert.equal(typeof answer.message, 'string'); assert.equal(answer.failed_step, 'read');
+        assert.notDeepEqual(answer, e.response, 'no contract row or figure may be returned');
+      }
+    }
+  });
+  test(e.name + ': disabling examples also refuses the example person', async t => {
+    const previous = process.env.SECONDHAND_EXAMPLES;
+    t.after(() => { if (previous === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = previous; });
+    process.env.SECONDHAND_EXAMPLES = '0';
+    const r = await call(e);
+    assert.equal(r.status, 503); assert.equal((await r.json()).code, 'unavailable');
+  });
+}

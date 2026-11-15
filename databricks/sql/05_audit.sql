@@ -2,24 +2,43 @@
 -- Run: node databricks/run-sql.mjs databricks/sql/05_audit.sql
 
 CREATE OR REPLACE VIEW secondhand.measures.rights_audit
-COMMENT 'Citation basis rows that use a market comp whose source forbids modelling. Zero rows is the rights promise.'
+COMMENT 'Citation basis violations: forbidden market comps, forbidden observation evidence, or frozen datasets used for current prices.'
 AS
 WITH basis AS (
   SELECT c.id AS citation_id, c.metric, explode(c.basis_ids) AS comp_id
   FROM secondhand.core.citation c
 )
-SELECT DISTINCT b.citation_id, b.metric, m.comp_id, m.source
+SELECT DISTINCT b.citation_id, b.metric, m.comp_id, m.source, 'market_comp' AS basis
 FROM basis b
 JOIN secondhand.market.comp m ON b.comp_id = m.comp_id
-WHERE m.may_model = false;
+WHERE m.may_model = false
+UNION ALL
+SELECT DISTINCT b.citation_id, b.metric, o.id AS comp_id, o.site AS source, 'observation' AS basis
+FROM basis b
+JOIN secondhand.core.observation o ON b.comp_id = o.id
+JOIN secondhand.core.evidence e ON o.evidence_id = e.id
+WHERE e.may_model = false
+UNION ALL
+-- Live asking and sold series: spec/determinations/market-insight.md M3.
+-- Metric names: databricks/load/load.mjs numbers(), no exact-name list in spec/.
+SELECT DISTINCT b.citation_id, b.metric, d.comp_id, d.source, 'dataset_in_current_metric' AS basis
+FROM basis b
+JOIN (
+  SELECT comp_id, source FROM secondhand.market.comp WHERE data LIKE 'dataset:%'
+  UNION
+  SELECT id AS comp_id, site AS source FROM secondhand.core.observation WHERE data LIKE 'dataset:%'
+) d ON b.comp_id = d.comp_id
+WHERE b.metric IN ('asking_p50_cents', 'sold_p50_cents');
 
 CREATE OR REPLACE VIEW secondhand.measures.rights_audit_summary
-COMMENT 'Citations and exploded basis rows checked, with forbidden market-comp basis rows counted as violations. Non-market bases are outside this rights check.'
+COMMENT 'Citations and exploded basis rows checked. Total violations include market-comp rights, observation evidence rights and frozen datasets in current-price metrics.'
 AS
 SELECT
   (SELECT count(*) FROM secondhand.core.citation) AS citations_checked,
   (SELECT count(*) FROM (SELECT explode(c.basis_ids) AS comp_id FROM secondhand.core.citation c) basis) AS basis_rows_checked,
-  (SELECT count(*) FROM secondhand.measures.rights_audit) AS violations;
+  (SELECT count(*) FROM secondhand.measures.rights_audit) AS violations,
+  (SELECT count(*) FROM secondhand.measures.rights_audit WHERE basis = 'observation') AS observation_violations,
+  (SELECT count(*) FROM secondhand.measures.rights_audit WHERE basis = 'dataset_in_current_metric') AS dataset_current_violations;
 
 CREATE OR REPLACE VIEW secondhand.measures.lineage_edges
 COMMENT 'Unity Catalog table lineage touching secondhand, with the latest observation of each directed edge. Citation basis_ids supply row lineage.'
@@ -66,4 +85,4 @@ LEFT JOIN tables g ON t.table_catalog = g.catalog_name AND t.table_schema = g.sc
 WHERE t.table_catalog = 'secondhand' AND t.table_schema = 'core' AND t.table_type <> 'VIEW';
 
 -- Lead: discover whether this workspace exposes ABAC policy metadata before relying on it.
--- SELECT table_name FROM secondhand.information_schema.tables WHERE table_schema = 'information_schema' AND lower(table_name) LIKE '%polic%';
+-- SELECT table_name FROM secondhand.information_schema.tables WHERE table_schema = 'information_schema' AND lower(table_name) LIKE '%polic%'

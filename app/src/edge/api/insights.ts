@@ -1,6 +1,6 @@
 // Rests-on: spec/product.md §7 Resources; spec/examples/.
 import { ApiError, type Handler } from './http.ts';
-import { exampleHandler, manifestFor, fromEngine, fields, integer, money, invalid } from './captures.ts';
+import { exampleHandler as contractExample, manifestFor, fromEngine, fields, integer, money, invalid } from './captures.ts';
 
 import { insights, type AnalyticsPort, type AnalyticsData } from '../insights/insights.ts';
 import { example, examplesServed } from './examples.ts';
@@ -14,7 +14,7 @@ const snapshot: AnalyticsData = { snapshot: { id: 'ci_in1', source: 'spec/exampl
   stats: [{ id: 'stat_insights', listing_id: 'ls_insights', day: '2026-11-15', stages: Object.fromEntries(initial.funnel.map(f => [f.stage, f.count])), definitions: Object.fromEntries(initial.funnel.map(f => [f.stage, `contract.${f.stage}`])), source: 'spec/examples/you.json', at: as_of }] };
 export const ports: AnalyticsPort = { async read(user) { if (user !== 'usr_8f2k') throw new Error('not_found'); return structuredClone(snapshot); } };
 
-const insightsExample = exampleHandler('GET /v1/insights', c => { const window = c.query.get('window'); if (window && !/^\d+d$/.test(window)) throw invalid('window must be days'); }, undefined, async (ctx, seed) => {
+const insightsExample = contractExample('GET /v1/insights', c => { const window = c.query.get('window'); if (window && !/^\d+d$/.test(window)) throw invalid('window must be days'); }, undefined, async (ctx, seed) => {
     const result = await insights(ctx.user_id!, ports, as_of, ctx.log);
     const body = seed.body as InsightsView;
     const funnel = body.funnel.map(row => {
@@ -24,6 +24,14 @@ const insightsExample = exampleHandler('GET /v1/insights', c => { const window =
     });
     return { ...seed, body: { ...body, funnel } };
   });
+
+function exampleHandler(...args: Parameters<typeof contractExample>): Handler {
+  const handler = contractExample(...args);
+  return (ctx, req) => {
+    if (ctx.user_id !== 'usr_8f2k' || !examplesServed()) throw new ApiError('unavailable', 'Goals are not available yet', 'read');
+    return handler(ctx, req);
+  };
+}
 
 export const handlers: Record<string, Handler> = {
   'GET /v1/insights': fromEngine((ctx, req) => {
