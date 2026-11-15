@@ -65,3 +65,11 @@ Get a BytePlus or OpenRouter key for Seedream 5.5 and rerun `run_real.py` on 5.5
 - So the measurement audit runs one way: capture's tape or LiDAR number is the truth and a render more than 5% off is dropped. A render is never used to work out size.
 - Built: `prototype/lay.py` (layout check, proportions, audit, a wrinkle number that is not yet trustworthy), `prototype/relay_prompt.txt`.
 - For capture: LiDAR is good to about 1 cm on a flat garment and cannot see wrinkles; details in the build plan.
+
+## Added 2026-11-15 06:50 UTC: slides from casual photos, running on the repo's OpenRouter key
+
+- Ben asked for slide-by-slide specs per garment and a backend that turns casual photos into a perfected set ([slides.md](../../../../research/studio/ben/slides.md)).
+- Built: `jobs/studio/` (read, plan, redraw, check, assemble) with the slide spec as data in `jobs/studio/slides.json`; the `studio touch-up test` workflow now runs `command: slides` on any branch and commits the run to that branch, never main.
+- The OpenRouter key works from GitHub Actions. Seedream 5.5 is no longer on OpenRouter's list; Nano Banana 2.1 is (6.8 s, $0.037 a render).
+- For capture: the plan asks for a back photo, a print close-up or a tape photo when the set cannot be made honestly without one (`asks` in each run's manifest).
+- For list: each slide carries `ai_marked`; only cover and back can be redrawn.

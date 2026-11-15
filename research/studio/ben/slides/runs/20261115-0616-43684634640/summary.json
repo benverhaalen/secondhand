@@ -1,0 +1,245 @@
+[
+ {
+  "item": "carhartt-pants",
+  "kind": "pants",
+  "seconds": 389.4,
+  "cost": 0.5322,
+  "slides": [
+   "cover:relay",
+   "back:level0",
+   "detail:level0",
+   "graphic:level0",
+   "tag:level0"
+  ],
+  "asks": [],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    true,
+    []
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    true,
+    []
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed",
+     "judge: lost readable 'carhartt' text on the pocket logo patch"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-3-pro-image",
+    false,
+    [
+     "print 0 not found as it is in the real photo",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front pockets, waistband button, front fly, heavy fading on thighs and knees",
+     "judge: lost back pockets, Carhartt logo patch, carpenter utility pockets, hammer loop"
+    ]
+   ]
+  ]
+ },
+ {
+  "item": "chico-hoodie",
+  "kind": "hoodie",
+  "seconds": 232.6,
+  "cost": 0.2756,
+  "slides": [
+   "cover:level0",
+   "graphic:level0",
+   "tag:level0",
+   "detail:level0",
+   "detail:level0",
+   "detail:level0"
+  ],
+  "asks": [
+   "Turn it over where it lies and take the same photo.",
+   "Get close to the front pocket print so the letters fill the screen."
+  ],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "print 1 not found as it is in the real photo",
+     "judge: not the same item",
+     "judge: invented white neck tag"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "print 1 not found as it is in the real photo",
+     "proportions moved -16% against the photo"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "print 1 not found as it is in the real photo",
+     "proportions moved -15% against the photo",
+     "judge: not the same item",
+     "judge: invented small white neck tag visible at base of hood"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "print 1 not found as it is in the real photo",
+     "judge: not the same item",
+     "judge: invented neck label inside collar"
+    ]
+   ]
+  ]
+ },
+ {
+  "item": "marquette-tee",
+  "kind": "tee",
+  "seconds": 409.7,
+  "cost": 0.5451,
+  "slides": [
+   "cover:level0",
+   "back:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "graphic:level0",
+   "tag:level0",
+   "measure:level0",
+   "measure:level0",
+   "extra:level0"
+  ],
+  "asks": [],
+  "whole": [
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions moved -12% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: lost NCAA FINAL FOUR TEAM text"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions moved -14% against the tape",
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions moved -9% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: lost legible 'NCAA FINAL FOUR TEAM' text on chest print"
+    ]
+   ],
+   [
+    "cover",
+    "gemini-3-pro-image",
+    false,
+    [
+     "proportions moved -13% against the tape",
+     "judge: printed text changed"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions moved -11% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: lost white collar tag sticking out at the top, legible micro-text inside the numbers 74"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions moved -14% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front crew neckline, visible inner neck tag",
+     "judge: lost legible micro-text inside the 74 graphic, back collar construction"
+    ]
+   ],
+   [
+    "back",
+    "gemini-nano-banana-2.1",
+    false,
+    [
+     "proportions moved -11% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: lost white neck tag, legible micro-text inside the numbers 74"
+    ]
+   ],
+   [
+    "back",
+    "gemini-3-pro-image",
+    false,
+    [
+     "proportions moved -9% against the tape",
+     "judge: not the same item",
+     "judge: printed text changed",
+     "judge: invented front crew neckline, Fruit of the Loom neck tag",
+     "judge: lost back neckline, legible micro-text inside the 74 graphic"
+    ]
+   ]
+  ]
+ }
+]
