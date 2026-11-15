@@ -2436,3 +2436,9 @@ Ben, same Codex chat:
 > add a sign in with google to the app ui that nate can wire on the backend
 
 Used in: app/src/you/sign-in.tsx and sign-in-wire.ts. The UI does not claim a session until the existing server exchange succeeds.
+
+## 2026-11-15 nate when the price cannot be set, the number of listings is the signal
+Nate, the search lead's session, 2026-11-15, about 14:20 UTC, answering whether Google Shopping rows (shown, never judged for the same product) should be filtered for display.
+> well, no, if we can't determine price, we maybe grab details on how many lsitings are there, and that indicates something, perhaps that none are being sold, that it was popular, theres alot there
+
+Used in: [packet 88](../.agents/team/packets/team/88-search-handoff.md).
