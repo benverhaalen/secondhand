@@ -9,7 +9,7 @@ import { WorkspaceState } from './state';
 import { Upload } from './upload';
 import { Settings } from './you';
 
-const tabs = [ ['Today', '/app', 'home-01'], ['Sell', '/app/sell', 'tag-01'], ['Buy', '/app/buy', 'money-03'], ['You', '/app/you', 'user'] ] as const;
+const tabs = [ ['Today', '/app', 'home-01'], ['Store', '/app/store', 'store-01'], ['Sell', '/app/sell', 'tag-01'], ['Buy', '/app/buy', 'money-03'], ['Insights', '/app/insights', 'binoculars'], ['You', '/app/you', 'user'] ] as const;
 export function DesktopShell({ children }: { children: React.ReactNode }) {
   const session = useSyncExternalStore(subscribeToSession, sessionSnapshot, () => undefined);
   const [error, setError] = useState<string>(); const [modal, setModal] = useState<'upload' | 'settings'>();
@@ -18,7 +18,7 @@ export function DesktopShell({ children }: { children: React.ReactNode }) {
   useEffect(() => { if (session === null) router.replace('/signin?next=' + encodeURIComponent(pathname + window.location.search + window.location.hash)); }, [session, router, pathname]);
   async function logout() { setSigningOut(true); try { await signOutSession(); router.replace('/'); } catch (e) { setError(message(e)); } finally { setSigningOut(false); } }
   if (!session) return <main id="main" className="desk-auth"><Link href="/" className="wordmark">secondhand</Link><ErrorNotice error={error} retry={() => { setError(undefined); getSession(true).catch(e => setError(message(e))); }} />{!error && <Loading />}</main>;
-  const active = pathname.startsWith('/app/sell') ? 'sell' : pathname.startsWith('/app/buy') ? 'buy' : pathname.startsWith('/app/you') ? 'you' : pathname.startsWith('/app/messages') ? 'messages' : 'today';
+  const active = pathname.startsWith('/app/store') ? 'store' : pathname.startsWith('/app/insights') ? 'insights' : pathname.startsWith('/app/sell') ? 'sell' : pathname.startsWith('/app/buy') ? 'buy' : pathname.startsWith('/app/you') ? 'you' : pathname.startsWith('/app/messages') ? 'messages' : 'today';
   return <WorkspaceState><div className="desk-workspace">
     <aside className="desk-rail"><Link className="desk-back" href="/" aria-label="Back to website"><Icon name="arrow-left-01" /><span>Back to website</span></Link>
       <Link href="/app" className="desk-wordmark" aria-label="secondhand workspace"><img src="/brand/mark.svg" width="24" height="28" alt="" /><span>secondhand</span></Link>

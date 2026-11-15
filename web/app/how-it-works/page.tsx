@@ -104,7 +104,7 @@ export default function HowItWorksPage() {
     </section>
     <section className={`${styles.wrap} ${styles.signup}`} aria-labelledby="signup-title">
       <div><p className={styles.label}>Sign Up</p><h2 id="signup-title">Start with one thing</h2></div>
-      <AccountAccess label="Create an account" />
+      <AccountAccess label="Continue with Google" />
     </section>
   </main>;
 }

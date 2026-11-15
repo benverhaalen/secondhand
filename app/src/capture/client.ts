@@ -1,12 +1,13 @@
 import { api, ApiFailure, type Fetch } from '@/api/client';
 import { fetch } from '@/api/fetch';
+import { photoBytes } from './photo-bytes';
 import type { Question, plan } from '@/engines/capture/plan';
 
 export type Capture = {
   id: string; item_id: string; version: number; purpose: 'sell' | 'appraise' | 'find';
   plan: ReturnType<typeof plan>; coverage: { needed: string[]; kept: string[] };
 };
-export type Still = { uri: string; base64: string; type: 'image/jpeg' | 'image/png' | 'image/heic'; step: string; role: string };
+export type Still = { uri: string; type: 'image/jpeg' | 'image/png' | 'image/heic'; step: string; role: string };
 type Upload = { id: string; upload: { url: string; method: string } };
 export const captureMessage = (error: unknown) => error instanceof ApiFailure && error.status === 401
   ? 'Sign in to continue.'
@@ -29,11 +30,9 @@ export const requestStudio = (capture: Capture) => api.call<Capture>(`PATCH /v1/
   body: { version: capture.version, generate: true },
 });
 
-// A plain loop: a callback per character on a multi-megabyte photo held tens of MB at once, and iOS closed the app (Nate, 2026-11-15).
-const decode = (base64: string) => { const text = atob(base64), out = new Uint8Array(text.length); for (let i = 0; i < text.length; i++) out[i] = text.charCodeAt(i); return out; };
-
-export async function uploadStills(capture: Capture, stills: Still[], uploadFetch: Fetch = fetch): Promise<Capture> {
-  const bytes = stills.map(still => decode(still.base64));
+// Photos travel as files: their bytes are read natively at upload (photo-bytes.native.ts), never held as base64 (Nate, 2026-11-15).
+export async function uploadStills(capture: Capture, stills: Still[], uploadFetch: Fetch = fetch, read: (uri: string) => Promise<Uint8Array> = photoBytes): Promise<Capture> {
+  const bytes = await Promise.all(stills.map(still => read(still.uri)));
   const signed = await api.call<{ photos: Upload[]; capture: Capture }>(`POST /v1/captures/${encodeURIComponent(capture.id)}/photos`, {
     body: { photos: stills.map((still, index) => ({ role: still.role, step: still.step, key: still.step, content_type: still.type, bytes: bytes[index].length })) },
   });
@@ -42,7 +41,7 @@ export async function uploadStills(capture: Capture, stills: Still[], uploadFetc
     throw new Error('Photo uploads are not connected yet. Your photos are still here; try again when the service is ready.');
   }
   await Promise.all(signed.photos.map(async (photo, index) => {
-    const response = await uploadFetch(photo.upload.url, { method: photo.upload.method, headers: { 'Content-Type': stills[index].type }, body: bytes[index] });
+    const response = await uploadFetch(photo.upload.url, { method: photo.upload.method, headers: { 'Content-Type': stills[index].type }, body: bytes[index] as unknown as BodyInit });
     if (!response.ok) throw new Error('A photo did not upload. Your photos are still here; try again.');
   }));
   return readCapture(capture.id);
