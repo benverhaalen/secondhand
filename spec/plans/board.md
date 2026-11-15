@@ -1,6 +1,6 @@
 # The build board
 
-Status: the one place progress is tracked for the cloud build. *Agent proposal* until Nate accepts it. What each stream is: [workstreams.md](workstreams.md). What can start this minute: [start-now.md](start-now.md). The global spec: [spec/README.md](../README.md) and the repo [README](../../README.md).
+Status: the one place progress is tracked for the cloud build. *Agent proposal* until Nate accepts it. What each stream is: [workstreams.md](workstreams.md). What can start this minute: [start-now.md](start-now.md). The global spec: [spec/README.md](../README.md) and the repo [README](../../README.md). How every feature joins every other one, and which joins are real, example or missing: [joins.md](joins.md).
 
 ## How to use it
 
