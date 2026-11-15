@@ -50,11 +50,11 @@ A price is easier to trust when you can see where it came from. Lakeflow checks 
 
 That made it possible to check whether someone else could rebuild the evidence behind a price. One recorded check rebuilt 42,399 of 42,405 bases. Six did not rebuild and remain open in that record. The workspace guide has the queries and the source artifacts. [Databricks guide](../databricks/DEMO.md) · [Recorded handoff](../.agents/team/packets/team/71-databricks-handoff.md)
 
-## 84% fewer large pricing misses
+## 84% fewer big pricing misses
 
 If a pair sold for $100, a price estimate below $80 or above $120 counted as a large miss. When we tested on past sneaker sales, the 90-day median missed by that much about once in 10 estimates. Our research model missed about once in 65. This is evidence that the model can give someone a starting estimate with fewer large errors in this market.
 
-*Research model, 39,707 paired StockX sales. Test sales from November 2018 through February 2019, limited to new Off-White x Nike and Yeezy 350 sneakers. 98.5% versus 90.2% within 20%. Estimates used earlier sales. See the full population, coverage and other baselines in the [results](../scripts/bench/out/backtest-stockx.json).*
+*Research model, 39,707 paired StockX sales. Test sales from November 2018 through February 2019, limited to new Off-White x Nike and Yeezy 350 sneakers. 98.5% versus 90.2% within 20%. Estimates used earlier sales. [Method and full results](pitch.md#how-we-measured-pricing-misses).*
 
 ## How deep we dug
 

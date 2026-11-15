@@ -14,7 +14,7 @@ The brand thread's recommended wordmark already carries both: the o is a clock w
 
 | Point | What to show now | What would support the stronger claim |
 |---|---|---|
-| **Price to the market.** | Show the sale records behind a price. On 39,707 historical StockX sales both methods priced, the research model made 84% fewer errors of more than 20% than the 90-day median. Say “about one big miss in 65 estimates instead of one in 10” and define a big miss with a $100 example. Put the dataset and coverage beside the result. [Output](../scripts/bench/out/backtest-stockx.json) | Lower errors or better realized outcomes across current categories, using the app engine. An estimation result alone measures neither savings nor sales. |
+| **Price to the market.** | Show the sale records behind a price. On 39,707 historical StockX sales both methods priced, the research model had **84% fewer big pricing misses** than the 90-day median. Put the dataset and coverage beside the result. [How we measured pricing misses](#how-we-measured-pricing-misses) | Lower errors or better realized outcomes across current categories, using the app engine. An estimation result alone measures neither savings nor sales. |
 | **Sell sooner across marketplaces.** | One item record, the previews or verified listings it produces, and an action after posting. Name actual support per marketplace. | Time to a confirmed sale on comparable items. Listing reach and time to publish are separate outcomes. |
 | **Make a good listing with less work.** | Show the photo, sourced facts and review-ready listing for the same item. Show the photo comparison as evidence of faithful presentation. | Run the same items to the same reviewed endpoint across tools. Report active time, factual corrections, omissions and completion. |
 | **Find the right used item sooner.** | Show one request, the best verified match that fits, the delivered price and a near miss. | Matched search tasks showing time to an eligible result and successful matches. Time to purchase needs a separate observation. |
@@ -23,6 +23,14 @@ The brand thread's recommended wordmark already carries both: the o is a clock w
 | **Keep people in charge of AI-assisted decisions.** | Show the buyer reply as a draft and the person deciding what to send. Show a proposed action with its limit, reason and consequence. | Confirm approval behavior at each supported action. Describe code-enforced limits and human checkpoints separately. |
 | **Engineer for cost, speed and easy interaction.** | Show a targeted follow-up instead of another full form, and a source returning while others are pending when a recording exists. A dated source trial measured a median under 1.1 seconds for Depop reads, 32 of 32 queries answered. [Read trial](../research/cross-cutting/nate/runs/public-client-live.md) | End-to-end latency and billed cost per completed job. A source-read time is a component measurement. |
 | **Show the reasoning, including when it goes wrong.** | Show actual failure cases and the decisions they forced: two payments, a changed photo detail and thin price evidence. Link the design and test. | Keep unresolved cases and follow-up tests visible. Add availability when the underlying workflow is verified. |
+
+### How we measured pricing misses
+
+**Approved headline: 84% fewer big pricing misses.** A big miss is an estimate more than 20% above or below the actual sale price. On a $100 sale, an estimate below $80 or above $120 counts as a miss.
+
+Of 41,988 historical test sales, the research model and the 90-day median both priced 39,707. On that paired set the miss rates were 1.54% and 9.83%. The relative reduction, calculated before rounding, was 84.3%. That is roughly one big miss in 65 estimates compared with one in 10. The test used earlier sales to estimate later StockX sales of new Off-White x Nike and Yeezy 350 sneakers from November 2018 to February 2019. The research model is separate from the app's served engine.
+
+Put **Method and full results** beside the headline wherever it appears. [Historical test output](../scripts/bench/out/backtest-stockx.json) · [Valuation test scope and model distinctions](../spec/engines/valuation.md#the-backtest-on-released-sold-data-and-what-it-may-claim)
 
 ## How each medium makes the case
 

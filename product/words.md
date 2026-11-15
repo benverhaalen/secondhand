@@ -2297,3 +2297,12 @@ Ben, Codex, refining the theme and the StockX comparison:
 > theres got to be a better way to talk about the 98.5 vs 90.2. like what does that difference mean about our product. how about dig through your closet. how did we do it. we dug into complex tooling. this is how:. We also dig into what we got wrong. i like these things
 
 Used in [Let's dig in](devpost.md#lets-dig-in) and [the pitch evidence map](pitch.md#what-we-want-people-to-remember).
+
+
+## 2026-11-15 approved pricing miss headline and method link
+
+Ben, Codex:
+
+> yes i agree with this stat: "**84% fewer big pricing misses" save this but ensure to not leave out a link for more in depth into it.**
+
+The approved wording and its scope are in [How we measured pricing misses](pitch.md#how-we-measured-pricing-misses).
