@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { Icon } from '../../components/icon';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -36,26 +37,26 @@ export default function DataUsePage() {
     <header className={`${styles.hero} marketing-atmosphere`} data-tone="evidence">
       <div className={styles.wrap}>
         <p className={styles.eyebrow}>Data Use</p>
-        <h1>The data architecture driving intelligence</h1>
+        <h1 className="marketing-page-title">The data architecture driving intelligence</h1>
         <p className={styles.lead}>Follow a price back to the sales behind it.</p>
         <figure className={styles.architecture} aria-label="Source records pass through quality and rights checks. Usable evidence supports an inspectable price. Other records are excluded or kept for display only.">
           <div className={styles.flow}>
             <div className={styles.node}><DataIcon kind="records" /><h2>Source records</h2><p>Sold prices, asking prices, dates and item details.</p></div>
-            <span className={styles.connector} aria-hidden="true">→</span>
+            <Icon name="arrow-right-01" size={20} className={styles.connector} />
             <div className={styles.node}><DataIcon kind="check" /><h2>Quality and usage checks</h2><p>Is the record valid? Is this use permitted?</p></div>
-            <span className={styles.connector} aria-hidden="true">→</span>
+            <Icon name="arrow-right-01" size={20} className={styles.connector} />
             <div className={styles.node}><DataIcon kind="database" /><h2>Usable evidence</h2><p>Comparable records with their source and date.</p></div>
-            <span className={styles.connector} aria-hidden="true">→</span>
+            <Icon name="arrow-right-01" size={20} className={styles.connector} />
             <div className={styles.node}><DataIcon kind="price" /><h2>A price you can inspect</h2><p>The estimate and the sales it rests on.</p></div>
           </div>
           <figcaption className={styles.branch}><span aria-hidden="true">↳</span> Excluded or display only <span className={styles.branchReason}>Invalid records are rejected. Model-use permission is checked separately.</span></figcaption>
         </figure>
-        <nav className={styles.jumpLinks} aria-label="On this page"><a className={styles.primary} href="#pipeline">Follow the pipeline <span aria-hidden="true">↓</span></a><a className={styles.secondary} href="#pricing-result">See the pricing result <span aria-hidden="true">↓</span></a><a className={styles.quiet} href="#your-data">Your account data <span aria-hidden="true">↓</span></a></nav>
+        <nav className={styles.jumpLinks} aria-label="On this page"><a className={styles.primary} href="#pipeline">Follow the pipeline <Icon name="arrow-down-01" size={16} /></a><a className={styles.secondary} href="#pricing-result">See the pricing result <Icon name="arrow-down-01" size={16} /></a><a className={styles.quiet} href="#your-data">Your account data <Icon name="arrow-down-01" size={16} /></a></nav>
       </div>
     </header>
 
     <section id="pipeline" className={`${styles.wrap} ${styles.section}`} aria-labelledby="pipeline-title">
-      <div className={styles.sectionIntro}><div><p className={styles.eyebrow}>The data pipeline</p><h2 id="pipeline-title">A sold price is different<br />from an asking price.</h2></div><p>We preserve that distinction alongside the source, date and recorded permissions. A separate view admits only rows marked for model use.</p></div>
+      <div className={styles.sectionIntro}><div><p className={styles.eyebrow}>The data pipeline</p><h2 id="pipeline-title">A sold price is different<br />from an asking price</h2></div><p>We preserve that distinction alongside the source, date and recorded permissions. A separate view admits only rows marked for model use.</p></div>
       <div className={styles.recordTable} role="table" aria-label="Illustrative data decisions">
         <div className={styles.tableHead} role="row"><span role="columnheader">Record</span><span role="columnheader">What it tells us</span><span role="columnheader">In this example</span></div>
         <div className={`${styles.record} ${styles.used}`} role="row"><span role="cell"><span className={styles.recordIcon} aria-hidden="true">✓</span>Sold price</span><span role="cell">A comparable item sold, with permitted use.</span><span role="cell">Eligible as evidence</span></div>
@@ -67,7 +68,7 @@ export default function DataUsePage() {
     </section>
 
     <section id="databricks" className={`${styles.wrap} ${styles.section} ${styles.platformSection}`} aria-labelledby="databricks-title">
-      <p className={styles.eyebrow}>Databricks</p><h2 id="databricks-title">Built on Databricks.<br />Inspectable down to the row.</h2>
+      <p className={styles.eyebrow}>Databricks</p><h2 id="databricks-title">Built on Databricks.<br />Inspectable down to the row</h2>
       <div className={styles.platformGrid}>
         <ol className={styles.platformList}>{platform.map((item, index) => <li key={item.name} className={index === 3 ? styles.basis : ''}>
           <span className={styles.number}>{index + 1}</span><div><p className={styles.toolName}>{item.name}</p><h3>{item.title}</h3><p className={styles.toolText}>{item.text}</p><SourceLink path={item.path}>{item.link}</SourceLink></div>
@@ -84,7 +85,7 @@ export default function DataUsePage() {
         <div className={styles.chartRow}><span>Research model</span><div className={styles.track}><div className={styles.modelBar} /></div><span className={styles.value}>1.5%</span></div>
         <div className={styles.axis} aria-hidden="true"><span>0%</span><span>2%</span><span>4%</span><span>6%</span><span>8%</span><span>10%</span></div>
       </figure>
-      <div className={styles.resultFoot}><p>Historical sneaker research. This model is separate from the engine served in the app.</p><a className={styles.link} href="#method">Method and limits <span aria-hidden="true">↓</span></a></div>
+      <div className={styles.resultFoot}><p>Historical sneaker research. This model is separate from the engine served in the app.</p><a className={styles.link} href="#method">Method and limits <Icon name="arrow-down-01" size={16} /></a></div>
       <details id="method" className={styles.method} open>
         <summary>What we measured</summary>
         <div className={styles.methodGrid}>
@@ -100,11 +101,11 @@ export default function DataUsePage() {
       </details>
     </div></section>
 
-    <section className={`${styles.wrap} ${styles.section}`} aria-labelledby="limits-title"><p className={styles.eyebrow}>Where the evidence runs thin</p><h2 id="limits-title">A price needs context.</h2><div className={styles.limitGrid}><div><h3>An asking price is a different signal.</h3><p>A listing tells us what a seller wants. A completed sale tells us what a buyer paid. Sparse sales, different conditions and old records all affect how much an estimate can tell you.</p></div><div><h3>Small samples need a visible limit.</h3><p>The Databricks report displays a rate only when it has at least 30 shown prices. The app has separate rules for its price ranges and fallback evidence. A historical sneaker result cannot stand in for every item in your closet.</p><SourceLink path="databricks/DEMO.md">Inspect the reporting rules</SourceLink></div></div></section>
+    <section className={`${styles.wrap} ${styles.section}`} aria-labelledby="limits-title"><p className={styles.eyebrow}>Where the evidence runs thin</p><h2 id="limits-title">A price needs context</h2><div className={styles.limitGrid}><div><h3>An asking price is a different signal</h3><p>A listing tells us what a seller wants. A completed sale tells us what a buyer paid. Sparse sales, different conditions and old records all affect how much an estimate can tell you.</p></div><div><h3>Small samples need a visible limit</h3><p>The Databricks report displays a rate only when it has at least 30 shown prices. The app has separate rules for its price ranges and fallback evidence. A historical sneaker result cannot stand in for every item in your closet.</p><SourceLink path="databricks/DEMO.md">Inspect the reporting rules</SourceLink></div></div></section>
 
-    <section id="your-data" className={`${styles.wrap} ${styles.section} ${styles.accountSection}`} aria-labelledby="account-title"><p className={styles.eyebrow}>Your account data</p><h2 id="account-title">What each input is for.</h2><p className={styles.accountLead}>This is the product’s data-use plan: what each input is for and the control a person should have. These are intended rules, not a claim that every control is live.</p>
+    <section id="your-data" className={`${styles.wrap} ${styles.section} ${styles.accountSection}`} aria-labelledby="account-title"><p className={styles.eyebrow}>Your account data</p><h2 id="account-title">What each input is for</h2><p className={styles.accountLead}>This is the product’s data-use plan: what each input is for and the control a person should have. These are intended rules, not a claim that every control is live.</p>
       <dl className={styles.accountData}><div><dt>Photos and item details</dt><dd>Identify the item, record the condition you provide and prepare its listing. The plan gives you a review of the facts and photos before approval.</dd></div><div><dt>Searches and preferences</dt><dd>Find items that fit your size, budget and condition preferences. Personal corrections are intended to affect your own results; shared training requires opt-in.</dd></div><div><dt>Marketplace connections</dt><dd>Read the listings, messages and orders needed for authorized actions. The plan keeps connection credentials out of model prompts and logs.</dd></div></dl>
-      <div className={styles.nextLinks}><SourceLink path="spec/data-use.md">Read the data-use plan</SourceLink><Link className={styles.link} href="/faq">Questions about permissions <span aria-hidden="true">→</span></Link><Link className={styles.link} href="/features">See what this makes possible <span aria-hidden="true">→</span></Link></div>
+      <div className={styles.nextLinks}><SourceLink path="spec/data-use.md">Read the data-use plan</SourceLink><Link className={styles.link} href="/faq">Questions about permissions <Icon name="arrow-right-01" size={16} /></Link><Link className={styles.link} href="/features">See what this makes possible <Icon name="arrow-right-01" size={16} /></Link></div>
     </section>
   </main>;
 }
