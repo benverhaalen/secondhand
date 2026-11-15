@@ -23,7 +23,7 @@ const send = (endpoint: string, path: string, token = 'good', body?: unknown) =>
 };
 const open = async (intent: string | undefined, token = 'good') => {
   now += 60_000;
-  const r = await send('POST /v1/captures', '/v1/captures', token, { mode: 'shots', purpose: 'find', ...(intent ? { intent } : {}) });
+  const r = await send('POST /v1/captures', '/v1/captures', token, { mode: 'shots', purpose: intent === 'sell' || !intent ? 'sell' : intent === 'worth' ? 'appraise' : 'find', ...(intent ? { intent } : {}) });
   assert.equal(r.status, 201);
   return (await r.json()).id as string;
 };

@@ -7,6 +7,9 @@
 // Every word is in WORDS for the designer; every number is a field of a frame or a count of its rows.
 import { useCallback, useState } from 'react';
 import { Burst, Card, ChatFrame, EmptyState, IconButton, List, Message, money, Pill, Rail, SearchField, SITES, SourceFloat, Stack, Txt, type Point, type Site } from '@/ui';
+import { View } from 'react-native';
+import { Chip } from '@/ui/parts/chip';
+import { space } from '@/ui/tokens.generated';
 import { ListRow } from '@/ui/parts/list-row';
 import { Tile } from '@/ui/parts/tile';
 import type { ApiFailure } from '../../api/client';
@@ -135,7 +138,14 @@ function Widget({ result, widget }: { result: Reply['results'][string] | undefin
 
 type Bursting = { id: string; at: Point; colour: string; url: string; closing: boolean };
 
-export function ShopView({ phase, state, skip, turns, failure, saved, offer, onAsk, onAskOffered, onClose, onOpen, onReopen, onRetry }: {
+const SOURCE_CHIPS: { id: string; site?: Site; label?: string }[] = [
+  { id: 'depop', site: 'depop' }, { id: 'ebay', site: 'ebay' }, { id: 'poshmark', site: 'poshmark' }, { id: 'mercari', site: 'mercari' },
+  { id: 'dupe', label: 'Dupe' }, { id: 'google_shopping', label: 'Google Shopping' },
+];
+
+export function ShopView({ phase, state, skip, turns, failure, saved, offer, off = [], onToggleSource, onAsk, onAskOffered, onClose, onOpen, onReopen, onRetry }: {
+  // The sources switched off for the next search, and the press that switches one. Shown before the first ask only.
+  off?: string[]; onToggleSource?: (id: string) => void;
   phase: Phase; state: string; skip: string; turns: Turn[]; failure: ApiFailure | null; saved: Chat[]; offer: string | null;
   onAsk: (text: string) => void; onAskOffered: () => void; onClose: () => void; onOpen: (url: string, id: string) => Promise<void>;
   onReopen: (chat: Chat) => void; onRetry: () => void;
@@ -157,6 +167,11 @@ export function ShopView({ phase, state, skip, turns, failure, saved, offer, onA
       bar={<SearchField id="shop-bar" focused placeholder={phase === 'chat' ? WORDS.followUp : WORDS.placeholder} working={searching} onSubmit={onAsk} />}
       close={<IconButton id="shop-close" icon="cancel-01" label={WORDS.close} look="plain" onPress={onClose} />}
       overlay={burst ? <Burst at={burst.at} colour={burst.colour} closing={burst.closing} onCovered={covered} onGone={() => setBurst(null)} /> : null}>
+      {phase === 'ask' && onToggleSource ? (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 }}>
+          {SOURCE_CHIPS.map(s => <Chip key={s.id} id={`shop-source-${s.id}`} {...(s.site ? { site: s.site } : { label: s.label })} picked={!off.includes(s.id)} onPress={() => onToggleSource(s.id)} />)}
+        </View>
+      ) : null}
       {phase === 'ask' && saved.length ? <List>{saved.map(chat => <ListRow key={chat.id} id={`shop-chat-${chat.id}`} label={chat.title} lead="clock-01" onPress={() => onReopen(chat)} />)}</List> : null}
       {turns.map((t, i) => t.kind === 'ask'
         ? t === first ? <Txt key={i} role="title">{t.text}</Txt> : <Message key={i} side="mine">{t.text}</Message>

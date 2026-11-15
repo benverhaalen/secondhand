@@ -39,11 +39,17 @@ function readSaved(): Chat[] {
   try { return load(); } catch (e) { log.error('shop.chats_read', e); return []; }
 }
 
+// The sources a search can be narrowed to, by the server's source id. The last one left on cannot be switched off.
+export const SOURCE_IDS = ['depop', 'ebay', 'poshmark', 'mercari', 'dupe', 'google_shopping'] as const;
+
 export function useShop() {
   const search = useSearch();
   const [turns, setTurns] = useState<Turn[]>([]);
   const [failure, setFailure] = useState<ApiFailure | null>(null);
   const [saved, setSaved] = useState<Chat[]>([]);
+  // Every source is asked unless the person switched one off (Nate: "default to all sources but have the toggle to select").
+  const [off, setOff] = useState<string[]>([]);
+  const toggleSource = useCallback((id: string) => setOff(o => o.includes(id) ? o.filter(x => x !== id) : o.length < SOURCE_IDS.length - 1 ? [...o, id] : o), []);
   const id = useRef(newId()), at = useRef(Date.now()), follow = useRef<AbortController | null>(null);
 
   useEffect(() => { setSaved(readSaved()); }, []);
@@ -84,8 +90,8 @@ export function useShop() {
     setFailure(null);
     const next: Turn[] = [...turns, { kind: 'ask', text, at: Date.now() }];
     setTurns(next);
-    if (!turns.length) search.run(text); else followUp(text, next);
-  }, [turns, search, followUp]);
+    if (!turns.length) search.run(text, off.length ? SOURCE_IDS.filter(s => !off.includes(s)) : undefined); else followUp(text, next);
+  }, [turns, search, followUp, off]);
 
   // Closing keeps the chat here; a chat with nothing asked is not kept.
   const close = useCallback(() => {
@@ -124,5 +130,5 @@ export function useShop() {
   }, [turns, search]);
 
   const askOffered = useCallback(() => { if (offer) { setOffer(null); ask(offer); } }, [offer, ask]);
-  return { turns, phase: phaseOf(turns), reach, failure, saved, offer, askOffered, ask, close, reopen, forget, retry };
+  return { turns, phase: phaseOf(turns), reach, failure, saved, offer, askOffered, ask, close, reopen, forget, retry, off, toggleSource };
 }

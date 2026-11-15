@@ -68,3 +68,9 @@ The usual search results page is the strongest rival to an inline conversation. 
 Pre-code failure tests cover event ordering, stale provisional text, refusal, wrong widget result, missing results, unsafe outbound protocols, storage denial, resize dimensions, request headers, stream fallback and timer cancellation. Later regression tests cover terminal retries, invalid saved tools, and unavailable price bands.
 
 Verification limits: no server, browser, network, deployment or git writes were run. Phone overflow, zoom, rendered contrast, fonts and motion were reasoned about from the CSS, not measured in a browser. Visual review remains unfinished. No image generation was needed; the brief supplied a real photo. API integration awaits the backend and origin.
+
+## Account access
+
+`/signin` and `/signup` accept email codes. With a Google OAuth web client configured, they also offer the Google Identity Services button. Both call the existing auth endpoints through the same-origin `/v1` rewrite. Set `SECONDHAND_API_ORIGIN` for the web build and add the public web origin to `SECONDHAND_WEB_ORIGINS` on the API when it runs on another origin.
+
+For Google, set `NEXT_PUBLIC_SECONDHAND_GOOGLE_CLIENT_ID` in the web build and include the same client ID in the API’s `GOOGLE_CLIENT_IDS`. Register the public origin with that Google web client. Email requires the API’s configured email sender. Browser sessions use the API’s HttpOnly refresh cookie. The web client does not save tokens in browser storage.
