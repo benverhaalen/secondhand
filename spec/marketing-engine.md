@@ -131,6 +131,8 @@ Freshness tiers: **hot** means read on the event itself; **warm** means served f
 
 ## 3. The calculation
 
+**What it learns from** (Nate, [words](../product/words.md#2026-11-14-nate-the-engine-learns-from-the-whole-market-not-only-our-users)). The engine is powered by the whole market, not only by our own users' results. Every listing the protocol reads on a site is an observation: its price, title, photos, attributes, age and position. When it is seen again, what changed is an outcome: a price drop, a rise or fall in rank, a "sold" mark, or its disappearance. So other people's listings give sale and no-sale outcomes at a volume our own users never could, and they update the same parameters, weighted by how sure the outcome is (a sold mark with a price counts fully; a listing that vanished counts as a probable sale by its age and the site's sell-through). Beside them sit what the platforms publish about their own ranking and fees, and what the information engines gather from retail, brand, price-history, review and trend sources. Our users' own outcomes are the most exact rows, because we know the full funnel and the money, and they calibrate the rest; they are not the base the engine waits for. That is why it works on day one.
+
 ### 3.1 Candidate generation
 
 For each connected site that passes the fixed gate (site allows the category, no recall or legal flag), the engine splits the plan into two parts that it can search separately, because presentation changes the chance of sale only through visibility:

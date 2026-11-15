@@ -682,3 +682,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate prepare the next session to fully build
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Lets prepare for next session to fully build. Finish up whats needed, wrap up, then lets get ready for expert mass parallel focused and assured building, showing me and detailing with me in clear terms how everything works, identifying where it outperforms, how it aids the way we present, ensure that you have also intelligently built around that and there are no things we dont do better than others
+
+## 2026-11-14 nate the engine learns from the whole market, not only our users
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Our engine isnt just built and powered by the existing data we've collected by OUR users, but by the existing listings, credible information, and more from the platforms and industries themselves
