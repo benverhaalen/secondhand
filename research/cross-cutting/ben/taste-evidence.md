@@ -19,6 +19,7 @@ Every row is *observed*: his reaction, in his words or close to them, at the lin
 | 11-15 01:58 [black](../../../product/words.md#2026-11-15-a-constitution-with-little-wiggle-room-the-heavy-black-the-black-outline-and-the-gray-box) | Round 10 mock | | Heavy black only on buttons; the gray box behind the Dunks "doesn't feel as separate" |
 | 11-15 02:18 [dark mode](../../../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) | Today, light and dark | "i like that dark mode a lot"; "the spacing i like"; the principles "look pretty damn good" | The light Dunks card not standing out; the Sold chip on the photo; Depop against the gradient; the title's spacing; a notice with an X and no action; card sizes and corners that differ |
 | 11-15 02:46 [v3](../../../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready) | Today v3 | "the ui overall design in the middle of the last two" | The light shadow "looks a little weird"; fonts "a bit lighter"; the money "too blank"; the countdown "too close to the corner"; the top gradient too invasive |
+| 11-15 02:59 [colors](../../../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much) | Color blind checks | | "dont weight to colorblindness too much": a word or an icon carries state, and his eye is one input, not the gate |
 
 ## What he wants under it
 

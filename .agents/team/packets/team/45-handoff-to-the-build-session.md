@@ -25,6 +25,7 @@ Nate: "Utilize codex too, sol and terra and even astra at times. 6.1 which you h
 | Work | Goes to | Why |
 |---|---|---|
 | Orchestration, every design choice, the operating design of each site adapter, anything that touches money, floors, trust, secrets, sessions or a person's account | Claude: the Fable orchestrator, Opus where the approach must be found in the code | these carry the protections and the whole-product picture |
+| Nothing that runs in the product. Codex models build; they do not drive the working product | Codex is a builder only | Nate, same words |
 | Specified tasks with owned files and a proving command that leave no design choice: the arithmetic engines (comps, keep, pair score, velocity, crops, stats normalising), scaffolds, fixtures, contract examples, test harnesses | Codex workers on Sol (GPT-6.1), run beside Claude's Sonnet seats so neither queue waits | scope-disciplined and parallel; half of the start-now page fits |
 | A second opinion on a risky diff, or a second attempt after a Claude seat fails twice | Codex, picked per case | a different family finds different faults |
 | Terra | whatever the Codex skill's roster says it is suited to on this machine: read the roster before the first dispatch, do not assume | not verified in this session |
@@ -36,11 +37,12 @@ Send independent tasks to both families in the same message. A Codex task gets t
 ## Start here
 
 1. [spec/README.md](../../../../spec/README.md): the index of everything below.
-2. [spec/plans/start-now.md](../../../../spec/plans/start-now.md): every task that can begin this minute, with its files and proving command, and the block to paste into every build brief. The full graph is `spec/plans/backend/plan.md` and `plan.json` when they land.
-3. [spec/engines/](../../../../spec/engines/): one document per engine. Each has what it decides, its signals, the calculation, how it learns, its speed design, what the person sees, how it beats what exists, protections, proof and build tasks.
-4. [spec/product.md](../../../../spec/product.md): the canon. Names, tables, the API and the five machines. A name not in it is added there first.
-5. [spec/assessment.md](../../../../spec/assessment.md): what is settled, what needs a check, and the ten workspace checks for the first hour.
-6. [spec/open-questions.md](../../../../spec/open-questions.md): what only Ben or Nate can settle. It opens with the questions for Ben.
+2. [spec/plans/workstreams.md](../../../../spec/plans/workstreams.md): the build piece by piece. The sessions the orchestrator launches, what each owns and delivers, what a platform team builds, and the seams fixed in the first hour.
+3. [spec/plans/start-now.md](../../../../spec/plans/start-now.md): every task that can begin this minute, with its files and proving command, and the block to paste into every build brief. The full graph is `spec/plans/backend/plan.md` and `plan.json` when they land.
+4. [spec/engines/](../../../../spec/engines/): one document per engine. Each has what it decides, its signals, the calculation, how it learns, its speed design, what the person sees, how it beats what exists, protections, proof and build tasks.
+5. [spec/product.md](../../../../spec/product.md): the canon. Names, tables, the API and the five machines. A name not in it is added there first.
+6. [spec/assessment.md](../../../../spec/assessment.md): what is settled, what needs a check, and the ten workspace checks for the first hour.
+7. [spec/open-questions.md](../../../../spec/open-questions.md): what only Ben or Nate can settle. It opens with the questions for Ben.
 
 ## What the product is, in Nate's words
 
@@ -127,11 +129,12 @@ Each engine's section 7 holds its rival table, and the plan holds one table that
 Paste this as the first message of the fresh session (Fable 5.2 as orchestrator, in this repo):
 
 ```text
-You are the orchestrator for Nate's side of secondhand. Read .agents/team/packets/team/45-handoff-to-the-build-session.md first, then spec/plans/start-now.md (and spec/plans/backend/plan.md and plan.json if they exist), then spec/engines/README.md. Follow AGENTS.md and the build skill.
+You are the orchestrator for Nate's side of secondhand. Read .agents/team/packets/team/45-handoff-to-the-build-session.md first, then spec/plans/workstreams.md and spec/plans/start-now.md (and spec/plans/backend/plan.md and plan.json if they exist), then spec/engines/README.md. Follow AGENTS.md and the build skill.
 
 Goal: every backend feature built, working and testable with no UI, by 03:00 Central, starting with every task in spec/plans/start-now.md at once, then the full plan wave by wave.
 
 How to run it:
+0. You launch each stream in spec/plans/workstreams.md as its own session, led by Opus or Fable, each with Sonnet seats and Codex workers on GPT-6.1 as builders. Streams 1, 2, 10, 13 and 15 push their interface first; the seven platform teams and the scoring streams start the moment the protocol envelope is pushed. You hold the canon, the walk and the clock.
 1. Wave 0 first: the workspace checks on the event workspace, the scaffolds, the fixtures, the failure reporter, and the eleven expert research sessions (one per engine, from a working professional's view: what must be determined, the best way, what to consider). Fold each session's findings into its engine document and its tasks' accepts and breaks before that engine's build tasks start.
 2. Dispatch every task whose dependencies are done and whose owned files are disjoint, all in one message. Paste the plan's "Say this in every build brief" block into each brief, with the task's rests, owns, check, accepts and breaks. Specified tasks go to Sonnet or a Codex worker; Opus only where the approach must be found in the code.
 3. A seat settles in writing how the thing is built before it finishes building: how the agent operates on the page, the pipeline of actions, what runs in parallel. No guess and check.
