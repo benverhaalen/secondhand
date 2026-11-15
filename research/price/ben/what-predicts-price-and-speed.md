@@ -115,7 +115,7 @@ The debate, with the case against each:
 ## 5. Tuning without fooling ourselves
 
 1. **Write the pass lines first and commit them** before the final window is opened: the metrics above, D6's pass rule (coverage 75 to 85% in every reported cell, q50 no worse than the better baseline), and the windows below. The commit hash goes into the result.
-2. **Three time windows, in order** (for 90 days of eBay sold rows): days 1 to 60 for comps and fitting, with weekly rolling origins in days 31 to 60 for tuning; days 61 to 75 to calibrate the conformal step; days 76 to 90 as the final holdout, scored once. A 7-day gap before each origin (D6).
+2. **Time windows, in order**: monthly rolling origins with a 7-day gap for tuning (D6), then the conformal calibration, then a locked final month scored once; nothing used for a locked item postdates the lock date ([plan decisions 2 to 4](../../../spec/plans/backtest/plan.md)).
 3. **What may be tuned:** the comp count k, the age half-life, the match weights, the shrinkage n/(n+20), and alpha. Few knobs, each with a start value from the spec. Report how many settings were tried, since picking the best of many flatters the result.
 4. **Every signal earns its weight.** Each of season, photo count, photo quality, round-number ask, day of week and Google Trends is switched off and on over the tuning origins; it keeps weight only if it improves PPE20 or pinball loss by more than the paired bootstrap noise (1,000 draws). This is the demand engine's promotion rule ([§4](../../../spec/engines/demand-and-trend.md#4-learning)) applied to price. The ablation table goes in the result: it is the honest answer to "do seasons matter?"
 5. **Leakage** is refused by [check_leakage](../../../jobs/valuation/backtest.py), plus three rules for scraped rows: the same item cross-listed or relisted counts once (by cluster), Best Offer sales with a hidden price are left out and counted, and post-listing signals (views, likes, watchers) never enter a price.
@@ -123,11 +123,11 @@ The debate, with the case against each:
 
 ## 6. What to collect
 
-**Sample size.** At 80% coverage a Wilson 95% interval is 63 to 91% at n = 30, 71 to 87% at n = 100, and 76 to 84% at n = 400. Detecting a 10-point gain in PPE20 over the baseline with a paired test needs about 155 to 310 items, depending on how often the two disagree (*inferred*, McNemar approximation). So: **at least 200 test sales per kind in the final window, 1,200 overall,** plus the earlier windows.
+**Sample size.** At 80% coverage a Wilson 95% interval is 63 to 91% at n = 30, 71 to 87% at n = 100, and 76 to 84% at n = 400. Detecting a 10-point gain in PPE20 over the baseline with a paired test needs about 155 to 310 items, depending on how often the two disagree (*inferred*, McNemar approximation). So: **at least 200 test sales per kind in the final window, from 20 or more products per kind, 1,200 overall,** plus the earlier windows. Sales of one product are not independent, so intervals resample products ([plan decision 16](../../../spec/plans/backtest/plan.md)).
 
 **Kinds and products.** Products whose identity is unambiguous, so the test isolates pricing from recognition. Matches the demand engine's six kinds, plus one hard bucket:
 
-| Kind | Examples (5 to 10 products each) | Why |
+| Kind | Seed examples (grow to 20 or more products per kind) | Why |
 |---|---|---|
 | Outerwear and apparel | Patagonia Better Sweater, Carhartt Detroit jacket, Levi's 501, Lululemon Define | The season test: coats against tees |
 | Shoes | Nike Dunk Low, New Balance 550, Birkenstock Boston | Hype and release decay |
@@ -178,7 +178,7 @@ Flattering because they say when the seller wins; true because each names what m
 | Makridakis et al., M5 accuracy results, 2020 preprint; Petropoulos et al., arXiv 2102.13209 | method | Hard baselines, cross-learning, small item-level gains |
 | inglisting eBay sold snapshot, Jul-Aug 2026 | evidence, with a stated conflict | Speed by price band; "no seasonal claim ... because the data cannot support one" |
 | Flipsail, Underpriced (2026) | weak signal | Calendars only; their own caveats |
-| Census Monthly Retail Trade via FRED: MRTSSM4481USN, MRTSSM442USN, MRTSSM443USN, MRTSSM451USN, MRTSSM45330USN (updated 2026-10-15) | evidence | New against used by month; the season prior per kind |
+| Census Monthly Retail Trade via FRED: MRTSSM4481USN, MRTSSM442USN, MRTSSM443USN, MRTSSM451USN, MRTSSM45330USN (updated 2026-10-15) | evidence | New against used by month. Only the used-merchandise series is a candidate prior for our own season factors; the new-goods series are context, when buying new competes |
 | ThredUp 2025 Resale Report (GlobalData, Mar 2025); Retail Dive, Mar 21 2025 | evidence, from an interested party | Secondhand gaining on new; price is the top reason |
 | All My Sons (Feb 2025), SpareFoot (May 2026), HireAHelper (2023) | weak signal | When moves happen: a supply wave for furniture |
 | KRIS 6 (Dec 2020), WCCO (May 2024), Kiplinger (Dec 2025) | weak signal | Donation timing claims, no volumes |
