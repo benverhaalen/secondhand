@@ -19,7 +19,7 @@ Anything else is an estimate and says so.
 | **60,936** | Every possible order of events for one item on 3 sites was checked: posts, payments, delists, failures, markdowns. In all 26,400 of those states where two buyers had paid, the second buyer gets a refund decision on screen. 0 states are left stuck without the person. On 4 sites: 931,406 states, no rule broken. | measured | `node scripts/bench/bench.mjs` (`--sites 4` for the 4-site run, about 2 min) |
 | **6 steps** | Break the refund on purpose and the checker finds the double sale in 6 steps: post, post, live, live, buyer A pays, buyer B pays. So the 60,936 is a test that can fail. | measured | same command, `race_mutant` |
 | **$2.69** | What choosing the site is worth on a $20 item: you keep $18.69 on Depop and $16.00 on Poshmark. On $100 it is $16.05 ($96.05 against $80.00). | measured, from fee pages read 2026-11-14 | `node scripts/bench/bench.mjs`, `fees` |
-| **116 of 117** | Planted lies in Ben's 19 real photos that the photo check caught: a detail painted out (a print, a label, a flaw), the color visibly shifted, the photo mirrored. It errs toward holding: 17 of 38 honest relights were held too, and the real photo is used instead. | measured | `python3 scripts/bench/gate.py` |
+| **173 of 174** | Planted lies in Ben's 19 real photos that the photo check caught: a detail painted out or swapped (a print, a label, a flaw), the item stretched, its color visibly shifted, the photo mirrored. It errs toward holding: 17 of 38 honest relights were held too, and the real photo is used instead. | measured | `python3 scripts/bench/gate.py` |
 | **76 of 76** | Photos the no-model fixer edited without moving the item's color past the limit (largest move 1.89 CIEDE2000, limit 2.0): 19 real photos, each as shot plus dark, flat and bright. | measured | `python3 scripts/bench/photo.py` |
 | **0.44 s** | A sale seen from a public Poshmark listing page: one request, 444 ms, read from the page's own sold mark. | observed 2026-11-14 | [sold/OPERATING.md](../app/src/edge/sold/OPERATING.md#observed-run), trace [sd-1](../research/cross-cutting/nate/runs/sd-1.md) |
 | **48 of 48** | When a site's page shape broke our reader, the fallback found the right listings with one model decision in 0.64 s. | observed 2026-11-15 | trace [hp-9](../research/cross-cutting/nate/runs/hp-9.md) |
@@ -28,7 +28,7 @@ Anything else is an estimate and says so.
 
 ## The mentor's questions, answered with numbers
 
-**Two sites sell the same item at the same time.** It can happen: a delist takes time, and a buyer can pay in that window. The rule is "paid beats dibs", and a second payment opens a refund decision rather than a silent cancel. The model check above proves the rule holds in every order of events on 3 sites and 4. How wide the window is depends on how fast we see the sale: seconds on eBay (the site pushes it), about 0.4 s per check on Poshmark's public page, checked every 1 to 2 minutes, and a 2-minute budget for each delist (red at 5). The window is a budget, not yet a measurement: no signed-in delist has run against a live account.
+**Two sites sell the same item at the same time.** It can happen: a delist takes time, and a buyer can pay in that window. The rule is "paid beats dibs", and a second payment opens a refund decision rather than a silent cancel. The model check above proves the rule holds in every order of events on 3 sites and 4. How wide the window is depends on how fast we see the sale: seconds on eBay (the site pushes it), about 0.4 s per check on Poshmark's public page, checked every 1 to 2 minutes, and a 2-minute budget for each delist (red at 5). So by design the last other listing is down within about 4 minutes of the sale on the slowest site (up to 2 minutes to see it, up to 2 to take each one down, all in parallel), against a tool that polls every 10 minutes and then delists. The window is a budget, not yet a measurement: no signed-in delist has run against a live account.
 
 **Sites take different cuts and pay out differently.** The keep engine holds one fee row per site with its date and source ([fees research](../research/price/nate/fees-and-taxes.md)). With the buyer paying $6 shipping:
 
@@ -50,32 +50,48 @@ To keep $17 you must ask $18.25 on Depop and $21.25 on Poshmark. Payout timing d
   |---|---|
   | A detail painted out, 64 px or 40 px square (1% and 0.4% of the photo) | 38 of 38 |
   | A detail painted out, 24 px square (0.14% of the photo) | 18 of 19 |
+  | A detail swapped for another patch of the same item, as a tag's text changed would be | 19 of 19 |
+  | The item stretched 4% or 8% wider | 38 of 38 |
   | The item's color turned 12 to 40 degrees, where a buyer could see it (over 4.5 CIEDE2000) | 41 of 41 |
   | The photo mirrored and recropped | 19 of 19 |
   | An honest relight, which should pass | 21 of 38 passed |
 
-  The one miss was a 24 px patch of a print scoring 0.65 against a floor of 0.60. All 17 honest relights that were held failed on the structure check, mostly close-ups of fabric texture, where our stand-in relight also blurs and turns the photo. A held render costs the seller a nicer photo, never a false one. Lowering that floor from 0.55 to 0.30 would pass 32 of 38 honest relights and still catch 115 of 117, but that was read off these same photos, so it is a lead to test on real Seedream renders, not a result. Two limits: these are edits we made, not real Seedream output, and a turn of hue on a faded or grey item that a buyer can't see (16 cases, under 4.5) is not counted as a lie either way.
-- *What a judge sees in five seconds:* [gate-side-by-side.jpg](../scripts/bench/out/gate-side-by-side.jpg). The real photo, an honest relight that passed, and the same relight with the print painted out, held, with the box that failed.
+  The benchmark found a hole first: alignment undid a stretch, so only 16 of 38 stretched photos were caught. The gate now reads the stretch off the alignment itself and holds anything stretched more than 2%; that caught all 38 and held no honest relight that had passed before. The 2% was set on these same photos, so it is a lead to confirm on real Seedream renders, not a held-out result. The one miss left is a 24 px patch of a print scoring 0.65 against a floor of 0.60.
+
+  All 17 honest relights that were held failed the structure check, mostly close-ups of fabric texture, where our stand-in relight also blurs and turns the photo. A held render costs the seller a nicer photo, never a false one. Lowering that floor from 0.55 to 0.30 would pass 32 of 38 and still catch the painted-out details, also read off these photos. Two limits: these are edits we made, not real Seedream output, and a hue turn on a faded or grey item that a buyer can't see (16 cases, under 4.5) is not counted either way.
+- *What a judge sees in five seconds:* [gate-side-by-side.jpg](../scripts/bench/out/gate-side-by-side.jpg). The real photo, an honest relight that is shown, the same relight with a detail painted out, held, and a heat map of where it no longer matches. For a slider on the site, the four frames are [original](../scripts/bench/out/gate-original.jpg), [honest](../scripts/bench/out/gate-honest.jpg), [lie](../scripts/bench/out/gate-lie.jpg) and [heat map](../scripts/bench/out/gate-heat.jpg), all the same size and aligned.
 
 **Typos and items the seller can't name.** Not measured. No code in the repo matches misspelled names yet. The design answer is that the seller doesn't type the name: the photo, the barcode and the tag decide it (the [capture ladder](../jobs/identity/ladder.py)), and the person is asked only to confirm. A 15-minute test: take 20 real item names, misspell each one the 3 common ways (a dropped letter, a swapped pair, a sound-alike), search each on eBay, and count how many still find the right item. That number tells us how much search-only tools lose, and it belongs on the site next to ours once the hands-on test is in.
 
-## What a listing costs us
+## What it costs us
 
-An estimate built from observed prices. Nothing here was billed yet.
+An estimate built from observed prices. Nothing here was billed yet. Posting is paid once per item; watching for sales is paid every day per linked account, and it is the bigger number unless it is designed down.
 
-| Step | Route | Cost per item |
+**Per item, once.**
+
+| Step | Route | Cost |
 |---|---|---|
 | Identify | Google Lens through Serper ($0.003), one web search ($0.01), the Decisions check on `gpt-6-luna` ($0.10 per million input tokens) | about $0.015 to $0.06 |
-| Photos | the no-model fix | $0 (about 10 s of one CPU core per photo) |
+| Photos | the no-model fix | $0 (seconds of one CPU core per photo) |
 | Photos, if the person asks for studio light | 3 Seedream relights at $0.035 plus 6 reference images at $0.008 | about $0.25 |
-| Post to 4 sites | eBay through its API ($0); the rest in a cloud browser at $0.06 an hour, billed by the minute, 1 to 4 minutes each | about $0.003 to $0.012 |
-| See the sale | public page reads, then one signed-in read to confirm | under $0.01 |
-| Take it down elsewhere | 3 browser runs of 1 to 4 minutes | about $0.003 to $0.012 |
-| **Total** | | **about $0.03 to $0.10, or $0.28 to $0.35 with studio light** |
+| Post to 4 sites | eBay through its API ($0); 3 sites in a cloud browser at $0.06 an hour, billed by the minute, 1 to 4 minutes each | about $0.003 to $0.012 |
+| Take it down elsewhere after the sale | 3 browser runs of 1 to 4 minutes | about $0.003 to $0.012 |
+| **Total** | | **about $0.02 to $0.08, or $0.27 to $0.33 with studio light** |
 
-For scale: on a $20 shirt, eBay's fee is $3.94 and consignment keeps $17. What we spend is cents. The trap is a browser kept open to watch for sales: $1.44 a day per site per person, about $170 a month for 4 sites ([sale detection](../research/sold/ben/cheap-sale-detection.md)). That's why the cheap public read decides when the browser runs.
+**Per linked account, per day, to see sales.** Each signed-in check is assumed to fit in one started browser minute ($0.001); that is not measured.
 
-Sources: [identification costs](../research/identify/nate/identification-technologies.md), [OpenRouter and Treg](../research/price/ben/openrouter-and-treg.md), [Decisions API](../research/identify/ben/openai-decisions-api.md), [Seedream](../research/studio/ben/seedream-relighting.md), [Browser Use](../research/cross-cutting/nate/browser-use-cloud.md).
+| Site | How we see the sale | Cost per day |
+|---|---|---|
+| eBay | the site pushes it | $0 |
+| Facebook | our own state: the agent booked the pickup | $0 |
+| Poshmark, Mercari | a public page read every 1 to 2 minutes from our server (0.44 s each, observed) | about $0 |
+| Depop | a signed-in sweep: every 90 s while hot, every 15 min while live, hourly when quiet | about $0.96 hot, $0.10 live, $0.02 quiet |
+| The naive way | a signed-in check on every site every 2 minutes | about $0.72 per site |
+| Worse | a browser held open to watch | $1.44 per site, about $170 a month for 4 sites ([sale detection](../research/sold/ben/cheap-sale-detection.md)) |
+
+For scale: on a $20 shirt, eBay's fee is $3.94 and consignment keeps $17. What we spend per item is cents, and the cheap public read is what keeps the daily cost near zero.
+
+Sources: [identification costs](../research/identify/nate/identification-technologies.md), [OpenRouter and Treg](../research/price/ben/openrouter-and-treg.md), [Decisions API](../research/identify/ben/openai-decisions-api.md), [Seedream](../research/studio/ben/seedream-relighting.md), [Browser Use](../research/cross-cutting/nate/browser-use-cloud.md), [cadence per site](../app/src/edge/sold/OPERATING.md#the-ladder-per-site).
 
 ## The hands-on test, before the pitch (about 45 minutes)
 
@@ -91,6 +107,8 @@ These are the numbers judges care about most and the only ones we cannot measure
 Say it like this: "On 10 of our own items, listing took a median of N seconds against M by hand per site, it named 8 of 10 exactly, and its price was within 20% of eBay's sold median for 7." Don't round 8 of 10 up to "80% accuracy" without the n.
 
 ## What we will not claim
+
+- **Replies held by the claim check per 100.** Not measured: no buyer conversations have run through it. Describe the method instead ([evidence gate](../docs/how-it-works/how-we-prove-it.md#the-evidence-gate-on-messages)).
 
 - **The identity pipeline's 100%.** Its proof set is synthetic, written from our own rules ([held_out.json](../jobs/identity/proof/held_out.json) says so). It shows the pipeline runs and that it is fast (0.1 ms per pair at p95), not that it is right.
 - **"Four sites in a minute."** Depop and Mercari refused a signed-out headless browser from our address (403, [bp-1](../research/cross-cutting/nate/runs/bp-1.md)). Signed-in posting has not run against a live account. Claim what the demo shows.
