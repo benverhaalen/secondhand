@@ -19,6 +19,7 @@ export type Comp = {
   site: 'ebay' | 'facebook' | 'depop' | 'poshmark' | 'mercari';
   sold_at: string;
   dated_by?: 'sold' | 'listed';
+  listed_at?: string;
   price_cents: number;
   kind: 'sold' | 'best_offer' | 'own_order';
   level: 'variant' | 'product' | 'family' | 'category';
