@@ -100,8 +100,8 @@ function Sheetful() {
         <Line><Pill id="f-reset" kind="second" label="Bring them back" onPress={() => setFed(['f-a', 'f-b'])} /></Line>
       </Section>
 
-      <Section title="Money news: what was kept, beside what sold">
-        <MoneyNews id="mn-two" since="Since yesterday" kept={97.33} line="2 sold, after fees" sold={MONEY_SOLD.slice(0, 2)} />
+      <Section title="Money news: what was kept, and what sold">
+        {/* One per view: an amount is the one peak number (C6). Five sold shows two photos and +3; Today shows the two-sold case. */}
         <MoneyNews id="mn-five" since="Since Monday" kept={1204.5} line="5 sold, after fees" sold={MONEY_SOLD} />
       </Section>
 
