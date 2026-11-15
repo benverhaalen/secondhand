@@ -25,6 +25,7 @@ from seeded_faults import item_mask  # noqa: E402
 BAND = {"tape": 0.08, "photo": 0.08}  # photo: only when the real photo is laid flat; honest pants redraws read 1 to 6%
 PRINT_MIN_INLIERS = 14
 PRINT_NCC = 0.45
+PRINT_COVER = 0.5  # share of the print's box the matched points span
 COLOR_DRAWN = 10.0  # before push-back: past this the model drew a differently colored item, and no correction is trusted
 SIDE = 1080
 
@@ -83,18 +84,26 @@ def _match(ref: np.ndarray, ren: np.ndarray):
     return H, (p1[inl.ravel().astype(bool)] if n else None), n, r
 
 
-def find_print(ref: np.ndarray, ren: np.ndarray) -> dict:
+def find_print(ref: np.ndarray, ren: np.ndarray, box=None) -> dict:
     """Where the real print sits in the render, and how alike the two look there (before anything is pasted)."""
     H, pts, n, r = _match(ref, ren)
     if H is None or n < PRINT_MIN_INLIERS:
         return {"found": False, "inliers": n}
+    if np.linalg.det(H[:2, :2]) < 0:  # a print that only matches flipped was mirrored; letters like CHICO match both ways
+        return {"found": False, "inliers": n, "mirrored": True}
     g1 = cv2.cvtColor(r, cv2.COLOR_RGB2GRAY)
     back = cv2.warpPerspective(cv2.cvtColor(ren, cv2.COLOR_RGB2GRAY), np.linalg.inv(H), (g1.shape[1], g1.shape[0]))
     m = np.zeros_like(g1)
     cv2.fillConvexPoly(m, cv2.convexHull(pts.astype(np.int32)), 1)
     a, b = g1[m > 0].astype(np.float32), back[m > 0].astype(np.float32)
     ncc = float(((a - a.mean()) * (b - b.mean())).mean() / (a.std() * b.std() + 1e-6)) if a.size > 100 else 0.0
-    return {"found": ncc >= PRINT_NCC, "inliers": n, "ncc": round(ncc, 3), "H": H, "pts": pts, "ref": r}
+    # the matches must spread over the whole print, not a few letters that read the same either way round (H, I, O)
+    cover = 1.0
+    if box:
+        bm = box_mask(r, box) > 0
+        cover = float((bm & (m > 0)).sum() / max(bm.sum(), 1))
+    return {"found": ncc >= PRINT_NCC and cover >= PRINT_COVER, "inliers": n, "ncc": round(ncc, 3), "cover": round(cover, 2),
+            "H": H, "pts": pts, "ref": r}
 
 
 def ink(ref: np.ndarray, pts: np.ndarray) -> np.ndarray:
@@ -227,8 +236,8 @@ def check(src: np.ndarray, ren: np.ndarray, template: str | None, prints: list[n
         if min(ref.shape[:2]) < 96:
             out["numbers"][f"print_{i}"] = {"skipped": "too small to match; the judge reads it"}
             continue
-        r = find_print(ref, ren)
-        out["numbers"][f"print_{i}"] = {k: v for k, v in r.items() if k in ("found", "inliers", "ncc")}
+        r = find_print(ref, ren, box)
+        out["numbers"][f"print_{i}"] = {k: v for k, v in r.items() if k in ("found", "inliers", "ncc", "cover", "mirrored")}
         if not r["found"]:
             out["reasons"].append(f"print {i} not found as it is in the real photo")
         elif repair:
