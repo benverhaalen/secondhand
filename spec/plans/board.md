@@ -12,16 +12,17 @@ Status: the one place progress is tracked for the build that ends at 03:00 Centr
 
 ## Milestones (the order of the build since 23:00 Central, 2026-11-14)
 
-Set by [Nate](../../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested-the-way-production-runs-with-milestones-that-are-finalised-as-they-are-hit) after two crashes: one thing at a time, each proved on Browser Use Cloud the way production runs it, and finalised before the next starts. A milestone is ticked only when its real run is recorded under  and a seat that did not write it has reviewed it. The stream boxes below are the detail; this list is the order. *Agent proposal* for the list itself.
+Set by [Nate](../../product/words.md#2026-11-14-nate-browser-use-on-cloud-tested-the-way-production-runs-with-milestones-that-are-finalised-as-they-are-hit) after two crashes: one thing at a time, each proved on Browser Use Cloud the way production runs it, and finalised before the next starts. A milestone is ticked only when its real run is recorded under `research/cross-cutting/nate/runs/` and a seat that did not write it has reviewed it. The stream boxes below are the detail; this list is the order. *Agent proposal* for the list itself.
 
-- [ ] M1 a cloud browser session: created, reached over CDP, one public Depop search read with no model in the loop, count and timing recorded, the browser stopped. BLOCKED:  is not set on this machine; Nate sets it
-- [ ] M2 stored sign-in: one account's storage state saved behind , loaded into a new cloud browser, shown to survive a restart
+- [ ] M1 a cloud browser session: created, reached over CDP, one public Depop search read with no model in the loop, count and timing recorded, the browser stopped. BLOCKED: `BROWSER_USE_API_KEY` is not set on this machine; Nate sets it
+- [ ] M2 stored sign-in: one account's storage state saved behind `account.token_ref`, loaded into a new cloud browser, shown to survive a restart
 - [ ] M3 linked accounts only: a planted unlinked site gives zero launches and zero jobs
-- [ ] M4 platform profiles as data, and the endpoint list with its docs generated from the manifests ( is )
-- [ ] M5 Depop, every public read verb live on cloud; every write verb dry; - [ ] M6 one real account linked by Nate in the hosted browser: signed-in reads, a  stored
+- [ ] M4 platform profiles as data, and the endpoint list with its docs generated from the manifests (`/write-listing` is `post`)
+- [ ] M5 Depop, every public read verb live on cloud; every write verb dry; `read_storefront`
+- [ ] M6 one real account linked by Nate in the hosted browser: signed-in reads, a `storefront_snapshot` stored
 - [ ] M7 write a listing: dry, then live on Nate's go, read back, then delisted
 - [ ] M8 Poshmark, Mercari, eBay, Facebook Marketplace, one at a time through M5 to M7
-- [ ] M9 the walk end to end on real pieces, the  routes answering from engines, deployed
+- [ ] M9 the walk end to end on real pieces, the `/v1` routes answering from engines, deployed
 
 ## Checkpoints (Central)
 
