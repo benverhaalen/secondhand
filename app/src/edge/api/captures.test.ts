@@ -410,12 +410,12 @@ test('separate capture modules preserve an open capture through read, PATCH, fin
   await a.pendingIdentify('usr_other',c.id);
   assert.equal((await bodyOf(await throughCopy(a,'GET /v1/captures/:id',c.id))).state,'judged');
   const next=await bodyOf(await throughCopy(b,'POST /v1/captures','',openInput));
-  assert.notEqual(next.id,opened.id,'route modules must share the capture counter');
-  assert.notEqual(next.item_id,opened.item_id,'route modules must share the item counter');
+  assert.notEqual(next.id,opened.id,'two captures never share an id');
+  assert.notEqual(next.item_id,opened.item_id,'two captures never share an item id');
   assert.equal(a.captureRows,b.captureRows,'the exported capture map must be shared');
   b.resetCaptures();
   assert.equal((await throughCopy(a,'GET /v1/captures/:id',next.id)).status,404,'reset must clear every route module');
-  assert.equal((await bodyOf(await throughCopy(a,'POST /v1/captures','',openInput))).id,opened.id,'reset must clear the shared counter');
+  assert.notEqual((await bodyOf(await throughCopy(a,'POST /v1/captures','',openInput))).id,opened.id,'a reset must not restart the ids');
 });
 
 test('two people opening through separate capture modules have distinct ids and private captures',async()=>{
@@ -694,9 +694,17 @@ async function at(endpoint:string,id:string,body?:unknown,token='good') {
 test('opening without item_id gives the other user a new item owned by that caller', async () => {
   const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
   assert.notEqual(c.item_id,'it_7c2m','new capture must not reuse the seeded user item');
-  assert.equal(c.item_id,'it_1');
+  assert.match(c.item_id,/^it_[0-9a-f]{32}$/);
   const row=capturesApi.captureRows.get(c.id)!;
   assert.equal(row.user_id,'usr_other');assert.equal(row.item_id,c.item_id);
+});
+test('capture and item ids are not minted from a counter, so a restart never reuses one', async () => {
+  const seen=new Set<string>();
+  for(let restart=0;restart<3;restart++) {
+    resetCaptures(); deps.idem.clear();
+    const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
+    for(const id of [c.id,c.item_id]) { assert.ok(!seen.has(id),id+' was minted twice'); seen.add(id); }
+  }
 });
 test('PATCH returns the other user capture own item id', async () => {
   const c=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
@@ -732,7 +740,7 @@ test('two users open distinct captures and only owners read or write every captu
   const first=await bodyOf(await requestCapture('POST /v1/captures',openInput));
   const second=await bodyOf(await requestCapture('POST /v1/captures',openInput));
   const other=await bodyOf(await requestCapture('POST /v1/captures',openInput,'other'));
-  assert.equal(first.id,'cap_3n9q');assert.equal(second.id,'cap_1');assert.equal(other.id,'cap_2');
+  assert.equal(first.id,'cap_3n9q');assert.match(second.id,/^cap_[0-9a-f]{32}$/);assert.notEqual(other.id,second.id);
   for(const [c,owner,foreign] of [[first,'good','other'],[second,'good','other'],[other,'other','good']] as const) {
     assert.deepEqual(await bodyOf(await at('GET /v1/captures/:id',c.id,undefined,owner)),c);
     for(const endpoint of ['GET /v1/captures/:id',photosEndpoint,patchEndpoint,'POST /v1/captures/:id/finish']) {

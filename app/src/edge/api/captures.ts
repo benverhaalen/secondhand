@@ -1,6 +1,7 @@
 // Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §§2,5,6,8,11; spec/examples/captures.json.
 // Realtime credentials remain contract examples.
 // The shared example boundary stays here until the contract layer's owner can move it to http.ts.
+import { randomUUID } from 'node:crypto';
 import { ApiError, deps as sharedDeps, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
 import { photos as photoStore } from './uploads.ts';
 import { EXAMPLES, example, type Example } from './examples.ts';
@@ -120,7 +121,7 @@ function liveCaptures() {
   const params = memoryStore();
   params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
   return {rows:new Map<string,CaptureRow>(),identifyRuns:new Map<string,Promise<void>>(),
-    generation:0,number:0,exampleOpened:false,subscriptions:new WeakSet<Blobs>(),params};
+    generation:0,exampleOpened:false,subscriptions:new WeakSet<Blobs>(),params};
 }
 const shared = globalThis as { __secondhandCaptures?: ReturnType<typeof liveCaptures> };
 const firstLoad = shared.__secondhandCaptures === undefined;
@@ -141,7 +142,7 @@ function initial(body: Record<string, unknown>, id: string, item_id: string): St
 export function resetCaptures() {
   captures.generation++;captures.identifyRuns.clear();
   captures.rows.clear();
-  captures.number = 0; captures.exampleOpened = false;
+  captures.exampleOpened = false;
   const state=initial(example('captures.open').request!.body as Record<string, unknown>,open.id,open.item_id);
   captures.rows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
 }
@@ -474,9 +475,10 @@ export const handlers: Record<string, Handler> = {
       const {ports}=await import('./items.ts');
       if (!await ports.read(ctx.user_id!,ctx.body.item_id as string)) throw new ApiError('not_found','item not found','read');
     }
-    const id=ctx.user_id==='usr_8f2k' && !captures.exampleOpened ? open.id : `cap_${++captures.number}`;
+    const minted=randomUUID().replaceAll('-','');
+    const id=ctx.user_id==='usr_8f2k' && !captures.exampleOpened ? open.id : `cap_${minted}`;
     if (id===open.id) captures.exampleOpened=true;
-    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${captures.number}`);
+    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${minted}`);
     const state=initial(body,id,item_id), created_at=new Date(deps.now()).toISOString();
     const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined,intent:(ctx.body.intent as CaptureRow['intent']) ?? 'sell'};
     captures.rows.set(id,row);
