@@ -1784,3 +1784,9 @@ Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
 > Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
 
 Used in: [state of completion](../spec/plans/completion.md).
+
+## 2026-11-15 nate the apple account is his, and the first testflight build is the demo we improve
+Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is left out of this public file.
+> its [his own name] my apple account, the testflight build is the demo for us to test and improve continously before we finalize. I expect we can continously improve the ui/ux and strive to fit the perfect presentation to ensure us winning the compeition
+
+Used in: [production readiness](../spec/plans/sweep/round-2/production-readiness.md), decisions 1 and 5.
