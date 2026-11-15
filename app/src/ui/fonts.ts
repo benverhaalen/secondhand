@@ -22,9 +22,11 @@ const WEB_TAIL = '"Noto Sans", -apple-system, "Helvetica Neue", sans-serif';
 const web = Platform.OS === 'web';
 const on = (f: (typeof FACES)[number]) => f.file != null;
 export const FACE = {
-  text: web ? [on(TEXT) && `"${TEXT.name}"`, WEB_TAIL].filter(Boolean).join(', ') : on(TEXT) ? TEXT.key : undefined,
+  // On the web the brand names always lead, even with no files (CI): the brand check reads the declared face, and a
+  // browser with the face installed uses it.
+  text: web ? `"${TEXT.name}", ${WEB_TAIL}` : on(TEXT) ? TEXT.key : undefined,
   display: web
-    ? [on(DISPLAY) && `"${DISPLAY.name}"`, on(TEXT) && `"${TEXT.name}"`, WEB_TAIL].filter(Boolean).join(', ')
+    ? `"${DISPLAY.name}", "${TEXT.name}", ${WEB_TAIL}`
     : on(DISPLAY) ? DISPLAY.key : on(TEXT) ? TEXT.key : undefined,
 };
 

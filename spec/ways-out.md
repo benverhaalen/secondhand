@@ -4,6 +4,8 @@
 
 How to read a row: **What if** is the moment, in the person's words. **Who** is the persona most likely to hit it. **How it behaves** is the exact behavior to build, with its default. **Stands** says whether the spec already has it (with a link), whether it is *new* (asked of Nate in [packet 47 §7c](../.agents/team/packets/team/47-what-the-pages-need-from-the-backend.md)), or *open* for Ben.
 
+What goes wrong on the system's side (two sales at once, fees and payouts, typos, unknown items, each site's audience, where the auto-list path stops) is in [edge-cases.md](edge-cases.md); the rows below are the person's side.
+
 Who: **Clear** clearing out · **Min** holding a minimum · **Fire** fire sale · **Test** testing the water · **Hunt** hunting one thing · **Price** checking a price · **Browse** browsing in their size · **Resell** reseller (stress case only).
 
 The flow stays the AI's ([Ben](../product/words.md#2026-11-15-no-missing-functions-walk-every-feature-for-what-would-frustrate-each-person): "obviously letting the ai flow work"). Every way out below sits one tap off the main path, in a card's More, a field's tap or a setting. None of them adds a step to the path for people who don't need it.
@@ -63,7 +65,10 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
-| "I'll answer buyers myself" | Min, Test | Every thread is fully writable. You > Messages: Answer for me (default), Draft for me (`answer_fact` replies become drafts that wait for a tap), or Off. Per site, too. Offers are not messages: they follow the Plan's accept mode and floor whatever this says, and the screen says so. The automatic dibs message still goes, because it only tells a buyer the item is spoken for | your own text specced (`actor: user`); the setting *new* (`user.auto_reply`) |
+| "I'll answer buyers myself" | Min, Test | Every thread is fully writable. You > Messages: Draft for me (the default for a new person: every reply waits as exact text for a tap), Answer for me (earned per kind of question after 3 replies sent unedited, the same way rules are promoted), or Off. Per site, too. Offers are not messages: they follow the Plan's accept mode and floor. The automatic dibs message still goes, because it only tells a buyer the item is spoken for | your own text specced (`actor: user`); the setting and drafts-first *new*: `answer_fact` is `auto` in the canon, so this asks Nate to make it promotable |
+| "Let me approve replies fast" | Min, Clear | Messages opens on "4 replies to send": each shows the buyer's words, the exact reply, and chips for the facts it used with where each came from. Send, Edit, or Take over, one at a time like a queue card, or Send all for replies that only state confirmed facts | *new* (Ben, [05:18](../product/words.md#2026-11-15-who-judges-it-guarantees-the-buyer-side-messages-you-approve-meetups-audit-every-site-and-no-fixed-pickup-schedule)) |
+| "This one needs me" | Min | Take over stops automatic replies in that thread until the person hands it back. The agent hands over by itself, with the reason on top, when a buyer is angry, asks to pay or meet off the site, raises a return or claim, asks about a fact that is not confirmed, or names a price outside the plan | *new* (the list); `scam_warning`, `move_off_site` specced |
+| "What has it been saying?" | Min, Resell | Each message in a thread says who wrote it: You, Sent for you, or Drafted and sent by you. You > Messages lists every automatic send across sites with its thread, the facts used and Why? | labels *new*; events specced |
 | "It told a buyer something wrong" | Min | Each automatic message is marked "Sent for you" with Why?. It cannot be unsent on any site, so Correct it fixes the fact on the item and drafts a follow-up as a `reply_other` card the person sends, through `claim_check` | `reply_other` and `claim_check` specced; Correct it *new* |
 | "They want more photos or a video" | Min | The agent sends any photo already on the item; for anything else the thread shows Take a photo, which opens the camera and attaches it | *new* |
 | "I don't want to haggle" | Clear, Fire | No offers in the Plan, or the floor and Always accept answer for you | specced |
@@ -83,6 +88,7 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
+| "Just fix the light, no AI" | Min, Test | Clean up (crop, straighten, exposure, white balance, background blur) is its own choice beside Enhance with AI, and never redraws the item ([edge cases §6](edge-cases.md#6-photos-clean-up-and-ai-enhancement-are-two-different-things)) | levels specced; Clean up as a named choice *new* |
 | "Don't edit my photos" | Min, Test | The default already uses the original photo, and Generate is off until the person picks it ([studio](features/studio.md)). Each photo has Use original. You > Photos: Never suggest edits turns off the Generate offers and any "Always do this" for `studio_approve`; the no-model tweaks (exposure, crop, straighten) stay as plain controls the person can reset | default specced; the setting *new* |
 | "I don't want to follow the steps" | Clear | Skip any step and Finish at any time from one photo. The review then says what is missing and what it costs ("No tag photo: brand from the logo only") | skip and finish specced; the cost line *new* |
 | "That's not what it is" | everyone | Change type at any point | specced |
@@ -97,6 +103,7 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
 | "It's identified wrong" | everyone | Tap the identity line: the other candidates, or type it. Price and plan recompute | specced (`clarify`, attribute edit) |
+| "This was my grandmother's; I don't know what it is" | Clear | I don't know is an answer; the listing describes what can be seen. A could-be-valuable mark (hallmark, signature, maker's mark) stops the quick path and suggests an appraisal first ([edge cases §4](edge-cases.md#4-not-knowing-what-it-is-a-relatives-things-a-pile-a-house)) | *new* |
 | "I'll write the title myself" | Min, Resell | Edit any field; the edit goes to every live listing and wins, except where `claim_check` holds a claim it cannot back or `identity_claim` applies, which ask as they always do. Lock it so the agent never proposes a change | edit specced; lock *new* (`attribute.locked`) |
 | "Change the cover photo" / "drop that one" / "add one" | Min, Resell | Photos on the item can be reordered, removed, replaced or added from the camera or library at any stage; a change goes to every live listing | *new* on a live item |
 | "My price, not yours" | Min | Type a price in the Plan; the suggestion stays as one line beside it ("Similar ones sold for $36 to $52") and is never forced | *new* (typed price on the Plan sheet) |
@@ -110,6 +117,7 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 
 | What if | Who | How it behaves | Stands |
 |---|---|---|---|
+| "Oops, $500, I meant $50" | anyone | A typed price far outside the sold range asks once, with the range; a floor above the price is refused in place ([edge cases §3](edge-cases.md#3-human-error-in-what-people-type)) | *new* |
 | "None of the five fit" | Min, Resell | Every adjustment is open under any choice: the slider, the floor, Always accept, the date, the ending, sites, list later | specced ([price § Selling intents](features/price.md#selling-intents)) |
 | "No price drops" | Min | Price drops off, in any choice | specced (`markdown_on`) |
 | "Not on Facebook, my friends are there" | anyone | Skip a site, kept as "you skipped" | specced |
@@ -164,6 +172,7 @@ Some ways out are closed because they hurt the person or a buyer. When someone r
 | "Forget what you learned about my style" | Browse | Your style shows what it learned; edit or clear it | specced (`GET`, `PATCH /v1/me/style`) |
 | "Don't test things on my listings" | Min | Experiments off | specced (`experiments_consent`) |
 | "I won't tell you what I paid" | Clear | Cost is never asked; it is only offered to resellers | specced |
+| "What's happening on Depop right now?" | Resell, Min | You > Sites: one page per site with what we read there last (each listing, its price and state, open offers, messages, orders) and when, everything we did there with its read-back, anything changed on the site that we did not do, and Open on the site beside each line. A mismatch is on top | events and reconcile specced; the per-site page *new* |
 
 ## §6.17 The website
 

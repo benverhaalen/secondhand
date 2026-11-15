@@ -131,3 +131,10 @@ test('429 that never clears gives timeout, not partial rows', async () => {
   assert.equal(r.searched[0]!.outcome, 'timeout');
   assert.equal(r.results.length, 0);
 });
+
+test('depop: a marked-down card reads the discounted price, not the full one (seen live 2026-11-14)', () => {
+  const card = '<li class="B382Gq_listItem"><a aria-label="Jacket" href="/products/seller-jacket-1a/"><img src="https://media-photos.depop.com/x/P0.jpg"></a>'
+    + '<p aria-description="Full price">$20.00</p><p aria-description="Discounted price">$19.00</p></li>';
+  const read = readPage('depop', '<ol>' + card + '</ol>', 'search');
+  assert.equal(read.ok && read.data[0].price_cents, 1900);
+});

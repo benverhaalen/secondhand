@@ -183,3 +183,12 @@ All fetched 2026-11-14 with curl (bytes read):
 - https://docs.browser-use.com/cloud/eu-deployment.md
 - https://docs.browser-use.com/open-source/browsers.md
 - https://docs.browser-use.com/open-source/all-parameters.md
+
+## Seen in the console (added 2026-11-14 about 23:00 Central)
+
+From Nate's screenshot of cloud.browser-use.com "Launch a cloud browser", account on tier 1. Each line is *observed* on that page, not in the docs.
+
+- The price line reads "Up to $0.01 for 15 min · billed by the minute while it runs". At the documented $0.06 per hour, 15 minutes is $0.015. The page and the docs disagree by rounding or by rate; a real run's `totalCostUsd` settles it. Not resolved.
+- Timeout choices: 5 m, 15 m, 30 m, 1 h, 4 h. Location: United States, with a selector.
+- A profile selector (set to none), and toggles for Record session, Allow resizing, Fixed viewport and Custom proxy. The custom proxy toggle is shown on a tier 1 account; the API reference read earlier marks `customProxy` as enterprise only. Not resolved: try it on create and record the answer.
+- Its Python sample: `from browser_use_sdk.v4 import AsyncBrowserUse`, `client.browsers.create(proxy_country_code="us", timeout=15)`, prints `cdp_url` and `live_url`, and stops in a `finally` with `client.browsers.stop(browser.id)`, with the comment "Billing runs until the browser stops or its timeout expires."

@@ -203,7 +203,7 @@ test('browser-use cloud: the key goes only in its header, never a URL; the brows
   assert.deepEqual(calls.map(x => [x.method, x.url]), [['POST', 'https://api.browser-use.com/api/v4/browsers'], ['PATCH', 'https://api.browser-use.com/api/v4/browsers/b-1']]);
   assert.ok(calls.every(x => x.key === 'KEY-123' && !x.url.includes('KEY-123')));
   assert.match(calls[0].body ?? '', /"proxyCountryCode":"us"/);
-  assert.doesNotMatch(calls[0].body ?? '', /captcha/i);
+  assert.match(calls[0].body ?? '', /"solveCaptchas":false/); // sent as off, never left to the vendor default
   const bad = cdpLauncher(pw, browserUseCloud({ apiKey: 'KEY-123', fetchFn: (async () => new Response('no', { status: 401 })) as unknown as typeof fetch }));
   await assert.rejects(bad.persistent('/p', { headless: true }), (e: Error) => !e.message.includes('KEY-123'));
 });
