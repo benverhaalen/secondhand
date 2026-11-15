@@ -2375,3 +2375,9 @@ Nate, the orchestrator's session, 2026-11-15, about 13:35 UTC, while the orchest
 > ensure the app is built to handle the data, everything sends in, the behavior works correctly
 
 Used in: [the harness-to-row map](../app/src/edge/intel/public/search.ts) and [its test](../app/src/edge/intel/public/search-fields.test.ts).
+
+## 2026-11-15 nate visitor photos may reach the conversation, benchmarks good enough for the site, three free requests, open source with a companion MCP server
+Nate, the engines lead's session, 2026-11-15, about 13:37 UTC, answering the engines handoff's open questions (a visitor's photo reaching the conversation model before identify strips it; any market score or backtest figure on a public page).
+> thats ok for photos to reach, seeing any market score? yeah i want benchmarks great enough to put on the site. and lets put 3 requests free for every user just for the hackathon, with it free to download on github, open source, alongside with a companion mcp server to give everyones agent access to the secondhand search engine
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
