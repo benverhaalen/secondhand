@@ -7,6 +7,7 @@
     "offline"
   ],
   "skip": "new: the camera is the same for a new person; empty: there is always a feed; one: one thing per session; dense: one thing per session, a pile is one session each; failed: a fact the camera cannot read stays a Blank, drawn in every state",
+  "catalog": false,
   "status": "clean",
   "findings": [
     {
