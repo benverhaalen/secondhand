@@ -61,6 +61,7 @@ export async function sourceUnavailable(source: Source, kind: Kind, o: SearchOpt
   if (!sourcesFor(o.caller, [source]).length) return { rows: [], searched: {
     site: source.site, group: source.group, kind, url: null, outcome: 'blocked', ms: 0, count: 0, reason: source.reason ?? "requires the person's search",
   } };
+  // Before the account check: with no route, linking an account would not help, so the answer is no_route.
   if (!sourceRouted(source, o)) return noRoute(source, kind);
   if (source.needs_ask || kind === 'sold' && source.site === 'ebay') {
     const account = await sourceAccount(source, o);
@@ -137,8 +138,8 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
   const account = await sourceAccount(source, o);
   const site = source.site;
   const run = () => o.harness!.call<(SnapListing & { title?: string; slug?: string; condition?: string; size?: string; listed_at?: string; sold_at?: string; currency: string; url: string; host?: string; converted?: boolean })[]>(site, 'search', {
-    signal: o.signal, q: query, status: kind === 'sold' ? 'sold' : 'active', ...(account ? { account_id: account.account_id, person_id: o.person_id } : {}),
-  });
+    q: query, status: kind === 'sold' ? 'sold' : 'active', ...(account ? { account_id: account.account_id, person_id: o.person_id } : {}),
+  }, { signal: o.signal });
   const result = o.log ? await o.log.call('tool', `${source.id}.search`, { account_id: account?.account_id }, run) : await run();
   if (!result.ok) {
     const failure = blocked(result.error.message);

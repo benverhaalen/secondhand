@@ -342,7 +342,7 @@ test('SR4 source signals reach both page and harness read boundaries', async () 
   const { createHarness, fakeAdapter } = await import('../../harness/protocol.ts');
   const harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => ({ ok: true, data: [] }) }] });
   const call = harness.call;
-  harness.call = (site, verb, args) => { assert.equal(args?.signal, controller.signal); return call(site, verb, args); };
+  harness.call = (site, verb, args, options) => { assert.equal(options?.signal, controller.signal); assert.equal(args?.signal, undefined); return call(site, verb, args, options); };
   await searchSource(SOURCES.find(s => s.id === 'ebay')!, 'signal', 'search', { paced: true, harness, signal: controller.signal });
   await searchSource(SOURCES.find(s => s.id === 'poshmark')!, 'signal', 'search', { paced: true, signal: controller.signal,
     fetchPage: async (_url, options) => { assert.equal((options as typeof options & { signal?: AbortSignal }).signal, controller.signal); return page('No results'); } });
