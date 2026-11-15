@@ -1417,7 +1417,10 @@ Ben, studio thread, 08:14 UTC.
 Ben, studio thread, 09:00 UTC.
 > how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
 
-Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
+Ben, project chat (relayed), 09:09 UTC, the parts about the studio.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too.
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md) ("Why each number"), jobs/studio/plan.py (`relay_measured`).
 
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
@@ -1692,3 +1695,16 @@ Nate, build session (orchestrator), 2026-11-15 about 09:00 Central. Two messages
 > https://browser-use.com/benchmarks/consumer
 
 Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 nate benchmark numbers that mean something, and graphics that show what we build on databricks
+Nate, build session (orchestrator), 2026-11-15 about 09:20 Central, with a link to Browser Use's showcase.
+> account as well for these and more ways to utilize browser use as inspiration to optimize and then position how we can benchmark numbers that mean something how fast it is, start to imagine designs for graphics that also exhibit how we build on databricks leverage and really expand the potential of the platform
+> https://browser-use.com/showcase
+
+Used in: [the open benchmark, speed that means something](../spec/benchmark.md#speed-that-means-something-and-what-the-lakehouse-adds).
+
+## 2026-11-15 nate ebay's regional sites reach us listings
+Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting the orchestrator's reading of Browser Use's eBay benchmark page.
+> No it shows that ebay.com doesnt work but ebay.co.uk , ebay.de, ebay.ie , and ebay.be work, which we can still probably use to access us listings and such, even sign in
+
+Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).

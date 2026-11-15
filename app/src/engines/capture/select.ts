@@ -5,7 +5,7 @@ import type { ParamStore } from '../param/param.ts';
 export type Fact = { value: unknown; source: 'seen'|'label'|'measured'|'derived'|'lookup'|'you_said'; confidence: number;
   confirmed?: boolean; unknown_reason?: 'not_read'; step?: string; note?: string };
 export type StudioAsk = {type:'cover'|'back'|'tag'|'graphic'|'flaw'|'measure'; text:string; zone?:string; kind?:string; name?:string};
-export const studioStep = (ask: StudioAsk): string => ['graphic','flaw'].includes(ask.type) ? `${ask.type}:${ask.zone}` : ask.type;
+export const studioStep = (ask: StudioAsk): string => ['graphic','flaw'].includes(ask.type) && ask.zone ? `${ask.type}:${ask.zone}` : ask.type;
 export const targets = (state: State): Target[] => state.studio?.requested ? [...state.sites,'studio'] : [...state.sites];
 export type State = {
   capture_id: string; item_id: string; purpose: 'sell'|'appraise'|'find'; confirm_mode: 'tap'|'auto'; has_lidar: boolean; object_capture?: boolean;
