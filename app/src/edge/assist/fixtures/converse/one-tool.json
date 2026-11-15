@@ -1,0 +1,66 @@
+[
+  {
+    "id": "msg_replay",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-sonnet-5-5",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "tool-a",
+        "name": "value_item",
+        "input": {
+          "query": "wool jacket"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ],
+    "stop_reason": "tool_use",
+    "stop_sequence": null,
+    "stop_details": null,
+    "container": null,
+    "diagnostics": null,
+    "usage": {
+      "input_tokens": 100,
+      "output_tokens": 10,
+      "cache_read_input_tokens": 50,
+      "cache_creation_input_tokens": 0,
+      "cache_creation": null,
+      "inference_geo": null,
+      "output_tokens_details": null,
+      "server_tool_use": null,
+      "service_tier": "standard"
+    }
+  },
+  {
+    "id": "msg_replay",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-sonnet-5-5",
+    "content": [
+      {
+        "type": "text",
+        "text": "The measured range. [price_range:r1] More detail [table:r1].",
+        "citations": null
+      }
+    ],
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "container": null,
+    "diagnostics": null,
+    "usage": {
+      "input_tokens": 100,
+      "output_tokens": 10,
+      "cache_read_input_tokens": 50,
+      "cache_creation_input_tokens": 0,
+      "cache_creation": null,
+      "inference_geo": null,
+      "output_tokens_details": null,
+      "server_tool_use": null,
+      "service_tier": "standard"
+    }
+  }
+]

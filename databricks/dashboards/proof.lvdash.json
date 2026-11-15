@@ -12,7 +12,7 @@
         "  ORDER BY g.id\n",
         "  LIMIT 12\n",
         ")\n",
-        "SELECT concat(replace(p.title, '-', ' '), ': our price $', format_number(p.value_cents / 100, 0), ', sold for $', format_number(p.sold_cents / 100, 0)) AS price,\n",
+        "SELECT concat(replace(p.title, '-', ' '), ': market model $', format_number(p.value_cents / 100, 0), ', sold for $', format_number(p.sold_cents / 100, 0)) AS price,\n",
         "       replace(b.title, '-', ' ') AS basis_title, w.basis_price_cents / 100.0 AS basis_price, date_format(b.at, 'MMM d, yyyy') AS basis_at, b.at AS basis_ts,\n",
         "       w.source_url, 'StockX' AS page, CASE WHEN w.equal THEN 'Yes' WHEN w.equal IS NULL THEN 'Not checked' ELSE 'No' END AS rebuilt\n",
         "FROM pick p, LATERAL why(p.id) w\n",
@@ -49,11 +49,14 @@
         "  SELECT count(*) AS readable FROM secondhand.governance.principal_map\n",
         "  WHERE principal = current_user() AND user_id NOT IN ('system', 'usr_backtest')\n",
         ")\n",
+        ", e AS (\n",
+        "  SELECT * FROM engine_ablation\n",
+        ")\n",
         "SELECT 'cited' AS stat, format_number(cited, 0) AS value_label, concat('of ', format_number(shown, 0), ' shown prices') AS sub_label FROM c\n",
         "UNION ALL SELECT 'rebuilt', format_number(equal_cases, 0), concat('of ', format_number(cases, 0), ' checked') FROM r\n",
-        "UNION ALL SELECT CASE price_from WHEN 'Our price' THEN 'ours' WHEN 'Last sale' THEN 'last_sale' ELSE 'median_90' END,\n",
+        "UNION ALL SELECT CASE price_from WHEN 'Market model' THEN 'ours' WHEN 'Last sale' THEN 'last_sale' ELSE 'median_90' END,\n",
         "       coalesce(concat(format_number(within_20 * 100, 1), '%'), 'Too few'), concat('of ', format_number(shown, 0), ' priced') FROM m\n",
-        "UNION ALL SELECT 'ours_range', coalesce(concat(format_number(range_held * 100, 1), '%'), 'Too few'), concat('of ', format_number(shown, 0), ' ranges') FROM m WHERE price_from = 'Our price'\n",
+        "UNION ALL SELECT 'ours_range', coalesce(concat(format_number(range_held * 100, 1), '%'), 'Too few'), concat('of ', format_number(shown, 0), ' ranges') FROM m WHERE price_from = 'Market model'\n",
         "UNION ALL SELECT 'locked', format_number(locked, 0), concat('of ', format_number(tables, 0), ' tables') FROM l\n",
         "UNION ALL SELECT 'refused', format_number(refused, 0), concat('of ', format_number(asked, 0), ' asked') FROM n\n",
         "UNION ALL SELECT 'held_back', format_number(hidden, 0), concat('of ', format_number(made, 0), ' prices made') FROM h\n",
@@ -62,7 +65,10 @@
         "UNION ALL SELECT 'changes', format_number(changed, 0), concat('in ', months, ' months of sales') FROM w\n",
         "UNION ALL SELECT 'holds', format_number(held, 0), concat('of ', months, ' months tested and kept') FROM w\n",
         "UNION ALL SELECT 'rollbacks', format_number(rolled_back, 0), 'undone the next month' FROM w\n",
-        "UNION ALL SELECT 'readable', format_number(readable, 0), 'besides system and backtest rows' FROM a\n"
+        "UNION ALL SELECT 'readable', format_number(readable, 0), 'besides system and backtest rows' FROM a\n",
+        "UNION ALL SELECT CASE contestant WHEN 'engine_all_on' THEN 'served' WHEN 'last_sale' THEN 'served_last_sale' ELSE 'served_median_90' END,\n",
+        "       coalesce(concat(format_number(within_20 * 100, 1), '%'), 'Too few'), concat('of ', format_number(sales, 0), ' test sales') FROM e WHERE contestant IN ('engine_all_on', 'last_sale', 'product_90d_median')\n",
+        "UNION ALL SELECT 'served_gap', concat(format_number(-vs_last_sale_points, 1), ' point'), concat('of ', format_number(vs_last_sale_n, 0), ' sales both priced, ', format_number(-vs_last_sale_hi, 1), ' to ', format_number(-vs_last_sale_lo, 1)) FROM e WHERE contestant = 'engine_all_on'\n"
       ]
     },
     {
@@ -271,7 +277,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -333,7 +339,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -399,7 +405,7 @@
                     "dataType": "STRING",
                     "values": [
                       {
-                        "value": "Adidas Yeezy Boost 350 Low V2 Beluga: our price $598, sold for $665"
+                        "value": "Adidas Yeezy Boost 350 Low V2 Beluga: market model $598, sold for $665"
                       }
                     ]
                   }
@@ -409,7 +415,7 @@
                 "showTitle": true,
                 "title": "Pick a price",
                 "showDescription": true,
-                "description": "Twelve of our prices from the backtest, each with what the shoe really sold for."
+                "description": "Twelve market model prices from the backtest, each with what the shoe really sold for."
               }
             }
           },
@@ -516,7 +522,7 @@
             "name": "beat_2",
             "multilineTextboxSpec": {
               "lines": [
-                "## 2. Closer than the usual guesses, on the same sales\n"
+                "## 2. Against the usual guesses, on the same sales\n"
               ]
             }
           },
@@ -559,7 +565,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -576,9 +582,9 @@
               },
               "frame": {
                 "showTitle": true,
-                "title": "Our price within 20% of the sale",
+                "title": "Market model within 20% of the sale",
                 "showDescription": true,
-                "description": "StockX 2019 sneakers, sold from Nov 2018."
+                "description": "Nightly model, not served by the app. StockX 2019."
               }
             }
           },
@@ -621,7 +627,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -683,7 +689,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -745,7 +751,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -762,15 +768,279 @@
               },
               "frame": {
                 "showTitle": true,
-                "title": "Our range held the sale price",
+                "title": "Market model's range held the sale price",
                 "showDescription": true,
-                "description": "How often the real price fell inside the range we showed."
+                "description": "How often the real price fell inside the market model's range."
               }
             }
           },
           "position": {
             "x": 9,
             "y": 14,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "beat_2_served",
+            "multilineTextboxSpec": {
+              "lines": [
+                "### The engine the app serves trails the last sale by about a point\n"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 18,
+            "width": 12,
+            "height": 1
+          }
+        },
+        {
+          "widget": {
+            "name": "served",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'served'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Engine the app serves, within 20%",
+                "showDescription": true,
+                "description": "Development reading of Nov 15 on StockX 2019 sneakers sold Nov 2018 to Feb 2019."
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 19,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "served_last_sale",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'served_last_sale'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Last sale, same test",
+                "showDescription": true,
+                "description": "The same sales, priced at the sale before."
+              }
+            }
+          },
+          "position": {
+            "x": 3,
+            "y": 19,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "served_median_90",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'served_median_90'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "90-day median, same test",
+                "showDescription": true,
+                "description": "The same sales, priced at the product median of the 90 days before."
+              }
+            }
+          },
+          "position": {
+            "x": 6,
+            "y": 19,
+            "width": 3,
+            "height": 4
+          }
+        },
+        {
+          "widget": {
+            "name": "served_gap",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "stats",
+                  "fields": [
+                    {
+                      "name": "value_label",
+                      "expression": "`value_label`"
+                    },
+                    {
+                      "name": "sub_label",
+                      "expression": "`sub_label`"
+                    }
+                  ],
+                  "disaggregated": true,
+                  "filters": [
+                    {
+                      "expression": "`stat` = 'served_gap'"
+                    }
+                  ]
+                }
+              }
+            ],
+            "spec": {
+              "version": 1,
+              "widgetType": "custom-vega-viz",
+              "jsonSpec": {
+                "type": "vega-lite",
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+              },
+              "encodings": {
+                "fields": [
+                  {
+                    "fieldName": "value_label"
+                  },
+                  {
+                    "fieldName": "sub_label"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              },
+              "frame": {
+                "showTitle": true,
+                "title": "Behind the last sale",
+                "showDescription": true,
+                "description": "Paired on the sales both priced, with its 95% interval."
+              }
+            }
+          },
+          "position": {
+            "x": 9,
+            "y": 19,
             "width": 3,
             "height": 4
           }
@@ -832,16 +1102,16 @@
                     "type": "categorical",
                     "mappings": [
                       {
-                        "value": "Our price",
-                        "color": "#0A0A0A"
+                        "value": "Market model",
+                        "color": "#767676"
                       },
                       {
                         "value": "Last sale",
-                        "color": "#7D8387"
+                        "color": "#9AA1A6"
                       },
                       {
                         "value": "90-day median",
-                        "color": "#BFC5C9"
+                        "color": "#C2C8CC"
                       }
                     ]
                   },
@@ -858,7 +1128,7 @@
           },
           "position": {
             "x": 0,
-            "y": 18,
+            "y": 23,
             "width": 12,
             "height": 6
           }
@@ -937,16 +1207,16 @@
                     "type": "categorical",
                     "mappings": [
                       {
-                        "value": "Our price",
-                        "color": "#0A0A0A"
+                        "value": "Market model",
+                        "color": "#767676"
                       },
                       {
                         "value": "Last sale",
-                        "color": "#7D8387"
+                        "color": "#9AA1A6"
                       },
                       {
                         "value": "90-day median",
-                        "color": "#BFC5C9"
+                        "color": "#C2C8CC"
                       }
                     ]
                   },
@@ -976,7 +1246,7 @@
           },
           "position": {
             "x": 0,
-            "y": 24,
+            "y": 29,
             "width": 6,
             "height": 6
           }
@@ -1018,7 +1288,7 @@
                     "sort": {
                       "by": "custom-order",
                       "orderedValues": [
-                        "Our price",
+                        "Market model",
                         "90-day median",
                         "Last sale"
                       ]
@@ -1046,16 +1316,16 @@
                     "type": "categorical",
                     "mappings": [
                       {
-                        "value": "Our price",
-                        "color": "#0A0A0A"
+                        "value": "Market model",
+                        "color": "#767676"
                       },
                       {
                         "value": "Last sale",
-                        "color": "#7D8387"
+                        "color": "#9AA1A6"
                       },
                       {
                         "value": "90-day median",
-                        "color": "#BFC5C9"
+                        "color": "#C2C8CC"
                       }
                     ]
                   },
@@ -1078,7 +1348,7 @@
           },
           "position": {
             "x": 6,
-            "y": 24,
+            "y": 29,
             "width": 6,
             "height": 6
           }
@@ -1094,7 +1364,7 @@
           },
           "position": {
             "x": 0,
-            "y": 30,
+            "y": 35,
             "width": 12,
             "height": 1
           }
@@ -1131,7 +1401,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1156,7 +1426,7 @@
           },
           "position": {
             "x": 0,
-            "y": 31,
+            "y": 36,
             "width": 4,
             "height": 4
           }
@@ -1216,7 +1486,7 @@
           },
           "position": {
             "x": 4,
-            "y": 31,
+            "y": 36,
             "width": 8,
             "height": 4
           }
@@ -1232,7 +1502,7 @@
           },
           "position": {
             "x": 0,
-            "y": 35,
+            "y": 40,
             "width": 12,
             "height": 1
           }
@@ -1269,7 +1539,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1294,7 +1564,7 @@
           },
           "position": {
             "x": 0,
-            "y": 36,
+            "y": 41,
             "width": 4,
             "height": 4
           }
@@ -1331,7 +1601,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1356,7 +1626,7 @@
           },
           "position": {
             "x": 4,
-            "y": 36,
+            "y": 41,
             "width": 4,
             "height": 4
           }
@@ -1393,7 +1663,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1418,7 +1688,7 @@
           },
           "position": {
             "x": 8,
-            "y": 36,
+            "y": 41,
             "width": 4,
             "height": 4
           }
@@ -1474,7 +1744,7 @@
           },
           "position": {
             "x": 0,
-            "y": 40,
+            "y": 45,
             "width": 6,
             "height": 5
           }
@@ -1534,7 +1804,7 @@
           },
           "position": {
             "x": 6,
-            "y": 40,
+            "y": 45,
             "width": 6,
             "height": 5
           }
@@ -1550,7 +1820,7 @@
           },
           "position": {
             "x": 0,
-            "y": 45,
+            "y": 50,
             "width": 12,
             "height": 1
           }
@@ -1582,7 +1852,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1607,7 +1877,7 @@
           },
           "position": {
             "x": 0,
-            "y": 46,
+            "y": 51,
             "width": 4,
             "height": 4
           }
@@ -1644,7 +1914,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1669,7 +1939,7 @@
           },
           "position": {
             "x": 4,
-            "y": 46,
+            "y": 51,
             "width": 4,
             "height": 4
           }
@@ -1706,7 +1976,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1731,7 +2001,7 @@
           },
           "position": {
             "x": 8,
-            "y": 46,
+            "y": 51,
             "width": 4,
             "height": 4
           }
@@ -1799,7 +2069,7 @@
           },
           "position": {
             "x": 0,
-            "y": 50,
+            "y": 55,
             "width": 12,
             "height": 5
           }
@@ -1815,7 +2085,7 @@
           },
           "position": {
             "x": 0,
-            "y": 55,
+            "y": 60,
             "width": 12,
             "height": 1
           }
@@ -1852,7 +2122,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -1877,7 +2147,7 @@
           },
           "position": {
             "x": 0,
-            "y": 56,
+            "y": 61,
             "width": 4,
             "height": 4
           }
@@ -1937,7 +2207,7 @@
           },
           "position": {
             "x": 4,
-            "y": 56,
+            "y": 61,
             "width": 8,
             "height": 4
           }
@@ -1999,7 +2269,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -2061,7 +2331,7 @@
               "widgetType": "custom-vega-viz",
               "jsonSpec": {
                 "type": "vega-lite",
-                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":500,\"color\":\"#0A0A0A\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#5F5F5F\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
+                "spec": "{\"$schema\":\"https://vega.github.io/schema/vega-lite/v6.json\",\"data\":{\"name\":\"databricks_query\"},\"width\":\"container\",\"height\":\"container\",\"config\":{\"view\":{\"stroke\":null},\"autosize\":{\"type\":\"fit\",\"contains\":\"padding\"}},\"layer\":[{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":40,\"fontWeight\":600,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"value_label\"},\"x\":{\"value\":0},\"y\":{\"value\":4}}},{\"mark\":{\"type\":\"text\",\"align\":\"left\",\"baseline\":\"top\",\"fontSize\":14,\"color\":\"#767676\"},\"encoding\":{\"text\":{\"field\":\"sub_label\"},\"x\":{\"value\":0},\"y\":{\"value\":56}}}]}"
               },
               "encodings": {
                 "fields": [
@@ -2199,17 +2469,17 @@
         "dark": "#101315"
       },
       "fontColor": {
-        "light": "#0A0A0A",
+        "light": "#767676",
         "dark": "#F2F2F2"
       },
       "selectionColor": {
-        "light": "#0A0A0A",
+        "light": "#767676",
         "dark": "#F2F2F2"
       },
       "visualizationColors": [
-        "#0A0A0A",
-        "#7D8387",
-        "#BFC5C9",
+        "#767676",
+        "#9AA1A6",
+        "#C2C8CC",
         "#C52B17"
       ],
       "widgetHeaderAlignment": "LEFT"
