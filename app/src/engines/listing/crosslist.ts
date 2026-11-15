@@ -178,7 +178,7 @@ const usd = (c: number) => `$${(c / 100).toFixed(2)}`;
 // One site's price under the chosen spread, and why. The floor and readiness are the same under every spread.
 function sitePrice(spread: Spread, l: SourceListing, site: FeeSite, target: number, sticker: number, market?: number) {
   const even = priceForKeep(site, target);
-  const numbers = (p: number, how: string) => `${how}: ${usd(p)} on ${site}, ${usd(p - keep(site, p).keep_cents)} in fees, you keep ${usd(keep(site, p).keep_cents)}`;
+  const numbers = (p: number, how: string) => `${how}: ${usd(p)} on ${site}, ${usd(p - keep(site, p).keep_cents)} in fees, you get ${usd(keep(site, p).keep_cents)}`;
   if (spread === 'same_price') return { price: sticker, why: { says: `Same price as your ${l.site} listing.`, numbers: numbers(sticker, `the ${l.site} price`) } };
   if (spread === 'site_market' && market !== undefined)
     return { price: market, why: { says: `What buyers on ${site} have paid for things like this.`, numbers: numbers(market, `${site}'s median sale`) } };
