@@ -49,8 +49,6 @@
   /* the field (C2): one per view, soft, no lines and no grain, black text only. Use background: var(--field); never rebuild it.
      Home is sky, mint and lime. The rest of the set, and how one field changes into the next, is open in the ledger (R17). */
   --field-1: var(--sky); --field-2: var(--mint); --field-3: var(--lime);
-  --field-mesh: radial-gradient(at 30% 100%, var(--field-2), transparent 60%), radial-gradient(at 100% 100%, var(--field-3), transparent 65%);
-  --field: var(--field-mesh), var(--field-1);
   /* state gradients (Art. 5, State gradients; L47): a state's fill and its two ring neighbors. Light only: in dark a state gradient is the deep --field-1 to -3 instead (A13) */
   --field-need-1: var(--marigold); --field-need-2: var(--lime);  --field-need-3: var(--peach);
   --field-sold-1: var(--mint);     --field-sold-2: var(--aqua);  --field-sold-3: var(--lime);
@@ -107,6 +105,12 @@
   --pill-card-h: 40px; --pill-card-pad: 20px; --tag-h: 20px; --tag-icon: 12px; --badge-h: 20px; --site-badge: 24px;
   /* motion (frontend-standard §3) */
   --t-feedback: 150ms; --t-select: 200ms; --t-panel: 300ms; --ease-out: cubic-bezier(0, 0, .2, 1);
+}
+/* The field's shape. It is declared again on any element marked data-field, so a field that turns into the next one
+   (C2: one color swapped for its neighbor on the ring) takes the --field-1 to -3 set on that element. */
+:root, [data-field] {
+  --field-mesh: radial-gradient(at 30% 100%, var(--field-2), transparent 60%), radial-gradient(at 100% 100%, var(--field-3), transparent 65%);
+  --field: var(--field-mesh), var(--field-1);
 }
 /* dark mode (Ben, 2026-11-15: "i like that dark mode a lot"). Only color changes (L22). The mirror rule is in Art. 5:
    the page, the surfaces and the ink flip; the field goes deep and takes the ink of its mode, and a state gradient is that field; state tags keep their
