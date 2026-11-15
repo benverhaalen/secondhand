@@ -105,7 +105,7 @@ The briefs are in the side-session notes folder of the orchestrator's group (`bu
    - Linking the GitHub repo failed: his account has no access to `benverhaalen/secondhand`. So deploys are by CLI, not on push.
    - Production, a custom domain and turning protection off come later (Nate). He said yes to `SECONDHAND_API_ORIGIN`, but there is no origin yet.
    - The server lead builds `server/main.ts` and its fly.toml with the placeholder name `secondhand-api`, so the origin is `https://secondhand-api.fly.dev` only if Nate creates the app under that name. It messages the real origin once Nate says yes and `/healthz` answers. Set the variable on preview only then, redeploy, and switch the page to polling `GET /v1/jobs/:id` first.
-   - flyctl v0.5.10 is installed in `%USERPROFILE%\.flyin` and signed in, with no apps yet.
+   - flyctl v0.5.10 is installed in `%USERPROFILE%/.fly/bin` and signed in, with no apps yet.
 10. DBX-A1 (above). The store tool can call `measures.why`, `why_summary`, `shown_prices` and `price_basis` today (the third Databricks lead, 11:10 UTC).
 
 Older notes kept for the next reader:
