@@ -37,12 +37,18 @@ Tabs follow the decided bar: Today · Sell · ＋ · Buy · You ([decisions](../
 | data | You > By site, the "why?" timeline | `job`, `event`, `rule`, `limits`, `label`, idempotency, the delete request | [features/data.md](features/data.md) |
 | buy | Buy: search, For you, Bought | no table: `order` with kind purchase, `offer` outgoing, `match` saved, `owned` items | [features/buy.md](features/buy.md) |
 | insights | You: earned, could earn, by site, goals | `goal` (*agent proposal*, Nate's); ledger numbers are derived ([decisions](../product/decisions.md#2026-11-14-the-you-tab-leads-with-numbers-and-a-by-site-comparison)) | [features/insights.md](features/insights.md) |
-| market | Buy search and product pages, for full users and visitors ([words](../product/words.md#2026-11-14-nate-a-market-anyone-can-learn-from)) | product pages, price history across retail and used markets, release hype, trends, `follow`, `visitor`, `referral_click`, visitor search, `GET /v1/products/:id` | `features/market.md` |
-| score | Every number on an item, listing, product or match | `score`, `ranker_model`, `experiment`, `arm`, change detection, the `citation` writer ([words](../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms)) | `features/score.md` |
+| market | Buy search and product pages, for full users and visitors ([words](../product/words.md#2026-11-14-nate-a-market-anyone-can-learn-from)) | product pages, price history across retail and used markets, release hype, trends, `follow`, `visitor`, `referral_click`, visitor search, `retail_offer`, `price_point`, `held_for_review`, the public API (§6), `GET /v1/products/:id` | [features/market.md](features/market.md) |
+| score | Every number on an item, listing, product or match | `score`, `ranker_model`, `experiment`, `arm`, change detection, the `citation` writer ([words](../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms)) | [features/score.md](features/score.md) |
+| assist | Buy search prompt, capture gaps, Sell and Market prompts | `intent`, the span fields on a `clarify` decision, the `assist` job | [features/assist.md](features/assist.md) |
 
-`rule` and `limits` sit with data because Today, messages, sold, price and buy all enforce them; You > Automation and You > Pickups are their screens. `requirement` sits with capture (the session reads it) and `claim_check` with data (every outgoing path calls it). market and score are plain paths until their files exist.
+`rule` and `limits` sit with data because Today, messages, sold, price and buy all enforce them; You > Automation and You > Pickups are their screens. `requirement` sits with capture (the session reads it) and `claim_check` with data (every outgoing path calls it). `kind` and `category_map` sit with identify (*agent proposal*, inferred from [fields-by-kind](determinations/fields-by-kind.md)); `route_table`, `route_call` and `route_truth` sit with data.
 
-How each number is computed lives in [determinations/](determinations/), one card per number: [seeing the item](determinations/seeing-the-item.md), [money](determinations/money.md), [listing and marketing](determinations/listing-and-marketing.md), [managing and buyers](determinations/managing-and-buyers.md), [market insight](determinations/market-insight.md). This page names things; a card says how they are worked out.
+How each number is computed lives in [determinations/](determinations/), one card per number: [seeing the item](determinations/seeing-the-item.md), [money](determinations/money.md), [listing and marketing](determinations/listing-and-marketing.md), [managing and buyers](determinations/managing-and-buyers.md), [market insight](determinations/market-insight.md), [asking and intent](determinations/asking-and-intent.md), [capture shots](determinations/capture-shots.md), [fields by kind](determinations/fields-by-kind.md). This page names things; a card says how they are worked out.
+
+| Other spec files | What it holds |
+|---|---|
+| [parity.md](parity.md) | parity with the tools that exist: search, price data, registries and routers, crosslisting, catalogs |
+| [../docs/how-it-works/](../docs/how-it-works/README.md) | plain-words explanations for readers outside the build |
 
 ## 3. The data model
 
@@ -55,7 +61,7 @@ Every row carries `id` (prefixed, §7), `user_id`, `created_at`, `updated_at` an
 | `item` | state (§4), product_id?, title, category, cost?, origin (`capture`, `purchase`, `import`, `folder`), kept_reason?, location {label, place?}, quantity (int, 1 by default), group_id?, seller_sku?, missing_fields[] (derived, never stored) | item-card | L | all | **Item** |
 | `product` | brand, model, variant, gtin?, mpn?, category, spec (json), embedding_ref, predecessor_id? (the previous generation in the same family, [M16](determinations/market-insight.md#m16-how-new-retail-releases-relate-to-used-supply-and-price)) | identify | L, mirrored to D | identify, price, watch, appraise | new: one catalogue identity many items and comps resolve to, so a sale of one item prices the next |
 | `capture` | item_id?, state (§4), mode (`shots`, `scan`, `talk`), coverage {needed[], kept[]}, depth_ref?, pose_ref?, masks_ref?, read_text_ref?, kept_raw (bool) | capture | L, files V | measure, identify, studio | part of Item: one session, and the item picks the mode ([decisions](../product/decisions.md#2026-11-14-capture-is-one-session-and-the-item-picks-the-mode)) |
-| `photo` | capture_id, role (`front`, `back`, `tag`, `fabric`, `flaw`, `spin`, `studio`), file_ref, parent_photo_ids[], exif_stripped (bool), use (`real`, `improved`) | capture | L, files V | studio, list, identify | part of Item |
+| `photo` | capture_id, role (`front`, `back`, `tag`, `care_label`, `fabric`, `detail`, `side`, `inside`, `sole`, `flaw`, `spin`, `screenshot`, `studio`), file_ref, parent_photo_ids[], exif_stripped (bool), use (`real`, `improved`), ai_marked (bool, the in-app mark; any export tag is separate, §9 J11) | capture | L, files V | studio, list, identify | part of Item |
 | `attribute` | item_id, name, value (json, or null when unknown), unit?, source, confidence (0..1, internal; never shown as a percentage, §8 certainty), evidence[] (`evidence` shape, below; includes the identity anchor), method, at, confirmed (bool), unknown_reason? | item-card | L | all | part of Item; a row per fact so each carries provenance |
 | `job` | kind (§4), item_id?, stages[] {name, state, started_at, ended_at}, state, result?, error?, trace_id | data | L | all | **Job** |
 | `comp` | product_id?, cluster_id? (one physical listing across sites and relists), site, price_cents, price_type (`asking`, `sold`, `retail`), best_offer_accepted? (bool; true means the shown price is the ask, not what was paid), observed_at (last read), first_seen_at, listed_at_source?, ended_at?, ended_reason? (`sold`, `ended`), sold_at? (equals ended_at when ended_reason is `sold`), price_history[] {at, price_cents}, phash[], condition, url_ref, evidence (`evidence` shape for a comp, with `rights`), source_route | price | D | price, appraise, watch, insights, market, score | **Comp** |
@@ -65,13 +71,13 @@ Every row carries `id` (prefixed, §7), `user_id`, `created_at`, `updated_at` an
 | `conversation` | site, site_thread_id, item_id?, listing_id or match_id, buyer_ref_hash, role (`sell`, `buy`), intent_last, state (§4), last_read_at, next_check_at | messages | L | today, sold, buy | **Conversation** |
 | `message` | conversation_id, actor (`user`, `auto`, `counterpart`), sent_at, site_message_id, intent, facets[] (including `possible_scam`, `dispute`), text_ref (body held encrypted, never logged) | messages | L | messages | part of Conversation |
 | `offer` | conversation_id or listing_id, direction (`in`, `out`), amount_cents, you_keep_cents (derived, after fees), state (§4), expires_at | messages | L | price, sold, buy | part of Conversation; its own row because offers have states and limits act on them |
-| `order` | kind (`sale`, `purchase`), item_id, listing_id?, match_id?, site, state (§4), price_cents, fees_cents, shipping_cents, payout_cents?, clocks (ship_by?, respond_by?, claim_until?, release_at?, each from the site's own rule, [sold.md](features/sold.md)), external_order_id; unique (site, external_order_id) | sold | L | insights, today, buy | new: the money and handover the ledger is derived from |
+| `order` | kind (`sale`, `purchase`), item_id, listing_id?, match_id?, site, state (§4), price_cents, fees_cents, shipping_cents, payout_cents?, money lines[] {kind (incl. `promotion_spend`), amount_cents, source (`site_report`, `computed`, `estimated`)}, label? {carrier, tracking_ref, insured_cents?, batch_id?}, clocks (ship_by?, respond_by?, claim_until?, release_at?, each from the site's own rule, [sold.md](features/sold.md)), external_order_id; unique (site, external_order_id) | sold | L | insights, today, buy | new: the money and handover the ledger is derived from |
 | `sale_receipt` | site, external_order_id (unique with site), source (`email`, `poll`, `api`), received_at, raw_ref | sold | L | sold, data | new: the raw proof of a sale, so one sale never makes two orders |
-| `decision` | kind (§5), item_id?, options[] {id, label, signature}, suggested, deadline, why, state (§4), answered? {option_id, answered_at, edited, card_ms, opened_detail} | today | L | all | **Decision** |
+| `decision` | kind (§5), item_id?, options[] {id, label, signature, image_url?, evidence[]}, suggested (option id, or null when span.mode is `blank`), allow_other?, wait?, span? (`span` shape, below), widget?, widget_props?, deadline, why, state (§4), answered? {option_id, answered_at, edited, card_ms, opened_detail} | today | L | all | **Decision** |
 | `rule` | kind, scope (`all` or item_id), state (§4), unedited_approvals (int), promoted_at?, last_used_at? | data | L | all executors | **Rule** |
 | `limits` | per item: floor_cents, always_accept_cents?; per user: handover, pickup_windows[], saved_spot_ref, ask_every_time (bool) | data | L | messages, sold, price, buy | part of Rule |
-| `want` | state (§4), text, product_id?, fit {attributes, garment measurements}, max_total_cents?, sites[], schedule {every_min}, next_check_at, alert (`available`, `under`) | watch | L | buy, today | **Want** (with Watch): intent to buy, never a `follow` |
-| `match` | state (§4), want_id?, source (`want`, `search`, `for_you`), site, url, price_cents, seen_at, valuation_id? | watch | L, history D | buy, today, price | part of Want |
+| `want` | state (§4), text, product_id?, intent_id?, fit {attributes, garment measurements}, max_total_cents?, sites[], schedule {every_min}, next_check_at, alert (`available`, `under`) | watch | L | buy, today | **Want** (with Watch): intent to buy, never a `follow` |
+| `match` | state (§4), want_id?, source (`want`, `search`, `for_you`), label (`match label`, below), site, url, price_cents, seen_at, valuation_id? | watch | L, history D | buy, today, price | part of Want |
 | `appointment` | order_id, kind (`pickup`, `ship_by`), window {start, end}, place_ref, calendar_ref?, state (§4) | sold | L | today, messages | **Appointment** |
 | `goal` | month, target_cents, target_sales?, progress (derived) | insights | L | today, you | new: Nate's monthly goal (*agent proposal*, vision.md Proposed) |
 | `event` | item_id?, actor (`user`, `auto`, `site`), action, why, observed_at, effective_at, operation_id, trace_id, undo {allowed, until}, undo_of?, route? (`api`, `replay`, `browser`), fell_back?, ms? | data | D, written through the logger | data, insights, today | the one log and the one "why?" source ([5-logging.md](../.agents/team/packets/team/5-logging.md)) |
@@ -83,17 +89,26 @@ Every row carries `id` (prefixed, §7), `user_id`, `created_at`, `updated_at` an
 | `experiment` | site, category, factor, arms[], state (§4), started_at, ended_at?, budget {listings, price_floor_kept} | score | L (live), D (results) | score, list | new: a controlled variation on consenting users' own listings |
 | `arm` | experiment_id, design (`matched_pair`, `before_after`), variant (json), listing_ids[], exposures, outcome {impressions?, views, watchers, sold, days_to_sell}, posterior | score | L, D | score | part of experiment; a `before_after` arm is labelled as such and never called randomised |
 | `rank_observation` | site, category, query, observed_at, listing_ids[] (in order), evidence (comp shape) | score | D | score | new: one query on one site at one time |
-| `notice` | kind (`ranker_changed`), site, category?, opened_at, cleared_at?, signals[] | score | L | score, list, price, today | new: raised to every affected listing |
+| `notice` | kind (`ranker_changed`, `listing_stale`, `anomaly`), site, category?, opened_at, cleared_at?, signals[] | score | L | score, list, price, today | new: raised to every affected listing |
 | `product_snapshot` | product_id, site, price_type, day, n, p25, p50, p75, listed_count, sold_count, table_version | market | D | market, price, score | new: daily per product, site and price type |
 | `market_metric` | metric, subject_type, subject_id, as_of, a guarded number | market | D, served from L | market, insights | new |
 | `index_point` | index_id, basket_version, day, value, era, citation_id | market | D | market | new |
-| `requirement` | item_kind, field, obtained_by (`label`, `measured`, `seen`, `lookup`, `asked`), views_needed[], priority (learned), version | capture | D (versioned), read into L | capture, measure, identify | new: one row of the capture requirements registry; the session asks only for what is still missing |
+| `requirement` | item_kind (a `kind` id), node, field, type, values_or_unit, role, site_names {site: name, max_length, required}, importance {match, value, rank {site}} (each `high`, `medium`, `low`), fill_ladder[] (rungs `label`, `measured`, `seen`, `lookup`, `asked`, each with its route; replaces obtained_by), views_needed[], seconds (measured per shot), effort (2 a still at hand, 3 with a handling step, 3 a typed value), priority (derived: the highest of the three importances), version | capture | D (versioned), read into L | capture, measure, identify, list, score, assist | new: one row of the capture requirements registry; the session asks only for what is still missing ([fields by kind](determinations/fields-by-kind.md), [capture shots](determinations/capture-shots.md)) |
+| `kind` | parent_id?, family (`kind family`, below), shopify_gid, google_id?, version | identify (*inferred*) | D (versioned), read into L | capture, list, price, market | new: one node of the item taxonomy; Shopify's product taxonomy is the spine (open, §9) |
+| `category_map` | kind_id, site, marketplace?, site_category, version | identify (*inferred*) | D (versioned), read into L | list | new: where a kind goes on each site; a site not mapped falls back to [listing D7](determinations/listing-and-marketing.md#d7-category-placement) |
 | `claim_check` | subject (message_id draft, listing draft), claims[] {text, state (`backed`, `unbacked`), attribute_id or evidence_ref?}, verdict (`pass`, `hold`, `abstain`), checker_version | data | L, D | messages, list, today | new: the evidence gate on anything leaving the system ([words](../product/words.md#2026-11-14-nate-a-safety-layer-and-a-framework-like-flue)) |
 | `visitor` | session_ref (no account, no `user_id`), first_seen_at, rate_bucket, referral_ref | market | edge, L (counts only) | market | new: searches and opens product pages; cannot sell or save ([words](../product/words.md#2026-11-14-nate-visitors-and-full-users)) |
 | `follow` | target (`product_id`, brand, category or query), variant?, channel, opt_in_at, first_seen_price_cents?, first_seen_at, last_notified_at?, muted_at? | market | L | market, today, insights | new: interest to learn and be told, distinct from a `want` |
 | `referral_click` | visitor_id or user_id, product_id?, site, url, referral_tag, clicked_at | market | D | market, insights | new: a link-out that carries a referral ([words](../product/words.md#2026-11-14-nate-referrals-and-market-data)) |
-| `thresholds` | name, value, scope {item_kind?, site?}, version, calibration_split, refit_at | data | D (versioned), read into L | capture, identify, measure, messages, score | new, *agent proposal*: every starting value a determination card names, versioned so a refit is auditable |
+| `thresholds` | name, value, scope {item_kind?, site?}, version, calibration_split, refit_at | data | D (versioned), read into L | capture, identify, measure, messages, score, assist | new, *agent proposal*: every starting value a determination card names, versioned so a refit is auditable; assist starts `assist_span_open` 0.8, `assist_preselect_margin` 0.2, `assist_value_floor` 0.15 ([asking-and-intent](determinations/asking-and-intent.md)) |
 | `release_event` | product_id, store, kind (`release`, `restock`), date, source_rank | market | D | market, score | new, *agent proposal*: a retail release or restock, for [M16](determinations/market-insight.md#m16-how-new-retail-releases-relate-to-used-supply-and-price) |
+| `intent` | owner_ref (user or visitor), surface, job_id, want_id?, slots {use, for_whom, budget, size, compatibility[], deadline, condition_tolerance, keep_for (months)}, each slot a provenance value | assist | L | buy, watch, market, price | new, *agent proposal*: what a person is after, parsed from their words ([assist](features/assist.md)) |
+| `retail_offer` | product_id, relation (`same_product`, `successor`, `functional_equivalent`), seller_kind, condition, price_cents, shipping_cents, tax_cents, delivery_min_days, delivery_max_days, stock, ships_from, ships_to, warranty_months, returns_days, source, fetched_at, rights | market | D, Shopify rows kept 10 minutes at most | buy, market, price | new, *agent proposal*: a new, refurbished or brand-resale offer from an official seller. Named `retail_offer` so it is never read as `offer`, a price offer between people (was `official_offer`) |
+| `price_point` | product_id, site, band, at, value_cents or gap, definition_version | market | D | market, price, score | new, *agent proposal*: a change-only series per product, site and band ([M3](determinations/market-insight.md#m3-used-price-per-site-over-time)) |
+| `held_for_review` | comp_id, product_id, reason, held_at, state (`held`, `accepted`, `dropped`, `entered_half_weight` after 14 days) | market | D | market | new, *agent proposal*: an odd sale kept out of the index until reviewed ([M14](determinations/market-insight.md#m14-a-category-price-index) step 6); state names *inferred* |
+| `route_table` | route_id (reverse-DNS, e.g. `com.ebay.browse.sold`), site, need (a harness verb or `sold`, `asking`, `retail`, `trend`, `identify`), returns, kind (`official_api`, `own_account`, `browser`, `treg_direct`, `treg_routed`, `other_vendor`), unit_cost, ok_7d, hit_7d, p50_ms, p95_ms, freshness, coverage, rights, right_90d, fallback_order, seed_source, state (`active`, `demoted`, `dropped`, `kill`), input_schema, output_schema, auth (`API_KEY`, `OAUTH2`, `NO_AUTH`, `BASIC`, `session`), version (each version kept as history: a reviewed rule change, which only reorders, or the kill switch) | data | L, history D | every harness, price, market, watch | new, *agent proposal*: one row per (site, need, route) ([data](features/data.md#source-registry-and-router-agent-proposal)); absorbs `route_rule_version` |
+| `route_call` | call_id, route_id, tags {person, job, need}, verdict (incl. `no_route`), fell_back, ms, cost_micro, overhead_micro | data | D | data, insights | new, *agent proposal*: one routed call; the daily stats are a Lakeflow rollup of it, not an entity (was `route_day_stat`) |
+| `route_truth` | route_id, checked_at, agreed (within the [D5](determinations/money.md#d5-fair-value-range-overall-and-per-site) range), basis | data | D | data | new, *agent proposal*: the nightly check behind `right_90d`; fields besides route_id *inferred* |
 
 Ledger numbers (earned, fees, kept, could earn) are queries over `order`, `event`, `strategy` and `valuation`, never stored ([primitives.md](../product/primitives.md)). Ben's `action_log` is `event where action is an item.action`.
 
@@ -109,11 +124,15 @@ Ben's comp names map in (*agent proposal*): price_basis `sold` is price_type `so
 | measurement | attribute with unit `mm`, method, plus {plus_minus_mm, endpoints_px, photo_id} | measure | |
 | package | attribute `package`, value {l_in, w_in, h_in, padding_in, weight_oz?, basis} | measure | feeds labels and shipping cost |
 | cost | item.cost {amount_cents, currency, date, source (`purchase`, `bought_it`, `you_said`)} | item-card | never asked for: shown as a choice when known, never a question ([user-wants.md](../research/cross-cutting/ben/user-wants.md)) |
-| candidate | job.result.candidates[] {product_id?, title, match, score, evidence[], source_route, rights}, up to 5 | identify | match is one of `exact`, `likely_same_model`, `same_family_other_variant`, `comparable`, `unresolved` |
+| candidate | job.result.candidates[] {product_id?, title, match (`match label`), score, evidence[], source_route (a route_id), rights}, up to 5 | identify | |
+| match label | `exact`, `likely_same_model`, `same_family_other_variant`, `comparable`, `unresolved` | identify | the one set, on candidate.match and match.label; thresholds in [seeing the item](determinations/seeing-the-item.md) card 9 |
+| kind family | `apparel`, `shoes`, `bags`, `jewellery_watches`, `furniture`, `lighting_home`, `electronics`, `appliances_tools`, `media`, `cards_collectibles`, `toys_lego`, `bikes_sports`, `baby_gear`, `other` | identify | the one list. Capture shots' kinds map in: clothing to apparel; watches and jewellery to jewellery_watches; phones and laptops, and small electronics, to electronics; home goods, decor and lighting to lighting_home; books and media to media; trading cards to cards_collectibles; toys and sets to toys_lego; tools to appliances_tools; the rest by name. bikes_sports and baby_gear have no shot plan yet and use other's (*inferred*) |
+| span | {id, key, start, end, text, surface, mode (`guess`, `blank`), mark (`pending`, `guessed`, `kept`, `changed`, `said`, `dropped`, `blank`, `filled`, `stale`, `left`), kind (`word`, `goal`, `focus`, `context`, `voice`), why (`scaffolding`, `disambiguation`, `interpretation`, `association`, `reference`), template, scope (`message`, `conversation`), fact_type, slot? or requirement_id?, assumption_event_id?, seen_at?, opened, dwell_ms} | assist | on a `clarify` decision; `requirement_id` is the one link to capture's `requirement` registry ([assist](features/assist.md#contract-for-the-frontend)) |
+| offer_view | {condition, seller_kind, delivered_cents, delivery_min_days, delivery_max_days, stock, ships_from, ships_to} | buy | one row of a search result, from a listing or a `retail_offer`; delivered includes a labelled tax estimate |
 | `evidence`, attribute | {kind (`image_region`, `depth`, `label_text`, `lookup`, `owner`), ref, region?, captured_at, extractor_version} | item-card | what a fact rests on; `owner` is the person's own statement |
 | `evidence`, comp | {source_url, read_at, snapshot_ref, fingerprint, extractor_version, rights} | price | `snapshot_ref` points at the stored page in V so the read can be replayed |
 | `rights` | tags `may_store`, `may_model`, `may_show`, `may_share`, `ttl` | price | set per source from its terms, as facts. Hackathon build: recorded, not enforced. Public launch: the same tags are enforced ([decisions](../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build)). Replaces `permitted_uses` |
-| guarded number | {value or range, basis_count, as_of, citation_id, state (`shown`, `hidden`), hide_reason?} | score | every number the app shows; a hidden one says why and what would show it |
+| guarded number | {value or range, basis_count, as_of, citation_id, state (`shown`, `hidden`), hide_reason? (`too_few`, `stale`, `mixed_types`, `source_gap`, `conflict`, `noise`)} | score | every number the app shows; a hidden one says why and what would show it |
 
 ## 4. States
 
@@ -211,10 +230,13 @@ Dibs: a paid buyer beats a dibs (code, not a decision); the dibs buyer gets an a
 |---|---|
 | capture | `capture_judge` (stages received, judged), `defect_propose`, `folder_group` |
 | item research | `measure`, `identify`, `studio`, `valuate` (appraise uses valuate) |
-| list | `draft`, `post` (relist uses post), `delist` |
+| list | `draft`, `post` (relist uses post), `delist`, `share` (the engagement levers, [listing D26](determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)) |
 | messages | `send_message`, `poll_inbox` |
-| sold | `label`, `poll_orders` |
-| watch, buy | `watch_run`, `search` |
+| sold | `label` (stages rate, buy, upload_tracking), `poll_orders` |
+| watch, buy | `watch_run`, `search` (stages identify, fanout, rank) |
+| assist | `assist` (stages parsed, linked, proposed) |
+| insights | `poll_stats` (runs the harness `read_stats` verb for the funnel) |
+| data, scheduled | `route_probe` (hourly, writes route health) |
 | connect | `import` {listings, purchases}, `unlink` |
 | scheduled | `reconcile`, `check_due` (one per row whose `next_check_at` has passed, §6 runtime) |
 | score | `observe_rank` (the fixed query panel per site and category, daily, through the harness `search` verb, writes `rank_observation`), `fit_ranker` (refits `ranker_model`, registers a Challenger, promotes to Champion only when held-out agreement beats the Champion and the floor), `score` (recomputes a subject's axes when its comparable set moves), `run_experiment` (allocates and reads arms), `requirement_reorder` (weekly, proposes a new `requirement` version a person approves) |
@@ -252,11 +274,11 @@ Modes are `auto`, `ask` and `locked`; `locked` is what [events.json](events.json
 | share_address | messages | locked | no | | the home address |
 | markdown | price | auto above the floor, on the path | yes | markdown_suggested | |
 | price_below_floor | price | ask | never | price_below_lowest, below_floor | ([decisions](../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)); screen copy "lowest you'd take" |
-| clarify | identify | ask | no | clarifying_question | |
+| clarify | identify, assist | ask | no | clarifying_question | carries a `span` when assist raises it ([assist](features/assist.md)); a `blank` span sets `wait` and no suggestion |
 | identity_claim | identify | locked | no | | counterfeit, function, or removing a flaw |
 | retake, missing_shot, confirm_flaw, approve_groups, category_unsure | capture | ask | no | | |
 | measure_review | measure | ask | no | | |
-| studio_approve | studio | ask | yes | | options use_improved, use_real, redo |
+| studio_approve | studio | ask | yes | | options use_improved, use_real, redo, fix_texture |
 | ship_by | sold | ask | n/a | | the reminder card |
 | buy_label | sold | ask | yes | | |
 | cancel_sale | sold | ask | no | cancellation | carries cancel_reason |
@@ -276,12 +298,16 @@ Modes are `auto`, `ask` and `locked`; `locked` is what [events.json](events.json
 | save_match | buy | ask | yes, never Poshmark likes | match | saves, likes or carts on the site |
 | complete_purchase | buy | locked | no | | |
 | rule_expiring | data | ask | no | | |
-| unbacked_claim | data | ask | no | | a `claim_check` held an outgoing message (messages, a sold claim reply or cancel reason), a listing (list) or a studio caption (studio): options are send without the claim, edit, or confirm the fact (which writes an attribute with `owner` evidence) |
+| unbacked_claim | data | ask | no | | a `claim_check` held an outgoing message (messages, a sold claim reply or cancel reason), a listing (list) or a studio caption (studio): options are send without the claim, edit, or confirm the fact (which writes an attribute with `owner` evidence). It can also be raised from a `blank` span; it then carries the action's deadline, and at the deadline the message or listing goes out without the claim |
 | join_experiment | score | ask | never | | a test on the person's own listings inside their floor; the standing switch is `user.experiments_consent` ([words](../product/words.md#2026-11-14-nate-a-general-scoring-feature-and-real-time-algorithms)) |
 | digest | market | auto | n/a | | the weekly card for a person's follows; it commits nothing |
 | promote_spend | list | ask | never | | *agent proposal*: paid promotion on a listing, at the break-even rate from [D18](determinations/listing-and-marketing.md#d18-promoted-listing); with no promotion budget set it is listed as a lever, never suggested |
+| bulk_action | list | ask | no (*inferred*) | | one decision for a change set across listings ([list](features/list.md#changing-many-listings-at-once)): Do all, Untick some, Cancel |
+| end_unsold | price | ask | no | | the end of the markdown path ([money D15](determinations/money.md#d15-markdown-path-stale-and-relist)); promotable *inferred* as no |
 
-Notices are cards that ask nothing and commit nothing, so they are not decision kinds and carry no mode. Kinds: `ranker_changed` (score: a site's ranking seems to have changed; visibility and trend for that site hide on every affected listing until it clears).
+Notices are cards that ask nothing and commit nothing, so they are not decision kinds and carry no mode. Kinds: `ranker_changed` (score: a site's ranking seems to have changed; visibility and trend for that site hide on every affected listing until it clears), `listing_stale` and `anomaly` (insights).
+
+Promotion counts only marks the person saw (a money mark or a claim mark, `span.seen_at` set); an unseen default is never an approval.
 
 Not kinds: goal progress (a You number), dibs and lost dibs (code and an automatic message, §4), watch dedupe (internal to `watch_run`). Nothing on the buy side that commits the person is automatic.
 
@@ -340,10 +366,10 @@ The decision is Databricks for the whole backend with a hybrid fallback after 2 
 | Agent Bricks or a custom agent on Apps | investigate, draft listings, read messages, propose decisions | DurableAgentServer for background work; memory on Lakebase; Knowledge Assistant and Supervisor are Legacy, Supervisor API end of life 2026-09-30 | do not build on Legacy pieces | one agent run end to end with a trace |
 | Unity Gateway | every model call | GA with budgets, fallbacks, guardrails; release notes name Opus 5.5, Haiku 5.5 and Fable, plus GPT and Gemini models; Sonnet is not named; Seedream not listed; no rate limits documented | studio provider outside the gateway | model availability on our workspace |
 | AI Search | product and comp retrieval, similar items | no image embeddings; hybrid returns at most 200; dimension up to 4096 | image vectors are self-managed | pgvector or Delta vectors for photos |
-| MLflow 3 | a trace per job, labels, evaluation | traces in UC Delta; 200 traces/s ingestion; a trace over 25 MB unreadable; `log_feedback` takes HUMAN, LLM_JUDGE, CODE; prompt registry Beta | big image payloads in traces | trace volume at real load |
+| MLflow 3 | a trace per job, labels, evaluation | traces in UC Delta; 200 traces/s ingestion; a trace over 25 MB unreadable; `log_feedback` takes HUMAN, LLM_JUDGE, CODE, but not on traces stored in Unity Catalog tables, so a tap is stored as a `label` row in Delta that links the trace id ([databricks.md](databricks.md)); prompt registry Beta | big image payloads in traces | trace volume at real load |
 | Genie | questions over items and sales | per the decision; Genie Agents take no custom tools | scoping to one user | a user-scoped space over metric views |
-| Zerobus | event ingestion into Delta | at-least-once delivery | duplicate events | dedupe on `operation_id` and event id |
-| Free Edition (the workspace looks like it) | n/a | 3 apps that stop after 24 h, 1 Lakebase project, 5 concurrent tasks, no GPU serving, open models only, one 2X-Small warehouse, outbound to trusted domains only, non-commercial ([databricks.md](databricks.md)) | fails a product that runs all day; open-web fetching runs outside | which edition we have |
+| Zerobus | dropped, kept in reserve: the Lakebase change feed already ingests ([data](features/data.md)) | at-least-once delivery | duplicate events, if it returns | dedupe on `operation_id` and event id; returns only when event volume passes the feed's limits |
+| Free Edition (the workspace looked like it) | n/a; the event gives a full workspace ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)), so these limits are temporary | 3 apps that stop after 24 h, 1 Lakebase project, 5 concurrent tasks, no GPU serving, open models only, one 2X-Small warehouse, outbound to trusted domains only, non-commercial ([databricks.md](databricks.md)) | fails a product that runs all day; open-web fetching runs outside | which edition we have |
 
 Confirmed for this pass (*observed*), and binding on every feature:
 
@@ -353,9 +379,9 @@ Confirmed for this pass (*observed*), and binding on every feature:
 | The official database plugin gives no per-user row isolation | isolation is ours: `SET LOCAL app.user_id` and policies (Tenant isolation) |
 | Synced tables into Lakebase are read-only and carry no catalog row filters | a synced table is filtered by `user_id` in our query, never trusted to filter itself |
 | Lakebase tokens last 1 h | the API refreshes before expiry; long jobs reconnect |
-| Zerobus is at-least-once | every consumer dedupes |
+| Zerobus is at-least-once (dropped, in reserve) | if it returns, every consumer dedupes |
 | Genie Agents take no custom tools | Genie answers questions; actions go through the `/v1` API |
-| Free Edition: 3 apps that stop after 24 h, 1 Lakebase project, no GPU serving, open models only | the agent runtime cannot live in an App alone; image vectors run on CPU or outside |
+| Free Edition: 3 apps that stop after 24 h, 1 Lakebase project, no GPU serving, open models only | until the full workspace arrives: the agent runtime cannot live in an App alone; image vectors run on CPU or outside |
 
 ### Front door (Open, §9)
 
@@ -447,6 +473,27 @@ flowchart LR
 
 Framework, open (§9), facts from [flue-agent-harness.md](../research/cross-cutting/nate/flue-agent-harness.md) (*observed*): Flue in TypeScript, with Lakebase through `@databricks/lakebase` and MLflow traces, where the store is ours and the Lakebase, MLflow and browser adapters are ours to write and keep; or Databricks' own Python agent server (DurableAgentServer), which gives idempotent invocation ids, ordered sessions and heartbeat recovery with no app code, in Python only, on a Databricks-managed store that is not the product's Lakebase project ([words](../product/words.md#2026-11-14-nate-a-safety-layer-and-a-framework-like-flue)). What decides it: which holds a cloud browser session through a slow site for minutes and resumes after a restart; which runs while Free Edition apps stop after 24 h; which writes one MLflow trace per job without glue; and which lets the harness verbs and `claim_check` be plain code tools. A one-site trial of each on `read_inbox` then `send_message` settles it.
 
+### Source router (*agent proposal*)
+
+Every outside read goes through `route_table` and writes a `route_call` ([data](features/data.md#source-registry-and-router-agent-proposal)).
+
+| Rule | Value |
+|---|---|
+| Exploration | 5% of reads try a route other than the best, so `route_truth` stays current |
+| Ceilings | cost and latency per call, as settings |
+| Recovery | a retry by `call_id` costs nothing |
+| Provider error | no cost recorded; no fallback on any other 4xx |
+| Health | `GET /v1/sources/health` (§7); `route_probe` keeps it fresh |
+
+### Public API (*agent proposal* on the shape; public by Nate's [words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos))
+
+| Item | Value |
+|---|---|
+| Tools | `search`, `product`, `compare`, `history`, `trends`: the §7 endpoints, also as MCP tools and described in `llms.txt` |
+| Edge | keys and rate limits at the front door |
+| Rows served | only rows where `rights.may_share` holds |
+| Never served | people's listings: no feeds, secondhand is not a storefront |
+
 ### The proof layer (*agent proposal*)
 
 Every fact carries `evidence`, every number shown is a guarded number with a `citation`, and everything sent out passes a `claim_check` ([words](../product/words.md#2026-11-14-nate-provable-and-features-for-databricks)). [databricks.md](databricks.md) calls these an assertion, an observation and a manifest; this spec's names win.
@@ -458,7 +505,7 @@ Every fact carries `evidence`, every number shown is a guarded number with a `ci
 | Governance | `rights` tags carried with each row; history kept so any number can be recomputed as of its date | Unity Catalog tags and lineage; table history retention raised above the 7 day default, or append-only snapshots |
 | Output | a guarded number with `citation_id` reaches the phone; hidden numbers say why; `claim_check` gates messages and listings | Lakebase (current guarded numbers, `claim_check` rows), the `/v1` API, MLflow traces |
 
-Guard rules: a sold range on fewer than 5 sales is hidden; 5 to 9 low, 10 to 29 medium, 30 or more high; a series older than 2 weeks is dropped ([databricks.md](databricks.md)); an asking range on fewer than 6 listings is hidden ([market-intelligence.md](../research/data/nate/market-intelligence.md)). The kill test: recompute 20 shown numbers from their citations a week later and match them exactly.
+Guard rules: a sold range is hidden below [money D1](determinations/money.md#d1-comparable-set-and-weights)'s minimum basis (`n_eff >= 6` and at least 2 sold in 90 days, which replaces a plain count of 5; the range itself is [D5](determinations/money.md#d5-fair-value-range-overall-and-per-site)); once shown, 5 to 9 low, 10 to 29 medium, 30 or more high; a series older than 2 weeks is dropped ([databricks.md](databricks.md)); an asking range on fewer than 6 listings is hidden ([market-intelligence.md](../research/data/nate/market-intelligence.md)). The kill test: recompute 20 shown numbers from their citations a week later and match them exactly.
 
 Sources: any source on the open internet may be used for this build (marketplace pages, price-history sites, retail and brand pages, archived pages, trend sources); each observation records its source and `rights` tags in its `evidence`, and a source's terms are listed as facts ([words](../product/words.md#2026-11-14-nate-open-source-onto-databricks-and-open-internet-sources)).
 
@@ -483,7 +530,7 @@ Image judgements and text judgements are separate parts of the harness, and the 
 
 ## 7. Contract conventions
 
-The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_` (this page adds `cap_`, `ph_`, `att_`, `pr_`, `cmp_`, `val_`, `st_`, `cv_`, `msg_`, `of_`, `ru_`, `mt_`, `ap_`, `gl_`, `ev_`, `rec_`, `acc_`, `lb_`, `sr_`, and for the proof layer, score and market `ci_`, `sc_`, `rk_`, `ro_`, `ex_`, `arm_`, `nt_`, `rq_`, `cc_`, `vi_`, `fo_`, `rc_`, `ps_`, `mm_`, `ip_`, *agent proposal*); [log/example.mjs](../log/example.mjs) writes `jb_` and moves to `job_`. Money `{amount_cents, currency}`; ISO 8601 UTC times; provenance `{value, unit?, source, confidence, evidence[], confirmed}`; range `{low, high, basis_count, as_of, per_site}`, worded per [copy.md](../product/copy.md); a shown number wraps either in the guarded number shape (§3), so it also carries `citation_id`, `state` and `hide_reason`.
+The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_` (this page adds `cap_`, `ph_`, `att_`, `pr_`, `cmp_`, `val_`, `st_`, `cv_`, `msg_`, `of_`, `ru_`, `mt_`, `ap_`, `gl_`, `ev_`, `rec_`, `acc_`, `lb_`, `sr_`, and for the proof layer, score and market `ci_`, `sc_`, `rk_`, `ro_`, `ex_`, `arm_`, `nt_`, `rq_`, `cc_`, `vi_`, `fo_`, `rc_`, `ps_`, `mm_`, `ip_`, and for assist `in_` (intent), *agent proposal*); [log/example.mjs](../log/example.mjs) writes `jb_` and moves to `job_`. Money `{amount_cents, currency}`; ISO 8601 UTC times; provenance `{value, unit?, source, confidence, evidence[], confirmed}`; range `{low, high, basis_count, as_of, per_site}`, worded per [copy.md](../product/copy.md); a shown number wraps either in the guarded number shape (§3), so it also carries `citation_id`, `state` and `hide_reason`.
 
 ### Requests
 
@@ -510,20 +557,27 @@ The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_
 | `GET /v1/decisions?state=open`, `POST /v1/decisions/:id/act` | answer one |
 | `GET /v1/conversations`, `GET /v1/conversations/:id/messages`, `POST /v1/conversations/:id/messages` | messages; a person's own reply |
 | `GET /v1/orders`, `POST /v1/orders` (kind purchase: Bought it), `GET /v1/appointments`, `POST /v1/orders/:id/handed-over` | sales, purchases, pickups and ship-by |
-| `GET`, `PUT /v1/limits`; `GET /v1/rules`; `POST /v1/rules {from_decision_id}`; `DELETE /v1/rules/:id` | You > Automation and You > Pickups; a locked kind returns `403 locked` |
+| `POST /v1/orders/:id/ship {insure_cents?}`, `POST /v1/orders/labels {order_ids[], layout}`, `GET /v1/orders/pick-list` | buy one label (fills `order.label`); a batch of labels on one sheet; what to pull and pack today |
+| `GET /v1/records?tax_year=&format=csv` | the tax report: sales, costs and fees for the year; tax shown is a labelled estimate (§8) |
+| `GET`, `PUT /v1/limits`; `GET /v1/rules`; `POST /v1/rules {from_decision_id}` or `{kind, scope, limits}`; `DELETE /v1/rules/:id` | You > Automation and You > Pickups; one rule system, read as when, if, then; a locked kind returns `403 locked` |
 | `GET /v1/events?item_id=&cursor=`, `POST /v1/events/:id/undo` | the one source for the log and the "why?" timeline: `{event_id, item_id, action, actor, at, why, trace_id, undo: {allowed, until}}`; there is no `/why`, `/v1/log` or `/v1/actions` |
 | `POST /v1/wants`, `GET /v1/wants`, `GET /v1/wants/:id`, `PATCH /v1/wants/:id {state, text, fit, max_total_cents, sites, schedule, alert}`, `GET /v1/wants/:id/matches`, `POST /v1/matches/:id/act {action: dismiss, save, not_same, bought}` | Buy: create, read, pause, end and edit a want; its matches. `GET /v1/wants` carries checked {site: at} and behind[] (sites whose monitor is late) |
-| `POST /v1/search {text?, photo_id? or upload, url?}` | search across sites by text, a photo or a link (a photo cannot ride a GET); returns results or a `search` job; a visitor may call it without a token through the edge, rate limited (`429 rate_limited`) |
-| `GET /v1/products/:id` | a product page: identity, price history across retail and used markets, hype and trend, each a guarded number; visitor allowed |
+| `POST /v1/assist {surface, text, item_id?, want_id?, capture_id?, context_ref?}` | the assistant reads a sentence; returns `202 {id, kind, state, stages[]}` for an `assist` job ([assist](features/assist.md#contract-for-the-frontend)) |
+| `POST /v1/search {text?, photo_id? or upload, url?, filters?, like?, assist_job_id?, answers[]?}` | search across sites by text, a photo or a link (a photo cannot ride a GET); `filters {condition[], seller_kind[], ships_to?, ships_from?, max_delivered_cents?, in_stock_only?}`; a visitor's span answers come as `answers[] {span_id, option_id, signature, edit?}`; batches are `{product, results[] (offer_view), official[] (retail_offer), sites_pending[]}`; returns results or a `search` job; a visitor may call it without a token through the edge, rate limited (`429 rate_limited`) |
+| `POST /v1/compare {url or match_id}` | one listing against the product's other offers; visitor allowed |
+| `GET /v1/products/:id` | a product page: identity, price history across retail and used markets, hype and trend, each a guarded number, and an `offers` block (`offer_view` rows); visitor allowed |
+| `GET /v1/products/:id/history?range=`, `GET /v1/trends?category=&window=7d\|30d`, `GET /v1/index/:id` | price history, trends by category, an index; visitor allowed ([market](features/market.md)) |
+| `GET /v1/out?listing=` | the one referral link-out (it replaces `POST /v1/referrals/click`): writes `referral_click`, returns `302` to the site URL with its referral tag; visitor allowed |
+| `POST /v1/genie` | full users only: a question in words; returns the answer, its SQL and rows |
+| `GET /v1/sources/health?site=&need=` | each route's health from `route_truth` (§6 Source router) |
 | `POST /v1/follows`, `GET /v1/follows`, `PATCH /v1/follows/:id {muted}`, `DELETE /v1/follows/:id` | follows; full users only |
-| `POST /v1/referrals/click` | records a `referral_click` and returns the site URL with its referral tag; visitor allowed |
 | `GET /v1/scores?subject_type=&subject_id=` | the `score` rows per axis and site, each a guarded number, hidden ones with `hide_reason`; p95 under 1 s on a warm store ([score.md](features/score.md)) |
 | `GET /v1/scores/:id/basis` | the citation and its basis as one line ("from 41 sales in 90 days") |
 | `GET /v1/sites/:site/ranker` | the open `notice` for a site, if any, and the panel's age |
 | `GET /v1/citations/:id` | what a number rests on: metric, filters, table versions, basis ids |
 | `GET /v1/experiments`, `POST /v1/experiments/consent {on}` | experiments a person's listings are in; the consent switch sets `user.experiments_consent`; joining one test is a `join_experiment` decision |
 | `POST /v1/accounts`, `GET /v1/accounts`, `POST /v1/accounts/:id/import`, `DELETE /v1/accounts/:id` | connect a site or email (returns an OAuth URL or a browser sign-in session); health; `import` and `unlink` jobs |
-| `GET /v1/insights`, `PUT /v1/goals/:month` | You numbers, By site, goals |
+| `GET /v1/insights`, `PUT /v1/goals/:month` | You numbers, By site, goals; insights adds `funnel[], stale[], profit_by[], pnl, slow_movers[], sell_down, cohorts[], reliability[], anomalies[], promotion[]` ([insights](features/insights.md)) |
 | `POST /v1/me/export`, `DELETE /v1/me` | `export_user` and `delete_user` jobs |
 | `GET /v1/jobs/:id`, `GET /v1/jobs/:id/events` | one job |
 | `GET /v1/stream` | one SSE stream per signed-in user: `decision.open`, `decision.answer`, `decision.close`, `state.change`, `message.new`, `job.state`, `job.stage`, `score.change` (a score's value or state changed) |
@@ -533,6 +587,8 @@ The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_
 A long call returns `202` with `{id, kind, state, stages:[{name, state, started_at, ended_at}], result?}` at once. `GET /v1/jobs/:id/events` streams SSE frames carrying events.json `job.state` and `job.stage` payloads, each with an `id` so `Last-Event-ID` resumes; a heartbeat comment every 15 s. `GET /v1/jobs/:id` returns the same shape for polling, every 2 s. Job states and stage states are the §4 names, the same in stream, log and [frontend-standard.md](../product/frontend-standard.md). `message.new` and `score.change` are stream-only today. Build tasks for [events.json](events.json): log lines for `message.new` and `score.change`; `studio.*` events from [studio.md](features/studio.md); `double_sale`, `claim_reply` and the `cancel_reason` field from [sold.md](features/sold.md). SSE through the Apps proxy is untested, so polling must always work.
 
 Watch has two event layers (*agent proposal*, from [Ben's plan](../.agents/team/packets/price/21-pricing-search-watch-plan.md)). The page monitor emits `listing.new`, `price.drop`, `listing.gone`, `monitor.behind` and `monitor.recovered`: what changed on a site's pages, before any matching. Above it, watch emits `watch.ran`, `match.found` and `match.alerted`, which are about a person's want. `monitor.behind` adds its site to behind[] on `GET /v1/wants`, and `monitor.recovered` removes it. The monitor events go into events.json as a build task.
+
+Assist has one event set (*agent proposal*, [assist](features/assist.md#contract-for-the-frontend)), into events.json as a build task: `assist.parsed`, `assist.assumed`, `assist.answered`, `assist.left`, `assist.defined`, `assist.scored`, `assist.dropped`, `assist.blank`, `assist.filled`, `assist.stale`. Its thresholds are rows of `thresholds` (§3).
 
 ### Decisions and the act endpoint
 
@@ -566,9 +622,11 @@ Watch has two event layers (*agent proposal*, from [Ben's plan](../.agents/team/
 | Proof | Every fact carries `evidence`; every number shown is a guarded number with a `citation`; anything sent out passes a `claim_check` (§6 proof layer). |
 | Safety screening | Before anything leaves, `claim_check` splits the text into claims and holds any claim no attribute or evidence backs (decision `unbacked_claim`). Before any reply: buyer and page text is data, never instruction; off-site payment, overpayment, code and label requests are flagged as scam risk and become decisions; listings are screened for each site's prohibited items; studio edits may clean up, never hide wear, change colour or add accessories. |
 | Evaluation | A real-item set of household things across clothes, shoes, electronics, furniture and small goods, each with a tape measure, the tag read by hand, and its eventual sale price. Measured: identify exact-match rate; measurement error in cm per attribute; share of sold prices inside the shown range; time from ＋ to live; edit rate on drafts and replies; Jev against the Decisions API on labelled messages; delist delay after a sale; reconcile mismatches per day; any auto action outside limits (the bar is zero). Model self-confidence is never the measure. |
-| Honest analytics | "Based on N sales from <dates>"; "Asking prices of N live listings"; "N people are watching"; "Sold N days after you listed it". Under 5 sales, show the sales, not a range; under 6 live listings, no asking range (§6 guard rules). Asking sits above sold, and sold-only data has survivorship bias. Sites that hide sold data give only listings we saw disappear, which undercounts. Never sum sites as if complete. Own-listing views only where the site gives them (eBay). Closed marketplaces have no search volume; proxies are watchers, likes, sell-through and in-app saved searches. |
+| Honest analytics | "Based on N sales from <dates>"; "Asking prices of N live listings"; "N people are watching"; "Sold N days after you listed it". Below money D1's minimum basis, show the sales, not a range; under 6 live listings, no asking range (§6 guard rules). Asking sits above sold, and sold-only data has survivorship bias. Sites that hide sold data give only listings we saw disappear, which undercounts. Never sum sites as if complete. Own-listing views only where the site gives them (eBay). Closed marketplaces have no search volume; proxies are watchers, likes, sell-through and in-app saved searches. |
 | Sell-through | One definition, owned by [M6](determinations/market-insight.md#m6-sell-through) (*agent proposal*): of the listing clusters first seen 60 to 31 days ago, the share sold within 30 days of first seen, over eBay, Poshmark, Mercari and Depop (Facebook excluded); hidden as `too_few` under 10 clusters and as `source_gap` under 2 of those 4 sites; in the first 60 days the stock form sold/(sold+active) is shown, labelled as such. A card that needs sell-through reads this one (§9) |
 | Shared market data | Before any aggregate leaves a person's account, the [M20](determinations/market-insight.md#m20-making-an-anonymous-dataset-safe-to-share) contributor rule, starting values: no person ids, handles, urls or photos; at least 10 distinct contributors per cell; a cell where one contributor makes over 50% is dropped; complementary suppression so a dropped cell cannot be derived; counts rounded to 5; time no finer than a week under 50 contributors |
+| Tax | No paid tax service ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)): a delivered price shows tax as a labelled estimate; the rate is a placeholder (§9) |
+| Account risk | Every automated action on a person's account shows that site's account risk; sharing and offers to likers run at the pace the engine finds best ([listing D26](determinations/listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)); automation on real accounts may be left out of the demonstration (Nate, same words) |
 
 ## 9. Open for Ben and Nate
 
@@ -586,7 +644,12 @@ Watch has two event layers (*agent proposal*, from [Ben's plan](../.agents/team/
 | Nate's other proposals not yet answered by Ben: private store, For you and save-sync | not answered | Nate's proposal (vision.md Proposed) | keep them in the specs as proposals | buy, connect |
 | Studio photos and honesty | not answered | not answered | always keep the real photos alongside | studio, list |
 | Tell buyers an assistant is answering? | not answered | not answered | natural voice, a short note on the first automatic message, honest if asked ([handled-by-default.md](../research/messages/nate/handled-by-default.md)) | messages, legal exposure |
-| The front door | not answered | not answered | test option B on the real workspace; keep A ready | everything that calls the API |
+| The front door | not answered | the event gives a full workspace ([words](../product/words.md#2026-11-14-nate-answers-on-the-databricks-file-the-workspace-and-feature-pages)); the search engine is a public API ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | test option B on the real workspace; keep A ready, and A now also carries the public API's keys and rate limits (§6) | everything that calls the API |
+| Is the search engine's API public? | not answered | answered yes: "We will make the out perfroming industry and product search engine an available to call api." ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | §6 Public API | market, buy, front door |
+| Do people's listings go out as feeds to assistants? | not answered | answered no: "we dont serve what we have placed on secondhand, as secondhand inst a storefront" (same words) | no feed; the API serves search only | market, buy, list |
+| A paid tax service (Avalara or TaxJar)? | not answered | answered no: "We do not pay for a tax service" (same words) | a labelled estimate (§8) | buy, sold, insights |
+| J11 in [open-questions.md](open-questions.md): is an AI tag written into or onto an exported photo? | "dont say it was made with ai. track on our end but for demo purposes we want it to just work before tinkering. worst case scenario is everything works beautifully but we cant post because we added an ai tag." ([words](../product/words.md#2026-11-14-no-ai-tag-on-exported-photos-track-it-on-our-end)) | "Ai tags on photos retouched, but not on ones taken." ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | not resolved here; `photo.ai_marked` tracks it in the app either way; studio Open 5 | studio, list |
+| J12 in [open-questions.md](open-questions.md): retouch by default per site, or only when the person picks it? | no verbatim quote found; his packets set a per-site default level ([platform fit](../.agents/team/packets/list/31-platform-fit.md), [studio plan](../.agents/team/packets/studio/30-studio-build-plan.md)) | "make retouch a user select feature during the process of creating the listings" ([words](../product/words.md#2026-11-14-nate-the-best-way-to-take-every-photo-tags-delayed-retouch-chosen-by-the-person)) | not resolved here; studio Open 6, [studio](features/studio.md#retouch-chosen-by-the-person) | studio, list |
 | Expo holds only if capture is fully possible in it? | Expo with a Swift camera module ([decisions](../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)) | Expo if every capture feature works as it would natively ([words](../product/words.md#2026-11-14-nate-expo-if-capture-is-fully-possible)) | Expo stands; the camera module test on object capture and LiDAR settles it | capture, measure |
 | Which `rights` tags are enforced at a public launch, and by what (a UC tag policy, a query guard, both)? | not answered | licences do not shape the build ([words](../product/words.md#2026-11-14-nate-licences-do-not-constrain-the-build)) | record tags now on every comp; enforce through `guarded_query` plus UC tags at launch | price, market, score, data |
 | Where marketplace sessions live (Keychain or server) | not answered | not answered | server vault and cloud browser profile, with the stakes stated | connect, security |
@@ -600,7 +663,16 @@ Watch has two event layers (*agent proposal*, from [Ben's plan](../.agents/team/
 | Table history kept for recompute: raise retention or keep append-only snapshots | not answered | not answered | append-only snapshots for comps and guarded numbers; the kill test in §6 decides | data, score, market |
 | Sell-through: a 30-day cohort ([M6](determinations/market-insight.md#m6-sell-through)) or 90-day sold/(sold+active) ([D23](determinations/money.md#d23-sell-through-and-share-of-asking)) | not answered | not answered | M6, with the stock form as its labelled fallback (§8) | market, insights, price, score |
 | Earned auto: 3 unedited approvals of one kind (§5), or 3 of 3 spanning at least 2 items ([card 18](determinations/managing-and-buyers.md#18-whether-an-action-kind-has-earned-auto)) | not answered | not answered | 3 of 3 across at least 2 items for kinds that are not per item, so one item's quirks do not earn a rule | data, today |
-| Being researched, no entities yet: a buyer's purpose and constraints captured for a search through a short clarifying exchange, and a used listing compared against a new official brand-sold option ([words](../product/words.md#2026-11-14-nate-a-suite-like-shopify-and-the-better-official-option)) | not answered | the request itself | wait for the research before naming anything | watch, buy, market |
+| A buyer's purpose and constraints captured for a search, and a used listing compared against a new official brand-sold option ([words](../product/words.md#2026-11-14-nate-a-suite-like-shopify-and-the-better-official-option)) | not answered | the request itself | now named: `intent` (assist) and `retail_offer` (§3); `POST /v1/compare` (§7) | watch, buy, market, assist |
+| Shopify's product taxonomy as the spine for every kind (J19) | not answered | not answered | yes ([fields-by-kind](determinations/fields-by-kind.md)) | identify, capture, list |
+| May an inferred value of medium importance go into a site's structured fields (J20)? | not answered | not answered | yes for search fields, never for condition, size or authenticity | list, identify |
+| Several things sold together: one card for the lot or one per piece (J21)? | not answered | not answered | one card for the lot, pieces as parts | capture, price |
+| Exploration traffic on paid routes (J22) | not answered | not answered | yes, capped per day (§6 Source router) | data |
+| Product page order: buy's shared order or score alone (J23)? | not answered | not answered | the same rule as search | market, buy |
+| Poshmark share pace | not answered | "It can share and send offers however much is best." ([words](../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)) | the engine's pace, with the account risk shown (§8) | list, connect |
+| The 7% tax placeholder | not answered | no paid service (same words) | keep it labelled as an estimate until a per-state table exists | buy, sold |
+| Care label and fabric close-ups: conditional or always? | not answered | not answered | conditional on kind (inferred from [capture-shots](determinations/capture-shots.md); Ben's call) | capture |
+| Widen `clarify` to identify and assist; assist catalog rows 54 to 67 against A2UI; visitors stored as counts only; inline marks or chips | not answered | not answered | as [assist](features/assist.md#contract-for-the-frontend) proposes; a bar tests marks against chips | assist, buy, market |
 
 ## 10. Data flows
 
@@ -731,7 +803,7 @@ flowchart LR
 flowchart LR
   U["visitor on the web or the app"] -->|"public edge: visitor session, rate limit"| Q["POST /v1/search on Apps API"]
   Q -->|"AI Search and Lakebase: guarded numbers"| P["GET /v1/products/:id product page"]
-  P -->|"POST /v1/referrals/click: referral_click in Delta"| L["site URL with referral tag"]
+  P -->|"GET /v1/out: referral_click in Delta"| L["site URL with referral tag"]
   P -->|"Follow tapped: sign up, then follow in Lakebase"| F["full user"]
 ```
 
@@ -744,6 +816,8 @@ A spec Ben and Nate can audit ([words](../product/words.md#2026-11-14-nate-valid
 | A name, state, kind, job kind, endpoint or shape | this page first, then the features that use it | any agent, marked *agent proposal* |
 | A method, weight, threshold or hide rule | its card in [determinations/](determinations/); a new name it needs comes here first | any agent, marked *agent proposal* |
 | A name a feature needs that this page lacks | that feature's "Needs from the shared model", until it lands here | the feature's agent |
+| A tool that already does part of a feature, and how ours compares | [parity.md](parity.md); a name it needs comes here first | any agent, marked *agent proposal* |
+| How a feature works, in plain words for readers outside the build | [../docs/how-it-works/](../docs/how-it-works/README.md), after the name or card it explains has changed here or in determinations | any agent |
 | A design choice inside a feature | that feature's "Design choices" table: the options, the one picked, why, and what would change it | the feature's agent |
 | What each research claim and each quote in words.md is covered by | the coverage audit, `spec/coverage.md`, one row per claim or quote with the spec section that covers it, or "not covered" | any agent |
 | A line moving to Decided | [decisions.md](../product/decisions.md) | only Ben or Nate |
