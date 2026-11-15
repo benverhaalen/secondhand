@@ -1,0 +1,95 @@
+{
+  "examples": [
+    {
+      "name": "scores.list", "endpoint": "GET /v1/scores", "path": "/v1/scores?subject_type=listing&subject_id=ls_e81",
+      "status": 200,
+      "response": { "data": [
+        { "id": "sc_f1", "subject_type": "listing", "subject_id": "ls_e81", "axis": "financial", "site": "ebay", "value": 0.78, "range": { "low": 0.7, "high": 0.84 }, "citation_id": "ci_sf1", "state": "shown", "model_version": "score-4" },
+        { "id": "sc_v1", "subject_type": "listing", "subject_id": "ls_e81", "axis": "visibility", "site": "ebay", "value": null, "range": null, "citation_id": "ci_sv1", "state": "hidden", "hide_reason": "noise", "model_version": "score-4" }
+      ] }
+    },
+    {
+      "name": "scores.basis", "endpoint": "GET /v1/scores/:id/basis", "path": "/v1/scores/sc_f1/basis",
+      "status": 200,
+      "response": { "score_id": "sc_f1", "citation_id": "ci_sf1", "line": "from 41 sales in 90 days" }
+    },
+    {
+      "name": "sites.ranker", "endpoint": "GET /v1/sites/:site/ranker", "path": "/v1/sites/ebay/ranker",
+      "status": 200,
+      "response": { "site": "ebay", "notice": null, "panel_as_of": "2026-11-15T00:00:00Z", "panel_age_h": 5 }
+    },
+    {
+      "name": "citations.get", "endpoint": "GET /v1/citations/:id", "path": "/v1/citations/ci_41x",
+      "status": 200,
+      "response": { "id": "ci_41x", "metric": "sold_range", "filters": { "product_id": "pr_4hd1", "window_days": 90 }, "table_versions": [{ "table": "comp", "version": 412 }], "definition_version": 3, "code_version": "a1b2c3d", "param_versions": { "site_weight.mercari": 37 }, "model_version": null, "computed_at": "2026-11-15T03:58:00Z", "basis_count": 41, "basis_hash": "9f2c6d0e" }
+    },
+    {
+      "name": "experiments.list", "endpoint": "GET /v1/experiments", "path": "/v1/experiments", "list": true,
+      "status": 200,
+      "response": { "data": [], "next_cursor": null, "consent": false }
+    },
+    {
+      "name": "experiments.consent", "endpoint": "POST /v1/experiments/consent", "path": "/v1/experiments/consent",
+      "request": { "headers": { "Idempotency-Key": "idk_xc_01" }, "body": { "on": true } },
+      "status": 200,
+      "response": { "experiments_consent": true }
+    },
+    {
+      "name": "accounts.connect.ebay", "endpoint": "POST /v1/accounts", "path": "/v1/accounts",
+      "request": { "headers": { "Idempotency-Key": "idk_acc_01" }, "body": { "site": "ebay" } },
+      "status": 201,
+      "response": { "id": "acc_eb1", "site": "ebay", "route": "harness", "health": "paused", "next": { "kind": "oauth", "url": "https://auth.ebay.com/oauth2/authorize?client_id=example&state=acc_eb1" } }
+    },
+    {
+      "name": "accounts.connect.depop", "endpoint": "POST /v1/accounts", "path": "/v1/accounts",
+      "request": { "headers": { "Idempotency-Key": "idk_acc_02" }, "body": { "site": "depop" } },
+      "status": 201,
+      "response": { "id": "acc_dp1", "site": "depop", "route": "harness", "health": "paused", "next": { "kind": "sign_in_link", "url": "https://app.example/link/one-time-example", "expires_at": "2026-11-15T05:25:00Z" } }
+    },
+    {
+      "name": "accounts.list", "endpoint": "GET /v1/accounts", "path": "/v1/accounts", "list": true,
+      "status": 200,
+      "response": { "data": [
+        { "id": "acc_eb1", "site": "ebay", "route": "harness", "health": "ok", "linked_at": "2026-11-15T03:15:00Z", "capabilities": ["post", "delist", "read_listings", "read_messages", "send_message", "offer_to_watchers"], "export_mark": "none" },
+        { "id": "acc_po1", "site": "poshmark", "route": "harness", "health": "broken", "linked_at": "2026-11-10T20:00:00Z", "capabilities": ["post", "delist"], "export_mark": "none", "decision_id": "dec_rl1" }
+      ], "next_cursor": null }
+    },
+    {
+      "name": "accounts.import", "endpoint": "POST /v1/accounts/:id/import", "path": "/v1/accounts/acc_dp1/import",
+      "request": { "headers": { "Idempotency-Key": "idk_imp_01" }, "body": { "listings": true, "purchases": true, "external_ids": ["dp-1001", "dp-1002"] } },
+      "status": 202,
+      "response": { "id": "job_im1", "kind": "import", "state": "running", "stages": [{ "name": "listings", "state": "running", "started_at": "2026-11-15T03:20:00Z", "ended_at": null, "found": { "results_found": 2, "sites": { "depop": 2 } } }] }
+    },
+    {
+      "name": "accounts.import_preview", "endpoint": "GET /v1/accounts/:id/import-preview", "path": "/v1/accounts/acc_dp1/import-preview", "proposed": true,
+      "status": 200,
+      "response": { "account_id": "acc_dp1", "site": "depop", "read_at": "2026-11-15T03:19:00Z", "listings": [
+        { "external_id": "dp-1001", "title": "Vintage Levi's trucker jacket", "price_cents": { "amount_cents": 6500, "currency": "USD" }, "photo_url": "https://media.example/dp-1001.jpg", "state": "live", "matches_item_id": null },
+        { "external_id": "dp-1002", "title": "Carhartt J97 brown L", "price_cents": { "amount_cents": 9500, "currency": "USD" }, "photo_url": "https://media.example/dp-1002.jpg", "state": "live", "matches_item_id": "it_7c2m" }
+      ], "purchases": 3 }
+    },
+    {
+      "name": "accounts.unlink", "endpoint": "DELETE /v1/accounts/:id", "path": "/v1/accounts/acc_po1",
+      "status": 202,
+      "response": { "id": "job_ul1", "kind": "unlink", "state": "queued", "stages": [] }
+    },
+    {
+      "name": "insights.get", "endpoint": "GET /v1/insights", "path": "/v1/insights?window=30d",
+      "status": 200,
+      "response": {
+        "earned_cents": { "amount_cents": 41230, "currency": "USD" }, "fees_cents": { "amount_cents": 5410, "currency": "USD" }, "kept_cents": { "amount_cents": 31720, "currency": "USD" }, "could_earn_cents": { "amount_cents": 62000, "currency": "USD" },
+        "by_site": [{ "site": "ebay", "sold": 4, "earned_cents": { "amount_cents": 26100, "currency": "USD" } }, { "site": "depop", "sold": 3, "earned_cents": { "amount_cents": 15130, "currency": "USD" } }],
+        "goal": { "month": "2026-11", "target_cents": { "amount_cents": 50000, "currency": "USD" }, "progress_cents": { "amount_cents": 41230, "currency": "USD" } },
+        "funnel": [{ "stage": "views", "count": 812 }, { "stage": "watchers", "count": 44 }, { "stage": "offers", "count": 9 }, { "stage": "sold", "count": 7 }],
+        "stale": [{ "item_id": "it_2k9p", "days_live": 21 }], "profit_by": [], "pnl": { "revenue_cents": { "amount_cents": 41230, "currency": "USD" }, "cost_cents": { "amount_cents": 4100, "currency": "USD" } }, "slow_movers": [], "sell_down": null, "cohorts": [], "reliability": [], "anomalies": [], "promotion": [],
+        "citation_id": "ci_in1"
+      }
+    },
+    {
+      "name": "goals.put", "endpoint": "PUT /v1/goals/:month", "path": "/v1/goals/2026-11",
+      "request": { "body": { "target_cents": { "amount_cents": 50000, "currency": "USD" }, "target_sales": 10 } },
+      "status": 200,
+      "response": { "id": "gl_n1", "month": "2026-11", "target_cents": { "amount_cents": 50000, "currency": "USD" }, "target_sales": 10, "progress_cents": { "amount_cents": 41230, "currency": "USD" }, "version": 1 }
+    }
+  ]
+}

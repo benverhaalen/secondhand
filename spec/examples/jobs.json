@@ -1,0 +1,89 @@
+{
+  "examples": [
+    {
+      "name": "jobs.get", "endpoint": "GET /v1/jobs/:id", "path": "/v1/jobs/job_9a",
+      "status": 200,
+      "response": {
+        "id": "job_9a", "kind": "identify", "state": "done", "item_id": "it_7c2m", "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+        "stages": [
+          { "name": "read_label", "state": "arrived", "started_at": "2026-11-15T03:54:00Z", "ended_at": "2026-11-15T03:54:02Z", "found": { "results_found": 3 } },
+          { "name": "candidates", "state": "arrived", "started_at": "2026-11-15T03:54:02Z", "ended_at": "2026-11-15T03:54:06Z", "found": { "sources_searched": 3, "results_found": 17, "results_used": 5, "dropped_by_reason": { "other_variant": 12 } } }
+        ],
+        "result": { "candidates": [{ "product_id": "pr_4hd1", "title": "Carhartt Detroit Jacket J97", "match": "exact", "score": 0.94, "evidence": [], "source_route": "com.ebay.browse.search", "rights": ["may_store", "may_show"] }] }
+      }
+    },
+    {
+      "name": "jobs.get.not_found", "endpoint": "GET /v1/jobs/:id", "path": "/v1/jobs/job_someoneelse",
+      "status": 404,
+      "response": { "code": "not_found", "message": "no job job_someoneelse for this user", "failed_step": "read", "retry": { "by": "none" } }
+    },
+    {
+      "name": "jobs.get.sweep", "endpoint": "GET /v1/jobs/:id", "path": "/v1/jobs/job_sw1",
+      "status": 200,
+      "response": { "id": "job_sw1", "kind": "sweep", "state": "running", "stages": [{ "name": "read_listings", "state": "running", "started_at": "2026-11-15T05:00:00Z", "ended_at": null, "found": { "sites": { "depop": 6 } } }] }
+    },
+    {
+      "name": "jobs.get.relink_paused", "endpoint": "GET /v1/jobs/:id", "path": "/v1/jobs/job_mo1",
+      "status": 200,
+      "response": { "id": "job_mo1", "kind": "make_offer", "state": "queued", "paused": "account_stale", "stages": [], "relink_job_id": "job_rl1" }
+    },
+    {
+      "name": "jobs.events", "endpoint": "GET /v1/jobs/:id/events", "path": "/v1/jobs/job_9a/events", "content_type": "text/event-stream",
+      "status": 200, "stream": "identify_then_valuate", "response": null
+    },
+    {
+      "name": "jobs.events.resume", "endpoint": "GET /v1/jobs/:id/events", "path": "/v1/jobs/job_9a/events", "content_type": "text/event-stream",
+      "request": { "headers": { "Last-Event-ID": "4" } },
+      "status": 200, "stream": "identify_then_valuate", "from_id": 5, "response": null
+    },
+    {
+      "name": "jobs.events.visitor", "endpoint": "GET /v1/jobs/:id/events", "path": "/v1/jobs/job_sr1/events", "auth": "visitor", "content_type": "text/event-stream",
+      "status": 200, "stream": "visitor_search", "response": null
+    },
+    {
+      "name": "stream", "endpoint": "GET /v1/stream", "path": "/v1/stream", "content_type": "text/event-stream",
+      "status": 200, "stream": "user_stream", "response": null
+    }
+  ],
+  "streams": [
+    {
+      "name": "identify_then_valuate",
+      "frames": [
+        { "id": "1", "event": "job.state", "data": { "job_id": "job_9a", "kind": "identify", "state": "running", "at": "2026-11-15T03:54:00Z" } },
+        { "id": "2", "event": "job.stage", "data": { "job_id": "job_9a", "stage": "read_label", "state": "running", "at": "2026-11-15T03:54:00Z", "found": { "results_found": 0 } } },
+        { "id": "3", "event": "fact.found", "data": { "job_id": "job_9a", "attribute": { "name": "brand", "value": "Carhartt", "source": "label" }, "at": "2026-11-15T03:54:01Z" } },
+        { "id": "4", "event": "fact.found", "data": { "job_id": "job_9a", "attribute": { "name": "size", "value": null, "unknown_reason": "not_visible" }, "at": "2026-11-15T03:54:01Z" } },
+        { "id": "5", "event": "fact.found", "data": { "job_id": "job_9a", "attribute": { "name": "model", "value": "Detroit Jacket J97", "source": "spec" }, "at": "2026-11-15T03:54:04Z" } },
+        { "id": "6", "event": "job.stage", "data": { "job_id": "job_9a", "stage": "candidates", "state": "arrived", "at": "2026-11-15T03:54:06Z", "found": { "sources_searched": 3, "results_found": 17, "results_used": 5, "dropped_by_reason": { "other_variant": 12 } } } },
+        { "id": "7", "event": "job.state", "data": { "job_id": "job_9a", "kind": "identify", "state": "done", "at": "2026-11-15T03:54:06Z" } },
+        { "comment": "heartbeat, every 15 s" },
+        { "id": "8", "event": "job.stage", "data": { "job_id": "job_9b", "stage": "comps", "state": "running", "at": "2026-11-15T03:54:07Z", "found": { "comps": 88, "kind": "sold jackets", "sources_searched": 2 } } },
+        { "id": "9", "event": "job.stage", "data": { "job_id": "job_9b", "stage": "comps", "state": "running", "at": "2026-11-15T03:54:09Z", "found": { "comps": 214, "kind": "sold jackets", "sources_searched": 4, "results_found": 214, "results_used": 41, "dropped_by_reason": { "other_variant": 120, "lot": 9, "stale": 44 }, "sites": { "ebay": 23, "depop": 12, "mercari": 6 } } } },
+        { "id": "10", "event": "job.stage", "data": { "job_id": "job_9b", "stage": "range", "state": "arrived", "at": "2026-11-15T03:54:11Z", "found": { "results_used": 41 } } },
+        { "id": "11", "event": "job.state", "data": { "job_id": "job_9b", "kind": "valuate", "state": "done", "at": "2026-11-15T03:54:11Z" } }
+      ]
+    },
+    {
+      "name": "visitor_search",
+      "frames": [
+        { "id": "1", "event": "job.stage", "data": { "job_id": "job_sr1", "stage": "identify", "state": "arrived", "at": "2026-11-15T05:06:01Z", "found": { "results_found": 1 } } },
+        { "id": "2", "event": "job.stage", "data": { "job_id": "job_sr1", "stage": "fanout", "state": "running", "at": "2026-11-15T05:06:02Z", "found": { "sources_searched": 3, "results_found": 18, "sites": { "ebay": 9, "depop": 5, "mercari": 4 } } } },
+        { "id": "3", "event": "job.stage", "data": { "job_id": "job_sr1", "stage": "rank", "state": "arrived", "at": "2026-11-15T05:06:04Z", "found": { "results_found": 18, "results_used": 12, "dropped_by_reason": { "wrong_size": 6 } } } },
+        { "id": "4", "event": "job.state", "data": { "job_id": "job_sr1", "kind": "search", "state": "done", "at": "2026-11-15T05:06:04Z", "result": { "product_id": "pr_4hd1", "results": [{ "site": "ebay", "condition": "used_good", "seller_kind": "person", "delivered_cents": { "amount_cents": 7900, "currency": "USD" }, "delivery_min_days": 2, "delivery_max_days": 5, "stock": 1, "ships_from": "US-PA", "ships_to": "US" }], "official": [], "sites_pending": [] } } }
+      ]
+    },
+    {
+      "name": "user_stream",
+      "frames": [
+        { "id": "101", "event": "decision.open", "data": { "decision_id": "dec_51k", "kind": "accept_offer", "item_id": "it_7c2m", "at": "2026-11-15T04:20:00Z" } },
+        { "id": "102", "event": "message.new", "data": { "conversation_id": "cv_6t1", "message_id": "msg_c2", "at": "2026-11-15T04:18:00Z" } },
+        { "id": "103", "event": "job.state", "data": { "job_id": "job_ao2", "kind": "answer_offer", "state": "running", "at": "2026-11-15T04:21:00Z" } },
+        { "id": "104", "event": "decision.answer", "data": { "decision_id": "dec_51k", "option_id": "opt_ctr", "at": "2026-11-15T04:21:00Z" } },
+        { "id": "105", "event": "decision.close", "data": { "decision_id": "dec_51k", "state": "answered", "at": "2026-11-15T04:22:00Z" } },
+        { "id": "106", "event": "state.change", "data": { "entity": "listing", "listing_id": "ls_d22", "from": "live", "to": "live", "at": "2026-11-15T04:22:00Z" } },
+        { "id": "107", "event": "score.change", "data": { "score_id": "sc_f1", "subject_id": "ls_e81", "axis": "financial", "state": "shown", "market_standing": { "word": "slow", "place": { "rank": 7, "of": 14, "basis": "price" }, "outlook": { "days_lo": 9, "days_hi": 20 }, "citation_id": "ci_77c", "state": "shown" }, "at": "2026-11-15T06:00:00Z" } },
+        { "id": "108", "event": "job.stage", "data": { "job_id": "job_rl1", "stage": "sign_in", "state": "started", "at": "2026-11-15T06:01:00Z", "found": {} } }
+      ]
+    }
+  ]
+}

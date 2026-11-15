@@ -11,8 +11,10 @@ export interface Log {
     describe?: (out: T) => Record<string, unknown>,
   ): Promise<T>;
   child(ids: Record<string, string>, src?: string): Log;
-  error(where: string, e: unknown): void;
+  error(where: string, e: unknown, fields?: Record<string, unknown>): void;
+  event(name: string, fields?: Record<string, unknown>, level?: string): unknown;
 }
 
 export function createLog(options: { src: string; build: string; sink: Sink; seed?: number; session?: string; from?: string; config?: Record<string, unknown> }): Log;
 export const consoleSink: Sink;
+export function memorySink(): Sink & { lines: string[]; text(): string };

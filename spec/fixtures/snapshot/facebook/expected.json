@@ -1,0 +1,68 @@
+{
+ "site": "facebook",
+ "pairs": [
+  {
+   "from": "base.json",
+   "to": "reordered.json",
+   "changes": [],
+   "why": "same facts in another order: nothing changed"
+  },
+  {
+   "from": "base.json",
+   "to": "changed.json",
+   "changes": [
+    {
+     "action": "price.changed",
+     "ref": "fa2-100237",
+     "payload": {
+      "from_cents": 4000,
+      "to_cents": 3500
+     }
+    },
+    {
+     "action": "listing.sold",
+     "ref": "fa2-100274",
+     "payload": {
+      "price_cents": 2500
+     }
+    },
+    {
+     "action": "like.added",
+     "ref": "fa2-100311",
+     "payload": {
+      "from": 1,
+      "to": 2
+     }
+    },
+    {
+     "action": "listing.ended",
+     "ref": "fa2-100348",
+     "payload": {}
+    },
+    {
+     "action": "offer.received",
+     "ref": "fa2-o2",
+     "payload": {
+      "listing_external_id": "fa2-100237",
+      "amount_cents": 3000
+     }
+    },
+    {
+     "action": "message.received",
+     "ref": "fa2-m2",
+     "payload": {
+      "thread_ref": "fa2-t2",
+      "listing_external_id": "fa2-100237"
+     }
+    }
+   ],
+   "why": "views moved on the first listing and watchers did not: no event for either"
+  },
+  {
+   "from": "base.json",
+   "to": "public.json",
+   "changes": [],
+   "why": "a section not read is absent: it must not read as everything gone"
+  }
+ ]
+}

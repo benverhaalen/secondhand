@@ -1,0 +1,395 @@
+{
+ "version": 1,
+ "note": "Skeleton: ten household items across the kinds in product.md section 8. Every answer is null until a team member measures the item and fills answer, measured_by (a role handle, never a personal detail) and measured_on (ISO date). The scorer skips unmeasured fields. Photos are NOT uploaded yet: the paths are declared placeholders under volume_root, which names a Unity Catalog volume once the event workspace exists.",
+ "volume_root": "/Volumes/<catalog>/<schema>/real_items",
+ "items": [
+  {
+   "id": "clothes-1",
+   "kind": "clothes",
+   "photos": [
+    "clothes-1/front.jpg",
+    "clothes-1/tag.jpg"
+   ],
+   "fields": {
+    "chest_width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "length_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "clothes-2",
+   "kind": "clothes",
+   "photos": [
+    "clothes-2/front.jpg",
+    "clothes-2/tag.jpg"
+   ],
+   "fields": {
+    "chest_width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "length_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "shoes-1",
+   "kind": "shoes",
+   "photos": [
+    "shoes-1/front.jpg",
+    "shoes-1/tag.jpg"
+   ],
+   "fields": {
+    "length_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "shoes-2",
+   "kind": "shoes",
+   "photos": [
+    "shoes-2/front.jpg",
+    "shoes-2/tag.jpg"
+   ],
+   "fields": {
+    "length_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "electronics-1",
+   "kind": "electronics",
+   "photos": [
+    "electronics-1/front.jpg",
+    "electronics-1/tag.jpg"
+   ],
+   "fields": {
+    "width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "height_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "depth_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "electronics-2",
+   "kind": "electronics",
+   "photos": [
+    "electronics-2/front.jpg",
+    "electronics-2/tag.jpg"
+   ],
+   "fields": {
+    "width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "height_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "depth_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "furniture-1",
+   "kind": "furniture",
+   "photos": [
+    "furniture-1/front.jpg",
+    "furniture-1/tag.jpg"
+   ],
+   "fields": {
+    "width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "depth_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "height_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "furniture-2",
+   "kind": "furniture",
+   "photos": [
+    "furniture-2/front.jpg",
+    "furniture-2/tag.jpg"
+   ],
+   "fields": {
+    "width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "depth_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "height_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "small_goods-1",
+   "kind": "small_goods",
+   "photos": [
+    "small_goods-1/front.jpg",
+    "small_goods-1/tag.jpg"
+   ],
+   "fields": {
+    "width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "height_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "depth_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  },
+  {
+   "id": "small_goods-2",
+   "kind": "small_goods",
+   "photos": [
+    "small_goods-2/front.jpg",
+    "small_goods-2/tag.jpg"
+   ],
+   "fields": {
+    "width_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "height_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "depth_cm": {
+     "unit": "cm",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "tape measure"
+    },
+    "tag_text": {
+     "unit": "text",
+     "answer": null,
+     "measured_by": null,
+     "measured_on": null,
+     "method": "read by hand"
+    }
+   },
+   "sold_price_cents": {
+    "answer": null,
+    "recorded_by": null,
+    "recorded_on": null
+   }
+  }
+ ]
+}

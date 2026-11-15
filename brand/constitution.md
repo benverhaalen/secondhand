@@ -389,6 +389,33 @@ Each AI tell is paired with what to reach for, because banning one default moves
 
 The numbers in this table are also in [media.json](media.json), which the checker reads. A test fails when the two differ, so change both in one commit. A post, a story and a deck take their sizes, margins and scaled gaps as variables from [media.css](media.css), which a script writes from media.json, so nothing off the app sets a raw number: `var(--mt-heading)`, `var(--ms-4)`, `var(--mr-card)`. How many views the field may fill is in Article 5.2 and the Field row. An app screen shown on a slide, a post or a page is a picture of the screen that passed its own check, placed as an image, never the screen's markup set again at another size.
 
+### What each medium is for
+
+Ben, [writing by medium](../product/words.md#2026-11-15-writing-changes-by-medium-the-right-fonts-showing-not-telling-and-general-rules-first): "writing should change based on medium", and "creating generalizable rules that fit all this". The voice is Article 12 and does not change. What changes is the length and what the words are for, and both follow from what the reader is doing ([the research](../research/cross-cutting/ben/communicating-in-every-medium.md)). Agent proposal, R26.
+
+| | The reader is | They give it | The words | The picture |
+|---|---|---|---|---|
+| App | Doing a task, eyes on the control | One read of a label | Name the action or the state, and say what to do next. A button is a verb and an object | The item's photo and the state's color carry what words would |
+| Website | Scanning to see if it is for them | 79% scan, so the heading and the first line | Say what it is and what you keep, then let them go deeper. Half the words of a first draft | A real item and a real screen in every section |
+| Slide | Listening to the speaker, glancing up | 3 seconds a glance | State the one point the speaker then explains, as a sentence. Never the speaker's script | The proof of the point: the screen, the item, the number |
+| Post | Scrolling past | The photo, then the first line | The first line works alone, with no context | The item is the post |
+| Story and video | Watching and listening at a fixed pace | Each caption 7 s at most | Sharpen what is seen and heard, 8 words at a time | Footage of the real thing |
+
+### What holds in every medium
+
+Each line is held by the id at its end. They come from the research note above, where the numbers are.
+
+1. **One point per view, said as a sentence.** A heading states a claim with a verb, in 8 words or fewer (Article 12.4). "Selling is a second job", never "The problem" (G7).
+2. **A stranger gets it in 3 seconds.** Shown the view for 3 seconds, a person outside the team says its point (G7).
+3. **Show the thing, then say it.** A claim sits in the same view as what proves it: the real item, the real screen, or a number with its source (G8, G1, G3, G6).
+4. **One specific case before a number.** "A $20 shirt pays you $3", then the market (G8).
+5. **Nothing is there for decoration.** Take a thing away; if the point is unchanged, it stays out (G9; in the app, B1).
+6. **A label sits next to its thing.** No legend, no key, no footnote across the view (G10).
+7. **One thing stands out.** One field (B4), one peak amount (B12), one black pill (B10). If two things are loud, neither is.
+8. **Words a person can check.** A concrete noun and a number over a category word: "a Carhartt jacket for $46.95", never "quality items" (B23, G4).
+9. **The first thing is the most important thing**, because it may be the only one read (G7).
+10. **The brand's two faces, and no other** (B15), at the medium's sizes (B14), weights (B13), leading and tracking (B14).
+
 ### Each medium, line by line
 
 Ben, [little wiggle room](../product/words.md#2026-11-15-a-constitution-with-little-wiggle-room-the-heavy-black-the-black-outline-and-the-gray-box): "you can create sections for app or web", and "it all gives little wiggle room for ambiguity". Each line below has one reading and ends with what holds it: a check in Part IV (B, U), a judge line in [ui-rules.json](../.agents/ui-rules.json) (G), or a ledger pick (L). The numbers are the table's. A line with no id is not held yet. The lines new to this section are agent proposals (Article 2), open in the ledger as R26.
@@ -455,7 +482,7 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B11 | Logos not names (C5) | No marketplace name as visible text where a logo slot exists; logo `aria-label` present | Not built |
 | B12 | Money says what it is, with no highlight (C6) | Each amount has words in its row or block that say what it is, and no band of color behind it | Script |
 | B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {400, 500, 600}; 600 only in the display face; 500 only inside a button or a link styled as one | Script |
-| B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) | Script |
+| B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) Off the app, a size of 32 and up is set at leading 1.1 and tracking `-0.02em`, and the wordmark at `-0.01em` (Art. 6.12) | Script |
 | B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script |
 | B16 | Sentence case (Art. 6.5) | No phrase is all caps. One word in capitals and title case are warnings, because a name may be written that way | Script |
 | B17 | Spacing scale (Art. 7.1) | Every gap inside a component ∈ {0, 4, 8, 12, 16, 20, 24, 32, 48, 64}; canvas margins and safe areas come from Part III. Text stays inside the margins; a photo stays inside them or runs to the edge; web text is no wider than the content width | Script |

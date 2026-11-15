@@ -1,0 +1,281 @@
+{
+ "version": 1,
+ "note": "masks are synthetic filled boxes; rects are [x0, y0, x1, y1) in frame pixels; item_cut means no square holds the box, so the photo is never padded",
+ "frame": {
+  "w": 300,
+  "h": 400
+ },
+ "square_side": 300,
+ "margin_px": 6,
+ "grailed_h": 375,
+ "cases": [
+  {
+   "id": "case-0",
+   "name": "inside the centred square",
+   "mask": "mask-00.png",
+   "expected": {
+    "box": [
+     90,
+     120,
+     210,
+     280
+    ],
+    "item_cut": false,
+    "square": [
+     0,
+     50,
+     300,
+     350
+    ],
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": [
+     0,
+     12,
+     300,
+     387
+    ]
+   }
+  },
+  {
+   "id": "case-1",
+   "name": "high, the square slides up",
+   "mask": "mask-01.png",
+   "expected": {
+    "box": [
+     80,
+     20,
+     220,
+     200
+    ],
+    "item_cut": false,
+    "square": [
+     0,
+     14,
+     300,
+     314
+    ],
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": [
+     0,
+     0,
+     300,
+     375
+    ]
+   }
+  },
+  {
+   "id": "case-2",
+   "name": "low, the square slides down",
+   "mask": "mask-02.png",
+   "expected": {
+    "box": [
+     80,
+     220,
+     220,
+     390
+    ],
+    "item_cut": false,
+    "square": [
+     0,
+     96,
+     300,
+     396
+    ],
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": [
+     0,
+     25,
+     300,
+     400
+    ]
+   }
+  },
+  {
+   "id": "case-3",
+   "name": "tight at the top, slides to the top edge",
+   "mask": "mask-03.png",
+   "expected": {
+    "box": [
+     60,
+     6,
+     240,
+     250
+    ],
+    "item_cut": false,
+    "square": [
+     0,
+     0,
+     300,
+     300
+    ],
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": [
+     0,
+     0,
+     300,
+     375
+    ]
+   }
+  },
+  {
+   "id": "case-4",
+   "name": "tight at the bottom, slides to the bottom edge",
+   "mask": "mask-04.png",
+   "expected": {
+    "box": [
+     60,
+     150,
+     240,
+     394
+    ],
+    "item_cut": false,
+    "square": [
+     0,
+     100,
+     300,
+     400
+    ],
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": [
+     0,
+     25,
+     300,
+     400
+    ]
+   }
+  },
+  {
+   "id": "case-5",
+   "name": "fills the square exactly less margin",
+   "mask": "mask-05.png",
+   "expected": {
+    "box": [
+     6,
+     56,
+     294,
+     344
+    ],
+    "item_cut": false,
+    "square": [
+     0,
+     50,
+     300,
+     350
+    ],
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": [
+     0,
+     12,
+     300,
+     387
+    ]
+   }
+  },
+  {
+   "id": "case-6",
+   "name": "too tall, no square holds it",
+   "mask": "mask-06.png",
+   "expected": {
+    "box": [
+     100,
+     5,
+     200,
+     395
+    ],
+    "item_cut": true,
+    "square": null,
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": null
+   }
+  },
+  {
+   "id": "case-7",
+   "name": "too wide, margin breaks on the sides",
+   "mask": "mask-07.png",
+   "expected": {
+    "box": [
+     2,
+     150,
+     298,
+     250
+    ],
+    "item_cut": true,
+    "square": null,
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": null
+   }
+  },
+  {
+   "id": "case-8",
+   "name": "thin sliver",
+   "mask": "mask-08.png",
+   "expected": {
+    "box": [
+     148,
+     190,
+     152,
+     210
+    ],
+    "item_cut": false,
+    "square": [
+     0,
+     50,
+     300,
+     350
+    ],
+    "poshmark": [
+     0,
+     0,
+     300,
+     400
+    ],
+    "grailed": [
+     0,
+     12,
+     300,
+     387
+    ]
+   }
+  }
+ ]
+}

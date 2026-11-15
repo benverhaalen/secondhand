@@ -1,0 +1,200 @@
+[
+ {
+  "id": "fc_fx1",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx2"
+  },
+  "horizon_weeks": 4,
+  "metric": "sales_count",
+  "p10": 2,
+  "p50": 5,
+  "p90": 9,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-06-01",
+  "resolved_value": 6
+ },
+ {
+  "id": "fc_fx2",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx3"
+  },
+  "horizon_weeks": 8,
+  "metric": "sales_count",
+  "p10": 4,
+  "p50": 10,
+  "p90": 16,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-06-01",
+  "resolved_value": 18
+ },
+ {
+  "id": "fc_fx3",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx1"
+  },
+  "horizon_weeks": 4,
+  "metric": "median_sold_price_cents",
+  "p10": 3800,
+  "p50": 4200,
+  "p90": 4700,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-06-01",
+  "resolved_value": 4100
+ },
+ {
+  "id": "fc_fx4",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx2"
+  },
+  "horizon_weeks": 8,
+  "metric": "median_sold_price_cents",
+  "p10": 3500,
+  "p50": 4100,
+  "p90": 4800,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-06-01",
+  "resolved_value": 3400
+ },
+ {
+  "id": "fc_fx5",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx3"
+  },
+  "horizon_weeks": 12,
+  "metric": "sales_count",
+  "p10": 6,
+  "p50": 14,
+  "p90": 24,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-06-01",
+  "resolved_value": 14
+ },
+ {
+  "id": "fc_fx6",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx1"
+  },
+  "horizon_weeks": 4,
+  "metric": "sales_count",
+  "p10": 1,
+  "p50": 3,
+  "p90": 6,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-07-06",
+  "resolved_value": 3
+ },
+ {
+  "id": "fc_fx7",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx2"
+  },
+  "horizon_weeks": 12,
+  "metric": "median_sold_price_cents",
+  "p10": 3000,
+  "p50": 3900,
+  "p90": 5000,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-07-06",
+  "resolved_value": 5000
+ },
+ {
+  "id": "fc_fx8",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx3"
+  },
+  "horizon_weeks": 4,
+  "metric": "sales_count",
+  "p10": 0,
+  "p50": 2,
+  "p90": 5,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-07-06",
+  "resolved_value": 0
+ },
+ {
+  "id": "fc_fx9",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx1"
+  },
+  "horizon_weeks": 4,
+  "metric": "sales_count",
+  "p10": 1,
+  "p50": 4,
+  "p90": 7,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-09-07"
+ },
+ {
+  "id": "fc_fx10",
+  "subject": {
+   "kind": "product",
+   "id": "product_fx2"
+  },
+  "horizon_weeks": 12,
+  "metric": "median_sold_price_cents",
+  "p10": 3600,
+  "p50": 4000,
+  "p90": 4600,
+  "basis_count": 24,
+  "param_versions": {
+   "beta_D": 1,
+   "k_cov": 1
+  },
+  "model_version": "fx-1",
+  "as_of": "2026-10-26"
+ }
+]

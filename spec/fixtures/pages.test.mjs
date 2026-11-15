@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirHash, filesUnder, piiHits } from './frames/lib.mjs';
 
 const dir = fileURLToPath(new URL('./pages/', import.meta.url));
-const d681c029e3fef3919c1597acb8990d3db7272ab4ffbb3e7c014dd54fc1e9efe6NED = { version: 1, sha256: 'd681c029e3fef3919c1597acb8990d3db7272ab4ffbb3e7c014dd54fc1e9efe6' };
+const PINNED = { version: 1, sha256: 'd681c029e3fef3919c1597acb8990d3db7272ab4ffbb3e7c014dd54fc1e9efe6' };
 const manifest = JSON.parse(fs.readFileSync(`${dir}manifest.json`, 'utf8'));
 const sha = (f) => crypto.createHash('sha256').update(fs.readFileSync(dir + f)).digest('hex');
 const cents = (p) => Math.round(parseFloat(p.replace(/[^0-9.]/g, '')) * 100);
@@ -26,9 +26,9 @@ export const extract = (site, html) => {
 };
 
 test('hash pinned: a changed fixture needs a new version and a new pin', () => {
-  assert.equal(manifest.version, d681c029e3fef3919c1597acb8990d3db7272ab4ffbb3e7c014dd54fc1e9efe6NED.version, 'version moved: update PINNED in this test with the new hash');
+  assert.equal(manifest.version, PINNED.version, 'version moved: update PINNED in this test with the new hash');
   for (const e of manifest.files) for (const [f, h] of Object.entries(e.sha256)) assert.equal(sha(f), h, `${f} changed without a manifest update`);
-  assert.equal(dirHash(dir), d681c029e3fef3919c1597acb8990d3db7272ab4ffbb3e7c014dd54fc1e9efe6NED.sha256, 'fixture bytes changed without a version bump');
+  assert.equal(dirHash(dir), PINNED.sha256, 'fixture bytes changed without a version bump');
 });
 
 test('the five sites are present; each is marked recorded or synthetic, a recorded one with its URL and date', () => {

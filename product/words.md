@@ -910,6 +910,17 @@ Nate, build session (orchestrator), 2026-11-14 about 21:50 to 22:00 Central, thr
 
 > Well no dont limit so we have any streams waiting, ensure all streams are working and the most we can develop we are, just account to ensure that we dont super overload it with both our sessions and massive codex orchestrators also dispatching
 
+## 2026-11-15 writing changes by medium, the right fonts, showing not telling, and general rules first
+Ben, thread "Build the brand system for everything", 03:43 UTC.
+> also writing should change based on medium. what i want from each medium. research should back. ensure research is done by smaller subagents btw
+
+Ben, same thread, 03:44 UTC.
+> also ensure the right fonts are used. showing not telling. communication is key in all situations. understanding communication effectively and creating interesting rather than bland presentations is one thing. but right now dont focus on presentations or videos exactly or social media posts. just think about creating generalizable rules that fit all this. im making not an app but a presentation
+
+## 2026-11-15 no missing functions: walk every feature for what would frustrate each person
+Ben, project chat, 2026-11-15 03:55 UTC, after asking for one thread to build the UI.
+> ideally i just want one. i really need things to really get going on the ui actually being made for everything. also a worry i have is certain functionalities wont be there when its all done. like in everything think really intently about all the personas and friction and features that were either already stated or planned where they would disgruntle or make the experience worse for the user. like in the + thing. what if i want to upload my own photos. what if i dont want ai to edit them. what if .... etc. generalize that. and ensure somewhere in the personas defined or ui system or somewhere or even saying each feature and architecting out how they should work. knowing that this is how we want it exactly to feel (obviously letting the ai flow work) but you have encoded my judgement super well over time into constitutions so continue to refine and get it down. yeah i told him hes changing it
+
 ## 2026-11-15 round 11 picks
 Ben, on the round 11 picks page, saved 2026-11-15 03:37 UTC; he wrote "done with round 11" in the thread "Set the secondhand brand identity" at 03:37. He tapped four things: the light fill under the second button, one black button under the black pill, centered under where the wordmark sits, and the line "Your second hand, for everything secondhand." under the idea in one line. The quotes are the notes he typed.
 

@@ -5,6 +5,10 @@
   --find-h: 56px;                  /* the search field: one tall control, the first thing on the tab */
   --match-photo: 180px;            /* the new match's photo: the largest thing in its card */
   --shelf-tile: 108px;             /* a tile on the Watching and Bought shelves: three fill the width between the margins */
+  /* The wash, as Ben asked at 03:22: stronger, an accent, ending no lower than the first control. Built from the ring's tokens */
+  --wash-1: color-mix(in srgb, var(--sky) 70%, transparent); --wash-2: color-mix(in srgb, var(--mint) 60%, transparent);
+  --wash: radial-gradient(120% 90% at 15% 0%, var(--wash-1), transparent 70%), radial-gradient(90% 80% at 95% 0%, var(--wash-2), transparent 70%);   /* tokens.css's --wash, restated so it reads these two stops */
+  --wash-h: calc(54px + var(--nav-h) + var(--s-4) + var(--find-h));   /* status bar, nav, gap, search field: the wash ends at the field's lower edge */
 }
 
 /* One field for words or a pasted link, with the camera inside it. Text you type is 18 (Art. 6) */
@@ -22,7 +26,7 @@
 .buy .match .big .ph { width: 100%; height: var(--match-photo); }
 .buy .match .big .site { right: var(--s-2); bottom: var(--s-2); }
 .buy .read { display: flex; align-items: center; gap: var(--s-1); }
-.buy .read .ic { width: 16px; height: 16px; }
+.buy .read .ic { width: var(--tag-icon); height: var(--tag-icon); }   /* a tag's icon size */
 .buy .two { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
 .buy .card.field .i2 { color: var(--on-field-2); }
 
@@ -31,10 +35,11 @@
 .buy .shelf .t { width: var(--shelf-tile); flex: none; }
 .buy .shelf .ph { width: var(--shelf-tile); height: var(--shelf-tile); }
 
-/* Round 11 shows a chosen tab by filling the icon's first path. The magnifier's first path is its handle, so the lens vanished:
-   here the lens is the filled part and the handle stays a stroke */
-.buy .tab[aria-current] .ic > :first-child { fill: none; stroke: currentColor; }
-.buy .tab[aria-current] .ic > :nth-child(2) { fill: currentColor; stroke: currentColor; }
+/* Ben, 03:45: the current tab shows a pill behind its icon. Round 11 has no such part yet, so it is drawn here from tokens; it belongs in screens.css.
+   The icon stays a line drawing, which also undoes the kit's fill of the first path (the Buy magnifier lost its lens to it) */
+.buy .tab:not(.add) .ic { box-sizing: content-box; padding: var(--s-1) var(--s-4); border-radius: var(--r-pill); }   /* every tab keeps the pill's room, so the labels stay on one line */
+.buy .tab[aria-current] .ic { background: var(--gray); }
+.sh.buy .tab[aria-current] .ic > :nth-child(n) { fill: none; stroke: currentColor; }
 
 /* Shelf titles are headings for a screen reader, not bold: the brand has no bold (Art. 6) */
-.buy h2 { font-weight: var(--w-regular); margin: 0; }
+.buy h2 { font-weight: var(--w-text); margin: 0; }

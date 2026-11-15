@@ -1,0 +1,42 @@
+{
+ "now": "2026-11-01T00:00:00Z",
+ "rule": "a forecast is resolved when resolved_value is set; pinball loss is the mean over q 0.1, 0.5, 0.9 of max(q(y-p), (q-1)(y-p)), rounded to 2 places; inside means p10 <= y <= p90; due means the horizon ended by now but no resolved_value yet",
+ "resolved_ids": [
+  "fc_fx1",
+  "fc_fx2",
+  "fc_fx3",
+  "fc_fx4",
+  "fc_fx5",
+  "fc_fx6",
+  "fc_fx7",
+  "fc_fx8"
+ ],
+ "pinball_loss": {
+  "fc_fx1": 0.4,
+  "fc_fx2": 2.4,
+  "fc_fx3": 46.67,
+  "fc_fx4": 193.33,
+  "fc_fx5": 0.6,
+  "fc_fx6": 0.17,
+  "fc_fx7": 250,
+  "fc_fx8": 0.5
+ },
+ "inside_p10_p90": [
+  "fc_fx1",
+  "fc_fx3",
+  "fc_fx5",
+  "fc_fx6",
+  "fc_fx7",
+  "fc_fx8"
+ ],
+ "coverage": {
+  "inside": 6,
+  "of": 8
+ },
+ "due_unresolved_ids": [
+  "fc_fx9"
+ ],
+ "open_ids": [
+  "fc_fx10"
+ ]
+}

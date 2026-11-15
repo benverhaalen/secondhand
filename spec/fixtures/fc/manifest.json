@@ -1,0 +1,10 @@
+{
+ "fixture": "fc",
+ "note": "Hand-built, no real data. Fields follow the forecast row in spec/product.md section 3 (prefix fc_) and scoring in spec/engines/demand-and-trend.md.",
+ "mode": "synthetic",
+ "version": 1,
+ "sha256": {
+  "forecasts.json": "2cf1c70ec8dfdd31be580326bba0cabed5116ec58df3f1beb2e3e1000647833e",
+  "expected.json": "2d35fc075804fdcf8b0d16d78f0279c87b193023fd9f1052f350b6fd99402371"
+ }
+}
