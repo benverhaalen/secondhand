@@ -14,7 +14,7 @@ class CrashBoundary extends Component<{ children: ReactNode }, { failed: boolean
   render() {
     if (!this.state.failed) return this.props.children;
     return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Something went wrong</Text>
+      <Text>This screen stopped working</Text>
       <Button title="Retry" onPress={() => this.setState({ failed: false })} />
     </View>;
   }
