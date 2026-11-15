@@ -6,12 +6,13 @@ import { crashBoundary } from '@/log/boundary';
 // The root: the brand's faces load before anything draws (so nothing reflows when they arrive), then one stack.
 // Main screens are the tabs; everything else pushes over them. Every screen draws its own Nav, so no native header.
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { Platform } from 'react-native';
 import { useBrandFonts } from '@/ui/fonts';
 import { PhoneInsets } from '@/ui/insets';
 import { useColors, useScheme } from '@/ui/theme';
 
 export default function RootLayout() {
-  return <SessionProvider><Head><title>secondhand</title></Head><RootNavigator /></SessionProvider>;
+  return <SessionProvider>{Platform.OS === 'web' && <Head><title>secondhand</title></Head>}<RootNavigator /></SessionProvider>;
 }
 
 function RootNavigator() {
