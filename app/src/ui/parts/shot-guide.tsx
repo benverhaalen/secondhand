@@ -3,6 +3,7 @@
 // slowly across it, and the shot's name and one line under it in place of a sentence across the top. Why a part: every
 // capture family's steps use it (jobs/capture/process.json), and the parts sheet draws each glyph.
 //   step   the process step's key (front, back, tag, soles, scan, ...); an unknown step draws the plain frame.
+//   family the capture family picked first; front and back are drawn as a garment only for clothing.
 //   words  the server's own words for a retake or an added shot, which replace the line.
 // It never takes a press (pointerEvents none). Reduce Motion: the drawing is still and the phone does not move.
 import { useEffect } from 'react';
@@ -13,27 +14,8 @@ import { Txt } from '../text';
 import { motion, space } from '../tokens.generated';
 import { mark } from './mark';
 import { useBar } from './camera';
+import { SHOT, type Glyph } from '@/capture/shots';
 
-type Glyph = 'garment' | 'label' | 'sole' | 'around' | 'cover' | 'barcode' | 'box' | 'plain';
-const SHOT: Record<string, { glyph: Glyph; title: string; line: string }> = {
-  front: { glyph: 'garment', title: 'The front', line: 'Lay it flat and fill the frame.' },
-  back: { glyph: 'garment', title: 'The back', line: 'Turn it over, same distance.' },
-  tag: { glyph: 'label', title: 'The tag', line: 'Close enough to read every word.' },
-  size_label: { glyph: 'label', title: 'The size label', line: 'Usually inside the tongue.' },
-  inside_tab: { glyph: 'label', title: 'The inside tag', line: 'Open it and get close to the tag.' },
-  back_or_stamp: { glyph: 'label', title: 'The back or stamp', line: 'Close enough to read the stamp.' },
-  model_plate: { glyph: 'label', title: 'The model plate', line: 'Usually underneath or on the back.' },
-  rating_plate: { glyph: 'label', title: 'The rating plate', line: 'Usually underneath or on the back.' },
-  model_date_label: { glyph: 'label', title: 'The model label', line: 'Usually underneath, with a date.' },
-  serial: { glyph: 'label', title: 'The serial number', line: 'Usually under the frame.' },
-  base: { glyph: 'label', title: 'The base', line: 'Turn it over and show the label.' },
-  soles: { glyph: 'sole', title: 'The soles', line: 'Both soles, side by side.' },
-  scan: { glyph: 'around', title: 'All the way round', line: 'Move slowly around it.' },
-  ring: { glyph: 'around', title: 'All the way round', line: 'Move slowly around it.' },
-  front_cover: { glyph: 'cover', title: 'The cover', line: 'Straight on, fill the frame.' },
-  back_barcode: { glyph: 'barcode', title: 'The barcode', line: 'Close enough to read the numbers.' },
-  box_or_set_front: { glyph: 'box', title: 'The box or set', line: 'Straight on, fill the frame.' },
-};
 const W = 160, SWEEP = 22;
 // The shot's short name, for the line at the top once the coach has faded.
 export const shotTitle = (step: string, words?: string) => SHOT[step]?.title ?? words ?? 'Next photo';
@@ -61,14 +43,18 @@ function Drawing({ glyph, ink }: { glyph: Glyph; ink: string }) {
       <Rect {...s} x={36} y={46} width={88} height={68} rx={6} />
       {[50, 56, 64, 70, 78, 84, 92, 100, 106, 112].map((x, i) => <Line key={x} {...s} strokeWidth={i % 3 === 0 ? 3 : 1.5} x1={x} y1={58} x2={x} y2={94} />)}
     </>;
+    case 'screen': return <><Rect {...s} x={44} y={22} width={72} height={116} rx={12} /><Line {...s} x1={56} y1={40} x2={104} y2={40} /><Line {...s} x1={56} y1={56} x2={96} y2={56} /><Line {...s} x1={56} y1={72} x2={100} y2={72} /></>;
     case 'box': return <Path {...s} d="M80 28 L126 52 L126 108 L80 132 L34 108 L34 52 Z M34 52 L80 76 L126 52 M80 76 L80 132" />;
     default: return <Rect {...s} x={38} y={30} width={84} height={100} rx={10} />;
   }
 }
 
-export function ShotGuide({ step, words }: { step: string; words?: string }) {
+export function ShotGuide({ step, family = null, words }: { step: string; family?: string | null; words?: string }) {
   const b = useBar(), still = useReducedMotion();
-  const shot = SHOT[step] ?? { glyph: 'plain' as Glyph, title: words ?? 'Next photo', line: '' };
+  const known = SHOT[step] ?? { glyph: 'plain' as Glyph, title: words ?? 'Next photo', line: '' };
+  // A front or back is drawn as a garment only for clothing; a card, a watch or something else gets the plain frame.
+  const flat = (step === 'front' || step === 'back') && family !== 'apparel';
+  const shot = flat ? { ...known, glyph: 'plain' as Glyph, line: step === 'front' ? 'Straight on, fill the frame.' : 'Turn it over, same distance.' } : known;
   const x = useSharedValue(-SWEEP);
   useEffect(() => {
     if (still) { x.set(0); return; }

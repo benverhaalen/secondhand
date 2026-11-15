@@ -54,10 +54,11 @@ export function check(plan) {
   return out;
 }
 
-// Codex reads every AGENTS.md from the folder it runs in up to the repo root, so a call run inside a repo is not fresh.
+// Codex reads every AGENTS.md from the Git root down to the folder it runs in, so a call run inside a repo is not fresh.
+// With no Git root it reads only the call's own folder (empty by the fresh check), so an AGENTS.md above, like one in the home, is not read.
 function insideRepo(folder) {
   for (let d = resolve(folder); ; d = dirname(d)) {
-    if (existsSync(join(d, 'AGENTS.md')) || existsSync(join(d, '.git'))) return d;
+    if (existsSync(join(d, '.git'))) return d;
     if (d === dirname(d)) return null;
   }
 }
