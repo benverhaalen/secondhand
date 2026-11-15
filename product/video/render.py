@@ -68,13 +68,13 @@ SCENES=[
  ('s02','big',("THE PROBLEM","Hundreds of photos.\nHours for one listing.","Shooting, sorting, writing, noting every flaw, pricing. Then again on the next site."),"I thrift most of my clothes, and I've grown out of a lot of them. I always mean to sell them, and they pile up in my room. One listing took me hours."),
  ('n03','phones',("SELL","Point the camera at it",None,['01-sell-what-are-you-selling-dark-phone.png','@work/devpost/photos/camera-madhacks-shirt.png']),"To sell something, you point the camera at it. It asks what it is, and only asks for the shots it needs."),
  ('s06','phones',("SELL","AI fills it in.\nYou confirm.",None,['02-sell-capture-facts-read-dark-phone.png','03-sell-capture-confirm-condition-dark-phone.png','04-sell-capture-ready-for-draft-dark-phone.png']),"It reads the brand, the model and the size off the tag. I confirm them, and I set the condition myself. These are my own jeans."),
- ('s07','phones',("SELL","A price from what sold",None,['06-sell-review-item-dark-phone.png','07-sell-review-item-details-dark-phone.png','08-sell-price-guidance-dark-phone.png']),"The price comes from what similar things sold for. If it can't tell what something is, it doesn't guess."),
- ('s10','phones',("SELL","A listing built for each site",None,['09-sell-listing-preview-dark-phone.png','10-sell-finish-on-a-site-dark-phone.png']),"Then it builds a listing for each site. No chatbot writes it. I read the draft, and I'm the one who posts it."),
- ('n07','phones',("EVERY MARKETPLACE","One item, every site",None,['20-stage-plan-dark-phone.png','21-stage-listings-per-site-dark-phone.png','22-stage-listings-more-sites-dark-phone.png']),"It's built for every marketplace at once. Each site gets its own title and price, and I see what I'd keep after fees."),
+ ('s07','phones',("SELL","A price from what sold",None,['06-sell-review-item-dark-phone.png','08-sell-price-guidance-dark-phone.png']),"The price comes from what similar things sold for. If it can't tell what something is, it doesn't guess."),
+ ('s10','phones',("SELL","A listing built for each site",None,['09-sell-listing-preview-dark-phone.png']),"Then it builds a listing for each site. No chatbot writes it. I read the draft, and I'm the one who posts it."),
+ ('n07','phones',("EVERY MARKETPLACE","One item, every site",None,['20-stage-plan-dark-phone.png','21-stage-listings-per-site-dark-phone.png']),"It's built for every marketplace at once. Each site gets its own title and price, and I see what I'd keep after fees."),
  ('n08','phones',("SELL","Everything you're selling",None,['11-sell-listings-dark-phone.png','12-sell-item-page-dark-phone.png']),"All my listings live in one place, whatever site they're on."),
- ('n09','phones',("TODAY","One short list of what needs you",None,['13-today-decisions-dark-phone.png','19-stage-item-draft-dark-phone.png']),"And Today is one short list of what needs me, like an offer on something I'm selling."),
+ ('n09','phones',("TODAY","One short list of what needs you",None,['13-today-decisions-dark-phone.png']),"And Today is one short list of what needs me, like an offer on something I'm selling."),
  ('s11','phones',("BUY","One search, every marketplace",None,['15-buy-search-building-dark-phone.png','16-buy-search-results-dark-phone.png']),"Buying works the other way around. One search reads the marketplaces at once."),
- ('s12','phones',("BUY","Answers shaped like the question",None,['17-buy-chat-answer-table-and-range-dark-phone.png','18-buy-chat-question-chips-dark-phone.png']),"Ask a follow-up, and you get a table or a price range. Every price in it is checked against a real listing."),
+ ('s12','phones',("BUY","Answers shaped like the question",None,['@work/video/17-cropped.png','@work/video/18-cropped.png']),"Ask a follow-up, and you get a table or a price range. Every price in it is checked against a real listing."),
  ('n12','phones',("BUY","Know what it's worth",None,['14-buy-appraised-worth-dark-phone.png']),"It can tell me what something is worth, or keep looking for the one I want, at my price."),
  ('s08','big',("BACKTEST","41.9k real sales.\n96% priced within 20%.","We hid each sale, priced it from earlier sales only, and compared."),"We tested that on forty-two thousand real sneaker sales. We hid each sale, priced it from the ones before it, and compared. On a hundred dollar pair, it's usually off by about four dollars."),
  ('s09','big',("DATABRICKS","Why that price?","why(id) opens any price to the exact sales behind it and rebuilds the number. 42,399 of 42,405 matched."),"You can also ask why. On Databricks, any price opens up to the exact sales behind it. We wrote a function that rebuilds the number from those sales, and it matched on all but six."),
@@ -109,8 +109,7 @@ def build(kind,a):
         ImageDraw.Draw(ph).rounded_rectangle((0,0,w-1,h-1),radius=46,outline=(70,76,80,255),width=2)
         p2=phone(shot); return L+[('phone',ph,1010,90,0.18),('phone',p2,1010+w+44,90,0.34)]
     k,hd,sub,names=a
-    hh={1:900,2:900,3:780}[len(names)]; ps=[phone(n,hh) for n in names]; gap=40; tot=sum(p.width for p in ps)+gap*(len(ps)-1); x=W-110-tot
-    tb=textblock(k,hd,sub,maxw=min(760,x-140-70)); L=[('text',tb,140,(H-tb.height)//2,0)]
+    hh=980; ps=[phone(n,hh) for n in names]; gap=70; tot=sum(p.width for p in ps)+gap*(len(ps)-1); x=(W-tot)//2; L=[]   # app screens carry the scene: no words beside them
     for i,p in enumerate(ps): L.append(('phone',p,x,(H-hh)//2,0.12+0.12*i)); x+=p.width+gap
     return L
 out=sys.argv[1] if len(sys.argv)>1 else 'work/video/secondhand-v1-silent.mp4'
