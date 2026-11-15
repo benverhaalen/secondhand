@@ -105,17 +105,22 @@
     const dap = intro.querySelector('.dap'), [h1, h2] = dap.querySelectorAll('.hand'), word = dap.querySelector('.intro-word');
     const g = (window.fitHands && fitHands(dap, word, [h1, h2])) || 24;
     const W = word.scrollWidth; word.style.width = '0px';
-    lockup.style.visibility = 'hidden';
-    const ease = 'cubic-bezier(.2,.8,.2,1)', inout = 'cubic-bezier(.65,0,.35,1)', run = [];
-    // 1. The hands come in from either side and meet.
-    run.push(h1.animate([{ transform: 'translateX(-45vw) scaleX(-1) rotate(-28deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'translateX(3px) scaleX(-1) rotate(-10deg)', opacity: 1 }], { duration: 520, easing: ease, fill: 'forwards' }));
-    run.push(h2.animate([{ transform: 'translateX(45vw) rotate(-28deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'translateX(-3px) rotate(-10deg)', opacity: 1 }], { duration: 520, easing: ease, fill: 'forwards' }));
-    // 2. The dap: a small bump where they meet.
-    run.push(dap.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: 220, delay: 500, easing: 'ease-out' }));
-    // 3. They part, and the wordmark is between them.
-    run.push(h1.animate([{ transform: 'translateX(3px) scaleX(-1) rotate(-10deg)', marginRight: '0px' }, { transform: 'scaleX(-1)', marginRight: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
-    run.push(h2.animate([{ transform: 'translateX(-3px) rotate(-10deg)', marginLeft: '0px' }, { transform: 'none', marginLeft: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
-    run.push(word.animate([{ width: '0px', opacity: 0 }, { width: `${W}px`, opacity: 1 }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
+    lockup.style.visibility = 'hidden'; intro.classList.add('playing');
+    // Stop motion, not smooth (Ben, 08:31): every move jumps from frame to frame, about ten frames a second.
+    const run = [], hold = { fill: 'forwards' };
+    // 1 and 2. The dap, from Codex's sprite (sprites/dap.svg, 8 frames of 48 by 24): the hands come in, meet and bump,
+    // frames 1 to 5. The sprite is scaled so its hands stand as tall as the hands beside the word.
+    const sprite = intro.querySelector('.sprite'), u = h1.getBoundingClientRect().height / 19;
+    Object.assign(sprite.style, { width: `${48 * u}px`, height: `${24 * u}px` });
+    for (const i of sprite.children) run.push(i.animate([{ maskPosition: '0% 0' }, { maskPosition: `${400 / 7}% 0` }], { duration: 500, easing: 'steps(5, jump-none)', ...hold }));
+    run.push(sprite.animate([{ visibility: 'visible' }, { visibility: 'hidden' }], { duration: 1, delay: 640, ...hold }));
+    for (const h of [h1, h2]) run.push(h.animate([{ visibility: 'hidden' }, { visibility: 'visible' }], { duration: 1, delay: 640, ...hold }));
+    // 3. They part, and the wordmark is between them, in four frames.
+    const part = { duration: 400, delay: 680, easing: 'steps(4, jump-end)', ...hold };
+    run.push(h1.animate([{ marginRight: '0px' }, { marginRight: `${g}px` }], part));
+    run.push(h2.animate([{ transform: 'scaleX(-1)', marginLeft: '0px' }, { transform: 'scaleX(-1)', marginLeft: `${g}px` }], part));
+    run.push(word.animate([{ width: '0px', opacity: 0 }, { width: `${W}px`, opacity: 1 }], part));
+    const inout = 'cubic-bezier(.65,0,.35,1)';
     // 4. The mark settles into the header, and the page comes up under it.
     const settle = () => {
       const a = dap.getBoundingClientRect(), b = lockup.getBoundingClientRect(), k = b.height / a.height;
@@ -125,7 +130,7 @@
       go.finished.then(() => { lockup.style.visibility = ''; intro.remove(); });
     };
     let done = false; const finish = () => { if (done) return; done = true; settle(); };
-    setTimeout(finish, 1360);
+    setTimeout(finish, 1300);
     // A click or a key skips the open.
     addEventListener('pointerdown', () => { if (done) return; run.forEach(a => a.finish()); finish(); }, { once: true });
     addEventListener('keydown', () => { if (done) return; run.forEach(a => a.finish()); finish(); }, { once: true });

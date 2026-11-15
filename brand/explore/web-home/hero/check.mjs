@@ -8,14 +8,21 @@
 // then "See how it works". Writes out/: one still per screen, menu.jpg, screens.jpg and audit.json, and the
 // recordings open-390.mp4 and open-1440.mp4 when asked for. Exits 1 when a screen breaks.
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readdirSync, readFile, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { extname, join, relative, resolve } from 'node:path';
+import { createServer } from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { brandFaces, check, playwright } from '../../../../scripts/brand-check.mjs';
 import { contrastFloor } from '../boards/audit.mjs';
 
 const here = import.meta.dirname, root = resolve(here, '../../../..'), out = join(here, 'out'), file = join(here, 'index.html');
+// Served over http, as a visitor gets it: Chrome will not load a CSS mask (the dap sprite) from a file:// page.
+const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.webp': 'image/webp', '.png': 'image/png', '.jpg': 'image/jpeg' };
+const server = createServer((req, res) => { const p = join(root, decodeURIComponent(new URL(req.url, 'http://x').pathname)); if (!p.startsWith(root)) { res.writeHead(403).end(); return; }
+  readFile(p, (err, body) => { if (err) res.writeHead(404).end(); else res.writeHead(200, { 'content-type': types[extname(p)] ?? 'application/octet-stream' }).end(body); }); });
+await new Promise(ok => server.listen(0, '127.0.0.1', ok));
+const url = `http://127.0.0.1:${server.address().port}/${relative(root, file)}`;
 mkdirSync(out, { recursive: true });
 const faces = brandFaces(readFileSync(join(root, 'brand/tokens.css'), 'utf8'));
 if (!faces) console.warn('warn: the brand faces are not here, so this uses a fallback face. Set BRAND_FONTS.');
@@ -28,7 +35,7 @@ const open = async (w, h, opts = {}, query = '?intro=0') => {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2, hasTouch: touch, isMobile: touch && w < 900, ...opts });
   const page = await ctx.newPage(); page.errors = []; page.on('pageerror', e => page.errors.push(e.message));
   if (faces) await page.addInitScript(css => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = css; document.head.append(s); }); }, faces);
-  await page.goto(pathToFileURL(file).href + query); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(400);
+  await page.goto(url + query); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(400);
   return { ctx, page };
 };
 
@@ -102,6 +109,6 @@ await p.screenshot({ path: join(out, 'screens.jpg'), type: 'jpeg', quality: 82, 
 rmSync(tmp, { recursive: true, force: true });
 
 writeFileSync(join(out, 'audit.json'), JSON.stringify(audit, null, 2) + '\n');
-await browser.close();
+await browser.close(); server.close();
 console.log(`${audit.brand_errors.length} brand error(s); ${broken} screen problem(s)`);
 process.exit(broken ? 1 : 0);

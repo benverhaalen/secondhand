@@ -2,13 +2,13 @@
 body { overflow-x: hidden; }
 header { color: var(--ink); }
 .lockup { display: inline-flex; align-items: center; text-decoration: none; }
-/* The hands: four-finger-03, the left one turned so both thumbs point at the word. Each carries one ring color, so the
+/* The hands: four-finger-03, the right one turned so both thumbs point out, as in the dap sprite. Each carries one ring color, so the
    wordmark keeps its ink (C1) and the color sits beside it (Ben, 08:31: "make the wordmark text use color"). hands-fit.js
    sizes them to the wordmark's ink. */
 .hand { flex: none; color: var(--sky); overflow: visible; }
 .hand:last-of-type { color: var(--mint); }
 .lockup .hand, .dap .hand { width: 24px; height: 24px; }
-.lockup .hand:first-child, .dap .hand:first-child, .hl-lock .hand:first-child { transform: scaleX(-1); }
+.lockup .hand:last-child, .dap .hand:last-child, .hl-lock .hand:last-child { transform: scaleX(-1); }
 .hl-lock { white-space: nowrap; }
 
 .hero { position: relative; isolation: isolate; min-height: max(100svh, 560px); display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: 72px var(--mx) var(--s-9); overflow: hidden; background: var(--page); }
@@ -44,7 +44,13 @@ header { color: var(--ink); }
 .intro { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--page); color: var(--ink); }
 .dap { display: flex; align-items: center; transform-origin: 0 0; }
 .dap .hand { width: 48px; height: 48px; }
-.dap .hand:last-child { transform: scaleX(-1); }
+/* the dap sprite: Codex's eight frames, stepped through as a mask, the left half in sky and the right in mint */
+.intro > * { grid-area: 1 / 1; }
+.sprite { position: relative; visibility: hidden; }
+.sprite i { position: absolute; inset: 0; background: var(--sky); clip-path: inset(0 50% 0 0);
+  -webkit-mask: url(../sprites/dap.svg) 0 0 / 800% 100% no-repeat; mask: url(../sprites/dap.svg) 0 0 / 800% 100% no-repeat; }
+.sprite i + i { background: var(--mint); clip-path: inset(0 0 0 50%); }
+.intro.playing .sprite { visibility: visible; } .intro.playing .dap .hand { visibility: hidden; }
 .intro-word { font: var(--w-display) 42px/1 var(--font-display); letter-spacing: var(--tr-21); white-space: nowrap; overflow: hidden; display: inline-block; }
 html.no-intro .intro { display: none; }
 @media (prefers-reduced-motion: reduce) { .intro { display: none; } }
