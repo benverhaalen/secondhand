@@ -833,3 +833,7 @@ Ben, project chat, 02:52 UTC, in full.
 ## 2026-11-15 packets to nate for the backend, and building in parallel
 Ben, project chat, 02:52 UTC.
 > also ensure you are sending packets to nate for anything his backend work might need. ensure you understand building in parallel.
+
+## 2026-11-14 nate the entire product is finished by 3 am, with leeway to 7 am
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about 21:00 Central.
+> When you say tonights settled items, understand that the entire product must be finished by 3 am, with some leeway up to 7 am
