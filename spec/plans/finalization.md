@@ -104,17 +104,17 @@ The [coverage map](../../databricks/COVERAGE.md) (2026-11-15, read from the file
 
 | Id | Fix | Proof | State |
 |---|---|---|---|
-| DB9 | A `source_rights` row for each live source (eBay, Mercari, Poshmark, Depop pages; Apify shown-only, `may_model` false, `hackathon_demo`), and the loader refuses a line looser than its source's row | A loader test per source; `measures.model_clearance` lists every live site | Proposed |
-| DB10 | A daily sweep deletes observations past `keep_until` or the source's `ttl_hours` | A test with one expired and one live row | Proposed; a schedule spends credit, so Nate's yes first |
-| DB11 | Every nightly fold task runs or says why: the eight engines without a Spark `main()` stop reporting a green skip, the person fold is found, capture and photo get tasks (with the engines lead, who owns the engine twins) | `fold.run` returns `ran` or a stated reason for all eleven | Proposed |
-| DB12 | The brand measure and the attribute record have a job: read `market.listing_obs`, build the record, run `jobs/measures/brand_premium.py`, export the `brand_premium` row (DB4) | `jobs/measures/test_brand_premium.py` and a fold test on seeded rows | Proposed |
-| DB13 | Per-person rows (messages, offers, orders) stay in Lakebase only, or reach Delta with `user_id` so the purge finds them | Nate's scope call; then an export test and a purge test for one user | Nate's call |
-| DB14 | Guard rules for a null-owner row whose `rights_mode` is not `public`, any Dupe row, an Apify row with `may_model` true, message text in `log_event` | `databricks/test_guard.py`, one seeded bad row per rule | Proposed |
-| DB15 | The similar group as a SQL function over `market.listing_obs`, in place of the paid Vector Search index (MI4, Nate: no paid Vector Search) | A seeded case in `15_market_check.sql` | Proposed |
-| DB16 | Search stage counts and capture question counts (ids and counts only) as `measures.search_stage` and `measures.capture_question` | Counts by source add up to rows found (SR6) | Proposed |
-| DB17 | `measures.rights_audit` covers `core.observation` bases and flags a `dataset:` basis in a current-price metric | `databricks/test_governance.mjs`, one seeded violation of each | Proposed |
-| DB18 | `measures.term_list` from the Mercari competition set, with no price column (word lists and structure, never a current price) | A schema test that the output has no price field | Proposed |
-| DB19 | Mercari Kaggle reloaded from the corrected freeze (32 columns; the volume holds the 34-column file, so descriptions sit in the wrong column) | `comp` row count unchanged at 1,481,418 and `description` non-empty on Mercari rows | Built in the repo (manifest 4cb07c1b); the pipeline refresh spends credit, so Nate's yes first |
+| DB11 | A `source_rights` row for each live source (eBay, Mercari, Poshmark, Depop pages; Apify shown-only, `may_model` false, `hackathon_demo`), and the loader refuses a line looser than its source's row | A loader test per source; `measures.model_clearance` lists every live site | Proposed |
+| DB12 | A daily sweep deletes observations past `keep_until` or the source's `ttl_hours` | A test with one expired and one live row | Proposed; a schedule spends credit, so Nate's yes first |
+| DB13 | Every nightly fold task runs or says why: the eight engines without a Spark `main()` stop reporting a green skip, the person fold is found, capture and photo get tasks (with the engines lead, who owns the engine twins) | `fold.run` returns `ran` or a stated reason for all eleven | Proposed |
+| DB14 | The brand measure and the attribute record have a job: read `market.listing_obs`, build the record, run `jobs/measures/brand_premium.py`, export the `brand_premium` row (DB4) | `jobs/measures/test_brand_premium.py` and a fold test on seeded rows | Proposed |
+| DB15 | Per-person rows (messages, offers, orders) stay in Lakebase only, or reach Delta with `user_id` so the purge finds them | Nate's scope call; then an export test and a purge test for one user | Nate's call |
+| DB16 | Guard rules for a null-owner row whose `rights_mode` is not `public`, any Dupe row, an eBay-sourced row (direct or through an Apify actor) with `may_model` true, message text in `log_event` | `databricks/test_guard.py`, one seeded bad row per rule | Proposed |
+| DB17 | The similar group as a SQL function over `market.listing_obs`, in place of the paid Vector Search index (MI4, Nate: no paid Vector Search) | A seeded case in `15_market_check.sql` | Proposed |
+| DB18 | Search stage counts and capture question counts (ids and counts only) as `measures.search_stage` and `measures.capture_question` | Counts by source add up to rows found (SR6) | Proposed |
+| DB19 | `measures.rights_audit` covers `core.observation` bases and flags a `dataset:` basis in a current-price metric | `databricks/test_governance.mjs`, one seeded violation of each | Proposed |
+| DB20 | `measures.term_list` from the Mercari competition set, with no price column (word lists and structure, never a current price) | A schema test that the output has no price field | Proposed |
+| DB21 | Mercari Kaggle reloaded from the corrected freeze (32 columns; the volume holds the 34-column file, so descriptions sit in the wrong column) | `comp` row count unchanged at 1,481,418 and `description` non-empty on Mercari rows | Built in the repo (manifest 4cb07c1b); the pipeline refresh spends credit, so Nate's yes first |
 
 ## 6. The app (lead: app wiring; the look is Ben's)
 
@@ -129,6 +129,20 @@ The [coverage map](../../databricks/COVERAGE.md) (2026-11-15, read from the file
 ## 7. Capture, and the website
 
 - **Capture has its own lead** (identify, classify, clarifying questions), started on Nate's word "Get this going too" ([words](../../product/words.md#2026-11-15-nate-get-identification-listing-classification-and-the-generative-clarifying-ui-built)), from the capture [handoff](../../.agents/team/packets/team/72-capture-handoff.md). In order: a research note on identifying an item from its photos (code first, then visual search, open-source tools, then paid services priced and left to Nate), the identify step as a job, listing classification per site, the clarifying questions as data with prefilled choices, real uploads, then the LiDAR module and the parts of an item. For measuring, the app review's answer to "Object Capture, or no?": build ARKit scene depth first as a local module (a size in seconds, from iOS 14, needs a development build), Object Capture second for rigid goods; RoomPlan is for rooms and is the wrong tool.
+- **Capture's state at the wrap-up (2026-11-15, the fourth capture lead; detail in [packet 72](../../.agents/team/packets/team/72-capture-handoff.md) section 00):**
+
+  | Piece | State | Proof or what it needs |
+  |---|---|---|
+  | Research note, identifying an item from photos, with treg's prices | done (d5bf3ffe, 84dd5896) | [the note](../../research/identify/nate/identify-from-photos-2026-11.md); not given a fresh review |
+  | Design: the identify job, the paid Lens rung (Nate: "yes"), classification, questions ordered by what they narrow | done (ab4aabb1, c616b4e7, 84dd5896, a062bac9) | [capture.md §5](../engines/capture.md#the-identify-job) |
+  | Listing classification and the plan's new order | merged (dfcab2c6) | Mac: classify 14, plan 62, walk 11 byte-identical, captures 139; two review rounds |
+  | The identify engine | on `w/cap-identify-1`, round 3 running | the second review found five wrong facts on edge tags; needs round 3 green and a third review |
+  | The route join (identify as a job, site questions answerable, photos with text and codes, the Blobs upload target) | brief written, not started (`brief-cap-identify-2.txt`) | waits on the identify engine merging and the server lead's `blobs.ts` |
+  | Real uploads | agreed: the server lead's `Blobs` port | waits on `blobs.ts` landing |
+  | The question widgets, client verbs and dev screen | worker `cap-ask-1` running | overlaps Ben's `app/src/capture/client.ts` (packet 83): keep one client |
+  | The LiDAR module | on `w/cap-depth-1` (bcbff73c), Ben's packet 87 on main | geometry 9 and fallback 3 pass, unsigned iOS build succeeded; a fresh review was running |
+  | Parts of one item (F17) | parked on `w/cap-parts-1` | three parser tests red; conflicts with dfcab2c6 in `plan.ts` and `select.ts` |
+
 - **The website waits until the system works**, as Nate said. A draft front for the buying conversation is parked on `w/buy-web-1`; it needs the server hosted before it can show anything real. A preview on Vercel is public, so it needs Nate's yes.
 
 ## 8. What the Mac tests without a person
