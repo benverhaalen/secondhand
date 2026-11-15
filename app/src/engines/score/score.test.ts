@@ -43,7 +43,10 @@ test('a hidden axis leaves the available utility score shown', () => {
   const out = successScore(x); assert.equal(out.state, 'shown'); assert.equal(out.value, Math.round(100 * 3900 / 4900)); assert.equal(out.band, 'on_track');
 });
 test('unavailable best hides while missing axes retain a utility score', () => {
-  assert.equal(successScore({ ...fixture(), best: null }).value, null);
+  const out = successScore({ ...fixture(), best: null });
+  assert.equal(out.value, null);
+  assert.equal(out.state, 'hidden');
+  assert.equal(out.hide_reason, 'source_gap');
   assert.equal(successScore({ ...fixture(), axes: [] }).state, 'shown');
 });
 test('zero and negative best utilities stay shown with the bounded utility ratio', () => {
@@ -59,6 +62,7 @@ test('unlabelled zero placeholders without price evidence mean best is unavailab
   const empty = {expected_keep_cents:0,expected_days:0,holding_cost_cents:0};
   const x = {...fixture(),now:empty,best:empty,basis:[],axes:[]};
   assert.equal(successScore(x).state,'hidden');
+  assert.equal(successScore(x).hide_reason,'source_gap');
   assert.equal(successScore({...x,basis_level:'prior'}).state,'shown');
 });
 test('planted price fix below floor is never recommended', () => {

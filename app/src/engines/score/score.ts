@@ -75,7 +75,7 @@ export function successScore(x: ScoreInput) {
         return { ...c, projected: { expected_keep_cents: projected.keep_cents, expected_days: projected.days, holding_cost_cents: projected.holding_cost_cents }, points: ratio(projected.utility_cents) - raw!, proof: guard(answer(ratio(projected.utility_cents) - raw!, x.basis, { metric: 'score.change', filters: { kind: c.kind, price_cents: c.price_cents }, table_versions: [], definition_version: 'score.success.U_now/U_best', code_version: 'ss-1', param_versions: versions, model_version: null }, x.as_of), guardRules) };
       }).filter(c => c.points > 0 && c.proof.state === 'shown').sort((a, b) => b.points - a.points || a.kind.localeCompare(b.kind) || (a.price_cents ?? 0) - (b.price_cents ?? 0));
     return { subject_type: 'listing', subject_id: x.listing_id, site: x.site, axis: 'success', state, value: raw, basis_level,
-      band, hide_reason: state === 'hidden' ? 'best_unavailable' : null,
+      band, hide_reason: state === 'hidden' ? 'source_gap' : null,
       provisional: !receipt, parts: { now, best, axes: x.axes }, change: changes[0] ?? null,
       citation_id: proof.ok ? proof.citation.id : null, citation: proof.ok ? { ...proof.citation, param_versions: versions } : null, model_version: null };
   });
