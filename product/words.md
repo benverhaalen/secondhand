@@ -2442,3 +2442,15 @@ Nate, the search lead's session, 2026-11-15, about 14:03 UTC, answering whether 
 > well, no, if we can't determine price, we maybe grab details on how many lsitings are there, and that indicates something, perhaps that none are being sold, that it was popular, theres alot there
 
 Used in: [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate systems working before the look
+Nate, the app's native-walks lead session, 2026-11-15, about 14:05 UTC, while the walks were reading screenshots against the brand card.
+> dont focus on ui as much as you should getting every system to work. then we can return
+
+Used in: section 6 of [finalization.md](../spec/plans/finalization.md) (the native walk table lists each failing system with its owner; the look findings are parked for Ben).
+
+## 2026-11-15 nate the browser sign-in window works end to end
+Nate, the app's native-walks lead session, 2026-11-15, about 13:40 UTC.
+> ensure the browser actions work, like the sesion window pops up for the user to authenticate, answer 2fa if needed, etc
+
+Used in: the connect walk in section 6 of [finalization.md](../spec/plans/finalization.md); `app/src/account/services.tsx`, `app/src/edge/connect/hosted.ts`.
