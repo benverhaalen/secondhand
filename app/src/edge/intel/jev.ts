@@ -4,7 +4,7 @@
 import { consoleSink, createLog, type Log } from '../../../../log/index.js';
 
 export const JEV_ENDPOINT = 'https://openrouter.ai/api/alpha/decisions';
-export const JEV_MODEL = 'typesafe/jev-1.14'; // the version pinned in ~/.claude/jev.json
+export const JEV_MODEL = 'typesafe/jev-1.14'; // copied from the pin in ~/.claude/jev.json on 2026-11-14; the edge runs off this machine, so it is a constant here
 export const JEV_BUDGET_MS = 400; // §5
 
 export interface JevChoiceQuestion { type: 'choice'; instructions: string; criteria: Record<string, string | null> }
