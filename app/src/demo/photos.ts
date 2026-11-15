@@ -29,4 +29,21 @@ const LOGOS: Record<Site, ImageSourcePropType> = {
 };
 
 export const photo = (key: PhotoKey): ImageSourcePropType => PHOTOS[key];
+
+// The cover as shot, cleaned up and redrawn, for the items whose photos the studio has already been run on, so the Post
+// preview can show the difference live (Ben, 08:12: "photos before after done already ... quickly toggle on off the
+// beautification (both the non ai and the ai one)"). Cleaned up is jobs/studio/slides_run.py level0: one exposure gain on
+// all three channels, so no color moves. Redrawn is that run's cover, which passed the photo check and the tape
+// (research/studio/ben/slides/runs/20261115-0652-43687372523); it was drawn by Nano Banana and is swapped for a Seedream 5.5
+// render once one passes the same check.
+export type Look = 'original' | 'clean' | 'ai';
+const STUDIO: Partial<Record<PhotoKey, Record<Look, ImageSourcePropType>>> = {
+  'marquette-tee': {
+    original: require('../../assets/demo/items/studio/marquette-tee/original.jpg'),
+    clean: require('../../assets/demo/items/studio/marquette-tee/clean.jpg'),
+    ai: require('../../assets/demo/items/studio/marquette-tee/ai.jpg'),
+  },
+};
+export const hasStudio = (key: PhotoKey): boolean => key in STUDIO;
+export const studio = (key: PhotoKey, look: Look): ImageSourcePropType => STUDIO[key]?.[look] ?? PHOTOS[key];
 export const logo = (site: Site): ImageSourcePropType => LOGOS[site];
