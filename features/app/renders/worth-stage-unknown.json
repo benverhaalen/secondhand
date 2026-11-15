@@ -2,33 +2,25 @@
   "route": "worth?stage=unknown",
   "screen": "worth",
   "states": [
-    "unknown"
+    "unknown",
+    "loading",
+    "failed",
+    "offline"
   ],
+  "skip": "empty: Worth is of one thing, so it has no list to be empty; one: it is always one thing; dense: one thing a page, so nothing piles up",
   "status": "fail",
   "findings": [
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "screen <div>",
-      "msg": "has a fill of rgb(242, 242, 242), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen <button>",
-      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
-    },
-    {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"worth\"",
-      "msg": "is not drawn in the states new, empty, one, typical, dense, loading, failed, offline: draw each, or say why it can't happen with data-skip=\"new: why\""
-    },
     {
       "level": "warn",
       "id": "B3",
       "where": "app",
       "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "error",
+      "id": "B35",
+      "where": "screen \"worth\"",
+      "msg": "is not drawn in the states new, typical, at /worth?stage=unknown?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
     }
   ]
 }
