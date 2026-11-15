@@ -1103,3 +1103,21 @@ Ben, project chat, 05:37:
 > if i tell you about a skill and its not in the repo i probably want you to fetch it
 
 Used in: [AGENTS.md](../AGENTS.md#how-to-work-here), [.agents/vendor/poteto/](../.agents/vendor/poteto/SOURCE.md), [.agents/skills/hillclimb](../.agents/skills/hillclimb/SKILL.md).
+
+## 2026-11-15 what could dock us points, mitigated everywhere
+Ben, thread "Prepare the pitch, Q&A and video" (relayed), 2026-11-15 05:36 UTC.
+> there are also a lot of things that could 'dock us points' when being compared to other projects. the goal in our project and our pitch and our website and our demos is to mitigate each one and show that we have thoroughly thought about it
+
+Used in: [qa.md](qa.md#where-judges-dock-points).
+
+## 2026-11-15 a demo that stuns, science-fair judging, and claims that change how judges see it
+Ben, project chat (relayed), 2026-11-15 05:41 UTC.
+> also figuring out the ranking of demoing capabilities. where we can show it to anyone live and it works so well and so fast that we just stun everyone. its so polished and so finished that judges question how we did it in 24 hours. it looks so un-ai slop. also the website should use expert ui ux practices for being viewed on mobile. also say like app store coming soon or something. the hackathon judging works in a science fair style. its very similar to last year's judging. 6 get chosen as finalists, then the prizes get judged as a whole from those. i also want to jot down claims we can make about the thing to try and improve how they view it. like one is we applied to the app store. one is the actual deployed site. one is having a video. one is having a really really well written devpost. i mean considering we can only live demo the app we really need the written portions to convey its use and what it does super well and super easily. we need to be personable. the judges should see us as a breath of fresh air. think of all the unique engineering weve done. we can also pitch about thinking about costs too. data. how we have humans in the loop and use graphics and examples to show how extensively we have thought about this. really communicate how sophisticated the technology we are using is.
+
+Used in: [pitch.md](pitch.md#the-table-demo-science-fair-judging), [devpost.md](devpost.md).
+
+## 2026-11-15 both sides in the demo, why people want it, and free as the business model
+Ben, thread "Prepare the pitch, Q&A and video", 2026-11-15 05:43 UTC.
+> i think showing buying and selling - both sides to capture as much of the audience as possible. we should know why people would die to download this. you have all this stuff. this is the easiest way to sell it, optimized to save you the most time and get you the most money, as cheaply as possible. and its completely free because this is how we propose this is a viable business model because of all the other business models. market research. where our market reach could be. where our market doesnt reach. here is what we need to make this viable. here are the hurdles we may run into. keeping it extremely honest
+
+Used in: [business.md](business.md), [pitch.md](pitch.md#what-to-show-ranked).

@@ -51,7 +51,7 @@ Ben, 05:36: "there are also a lot of things that could 'dock us points' when bei
 | 13 | Privacy: passwords, buyer messages, photos | eBay's own sign-in; the site's real login page for the others; we keep the session, not the password unless opted in; faces and mail blurred on the phone; message text never logged | Q&A only | FAQ: Do you see my passwords? | the blur on a shot with mail in it | |
 | 14 | Scope over polish: many features, none finished | one path finished end to end (photo to live to sold to down); the rest shown as design, honestly | the demo is one item, start to finish | | one item, start to finish | |
 | 15 | No proof anyone wants it | outside numbers (56% would pay someone to handle reselling; 8.6% of cheap eBay listings sell in 30 days) and Ben's own stopwatch run | Problem beat | Home: the $3 against $17 card | | Ben listing one item by hand against with secondhand |
-| 16 | No business model | free to list, a capped share of what sells; buyers free with referrals that never change ranking ([§9](#9-business-model)) | one line at the close if asked | FAQ: What does secondhand cost? says not set | | |
+| 16 | No business model | free for sellers and buyers; buying-side referrals, studio photos and a reseller plan pay for it ([business](business.md)) | one line at the close: "free, because listing costs us cents" | FAQ: What does secondhand cost? | | cost per listing |
 | 17 | Platforms will shut it down | we bring supply, which ThredUp names as the market's constraint, and the sites keep their fees; official APIs and partner programs where they exist | Q&A only | | | |
 | 18 | Unmeasured speed claims | only the measured clock; "seconds" in the name, never a minute count we didn't time | the clock on screen | | the timer runs live | time from first photo to live |
 | 19 | The repo doesn't reproduce, or CI is red | the README's run steps work from a clean clone; CI green on main before judging (it was red on 2026-11-15 05:30 UTC: `data.test.ts`, `sql.test.ts`, app-check, e2e) | | link to the repo | | |
@@ -191,7 +191,7 @@ Three parts, in this order on stage:
 3. **The real photo is always first** on every site. AI photos come after it.
 
 **Can you measure it?**
-Yes, and the honest way is to test the checker on lies we plant ourselves: take real items, make AI versions, then deliberately erase a stain, change the tag's size, shift the color. Report two numbers: how many planted lies it caught, and how many honest photos it wrongly blocked. The benchmark thread is running this; quote its numbers only. For a judge, show one item as a side by side with a slider, a difference heat map, and the flaw boxes outlined on both. The thresholds were set on 3 items and 6 renders, so call them uncalibrated until that run is in.
+Yes, and we did it on lies we planted ourselves ([numbers](numbers.md#the-mentors-questions-answered-with-numbers), measured). On Ben's 19 real photos we painted out details (a print, a label, a flaw), shifted the color and mirrored the photo: the check caught **116 of 117**. The one miss was a 24 px patch, 0.14% of the photo. It errs toward holding: 17 of 38 honest relights were held too, and then the real photo is used, so a held render costs a nicer photo, never a false one. The no-model Clean up edited 76 of 76 photos without moving the item's color past the limit (largest move 1.89 CIEDE2000, limit 2.0). For a judge, show [gate-side-by-side.jpg](../scripts/bench/out/gate-side-by-side.jpg): the real photo, an honest relight that passed, and the same relight with the print painted out, held, with the box that failed. Re-run: `python3 scripts/bench/gate.py`.
 
 **What stops the AI from telling a buyer something false?**
 Plain code decides every offer and every fact; the model only words the reply. Before anything is sent, each claim in it is matched to a fact on the item. A claim with no backing ("smoke-free home" when you never said so) holds the message and shows you the claim: Send without it, Edit, or It's true, which saves it as a fact ([messages, evidence gate](../spec/features/messages.md#evidence-gate)). Small fact-checking models alone miss about one claim in four, so the deterministic match runs first.
@@ -264,7 +264,7 @@ We never hold money, so refunds always happen on the site, under its rule, and a
 ## 8. Cost
 
 **What does one listing cost you to run?**
-Give the benchmark sheet's measured number. Until then, the shape (*inferred* from list prices): a vision call to identify, a few short text calls for the per-site drafts, a few minutes of cloud browser to post to four sites ($0.06 per browser-hour, billed by the started minute, so about a cent), and optionally AI photos. The surprise is that watching costs more than posting: checking a signed-in account every 2 minutes is up to 720 browser-minutes a day, about $0.72 per account per day, so checks back off when an account is quiet, and Poshmark and Mercari use the free public page instead ([Browser Use reference](../research/cross-cutting/nate/browser-use-cloud.md), [packet 49](../.agents/team/packets/team/49-handoff-to-the-mac-session.md)).
+About **$0.03 to $0.10** per item, or $0.28 to $0.35 with studio photos; an estimate from observed list prices, not yet billed ([numbers](numbers.md#what-a-listing-costs-us)). Identify is a cent or a few; posting to four sites is under 2 cents of cloud browser; the studio relight is the biggest line at about $0.25. The trap is watching: a browser kept open to watch for sales would be $1.44 a day per site per person, about $170 a month for four sites, so a free public-page read decides when the browser runs at all. On a $20 shirt, eBay's fee is $3.94; we spend cents.
 
 **Why is that cheap enough?**
 A person's time costs the same for a $5 shirt and a $200 bag, which is why consignment pays 3% of a $5 sale. An agent's cost per item is close to flat, which is the opening ([pitch evidence §1](../research/cross-cutting/ben/pitch-evidence.md#1-the-do-it-for-me-option-pays-almost-nothing-on-cheap-items)).
@@ -274,11 +274,13 @@ Recorded actions replace browser driving: once a site's action has been done onc
 
 ## 9. Business model
 
-**How does it make money?** Open for Ben and Nate; Nate proposed referrals and market data ([words](words.md#2026-11-14-nate-referrals-and-market-data)). *Agent proposal*:
-- **Sellers: free to list, a small share of what sells, capped.** We earn only when you do. People say they'd pay up to 20% for a reselling service (Morning Consult, 2024); we'd be far under that and under consignment.
-- **Buyers: free**, funded by referral links. A referral never decides which listing is called best; that rule is in the code ([buy](../spec/features/buy.md)).
-- **Resellers: a flat monthly plan**, priced against crosslisters (one Depop automation tool is listed at $39.99 a month, *asserted*).
-- **Later: anonymous market data**, only from consenting sellers and sources whose terms allow it.
+The full case, with market reach, what has to be true and the hurdles, is in [business.md](business.md).
+
+**How does it make money if it's free?** Ben's direction, 05:43: completely free for the person. It works because listing an item costs us cents (about $0.03 to $0.10, an estimate, [numbers](numbers.md#what-a-listing-costs-us)). We earn when a buyer we sent buys: eBay's Partner Network pays a share of each sale (about 3 to 4% by one reading of its card, *asserted*), so one $40 referred purchase covers a month of someone's listings. Studio photos and a reseller plan are the paid extras. A referral never changes which listing we call best.
+
+**Why not charge like everyone else?** Consignment takes most of the money on cheap items; subscriptions fit resellers, not someone clearing a closet once; a cut on top of the site's breaks the "most money" promise.
+
+**What's the weak spot?** Referral programs are strong on eBay and thin elsewhere, and we don't yet know how often people buy through us. That number decides whether free works, and we'd measure it first.
 
 **Who's the first customer, and how do you reach them?**
 Students moving out (a deadline and a room full of things) and parents with outgrown kids' stuff (constant, cheap, high volume) ([pitch](pitch.md#who-its-for-for-marketing-after-the-hackathon)). The campus move-out week is the launch.

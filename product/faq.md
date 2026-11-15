@@ -79,7 +79,7 @@ We show what lands in your account on each site, after that site's fees, before 
 The site, under its own rules. We show you the deadline and put together your photos and listing as evidence. A refund always waits for your tap.
 
 **What does secondhand cost?** **(launch)**
-Not set yet.
+Nothing, to sell or to buy. When you buy through a link from us, the site may pay us a small referral fee. It never changes which listing we show you first.
 
 ## Your accounts
 

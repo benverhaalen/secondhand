@@ -74,6 +74,62 @@ Same order as the recommendation above, with times for a 3-minute slot. If the s
 | 2:25 | Proof: tap any number or fact and see where it came from; AI photos are checked against the original | Why? on the price; the photo side by side |
 | 2:45 | "Your second hand. Done in seconds." | the wordmark |
 
+## The table demo: science-fair judging
+
+Added 2026-11-15 from Ben ([words](words.md#2026-11-15-a-demo-that-stuns-science-fair-judging-and-claims-that-change-how-judges-see-it)): judging is science-fair style, as last year. Judges walk table to table; 6 finalists are chosen; prizes are then judged on the project as a whole. So there are two audiences. In round one, a judge gives us a few minutes among many tables and decides from the first 30 seconds. With finalists, the whole project is judged: demo, Devpost, video, site and repo together. The written parts carry everything we can't show live ([devpost.md](devpost.md)).
+
+### What to show, ranked
+
+Ranked by stun times the chance it works every time, fast, at a table with bad wifi. Each row says what must be true before it goes in the live loop; anything that fails that test is shown as a recording and said to be one. Numbers are from [numbers.md](numbers.md).
+
+| Rank | Moment | Why it stuns | Works every time? | In the loop if |
+|---|---|---|---|---|
+| 1 | **Their own thing.** "Hand me something from your bag." Photograph it; it's named and priced per site with what you'd keep on each | it's their object, not our rehearsed one; nobody can fake that | depends on the identify route and the network | it identified 9 of 10 random objects in rehearsal, each in under 10 s. Otherwise use our own items |
+| 1b | **The same photo, the buying side.** Switch to Find this: the same thing across every site, the fair used price, the total with shipping, and the better official option when new or refurbished is the better buy | one engine for both sides; it widens the audience from sellers to everyone who buys used | depends on the public search readers answering at the table | the search answered in rehearsal on the same items; a slow site greys out, it never blocks |
+| 2 | **The photo lie detector.** Paint a stain out of a photo; it's held, with the box that failed. 116 of 117 planted lies caught | answers the mentor's worry in five seconds; visual | yes: no model, runs locally | always |
+| 3 | **It sold, in half a second.** Paste any Poshmark listing; it says live or sold in 0.44 s from the public page | real site, real time, no login | yes, if the page shape holds; the fallback recovered 48 of 48 when it broke | always, with a sold listing bookmarked |
+| 4 | **The $20 shirt.** Type a price; you keep $18.69 on Depop and $16.00 on Poshmark; to keep $17, ask $18.25 on Depop and $21.25 on Poshmark | the money is the problem statement made concrete | yes: fixed fee table | always |
+| 5 | **The couch.** Facebook best; Depop avoid ("ships only, its buyers want clothes"); Poshmark blocked (15 lb cap) | shows judgment, not a copy-paste crosslister | yes | always |
+| 6 | **Today.** One feed: a buyer offer, a held reply, a double sale with both buyers and the cost of each cancel, who is coming to a pickup | the finished, un-sloppy UI; human in the loop as a decision | yes on demo data; say it's demo data | the screens render on the phone |
+| 7 | **The checker.** 60,936 orderings of posts, payments and delists on 3 sites: never a silent double sale, never stuck. Break the refund and it fails in 6 steps | for technical judges: we proved it, not hoped | yes: runs in seconds | a technical judge asks "what if both sell?" |
+| 8 | **A cloud browser reading a site live.** 48 Poshmark listings in under 4 s, with its live view | the engineering under the hood | network dependent | a recorded run is ready if it stalls |
+| 9 | **A real post going live, then taken down** | the whole promise | not yet run on a live account (milestone M7) | it ran end to end on the morning of the 15th; otherwise the recording, said to be one |
+| 10 | **Why? on a price, recomputed from its citation on Databricks** | for Databricks judges | only if deployed | the App and tables exist on the workspace |
+
+### The table loop (about 2 minutes, repeatable)
+
+1. **0:00** "What's the last thing you meant to sell and didn't?" Wait for the answer. It makes it about them.
+2. **0:10** Moment 1 with their item, or ours. The phone in their hands if they'll take it.
+3. **0:35** Moment 1b on the same photo: "and if you wanted to buy one, here's every site at once, and whether this price is fair." Ben, 05:43: show both sides "to capture as much of the audience as possible" ([words](words.md#2026-11-15-both-sides-in-the-demo-why-people-want-it-and-free-as-the-business-model)).
+4. **0:50** Moment 4: "and here's what you'd keep on each site." Then moment 5 in one line.
+5. **1:05** Moment 6: "after it's listed, this is all you see." One card, one tap.
+6. **1:25** Moment 2: "and the photos can't lie." Hand them the side by side.
+7. **1:45** "It's live on the web at [site], the video and write-up are on Devpost." Hand them the card with the QR code.
+
+Two people: one demos, one watches the judge's face and takes the hard question (from [qa.md](qa.md)). The laptop beside the phone loops the video muted with captions, so a judge who walks up mid-demo still gets the story.
+
+**At the table, have:** the phone charged and on a hotspot, Do Not Disturb on, demo account signed in; a sold Poshmark listing and the side by side bookmarked; three of our own items (a tee, a shoe, something hard); a printed card with the one-sentence pitch and a QR code to the site and Devpost; the recorded runs queued on the laptop.
+
+## Claims we can make, and what makes each true
+
+Ben asked for claims that change how judges see the project. Each is said only when its condition holds on the day ([qa.md honesty gate](qa.md#before-you-say-it-the-honesty-gate)).
+
+| Claim | True when | Status 2026-11-15 06:00 UTC |
+|---|---|---|
+| "It's live: try it at [URL]" | the site is deployed and loads on a phone | the website thread is building it |
+| "We submitted it to the App Store" | an EAS build was submitted in App Store Connect; show the "Waiting for Review" screen. A TestFlight external beta review is the faster true version. Server-held site sessions may meet App Review guideline 5.1.1(v) ([connect](../spec/features/connect.md)) | not submitted; "App Store coming soon" is the honest line until then |
+| "There's a 2-minute video" | it's on Devpost | planned ([pitch-video.md](pitch-video.md)) |
+| "116 of 117 planted photo lies caught" | as measured | measured ([numbers](numbers.md)) |
+| "60,936 orders of events checked; a double sale is never silent" | as measured | measured |
+| "A sale seen in 0.44 s on Poshmark" | as observed | observed 2026-11-14 |
+| "What you keep differs by $2.69 on a $20 item, depending on the site" | as measured from fee pages read 2026-11-14 | measured |
+| "About 3 to 10 cents to list an item" | say "estimate from list prices" | estimate |
+| "1,420 tests run on every push" | CI is green | red on 2026-11-15; fix before saying |
+| "184 research notes, 39 dated decisions, 214 quoted product decisions from us two" | counted on the day | counted 2026-11-15 |
+| "Every fact links to the photo it came from" | the item screen shows it | designed; say so unless built |
+| "Listed in N seconds against M by hand" | the hands-on test in [numbers.md](numbers.md) was run | not run yet |
+| "Built in 24 hours by two people, with AI coding agents" | always true, and say it plainly; judges respect the honesty and it explains the volume | true |
+
 ## Taglines (both meanings)
 
 - "Your second hand for secondhand."
