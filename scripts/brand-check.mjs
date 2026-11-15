@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Checks a rendered output against the brand: a deck, a post, a story, a web page or an app mock, written as HTML.
-//   node scripts/brand-check.mjs <file.html> --medium app|web|post|story|deck [--json]
+//   node scripts/brand-check.mjs <file.html|http://url> --medium app|web|post|story|deck [--json]
 // It opens the file in headless Chromium at the medium's real size, measures every piece of text, box and color,
 // and runs the constitution's Part IV on what it measured (.agents/checks/render.mjs). Exit code 1 on any error.
 // A view is each element marked data-view (a slide, a post panel, a frame). With none, it is each screenful of the page.
@@ -174,7 +174,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
   const views = [], stressed = [], outside = []; let colors, lengths = [], named = {}, grads = {}, textWeight = 400, fontsLoaded = true, screens = 0, scaled = false;
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
-    await page.goto(pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
+    await page.goto(/^https?:\/\//.test(file) ? file : pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
     const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
     const probe = await browser.newPage(); await probe.setContent(`<html><style>${tokensCss}</style><body><i id="p"></i>`); await probe.evaluate(t => { if (t) document.documentElement.dataset.theme = t; }, theme);
     const got = await probe.evaluate(({ names, grads, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [], named: {}, grads: {} }; p.style.display = 'block';
@@ -254,7 +254,7 @@ export async function check(file, medium, { browser } = {}) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2), at = args.indexOf('--medium'), medium = at < 0 ? null : args[at + 1], file = args.find((a, i) => !a.startsWith('--') && i !== at + 1);
   const stop = msg => { process.stderr.write(`${msg}\n`); process.exit(2); };
-  if (file && medium && !existsSync(file)) stop(`no file ${file}`);
+  if (file && medium && !/^https?:\/\//.test(file) && !existsSync(file)) stop(`no file ${file}`);
   if (file && medium && !Object.keys(JSON.parse(readFileSync(join(root, 'brand/media.json'), 'utf8'))).includes(medium)) stop(`no medium "${medium}": it is app, web, post, story or deck`);
   if (!file || !medium) { process.stderr.write(readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 7).join('\n') + '\n'); process.exit(2); }
   const { facts, findings } = await check(file, medium);
