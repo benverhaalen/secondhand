@@ -374,20 +374,61 @@ Each AI tell is paired with what to reach for, because banning one default moves
 | Canvas | 390 × 844 pt | 1440 wide desktop, 390 mobile | 1080 × 1350 | 1080 × 1920 | 1920 × 1080 |
 | A view is | One screen at one scroll position, or one sheet | One viewport at one scroll position | One slide | One frame | One slide |
 | Margins | 20 | 24 mobile, 64 desktop, 1200 max content | 72 | 96 sides; keep 250 top and 340 bottom clear of UI | 96 |
-| Wordmark (C1) | Nav bar, centered, 21 px | Header left, 21 px; footer 86.5 px at 1440 and 50 px at 390, the hero's sizes | Top or bottom center, 40 px, same place in a series | End card, centered, 120 px | Bottom left of every slide, 32 px; alone on the closing slide at 64 px |
+| Wordmark (C1) | Nav bar, centered, 21 px | Header left, 21 px; footer 86.5 px at 1440 and 50 px at 390, the hero's sizes | Top or bottom center, 40 px, same place in a series | End card, centered, 120 px | Bottom left of every slide, 32 px; alone in the middle of the closing slide at 64 px |
 | Field (C2) | The one card or band that needs you | The hero band | Background of one panel per carousel, or one band | One scene or the end card | Title slide and one key slide |
 | Item (C3) | Every item row and card | Real items in every example | The item is the post | Real item footage | Real screenshots and photos |
 | Act (C4) | One per decision | One per section | None (posts don't have buttons); a plain line instead | None | None |
 | Text sizes | 13 / 15 / 18 / 21 / 36 / 50 | Display, Ben's sizes from 390 to 1440 wide: hero 50 to 86.5, section 36 to 58.3, feature 21 to 24.9 (`clamp()` between). Text 15 and 18 at every width | Body 40, heading 72, one number up to 200 | Captions 48, titles 96 | Body 32, heading 64, one number up to 200 |
 | Unit: the space and radius scales are multiplied by it (agent decision) | 1 | 1 | 3 | 3 | 2 |
-| Longest text | One sentence per card | Two short paragraphs per section | 20 words per slide | 8 words on screen at once | 15 words per slide |
+| Layouts: a view is one of these (agent proposal) | None | None | item, number, list, statement | item, number, close | title, statement, number, list, item, close |
+| Longest text | One sentence per card | Two paragraphs per section, 40 words each at most (agent proposal) | 20 words per slide | 8 words on screen at once | 15 words per slide |
 
 The numbers in this table are also in [media.json](media.json), which the checker reads. A test fails when the two differ, so change both in one commit. A post, a story and a deck take their sizes, margins and scaled gaps as variables from [media.css](media.css), which a script writes from media.json, so nothing off the app sets a raw number: `var(--mt-heading)`, `var(--ms-4)`, `var(--mr-card)`. How many views the field may fill is in Article 5.2 and the Field row. An app screen shown on a slide, a post or a page is a picture of the screen that passed its own check, placed as an image, never the screen's markup set again at another size.
 
-Post and video notes:
-- A carousel tells one story per slide in order: the item, what it is worth, where it sold, what you kept.
-- Video uses the app's own screens at true scale inside the frame, never a fake device mockup with hands.
-- Captions are the voice in Article 12. Hashtags only if they are real search terms, at the end, at most 3.
+### Each medium, line by line
+
+Ben, [little wiggle room](../product/words.md#2026-11-15-a-constitution-with-little-wiggle-room-the-heavy-black-the-black-outline-and-the-gray-box): "you can create sections for app or web", and "it all gives little wiggle room for ambiguity". Each line below has one reading and ends with what holds it: a check in Part IV (B, U), a judge line in [ui-rules.json](../.agents/ui-rules.json) (G), or a ledger pick (L). The numbers are the table's. A line with no id is not held yet. The lines new to this section are agent proposals (Article 2), open in the ledger as R26.
+
+**App.**
+1. A screen is 390 wide and scrolls down. Only a row whose next item shows cut at the edge scrolls sideways (B34).
+2. From the top: the nav bar, `--nav-h`, with the wordmark centered at 21 (B3); the content, 20 from each side (B17); the tab bar, `--tab-h`. The wash sits behind the nav bar and the one summary under it (B4).
+3. A screen has at most one field, on the one card that needs the person (B4, G5), and one black pill per decision (B10).
+4. A part is the size its token names on every screen (B31). It keeps that size with the longest and the emptiest content on the list (B34).
+5. A screen is drawn in every state on the list, from first use to offline, or says why a state cannot happen (B35).
+6. Nothing sits in the curve of a corner: content keeps the padding of its box from the arc (U5).
+7. Off the app, a screen is a picture of the screen that passed its check, shown 390 wide or wider (G3).
+
+**Website.**
+1. Every page is checked at 1440 and at 390 wide (B14, B17).
+2. From the top: the header, with the wordmark left at 21; the hero, the one band that carries the field (B4), with its heading at 86.5 and 50; the sections; the footer, with the wordmark at the hero's size (B3).
+3. A section has one heading, two paragraphs at most and one black pill at most (B10).
+4. Text that runs to a second line sits in a column 36 times its size wide at most, which is about 75 characters: 648 at 18 px (B17).
+5. Every example shows a real item by its photo (B9, G1) and the app as a picture of a screen (G3).
+6. Every line names an item, an amount, a marketplace or a step of the product (G4), and every number names its source (G6).
+
+**Instagram post and carousel.** Start from [templates/post.html](templates/post.html).
+1. A panel is one of four layouts (B37). Item: one square photo, 936 wide, with one heading under it. Number: the words that say what it is, one number up to 200, one line after. List: one heading over two to six rows of one line each. Statement: one heading with one line under it at most.
+2. The first panel is an item (C3: the item is the post). A carousel has 2 to 10 panels, in this order: the item, what it is worth, where it sold, what you kept.
+3. The wordmark is at the bottom center of every panel at 40 (B3).
+4. The field is the ground of one panel at most (B4, B8). Every other panel is the page color.
+5. A panel holds 20 words at most (B30) and makes one point (G2). It has no button (B10).
+6. The caption is in the voice of Article 12. Hashtags are real search terms, at the end, 3 at most.
+
+**Story, reel and video.** Start from [templates/story.html](templates/story.html).
+1. A frame is one of three layouts (B37). Item: one square photo or clip, 888 wide, with one caption under it. Number: the words that say what it is and one amount at 96. Close: the wordmark alone in the middle at 120.
+2. Nothing sits in the top 250 or the bottom 340 (B17).
+3. A caption is 8 words at most (B30), at 48, on the page color or the field, never on the footage (B6).
+4. The last frame is the close (B3). The field is the ground of one frame at most (B4).
+5. Video shows the app's own screens at true scale inside the frame, never a device mockup held in a hand (G3).
+6. A line of text stays on screen 0.3 s per word plus 1 s (B26, not built).
+
+**Pitch deck.** Start from [templates/deck.html](templates/deck.html).
+1. A slide is one of six layouts (B37). Title: the field fills it, with one heading and one line. Statement: one heading with one line under it at most. Number: the words that say what it is, one number up to 200, one line after. List: one heading over two to six rows of one line each. Item: the words on the left, and on the right one square photo as tall as the space above the wordmark. Close: the wordmark alone in the middle at 64.
+2. The first slide is a title and the last is a close. Content starts at the top left, 96 from each edge (B17).
+3. The wordmark is at the bottom left of every slide at 32 (B3).
+4. The field fills the title and one other slide at most (B4, B8).
+5. A slide holds 15 words at most (B30) and makes one point (G2). It has no button (B10).
+6. Every number names its source on the slide or in the notes handed over (G6). A screen of the app is a picture of that screen (G3).
 
 ---
 
@@ -432,11 +473,12 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B33 | Logos in a row (C5; agent proposal, ledger R26) | Logos that share a parent render at one height and one gap, and none is taller than the wordmark's type. A logo standing alone is not a row | Script |
 | B34 | A thing holds whatever is in it (Ben, [standard sizes](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis), [edge states](../product/words.md#2026-11-15-a-standard-for-edge-states-known-and-learned-while-building)) | The checker puts each piece of extreme content in [ui-states.json](../.agents/ui-states.json) into every slot marked `data-fill` and measures again: each `data-part` keeps its size, text a box cuts off ends in an ellipsis, and nothing spills out, runs over its neighbor or crosses a margin | Script |
 | B35 | Every state is drawn (Ben, [edge states](../product/words.md#2026-11-15-a-standard-for-edge-states-known-and-learned-while-building)) | A view or part that names itself (`data-screen`, `data-job`, `data-control`) with a `data-state` is drawn in every required state of its kind in ui-states.json, or `data-skip="state: why it can't happen"`. A state not on the list fails until it is added | Script |
+| B37 | A view off the app is a named layout (Part III; agent proposal, ledger R26) | On a post, a story and a deck, every `data-view` names a `data-layout` on its medium's list in [media.json](media.json) and holds what that layout holds: its count of headings, photos, rows and numbers | Script |
 | B36 | Edges line up or clearly differ (Art. 7.5) | Two blocks of text, one above the other, never start 1 to 3 px apart | Script |
 
 **Marks the checker reads.** `data-view` on each slide, panel or frame (with none, each screenful is a view). `data-part="name"` on each kind of repeated thing: a card, a chip, a tile. `data-fit="content"` on a part whose width follows its words. `data-item` on anything that shows an item. `data-photo` on a photo that is not an `img`, and `data-logo` on a logo. `data-chrome` on the phone's own status bar and home bar in an app mock, which are skipped. `data-fill="title"` (or `name`, `amount`, `count`, `text`, `photo`) on a slot whose content changes from one item or person to the next.
 
-**How the list of edge states grows.** When content or a state nobody drew breaks a screen, add it before fixing the screen: `node scripts/ui-states.mjs content title "<the text>" "<where it came up>"` or `node scripts/ui-states.mjs state screen <name> "<where>"`. From then on every output is checked with it. The repo check asks any commit that fixes a screen and adds nothing what the system learned.
+**How the list of edge states grows.** When content or a state nobody drew breaks a screen, add it before fixing the screen: `node scripts/ui-states.mjs content title "<the text>" "<where it came up>"` or `node scripts/ui-states.mjs state screen <name> "<where>"`. From then on every output is checked with it. The screen state `new` (first use, no history) is an agent proposal from Ben's line that "a new user probably doesnt want to see 0.00" ([words](../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)). The repo check asks any commit that fixes a screen and adds nothing what the system learned.
 
 A check that passes is not proof of taste ("scripts can't prove it looks good"). It is proof the rules were followed. Record results with the output.
 

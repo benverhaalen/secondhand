@@ -28,6 +28,7 @@
     "words": 20,
     "wordmark": { "sizes": [40], "at": "top-or-bottom-center", "same": true },
     "fields": 1,
+    "layouts": ["item", "number", "list", "statement"],
     "act": false
   },
   "story": {
@@ -39,6 +40,7 @@
     "words": 8,
     "wordmark": { "sizes": [120], "at": "center", "views": "last" },
     "fields": 1,
+    "layouts": ["item", "number", "close"],
     "act": false
   },
   "deck": {
@@ -51,6 +53,7 @@
     "words": 15,
     "wordmark": { "sizes": [64, 32], "at": "bottom-left", "views": "every", "alone": 64 },
     "fields": 2,
+    "layouts": ["title", "statement", "number", "list", "item", "close"],
     "act": false
   }
 }

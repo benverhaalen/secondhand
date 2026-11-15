@@ -118,6 +118,8 @@ function checkView(view, ctx) {
     if (name?.startsWith('on-field') && g.kind !== 'field' && g.kind !== 'built') E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
     else if (g.kind === 'fill' && color && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
       if (c < need) E('B6', q, `has ${c.toFixed(1)}:1 contrast with what is behind it; it needs ${need}:1 (Art. 5.1)`); }
+    // B17 on the web, text that wraps sits in a column of about 75 characters, 36 times its size (Part III)
+    if (medium === 'web' && t.lines >= 2 && t.rect[2] - t.rect[0] > 36 * t.size + 1) E('B17', q, `runs ${Math.round(t.rect[2] - t.rect[0])} px wide on ${t.lines} lines at ${t.size} px: a column of text is ${Math.round(36 * t.size)} px at most, about 75 characters (Part III)`);
     // B16 case, B23 words, B11 site names
     if (!mark) {
       if (t.upper || allCaps(t.text) && words(t.text) > 1) E('B16', q, 'is all capitals: sentence case everywhere (Art. 6.5)');
@@ -157,8 +159,10 @@ function checkView(view, ctx) {
   for (const t of text.filter(isMark)) {
     if (t.text.trim() !== 'secondhand') E('B3', '', `the wordmark reads "${t.text.trim()}": it is "secondhand", lowercase (C1)`);
     const cx = (t.rect[0] + t.rect[2]) / 2, cy = (t.rect[1] + t.rect[3]) / 2, where = sheet.wordmark?.at, mid = near(cx, view.w / 2, 2);
-    const ok = { 'top-center': mid && cy < view.h / 4, 'top-left': cx < view.w / 2 && cy < view.h / 4 || t.size > Math.min(...markSizes) + 1, 'center': mid && cy > view.h / 3 && cy < view.h * 2 / 3, 'top-or-bottom-center': mid && (cy < view.h / 4 || cy > view.h * 3 / 4), 'bottom-left': cx < view.w / 2 && cy > view.h * 3 / 4 || near(t.size, sheet.wordmark.alone ?? -1), any: true }[where ?? 'any'];
-    if (!ok) E('B3', '', `the wordmark sits at ${Math.round(cx)}, ${Math.round(cy)}: on a ${medium} it goes ${where.replace(/-/g, ' ')} (C1, Part III)`);
+    const ok = { 'top-center': mid && cy < view.h / 4, 'top-left': cx < view.w / 2 && cy < view.h / 4 || t.size > Math.min(...markSizes) + 1, 'center': mid && cy > view.h / 3 && cy < view.h * 2 / 3, 'top-or-bottom-center': mid && (cy < view.h / 4 || cy > view.h * 3 / 4), 'bottom-left': cx < view.w / 2 && cy > view.h * 3 / 4, any: true }[where ?? 'any'];
+    // Alone at its closing size, the wordmark is in the middle of the view, whatever its place on the other views.
+    const alone = near(t.size, sheet.wordmark?.alone ?? -1), middle = mid && cy > view.h / 3 && cy < view.h * 2 / 3;
+    if (alone ? !middle : !ok) E('B3', '', `the wordmark sits at ${Math.round(cx)}, ${Math.round(cy)}: ${alone ? `alone at ${t.size} px it goes in the middle of the view` : `on a ${medium} it goes ${where.replace(/-/g, ' ')}`} (C1, Part III)`);
   }
   // B32 the wordmark's kit (C1): once per view, untouched, on the page or the field, with one unit of clear space around it
   const marks = text.filter(isMark), hits = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
@@ -240,6 +244,14 @@ function checkView(view, ctx) {
   // A view the field fills is the brand's one loud moment (a title slide, an end card, a sale); judge() caps how many an output has.
   view.bleed = fields.some(el => (Math.min(el.rect[2], view.w) - Math.max(el.rect[0], 0)) * (Math.min(el.rect[3], view.h) - Math.max(el.rect[1], 0)) >= .9 * view.w * view.h);
   if (view.share && view.share.color > 1 / 3 && !view.bleed) E('B8', '', `is ${Math.round(view.share.color * 100)}% color: color covers at most a third of a view, not counting photos, unless the field fills it (Art. 5.2)`);
+  // B37 off the app, a view is one of its medium's layouts and holds what that layout holds (Part III)
+  if (sheet.layouts) { const heads = text.filter(t => t.display && !isMark(t)).length, photos = view.els.filter(e => e.photo).length, rows = view.els.filter(e => e.part === 'row').length, nums = text.filter(t => !t.display && t.size >= top - .5).length, rest = text.filter(t => !isMark(t)).length;
+    const holds = { title: [fields.length === 1 && view.bleed && heads === 1 && !photos && !rows && !nums, 'the field filling the view, with one heading'], statement: [heads === 1 && !photos && !rows && !nums && !view.bleed, 'one heading, with one line under it at most'],
+      number: [nums === 1 && !heads && !photos && !rows, 'one number with the words that say what it is, and no heading'], list: [heads <= 1 && rows >= 2 && rows <= 6 && !photos && !nums, 'two to six rows, each a [row], under one heading at most'],
+      item: [photos === 1 && !rows && !nums, 'one photo, with one heading or one line'], close: [marks.length === 1 && !rest && !photos, 'the wordmark alone'] }[view.layout];
+    if (!view.layout) E('B37', '', `names no layout: a ${medium} view is data-layout="${sheet.layouts.join('", "')}" (Part III)`);
+    else if (!sheet.layouts.includes(view.layout) || !holds) E('B37', '', `is the layout "${view.layout}", which a ${medium} does not have: its layouts are ${sheet.layouts.join(', ')} (Part III)`);
+    else if (!holds[0]) E('B37', '', `is the layout "${view.layout}" and does not hold what that is: ${holds[1]} (Part III)`); }
   // U4 two colors that mark different things stay apart for an eye with no red or no green cones, a dark ground is never brown, and a tag is never color alone
   const hues = [...new Set(view.els.filter(e => e.hasText && hueOf(pal.name(e.bg))).map(e => pal.name(e.bg)))];
   for (const [kind] of Object.entries(CVD)) for (let i = 0; i < hues.length; i++) for (let j = i + 1; j < hues.length; j++) { if (hueOf(hues[i]) === hueOf(hues[j])) continue;
@@ -354,7 +366,7 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
 
 // brand/media.json and the constitution's Part III table hold the same numbers; this fails when they drift apart.
 export function sheetAgrees(constitution, media) {
-  const rows = Object.fromEntries([...constitution.matchAll(/^\|\s*(Canvas|Margins|Wordmark \(C1\)|Text sizes|Longest text|Unit|Act \(C4\))[^|]*\|(.*)\|\s*$/gm)].map(m => [m[1], m[2].split('|')]));
+  const rows = Object.fromEntries([...constitution.matchAll(/^\|\s*(Canvas|Margins|Wordmark \(C1\)|Text sizes|Longest text|Unit|Act \(C4\)|Layouts)[^|]*\|(.*)\|\s*$/gm)].map(m => [m[1], m[2].split('|')]));
   const head = (constitution.match(/^\|\s*\|\s*App\s*\|.*$/m)?.[0] ?? '').split('|').slice(2, -1).map(s => s.trim());
   const key = h => ({ App: 'app', Website: 'web', 'Instagram post / carousel': 'post', 'Story / Reel / video': 'story', 'Pitch deck': 'deck' })[h];
   const nums = s => new Set((s.replace(/C\d|Art\.\s*\d+/g, '').match(/\d+(?:\.\d+)?/g) ?? []).map(Number)), out = [];
@@ -367,6 +379,8 @@ export function sheetAgrees(constitution, media) {
       if (row === 'Longest text' && !s.words) continue;
       if (missing.length || extra.length) out.push({ level: 'error', where: `brand/media.json ${key(h)}`, msg: `${row.toLowerCase()} disagrees with Part III of the constitution (${[missing.length && `the table has ${missing.join(', ')}`, extra.length && `the sheet has ${extra.join(', ')}`].filter(Boolean).join('; ')}): change both in one commit` }); }
     if (/^\s*None\b/.test(rows['Act (C4)'][i]) === !!s.act) out.push({ level: 'error', where: `brand/media.json ${key(h)}`, msg: `"act" is ${!!s.act} and the Act row of Part III says "${rows['Act (C4)'][i].trim()}": change both in one commit` });
+    const named = (rows.Layouts?.[i] ?? '').match(/\b[a-z]+\b/g) ?? [], mine = s.layouts ?? [];
+    if (named.join() !== mine.join()) out.push({ level: 'error', where: `brand/media.json ${key(h)}`, msg: `layouts disagree with Part III of the constitution (the table has ${named.join(', ') || 'none'}; the sheet has ${mine.join(', ') || 'none'}): change both in one commit` });
   });
   return out;
 }

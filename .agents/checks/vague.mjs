@@ -5,7 +5,7 @@
 import { read, err, lineOf } from './util.mjs';
 
 const FILE = 'brand/constitution.md';
-export const SCOPE = [4, 5, 6, 7, 8, 9, 10];
+export const SCOPE = [4, 5, 6, 7, 8, 9, 10, 'III'];   // 'III' is Part III, the media
 const WORDS = ['usually', 'generally', 'typically', 'often', 'sometimes', 'rarely', 'normally', 'where appropriate', 'as appropriate', 'as needed', 'when needed',
   'if possible', 'where possible', 'sparingly', 'subtle', 'subtly', 'slightly', 'a little', 'a bit', 'roughly', 'approximately', 'somewhat', 'fairly', 'quite',
   'mostly', 'nearly', 'almost', 'several', 'a few', 'various', 'and so on', 'etc', 'try to', 'ideally', 'preferably', 'should', 'reasonable', 'reasonably',
@@ -20,12 +20,12 @@ export function vague(root, { scope = SCOPE } = {}) {
   const text = read(root, FILE); if (text == null) return [];
   const out = []; let article = null, at = 0;
   for (const line of text.split('\n')) {
-    const head = line.match(/^#{2,3}\s+(?:Article\s+(\d+)|Part\b)/);
-    if (head) article = head[1] ? Number(head[1]) : null;
+    const head = line.match(/^#{2,3}\s+(?:Article\s+(\d+)|Part\s+(III)\b|Part\b)/);
+    if (head) article = head[1] ? Number(head[1]) : head[2] ?? null;
     if (article != null && scope.includes(article) && !/^#/.test(line)) {
       const body = strip(line);
       if (!PINNED.test(body)) for (const m of body.matchAll(HEDGE))
-        out.push(err(`${FILE}:${lineOf(text, at)}`, `"${m[0]}" with nothing on the line to pin it down: give the number, the token in backticks or the id of the check that decides it, or cut the word (Article ${article})`));
+        out.push(err(`${FILE}:${lineOf(text, at)}`, `"${m[0]}" with nothing on the line to pin it down: give the number, the token in backticks or the id of the check that decides it, or cut the word (${article === 'III' ? 'Part III' : `Article ${article}`})`));
     }
     at += line.length + 1;
   }
