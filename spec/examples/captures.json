@@ -1,0 +1,304 @@
+{
+  "examples": [
+    {
+      "name": "captures.open",
+      "endpoint": "POST /v1/captures",
+      "path": "/v1/captures",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_cap_01"
+        },
+        "body": {
+          "mode": "shots",
+          "purpose": "sell",
+          "first_photo_hint": "jacket"
+        }
+      },
+      "status": 201,
+      "response": {
+        "id": "cap_3n9q",
+        "item_id": "it_7c2m",
+        "state": "framing",
+        "mode": "shots",
+        "purpose": "sell",
+        "suggested_type": "apparel",
+        "type": null,
+        "picker": [
+          "apparel",
+          "shoes",
+          "bags",
+          "electronics",
+          "jewellery_watches",
+          "furniture",
+          "lighting_home",
+          "media",
+          "cards_collectibles",
+          "toys_lego",
+          "appliances_tools",
+          "bikes_sports",
+          "baby_gear",
+          "other"
+        ],
+        "process": [
+          {
+            "step": "front",
+            "kind": "instant",
+            "role": "front",
+            "needs_lidar": false
+          },
+          {
+            "step": "back",
+            "kind": "instant",
+            "role": "back",
+            "needs_lidar": false
+          },
+          {
+            "step": "tag",
+            "kind": "instant",
+            "role": "tag",
+            "needs_lidar": false
+          },
+          {
+            "step": "care_label",
+            "kind": "instant",
+            "role": "care_label",
+            "needs_lidar": false
+          },
+          {
+            "step": "measure_flat",
+            "kind": "series",
+            "role": "detail",
+            "needs_lidar": false
+          },
+          {
+            "step": "flaws",
+            "kind": "series",
+            "role": "flaw",
+            "needs_lidar": false
+          }
+        ],
+        "coverage": {
+          "needed": [
+            "front",
+            "back",
+            "tag",
+            "care_label"
+          ],
+          "kept": []
+        },
+        "created_at": "2026-11-15T03:50:00Z",
+        "version": 1
+      }
+    },
+    {
+      "name": "captures.photos",
+      "endpoint": "POST /v1/captures/:id/photos",
+      "path": "/v1/captures/cap_3n9q/photos",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_cap_02"
+        },
+        "body": {
+          "photos": [
+            {
+              "role": "front",
+              "step": "front",
+              "content_type": "image/heic",
+              "bytes": 2481120
+            },
+            {
+              "role": "tag",
+              "step": "tag",
+              "content_type": "image/heic",
+              "bytes": 1904331
+            }
+          ]
+        }
+      },
+      "status": 201,
+      "response": {
+        "photos": [
+          {
+            "id": "ph_a1",
+            "role": "front",
+            "step": "front",
+            "upload": {
+              "url": "https://uploads.example/v/ph_a1?sig=example",
+              "method": "PUT",
+              "expires_at": "2026-11-15T04:05:00Z"
+            }
+          },
+          {
+            "id": "ph_a2",
+            "role": "tag",
+            "step": "tag",
+            "upload": {
+              "url": "https://uploads.example/v/ph_a2?sig=example",
+              "method": "PUT",
+              "expires_at": "2026-11-15T04:05:00Z"
+            }
+          }
+        ],
+        "capture": {
+          "id": "cap_3n9q",
+          "state": "uploading",
+          "coverage": {
+            "needed": [
+              "back",
+              "care_label"
+            ],
+            "kept": [
+              "front",
+              "tag"
+            ]
+          },
+          "version": 2
+        }
+      }
+    },
+    {
+      "name": "captures.set_type",
+      "endpoint": "PATCH /v1/captures/:id",
+      "path": "/v1/captures/cap_3n9q",
+      "request": {
+        "body": {
+          "version": 2,
+          "type": "apparel"
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "cap_3n9q",
+        "state": "shooting",
+        "type": "apparel",
+        "suggested_type": "apparel",
+        "item": {
+          "id": "it_7c2m",
+          "category": "apparel"
+        },
+        "process": [
+          {
+            "step": "front",
+            "kind": "instant",
+            "role": "front",
+            "needs_lidar": false
+          },
+          {
+            "step": "back",
+            "kind": "instant",
+            "role": "back",
+            "needs_lidar": false
+          },
+          {
+            "step": "tag",
+            "kind": "instant",
+            "role": "tag",
+            "needs_lidar": false
+          },
+          {
+            "step": "care_label",
+            "kind": "instant",
+            "role": "care_label",
+            "needs_lidar": false
+          },
+          {
+            "step": "measure_flat",
+            "kind": "series",
+            "role": "detail",
+            "needs_lidar": false
+          }
+        ],
+        "version": 3
+      }
+    },
+    {
+      "name": "captures.finish",
+      "endpoint": "POST /v1/captures/:id/finish",
+      "path": "/v1/captures/cap_3n9q/finish",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_cap_03"
+        },
+        "body": {
+          "version": 3,
+          "note": "Bought at a church sale, worn twice"
+        }
+      },
+      "status": 202,
+      "response": {
+        "capture": {
+          "id": "cap_3n9q",
+          "state": "judged",
+          "version": 4
+        },
+        "item": {
+          "id": "it_7c2m",
+          "state": "researching"
+        },
+        "jobs": [
+          {
+            "id": "job_9a",
+            "kind": "identify",
+            "state": "running",
+            "stages": [
+              {
+                "name": "read_label",
+                "state": "running",
+                "started_at": "2026-11-15T03:54:00Z",
+                "ended_at": null
+              }
+            ]
+          },
+          {
+            "id": "job_9b",
+            "kind": "valuate",
+            "state": "queued",
+            "stages": []
+          },
+          {
+            "id": "job_9c",
+            "kind": "measure",
+            "state": "running",
+            "stages": [
+              {
+                "name": "flat_lay",
+                "state": "started",
+                "started_at": "2026-11-15T03:54:00Z",
+                "ended_at": null
+              }
+            ]
+          },
+          {
+            "id": "job_9d",
+            "kind": "studio",
+            "state": "queued",
+            "stages": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "captures.talk",
+      "endpoint": "POST /v1/captures/:id/talk",
+      "path": "/v1/captures/cap_3n9q/talk",
+      "proposed": true,
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_cap_04"
+        },
+        "body": {
+          "voice": true
+        }
+      },
+      "status": 201,
+      "response": {
+        "transport": "webrtc",
+        "client_secret": "<ephemeral key, 60 s>",
+        "expires_at": "2026-11-15T03:56:00Z",
+        "session_url": "https://realtime.example/v1/sessions",
+        "capture_id": "cap_3n9q",
+        "first_line": "Show me the front, flat if you can."
+      }
+    }
+  ]
+}

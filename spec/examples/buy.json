@@ -1,0 +1,117 @@
+{
+  "examples": [
+    {
+      "name": "wants.create", "endpoint": "POST /v1/wants", "path": "/v1/wants",
+      "request": { "headers": { "Idempotency-Key": "idk_want_01" }, "body": { "text": "Carhartt J97 in XL under $80", "max_total_cents": { "amount_cents": 8000, "currency": "USD" }, "sites": ["ebay", "depop", "mercari"], "alert": "under" } },
+      "status": 201,
+      "response": { "id": "want_3ss", "state": "active", "text": "Carhartt J97 in XL under $80", "product_id": "pr_4hd1", "fit": { "attributes": { "size": "XL" } }, "max_total_cents": { "amount_cents": 8000, "currency": "USD" }, "sites": ["ebay", "depop", "mercari"], "schedule": { "every_min": 30 }, "alert": "under", "next_check_at": "2026-11-15T05:30:00Z", "version": 1 }
+    },
+    {
+      "name": "wants.list", "endpoint": "GET /v1/wants", "path": "/v1/wants", "list": true,
+      "status": 200,
+      "response": { "data": [{ "id": "want_3ss", "state": "active", "text": "Carhartt J97 in XL under $80", "new_matches": 2, "checked": { "ebay": "2026-11-15T05:00:00Z", "depop": "2026-11-15T05:00:00Z", "mercari": "2026-11-15T04:31:00Z" }, "behind": ["mercari"], "version": 1 }], "next_cursor": null }
+    },
+    {
+      "name": "wants.get", "endpoint": "GET /v1/wants/:id", "path": "/v1/wants/want_3ss",
+      "status": 200,
+      "response": { "id": "want_3ss", "state": "active", "text": "Carhartt J97 in XL under $80", "product_id": "pr_4hd1", "fit": { "attributes": { "size": "XL" } }, "max_total_cents": { "amount_cents": 8000, "currency": "USD" }, "sites": ["ebay", "depop", "mercari"], "schedule": { "every_min": 30 }, "alert": "under", "checked": { "ebay": "2026-11-15T05:00:00Z" }, "behind": [], "next_check_at": "2026-11-15T05:30:00Z", "version": 1 }
+    },
+    {
+      "name": "wants.patch", "endpoint": "PATCH /v1/wants/:id", "path": "/v1/wants/want_3ss",
+      "request": { "body": { "version": 1, "state": "paused" } },
+      "status": 200,
+      "response": { "id": "want_3ss", "state": "paused", "version": 2 }
+    },
+    {
+      "name": "wants.matches", "endpoint": "GET /v1/wants/:id/matches", "path": "/v1/wants/want_3ss/matches", "list": true,
+      "status": 200,
+      "response": { "data": [{ "id": "mt_77", "state": "alerted", "want_id": "want_3ss", "source": "want", "label": "exact", "site": "mercari", "url": "https://www.mercari.com/us/item/m00000000001", "price_cents": { "amount_cents": 7200, "currency": "USD" }, "delivered_cents": { "amount_cents": 8150, "currency": "USD" }, "seen_at": "2026-11-15T04:31:00Z", "valuation_id": "val_m7", "verdict": "fair" }], "next_cursor": null }
+    },
+    {
+      "name": "matches.act", "endpoint": "POST /v1/matches/:id/act", "path": "/v1/matches/mt_77/act",
+      "request": { "headers": { "Idempotency-Key": "idk_mt_01" }, "body": { "action": "save" } },
+      "status": 200,
+      "response": { "id": "mt_77", "state": "saved", "decision_id": "dec_sv1" }
+    },
+    {
+      "name": "assist.parse", "endpoint": "POST /v1/assist", "path": "/v1/assist",
+      "request": { "headers": { "Idempotency-Key": "idk_as_01" }, "body": { "surface": "buy", "text": "a warm work jacket for my dad, size XL, under 80" } },
+      "status": 202,
+      "response": { "id": "job_as1", "kind": "assist", "state": "running", "stages": [{ "name": "parsed", "state": "arrived", "started_at": "2026-11-15T05:05:00Z", "ended_at": "2026-11-15T05:05:01Z", "found": { "results_found": 4 } }, { "name": "linked", "state": "running", "started_at": "2026-11-15T05:05:01Z", "ended_at": null }] }
+    },
+    {
+      "name": "search.text", "endpoint": "POST /v1/search", "path": "/v1/search", "auth": "visitor",
+      "request": { "headers": { "Idempotency-Key": "idk_sr_01" }, "body": { "text": "carhartt j97 xl", "filters": { "condition": ["used_good", "used_like_new"], "max_delivered_cents": { "amount_cents": 9000, "currency": "USD" } } } },
+      "status": 202,
+      "response": { "id": "job_sr1", "kind": "search", "state": "running", "stages": [{ "name": "identify", "state": "arrived", "started_at": "2026-11-15T05:06:00Z", "ended_at": "2026-11-15T05:06:01Z", "found": { "results_found": 1 } }, { "name": "fanout", "state": "running", "started_at": "2026-11-15T05:06:01Z", "ended_at": null, "found": { "sources_searched": 3, "results_found": 18 } }], "stream": "/v1/jobs/job_sr1/events" }
+    },
+    {
+      "name": "search.rate_limited", "endpoint": "POST /v1/search", "path": "/v1/search", "auth": "visitor",
+      "request": { "headers": { "Idempotency-Key": "idk_sr_02" }, "body": { "text": "carhartt j97 xl" } },
+      "status": 429,
+      "response": { "code": "rate_limited", "message": "visitor bucket empty", "failed_step": "edge", "retry": { "by": "auto", "after_s": 20 } }
+    },
+    {
+      "name": "compare", "endpoint": "POST /v1/compare", "path": "/v1/compare", "auth": "visitor",
+      "request": { "headers": { "Idempotency-Key": "idk_cmp_01" }, "body": { "url": "https://www.mercari.com/us/item/m00000000001" } },
+      "status": 200,
+      "response": { "product_id": "pr_4hd1", "this": { "site": "mercari", "condition": "used_good", "seller_kind": "person", "delivered_cents": { "amount_cents": 8150, "currency": "USD" }, "delivery_min_days": 3, "delivery_max_days": 6, "stock": 1, "ships_from": "US-OH", "ships_to": "US" }, "others": [{ "site": "ebay", "condition": "used_good", "seller_kind": "person", "delivered_cents": { "amount_cents": 7900, "currency": "USD" }, "delivery_min_days": 2, "delivery_max_days": 5, "stock": 1, "ships_from": "US-PA", "ships_to": "US" }], "verdict": "a little high", "citation_id": "ci_cm1" }
+    },
+    {
+      "name": "products.get", "endpoint": "GET /v1/products/:id", "path": "/v1/products/pr_4hd1", "auth": "visitor",
+      "status": 200,
+      "response": { "id": "pr_4hd1", "brand": "Carhartt", "model": "Detroit Jacket J97", "variant": "brown duck, blanket lined", "category": "apparel", "used_price": { "range": { "low": { "amount_cents": 8500, "currency": "USD" }, "high": { "amount_cents": 11500, "currency": "USD" } }, "basis_count": 41, "as_of": "2026-11-15T03:58:00Z", "citation_id": "ci_41x", "state": "shown" }, "retail_price": { "value": { "amount_cents": 15999, "currency": "USD" }, "basis_count": 1, "as_of": "2026-11-15T00:00:00Z", "citation_id": "ci_rt1", "state": "shown" }, "trend": { "value": "rising", "basis_count": 90, "as_of": "2026-11-15T00:00:00Z", "citation_id": "ci_tr1", "state": "shown" }, "offers": [{ "site": "ebay", "condition": "used_good", "seller_kind": "person", "delivered_cents": { "amount_cents": 7900, "currency": "USD" }, "delivery_min_days": 2, "delivery_max_days": 5, "stock": 1, "ships_from": "US-PA", "ships_to": "US" }] }
+    },
+    {
+      "name": "products.history", "endpoint": "GET /v1/products/:id/history", "path": "/v1/products/pr_4hd1/history?range=90d", "auth": "visitor",
+      "status": 200,
+      "response": { "product_id": "pr_4hd1", "range": "90d", "points": [{ "day": "2026-08-17", "site": "ebay", "band": "sold_p50", "value_cents": { "amount_cents": 9100, "currency": "USD" } }, { "day": "2026-11-14", "site": "ebay", "band": "sold_p50", "value_cents": { "amount_cents": 9800, "currency": "USD" } }], "citation_id": "ci_h1", "state": "shown" }
+    },
+    {
+      "name": "trends", "endpoint": "GET /v1/trends", "path": "/v1/trends?category=apparel&window=7d", "auth": "visitor",
+      "status": 200,
+      "response": { "category": "apparel", "window": "7d", "rows": [{ "product_id": "pr_4hd1", "title": "Carhartt Detroit Jacket J97", "direction": "rising", "change_pct": 7, "basis_count": 63, "as_of": "2026-11-15T00:00:00Z", "citation_id": "ci_tr2", "state": "shown" }] }
+    },
+    {
+      "name": "index.get", "endpoint": "GET /v1/index/:id", "path": "/v1/index/workwear", "auth": "visitor",
+      "status": 200,
+      "response": { "index": "workwear", "basket_version": 2, "points": [{ "day": "2026-11-14", "value": 104.2, "era": "2026" }], "citation_id": "ci_ix1", "state": "shown" }
+    },
+    {
+      "name": "out", "endpoint": "GET /v1/out", "path": "/v1/out?listing=mt_77", "auth": "visitor",
+      "status": 302, "headers": { "Location": "https://www.mercari.com/us/item/m00000000001?ref=example" }, "response": null
+    },
+    {
+      "name": "genie", "endpoint": "POST /v1/genie", "path": "/v1/genie",
+      "request": { "headers": { "Idempotency-Key": "idk_gn_01" }, "body": { "question": "Which site sold my jackets fastest this year?" } },
+      "status": 200,
+      "response": { "answer": "Depop, in 6 days on average across 4 jackets.", "sql": "select site, avg(days_to_sell) from sales where category = 'apparel' group by site", "rows": [["depop", 6.0], ["ebay", 11.5]], "citation_id": "ci_gn1" }
+    },
+    {
+      "name": "sources.health", "endpoint": "GET /v1/sources/health", "path": "/v1/sources/health?site=ebay&need=sold",
+      "status": 200,
+      "response": { "routes": [{ "route_id": "com.ebay.browse.sold", "site": "ebay", "need": "sold", "kind": "official_api", "breaker": "closed", "success": 0.97, "p50_ms": 420, "p95_ms": 1300, "right_90d": 0.93, "checked_at": "2026-11-15T04:00:00Z" }] }
+    },
+    {
+      "name": "follows.create", "endpoint": "POST /v1/follows", "path": "/v1/follows",
+      "request": { "headers": { "Idempotency-Key": "idk_fo_01" }, "body": { "target": { "product_id": "pr_4hd1" }, "channel": "push" } },
+      "status": 201,
+      "response": { "id": "fo_j1", "target": { "product_id": "pr_4hd1" }, "channel": "push", "state": "active", "opt_in_at": "2026-11-15T05:10:00Z", "first_seen_price_cents": { "amount_cents": 9800, "currency": "USD" }, "version": 1 }
+    },
+    {
+      "name": "follows.list", "endpoint": "GET /v1/follows", "path": "/v1/follows", "list": true,
+      "status": 200,
+      "response": { "data": [{ "id": "fo_j1", "target": { "product_id": "pr_4hd1" }, "channel": "push", "state": "active", "muted_at": null, "version": 1 }], "next_cursor": null }
+    },
+    {
+      "name": "follows.mute", "endpoint": "PATCH /v1/follows/:id", "path": "/v1/follows/fo_j1",
+      "request": { "body": { "version": 1, "muted": true } },
+      "status": 200,
+      "response": { "id": "fo_j1", "state": "muted", "muted_at": "2026-11-15T05:11:00Z", "version": 2 }
+    },
+    {
+      "name": "follows.delete", "endpoint": "DELETE /v1/follows/:id", "path": "/v1/follows/fo_j1",
+      "status": 204, "response": null
+    }
+  ]
+}
