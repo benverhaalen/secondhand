@@ -1,34 +1,22 @@
 {
   "route": "you/[page]",
-  "screen": "you-payouts",
+  "screen": "you-settings",
   "states": [
-    "typical"
+    "typical",
+    "new",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
   ],
-  "status": "fail",
+  "skip": "empty: every setting is there from the start, so the page is never empty; one: the page lists every setting, never one",
+  "status": "clean",
   "findings": [
     {
-      "level": "error",
-      "id": "B34",
-      "where": "screen \"$132.33\"",
-      "msg": "spills out of [amount]: a thing holds what is in it (ledger L37)"
-    },
-    {
       "level": "warn",
-      "id": "B16",
-      "where": "screen \"Marquette 74 Final Four tee, gold, XL\"",
-      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "screen <div>",
-      "msg": "has a fill of rgb(242, 242, 242), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"you-payouts\"",
-      "msg": "is not drawn in the states new, empty, one, dense, loading, failed, offline: draw each, or say why it can't happen with data-skip=\"new: why\""
+      "id": "L2",
+      "where": "screen",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
     },
     {
       "level": "warn",

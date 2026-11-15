@@ -1,0 +1,41 @@
+{
+  "route": "you/connections/[site]",
+  "screen": "you-site",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "one: a site page counts its rows in sections, so one row is drawn as typical",
+  "status": "fail",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 1 \"Marquette 74 Final Four tee, gold, XL\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "error",
+      "id": "U1",
+      "where": "screen 1 <button>",
+      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
+    },
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "screen 1",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}
