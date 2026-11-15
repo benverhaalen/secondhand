@@ -25,9 +25,9 @@ ROWS_SCHEMA = 'checked_at TIMESTAMP, table_name STRING, row_id STRING, rule STRI
 
 
 def sweep(sql):
-    unlogged = sql("SELECT DISTINCT m.principal FROM secondhand.governance.principal_map m "
+    unlogged = sql("SELECT DISTINCT m.principal, m.grant_id FROM secondhand.governance.principal_map m "
                    "WHERE m.user_id = '*' AND NOT EXISTS (SELECT 1 FROM secondhand.governance.break_glass b "
-                   'WHERE b.principal = m.principal AND b.ended_at IS NULL)', {})
+                   'WHERE b.id = m.grant_id AND b.ended_at IS NULL)', {})
     violations = []
     for row in unlogged:
         principal = row['principal']
@@ -35,15 +35,17 @@ def sweep(sql):
             '(id, principal, reason, started_at, ended_at, reason_closed) '
             "VALUES (:id, :principal, 'unlogged wildcard found by guard', current_timestamp(), current_timestamp(), 'swept by guard')",
             {'id': 'bg_' + uuid4().hex, 'principal': principal})
-        sql("DELETE FROM secondhand.governance.principal_map WHERE principal = :principal AND user_id = '*'",
-            {'principal': principal})
+        if row['grant_id'] is None:
+            sql("DELETE FROM secondhand.governance.principal_map WHERE principal = :principal AND user_id = '*' AND grant_id IS NULL",
+                {'principal': principal})
+        else:
+            sql('DELETE FROM secondhand.governance.principal_map WHERE grant_id = :id', {'id': row['grant_id']})
         violations.append({'table_name': 'principal_map', 'row_id': principal,
                            'rule': 'principal_map_unlogged_wildcard', 'data': None})
     stale = sql('SELECT id, principal FROM secondhand.governance.break_glass '
                 'WHERE ended_at IS NULL AND started_at < current_timestamp() - INTERVAL 60 MINUTES', {})
     for row in stale:
-        sql("DELETE FROM secondhand.governance.principal_map WHERE principal = :principal AND user_id = '*'",
-            {'principal': row['principal']})
+        sql('DELETE FROM secondhand.governance.principal_map WHERE grant_id = :id', {'id': row['id']})
         sql("UPDATE secondhand.governance.break_glass SET ended_at = current_timestamp(), reason_closed = 'swept by guard' "
             'WHERE id = :id AND ended_at IS NULL', {'id': row['id']})
     return violations

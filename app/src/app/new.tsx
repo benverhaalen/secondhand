@@ -49,7 +49,11 @@ export default function New() {
   const opened = useCallback((p: CirclePhase) => {
     if (p === 'open' && picked) router.replace({ pathname: '/camera', params: { mode: picked.mode } } as Href);
   }, [picked]);
-  const choose = (mode: Mode, index: number) => { rememberMode(mode); setPicked({ mode, index }); };
+  const choose = (mode: Mode, index: number) => {
+    rememberMode(mode);
+    if (mode === 'track') { router.replace('/want' as Href); return; }
+    setPicked({ mode, index });
+  };
   // Each job ends where its camera ends: a draft to review, the value page, the matches.
   const go = () => {
     if (sheet === 'sell') { if (ask && !asked) { setAsked(true); return; } router.replace(`/item/${DRAFT_ID}` as Href); return; }

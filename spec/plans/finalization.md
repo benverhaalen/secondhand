@@ -1,4 +1,4 @@
-# Finalization: every fix, in order, and who carries it
+# Finalization: every fix, in order, and who carries it Built: `harness/compose.ts` on main (87363be1), `SECONDHAND_CHROME` the one name. Waiting on the server lead to call it from runtime.ts; then the benchmark | Done (5477b7e7): `api/search.test.ts` 59 rerun by the lead | Built (5477b7e7): settles without Apify, no shown-only row reaches the call (tests rerun). Open: the run-cap port in the Store and the token, both the server lead's; the late frame after `done` | In build (search-route-1, round 2) | Done (5477b7e7): ten visitors, one eBay and one Depop read (test rerun by the lead) | In build (search-route-1, round 2) | Built (5477b7e7): commit navigation, one in-page call, `bench/reads.mjs` keeps the log. Live run 2026-11-15 12:28 UTC: eBay answered 403 on the first read; rerun after the back-off | Built (06e40795): seven classes, counts in `/v1/sources/health`, a refusal pauses the site 15 min doubling to 4 h. Depop live 12:29 UTC: 24 answered, 8 empty, 0 refused or challenged of 32 | Done (06e40795): `scripts/search-errors-check.mjs` prints [] (rerun by the lead) | Built (87363be1): compose.test.ts shows the live flag never reaches a fetch; done when the server lead removes runtime.ts's fetch clients |
 
 Written 2026-11-15 by the orchestrator for Nate's side (Claude Code, Fable), on Nate's word: "Lets address all fixes, and then also fully realize the system" ([words](../../product/words.md#2026-11-15-nate-address-every-fix-then-fully-realize-the-system-how-capture-should-run)). It rests on [the audit of main](audit-2026-11-15.md), written first from the code, and on Ben's plan, read after it ([what's left](whats-left.md), [the redesign's wiring list](../redesign/README.md#8-left-to-wire)). Everything here that Nate has not said himself is an *agent proposal* until he rules.
 
@@ -36,10 +36,26 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | SV9 | Monitoring a linked account: the signed-in client composed, and the watcher reading inbox, offers, orders and listing interest on its schedule. Writes stay dry | One real account linked by Nate in the live view; a read of each kind recorded |
 | SV10 | The rest of the server review: a decision signing key that is required and shared, a visitor id the server issues and signs, the idempotency slot taken before the handler runs, a replayed refresh token revoking its family, example rows no longer seeded into the real store, push tokens not stored raw, a refusal to start when a required variable is missing | The test the [review](audit-2026-11-15/review-server.md) names for each |
 
+**State** (server lead, 2026-11-15, about 12:40 UTC; a row is done only when someone who did not write it reran its proof):
+
+| Id | State | Where |
+|---|---|---|
+| SV0 | built, on main; fresh Opus review running | the store is SQLite through node:sqlite (decision: [server-store.md](server-store.md)), c19e8af6; `node server/main.ts`, 9221b28a; proof `node --test server/main.test.ts` (6/6 on the Mac: a session written in `auth.ts` is read by the `/v1/me` route; limits and rules written in turn both survive). The full email sign-in through the server waits on SV3 |
+| SV1 | building | Mac workers srv-auth-1 (sign-in state), srv-http-1 (idempotency, visitor limits, decision key and versions, last open), srv-jobs-1 (jobs and frames on disk) |
+| SV2 | building | srv-jobs-1: a row is written only when its own `may_store` is true and `keep_until` has not passed; the search lead adds those fields to every row |
+| SV3 | building | srv-auth-1: the `sendCode` port, `SECONDHAND_DEV_CODE` for development only, refused in production; the vendor is open (§9.2) |
+| SV4 | partly on main | the entry starts the watcher and the pipeline (watch ticks logged, SIGTERM exits 0, run on the Mac); Dockerfile and fly.toml building (srv-host-1). Nothing created on Fly |
+| SV5 | partly on main; review running | account lookups scoped by person, fd545dcb; the job read and the example visitor in srv-jobs-1 |
+| SV6 | the engines lead's (EN6), agreed 2026-11-15 | built on the SV7 port |
+| SV7 | next | land the observation writer from `w/int-obs-1` with the rights refusal and per-row fields; ports agreed with the engines and data leads |
+| SV8 | not started | |
+| SV9 | not started | needs Nate's linked account (§9.3) |
+| SV10 | building in part | srv-http-1 (signing key required, signed visitor id, idempotency slot first, required variables), srv-auth-1 (refresh replay revokes the family), srv-vault-1 next (vault on disk, push tokens in the vault, examples off in production) |
+
 ## 3. Search and the sources (lead: search)
 
-| Id | Fix | Proof |
-|---|---|---|
+| Id | Fix | Proof | State |
+|---|---|---|---|
 | SR1 | The anonymous browser clients are composed into the runtime when their key or a local browser is present, so Depop and eBay answer a person who is not signed in. One name for the local browser path | The dev server shows four sources arriving; the benchmark's 20 items run twice |
 | SR2 | A visitor is a visitor: the caller comes from the request, person-only rows are not asked for a visitor, and Mercari says "needs your account" | Tests for each; the visitor's job has no failed Facebook or Mercari stage |
 | SR3 | Apify never sits in the path an answer waits on: it fills in the background, its rows are stored as shown-only and never handed to a model, and the per-person cap is in the Store. The Facebook row is not shown until the fill exists | A test that a search with the token set settles without waiting on Apify, and that no shown-only row reaches the same-product call |
@@ -50,6 +66,7 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | SR8 | Every Depop read is classified (answered, empty, refused, challenged, shape changed, timed out) and counted, shown in `/v1/sources/health`. A refusal or a challenge makes the site back off; nothing retries around one | A day's counts by class from the log |
 | SR9 | Swallowed errors in the harness and browser files logged with their cause; the static findings under `harness/sites/` cleared | The gate shows none in those folders |
 | SR10 | The server cannot call Depop's own web data address by setting a variable; that read stays inside the site's page | A test that the "live" setting does not reach it |
+| SR11 | The person picks the sources: `POST /v1/search` takes `sources` (ids, or `osint` for the group), every source, stage and searched entry says `platform` or `osint`, and Dupe rows keep "via Dupe.com". eBay is read in every buy search and lands last, the conversation answering from the earlier frames ([Nate](../../product/words.md#2026-11-15-nate-ebay-last-in-every-buy-search-with-the-conversation-answering-while-it-waits-dupe-keeps-its-row-credit)) | Tests for the filter, the refusals and the group on every source | Briefed (search-route-1, round 3) |
 
 ## 4. Engines and the buying conversation (lead: engines)
 
