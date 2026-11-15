@@ -37,18 +37,19 @@ export interface Usage { input_tokens: number; output_tokens: number; cache_read
 export interface Answer {
   state: 'answered' | 'refused' | 'failed';
   reason?: string;
+  not_built?: string[];
   blocks: Block[];
   results: Record<string, ToolResult>;
   sources: WebSource[];
   calls: ToolCallInfo[];
   gate: { checked: number; cut: number; cut_sentences: string[]; tags_removed: number };
   model: string;
-  effort: 'low' | 'medium' | 'high';
+  effort: 'low' | 'medium';
   usage: Usage;
   ms: { first_text: number | null; done: number };
 }
 
 export type AssistEvent =
-  | { event: 'assist.tool'; data: ToolCallInfo & { phase: 'start' | 'end' } }
+  | { event: 'assist.tool'; data: Omit<ToolCallInfo, 'input'> & { phase: 'start' | 'end' } }
   | { event: 'assist.text'; data: { delta: string } }
-  | { event: 'assist.settled'; data: Answer };
+  | { event: 'assist.settled'; data: Omit<Answer, 'calls'> & { calls: Omit<ToolCallInfo, 'input'>[] } };

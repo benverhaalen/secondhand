@@ -161,6 +161,9 @@ test('server code is not a screen and hand-run probes are tooling: no logo, spac
   assert.equal(await pick('L6', { 'app/src/edge/harness/sites/ebay/adapter.ts': "export const why = 'Listed on eBay';" }), '');
   assert.equal(errors(run(brand, { ...scales, 'app/src/engines/negotiation/learn.ts': 'export const o = { margin: 0.5 };' })), '');
   assert.match(errors(run(brand, { ...scales, 'app/src/ui/a.tsx': 'export const o = { margin: 0.5 };' })), /B17/);
+  // A font's line-gap-override is a metric, written in a string outside any font-face block in fonts.ts.
+  assert.equal(errors(run(brand, { ...scales, 'app/src/ui/fonts.ts': "export const css = 'line-gap-override:9.7%';" })), '');
+  assert.match(errors(run(brand, { ...scales, 'app/src/ui/b.css': '.a { row-gap: 9.7%; }' })), /B17/);
   const print = 'cons' + 'ole.log("rows");\n';
   assert.equal(errors(run(logging, { 'app/src/edge/harness/sites/depop/live.ts': print, 'bench/run.mjs': print })), '');
   assert.match(errors(run(logging, { 'app/src/edge/harness/sites/depop/adapter.ts': print })), /no one can replay/);

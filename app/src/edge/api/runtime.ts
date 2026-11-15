@@ -9,7 +9,12 @@ import { linkedSearch, readSearchPage, type BrowserPage } from '../harness/sites
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
-import { runtimePorts as searchRuntime } from '../intel/public/search.ts';
+import { runtimePorts as searchRuntime, searchSource } from '../intel/public/search.ts';
+import { SOURCES, sourcesFor, routeId } from '../intel/public/sources.ts';
+import { sameProduct } from '../intel/reconcile.ts';
+import { jevAsk } from '../intel/jev.ts';
+import { availableNow, type Offer } from '../intel/swarm.ts';
+import { runWant, type WantRow } from './wants.ts';
 import { createApify } from '../harness/sites/apify/adapter.ts';
 import { example, examplesServed } from './examples.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
@@ -48,6 +53,10 @@ export function seedExamples(st: Store) {
     seed('item', { ...card, id: card.id, user_id: EXAMPLE_USER, tile: tiles.find(row => row.id === card.id), strategy_options: { fast: response('items.strategy').strategies } });
     for (const tile of (response('items.list').data as Row[])) seed('item', { attributes: [], photos: [], listings: [], ...tile, tile });
     for (const listing of card.listings as Row[]) seed('listing', { ...listing, item_id: card.id, account_id: listing.site === 'ebay' ? 'acc_eb1' : 'acc_dp1', required_fields: ['chest_width'] });
+    for (const order of response('orders.list').data as Row[]) {
+      const amounts = Object.fromEntries(['price_cents', 'fees_cents', 'shipping_cents', 'payout_cents'].map(key => [key, object(order[key]) ? order[key].amount_cents : order[key]]));
+      seed('order', { ...order, ...amounts });
+    }
     const preview = response('accounts.import_preview');
     for (const listing of preview.listings as Record<string, unknown>[]) seed('listing', { ...listing, id: `ls_import_${listing.external_id}`, account_id: preview.account_id, site: preview.site, import_preview: true, read_at: preview.read_at });
     for (const account of response('accounts.list').data as Row[]) seed('account', account);
@@ -70,6 +79,7 @@ export function seedExamples(st: Store) {
 export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
   adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number; vault?: AuthVault;
   publicClients?: { ebay: PageClient; depop: Client; close(): Promise<void> }; apifyToken?: string;
+  wantAsk?: Parameters<typeof sameProduct>[2];
 } = {}) {
   const now = options.now ?? Date.now;
   if (examplesServed()) seedExamples(st);
@@ -283,7 +293,50 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       return result;
     },
   });
-  return { store: st, vault, accounts, harness, close, leases, params, watcher, pipeline: {
+  async function runWants() {
+    const failures: unknown[] = [];
+    for (const due of st.systemRows<WantRow>('want')) {
+      if (!readable(due, due.user_id) || due.state !== 'active') continue;
+      try {
+        if (due.next_check_at !== undefined && !Number.isFinite(Date.parse(due.next_check_at))) throw new Error(`invalid next_check_at for ${due.id}`);
+        if (due.next_check_at && Date.parse(due.next_check_at) > now()) continue;
+        await leases.withLease(`want:${due.user_id}:${due.id}`, 'watch.want', params.get('job_lease_ttl_ms'), async () => {
+          const at = now();
+          const seconds = due.schedule?.every_min === undefined ? params.get('watch_cadence_s', { person: due.user_id }) : due.schedule.every_min * 60;
+          if (!Number.isFinite(seconds) || seconds <= 0) throw new RangeError('want cadence must be finite and positive');
+          const checked: Record<string, string> = {}, behind: string[] = [], offers: Offer[] = [];
+          for (const site of due.sites) {
+            const source = sourcesFor('background', SOURCES).find(source => source.site === site && source.rights.may_store && (source.lane === 'harness' || source.lane === 'public_page'));
+            if (!source) { behind.push(site); continue; }
+            const result = await searchSource(source, due.text, 'search', { caller: 'background', person_id: due.user_id, accounts,
+              harness: { call: (site, verb, args, opts) => harness.call(site, verb, { ...args, person_id: due.user_id }, opts) },
+              routed: site => routed(site) || !!options.adapters?.some(adapter => adapter.manifest.site === site && adapter.manifest.verb === 'search'), log });
+            if (!['hit', 'empty'].includes(result.searched.outcome) || result.searched.dropped) { behind.push(site); continue; }
+            if (result.rows.some(row => row.currency !== 'USD') || object(due.max_total_cents) && due.max_total_cents.currency !== 'USD') { behind.push(site); continue; }
+            const candidates = result.rows.filter(row => !row.sold && row.stock !== 'out_of_stock').map(row => ({ ...row, id: `ls_${site}_${row.id}`, listing_id: row.id!, site, title: row.title!, url: row.url!, price_cents: row.price_cents!, route_id: result.searched.route_id ?? routeId(source) }));
+            const judged = await sameProduct({ title: due.text }, candidates, options.wantAsk ?? ((state, questions) => jevAsk(state, questions, { log })));
+            if (judged.some(row => row.match === 'unresolved' && row.keep === 'keep')) { behind.push(site); continue; }
+            offers.push(...candidates.flatMap((row, index) => {
+              const match = judged[index];
+              if (match.keep !== 'keep' || !['exact', 'likely_same_model'].includes(match.match)) return [];
+              return [{ ...row, condition: row.condition ?? 'unknown', relation: 'same_product' as const, shipping_cents: row.shipping_cents ?? null, tax_rate: 0 }];
+            }));
+            checked[site] = new Date(at).toISOString();
+          }
+          const current = st.get<WantRow>('want', due.user_id, due.id);
+          if (!current || !readable(current, due.user_id) || current.state !== 'active' || current.version !== due.version) return;
+          runWant(st, due.id, availableNow(offers, { medianShipping: 0 }), [], { user_id: due.user_id, now: new Date(at), localHour: new Date(at).getUTCHours(), log, checked, behind, next_check_at: new Date(at + seconds * 1000).toISOString() });
+        });
+      } catch (error) {
+        log.error('watch.want', error, { want_id: due.id });
+        failures.push(error);
+      }
+    }
+    if (failures.length) throw new AggregateError(failures, 'want checks failed');
+  }
+  return { store: st, vault, accounts, harness, close, leases, params, watcher: { ...watcher,
+    async tick() { const result = await watcher.tick(); await runWants(); return result; },
+  }, pipeline: {
     async runOnce(limit: number) {
       const claimed = claimJobs(limit, worker, false);
       await Promise.all(claimed.map(job => running.run(job, () => pipeline.runOnce(1))));
@@ -300,9 +353,12 @@ export const runtime = createRuntime(store, log, { publicClients: sources.public
 let closing: Promise<void> | undefined;
 runtime.close = () => closing ??= Promise.resolve().then(() => sources.close());
 
+export function readable(row: Row, user_id: string): boolean {
+  return !row.deleted && row.user_id === user_id && (row.data !== 'example' || user_id === EXAMPLE_USER && examplesServed());
+}
 export function owned(table: Table, ctx: Ctx, id: string): Row {
   const row = runtime.store.get(table, ctx.user_id!, id);
-  if (!row || row.deleted) throw new ApiError('not_found', `no ${table} ${id} for this user`, 'read');
+  if (!row || !readable(row, ctx.user_id!)) throw new ApiError('not_found', `no ${table} ${id} for this user`, 'read');
   return row;
 }
 export function checkVersion(row: Row, expected: unknown) {

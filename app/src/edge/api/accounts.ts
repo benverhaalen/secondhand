@@ -1,8 +1,8 @@
 // Rests-on: spec/product.md §6 Secrets and marketplace sessions, §7; spec/examples/you.json.
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { manifestFor, fields, bool, strings, oneOf, invalid, sites, object } from './captures.ts';
-import { runtime, engine, owned, publicRow, list, checkVersion } from './runtime.ts';
-import { example } from './examples.ts';
+import { runtime, engine, owned, publicRow, readable, EXAMPLE_USER, list, checkVersion } from './runtime.ts';
+import { example, examplesServed } from './examples.ts';
 import type { Row, JobRow } from '../events/ports.ts';
 import type { Site } from '../harness/protocol.ts';
 
@@ -15,7 +15,7 @@ function accountJob(ctx: Ctx, account: Row, kind: 'import' | 'unlink', args: Rec
 
 async function readListings(ctx: Ctx, account: Row) {
   const result = await runtime.harness.call<Record<string, unknown>[]>(account.site as Site, 'read_listings', { account_id: account.id, person_id: ctx.user_id ?? undefined, shop_id: account.shop_id });
-  if (!result.ok) throw new ApiError('site_failed', result.error.message, 'read_listings', { by: 'user' });
+  if (!result.ok && !(ctx.user_id === EXAMPLE_USER && examplesServed() && ['no_route', 'policy_refused'].includes(result.error.code))) throw new ApiError('site_failed', result.error.message, 'read_listings', { by: 'user' });
   if (result.ok) {
     if (!Array.isArray(result.data) || !result.data.every(row => object(row) && typeof row.external_id === 'string' && typeof row.price_cents === 'number')) throw new ApiError('site_failed', 'listing response is not valid', 'read_listings', { by: 'user' });
     const at = new Date().toISOString();
@@ -32,8 +32,8 @@ async function readListings(ctx: Ctx, account: Row) {
       runtime.store.put('account', { ...account, read_at: at });
     });
   }
-  const rows = runtime.store.rows('listing', { user_id: ctx.user_id!, account_id: account.id, import_preview: true }).filter(row => row.preview_current !== false);
-  return { rows, source: 'live', read_at: new Date().toISOString() };
+  const rows = runtime.store.rows('listing', { user_id: ctx.user_id!, account_id: account.id, import_preview: true }).filter(row => readable(row, ctx.user_id!) && row.preview_current !== false);
+  return { rows, source: result.ok ? 'live' : 'stored', read_at: result.ok ? new Date().toISOString() : account.read_at, reason: result.ok ? undefined : result.error.code };
 }
 
 export const handlers: Record<string, Handler> = {
@@ -53,7 +53,7 @@ export const handlers: Record<string, Handler> = {
     ctx.log.event('state.change', { entity: 'account', id, to: 'paused' });
     return { status: 201, body: connected };
   }),
-  'GET /v1/accounts': engine(ctx => ({ status: 200, body: list(ctx, runtime.store.rows('account', { user_id: ctx.user_id! }).filter(row => !row.deleted && !row.pending).map(row => publicRow(row))) })),
+  'GET /v1/accounts': engine(ctx => ({ status: 200, body: list(ctx, runtime.store.rows('account', { user_id: ctx.user_id! }).filter(row => readable(row, ctx.user_id!) && !row.pending).map(row => publicRow(row))) })),
   'GET /v1/accounts/:id/import-preview': engine(async ctx => {
     let account = owned('account', ctx, ctx.params.id);
     const username = ctx.query.get('username')?.trim().replace(/^@/, '');
@@ -65,13 +65,13 @@ export const handlers: Record<string, Handler> = {
       account = { ...account, shop_id: String(result.data.shop_id), import_username: username };
       account = runtime.store.put('account', account);
     }
-    if (account.site === 'depop' && !account.shop_id) return { status: 200, body: { account_id: account.id, site: account.site, needs_username: true, listings: [] } };
+    if (account.site === 'depop' && !account.shop_id && !(ctx.user_id === EXAMPLE_USER && examplesServed())) return { status: 200, body: { account_id: account.id, site: account.site, needs_username: true, listings: [] } };
     const read = await readListings(ctx, account);
     const listings = read.rows.map(row => {
       const { external_id, title, price_cents, photo_url, state, matches_item_id } = row;
       return { external_id, title, price_cents, photo_url, state, matches_item_id: matches_item_id ?? null };
     });
-    return { status: 200, headers: { 'X-Secondhand-Source': read.source }, body: { account_id: account.id, site: account.site, username: account.import_username, read_at: read.read_at, listings } };
+    return { status: 200, headers: { 'X-Secondhand-Source': read.source, ...(read.reason ? { 'X-Secondhand-Reason': read.reason } : {}) }, body: { account_id: account.id, site: account.site, username: account.import_username, read_at: read.read_at, listings, purchases: account.purchases ?? 0 } };
   }),
   'POST /v1/accounts/:id/import': engine(async ctx => {
     const account = owned('account', ctx, ctx.params.id);
@@ -81,7 +81,7 @@ export const handlers: Record<string, Handler> = {
     const rows = ctx.body.listings ? read.rows.filter(row => !selected || selected.includes(String(row.external_id))) : [];
     if (selected?.some(id => !read.rows.some(row => row.external_id === id))) throw invalid('external_ids includes a listing outside this account', ['external_ids']);
     const body = accountJob(ctx, account, 'import', { listing_ids: rows.map(row => row.id), purchases: ctx.body.purchases });
-    return { status: 202, headers: { 'X-Secondhand-Source': read.source }, body };
+    return { status: 202, headers: { 'X-Secondhand-Source': read.source, ...(read.reason ? { 'X-Secondhand-Reason': read.reason } : {}) }, body };
   }),
   'DELETE /v1/accounts/:id': engine(async ctx => {
     const row = owned('account', ctx, ctx.params.id);

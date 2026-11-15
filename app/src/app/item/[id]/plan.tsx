@@ -15,7 +15,7 @@
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
 import { View } from 'react-native';
-import { Approve, Blank, EmptyState, FootButton, Guess, Icon, IconButton, Line, List, Pill, Row, SiteBadge, Skeleton, Stack, Txt, log } from '@/ui';
+import { Approve, Blank, EmptyState, FootButton, Guess, Icon, IconButton, Line, List, Pill, Photo, Press, Row, SiteBadge, Skeleton, Stack, Txt, log, type PhotoSrc } from '@/ui';
 import { Chips } from '@/ui/parts/chips';
 import { GuessPick } from '@/ui/parts/pick';
 import { PriceTrack } from '@/ui/parts/price-track';
@@ -27,6 +27,7 @@ import { SITE_LABEL, range, usd, type Item, type Site, type World } from '@/demo
 import { useScreen } from '@/demo/screen';
 import { SPREADS, type Spread } from '@/engines/listing/spreads';
 import * as M from '@/item/model';
+import { photo } from '@/demo/photos';
 
 // How many sites the plan posts to decides one, typical or dense, so each route says where the other two are drawn.
 // Loading, failed and offline are drawn from ?state= (useScreen); new and empty can't happen, a plan is of an item.
@@ -50,7 +51,7 @@ export default function ItemPlan() {
   const onClosed = () => { if (next.current) router.replace(next.current); else router.back(); };
   if (state === 'loading') {
     return (
-      <RouteSheet name="item-plan" state="loading" skip={skip('loading')} title="Plan" onClosed={onClosed}>
+      <RouteSheet flow name="item-plan" state="loading" skip={skip('loading')} title="choose your price" onClosed={onClosed}>
         <Stack gap="cards"><Skeleton of="notice" /><Skeleton of="card-item" /></Stack>
       </RouteSheet>
     );
@@ -58,7 +59,7 @@ export default function ItemPlan() {
   if (!found) {
     // Didn't load: the one fix is to load it again (frontend-standard §4, Error). Gone: nothing to try.
     return (
-      <RouteSheet name="item-plan" state="failed" skip={skip('failed')} title="Plan" onClosed={onClosed}>
+      <RouteSheet flow name="item-plan" state="failed" skip={skip('failed')} title="choose your price" onClosed={onClosed}>
         <EmptyState title="Can’t open this item" line={state === 'failed' ? 'This item didn’t load' : 'This item is no longer available'}
           action={state === 'failed' ? { id: 'plan-retry', label: 'Retry', onPress: () => router.replace(`/item/${id}/plan${world ? `?world=${world}` : ''}` as Href) } : undefined} />
       </RouteSheet>
@@ -98,6 +99,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
   const [waiting, setWaiting] = useState(false);
   const [farOk, setFarOk] = useState<number | null>(null);
   const [numbers, setNumbers] = useState(false);
+  const [settings, setSettings] = useState(false);
   // Any pick the person makes brings up Save, even one back to where it started: they made a choice (pages.md §6.7).
   const [touched, setTouched] = useState(false);
   const edit = () => { setSaved(false); setWaiting(false); setTouched(true); };
@@ -147,37 +149,22 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
   const rule = SPREADS[spread];
   const track = v ? { min: Math.floor(Math.min(floor, v.low * 0.7) / 100), max: Math.ceil((v.high * 1.3) / 100) } : null;
   return (
-    <RouteSheet name="item-plan" state={offline ? 'offline' : drawn} skip={skip(drawn)} title="Plan" foot={foot} onClosed={onClosed}>
+    <RouteSheet flow name="item-plan" state={offline ? 'offline' : drawn} skip={skip(drawn)} title="choose your price" foot={foot} onClosed={onClosed}>
       {offline ? (
         <Line><Icon name="refresh" size={12} tone="ink-2" />
           <Txt role="caption">{waiting ? 'Waiting for signal. Your plan saves when you’re back.' : 'Offline. Changes send when you’re back.'}</Txt></Line>
       ) : null}
-      <Stack>
-        <Chips id="choice" name="What do you want" value={choice} options={M.CHOICES} onChange={c => { setChoice(c as M.Choice); setTyped(null); edit(); }} />
-        {modes.length ? (
-          <List>
-            {modes.map(r => (
-              <Row key={r.choice} lead={r.choice === choice ? <Icon name="tick-02" size={12} /> : <View style={{ width: 12 }} />}
-                trail={<Txt role="body" tabular tone={r.choice === choice ? 'ink' : 'ink-2'}>{usd(r.price)}</Txt>}>
-                <Txt role="body" tone={r.choice === choice ? 'ink' : 'ink-2'}>{r.label}</Txt>
-                {r.line ? <Txt role="caption">{r.line}</Txt> : null}
-              </Row>
-            ))}
-          </List>
-        ) : null}
-        {consequence ? <Txt role="body">{consequence}</Txt> : null}
-        {/* Gone fast asks by when (pages.md §6.7 row 4): the date is a guess the person can change. */}
-        {choice === 'fast' ? (
-          <Line><GuessPick id="gone-by" name="Gone by" value={goneBy} choices={goneBys.map(g => ({ id: g.id, label: g.label }))} onPick={g => { setGoneBy(g); edit(); }} /></Line>
-        ) : null}
-      </Stack>
-
+      <Row lead={<Photo src={item.photos[0] ? photo(item.photos[0].key) as PhotoSrc : null} label={item.title} />}>
+        <Txt role="headline" lines={2}>{item.title}</Txt>
+        <Txt role="caption">{`${on.length} ${on.length === 1 ? 'marketplace' : 'marketplaces'} selected`}</Txt>
+      </Row>
       <List>
         <Row>
-          <Txt role="caption">Price</Txt>
+          <Txt role="caption">Listing price</Txt>
           {price !== null
-            ? <Line><Guess key={`price-${choice}-${typed ?? ''}`} id="plan-price" name="Price" value={usd(price)} changed={typed !== null} numeric look="body" onChange={t => { setTyped(t); edit(); }} /></Line>
+            ? <Line><Guess key={`price-${choice}-${typed ?? ''}`} id="plan-price" name="Price" value={usd(price)} changed={typed !== null} numeric look="amount" onChange={t => { setTyped(t); edit(); }} /></Line>
             : <Line><Blank id="plan-price" name="Price" numeric look="body" onChange={t => setTyped(t)} /></Line>}
+          {on.length ? <Txt role="body">{`You get ${range({ low: Math.min(...on.map(s => M.feeLine(s.site, s.price).get)), high: Math.max(...on.map(s => M.feeLine(s.site, s.price).get)) })} after fees`}</Txt> : null}
           {v ? <Txt role="caption">{`Similar ones sold for ${range(v)}`}</Txt> : null}
           {far && v ? (
             <Stack gap="tight">
@@ -193,6 +180,32 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
           <PriceTrack id="price-track" label="Price" min={track.min} max={track.max} value={Math.round(price / 100)} ticks={M.soldTicks(item)}
             caption="Each tick is a sale like it" onChange={d => { setTyped(String(d)); edit(); }} />
         ) : null}
+      </List>
+      <Stack>
+        <Txt role="headline">Your selling plan</Txt>
+        {modes.length ? (
+          <List>
+            {modes.map(r => (
+              <Press key={r.choice} id={`choice-${r.choice}`} label={`${r.label}, ${usd(r.price)}${r.line ? `, ${r.line}` : ''}`} selected={r.choice === choice && r.price === price} round={false} onPress={() => { setChoice(r.choice); setTyped(String(r.price / 100)); edit(); }}>
+              <Row lead={r.choice === choice && r.price === price ? <Icon name="tick-02" size={12} /> : <View style={{ width: 12 }} />}
+                trail={<Txt role="body" tabular tone={r.choice === choice ? 'ink' : 'ink-2'}>{usd(r.price)}</Txt>}>
+                <Txt role="body" tone={r.choice === choice ? 'ink' : 'ink-2'}>{r.label}</Txt>
+                {r.line ? <Txt role="caption">{r.line}</Txt> : null}
+              </Row>
+              </Press>
+            ))}
+          </List>
+        ) : null}
+        <Chips id="choice" name="Other selling plans" value={choice} options={M.CHOICES.filter(c => !modes.some(m => m.choice === c.id))} onChange={c => { setChoice(c as M.Choice); setTyped(null); edit(); }} />
+        {consequence ? <Txt role="body">{consequence}</Txt> : null}
+        {/* Gone fast asks by when (pages.md §6.7 row 4): the date is a guess the person can change. */}
+        {choice === 'fast' ? (
+          <Line><GuessPick id="gone-by" name="Gone by" value={goneBy} choices={goneBys.map(g => ({ id: g.id, label: g.label }))} onPick={g => { setGoneBy(g); edit(); }} /></Line>
+        ) : null}
+      </Stack>
+
+      <Line><Pill id="plan-settings" label={settings ? 'Hide offer settings' : 'Offer settings'} kind="second" onPress={() => setSettings(x => !x)} /></Line>
+      {settings ? <List>
         <Row>
           <Txt role="caption">Lowest you take</Txt>
           <Line><Guess id="plan-floor" name="Lowest you take" value={usd(floor)} changed={floorTyped !== null} numeric look="body" onChange={t => { setFloorTyped(t); edit(); }} /></Line>
@@ -208,13 +221,13 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
         <Row trail={<Switch id="accept-mode" label="Ask me before every offer" on={askEvery} onChange={o => { setAskEvery(o); edit(); }} />}>
           <Txt role="body">Ask me before every offer</Txt>
         </Row>
-      </List>
+      </List> : null}
 
       <Stack>
         <Txt role="caption">Sites</Txt>
         <List>
           {sites.map(s => (
-            <Row key={s.site} lead={<SiteBadge site={s.site} />}
+            <Row key={s.site} lead={<SiteBadge site={s.site} prominent />}
               trail={<Switch id={`site-${s.site}`} label={`Post on ${SITE_LABEL[s.site]}`} on={s.on} disabled={!s.can}
                 onChange={() => { setFlipped(k => (k.includes(s.site) ? k.filter(x => x !== s.site) : [...k, s.site])); edit(); }} />}>
               <Txt role="body" tone={s.on ? 'ink' : 'ink-2'} lines={3}>{s.why}</Txt>
@@ -258,7 +271,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
         numbers={
           <List>
             {on.map(s => { const f = M.feeLine(s.site, s.price); return (
-              <KeepRow key={s.site} site={s.site} line={`Lists at ${usd(f.price)}`} note={`${usd(f.fee)} in fees, on ${f.on}`} keep={`You get ${usd(f.get)}`} />
+              <KeepRow key={s.site} site={s.site} prominentSite line={`Lists at ${usd(f.price)}`} note={`${usd(f.fee)} in fees, on ${f.on}`} keep={`You get ${usd(f.get)}`} />
             ); })}
           </List>
         } />

@@ -54,7 +54,7 @@ export function SearchField({ id, value = '', placeholder, working = false, onSu
             placeholderTextColor={c.ink2}
             onChangeText={setDraft}
             onSubmitEditing={submit}
-            onBlur={() => setEditing(false)}
+            onBlur={() => { if (!focused) setEditing(false); }}
             returnKeyType="search"
             autoCorrect={false}
             style={{ fontSize: Math.max(16, type.t18.fontSize), lineHeight: type.t18.lineHeight, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: c.ink, padding: 0, outlineStyle: 'none' } as object}

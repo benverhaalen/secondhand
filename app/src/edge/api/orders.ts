@@ -2,7 +2,7 @@
 import type { Handler } from './http.ts';
 import { exampleHandler, manifestFor, fields, text, version, strings, money, oneOf, invalid, reference, sites } from './captures.ts';
 
-import { runtime, engine, list, publicRow } from './runtime.ts';
+import { runtime, engine, list, publicRow, readable } from './runtime.ts';
 import type { OrderRow } from '../orders/orders.ts';
 import type { Row } from '../events/ports.ts';
 export const ports = { all: (user_id = '') => runtime.store.rows<Row & OrderRow>('order', { user_id }) };
@@ -10,9 +10,12 @@ export const handlers: Record<string, Handler> = {
   'GET /v1/orders': engine(ctx => {
     const kind = ctx.query.get('kind');
     if (kind && !oneOf('sale', 'purchase')(kind)) throw invalid('unknown order kind');
-    const orders = ports.all(ctx.user_id!).filter(row => !row.deleted && (!kind || row.kind === kind));
+    const rows = ports.all(ctx.user_id!).filter(row => readable(row, ctx.user_id!));
+    const orders = rows.filter(row => !kind || row.kind === kind);
     const data = orders.map(row => {
       const body: Record<string, unknown> = { ...publicRow(row, true), item_id: row.item_id };
+      delete body.history;
+      delete body.payout_recorded_at;
       for (const key of ['price_cents', 'fees_cents', 'shipping_cents', 'payout_cents']) {
         const value = row[key];
         body[key] = typeof value === 'number' ? { amount_cents: value, currency: typeof row.currency === 'string' ? row.currency : 'USD' } : value ?? null;

@@ -4,8 +4,8 @@ import { exampleHandler, manifestFor, fromEngine, fields, text, bool, version, m
 import { ApiError } from './http.ts';
 import { assembleCard, mergeAttribute, type CardPort, type CardRecord, type Attribute } from '../card/card.ts';
 import { planOf, HORIZON_DAYS, type PlanChoice, type Objective } from '../../engines/valuation/path.ts';
-import { example } from './examples.ts';
-import { runtime, createRuntime, seedExamples, engine, owned, checkVersion, publicRow, list } from './runtime.ts';
+import { example, examplesServed } from './examples.ts';
+import { runtime, createRuntime, seedExamples, engine, owned, checkVersion, publicRow, list, readable, EXAMPLE_USER } from './runtime.ts';
 import { memoryStore, type Row } from '../events/ports.ts';
 import { itemLimits, validateLimits, limitsView } from './rules.ts';
 import { write, logReceived } from '../events/intake.ts';
@@ -52,13 +52,24 @@ const choices = example('items.plan_choices').response as PlanChoicesView;
 export const planPorts = { async read(id: string): Promise<PlanChoicesView> { if (id !== choices.item_id) throw new Error('not_found'); return structuredClone(choices); } };
 export const handlers: Record<string, Handler> = {
   'GET /v1/items': engine(async ctx => {
+    const rows = runtime.store.rows('item', { user_id: ctx.user_id! }).filter(row => readable(row, ctx.user_id!));
     const data = [];
-    for (const row of runtime.store.rows('item', { user_id: ctx.user_id! }).filter(row => !row.deleted)) {
+    for (const row of rows) {
       const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
       const tile = selectFields((row.tile as Record<string, unknown> | undefined) ?? row, tileExamples);
       data.push({ ...tile, id: row.id, ...(row.price_cents ? { price_cents: row.price_cents } : {}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
     }
-    return { status: 200, body: list(ctx, data) };
+    const sample = example('items.list').response as { data: { id: string }[]; next_cursor: string | null };
+    const exampleOnly = ctx.user_id === EXAMPLE_USER && examplesServed() && rows.every(row => row.data === 'example') && sample.data.every(tile => rows.some(row => row.id === tile.id));
+    if (exampleOnly && sample.next_cursor && ctx.query.get('cursor') === sample.next_cursor) {
+      const query = new URLSearchParams(ctx.query);
+      query.delete('cursor');
+      const offset = data.findIndex(row => row.id === sample.data.at(-1)?.id) + 1;
+      return { status: 200, body: list({ ...ctx, query }, data.slice(offset)) };
+    }
+    const body = list(ctx, data);
+    if (exampleOnly && !ctx.query.has('cursor') && body.next_cursor === null) body.next_cursor = sample.next_cursor;
+    return { status: 200, body };
   }),
   'GET /v1/items/:id': engine(async (ctx) => {
     const row = owned('item', ctx, ctx.params.id);

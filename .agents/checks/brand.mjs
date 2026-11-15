@@ -33,7 +33,7 @@ export function brand(root, { files }) {
     const t = (read(root, f) ?? '').replace(/@font-face\s*\{[^}]*\}/g, m => m.replace(/[^\n]/g, ' '));
     const rules = [
       [/font-?[Ww]eight["']?\s*[:=]\s*["']?(\d{3})/g, v => [Number(v)], s.weight, 'B13 weight'],
-      [/\b(?:margin|padding|gap|row-gap|column-gap)(?:-?[A-Za-z]*)?["']?\s*[:=]\s*["']?([^;,"'\n}]+)/g, px, s.space, 'B17 spacing'],
+      [/(?<![\w-])(?:margin|padding|gap|row-gap|column-gap)(?:-?[A-Za-z]*)?["']?\s*[:=]\s*["']?([^;,"'\n}]+)/g, px, s.space, 'B17 spacing'],
       [/border-?[Rr]adius["']?\s*[:=]\s*["']?([^;,"'\n}]+)/g, px, s.radius, 'B20 radius'],
     ];
     for (const [re, parse, set, id] of rules) for (const m of t.matchAll(re))

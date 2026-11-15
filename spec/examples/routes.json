@@ -17,6 +17,20 @@
             "needs_session": true
           },
           {
+            "endpoint": "DELETE /v1/connections/:handle",
+            "auth": "user",
+            "source": "engine",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
+            "endpoint": "DELETE /v1/connections/accounts/:id",
+            "auth": "user",
+            "source": "engine",
+            "method": "DELETE",
+            "needs_session": true
+          },
+          {
             "endpoint": "DELETE /v1/follows/:id",
             "source": "example",
             "auth": "user",
@@ -83,6 +97,13 @@
             "endpoint": "GET /v1/citations/:id",
             "source": "example",
             "auth": "user",
+            "method": "GET",
+            "needs_session": true
+          },
+          {
+            "endpoint": "GET /v1/connections",
+            "auth": "user",
+            "source": "engine",
             "method": "GET",
             "needs_session": true
           },
@@ -396,10 +417,10 @@
           },
           {
             "endpoint": "POST /v1/assist",
-            "source": "example",
-            "auth": "user",
+            "source": "engine",
+            "auth": "visitor",
             "method": "POST",
-            "needs_session": true
+            "needs_session": false
           },
           {
             "endpoint": "POST /v1/auth/apple",
@@ -498,6 +519,27 @@
             "auth": "visitor",
             "method": "POST",
             "needs_session": false
+          },
+          {
+            "endpoint": "POST /v1/connections",
+            "auth": "user",
+            "source": "engine",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/connections/:handle/complete",
+            "auth": "user",
+            "source": "engine",
+            "method": "POST",
+            "needs_session": true
+          },
+          {
+            "endpoint": "POST /v1/connections/:handle/view",
+            "auth": "user",
+            "source": "engine",
+            "method": "POST",
+            "needs_session": true
           },
           {
             "endpoint": "POST /v1/conversations/:id/messages",
@@ -645,6 +687,13 @@
             "auth": "user",
             "method": "PUT",
             "needs_session": true
+          },
+          {
+            "endpoint": "PUT /v1/uploads/:id",
+            "auth": "none",
+            "source": "engine",
+            "method": "PUT",
+            "needs_session": false
           }
         ],
         "next_cursor": null

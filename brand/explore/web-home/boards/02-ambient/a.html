@@ -9,8 +9,6 @@
 <!-- Written by make.mjs. A. The rail: real listing photos drift sideways through the field, like a rack you walk past. -->
 <style>
   .lockup { display: inline-flex; align-items: center; text-decoration: none; }
-  .lockup .hand { margin-inline: 12px; }
-  .lockup .hand:first-child { margin-left: 0; } .lockup .hand:last-child { margin-right: 0; transform: scaleX(-1); }
   .hl { font-family: var(--font-display); font-weight: var(--w-display); white-space: nowrap; letter-spacing: -0.01em; }
   header { color: var(--ink); }
   .hero { position: relative; isolation: isolate; min-height: 100svh; display: grid; grid-template-rows: 1fr auto; gap: var(--s-8); padding: 72px var(--mx) var(--mx); background: var(--page); }
@@ -36,7 +34,7 @@
   <section class="hero">
     <header>
       <div class="wrap">
-        <a class="lockup" href="#" aria-label="secondhand"><svg class="hand" aria-hidden="true" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M188,48a27.75,27.75,0,0,0-12,2.71V44a28,28,0,0,0-54.65-8.6A28,28,0,0,0,80,60v64l-3.82-6.13a28,28,0,0,0-48.6,27.82c16,33.77,28.93,57.72,43.72,72.69C86.24,233.54,103.2,240,128,240a88.1,88.1,0,0,0,88-88V76A28,28,0,0,0,188,48Zm12,104a72.08,72.08,0,0,1-72,72c-20.38,0-33.51-4.88-45.33-16.85C69.44,193.74,57.26,171,41.9,138.58a6.36,6.36,0,0,0-.3-.58,12,12,0,0,1,20.79-12,1.76,1.76,0,0,0,.14.23l18.67,30A8,8,0,0,0,96,152V60a12,12,0,0,1,24,0v60a8,8,0,0,0,16,0V44a12,12,0,0,1,24,0v76a8,8,0,0,0,16,0V76a12,12,0,0,1,24,0Z"/></svg><span class="wordmark">secondhand</span><svg class="hand" aria-hidden="true" width="24" height="24" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="currentColor"><path d="M188,48a27.75,27.75,0,0,0-12,2.71V44a28,28,0,0,0-54.65-8.6A28,28,0,0,0,80,60v64l-3.82-6.13a28,28,0,0,0-48.6,27.82c16,33.77,28.93,57.72,43.72,72.69C86.24,233.54,103.2,240,128,240a88.1,88.1,0,0,0,88-88V76A28,28,0,0,0,188,48Zm12,104a72.08,72.08,0,0,1-72,72c-20.38,0-33.51-4.88-45.33-16.85C69.44,193.74,57.26,171,41.9,138.58a6.36,6.36,0,0,0-.3-.58,12,12,0,0,1,20.79-12,1.76,1.76,0,0,0,.14.23l18.67,30A8,8,0,0,0,96,152V60a12,12,0,0,1,24,0v60a8,8,0,0,0,16,0V44a12,12,0,0,1,24,0v76a8,8,0,0,0,16,0V76a12,12,0,0,1,24,0Z"/></svg></a>
+        <a class="lockup" href="#" aria-label="secondhand"><img class="brand-mark" data-part="brand-mark" src="../../../../mark.svg" width="24" height="28" alt=""><span class="wordmark">secondhand</span></a>
         <nav aria-label="Pages"><a href="#">How it works</a><a href="#">Sites and fees</a><a href="#">The data</a><a href="#">FAQ</a></nav>
         <a class="signin" href="#">Sign in</a>
       </div>
