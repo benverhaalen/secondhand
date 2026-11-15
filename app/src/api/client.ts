@@ -11,7 +11,8 @@ import { utf8Decoder } from './utf8.ts';
 export type Session = { token: string | null; refresh: string | null; visitor: string | null };
 export type SearchStart = Pick<ApiJobRow, 'id' | 'kind' | 'state'> & { stages: SearchStage[]; stream: string };
 export type Fetch = (url: string, init?: RequestInit) => Promise<Response>;
-type Options = { origin: string | null; fetch: Fetch; now?: () => number; log?: Log; vault?: Vault };
+// graceMs: how long the stream is read after job.state done, for a late fill (the server's job_fill_grace_s prior, 60 s).
+type Options = { origin: string | null; fetch: Fetch; now?: () => number; log?: Log; vault?: Vault; graceMs?: number };
 type CallOptions = { body?: unknown; signal?: AbortSignal };
 
 export class ApiFailure extends Error {
@@ -145,16 +146,18 @@ export function createClient(options: Options) {
     let lastId: number | null = null;
     async function consume(response: Response): Promise<boolean> {
       const parser = createSseParser();
-      let terminal = false;
+      let terminal = false, late = false;
+      let grace: Promise<'grace'> | null = null;
       const deliver = (text: string) => {
         const skipped = parser.skipped;
         for (const frame of parser.push(text)) {
-          if (signal?.aborted || terminal) break;
+          if (signal?.aborted) break;
           if (lastId !== null && frame.id <= lastId) continue;
           lastId = frame.id;
           logger.note('job frame', { job: jobId, frame_id: frame.id, event: frame.event });
           onFrame(frame);
-          terminal = frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed');
+          terminal ||= frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed');
+          late ||= frame.event === 'answer.late';
         }
         if (parser.skipped > skipped) logger.note('invalid SSE blocks skipped', { job: jobId, count: parser.skipped - skipped });
       };
@@ -169,12 +172,17 @@ export function createClient(options: Options) {
       let ended = false;
       try {
         while (!signal?.aborted) {
-          let chunk: ReadableStreamReadResult<Uint8Array>;
-          try { chunk = await abortable(() => reader.read(), signal); }
+          let chunk: ReadableStreamReadResult<Uint8Array> | 'grace';
+          // Once done has arrived, wait no longer than the grace for a late fill, whatever the server does.
+          if (terminal) grace ??= new Promise(r => setTimeout(() => r('grace'), options.graceMs ?? 60_000));
+          try { const read = abortable(() => reader.read(), signal); chunk = grace ? await Promise.race([read, grace]) : await read; }
           catch (cause) { throw new StreamInterrupted(cause); }
+          if (chunk === 'grace') return true;
           if (chunk.done) { ended = true; deliver(decoder.decode()); return terminal; }
+          // After job.state done the server keeps the stream open only while a late fill is pending (answer.late,
+          // capped by job_fill_grace_s), then closes it; so read to the end rather than stop at done.
           deliver(decoder.decode(chunk.value));
-          if (terminal) return true;
+          if (terminal && late) return true;
         }
         return false;
       } finally {

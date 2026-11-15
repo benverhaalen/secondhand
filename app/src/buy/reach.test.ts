@@ -233,3 +233,16 @@ test('sparse searched, pending and result arrays are unreadable frames, never un
     frame('answer.settled', { ...final.data, searched: sparse })];
   assert.deepEqual(reach(live.start, bad), { ...reach(live.start, []), skipped: bad.length });
 });
+
+test('answer.late after answer.settled adds its rows after the ranked ones, and the source counts as landed', () => {
+  const settledAt = live.frames.findIndex(f => (f as { event: string }).event === 'answer.settled');
+  const settled = live.frames[settledAt] as unknown as { data: { results: { id: string; site: string }[] } };
+  const row = { ...settled.data.results[0], id: 'ls_facebook_1', listing_id: 'ls_facebook_1', external_id: '1', site: 'facebook', route_id: 'apify.facebook.search', data: 'live:facebook', relation: 'unresolved', via: 'apify', actor: 'apify~facebook-marketplace-scraper', may_model: false, use_scope: 'hackathon_demo' };
+  const partial = live.frames.find(f => (f as { event: string }).event === 'answer.partial') as unknown as { data: Record<string, unknown> };
+  const lateFrame = { id: 99, event: 'answer.late', data: { ...partial.data, site: 'facebook', results: [row], sites_pending: [] } };
+  const r = reach(live.start, [...live.frames, lateFrame]);
+  assert.equal(r.skipped, 0);
+  assert.equal(r.results.at(-1)?.id, 'ls_facebook_1');
+  assert.equal(r.results.length, settled.data.results.length + 1);
+  assert.ok(r.landed.includes('facebook'));
+});
