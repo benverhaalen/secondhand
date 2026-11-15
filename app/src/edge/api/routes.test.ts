@@ -61,6 +61,8 @@ test('every handler module exports a manifest consumed by the aggregate', async 
   const modules = readdirSync(new URL('./', import.meta.url)).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts') && !['routes.ts', 'http.ts', 'examples.ts', 'store.ts'].includes(f));
   for (const file of modules) {
     const module = await import(new URL(file, import.meta.url).href);
+    // A helper beside the routes (no handlers of its own) is not a handler module.
+    if (!module.handlers && !module.routeHandlers && !module.manifest) continue;
     assert.ok(Array.isArray(module.manifest), `${file}: missing module manifest`);
     if (module.handlers && Object.keys(module.handlers).every(key => key.includes(' /v1/'))) assert.deepEqual(module.manifest.map((row: { endpoint: string }) => row.endpoint).sort(), Object.keys(module.handlers).sort(), `${file}: handler absent from module manifest`);
     if (module.routeHandlers) {

@@ -1,4 +1,5 @@
-// A state, as a word and an icon on its fill (Art. 5, States). 20 tall, a 12 icon 4 from the near end, the word 8 from
+// A state, as a word and an icon on its fill (Art. 5, States). 24 tall, a 16 icon 4 from the near end, the word at 15 (Ben,
+// 09:59: "the little tags for pickup or offers etc" were "just too small"), 8 from
 // the far end (Art. 7.7). It is flat: a tag never looks pressable (frontend-standard §5).
 // On a photo it is a soft gradient from the hue's tint to its fill (Ben, round 7). On a field it goes white, so it does not vanish (C2).
 import { View, type ViewStyle } from 'react-native';
@@ -37,8 +38,8 @@ function TagBody({ state, word, place = 'inline' }: TagProps) {
       {...mark('tag', { state, fit: 'content' })}
       accessibilityLabel={word ?? t.word}
       style={[{ height: size.tagH, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.s1, paddingLeft: space.s1, paddingRight: space.s2, alignSelf: 'flex-start', ...FLAT }, fill, edge]}>
-      <Icon name={t.icon} size={12} tone={t.iconInk ?? (quiet ? 'ink-2' : 'ink')} />
-      <Txt role="caption" tone={quiet ? 'ink-2' : 'ink'} lines={1}>{word ?? t.word}</Txt>
+      <Icon name={t.icon} size={size.tagIcon as 16} tone={t.iconInk ?? (quiet ? 'ink-2' : 'ink')} />
+      <Txt role="body" tone={quiet ? 'ink-2' : 'ink'} lines={1}>{word ?? t.word}</Txt>
     </View>
   );
 }

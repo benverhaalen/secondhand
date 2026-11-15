@@ -92,7 +92,7 @@ test('the checker catches a broken log: unknown event, missing or mistyped field
   assert.match(problemsOf([good[0], line(1, 'ui.show', { screen: 'x', src: { a: 1 } })]), /session and src are strings/);
   assert.match(problemsOf([good[0], line(1, 'call.start', { call: 'c1', kind: 'http', name: 'x' }), line(2, 'call.end', { call: 'c1', ok: 'yes', ms: 'fast' })]), /ms must be number, got string[\s\S]*ok must be boolean, got string/);
   assert.match(problemsOf([good[0], line(1, 'job.state', { job: 'j', kind: 'post', state: 'paused' })]), /state "paused" is not one of queued, running, done, failed/);
-  assert.match(problemsOf([good[0], line(1, 'job.stage', { job: 'j', stage: 'rendering', state: 'done' })]), /state "done" is not one of started, running, arrived, failed/);
+  assert.match(problemsOf([good[0], line(1, 'job.stage', { job: 'j', stage: 'rendering', state: 'done' })]), /state "done" is not one of started, running, arrived, planned, failed/);
   assert.equal(problemsOf([good[0], line(1, 'job.stage', { job: 'j', stage: 'rendering' }), line(2, 'job.stage', { job: 'j', stage: 'rendering', state: 'arrived' })]), '');
   assert.match(problemsOf([good[0], line(1, 'job.state', { job: 'j', kind: 'post', state: 'failed' })]), /a failed job needs its error/);
   assert.match(problemsOf([good[0], line(2, 'ui.show', { screen: 'x' })]), /seq is 2, expected 1/);

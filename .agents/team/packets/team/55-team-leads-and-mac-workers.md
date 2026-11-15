@@ -142,6 +142,34 @@ The orchestrator (Fable 5.2) oversees the four leads and answers to Nate. A lead
 - Databricks CLI always with `--profile Nate`. Creating a paid resource (a warehouse, an endpoint, an app) is asked first, through the orchestrator.
 - Nate's and Ben's words go verbatim into `product/words.md`; a lead's own idea is marked *agent proposal*.
 
+## The spec pass (from 2026-11-15 about 15:30 Central)
+
+Nate ([words](../../../../product/words.md#2026-11-15-nate-wrap-the-leads-up-at-a-good-spot-then-spec-from-what-we-have)): "lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop".
+
+**Wrap up first.** Each lead brings its area to a clean stop: the workers already running finish, are read, and are merged only if they pass (tests, `tsc` for their files, the diff against the brief); a worker that cannot pass is left on its branch with a note, not merged. No new build brief is started, with one exception: a safety fault already found and named (a write recorded as done that was not sent, a delist that can be blocked or wrongly made, a decision that crashes, an isolation hole) is finished. Then the lead writes its state where the next reader will find it: its board rows and its row of [the completion table](../../../../spec/plans/completion.md) made true, every open branch and what it holds, and the queue it would have run next.
+
+**Then spec, before more code.** Each lead rewrites its area's spec pages from what is true now:
+
+1. What exists: the page says what the code does today, with file references, not what was planned. Where the page and the code disagree, the page says which is right and why.
+2. What is wrong: every finding from the audits ([science](../../../../spec/plans/sweep/science-audit.md), [security](../../../../spec/plans/sweep/round-2/security-and-privacy.md), [production](../../../../spec/plans/sweep/round-2/production-readiness.md), [repo](../../../../spec/plans/sweep/round-2/repo-organization.md), the first round's three), the leads' own reviews and [the real-time proof](../../../../spec/plans/completion.md), placed in the page it belongs to as a named fix with its test.
+3. What comes next: improvements and further development, each with the measure that will say it worked, in the order it should be built.
+
+One rule in one place: a rule stated on two pages is cut down to one, and the other links to it. Every threshold is a named param with its prior. Every number on a page says where it came from. Product choices are marked *agent proposal* and go to Nate; the backend is his to decide ([words](../../../../product/words.md#2026-11-15-nate-ben-has-given-me-the-backend)). Spec pages are written and read on Windows; a Sonnet seat may draft, an Opus seat reviews. Building resumes from the reviewed spec, piece by piece.
+
+## A session ends before it fills
+
+Nate ([words](../../../../product/words.md#2026-11-15-nate-where-are-we-not-optimized-an-expert-lead-for-real-time-adaptation-the-bundle-identifier-and-sessions-end-before-they-fill)): "ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled". A lead's judgement gets worse as its context fills, so a lead hands off at about half full and stops; it does not run to the limit.
+
+To end: land what is in flight and passes; leave the rest on its branches; then write one handoff packet in `.agents/team/packets/team/` (integration 69, engines 70, Databricks 71, capture 72, the orchestrator 73, the adaptation lead 74; a later handoff of the same area replaces its own file) and stop. The packet is everything the next session needs and nothing else:
+
+1. What is true on main for the area, with the commit, and what was proved with which command.
+2. Every open branch and worktree on the Mac: its name, what it holds, whether it passed, what it waits on.
+3. The queue in order, each item with its owned files and its done check, so a brief can be written from it.
+4. Decisions made and why, in one line each, and anything waiting on Nate.
+5. What the last session got wrong or learned the hard way.
+
+A fresh session is started by the orchestrator from that packet and packet 55. It reads those two, the area's spec pages and the board, and nothing of the old transcript.
+
 ## Talking to each other
 
 Nobody waits idle, and no worker ever waits. What one seat needs from another is a row in [who is waiting on what](../../../../spec/plans/waiting.md), with one owner and what the waiter builds meanwhile; read its five rules and keep your rows true.

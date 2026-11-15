@@ -80,6 +80,9 @@ function mulberry32(seed) {
 // src: which program this is ('app', 'server', 'job.relight', 'agent.list.depop'). build: version plus commit. sink: a function that takes one JSON line.
 // from: the "session#seq" of the line that started this program. config: flags, model names and prompt versions, anything else that changes behavior.
 // blob(id, json): where a value too large for a line goes; without it the line keeps only the start of the value.
+const observers = new Set();
+export function observeLogs(sink) { observers.add(sink); return () => observers.delete(sink); }
+
 export function createLog({ src, build, sink, seed, session, from, platform, config, now = () => new Date(), blob } = {}) {
   if (typeof src !== 'string' || !src || typeof build !== 'string' || !build || typeof sink !== 'function') throw new Error('createLog needs src, build and sink (see log/README.md)');
   if (!Number.isInteger(seed)) seed = (Math.random() * 2 ** 32) >>> 0;
@@ -102,6 +105,7 @@ export function createLog({ src, build, sink, seed, session, from, platform, con
     } catch (e) { line.log_error = { type: e?.name ?? typeof e, msg: maskText(String(e?.message ?? e)) }; }
     state.seq++; // taken only now, so a line that could not be built leaves no gap
     try { sink(JSON.stringify(line)); } catch { /* logging never breaks the program; the missing seq shows the loss */ }
+    for (const observer of observers) { try { observer(JSON.stringify(line)); } catch {} }
     return line;
   }
 

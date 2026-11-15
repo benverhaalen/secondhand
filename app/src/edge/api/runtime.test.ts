@@ -9,7 +9,68 @@ import { memoryStore, type JobRow } from '../events/ports.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { fileStore } from '../events/file-store.ts';
 import { depopAdapters, PATHS } from '../harness/sites/depop/adapter.ts';
-import { fakeAdapter, fail, type Adapter } from '../harness/protocol.ts';
+import { fakeAdapter, fail, WRITE_VERBS, type Adapter, type CallArgs } from '../harness/protocol.ts';
+import { URLS, type PageClient } from '../harness/sites/ebay/adapter.ts';
+
+test('offline eBay search tries endpoint then page, both no_route, without network', async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = 'depop';
+  const network = t.mock.method(globalThis, 'fetch', async () => { throw new Error('offline eBay must not fetch'); });
+  const sink = memorySink();
+  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }));
+  const result = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans' });
+  assert.ok(!result.ok && result.error.code === 'no_route');
+  assert.equal(result.meta.route_id, 'ebay.search.page', 'offline page route must remain registered');
+  assert.equal(result.meta.fell_back, true);
+  assert.match(sink.text(), /ebay.search.endpoint/);
+  assert.match(sink.text(), /ebay.search.page/);
+  assert.equal((sink.text().match(/"code":"no_route"/g) ?? []).length, 2, 'each route must log no_route');
+  assert.equal(network.mock.callCount(), 0);
+});
+
+test('offline eBay does not use a planted page client', async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = '';
+  let loads = 0;
+  const ebayPageClient: PageClient = { signed_in: false, async page() { loads++; throw new Error('offline eBay must not load pages'); } };
+  const r = createRuntime(memoryStore(), log(), { ebayPageClient });
+  const result = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans' });
+  assert.ok(!result.ok && result.error.code === 'no_route');
+  assert.equal(loads, 0);
+});
+
+test('enabled eBay falls from the keyless endpoint to the planted page client through its site service', async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = 'depop,ebay';
+  const network = t.mock.method(globalThis, 'fetch', async () => { throw new Error('planted eBay client must own page reads'); });
+  const seen: string[] = [];
+  const ebayPageClient: PageClient = { signed_in: false, async page(url, signal) {
+    assert.equal(signal.aborted, false);
+    seen.push(url);
+    const fixture = url === URLS.search('levis 501 jeans', false) ? 'page-search.html' : url === URLS.store('seller_a') ? 'page-store.html' : undefined;
+    assert.ok(fixture, 'unexpected page URL');
+    return { status: 200, html: readFileSync(new URL(`../harness/sites/ebay/fixtures/${fixture}`, import.meta.url), 'utf8') };
+  } };
+  const r = createRuntime(memoryStore(), log(), { ebayPageClient });
+  const search = await r.harness.call<Record<string, unknown>[]>('ebay', 'search', { q: 'levis 501 jeans' });
+  assert.ok(search.ok, JSON.stringify(search));
+  assert.equal(search.data.length, 3);
+  assert.equal(search.data[0].price_cents, 3900);
+  assert.equal(search.meta.route_id, 'ebay.search.page');
+  assert.equal(search.meta.fell_back, true, 'keyless endpoint must run before the page route');
+  const storefront = await r.harness.call('ebay', 'read_storefront', { username: 'seller_a' });
+  assert.ok(storefront.ok, JSON.stringify(storefront));
+  assert.equal(storefront.meta.route_id, 'ebay.read_storefront.page');
+  assert.equal(storefront.meta.fell_back, true);
+  const sold = await r.harness.call('ebay', 'search', { q: 'levis 501 jeans', status: 'sold' });
+  assert.ok(!sold.ok && sold.error.code === 'auth_expired' && sold.error.hint.do === 'relink');
+  assert.equal(sold.meta.route_id, 'ebay.search.page');
+  assert.deepEqual(seen, [URLS.search('levis 501 jeans', false), URLS.store('seller_a')]);
+  assert.equal(network.mock.callCount(), 0);
+});
 
 test('watcher sweeps only the linked Depop account through site adapters and saves its baseline', async t => {
   const dir = mkdtempSync(join(tmpdir(), 'secondhand-watch-runtime-'));
@@ -93,13 +154,51 @@ test('site services label writes live only for the enabled site', async t => {
   }
 });
 
-for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule']) test(`watcher respects ${setting} before a ledger write`, async () => {
+for (const liveSites of [undefined, '', 'depop']) test(`write guard enforces the per-site live list (${liveSites ?? 'unset'}) for every write verb`, async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  if (liveSites === undefined) delete process.env.SECONDHAND_LIVE_SITES;
+  else process.env.SECONDHAND_LIVE_SITES = liveSites;
+  const seen = new Map<string, CallArgs>();
+  const adapters: Adapter[] = (['depop', 'poshmark'] as const).flatMap(site => [...WRITE_VERBS, 'search' as const].map(verb => ({
+    ...fakeAdapter(site, verb), async run(args) {
+      seen.set(`${site}:${verb}:${args.operation_id ?? 'read'}`, args);
+      return { ok: true as const, data: {} };
+    },
+  })));
+  const sink = memorySink();
+  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }), { adapters });
+  for (const site of ['depop', 'poshmark'] as const) {
+    const account_id = `acc_guard_${site}`;
+    r.store.put('account', { id: account_id, user_id: 'usr_guard', site, token_ref: `fixture/${site}` });
+    await r.vault.put(`fixture/${site}`, { cookies: [], origins: [] });
+    for (const verb of WRITE_VERBS) for (const dry of [false, true, undefined]) {
+      const args = Object.freeze({ account_id, operation_id: `guard-${site}-${verb}-${dry}`, ...(dry !== undefined && { dry }) });
+      const result = await r.harness.call(site, verb, args);
+      assert.ok(result.ok, JSON.stringify(result));
+      const received = seen.get(`${site}:${verb}:${args.operation_id}`)!;
+      assert.equal(received.dry, liveSites === site ? dry : true, `${site}.${verb} must respect its own live permission`);
+      assert.equal(args.dry, dry, 'the guard must not mutate caller arguments');
+    }
+    assert.ok((await r.harness.call(site, 'search', { dry: false })).ok);
+    assert.equal(seen.get(`${site}:search:read`)?.dry, false, 'reads must keep their arguments');
+  }
+  const forced = sink.text().trim().split('\n').map(line => JSON.parse(line)).filter(line => line.msg === 'marketplace write forced dry');
+  assert.equal(forced.length, WRITE_VERBS.length * 3 * (liveSites === 'depop' ? 1 : 2), 'each forced write must log exactly once');
+  for (const line of forced) {
+    assert.ok(line.site === 'poshmark' || liveSites !== 'depop' && line.site === 'depop');
+    assert.ok(WRITE_VERBS.includes(line.verb));
+    assert.ok(String(line.operation_id).startsWith(`guard-${line.site}-${line.verb}-`));
+  }
+});
+
+for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule', 'counter_without_model', 'below_floor_without_model']) test(`watcher respects ${setting} before a ledger write`, async () => {
   let now = Date.parse('2026-11-15T12:00:00Z'), offers = false;
   const products = JSON.parse(readFileSync(new URL('../harness/sites/depop/fixtures/products.json', import.meta.url), 'utf8'));
   const offer = JSON.parse(readFileSync(new URL('../harness/sites/depop/fixtures/offers.json', import.meta.url), 'utf8')).objects[0];
   const adapters = depopAdapters({ signed_in: true, async doc() { throw new Error('unexpected document read'); }, async json(path) {
     const body = path === PATHS.products('fixture-shop') ? products : path === PATHS.offers && offers
-      ? { objects: [{ ...offer, product_id: 999002396, amount: { amount: '75.00' }, created_at: new Date(now).toISOString(), status: 'pending' }] } : { objects: [] };
+      ? { objects: [{ ...offer, product_id: 999002396, amount: { amount: setting === 'counter_without_model' ? '62.00' : setting === 'below_floor_without_model' ? '45.00' : '75.00' }, created_at: new Date(now).toISOString(), status: 'pending' }] } : { objects: [] };
     return { status: 200, body };
   } });
   const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
@@ -117,7 +216,19 @@ for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule']) te
   assert.ok(job, 'an observed offer must create a job');
   if (setting !== 'auto') {
     assert.equal(r.store.systemRows('operation').length, 0, setting + ' must ask before writing');
-    assert.ok(r.store.decisions({ user_id: 'usr_offer', state: 'open' }).length > 0);
+    const decisions = r.store.decisions({ user_id: 'usr_offer', state: 'open' });
+    assert.ok(decisions.length > 0);
+    const why = 'No acceptance model weighed this; the counter is the midpoint inside your limits.';
+    if (setting === 'stricter_rule') {
+      assert.equal(decisions[0].kind, 'accept_offer', 'the stricter item rule turns an otherwise automatic acceptance into a person decision');
+      assert.notEqual(decisions[0].why, why, 'the acceptance decision must keep its own reason');
+      assert.equal(job.args.response, 'accept');
+    } else if (setting.endsWith('_without_model')) {
+      assert.equal(decisions[0].kind, setting === 'below_floor_without_model' ? 'price_below_floor' : 'counter_offer');
+      assert.equal(decisions[0].why, why, 'a midpoint counter must disclose that no acceptance model weighed it');
+      assert.equal(job.args.response, 'counter');
+      assert.ok(Number(job.args.price_cents) >= 5000 && Number(job.args.price_cents) < 8000);
+    } else assert.ok(decisions.every(decision => decision.why !== why), 'other approval requests must keep their own reason');
     return;
   }
   assert.equal(job.args.decided_by, 'negotiation');
@@ -228,8 +339,11 @@ test('pipeline Depop write returns a dry plan and current limits override stale 
   };
   const first = enqueue('dry-write', 8000);
   await r.pipeline.runOnce(1);
-  assert.equal(r.store.getJob(first.id)?.state, 'done');
-  assert.equal((r.store.getJob(first.id)?.result as { dry: boolean }).dry, true);
+  const planned = r.store.getJob(first.id)!;
+  assert.equal(planned.state, 'done');
+  assert.equal(planned.stages.find(stage => stage.name === 'revise')?.state, 'planned');
+  assert.equal((planned.result as { planned: boolean }).planned, true);
+  assert.equal(((planned.result as { plan: { dry: boolean } }).plan).dry, true);
   const second = enqueue('new-floor', 8000);
   const limits = r.store.get('limits', 'usr_8f2k', 'it_7c2m')!;
   r.store.put('limits', { ...limits, floor_cents: { amount_cents: 8500, currency: 'USD' } });
@@ -341,4 +455,19 @@ test('all seeded product rows keep example provenance through reseeding', () => 
   assert.ok(st.decisions().every(row => row.data === 'example'), 'seeded decisions carry example provenance');
   createRuntime(r.store, log());
   assert.equal(st.get('account', 'usr_8f2k', 'acc_dp1')?.data, 'example');
+});
+
+test('Mercari sold reads are registered but make no network call with live sites off', async () => {
+  const r = createRuntime(memoryStore(), log());
+  r.store.put('account', { id: 'acc_mc', user_id: 'owner', site: 'mercari', token_ref: 'mercari-test' });
+  await r.vault.put('mercari-test', { cookies: [], origins: [] });
+  const fetchBefore = globalThis.fetch;
+  let fetches = 0;
+  globalThis.fetch = async () => { fetches++; throw new Error('unexpected network'); };
+  try {
+    const result = await r.harness.call('mercari', 'search', { q: 'carhartt hoodie', status: 'sold', account_id: 'acc_mc', person_id: 'owner' });
+    assert.equal(result.ok, false);
+    if (!result.ok) assert.match(result.error.message, /live reads are (disabled|unavailable)/);
+    assert.equal(fetches, 0);
+  } finally { globalThis.fetch = fetchBefore; }
 });

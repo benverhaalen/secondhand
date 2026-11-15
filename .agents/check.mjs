@@ -17,6 +17,7 @@ import { brand } from './checks/brand.mjs';
 import { vague } from './checks/vague.mjs';
 import { logging } from './checks/logging.mjs';
 import { code } from './checks/code.mjs';
+import { screens } from './checks/screens.mjs';
 import { parts } from './checks/parts.mjs';
 import { picks } from './checks/picks.mjs';
 import { motion } from './checks/motion.mjs';
@@ -26,6 +27,7 @@ import { states } from './checks/states.mjs';
 import { unreached } from './checks/evidence.mjs';
 import { waysOut } from './checks/waysout.mjs';
 import { bundle } from './checks/bundle.mjs';
+import { hermes } from './checks/hermes.mjs';
 import { createLog } from '../log/index.js';
 import { fileSink } from '../log/node.js';
 
@@ -52,8 +54,8 @@ const results = [
   ...t('layout', () => layout(root)).map(msg => ({ level: 'error', where: 'layout', msg })),
   ...t('links', () => links(root, { files, awaited: JSON.parse(read('.agents/awaited.json') || '[]') })), ...t('provenance', () => provenance(root, { wordsBase })), ...t('research', () => research(root, { files })),
   ...t('secrets', () => secrets(root, { files })), ...t('ui', () => ui(root, { files })), ...t('brand', () => brand(root, { files })), ...t('vague', () => vague(root)), ...t('logging', () => logging(root, { files })),
-  ...t('code', () => code(root, { files, changed })), ...t('parts', () => parts(root, { files })), ...t('picks', () => picks(root, { files })), ...t('motion', () => motion(root, { files })), ...t('rules', () => rules(root)),
-  ...t('waysout', () => waysOut(root)), ...t('bundle', () => bundle(root, { files })),
+  ...t('code', () => code(root, { files, changed })), ...t('parts', () => parts(root, { files })), ...t('screens', () => screens(root, { files })), ...t('picks', () => picks(root, { files })), ...t('motion', () => motion(root, { files })), ...t('rules', () => rules(root)),
+  ...t('waysout', () => waysOut(root)), ...t('bundle', () => bundle(root, { files })), ...t('hermes', () => hermes(root, { files })),
   ...t('rests', () => rests(root, { commits: commitsSince(root, base) })), ...t('states', () => states(root, { commits: commitsSince(root, base) })),
 ];
 // Keep each human in the loop on the other's work: research and packets that landed in the last day.

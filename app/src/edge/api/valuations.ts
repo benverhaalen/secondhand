@@ -3,7 +3,8 @@ import type { Handler } from './http.ts';
 import { exampleHandler, manifestFor, fromEngine, fields, text, oneOf, url, invalid, reference } from './captures.ts';
 
 import { check, type CheckInput } from '../../engines/valuation/check.ts';
-import { soldSources, type Call } from '../../engines/valuation/sold.ts';
+import { soldSources } from '../../engines/valuation/sold.ts';
+import { soldSearch } from './valuation-sold.ts';
 import { example } from './examples.ts';
 import { jobs, type ApiJobRow } from './jobs.ts';
 import type { Ctx } from './http.ts';
@@ -13,13 +14,12 @@ export const ports: { read(ctx: Ctx): Promise<Omit<CheckInput, 'log'> | null> } 
     if (ctx.body.url) return null;
     const item = example('items.get').response as { product_id: string; title: string; valuation: { range: { low: { amount_cents: number }; high: { amount_cents: number }; basis_count: number; as_of: string; citation_id: string } } };
     const range = item.valuation.range;
-    // Live sold comps from the harness's public sold searches (spec/plans/backtest/how-we-price.md §3). A site the
-    // runtime harness has no route for answers no_route and adds nothing, so offline this prices from the family band.
     const { runtime } = await import('./runtime.ts');
-    const call: Call = (site, verb, args) => runtime.harness.call(site, verb, args);
-    const sources = soldSources(call, ['mercari', 'poshmark'], { query: item.title.split(',')[0], condition: 'good', error: (where, e) => ctx.log.error(where, e) });
+    const sources = soldSources(soldSearch({ person_id: ctx.user_id ?? undefined, accounts: runtime.accounts, harness: runtime.harness,
+      live_sites: (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/), log: ctx.log }), ['mercari', 'poshmark'],
+    { query: item.title.split(',')[0], condition: 'good', error: (where, e) => ctx.log.error(where, e) });
     return { product_id: item.product_id, condition: 'good', as_of: range.as_of,
-      floor_cents: 0, objective: 'balanced', param_version: 1, warm_comps: [], sources, sites: [],
+      floor_cents: 0, objective: 'balanced', param_version: 1, warm_comps: [], sources, sites: [{ site: 'mercari' }, { site: 'poshmark' }],
       fast: { low: range.low.amount_cents, high: range.high.amount_cents, n: range.basis_count, as_of: range.as_of, basis: 'family', state: 'rough' } };
   },
 };

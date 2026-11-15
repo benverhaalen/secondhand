@@ -1,7 +1,7 @@
 // The You tab (app/behavior/(tabs)/you.json) on the web build: each state in its world, and every control.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { behavior, start } from './behavior.mjs';
+import { behavior, start, WAIT } from './behavior.mjs';
 import { at, youControlTests } from './you-common.mjs';
 
 const table = behavior('(tabs)/you');
@@ -36,7 +36,7 @@ test('you: every state in the behavior table has a test here', () => {
 for (const st of table.states) test(`you: ${st.state} (${st.world}) shows ${st.shows.slice(0, 80)}`, async () => {
   const s = await app.open(st.path ?? at('/you', st.world));
   for (const t of SHOWS[st.state]) await s.shows(t);
-  for (const t of HIDDEN[st.state] ?? []) assert.equal(await s.page.getByText(t, { exact: true }).count(), 0, `${st.state} should not show "${t}"`);
+  for (const t of HIDDEN[st.state] ?? []) assert.equal(await s.count(t, { exact: true }), 0, `${st.state} should not show "${t}"`);
   assert.equal(await s.page.locator(`[data-screen="you"]`).getAttribute('data-state'), st.state);
 });
 
@@ -54,7 +54,7 @@ test('you: Sign in on a signed-out site signs back in without leaving You', asyn
   await s.tap('you-signin-poshmark');
   await s.shows('Signing in');
   await s.shows('Finish on Poshmark’s own page');
-  await s.saw({ type: 'change', entity: 'account', id: 'poshmark', to: 'connected' }, { timeout: 4000 });
+  await s.saw({ type: 'change', entity: 'account', id: 'poshmark', to: 'connected' }, { timeout: WAIT });
   await s.shows('Linked again');
   assert.equal(new URL(s.page.url()).pathname, '/you');
 });

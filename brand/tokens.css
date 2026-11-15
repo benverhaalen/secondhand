@@ -98,11 +98,11 @@
   --shadow-card: 0 0 0 1px var(--card-edge);   /* a card on the page: a hairline, no blur (Ben, 02:46: the shadow "looks a little weird") */
   /* size */
   --outline: var(--ink);               /* off the app only: the app's second button is a light fill (L5) */
-  --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px; --photo-card: 72px;
+  --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 62px; --photo-card: 72px;
   /* the parts and their sizes (Ben, 2026-11-15: "the spacing i like", "ensure that there are primitives of it all"; Art. 7.8) */
   --card-corner: 24px;                   /* a thing in a card's corner that is not a photo starts this far from the two edges, so it clears the 36 arc by 16 */
   --card-pad: 16px; --card-decision-h: 156px; --card-item-h: 104px; --notice-h: 56px;
-  --pill-card-h: 40px; --pill-card-pad: 20px; --tag-h: 20px; --tag-icon: 12px; --badge-h: 20px; --site-badge: 24px;
+  --pill-card-h: 40px; --pill-card-pad: 20px; --tag-h: 24px; --tag-icon: 16px; --badge-h: 20px; --site-badge: 24px;
   /* motion (frontend-standard §3) */
   --t-feedback: 150ms; --t-select: 200ms; --t-panel: 300ms; --ease-out: cubic-bezier(0, 0, .2, 1);
 }

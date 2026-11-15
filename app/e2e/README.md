@@ -25,6 +25,14 @@ The tests are written from the table before the behavior exists, and fail until 
 
 - A test that taps everything and asserts no unlisted tap counts only taps whose `screen` is the page's own path: once Back or a link leaves the page, later taps belong to another table.
 
+## On a real iPhone
+
+Run `node app/e2e/native/run.mjs` on the Mac with Node 22+, Xcode and xcodegen. Install the app first ([On an iPhone](../README.md#on-an-iphone)) and keep the phone unlocked. The command selects the first connected iPhone; use `--device <udid>` to choose one or `--sim <udid>` for a simulator with the app installed. The test runner counts as one of the 3 apps a free Apple team may install.
+
+It captures every route in `features/app/renders/<slug>.json` except routes with `[param]`, plus `stage`, and overwrites `features/app/native/<slug>.png`, `<slug>.tree.txt` and `run.json` (device, OS, installed app version, capture time and route files). To capture a subset, pass render slugs or paths: `node app/e2e/native/run.mjs tabs-index sell stage --settle 2.5`. The runner rebuilds when `Tests/` or `project.yml` changes; its build cache stays under the system temporary directory. Successful runs remove the result bundle and attachment manifest.
+
+Check the route helpers with `node --test app/e2e/native/routes.test.mjs`.
+
 ## A demo video
 
 `node scripts/app-demo.mjs <flow> [--dark] [--captions] [--frame] [--out file]` records a flow as a short clip, the kind a launch post on X shows: the web build at 390 x 844 driven by the demo worlds, no phone. It writes `features/app/demos/<flow>.mp4` (H.264, 2x; the raw webm when ffmpeg is missing) and `<flow>.png`, the last frame, for a poster. `--dark` and `--frame` add `-dark` and `-framed` to the name.

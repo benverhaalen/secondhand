@@ -52,13 +52,41 @@ test('a trust block sends nothing', () => {
   assert.equal(d.amount_cents, null);
 });
 
-test('a pAccept that is NaN or throws falls back to the champion and says so', () => {
-  const nan = decide(base, () => NaN, 'challenger');
-  assert.equal(nan.amount_cents, 6800);
-  assert.equal(nan.fallback, 'p_accept_invalid');
-  const boom = decide(base, () => { throw new Error('x'); }, 'challenger');
-  assert.equal(boom.amount_cents, 6800);
-  assert.equal(boom.fallback, 'p_accept_invalid');
+test('an invalid challenger runs the champion accept and counter rules and records the policy used', () => {
+  for (const p of [() => NaN, () => -1, () => 2, () => { throw new Error('model failed'); }]) {
+    for (const v_wait_cents of [4400, 4500, null]) {
+      const s = { ...base, v_wait_cents };
+      const champion = decide(s, tableP, 'champion');
+      const fallback = decide(s, p, 'challenger');
+      assert.deepEqual([fallback.kind, fallback.amount_cents, fallback.ask], [champion.kind, champion.amount_cents, champion.ask]);
+      assert.equal(fallback.policy, 'champion');
+      assert.equal(fallback.fallback, 'p_accept_invalid');
+    }
+    const below = decide({ ...base, offer_cents: 500 }, p, 'challenger');
+    assert.deepEqual([below.kind, below.ask, below.policy, below.fallback], ['price_below_floor', true, 'champion', 'p_accept_invalid']);
+  }
+});
+
+test('a $5 eBay offer with negative keep still asks below the $60 floor', () => {
+  assert.equal(keep(500), -508);
+  for (const policy of ['champion', 'challenger'] as const) {
+    const d = decide({ ...base, offer_cents: 500 }, tableP, policy);
+    assert.equal(d.kind, 'price_below_floor');
+    assert.equal(d.ask, true);
+  }
+});
+
+test('negative candidate and returning keeps remain signed whole cents through expected keep', () => {
+  for (const policy of ['champion', 'challenger'] as const) {
+    const d = decide({ ...base, keep: () => -1000, v_wait_cents: -2000, returning_keep: () => -3000 }, () => .5, policy);
+    const c = d.candidates.find(c => c.amount_cents === 6500)!;
+    assert.equal(c.keep, -1000);
+    assert.equal(c.v_after, -2200);
+    assert.equal(c.expected_keep, -1600);
+  }
+  for (const value of [1.5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1, Number.MIN_SAFE_INTEGER - 1]) {
+    assert.throws(() => decide({ ...base, keep: () => value }, tableP), /keep/);
+  }
 });
 
 test('pAccept is clamped to [0.02, 0.98]', () => {
@@ -102,7 +130,7 @@ test('limits property test: 10,000 random states, planted pAccept, fee-step keep
   const r = prng(20261114);
   const planted: PAccept = (c, s) => (c < s.floor_cents ? 0.98 : 0.02);
   // eBay's fixed fee steps from $0.30 to $0.40 above $10, so keep falls by 9 cents at 935: a planted non-monotone keep.
-  const stepKeep = (a: number, b: number) => (x: number) => Math.max(0, Math.round(a * x) - (x <= 1000 ? 30 : 40) - b);
+  const stepKeep = (a: number, b: number) => (x: number) => Math.round(a * x) - (x <= 1000 ? 30 : 40) - b;
   let accepts = 0, asks = 0, counters = 0;
   for (let i = 0; i < 10000; i++) {
     const ask = 500 + Math.floor(r() * 30000);
@@ -112,7 +140,7 @@ test('limits property test: 10,000 random states, planted pAccept, fee-step keep
     const a = 0.5 + r() * 0.45, b = Math.floor(r() * 1500);
     const s: OfferState = {
       site: ['ebay', 'poshmark', 'depop', 'mercari'][i % 4], offer_cents: offer, ask_cents: ask,
-      floor_cents: floor, always_accept_cents: always, keep: i % 2 ? (x) => Math.max(0, Math.round(a * x - b)) : stepKeep(a, b),
+      floor_cents: floor, always_accept_cents: always, keep: i % 2 ? (x) => Math.round(a * x - b) : stepKeep(a, b),
       v_wait_cents: r() < 0.2 ? null : Math.floor(r() * ask), trust_block: false,
     };
     if (floor > ask || offer <= 0) { assert.throws(() => decide(s, planted), RangeError); continue; }

@@ -5,7 +5,8 @@ import { ICONS, type IconName } from './icons.generated';
 import { useColors, useGround } from './theme';
 
 export type { IconName };
-export type IconSize = 12 | 20 | 24;
+// 16 is the tag's icon, beside its word at 15 (Ben, 09:59: the tags were "just too small").
+export type IconSize = 12 | 16 | 20 | 24;
 
 export function Icon({ name, size = 24, tone = 'ink', filled = false, label }: {
   name: IconName;

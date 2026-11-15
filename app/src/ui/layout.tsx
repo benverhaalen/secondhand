@@ -1,7 +1,7 @@
 // The only parts a screen is laid out with. Which one to reach for, and which separator means what, is in README.md beside this file.
 import { Children, type ReactNode } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Wash } from './parts/chrome';
 import { Txt } from './text';
 import { OnGround, useColors } from './theme';
@@ -12,10 +12,11 @@ import { radius, space } from './tokens.generated';
 export const GAP = { tight: space.s2, group: space.s3, cards: space.s4, section: space.s7 } as const;
 
 // The whole view: the safe area, the 20 gutter, one scroll. `nav` sits first, 8 above what follows (Art. 7.8).
-// `wash` draws the header gradient behind the nav (Art. 5, The wash): main screens with news at the top only.
+// The wash is under every nav (U8; Ben, 09:56: "the gradient at the top of the screen is on some pages and not on others"):
+// a page with a top has it, and a sheet or a full-screen moment, which have no nav, do not.
 // `name` and `state` mark the root (data-screen, data-state on the web) so tests and the gallery know which state is drawn.
 // `foot` is the page's one act pinned to the foot, 16 above the safe area (Art. 7.9), when it is not in the first 844.
-export function Screen({ children, nav, wash = false, center = false, name, state, skip, sheet, foot }: {
+export function Screen({ children, nav, wash = nav != null, center = false, name, state, skip, sheet, foot }: {
   children: ReactNode;
   nav?: ReactNode;
   wash?: boolean;
@@ -28,13 +29,15 @@ export function Screen({ children, nav, wash = false, center = false, name, stat
   sheet?: string;
   foot?: ReactNode;
 }) {
-  const c = useColors();
+  const c = useColors(), inset = useSafeAreaInsets();
   const marks = name || state || sheet ? ({ dataSet: { screen: name, state, skip, sheet } } as object) : {};
+  // A washed screen takes the top inset itself: the wash runs under the status bar and the content starts below it.
+  // Without a wash the safe area keeps the top, so nothing is ever drawn under the clock (U9).
   return (
     <OnGround ground="page">
-      <SafeAreaView {...marks} edges={['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
-        <ScrollView contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, center && styles.center]}>
-          {wash ? <Wash /> : null}
+      <SafeAreaView {...marks} edges={wash ? ['left', 'right'] : ['top', 'left', 'right']} style={{ flex: 1, backgroundColor: c.page }}>
+        <ScrollView contentContainerStyle={[styles.body, nav ? styles.withNav : styles.bare, wash && { paddingTop: inset.top }, center && styles.center]}>
+          {wash ? <Wash under={inset.top} /> : null}
           {nav ? <View style={styles.nav}>{nav}</View> : null}
           <View style={[styles.content, center && styles.center]}>{children}</View>
         </ScrollView>
