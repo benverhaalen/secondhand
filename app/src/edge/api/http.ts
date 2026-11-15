@@ -12,7 +12,7 @@ export type Retry = { by: 'auto' | 'user' | 'none'; after_s?: number };
 export type Reply = { status: number; body?: unknown; headers?: Record<string, string> } | Response;
 export type Ctx = {
   user_id: string | null; visitor_id: string | null; request_id: string;
-  params: Record<string, string>; query: URLSearchParams; body: Record<string, unknown>; headers: Headers; log: Log;
+  params: Record<string, string>; query: URLSearchParams; body: Record<string, unknown>; raw?: Uint8Array; headers: Headers; log: Log;
 };
 export type Handler = (ctx: Ctx, req: Request) => Promise<Reply> | Reply;
 type Log = ReturnType<typeof createLog>;
@@ -112,7 +112,39 @@ type Idempotency = { hash: string; at: number } & (
   { state: 'running' } | { state: 'finished'; status: number; body: string; headers: Record<string, string> }
 );
 
-export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' | 'visitor' | 'none' } = {}) {
+class BodyTooLarge extends ApiError { get status() { return 413; } }
+
+async function readRaw(req: Request, max_bytes: number, log: Log): Promise<Uint8Array> {
+  const tooLarge = () => new BodyTooLarge('invalid', 'body exceeds max_bytes', 'read', { by: 'user' });
+  if (Number(req.headers.get('Content-Length')) > max_bytes) {
+    void req.body?.cancel().catch(error => log.error('raw.cancel', error));
+    throw tooLarge();
+  }
+  if (!req.body) return new Uint8Array();
+  const reader = req.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+  try {
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      length += value.byteLength;
+      if (length > max_bytes) {
+        void reader.cancel().catch(error => log.error('raw.cancel', error));
+        throw tooLarge();
+      }
+      chunks.push(value);
+    }
+  } finally { reader.releaseLock(); }
+  const bytes = new Uint8Array(length);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return bytes;
+}
+
+type RouteOptions = { auth?: 'user' | 'visitor' | 'none' } & ({ body: 'raw'; max_bytes: number } | { body?: 'json' });
+
+export function route(endpoint: string, handler: Handler, opts: RouteOptions = {}) {
   const [method, pattern] = endpoint.split(' ');
   const mode = opts.auth ?? 'user';
   return async function (req: Request): Promise<Response> {
@@ -127,10 +159,16 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
     const storage = deps.kv;
     try {
       if (req.method !== method) throw new ApiError('invalid', `${req.method} on ${endpoint}`, 'route');
-      const params = paramsOf(pattern, url.pathname) ?? {};
+      let params: Record<string, string>;
+      try { params = paramsOf(pattern, url.pathname) ?? {}; }
+      catch (error) {
+        if (opts.body === 'raw' && error instanceof URIError) throw new ApiError('not_found', 'route not found', 'route');
+        throw error;
+      }
       const query = new URLSearchParams(url.search); query.delete('user_id');
       let body: Record<string, unknown> = {};
-      const raw = ['GET', 'DELETE'].includes(method) ? '' : await req.text();
+      const binary = opts.body === 'raw' ? await readRaw(req, opts.max_bytes, log) : undefined;
+      const raw = opts.body === 'raw' || ['GET', 'DELETE'].includes(method) ? '' : await req.text();
       if (raw) {
         try { body = JSON.parse(raw); } catch { throw new ApiError('invalid', 'body is not JSON', 'parse', { by: 'user' }); }
         if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ApiError('invalid', 'body must be an object', 'parse', { by: 'user' });
@@ -144,9 +182,9 @@ export function route(endpoint: string, handler: Handler, opts: { auth?: 'user' 
         visitor_id = acceptedVisitorId(given);
         visit(deps.connectingAddress(req) ?? visitor_id);
       }
-      const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
+      const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, ...(binary === undefined ? {} : { raw: binary }), headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
 
-      const key = method === 'POST' ? req.headers.get('Idempotency-Key') : null;
+      const key = opts.body !== 'raw' && method === 'POST' ? req.headers.get('Idempotency-Key') : null;
       const slot = key ? `${user_id ?? visitor_id ?? 'none'} ${endpoint} ${key}` : null;
       const claimed = slot ? storage.add('idem', slot, { hash: raw, state: 'running', at: deps.now() }, DAY_MS) : false;
       if (slot && !claimed) {
