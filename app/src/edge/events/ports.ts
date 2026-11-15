@@ -85,7 +85,7 @@ export interface StoreState {
 }
 
 export interface Store {
-  put<T extends Row>(table: Table, row: T): T;
+  put<T extends Row>(table: Table, row: T): T & { version: number };
   get<T extends Row>(table: Table, user_id: string, id: string): T | undefined;
   rows<T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>): T[];
   // Cross-tenant read for system work; never called from a route handler.
