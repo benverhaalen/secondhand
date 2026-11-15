@@ -1,17 +1,23 @@
 import { FAMILIES, type Family } from './process.ts';
-import { select, type State, type Fact } from './select.ts';
+import { select, targets, studioStep, type State, type Fact } from './select.ts';
 import { fieldState, formValue, type FieldStatus } from './fields.ts';
-import { linked, compare, type FieldRow, type Site } from './table.ts';
+import { linked, compare, type FieldRow, type Target, type Site } from './table.ts';
 import { memoryStore, type ParamStore } from '../param/param.ts';
-export type Completeness = Partial<Record<Site,{ready:boolean;missing:{field:string;state:FieldStatus|'blocked'}[]}>>;
+export type Completeness = Partial<Record<Target,{ready:boolean;missing:{field:string;state:FieldStatus|'blocked'}[]}>>;
 export function completeness(rows: FieldRow[],state: State,params: ParamStore): Completeness {
   const keys=select(state,params).process.map(s=>s.key);
-  return Object.fromEntries(state.sites.map(site=> {
+  return Object.fromEntries(targets(state).map(site=> {
     if(state.recall_flag)return [site,{ready:false,missing:[{field:'recall_flag',state:'blocked'}]}];
     const missing=rows.filter(row=>linked([site],row.required).length).flatMap(row=> {
       const f=fieldState(row,state,keys,params);
-      return f.state==='known' && formValue(row,site,f.fact?.value).ok ? [] : [{field:row.field,state:f.state}];
+      if(site==='studio' && row.type==='dimensions' && !state.studio!.measurements.every(part=>
+        f.fact?.value && typeof f.fact.value==='object' && typeof (f.fact.value as Record<string,unknown>)[part]==='number'))
+        return [{field:row.field,state:f.state==='known'?'missing':f.state}];
+      return f.state==='known' && (site==='studio' || formValue(row,site,f.fact?.value).ok) ? [] : [{field:row.field,state:f.state}];
     }).sort((a,b)=>compare(a.field,b.field));
+    if(site==='studio')for(const ask of state.studio!.asks) {
+      if(ask.type!=='measure' && !state.kept.includes(studioStep(ask)))missing.push({field:studioStep(ask),state:'missing'});
+    }
     return [site,{ready:missing.length===0,missing}];
   }));
 }

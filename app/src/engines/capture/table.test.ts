@@ -36,3 +36,8 @@ test('ways use canonical fill-ladder rung seen', () => {
   assert.doesNotMatch(JSON.stringify(data.fields), /"way":"photo"/);
   assert.doesNotMatch(JSON.stringify(data.classes), /"way":"photo"/);
 });
+test('rigid dimensions try published lookup before measurement and asking', () => {
+  for (const name of ['bag','medium_hard','large_bulky'] as const) {
+    assert.deepEqual(table.classes[name].dimensions!.ways.map(w=>[w.way,w.min_conf]),[['lookup',.9],['measured',.8],['asked',undefined]]);
+  }
+});
