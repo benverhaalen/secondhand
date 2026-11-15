@@ -1173,3 +1173,9 @@ Used in: [pitch.md](pitch.md#its-always-you-ai-that-helps-you-not-ai-that-is-you
 ## 2026-11-15 a sale and a match ping at once, replies start as drafts, and agents build the better way
 Ben, thread "Map every feature and page so the build can start", 06:40 UTC, answering "Should a sale, and a watched item under your price, notify you right away?" and "Replies starting as drafts changes Nate's rule".
 > 1. yes. 2. yes do that. ensure the ui building completely understands all this and the ui system. and overall across all agents when they think theres a better way to do things for our purposes and constitution then do it. anything i have edit wise gets applied too.
+
+## 2026-11-15 you send it, and if a buyer asks it says so
+Ben, project chat (relayed), 2026-11-15 06:44 UTC, answering "Should automatic replies say they were sent with secondhand?"
+> no i mean if the user manually reads and chooses to send, the user then sends it. if the buyer asks then it can say
+
+Used in: [pitch.md](pitch.md#its-always-you-ai-that-helps-you-not-ai-that-is-you), [spec/features/messages.md](../spec/features/messages.md).

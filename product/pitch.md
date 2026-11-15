@@ -77,10 +77,8 @@ Ben, 06:40: "pitching about ai impersonation. its always you. also think about h
 
 **What makes them true** (each is in the code or the spec; cite it if asked):
 - Code, not the model, decides anything about money, your address or a deal off the site; those three can never be automatic.
-- It sends only words you approved, or words built from your item's facts under a rule you set. A claim it can't back is held and shown to you.
-- It earns "Always do this" after you approve the same kind of thing three times without a change, and every automatic action has a Why? and a way out ([ways out](../spec/ways-out.md)).
-
-**The line to be careful with.** Replies go out from your account, so "it never impersonates you" is only true if an automatic message says it was sent with help. That choice is still open (disclosure, J3 in [the assessment](../spec/assessment.md)). Until it's decided, say "it speaks for you only in words you approved or by rules you set", not "it never impersonates you".
+- Replies start as drafts: you read them and you send them ([Ben, 06:40](words.md#2026-11-15-a-sale-and-a-match-ping-at-once-replies-start-as-drafts-and-agents-build-the-better-way)). Every draft is built from your item's facts; a claim it can't back is held and shown to you.
+- It earns "Always do this" after you approve the same**Who sends it.** Ben, 06:44: when you read a reply and choose to send it, you sent it, so it carries no label; if a buyer asks whether AI helped, the reply says yes ([words](words.md#2026-11-15-you-send-it-and-if-a-buyer-asks-it-says-so)). So the honest line is "Every reply is one you read and sent. Ask if AI helped, and it'll tell you." Don't say "no AI ever touches your messages".nt.md)). Until it's decided, say "it speaks for you only in words you approved or by rules you set", not "it never impersonates you".
 
 ## Security and open source
 
