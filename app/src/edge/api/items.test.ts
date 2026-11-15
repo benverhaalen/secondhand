@@ -212,3 +212,33 @@ test('the sell list reflects the edited price rather than the seeded tile', asyn
   const listed = await (await call(examples.find(e => e.name === 'items.list')!)).json();
   assert.equal(listed.data.find((item: { id: string }) => item.id === 'it_7c2m').price_cents.amount_cents, 9900);
 });
+
+test('item card keeps Store provenance on the row and out of the response', async () => {
+  const { runtime } = await import('./runtime.ts');
+  const row = runtime.store.get('item', 'usr_8f2k', 'it_7c2m')!;
+  assert.equal(row.data, 'example');
+  const response = await call(examples.find(e => e.name === 'items.get')!);
+  assert.equal(Object.hasOwn(await response.json(), 'data'), false, 'item provenance is not a card field');
+  assert.equal(runtime.store.get('item', 'usr_8f2k', row.id)!.data, 'example');
+});
+
+test('list fallback does not expose item fields outside the tile example', async () => {
+  const { runtime } = await import('./runtime.ts');
+  const row = runtime.store.get('item', 'usr_8f2k', 'it_7c2m')!;
+  runtime.store.put('item', { ...row, tile: undefined, note: 'private item note' });
+  const response = await call(examples.find(e => e.name === 'items.list')!);
+  const body = await response.json();
+  const item = body.data.find((entry: { id: string }) => entry.id === row.id);
+  assert.equal(Object.hasOwn(item, 'note'), false, 'item notes are not tile fields');
+  assert.equal(Object.hasOwn(item, 'data'), false, 'item provenance is not a tile field');
+});
+
+test('item attributes do not expose fields outside their example shape', async () => {
+  const { runtime } = await import('./runtime.ts');
+  const row = runtime.store.get('item', 'usr_8f2k', 'it_7c2m')!;
+  const attributes = (row.attributes as Record<string, unknown>[]).map(attribute => ({ ...attribute, data: 'example' }));
+  runtime.store.put('item', { ...row, attributes });
+  const response = await call(examples.find(e => e.name === 'items.get')!);
+  const body = await response.json();
+  assert.ok(body.attributes.every((attribute: Record<string, unknown>) => !Object.hasOwn(attribute, 'data')), 'attribute provenance is not a response field');
+});
