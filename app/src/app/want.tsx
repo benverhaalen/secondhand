@@ -7,28 +7,33 @@
 // (the hand-off rule). A saved want saves each change at once with Undo and looks again at once. While it looks, the page
 // says so per site ("Looking on 5 sites", "4m ago", "Behind", "Found 6 so far"), and the person can leave at any time.
 // The page's reasons and states are in app/behavior/want.json.
+import * as Haptics from 'expo-haptics';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
+import { Linking, Platform } from 'react-native';
 import {
   ALL_SITES, CONDITIONS, conditionId, coloursFor, draftOf, firstPass, kindOf, priceBounds, RADII, sizesFor, soldDots, wantFromWords, type How, type WantDraft,
 } from '@/buy/read';
+import { afterListing, parseStage, SAMPLE, type StageAlert } from '@/buy/stage';
 import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
 import { ago, product, usd, type Site } from '@/demo';
 import {
-  Approve, Blank, ChoiceChips, ColourSwatches, EmptyState, Guess, Line, Nav, Pill, RangeSlider, Row, Screen, Section, SiteStrip, SizePicker, Stack, Txt,
-  UndoToast, type SiteSlot,
+  Approve, Blank, ChoiceChips, ColourSwatches, EmptyState, Guess, Line, MatchCard, Nav, Pill, RangeSlider, Row, Screen, Section, SiteStrip, SizePicker, Stack, Txt,
+  UndoToast, log, type SiteSlot,
 } from '@/ui';
 
 const hour = (hhmm: string) => { const h = Number(hhmm.slice(0, 2)); return `${h % 12 || 12} ${h < 12 ? 'am' : 'pm'}`; };
 const whole = (text: string) => Math.round(Number(text.replace(/[^0-9.]/g, '')));
 // How long each site takes to answer in the demo's look, so a look reads as sites coming in one by one.
 const STEP = 450;
+// The live buy beat reads the stage watcher this often (product/live-buy-demo.md): a find shows within 2 s of the watcher's.
+const LIVE_EVERY_MS = 2000;
 const SKIP = 'one: a want is one thing, with no list in it to hold one or many; dense: the same, a want has no list to fill';
 
 export default function Want() {
   const { w, state } = usePage();
-  const params = useLocalSearchParams<{ id?: string; q?: string }>();
+  const params = useLocalSearchParams<{ id?: string; q?: string; live?: string }>();
   // A state named with no want in the address draws the world's first want, or a new one from the demo's Dunks search.
   const q = params.q || (state === 'new' ? 'nike dunk low grey 10' : '');
   const saved = state === 'empty' ? undefined : w.wants.find(x => x.id === params.id) ?? (state && state !== 'new' && !q ? w.wants[0] : undefined);
@@ -40,6 +45,24 @@ export default function Want() {
   const [look, setLook] = useState<{ answered: number; found: number } | null>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  // Live finds from the stage watcher, newest first. ?live=1 reads GET /v1/stage; ?live=sample is the render checks' fixed find.
+  const [live, setLive] = useState<{ alerts: StageAlert[]; reached: boolean }>({ alerts: params.live === 'sample' ? SAMPLE : [], reached: true });
+  useEffect(() => {
+    if (params.live !== '1') return;
+    let stop = false, seen = 0, timer: ReturnType<typeof setTimeout> | undefined;
+    const read = () => log.call('http', 'stage.read', { route: '/v1/stage' }, () => fetch('/v1/stage', { cache: 'no-store' })
+      .then(r => { if (!r.ok) throw new Error(`stage ${r.status}`); return r.json(); }), raw => ({ result: { alerts: parseStage(raw).alerts.length } }))
+      .then(raw => {
+        const { alerts } = parseStage(raw);
+        if (alerts.length > seen && Platform.OS !== 'web') Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(e => log.error('want.live_haptic', e));
+        seen = alerts.length;
+        if (!stop) setLive({ alerts, reached: true });
+      })
+      .catch(e => { log.error('want.live_read', e); if (!stop) setLive(l => ({ ...l, reached: false })); })
+      .finally(() => { if (!stop) timer = setTimeout(read, LIVE_EVERY_MS); });
+    read();
+    return () => { stop = true; if (timer) clearTimeout(timer); };
+  }, [params.live]);
 
   const nav = <Nav back={() => router.back()} />;
   if (state === 'loading') return <Loading name="want" nav={nav} rows="notice" skip={SKIP} />;
@@ -93,6 +116,18 @@ export default function Want() {
     </Section>
   );
 
+  const finds = running && params.live && (live.alerts.length || !live.reached) ? (
+    <Section title="Found">
+      <Stack gap="tight">
+        {live.alerts.map(a => (
+          <MatchCard key={a.id} id={`want-found-${a.id}`} title={a.title} photo={a.image} site={a.site} verdict="under" what="Listed at" amount={usd(a.price_cents)}
+            when={afterListing(a)} onPress={() => { Linking.openURL(a.url).catch(e => log.error('want.open_site', e, { site: a.site })); }} />
+        ))}
+        {live.reached ? null : <Txt role="caption">Behind. Trying again.</Txt>}
+      </Stack>
+    </Section>
+  ) : null;
+
   const foot = toast ? <UndoToast id="want-undo" text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} />
     : fresh ? <Approve id="want-start" does={most ? `Watch for ${usd(most)} or less` : 'Watch for this'} status={status} step="Starting"
         done="Watching. You can leave and come back." onApprove={() => { setStatus('working'); timers.current.push(setTimeout(() => { setStatus('done'); lookAgain(x); }, 600)); }} />
@@ -106,6 +141,7 @@ export default function Want() {
         <Guess id="want-what" look="body" name="What to look for" value={x.text} changed={!fresh} onChange={v => edit({ ...x, text: v })} />
       </Stack>
 
+      {finds}
       {fresh ? null : progress}
 
       <Section title="Price, delivered">
