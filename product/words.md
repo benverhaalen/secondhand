@@ -2367,3 +2367,11 @@ Nate, the orchestrator's session, 2026-11-15, about 13:30 UTC.
 > with the server getting hosted, begin simulating full user experiences, checking and visually verifying the features. Both natively with xcode, sending codex reviewers to drive the tests, and however you can audit and such to confirm and benchmark everything working. fixing yourself quickly and ingeniously to get benchmarks perfect\
 
 Used in: [the finalization spec, section 12](../spec/plans/finalization.md).
+
+## 2026-11-15 nate why do photos not show up, all data to the server, the app built to handle it
+Nate, the orchestrator's session, 2026-11-15, about 13:35 UTC, while the orchestrator walked `/shop` in the browser and no listing showed a photo. Two messages.
+> Why do photos not show up? ensure all data is sent to the server
+
+> ensure the app is built to handle the data, everything sends in, the behavior works correctly
+
+Used in: [the harness-to-row map](../app/src/edge/intel/public/search.ts) and [its test](../app/src/edge/intel/public/search-fields.test.ts).
