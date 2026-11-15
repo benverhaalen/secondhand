@@ -221,7 +221,18 @@ Asked by [Nate](../../product/words.md#2026-11-14-nate-look-into-apify-and-build
 | Sells these reads per result | we do not buy them and do not measure ourselves against them. They show only that it can be done, so we develop our own ([Nate](../../product/words.md#2026-11-14-nate-not-a-comparison-we-develop-our-own-on-firecrawl-crawl4ai-browser-use-and-jev-ultrafast): "we can and definitely should develop our own. utilizing the firecrawl web4crawl browser use and jev ultrafast technologies to optimize and perfect the way we gather and delvier information"). How each of the four is used is in the [intelligence engine](intelligence-api.md): Firecrawl's and crawl4ai's fetch, render and extraction patterns for reading pages, browser-use for driving a signed-in page, Jev for the fast typed decisions |
 | Exposes Actors as MCP tools | our public search API is already planned as MCP tools |
 
-The signed-in browser runs on a managed cloud browser service (the one already in [connect](../features/connect.md)), which supplies the browser, the profile storage and the address. We do not write code that forges a device fingerprint or solves a challenge; when one appears the person clears it.
+**Where a session runs: ours and the person's, no browser vendor** ([Nate](../../product/words.md#2026-11-14-nate-host-all-engines-ourselves-and-can-the-persons-own-device-do-the-work): "I feel its best to host all engines ourselves"). Every engine and every browser is hosted by us or runs on the person's own device.
+
+| Route | What it is | Good for | Limit |
+|---|---|---|---|
+| The phone, while the app is open | the app's own web view is a real browser on the person's device, signed in to the site, on their own network. A command runs inside it the same way as anywhere else | linking (the sign-in happens on their own device), and everything done while they are in the app: posting after a capture, answering an offer, a fresh read. It costs us nothing and is the session a site trusts most | iOS suspends an app shortly after it leaves the screen and grants background time only in short windows it chooses, so nothing overnight |
+| Our hosted session | a headless browser in a container on our own compute, holding the person's session and saved profile, one steady address per account | watchers, overnight work, anything while the app is closed | compute we pay for; a session moved from the phone to our address may be asked to verify once |
+| Plain requests from our servers | once recon has found the site's own endpoints, most verbs are one or two HTTP requests carrying the session's cookies: no browser at all | most reads and many writes, at the lowest cost and highest speed | sites that bind a session to a browser need one of the two routes above |
+| The person's computer, optional | a browser extension that runs commands in their own signed-in browser, the opencli way | heavy sellers who leave a computer on | only while that computer is on |
+
+The route table ranks these per site and verb by measured success, speed and challenge rate, like every other route. A phone cannot host the background sessions; it is the best route while the app is open, and our own hosting covers the rest. Whether our hosted browsers run on Databricks compute or on a small container host of ours beside it is a first-hour workspace check; the design is the same either way.
+
+We do not write code that forges a device fingerprint or solves a challenge; when one appears the person clears it.
 
 ## 4. Learning
 
