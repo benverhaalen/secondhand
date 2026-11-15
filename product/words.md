@@ -2218,3 +2218,9 @@ Nate, orchestrator's session, 2026-11-15, about 06:55 and 07:05 Central. The fir
 > For the mac only font, add a google font found equivalent in style built to support all systems
 
 Used in: the identify lead's brief, [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate re-evaluate and benchmark what is working, against competitors
+Nate, orchestrator's session, 2026-11-15, about 07:15 Central.
+> revaluate and run competitive benchmarks on the areas we are considering done. All product searchs all platform harnesses to search each listing, analyze every ranking, determine every engine. whatever is working
+
+Used in: the cross-source benchmark run of 2026-11-15 under `research/cross-cutting/nate/runs/`.
