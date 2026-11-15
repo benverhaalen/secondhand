@@ -47,9 +47,9 @@ const MARK = '<p class="m" style="font-size:32px;position:absolute;left:96px;bot
 const TITLE = `<section class="s f" data-view><p class="b">Sell used things from one app</p>${MARK}</section>`, END = '<section class="s" data-view><p class="m">secondhand</p></section>';
 const deck = mid => `${TITLE}<section class="s" data-view>${mid}${MARK}</section>${END}`;
 let n = 0;
-async function ids(body, medium = 'deck', level = 'error') {
+async function ids(body, medium = 'deck', level = 'error', theme = '') {
   const f = join(dir, `${n++}.html`), link = name => `<link rel="stylesheet" href="${pathToFileURL(join(root, 'brand', name)).href}">`;
-  writeFileSync(f, `<!doctype html><html data-medium="${medium}"><meta charset="utf-8">${link('tokens.css')}${link('media.css')}<style>${css}</style><body>${body}`);
+  writeFileSync(f, `<!doctype html><html data-medium="${medium}"${theme && ` data-theme="${theme}"`}><meta charset="utf-8">${link('tokens.css')}${link('media.css')}<style>${css}</style><body>${body}`);
   return (await check(f, medium, { browser })).findings.filter(o => o.level === level).map(o => `${o.id} ${o.where} ${o.msg}`);
 }
 // CI sets CI=true and installs a browser. There, a missing browser fails, so these tests can't be skipped without anyone seeing.
@@ -91,9 +91,9 @@ const CASES = [
   ['B3', 'no wordmark at all', '<section class="s" data-view><p class="b">Listed in a minute</p></section>', /B3 .*no wordmark/],
   ['B30', 'too many words', deck(`<p class="b">${'used things sell faster with good photos '.repeat(3)}</p>`), /B30 .*21 words/],
   ['B4', 'two fields in one view', deck('<div class="f" style="height:160px"></div><div class="f" style="height:160px"></div>'), /B4 .*2 gradients/],
-  ['B5', 'a field with a dark color', deck('<div style="height:160px;background:radial-gradient(at 0 0,var(--mint),transparent 60%),radial-gradient(at 100% 100%,var(--sky-deep),transparent 60%),var(--sky)"></div>'), /B5 .*--sky-deep/],
-  ['B5', 'a flat two-stop gradient', deck('<div style="height:160px;background:linear-gradient(var(--sky),var(--mint))"></div>'), /B5 .*2 colors/],
-  ['B5', 'a field of opposite colors', deck('<div style="height:160px;background:radial-gradient(at 0 0,var(--lilac),transparent 60%),radial-gradient(at 100% 100%,var(--marigold),transparent 60%),var(--lime)"></div>'), /B5 .*degrees apart/],
+  ['B5', 'a field with a dark color', deck('<div style="height:160px;background:radial-gradient(at 0 0,var(--mint),transparent 60%),radial-gradient(at 100% 100%,var(--sky-deep),transparent 60%),var(--sky)"></div>'), /B5 .*built by hand/],
+  ['B5', 'a flat two-stop gradient', deck('<div style="height:160px;background:linear-gradient(var(--sky),var(--mint))"></div>'), /B5 .*built by hand/],
+  ['B5', 'a field of opposite colors', deck('<div style="height:160px;background:radial-gradient(at 0 0,var(--lilac),transparent 60%),radial-gradient(at 100% 100%,var(--marigold),transparent 60%),var(--lime)"></div>'), /B5 .*built by hand/],
   ['B8', 'color over a third of the view', deck('<div style="position:absolute;inset:0 0 40% 0;background:var(--mint)"></div>'), /B8 .*60% color/],
   ['B8', 'the field filling too many slides', `${TITLE}<section class="s f" data-view><p class="b">One</p></section><section class="s f" data-view><p class="b">Two</p></section>${END}`, /B8 .*fills 3 views/],
   ['B31', 'one kind of thing at two sizes', deck('<div data-part="card-item" style="height:160px;background:var(--gray)"></div><div data-part="card-item" style="height:200px;background:var(--gray)"></div>'), /B31 \S+ \S+ \[card-item\] is 160, 200 px tall/],
@@ -163,7 +163,7 @@ CASES.push(['B15', 'text that taps pass through, in a face that is not ours', de
   ['B23', 'two hyphens used as a dash', deck('<p class="b">Sold -- fast</p>'), /B23 .*"--" as a dash/],
   ['B12', 'an amount in euros with the sign after it', deck('<div><p style="font-size:200px">46,95 €</p></div>'), /B12 .*nothing beside it/],
   ['B10', 'a black button with square corners on a slide', deck('<span class="b" style="display:inline-block;background:var(--ink);color:var(--page);border-radius:8px;padding:16px 32px">Accept the offer</span>'), /B10 .*black button/],
-  ['B5', 'a pinwheel gradient', deck('<div style="height:160px;background:conic-gradient(var(--sky),var(--mint),var(--lime),var(--sky))"></div>'), /B5 .*conic gradient/],
+  ['B5', 'a pinwheel gradient', deck('<div style="height:160px;background:conic-gradient(var(--sky),var(--mint),var(--lime),var(--sky))"></div>'), /B5 .*built by hand/],
   ['B28', 'a slide left unmarked between marked slides', `${TITLE}<section class="s"><p class="b" style="font-family:Arial">Nobody checks this</p></section>${END}`, /B28 .*"Nobody checks this" sits outside every data-view/],
   ['B28', 'a page zoomed to one and a half times', `<style>body{zoom:1.5}</style>${app('')}`, /B28 .*zoomed or scaled/, 'app'],
   ['B14', 'two lines at the peak size on an app screen', app('<div style="padding:0 20px"><p style="font-size:50px">Big words</p><p style="font-size:50px">More big words</p></div>'), /B14 .*one peak number/, 'app'],
@@ -178,6 +178,8 @@ CASES.push(['U4', 'a dark ground that reads as brown', app('<div style="margin:1
   ['U1', 'a row that opens a screen with no chevron', app('<a href="#x" style="display:block;margin:16px 20px;font-size:15px;color:var(--ink);text-decoration:none">Ship the Nike Dunks by tomorrow</a>'), /U1 .*no chevron/, 'app'],
   ['U1', 'a button that is bare words', app('<button style="font:500 15px var(--font-text);background:none;border:0;margin:16px 20px;color:var(--ink)">Send a counter</button>'), /U1 .*no fill and no outline/, 'app'],
   ['B36', 'two lines that start two pixels apart', app('<p style="font-size:15px;margin:16px 0 0 20px">Carhartt jacket</p><p style="font-size:15px;margin:16px 0 0 22px">Nike Dunks</p>'), /B36 .*start 20 and 22 px/, 'app'],
+  ['B31', 'a notice that is not the height the tokens give a notice', app('<div data-part="notice" style="margin:16px 20px;height:64px;background:var(--gray)"></div>'), /B31 view 1 \[notice\] is 64 px tall: a \[notice\] is --notice-h, 56 px/, 'app'],
+  ['B31', 'a kind tag that is not the height the tokens give a tag', app(TAG('mint', 'Live')), /B31 view 1 \[tag-kind\] is \d+ px tall: a \[tag-kind\] is --tag-h, 20 px/, 'app'],
   ['B31', 'one kind of thing with two corners', deck('<div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-card)"></div><div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-photo);margin-top:32px"></div>'), /B31 .*corners of \d+px and \d+px/]);
 test('render: seen with no red or no green cones, the four state fills stay apart, and two tints of near hues do not', () => {
   const d = (a, b, k) => Math.hypot(...seenAs(a, k).map((v, i) => v - seenAs(b, k)[i])), sky = [165, 225, 254], mint = [161, 234, 203], lime = [235, 240, 143], marigold = [245, 210, 151];
@@ -193,14 +195,14 @@ test('render: a tile of a fixed size that ends long text with an ellipsis and ke
 });
 const SCREEN = (attrs, inner = '') => `<section data-view ${attrs} style="width:390px;height:844px;padding:20px"><p class="m" style="font-size:21px;text-align:center">secondhand</p><div class="f" style="height:64px;margin-top:32px"></div>${inner}</section>`;
 test('render: a screen that draws a state and says why the others cannot happen passes', { skip: !pw }, async () => {
-  assert.deepEqual(await ids(SCREEN('data-screen="about" data-state="typical" data-skip="empty: it holds no list; one: it holds no list; dense: it holds no list; loading: it is built in; failed: it is built in; offline: it is built in"'), 'app'), []);
+  assert.deepEqual(await ids(SCREEN('data-screen="about" data-state="typical" data-skip="new: it is the same on day one; empty: it holds no list; one: it holds no list; dense: it holds no list; loading: it is built in; failed: it is built in; offline: it is built in"'), 'app'), []);
 });
 CASES.push(['B34', 'a chip that grows with its words', app('<div data-part="chip" style="margin:16px 20px;display:inline-block;background:var(--gray);padding:8px 12px"><span data-fill="title" style="font-size:15px">Nike Dunks</span></div>'), /B34 view 1 with short-title \[chip\] goes from/, 'app'],
   ['B34', 'a long title cut off with no ellipsis', app('<div data-part="chip" style="margin:16px 20px;width:200px;height:36px;background:var(--gray)"><p data-fill="title" style="font-size:15px;white-space:nowrap;overflow:hidden">Nike Dunks</p></div>'), /B34 view 1 with long-title .*cut off by its box with no ellipsis/, 'app'],
   ['B34', 'a long title that spills out of its tile', app('<div data-part="chip" style="margin:16px 20px;width:200px;height:36px;background:var(--gray);white-space:nowrap"><span data-fill="title" style="font-size:15px">Nike Dunks</span></div>'), /B34 view 1 with long-title .*spills out of \[chip\]/, 'app'],
   ['B34', 'a tile that collapses when its photo is missing', app(`<div data-part="tile" data-item style="margin:16px 20px;width:350px"><img data-fill="photo" alt="A jacket" src="${PX}" style="width:100%;display:block"></div>`), /B34 view 1 with no-photo \[tile\] goes from 350 by 350 to/, 'app'],
   ['B34', 'a long amount that runs over the words beside it', app('<div style="margin:16px 20px;position:relative;height:20px"><span data-fill="amount" style="font-size:15px;position:absolute;left:0">$38</span><span style="font-size:15px;position:absolute;left:40px">offered today</span></div>'), /B34 view 1 with big-amount .*runs over "offered today"/, 'app'],
-  ['B35', 'a screen drawn in one state only', SCREEN('data-screen="today" data-state="typical"'), /B35 screen "today" is not drawn in the states empty, one, dense, loading, failed, offline/, 'app'],
+  ['B35', 'a screen drawn in one state only', SCREEN('data-screen="today" data-state="typical"'), /B35 screen "today" is not drawn in the states new, empty, one, dense, loading, failed, offline/, 'app'],
   ['B35', 'a state nobody has listed', SCREEN('data-screen="today" data-state="haunted"'), /B35 screen "today" is drawn in the state "haunted", which is not on the list/, 'app'],
   ['B35', 'a job drawn only while it runs', SCREEN('', '<p data-job="pricing" data-state="running" style="font-size:15px;margin-top:16px">Pricing on eBay</p>'), /B35 job "pricing" is not drawn in the states started, arrived, failed, slow/, 'app']);
 const LOGO = h => `<img alt="eBay" data-logo src="${PX}" style="height:${h}px;width:${h}px;margin-right:16px">`;
@@ -211,7 +213,18 @@ CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-v
   ['B33', 'logos of two heights in a row', deck(`<div>${LOGO(48)}${LOGO(64)}</div>`), /B33 .*48, 64 px tall/],
   ['B33', 'a row of logos taller than the wordmark', deck(`<div>${LOGO(96)}${LOGO(96)}</div>`), /B33 .*96 px tall: none is taller/]);
 test('render: a logo standing alone where a photo would be passes at any size', { skip: !pw }, async () => assert.deepEqual(await ids(deck(`<div>${LOGO(160)}</div>`)), []));
-for (const [id, what, body, re, medium] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium)).join('\n'), re));
+// The wash and the field are tokens, used as they stand. The field takes the ink of its mode, and the wash is not a field.
+const WASH = (style = 'top:0', inner = '') => `<header style="position:absolute;left:0;right:0;${style};height:var(--wash-h);background:var(--wash)">${inner}</header>`;
+test('render: the wash behind the header of a screen passes, with the field on a card under it, in light and dark', { skip: !pw }, async () => {
+  const body = app(`${WASH('top:0', '<p style="font-size:15px;position:absolute;top:120px;left:20px">Today</p>')}<div class="f" style="position:absolute;top:220px;left:20px;right:20px;height:156px;padding:16px"><p style="font-size:15px;color:var(--on-field)">You keep</p><p style="font-size:13px;color:var(--on-field-2)">after fees</p></div>`);
+  assert.deepEqual(await ids(body, 'app'), []); assert.deepEqual(await ids(body, 'app', 'error', 'dark'), []);
+});
+CASES.push(['B4', 'the wash twice on a screen', app(`${WASH()}${WASH()}`), /B4 .*the wash 2 times/, 'app'],
+  ['B4', 'the wash halfway down a screen', app(WASH('top:300px')), /B4 .*starts at the top of the screen/, 'app'],
+  ['B4', 'the wash on a slide', deck(`<div style="height:160px;background:var(--wash)"></div>`), /B4 .*uses the wash on a deck/],
+  ['B7', 'the ink of the field used off the field', app('<p style="font-size:15px;margin:16px 20px;color:var(--on-field-2)">after fees</p>'), /B7 .*off the field/, 'app', 'dark'],
+  ['B6', 'the second ink of the page used on a dark field', app('<div class="f" style="margin:16px 20px;height:156px;padding:16px"><p style="font-size:15px;color:var(--ink-2)">after fees</p></div>'), /B6 .*on the field/, 'app', 'dark']);
+for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.
 import { mkdirSync } from 'node:fs';

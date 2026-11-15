@@ -28,14 +28,14 @@ export const allCaps = s0 => { const s = s0.split(/\s+/).filter(w => !/\d/.test(
 export const titleCase = s => { const w = s.trim().split(/\s+/).filter(x => /^\p{L}{4,}$/u.test(x)); return w.length >= 3 && w.every(x => x[0] !== x[0].toLowerCase()); };
 
 // The colors a medium may use, by token name: { light: { ink: 'rgb(10, 10, 10)', ... } } as the browser computes them.
-function palette(colors) {
+function palette(colors, grads = {}) {
   // Two tokens may hold one value (the second ink, and the second ink on a field). The name the rules know wins.
   const rank = n => TEXT_INK.has(n) ? 0 : hueOf(n) ? 1 : LINE_INK.has(n) ? 2 : 3, byValue = new Map();
   for (const [n, v] of Object.entries(colors)) if (!byValue.has(v) || rank(n) < rank(byValue.get(v))) byValue.set(v, n);
   const name = v => byValue.get(v) ?? (v === 'rgb(255, 255, 255)' ? 'white' : null);
-  return { name, of: n => rgba(colors[n]), has: v => name(v) != null };
+  return { name, of: n => rgba(colors[n]), raw: n => colors[n], has: v => name(v) != null, grads };
 }
-const TEXT_INK = new Set(['ink', 'on-color', 'ink-2', 'ink-disabled', 'page', 'white', 'brick', 'brick-deep']);
+const TEXT_INK = new Set(['ink', 'on-color', 'ink-2', 'ink-disabled', 'page', 'white', 'brick', 'brick-deep', 'on-field', 'on-field-2']);
 const LINE_INK = new Set(['ink', 'on-color', 'outline', 'rule', 'ink-2', 'ink-disabled', 'brick', 'page', 'white']);
 const hueOf = n => RING.find(h => n === h || n === `${h}-tint`);
 const size = el => [el.rect[2] - el.rect[0], el.rect[3] - el.rect[1]];
@@ -50,11 +50,13 @@ const oklab = ([r, g, b]) => { const l = Math.cbrt(.4122214708 * r + .5363325363
   return [.2104542553 * l + .793617785 * m - .0040720468 * s, 1.9779984951 * l - 2.428592205 * m + .4505937099 * s, .0259040371 * l + .7827717662 * m - .808675766 * s]; };
 export const seenAs = (rgb, kind) => oklab(CVD[kind].map(row => Math.min(1, Math.max(0, row[0] * lin(rgb[0]) + row[1] * lin(rgb[1]) + row[2] * lin(rgb[2])))));
 
-// A gradient is a state tag when it runs from one hue's tint to its fill (ledger L18). Any other gradient is a field (C2).
+// Every gradient is a token used as it stands: the field (C2), the wash behind a screen's header (Art. 5), any other gradient tokens.css holds.
+// The one gradient written in place is a state tag, which runs from one hue's tint to its fill (ledger L18). Anything else was built by hand.
 function gradientKind(el, pal) {
-  const names = el.gradient.colors.map(c => pal.name(c));
-  const hues = new Set(names.map(n => n && hueOf(n)));
-  return hues.size === 1 && !hues.has(undefined) && !hues.has(null) && names.some(n => n.endsWith('-tint')) ? 'tag' : 'field';
+  const g = el.gradient, held = Object.entries(pal.grads).find(([n, t]) => !n.endsWith('-mesh') && t.raw === g.raw && (n.startsWith('wash') || t.base === g.base))?.[0];
+  if (held) return held.startsWith('wash') ? 'wash' : held.startsWith('field') ? 'field' : 'token';
+  const names = g.colors.map(c => pal.name(c)), hues = new Set(names.map(n => n && hueOf(n)));
+  return hues.size === 1 && !hues.has(undefined) && !hues.has(null) && names.some(n => n.endsWith('-tint')) ? 'tag' : 'built';
 }
 
 // What is behind a piece of text, as one opaque color where that can be known.
@@ -62,7 +64,7 @@ function ground(t, view, pal) {
   let tint = null;
   for (const g of t.ground) {
     if (g.kind === 'photo') return { kind: 'photo' };
-    if (g.kind === 'gradient') { const el = view.els[g.el]; return { kind: gradientKind(el, pal), el }; }
+    if (g.kind === 'gradient') { const el = view.els[g.el], kind = gradientKind(el, pal); if (kind === 'wash') break; return { kind, el }; }
     const c = rgba(g.color); if (!c) return { kind: 'unknown', raw: g.color };
     if (c[3] >= .99) return { kind: 'fill', raw: g.color, color: tint ? over(tint, c) : c, name: tint ? null : pal.name(g.color) };
     tint = tint ? [...over(tint, c), 1 - (1 - tint[3]) * (1 - c[3])] : c;
@@ -110,7 +112,10 @@ function checkView(view, ctx) {
     else if (!TEXT_INK.has(name)) E('B7', q, `is --${name} text: color is a ground, never ink. Text is ink, the second ink, or white on black, brick and the deep steps (Art. 5.1)`);
     // B6 what the text sits on
     if (g.kind === 'photo') E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
-    else if (g.kind === 'field' || g.kind === 'tag' || (g.name && hueOf(g.name))) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && pal.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'the field'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
+    else if (g.kind === 'field') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
+      if (ok.length ? !ok.includes(t.color) : !['ink', 'on-color'].includes(name)) E('B6', q, `is --${name ?? 'a raw color'} on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)`); }
+    else if (g.kind !== 'fill' || g.name && hueOf(g.name)) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && pal.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'a gradient'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
+    if (name?.startsWith('on-field') && g.kind !== 'field') E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
     else if (g.kind === 'fill' && color && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
       if (c < need) E('B6', q, `has ${c.toFixed(1)}:1 contrast with what is behind it; it needs ${need}:1 (Art. 5.1)`); }
     // B16 case, B23 words, B11 site names
@@ -182,7 +187,7 @@ function checkView(view, ctx) {
   const count = text.filter(t => !isMark(t)).reduce((n, t) => n + words(t.text), 0);
   if (sheet.words && count > sheet.words) E('B30', '', `has ${count} words: a ${medium} view holds ${sheet.words} at most (Part III)`);
 
-  const fields = [], holdsPhoto = new Set();
+  const fields = [], washes = [], holdsPhoto = new Set();
   view.els.forEach((el, i) => { if (el.photo) for (let j = i; j >= 0; j = view.els[j].parent) holdsPhoto.add(j); });
   for (const el of view.els) {
     const q = el.part ? `[${el.part}]` : `<${el.tag}>`;
@@ -211,21 +216,18 @@ function checkView(view, ctx) {
     if (!sheet.act && !act(el, pal) && ['ink', 'ink-press'].includes(pal.name(el.bg)) && el.hasText && size(el)[0] * size(el)[1] < .1 * view.w * view.h) E('B10', q, `is a black button: a ${medium} has no buttons, so the act is a plain line (Part III)`);
     if (act(el, pal) && !sheet.act) E('B10', q, `is a black pill: a ${medium} has no buttons, so the act is a plain line (Part III)`);
     // gradients
-    if (el.gradient) {
-      if (el.gradient.repeating) E('B5', q, 'uses a repeating gradient: the field has no lines and no grain (C2)');
-      if (el.gradient.conic) E('B5', q, 'uses a conic gradient: the field is soft points of color, with no edges (C2)');
-      if (gradientKind(el, pal) === 'field') fields.push(el);
+    if (el.gradient) { const kind = gradientKind(el, pal), held = Object.keys(pal.grads).filter(n => !n.endsWith('-mesh')).map(n => `var(--${n})`).join(', ');
+      if (kind === 'built') E('B5', q, `is a gradient built by hand: a gradient is a token used as it stands${held ? ` (${held})` : ''}, never rebuilt (C2)`);
+      if (kind === 'field' || kind === 'built') fields.push(el);
+      if (kind === 'wash') washes.push(el);
     }
   }
-  // B4 one field per view, B5 a soft mesh of three ring colors
+  // B4 one field per view, and the wash once, at the top of a screen, no taller than --wash-h
   if (fields.length > 1) E('B4', '', `has ${fields.length} gradients: one field per view (C2)`);
-  for (const el of fields) {
-    const q = el.part ? `[${el.part}]` : `<${el.tag}>`, names = [...new Set(el.gradient.colors.map(c => pal.name(c) ?? c))], off = names.filter(n => !RING.includes(n));
-    if (off.length) E('B5', q, `the field uses ${off.map(n => n.startsWith('rgb') ? n : `--${n}`).join(', ')}: a field is three of the eight ring fills, never dark, saturated or a tint (C2)`);
-    else if (names.length !== 3) E('B5', q, `the field has ${names.length} color${names.length === 1 ? '' : 's'}: a field is a soft mesh of three (C2)`);
-    else { const hs = names.map(n => oklch(hex(pal.of(n))).H), far = Math.max(turn(hs[0], hs[1]), turn(hs[1], hs[2]), turn(hs[0], hs[2]));
-      if (far > 140) E('B5', q, `the field mixes --${names.join(', --')}, ${Math.round(far)} degrees apart: no two field colors sit near opposite each other (C2)`); }
-    if (!el.gradient.radial) E('B5', q, 'the field is a straight gradient: it is a soft mesh of blurred points, written with radial gradients (C2)');
+  if (washes.length > 1) E('B4', '', `has the wash ${washes.length} times: it appears at most once on a screen (Art. 5)`);
+  for (const el of washes) { const q = el.part ? `[${el.part}]` : `<${el.tag}>`, tall = (ctx.named['wash-h'] ?? 200) * u;
+    if (!['app', 'web'].includes(medium)) E('B4', q, `uses the wash on a ${medium}: it sits behind the header of a screen and nowhere else (Art. 5)`);
+    else if (el.rect[1] > 1 || size(el)[1] > tall + 1) E('B4', q, `the wash runs from ${Math.round(el.rect[1])} to ${Math.round(el.rect[3])} px: it starts at the top of the screen and is ${tall} px tall at most (Art. 5)`);
   }
   // two black pills side by side
   // C4 one act per decision: two black pills never share a box, or a card (the nearest thing marked data-part)
@@ -242,7 +244,7 @@ function checkView(view, ctx) {
   const hues = [...new Set(view.els.filter(e => e.hasText && hueOf(pal.name(e.bg))).map(e => pal.name(e.bg)))];
   for (const [kind] of Object.entries(CVD)) for (let i = 0; i < hues.length; i++) for (let j = i + 1; j < hues.length; j++) { if (hueOf(hues[i]) === hueOf(hues[j])) continue;
     const d = Math.hypot(...seenAs(pal.of(hues[i]), kind).map((v, k) => v - seenAs(pal.of(hues[j]), kind)[k]));
-    if (d < .05) E('U4', '', `--${hues[i]} and --${hues[j]} are ${d.toFixed(3)} apart to an eye with ${kind}: two colors that mark different things in one view stay .05 apart in Oklab`); }
+    if (d < .05) W('U4', '', `--${hues[i]} and --${hues[j]} are ${d.toFixed(3)} apart to an eye with ${kind}: two colors that mark different things in one view stay .05 apart in Oklab`); }
   for (const el of view.els) { const c = rgba(el.bg); if (!c || c[3] < .99) continue; const o = oklch(hex(c));
     if (o.L < .5 && o.C > .03 && o.H >= 70 && o.H <= 115) E('U4', el.part ? `[${el.part}]` : `<${el.tag}>`, `has a dark ground of ${el.bg} in the yellow to olive band, which reads as brown`);
     if (/tag/.test(el.part ?? '') && hueOf(pal.name(el.bg)) && !el.hasText && !view.els.some(k => k.parent === view.els.indexOf(el) && (k.tag === 'img' || k.tag === 'svg'))) E('U4', `[${el.part}]`, 'shows its state by color alone: a tag carries a word or an icon'); }
@@ -285,7 +287,7 @@ function underStress(view, base, baseOut, ctx) {
 
 // facts: { views: [...], stressed: [...], fontsLoaded }, as scripts/brand-check.mjs collects them. Returns the findings.
 export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
-  const pal = palette(colors), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [] }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
+  const pal = palette(colors, facts.grads ?? {}), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [], named: facts.named ?? {} }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
   const byIndex = new Map(facts.views.map((v, i) => [v.index, i])), stress = (facts.stressed ?? []).flatMap(v => underStress(v, facts.views[byIndex.get(v.index)], per[byIndex.get(v.index)], ctx));
   const once = new Set(); for (const o of stress) { const k = `${o.where} ${o.msg}`; if (!once.has(k)) { once.add(k); out.push(o); } }
   // B28 everything that shows was measured
@@ -311,6 +313,12 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
   for (const [k, all] of kinds) { const part = k.split(' ')[1], set = (xs, i) => [...new Set(xs.map(x => Math.round(size(x.el)[i])))].sort((a, b) => a - b), spread = xs => Math.max(...xs) - Math.min(...xs) > 1;
     const hs = set(all, 1), ws = set(all.filter(x => x.el.fit !== 'content' && !x.el.logo), 0), at = `${new Set(all.map(x => x.view)).size > 1 ? 'views' : 'view'} ${[...new Set(all.map(x => x.view))].join(', ')}`;
     if (spread(hs)) out.push(err('B31', `${at} [${part}]`, `is ${hs.join(', ')} px tall in different places: things of one kind are one size, whatever is in them`));
+    // A part whose name has a size in tokens.css is that size: [card-decision] is --card-decision-h tall, [site-badge] is --site-badge square.
+    // A longer name falls back to its family: [tag-kind] takes --tag-h.
+    const named = facts.named ?? {}, token = (suffix) => { for (let name = part; name; name = name.replace(/-?[^-]+$/, '')) if (named[name + suffix] != null) return [name + suffix, named[name + suffix] * (sheet.unit ?? 1)]; return null; };
+    const tall = token('-h') ?? token(''), wide = token('-w') ?? token('');
+    if (tall && hs.some(h => Math.abs(h - tall[1]) > 1)) out.push(err('B31', `${at} [${part}]`, `is ${hs.join(', ')} px tall: a [${part}] is --${tall[0]}, ${tall[1]} px`));
+    if (wide && ws.some(w => Math.abs(w - wide[1]) > 1)) out.push(err('B31', `${at} [${part}]`, `is ${ws.join(', ')} px wide: a [${part}] is --${wide[0]}, ${wide[1]} px`));
     const rs = [...new Set(all.map(x => [...new Set(x.el.radius)].join(' ') || '0'))];
     if (rs.length > 1) out.push(err('B31', `${at} [${part}]`, `has corners of ${rs.join(' and ')}: things of one kind have one corner`));
     if (ws.length && spread(ws)) out.push(err('B31', `${at} [${part}]`, `is ${ws.join(', ')} px wide in different places: things of one kind are one size, whatever is in them. Where a width should follow its words, mark it data-fit="content"`)); }

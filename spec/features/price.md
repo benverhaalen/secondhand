@@ -173,8 +173,61 @@ For Ben and Nate to mark.
 2. The best Depop plan is preselected. Tap "why" and see the 9 listings it came from.
 3. Change the floor below the plan's floor, and the app asks. Confirm, and the site floor tool is set.
 
+## Selling intents
+
+*Agent proposal*, from Ben's ask at 02:46 ([words](../../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)): "the user can set things like i want to sell but this is my minimum. or i want to do a firesale. or i just want to see if someone would buy it but i want to keep it unless i can get it". Brainstormed twice, by this thread and by a second model given only the personas and the levers; where the two differed is marked below.
+
+### Why the plan needs an intent above the slider
+
+The plan today has one axis: speed against price. `objective` (quick, balanced, max_return), `posture` (0 to 1) and `horizon_days` (7, 30, 90) are three views of it, and the [valuation engine](../engines/valuation.md) says so: "the plan choice and the slider are the same control". Ben's three examples differ on a second axis the model lacks: **what should happen if it does not sell, and whether a sale is wanted at all**. No slider position says "I'd rather keep it". So the person picks an intent first, and the slider stays as the fine adjustment under it (*inferred*; both brainstorms reached this independently).
+
+### Who wants what
+
+Personas from [today research §1](../../research/today/ben/today-wants-alerts-and-clickability.md#1-who-opens-the-app-next-to-what-they-already-use); principles (P) from [user-wants](../../research/cross-cutting/ben/user-wants.md).
+
+| What they want, in their words | Who | The want under it | Covered today by | Missing |
+|---|---|---|---|---|
+| "Gone by Friday" | clearing out (moving), students | out of the house by a date; money second (P1) | `quick`, horizon 7 | a real date. A horizon is a scoring window, not a deadline: holding cost is near zero until Thursday, then it is the whole item. Needs `gone_by` and a ladder compressed to reach the floor before it |
+| "Just get rid of it" (fire sale) | clearing out | no more decisions; any fair taker | `quick`, posture 0 | conflicts with "a price below your floor always asks" ([decision](../../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)). Kept intact: a fire sale sets a low floor once, shown with what you'd keep, instead of weakening the rule |
+| "Sell it, but not under $X" | everyone | a normal sale with one protected line | `balanced`, floor, the markdown path | nothing: this is the default |
+| "Only if I get $X, otherwise I keep it" | attached owners, young fashion sellers | keeping is a fine outcome (P10, loss aversion) | `max_return` with floor X | three breaks: if X is above the top sold price the path has no rung; [D15](../determinations/money.md) walks it to stale and `end_unsold`; the success score calls it at risk. Needs a reserve mode: fixed ask, no markdowns, no stale, ends only when the person says |
+| "See what it would fetch" | everyone, flippers most | information, not a sale | appraise, with no listing | a live listing where every offer asks and nothing is accepted for you, with a review date. Not on a site where a buy-now binds the seller and cancelling costs a defect (eBay, Mercari, Poshmark; [money](../determinations/money.md)), so on those it lists with offers only, or stays an appraisal |
+| "Donate it if it doesn't sell" | clearing out | an ending chosen up front, so nothing lingers (P1: donate "looks finished, not failed") | `end_unsold`, asked at the end | `fallback` chosen at listing (donate, keep, trade in, relist, ask me), so the end is automatic |
+| "Clear the lot" | clearing out, flippers | the pile gone; the total matters, not each price | `bundle_offer`, per-item floors | a batch with one total floor that lets items cross-subsidise; conflicts with "never below any item's floor" in bundles. Open for Ben and Nate |
+| "Hold it for the season" | young fashion, flippers | list the coat in October | `list_at` | a visible scheduled state ("lists Oct 1") and the engine's note when waiting pays |
+| "At least what I paid, plus a margin" | flippers | profit over cost | `item.cost`, `user.target_profit_cents` | a floor derived from cost. Cost is never asked of someone clearing out (P10); it is offered once a person behaves like a flipper (*second model's point*) |
+| "Don't bother me" | clearing out | set once, hear only when it sells (P3) | rules, Always accept | the stale and end steps still ask; fixed by `fallback` and the intents above being answered up front |
+| "Not on Facebook" | anyone | friends shouldn't see it | a skipped site in the plan | a person-set skip reason (`skip_reason` holds system reasons only) |
+
+### Five choices, one tap
+
+The Plan sheet opens on these, each showing its consequence from sold data before the person picks ("about 9 days, you keep $41"), never a bare label (P10).
+
+| Choice | Says underneath | Sets | Standing judges it by |
+|---|---|---|---|
+| **Sell it** (default) | a fair price, soon | `balanced`, posture 0.5, horizon 30, floor suggested from sold prices, Always accept offered, `fallback` ask | on pace against the plan's median days |
+| **Gone fast** | by a date, or as soon as possible | `quick`, posture 0.15, optional `gone_by`, the path compressed to reach the floor by the date, Always accept at the floor, pickup sites first, `fallback` chosen now. A fire sale is this with a low floor | will it clear before `gone_by`; a predicted miss is the one alarm worth a push ("won't sell by Friday at $40; $28 would") |
+| **Best price** | no rush | `max_return`, posture 0.85, horizon 90, offers on, slow counters, `fallback` ask | interest arriving at this ask |
+| **Only at my price** | I'd keep it otherwise | `intent` reserve: ask fixed at their number, `markdown_on` false, no stale, offers below it decline quietly or ask (their pick), `fallback` keep, `review_at` 30 days | distance from the market only: "sold ones top out at $70; yours is $95". Never Slow or Stuck |
+| **Just checking** | what would it fetch? | an appraisal by default; or a listing with `accept_mode` ask_all, nothing automatic, `review_at` 14 days, only on sites where an offer does not bind | the answer itself: interest and offers received; no fixes pushed |
+
+Everything else is an adjustment inside a choice, not a sixth choice: the floor, Always accept, the date, the fallback, ship or pickup, sites to skip, sell as a set, cost (flippers only), list later. The default is Sell it, not the middle of a slider, because for the primary person "gone" beats money (P1); the slider still opens at the middle inside Sell it, as Nate asked ([words](../../product/words.md#2026-11-14-nate-the-price-slider-defaults-to-the-middle)). The second model argued the default should lean faster for the primary persona; that is Ben's and Nate's call.
+
+### What changes underneath
+
+| Part | Change |
+|---|---|
+| `strategy` | add `intent` (`sell`, `fast`, `best`, `reserve`, `check`), `gone_by?` (date), `fallback` (`ask`, `donate`, `keep`, `trade_in`, `relist`), `markdown_on` (bool), `review_at?` |
+| `limits` | add `accept_mode` (`auto`, `ask_all`) per item |
+| the marketing engine | for `fast` with `gone_by`, the holding cost is a step at the date, not a rate; for `reserve`, no path is built and the item never enters `stale` |
+| [money D15](../determinations/money.md) | skips `reserve` and `check`; for the rest, `fallback` answers `end_unsold` without a card unless it is `ask` |
+| the success score | `U_best` is the best plan under the chosen intent, not only the posture ([score](score.md#standing-against-the-market)) |
+| decision kinds | none new; `end_unsold` is raised only when `fallback` is `ask` |
+| the floor rule | unchanged: a price below the floor always asks. Intents set the floor up front; they never cross it |
+
 ## Open for Ben and Nate
 
+- Selling intents: may a batch carry one total floor that overrides each item's floor? May "Just checking" create a live listing at all? Is cost ever asked, or only offered to flippers? Should the default lean faster than Sell it for someone clearing out?
 - Is the 30-day horizon the right default "best", or should the best plan follow this month's goal when one is set?
 - Should visitors see the financial axis on product pages when its range is "not checked yet"?
 
@@ -184,3 +237,4 @@ For Ben and Nate to mark.
 - `GET /v1/citations/:id` in the endpoint list.
 - `unbacked_claim` in the decision kinds.
 - `comp.days_listed`, `comp.search_position`, `comp.state` (sold, live, ended).
+- Selling intents: `strategy.intent`, `strategy.gone_by`, `strategy.fallback`, `strategy.markdown_on`, `strategy.review_at`, `limits.accept_mode`, and a person-set `skip_reason` value `you_skipped` ([selling intents](#selling-intents)).
