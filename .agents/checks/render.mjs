@@ -122,6 +122,27 @@ function checkView(view, ctx) {
     const ok = { 'top-center': mid && cy < view.h / 4, 'top-left': cx < view.w / 2 && cy < view.h / 4 || t.size > 30, 'center': mid, 'top-or-bottom-center': mid && (cy < view.h / 4 || cy > view.h * 3 / 4), any: true }[where ?? 'any'];
     if (!ok) E('B3', '', `the wordmark sits at ${Math.round(cx)}, ${Math.round(cy)}: on a ${medium} it goes ${where.replace(/-/g, ' ')} (C1, Part III)`);
   }
+  // B32 the wordmark's kit (C1): once per view, untouched, on the page or the field, with one unit of clear space around it
+  const marks = text.filter(isMark), hits = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
+  if (marks.length > 1) E('B32', '', `carries the wordmark ${marks.length} times: once per view (C1)`);
+  for (const t of marks) {
+    if (t.fx.length) E('B32', '', `the wordmark is ${t.fx.join(' and ')}: it is never transformed, shadowed, outlined, stroked, filtered, faded or moved (C1)`);
+    const own = view.els[t.el], g = ground(t, view, pal), n = pal.name(t.color);
+    if (own && (own.bg || own.borders.length)) E('B32', '', 'the wordmark has a fill or a box of its own (C1)');
+    if (n && !['ink', 'on-color', 'page', 'white'].includes(n)) E('B32', '', `the wordmark is --${n}: it is black or white (C1)`);
+    if (g.kind === 'tag' || g.kind === 'fill' && g.name !== 'page' && !(g.name === 'ink' && n !== 'ink')) E('B32', '', `the wordmark sits on ${g.name ? `--${g.name}` : 'a color'}: it goes on the page or the field (C1)`);
+    const unit = t.size / 2, zone = [t.rect[0] - unit, t.rect[1] - unit, t.rect[2] + unit, t.rect[3] + unit], up = new Set(); for (let i = t.el; i >= 0; i = view.els[i].parent) up.add(i);
+    const near = [...text.filter(o => o !== t && hits(o.rect, zone)).map(o => short(o.text)),
+      ...view.els.filter((el, i) => !up.has(i) && el.part !== 'hand' && (el.paints || el.bg || el.borders.length) && hits(el.rect, zone) && !(el.rect[0] <= t.rect[0] && el.rect[1] <= t.rect[1] && el.rect[2] >= t.rect[2] && el.rect[3] >= t.rect[3])).map(el => el.part ? `[${el.part}]` : `<${el.tag}>`)];
+    if (near.length) E('B32', '', `${[...new Set(near)].slice(0, 3).join(', ')} sits within ${unit} px of the wordmark: nothing but its ground comes within half its type size (C1)`);
+  }
+  // B33 logos in a row (C5): one height, one gap, none taller than the wordmark's type
+  const rows = new Map(); for (const el of view.els) if (el.logo) rows.set(el.parent, [...(rows.get(el.parent) ?? []), el]);
+  for (const logos of rows.values()) { const hs = logos.map(l => Math.round(l.rect[3] - l.rect[1])), cap = sheet.wordmark?.sizes?.[0];
+    if (Math.max(...hs) - Math.min(...hs) > 1) E('B33', '', `logos in one row are ${[...new Set(hs)].join(', ')} px tall: logos in a row share one height (C5)`);
+    if (cap && Math.max(...hs) > cap + 1) W('B33', '', `a logo is ${Math.max(...hs)} px tall: none is taller than the wordmark's type, ${cap} px on a ${medium} (C5)`);
+    const line = logos.filter(l => Math.abs(l.rect[1] - logos[0].rect[1]) < 2).sort((a, b) => a.rect[0] - b.rect[0]), gaps = line.slice(1).map((l, i) => Math.round(l.rect[0] - line[i].rect[2]));
+    if (gaps.length > 1 && Math.max(...gaps) - Math.min(...gaps) > 1) E('B33', '', `logos in one row sit ${[...new Set(gaps)].join(', ')} px apart: one gap (C5)`); }
   // longest text
   const count = text.filter(t => !isMark(t)).reduce((n, t) => n + words(t.text), 0);
   if (sheet.words && count > sheet.words) E('B30', '', `has ${count} words: a ${medium} view holds ${sheet.words} at most (Part III)`);

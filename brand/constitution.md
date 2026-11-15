@@ -113,7 +113,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 
 **C5. Platform logos, not names.** Where a marketplace is meant, its real logo is shown, from [assets/platforms/](../assets/platforms/). Ben, 19:59.
 - Boundary: unaltered logos only, brand color or black, never redrawn letterforms. VoiceOver and alt text carry the name.
-- In a row, logos share one height and one gap, and none is taller than the wordmark's type size. Corners stay as the file has them: rounding a logo alters it (agent proposal, R26).
+- In a row, logos share one height and one gap, and none is taller than the wordmark's type size. In the app, a logo that stands where a photo would be, for a thing that has no photo, sits alone in the photo's 72 slot at 40. Corners stay as the file has them: rounding a logo alters it (agent proposal, R26).
 
 **C6. Plain money.** Amounts are set in the text face with tabular figures, with the currency sign, at the same size as the text around them or one step up. The one peak amount per view (a sale) may be 50 in the app or up to 200 in a post or deck, still in the text face (agent proposal). No band or highlight sits behind an amount: it stands out by size alone, and one kind of amount looks the same everywhere it appears (Ben, [round 7](../product/words.md#2026-11-15-round-7-picks)).
 - Boundary: never a counter animation; never a big number without what it is ("$46.95" alone fails; "You keep $46.95" passes).
@@ -390,6 +390,8 @@ Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-c
 | B29 | Feel | Ben looks at it | Ben |
 | B30 | Longest text (Part III) | Words in a view ≤ the medium's limit, not counting the wordmark | Script |
 | B31 | Things of one kind are one size, whatever is in them (Ben, [words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)) | Every element with the same `data-part` name renders at one height, within 1 px | Script |
+| B32 | The wordmark's kit (C1; agent proposal, ledger R26) | Once per view; no transform, shadow, outline, stroke, filter, fade or motion; no fill or box of its own; ink or white, on the page or the field; nothing else within half its type size | Script |
+| B33 | Logos in a row (C5; agent proposal, ledger R26) | Logos that share a parent render at one height and one gap. A logo taller than the wordmark's type is a warning until R26 is picked | Script |
 
 A check that passes is not proof of taste ("scripts can't prove it looks good"). It is proof the rules were followed. Record results with the output.
 

@@ -37,7 +37,7 @@ const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAA
 const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--page);color:var(--ink);font-family:var(--font-text);font-weight:400}
 .s{width:1920px;height:1080px;padding:96px;position:relative;overflow:hidden}.p{width:1080px;height:1350px;padding:72px;position:relative;overflow:hidden}
 .h{font-size:64px;font-family:var(--font-display);font-weight:600}.b{font-size:32px}.m{font-family:var(--font-display);font-weight:600;font-size:64px}.f{background:var(--field)}`;
-const TITLE = '<section class="s f" data-view><p class="m">secondhand</p><p class="b">Sell used things from one app</p></section>', END = '<section class="s" data-view><p class="m">secondhand</p></section>';
+const TITLE = '<section class="s f" data-view><p class="m">secondhand</p><p class="b" style="margin-top:32px">Sell used things from one app</p></section>', END = '<section class="s" data-view><p class="m">secondhand</p></section>';
 const deck = mid => `${TITLE}<section class="s" data-view>${mid}</section>${END}`;
 let n = 0;
 async function ids(body, medium = 'deck') {
@@ -91,12 +91,18 @@ const CASES = [
 // An app mock: the phone's own bars are skipped, a screen may be taller than the phone, a row may scroll past the margin, and text an ancestor clips is not on the page.
 const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;text-align:center">secondhand</p>${inner}</section>`;
 test('render: an app mock with a status bar, a tall screen, a scrolling row and clipped text passes', { skip: !pw }, async () => {
-  assert.deepEqual(await ids(app(`<div style="overflow-x:auto;white-space:nowrap;padding:0 20px"><span style="font-size:15px">Draft</span>${'<span style="font-size:15px;padding:0 64px">Live</span>'.repeat(6)}</div>
+  assert.deepEqual(await ids(app(`<div style="overflow-x:auto;white-space:nowrap;padding:0 20px;margin-top:16px"><span style="font-size:15px">Draft</span>${'<span style="font-size:15px;padding:0 64px">Live</span>'.repeat(6)}</div>
     <div style="height:20px;overflow:hidden;padding:0 20px"><p style="font-size:15px;height:20px">Carhartt jacket</p><p style="font-size:15px">Hidden below the fold of its box</p></div>
     <img alt="A jacket" src="${PX}" style="width:350px;height:200px;margin:0 20px;display:block">`, 1200), 'app'), []);
 });
 CASES.push(['B15', 'a status bar marked in the middle of the screen', app('<div data-chrome style="margin:200px 20px 0;font:400 15px Arial">Not a status bar</div>'), /B15 .*Arial/, 'app'],
   ['B28', 'a slide taller than the deck', `<section class="s" data-view style="height:1400px"><p class="m">secondhand</p></section>`, /B28 .*1920 by 1400/]);
+const LOGO = h => `<img alt="eBay" data-logo src="${PX}" style="height:${h}px;width:${h}px;margin-right:16px">`;
+CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-view><p class="m" style="display:inline-block;transform:rotate(-4deg);text-shadow:0 2px 4px var(--scrim)">secondhand</p></section>`, /B32 .*transformed and shadowed/],
+  ['B32', 'a line crowding the wordmark', `<section class="s" data-view><p class="m">secondhand</p><p class="b">Sell used things</p></section>`, /B32 .*"Sell used things" sits within 32 px/],
+  ['B32', 'the wordmark twice on a slide', `<section class="s" data-view><p class="m">secondhand</p><p class="m" style="margin-top:96px">secondhand</p></section>`, /B32 .*2 times/],
+  ['B32', 'the wordmark on a gray box', `<section class="s" data-view><div style="background:var(--gray);padding:64px"><p class="m">secondhand</p></div></section>`, /B32 .*sits on --gray/],
+  ['B33', 'logos of two heights in a row', deck(`<div>${LOGO(48)}${LOGO(64)}</div>`), /B33 .*48, 64 px tall/]);
 for (const [id, what, body, re, medium] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.
