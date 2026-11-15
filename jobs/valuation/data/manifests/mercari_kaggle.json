@@ -1,0 +1,74 @@
+{
+  "source": "mercari_kaggle",
+  "licence": "Kaggle competition data (Mercari Price Suggestion Challenge); rules unread, non-commercial research use asserted",
+  "may_model": true,
+  "code_commit": "b40085dc8cbd4e95937435792b156b73c7915d6a",
+  "inputs": [
+    {
+      "file": "train.tsv",
+      "bytes": 337809843,
+      "sha256": "94b24fbecca842140b6276e9da43ce66be3b56b4b991375228802a74050fe471"
+    }
+  ],
+  "output": {
+    "file": "rows.csv.gz",
+    "sha256": "e220ebdcacfcdbe5eafc2d72e706c7ae6e1b6b80b01fdf08ecb52a83aa2253b6",
+    "columns": [
+      "row_id",
+      "source",
+      "licence",
+      "site",
+      "url",
+      "kind",
+      "product_id",
+      "family_id",
+      "cluster_id",
+      "brand",
+      "category",
+      "condition",
+      "size",
+      "era",
+      "title",
+      "photo_count",
+      "seller_feedback",
+      "price_type",
+      "price_cents",
+      "buyer_shipping_cents",
+      "listed_at",
+      "at",
+      "best_offer",
+      "views",
+      "watchers",
+      "may_model",
+      "at_ask",
+      "priced_from_our_number",
+      "description",
+      "retail_cents",
+      "released_at",
+      "region"
+    ]
+  },
+  "rows": 1481661,
+  "by_price_type": {
+    "sold": 1481661
+  },
+  "by_kind": {
+    "apparel": 673646,
+    "appliances_tools": 2586,
+    "baby_gear": 6071,
+    "bags": 52164,
+    "bikes_sports": 21864,
+    "cards_collectibles": 12291,
+    "electronics": 113768,
+    "jewellery_watches": 61730,
+    "lighting_home": 65245,
+    "media": 21021,
+    "other": 284898,
+    "shoes": 100924,
+    "toys_lego": 65453
+  },
+  "at_range": null,
+  "dropped": {
+    "price_zero": 874
+  }
+}

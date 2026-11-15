@@ -103,7 +103,7 @@ async function press(s, id) {
 const goes = (s, path) => s.page.waitForURL(u => new URL(u).pathname === path, { timeout: 3000 });
 
 const SWITCH = 'Nintendo Switch OLED, white, with dock', DUNKS = 'Nike Dunk Low, Grey Fog, men’s 10', JACKET = 'Carhartt Detroit Jacket J97, brown duck, L';
-const KEEP = 'You keep about $498 if all 5 sell', POST = 'Post 2 and lower 1', POSTED = 'Posted 2, lowered 1';
+const KEEP = 'You get about $498 if all 5 sell', POST = 'Post 2 and lower 1', POSTED = 'Posted 2, lowered 1';
 const FREE = 'What’s left goes up free', ERROR = 'The site didn’t answer, so nothing went up.';
 
 // ---- states ----
@@ -163,7 +163,7 @@ const CHECKS = {
   'thing-it_switch on sweeping': async s => { await sheet(s, 'thing-it_switch'); await s.shows(table.state('sweeping').shows); },
   'thing-it_switch on started': async s => { await tagged(s, 'thing-it_switch', 'Live'); await opens(s, 'thing-it_switch', SWITCH); await s.shows(/\$225/); },
   'thing-it_pants on wednesday': async s => {
-    await opens(s, 'thing-it_pants', 'You keep $38.14');
+    await opens(s, 'thing-it_pants', 'You get $38.14');
     assert.equal(await count(rows(s, 'thing-it_pants')), 0, 'a sold thing has nothing left to choose');
   },
   'thing-it_jacket on done': async s => { await opens(s, 'thing-it_jacket', JACKET); },
@@ -182,7 +182,7 @@ const CHECKS = {
     assert.ok(price, `the row picked ("${text}") names a price`);
     await s.shows(new RegExp(`For\\s*${price.replace(/[.$]/g, '\\$&')}`));
     await gone(s, has(KEEP));
-    await s.shows(/You keep about \$[\d,]+ if all 5 sell/);
+    await s.shows(/You get about \$[\d,]+ if all 5 sell/);
   },
   'price-it_switch on failed': async s => { await sheet(s, 'price-it_switch'); },
 
