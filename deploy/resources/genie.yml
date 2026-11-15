@@ -1,0 +1,7 @@
+resources:
+  genie_spaces:
+    market:
+      title: secondhand market
+      description: Public market comps, historical valuation backtests, parameter changes and governance evidence. Thin price answers are refused with their counts; shown numbers open with measures.why().
+      warehouse_id: ${var.warehouse_id}
+      file_path: ../../databricks/genie/market.json
