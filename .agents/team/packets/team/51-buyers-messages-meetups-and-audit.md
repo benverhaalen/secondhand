@@ -33,6 +33,17 @@ Where it is written: [edge cases §10 to §17](../../../../spec/edge-cases.md#10
 - On a saved match: the price change since it was found, and the listing's photos and text stored at find time as evidence for a not-as-described case.
 - The seller-not-replying path: when a `buy_offer` expires, offer the next match.
 
+## Notifications
+
+[spec/notifications.md](../../../../spec/notifications.md) (Ben, 05:23). The triggers your side raises:
+- Each decision kind and event carries `notify {level: now | later | silent, time_sensitive}` from one table in code, with the level per default set by the item's `plan_choice` and the want, and overridable per kind in `user.notification_pref`.
+- Digests at 9:00, 13:00 and 19:00 local, moved toward the person's usual open times; one notification per digest with a count and the top line.
+- Quiet hours `user.quiet_hours {from, to}` default 22:00 to 08:00; a deadline inside them is pushed before they start.
+- Fatigue: a kind pushed 3 times and never opened moves to the digest, and the next digest says so with Undo.
+- Grouping keys: one thread per item (`thread_id = item_id`), and one per batch action.
+- Lock-screen actions call `POST /v1/decisions/:id/act` with the card version; Accept, Approve and Counter require device authentication.
+- The push payload `{kind, decision_id?, item_id?, path}` from packet 47, plus `title`, `body`, `actions[]` rendered on the server from the copy table so web and phone say the same thing.
+
 ## Smaller asks
 
 - Poshmark end: "not for sale" by default, delete only on the person's ask (delete loses the likes).
