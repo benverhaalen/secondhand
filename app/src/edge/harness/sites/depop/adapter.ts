@@ -33,13 +33,17 @@ export const PATHS = {
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
-const at = (o: unknown, ...ks: string[]): unknown => ks.reduce<unknown>((v, k) => (isObj(v) ? v[k] : undefined), o);
+const at = (o: unknown, ...ks: string[]): unknown => ks.reduce<unknown>((v, k) => (isObj(v) ? v[k] : Array.isArray(v) ? v[Number(k)] : undefined), o);
 const str = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' ? String(v) : undefined);
 const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : undefined);
 // "64.05" -> 6405; anything that is not a plain decimal amount is undefined, so classifyRead names it.
 export const cents = (v: unknown) => (typeof v === 'string' && /^\d+(\.\d{1,2})?$/.test(v) ? Math.round(Number(v) * 100) : undefined);
 export const refHash = (v: string) => 'h' + createHash('sha256').update(v).digest('hex').slice(0, 8);
 const objects = (body: unknown) => (Array.isArray(at(body, 'objects')) ? (at(body, 'objects') as unknown[]).filter(isObj) : undefined);
+// The first line of a listing's text, without its hashtags, at most 80 characters.
+export const titleOf = (v: unknown) => (typeof v === 'string' ? v.split(/\r?\n/).map(l => l.replace(/#\S+/g, '').replace(/\s+/g, ' ').trim()).find(Boolean)?.slice(0, 80) : undefined);
+// A slug is "<handle>-<words>-<id>": the words alone, so a seller's handle never stands in for a title.
+export const slugTitle = (slug?: string) => slug?.split('-').slice(1, -1).join(' ') || undefined;
 const listingUrl = (slug: string) => `${WWW}/products/${slug}/`;
 
 // The page is a Next.js app: its data rides in `self.__next_f.push([1,"..."])` parts, joined in order.
@@ -118,6 +122,12 @@ async function search(c: Client, a: CallArgs, s: AbortSignal): Promise<AdapterRe
     const slug = str(o.slug);
     return { external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), price_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'price', 'amount')),
       currency: str(at(o, 'pricing', 'currency')), brand: str(o.brand_name), likes: num(o.like_count),
+      // Depop has no title: the first line of the seller's text is what its own cards show (observed 2026-11-15).
+      title: titleOf(o.description) ?? slugTitle(slug), image_url: str(at(o, 'preview', 'formats', 'P0', 'url')) ?? str(at(o, 'pictures', '0', 'formats', 'P0', 'url')),
+      condition: str(at(o, 'attributes', 'condition'))?.replaceAll('_', ' '), size: str(at(o, 'sizes', '0', 'name')), category: str(o.category_name),
+      color: Array.isArray(at(o, 'attributes', 'colour')) ? (at(o, 'attributes', 'colour') as unknown[]).filter(c => typeof c === 'string').join(', ') || undefined : undefined,
+      shipping_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'shipping', 'amount')),
+      original_price_cents: cents(at(o, 'pricing', 'original_price', 'price_breakdown', 'price', 'amount')), sponsored: o.is_boosted === true || undefined,
       sku: typeof o.sku === 'string' ? o.sku : undefined, // unobserved
       seller_ref_hash: slug && refHash(slug.split('-')[0]) };
   });
