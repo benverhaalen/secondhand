@@ -12,7 +12,7 @@
     "The circle grows in the brand's field, sky, mint and lime, which flows over the whole screen as it grows (Ben, 06:19: \"the background might be good to have that be the gradient so it can kind of almost like flow over the whole thing\"). It is the field and not the wash: the wash marks the top of a main tab (U8), and the field is the one full ground a view may have (C2). In dark it is deep sky, mint and aqua, the quiet ground of the dark Today, so no light circle flashes at night.",
     "The four jobs stand centered between the top of the screen and the × (Ben, 06:19: \"center the main action buttons\"), each name centered in its capsule. The last used sits lowest, nearest the ×, so the thumb's shortest reach is the likeliest job; it rises first and its icon well is the one ink circle (one emphasis per view).",
     "＋ holds four jobs, in Ben's words and order (11:29: \"appraise an item. sell an item. track an item. and find an item\"; 11:32: Track is \"tracking a brewers jersey secondhand\", Find is \"finding out what an item is\", What's it worth \"appraises an item based on what the secondhand market prices it at now\"). Before any is used they stand in that order; after, the last used comes first. Where each result lives afterward: spec/redesign/new-results.md.",
-    "Each way into a job ends where the camera's way ends: Sell at the draft's review, Appraise on the value page for the product, Track on a new want for it (the most to pay, then Buy's Watching shelf), Find on its product page.",
+    "Each way into a job ends where the camera's way ends: Sell at the draft's review, Appraise on the value page for the product, Track on a new want for it (the most to pay, then Buy's Looking for group), Find on its product page.",
     "Capsules are 88 tall with a 56 icon well: 88 less 2 × 16 padding is 56, so the well's corner nests in the capsule's (Art. 9.1). No pencil and no gradient on a capsule (Ben, 11:29 and 11:32): four capsules alike, told apart by icon and name.",
     "Choosing a job opens the camera out of the touched capsule's icon well, on the camera's black, so the camera comes from what the finger touched (E24), in 300 ms.",
     "A link or words can arrive from outside (a share sheet): ?link= opens Sell it with the link in its field, ?what= prefills the field of the job ?sheet= names.",
@@ -114,7 +114,7 @@
     {
       "control": "Watch for it",
       "id": "track-go",
-      "on_tap": "a new want opens for the product the words name, where the most to pay is set; it then lives on Buy's Watching shelf",
+      "on_tap": "a new want opens for the product the words name, where the most to pay is set; it then lives in Buy's Looking for group",
       "does": "starts tracking it",
       "goes": "/want",
       "sheet": "track"
