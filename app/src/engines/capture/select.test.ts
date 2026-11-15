@@ -21,9 +21,9 @@ test('floor and margin each independently reject a suggestion',()=>{assert.equal
 test('LiDAR with failed Object Capture uses ring and rewrites scan ways', () => {
   const selected = run({type:'bags',has_lidar:true,object_capture:false});
   assert.deepEqual(selected.process.map(step=>step.key), ['ring','inside_tab']);
-  assert.equal(selected.rows.find(row=>row.field==='dimensions')!.ways[0].view, 'ring');
+  assert.equal(selected.rows.find(row=>row.field==='dimensions')!.ways.find(way=>way.way==='measured')!.view, 'ring');
 });
 test('bundle scan ways follow ring keys per piece', () => {
   const selected = run({type:'bags',has_lidar:true,object_capture:false,pieces:2});
-  assert.equal(selected.rows.find(row=>row.field==='dimensions.2')!.ways[0].view, 'ring.2');
+  assert.equal(selected.rows.find(row=>row.field==='dimensions.2')!.ways.find(way=>way.way==='measured')!.view, 'ring.2');
 });

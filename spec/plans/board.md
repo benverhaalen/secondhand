@@ -197,13 +197,27 @@ Design and what is proved: [databricks-build.md](../databricks-build.md#9-what-i
 - [ ] the type suggestion contract and both ways of confirming it (tap, and skip when confident)
 - [ ] the per-type process table as data: instant, series, scan
 - [ ] the follow-up inputs as data, one input per field a type needs
-- [ ] the deterministic plan ([capture engine §11](../engines/capture.md#11-the-deterministic-plan)): one table by family and dimension class, field states, per-site form, one completeness check, the question planner. Proved 2026-11-15 (merge 929926f1): 86 engine tests pass and six item types (T-shirt, sneakers, handbag, phone, chair from an unsure first frame, a bundle of three) walk from first photo to done, run twice with identical output, `node --test --test-concurrency=1 app/src/engines/capture/walk.test.ts`. Questions to done: T-shirt 3 (type, condition, size), sneakers 4, handbag 5 (one refused), phone 5, chair 2, bundle 9. Ticked after the fresh review; next: close variants and studio asks (round 3), the routes (cap-routes-1)
+- [ ] the deterministic plan ([capture engine §11](../engines/capture.md#11-the-deterministic-plan)): one table by family and dimension class, field states, per-site form, one completeness check, the question planner. Proved 2026-11-15 (merge 929926f1): 86 engine tests pass and six item types (T-shirt, sneakers, handbag, phone, chair from an unsure first frame, a bundle of three) walk from first photo to done, run twice with identical output, `node --test --test-concurrency=1 app/src/engines/capture/walk.test.ts`. Questions to done (printed by the walk, `capture.questions`): T-shirt 3 (2 with auto confirm), sneakers 4, handbag 5 (one refused), phone 5, chair 2, bundle of three 9; a table with two close size variants 1 when a depth reading picks the variant, 2 without depth (condition, then one pick between the two sizes). Round 3 (0c92f237, 103 tests) adds the variants and studio asks. Plan speed p50 0.103 ms, p95 0.285 ms over 47 states (budget 100 ms), measured by cap-routes-1. The fresh review's fixes are round 4; ticked once it merges. The routes wait on four integration edits (waiting.md)
 - [ ] the free note reader: confirms, marks a contradiction, adds; never re-asks; address, phone and payment never reach a listing
 - [ ] photo ph-1 to ph-6
 - [ ] proof per [capture](../engines/capture.md) sections 9 and 10: `python -m pytest jobs/photo` and `node --test app/src/engines/capture/`
 
 ## 15 API and contract
 
+Integration lead's rows. The joins are in [joins.md](joins.md); what waits on whom is in [waiting.md](waiting.md).
+
+### Where it stands (integration, rerun 2026-11-15 on the Mac unless marked)
+
+| Measure | Number | Before | Command | Commit |
+|---|---|---|---|---|
+| `/v1` endpoints answering from examples | 24 of 86 | 43 of 86 this morning | `node -e` over `manifest` in `app/src/edge/api/routes.ts` (count `source: 'example'`); `node --test app/src/edge/api/routes.test.ts` keeps each reason true | a97e78f1 |
+| Restart survival | events, jobs, decisions, product rows and the write ledger reload from `SECONDHAND_DATA_DIR`; a running job reloads queued; a started write stays started | all in memory | `node --test app/src/edge/events/file-store.test.ts` (12 pass), `app/src/edge/api/runtime.test.ts` (10 pass, two child processes) | fda50f8, a97e78f1 |
+| The week in the background | 7 simulated days, 10080 ticks: 3124 / 2475 / 403 sweeps for Depop / Poshmark / eBay, 0 calls for the unlinked Facebook, one offer answered by rule as a Depop dry plan, two offers become decisions, one relink, one sale ends Poshmark and eBay and never Depop; same counts when the store reloads on day 4 | no join existed | `node --test app/src/edge/events/watcher.test.ts` | 12f2db3; reviewer found two high breaks (a like reaching `answer_offer`, a sale pause lost after a crash): fixes in int-watch-2, rows not ticked |
+| The walk | 15 stages, 11 real, 4 fake each naming its owner (capture: shot scoring; Poshmark and eBay adapters: scripted routes); `post` and `answer_offer` real on Depop dry plans | 12 stages, 3 fake by label | `node scripts/walk.mjs` on the Mac and on Windows (both total ok); `node --test scripts/walk.test.mjs` (14 pass) | b68fcc7 |
+| Benchmark baseline, 20 market items | row 1 coverage 0 of 20 (Wilson 95% 0 to 0.16): `POST /v1/search` still read one stub page | none | `node bench/run.mjs && node bench/score.mjs bench/out/<run_id>` | ecece93 |
+| Route code safe for Metro's server bundle | 0 findings | 5 files broke Ben's export | `.agents/checks/bundle.mjs` inside `node .agents/check.mjs`; `node --test .agents/checks/bundle.test.mjs` (7 pass) | 03e5993 |
+
+Open in the next round: streaming search on the real lanes (int-search-1), the watcher fixes and the hazard cadence (int-watch-2), item responses leaking the store's `data` field (one contract test red, int-runtime-2), then the bench rerun after search.
 
 - [ ] interface first: `spec/examples/` for every endpoint, pushed for Ben's screens
 - [ ] `/v1` routes over each engine as it lands

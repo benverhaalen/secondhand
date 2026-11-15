@@ -68,3 +68,12 @@ walk('F Three T-shirts',{sites:['depop','poshmark'],pieces:3,suggestion:{family:
  {patch:{retakes:{'tag.2':2}},questions:bundleQs,status:'asking'},
  ...bundleQs.map((entry,i)=>({patch:{facts:{[entry[0]]:f(entry[0]==='condition'?'good':entry[0]==='brand.2'?'Gildan':entry[0]==='size_label.3'?'L':'M')}},questions:bundleQs.slice(i+1),status:i===bundleQs.length-1?'done' as const:'asking' as const})),
 ]);
+const tableVariants=[{label:'120 x 75 cm',value:{width:120,depth:75,height:75},p:.55},{label:'140 x 80 cm',value:{width:140,depth:80,height:75},p:.45}];
+for(const has_lidar of [true,false]) {
+ const key=has_lidar?'scan':'ring';
+ walk(`G${has_lidar?1:2} Close table variants`,{sites:['facebook','ebay'],type:'furniture',rigid:true,extent_cm:120,profile:{handover:'pickup'},has_lidar,variants:{dimensions:tableVariants}},'large_bulky',[key],[
+  {patch:{kept:[key],lookups:'done',facts:{condition:f('good','seen',.7),colour:f(['brown'],'seen',.9),material:f('wood','seen',.9),...(has_lidar?{dimensions:f({width:120.6,depth:75.2,height:74.8},'measured',.9)}:{})}},questions:[q('condition','pick_one','good'),...(!has_lidar?[q('dimensions')]:[])],status:'asking'},
+  {patch:{facts:{condition:f('good')}},questions:has_lidar?[]:[q('dimensions')],status:has_lidar?'done':'asking'},
+  ...(!has_lidar?[{patch:{facts:{dimensions:f(tableVariants[1].value)}},questions:[],status:'done' as const}]:[]),
+ ]);
+}
