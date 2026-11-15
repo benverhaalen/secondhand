@@ -18,7 +18,7 @@ The objective is the lowest expected cost per decision: `cost(a) = p · L · mis
 Two rows the canon lacks:
 
 ```
-trust_signal { thread_id | appointment_id | listing_id | account_id, message_id?, signal, present: bool,
+trust_signal { conversation_id | appointment_id | listing_id | account_id, message_id?, signal, present: bool,
                evidence_span, extractor: code | model, model_version, confidence, at }
 trust_label  { subject_id, kind: scam | no_show | dispute | not_authentic | challenge,
                value: 0 | 1, weight, source, observed_at, resolved_at }

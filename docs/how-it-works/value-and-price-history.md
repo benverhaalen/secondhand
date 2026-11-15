@@ -61,7 +61,7 @@ A range has three states.
 |---|---|---|
 | Checked | The lower bound of the 95% Wilson interval on coverage is at least 70%, with 30 or more tests | The range and a share such as "8 in 10", rounded down |
 | Not checked yet | Too few tests in this category | The parent category's range, drawn wider, with no share |
-| Hidden | `too_few_sales`, or `too_wide` when high minus low exceeds the median | "Prices for this vary too much to say" |
+| Hidden | `too_few`, or `too_wide` when high minus low exceeds the median | "Prices for this vary too much to say" |
 
 For new-with-tags items, the top is also capped by the lowest live ask and today's new price. The design is wrong if, in our own backtest, the median's error is worse than the better of two simple baselines (the median of recent sold comps, and the last sale of the same product), or the 80% range holds outside 75% to 85% ([money.md D6](../../spec/determinations/money.md#d6-range-calibration-and-display-state); starting values). Vendors' published tests are not the bar ([published-price-tests-and-their-flaws](../../research/price/nate/published-price-tests-and-their-flaws.md)).
 
