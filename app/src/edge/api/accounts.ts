@@ -43,8 +43,10 @@ export const handlers: Record<string, Handler> = {
     const prior = runtime.store.rows('account', { user_id: ctx.user_id!, site: ctx.body.site })[0];
     const { token_ref, ...current } = prior ?? {};
     const id = prior?.id ?? `acc_${crypto.randomUUID().replaceAll('-', '')}`;
-    const connected = { ...seed, id };
-    if (seed.site === 'ebay' && object(seed.next)) connected.next = { ...seed.next, url: String(seed.next.url).replace(seed.id, id) };
+    const connected: Record<string, unknown> = { ...seed, id };
+    const seedFields: Record<string, unknown> = seed;
+    const next = seedFields.next;
+    if (seed.site === 'ebay' && object(next)) connected.next = { ...next, url: String(next.url).replace(seed.id, id) };
     runtime.store.put('account', { ...current, ...connected, user_id: ctx.user_id!, pending: false, deleted: false });
     if (typeof token_ref === 'string') await runtime.vault.delete(token_ref);
     ctx.log.event('state.change', { entity: 'account', id, to: 'paused' });
