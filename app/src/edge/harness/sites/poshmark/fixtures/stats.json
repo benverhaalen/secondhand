@@ -1,0 +1,7 @@
+{
+ "_fixture": "synthetic, not recorded: no account is linked, the signed-in path and shape are unobserved",
+ "data": [
+  { "post_id": "6ad63271c9ddecf01eaf740c", "views": 140, "likes": 12, "shares": 30 }
+ ],
+ "more": { "is_next_max_id_present": false }
+}

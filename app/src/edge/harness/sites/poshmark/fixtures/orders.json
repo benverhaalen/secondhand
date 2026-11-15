@@ -1,0 +1,7 @@
+{
+ "_fixture": "synthetic, not recorded: no account is linked, the signed-in path and shape are unobserved",
+ "data": [
+  { "id": "r1", "post_id": "6a285ced88849a05804c9a59", "status": "shipped", "total_amount": { "val": "22.0", "currency_code": "USD" }, "created_at": "2026-11-11T22:55:50-08:00" }
+ ],
+ "more": { "is_next_max_id_present": false }
+}
