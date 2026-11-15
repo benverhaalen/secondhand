@@ -14,6 +14,8 @@ export type State = {
   variants?: {dimensions?: {label:string;value:Record<string,number>;p:number}[]};
   studio?: {requested:boolean;measurements:string[];asks:StudioAsk[]};
   facts: Record<string,Fact>; candidates?: Record<string,string[]>; lookups: 'none'|'running'|'done'; lookups_at?: string;
+  candidate_detail?: Record<string, Record<string, {c: number; rests_on: string[]}>>;
+  site_rows?: {site: Site; field: string; name: string; required: boolean; allowed?: string[]; max_length?: number}[];
   profile?: {handover?: 'pickup'|'delivery'|'either'}; refused: string[]; recall_flag?: boolean;
 };
 export function suggestionPasses(state: State, params: ParamStore): boolean {

@@ -11,7 +11,7 @@ export type Question = {
   field: string;
   fields?: string[];
   kind: AskKind|'shot';
-  options: {value: unknown; proposed: boolean; label?: string}[];
+  options: {value: unknown; proposed: boolean; label?: string; rests_on?: string[]}[];
   other: boolean;
   unit?: string;
   units?: string[];
@@ -27,6 +27,23 @@ type Resolved = {row: FieldRow; resolution: Resolution};
 type Candidate = {question: Question; rows: FieldRow[]};
 type ShotGroup = {shot: NonNullable<Resolution['shot']>; rows: FieldRow[]};
 
+function siteFieldRows(state: State, captureRows: FieldRow[]): FieldRow[] {
+  const rows: FieldRow[] = [];
+  for(const row of state.site_rows ?? []) {
+    if(!state.sites.includes(row.site) || captureRows.some(capture=>capture.field===row.field))continue;
+    const existing=rows.find(candidate=>candidate.field===row.field);
+    if(existing) {
+      const sites=(row.required ? existing.required : existing.recommended) as Target[];
+      if(!sites.includes(row.site))sites.push(row.site);
+      continue;
+    }
+    rows.push({field:row.field,type:row.allowed ? 'enum':'text',...(row.allowed ? {values:[...row.allowed]}:{}),
+      ways:[{way:'asked'}],confirm:'always',required:row.required?[row.site]:[],recommended:row.required?[]:[row.site],
+      ask:{kind:row.allowed?'pick_one':'text',words:row.name}});
+  }
+  return rows;
+}
+
 function usedByLinkedSite(row: FieldRow, state: State): boolean {
   return linked(targets(state),row.required).length > 0 || linked(targets(state),row.recommended).length > 0;
 }
@@ -35,7 +52,7 @@ function invalidForRequiredSite(row: FieldRow, complete: Completeness, state: St
   return linked(targets(state),row.required).some(site => complete[site]!.missing.some(field => field.field === row.field));
 }
 
-function fieldQuestions(resolved: Resolved[], state: State, complete: Completeness, shooting: boolean): Candidate[] {
+function fieldQuestions(resolved: Resolved[], state: State, complete: Completeness, shooting: boolean, siteRows: FieldRow[]): Candidate[] {
   const candidates: Candidate[] = [];
   for (const {row,resolution} of resolved) {
     if (row.field === 'condition' && state.purpose === 'find') continue;
@@ -66,7 +83,8 @@ function fieldQuestions(resolved: Resolved[], state: State, complete: Completene
     const variants=resolution.reason==='variants'?state.variants!.dimensions:undefined;
     if(variants) {kind='pick_one';options=variants.map(variant=>({value:variant.value,label:variant.label,proposed:false}));}
     const required_by = linked(targets(state),row.required);
-    const why = invalidKnown ? 'required' : resolution.state === 'proposed' ? 'confirm' : required_by.length ? 'required' : askedOnly ? 'only_you_know' : 'value';
+    const why = siteRows.includes(row) ? required_by.length ? 'required' : 'value' :
+      invalidKnown ? 'required' : resolution.state === 'proposed' ? 'confirm' : required_by.length ? 'required' : askedOnly ? 'only_you_know' : 'value';
     const question: Question = {
       id:`q_${state.capture_id}_${row.field}`,
       field:row.field,
@@ -146,16 +164,23 @@ function addUnlocks(candidates: Candidate[], resolved: Resolved[], rows: FieldRo
 }
 
 function orderQuestions(candidates: Candidate[], state: State, params: ParamStore): void {
-  const first = (question: Question) => question.field === 'type' ? 0 : question.field === 'lot_count' ? 1 : 2;
+  const first = (candidate: Candidate) => candidate.question.field === 'type' ? 0 : candidate.question.field === 'lot_count' ? 1 :
+    candidate.rows.some(row=>'shapes' in row && row.shapes===true) ? 2 : 3;
+  const entropy = (field: string) => {
+    const scores=Object.values(state.candidate_detail?.[field] ?? {}).map(option=>option.c).filter(score=>score>0);
+    const sum=scores.reduce((total,score)=>total+score,0);
+    return scores.reduce((bits,score)=>{const p=score/sum;return bits-p*Math.log2(p);},0);
+  };
   const recommended = (rows: FieldRow[]) => rows.reduce((count,row) => count + linked(targets(state),row.recommended).length,0);
   const effort = (question: Question) => bound(params,`capture_effort_${question.kind}`);
   candidates.sort((a,b) => {
-    const priority = first(a.question) - first(b.question);
+    const priority = first(a) - first(b);
+    const information = entropy(b.question.field) - entropy(a.question.field);
     const required = b.question.unlocks.required - a.question.unlocks.required;
     const ready = b.question.unlocks.ready_after.length - a.question.unlocks.ready_after.length;
     const recommendation = recommended(b.rows) - recommended(a.rows);
     const cost = effort(a.question) - effort(b.question);
-    return priority || required || ready || recommendation || cost || compare(a.question.field,b.question.field);
+    return priority || information || required || ready || recommendation || cost || compare(a.question.field,b.question.field);
   });
 }
 
@@ -182,7 +207,8 @@ export function plan(state: State, params: ParamStore) {
   if (targets(state).length === 0) state = {...state,sites:[...SITES] as State['sites']};
   const selected = select(state,params);
   const keys = selected.process.map(step => step.key);
-  const rows = selected.rows.filter(row => usedByLinkedSite(row,state));
+  const siteRows=siteFieldRows(state,selected.rows);
+  const rows = [...selected.rows,...siteRows].filter(row => usedByLinkedSite(row,state)).sort((a,b)=>compare(a.field,b.field));
   const resolved = rows.map(row => ({row,resolution:fieldState(row,state,keys,params)}));
   const complete = completeness(rows,state,params);
   const fields = resolved.map(({row,resolution}) => ({
@@ -196,7 +222,7 @@ export function plan(state: State, params: ParamStore) {
     recommended_by:linked(targets(state),row.recommended),
   }));
   const shooting = keys.some(key => !state.kept.includes(key));
-  const candidates = fieldQuestions(resolved,state,complete,shooting);
+  const candidates = fieldQuestions(resolved,state,complete,shooting,siteRows);
   const {candidates:shotsToAsk} = shotQuestions(resolved,state,keys,shooting);
   candidates.push(...shotsToAsk);
   if(state.studio?.requested && !shooting)for(const ask of state.studio.asks) {
@@ -210,6 +236,10 @@ export function plan(state: State, params: ParamStore) {
     }});
   }
   addUnlocks(candidates,resolved,rows,state,complete,selected.family,params);
+  for(const {question} of candidates)for(const option of question.options) {
+    const detail=state.candidate_detail?.[question.field]?.[String(option.value)];
+    if(detail?.rests_on.length)option.rests_on=[...detail.rests_on];
+  }
   orderQuestions(candidates,state,params);
   const questions = capQuestions(candidates,rows,state,params);
   const process = selected.process.map(step => ({

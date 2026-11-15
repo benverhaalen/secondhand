@@ -6,7 +6,78 @@ import { SITES } from '../../../../spec/sites.mjs';
 const allSites = [...SITES] as State['sites'];
 const state = (patch: Partial<State> = {}): State => ({capture_id:'c',item_id:'i',purpose:'sell',confirm_mode:'tap',has_lidar:true,sites:['ebay'],type:null,kept:[],retakes:{},facts:{},lookups:'none',refused:[],...patch});
 import { memoryStore } from '../param/param.ts';
+import { walks } from './walks.ts';
 const run=(patch: Parameters<typeof state>[0])=>plan(state(patch),memoryStore());
+test('candidate entropy outranks equal requirements and lower entropy, preserving option evidence', () => {
+ const base:Partial<State>={type:'apparel',sites:['depop'],kept:['front','back','tag'],lookups:'done',candidates:{brand:['Carhartt','Dickies']}};
+ const detail={Carhartt:{c:.5,rests_on:['RN on tag']},Dickies:{c:.5,rests_on:[]}};
+ const p=run({...base,candidate_detail:{brand:detail}});
+ assert.ok(p.questions.findIndex(q=>q.field==='brand')<p.questions.findIndex(q=>q.field==='condition'));
+ assert.deepEqual(p.questions.find(q=>q.field==='brand')!.options,[{value:'Carhartt',proposed:false,rests_on:['RN on tag']},{value:'Dickies',proposed:false}]);
+ const uneven=run({...base,candidate_detail:{brand:{Carhartt:{c:9,rests_on:[]},Dickies:{c:1,rests_on:[]}},condition:{good:{c:5,rests_on:[]},fair:{c:5,rests_on:[]}}}});
+ assert.ok(uneven.questions.findIndex(q=>q.field==='brand')>uneven.questions.findIndex(q=>q.field==='condition'));
+});
+test('one scored option and zero scores have no entropy and type keeps first priority', () => {
+ const base:Partial<State>={type:'apparel',sites:['depop'],kept:['front','back','tag'],lookups:'done'};
+ const before=run(base);
+ const details:NonNullable<State['candidate_detail']>[string][]=[{Carhartt:{c:1,rests_on:[]}},{Carhartt:{c:0,rests_on:[]},Dickies:{c:0,rests_on:[]}}];
+ for(const detail of details)
+  assert.deepEqual(run({...base,candidate_detail:{brand:detail}}),before);
+ const p=run({...base,type:null,candidate_detail:{brand:{Carhartt:{c:.5,rests_on:[]},Dickies:{c:.5,rests_on:[]}}}});
+ assert.equal(p.questions[0].field,'type');
+});
+test('without candidate detail every walk keeps its pinned question values and order without evidence keys', () => {
+ for(const fixture of walks) {
+  const s=structuredClone(fixture.initial),params=memoryStore();
+  for(const event of fixture.events) {
+   const facts=s.facts;Object.assign(s,event.patch);s.facts={...facts,...event.patch.facts};
+   const p=plan(s,params);
+   assert.deepEqual(p.questions.map(q=>[q.shot?.step??q.field,q.kind,q.options.find(o=>o.proposed)?.value??null]),event.questions,fixture.name);
+   assert.ok(p.questions.every(q=>q.options.every(o=>!('rests_on' in o))));
+  }
+ }
+});
+test('required site rows bypass a zero cap while optional, unlinked and capture-table rows do not', () => {
+ const params=memoryStore();
+ const zero={...params,read:(name:string,scope:Parameters<typeof params.read>[1])=>({...params.read(name,scope),...(name==='capture_question_cap'?{value:0}:{})})};
+ const s=state({type:'apparel',kept:['front','back','tag'],lookups:'done',site_rows:[
+  {site:'ebay',field:'ebay:Inseam',name:'Inseam',required:true},
+  {site:'ebay',field:'ebay:Rise',name:'Rise',required:false,allowed:['High','Low']},
+  {site:'depop',field:'depop:extra',name:'Extra',required:true},
+  {site:'ebay',field:'brand',name:'Wrong brand name',required:true},
+ ]});
+ const q=plan(s,zero).questions.find(q=>q.field==='ebay:Inseam')!;
+ assert.ok(q);assert.equal(q.kind,'text');assert.equal(q.words,'Inseam');assert.equal(q.why,'required');
+ assert.equal(q.id,'q_c_ebay:Inseam');assert.deepEqual(q.required_by,['ebay']);
+ assert.ok(!plan(s,zero).questions.some(q=>['ebay:Rise','depop:extra'].includes(q.field)));
+ assert.ok(!plan(s,zero).questions.some(q=>q.words==='Wrong brand name'));
+ const optional=plan(s,params).questions.find(q=>q.field==='ebay:Rise')!;
+ assert.ok(optional);assert.equal(optional.kind,'pick_one');assert.equal(optional.why,'value');assert.deepEqual(optional.required_by,[]);
+ assert.deepEqual(optional.options,[{value:'High',proposed:false},{value:'Low',proposed:false}]);
+ s.facts['ebay:Inseam']={value:'36',source:'you_said',confidence:1};
+ assert.ok(!plan(s,params).questions.some(q=>q.field==='ebay:Inseam'));
+});
+test('site rows wait for shots and answered optional site rows consume the item cap', () => {
+ const s=state({type:'apparel',kept:[],site_rows:[{site:'ebay',field:'ebay:Inseam',name:'Inseam',required:true}]});
+ assert.ok(!plan(s,memoryStore()).questions.some(q=>q.field==='ebay:Inseam'));
+ s.kept=['front','back','tag'];s.lookups='done';
+ s.site_rows=[{site:'ebay',field:'ebay:Rise',name:'Rise',required:false}];
+ const before=plan(s,memoryStore()).questions.filter(q=>q.unlocks.required===0).length;
+ s.facts['ebay:Rise']={value:'High',source:'you_said',confidence:1};
+ assert.equal(plan(s,memoryStore()).questions.filter(q=>q.unlocks.required===0).length,before-1);
+});
+test('a proposed required site aspect stays askable until the person settles it, per capture spec section 5', () => {
+ const s=state({type:'apparel',kept:['front','back','tag'],lookups:'done',site_rows:[{site:'ebay',field:'ebay:Inseam',name:'Inseam',required:true}],
+  facts:{'ebay:Inseam':{value:'36',source:'label',confidence:1}}});
+ const before=structuredClone(s),p=plan(s,memoryStore());
+ assert.ok(p.questions.some(q=>q.field==='ebay:Inseam'));
+ assert.equal(p.fields.find(row=>row.field==='ebay:Inseam')!.state,'proposed');
+ assert.equal(p.questions.find(q=>q.field==='ebay:Inseam')!.why,'required');
+ assert.ok(p.complete.ebay!.missing.some(row=>row.field==='ebay:Inseam'));
+ assert.deepEqual(s,before,'planning must not confirm a proposed fact or mutate its input');
+ s.facts['ebay:Inseam'].confirmed=true;
+ assert.ok(!plan(s,memoryStore()).questions.some(q=>q.field==='ebay:Inseam'));
+});
 test('F18: a required field waiting on lookups keeps asking with zero questions', () => {
  const p=run({type:'furniture',kept:['scan'],lookups:'running',profile:{handover:'pickup'},refused:['colour','material'],facts:{condition:{value:'good',source:'you_said',confidence:1}}});
  assert.deepEqual(p.questions,[]);
