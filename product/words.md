@@ -896,3 +896,10 @@ Nate, build session (orchestrator), 2026-11-14 about 22:00 Central, asked "Which
 ## 2026-11-15 the text weight is 500
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a side by side of Book, Medium on titles and a weight near 450. Recorded by the brand thread, which owns Article 6.
 > i think with font weights i like 500 unless you have a researched back reason to choose 450. what do you think
+
+## 2026-11-15 writing changes by medium, the right fonts, showing not telling, and general rules first
+Ben, thread "Build the brand system for everything", 03:43 UTC.
+> also writing should change based on medium. what i want from each medium. research should back. ensure research is done by smaller subagents btw
+
+Ben, same thread, 03:44 UTC.
+> also ensure the right fonts are used. showing not telling. communication is key in all situations. understanding communication effectively and creating interesting rather than bland presentations is one thing. but right now dont focus on presentations or videos exactly or social media posts. just think about creating generalizable rules that fit all this. im making not an app but a presentation
