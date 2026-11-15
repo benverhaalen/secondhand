@@ -78,6 +78,10 @@ def test_metrics_measure_closeness_the_side_we_miss_on_and_the_range():
     assert m["within_10"] == 0.5 and m["within_20"] == 0.75 and m["off_by_over_30"] == 0.0
     assert m["bias"] == pytest.approx(0.075) and m["median_pct_off"] == pytest.approx(0.125)   # signed against absolute
     assert m["sold_above_our_middle"] == 0.25 and m["coverage"] == 0.5
+    # Money, honest on sold-only data: listed at our middle, 3 of 4 would have sat above what the buyer paid; the one
+    # under left $0.15; and a sale only happens at or below the price a buyer paid, so 85 of the 400 is the floor.
+    assert m["priced_above_the_sale"] == 0.75 and m["left_on_table_per_sale_dollars"] == pytest.approx(0.0375)
+    assert m["sell_now_floor_share"] == pytest.approx(85 / 400)
     assert experiment._metrics(pairs, min_n=30)["too_few"]
 
 

@@ -55,7 +55,7 @@ export function matchRecall(l: Listing, r: RecallRow): Match {
 
 export function matchAll(l: Listing, recalls: RecallRow[]): { match: Match; recall: RecallRow | null } {
   let best: { match: Match; recall: RecallRow | null } = { match: 'none', recall: null };
-  for (const r of recalls) {
+  for (const r of [...recalls].sort((a, b) => a.LastPublishDate < b.LastPublishDate ? 1 : a.LastPublishDate > b.LastPublishDate ? -1 : String(a.RecallID) < String(b.RecallID) ? -1 : String(a.RecallID) > String(b.RecallID) ? 1 : JSON.stringify(a).localeCompare(JSON.stringify(b)))) {
     const m = matchRecall(l, r);
     if (m === 'exact') return { match: m, recall: r };
     if (m === 'name' && best.match === 'none') best = { match: m, recall: r };

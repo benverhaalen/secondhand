@@ -153,3 +153,33 @@ test('the watch snapshot keeps unread sections undefined', async () => {
   assert.equal(signed.route, 'signed_in');
   assert.equal(signed.offers![0].state, 'open');
 });
+
+
+test('the Depop post plan fills sku from sku_hash only when the listing has no sku', async () => {
+  for (const own of [undefined, 'seller-sku']) {
+    const listing = { ...LISTING, ...(own === undefined ? {} : { sku: own }) };
+    const r = await run('post', { listing, sku_hash: 'sh0123456789abcdef', operation_id: 'op' });
+    assert.ok(r.ok);
+    assert.equal((r.data as { request: { sku: string } }).request.sku, own ?? 'sh0123456789abcdef');
+    assert.equal('sku' in listing, own !== undefined);
+  }
+  const r = await run('post', { listing: LISTING, operation_id: 'op' });
+  assert.ok(r.ok);
+  assert.equal((r.data as { request: Record<string, unknown> }).request.sku, undefined);
+});
+
+test('listing sku is optional and an unobserved synthetic site sku is read back without changing recordings', async () => {
+  const base = client();
+  // Synthetic mutation: no recording currently proves the sku path.
+  const c: Client = { ...base, async json(path, signal) {
+    const r = await base.json(path, signal);
+    const body = r.body as { objects?: Record<string, unknown>[] };
+    return { ...r, body: { ...body, objects: body.objects?.map(o => ({ ...o, sku: 'synthetic-sku' })) } };
+  } };
+  assert.ok(M.read_listings.fields.some(f => f.name === 'sku' && !f.required));
+  const withSku = rows(await run('read_listings', { shop_id: '1000001' }, c));
+  assert.ok(withSku.length > 0);
+  assert.ok(withSku.every(r => r.sku === 'synthetic-sku'));
+  const recorded = rows(await run('read_listings', { shop_id: '1000001' }));
+  assert.ok(recorded.every(r => r.sku === undefined));
+});

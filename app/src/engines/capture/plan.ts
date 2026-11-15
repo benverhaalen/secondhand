@@ -1,7 +1,7 @@
-import { select, type State } from './select.ts';
+import { select, targets, studioStep, type State } from './select.ts';
 import { fieldState, viewsFor, type Resolution } from './fields.ts';
 import { completeness, type Completeness } from './complete.ts';
-import { bound, compare, linked, type AskKind, type FieldRow, type Site } from './table.ts';
+import { bound, compare, linked, type AskKind, type FieldRow, type Target } from './table.ts';
 import type { ParamStore } from '../param/param.ts';
 export type { State, Fact } from './select.ts';
 
@@ -10,15 +10,15 @@ export type Question = {
   field: string;
   fields?: string[];
   kind: AskKind|'shot';
-  options: {value: unknown; proposed: boolean}[];
+  options: {value: unknown; proposed: boolean; label?: string}[];
   other: boolean;
   unit?: string;
   units?: string[];
   parts?: string[];
-  shot?: {step: string; reason: 'retake'|'add'};
+  shot?: {step: string; reason: 'retake'|'add'; for?:'studio'; zone?:string; flaw_kind?:string};
   why: 'required'|'confirm'|'value'|'only_you_know';
-  required_by: Site[];
-  unlocks: {required: number; ready_after: Site[]};
+  required_by: Target[];
+  unlocks: {required: number; ready_after: Target[]};
   words: string;
   answer: {method: 'PATCH'|'POST'; path: string};
 };
@@ -27,11 +27,11 @@ type Candidate = {question: Question; rows: FieldRow[]};
 type ShotGroup = {shot: NonNullable<Resolution['shot']>; rows: FieldRow[]};
 
 function usedByLinkedSite(row: FieldRow, state: State): boolean {
-  return linked(state.sites,row.required).length > 0 || linked(state.sites,row.recommended).length > 0;
+  return linked(targets(state),row.required).length > 0 || linked(targets(state),row.recommended).length > 0;
 }
 
 function invalidForRequiredSite(row: FieldRow, complete: Completeness, state: State): boolean {
-  return linked(state.sites,row.required).some(site => complete[site]!.missing.some(field => field.field === row.field));
+  return linked(targets(state),row.required).some(site => complete[site]!.missing.some(field => field.field === row.field));
 }
 
 function fieldQuestions(resolved: Resolved[], state: State, complete: Completeness, shooting: boolean): Candidate[] {
@@ -61,15 +61,17 @@ function fieldQuestions(resolved: Resolved[], state: State, complete: Completene
       const hasOptions = choices.length > 0;
       kind = hasOptions ? 'pick_one' : 'text';
     }
-    const options = values.map(value => ({value,proposed:proposed !== undefined && JSON.stringify(value) === JSON.stringify(proposed)}));
-    const required_by = linked(state.sites,row.required);
+    let options: Question['options'] = values.map(value => ({value,proposed:proposed !== undefined && JSON.stringify(value) === JSON.stringify(proposed)}));
+    const variants=resolution.reason==='variants'?state.variants!.dimensions:undefined;
+    if(variants) {kind='pick_one';options=variants.map(variant=>({value:variant.value,label:variant.label,proposed:false}));}
+    const required_by = linked(targets(state),row.required);
     const why = invalidKnown ? 'required' : resolution.state === 'proposed' ? 'confirm' : required_by.length ? 'required' : askedOnly ? 'only_you_know' : 'value';
     const question: Question = {
       id:`q_${state.capture_id}_${row.field}`,
       field:row.field,
       kind,
       options,
-      other:row.type === 'text' || row.field === 'type',
+      other:!!variants || row.type === 'text' || row.field === 'type',
       ...(row.unit ? {unit:row.unit} : {}),
       ...(row.ask.units ? {units:[...row.ask.units]} : {}),
       ...(row.ask.parts ? {parts:[...row.ask.parts]} : {}),
@@ -112,8 +114,8 @@ function shotQuestions(resolved: Resolved[], state: State, keys: string[], shoot
       options:[],
       other:false,
       shot,
-      why:rows.some(row => linked(state.sites,row.required).length) ? 'required' : 'value',
-      required_by:state.sites.filter(site => rows.some(row => linked([site],row.required).length)),
+      why:rows.some(row => linked(targets(state),row.required).length) ? 'required' : 'value',
+      required_by:targets(state).filter(site => rows.some(row => linked([site],row.required).length)),
       unlocks:{required:0,ready_after:[]},
       words:shot.reason === 'retake' ? `Retake the ${step.replaceAll('_',' ')}` : `One more: the ${step.replaceAll('_',' ')}`,
       answer:{method:'POST',path:`/v1/captures/${state.capture_id}/photos`},
@@ -125,25 +127,26 @@ function shotQuestions(resolved: Resolved[], state: State, keys: string[], shoot
 
 function addUnlocks(candidates: Candidate[], resolved: Resolved[], rows: FieldRow[], state: State, complete: Completeness, family: ReturnType<typeof select>['family'], params: ParamStore): void {
   for (const {question,rows:answeredRows} of candidates) {
-    question.unlocks.required = answeredRows.reduce((count,row) => count + linked(state.sites,row.required).length,0);
+    question.unlocks.required = (question.shot?.for==='studio'?1:0) + answeredRows.reduce((count,row) => count + linked(targets(state),row.required).length,0);
     const refused = state.refused.filter(field => !answeredRows.some(row => row.field === field));
-    const hypothetical = {...state,facts:{...state.facts},refused};
+    const hypothetical = {...state,facts:{...state.facts},kept:[...state.kept],refused};
+    if(question.shot)hypothetical.kept.push(question.shot.step);
     for (const row of answeredRows) {
       const resolution = resolved.find(entry => entry.row.field === row.field)!.resolution;
       const current = resolution.fact?.value;
       const invalidKnown = resolution.state === 'known' && invalidForRequiredSite(row,complete,state);
-      const value = invalidKnown ? row.values?.[0] ?? '' : current ?? row.values?.[0] ?? '';
+      const value = state.studio?.requested && row.type==='dimensions' ? Object.fromEntries((row.ask?.parts ?? []).map(part=>[part,0])) : invalidKnown ? row.values?.[0] ?? '' : current ?? row.values?.[0] ?? '';
       hypothetical.facts[row.field] = {value,source:'you_said',confidence:1};
       if (row.field === 'type') hypothetical.type = family;
     }
     const after = completeness(rows,hypothetical,params);
-    question.unlocks.ready_after = state.sites.filter(site => !complete[site]!.ready && after[site]!.ready);
+    question.unlocks.ready_after = targets(state).filter(site => !complete[site]!.ready && after[site]!.ready);
   }
 }
 
 function orderQuestions(candidates: Candidate[], state: State, params: ParamStore): void {
   const first = (question: Question) => question.field === 'type' ? 0 : question.field === 'lot_count' ? 1 : 2;
-  const recommended = (rows: FieldRow[]) => rows.reduce((count,row) => count + linked(state.sites,row.recommended).length,0);
+  const recommended = (rows: FieldRow[]) => rows.reduce((count,row) => count + linked(targets(state),row.recommended).length,0);
   const effort = (question: Question) => bound(params,`capture_effort_${question.kind}`);
   candidates.sort((a,b) => {
     const priority = first(a.question) - first(b.question);
@@ -157,8 +160,8 @@ function orderQuestions(candidates: Candidate[], state: State, params: ParamStor
 
 function capQuestions(candidates: Candidate[], rows: FieldRow[], state: State, params: ParamStore): Question[] {
   const consumed = rows.filter(row => {
-    const optional = linked(state.sites,row.required).length === 0;
-    const answered = state.facts[row.field]?.source === 'you_said' || state.refused.includes(row.field);
+    const optional = linked(targets(state),row.required).length === 0;
+    const answered = state.facts[row.field]?.source === 'you_said' || state.facts[row.field]?.confirmed === true || state.refused.includes(row.field);
     return optional && answered;
   }).length;
   let remaining = Math.max(0,bound(params,'capture_question_cap') - consumed);
@@ -185,19 +188,31 @@ export function plan(state: State, params: ParamStore) {
     state:resolution.state,
     value:resolution.fact?.value ?? null,
     source:resolution.fact?.source ?? null,
-    required_by:linked(state.sites,row.required),
-    recommended_by:linked(state.sites,row.recommended),
+    ...(resolution.auto_accepted ? {auto_accepted:true as const} : {}),
+    ...(resolution.fact?.note?{note:resolution.fact.note}:{}),
+    required_by:linked(targets(state),row.required),
+    recommended_by:linked(targets(state),row.recommended),
   }));
   const shooting = keys.some(key => !state.kept.includes(key));
   const candidates = fieldQuestions(resolved,state,complete,shooting);
-  const {candidates:shotsToAsk,shots} = shotQuestions(resolved,state,keys,shooting);
+  const {candidates:shotsToAsk} = shotQuestions(resolved,state,keys,shooting);
   candidates.push(...shotsToAsk);
+  if(state.studio?.requested && !shooting)for(const ask of state.studio.asks) {
+    const step=studioStep(ask);
+    if(ask.type==='measure' || state.kept.includes(step) || candidates.some(candidate=>candidate.question.shot?.for==='studio' && candidate.question.shot.step===step))continue;
+    candidates.push({rows:[],question:{
+      id:`q_${state.capture_id}_studio_${step}`,field:step,kind:'shot',options:[],other:false,
+      shot:{step,reason:'add',for:'studio',...(ask.zone?{zone:ask.zone}:{}),...(ask.kind?{flaw_kind:ask.kind}:{})},
+      why:'required',required_by:['studio'],unlocks:{required:0,ready_after:[]},words:ask.text,
+      answer:{method:'POST',path:`/v1/captures/${state.capture_id}/photos`},
+    }});
+  }
   addUnlocks(candidates,resolved,rows,state,complete,selected.family,params);
   orderQuestions(candidates,state,params);
   const questions = capQuestions(candidates,rows,state,params);
   const process = selected.process.map(step => ({
     ...step,
-    state:shots[step.key]?.shot.reason === 'retake' ? 'retake' as const : state.kept.includes(step.key) ? 'kept' as const : 'pending' as const,
+    state:questions.some(question=>question.shot?.step===step.key && question.shot.reason==='retake') ? 'retake' as const : state.kept.includes(step.key) ? 'kept' as const : 'pending' as const,
   }));
   const status = shooting ? 'shooting' as const : questions.length ? 'asking' as const : 'done' as const;
   const {rows:_rows,...selection} = selected;

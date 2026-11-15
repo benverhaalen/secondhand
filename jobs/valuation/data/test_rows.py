@@ -92,3 +92,26 @@ def test_freeze_refuses_an_input_whose_hash_changed(tmp_path):
     p = _write(tmp_path, "train.tsv", "train_id\tname\titem_condition_id\tcategory_name\tbrand_name\tprice\tshipping\titem_description\n")
     with pytest.raises(ValueError, match="sha256"):
         freeze("mercari_kaggle", [p], tmp_path / "o", expect={"train.tsv": "0" * 64})
+
+
+def test_nber_product_sample_keeps_whole_products_and_is_stable(tmp_path):
+    cols = ["anon_item_id", "anon_product_id", "auct_start_dt", "auct_end_dt", "start_price_usd", "item_price",
+            "photo_count", "fdbk_score_start", "item_cndtn_id", "meta_categ_id", "view_item_count", "wtchr_count", "bo_ck_yn"]
+    raw = io.StringIO()
+    w = csv.writer(raw)
+    w.writerow(cols)
+    for i in range(2000):   # 200 products, 10 listings each
+        w.writerow([i, i % 200, "2012-06-01", "2012-06-09", "10", "9", 1, 1, 3000, 293, 1, 0, 0])
+    p = tmp_path / "anon_bo_lists.csv.gz"
+    p.write_bytes(gzip.compress(raw.getvalue().encode()))
+    a = freeze("nber_ebay_bo", [p], tmp_path / "a", share=0.25)
+    b = freeze("nber_ebay_bo", [p], tmp_path / "b", share=0.25)
+    assert a["output"]["sha256"] == b["output"]["sha256"] and a["sample"]["share"] == 0.25
+    with gzip.open(tmp_path / "a" / "rows.csv.gz", "rt") as f:
+        kept = list(csv.DictReader(f))
+    per_product = {}
+    for r in kept:
+        per_product[r["product_id"]] = per_product.get(r["product_id"], 0) + 1
+    assert set(per_product.values()) == {10}            # a sampled product keeps every listing
+    assert 30 <= len(per_product) <= 70                  # about a quarter of 200
+    assert a["dropped"]["not_in_sample"] == 2000 - len(kept)

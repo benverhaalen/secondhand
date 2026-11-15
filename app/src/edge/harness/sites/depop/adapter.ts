@@ -97,7 +97,7 @@ function manifest(verb: Verb, o: { session: Manifest['session']; route_kind: Man
   };
 }
 const LISTING = [F('external_id', 'string'), F('slug', 'string'), F('url', 'url'), F('state', 'string'), F('price_cents', 'cents'), F('currency', 'string'),
-  F('brand', 'string', { opt: true }), F('likes', 'number', { opt: true })];
+  F('brand', 'string', { opt: true }), F('likes', 'number', { opt: true }), F('sku', 'string', { opt: true })];
 const PLAN = [F('dry', 'boolean'), F('url', 'url'), F('steps', 'string[]'), F('request', 'object')];
 
 // --- the public reads ---
@@ -117,6 +117,7 @@ async function search(c: Client, a: CallArgs, s: AbortSignal): Promise<AdapterRe
     const slug = str(o.slug);
     return { external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), price_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'price', 'amount')),
       currency: str(at(o, 'pricing', 'currency')), brand: str(o.brand_name), likes: num(o.like_count),
+      sku: typeof o.sku === 'string' ? o.sku : undefined, // unobserved
       seller_ref_hash: slug && refHash(slug.split('-')[0]) };
   });
   return classifyRead({ challenge: false, rows }, M.search);
@@ -130,7 +131,7 @@ const listingRow = (o: Obj) => {
   const slug = str(o.slug);
   return { external_id: str(o.id), slug, url: slug && listingUrl(slug), state: stateOf(o.status), currency: str(at(o, 'pricing', 'currency')),
     price_cents: cents(at(o, 'pricing', 'current_price', 'price_breakdown', 'price', 'amount')), brand: str(o.brand_name), likes: num(o.like_count),
-    listed_at: str(o.created_at) };
+    listed_at: str(o.created_at), sku: typeof o.sku === 'string' ? o.sku : undefined }; // unobserved
 };
 
 // Own listings, from the public shop endpoints of the linked shop; views and watchers need the session.
@@ -262,9 +263,10 @@ const id = (a: CallArgs, k: string) => str(a[k]);
 const WRITES: Record<'post' | 'revise' | 'end' | 'relist' | 'send_message' | 'answer_offer' | 'make_offer' | 'save', (a: CallArgs) => Plan | Extract<AdapterResult, { ok: false }>> = {
   post: a => {
     const l = isObj(a.listing) ? a.listing : {};
-    const bad = listingProblems(l); if (bad.length) return refuse('invalid_listing', bad.join('; '));
-    return { dry: true, url: `${WWW}/products/create/`, request: l, steps: ['add the photos', 'fill description', 'choose department and product_type', 'choose size',
-      'choose condition', 'fill brand', 'fill price and quantity', 'set shipping', 'stop before Post'] };
+    const request = { ...l, ...(!(typeof l.sku === 'string' && l.sku.length > 0) && typeof a.sku_hash === 'string' ? { sku: a.sku_hash } : {}) };
+    const bad = listingProblems(request); if (bad.length) return refuse('invalid_listing', bad.join('; '));
+    return { dry: true, url: `${WWW}/products/create/`, request, steps: ['add the photos', 'fill description', 'choose department and product_type', 'choose size',
+      'choose condition', 'fill brand', 'fill price and quantity', 'set shipping', ...(request.sku ? ['fill sku'] : []), 'stop before Post'] };
   },
   revise: a => {
     const slug = id(a, 'slug'); if (!slug) return refuse('missing_input', 'revise needs slug');
