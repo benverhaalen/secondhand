@@ -120,15 +120,15 @@ Minimal writing does not mean minimal capability. For every screen:
 - **Make the likeliest action one tap, and the others reachable.** That means one primary action, up to two visible secondary actions, and a "More" menu that names the rest. Nothing a user could reasonably want is missing; nothing a user didn't want is shown.
 - **Name the escape.** Every card that asks for a decision says what happens if you ignore it ("The offer expires tomorrow at 6 pm").
 - **Walk each person in, trying to leave** (Ben, 03:55: "what if i want to upload my own photos. what if i dont want ai to edit them. what if .... etc. generalize that", [words](words.md#2026-11-15-no-missing-functions-walk-every-feature-for-what-would-frustrate-each-person)). Take the screen's two to four [personas](personas.md) and ask each of these. Every yes needs a way out, one tap off the main path, so the AI flow stays the default and nobody is trapped in it:
-  1. *I already have it* (photos, a listing, a price, words): the person's own input is accepted wherever the AI would make one.
-  2. *Don't touch it*: an AI change is offered, not applied, where it changes what a buyer sees; the original is always kept; and it can be turned off for good.
-  3. *That's wrong*: every inferred fact can be fixed in place, the fix wins everywhere, and it is never overwritten.
-  4. *I'll do it myself*: every automatic kind can be set to ask, and every step has a by-hand path (post it myself, ship it myself, answer myself).
-  5. *Not now*: every step can be skipped, saved or snoozed, and is resumed where it was left.
-  6. *I changed my mind*: undo, or the way back (unpost, unsell, unlink, delete), with the site's limit said before the tap.
-  7. *I don't have that* (a site, LiDAR, a signal, a camera, an account, push): a path that works without it, saying what is lost.
-  8. *Not there, not them*: per-site and per-person control (skip a site, block a buyer).
-  9. *Get me out*: pause everything, export, delete.
+  1. *I already have it, or I'll do it myself* (photos, a listing, a price, words, a reply, a label): the person's own input or hand is accepted wherever the AI would act, and every promotable automatic kind can be set to ask.
+  2. *Don't touch it*: an AI change that alters what a buyer sees is never applied unasked; the original is always kept; and the offer can be turned off for good.
+  3. *That's wrong*: every inferred fact can be fixed in place, and the fix wins everywhere except where a held claim or a locked kind asks.
+  4. *Not now, or I changed my mind*: every step can be skipped, saved or snoozed and resumed where it was left; and every action has an undo or a way back (unpost, unsell, unlink, delete), with the site's limit said before the tap.
+  5. *I don't have that* (a site, LiDAR, a signal, a camera, push, a photo): a path that works without it, saying what is lost.
+  6. *Not there, not them, not now*: per-site and per-person control (skip a site, block a buyer, quiet hours).
+  7. *Too much*: volume folds (batches, queues, digests), and a person can pause everything.
+  8. *Not my data*: what it learned can be seen and cleared, experiments are opt-in, and export and delete are always there.
+  9. *Not for me as I am* (text size, screen reader, color vision, units, language): the screen still works.
 
   A way out is refused only where it would hurt the person or a buyer (a hidden flaw, below the floor without a tap, buying without a tap), and then the screen says why in one line. The results for every page are in [spec/ways-out.md](../spec/ways-out.md). A page without its section there is unfinished (`node .agents/check.mjs`).
 

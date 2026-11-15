@@ -658,12 +658,21 @@
           "Idempotency-Key": "idk_undo_01"
         }
       },
-      "status": 202,
+      "status": 200,
       "response": {
-        "id": "job_dx1",
-        "kind": "delist",
-        "state": "queued",
-        "stages": [],
+        "event": {
+          "event_id": "ev_u03",
+          "item_id": "it_7c2m",
+          "action": "app.list",
+          "actor": "user",
+          "at": "2026-11-15T04:40:00Z",
+          "why": "undo",
+          "trace_id": "0af7651916cd43dd8448eb211c80319c",
+          "undo": {
+            "allowed": false,
+            "until": null
+          }
+        },
         "undo_of": "ev_p02"
       }
     },

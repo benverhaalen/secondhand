@@ -46,3 +46,13 @@ def test_a_field_the_process_needs_gets_its_own_input_past_the_cap(load_fixture)
     more = follow_ups(rows, facts, process_fields={"charger"})
     assert len(plain) == 3 and len(more) == 4
     assert more[0]["field"] == "condition"
+
+
+def test_find_asks_no_condition_and_purpose_is_checked(load_fixture):
+    import pytest
+    fx, c = load_fixture("requirement/requirement.json"), load_fixture("requirement/cases.json")["cases"][0]
+    rows = _rows(fx, "apparel")
+    assert "condition" not in [f["field"] for f in follow_ups(rows, c["facts"], purpose="find")]
+    assert follow_ups(rows, c["facts"], purpose="appraise") == follow_ups(rows, c["facts"])
+    with pytest.raises(ValueError):
+        follow_ups(rows, c["facts"], purpose="browse")

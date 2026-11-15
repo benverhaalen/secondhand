@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { dirHash, filesUnder, piiHits } from './frames/lib.mjs';
 
 const dir = fileURLToPath(new URL('./snapshot/', import.meta.url));
-const PINNED = { version: 1, sha256: '4d3739d6a6a147457c135c16edd5b5d0b880c815b58d42729eaf863683c4950a' };
+const PINNED = { version: 2, sha256: '4d3739d6a6a147457c135c16edd5b5d0b880c815b58d42729eaf863683c4950a' };
 const manifest = JSON.parse(fs.readFileSync(`${dir}manifest.json`, 'utf8'));
 const SITES = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'];
 const SECTIONS = ['listings', 'offers', 'messages', 'orders', 'notifications'];
@@ -23,15 +23,16 @@ export function diff(a, b) {
     for (const [id, n] of by('listings', b)) {
       const o = A.get(id);
       if (!o) continue;
-      if (o.price_cents !== n.price_cents) out.push({ action: 'price.changed', ref: id, payload: { from_cents: o.price_cents, to_cents: n.price_cents } });
-      if (o.state !== n.state && n.state === 'sold') out.push({ action: 'listing.sold', ref: id, payload: { price_cents: n.price_cents } });
-      if (o.state !== n.state && n.state === 'ended') out.push({ action: 'listing.ended', ref: id, payload: {} });
-      if (n.likes > o.likes) out.push({ action: 'like.added', ref: id, payload: { from: o.likes, to: n.likes } });
+      if (o.price_cents !== n.price_cents) out.push({ action: 'price.changed', ref: id, listing_external_id: id, payload: { from_cents: o.price_cents, to_cents: n.price_cents } });
+      if (o.state !== n.state && n.state === 'sold') out.push({ action: 'listing.sold', ref: id, listing_external_id: id, payload: {} });
+      if (o.state !== n.state && n.state === 'ended') out.push({ action: 'listing.ended', ref: id, listing_external_id: id, payload: {} });
+      if (n.likes > o.likes) out.push({ action: 'like.added', ref: id, listing_external_id: id, payload: { from: o.likes, to: n.likes } });
     }
   }
-  if (a.offers && b.offers) { const A = by('offers', a); for (const [id, n] of by('offers', b)) if (!A.has(id)) out.push({ action: 'offer.received', ref: id, payload: { listing_external_id: n.listing_external_id, amount_cents: n.amount_cents } }); }
-  if (a.messages && b.messages) { const A = by('messages', a); for (const [id, n] of by('messages', b)) if (!A.has(id)) out.push({ action: 'message.received', ref: id, payload: { thread_ref: n.thread_ref, listing_external_id: n.listing_external_id } }); }
-  const rank = (c) => ['price.changed', 'listing.sold', 'like.added', 'listing.ended', 'offer.received', 'message.received'].indexOf(c.action);
+  if (a.offers && b.offers) { const A = by('offers', a); for (const [id, n] of by('offers', b)) if (!A.has(id)) out.push({ action: 'offer.received', ref: id, listing_external_id: n.listing_external_id, payload: { amount_cents: n.amount_cents } }); }
+  if (a.messages && b.messages) { const A = by('messages', a); for (const [id, n] of by('messages', b)) if (!A.has(id)) out.push({ action: 'message.received', ref: id, listing_external_id: n.listing_external_id, payload: { thread_ref: n.thread_ref } }); }
+  if (a.orders && b.orders) { const A = by('orders', a); for (const [id, n] of by('orders', b)) if (!A.has(id) || A.get(id).state !== n.state) out.push({ action: 'order.updated', ref: id, listing_external_id: n.listing_external_id, payload: { state: n.state, price_cents: n.price_cents } }); }
+  const rank = (c) => ['price.changed', 'listing.sold', 'like.added', 'listing.ended', 'offer.received', 'message.received', 'order.updated'].indexOf(c.action);
   return out.sort((x, y) => rank(x) - rank(y));
 }
 
@@ -64,7 +65,7 @@ test('expected answer beside the input: reordered gives no change, changed gives
   for (const s of SITES) for (const p of read(`${s}/expected.json`).pairs) {
     assert.deepEqual(diff(read(`${s}/${p.from}`), read(`${s}/${p.to}`)), p.changes, `${s} ${p.from} -> ${p.to}`);
   }
-  for (const s of SITES) assert.equal(read(`${s}/expected.json`).pairs[1].changes.length, 6);
+  for (const s of SITES) assert.equal(read(`${s}/expected.json`).pairs[1].changes.length, 7);
 });
 
 test('the raw page and json carry the same listings as base, in the site own status words', () => {

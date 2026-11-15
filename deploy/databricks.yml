@@ -1,0 +1,114 @@
+# The backend on the workspace (dp-1; spec/databricks.md §15, spec/product.md §6). Deploy only through deploy/deploy.mjs:
+# dev is the rehearsal, prod needs Nate's go. Profile is always explicit (--profile Nate, his pick: product/words.md).
+bundle:
+  name: secondhand
+
+sync:
+  paths:
+    - .
+    - ../jobs
+
+variables:
+  catalog:
+    description: Unity Catalog catalog that holds the schema
+    default: workspace
+  schema:
+    description: Schema for Delta tables and volumes
+    default: secondhand
+
+resources:
+  schemas:
+    secondhand:
+      catalog_name: ${var.catalog}
+      name: ${var.schema}
+      comment: secondhand backend (observation, citation, history of param)
+
+  volumes:
+    captures:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.secondhand.name}
+      name: captures
+      comment: captures/<user_id>/<capture_id>/, written only by the API
+    snapshots:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.secondhand.name}
+      name: snapshots
+      comment: stored pages behind evidence.snapshot_ref, so a read can be replayed
+
+  secret_scopes:
+    vault:
+      name: secondhand
+      # T0-1 created this scope before the bundle existed: bind it once with `databricks bundle deployment bind vault secondhand --target <t> --profile Nate`.
+      # eBay refresh tokens, site sessions and opt-in saved passwords, by account.token_ref (§6 Secrets). Values are never in the bundle.
+
+  jobs:
+    nightly_fits:
+      name: secondhand-nightly-fits
+      description: Every engine's nightly fold writes challengers with held-out scores; promote only on a held-out win (§6 Real-time weights).
+      schedule:
+        quartz_cron_expression: "0 0 2 * * ?"
+        timezone_id: America/Chicago
+        pause_status: UNPAUSED
+      max_concurrent_runs: 1
+      environments:
+        - environment_key: fits
+          spec:
+            environment_version: "3"
+            dependencies:
+              - numpy
+              - scipy
+              - lightgbm
+      tasks:
+        - task_key: identity
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [identity] }
+        - task_key: demand
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [demand] }
+        - task_key: analytics
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [analytics] }
+        - task_key: style
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [style] }
+        - task_key: valuation
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [valuation] }
+        - task_key: negotiation
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [negotiation] }
+        - task_key: trust
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [trust] }
+        - task_key: score
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [score] }
+        - task_key: person
+          environment_key: fits
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [person] }
+
+    purge_user:
+      name: secondhand-purge-user
+      description: The Delta and volume half of delete_user (du-1 returns these as pending_stores); run with user_id.
+      parameters:
+        - name: user_id
+          default: ""
+      environments:
+        - environment_key: purge
+          spec:
+            environment_version: "3"
+      tasks:
+        - task_key: purge
+          environment_key: purge
+          spark_python_task:
+            python_file: ./tasks/purge.py
+            parameters: ["{{job.parameters.user_id}}", "${var.catalog}", "${var.schema}"]
+
+targets:
+  dev:
+    mode: development
+    default: true
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Shared/.bundle/${bundle.name}/${bundle.target}

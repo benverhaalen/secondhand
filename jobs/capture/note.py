@@ -130,7 +130,7 @@ def read_note(text: str, source: str, held: dict[str, dict] | None = None, row_f
             filled.append({"name": name, "value": value, "source": "asked", "evidence": "owner"})
         else:
             description.append({"name": name, "line": span})
-    return {"item_note": {"text": text, "source": source},  # private to the person; never in a listing or a log
+    return {"item_note": text, "item_note_source": source,  # private to the person; never in a listing or a log
             "redacted": clean, "removed": sorted(set(cut_kinds)),
             "confirmed": confirmed, "marks": marks, "filled": filled, "description": description,
             "asked": sorted(asked)}

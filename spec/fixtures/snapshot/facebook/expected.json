@@ -14,6 +14,7 @@
     {
      "action": "price.changed",
      "ref": "fa2-100237",
+     "listing_external_id": "fa2-100237",
      "payload": {
       "from_cents": 4000,
       "to_cents": 3500
@@ -22,13 +23,13 @@
     {
      "action": "listing.sold",
      "ref": "fa2-100274",
-     "payload": {
-      "price_cents": 2500
-     }
+     "listing_external_id": "fa2-100274",
+     "payload": {}
     },
     {
      "action": "like.added",
      "ref": "fa2-100311",
+     "listing_external_id": "fa2-100311",
      "payload": {
       "from": 1,
       "to": 2
@@ -37,26 +38,36 @@
     {
      "action": "listing.ended",
      "ref": "fa2-100348",
+     "listing_external_id": "fa2-100348",
      "payload": {}
     },
     {
      "action": "offer.received",
      "ref": "fa2-o2",
+     "listing_external_id": "fa2-100237",
      "payload": {
-      "listing_external_id": "fa2-100237",
       "amount_cents": 3000
      }
     },
     {
      "action": "message.received",
      "ref": "fa2-m2",
+     "listing_external_id": "fa2-100237",
      "payload": {
-      "thread_ref": "fa2-t2",
-      "listing_external_id": "fa2-100237"
+      "thread_ref": "fa2-t2"
+     }
+    },
+    {
+     "action": "order.updated",
+     "ref": "fa2-ord1",
+     "listing_external_id": "fa2-100274",
+     "payload": {
+      "state": "paid",
+      "price_cents": 2500
      }
     }
    ],
-   "why": "views moved on the first listing and watchers did not: no event for either"
+   "why": "views moved on the first listing and watchers did not: no event for either; the new paid order is an order.updated"
   },
   {
    "from": "base.json",
