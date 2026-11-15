@@ -71,7 +71,8 @@ const own: Record<string, Handler> = {
   answer_offer: (c, j) => c.eventOf(j)?.action === 'app.confirm'
     ? c.act(j, 'answer_offer', 'confirm_trade', { response: 'accept' }) : c.act(j, 'answer_offer', kindArg(j, 'counter_offer')),
   make_offer: (c, j) => c.act(j, 'make_offer', 'buy_offer'),
-  poll_orders: (c, j) => c.read(j, 'read_orders'),
+  // sold's confirm (sd-1) registers here: the signed-in read, the order, then the delist fan-out
+  poll_orders: (c, j) => (c.engines.poll_orders ? Promise.resolve(c.engines.poll_orders(j)) : c.read(j, 'read_orders')),
   poll_inbox: (c, j) => c.read(j, 'read_inbox'),
   reconcile: (c, j) => c.read(j, 'read_listings'),
   async relink(c, j) {

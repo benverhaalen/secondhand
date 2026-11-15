@@ -22,6 +22,7 @@ class Week:
     sold: int
     exposure: float  # listing-weeks observed; 0 means censored
     season: float = 1.0  # season_m for the week's month
+    capped: bool = False  # the read hit the site's result cap: sold is a lower bound
 
 
 @dataclass(frozen=True)
@@ -31,6 +32,7 @@ class Velocity:
     mean: float
     p10: float
     p90: float
+    lower_bound: bool = False
 
 
 def weekly_counts(comps: list[dict]) -> dict[tuple[str, str], int]:
@@ -60,4 +62,5 @@ def velocity(weeks: list[Week], prior: dict) -> Velocity:
         a += w * wk.sold
         b += w * wk.exposure * wk.season
     dist = gamma(a, scale=1.0 / b)
-    return Velocity(a=a, b=b, mean=a / b, p10=float(dist.ppf(0.10)), p90=float(dist.ppf(0.90)))
+    return Velocity(a=a, b=b, mean=a / b, p10=float(dist.ppf(0.10)), p90=float(dist.ppf(0.90)),
+                    lower_bound=any(wk.capped and wk.exposure > 0 for wk in weeks))
