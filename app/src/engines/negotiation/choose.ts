@@ -8,6 +8,7 @@ export type OfferState = {
   ask_cents: number; // current price
   floor_cents: number;
   always_accept_cents: number;
+  accept_line_cents?: number; // posture: accepting below this line requires approval
   keep: (price_cents: number) => number;
   v_wait_cents: number | null; // null when D10 is hidden
   trust_block: boolean;
@@ -79,10 +80,11 @@ export function decide(s: OfferState, pAccept: PAccept, policy: 'champion' | 'ch
   // The floor and always_accept are prices the person set; compare prices, since keep can fall at a fee step.
   const below = s.offer_cents < s.floor_cents;
   const always = Math.max(s.always_accept_cents, s.floor_cents);
-  const keepOffer = s.keep(s.offer_cents);
+  const keepOffer = Math.round(s.keep(s.offer_cents));
+  const underLine = s.accept_line_cents !== undefined && s.offer_cents < s.accept_line_cents;
   const acceptRow: Candidate = { amount_cents: s.offer_cents, keep: keepOffer, p_accept: 1, expected_keep: keepOffer };
   const accept = (candidates: Candidate[], ask = false, fallback?: Decision['fallback']): Decision =>
-    assertLimits({ ...base, kind: 'accept_offer', amount_cents: s.offer_cents, keep_at_amount: keepOffer, p_accept: 1, expected_keep: keepOffer, candidates, ask: ask || !!s.ask_all, ...(fallback && { fallback }) }, s);
+    assertLimits({ ...base, kind: 'accept_offer', amount_cents: s.offer_cents, keep_at_amount: keepOffer, p_accept: 1, expected_keep: keepOffer, candidates, ask: ask || underLine || !!s.ask_all, ...(fallback && { fallback }) }, s);
   if (!below && s.offer_cents >= always) return accept([acceptRow]);
 
   const { lo, hi } = counterRange(s);
@@ -93,7 +95,7 @@ export function decide(s: OfferState, pAccept: PAccept, policy: 'champion' | 'ch
     try { p = pAccept(c, s); } catch { invalid = true; }
     if (!Number.isFinite(p)) invalid = true;
     p = clampP(p);
-    return { amount_cents: c, keep: s.keep(c), p_accept: p, expected_keep: p * s.keep(c) + (1 - p) * vAfter };
+    return { amount_cents: c, keep: Math.round(s.keep(c)), p_accept: p, expected_keep: p * s.keep(c) + (1 - p) * vAfter };
   });
   const fallback = invalid ? 'p_accept_invalid' as const : undefined;
   const listed = invalid ? [] : cands;
@@ -101,11 +103,11 @@ export function decide(s: OfferState, pAccept: PAccept, policy: 'champion' | 'ch
 
   let pick: Candidate | undefined; // undefined = accept, or no counter at all
   if (policy === 'challenger' && !invalid && v !== null) {
-    let best = below ? -Infinity : keepOffer;
+    let best = below || underLine ? -Infinity : keepOffer;
     for (const c of cands) if (c.expected_keep > best) { best = c.expected_keep; pick = c; }
   } else {
     const m = midpoint(s);
-    pick = m === null ? undefined : (cands.find((c) => c.amount_cents === m) ?? { amount_cents: m, keep: s.keep(m), p_accept: NaN, expected_keep: NaN });
+    pick = m === null ? undefined : (cands.find((c) => c.amount_cents === m) ?? { amount_cents: m, keep: Math.round(s.keep(m)), p_accept: NaN, expected_keep: NaN });
   }
   const counter = (kind: 'counter_offer' | 'price_below_floor', c: Candidate | undefined, ask: boolean): Decision => assertLimits({
     ...base, kind, amount_cents: c?.amount_cents ?? null, keep_at_amount: c ? c.keep : null,
@@ -116,7 +118,7 @@ export function decide(s: OfferState, pAccept: PAccept, policy: 'champion' | 'ch
   // D16 rule 3: under the floor it always asks, proposing the counter rule 2 would send.
   if (below) return counter('price_below_floor', s.counter_under_floor === false ? undefined : pick, true);
   // D16 rule 2: in the band, accept when the offer already keeps at least what waiting does.
-  if (policy === 'champion' && v !== null && keepOffer >= v) return accept(full, false, fallback);
+  if (policy === 'champion' && !underLine && v !== null && keepOffer >= v) return accept(full, false, fallback);
   // No ending between the offer and the ask: the gap is under one ending, so taking the offer is the counter.
   if (!pick) return accept(full, v === null, fallback);
   // V hidden: only rules 1 and 3 run, so a counter in the band is a proposal.

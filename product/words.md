@@ -1511,3 +1511,30 @@ Used in: [product/constitutions/](constitutions/README.md), [spec/intent-ledger.
 ## 2026-11-15 save opus: cut steps and tokens from the build
 Ben, project chat, 08:18 UTC.
 > im worried im going to run out of opus usage. are there any things from the logging youve been collecting that you can remove as steps in the build of the ui to increase speed. are there any other ways to increase speed of building. and decrease the token spend
+## 2026-11-15 nate the leads use codex well
+Nate, build session (orchestrator), 2026-11-15 about 03:10 Central.
+> Ensure the team leads are best utilizing codex, understand the proper models, efforts, and how to effectively prompt and configure for using such workers too
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate is this the most efficient way to read a site
+Nate, build session (orchestrator), 2026-11-15 about 03:05 Central.
+> is this really the most optimized way to read the site too? like acounting for efficienny? using jev ultrafast and such?
+
+## 2026-11-15 nate the benchmark measures spec/benchmark.md
+Nate, build session (orchestrator), 2026-11-15 about 03:30 Central, after the orchestrator offered to time each site's read path.
+> Well benchmark we were thinking would measure spec\benchmark.md
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate up to seven at once per lead
+Nate, build session (orchestrator), 2026-11-15 about 03:45 Central.
+> Go for up to 7 subagents for each lead, if they see it needed, of course too much on one focus is crazy but if waiting because of the limit each can have up to 7 concurrent
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate no worker waits confused, and experts sweep the spec
+Nate, build session (orchestrator), 2026-11-15 about 04:00 Central, after the integration lead found the benchmark's item set unfilled.
+> Oh wow, well ensure workers aren't going to get confused and all wait in a way that connects to it working, that they check through all docs and that you have expert data scientists and ai software engineers, databricks professional subagents, sweep over the spec of whats imagined and suggest improvements
+
+Used in: [who is waiting on what](../spec/plans/waiting.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).

@@ -65,3 +65,38 @@ def test_frozen_model_does_not_partially_promote_cuts():
     out = nightly(outcomes(), outcomes('held'), PRIOR, store, {}, '2026-11-15')
     assert out['state'] == 'kept'
     assert store.champion('score_bands', {}) == before
+
+
+def test_registry_champion_is_the_held_out_comparator_even_when_prior_is_worse():
+    store = MemoryStore()
+    training = [{**r, 'value': r['value'] * 2} for r in outcomes()]
+    held = [{**r, 'value': r['value'] * 2} for r in outcomes('held')]
+    champion = fit_bands(training)
+    row = store.propose({'name': 'score_bands', 'scope': {}, 'family': 'model_ref',
+                         'value_or_hyperparams': champion, 'held_out_score': -1}, 0)
+    store.promote('score_bands', {}, row['version'], 0, '2026-11-14')
+    out = nightly(outcomes(), held, {**PRIOR, 'rates': [.05] * 4}, store, {}, '2026-11-15')
+    assert out['state'] == 'kept'
+    assert out['model'] == champion
+    assert len(store.history('score_bands', {})) == 1
+
+
+@pytest.mark.parametrize('split', ['training', 'held_out'])
+@pytest.mark.parametrize('owner', ['other', None])
+def test_person_scope_refuses_foreign_or_unowned_outcomes(split, owner):
+    training = [{**r, 'person': 'owner'} for r in outcomes()]
+    held = [{**r, 'person': 'owner'} for r in outcomes('held')]
+    (training if split == 'training' else held)[0]['person'] = owner
+    store = MemoryStore()
+    with pytest.raises(ValueError, match='person scope'):
+        nightly(training, held, PRIOR, store, {'person': 'owner'}, '2026-11-15')
+    assert not store.rows
+
+
+def test_current_held_out_win_is_not_blocked_by_historical_champion_score():
+    store = MemoryStore()
+    row = store.propose({'name': 'score_bands', 'scope': {}, 'family': 'model_ref',
+                         'value_or_hyperparams': PRIOR, 'held_out_score': 0}, 0)
+    store.promote('score_bands', {}, row['version'], 0, '2026-11-14')
+    out = nightly(outcomes(), outcomes('held'), PRIOR, store, {}, '2026-11-15')
+    assert out['state'] == 'promoted'

@@ -27,7 +27,7 @@ One item from the camera to the sale, the way the person meets it. A link marked
 | 15 | Delist elsewhere | confirm → `delist/delist.ts` fanOut → `end` per site | real in the walk on the fake site; the delist job does not carry the site's listing id | integration (int-watch-1 task 3) |
 | 16 | Expired sign-in | `auth_expired` → `stale.ts` markStale → `relink` decision → resume | real alone, not joined to sweeps | integration (int-watch-1) |
 | 17 | Numbers shown | `GET /v1/scores`, `/insights`, `/today` → proof layer citations | real; `GET /v1/citations/:id` example | engines lead: basis ids on the default citation |
-| 18 | Survives a restart | every row above | missing (all memory) | integration: `fileStore` behind the Store port (int-store-1); Lakebase needs an async port (Databricks lead, through the orchestrator) |
+| 18 | Survives a restart | every row above | real for events, jobs, decisions and product rows when `SECONDHAND_DATA_DIR` is set (`fileStore`, de71199; `node --test app/src/edge/events/file-store.test.ts`, 8 pass, 2026-11-15); routes still keep items and orders in their own maps until int-runtime-1 | integration; Lakebase needs an async Store port (Databricks lead, through the orchestrator) |
 
 ## By feature
 
