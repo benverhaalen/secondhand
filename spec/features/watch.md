@@ -27,6 +27,7 @@ Watch lives in the Buy tab on the Watching shelf ([decision](../../product/decis
 | "around $60" | price | `RangeSlider` (58) over the sold dots | 20% either side of the number |
 | "shipped or pickup or both" | how it gets to me | three-way toggle Ship, Pickup, Both; pickup shows a radius on a map | Both, 15 miles |
 | "blue" | colour | `ColourSwatches` (61) from the colours the listings actually come in | any |
+| "men's", "youth" | who clothes are cut for: Any, Men's, Women's, Youth; clothes only. A women's or kids' L passes a size check alone: 12 of 48 Poshmark "brewers jersey" results were those cuts ([Brewers trial](../../research/watch/ben/brewers-alert-trial.md)) | chips; matched against the site's own department | from the words, else any |
 | size | size | `SizePicker` (60), or the measurements of a jersey they own | from the style profile |
 | condition | how worn | four chips, new with tags to fair | good or better |
 | sites | where to look | the five logos plus official stores | all |

@@ -1,4 +1,6 @@
 """The experiment runner (spec/plans/backtest/plan.md): the test of the test first (decision 23), then the scores."""
+import json
+
 import pytest
 
 from valuation import experiment, synthetic
@@ -50,8 +52,9 @@ def test_a_contestant_only_ever_learns_from_rows_before_its_freeze_date_and_allo
             seen.append(("fit", max(experiment.ts(r["at"]) for r in train), all(r["may_model"] for r in train)))
 
         def predict(self, item, as_of, history):
-            seen.append(("predict", max((experiment.ts(r["at"]) for r in history), default=0) < experiment.ts(as_of),
-                         all(r["may_model"] for r in history)))
+            rs = history.product(item["product_id"])
+            seen.append(("predict", max((experiment.ts(r["at"]) for r in rs), default=0) < experiment.ts(as_of)
+                         and history.latest_at() < experiment.ts(as_of), all(r["may_model"] for r in rs)))
             fits = [s for s in seen if s[0] == "fit"]
             assert fits[-1][1] < experiment.ts(as_of)
             return super().predict(item, as_of, history)
@@ -127,3 +130,25 @@ def test_the_report_carries_every_number_the_page_shows(report):
         assert m["overall"][k] is not None, k
     assert set(m["slices"]) == {"kind", "condition", "site", "month", "price_band_of_our_middle"}
     assert report["sentence"].startswith("On ")
+
+
+def test_the_ledger_refuses_a_second_look_at_the_locked_month_and_scores_replay_from_the_log(rows, tmp_path):
+    import csv
+    path, book = tmp_path / "rows.csv", str(tmp_path / "ledger.jsonl")
+    with open(path, "w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=list(rows[0]))
+        w.writeheader()
+        w.writerows(rows)
+    args = ["backtest", "--rows", str(path), "--ledger", book, "--sample", "60"]
+    experiment.main(args + ["--test-from", "2026-07-01T00:00:00Z", "--test-to", "2026-09-01T00:00:00Z"])
+    with pytest.raises(ValueError, match="already"):
+        experiment.main(args + ["--test-from", "2026-08-01T00:00:00Z", "--locked"])      # tuning already saw August
+    _, brief = experiment.main(args + ["--test-from", "2026-09-01T00:00:00Z", "--locked"])
+    with pytest.raises(ValueError, match="already"):
+        experiment.main(args + ["--test-from", "2026-10-01T00:00:00Z"])                  # a look inside the locked window
+    _, again = experiment.main(args + ["--test-from", "2026-10-01T00:00:00Z", "--deviation", "scorer bug fixed"])
+    book_lines = [json.loads(x) for x in open(book)]
+    assert [x["locked"] for x in book_lines] == [False, True, False] and book_lines[-1]["deviation"] == "scorer bug fixed"
+    assert book_lines[0]["settings"]["model"]["ANCHOR_K"] == 5 and len(book_lines[0]["rows_sha256"]) == 64
+    _, replay = experiment.main(["rescore", "--log", brief["log"], "--rows", str(path)])
+    assert replay["contestants"] == brief["contestants"]

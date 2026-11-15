@@ -17,13 +17,30 @@ Ben, 07:46: "demoing the buy feature live would be so cool... nate does it live 
 
 So the beat is real detection by our code on the site's own public page, shown in our own app. The rest of the want screen (the price dots, the sites' status) is demo data, and the watching runs from the laptop. Say that if asked.
 
+## On Nate's harness, with a stage cadence (Ben, 08:42)
+
+Ben: "plan to use however nate builds the harness to end up doing the demo. im hearing ebay api takes like a day for approval" and "we can design a demo mode that never says demo mode for the backend so that we can increase the rate at which it polls or have some mechanism to make it instant" ([words](words.md#2026-11-15-the-demo-runs-on-nates-harness-and-the-cadence-is-a-lever)). *Agent proposal*:
+
+| Part | How it works | What it needs from Nate |
+|---|---|---|
+| The read | Nate's Poshmark `search` verb with `sort: added_desc`, on one warm cloud browser page, about 2 to 2.5 s a read ([harness README](../app/src/edge/harness/sites/poshmark/README.md)) | search rows that also carry `size`, `department`, `category` and `listed_at` (`first_published_at`), all already in `$_search.gridData` ([packet 68](../.agents/team/packets/watch/68-demo-on-the-harness.md)) |
+| The match | `scripts/demo/want.mjs` `judge`: team, jersey, cut, category, size, price, still for sale; then the listing's own page | nothing; built and tested |
+| The stage cadence | a server setting, not a UI state: the one demo want's `next_check_at` floor drops to 10 s for the length of the beat. Nothing on screen changes, and nothing says "demo" | a per-want floor override read from the server's environment |
+| The instant path | when a listing is posted *through secondhand* (the harness `post` verb), its own completion event runs the matcher against active wants at once, so the find shows before any search has indexed it. This is a real product path, not staged: we know the moment our own cross-lister posts | `post` emits a completion event with the listing's fields; the matcher subscribes. `post` is dry until Nate says go |
+
+**Which path on stage.** If Nate's `post` goes live by the demo, Nate posts *through our app* and the find is instant: "it was listed through secondhand, so we matched it the moment it went up". Otherwise Nate posts in the Poshmark app and the 10 s search catches it: "on stage this search runs every 10 seconds; in the product it's every few minutes, shared across everyone watching the same thing".
+
+**What we never do.** No alert that a real listing didn't cause. No timer that fakes a find. The stage cadence and the instant path are both real code reading a real listing; only the rate is turned up, and we say so if asked.
+
+**The cadence lever.** How often a want checks a site trades money and site load against the chance the listing sells first. Codex is researching the numbers (time-to-sale for underpriced listings, cost per read on each route, sharing across users, ROI at 1, 5, 15 and 60 minutes) into [research/watch/ben/cadence-levers.md](../research/watch/ben/cadence-levers.md); the brief is [here](../research/watch/ben/codex-briefs/cadence-and-market.md).
+
 ## Which site
 
 | Site | How soon a new listing shows in a signed-out search | Verdict |
 |---|---|---|
-| **Poshmark** | not measured. Its newest-first search (`sort_by=added_desc`) is plain HTML. A listing's id holds its creation time, so we can show how long after listing we found it (*observed*, [exa-empirical §5](../research/watch/ben/exa-empirical.md#5-freshness-against-each-sites-newest-first-page)). A public Poshmark read took 0.44 s (*observed*) | **First to test** |
-| eBay | not measured. Its newest-first page held listings 9 minutes old (*observed*, same note). It shows bot walls, and listing from a phone takes longer | backup |
-| Mercari | not measured. The reader exists | third |
+| **Poshmark** | timed run pending ([brewers trial](../research/watch/ben/brewers-alert-trial.md)). From Ben's Mac it is the only one of six sites that answers a signed-out read: 0.70 s, and the page carries each listing's publish time, size, department and category (*observed*, 08:12 UTC). Its terms ban automated collection and its robots.txt disallows `/search` (*observed*) | **The demo's site**; say it reads Poshmark's public page |
+| eBay | the search page returns 403 to a plain read (*observed*). The Browse API is the sanctioned route (newest first, creation date, 5,000 calls a day) but needs developer keys we don't have | backup once keys exist; the product's watch source (*agent proposal*) |
+| Mercari | 403 to a plain read (*observed*) | out |
 | Facebook | of 6,658 new listings, 9 showed in search before they were 6 minutes old (*asserted*, a vendor's count, [new-listing-detection §6](../research/watch/nate/new-listing-detection.md#6-facebooks-delay-before-a-listing-is-visible)) | out |
 | Depop | Cloudflare, and it needs a sign-in; and never Ben's personal Depop ([05:54](words.md#2026-11-15-stop-using-my-personal-depop)) | out |
 
@@ -63,7 +80,8 @@ Never fire a fake alert. A demo-data alert is shown only with "demo data" said o
 - **A stranger buys Nate's listing.** A low price draws buyers fast. List only a thing Nate owns and is glad to sell at that price. Take it down right after the beat, and if it sells, he ships it.
 - **A stranger's listing shows first.** Choose a narrow search that usually costs well over the cap; the first read takes what's already there as seen. A real new match is still a real alert, so say so.
 - **A bot wall or bad wifi on the day.** The watcher backs off to 60 s; switch to the clip. Phone and laptop on a hotspot.
-- **The sites' terms for automated reads haven't been read** ([backtest plan, decision 32](../spec/plans/backtest/plan.md)). It's one signed-out search every 10 seconds, for the length of the beat. At the first warning from a site, stop.
+- **Poshmark's terms ban automated collection, and its robots.txt disallows `/search`** (*observed*, [brewers trial §1–2](../research/watch/ben/brewers-alert-trial.md#1-what-answers-a-signed-out-read-from-bens-mac)). It's one signed-out search every 10 seconds, for the length of the beat. If a judge asks, say so plainly, and that the product's route is eBay's API. At the first warning from a site, stop.
+- **A price cap alone pings for the wrong things.** On "brewers jersey", 40 of 48 results were tees, women's or kids' cuts, other teams or giveaways (*observed*). Run with `--want`, which judges Poshmark's own department, category and size.
 - **The phone has to reach the laptop, with the app open.** The phone and the laptop are on the same hotspot, the app is open on the want screen, and the screen is set not to lock. The find shows in the app, not as a notification: there's no push sender yet. The watcher's `--ntfy` option is kept as a spare only.
 - **The listing page may not carry a structured price.** Then the confirm step never passes; the rehearsal checks this. `--trust-search-price` uses the search page's price instead; say so if it's on.
 - **Cadence.** The product checks each want every 5 to 60 minutes ([watch spec](../spec/features/watch.md)). On stage it's every 10 seconds, for one search. If asked, say both.
@@ -78,7 +96,7 @@ Never fire a fake alert. A demo-data alert is shown only with "demo data" said o
 1. Nate: a demo account on Poshmark, and on eBay as the backup. Never Ben's personal Depop.
 2. Pick the item, the search and the cap. Nate owns the item. On the newest-first page, count how many listings under the cap arrived in the last day; it should be close to none.
 3. On the laptop: `cd app && npm start`. On Ben's phone, on the hotspot, open the app at the laptop's address: `/want?q=<the item>%20under%20%24<cap>&live=1`. Set the price on screen to the watcher's cap, and tap Watch.
-4. On the laptop, on the hotspot: `node scripts/demo/stage-watch.mjs --url '<newest-first search>' --cap 25 --every 10 --for 15` (it writes `logs/stage-alerts.json`, which the app reads). It should print "watching Poshmark: N listings already there".
+4. On the laptop, on the hotspot: `node scripts/demo/stage-watch.mjs --url '<newest-first search>' --want scripts/demo/wants/<want>.json --every 10 --for 15` (or `--cap 25` for price only) (it writes `logs/stage-alerts.json`, which the app reads). It should print "watching Poshmark: N listings already there".
 5. Nate posts. Note the time of the tap, the time the find shows on Ben's phone, and the found-after number. Take it down. Three runs.
 6. Check that the confirm step passed. If it didn't, re-run with `--trust-search-price` and note it.
 7. Run the price drop once.

@@ -48,7 +48,7 @@ These are predictions written before any run, so the page cannot be fitted to th
 
 ## The rules
 
-1. One fixed set of real items, chosen before any tool is run and never changed after: the [real-item set](items/manifest.json), grown to 200 across the product families, half of them with a known later sale.
+1. One fixed set of real items, chosen before any tool is run and never changed after: the [real-item set](items/manifest.json), grown to 200 across the product families. For price accuracy the listings are live ones picked before any sale is known: whatever sells afterwards is scored and the unsold are reported, since an item whose sale is already known is leakage and one picked because it sold is survivorship ([data-science sweep, item 11](plans/sweep/data-science.md)).
 2. Each tool is used the way a normal person uses it, signed out or on its free plan unless the row says otherwise, on the same day as ours. A tool that does not cover a question scores "no answer", which is a result, not an exclusion.
 3. Every raw answer is saved with a screenshot or the response and its time. A number is claimed on the website only if the run that produced it is in the published record.
 4. Our own answers come from the same public API anyone can call, not from an internal path.
@@ -62,9 +62,9 @@ These are predictions written before any run, so the page cannot be fitted to th
 | 2 | Breadth per answer | how many of these twelve kinds of fact come back for one item: sold prices, live listings, the official price, credible discounts, product reviews, seller reviews, demand trend, time to sell, fees per site, what you keep, the same item on other sites, a price history | every tool in [parity](parity.md) |
 | 3 | Sources shown | the share of numbers in an answer that open to the listings or pages behind them | all |
 | 4 | Sold prices across sites | the share of items with sold prices from three or more marketplaces | Terapeak, 130point |
-| 5 | Exact match | of the top ten results, the share that are the same product and variant, judged by two people against the item's known identity | ThriftX, Dupe.com |
+| 5 | Exact match | of the top ten results, the share that are the same product and variant, judged by two people against the item's known identity, who do not see which tool gave the result; their agreement is printed beside the row and a third person settles a disagreement | ThriftX, Dupe.com |
 | 6 | Freshness | the age of the newest data point in the answer | Gem, Terapeak, Keepa |
-| 7 | Price accuracy | for the 100 items with a known later sale, the share of sale prices inside the stated range, with the range's width beside it; by family | every tool that states a price or range |
+| 7 | Price accuracy | for the items that sell after the answers: every tool that states a price is scored on the absolute percent error of its middle price, paired on the items both answered; a tool that states a range is also scored on the share of sale prices inside it with the range's width beside it; by family. The item count and its interval are stated with every figure: at 20 items an 80% share reads anywhere from 58 to 92% ([data-science sweep, item 11](plans/sweep/data-science.md)) | every tool that states a price or range |
 | 8 | Speed | seconds to the first answer and to the full answer, median and p95 | ThriftX, Dupe.com |
 | 9 | Thin evidence | for the 20 rarest items, whether the tool returns nothing, a guess with no basis, or more evidence after a wider search | all |
 | 10 | Sale to delist | seconds from a sale on one site to the listing being down on the others, on test listings | Vendoo, List Perfectly |
@@ -122,7 +122,7 @@ Likely to break it, each with its test: an item swapped after a run (the manifes
 1. Freeze the item set: the manifest's hash goes in every record.
 2. Run ours through the public API with the runner, once, with the time recorded.
 3. The same day, two people ask each tool about each item the way a normal person would, and save the answer and a screenshot into that tool's record. A tool with a public interface is asked through it.
-4. Wait for the sales: the 100 items with a known later sale are scored for row 7 only against sales dated after the answers.
+4. Publish the hash of the answers file before any sale. Then wait for the sales: an item is scored for row 7 only against a sale dated after the answers, and the items that did not sell are counted and reported.
 5. Run the scorer. It writes the results file and refuses any number without a record.
 6. Publish the page, the records, the manifest and the rerun command together. A rerun is dated and added to a changelog; an old run is never overwritten.
 

@@ -1,0 +1,115 @@
+{
+ "url": "https://www.mercari.com/u/900000005/",
+ "recorded_at": "2026-11-15",
+ "status": 200,
+ "html": "",
+ "api": [
+  {
+   "op": "publicProfileUserQuery",
+   "body": {
+    "data": {
+     "user": {
+      "id": 900000005,
+      "name": "Seller A",
+      "username": "user900000005",
+      "photo": null,
+      "introduction": "Bundle to save.",
+      "numSellItems": 326,
+      "numSales": 297,
+      "ratings": {
+       "count": 466,
+       "average": 5,
+       "__typename": "Ratings"
+      },
+      "followerCount": 146,
+      "followingCount": 132,
+      "created": 1572982814,
+      "numCancelReviews": 6,
+      "isProSeller": false
+     }
+    }
+   }
+  },
+  {
+   "op": "publicProfileSearchQuery",
+   "body": {
+    "data": {
+     "search": {
+      "count": 2,
+      "nextKey": "0",
+      "page": {
+       "offset": -1,
+       "soldItemsOffset": -1,
+       "promotedItemsOffset": -1,
+       "__typename": "SearchPage"
+      },
+      "itemsList": [
+       {
+        "id": "m71586647987",
+        "name": "Ariat Women's Boot Cut Jeans",
+        "status": "on_sale",
+        "price": 2500,
+        "originalPrice": 2500,
+        "seller": {
+         "id": 900000005,
+         "sellerId": 900000005
+        },
+        "brand": {
+         "id": 357,
+         "name": "Ariat"
+        },
+        "itemSize": {
+         "name": "33 in."
+        },
+        "itemCondition": {
+         "id": 2,
+         "name": "Like new"
+        },
+        "categoryId": 183,
+        "created": 1793411295,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       },
+       {
+        "id": "m88697389678",
+        "name": "Judy Blue Straight Fit Jeans",
+        "status": "on_sale",
+        "price": 1200,
+        "originalPrice": 1200,
+        "seller": {
+         "id": 900000005,
+         "sellerId": 900000005
+        },
+        "brand": {
+         "id": 24918,
+         "name": "Judy Blue"
+        },
+        "itemSize": {
+         "name": "34 in."
+        },
+        "itemCondition": {
+         "id": 2,
+         "name": "Like new"
+        },
+        "categoryId": 1964,
+        "created": 1794698051,
+        "promoteType": 0,
+        "promoteExpireTime": 0
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "op": "publicProfileSearchQueryCount",
+   "body": {
+    "data": {
+     "search": {
+      "count": 30
+     }
+    }
+   }
+  }
+ ]
+}

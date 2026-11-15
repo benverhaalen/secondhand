@@ -350,6 +350,17 @@ test('F6: malformed cloud create replies are rejected at the boundary', async ()
     await assert.rejects(source.open(undefined, { headless: true }), /invalid browser/);
   }
 });
+test('an https CDP address is accepted, and a browser whose reply is unusable is stopped by id', async () => {
+  const ok = browserUseCloud({ apiKey: 'fixture', fetchFn: (async () => new Response(JSON.stringify({ id: 'b', cdpUrl: 'https://cdp.example/x' }))) as typeof fetch });
+  assert.equal((await ok.open(undefined, { headless: true })).cdpUrl, 'https://cdp.example/x');
+  const calls: string[] = [], failed: string[] = [];
+  const bad = browserUseCloud({ apiKey: 'fixture', onStopFailed: id => failed.push(id), fetchFn: (async (url, init) => {
+    calls.push(`${init?.method} ${String(url).split('/').pop()}`);
+    return init?.method === 'POST' ? new Response(JSON.stringify({ id: 'b-7', cdpUrl: 'file:///tmp/x' })) : new Response('{}', { status: 200 });
+  }) as typeof fetch });
+  await assert.rejects(bad.open(undefined, { headless: true }), /invalid browser/);
+  assert.deepEqual(calls, ['POST browsers', 'PATCH b-7']); assert.deepEqual(failed, []);
+});
 test('F5: cloud timeout uses each launch and caps it at 240 minutes', async () => {
   const timeouts: number[] = [];
   const source = browserUseCloud({ apiKey: 'fixture', fetchFn: (async (_url, init) => {

@@ -48,7 +48,7 @@ export async function check(x: CheckInput) {
     const q = x.calibration?.Q_g ?? 0;
     const warm = x.fast;
     const range = found.range.q50 !== null ? {
-      q10: Math.max(0, (found.range.q10 ?? 0) - q), q50: found.range.q50, q90: (found.range.q90 ?? 0) + q,
+      q10: Math.max(0, Math.floor((found.range.q10 ?? 0) - q)), q50: found.range.q50, q90: Math.ceil((found.range.q90 ?? 0) + q),
       state: calibrated && found.state === 'ok' ? 'checked' : 'not_checked_yet', group: x.calibration?.group ?? null,
       share_shown: calibrated ? Math.floor(x.calibration!.coverage * 10) / 10 : null,
     } : { q10: warm?.low ?? null, q50: null, q90: warm?.high ?? null, state: warm ? 'not_checked_yet' : 'hidden', group: null, share_shown: null };

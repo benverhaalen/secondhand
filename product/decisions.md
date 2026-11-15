@@ -2,6 +2,12 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-15: Depop sales are seen by the signed-in sweep for now; the partner API is a proposal
+Agreed by: Ben, on the card "Should we apply to Depop's partner programme so free pays?" in the thread "Quantify every feature with why and ROI", 08:32 UTC, picking "Keep the signed-in sweep", then in words at 08:32: "propose in roi propostion being in the depop api thing but right now dont claim that we are". Decided: Depop sale detection stays the signed-in sweep ([OPERATING.md](../app/src/edge/sold/OPERATING.md)); [roi.md](roi.md) presents the partner API as the proposed step that flips the base case to +$0.31 a person a month; nothing says we are in the programme or have applied.
+
+## 2026-11-15: hot items and seasons are out of scope
+Agreed by: Ben, project chat, 08:31 UTC: "i dont care about hot items and seasons anymore. stop that." Decided: hot and seasons stay out of the plans and the pitch; the event-effect estimator is parked in the repo and run by nothing. Changed: [feature-breakdown.md §10](feature-breakdown.md#10-hot-and-seasons-dropped).
+
 ## 2026-11-15: a sale and a watched item under your price notify at once
 Agreed by: Ben, in the thread "Map every feature and page so the build can start", 06:40 UTC ("1. yes", [words](words.md#2026-11-15-a-sale-and-a-match-ping-at-once-replies-start-as-drafts-and-agents-build-the-better-way)). Decided: a sale ("Sold on Depop: the Carhartt jacket. You keep $31.40. Ship by Thu.") and a watched item under the person's top price push immediately, not in a batch. Changed: [spec/notifications.md](../spec/notifications.md), [today step 8](../spec/features/today.md).
 

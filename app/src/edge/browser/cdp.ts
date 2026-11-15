@@ -112,8 +112,18 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
         // the whole timeout is charged up front and refunded on stop, so it is sized to the job; a challenge is never solved here, it pauses for the person
         body: JSON.stringify({ proxyCountryCode: country, timeout: Math.min(240, Math.max(1, Math.ceil(opts.timeoutMin ?? timeoutMin))), solveCaptchas: false, ...(profileId ? { profileId } : {}) }) });
       if (!res.ok) throw new Error(`browser-use cloud create answered ${res.status}`);
-      const { id, cdpUrl, live_url } = parseBrowser(await res.json());
-      const stopOnce = () => fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).then(r => r.ok, () => false);
+      const body: unknown = await res.json();
+      const stopId = (bid: string) => fetchFn(`${base}/browsers/${encodeURIComponent(bid)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).then(r => r.ok, () => false);
+      let parsed: ReturnType<typeof parseBrowser>;
+      try { parsed = parseBrowser(body); }
+      catch (e) {
+        // The browser exists and is billing even though its reply is unusable: stop it by id before giving up.
+        const bid = body && typeof body === 'object' ? (body as { id?: unknown }).id : undefined;
+        if (typeof bid === 'string' && bid.trim() && !(await stopId(bid) || await stopId(bid))) onStopFailed(bid);
+        throw e;
+      }
+      const { id, cdpUrl, live_url } = parsed;
+      const stopOnce = () => stopId(id);
       let stopped = false;
       return { cdpUrl, live_url, stop: async () => {
         if (stopped) return;
@@ -143,5 +153,6 @@ export function parseBrowser(value: unknown): { id: string; cdpUrl: string; live
     return v;
   };
   if (typeof id !== 'string' || !id.trim()) throw invalid();
-  return { id, cdpUrl: url(cdpUrl, ['ws:', 'wss:']), ...(live === undefined ? {} : { live_url: url(live, ['https:', 'http:']) }) };
+  // Browser Use answers with an https: CDP address (seen 2026-11-15); connectOverCDP takes an http(s) endpoint as well as ws(s).
+  return { id, cdpUrl: url(cdpUrl, ['ws:', 'wss:', 'https:', 'http:']), ...(live === undefined ? {} : { live_url: url(live, ['https:', 'http:']) }) };
 }

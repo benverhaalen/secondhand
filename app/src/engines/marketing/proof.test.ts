@@ -45,5 +45,5 @@ test('offer Beta updates match the closed form with forgetting', () => {
   store.observe('offer_accept', {}, { success: 1, weight: 1 }, at);
   store.observe('offer_accept', {}, { success: 0, weight: 1, days_since_last: 30 }, at);
   const got = store.read('offer_accept', {}).value as { alpha: number; beta: number };
-  assert.deepEqual(got, { alpha: 1.5, beta: 2 }, 'marketing §3.5 requires a 30-day half-life on old counts; shared registry uses exp(-days/30)');
+  assert.deepEqual(got, { alpha: 1.5, beta: 2 }, 'marketing §3.5 requires a 30-day half-life on old counts; shared registry uses 0.5^(days/30)');
 });

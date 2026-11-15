@@ -25,6 +25,8 @@ The orchestrator (the session that started the leads) holds the harnesses in `ap
 
 Every calculation is deterministic: same inputs, same answer, integer cents for money, every tunable number a `param` row, every shown number guarded with a citation. A model fills a gap only where the spec says a model does, and its output is checked before use.
 
+The system always answers, and what it weighs in real time is its strength ([Nate](../../../../product/words.md#2026-11-15-nate-the-system-always-prices-with-fallbacks-and-its-power-is-what-it-weighs-in-real-time)). Every number has an established fallback order and says which step it used; a threshold decides only whether the system acts without asking, never whether it answers; and a threshold is read against the evidence as it stands now, pooled from the parent scope where a scope is thin, not against a table that must fill up first. A design that makes the system wait on a fixed count is the wrong design here.
+
 ## Mac workers
 
 The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes ngarelik@glados '<command>'`.
@@ -37,12 +39,14 @@ The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes nga
 | Commit its work (the worker never commits) | `ssh -n ... 'cd ~/dev/projects/secondhand-wt/<name> && git add <explicit paths> && git commit -q -m "<type(scope): plain words>"'` |
 | Bring it to Windows | `git fetch -q mac 'refs/heads/w/*:refs/remotes/mac/w/*'` then `git merge mac/w/<name>` |
 
-- A worker name is new each time and starts with the lead's name: `eng-valuation-1`, `dbx-dashboard-2`. The worktree is cut from `main` as the Mac has it, so push before starting a worker that needs your latest commit.
-- Up to three workers per lead at once; the script refuses to start one when twelve are running. The Mac has 16 cores and 64 GB, measured 93% free with one worker running (2026-11-15 02:40 Central), so use it, without piling on: Nate, "careful not to overdoo it, we have alot of sessions running".
+- A worker name is new each time and starts with the lead's name: `eng-valuation-1`, `dbx-dashboard-2`. The worktree is cut from `origin/main` after a fetch, so push before starting a worker that needs your latest commit. Nothing is run or written in the Mac's main checkout (`~/dev/projects/secondhand`): a long run, a download or a backtest goes in a worker's worktree, since a dirty main checkout is everyone's problem.
+- Up to seven delegates per lead at once, Codex workers and Claude seats counted together, when the lead sees the need: Nate, "if waiting because of the limit each can have up to 7 concurrent", and "too much on one focus is crazy", so seven is for seven separate pieces, never seven on one. The script refuses to start a worker when 28 are running or when under a quarter of the Mac's memory is free. The Mac has 16 cores and 64 GB, measured 93% free with one worker running (2026-11-15 02:40 Central), so use it, without piling on: Nate, "careful not to overdoo it, we have alot of sessions running".
 - The Mac also runs the heavy things: a long test file, a benchmark, a backtest, a Docker service a test needs. Run them in a worker's worktree over SSH, one per worktree, and bring back the numbers.
 - Claude Code on the Mac is not signed in, so Claude seats run from the Windows sessions (below); only Codex and plain commands run on the Mac.
 - The Mac cannot push to GitHub. Work reaches `origin` only through a Windows merge and push.
+- A conflict is never resolved in the shared Windows checkout: an unfinished merge there stops every session from pulling or committing (it happened on 2026-11-15). Before bringing a branch to Windows, merge `origin/main` into it in its Mac worktree, resolve and rerun its tests there, and squash or reset only onto an explicit commit id, never onto `origin/main` by name, since another worker's fetch can move that ref under you. If a merge on Windows does conflict, `git merge --abort` at once and go back to the Mac.
 - No key goes to the Mac in a brief, a file or a command line. A task that needs a key on the Mac goes to the orchestrator.
+- Codex's workspace-write sandbox keeps `.agents/` read-only, so a worker cannot create a file under `.agents/checks/` (found by the integration lead, 2026-11-15). A brief that needs one has the worker write it under `scripts/<piece>-staging/`; the lead moves it into `.agents/checks/` and adds its line to `check.mjs`.
 - End every brief with the worker rules below, unchanged.
 
 ```
@@ -67,7 +71,10 @@ Nate: "Ensure the team leads are best utilizing codex, understand the proper mod
 | A specified build: owned files, tests named, the pattern already in the folder. Most pieces | `gpt-6.1-sol` (the script's default) | medium |
 | A build with design left inside it: an algorithm, money or state edges, several files that must agree | `gpt-6.1-sol` | high |
 | A long piece run unattended where staying inside the brief decides it: many files, a refactor across an area, anything a worker might fake or wander on | `gpt-6-astra` | high |
+| A straightforward build in volume: one more route like its neighbours, one more adapter verb, a twin of code that exists | `gpt-6.1-terra` | medium |
 | Mechanical work: a rename, fixtures from a stated shape, a doc brought in line with code, lint fixes | `gpt-6-luna` | high |
+
+The whole served list on 2026-11-15 (codex-cli 0.169.0, the newest release): `gpt-6.1-sol` ("latest workhorse", the 6.1 generation and our default), `gpt-6.1-terra` (the 6.1 Codex model, the balanced tier), `gpt-6-astra` (frontier; no 6.1 Astra is served), `gpt-6-luna` (fast and cheap; no 6.1 Luna is served), and the older `gpt-6-sol` and `gpt-5.6-*`, which nothing here should use. `gpt-6.1-terra` has not been measured on this repo: the first lead to use it records how its piece went (rounds to pass, minutes) on the board so the table can be corrected. The list changes; read it fresh with `ssh -n … 'grep -o "\"slug\": *\"[^\"]*\"" ~/.codex-worker/models_cache.json'` before trusting this table on another day.
 
 Astra costs about five times Sol per token, so it is for the pieces that earn it. Efforts above high are not used without a measured gain; the script refuses them. If a model is refused, the worker's log (`/tmp/worker-<name>.log`) says so in its first lines: fall back to `gpt-6.1-sol`.
 
@@ -92,7 +99,7 @@ Five sessions share `C:\dev\secondhand`. It crashed three times under thirteen, 
 - Commit with explicit paths the moment a piece passes, then `git pull --no-rebase` and `git push`. If `index.lock` is held, wait two seconds and try again. Never `git add -A`, never stash, reset, rebase or force-push.
 - A merge needs a clean index: commit or leave alone your own edits first, and never touch another session's uncommitted files.
 - One test file at a time (`node --test --test-concurrency=1 <file>`). Never `node .agents/check.mjs` and never `scripts/prove.mjs --wave` or `--tune` from a lead: the orchestrator runs the full check before a push that needs it. Heavy or long runs go to the Mac.
-- A lead may hand work to Claude seats of its own (the Agent tool, in the lead's session): Sonnet 5.5 for a specified piece (a doc update, a brief, reading a diff against its brief, a lookup), another Opus 5.5 for a design question or a fresh review. At most two at once per lead, and they do not run tests or builds here: those go to the Mac. A lead starts no new sessions; there are four leads and that number stays.
+- A lead may hand work to Claude seats of its own (the Agent tool, in the lead's session): Sonnet 5.5 for a specified piece (a doc update, a brief, reading a diff against its brief, a lookup), another Opus 5.5 for a design question or a fresh review. They count toward the lead's seven, and they do not run tests or builds here: those go to the Mac. A lead starts no new sessions; there are four leads and that number stays.
 
 ## The documentation of what we build with
 
@@ -106,6 +113,17 @@ Nate: "remember to account for all documentation for relevant platforms, languag
 
 - Test what can break and what a person would see break: one test per real failure mode, the edges of money and state, each join between two parts. Do not test the same thing at three levels, do not test a constant, and do not rerun a suite that did not change. A piece is done when its own checks pass and a fresh reader has read the diff, not when every test in the repo has run again.
 - Every piece ends with a number someone can check: accuracy against real data, time to answer, cost per call, share of shown numbers with a citation, endpoints on engines against on examples. Record the number, the command that produced it and the date on the lead's rows of [the board](../../../../spec/plans/board.md) and in the spec or feature page it belongs to. A number that got better says what it was before.
+- The benchmark these numbers feed is [spec/benchmark.md](../../../../spec/benchmark.md), ten rows measured on one fixed set of real items through our public API ([Nate](../../../../product/words.md#2026-11-15-nate-the-benchmark-measures-specbenchmarkmd)). A lead's measurement is taken in that benchmark's terms wherever a row covers it, so it can go straight onto the page, not a private timing of an inner function:
+
+| Row of the benchmark | Lead |
+|---|---|
+| The runner and the scorer (`bench/run.mjs`, `bench/score.mjs`), and the first small run of ours: 20 items across five families | integration |
+| 1 coverage, 2 breadth per answer, 3 sources shown, 8 speed to first and full answer (p50 and p95, never an average), 10 sale to delist | integration, from the runner's records |
+| 7 price accuracy by family, with the range's width beside it | engines, from the backtest on real sold data |
+| 4 sold prices across sites, 6 freshness, 9 thin evidence, and the speed and cost of each site's read path behind row 8 | the orchestrator, with the harnesses |
+| The tables, the dashboard and the Genie space that show the run | databricks |
+
+  The rivals' side (two people asking each tool by hand the same day) and which rivals are named are Nate's and Ben's.
 - Docs change in the same commit as the thing they describe. A reader who opens the board should see what is proved without asking anyone.
 
 ## Problems
@@ -122,5 +140,7 @@ The orchestrator (Fable 5.2) oversees the four leads and answers to Nate. A lead
 - Nate's and Ben's words go verbatim into `product/words.md`; a lead's own idea is marked *agent proposal*.
 
 ## Talking to each other
+
+Nobody waits idle, and no worker ever waits. What one seat needs from another is a row in [who is waiting on what](../../../../spec/plans/waiting.md), with one owner and what the waiter builds meanwhile; read its five rules and keep your rows true.
 
 A lead that needs something from another area sends the orchestrator one message naming the file, the change and why. A lead reports at the end of each piece: what is now true, the command that proves it, what is open.
