@@ -8,6 +8,7 @@
 * { box-sizing: border-box; }
 html { background: var(--page); color: var(--ink); scroll-padding-top: var(--s-6); }
 body { margin: 0; font-family: var(--font-text); font-size: var(--t-15); font-weight: var(--w-text); line-height: var(--lh-15); overflow-wrap: anywhere; }
+.brand-icon { flex-shrink: 0; }
 button, input, textarea { font: inherit; color: inherit; }
 button, a, summary { -webkit-tap-highlight-color: transparent; }
 button, summary { cursor: pointer; }
