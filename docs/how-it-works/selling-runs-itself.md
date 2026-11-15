@@ -44,21 +44,23 @@ The same logic picks the sites. [D1](../../spec/determinations/listing-and-marke
 
 ## How the agent reaches each site
 
-On every site the app first uses its own adapter over your signed-in session: a cloud browser keeps your login in a saved profile ([connect spec](../../spec/features/connect.md)). A site's official API is the last fallback, used only where ours cannot be made to work. The app never holds your password.
+On every site the app first uses its own adapter over your signed-in session ([connect spec](../../spec/features/connect.md)). You link eBay through eBay's own sign-in. Every other site is linked once: you get a sign-in link that opens the site's real login in a page we host, and you sign in yourself. After that the app is your own agent, acting on your session because you signed off on it ([Nate](../../product/words.md#2026-11-14-nate-the-person-signs-off-so-it-is-their-own-agent-acting)). If a session expires, the app asks you to sign in again. It keeps no password unless you turn on saved passwords, which are off by default: then the password is stored encrypted, only the sign-in job can read it, every read is recorded, and one tap deletes it ([Nate](../../product/words.md#2026-11-14-nate-passwords-are-kept-opt-in-as-encrypted-secrets-we-cannot-see)). A site's official API is the last fallback, used only where ours cannot be made to work.
+
+The session runs in one of four places, and we run every one of them ourselves, with no browser vendor and no paid fetcher ([Nate](../../product/words.md#2026-11-14-nate-host-all-engines-ourselves-and-can-the-persons-own-device-do-the-work), [Nate](../../product/words.md#2026-11-14-nate-we-do-not-pay-for-apify-priced-tools-prove-it-can-be-done-and-ours-is-free)): the phone's own web view while the app is open; a browser we host on our own computers, with one steady US address per account; plain requests that carry the session; and an optional browser extension.
 
 | Site | Route | Sale signal |
 |---|---|---|
-| eBay | Cloud browser, saved profile; official API with OAuth as last fallback | A push notification, in seconds |
-| Depop | Cloud browser, saved profile; its API as last fallback if a partner key is granted | Webhooks, in seconds |
-| Poshmark | Cloud browser, saved profile | A sale email wakes a check, about 2 minutes (inferred) |
-| Mercari | Cloud browser, saved profile | A sale email or poll, about 2 minutes (inferred) |
-| Facebook Marketplace | Cloud browser, saved profile | No source found, so the check is paced by you |
+| eBay | Signed-in session; official API through eBay's sign-in as last fallback | A signed push from eBay, checked before it is trusted, in seconds; whether to use it is still open |
+| Depop | Signed-in session; Depop gives us no partner access, so there is no API fallback ([Nate](../../product/words.md#2026-11-14-nate-no-depop-partner-access-so-build-an-ai-driven-workaround)) | Watchers on your notifications, inbox, offers and orders |
+| Poshmark | Signed-in session | The public listing page, checked every 1 to 2 minutes, shows it sold; the signed-in read confirms |
+| Mercari | Signed-in session | The public listing page, checked every 1 to 2 minutes, shows it sold; the signed-in read confirms |
+| Facebook Marketplace | Signed-in session | Watchers, paced by how busy the item is |
 
-Each site has its own harness with the same verbs: post, revise, end, relist, read the inbox, send a message, read and answer offers, read orders and read stats. The cloud browser is Browser Use, with one profile and one stable US address per account.
+Each site has its own harness with the same verbs: post, revise, end, relist, read the inbox, send a message, read and answer offers, read orders and read stats. A watcher is a signed-in read on a timer: every 1 to 2 minutes while something is happening, every 15 minutes while the item is live, hourly when it is quiet. Sale email is not used. *Agent proposal* from the [protocol](../../spec/engines/protocol-and-adapters.md#36-how-every-event-reaches-the-system-agent-proposal) and Ben's [packet 44](../../.agents/team/packets/sold/44-cheap-sale-detection.md); Ben's agreement not recorded on this wording.
 
 The browser is slow, so the harness records the site's own calls once and later repeats them from inside your session ([replay spec](../../spec/features/replay.md)). A delist then takes about 3 seconds instead of 1 to 4 minutes (asserted, and timed runs will decide). If a site changes and a call fails, the harness drives the browser again under the same key.
 
-The terms of eBay, Poshmark and Mercari ban automated means whatever the route, so a risk line is shown for each until a site gives a written allowance.
+The terms of eBay, Poshmark and Mercari ban automated means whatever the route. The app acts as your own agent on your own session after your sign-off, and a risk line is shown for each site until it gives a written allowance.
 
 ## One loop, two triggers
 
@@ -75,7 +77,7 @@ flowchart LR
   F --> H[Event and trace, then act or set next check]
 ```
 
-An event is a push from a site or a hint from a sale email. A schedule is a sweep of listings whose next check is due. Starting values: a pending offer, minutes; a waiting buyer, 15 to 60 minutes; a quiet listing, 6 to 24 hours. Every job carries a key such as `delist:{item}:{site}`, so a retry never acts twice. After any outward action the harness reads the site to confirm it happened, because an accepted call may have changed nothing.
+An event is a signed push from a site, a watcher that saw something change, or a public listing page that shows the item sold. A schedule is a sweep of listings whose next check is due. Starting values: a pending offer, minutes; a waiting buyer, 15 to 60 minutes; a quiet listing, 6 to 24 hours. Every job carries a key such as `delist:{item}:{site}`, so a retry never acts twice. After any outward action the harness reads the site to confirm it happened, because an accepted call may have changed nothing.
 
 ## What runs without a tap
 
@@ -104,9 +106,9 @@ When a buyer asks to collect, the app offers a slot inside your pickup hours at 
 
 ## When it sells
 
-A paid order, read back from the site, is the only trigger. A sale email never proves a sale, and an unpaid offer pauses the item without delisting it ([sold spec](../../spec/features/sold.md)).
+A paid order, read back from the site, is the only trigger. A public page or a push only wakes the check, it never proves a sale, and an unpaid offer pauses the item without delisting it ([sold spec](../../spec/features/sold.md)).
 
-1. **Delist everywhere else.** One job per other listing, with in-flight posts and revisions cancelled first. Retries back off from 5 seconds to 2 minutes, then use the cloud browser. A delist counts only after read-back. A listing still buyable after 5 minutes turns red, and then the app asks you.
+1. **Delist everywhere else.** One job per other listing, with in-flight posts and revisions cancelled first. Retries back off from 5 seconds to 2 minutes, then use our hosted browser. A delist counts only after read-back. A listing still buyable after 5 minutes turns red, and then the app asks you.
 2. **Shipping.** One card carries the site's label, the box and the weight from your measurements. Buying the label asks until you have approved it 3 times unedited.
 3. **Pickup instead.** The booked slot at the saved spot, closed by a buyer code or your tap.
 4. **After handover.** Delivered, "Money arrives Tue", a request for a review, then Done.
@@ -117,7 +119,7 @@ If two buyers pay on two sites, a `double_sale` card names both and the cost of 
 
 - **Starting values.** The title weights, the three price paths and the free-shipping figure have no study behind them. Sell-through per plan on our own sales will decide.
 - **What no source can tell.** The sites' real ranking weights, whether sharing or relisting helps, the best hour to post, and the lift from promotion. The app shows none of these as fact.
-- **Sale detection.** The 2 minute lag for Poshmark and Mercari is inferred, and Facebook has no event source. Facebook's title limit is three surfaces, not three values: the partner catalog takes 200 (65 recommended), the consumer form about 99 with a warning at 100, and 150 has no source ([settled note, row 11](../../research/watch/nate/open-items-settled-sites-and-rivals.md)), so the app aims for 60.
+- **Sale detection.** The 1 to 2 minute public-page check on Poshmark and Mercari is a starting value, whether eBay's push is used is open, and Facebook has no event source of its own. Facebook's title limit is three surfaces, not three values: the partner catalog takes 200 (65 recommended), the consumer form about 99 with a warning at 100, and 150 has no source ([settled note, row 11](../../research/watch/nate/open-items-settled-sites-and-rivals.md)), so the app aims for 60.
 - **The spec disagrees with itself in places.** Cadences now sit in one place: `reconcile` runs nightly ([connect](../../spec/features/connect.md#read-back-and-reconcile)) and every other check follows `next_check_at` at the tiers in card 15. The delist bar is one value, owned by [sold](../../spec/features/sold.md#how-we-will-know-it-works). The site clocks for cancelling and shipping conflict, and the plan recommends the shorter one.
 - **Open choices.** Whether buyers are told an assistant is answering (one study found disclosure cut purchases by about 80%, against California and EU rules), and whether replay keeps its own spec.
 

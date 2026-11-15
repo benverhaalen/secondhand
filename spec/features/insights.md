@@ -28,7 +28,7 @@ A sale ends on the amount kept: no confetti, streaks, countdowns or guilt copy (
 | Kept versus sold | Money in versus money released ([fees and taxes](../../research/price/nate/fees-and-taxes.md)) | Kept counts `released` orders only; sold-not-released shows as On its way | Unpaid money can still be refunded or disputed; product's states include `claim_window`, `return_open`, `dispute_open` | A site that never reports release: "Got paid?" tap, stored as `you_said` |
 | Goal counts | Sold amount (Nate) or kept (Ben); a count of sales ([seller metrics](../../research/today/nate/seller-metrics-and-notifications.md)) | Kept after fees, sold amount one tap away | It is the number the person can spend | Goal use in a test group ([coverage](../coverage.md) row 3) |
 | Peer comparison | Compare to other sellers (OneShop); compare sites ([seller metrics](../../research/today/nate/seller-metrics-and-notifications.md)) | By site only, from the person's own sales | Few precedents, and others' data is not ours to show | Test group asks for it |
-| Fee source | Site APIs and CSVs; typed estimates | API or CSV where it exists, else "estimated" marked | eBay Sell Finances, Depop partner API or CSV, Mercari Gross Sales Report, Poshmark CSV; Facebook none ([analytics](../../research/data/nate/analytics-and-recommendations.md)) | A site adds an API |
+| Fee source | Site APIs and CSVs; typed estimates | API or CSV where it exists, else "estimated" marked | eBay Sell Finances, Depop CSV or the signed-in read (no partner access), Mercari Gross Sales Report, Poshmark CSV; Facebook none ([analytics](../../research/data/nate/analytics-and-recommendations.md)) | A site adds an API |
 | Free questions | Genie over rollup views; fixed list only ([databricks.md](../databricks.md) §5.7) | Fixed list first, Genie behind `guarded_query` | Genie Agents take no custom tools, so the guard has to sit in front | A Genie call through the App fails the guard ([coverage](../coverage.md) row 5) |
 | Notification cadence | Per event; digest ([seller metrics](../../research/today/nate/seller-metrics-and-notifications.md)) | Push only for an offer at or above the lowest price, a deadline or a pickup; the rest about 3 batches a day (a starting value, unsourced; the rule is [managing 20](../determinations/managing-and-buyers.md#20-what-to-notify-now-in-a-batch-or-not-at-all)) | Fitz 2019 on batching, carried via coverage (*asserted*); batched seller notifications are untested | Opens and opt-outs in a test group |
 | Profit | Ask what they paid; use purchase price only | Purchase price only, never asked | Principle 10 ([user-wants](../../research/cross-cutting/ben/user-wants.md)) | The person's own entry, shown as `you_said` |
@@ -76,6 +76,10 @@ The display state of a range (shown, wide, hidden) is [money D6](../determinatio
 ## Goals (*agent proposal*, Nate's)
 
 `goal`: `{month, target_cents, target_sales?, progress}`; `progress` is derived from `order`, never stored. `PUT /v1/goals/:month` sets it. Rules: the bar counts Kept; a refund after release lowers progress with an `event`; hitting the target ends in the amount kept, no celebration; a missed month is not mentioned. Only OneShop and Vendoo mention goals in the research ([seller metrics](../../research/today/nate/seller-metrics-and-notifications.md), *observed*, *inferred*), so the evidence is weak and the deciding test is goal use in a test group. The progress method is [money D21](../determinations/money.md#d21-goal-progress).
+
+## Storefront success score (*agent proposal*)
+
+Each listing carries one success score, 0 to 100, shown as a band with its word ([score](score.md#the-success-score-agent-proposal-answered-by-nate), [Nate](../../product/words.md#2026-11-14-nate-the-system-runs-the-storefront-learns-the-person-and-scores-every-listing-with-one-success-score)). The You tab rolls it up for the whole storefront: the listing scores averaged, each weighted by its expected keep, per site and overall. Tapping the roll-up lists the listings pulling it down, lowest first, each with the one change that would raise it most. It reads the same `score` rows the listing does and stores nothing of its own. Hidden when no live listing has a score yet. Ben's agreement not recorded; the colours are Ben's.
 
 ## Analytics suite (*agent proposal*)
 
@@ -199,6 +203,8 @@ Retention here is a hypothesis (*agent proposal*, Nate): people return when some
 | eBay's licence limits cross-service performance comparison and pricing models; Ben's and Nate's notes number the clause differently | observed | [fees and taxes](../../research/price/nate/fees-and-taxes.md), [comps sources](../../research/price/ben/comps-sources-live.md) | By site uses our own sales only; eBay rows carry `may_share` false, enforced |
 | Fee base differs per site, so net needs shipping and tax | inferred | [fees and taxes](../../research/price/nate/fees-and-taxes.md) | same |
 | Items under $15 sell within 30 days 8.6% of the time, $100 to $249.99 27.6% | observed | [pitch evidence](../../research/cross-cutting/ben/pitch-evidence.md) | same |
+| Facebook reports views, clicks and message threads in the Seller app, and saves and shares in web Insights, read by the harness, not an API | observed (app), asserted (web) | [levers-and-signals](../../research/list/ben/levers-and-signals.md) | same |
+| Mercari "views" are impressions in search and feeds, updated daily; clicks are listing opens; so a Mercari view is not an eBay view | observed | [levers-and-signals](../../research/list/ben/levers-and-signals.md) | same |
 
 Rules that stay: buyers' personal data is not shown or kept, and the risk to a real marketplace account is shown per site.
 
