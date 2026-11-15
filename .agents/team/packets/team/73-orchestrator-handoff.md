@@ -4,7 +4,9 @@ Updated: November 15, 2026, about 10:15 UTC. Owner: Nate. Agent: Claude Code, th
 
 The orchestrator holds the whole backend for Nate: it starts and briefs the team leads, takes the problems that change what was imagined, owns the site harnesses and the cloud browser (`app/src/edge/harness/`, `app/src/edge/browser/`), and records what Nate says in [words](../../../../product/words.md). Read first: [packet 55](55-team-leads-and-mac-workers.md), [completion](../../../../spec/plans/completion.md), [where the backend is not optimized](../../../../spec/plans/optimization-gaps.md), then the lead handoffs below.
 
-## 0a. Where things stand at 14:45 UTC on 2026-11-15, and what the orchestrator does next
+## 0a. Where things stand at 14:26 UTC on 2026-11-15, and what the orchestrator does next
+
+A note on times: the orchestrator wrote times from memory after 13:50 UTC and they run up to fifteen minutes fast (the halt marked 14:25 was sent at about 14:17; "14:35" was about 14:22). The machine clock (`date -u`) is the truth; it read 14:26 UTC when this was written.
 
 Judging is at 19:00 UTC. Nate's goal: "is to finalize all systems, test, fix, get them realized". His last instruction (14:35 UTC): "Give ben a full packet of plans, and ill compact and you will return to full /goal build and test and wire the backend to see it working". The plan packet for Ben is [97](97-the-plan-from-here-for-ben.md). Everything below section 0a is older.
 

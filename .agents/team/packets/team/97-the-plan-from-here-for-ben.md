@@ -1,6 +1,6 @@
 # 97: the whole plan from here, for Ben
 
-Updated: November 15, 2026, 14:40 UTC. Owner: Ben. For: Ben. From: Nate's side (the orchestrator, Claude Code). Status: the plan Nate's side is working to until judging at 19:00 UTC, and after it. Nate asked for this packet ([words](../../../../product/words.md#2026-11-15-nate-a-full-packet-of-plans-for-ben-then-back-to-building-and-wiring-the-backend)).
+Updated: November 15, 2026, 14:26 UTC by the machine clock (times the orchestrator wrote from memory since 13:50 UTC, here and in packets 84, 94 and 95, run up to fifteen minutes fast). Owner: Ben. For: Ben. From: Nate's side (the orchestrator, Claude Code). Status: the plan Nate's side is working to until judging at 19:00 UTC, and after it. Nate asked for this packet ([words](../../../../product/words.md#2026-11-15-nate-a-full-packet-of-plans-for-ben-then-back-to-building-and-wiring-the-backend)).
 
 Read this one; it replaces having to read 84, 92 to 96 in order. Section 5 is what we need from you.
 
