@@ -143,6 +143,27 @@ CASES.push(['B9', 'an item with no photo', deck('<div data-item><p class="b">Car
   ['B3', 'a web footer wordmark at the wrong size for the width', web('<p style="font-size:18px">Sell used things</p>').replace('var(--t-hero)', '86.5px'), /B3 .*390 wide it is 21 or 50 px/, 'web'],
   ['B30', 'too many words on a story frame', STORY('<p class="m" style="font-size:120px">secondhand</p>').replace('Listed in a minute', 'Used things sell faster with good photos and honest words'), /B30 .*10 words/, 'story'],
   ['B3', 'a story wordmark before the end card', STORY('<p style="font-size:48px">Sold</p>').replace('<p style="font-size:48px">Listed', '<p class="m" style="font-size:120px;text-align:center;margin-bottom:96px">secondhand</p><p style="font-size:48px">Listed'), /B3 view 1 carries the wordmark/, 'story']);
+// What a fresh agent got past the checker, and what it failed that was on brand (brand/explore/system-audit, 2026-11-15).
+test('render: a row under a solid bar, a toast that has faded out, a label for screen readers, a focus ring, a disabled button and a heading with a second phrase all pass', { skip: !pw }, async () => {
+  assert.deepEqual(await ids(app(`<div style="position:relative;padding:0 20px;margin-top:16px"><p style="font-size:15px;color:var(--ink-disabled)">Under the bar</p><div style="position:absolute;inset:0;background:var(--page)"></div></div>
+    <p style="font-size:15px;opacity:0;font-family:Arial;padding:0 20px">Gone</p><span style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;font-family:Arial">For a screen reader</span>
+    <div style="padding:16px 20px"><button style="${PILL};box-shadow:var(--focus-ring);border:1px solid var(--outline)">Accept $38</button>
+    <button disabled style="font:500 15px var(--font-text);background:var(--gray);color:var(--ink-disabled);border:0;border-radius:var(--r-pill);padding:16px 32px;margin-top:16px">Send</button>
+    <h1 style="font:600 36px/1.125 var(--font-display);white-space:nowrap;margin-top:16px">Today <span style="color:var(--ink-2)">here</span></h1></div>`), 'app'), []);
+});
+CASES.push(['B15', 'text that taps pass through, in a face that is not ours', deck('<p class="b" style="pointer-events:none;font-family:Arial">Listed in a minute</p>'), /B15 .*Arial/],
+  ['B15', 'Inter named as a fallback', deck('<p class="b" style="font-family:var(--font-text), Inter">Listed in a minute</p>'), /B15 .*names Inter/],
+  ['B13', 'italic text', deck('<p class="b" style="font-style:italic">Listed in a minute</p>'), /B13 .*is italic/],
+  ['A7', 'an accent in the display face', deck('<p class="h">Vêtements</p>'), /A7 .*does not hold/],
+  ['B16', 'words capitalized by CSS', deck('<p class="b" style="text-transform:capitalize">listed in a minute</p>'), /B16 .*capitalized by CSS/],
+  ['B23', 'two hyphens used as a dash', deck('<p class="b">Sold -- fast</p>'), /B23 .*"--" as a dash/],
+  ['B12', 'an amount in euros with the sign after it', deck('<div><p style="font-size:200px">46,95 €</p></div>'), /B12 .*nothing beside it/],
+  ['B10', 'a black button with square corners on a slide', deck('<span class="b" style="display:inline-block;background:var(--ink);color:var(--page);border-radius:8px;padding:16px 32px">Accept the offer</span>'), /B10 .*black button/],
+  ['B5', 'a pinwheel gradient', deck('<div style="height:160px;background:conic-gradient(var(--sky),var(--mint),var(--lime),var(--sky))"></div>'), /B5 .*conic gradient/],
+  ['B28', 'a slide left unmarked between marked slides', `${TITLE}<section class="s"><p class="b" style="font-family:Arial">Nobody checks this</p></section>${END}`, /B28 .*"Nobody checks this" sits outside every data-view/],
+  ['B28', 'a page zoomed to one and a half times', `<style>body{zoom:1.5}</style>${app('')}`, /B28 .*zoomed or scaled/, 'app'],
+  ['B14', 'two lines at the peak size on an app screen', app('<div style="padding:0 20px"><p style="font-size:50px">Big words</p><p style="font-size:50px">More big words</p></div>'), /B14 .*one peak number/, 'app'],
+  ['B3', 'a story wordmark at the top of its end card', STORY('<p class="m" style="font-size:120px;align-self:start;margin-top:250px">secondhand</p>'), /B3 .*goes center/, 'story']);
 // Edge states. The checker refills every slot marked data-fill with each piece of extreme content in .agents/ui-states.json and checks the view again.
 const SLOT = 'font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
 test('render: a tile of a fixed size that ends long text with an ellipsis and keeps its photo slot passes with every extreme', { skip: !pw }, async () => {

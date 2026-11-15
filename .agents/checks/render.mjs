@@ -9,20 +9,22 @@ const warn = (id, where, msg) => ({ level: 'warn', id, where, msg });
 
 export const RING = ['lilac', 'sky', 'aqua', 'mint', 'lime', 'marigold', 'peach', 'pink'];
 const SITES = /\b(?:eBay|Poshmark|Depop|Mercari|Grailed|OfferUp|Etsy|Vinted|Facebook Marketplace)\b/;
-const MONEY = /^[\s(]*[-+]?[$€£¥]\s?\d[\d,.]*[kKmM]?[\s)]*$/;
+const MONEY = /^[\s(]*[-+]?(?:[A-Z]{2,3})?\p{Sc}\s?\d[\d,.]*[kKmM]?[\s)]*$|^[\s(]*[-+]?\d[\d,.]*\s?\p{Sc}[\s)]*$/u;
 
 // "rgb(1, 2, 3)" or "rgba(1, 2, 3, 0.5)" as [r, g, b, a]. Anything else (oklch(), color()) is not a token value.
 export const rgba = s => { const m = /^rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/.exec(s ?? ''); return m ? [+m[1], +m[2], +m[3], m[4] == null ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : +m[4]] : null; };
 const hex = ([r, g, b]) => '#' + [r, g, b].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
 const over = (top, under) => [0, 1, 2].map(i => top[i] * top[3] + under[i] * (1 - top[3]));
-const near = (a, b, room = .5) => Math.abs(a - b) <= room;
+const near = (a, b, room = .15) => Math.abs(a - b) <= room;
 const turn = (a, b) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
 const short = s => { const t = s.replace(/\s+/g, ' ').trim(); return `"${t.length > 40 ? t.slice(0, 37) + '...' : t}"`; };
 
 // Words as the constitution counts them: two characters are a word in Chinese, Japanese and Korean (Art. 6, Any language).
+const SEG = new Intl.Segmenter(undefined, { granularity: 'word' });
 export const words = s => { const cjk = (s.match(/[぀-ヿ㐀-鿿가-힯]/g) ?? []).length;
-  return Math.ceil(cjk / 2) + (s.replace(/[぀-ヿ㐀-鿿가-힯]/g, ' ').match(/[\p{L}\p{N}][\p{L}\p{N}'’.,$%-]*/gu) ?? []).length; };
-export const allCaps = s => { const l = s.match(/\p{L}/gu) ?? []; return l.length >= 4 && s === s.toUpperCase() && s !== s.toLowerCase(); };
+  return Math.ceil(cjk / 2) + [...SEG.segment(s.replace(/[぀-ヿ㐀-鿿가-힯]/g, ' ').replace(/(\d)[.,](?=\d)/g, '$1'))].filter(x => x.isWordLike).length; };
+// Capitals are read from the letters that have a case, leaving out words with a digit in them (a postcode, a model number).
+export const allCaps = s0 => { const s = s0.split(/\s+/).filter(w => !/\d/.test(w)).join(' '), l = s.match(/[\p{Lu}\p{Ll}]/gu) ?? []; return l.length >= 4 && s === s.toUpperCase() && s !== s.toLowerCase(); };
 export const titleCase = s => { const w = s.trim().split(/\s+/).filter(x => /^\p{L}{4,}$/u.test(x)); return w.length >= 3 && w.every(x => x[0] !== x[0].toLowerCase()); };
 
 // The colors a medium may use, by token name: { light: { ink: 'rgb(10, 10, 10)', ... } } as the browser computes them.
@@ -38,6 +40,7 @@ const size = el => [el.rect[2] - el.rect[0], el.rect[3] - el.rect[1]];
 // A pill by shape: the token, or a corner as round as the box allows.
 const pill = el => el.radius.some(r => r === '50%' && Math.abs(size(el)[0] - size(el)[1]) > 1 || parseFloat(r) >= 999 || !r.endsWith('%') && parseFloat(r) >= Math.min(...size(el)) / 2 - .5);
 const act = (el, pal) => ['ink', 'ink-press'].includes(pal.name(el.bg)) && pill(el) && el.hasText;
+const cy = el => (el.rect[1] + el.rect[3]) / 2;
 
 // A gradient is a state tag when it runs from one hue's tint to its fill (ledger L18). Any other gradient is a field (C2).
 function gradientKind(el, pal) {
@@ -74,17 +77,21 @@ function checkView(view, ctx) {
   for (const t of text) {
     const q = short(t.text), g = ground(t, view, pal), color = rgba(t.color), name = pal.name(t.color);
     // B15 faces, B13 weights
+    if (/(?:^|,)\s*["']?inter(?: [\w ]+)?["']?\s*(?:,|$)/i.test(t.family)) E('B15', q, 'names Inter in its font list: Inter is banned, even as a fallback (Art. 6)');
     if (!t.display && !t.textFace) E('B15', q, `is set in ${t.family.split(',')[0]}: the faces are the text face and the display face from tokens.css (Art. 6)`);
     if (!scales.weight.has(t.weight)) E('B13', q, `is weight ${t.weight}: the weights are ${[...scales.weight].join(', ')} (Art. 6.1)`);
     else if (t.display !== (t.weight === 600)) E('B13', q, `is ${t.display ? 'the display face' : 'the text face'} at ${t.weight}: 600 is the display face's one weight and no other face uses it (Art. 6.1)`);
     else if (t.weight === 500 && !sheet.act) E('B13', q, `is weight 500: medium is for button labels and the selected tab, and a ${medium} has neither (Art. 6.1)`);
-    else if (t.weight === 500 && !t.control) E('B13', q, 'is weight 500 and is not a button label or the selected tab: everything else is 400, and stands out by size or ink (Art. 6.1)');
+    else if (t.weight === 500 && !t.control) E('B13', q, 'is weight 500 and is not a button label: everything else is 400, and stands out by size or ink (Art. 6.1)');
+    if (t.italic) E('B13', q, 'is italic: the faces have no italic, so this is a slanted fake (Art. 6)');
+    if (t.stroked && !isMark(t)) E('B13', q, 'has a stroke on its letters: that is a fake bold (Art. 6)');
     // B14 sizes
     const mark = isMark(t);
     if (mark) { if (markSizes.length && !markSizes.some(s => near(t.size, s))) E('B3', '', `the wordmark is ${t.size} px: on a ${medium}${Array.isArray(sheet.wordmark.sizes) ? '' : ` ${view.canvas[0]} wide`} it is ${markSizes.join(' or ')} px (Part III)`); }
     else if (t.size > top + .5) { if (!sheet.peak || t.size > sheet.peak + .5) E('B14', q, `is ${t.size} px: the largest size on a ${medium} is ${sheet.peak ?? top} (Part III)`); }
     else if (!sizes.some(s => near(t.size, s))) E('B14', q, `is ${t.size} px: the sizes on a ${medium} are ${sizes.join(', ')} (Part III)`);
     // A7 where the display face goes
+    if (t.display && /[^\x20-\x7E‘’“”…]/.test(t.text)) E('A7', q, 'has letters the display face does not hold (it has no accents and one script): the text face takes this line (Art. 6)');
     if (t.display && !mark) {
       if (/\d/.test(t.text)) E('A7', q, 'sets a number in the display face: amounts and numbers are in the text face (Art. 6)');
       if (t.size < 21 * u - .5) E('A7', q, `is the display face at ${t.size} px: it is for the wordmark and headings of ${21 * u} px and up (Art. 6)`);
@@ -96,16 +103,18 @@ function checkView(view, ctx) {
     // B6 what the text sits on
     if (g.kind === 'photo') E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
     else if (g.kind === 'field' || g.kind === 'tag' || (g.name && hueOf(g.name))) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && pal.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'the field'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
-    else if (g.kind === 'fill' && color) { const c = contrast(hex(over(color, g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
+    else if (g.kind === 'fill' && color && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
       if (c < need) E('B6', q, `has ${c.toFixed(1)}:1 contrast with what is behind it; it needs ${need}:1 (Art. 5.1)`); }
     // B16 case, B23 words, B11 site names
     if (!mark) {
       if (t.upper || allCaps(t.text) && words(t.text) > 1) E('B16', q, 'is all capitals: sentence case everywhere (Art. 6.5)');
       else if (allCaps(t.text)) W('B16', q, 'is one word in capitals: that is for a name its maker writes that way (IKEA, HDMI), never for emphasis (Art. 6.5)');
+      else if (t.caps) E('B16', q, `is ${t.caps}: sentence case everywhere (Art. 6.5)`);
       else if (titleCase(t.text)) W('B16', q, 'looks like title case: sentence case everywhere, unless these are names (Art. 6.5)');
       if (/\bSecond[Hh]and\b|\bSECONDHAND\b/.test(t.text)) E('B3', q, 'the name is written "secondhand", lowercase (C1)');
     }
     for (const h of scan(t.text)) (['O13', 'S1', 'S2'].includes(h.id) ? E : W)('B23', q, `"${h.match}" ${h.why} (product/copy.md ${h.id})`);
+    if (/\s--\s/.test(t.text)) E('B23', q, 'uses "--" as a dash: no dashes (product/copy.md O13)');
     if (SITES.test(t.text)) W('B11', q, `names ${SITES.exec(t.text)[0]} in words: where a marketplace is meant, show its logo from assets/platforms (C5)`);
     // C6 an amount says what it is
     if (MONEY.test(t.text) && t.alone) E('B12', q, 'is an amount with nothing beside it saying what it is: "You keep $46.95", not "$46.95" (C6)');
@@ -128,13 +137,14 @@ function checkView(view, ctx) {
   if (peaks.length > 1) E('B14', '', `has ${peaks.length} pieces of text above ${top} px: one peak number per view (C6)`);
   for (const t of peaks) if (!/\d/.test(t.text) || t.display) E('B14', short(t.text), `is above ${top} px and is not a number in the text face: only the one peak amount goes that large (C6)`);
   // A7 one display heading per view besides the wordmark
-  const heads = text.filter(t => t.display && !isMark(t));
-  if (heads.length > 1) E('A7', '', `has ${heads.length} display headings (${heads.map(t => short(t.text)).join(', ')}): one per view besides the wordmark (Art. 6)`);
+  // A heading with a second phrase, or one split across two pieces of markup, is one heading: count the blocks. A web window may show several sections.
+  const heads = text.filter(t => t.display && !isMark(t)), blocks = new Set(heads.map(t => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].block) return i; return t.el; }));
+  if (blocks.size > 1 && medium !== 'web') E('A7', '', `has ${blocks.size} display headings (${heads.map(t => short(t.text)).join(', ')}): one per view besides the wordmark (Art. 6)`);
   // B3 the wordmark's place
   for (const t of text.filter(isMark)) {
     if (t.text.trim() !== 'secondhand') E('B3', '', `the wordmark reads "${t.text.trim()}": it is "secondhand", lowercase (C1)`);
     const cx = (t.rect[0] + t.rect[2]) / 2, cy = (t.rect[1] + t.rect[3]) / 2, where = sheet.wordmark?.at, mid = near(cx, view.w / 2, 2);
-    const ok = { 'top-center': mid && cy < view.h / 4, 'top-left': cx < view.w / 2 && cy < view.h / 4 || t.size > Math.min(...markSizes) + 1, 'center': mid, 'top-or-bottom-center': mid && (cy < view.h / 4 || cy > view.h * 3 / 4), any: true }[where ?? 'any'];
+    const ok = { 'top-center': mid && cy < view.h / 4, 'top-left': cx < view.w / 2 && cy < view.h / 4 || t.size > Math.min(...markSizes) + 1, 'center': mid && cy > view.h / 3 && cy < view.h * 2 / 3, 'top-or-bottom-center': mid && (cy < view.h / 4 || cy > view.h * 3 / 4), any: true }[where ?? 'any'];
     if (!ok) E('B3', '', `the wordmark sits at ${Math.round(cx)}, ${Math.round(cy)}: on a ${medium} it goes ${where.replace(/-/g, ' ')} (C1, Part III)`);
   }
   // B32 the wordmark's kit (C1): once per view, untouched, on the page or the field, with one unit of clear space around it
@@ -153,12 +163,13 @@ function checkView(view, ctx) {
     if (near.length) E('B32', '', `${[...new Set(near)].slice(0, 3).join(', ')} sits within ${unit} px of the wordmark: nothing but its ground comes within half its type size (C1)`);
   }
   // B33 logos in a row (C5): one height, one gap, none taller than the wordmark's type
-  const rows = new Map(); for (const el of view.els) if (el.logo) rows.set(el.parent, [...(rows.get(el.parent) ?? []), el]);
-  for (const logos of rows.values()) { const hs = logos.map(l => Math.round(l.rect[3] - l.rect[1])), cap = markSizes[0];
-    if (Math.max(...hs) - Math.min(...hs) > 1) E('B33', '', `logos in one row are ${[...new Set(hs)].join(', ')} px tall: logos in a row share one height (C5)`);
+  const rows = []; for (const el of view.els.filter(e => e.logo).sort((a, b) => cy(a) - cy(b))) { const row = rows.at(-1); if (row && Math.min(row[0].rect[3], el.rect[3]) - Math.max(row[0].rect[1], el.rect[1]) >= Math.min(size(row[0])[1], size(el)[1]) / 2) row.push(el); else rows.push([el]); }
+  for (const logos of rows) { const hs = logos.map(l => Math.round(l.rect[3] - l.rect[1])), cap = markSizes[0];
+    if (Math.max(...hs) - Math.min(...hs) > 1) E('B33', '', `logos in one row are ${[...new Set(hs)].sort((a, b) => a - b).join(', ')} px tall: logos in a row share one height (C5)`);
     if (cap && logos.length > 1 && Math.max(...hs) > cap + 1) E('B33', '', `a logo is ${Math.max(...hs)} px tall: none is taller than the wordmark's type, ${cap} px on a ${medium} (C5)`);
-    const line = logos.filter(l => Math.abs(l.rect[1] - logos[0].rect[1]) < 2).sort((a, b) => a.rect[0] - b.rect[0]), gaps = line.slice(1).map((l, i) => Math.round(l.rect[0] - line[i].rect[2]));
-    if (gaps.length > 1 && Math.max(...gaps) - Math.min(...gaps) > 1) E('B33', '', `logos in one row sit ${[...new Set(gaps)].join(', ')} px apart: one gap (C5)`); }
+    // The gap is read inside one box: logos on one line in two different cards are not spaced against each other.
+    for (const p of new Set(logos.map(l => l.parent))) { const line = logos.filter(l => l.parent === p).sort((a, b) => a.rect[0] - b.rect[0]), gaps = line.slice(1).map((l, i) => Math.round(l.rect[0] - line[i].rect[2]));
+      if (gaps.length > 1 && Math.max(...gaps) - Math.min(...gaps) > 1) E('B33', '', `logos in one row sit ${[...new Set(gaps)].join(', ')} px apart: one gap (C5)`); } }
   // longest text
   const count = text.filter(t => !isMark(t)).reduce((n, t) => n + words(t.text), 0);
   if (sheet.words && count > sheet.words) E('B30', '', `has ${count} words: a ${medium} view holds ${sheet.words} at most (Part III)`);
@@ -172,7 +183,7 @@ function checkView(view, ctx) {
       if (!n) E('B7', q, `has a ${what} of ${c}, which is not a color in tokens.css: use var(--token)`);
       else if (inks && !inks.has(n)) E('B7', q, `has a --${n} line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)`); }
     // B17 space, B20 radius
-    for (const [prop, v] of el.space) if (v && !scales.space.has(Math.abs(v) / u) && !Object.values(sheet.margin).flatMap(x => typeof x === 'object' ? Object.values(x) : [x]).includes(Math.abs(v)))
+    for (const [prop, v] of Math.min(...size(el)) <= 2 ? [] : el.space) if (v && !scales.space.has(Math.abs(v) / u) && !Object.values(sheet.margin).flatMap(x => typeof x === 'object' ? Object.values(x) : [x]).includes(Math.abs(v)) && !ctx.lengths.includes(Math.abs(v)))
       E('B17', q, `${prop} is ${v} px: gaps on a ${medium} are ${[...scales.space].filter(Boolean).map(s => s * u).join(', ')} (Art. 7.1${u > 1 ? `, times ${u}` : ''})`);
     for (const r of new Set(el.radius)) { const round = r === '50%' || parseFloat(r) >= 999 || parseFloat(r) >= Math.min(...size(el)) / 2;
       if (!round && (r.endsWith('%') || !scales.radius.has(parseFloat(r) / u))) E('B20', q, `has a ${r} corner: corners on a ${medium} are ${[...scales.radius].filter(v => v && v < 999).map(v => v * u).join(', ')} or a pill (Art. 9.1${u > 1 ? `, times ${u}` : ''})`); }
@@ -186,13 +197,15 @@ function checkView(view, ctx) {
     if (el.borders.length && el.shadow) E('B21', q, 'has a border and a shadow: one depth, hairlines or one soft shadow, never both (Art. 9.2)');
     // B9 photos
     // A small picture with alt="" is an icon that says nothing, which is how HTML marks one. A photo or a logo says what it is.
-    if (el.tag === 'img' && (el.noAlt || !el.alt && (el.logo || Math.max(...size(el)) > 32 * u))) E('B9', q, 'is an image with no alt text: say what the photo shows, or name the logo (C3, C5)');
+    if (el.tag === 'img' && (el.noAlt || !(el.alt ?? '').trim() && (el.logo || Math.max(...size(el)) > 32 * u))) E('B9', q, 'is an image with no alt text: say what the photo shows, or name the logo (C3, C5)');
     if (el.item && !holdsPhoto.has(view.els.indexOf(el))) E('B9', q, 'is an item with no photo in it: every item is shown by its photo (C3)');
     // C4 the act
+    if (!sheet.act && !act(el, pal) && ['ink', 'ink-press'].includes(pal.name(el.bg)) && el.hasText && size(el)[0] * size(el)[1] < .1 * view.w * view.h) E('B10', q, `is a black button: a ${medium} has no buttons, so the act is a plain line (Part III)`);
     if (act(el, pal) && !sheet.act) E('B10', q, `is a black pill: a ${medium} has no buttons, so the act is a plain line (Part III)`);
     // gradients
     if (el.gradient) {
       if (el.gradient.repeating) E('B5', q, 'uses a repeating gradient: the field has no lines and no grain (C2)');
+      if (el.gradient.conic) E('B5', q, 'uses a conic gradient: the field is soft points of color, with no edges (C2)');
       if (gradientKind(el, pal) === 'field') fields.push(el);
     }
   }
@@ -209,12 +222,15 @@ function checkView(view, ctx) {
   // two black pills side by side
   // C4 one act per decision: two black pills never share a box, or a card (the nearest thing marked data-part)
   const acts = view.els.filter(el => act(el, pal)), card = a => { for (let i = a.parent; i >= 0; i = view.els[i].parent) if (view.els[i].part) return i; return -1; };
-  for (const p of new Set(acts.map(a => a.parent))) if (acts.filter(a => a.parent === p).length > 1) E('B10', '', 'has two black pills side by side: one black pill per decision (C4)');
-  for (const c of new Set(acts.map(card))) if (c >= 0 && acts.filter(a => card(a) === c).length > 1 && new Set(acts.filter(a => card(a) === c).map(a => a.parent)).size > 1) E('B10', `[${view.els[c].part}]`, 'holds two black pills: one per card (C4)');
+  // Side by side is read from where they sit: two full-size black pills on one row. A selected chip is black too, and smaller.
+  const big = acts.filter(a => size(a)[1] >= 44 * u - 1);
+  if (big.some((a, i) => big.slice(i + 1).some(b => Math.abs(cy(a) - cy(b)) < size(a)[1] / 2))) E('B10', '', 'has two black pills side by side: one black pill per decision (C4)');
+  for (const c of new Set(big.map(card))) if (c >= 0 && big.filter(a => card(a) === c).length > 1 && !/list|grid|feed/.test(view.els[c].part)) E('B10', `[${view.els[c].part}]`, 'holds two black pills: one per card (C4)');
   // B8 color share
   // A view the field fills is the brand's one loud moment (a title slide, an end card, a sale); judge() caps how many an output has.
   view.bleed = fields.some(el => (Math.min(el.rect[2], view.w) - Math.max(el.rect[0], 0)) * (Math.min(el.rect[3], view.h) - Math.max(el.rect[1], 0)) >= .9 * view.w * view.h);
   if (view.share && view.share.color > 1 / 3 && !view.bleed) E('B8', '', `is ${Math.round(view.share.color * 100)}% color: color covers at most a third of a view, not counting photos, unless the field fills it (Art. 5.2)`);
+  if (view.els.length > 12 && !view.els.some(e => e.part)) W('B31', '', 'marks nothing data-part, so nothing was checked for one size: mark each kind of repeated thing');
   // L2 not only black and white: a view with no color and no photo. A warning, because a closing slide may be the wordmark alone.
   if (view.share && view.share.color < .005 && !view.els.some(e => e.photo)) W('L2', '', 'is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)');
   view.fields = fields.length;
@@ -236,9 +252,14 @@ function underStress(view, base, baseOut, ctx) {
 
 // facts: { views: [...], stressed: [...], fontsLoaded }, as scripts/brand-check.mjs collects them. Returns the findings.
 export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
-  const pal = palette(colors), ctx = { medium, sheet, scales, pal }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
+  const pal = palette(colors), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [] }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
   const byIndex = new Map(facts.views.map((v, i) => [v.index, i])), stress = (facts.stressed ?? []).flatMap(v => underStress(v, facts.views[byIndex.get(v.index)], per[byIndex.get(v.index)], ctx));
   const once = new Set(); for (const o of stress) { const k = `${o.where} ${o.msg}`; if (!once.has(k)) { once.add(k); out.push(o); } }
+  // B28 everything that shows was measured
+  if (!facts.views.some(v => v.texts.length)) out.push(err('B28', medium, 'no text was measured, so nothing was checked: is this the right file?'));
+  if (facts.scaled) out.push(err('B28', medium, 'the page, or a view, is zoomed or scaled: a view is drawn at its real size (Art. 7.6)'));
+  if (facts.outside?.length) out.push(err('B28', medium, `${facts.outside.map(short).join(', ')} sits outside every data-view, so nothing checked it: put it in a view or take it out`));
+  if (facts.screens > 40) out.push(err('B28', medium, `the page is ${facts.screens} screens tall and the first 40 were checked: mark its sections data-view, or split it`));
   // B35 a thing that names itself draws every state it can be in: data-screen="today" data-state="empty" on a view, data-job or data-control on a part
   const drawn = new Map(), note = (m, at) => { if (!m) return; for (const [kind, name] of Object.entries(m.names)) { const k = `${kind} ${name}`, d = drawn.get(k) ?? { kind, name, have: new Set(), skip: new Map(), at };
     if (m.state) d.have.add(m.state); else out.push(err('B35', at, `names the ${kind} "${name}" and no state: add data-state`));
