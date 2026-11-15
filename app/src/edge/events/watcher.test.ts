@@ -1,11 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileStore } from './file-store.ts';
 import { createWatcher, type WatchedListing, type WatcherDeps } from './watcher.ts';
 import { decide, type OfferState } from '../../engines/negotiation/choose.ts';
 import { keep } from '../../engines/valuation/keep.ts';
 import { orderBook } from '../orders/orders.ts';
-import { memoryStore, memoryParams, memoryLeases } from './ports.ts';
+import { memoryStore, memoryParams, memoryLeases, type Store } from './ports.ts';
 import { ingest } from './intake.ts';
 import { memoryAccounts, memoryVault } from '../browser/auth.ts';
 import { createHarness, fakeManifest, fail, type Adapter, type Harness, type Verb, type CallArgs } from '../harness/protocol.ts';
@@ -25,16 +28,18 @@ const atMinute = (site: Site, kind: string) => {
 const pAccept = () => 0.5;
 const requiresPAccept: undefined extends WatcherDeps['pAccept'] ? false : true = true;
 
-async function week(noLimits = false) {
+async function week(noLimits = false, path?: string) {
   let minute = 0;
   const now = () => start + minute * 60_000;
-  const store = memoryStore(), sink = memorySink();
+  let store: Store = path ? fileStore(path) : memoryStore();
+  const sink = memorySink();
   const log = createLog({ src: 'test', build: 'test', seed: 1, sink, now: () => new Date(now()) });
   const vault = memoryVault();
   const sites = ['depop', 'poshmark', 'ebay'] as const;
   const rows = sites.map(site => ({ account_id: `acc_${site}`, person_id: 'usr_walk', site, token_ref: `test_${site}` }));
   for (const row of rows) await vault.put(row.token_ref, { cookies: [], origins: [] });
   const accounts = memoryAccounts(rows, vault);
+  for (const row of rows) store.put('account', { id: row.account_id, user_id: row.person_id, site: row.site, next_check_at: new Date(start).toISOString() });
   const listings: WatchedListing[] = [...sites, 'facebook' as const].map(site => ({ listing_id: `listing_${site}`, item_id: 'it_walk', site,
     account_id: `acc_${site}`, external_id: site === 'depop' ? '999002396' : `ext_${site}`, state: 'live' }));
   const active = (site: Site, kind: string) => script.filter(s => s.site === site && s.kind === kind && s.minute <= minute);
@@ -81,14 +86,20 @@ async function week(noLimits = false) {
     return result;
   } };
   const snapshots = new Map<string, Snapshot>();
-  const watcher = createWatcher({ store, harness, accounts, leases: memoryLeases(now), params: memoryParams({ watch_cadence_s: 900, job_lease_ttl_ms: 120000, delist_max_attempts: 3 },
+  const makeWatcher = () => createWatcher({ store, harness, accounts, leases: memoryLeases(now), params: memoryParams({ watch_cadence_s: 900, job_lease_ttl_ms: 120000, delist_max_attempts: 3 },
     Object.fromEntries(sites.flatMap(site => Object.entries({ hot: 90, live: 900, quiet: 3600 }).map(([tier, cadence]) => [`watch_cadence_s@${site}/${tier}`, cadence])))), log, now,
     snapshots, listings: { byExternal: (_u, site, external) => listings.find(l => l.site === site && l.external_id === external), ofItem: () => listings },
     limits: { of: () => noLimits ? undefined : { ask_cents: 6000, floor_cents: 4500, always_accept_cents: 5800 } }, pAccept,
     readArgs: a => a.site === 'depop' ? { shop_id: 'shop_walk' } : {},
   });
+  let watcher = makeWatcher();
   const sweeps: { site: Site; minute: number; tier: 'hot' | 'live' | 'quiet' }[] = [];
   for (; minute < 10080; minute++) {
+    if (path && minute === 4320) {
+      store = fileStore(path);
+      assert.equal(store.get('account', 'usr_walk', 'acc_ebay')?.paused, 'auth_expired', 'day 4 reload preserves the stale account');
+      watcher = makeWatcher();
+    }
     if (minute === atMinute('ebay', 'auth_expired')) ingest(store, log, { user_id: 'usr_walk', account_id: 'acc_ebay', site: 'ebay', source: 'watcher_signed_in', action: 'price.changed',
       item_id: 'it_pause', listing_id: 'pause_ebay', actor: 'auto', dedupe_key: 'pause_probe', trace_id: 'week', observed_at: new Date(now()).toISOString(), effective_at: new Date(now()).toISOString(), payload: { external_id: 'pause_probe' } });
     if (minute === atMinute('ebay', 'relinked')) {
@@ -109,13 +120,14 @@ async function week(noLimits = false) {
   return { store, calls, snapshots, sweeps };
 }
 
-test('seven days: limits, drafts, stale sessions, confirmed sale, quiet cadence and deterministic dedupe', async t => {
-  const began = performance.now();
-  const a = await week();
-  const counts = (r: Awaited<ReturnType<typeof week>>) => ({ events: r.store.events().length, jobs: r.store.jobs().length,
+const counts = (r: Awaited<ReturnType<typeof week>>) => ({ events: r.store.events().length, jobs: r.store.jobs().length,
     decisions: r.store.decisions().map(d => `${d.kind}:${d.state}`).sort(),
     sweeps: Object.fromEntries(['depop', 'poshmark', 'ebay'].map(site => [site, r.calls.filter(c => c.site === site && c.verb === 'read_offers').length])),
     calls: Object.fromEntries([...new Set(r.calls.map(c => `${c.site}:${c.verb}`))].sort().map(k => [k, r.calls.filter(c => `${c.site}:${c.verb}` === k).length])) });
+
+test('seven days: limits, drafts, stale sessions, confirmed sale, quiet cadence and deterministic dedupe', async t => {
+  const began = performance.now();
+  const a = await week();
   assert.equal(a.calls.filter(c => c.site === 'facebook').length, 0);
   const answers = a.calls.filter(c => c.verb === 'answer_offer');
   assert.equal(answers.length, 1, 'only the 5900 rule answer reaches a site');
@@ -160,11 +172,20 @@ test('an offer without item limits raises a decision and never writes an answer'
   assert.ok(offers.every(e => e.payload.decision_kind === 'counter_offer' && e.payload.negotiation_ask === true));
 });
 
-function smallRig(run: Adapter['run'], overrides: Partial<Pick<WatcherDeps, 'pAccept' | 'orders'>> = {}) {
+test('seven days on fileStore with a day 4 restart has the same final counts as memoryStore', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'watcher-week-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const memory = await week();
+  const reloaded = await week(false, join(dir, 'store.json'));
+  assert.deepEqual(counts(reloaded), counts(memory), 'saved due times and pauses preserve every weekly count');
+});
+
+function smallRig(run: Adapter['run'], overrides: Partial<Pick<WatcherDeps, 'pAccept' | 'orders'>> = {}, storage: { store?: Store; due?: boolean } = {}) {
   let time = start;
   const now = () => time;
-  const store = memoryStore(), log = createLog({ src: 'test', build: 'test', sink: memorySink() });
+  const store = storage.store ?? memoryStore(), log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   const account = { account_id: 'acc_depop', person_id: 'usr_walk', site: 'depop' as const, token_ref: 'fixture' };
+  if (storage.due !== false) store.put('account', { id: account.account_id, user_id: account.person_id, site: account.site, next_check_at: new Date(start).toISOString() });
   const accounts = { async linked() { return [account]; }, async byId(id: string) { return id === account.account_id ? account : undefined; } };
   const calls: Verb[] = [];
   const adapters: Adapter[] = (['read_listings', 'read_offers', 'read_inbox', 'read_orders', 'end', 'answer_offer'] as Verb[]).map(verb => ({
@@ -179,6 +200,137 @@ function smallRig(run: Adapter['run'], overrides: Partial<Pick<WatcherDeps, 'pAc
   return { ...deps, watcher: createWatcher(deps), calls, advance: (ms: number) => { time += ms; } };
 }
 const live = { external_id: 'ext', state: 'live', price_cents: 6000 };
+
+test('watcher creates missing account rows with spread due times and preserves existing account fields', async () => {
+  const rig = smallRig(async () => ({ ok: true, data: [] }), {}, { due: false });
+  await rig.watcher.tick();
+  assert.equal(rig.calls.length, 0, 'new account must wait for its jittered first sweep');
+  const row = rig.store.get('account', 'usr_walk', 'acc_depop');
+  assert.ok(row, 'scheduler creates its account row');
+  const due = Date.parse(String(row.next_check_at));
+  assert.ok(due > start && due <= start + 3600000, 'quiet account starts within one cadence');
+  rig.store.put('account', { ...row, marker: 'keep' });
+  const restarted = createWatcher(rig);
+  await restarted.tick(); assert.equal(rig.calls.length, 0, 'restart keeps the first due time');
+  rig.advance(due - start); await restarted.tick();
+  assert.equal(rig.calls.filter(v => v === 'read_listings').length, 1);
+  assert.equal(rig.store.get('account', 'usr_walk', 'acc_depop')?.marker, 'keep', 'schedule writes preserve the rest of the row');
+});
+
+test('watcher blocked pause and one site_warning survive a day and fileStore reload until cleared', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'watcher-blocked-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'store.json');
+  let blocked = true;
+  const rig = smallRig(async () => blocked ? fail('blocked', 'fixture check', { do: 'pause_session', site: 'depop' }) : { ok: true, data: [] }, {}, { store: fileStore(path) });
+  // A prior detection already opened this decision; another sweep must join it.
+  const decision = rig.store.raiseDecision({ user_id: 'usr_walk', kind: 'site_warning', subject: 'acc_depop', why: 'fixture check', options: [] }).row;
+  await rig.watcher.tick();
+  assert.equal(rig.store.get('account', 'usr_walk', 'acc_depop')?.paused, 'blocked');
+  assert.equal(rig.store.decisions({ kind: 'site_warning' }).length, 1, 'blocked sweeps dedupe while open');
+  const store = fileStore(path), restarted = createWatcher({ ...rig, store });
+  for (let i = 0; i < 1440; i++) { rig.advance(60000); await restarted.tick(); }
+  assert.equal(rig.calls.length, 1, 'no read or job calls while blocked, including after restart');
+  assert.equal(store.decisions({ kind: 'site_warning', subject: 'acc_depop', state: 'open' }).length, 1);
+  blocked = false; await restarted.cleared('acc_depop');
+  assert.equal(store.decisions().find(d => d.id === decision.id)?.state, 'answered', 'cleared closes the account warning');
+  assert.equal(store.get('account', 'usr_walk', 'acc_depop')?.paused, null, 'cleared persists the pause removal');
+  const cleared = createWatcher({ ...rig, store: fileStore(path) });
+  await cleared.tick(); assert.equal(rig.calls.filter(v => v === 'read_listings').length, 2, 'saved clear resumes immediately');
+});
+
+test('watcher opens one warning for a new block and opens another only after clearing it', async () => {
+  const rig = smallRig(async () => fail('blocked', 'fixture check', { do: 'pause_session', site: 'depop' }));
+  await rig.watcher.tick();
+  assert.equal(rig.store.decisions({ kind: 'site_warning', subject: 'acc_depop', state: 'open' }).length, 1);
+  rig.advance(86400000); await rig.watcher.tick(); assert.equal(rig.calls.length, 1);
+  await rig.watcher.cleared('acc_depop'); await rig.watcher.tick();
+  assert.equal(rig.store.decisions({ kind: 'site_warning', state: 'answered' }).length, 1);
+  assert.equal(rig.store.decisions({ kind: 'site_warning', state: 'open' }).length, 1);
+});
+
+test('a failed site_warning write cannot persist a blocked account without its decision', async () => {
+  const memory = memoryStore(); let failDecision = true;
+  const store: Store = { ...memory, tx: fn => memory.tx(t => fn({ ...t, raiseDecision(decision) {
+    if (failDecision) { failDecision = false; throw new Error('decision write failed'); }
+    return t.raiseDecision(decision);
+  } })) };
+  const rig = smallRig(async () => fail('blocked', 'fixture check', { do: 'pause_session', site: 'depop' }), {}, { store });
+  await assert.rejects(rig.watcher.tick(), /decision write failed/);
+  assert.equal(store.get('account', 'usr_walk', 'acc_depop')?.paused, undefined, 'pause and warning must commit together');
+  await rig.watcher.tick();
+  assert.equal(store.get('account', 'usr_walk', 'acc_depop')?.paused, 'blocked');
+  assert.equal(store.decisions({ kind: 'site_warning', state: 'open' }).length, 1);
+});
+
+test('a failed resume write keeps both the account pause and its warning open', async () => {
+  const memory = memoryStore(); let failResume = true;
+  const store: Store = { ...memory, tx: fn => memory.tx(t => fn({ ...t, put(table, row) {
+    if (table === 'account' && row.paused === null && failResume) { failResume = false; throw new Error('resume write failed'); }
+    return t.put(table, row);
+  } })) };
+  const rig = smallRig(async () => fail('blocked', 'fixture check', { do: 'pause_session', site: 'depop' }), {}, { store });
+  await rig.watcher.tick();
+  await assert.rejects(rig.watcher.cleared('acc_depop'), /resume write failed/);
+  assert.equal(store.get('account', 'usr_walk', 'acc_depop')?.paused, 'blocked');
+  assert.equal(store.decisions({ kind: 'site_warning', state: 'open' }).length, 1, 'warning closes only when the resume is saved');
+  await rig.watcher.cleared('acc_depop');
+  assert.equal(store.get('account', 'usr_walk', 'acc_depop')?.paused, null);
+  assert.equal(store.decisions({ kind: 'site_warning', state: 'open' }).length, 0);
+});
+
+test('a failed relink decision cannot leave a durable auth_expired pause without its prompt', async () => {
+  const memory = memoryStore(); let failRelink = true;
+  const store: Store = { ...memory, tx: fn => memory.tx(() => fn(store)), raiseDecision(decision) {
+    if (decision.kind === 'relink' && failRelink) { failRelink = false; throw new Error('relink decision failed'); }
+    return memory.raiseDecision(decision);
+  } };
+  const rig = smallRig(async () => fail('auth_expired', 'fixture expiry', { do: 'relink', site: 'depop' }), {}, { store });
+  await assert.rejects(rig.watcher.tick(), /relink decision failed/);
+  assert.equal(store.get('account', 'usr_walk', 'acc_depop')?.paused, undefined, 'auth pause and relink prompt must commit together');
+  await createWatcher(rig).tick();
+  assert.equal(store.get('account', 'usr_walk', 'acc_depop')?.paused, 'auth_expired');
+  assert.equal(store.decisions({ kind: 'relink', state: 'open' }).length, 1);
+});
+
+test('watcher saves retry_after in account.next_check_at and respects it after restart', async () => {
+  const rig = smallRig(async () => fail('rate_limited', 'fixture wait', { do: 'retry_after', after_s: 7200 }));
+  await rig.watcher.tick();
+  assert.equal(rig.store.get('account', 'usr_walk', 'acc_depop')?.next_check_at, new Date(start + 7200000).toISOString());
+  const restarted = createWatcher(rig);
+  rig.advance(7199999); await restarted.tick(); assert.equal(rig.calls.length, 1, 'restart must not retry early');
+  rig.advance(1); await restarted.tick(); assert.equal(rig.calls.length, 2);
+});
+
+for (const paused of ['blocked', 'auth_expired', null] as const) {
+  test(`an account linked after the first tick keeps its saved deadline and pause ${paused}`, async () => {
+    const rig = smallRig(async () => ({ ok: true, data: [] }));
+    const row = rig.store.get('account', 'usr_walk', 'acc_depop')!;
+    rig.store.put('account', { ...row, paused, next_check_at: new Date(start + 7200000).toISOString() });
+    const linked = rig.accounts.linked;
+    rig.accounts.linked = async () => [];
+    await rig.watcher.tick();
+    rig.accounts.linked = linked;
+    await rig.watcher.tick();
+    assert.equal(rig.store.get('account', 'usr_walk', 'acc_depop')?.next_check_at, new Date(start + 7200000).toISOString(), 'late linking cannot overwrite a saved due time');
+    rig.advance(7199999); await rig.watcher.tick(); assert.equal(rig.calls.length, 0);
+    rig.advance(1); await rig.watcher.tick();
+    assert.equal(rig.calls.length, paused ? 0 : 4, 'late linking must honor the saved pause');
+  });
+}
+
+for (const action of ['cleared', 'relinked'] as const) {
+  test(`${action} can resume a newly linked account before its first linked tick`, async () => {
+    const rig = smallRig(async () => ({ ok: true, data: [] }));
+    const linked = rig.accounts.linked;
+    rig.accounts.linked = async () => [];
+    await rig.watcher.tick();
+    rig.accounts.linked = linked;
+    await rig.watcher[action]('acc_depop');
+    await rig.watcher.tick();
+    assert.equal(rig.calls.filter(v => v === 'read_listings').length, 1, 'resume uses the account resolved by byId');
+  });
+}
 
 test('counter candidates use site fees and the caller supplies the acceptance model', async () => {
   let offered = false;

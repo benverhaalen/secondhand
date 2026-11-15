@@ -6,10 +6,10 @@
 // next due time from the `watch_cadence_s` param read at that moment (scope site + state), so a
 // changed param applies on the next tick. Accounts sweep in parallel; one account never twice at once.
 // It runs through the night; pace and quiet hours per site live in the harness manifest, not here.
-// Likely breaks, each tested: a cadence frozen as a constant; a param change not picked up; an expired
-// session that keeps sweeping or raises a second decision; a lease left held after a throw; a busy
-// lease that pushes the account a whole cadence back.
+// Saved due times and pause reasons survive restarts; accounts without a due time start spread over
+// one cadence. A challenge waits for the person; a retry hint can only lengthen the next cadence.
 import { mask } from '../../../../log/index.js';
+import { createHash } from 'node:crypto';
 import type { Site } from './event.ts';
 import type { Accounts } from '../browser/auth.ts';
 import { sweepStorefronts, type SnapshotStore } from '../harness/storefront.ts';
@@ -19,19 +19,37 @@ import type { Leases, Params } from './ports.ts';
 export interface Account { account_id: string; site: Site; user_id: string }
 export type Tier = 'hot' | 'live' | 'quiet';
 type SweepResult = { ok: true } | { ok: false; error: { code: string; message: string; hint?: unknown } };
+type PauseReason = 'auth_expired' | 'blocked';
+export type SchedulePatch = { due?: number; paused?: PauseReason | null };
+export interface ScheduleState {
+  load(): { due: Record<string, number>; paused: Record<string, PauseReason> };
+  save(account_id: string, patch: SchedulePatch): void;
+}
 
 export function createScheduler(o: {
   params: Params; leases: Leases; now: () => number;
   accounts: () => Account[]; stateOf: (a: Account) => Tier;
   runSweep: (a: Account) => Promise<SweepResult>;
   onStale: (a: Account) => void | Promise<void>; // as-1 markStale: one relink decision, jobs paused
+  onBlocked?: (a: Account) => void | Promise<void>;
+  state?: ScheduleState;
   leaseTtlMs?: number;
   storefront?: { accounts: Accounts; harness: Harness; store: SnapshotStore };
 }) {
-  const due = new Map<string, number>(), paused = new Set<string>();
+  const saved = o.state?.load();
+  const due = new Map<string, number>(Object.entries(saved?.due ?? {}));
+  const paused = new Map<string, PauseReason>(Object.entries(saved?.paused ?? {}));
   const ttl = o.leaseTtlMs ?? 120_000;
+  const cadence = (a: Account) => o.params.get('watch_cadence_s', { site: a.site, segment: o.stateOf(a) }) * 1000;
 
-  async function sweep(a: Account): Promise<'ran' | 'skipped' | 'stale'> {
+  function save(account_id: string, patch: SchedulePatch) {
+    o.state?.save(account_id, patch);
+    if (patch.due !== undefined) due.set(account_id, patch.due);
+    if (patch.paused === null) paused.delete(account_id);
+    else if (patch.paused !== undefined) paused.set(account_id, patch.paused);
+  }
+
+  async function sweep(a: Account): Promise<'ran' | 'skipped' | 'stale' | 'blocked'> {
     const storefront = o.storefront;
     if (storefront) {
       const linked = await storefront.accounts.byId(a.account_id);
@@ -58,27 +76,46 @@ export function createScheduler(o: {
     });
     if (!leased.ok) return 'skipped';
     const r = leased.value;
-    if (!r.ok && r.error.code === 'auth_expired') { paused.add(a.account_id); await o.onStale(a); return 'stale'; }
-    // any other failure keeps the cadence; the harness's own retry hints govern the calls inside the sweep
-    due.set(a.account_id, o.now() + o.params.get('watch_cadence_s', { site: a.site, segment: o.stateOf(a) }) * 1000);
+    if (!r.ok && (r.error.code === 'auth_expired' || r.error.code === 'blocked')) {
+      save(a.account_id, { paused: r.error.code });
+      if (r.error.code === 'auth_expired') { await o.onStale(a); return 'stale'; }
+      await o.onBlocked?.(a); return 'blocked';
+    }
+    let after = 0;
+    if (!r.ok && r.error.hint && typeof r.error.hint === 'object') {
+      const hint = r.error.hint;
+      if ((r.error.code === 'rate_limited' || 'do' in hint && hint.do === 'retry_after')
+        && 'after_s' in hint && typeof hint.after_s === 'number' && Number.isFinite(hint.after_s)) after = hint.after_s * 1000;
+    }
+    save(a.account_id, { due: o.now() + Math.max(cadence(a), after) });
     return 'ran';
   }
 
   return {
     async tick() {
       const t = o.now();
-      const ready = o.accounts().filter(a => !paused.has(a.account_id) && (due.get(a.account_id) ?? 0) <= t);
+      const accounts = o.accounts();
+      for (const a of accounts) {
+        if (!paused.has(a.account_id) && !due.has(a.account_id)) save(a.account_id, { due: t + firstDelay(a.account_id, cadence(a)) });
+      }
+      const ready = accounts.filter(a => !paused.has(a.account_id) && due.get(a.account_id)! <= t);
       const out = await Promise.all(ready.map(a => sweep(a).then(r => [a.account_id, r] as const)));
       const by = (k: string) => out.filter(([, r]) => r === k).map(([id]) => id);
-      return { ran: by('ran'), skipped: by('skipped'), stale: by('stale') };
+      return { ran: by('ran'), skipped: by('skipped'), stale: by('stale'), blocked: by('blocked') };
     },
-    resume(account_id: string) { paused.delete(account_id); due.delete(account_id); },
-    paused: () => [...paused],
+    resume(account_id: string) { save(account_id, { due: o.now(), paused: null }); },
+    paused: () => [...paused.keys()],
     nextDue: () => Object.fromEntries(due),
   };
 }
 
+function firstDelay(account_id: string, cadenceMs: number): number {
+  const hash = createHash('sha256').update(account_id).digest().readUInt32BE(0);
+  return Math.floor(hash / 0x1_0000_0000 * cadenceMs) + 1;
+}
+
 export function sweepFailure(e: unknown): SweepResult {
   const code = e && typeof e === 'object' && 'code' in e && typeof e.code === 'string' ? e.code : 'error';
-  return { ok: false, error: { code, message: JSON.stringify(mask({ message: e instanceof Error ? e.message : String(e) })) } };
+  const hint = e && typeof e === 'object' && 'hint' in e ? e.hint : undefined;
+  return { ok: false, error: { code, hint, message: JSON.stringify(mask({ message: e instanceof Error ? e.message : String(e) })) } };
 }

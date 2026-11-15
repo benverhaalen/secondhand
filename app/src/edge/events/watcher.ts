@@ -13,7 +13,7 @@ import type { Snapshot, Site } from './event.ts';
 import { ingest } from './intake.ts';
 import { createPipeline, type PipelineLog } from './pipeline.ts';
 import type { HarnessError, HarnessLike, JobRow, Leases, Params, Store } from './ports.ts';
-import { createScheduler, type Account, type Tier } from './schedule.ts';
+import { createScheduler, type Account, type Tier, type SchedulePatch, type ScheduleState } from './schedule.ts';
 import { markStale, markRelinked } from './stale.ts';
 
 export interface WatchedListing {
@@ -51,7 +51,63 @@ export function createWatcher(d: WatcherDeps) {
   const slugs = new Map<string, string>();
   const orders = d.orders ?? orderBook(iso);
   const confirmations = new Map<string, Partial<JobRow> & { next_run_at?: string }>();
-  const staleAccount = (a: Account) => { stale.add(a.account_id); markStale(store, log, a); };
+  let scheduler: ReturnType<typeof createScheduler> | undefined;
+
+  function saveSchedule(a: Account, patch: SchedulePatch) {
+    const decisions = store.tx(t => {
+      const row = t.get('account', a.user_id, a.account_id) ?? { id: a.account_id, user_id: a.user_id, site: a.site };
+      t.put('account', { ...row,
+        ...(patch.due !== undefined && { next_check_at: new Date(patch.due).toISOString() }),
+        ...(patch.paused !== undefined && { paused: patch.paused }),
+      });
+      if (patch.paused === 'auth_expired') markStale(t, log, a);
+      const opened = patch.paused === 'blocked' ? t.raiseDecision({ user_id: a.user_id, kind: 'site_warning', subject: a.account_id,
+        why: `${a.site} needs you to pass a check`, options: [{ id: 'cleared', label: 'Resume checks' }], suggested: 'cleared' }) : undefined;
+      const closed = patch.paused === null && row.paused === 'blocked'
+        ? t.decisions({ user_id: a.user_id, kind: 'site_warning', subject: a.account_id, state: 'open' }) : [];
+      for (const decision of closed) t.updateDecision(decision.id, { state: 'answered' });
+      return { opened, closed };
+    });
+    log.event('note', { msg: 'watcher schedule saved', account_id: a.account_id,
+      ...(patch.due !== undefined && { next_check_at: new Date(patch.due).toISOString() }),
+      ...(patch.paused !== undefined && { paused: patch.paused }),
+    });
+    if (decisions.opened && !decisions.opened.duplicate) log.event('decision.open', { decision: decisions.opened.row.id, kind: 'site_warning', tier: 'ask' });
+    for (const decision of decisions.closed) log.event('decision.close', { decision: decision.id, reason: 'cleared' });
+  }
+  function resumeAccount(a: Account) {
+    if (!linked.some(link => link.account_id === a.account_id)) linked.push(a);
+    if (scheduler) scheduler.resume(a.account_id);
+    else saveSchedule(a, { due: now(), paused: null });
+  }
+  const state: ScheduleState = {
+    load() {
+      const saved: ReturnType<ScheduleState['load']> = { due: {}, paused: {} };
+      for (const a of linked) {
+        const row = store.get('account', a.user_id, a.account_id);
+        if (!row) continue;
+        if (row.next_check_at !== undefined && row.next_check_at !== null) {
+          if (typeof row.next_check_at !== 'string' || !Number.isFinite(Date.parse(row.next_check_at))) throw new Error(`invalid next_check_at for ${a.account_id}`);
+          saved.due[a.account_id] = Date.parse(row.next_check_at);
+        }
+        if (row.paused === undefined || row.paused === null) continue;
+        if (row.paused !== 'auth_expired' && row.paused !== 'blocked') throw new Error(`invalid paused reason for ${a.account_id}`);
+        saved.paused[a.account_id] = row.paused;
+        if (row.paused === 'auth_expired') stale.add(a.account_id);
+      }
+      return saved;
+    },
+    save(account_id, patch) {
+      const a = linked.find(a => a.account_id === account_id);
+      if (!a) throw new Error(`cannot save schedule for unlinked account ${account_id}`);
+      saveSchedule(a, patch);
+    },
+  };
+  const staleAccount = (a: Account) => {
+    if (store.get('account', a.user_id, a.account_id)?.paused !== 'auth_expired') saveSchedule(a, { paused: 'auth_expired' });
+    else markStale(store, log, a);
+    stale.add(a.account_id);
+  };
 
   function stateOf(a: Account): Tier {
     const s = d.snapshots.get(a.account_id);
@@ -109,9 +165,9 @@ export function createWatcher(d: WatcherDeps) {
     return { ok: true as const };
   }
 
-  const scheduler = createScheduler({ accounts: () => linked.filter(a => !stale.has(a.account_id)), stateOf,
+  const scheduling = () => scheduler ??= createScheduler({ accounts: () => linked.filter(a => !stale.has(a.account_id)), stateOf,
     runSweep: a => runSweep(a).catch(error => { log.error('watcher.sweep', error, { account_id: a.account_id }); throw error; }),
-    onStale: staleAccount, params: d.params, leases: d.leases, now,
+    onStale: a => { stale.add(a.account_id); }, state, params: d.params, leases: d.leases, now,
     leaseTtlMs: d.params.get('job_lease_ttl_ms') });
 
   // The pipeline's policy checks price and kind, but has no negotiation.ask input. Preserve that
@@ -121,6 +177,9 @@ export function createWatcher(d: WatcherDeps) {
     const account = linked.find(a => a.account_id === account_id && a.site === site);
     const meta = { route_id: 'watcher', ms: 0, fell_back: false };
     if (!account || stale.has(account_id)) return { ok: false, error: { code: 'auth_expired', message: 'linked account unavailable', hint: { do: 'relink' } }, meta };
+    if (store.get('account', account.user_id, account_id)?.paused === 'blocked') return { ok: false, error: {
+      code: 'blocked', message: 'account check pending', hint: { do: 'pause_session', site },
+    }, meta };
     if (isWrite(verb as Verb) && args.negotiation_ask === true) return { ok: false, error: {
       code: 'policy_refused', message: 'negotiation requires approval', hint: { do: 'raise_decision', kind: String(args.decision_kind) },
     }, meta };
@@ -179,8 +238,10 @@ export function createWatcher(d: WatcherDeps) {
 
   return {
     async tick() {
-      linked = (await d.accounts.linked()).map(a => ({ account_id: a.account_id, site: a.site as Site, user_id: a.person_id }));
-      const swept = await scheduler.tick();
+      const next = (await d.accounts.linked()).map(a => ({ account_id: a.account_id, site: a.site as Site, user_id: a.person_id }));
+      if (next.some(a => !linked.some(previous => previous.account_id === a.account_id))) scheduler = undefined;
+      linked = next;
+      const swept = await scheduling().tick();
       // runOnce also counts jobs it cannot lease or whose retry time is in the future. Stop when
       // the durable rows no longer change, leaving those jobs for the next clock tick.
       let before: string;
@@ -199,7 +260,14 @@ export function createWatcher(d: WatcherDeps) {
       const a = await d.accounts.byId(account_id);
       if (!a) throw new Error(`cannot resume unlinked account ${account_id}`);
       markRelinked(store, log, { user_id: a.person_id, account_id });
-      stale.delete(account_id); scheduler.resume(account_id);
+      stale.delete(account_id);
+      resumeAccount({ account_id, user_id: a.person_id, site: a.site as Site });
+    },
+    async cleared(account_id: string) {
+      const a = await d.accounts.byId(account_id);
+      if (!a) throw new Error(`cannot resume unlinked account ${account_id}`);
+      resumeAccount({ account_id, user_id: a.person_id, site: a.site as Site });
+      log.event('note', { msg: 'watcher account cleared', account_id });
     },
   };
 }
