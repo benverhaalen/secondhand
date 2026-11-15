@@ -11,10 +11,11 @@ import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
 import { runtimePorts as searchRuntime } from '../intel/public/search.ts';
 import { createApify } from '../harness/sites/apify/adapter.ts';
-import { example } from './examples.ts';
+import { example, examplesServed } from './examples.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { fromEngine, pagination, object, integer, invalid } from './captures.ts';
-import { memoryVault, type Accounts, type LinkedAccount } from '../browser/auth.ts';
+import type { AuthVault, Accounts, LinkedAccount } from '../browser/auth.ts';
+import { vault as defaultVault } from '../store/vault.ts';
 import { createHarness, fail, isWrite, type Adapter, type Harness } from '../harness/protocol.ts';
 import { createSiteService } from '../harness/service.ts';
 import { composeSources } from '../harness/compose.ts';
@@ -67,13 +68,12 @@ export function seedExamples(st: Store) {
 }
 
 export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
-  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number;
+  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number; vault?: AuthVault;
   publicClients?: { ebay: PageClient; depop: Client; close(): Promise<void> }; apifyToken?: string;
 } = {}) {
   const now = options.now ?? Date.now;
-  seedExamples(st);
-  // shortcut: session state is process-local until the Databricks secret-scope AuthVault joins.
-  const vault = memoryVault();
+  if (examplesServed()) seedExamples(st);
+  const vault = options.vault ?? defaultVault();
   const accounts: Accounts & { byId(id: string, person_id?: string): Promise<LinkedAccount | undefined> } = {
     async linked(person_id) {
       const rows = person_id ? st.rows('account', { user_id: person_id }) : st.systemRows('account');
