@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 import { Approve, EmptyState, FootButton, Grid, List, log, Pill, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
+import { SiteChip } from '@/ui/parts/site-chip';
 import { Shelf, Tile, TileSkeleton, type TileFact } from '@/ui/parts/tile';
 import { day, feed, pill, sellItem, shelves, unread, usd, type Item, type World } from '@/demo';
 import { useScreen } from '@/demo/screen';
@@ -222,7 +223,7 @@ export default function Sell() {
             <Chip key={s.id} id={`filter-${s.id}`} label={s.title} count={s.items.length} picked={shelf === s.id} onPress={() => setShelf(s.id)} />
           ))}
           {offered.sites.map(s => (
-            <Chip key={s} id={`filter-site-${s}`} site={s} picked={site === s} onPress={() => setSite(site === s ? null : s)} />
+            <SiteChip key={s} id={`filter-site-${s}`} site={s} picked={site === s} onPress={() => setSite(site === s ? null : s)} />
           ))}
         </FilterRow>}
         {/* Offline: the last copy stays, and a change waits for the signal (ways-out, Everywhere). */}
@@ -245,7 +246,7 @@ export default function Sell() {
 
       {picking ? null : (
         <List>
-          <Choice id="sell-pause" icon="calendar-03" label="Pause selling" line="Away for a while" leads onPress={() => router.push('/you/pause' as Href)} />
+          <Choice id="sell-pause" icon="calendar-03" label="Pause selling" leads onPress={() => router.push('/you/settings' as Href)} />
         </List>
       )}
 

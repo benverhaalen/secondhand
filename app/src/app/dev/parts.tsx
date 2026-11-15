@@ -23,6 +23,7 @@ import { MoneyBar } from '@/ui/parts/money-bar';
 import { StateBar } from '@/ui/parts/state-bar';
 import { PulseKey, PulseRow } from '@/ui/parts/pulse-row';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
+import { SiteChip } from '@/ui/parts/site-chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
 import { photo } from '@/demo/photos';
@@ -218,7 +219,8 @@ function Sheetful() {
           <Chip id="c-sort" icon="sorting-01" label="Latest" onPress={() => {}} />
           <Chip id="c-all" label="All" picked onPress={() => {}} />
           <Chip id="c-need" label="Needs you" count={8} onPress={() => {}} />
-          <Chip id="c-ebay" site="ebay" onPress={() => {}} />
+          <SiteChip id="c-ebay" site="ebay" onPress={() => {}} />
+          <SiteChip id="c-depop" site="depop" picked onPress={() => {}} />
         </FilterRow>
         <Shelf id="p-need" title="Needs you" count={8} onAll={() => {}}>
           <Grid columns={2}>

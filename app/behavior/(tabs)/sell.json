@@ -138,7 +138,7 @@
       "on_tap": "opens Pause selling",
       "id": "sell-pause",
       "does": "opens Pause selling",
-      "goes": "/you/pause",
+      "goes": "/you/settings",
       "at": "/sell?world=clearing"
     },
     {
