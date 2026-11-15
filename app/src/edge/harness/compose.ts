@@ -31,9 +31,12 @@ export function searchClients(env: Record<string, string | undefined> = process.
       ? browserUseCloud({ apiKey: env.BROWSER_USE_API_KEY })
       : mercariChrome ? localChrome({ executablePath: mercariChrome,
         scratch: deps.scratch ?? join(env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-public-browser') }) : undefined;
-    if (source) {
+    // A missing browser library must never stop the server booting: search then runs without a browser.
+    let pw: CdpPw | undefined;
+    try { if (source) pw = deps.pw ?? createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw; }
+    catch (error) { log.error('search.browser_library', error); }
+    if (source && pw) {
       browser = source.kind;
-      const pw = deps.pw ?? createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
       const cdp = cdpLauncher(pw, source);
       launcher = {
         anonymous: async options => publicContext(await cdp.anonymous(options)),
