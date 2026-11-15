@@ -140,7 +140,7 @@ function checkView(view, ctx) {
   const rows = new Map(); for (const el of view.els) if (el.logo) rows.set(el.parent, [...(rows.get(el.parent) ?? []), el]);
   for (const logos of rows.values()) { const hs = logos.map(l => Math.round(l.rect[3] - l.rect[1])), cap = sheet.wordmark?.sizes?.[0];
     if (Math.max(...hs) - Math.min(...hs) > 1) E('B33', '', `logos in one row are ${[...new Set(hs)].join(', ')} px tall: logos in a row share one height (C5)`);
-    if (cap && Math.max(...hs) > cap + 1) W('B33', '', `a logo is ${Math.max(...hs)} px tall: none is taller than the wordmark's type, ${cap} px on a ${medium} (C5)`);
+    if (cap && logos.length > 1 && Math.max(...hs) > cap + 1) E('B33', '', `a logo is ${Math.max(...hs)} px tall: none is taller than the wordmark's type, ${cap} px on a ${medium} (C5)`);
     const line = logos.filter(l => Math.abs(l.rect[1] - logos[0].rect[1]) < 2).sort((a, b) => a.rect[0] - b.rect[0]), gaps = line.slice(1).map((l, i) => Math.round(l.rect[0] - line[i].rect[2]));
     if (gaps.length > 1 && Math.max(...gaps) - Math.min(...gaps) > 1) E('B33', '', `logos in one row sit ${[...new Set(gaps)].join(', ')} px apart: one gap (C5)`); }
   // longest text
