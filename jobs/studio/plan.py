@@ -66,11 +66,12 @@ def _ask(t, **kw):
 RELAY_NEEDS = {"shirt": ("pit_to_pit", "length"), "sweatshirt": ("pit_to_pit", "length")}
 
 
-def relay_measured(ks: dict, measured: dict) -> bool:
-    """A re-lay needs the item's measurements, and a check that can hold the redraw to them. Tops have both. Pants
-    have no ruler yet (measure.py reads tops), so they are touched up in place."""
+def relay_measured(ks: dict, measured: dict, by: str | None = None) -> bool:
+    """A re-lay needs the item's measurements from the LiDAR capture (Ben, 09:00 and 09:09: "only allow this from lidar
+    flow too"), and a check that can hold the redraw to them. Tops have both. Pants have no ruler yet (measure.py reads
+    tops), so they are touched up in place. A tape photo or a typed number does not open it."""
     need = RELAY_NEEDS.get(ks.get("template"))
-    return bool(need) and all(measured.get(k) for k in need)
+    return by == "lidar" and bool(need) and all(measured.get(k) for k in need)
 
 
 def plan(look: dict) -> dict:
@@ -81,11 +82,11 @@ def plan(look: dict) -> dict:
     slides, asks, notes = [], [], []
     used = set()
     route = ks["whole_route"]
-    if route == "relay" and not relay_measured(ks, look.get("measured") or {}):
+    if route == "relay" and not relay_measured(ks, look.get("measured") or {}, look.get("measured_by")):
         # Ben, 09:00: the re-lay is for phones that measure (LiDAR). No measurement, nothing to hold a redrawn shape to,
         # so the whole photo is only touched up where it lies
         route = "light"
-        notes.append("not measured (no LiDAR reading or tape), so the cover is touched up in place, not re-laid")
+        notes.append("no LiDAR measurement, so the cover is touched up in place, not re-laid")
 
     def add(t, p, route, why, crop=None, zone=None, extra=None):
         slides.append({"type": t, "photo": p["id"], "crop": crop, "route": route, "zone": zone, "why": why, **(extra or {})})

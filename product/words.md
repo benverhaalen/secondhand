@@ -1417,7 +1417,10 @@ Ben, studio thread, 08:14 UTC.
 Ben, studio thread, 09:00 UTC.
 > how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
 
-Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
+Ben, project chat (relayed), 09:09 UTC, the parts about the studio.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too.
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md) ("Why each number"), jobs/studio/plan.py (`relay_measured`).
 
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
