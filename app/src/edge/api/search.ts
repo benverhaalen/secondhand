@@ -22,8 +22,9 @@ export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string,
 type ActiveRead = { rows?: JudgedRow[]; searched?: SiteSearched };
 const reading = new Map<string, ActiveRead>();
 
-type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped' | 'fallback' | 'cost_usd_est'>)[] };
-type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
+// Exported for the app's search screen (app/src/api), which imports these instead of copying them.
+export type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'site' | 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped' | 'fallback' | 'cost_usd_est'>)[] };
+export type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
 type JudgedRow = { row: SearchRow; judged: Judged };
 type PublicOffer = BuyOffer & Pick<SearchRow, 'via' | 'actor' | 'may_model' | 'use_scope'> & { converted?: boolean; host?: string; match: Judged['match']; currency?: string; image_url?: string; external_id: string; data: `live:${SourceSite}`; commercial_link?: true; attribution?: 'Dupe.com'; source_site?: string; secondhand?: boolean; keep_until?: string };
 type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
@@ -93,6 +94,7 @@ function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters
   return { searched, rows, offers: offers.filter(o => kept.has(o.id)), ranked, found };
 }
 
+export type OfferView = ReturnType<typeof offerView>;
 function offerView(row: BuyRow) {
   const offer = row as BuyRow & PublicOffer;
   const amount = (n: number) => offer.currency ? { amount_cents: n, currency: offer.currency } : null;
@@ -133,7 +135,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   };
   const answer = (settled: boolean): SearchAnswer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
     protocol_version: protocol.version, facts: [], found: result().found,
-    searched: [...batches.entries()].map(([id, b]) => ({ route_id: b.searched.route_id ?? routeId(sources.find(s => s.id === id)!), query,
+    searched: [...batches.entries()].map(([id, b]) => ({ site: b.searched.site, route_id: b.searched.route_id ?? routeId(sources.find(s => s.id === id)!), query,
       outcome: b.searched.outcome, ms: b.searched.ms, ...(b.searched.pace ? { pace: b.searched.pace } : {}), ...(b.searched.dropped ? { dropped: b.searched.dropped } : {}), ...(b.searched.error_code ? { error_code: b.searched.error_code } : {}), ...(b.searched.reason ? { reason: b.searched.reason } : {}), ...(b.searched.fallback ? { fallback: b.searched.fallback } : {}), ...(b.searched.cost_usd_est !== undefined ? { cost_usd_est: b.searched.cost_usd_est } : {}) })),
     stage: settled ? 'settled' : 'first', ms: { first, settled: settled ? Math.round(performance.now() - t0) : null } });
   const emit = (event: 'answer.partial' | 'answer.settled', data: Record<string, unknown>) => {

@@ -163,8 +163,10 @@ export const jobEvents = (s: JobStore = jobs): Handler => (ctx, req) => {
 };
 export const userStream = (s: JobStore = jobs): Handler => (ctx, req) => sse(s, `user:${ctx.user_id}`, lastId(req.headers), false);
 
-export const jobs: JobStore = jobsOn(store);
-seedExamples(jobs);
+// One job store per process: Expo bundles each API route on its own, so a module-level store was one per route and a
+// search's job was not_found at /v1/jobs/:id on the dev server (2026-11-15). The first route to load makes it.
+const shared = globalThis as { __secondhandJobs?: JobStore };
+export const jobs: JobStore = shared.__secondhandJobs ??= (() => { const s = jobsOn(store); seedExamples(s); return s; })();
 
 export const routeHandlers = {
   'GET /v1/jobs/:id': getJob(),
