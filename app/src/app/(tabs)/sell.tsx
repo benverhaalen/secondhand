@@ -56,7 +56,14 @@ function tileOf(w: World, it: Item): { state: TagState; word?: string; fact: Til
       const by = order?.clocks.ship_by;
       return { state: 'ship', word: order?.state === 'pickup_booked' ? 'Pickup' : by ? `Ship by ${day(by, w.now)}` : 'Ship', fact: kept ?? listed };
     }
-    case 'Sold': return { state: 'sold', fact: kept ?? listed };
+    case 'Sold': {
+      // After it ships, the money moves through four words (edge-cases §2): Sold, On its way, Ready on the site, In your
+      // bank. The tile carries the word and what lands; the dates and instant payout sit on the order, on the item page.
+      if (!order || !kept) return { state: 'sold', fact: listed };
+      const ready = order.clocks.release_at && order.clocks.release_at <= w.now;
+      const word = order.state === 'released' ? 'In your bank' : ready ? 'Ready on the site' : ['shipped', 'delivered', 'claim_window', 'handed_over'].includes(order.state) ? 'On its way' : 'You keep';
+      return { state: order.state === 'released' ? 'paid' : 'sold', word: order.state === 'released' ? 'Paid' : undefined, fact: { label: word, amount: kept.amount } };
+    }
     case 'Slow': return { state: 'stuck', word: 'Slow', fact: listed };
     case 'Live': return { state: live.some(l => l.market_standing?.word === 'hot') ? 'hot' : 'live', fact: listed };
     case 'Researching': return { state: 'working', fact: { label: 'Pricing' } };

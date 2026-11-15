@@ -28,6 +28,11 @@
       "state": "kept",
       "route": "/worth",
       "shows": "Kept"
+    },
+    {
+      "state": "unknown",
+      "route": "/worth?stage=unknown",
+      "shows": "No number yet"
     }
   ],
   "controls": [
@@ -80,6 +85,20 @@
       "id": "worth-model-field",
       "does": "types the model number; on enter the value is checked again",
       "at": "/worth?stage=unsure"
+    },
+    {
+      "control": "I don’t know",
+      "on_tap": "answers that the person does not know which one it is; selling still works from the photos",
+      "id": "worth-unknown",
+      "does": "answers that the person does not know which one it is",
+      "at": "/worth?stage=unsure"
+    },
+    {
+      "control": "Have a price in mind?",
+      "on_tap": "opens a field for the person's own price",
+      "id": "worth-price",
+      "does": "opens a field for the person's own price",
+      "at": "/worth"
     }
   ],
   "flows": [
@@ -106,8 +125,73 @@
         "worth-sources"
       ],
       "then": "a sheet lists each site's sold range, and a site with too few sales says so"
+    },
+    {
+      "flow": "a price far from the sales",
+      "steps": [
+        "worth-price",
+        "type 500",
+        "enter"
+      ],
+      "then": "asks once: Similar ones sold for $65 to $95. Sell at $500? with Sell at $500 and Change it"
+    },
+    {
+      "flow": "I don't know",
+      "steps": [
+        "worth-unknown"
+      ],
+      "then": "No number yet, with Sell this and Type a model"
     }
   ],
   "back": "Back returns to the camera or the page that opened it; the value is kept only if Keep it was tapped.",
-  "decisions": []
+  "decisions": [
+    {
+      "decision": "The photo and name in one 72 row, then the range at 50, no page title",
+      "why": "The number is the focal point (copy.md, one focal point); the thing is recognised by its photo (C3). A heading over it would be a second large thing saying what the nav already implies."
+    },
+    {
+      "decision": "The value is a range in whole dollars, widened outward, labelled \"What similar ones sold for lately\"",
+      "why": "appraise: every number guarded and from sold comparables; copy.md: \"Similar ones sold for $36 to $52 lately\", never a sample size. Cents on an estimate claim a precision the sales do not have."
+    },
+    {
+      "decision": "The sales are one tap away in a sheet, per site, with when they were checked",
+      "why": "copy.md progressive disclosure; Art. 7.10 one number first, the sum behind one line."
+    },
+    {
+      "decision": "You keep: one row per site, best first, logo, how long it takes there, and the keep range at the right edge",
+      "why": "pages §6.11 \"for an owner: what you'd keep per site\"; money.md D9 via youKeep; the amount sits where every marketplace row puts it."
+    },
+    {
+      "decision": "A site with too few sales says so and shows no amount",
+      "why": "appraise: \"a route with no basis is hidden with its reason, never guessed\"."
+    },
+    {
+      "decision": "\"Not linked\" under a site only when the person has linked some",
+      "why": "For someone with sites linked it explains why Sell this won't post there; for a new person every row would say it, which is noise (ways-out: Worth works with no site)."
+    },
+    {
+      "decision": "Sell this (black) and Keep it (light fill) side by side after the keep rows",
+      "why": "pages §6.11 actions; the decision comes after the facts that make it. Keep it only saves a value, so it acts and shows Kept with Undo; Sell this hands the price to Plan."
+    },
+    {
+      "decision": "Glance shows the range labelled \"Rough guess\", each site \"Checking\", and no next step",
+      "why": "appraise step 2: the 2 s answer is labelled rough; nothing is decided on a rough number."
+    },
+    {
+      "decision": "Unsure: \"Which one is it?\", the guess dotted, a Model number blank, and I don't know",
+      "why": "ways-out §6.11 typed model number; edge-cases §4: I don't know is an answer. Below the qualified-to-price gate there is no number (appraise)."
+    },
+    {
+      "decision": "A price in mind is optional; one far from the sales (over 3x the top, under a third of the bottom) asks once with the range",
+      "why": "edge-cases §3 and ways-out \"Oops, $500, I meant $50\". The question names the range and puts the person's own price on the button."
+    },
+    {
+      "decision": "A could-be-valuable mark replaces Sell this with Get it appraised",
+      "why": "edge-cases §4: a hallmark, signature or maker's mark stops the quick path. No demo item carries such a mark yet, so this path is not rendered."
+    },
+    {
+      "decision": "Look deeper and the model number are plain rows at the end",
+      "why": "Art. 7.9: what is not today's decision sits in ruled rows at the end of the page."
+    }
+  ]
 }

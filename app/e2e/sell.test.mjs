@@ -121,8 +121,16 @@ test('sell: Done leaves select, and a tile opens its item again', async () => {
 test('sell: the break content holds: no tile is wider than its column and nothing runs off the screen', async () => {
   const screen = await app.open('/sell?world=edge');
   await screen.shows('Needs you');
-  const over = await screen.page.locator('[data-part="tile"]').evaluateAll(els => els.filter(e => e.scrollWidth > e.clientWidth + 1 || e.getBoundingClientRect().right > innerWidth).length);
-  assert.equal(over, 0);
+  // Everything a tile draws stays inside its column, but for the site badges, which sit 4 outside the photo's corner
+  // by design; and nothing passes the screen's edge.
+  const over = await screen.page.locator('[data-part="tile"]').evaluateAll(els => els.flatMap(t => {
+    const box = t.getBoundingClientRect();
+    return [...t.querySelectorAll('*')].filter(e => {
+      const r = e.getBoundingClientRect();
+      return r.width && (r.right > box.right + 4.5 || r.left < box.left - 0.5 || r.right > innerWidth);
+    }).map(e => e.textContent);
+  }));
+  assert.deepEqual(over, []);
 });
 
 // Every tap the screen logs is a control the table lists or a step of one of its flows.

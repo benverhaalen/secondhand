@@ -11,7 +11,9 @@ import { ago, connectionState, itemById, product, usd, world, WORLD_NAMES, youKe
 import type { PhotoKey } from '@/demo/photo-keys';
 import { photo } from '@/demo/photos';
 
-type Stage = 'glance' | 'check' | 'unsure';
+type Stage = 'glance' | 'check' | 'unsure' | 'unknown';
+// Attributes that say a thing may be worth far more than it looks (edge-cases §4): the quick path stops for an appraisal.
+const VALUABLE = ['hallmark', 'signature', 'maker_mark'];
 // One thing being valued: an item the person has, or a product a fresh photo matched.
 type Subject = {
   title: string; key: PhotoKey; low: Cents; high: Cents; asOf: string; itemId?: string;
@@ -43,7 +45,11 @@ function fromItem(w: World, id: string): Subject | null {
 export default function Worth() {
   const params = useLocalSearchParams<{ world?: string; item?: string; product?: string; stage?: string }>();
   const w = world(WORLD_NAMES.includes(params.world as AnyWorld) ? (params.world as AnyWorld) : undefined);
-  const [stage, setStage] = useState<Stage>(params.stage === 'glance' || params.stage === 'unsure' ? params.stage : 'check');
+  const [stage, setStage] = useState<Stage>(params.stage === 'glance' || params.stage === 'unsure' || params.stage === 'unknown' ? params.stage : 'check');
+  // A price the person has in mind, and whether they already said yes to one far from the sales (asked once).
+  const [pricing, setPricing] = useState(false);
+  const [mine, setMine] = useState<Cents | null>(null);
+  const [sure, setSure] = useState(false);
   const [kept, setKept] = useState(false);
   const [typing, setTyping] = useState(false);
   const [model, setModel] = useState('');
@@ -57,17 +63,38 @@ export default function Worth() {
   // A new number arrives when the person types the model: the value is checked again for what they named.
   const named = (v: string) => { setModel(v); setTyping(false); if (v.trim()) setStage('check'); };
 
-  if (stage === 'unsure') {
+  if (stage === 'unsure' || stage === 'unknown') {
+    // "I don't know" is an answer, not a failure (edge-cases §4): no number, since sales can't be matched to a guess,
+    // and selling still works from what the photo shows. Looking deeper is the way to a number.
+    const unknown = stage === 'unknown';
     return (
-      <Screen name="worth" state="unsure" nav={nav}>
+      <Screen name="worth" state={stage} nav={nav}>
         <Row lead={<Photo src={pic} label="Your photo" />}>
-          <Txt role="title">Which one is it?</Txt>
-          <Guess id="worth-guess" name="What it looks like" value={UNSURE_GUESS} look="body" />
+          <Txt role="title">{unknown ? 'No number yet' : 'Which one is it?'}</Txt>
+          {unknown ? <Txt role="body" tone="ink-2">It’ll be listed by what the photos show.</Txt>
+            : <Guess id="worth-guess" name="What it looks like" value={UNSURE_GUESS} look="body" />}
         </Row>
-        <Stack gap="tight">
-          <Blank id="worth-model-field" name="Model number" onChange={named} />
-          <Txt role="caption">It’s on a label or the box.</Txt>
-        </Stack>
+        {unknown ? (
+          <Stack>
+            <Line gap="tight">
+              <Pill id="worth-sell" label="Sell this" onPress={() => router.push('/camera' as Href)} />
+              <Pill id="worth-model-again" kind="second" label="Type a model" onPress={() => setStage('unsure')} />
+            </Line>
+            <List>
+              <Choice id="worth-deep" icon="search-01" label={deep ? 'Looking deeper' : 'Look deeper'} line={deep ? 'It lands on Today when it’s done.' : 'Older sales and more sites. Takes a few minutes.'} disabled={deep} onPress={() => setDeep(true)} />
+            </List>
+          </Stack>
+        ) : (
+          <Stack>
+            <Stack gap="tight">
+              <Blank id="worth-model-field" name="Model number" onChange={named} />
+              <Txt role="caption">It’s on a label or the box.</Txt>
+            </Stack>
+            <List>
+              <Choice id="worth-unknown" icon="information-circle" label="I don’t know" onPress={() => setStage('unknown')} />
+            </List>
+          </Stack>
+        )}
       </Screen>
     );
   }
@@ -78,6 +105,14 @@ export default function Worth() {
     .sort((a, b) => (b.keepHigh ?? -1) - (a.keepHigh ?? -1));
   const glance = stage === 'glance';
   const state = kept ? 'kept' : stage;
+  const sellTo = (s.itemId ? `/item/${s.itemId}` : '/camera') as Href;
+  const valuable = !!s.itemId && !!itemById(w, s.itemId)?.attributes.some(a => VALUABLE.includes(a.name) && a.value != null);
+  // More than 3 times the top of the sales, or under a third of the bottom (edge-cases §3).
+  const far = mine != null && (mine > 3 * s.high || mine < s.low / 3);
+  const priced = (v: string) => {
+    const cents = Math.round(Number(v.replace(/[^\d.]/g, '')) * 100);
+    setPricing(false); setSure(false); setMine(Number.isFinite(cents) && cents > 0 ? cents : null);
+  };
 
   return (
     <Screen name="worth" state={state} nav={nav}>
@@ -103,9 +138,26 @@ export default function Worth() {
 
       {glance ? null : kept ? (
         <Approve id="worth-keep" does="Keep it" status="done" done="Kept" onUndo={() => setKept(false)} />
+      ) : valuable ? (
+        <Stack>
+          <Txt role="body">It has a maker’s mark. Get it appraised before it’s priced.</Txt>
+          <Line gap="tight">
+            <Pill id="worth-appraise" label={deep ? 'Appraisal asked' : 'Get it appraised'} state={deep ? 'disabled' : 'idle'} onPress={() => setDeep(true)} />
+            <Pill id="worth-keep" kind="second" label="Keep it" onPress={() => setKept(true)} />
+          </Line>
+        </Stack>
+      ) : far && !sure ? (
+        // A price far from the sales asks once, with the range (edge-cases §3, "Oops, $500, I meant $50").
+        <Stack>
+          <Txt role="body">{`Similar ones sold for ${down(s.low)} to ${up(s.high)}. Sell at ${usd(mine!)}?`}</Txt>
+          <Line gap="tight">
+            <Pill id="worth-price-yes" label={`Sell at ${usd(mine!)}`} onPress={() => { setSure(true); router.push(sellTo); }} />
+            <Pill id="worth-price-fix" kind="second" label="Change it" onPress={() => { setMine(null); setPricing(true); }} />
+          </Line>
+        </Stack>
       ) : (
         <Line gap="tight">
-          <Pill id="worth-sell" label="Sell this" onPress={() => router.push((s.itemId ? `/item/${s.itemId}` : '/camera') as Href)} />
+          <Pill id="worth-sell" label={mine ? `Sell at ${usd(mine)}` : 'Sell this'} onPress={() => router.push(sellTo)} />
           <Pill id="worth-keep" kind="second" label="Keep it" onPress={() => setKept(true)} />
         </Line>
       )}
@@ -113,10 +165,12 @@ export default function Worth() {
       {glance ? null : (
         <Stack gap="tight">
           <List>
+            <Choice id="worth-price" icon="money-03" label="Have a price in mind?" line={mine ? `Yours: ${usd(mine)}` : undefined} onPress={() => setPricing(true)} />
             <Choice id="worth-model" icon="edit-02" label="Not this one? Type the model number" onPress={() => setTyping(true)} />
             <Choice id="worth-deep" icon="search-01" label={deep ? 'Looking deeper' : 'Look deeper'} line={deep ? 'It lands on Today when it’s done.' : 'More sites and older sales. Takes a few minutes.'} disabled={deep} onPress={() => setDeep(true)} />
           </List>
           {typing ? <Blank id="worth-model-field" name="Model number" onChange={named} /> : null}
+          {pricing ? <Blank id="worth-price-field" name="Your price" numeric onChange={priced} /> : null}
         </Stack>
       )}
 

@@ -9,7 +9,7 @@ let app;
 before(async () => { app = await start(); });
 after(async () => { await app?.stop(); });
 
-const STATES = { glance: [], check: [], unsure: [], kept: ['worth-keep'] };
+const STATES = { glance: [], check: [], unsure: [], kept: ['worth-keep'], unknown: [] };
 
 test('worth: every state in the behavior table has a test here', () => {
   assert.deepEqual(Object.keys(STATES).sort(), table.states.map(s => s.state).sort());
@@ -69,6 +69,32 @@ test('worth: a typed model number gives the value when the photo was not enough'
   await input.fill('HEG-001');
   await input.press('Enter');
   await screen.shows('You keep');
+});
+
+// edge-cases §4: "I don't know" is an answer. No number, and selling still works from the photos.
+test('worth: I don’t know leads on to selling, with no number', async () => {
+  const screen = await app.open('/worth?stage=unsure');
+  await screen.tap('worth-unknown');
+  await screen.shows('No number yet');
+  assert.equal(await screen.page.getByText(/^\$[\d,]+ to \$[\d,]+$/).count(), 0);
+  assert.equal(await screen.page.getByTestId('worth-sell').count(), 1);
+});
+
+// edge-cases §3, "Oops, $500, I meant $50": a price far from the sales asks once, with the range and the price on the button.
+test('worth: a typed price far from the sales asks once', async () => {
+  const screen = await app.open('/worth?world=clearing');
+  await screen.tap('worth-price');
+  await screen.tap('worth-price-field');
+  const input = screen.page.getByTestId('worth-price-field-input');
+  await input.fill('5000');
+  await input.press('Enter');
+  await screen.shows(/^Similar ones sold for \$[\d,]+ to \$[\d,]+\. Sell at \$5,000(\.00)?\?$/);
+  await screen.tap('worth-price-fix');
+  assert.equal(await screen.page.getByTestId('worth-price-yes').count(), 0);
+  await screen.tap('worth-price-field');
+  await input.fill('60');
+  await input.press('Enter');
+  assert.equal(await screen.page.getByTestId('worth-price-yes').count(), 0, 'a price inside the sales asks nothing');
 });
 
 test('worth: the break content holds: a huge range and a long title stay on the screen', async () => {

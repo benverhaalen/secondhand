@@ -107,7 +107,8 @@
         "glance",
         "check",
         "unsure",
-        "kept"
+        "kept",
+        "unknown"
       ]
     },
     "job": {
@@ -151,6 +152,9 @@
     ],
     "screen kept": [
       "What's it worth, kept and valued"
+    ],
+    "screen unknown": [
+      "What's it worth, the person said I don't know (spec/edge-cases.md §4)"
     ]
   }
 }
