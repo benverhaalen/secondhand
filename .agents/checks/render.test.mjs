@@ -27,9 +27,9 @@ test('render: brand/media.json holds the same numbers as Part III of the constit
   const drift = structuredClone(media); drift.post.margin.x = 80; drift.deck.words = 25;
   const bad = sheetAgrees(constitution, drift).map(o => `${o.where} ${o.msg}`).join('\n');
   assert.match(bad, /post margins disagrees/); assert.match(bad, /deck longest text disagrees/);
-  drift.deck.unit = 3; drift.post.act = true; drift.web.wordmark.sizes['390'] = [21, 48];
+  drift.deck.unit = 3; drift.post.act = true; drift.story.layouts = ['item', 'collage']; drift.web.wordmark.sizes['390'] = [21, 48];
   const worse = sheetAgrees(constitution, drift).map(o => `${o.where} ${o.msg}`).join('\n');
-  assert.match(worse, /deck unit disagrees/); assert.match(worse, /post "act" is true/); assert.match(worse, /web wordmark \(c1\) disagrees/);
+  assert.match(worse, /deck unit disagrees/); assert.match(worse, /story layouts disagree/); assert.match(worse, /post "act" is true/); assert.match(worse, /web wordmark \(c1\) disagrees/);
   assert.match(sheetAgrees('# no table', media)[0].msg, /can't read the Part III media table/);
 });
 
@@ -44,13 +44,14 @@ const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--pa
 .h{font-size:64px;font-family:var(--font-display);font-weight:600}.b{font-size:32px}.m{font-family:var(--font-display);font-weight:600;font-size:64px}.f{background:var(--field)}`;
 // On a deck the wordmark sits bottom left of every slide at 32, and alone at 64 on the closing slide.
 const MARK = '<p class="m" style="font-size:32px;position:absolute;left:96px;bottom:96px">secondhand</p>';
-const TITLE = `<section class="s f" data-view><p class="b">Sell used things from one app</p>${MARK}</section>`, END = '<section class="s" data-view><p class="m">secondhand</p></section>';
+const TITLE = `<section class="s f" data-view><p class="b">Sell used things from one app</p>${MARK}</section>`, END = '<section class="s" data-view style="display:grid;place-items:center"><p class="m">secondhand</p></section>';
 const deck = mid => `${TITLE}<section class="s" data-view>${mid}${MARK}</section>${END}`;
 let n = 0;
 async function ids(body, medium = 'deck', level = 'error', theme = '') {
   const f = join(dir, `${n++}.html`), link = name => `<link rel="stylesheet" href="${pathToFileURL(join(root, 'brand', name)).href}">`;
   writeFileSync(f, `<!doctype html><html data-medium="${medium}"${theme && ` data-theme="${theme}"`}><meta charset="utf-8">${link('tokens.css')}${link('media.css')}<style>${css}</style><body>${body}`);
-  return (await check(f, medium, { browser })).findings.filter(o => o.level === level).map(o => `${o.id} ${o.where} ${o.msg}`);
+  // The fixtures here are the least markup that shows one rule, so they name no layout. B37 has its own cases, on the templates.
+  return (await check(f, medium, { browser })).findings.filter(o => o.level === level && !/names no layout/.test(o.msg)).map(o => `${o.id} ${o.where} ${o.msg}`);
 }
 // CI sets CI=true and installs a browser. There, a missing browser fails, so these tests can't be skipped without anyone seeing.
 test('render: a browser is here when the checks run in CI', () => { if (process.env.CI) assert.ok(pw, 'Playwright is not installed, so no rule was tested on a render'); });
@@ -143,6 +144,7 @@ CASES.push(['B9', 'an item with no photo', deck('<div data-item><p class="b">Car
   ['B31', 'one kind of thing at two sizes on two slides', `${TITLE}<section class="s" data-view><div data-part="tile" style="height:160px;background:var(--gray)"></div></section><section class="s" data-view><div data-part="tile" style="height:240px;background:var(--gray)"></div></section>${END}`, /B31 views 2, 3 \[tile\] is 160, 240 px tall/],
   ['B17', 'a photo that runs off the slide', deck(`<img alt="A jacket" src="${PX}" style="position:absolute;right:-200px;top:96px;width:800px;height:400px">`), /B17 .*200 px past the right edge/],
   ['B17', 'a photo that stops in the margin', deck(`<img alt="A jacket" src="${PX}" style="position:absolute;right:40px;top:96px;width:800px;height:400px">`), /B17 .*stops 40 px from the right edge/],
+  ['B17', 'a web paragraph in a column too wide to read', web('<p style="font-size:18px;width:900px">' + 'Sell used things from one app and keep what you make. '.repeat(6) + '</p>'), /B17 .*a column of text is 648 px at most/, 'web'],
   ['B17', 'web text wider than the content width', web('<p style="font-size:18px;width:1300px">' + 'Sell used things from one app and keep what you make. '.repeat(8) + '</p>'), /B17 .*1200 px wide at most/, 'web'],
   ['B3', 'a web footer wordmark at the wrong size for the width', web('<p style="font-size:18px">Sell used things</p>').replace('var(--t-hero)', '86.5px'), /B3 .*390 wide it is 21 or 50 px/, 'web'],
   ['B30', 'too many words on a story frame', STORY('<p class="m" style="font-size:120px">secondhand</p>').replace('Listed in a minute', 'Used things sell faster with good photos and honest words'), /B30 .*10 words/, 'story'],
@@ -231,6 +233,19 @@ test('render: a countdown 24 from the edge of a card with a 36 corner, and a pho
 });
 CASES.push(['U5', 'a countdown in the curve of a card corner', CARD('<span style="position:absolute;top:16px;right:16px;font-size:13px;line-height:18px">2h left</span>'), /U5 .*"2h left" sits 1\d px from the curve of the top right corner of \[card-decision\]/, 'app'],
   ['U5', 'a square photo in the curve of a card corner', CARD(`<img data-photo alt="A jacket" src="${PX}" style="width:72px;height:72px;display:block">`), /U5 .*<img> sits \d+ px from the curve of the top left corner/, 'app']);
+// The templates in brand/templates are where a deck, a post and a story start, so they pass, and a change to a rule that breaks them is seen here.
+for (const medium of ['deck', 'post', 'story']) test(`render: the ${medium} template passes`, { skip: !pw }, async () =>
+  assert.deepEqual((await check(join(root, `brand/templates/${medium}.html`), medium, { browser })).findings.filter(o => o.level === 'error').map(o => `${o.id} ${o.where} ${o.msg}`), []));
+// A slide is one of the deck's six layouts, and holds what that layout holds.
+const SLIDE = (layout, inner) => `<html data-medium="deck"><link rel="stylesheet" href="${pathToFileURL(join(root, 'brand/tokens.css')).href}"><link rel="stylesheet" href="${pathToFileURL(join(root, 'brand/media.css')).href}"><link rel="stylesheet" href="${pathToFileURL(join(root, 'brand/templates/layouts.css')).href}"><body><section data-view ${layout}><div class="content">${inner}</div><p class="wordmark">secondhand</p></section><section data-view data-layout="close"><p class="wordmark">secondhand</p></section>`;
+for (const [what, layout, inner, re] of [['a slide that names no layout', '', '<p class="body">Listed in a minute</p>', /B37 view 1 names no layout/],
+  ['a layout the deck does not have', 'data-layout="collage"', '<p class="body">Listed in a minute</p>', /B37 view 1 is the layout "collage", which a deck does not have/],
+  ['a number slide with a heading on it', 'data-layout="number"', '<h2 class="heading">What you keep</h2><p class="body">You keep</p><p class="peak">$17</p>', /B37 view 1 is the layout "number" and does not hold what that is/],
+  ['a list of seven rows', 'data-layout="list"', `<ul class="rows">${'<li data-part="row"><p class="body">Shoots</p></li>'.repeat(7)}</ul>`, /B37 view 1 is the layout "list" and does not hold what that is: two to six rows/]])
+  test(`render B37: ${what} fails`, { skip: !pw }, async () => { const f = join(dir, `layout-${n++}.html`); writeFileSync(f, `<!doctype html>${SLIDE(layout, inner)}`);
+    assert.match((await check(f, 'deck', { browser })).findings.map(o => `${o.id} ${o.where} ${o.msg}`).join('\n'), re); });
+CASES.push(['B37', 'a slide in a layout the deck does not have', `<section class="s" data-view data-layout="collage"><p class="b">Listed in a minute</p>${MARK}</section>${END}`, /B37 .*"collage", which a deck does not have/]);
+CASES.push(['B3', 'the closing wordmark in a corner', `${TITLE}<section class="s" data-view><p class="m">secondhand</p></section>`, /B3 .*alone at 64 px it goes in the middle/]);
 for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.

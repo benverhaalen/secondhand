@@ -165,6 +165,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
       if (tall) { const r = await page.evaluate(i => { const b = document.querySelectorAll('[data-view]')[i].getBoundingClientRect(); return [b.left, b.top, b.width, b.height]; }, i); rect.splice(0, 4, ...r); }
       const view = await page.evaluate(measure, { index, rect, faces: got.faces, medium, kinds });
       view.marks = marked ? await page.evaluate(({ i, kinds }) => { const d = document.querySelectorAll('[data-view]')[i].dataset; return d.state == null && !kinds.some(k => d[k]) ? null : { state: d.state ?? null, skip: d.skip ?? '', names: Object.fromEntries(kinds.filter(k => d[k]).map(k => [k, d[k]])) }; }, { i, kinds }) : null;
+      view.layout = marked ? await page.evaluate(i => document.querySelectorAll('[data-view]')[i].dataset.layout ?? null, i) : null;
       if (old) view.share = old.share;
       else { const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], tall ? Math.ceil(rect[3]) : canvas[1]) };
         const png = `data:image/png;base64,${(await page.screenshot({ clip })).toString('base64')}`;

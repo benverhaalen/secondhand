@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en" data-medium="deck">
+<head>
+<meta charset="utf-8">
+<title>secondhand deck template</title>
+<link rel="stylesheet" href="../tokens.css">
+<link rel="stylesheet" href="../media.css">
+<link rel="stylesheet" href="layouts.css">
+</head>
+<body>
+<!-- A deck is 1920 by 1080. Every slide is one of six layouts: title, statement, number, list, item, close.
+     Check it: node scripts/brand-check.mjs brand/templates/deck.html --medium deck
+     The numbers here are from research/cross-cutting/ben/pitch-evidence.md. Replace them with yours and keep the source in a comment. -->
+
+<!-- title: the field fills it, one heading, one line. -->
+<section data-view data-layout="title" data-field>
+  <div class="content">
+    <h2 class="heading">Sell used things from one app</h2>
+    <p class="body second">A second pair of hands for selling.</p>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- statement: one heading, and at most one line under it. -->
+<section data-view data-layout="statement">
+  <div class="content">
+    <h2 class="heading">Selling is a second job</h2>
+    <p class="body second">Photos, a price, a post on every site, every message.</p>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- number: what it is, the one number, what follows. Source: pitch-evidence.md, the eBay sell-through row. -->
+<section data-view data-layout="number">
+  <div class="content">
+    <p class="body second">Listed under $15 on eBay</p>
+    <p class="peak">8.6%</p>
+    <p class="body">sell in 30 days.</p>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- list: a heading and six rows at most, each one line. -->
+<section data-view data-layout="list">
+  <div class="content">
+    <h2 class="heading">What it does</h2>
+    <ul class="rows">
+      <li data-part="row"><p class="body">Shoots and measures</p></li>
+      <li data-part="row"><p class="body">Prices from what sold</p></li>
+      <li data-part="row">
+        <p class="body">Posts</p>
+        <div class="logos">
+          <img data-part="logo" src="../../assets/platforms/ebay.svg" alt="eBay">
+          <img data-part="logo" src="../../assets/platforms/depop.svg" alt="Depop">
+          <img data-part="logo" src="../../assets/platforms/mercari.svg" alt="Mercari">
+        </div>
+      </li>
+      <li data-part="row"><p class="body">Answers buyers</p></li>
+    </ul>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- item: words on the left, one real photo on the right. -->
+<section data-view data-layout="item">
+  <div class="content">
+    <div class="words">
+      <h2 class="heading">One photo in</h2>
+      <p class="body second">Chico State hoodie, XXL</p>
+    </div>
+    <figure class="item" data-part="item-hero">
+      <img data-photo src="../../assets/demo-items/real/chico-hoodie/01_cover.jpg" alt="Russell Athletic Chico State hoodie, faded crimson, XXL, flat on concrete">
+    </figure>
+  </div>
+  <p class="wordmark">secondhand</p>
+</section>
+
+<!-- close: the wordmark alone. -->
+<section data-view data-layout="close">
+  <p class="wordmark">secondhand</p>
+</section>
+</body>
+</html>

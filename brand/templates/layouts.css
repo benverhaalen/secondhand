@@ -1,0 +1,41 @@
+/* Layouts for a deck, a post and a story (constitution Part III). Link tokens.css, media.css, then this file, and set data-medium on <html>.
+   A view is <section data-view data-layout="...">, holding one <div class="content"> and, where the medium asks for it, <p class="wordmark">.
+   Every size here is a variable from media.css, so nothing is a raw number. Copy a template; do not write a new layout in place. */
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--page); }
+body { color: var(--ink); font-family: var(--font-text); font-weight: var(--w-regular); }
+p, h2, ul, li, figure, figcaption { margin: 0; padding: 0; }
+ul { list-style: none; }
+[data-medium="story"] { --mt-body: var(--mt-caption); --mt-heading: var(--mt-title); }
+
+[data-view] { width: var(--canvas-w); height: var(--canvas-h); padding: var(--margin-top) var(--margin-x) var(--margin-bottom); display: flex; flex-direction: column; overflow: hidden; background: var(--page); }
+[data-view][data-field] { background: var(--field); color: var(--on-field); }
+.content { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: var(--ms-6); }
+
+/* type (Art. 6.12): 32 and up at leading 1.1 and tracking -0.02em; under 32 at 1.4 and 0 */
+.heading { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--mt-heading); line-height: 1.1; letter-spacing: -0.02em; white-space: nowrap; }
+.body { font-size: var(--mt-body); line-height: 1.1; letter-spacing: -0.02em; }
+.second { color: var(--ink-2); }
+[data-field] .second { color: var(--on-field-2); }
+.peak { font-size: var(--mt-peak); line-height: 1.1; letter-spacing: -0.02em; }
+/* an amount at the heading's size is in the text face, because the display face holds no digits (Art. 6.11) */
+.amount { font-size: var(--mt-heading); line-height: 1.1; letter-spacing: -0.02em; }
+.wordmark { font-family: var(--font-display); font-weight: var(--w-display); font-size: var(--mt-wordmark); line-height: 1.1; letter-spacing: -0.01em; margin-top: var(--ms-8); }
+[data-medium="post"] .wordmark { text-align: center; }
+
+/* number: what the number is, the number, what follows from it */
+[data-layout="number"] .content { gap: var(--ms-3); }
+/* list: rows of one height with a hairline between them, six at most */
+.rows > li { display: grid; grid-template-columns: 1fr auto; align-items: center; height: var(--ms-8); }
+.rows > li + li { border-top: 1px solid var(--rule); }
+.logos { display: flex; gap: var(--ms-3); align-items: center; }
+.logos img { display: block; height: var(--mt-wordmark); width: var(--mt-wordmark); }
+/* item: the photo is square. On a deck it fills the right of the slide and the words sit left; on a post and a story it sits on top */
+.item img { display: block; aspect-ratio: 1; object-fit: cover; border-radius: var(--mr-photo); }
+[data-medium="deck"] [data-layout="item"] .content { flex-direction: row; justify-content: space-between; gap: var(--ms-8); }
+[data-medium="deck"] [data-layout="item"] .words { display: flex; flex-direction: column; gap: var(--ms-6); }
+[data-medium="deck"] [data-layout="item"] .item, [data-medium="deck"] [data-layout="item"] .item img { height: 100%; }
+[data-medium="post"] .item img, [data-medium="story"] .item img { width: 100%; }
+/* close: the wordmark alone, in the middle */
+[data-layout="close"] { display: grid; place-items: center; }
+[data-layout="close"] .wordmark { margin: 0; font-size: var(--mt-wordmark-alone, var(--mt-wordmark)); }
