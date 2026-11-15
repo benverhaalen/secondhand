@@ -10,9 +10,9 @@
   ],
   "decisions": [
     "The cards' words and order live in app/src/today/cards.ts, not in the screen, so they are tested in node and the item page can read the same card (one fact, one place).",
-    "The world is picked with ?world= (clearing by default) and states are reached with ?state=loading|offline and ?fail=<decision ids>, because the demo has no server to slow down or fail.",
-    "On an offer card Accept is the black pill and the agent's counter is the second, though the data suggests the counter: the fact line shows what accepting keeps, and the person clearing out looks at what they keep, then accepts (pages §3).",
-    "On a pickup that asks for the home address, Keep the lot is the black pill and Share address is the second: an address is shared only on the person's tap (decision 2026-11-14, locked), so the safe choice is the one the eye lands on.",
+    "The person and the state are read through useScreen() (app/src/demo/screen.ts), so Today draws every state at /?state=<s> like every page; ?world=stops and ?fail=<decision ids> are Today's own extras, because the demo has no server to fail.",
+    "On an offer card Accept leads (black when the card is the lead or due within the hour, C4) and the agent's counter is the second, though the data suggests the counter: the fact line shows what accepting keeps, and the person clearing out looks at what they keep, then accepts (pages §3).",
+    "On a pickup that asks for the home address, Keep the lot leads and Share address is the second: an address is shared only on the person's tap (decision 2026-11-14, locked), so the safe choice is the one the eye lands on.",
     "Every act holds about 5 s behind an Undo toast before it reaches the site (Gmail's undo send), so even a sent reply or an accept can be taken back in that window; after it, the log and the site's own limits apply.",
     "The batch of labels says what the tap spends (Labels cost $6.40), not what the sales keep, because the top slot already says that money (one fact, one place).",
     "The handled line names the most frequent thing the agent did and how many others ('Took 2 listings down, and 1 more'), never a bare count, because Ben called '3 need you, 11 handled' meaningless (ledger L13); it opens its log in a sheet, with Undo where the site still allows it.",
@@ -24,7 +24,9 @@
     "A thing sold on two sites is one card, Sold twice, with Keep the first as the one tap and Compare opening both sales side by side (site, buyer's price, what each keeps, what cancelling each costs); the top slot counts it once until the person picks (spec/edge-cases.md §1).",
     "Each stop on the auto-list tree is one card with one question in its fact line and the likely answer as the black pill, so a stopped tree costs a tap, never a restart; a retake opens the camera (spec/edge-cases.md §7). The stops world (/?world=stops) draws them all.",
     "Every card's More ends with I did this already, Open the chat and Open the item (ways-out, Today: 'I already did that on the site', 'None of these buttons').",
-    "An amount typed under the person's lowest asks once in the sheet ('Under your lowest, $70. Tap again to send it.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona)."
+    "An amount typed under the person's lowest asks once in the sheet ('Under your lowest, $70. Tap again to send it.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona).",
+    "One black pill per view (C4, DecisionCard): only the lead card, nearest its deadline, and any card due within the hour lead with black; every other card leads with the light fill.",
+    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Try again, and a card that failed is the failed state reached with ?fail=."
   ],
   "states": [
     {
@@ -34,18 +36,23 @@
     },
     {
       "state": "new",
-      "route": "/?world=new",
+      "route": "/?state=new",
       "shows": "Next step, Link a site, and the What's something worth? row; no money, no cards, never $0.00"
     },
     {
       "state": "dense",
-      "route": "/?world=flipper",
+      "route": "/?state=dense",
       "shows": "Since this morning $137.97, three offers, a label, 5 to ship as one batch card, 40 to post drawn as a stack, the photos to approve, a notice and the handled line"
     },
     {
       "state": "empty",
-      "route": "/?world=one",
-      "shows": "Nothing needs you"
+      "route": "/?state=empty",
+      "shows": "Nothing needs you, with no money at the top, no notices and no handled line"
+    },
+    {
+      "state": "one",
+      "route": "/?state=one",
+      "shows": "Since yesterday $97.33 and one card, the pickup on its state gradient with the one black pill, Keep the lot; nothing else"
     },
     {
       "state": "loading",
@@ -55,7 +62,7 @@
     {
       "state": "working",
       "route": "/?world=clearing",
-      "shows": "after a tap, the pressed card's black pill shows the step (Accepting, Sending, 1 of 2) and its other pill is disabled"
+      "shows": "after a tap, the pressed pill shows the step (Accepting, Sending, 1 of 2) and its other pill is disabled"
     },
     {
       "state": "done",
@@ -66,6 +73,11 @@
       "state": "failed",
       "route": "/?world=clearing&fail=dec_jacket",
       "shows": "the card stays with a Failed tag, says what failed ('The site did not answer') and offers Retry"
+    },
+    {
+      "state": "did not load",
+      "route": "/?state=failed",
+      "shows": "Today didn’t load and Try again, with no money and no cards; Try again draws Today"
     },
     {
       "state": "batch failed",
@@ -80,7 +92,7 @@
     {
       "state": "offline",
       "route": "/?state=offline",
-      "shows": "a tap is taken and the pill says Waiting for signal"
+      "shows": "the last copy under a Waiting for signal line; a tap is taken and the pill says Waiting for signal"
     },
     {
       "state": "break",
@@ -307,6 +319,12 @@
       "id": "dec_jacket-elsewhere",
       "control": "I did this already, in More",
       "on_tap": "Checking the site, then the card leaves with Undo"
+    },
+    {
+      "id": "retry",
+      "route": "/?state=failed",
+      "control": "Try again, when Today did not load",
+      "on_tap": "loads Today again"
     }
   ],
   "back": "Today is a tab: it has no Back. The queue's Back closes the queue; a sheet closes on its scrim."
