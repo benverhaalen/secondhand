@@ -42,7 +42,7 @@ Ranked by how convincing it is per hour spent. "Who" is the thread or person bes
 | # | Proof | Convincing | Hours | Who | Status |
 |---|---|---|---|---|---|
 | 1 | **The stopwatch** on 8 to 10 real items: by hand on 2 or 3 sites against the app, with how many it named right and how close its price was to the sold median | very: real items, a real clock, intervals on the numbers | about 0.75 | Ben and Nate, filmed ([demo reel](demo-reel.md#1-the-evidence-is-the-clip)) | the scorer exists: `node scripts/bench/hands-on.mjs`, from the [template](../scripts/bench/hands-on.template.csv) |
-| 2 | **The price backtest** on 30 to 50 things that already sold on Poshmark, Mercari or Grailed (their sold prices are public without signing in, *observed* in [comps sources](../research/price/ben/comps-sources-live.md)): median error, how often the sale fell inside our range, against the plain median of asking prices | very, for data judges; it's the only number about price accuracy we could have | 2 to 3 | the benchmark work | the harness exists (`jobs/valuation/backtest.py`); the sold rows need gathering. Keep eBay out: its licence bars modelling prices on its data |
+| 2 | **The price backtest** on things that already sold on Poshmark, Mercari or Grailed (their sold prices are public without signing in, *observed* in [comps sources](../research/price/ben/comps-sources-live.md)), scored as [below](#the-price-backtest-how-it-flatters-truthfully) | very, for data judges; it's the only number about price accuracy we could have | 2 to 3 | the benchmark work | designed in [spec/plans/backtest/plan.md](../spec/plans/backtest/plan.md) (31 decisions); the harness exists (`jobs/valuation/backtest.py`); **nothing has run on real resale rows yet** |
 | 3 | **Live leading signals**: list 5 to 10 items tonight with the listings and prices secondhand wrote, on a demo account (never Ben's personal Depop), and report at the pitch what came in: views, likes, offers, questions, per site | very: real buyers, real hours. Say "written and priced by secondhand" and, if posted by hand, say so | 1 to post, then the market's time | Ben and Nate | needs demo accounts; one first warning from a site stops it |
 | 4 | **The pre-registered forecast**: commit the predicted range and days to sell for the items in 3, now | medium at judging, strong as a signal of rigor: "we wrote it down before we knew" | 0.25 | this thread, from the app's numbers | a CSV in `scripts/bench/` committed tonight |
 | 5 | **The ablation**, inside the backtest: weighted comps against a plain median; the best site against one fixed site | medium to strong; shows each piece earns its place | 0.5 on top of 2 | the benchmark work | the fee half is done ($2.69 on $20); the price half rides on 2 |
@@ -50,6 +50,35 @@ Ranked by how convincing it is per hour spent. "Who" is the thread or person bes
 | 7 | **Third-party evidence that the levers work** (more sites, better photos, faster replies) | weak to medium: thin and mostly vendor claims; our notes found no sell-through data for Poshmark or Mercari | 0.5 | research | cite each one as theirs, never as ours |
 
 **If there's only time for three:** 1, 2 and 4. The stopwatch proves the work goes away, the backtest proves the price, and the forecast shows we'll be held to it.
+
+## The price backtest: how it flatters truthfully
+
+Ben asked for a backtest set up "in a flattering but truthful way" ([07:18](words.md#2026-11-15-a-backtest-that-flatters-truthfully-seasons-and-waves-and-merge-to-main)). The design is in the [backtest plan](../spec/plans/backtest/plan.md) and its evidence is in [what predicts price and speed](../research/price/ben/what-predicts-price-and-speed.md). Each item below flatters us only where it's also the fair way to score.
+
+1. **State the market's own noise first.** Identical items resell about 11% apart in the same month on eBay (Einav et al., AEJ Micro 2015, 7.7M listings, *observed*). At that spread, a perfect model lands within 20% of the sale about 93% of the time and within 10% only 63% (simulation, *inferred*). So the headline is "within 20%", shown beside that ceiling. R² is never the headline: any model that knows a phone costs more than a T-shirt scores high on it.
+2. **The headline line**, with placeholders until the run: "X in 10 of our prices landed within 20% of what it sold for. The eBay sold median, the number a seller looks up today, got Y in 10, on the same N sales, priced the day before listing. Our 80% ranges held Z% of the time." Always say beside it how often we were off by more than 30%.
+3. **Saying "I don't know" counts in our favour, if we prove it.** On the items we declined to price, show how often the eBay median was off by more than 30%. That shows the system knows when it doesn't know.
+4. **Testing the test.** A planted leak is refused (`backtest.py` already does this). A model that's handed the answer hits the noise ceiling and no higher. Shuffled comps score no better than the baseline. The test is written down before the run, and the final window is scored once.
+5. **A public number to stand beside ours.** Kaggle's Mercari price challenge was scored on sold Mercari items, and the winner reached RMSLE 0.3875 out of 2,384 teams (Mercari engineering blog, 2018, *observed* through the research note). It only matches our from-a-photo case, and we haven't confirmed we can download the data.
+
+## Seasons and supply: what's true, and the lines it allows
+
+Ben asked about seasons, spikes, dates, and when people donate or buy new ([07:18](words.md#2026-11-15-a-backtest-that-flatters-truthfully-seasons-and-waves-and-merge-to-main), and [07:28](words.md#2026-11-15-the-backtest-proves-it-works-now-and-is-where-we-tune-and-trends-reach-past-resale)). This is from Census store sales (FRED, not seasonally adjusted, 2023 to 2025), run through [M12](../spec/determinations/market-insight.md#m12-seasonality)'s own method (`python3 scripts/bench/seasons.py`). The values are *observed* and the factors are *inferred*.
+
+| What | When | Factor (1.00 = an average month) |
+|---|---|---|
+| Used-goods stores, slowest | January | 0.91 |
+| Used-goods stores, busiest | March and October | 1.08 |
+| New clothing stores, peak | December | 1.45 |
+| New electronics stores, peak | December | 1.34 |
+| Used-goods stores in December | December | 1.02 |
+
+- **December is when new wins.** New clothing and electronics rise 34 to 45%; used barely moves. A pitch line that holds: "In December people buy new. In March and October they buy used."
+- **Supply.** There are no public donation volumes, only Goodwill's quotes about year-end and spring. One moving company's 222,300 moves in 2024 had about 37% in May to August, with January the quietest (All My Sons, *observed*, one company). Moves are a supply wave for furniture. The supply-and-demand signal we'd measure ourselves is sold items against new listings per month.
+- **Holiday spikes on resale apps.** Poshmark said vintage sold nearly 30% more, and toys 50% more, over Thanksgiving weekend 2022 than the year before (company-reported, Modern Retail).
+- **No source measures resale *price* by month.** Say "more coats sell in October", never "coats sell for more in October", until our own rows show a price factor. The same fix is open in M12's example line ([plan, §4](../spec/plans/backtest/plan.md)).
+
+**One risk to settle before the pitch:** eBay's API licence bars using eBay content "to suggest or model prices for items listed on eBay Sites" (*observed*, [comps sources](../research/price/ben/comps-sources-live.md)). Showing the eBay sold median as the baseline to beat is a comparison, not a model, but how those rows are collected decides which terms apply. Say how we got them if asked.
 
 ## Comparison: say it against what people do today
 
@@ -66,4 +95,6 @@ Ranked by how convincing it is per hour spent. "Who" is the thread or person bes
 - "It sells faster" or "more sales": not measured. Say which part we measured.
 - A sell-through rate from the live listings in 3: hours aren't a sell-through.
 - A backtest number without its n and its range coverage, or on fewer than 20 items.
+- "Within 10%" as a headline, or R² at all: the market's own noise caps the first at about 63%, and the second flatters any model.
+- That an item "sells for more" in a season: the evidence is for counts and speed, not price.
 - Another tool's name, unless Ben and Nate decide to name them.
