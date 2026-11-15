@@ -37,14 +37,33 @@ Reason it out as the best product designer you know would: what the product is f
 | Tests first | A fresh agent turns the table into Playwright tests in `app/e2e/<page>.spec.ts` against the web build, read from the event log, and a Maestro flow in `app/e2e/maestro/<page>.yaml` | They fail before the behavior exists |
 | Behavior | Make the tests pass. Motion and haptics from `app/src/ui/motion.ts` and frontend-standard §3 | Tests pass |
 | Check | `node scripts/app-check.mjs <route>`: brand-check on the real render (U6 logos, U7 nothing moves, sizes, contrast, corners) and Emil's checks; `node .agents/check.mjs` | Zero errors |
-| Break it | Run `break-ui` on the page: long text, no data, slow network, huge numbers, dark mode, large type, fast taps | Every break is fixed, and each one that a script could catch is a new check with a failing test |
-| Record | A finding that could recur goes to the lowest layer that makes it impossible: a token, a part, a check, then a judge line | The commit names it |
+| Break it | Run `break-ui` and `review-animations` on the page: long text, no data, slow network, huge numbers, dark mode, large type, fast taps; walk it as each persona and each ways-out row | Every defect went through the intake below |
+| Record | Every defect found, by anyone, goes through the intake below | The commit names the layer it was fixed in |
 
 A beautiful page with a dead control fails. So does a working page that drifts from the kit.
 
-## Human in the loop is the signature
+## When the agent acts and when it hands off
 
-Ben, 04:04: "design around human in the loop to show it off as central to our product". Every page shows what the agent guessed and lets the person change it: guesses are underlined dotted until the person touches them, an approval is one tap with what it will do written on the button, and every automatic step can be undone from where it happened. Price, an address and a pickup always wait for a tap. Design these moments to look deliberate and calm, not like warnings.
+Ben, 04:04: design around human in the loop and show it off; 04:12: not as a slogan, as "a decision when navigating when to hand off to human vs agent". Decide it per action, on every page, with this rule (the tiers are in [decisions](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)):
+
+| The agent proceeds, and shows it as done with Undo | It hands off, and shows a card with its guess filled in |
+|---|---|
+| The step can be undone where it happened | The step cannot be undone, or is public in the person's name for the first time |
+| It stays inside limits the person set (floor, ceiling, rules) | Money moves outside those limits, or a price is set at all |
+| The person approved this kind three times unedited | An address, a pickup, an identity or a payment is shared |
+| The agent is sure, and the facts are backed | The agent guessed, a claim has no source, or two sites disagree |
+
+A hand-off shows what the agent would do, written on the button, with every guessed word underlined dotted until the person touches it; one tap approves. A step the agent took shows in the log and on the page it changed, with Undo. Never write a slogan about it; the screens show it.
+
+## One intake for every defect
+
+Ben, 04:11: "what else would become a check? ... ensure your process is generalizable". A defect is anything that should not have reached a person, whatever found it: Ben's correction, break-ui, a judge that fails the same thing twice, an end-to-end test, a bug on the phone, review-animations, an accessibility audit, a persona or ways-out walk, two surfaces that drift apart, a mismatch with the backend's contract, or a research finding. Each one runs the same five steps, in one commit:
+
+1. **Reproduce.** Add the smallest fixture that shows it: a render case, a content case in `.agents/ui-states.json`, an e2e step, or a unit test. It must fail now.
+2. **Scope.** Name where it applies: global, app, web, deck, post or story (`media` on the rule's row). A rule for the app never binds the website unless the website has the same problem.
+3. **Fix it at the lowest layer.** A token, then a part, then the page. A fix in the page alone is allowed only for a defect that exists on one page.
+4. **Hold it.** If a script can decide it, a check with that fixture as its failing test and a `check` row in `.agents/ui-rules.json`. If not, one "Fail if" judge line with its source. A note with neither does not count.
+5. **Teach.** If a builder following this file would have made it again, change this file or the skill that misled them, in the same commit, and quote Ben's words in `product/words.md` when the defect came from him.
 
 ## Rules for parallel builders
 
