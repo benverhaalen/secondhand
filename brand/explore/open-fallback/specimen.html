@@ -1,0 +1,33 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>open fallback specimen</title>
+<style>
+  /* Only the open pair, declared as the app declares it (app/src/ui/fonts.ts). No other face is named anywhere in this file. */
+  @font-face { font-family: "Hanken Grotesk"; src: url("../../../app/assets/fonts-open/hanken-grotesk/HankenGrotesk-Medium.ttf"); font-weight: 500; font-style: normal; size-adjust: 103.45%; ascent-override: 92.6%; descent-override: 23.4%; line-gap-override: 0%; }
+  @font-face { font-family: "Outfit"; src: url("../../../app/assets/fonts-open/outfit/Outfit-SemiBold.ttf"); font-weight: 600; font-style: normal; size-adjust: 103.5%; ascent-override: 72.5%; descent-override: 24.2%; line-gap-override: 9.7%; }
+  body { margin: 0; padding: 24px; width: 760px; background: #fff; color: #111; font: 500 15px/20px "Hanken Grotesk", sans-serif; font-synthesis: none; }
+  h6 { margin: 20px 0 6px; font: 500 13px/15px "Hanken Grotesk"; color: #777; }
+  .d { font-family: "Outfit"; font-weight: 600; text-transform: lowercase; }
+  .tab { display: flex; gap: 40px; border-top: 1px solid #ddd; padding-top: 8px; width: 360px; }
+  .tab span { font-size: 13px; line-height: 15px; }
+  .price { font-size: 18px; line-height: 24px; font-variant-numeric: tabular-nums; }
+  .trunc { width: 260px; font-size: 18px; line-height: 24px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-right: 1px dashed #c33; }
+  .row { display: flex; gap: 28px; align-items: baseline; }
+  .sp { letter-spacing: 0; }
+</style>
+<h6>wordmark, 36 display 600 (lowercase)</h6>
+<div class="d" style="font-size:36px;line-height:44px">secondhand</div>
+<h6>screen title, 21 display 600</h6>
+<div class="d" style="font-size:21px;line-height:28px">your sales, saved searches, jeans</div>
+<h6>tab bar labels, 13 text 500</h6>
+<div class="tab"><span>Sell</span><span>Buy</span><span>Inbox</span><span>You</span></div>
+<h6>prices, 18 text 500, tabular figures (columns align)</h6>
+<div class="price">$31.40<br>$111.00<br>$1,088.25<br>$7.95</div>
+<h6>a long item title that truncates, 18 (dashed line is the edge)</h6>
+<div class="trunc">Vintage Levi's 501 straight leg jeans in dark indigo, 32 x 30, selvedge</div>
+<h6>special characters at 13 / 15 / 18 / 50</h6>
+<div class="row sp"><span style="font-size:13px">&#8217; &#215; &#8722; &#189; &#8230; &#8211; &#8594;</span><span style="font-size:15px">&#8217; &#215; &#8722; &#189; &#8230; &#8211; &#8594;</span><span style="font-size:18px">&#8217; &#215; &#8722; &#189; &#8230; &#8211; &#8594;</span><span style="font-size:50px">&#8217;&#215;&#8722;&#189;&#8230;&#8211;&#8594;</span></div>
+<h6>in use at 15</h6>
+<div>It&#8217;s 32&#189; in &#215; 4 &#8722; $8 &#8230; Accept $38 &#8211; sold &#8594; shipped</div>
+<h6>50 text 500 digits</h6>
+<div style="font-size:50px;line-height:56px;font-variant-numeric:tabular-nums">$38.00</div>

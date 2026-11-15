@@ -23,3 +23,17 @@ test('a missing face is reported, not invented', () => {
   assert.equal(got.find(f => f.file === 'ppneuemontreal-medium.otf').ok, false);
   assert.deepEqual(readdirSync(dest), ['Clofie-SemiBold.ttf']);
 });
+
+test('the open fallback files are committed, and the website copy is byte for byte the app copy', async () => {
+  const { OPEN, openMissing } = await import('./fonts.mjs');
+  const { readFileSync } = await import('node:fs');
+  const { fileURLToPath } = await import('node:url');
+  const root = join(fileURLToPath(import.meta.url), '../..');
+  assert.deepEqual(openMissing(), []);
+  for (const o of OPEN) assert.ok(readFileSync(join(root, o.app)).equals(readFileSync(join(root, o.web))), o.web);
+});
+
+test('an open file that is gone is reported', async () => {
+  const { openMissing } = await import('./fonts.mjs');
+  assert.equal(openMissing(dir()).length, 4);
+});
