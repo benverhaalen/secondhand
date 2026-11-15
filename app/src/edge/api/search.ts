@@ -1,36 +1,200 @@
-// Rests-on: spec/product.md §7 Resources; spec/examples/.
-import type { Handler } from './http.ts';
-import { exampleHandler, manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid } from './captures.ts';
-
-import { searchAll, type SearchOpts } from '../intel/public/search.ts';
-import { searchAll as rankOffers, type BuyOffer } from '../buy/buy.ts';
+// Rests-on: spec/product.md §7 Jobs and the event stream, §8 search budget; int-search-1 brief.
+import { ApiError, type Ctx, type Handler } from './http.ts';
+import { manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid, pagination } from './captures.ts';
+import { searchSite, type SiteSearched } from '../intel/public/search.ts';
+import { BASE, searchUrl, type Row } from '../intel/public/readers.ts';
+import { fetchPage } from '../intel/fetch.ts';
+import { SITES, type Site } from '../harness/protocol.ts';
+import { runPlan, normalize } from '../intel/run.ts';
+import { PROTOCOLS } from '../intel/protocols.ts';
+import { emptyFound, type Answer, type Found } from '../intel/answer.ts';
+import { sameProduct, type Judged, type Result } from '../intel/reconcile.ts';
+import { jevAsk } from '../intel/jev.ts';
+import { searchAll as rankOffers, type BuyOffer, type BuyRow } from '../buy/buy.ts';
 import { jobs, type ApiJobRow } from './jobs.ts';
-import { example } from './examples.ts';
 
-// Public-page storage uses fetchPage's existing port; a missing recording is an explicit source gap.
-const pages = new Map<string, string>();
-const offer = (example('products.get').response as { offers: { delivered_cents: { amount_cents: number } }[] }).offers[0];
-const seedQuery = (example('search.text').request!.body as { text: string }).text;
-const escape = (s: string) => s.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
-pages.set(seedQuery, `<li class="s-item"><a class="s-item__link" href="https://www.ebay.com/itm/000000000001"><div class="s-item__title">${escape('Carhartt Detroit Jacket J97')}</div></a><span class="s-item__price">$${(offer.delivered_cents.amount_cents / 100).toFixed(2)}</span><span class="SECONDARY_INFO">used_good</span></li>`);
-export const ports: Pick<SearchOpts, 'fetchPage'> = { async fetchPage(url) {
-  const u = new URL(url), html = u.hostname.endsWith('ebay.com') ? pages.get(u.searchParams.get('_nkw') ?? '') : undefined;
-  return html === undefined ? { ok: false, kind: 'not_found', reason: 'no stored public page', ms: 0, searched: [] } : { ok: true, html, final_url: url, status: 200, rung: 'plain', ms: 0, searched: [] };
-} };
+const protocol = PROTOCOLS.listings_matching;
+export const ports = { fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms };
+// The shared job store owns the promises as well as their rows; nothing is detached without a rejection handler.
+export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string, Promise<void>>() });
+type ActiveRead = { rows?: JudgedRow[]; searched?: SiteSearched; failure?: unknown };
+const reading = new Map<string, ActiveRead>();
+
+type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found };
+type JudgedRow = { row: Row; judged: Judged };
+type PublicOffer = BuyOffer & { currency: string; image_url?: string; external_id: string };
+type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
+
+function candidates(site: Site, rows: Row[]): Result[] {
+  // readPage's required-field gate has already validated these fields.
+  return rows.map(row => ({ id: `ls_${site}_${row.id}`, listing_id: `ls_${site}_${row.id}`, site,
+    title: row.title!, price_cents: row.price_cents!, url: row.url!, route_id: `public.${site}` }));
+}
+
+function rank(site: Site, rows: JudgedRow[], searched: SiteSearched, filters: Record<string, unknown>): Batch {
+  const found: Found = { ...emptyFound(), sources_searched: 1, results_found: rows.length, sites: { [site]: 0 } };
+  const drop = (reason: string) => { found.dropped_by_reason[reason] = (found.dropped_by_reason[reason] ?? 0) + 1; };
+  const offers: PublicOffer[] = [];
+  for (const { row, judged } of rows) {
+    if (judged.keep !== 'keep') { drop(judged.keep); continue; }
+    if (judged.match === 'unresolved') { drop('unresolved'); continue; }
+    if (judged.match === 'same_family_other_variant') { drop('other_variant'); continue; }
+    const offer: PublicOffer = { ...candidates(site, [row])[0], external_id: row.id!, currency: row.currency!,
+      ...(row.image_url ? { image_url: row.image_url } : {}), condition: row.condition ?? 'unknown',
+      relation: judged.match === 'comparable' ? 'functional_equivalent' : 'same_product',
+      shipping_cents: null, tax_rate: 0, source_kind: 'marketplace', sold: row.sold };
+    if (Array.isArray(filters.condition) && !filters.condition.includes(offer.condition)) { drop('condition'); continue; }
+    if (Array.isArray(filters.seller_kind) && !filters.seller_kind.includes(offer.seller_kind)) { drop('seller_kind'); continue; }
+    if (text(filters.ships_from) && offer.ships_from !== filters.ships_from) { drop('ships_from'); continue; }
+    if (text(filters.ships_to) && !offer.ships_to?.includes(filters.ships_to)) { drop('ships_to'); continue; }
+    if (filters.in_stock_only === true && offer.stock !== 'in_stock') { drop('in_stock_only'); continue; }
+    if (object(filters.max_delivered_cents) && row.currency !== filters.max_delivered_cents.currency) { drop('currency'); continue; }
+    offers.push(offer);
+  }
+  const live = rankOffers(offers, { medianShipping: 0 });
+  if (offers.length > live.length) found.dropped_by_reason.unavailable_or_duplicate = offers.length - live.length;
+  const ranked = live.filter(r => {
+    if (object(filters.max_delivered_cents) && r.delivered_cents > Number(filters.max_delivered_cents.amount_cents)) { drop('max_delivered_cents'); return false; }
+    return true;
+  });
+  found.results_used = ranked.length; found.sites[site] = ranked.length;
+  const kept = new Set(ranked.map(r => r.id));
+  return { searched, rows, offers: offers.filter(o => kept.has(o.id)), ranked, found };
+}
+
+function offerView(row: BuyRow) {
+  const offer = row as BuyRow & PublicOffer;
+  const amount = (n: number) => ({ amount_cents: n, currency: offer.currency });
+  return { id: offer.id, listing_id: offer.listing_id, external_id: offer.external_id, title: offer.title, url: offer.url,
+    site: offer.site, route_id: offer.route_id, condition: offer.condition, relation: offer.relation,
+    source_kind: offer.source_kind, price_cents: amount(offer.price_cents), shipping_cents: null,
+    delivered_cents: amount(offer.delivered_cents), shipping_estimated: offer.shipping_estimated, also_on: offer.also_on,
+    ...(offer.image_url ? { image_url: offer.image_url } : {}) };
+}
+
+async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typeof ports) {
+  const query = String(ctx.body.text ?? ctx.body.url ?? ''), filters = object(ctx.body.filters) ? ctx.body.filters : {};
+  const t0 = performance.now(), pending = new Set<Site>(SITES), batches = new Map<Site, Batch>();
+  let first: number | null = null;
+  const saveStages = () => jobs.update(job.id, {
+    // The brief adds `late` and found{}; the shared Stage type still names the older four states.
+    stages: structuredClone(stages) as ApiJobRow['stages'],
+  });
+  const result = () => {
+    const found = emptyFound();
+    for (const batch of batches.values()) {
+      for (const key of ['sources_searched', 'results_found', 'results_used'] as const) found[key] += batch.found[key];
+      Object.assign(found.sites, batch.found.sites);
+      for (const [reason, count] of Object.entries(batch.found.dropped_by_reason)) found.dropped_by_reason[reason] = (found.dropped_by_reason[reason] ?? 0) + count;
+    }
+    const ranked = rankOffers([...batches.values()].flatMap(b => b.offers), { medianShipping: 0 });
+    return { product: null, results: ranked.map(offerView), official: [], sites_pending: [...pending], found,
+      searched: [...batches.values()].map(b => ({ ...b.searched, ...(b.cached ? { cached: true } : {}) })) };
+  };
+  const answer = (settled: boolean): Answer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
+    protocol_version: protocol.version, facts: [], found: result().found,
+    searched: [...batches.values()].map(b => ({ route_id: `public.${b.searched.site}`, query,
+      outcome: b.searched.outcome === 'page_changed' ? 'blocked' : b.searched.outcome, ms: b.searched.ms })),
+    stage: settled ? 'settled' : 'first', ms: { first, settled: settled ? Math.round(performance.now() - t0) : null } });
+  const emit = (event: 'answer.partial' | 'answer.settled', data: Record<string, unknown>) => {
+    const a = answer(event === 'answer.settled');
+    ctx.log.event(event, { job: job.id, answer: a });
+    jobs.append(job.id, event, { job_id: job.id, ...data, answer: a });
+  };
+  const land = (site: Site, batch: Batch, refreshing: boolean) => {
+    if (jobs.st.getJob(job.id)?.state !== 'running') return;
+    batches.set(site, batch);
+    if (!refreshing) pending.delete(site);
+    const stage = stages.find(s => s.name === `site:${site}`)!;
+    stage.state = batch.searched.outcome === 'timeout' ? 'late' : 'arrived';
+    stage.ended_at = new Date().toISOString(); stage.found = batch.found;
+    first ??= Math.round(performance.now() - t0);
+    saveStages(); jobs.update(job.id, { result: result() });
+    // events.json still has the old stage enum; state.change records the brief's late state without falsifying it.
+    if (stage.state === 'late') ctx.log.event('state.change', { entity: 'job.stage', id: `${job.id}:${stage.name}`, to: 'late', job: job.id, stage: stage.name, found: stage.found });
+    else ctx.log.stage(job.id, stage.name, { state: stage.state, found: stage.found });
+    jobs.append(job.id, 'job.stage', { job_id: job.id, stage: stage.name, state: stage.state, at: stage.ended_at, found: stage.found });
+    emit('answer.partial', { site, product: null, results: batch.ranked.map(offerView), official: [], sites_pending: [...pending] });
+  };
+  const sitePlan = async (site: Site, freshness_s: number) => {
+    const key = `${site}|${normalize(query)}`;
+    let shared = reading.get(key), ran = false, rows: JudgedRow[] = [];
+    const remaining = Math.max(0, opts.deadline_ms - (performance.now() - t0));
+    // A one-target plan lets empty and blocked sites settle independently too; runPlan only emits partials for hits.
+    const a = await runPlan({ kind: 'listings_matching', slots: { text: query }, protocol_version: protocol.version,
+      first_ms: protocol.budget.first_ms, settled_ms: remaining,
+      targets: [{ target_id: `site:${site}`, query, deadline_ms: remaining, freshness_s, routes: [{
+        route_id: `public.${site}`, host: new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
+        async run(q) {
+          ran = true; shared = {}; reading.set(key, shared);
+          try {
+            const page = await searchSite(site, q, 'search', { fetchPage: opts.fetchPage, deadline_ms: remaining, log: ctx.log });
+            shared.searched = page.searched;
+            const judged = await sameProduct({ title: q }, candidates(site, page.rows), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
+            shared.rows = page.rows.map((row, i) => ({ row, judged: judged[i] }));
+            return { outcome: page.searched.outcome === 'page_changed' ? 'blocked' as const : page.searched.outcome, rows: shared.rows, site };
+          } catch (e) { shared.failure = e; throw e; }
+          finally { reading.delete(key); }
+        },
+      }] }],
+      calculate(arrivals) { rows = arrivals.flatMap(a => a.rows as JudgedRow[]); return { facts: [] }; },
+    });
+    if (shared?.failure) throw shared.failure;
+    const sameRead = shared?.rows && rows.length === shared.rows.length && rows.every((r, i) => r === shared!.rows![i]);
+    const searched = sameRead ? shared!.searched : undefined;
+    const outcome = a.searched[0]?.outcome ?? 'timeout';
+    const observed: SiteSearched = searched && outcome !== 'timeout' ? searched : {
+      site, kind: 'search', url: searchUrl(site, query, 'search'), outcome: outcome === 'over_budget' ? 'timeout' : outcome,
+      count: rows.length, ms: a.searched[0]?.ms ?? Math.round(remaining),
+    };
+    const cached = !ran && !sameRead && (outcome === 'hit' || outcome === 'empty');
+    return { batch: rank(site, rows, observed, filters), cached,
+      live: cached && shared?.rows && shared.searched ? rank(site, shared.rows, shared.searched, filters) : undefined };
+  };
+  try {
+    await Promise.all(SITES.map(async site => {
+      const initial = await sitePlan(site, protocol.freshness.listings);
+      land(site, initial.batch, initial.cached);
+      if (initial.cached && jobs.st.getJob(job.id)?.state === 'running') {
+        const live = initial.live ?? (await sitePlan(site, 0)).batch;
+        const batch = ['hit', 'empty'].includes(live.searched.outcome) ? live : { ...initial.batch, searched: live.searched, cached: true };
+        land(site, batch, false);
+      }
+    }));
+    if (jobs.st.getJob(job.id)?.state !== 'running') return;
+    const final = result(); jobs.update(job.id, { result: final });
+    emit('answer.settled', final);
+    // finish() would overwrite late stages as arrived; retain each site's actual ending.
+    ctx.log.job(job.id, 'search', 'done');
+    jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'done', at: new Date().toISOString(), result: final });
+  } catch (e) {
+    ctx.log.error('search', e);
+    const error = e instanceof ApiError ? e.toJSON() : new ApiError('site_failed', 'search failed', 'search', { by: 'user' }).toJSON();
+    for (const stage of stages) if (stage.state === 'running') { stage.state = 'failed'; stage.ended_at = new Date().toISOString(); }
+    saveStages(); jobs.update(job.id, { error });
+    ctx.log.job(job.id, 'search', 'failed', { error });
+    jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'failed', at: new Date().toISOString(), error });
+  }
+}
 
 export const handlers: Record<string, Handler> = {
-  'POST /v1/search': fromEngine(exampleHandler('POST /v1/search', c => { fields(c.body, {}, { text, photo_id: text, url, filters: object, like: text, assist_job_id: text, answers: v => Array.isArray(v) && v.every(a => object(a) && text(a.span_id) && text(a.option_id) && text(a.signature)) }); if (!['text', 'photo_id', 'url', 'like', 'assist_job_id'].some(k => c.body[k] !== undefined)) throw invalid('a search input is required'); if (object(c.body.filters)) fields(c.body.filters, {}, { condition: strings, seller_kind: strings, ships_to: text, ships_from: text, max_delivered_cents: money, in_stock_only: bool }); }, undefined, async (ctx, seed) => {
-    const result = await searchAll(String(ctx.body.text ?? ctx.body.url ?? ''), { ...ports, log: ctx.log });
-    const offers: BuyOffer[] = result.results.flatMap(({ site, row }) => row.id && row.title && row.url && row.price_cents !== undefined ? [{ id: row.id, listing_id: row.id, title: row.title, url: row.url, price_cents: row.price_cents, site, route_id: `public.${site}`, condition: row.condition ?? 'unknown', relation: 'same_product', shipping_cents: null, tax_rate: 0, source_kind: 'marketplace' }] : []);
-    const filters = object(ctx.body.filters) ? ctx.body.filters : {};
-    const condition = Array.isArray(filters.condition) ? filters.condition.filter(text) : undefined;
-    const ranked = rankOffers(offers, { medianShipping: 0, condition });
-    const max = object(filters.max_delivered_cents) ? filters.max_delivered_cents.amount_cents : undefined;
-    const body = seed.body as { id: string; kind: 'search'; state: 'running'; stages: ApiJobRow['stages'] };
-    const job = jobs.start(body, ctx.user_id ?? ctx.visitor_id!);
-    jobs.finish(job.id, { ...result, offers: ranked.filter(r => typeof max !== 'number' || r.delivered_cents <= max) });
-    ctx.log.event('state.change', { entity: 'job', id: job.id, to: 'done' });
-    return { ...seed, body: { ...body, id: job.id, stream: `/v1/jobs/${job.id}/events` } };
-  })),
+  'POST /v1/search': fromEngine(ctx => {
+    pagination(ctx);
+    ctx.log.input('api', 'POST /v1/search', { fields: Object.keys(ctx.body), query_fields: [...ctx.query.keys()] });
+    fields(ctx.body, {}, { text, photo_id: text, url, filters: object, like: text, assist_job_id: text, answers: v => Array.isArray(v) && v.every(a => object(a) && text(a.span_id) && text(a.option_id) && text(a.signature)) });
+    if (!['text', 'photo_id', 'url', 'like', 'assist_job_id'].some(k => ctx.body[k] !== undefined)) throw invalid('a search input is required');
+    if (object(ctx.body.filters)) fields(ctx.body.filters, {}, { condition: strings, seller_kind: strings, ships_to: text, ships_from: text, max_delivered_cents: money, in_stock_only: bool });
+    // jobsOn exposes this fixture owner to every visitor; it cannot own a real search.
+    if (ctx.visitor_id === 'vis_example01') throw invalid('use a new visitor session');
+    const started_at = new Date().toISOString();
+    const stages: SearchStage[] = SITES.map(site => ({ name: `site:${site}`, state: 'running', started_at, ended_at: null, found: emptyFound() }));
+    const job = jobs.put({ kind: 'search', state: 'running', stages: structuredClone(stages) as ApiJobRow['stages'] }, ctx.user_id ?? ctx.visitor_id!);
+    ctx.log.job(job.id, 'search', 'running');
+    jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'running', at: started_at });
+    const opts = { ...ports };
+    const task = Promise.resolve().then(() => search(ctx, job, stages, opts)).finally(() => searchJobs.pendingSearches.delete(job.id));
+    searchJobs.pendingSearches.set(job.id, task);
+    return { status: 202, body: { id: job.id, kind: job.kind, state: 'running', stages: structuredClone(stages), stream: `/v1/jobs/${job.id}/events` } };
+  }),
 };
 export const manifest = manifestFor(handlers);

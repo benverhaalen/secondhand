@@ -1,10 +1,37 @@
 import { object } from './captures.ts';
 import assert from 'node:assert/strict';
-import { beforeEach, test } from 'node:test';
+import { afterEach, beforeEach, test } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
-import { handlers, manifest } from './search.ts';
+import { handlers, manifest, ports, searchJobs } from './search.ts';
+import { readFileSync } from 'node:fs';
+import { jobs, getJob, jobEvents } from './jobs.ts';
+import { SITES, type Site } from '../harness/protocol.ts';
+import { BASE } from '../intel/public/readers.ts';
+import { _reset } from '../intel/run.ts';
+import type { PageResult } from '../intel/fetch.ts';
+import type { Found } from '../intel/answer.ts';
+
+const originalPorts = { ...ports };
+const created: string[] = [];
+const fixture = (site: Site) => readFileSync(new URL(`../../../../spec/fixtures/pages/${site}.html`, import.meta.url), 'utf8');
+const page = (html: string): PageResult => ({ ok: true, html, final_url: '', status: 200, rung: 'plain', ms: 1, searched: [] });
+const blocked = (): PageResult => ({ ok: false, kind: 'blocked', reason: '403', status: 403, ms: 1, searched: [] });
+const siteOf = (url: string) => SITES.find(s => url.startsWith(BASE[s]))!;
+const bounded = async <T>(p: Promise<T>, ms = 1500): Promise<T> => {
+  let timer: ReturnType<typeof setTimeout>;
+  try { return await Promise.race([p, new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error('search did not make progress')), ms); })]); }
+  finally { clearTimeout(timer!); }
+};
+const ended = (id: string) => bounded(new Promise<void>(resolve => {
+  const check = () => { if (['done', 'failed'].includes(jobs.st.getJob(id)!.state)) { off(); resolve(); } };
+  const off = jobs.listen(id, check); check();
+}));
+const poll = (id: string, visitor = 'vis_search01', events = false, after = 0) => route(
+  events ? 'GET /v1/jobs/:id/events' : 'GET /v1/jobs/:id', events ? jobEvents() : getJob(), { auth: 'visitor' },
+)(new Request(`http://edge.test/v1/jobs/${id}${events ? '/events' : ''}`, { headers: { 'X-Visitor-Id': visitor, 'Last-Event-ID': String(after) } }));
+
 
 const prefixes = ["search"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
@@ -12,7 +39,13 @@ beforeEach(() => {
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  _reset();
+  Object.assign(ports, { ...originalPorts, deadline_ms: 80, fetchPage: async () => blocked(),
+    ask: async (_state: object, questions: Record<string, unknown>) => ({ ok: true, ms: 0,
+      answers: Object.fromEntries(Object.keys(questions).map(k => [k, { choice: k.startsWith('m') ? 'likely_same_model' : 'keep' }])) }),
+  });
 });
+afterEach(async () => { await Promise.all(created.splice(0).map(ended)); await Promise.all(searchJobs.pendingSearches.values()); Object.assign(ports, originalPorts); });
 const call = (e: Example, options: { body?: unknown; raw?: string; path?: string; token?: string | null; headers?: Record<string, string> } = {}) => {
   const token = options.token === undefined ? (e.auth === 'visitor' ? null : 'good') : options.token;
   const entry = manifest.find(m => m.endpoint === e.endpoint)!;
@@ -33,7 +66,12 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   assert.ok(r.headers.get('X-Request-Id'));
   for (const [key, value] of Object.entries(e.headers ?? {})) assert.equal(r.headers.get(key), value);
   if (e.response === null) assert.equal(await r.text(), '');
-  else assert.deepEqual(await r.json(), e.response);
+  else {
+    const body = await r.json(); created.push(body.id);
+    const expected = e.response as { id: string; stages: { started_at: string }[]; stream: string };
+    assert.deepEqual({ ...body, id: expected.id, stream: expected.stream,
+      stages: body.stages.map((s: Record<string, unknown>) => ({ ...s, started_at: expected.stages[0].started_at })) }, expected);
+  }
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
@@ -109,6 +147,7 @@ test('search stores the public engine rows on the job, without a network depende
   const { jobs } = await import('./jobs.ts');
   const response = await call(examples.find(e => e.name === 'search.text')!);
   const body = await response.json();
+  await ended(body.id);
   const result = jobs.st.getJob(body.id)?.result;
   assert.ok(object(result) && Array.isArray(result.results), 'searchAll must populate the job result');
 });
@@ -117,6 +156,7 @@ test('new searches have distinct jobs within and across visitor sessions', async
   const { jobs } = await import('./jobs.ts');
   const e = examples.find(e => e.name === 'search.text')!;
   const first = await (await call(e, { headers: { 'X-Visitor-Id': 'vis_first01', 'Idempotency-Key': 'first-search' } })).json();
+  await ended(first.id);
   const saved = structuredClone(jobs.get(first.id, 'vis_first01')?.result);
   const second = await (await call(e, { body: { text: 'another jacket' }, headers: { 'X-Visitor-Id': 'vis_second01', 'Idempotency-Key': 'second-search' } })).json();
   const third = await (await call(e, { body: { text: 'different jacket' }, headers: { 'X-Visitor-Id': 'vis_first01', 'Idempotency-Key': 'third-search' } })).json();
@@ -124,4 +164,227 @@ test('new searches have distinct jobs within and across visitor sessions', async
   assert.ok(jobs.get(second.id, 'vis_second01'));
   assert.equal(jobs.get(second.id, 'vis_first01'), undefined);
   assert.deepEqual(jobs.get(first.id, 'vis_first01')?.result, saved);
+});
+
+const start = async (body: Record<string, unknown> = { text: 'levi 501' }, visitor = 'vis_search01') => {
+  const response = await bounded(call(examples.find(e => e.name === 'search.text')!, {
+    body, headers: { 'X-Visitor-Id': visitor, 'Idempotency-Key': crypto.randomUUID() },
+  }), 100);
+  assert.equal(response.status, 202);
+  const job = await response.json(); created.push(job.id); return job;
+};
+
+test('202 is returned before any page answers, including a page that never resolves', async () => {
+  const started = new Set<Site>();
+  ports.fetchPage = async u => { started.add(siteOf(u)); return new Promise(() => {}); };
+  const job = await start();
+  assert.equal(job.state, 'running');
+  assert.deepEqual(job.stages.map((s: { name: string }) => s.name), SITES.map(s => `site:${s}`));
+  assert.ok(job.stages.every((s: { state: string; found: Found }) => s.state === 'running' && s.found.results_found === 0));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(started.size, SITES.length, 'all sites must be started together');
+  assert.equal(jobs.st.getJob(job.id)?.state, 'running');
+});
+
+test('site batches reach polling and a live SSE reader in landing order, with exact found counts', async () => {
+  const release = new Map<Site, (p: PageResult) => void>();
+  ports.fetchPage = async u => new Promise(resolve => release.set(siteOf(u), resolve));
+  const job = await start();
+  const res = await poll(job.id, 'vis_search01', true);
+  const reader = res.body!.getReader();
+  await reader.read(); // running frame
+  for (const site of ['depop', 'ebay'] as const) {
+    release.get(site)!(page(fixture(site)));
+    const frames = [];
+    while (frames.length < 2) {
+      const chunk = await bounded(reader.read());
+      assert.equal(chunk.done, false);
+      frames.push(...new TextDecoder().decode(chunk.value).trim().split('\n\n'));
+    }
+    assert.match(frames[0], /event: job.stage/);
+    assert.match(frames[1], /event: answer.partial/);
+    const stored = await (await poll(job.id)).json();
+    const stage = stored.stages.find((s: { name: string }) => s.name === `site:${site}`);
+    const partial = jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial').at(-1)!;
+    assert.equal(partial.data.site, site);
+    assert.equal(stage.state, 'arrived');
+    assert.deepEqual(stage.found, { sources_searched: 1, results_found: site === 'depop' ? 12 : 6,
+      results_used: site === 'depop' ? 12 : 6, dropped_by_reason: {}, sites: { [site]: site === 'depop' ? 12 : 6 } });
+    assert.equal((partial.data.results as unknown[]).length, stage.found.results_used);
+    assert.equal(stored.state, 'running');
+  }
+  await reader.cancel();
+  for (const site of SITES.filter(s => !['ebay', 'depop'].includes(s))) release.get(site)!(blocked());
+  await ended(job.id);
+  const result = (await (await poll(job.id)).json()).result;
+  assert.equal(result.results.length, 18);
+  assert.equal(result.found.results_used, 18);
+  assert.equal(result.found.sources_searched, SITES.length);
+  const totals = result.results.map((r: { delivered_cents: { amount_cents: number } }) => r.delivered_cents.amount_cents);
+  assert.deepEqual(totals, [...totals].sort((a, b) => a - b));
+});
+
+test('a late site is recorded and a done job cannot be changed by its eventual page', async () => {
+  let release!: (p: PageResult) => void;
+  ports.fetchPage = async u => siteOf(u) === 'ebay' ? new Promise(resolve => { release = resolve; }) : blocked();
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.state, 'done');
+  assert.equal(saved.stages.find((s: { name: string }) => s.name === 'site:ebay').state, 'late');
+  assert.equal(saved.result.searched.find((s: { site: string }) => s.site === 'ebay').outcome, 'timeout');
+  const count = jobs.framesAfter(job.id, 0).length;
+  release(page(fixture('ebay')));
+  await new Promise(resolve => setTimeout(resolve, 10));
+  assert.deepEqual(await (await poll(job.id)).json(), saved);
+  assert.equal(jobs.framesAfter(job.id, 0).length, count);
+});
+
+test('403 and a login wall are blocked with zero rows, and are streamed before a slow site ends', async () => {
+  ports.fetchPage = async u => siteOf(u) === 'ebay' ? new Promise(() => {}) : siteOf(u) === 'facebook' ? page('<form action="/login">Log in</form>') : blocked();
+  const job = await start();
+  await new Promise(resolve => setTimeout(resolve, 10));
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.state, 'running');
+  for (const site of ['facebook', 'depop']) {
+    const searched = saved.result.searched.find((s: { site: string }) => s.site === site);
+    assert.equal(searched.outcome, 'blocked'); assert.equal(searched.count, 0);
+    const stage = saved.stages.find((s: { name: string }) => s.name === `site:${site}`);
+    assert.equal(stage.found.results_found, 0);
+  }
+});
+
+test('a different visitor cannot poll or stream a new job; SSE resumes strictly after Last-Event-ID', async () => {
+  const job = await start(); await ended(job.id);
+  for (const events of [false, true]) assert.equal((await poll(job.id, 'vis_other001', events)).status, 404);
+  const frames = jobs.framesAfter(job.id, 2);
+  const stream = await bounded((await poll(job.id, 'vis_search01', true, 2)).text());
+  assert.deepEqual([...stream.matchAll(/^id: (\d+)$/gm)].map(m => Number(m[1])), frames.map(f => f.id));
+  assert.equal(await (await poll(job.id, 'vis_search01', true, frames.at(-1)!.id)).text(), '');
+});
+
+test('sameProduct receives the query, a look-alike is not same_product, and drops balance counts', async () => {
+  ports.fetchPage = async u => siteOf(u) === 'ebay' ? page(fixture('ebay')) : blocked();
+  ports.ask = async (state, questions) => {
+    assert.equal((state as { target: string }).target, 'levi 501');
+    return { ok: true, ms: 0, answers: Object.fromEntries(Object.keys(questions).map(k => [k, {
+      choice: k.startsWith('m') ? (k === 'm0' ? 'comparable' : 'likely_same_model') : k === 'k1' ? 'wrong_item' : 'keep',
+    }])) };
+  };
+  const job = await start({ text: 'levi 501', filters: { max_delivered_cents: { amount_cents: 4000, currency: 'USD' } } });
+  await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.result.results.find((r: { external_id: string }) => r.external_id === '100000000').relation, 'functional_equivalent');
+  assert.equal(saved.result.found.results_found, 6);
+  assert.equal(saved.result.found.results_used, 4);
+  assert.deepEqual(saved.result.found.dropped_by_reason, { wrong_item: 1, max_delivered_cents: 1 });
+});
+
+test('background reconciliation failure ends the job as failed with the contract error', async () => {
+  ports.fetchPage = async u => siteOf(u) === 'ebay' ? page(fixture('ebay')) : blocked();
+  ports.ask = async () => { throw new Error('judge unavailable'); };
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.state, 'failed');
+  assert.equal(saved.error.code, 'site_failed');
+  assert.equal(saved.error.failed_step, 'search');
+  assert.equal(saved.error.retry.by, 'user');
+  assert.equal(jobs.framesAfter(job.id, 0).at(-1)!.data.state, 'failed');
+});
+
+test('a fresh repeat streams the standing result before its live delta; filters are not cached', async () => {
+  let reads = 0, release!: (p: PageResult) => void;
+  ports.fetchPage = async u => {
+    if (siteOf(u) !== 'ebay') return blocked();
+    if (++reads === 1) return page(fixture('ebay'));
+    return new Promise(resolve => { release = resolve; });
+  };
+  const first = await start(); await ended(first.id);
+  const second = await start({ text: 'LEVI  501', filters: { max_delivered_cents: { amount_cents: 3000, currency: 'USD' } } });
+  await new Promise(resolve => setTimeout(resolve, 10));
+  const warm = await (await poll(second.id)).json();
+  assert.equal(warm.state, 'running');
+  assert.equal(warm.result.results.length, 3);
+  assert.equal(reads, 2);
+  release(page('No results'));
+  await ended(second.id);
+  const done = await (await poll(second.id)).json();
+  assert.equal(done.result.results.length, 0, 'live empty batch must remove the cached rows');
+  assert.deepEqual(jobs.framesAfter(second.id, 0).filter(f => f.event === 'answer.partial' && f.data.site === 'ebay').map(f => (f.data.results as unknown[]).length), [3, 0]);
+});
+
+test('concurrent warm repeats both receive the shared live delta after their cached batch', async () => {
+  let reads = 0, release!: (p: PageResult) => void;
+  ports.fetchPage = async u => {
+    if (siteOf(u) !== 'ebay') return blocked();
+    if (++reads === 1) return page(fixture('ebay'));
+    return new Promise(resolve => { release = resolve; });
+  };
+  const first = await start(); await ended(first.id);
+  const a = await start();
+  await new Promise(resolve => setImmediate(resolve));
+  const b = await start();
+  await new Promise(resolve => setImmediate(resolve));
+  for (const job of [a, b]) {
+    assert.equal(jobs.st.getJob(job.id)?.state, 'running', 'each repeat must wait for the shared live delta');
+    assert.equal((await (await poll(job.id)).json()).result.results.length, 6);
+  }
+  release(page('No results'));
+  await Promise.all([ended(a.id), ended(b.id)]);
+  assert.equal(reads, 2, 'the repeats must share one live fetch');
+  for (const job of [a, b]) assert.equal((await (await poll(job.id)).json()).result.results.length, 0);
+});
+
+test('a shared reconciliation error fails every joining job and cleans held promises', async () => {
+  let release!: (p: PageResult) => void, reads = 0;
+  ports.fetchPage = async u => {
+    if (siteOf(u) !== 'ebay') return blocked();
+    reads++; return new Promise(resolve => { release = resolve; });
+  };
+  ports.ask = async () => { throw new Error('shared judge failure'); };
+  const a = await start(), b = await start();
+  release(page(fixture('ebay')));
+  await Promise.all([ended(a.id), ended(b.id)]);
+  assert.equal(reads, 1);
+  for (const job of [a, b]) {
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.state, 'failed'); assert.equal(saved.error.code, 'site_failed');
+  }
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(searchJobs.pendingSearches.has(a.id), false);
+  assert.equal(searchJobs.pendingSearches.has(b.id), false);
+});
+
+test('a timed-out live refresh keeps fresh indexed offers and records the site as late', async () => {
+  let reads = 0;
+  ports.fetchPage = async u => siteOf(u) !== 'ebay' ? blocked() : ++reads === 1 ? page(fixture('ebay')) : new Promise(() => {});
+  const first = await start(); await ended(first.id);
+  const second = await start(); await ended(second.id);
+  const saved = await (await poll(second.id)).json();
+  assert.equal(saved.state, 'done');
+  assert.equal(saved.stages.find((s: { name: string }) => s.name === 'site:ebay').state, 'late');
+  assert.equal(saved.result.results.length, 6);
+  assert.equal(saved.result.found.results_used, 6);
+  assert.equal(saved.result.searched.find((s: { site: string }) => s.site === 'ebay').cached, true);
+});
+
+test('the fixture-only visitor id cannot create a job that the example ownership exception would expose', async () => {
+  const e = examples.find(e => e.name === 'search.text')!;
+  const before = jobs.st.jobs({ kind: 'search' }).length;
+  const response = await call(e, { headers: { 'X-Visitor-Id': 'vis_example01' } });
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).code, 'invalid');
+  assert.equal(jobs.st.jobs({ kind: 'search' }).length, before);
+});
+
+test('search logs successful and late site transitions through the existing log contract', async () => {
+  const { checkLog } = await import('../../../../spec/log.mjs');
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  ports.fetchPage = async u => siteOf(u) === 'ebay' ? new Promise(() => {}) : blocked();
+  const reply = await handlers['POST /v1/search']({ user_id: null, visitor_id: 'vis_search01', request_id: 'test',
+    params: {}, query: new URLSearchParams(), body: { text: 'levi 501' }, headers: new Headers(), log: deps.log,
+  }, new Request('http://edge.test/v1/search'));
+  assert.ok(!(reply instanceof Response) && object(reply.body) && typeof reply.body.id === 'string');
+  const id = reply.body.id; created.push(id); await ended(id);
+  deps.log.end();
+  assert.deepEqual(checkLog(sink.text()).problems, []);
 });

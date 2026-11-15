@@ -319,15 +319,12 @@
       "frames": [
         {
           "id": "1",
-          "event": "job.stage",
+          "event": "job.state",
           "data": {
             "job_id": "job_sr1",
-            "stage": "identify",
-            "state": "arrived",
-            "at": "2026-11-15T05:06:01Z",
-            "found": {
-              "results_found": 1
-            }
+            "kind": "search",
+            "state": "running",
+            "at": "2026-11-15T05:06:00Z"
           }
         },
         {
@@ -335,65 +332,1281 @@
           "event": "job.stage",
           "data": {
             "job_id": "job_sr1",
-            "stage": "fanout",
-            "state": "running",
-            "at": "2026-11-15T05:06:02Z",
+            "stage": "site:facebook",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
             "found": {
-              "sources_searched": 3,
-              "results_found": 18,
+              "sources_searched": 1,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
               "sites": {
-                "ebay": 9,
-                "depop": 5,
-                "mercari": 4
+                "facebook": 0
               }
             }
           }
         },
         {
           "id": "3",
-          "event": "job.stage",
+          "event": "answer.partial",
           "data": {
             "job_id": "job_sr1",
-            "stage": "rank",
-            "state": "arrived",
-            "at": "2026-11-15T05:06:04Z",
-            "found": {
-              "results_found": 18,
-              "results_used": 12,
-              "dropped_by_reason": {
-                "wrong_size": 6
+            "site": "facebook",
+            "product": null,
+            "results": [],
+            "official": [],
+            "sites_pending": [
+              "ebay",
+              "depop",
+              "poshmark",
+              "mercari",
+              "offerup",
+              "grailed"
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 1,
+                "results_found": 0,
+                "results_used": 0,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 2,
+                "settled": null
               }
             }
           }
         },
         {
           "id": "4",
+          "event": "job.stage",
+          "data": {
+            "job_id": "job_sr1",
+            "stage": "site:depop",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
+            "found": {
+              "sources_searched": 1,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {
+                "depop": 0
+              }
+            }
+          }
+        },
+        {
+          "id": "5",
+          "event": "answer.partial",
+          "data": {
+            "job_id": "job_sr1",
+            "site": "depop",
+            "product": null,
+            "results": [],
+            "official": [],
+            "sites_pending": [
+              "ebay",
+              "poshmark",
+              "mercari",
+              "offerup",
+              "grailed"
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 2,
+                "results_found": 0,
+                "results_used": 0,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.depop",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 2,
+                "settled": null
+              }
+            }
+          }
+        },
+        {
+          "id": "6",
+          "event": "job.stage",
+          "data": {
+            "job_id": "job_sr1",
+            "stage": "site:poshmark",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
+            "found": {
+              "sources_searched": 1,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {
+                "poshmark": 0
+              }
+            }
+          }
+        },
+        {
+          "id": "7",
+          "event": "answer.partial",
+          "data": {
+            "job_id": "job_sr1",
+            "site": "poshmark",
+            "product": null,
+            "results": [],
+            "official": [],
+            "sites_pending": [
+              "ebay",
+              "mercari",
+              "offerup",
+              "grailed"
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 3,
+                "results_found": 0,
+                "results_used": 0,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0,
+                  "poshmark": 0
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.depop",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.poshmark",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 2,
+                "settled": null
+              }
+            }
+          }
+        },
+        {
+          "id": "8",
+          "event": "job.stage",
+          "data": {
+            "job_id": "job_sr1",
+            "stage": "site:mercari",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
+            "found": {
+              "sources_searched": 1,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {
+                "mercari": 0
+              }
+            }
+          }
+        },
+        {
+          "id": "9",
+          "event": "answer.partial",
+          "data": {
+            "job_id": "job_sr1",
+            "site": "mercari",
+            "product": null,
+            "results": [],
+            "official": [],
+            "sites_pending": [
+              "ebay",
+              "offerup",
+              "grailed"
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 4,
+                "results_found": 0,
+                "results_used": 0,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0,
+                  "poshmark": 0,
+                  "mercari": 0
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.depop",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.poshmark",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.mercari",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 2,
+                "settled": null
+              }
+            }
+          }
+        },
+        {
+          "id": "10",
+          "event": "job.stage",
+          "data": {
+            "job_id": "job_sr1",
+            "stage": "site:offerup",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
+            "found": {
+              "sources_searched": 1,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {
+                "offerup": 0
+              }
+            }
+          }
+        },
+        {
+          "id": "11",
+          "event": "answer.partial",
+          "data": {
+            "job_id": "job_sr1",
+            "site": "offerup",
+            "product": null,
+            "results": [],
+            "official": [],
+            "sites_pending": [
+              "ebay",
+              "grailed"
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 5,
+                "results_found": 0,
+                "results_used": 0,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0,
+                  "poshmark": 0,
+                  "mercari": 0,
+                  "offerup": 0
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.depop",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.poshmark",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.mercari",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.offerup",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 2,
+                "settled": null
+              }
+            }
+          }
+        },
+        {
+          "id": "12",
+          "event": "job.stage",
+          "data": {
+            "job_id": "job_sr1",
+            "stage": "site:grailed",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
+            "found": {
+              "sources_searched": 1,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {
+                "grailed": 0
+              }
+            }
+          }
+        },
+        {
+          "id": "13",
+          "event": "answer.partial",
+          "data": {
+            "job_id": "job_sr1",
+            "site": "grailed",
+            "product": null,
+            "results": [],
+            "official": [],
+            "sites_pending": [
+              "ebay"
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 6,
+                "results_found": 0,
+                "results_used": 0,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0,
+                  "poshmark": 0,
+                  "mercari": 0,
+                  "offerup": 0,
+                  "grailed": 0
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.depop",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.poshmark",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.mercari",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.offerup",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.grailed",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 2,
+                "settled": null
+              }
+            }
+          }
+        },
+        {
+          "id": "14",
+          "event": "job.stage",
+          "data": {
+            "job_id": "job_sr1",
+            "stage": "site:ebay",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
+            "found": {
+              "sources_searched": 1,
+              "results_found": 6,
+              "results_used": 6,
+              "dropped_by_reason": {},
+              "sites": {
+                "ebay": 6
+              }
+            }
+          }
+        },
+        {
+          "id": "15",
+          "event": "answer.partial",
+          "data": {
+            "job_id": "job_sr1",
+            "site": "ebay",
+            "product": null,
+            "results": [
+              {
+                "id": "ls_ebay_100023757",
+                "listing_id": "ls_ebay_100023757",
+                "external_id": "100023757",
+                "title": "Levis 501 shrink-to-fit dark",
+                "url": "https://www.ebay.com/itm/100023757",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 1899,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 1899,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100015838",
+                "listing_id": "ls_ebay_100015838",
+                "external_id": "100015838",
+                "title": "Levi 501 original fit W34",
+                "url": "https://www.ebay.com/itm/100015838",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 2450,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 2450,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100039595",
+                "listing_id": "ls_ebay_100039595",
+                "external_id": "100039595",
+                "title": "Levi 501 distressed light wash",
+                "url": "https://www.ebay.com/itm/100039595",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 2999,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 2999,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100000000",
+                "listing_id": "ls_ebay_100000000",
+                "external_id": "100000000",
+                "title": "Levi 501 jeans 32x30 blue",
+                "url": "https://www.ebay.com/itm/100000000",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 3999,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 3999,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100031676",
+                "listing_id": "ls_ebay_100031676",
+                "external_id": "100031676",
+                "title": "Levi 501 90s straight 29",
+                "url": "https://www.ebay.com/itm/100031676",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 4200,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 4200,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100007919",
+                "listing_id": "ls_ebay_100007919",
+                "external_id": "100007919",
+                "title": "Vintage Levis 501 Made in USA",
+                "url": "https://www.ebay.com/itm/100007919",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 6500,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 6500,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              }
+            ],
+            "official": [],
+            "sites_pending": [],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 7,
+                "results_found": 6,
+                "results_used": 6,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0,
+                  "poshmark": 0,
+                  "mercari": 0,
+                  "offerup": 0,
+                  "grailed": 0,
+                  "ebay": 6
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.depop",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.poshmark",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.mercari",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.offerup",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.grailed",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.ebay",
+                  "query": "levi 501",
+                  "outcome": "hit",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 2,
+                "settled": null
+              }
+            }
+          }
+        },
+        {
+          "id": "16",
+          "event": "answer.settled",
+          "data": {
+            "job_id": "job_sr1",
+            "product": null,
+            "results": [
+              {
+                "id": "ls_ebay_100023757",
+                "listing_id": "ls_ebay_100023757",
+                "external_id": "100023757",
+                "title": "Levis 501 shrink-to-fit dark",
+                "url": "https://www.ebay.com/itm/100023757",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 1899,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 1899,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100015838",
+                "listing_id": "ls_ebay_100015838",
+                "external_id": "100015838",
+                "title": "Levi 501 original fit W34",
+                "url": "https://www.ebay.com/itm/100015838",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 2450,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 2450,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100039595",
+                "listing_id": "ls_ebay_100039595",
+                "external_id": "100039595",
+                "title": "Levi 501 distressed light wash",
+                "url": "https://www.ebay.com/itm/100039595",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 2999,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 2999,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100000000",
+                "listing_id": "ls_ebay_100000000",
+                "external_id": "100000000",
+                "title": "Levi 501 jeans 32x30 blue",
+                "url": "https://www.ebay.com/itm/100000000",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 3999,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 3999,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100031676",
+                "listing_id": "ls_ebay_100031676",
+                "external_id": "100031676",
+                "title": "Levi 501 90s straight 29",
+                "url": "https://www.ebay.com/itm/100031676",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 4200,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 4200,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              },
+              {
+                "id": "ls_ebay_100007919",
+                "listing_id": "ls_ebay_100007919",
+                "external_id": "100007919",
+                "title": "Vintage Levis 501 Made in USA",
+                "url": "https://www.ebay.com/itm/100007919",
+                "site": "ebay",
+                "route_id": "public.ebay",
+                "condition": "unknown",
+                "relation": "same_product",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 6500,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 6500,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": []
+              }
+            ],
+            "official": [],
+            "sites_pending": [],
+            "found": {
+              "sources_searched": 7,
+              "results_found": 6,
+              "results_used": 6,
+              "dropped_by_reason": {},
+              "sites": {
+                "facebook": 0,
+                "depop": 0,
+                "poshmark": 0,
+                "mercari": 0,
+                "offerup": 0,
+                "grailed": 0,
+                "ebay": 6
+              }
+            },
+            "searched": [
+              {
+                "site": "facebook",
+                "kind": "search",
+                "url": "https://www.facebook.com/marketplace/search?query=levi%20501",
+                "outcome": "blocked",
+                "ms": 1,
+                "count": 0,
+                "reason": "403"
+              },
+              {
+                "site": "depop",
+                "kind": "search",
+                "url": "https://www.depop.com/search/?q=levi%20501",
+                "outcome": "blocked",
+                "ms": 1,
+                "count": 0,
+                "reason": "403"
+              },
+              {
+                "site": "poshmark",
+                "kind": "search",
+                "url": "https://poshmark.com/search?query=levi%20501",
+                "outcome": "blocked",
+                "ms": 1,
+                "count": 0,
+                "reason": "403"
+              },
+              {
+                "site": "mercari",
+                "kind": "search",
+                "url": "https://www.mercari.com/search/?keyword=levi%20501",
+                "outcome": "blocked",
+                "ms": 1,
+                "count": 0,
+                "reason": "403"
+              },
+              {
+                "site": "offerup",
+                "kind": "search",
+                "url": "https://offerup.com/search?q=levi%20501",
+                "outcome": "blocked",
+                "ms": 1,
+                "count": 0,
+                "reason": "403"
+              },
+              {
+                "site": "grailed",
+                "kind": "search",
+                "url": "https://www.grailed.com/search?query=levi%20501",
+                "outcome": "blocked",
+                "ms": 1,
+                "count": 0,
+                "reason": "403"
+              },
+              {
+                "site": "ebay",
+                "kind": "search",
+                "url": "https://www.ebay.com/sch/i.html?_nkw=levi%20501",
+                "outcome": "hit",
+                "ms": 1,
+                "count": 6
+              }
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 7,
+                "results_found": 6,
+                "results_used": 6,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0,
+                  "poshmark": 0,
+                  "mercari": 0,
+                  "offerup": 0,
+                  "grailed": 0,
+                  "ebay": 6
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "public.facebook",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.depop",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.poshmark",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.mercari",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.offerup",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.grailed",
+                  "query": "levi 501",
+                  "outcome": "blocked",
+                  "ms": 1
+                },
+                {
+                  "route_id": "public.ebay",
+                  "query": "levi 501",
+                  "outcome": "hit",
+                  "ms": 1
+                }
+              ],
+              "stage": "settled",
+              "ms": {
+                "first": 2,
+                "settled": 4
+              }
+            }
+          }
+        },
+        {
+          "id": "17",
           "event": "job.state",
           "data": {
             "job_id": "job_sr1",
             "kind": "search",
             "state": "done",
-            "at": "2026-11-15T05:06:04Z",
+            "at": "2026-11-15T05:06:00Z",
             "result": {
-              "product_id": "pr_4hd1",
+              "product": null,
               "results": [
                 {
+                  "id": "ls_ebay_100023757",
+                  "listing_id": "ls_ebay_100023757",
+                  "external_id": "100023757",
+                  "title": "Levis 501 shrink-to-fit dark",
+                  "url": "https://www.ebay.com/itm/100023757",
                   "site": "ebay",
-                  "condition": "used_good",
-                  "seller_kind": "person",
-                  "delivered_cents": {
-                    "amount_cents": 7900,
+                  "route_id": "public.ebay",
+                  "condition": "unknown",
+                  "relation": "same_product",
+                  "source_kind": "marketplace",
+                  "price_cents": {
+                    "amount_cents": 1899,
                     "currency": "USD"
                   },
-                  "delivery_min_days": 2,
-                  "delivery_max_days": 5,
-                  "stock": 1,
-                  "ships_from": "US-PA",
-                  "ships_to": "US"
+                  "shipping_cents": null,
+                  "delivered_cents": {
+                    "amount_cents": 1899,
+                    "currency": "USD"
+                  },
+                  "shipping_estimated": true,
+                  "also_on": []
+                },
+                {
+                  "id": "ls_ebay_100015838",
+                  "listing_id": "ls_ebay_100015838",
+                  "external_id": "100015838",
+                  "title": "Levi 501 original fit W34",
+                  "url": "https://www.ebay.com/itm/100015838",
+                  "site": "ebay",
+                  "route_id": "public.ebay",
+                  "condition": "unknown",
+                  "relation": "same_product",
+                  "source_kind": "marketplace",
+                  "price_cents": {
+                    "amount_cents": 2450,
+                    "currency": "USD"
+                  },
+                  "shipping_cents": null,
+                  "delivered_cents": {
+                    "amount_cents": 2450,
+                    "currency": "USD"
+                  },
+                  "shipping_estimated": true,
+                  "also_on": []
+                },
+                {
+                  "id": "ls_ebay_100039595",
+                  "listing_id": "ls_ebay_100039595",
+                  "external_id": "100039595",
+                  "title": "Levi 501 distressed light wash",
+                  "url": "https://www.ebay.com/itm/100039595",
+                  "site": "ebay",
+                  "route_id": "public.ebay",
+                  "condition": "unknown",
+                  "relation": "same_product",
+                  "source_kind": "marketplace",
+                  "price_cents": {
+                    "amount_cents": 2999,
+                    "currency": "USD"
+                  },
+                  "shipping_cents": null,
+                  "delivered_cents": {
+                    "amount_cents": 2999,
+                    "currency": "USD"
+                  },
+                  "shipping_estimated": true,
+                  "also_on": []
+                },
+                {
+                  "id": "ls_ebay_100000000",
+                  "listing_id": "ls_ebay_100000000",
+                  "external_id": "100000000",
+                  "title": "Levi 501 jeans 32x30 blue",
+                  "url": "https://www.ebay.com/itm/100000000",
+                  "site": "ebay",
+                  "route_id": "public.ebay",
+                  "condition": "unknown",
+                  "relation": "same_product",
+                  "source_kind": "marketplace",
+                  "price_cents": {
+                    "amount_cents": 3999,
+                    "currency": "USD"
+                  },
+                  "shipping_cents": null,
+                  "delivered_cents": {
+                    "amount_cents": 3999,
+                    "currency": "USD"
+                  },
+                  "shipping_estimated": true,
+                  "also_on": []
+                },
+                {
+                  "id": "ls_ebay_100031676",
+                  "listing_id": "ls_ebay_100031676",
+                  "external_id": "100031676",
+                  "title": "Levi 501 90s straight 29",
+                  "url": "https://www.ebay.com/itm/100031676",
+                  "site": "ebay",
+                  "route_id": "public.ebay",
+                  "condition": "unknown",
+                  "relation": "same_product",
+                  "source_kind": "marketplace",
+                  "price_cents": {
+                    "amount_cents": 4200,
+                    "currency": "USD"
+                  },
+                  "shipping_cents": null,
+                  "delivered_cents": {
+                    "amount_cents": 4200,
+                    "currency": "USD"
+                  },
+                  "shipping_estimated": true,
+                  "also_on": []
+                },
+                {
+                  "id": "ls_ebay_100007919",
+                  "listing_id": "ls_ebay_100007919",
+                  "external_id": "100007919",
+                  "title": "Vintage Levis 501 Made in USA",
+                  "url": "https://www.ebay.com/itm/100007919",
+                  "site": "ebay",
+                  "route_id": "public.ebay",
+                  "condition": "unknown",
+                  "relation": "same_product",
+                  "source_kind": "marketplace",
+                  "price_cents": {
+                    "amount_cents": 6500,
+                    "currency": "USD"
+                  },
+                  "shipping_cents": null,
+                  "delivered_cents": {
+                    "amount_cents": 6500,
+                    "currency": "USD"
+                  },
+                  "shipping_estimated": true,
+                  "also_on": []
                 }
               ],
               "official": [],
-              "sites_pending": []
+              "sites_pending": [],
+              "found": {
+                "sources_searched": 7,
+                "results_found": 6,
+                "results_used": 6,
+                "dropped_by_reason": {},
+                "sites": {
+                  "facebook": 0,
+                  "depop": 0,
+                  "poshmark": 0,
+                  "mercari": 0,
+                  "offerup": 0,
+                  "grailed": 0,
+                  "ebay": 6
+                }
+              },
+              "searched": [
+                {
+                  "site": "facebook",
+                  "kind": "search",
+                  "url": "https://www.facebook.com/marketplace/search?query=levi%20501",
+                  "outcome": "blocked",
+                  "ms": 1,
+                  "count": 0,
+                  "reason": "403"
+                },
+                {
+                  "site": "depop",
+                  "kind": "search",
+                  "url": "https://www.depop.com/search/?q=levi%20501",
+                  "outcome": "blocked",
+                  "ms": 1,
+                  "count": 0,
+                  "reason": "403"
+                },
+                {
+                  "site": "poshmark",
+                  "kind": "search",
+                  "url": "https://poshmark.com/search?query=levi%20501",
+                  "outcome": "blocked",
+                  "ms": 1,
+                  "count": 0,
+                  "reason": "403"
+                },
+                {
+                  "site": "mercari",
+                  "kind": "search",
+                  "url": "https://www.mercari.com/search/?keyword=levi%20501",
+                  "outcome": "blocked",
+                  "ms": 1,
+                  "count": 0,
+                  "reason": "403"
+                },
+                {
+                  "site": "offerup",
+                  "kind": "search",
+                  "url": "https://offerup.com/search?q=levi%20501",
+                  "outcome": "blocked",
+                  "ms": 1,
+                  "count": 0,
+                  "reason": "403"
+                },
+                {
+                  "site": "grailed",
+                  "kind": "search",
+                  "url": "https://www.grailed.com/search?query=levi%20501",
+                  "outcome": "blocked",
+                  "ms": 1,
+                  "count": 0,
+                  "reason": "403"
+                },
+                {
+                  "site": "ebay",
+                  "kind": "search",
+                  "url": "https://www.ebay.com/sch/i.html?_nkw=levi%20501",
+                  "outcome": "hit",
+                  "ms": 1,
+                  "count": 6
+                }
+              ]
             }
           }
         }
