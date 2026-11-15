@@ -1,0 +1,762 @@
+{
+  "examples": [
+    {
+      "name": "items.list",
+      "endpoint": "GET /v1/items",
+      "path": "/v1/items?state=live&limit=20",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "it_7c2m",
+            "state": "live",
+            "title": "Carhartt Detroit Jacket J97, brown duck, L",
+            "category": "apparel",
+            "quantity": 1,
+            "pill": "offer",
+            "cover_photo_id": "ph_a1",
+            "price_cents": {
+              "amount_cents": 9800,
+              "currency": "USD"
+            },
+            "sites": [
+              "ebay",
+              "depop"
+            ],
+            "needs_you": {
+              "count": 1,
+              "top_kind": "accept_offer"
+            },
+            "market_standing": {
+              "word": "on_pace",
+              "place": {
+                "rank": 3,
+                "of": 14,
+                "basis": "price"
+              },
+              "outlook": {
+                "days_lo": 4,
+                "days_hi": 9
+              },
+              "citation_id": "ci_77a",
+              "state": "shown"
+            },
+            "updated_at": "2026-11-15T03:40:00Z",
+            "version": 12
+          },
+          {
+            "id": "it_2k9p",
+            "state": "review",
+            "title": "Nintendo Switch OLED, white",
+            "category": "electronics",
+            "quantity": 1,
+            "pill": "review",
+            "cover_photo_id": "ph_b4",
+            "price_cents": null,
+            "sites": [],
+            "needs_you": {
+              "count": 2,
+              "top_kind": "first_post"
+            },
+            "market_standing": {
+              "word": "still_learning",
+              "place": null,
+              "outlook": null,
+              "citation_id": null,
+              "state": "hidden",
+              "hide_reason": "too_few"
+            },
+            "updated_at": "2026-11-15T03:12:00Z",
+            "version": 4
+          }
+        ],
+        "next_cursor": "cur_it_2k9p"
+      }
+    },
+    {
+      "name": "items.get",
+      "endpoint": "GET /v1/items/:id",
+      "path": "/v1/items/it_7c2m",
+      "status": 200,
+      "response": {
+        "id": "it_7c2m",
+        "state": "live",
+        "product_id": "pr_4hd1",
+        "title": "Carhartt Detroit Jacket J97, brown duck, L",
+        "category": "apparel",
+        "cost": {
+          "amount_cents": 1200,
+          "currency": "USD",
+          "date": "2026-11-09",
+          "source": "you_said"
+        },
+        "origin": "capture",
+        "location": {
+          "label": "Hall closet"
+        },
+        "quantity": 1,
+        "group_id": null,
+        "seller_sku": "SH-0042",
+        "note": "Bought at a church sale, worn twice",
+        "missing_fields": [
+          "chest_width"
+        ],
+        "photos": [
+          {
+            "id": "ph_a1",
+            "role": "front",
+            "use": "real",
+            "ai_marked": false,
+            "quality": {
+              "score": 84,
+              "cover_ok": true
+            }
+          },
+          {
+            "id": "ph_a2",
+            "role": "tag",
+            "use": "real",
+            "ai_marked": false,
+            "quality": {
+              "score": 77,
+              "cover_ok": false
+            }
+          }
+        ],
+        "attributes": [
+          {
+            "id": "att_br1",
+            "name": "brand",
+            "value": "Carhartt",
+            "source": "label",
+            "confirmed": true,
+            "evidence": [
+              {
+                "kind": "label_text",
+                "ref": "ph_a2",
+                "captured_at": "2026-11-15T03:52:00Z",
+                "extractor_version": "ocr-3"
+              }
+            ]
+          },
+          {
+            "id": "att_sz1",
+            "name": "size",
+            "value": "L",
+            "source": "label",
+            "confirmed": false,
+            "evidence": [
+              {
+                "kind": "label_text",
+                "ref": "ph_a2",
+                "captured_at": "2026-11-15T03:52:00Z",
+                "extractor_version": "ocr-3"
+              }
+            ]
+          },
+          {
+            "id": "att_cw1",
+            "name": "chest_width",
+            "value": null,
+            "unit": "mm",
+            "source": "measured",
+            "confirmed": false,
+            "unknown_reason": "not_visible",
+            "evidence": []
+          },
+          {
+            "id": "att_fl1",
+            "name": "flaw.1",
+            "value": {
+              "kind": "fraying",
+              "where": "left cuff",
+              "severity": "minor"
+            },
+            "source": "inferred",
+            "confirmed": true,
+            "evidence": [
+              {
+                "kind": "image_region",
+                "ref": "ph_a1",
+                "region": {
+                  "x": 0.12,
+                  "y": 0.71,
+                  "w": 0.1,
+                  "h": 0.08
+                },
+                "captured_at": "2026-11-15T03:51:00Z",
+                "extractor_version": "flaw-2"
+              }
+            ]
+          }
+        ],
+        "valuation": {
+          "id": "val_c3",
+          "level": 1,
+          "range": {
+            "low": {
+              "amount_cents": 8500,
+              "currency": "USD"
+            },
+            "high": {
+              "amount_cents": 11500,
+              "currency": "USD"
+            },
+            "basis_count": 41,
+            "as_of": "2026-11-15T03:58:00Z",
+            "citation_id": "ci_41x",
+            "state": "shown"
+          }
+        },
+        "strategy": {
+          "id": "st_e2",
+          "state": "running",
+          "objective": "balanced",
+          "floor_cents": {
+            "amount_cents": 7000,
+            "currency": "USD"
+          },
+          "horizon_days": 30
+        },
+        "listings": [
+          {
+            "id": "ls_e81",
+            "site": "ebay",
+            "state": "live",
+            "price_cents": {
+              "amount_cents": 9800,
+              "currency": "USD"
+            },
+            "url": "https://www.ebay.com/itm/000000000001",
+            "posture": 0.5,
+            "interest": {
+              "views": 63,
+              "watchers": 4
+            },
+            "posted_at": "2026-11-15T04:10:00Z",
+            "market_standing": {
+              "word": "on_pace",
+              "place": {
+                "rank": 3,
+                "of": 14,
+                "basis": "price"
+              },
+              "outlook": {
+                "days_lo": 4,
+                "days_hi": 9
+              },
+              "fix": {
+                "change": "Add a photo of the tag",
+                "points": 6,
+                "action_id": "act_tagphoto"
+              },
+              "citation_id": "ci_77a",
+              "state": "shown"
+            }
+          },
+          {
+            "id": "ls_d22",
+            "site": "depop",
+            "state": "live",
+            "price_cents": {
+              "amount_cents": 9500,
+              "currency": "USD"
+            },
+            "url": "https://www.depop.com/products/example-carhartt-j97",
+            "posture": 0.5,
+            "interest": {
+              "likes": 11
+            },
+            "posted_at": "2026-11-15T04:12:00Z",
+            "market_standing": {
+              "word": "hot",
+              "place": {
+                "rank": 1,
+                "of": 9,
+                "basis": "price"
+              },
+              "outlook": {
+                "days_lo": 1,
+                "days_hi": 4
+              },
+              "citation_id": "ci_77b",
+              "state": "shown"
+            }
+          }
+        ],
+        "limits": {
+          "floor_cents": {
+            "amount_cents": 7000,
+            "currency": "USD"
+          },
+          "always_accept_cents": null,
+          "plan_choice": "sell",
+          "gone_by": null,
+          "fallback": "ask",
+          "markdown_on": true,
+          "review_at": null,
+          "accept_mode": "ask_all"
+        },
+        "open_decisions": [
+          {
+            "id": "dec_51k",
+            "kind": "accept_offer"
+          }
+        ],
+        "created_at": "2026-11-15T03:50:00Z",
+        "updated_at": "2026-11-15T04:30:00Z",
+        "version": 12
+      }
+    },
+    {
+      "name": "items.get.not_found",
+      "endpoint": "GET /v1/items/:id",
+      "path": "/v1/items/it_notmine",
+      "status": 404,
+      "response": {
+        "code": "not_found",
+        "message": "no item it_notmine for this user",
+        "failed_step": "read",
+        "retry": {
+          "by": "none"
+        }
+      }
+    },
+    {
+      "name": "items.patch",
+      "endpoint": "PATCH /v1/items/:id",
+      "path": "/v1/items/it_7c2m",
+      "request": {
+        "body": {
+          "version": 12,
+          "title": "Carhartt Detroit Jacket J97 blanket lined, brown, L",
+          "location": {
+            "label": "Bin 3"
+          },
+          "cost": {
+            "amount_cents": 1500,
+            "currency": "USD"
+          }
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "it_7c2m",
+        "title": "Carhartt Detroit Jacket J97 blanket lined, brown, L",
+        "location": {
+          "label": "Bin 3"
+        },
+        "cost": {
+          "amount_cents": 1500,
+          "currency": "USD",
+          "date": "2026-11-09",
+          "source": "you_said"
+        },
+        "push_my_edit": {
+          "listing_ids": [
+            "ls_e81",
+            "ls_d22"
+          ],
+          "job_id": "job_pe3"
+        },
+        "version": 13
+      }
+    },
+    {
+      "name": "items.patch.bad_body",
+      "endpoint": "PATCH /v1/items/:id",
+      "path": "/v1/items/it_7c2m",
+      "request": {
+        "body": {
+          "version": 13,
+          "quantity": -2
+        }
+      },
+      "status": 400,
+      "response": {
+        "code": "invalid",
+        "message": "quantity must be a whole number of at least 1",
+        "failed_step": "validate",
+        "retry": {
+          "by": "user"
+        },
+        "fields": [
+          "quantity"
+        ]
+      }
+    },
+    {
+      "name": "items.attribute.correct",
+      "endpoint": "PATCH /v1/items/:id/attributes/:name",
+      "path": "/v1/items/it_7c2m/attributes/size",
+      "request": {
+        "body": {
+          "version": 13,
+          "value": "XL"
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "att_sz1",
+        "name": "size",
+        "value": "XL",
+        "source": "you_said",
+        "confirmed": true,
+        "evidence": [
+          {
+            "kind": "owner",
+            "ref": "usr_8f2k",
+            "captured_at": "2026-11-15T04:31:00Z",
+            "extractor_version": "owner"
+          }
+        ],
+        "item_version": 14
+      }
+    },
+    {
+      "name": "items.attribute.unpin",
+      "endpoint": "PATCH /v1/items/:id/attributes/:name",
+      "path": "/v1/items/it_7c2m/attributes/brand",
+      "request": {
+        "body": {
+          "version": 14,
+          "confirmed": false
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "att_br1",
+        "name": "brand",
+        "value": "Carhartt",
+        "source": "label",
+        "confirmed": false,
+        "event_id": "ev_un1",
+        "item_version": 15
+      }
+    },
+    {
+      "name": "items.sell",
+      "endpoint": "POST /v1/items/:id/sell",
+      "path": "/v1/items/it_5qq1/sell",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_sell_01"
+        }
+      },
+      "status": 201,
+      "response": {
+        "item": {
+          "id": "it_5qq1",
+          "state": "capturing",
+          "version": 3
+        },
+        "capture": {
+          "id": "cap_8w2",
+          "state": "framing",
+          "mode": "shots",
+          "purpose": "sell"
+        }
+      }
+    },
+    {
+      "name": "items.strategy",
+      "endpoint": "POST /v1/items/:id/strategy",
+      "path": "/v1/items/it_7c2m/strategy",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_strat_01"
+        },
+        "body": {
+          "version": 15,
+          "plan_choice": "fast",
+          "gone_by": "2026-11-22",
+          "fallback": "donate",
+          "markdown_on": true,
+          "accept_mode": "ask_all",
+          "floor_cents": {
+            "amount_cents": 7000,
+            "currency": "USD"
+          }
+        }
+      },
+      "status": 200,
+      "response": {
+        "strategies": [
+          {
+            "id": "st_e2",
+            "site": "ebay",
+            "state": "chosen",
+            "verdict": "list",
+            "objective": "quick",
+            "floor_cents": {
+              "amount_cents": 7000,
+              "currency": "USD"
+            },
+            "horizon_days": 7,
+            "offers_on": true,
+            "price_path": [
+              {
+                "at": "2026-11-15T05:00:00Z",
+                "price_cents": {
+                  "amount_cents": 9200,
+                  "currency": "USD"
+                }
+              },
+              {
+                "at": "2026-11-18T05:00:00Z",
+                "price_cents": {
+                  "amount_cents": 8400,
+                  "currency": "USD"
+                }
+              },
+              {
+                "at": "2026-11-21T05:00:00Z",
+                "price_cents": {
+                  "amount_cents": 7600,
+                  "currency": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "id": "st_d3",
+            "site": "depop",
+            "state": "chosen",
+            "verdict": "list",
+            "objective": "quick",
+            "floor_cents": {
+              "amount_cents": 7000,
+              "currency": "USD"
+            },
+            "horizon_days": 7,
+            "offers_on": true,
+            "price_path": [
+              {
+                "at": "2026-11-15T05:00:00Z",
+                "price_cents": {
+                  "amount_cents": 9000,
+                  "currency": "USD"
+                }
+              }
+            ]
+          },
+          {
+            "id": "st_p4",
+            "site": "poshmark",
+            "state": "suggested",
+            "verdict": "skip",
+            "skip_reason": "not_connected"
+          }
+        ],
+        "limits": {
+          "floor_cents": {
+            "amount_cents": 7000,
+            "currency": "USD"
+          },
+          "always_accept_cents": null,
+          "plan_choice": "fast",
+          "gone_by": "2026-11-22",
+          "fallback": "donate",
+          "markdown_on": true,
+          "review_at": null,
+          "accept_mode": "ask_all"
+        },
+        "item_version": 16
+      }
+    },
+    {
+      "name": "items.strategy.below_floor",
+      "endpoint": "POST /v1/items/:id/strategy",
+      "path": "/v1/items/it_7c2m/strategy",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_strat_02"
+        },
+        "body": {
+          "version": 16,
+          "plan_choice": "sell",
+          "floor_cents": {
+            "amount_cents": 7000,
+            "currency": "USD"
+          },
+          "always_accept_cents": {
+            "amount_cents": 5000,
+            "currency": "USD"
+          }
+        }
+      },
+      "status": 422,
+      "response": {
+        "code": "outside_limits",
+        "message": "always_accept below floor",
+        "failed_step": "policy_check",
+        "retry": {
+          "by": "user"
+        }
+      }
+    },
+    {
+      "name": "items.listings",
+      "endpoint": "POST /v1/items/:id/listings",
+      "path": "/v1/items/it_7c2m/listings",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_post_01"
+        },
+        "body": {
+          "version": 16,
+          "sites": [
+            "ebay",
+            "depop"
+          ],
+          "dry_run": true
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_po5",
+        "kind": "post",
+        "state": "running",
+        "item_id": "it_7c2m",
+        "dry_run": true,
+        "stages": [
+          {
+            "name": "draft",
+            "state": "arrived",
+            "started_at": "2026-11-15T04:05:00Z",
+            "ended_at": "2026-11-15T04:05:09Z",
+            "found": {}
+          },
+          {
+            "name": "claim_check",
+            "state": "running",
+            "started_at": "2026-11-15T04:05:09Z",
+            "ended_at": null,
+            "found": {}
+          }
+        ],
+        "decision_id": "dec_fp1"
+      }
+    },
+    {
+      "name": "items.plan_choices",
+      "endpoint": "GET /v1/items/:id/plan-choices",
+      "path": "/v1/items/it_7c2m/plan-choices",
+      "proposed": true,
+      "status": 200,
+      "response": {
+        "item_id": "it_7c2m",
+        "choices": [
+          {
+            "plan_choice": "sell",
+            "objective": "balanced",
+            "days": {
+              "lo": 6,
+              "hi": 14
+            },
+            "you_keep_cents": {
+              "amount_cents": 8100,
+              "currency": "USD"
+            },
+            "citation_id": "ci_pc1",
+            "state": "shown"
+          },
+          {
+            "plan_choice": "fast",
+            "objective": "quick",
+            "days": {
+              "lo": 1,
+              "hi": 5
+            },
+            "you_keep_cents": {
+              "amount_cents": 6900,
+              "currency": "USD"
+            },
+            "citation_id": "ci_pc2",
+            "state": "shown"
+          },
+          {
+            "plan_choice": "best",
+            "objective": "max_return",
+            "days": {
+              "lo": 18,
+              "hi": 45
+            },
+            "you_keep_cents": {
+              "amount_cents": 9600,
+              "currency": "USD"
+            },
+            "citation_id": "ci_pc3",
+            "state": "shown"
+          },
+          {
+            "plan_choice": "reserve",
+            "objective": "max_return",
+            "days": null,
+            "you_keep_cents": null,
+            "needs": "your_number",
+            "state": "shown"
+          },
+          {
+            "plan_choice": "check",
+            "objective": "balanced",
+            "days": null,
+            "you_keep_cents": {
+              "amount_cents": 8100,
+              "currency": "USD"
+            },
+            "citation_id": "ci_pc1",
+            "state": "shown"
+          }
+        ],
+        "sold_by_site": [
+          {
+            "site": "ebay",
+            "low": {
+              "amount_cents": 8200,
+              "currency": "USD"
+            },
+            "high": {
+              "amount_cents": 11900,
+              "currency": "USD"
+            },
+            "basis_count": 23,
+            "as_of": "2026-11-15T03:58:00Z",
+            "citation_id": "ci_s1",
+            "state": "shown"
+          },
+          {
+            "site": "depop",
+            "low": {
+              "amount_cents": 8800,
+              "currency": "USD"
+            },
+            "high": {
+              "amount_cents": 12500,
+              "currency": "USD"
+            },
+            "basis_count": 12,
+            "as_of": "2026-11-15T03:58:00Z",
+            "citation_id": "ci_s2",
+            "state": "shown"
+          },
+          {
+            "site": "mercari",
+            "low": null,
+            "high": null,
+            "basis_count": 2,
+            "as_of": "2026-11-15T03:58:00Z",
+            "citation_id": "ci_s3",
+            "state": "hidden",
+            "hide_reason": "too_few"
+          }
+        ],
+        "floor_cents": {
+          "amount_cents": 7000,
+          "currency": "USD"
+        }
+      }
+    }
+  ]
+}

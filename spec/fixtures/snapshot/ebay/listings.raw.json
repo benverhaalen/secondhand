@@ -1,0 +1,56 @@
+{
+ "items": [
+  {
+   "id": "eb1-100237",
+   "status": "ACTIVE",
+   "price": {
+    "amount": 4000,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 3,
+    "watchers": 1,
+    "views": 40
+   }
+  },
+  {
+   "id": "eb1-100274",
+   "status": "ACTIVE",
+   "price": {
+    "amount": 2500,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 3,
+    "watchers": 0,
+    "views": 22
+   }
+  },
+  {
+   "id": "eb1-100311",
+   "status": "ACTIVE",
+   "price": {
+    "amount": 6000,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 1,
+    "watchers": 2,
+    "views": 75
+   }
+  },
+  {
+   "id": "eb1-100348",
+   "status": "ACTIVE",
+   "price": {
+    "amount": 1800,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 0,
+    "watchers": 0,
+    "views": 9
+   }
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "fixture": "orders",
+ "note": "Hand-built, no real account. Fields follow the order and listing rows in spec/product.md section 3 and the kept and speed steps in spec/engines/platform-analytics.md. Sale-and-kept arithmetic is the reference the analytics and sold tasks must agree on.",
+ "mode": "synthetic",
+ "version": 1,
+ "sha256": {
+  "orders.json": "692146345d2b25b375ce475f0f82d01a7799666804df76ffc89c8566439dd21e",
+  "listings.json": "7945a8659d713cb23f07c19158da0dcade5b836ba220d9d403fc5e415597c4d5",
+  "expected.json": "ae8882aabfc27df1095cf1d02925c099a2c81e04a9529d0d4a3451acda1f2634"
+ }
+}

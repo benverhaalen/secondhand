@@ -1,0 +1,65 @@
+[
+ {
+  "id": "ls_fx1e",
+  "item_id": "item_fx1",
+  "site": "ebay",
+  "posted_at": "2026-09-01T00:00:00Z",
+  "ended_at": "2026-09-11T00:00:00Z",
+  "state": "sold"
+ },
+ {
+  "id": "ls_fx2p",
+  "item_id": "item_fx2",
+  "site": "poshmark",
+  "posted_at": "2026-09-02T00:00:00Z",
+  "ended_at": "2026-09-05T00:00:00Z",
+  "state": "sold"
+ },
+ {
+  "id": "ls_fx2e",
+  "item_id": "item_fx2",
+  "site": "ebay",
+  "posted_at": "2026-09-02T00:00:00Z",
+  "ended_at": "2026-09-05T00:00:00Z",
+  "state": "ended"
+ },
+ {
+  "id": "ls_fx3d",
+  "item_id": "item_fx3",
+  "site": "depop",
+  "posted_at": "2026-09-03T00:00:00Z",
+  "ended_at": "2026-09-13T00:00:00Z",
+  "state": "sold"
+ },
+ {
+  "id": "ls_fx4m",
+  "item_id": "item_fx4",
+  "site": "mercari",
+  "posted_at": "2026-09-04T00:00:00Z",
+  "ended_at": "2026-09-06T00:00:00Z",
+  "state": "sold"
+ },
+ {
+  "id": "ls_fx5f",
+  "item_id": "item_fx5",
+  "site": "facebook",
+  "posted_at": "2026-09-05T00:00:00Z",
+  "ended_at": "2026-09-08T00:00:00Z",
+  "state": "sold"
+ },
+ {
+  "id": "ls_fx6e",
+  "item_id": "item_fx6",
+  "site": "ebay",
+  "posted_at": "2026-09-06T00:00:00Z",
+  "ended_at": "2026-09-09T00:00:00Z",
+  "state": "ended"
+ },
+ {
+  "id": "ls_fx7p",
+  "item_id": "item_fx7",
+  "site": "poshmark",
+  "posted_at": "2026-09-07T00:00:00Z",
+  "state": "live"
+ }
+]

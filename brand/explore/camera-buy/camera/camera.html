@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="../../round-11/mock/screens.css">
 <link rel="stylesheet" href="camera.css">
 <style>
-  body { margin: 0; background: var(--gray); font: var(--w-regular) var(--t-15)/var(--lh-15) var(--font-text); }
+  body { margin: 0; background: var(--gray); font: var(--w-text) var(--t-15)/var(--lh-15) var(--font-text); }
   .wall { display: flex; flex-wrap: wrap; gap: var(--s-6); padding: var(--s-6) var(--s-5); align-items: flex-start; }
   .bare .wall { padding: 0; gap: 0; }
 </style>
@@ -21,24 +21,28 @@
 // The photos under it are generated stand-ins for the live feed (features/capture/design/feed/). The order of shots and the found fact are sample content for a jacket.
 // Motion (how the pop arrives and leaves, the point cloud, haptics, voice) is the camera motion preview's, not this still's.
 const I = n => `<svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">${SH_ICONS[n]}</svg>`;
-const STAGES = 5;
+// The stages that appear on the camera for this jacket, in the order of research/capture/ben/item-attributes-by-site.md section 4:
+// Kind, Photos, Label, Measure, Condition. Match, Category, Details and Size are skipped because the tag answers them; Review is after the camera.
+// A stage is one circle, so the front and the back share the Photos circle. Each instruction is that section's line for the stage,
+// or the capture spec's line for the view still missing ("Turn it over"), and each is true to its photo: it names what to do next.
+const STAGES = ['Kind', 'Photos', 'Label', 'Measure', 'Condition'];
 const MOMENTS = {
-  front: { ask: 'Show the front', done: 0, feed: 'feed-front', found: null },
-  back:  { ask: 'Now the back', done: 1, feed: 'feed-back', found: 'Carhartt', last: 'feed-front' },
-  tag:   { ask: 'Now the tag', done: 2, feed: 'feed-tag', found: null, last: 'feed-back' },
+  front: { ask: 'Lay it flat', done: 1, feed: 'feed-front', found: null },
+  back:  { ask: 'Turn it over', done: 1, feed: 'feed-turn', found: 'Carhartt', last: 'feed-front' },
+  tag:   { ask: 'Closer on the tag', done: 2, feed: 'feed-tag', found: null, last: 'feed-back' },
 };
 const FEED = '../../../../features/capture/design/feed/';
 
 function screen(k, low) {
   const m = MOMENTS[k];
-  const stages = Array.from({ length: STAGES }, (_, i) => `<li data-part="stage" class="${i < m.done ? 'done' : i === m.done ? 'now' : ''}">${I('tick')}</li>`).join('');
+  const stages = STAGES.map((name, i) => `<li data-part="stage" aria-label="${name}" class="${i < m.done ? 'done' : i === m.done ? 'now' : ''}">${I('tick')}</li>`).join('');
   return `<div class="sh fixed cam" data-view data-moment="${k}">
     <img class="feed" src="${FEED}${m.feed}.jpg" alt="Camera view">
     <i class="shade"></i>
     <div class="os" data-chrome><span>9:41</span><span></span></div>
     <div class="bar">
       <button class="round" data-part="cam-round" aria-label="Close">${I('close')}</button>
-      <ol class="stages" aria-label="${m.done} of ${STAGES} photos taken">${stages}</ol>
+      <ol class="stages" aria-label="${m.done} of ${STAGES.length} steps done">${stages}</ol>
       <button class="round" data-part="cam-round" aria-label="Talk" aria-pressed="false">${I('mic')}</button>
     </div>
     <p class="ask" aria-live="polite">${m.ask}</p>

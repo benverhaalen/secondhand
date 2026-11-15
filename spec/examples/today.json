@@ -1,0 +1,415 @@
+{
+  "examples": [
+    {
+      "name": "today.get",
+      "endpoint": "GET /v1/today",
+      "path": "/v1/today",
+      "status": 200,
+      "response": {
+        "headline": {
+          "kind": "kept_since_last_open",
+          "value": {
+            "amount_cents": 9620,
+            "currency": "USD"
+          },
+          "label": "Since yesterday",
+          "sub": "2 sold, after fees",
+          "citation_id": "ci_41x",
+          "state": "shown",
+          "path": "/you"
+        },
+        "counts": {
+          "open": 6,
+          "due_today": 2,
+          "auto_done_since_last_open": 4
+        },
+        "decisions": [
+          {
+            "id": "dec_51k",
+            "kind": "accept_offer",
+            "item_id": "it_7c2m",
+            "state": "open",
+            "tier": "ask",
+            "why": "A buyer on Depop offered $85. Your lowest is $70.",
+            "deadline": "2026-11-16T04:20:00Z",
+            "options": [
+              {
+                "id": "opt_acc",
+                "label": "Accept $85",
+                "signature": "sig.dec_51k.opt_acc.v3",
+                "evidence": []
+              },
+              {
+                "id": "opt_ctr",
+                "label": "Counter $92",
+                "signature": "sig.dec_51k.opt_ctr.v3",
+                "evidence": []
+              },
+              {
+                "id": "opt_dec",
+                "label": "Decline",
+                "signature": "sig.dec_51k.opt_dec.v3",
+                "evidence": []
+              }
+            ],
+            "suggested": "opt_ctr",
+            "allow_other": true,
+            "money": {
+              "offer_cents": {
+                "amount_cents": 8500,
+                "currency": "USD"
+              },
+              "you_keep_cents": {
+                "amount_cents": 7735,
+                "currency": "USD"
+              }
+            },
+            "group_key": "it_7c2m:accept_offer",
+            "group_rank": 1,
+            "group_form": "single",
+            "version": 3,
+            "feed": "now"
+          },
+          {
+            "id": "dec_ct1",
+            "kind": "confirm_trade",
+            "item_id": "it_3vv8",
+            "state": "open",
+            "tier": "ask",
+            "why": "The buyer on Facebook says they will pick up at 6. Confirm the deal?",
+            "deadline": "2026-11-15T22:00:00Z",
+            "options": [
+              {
+                "id": "opt_yes",
+                "label": "Confirm",
+                "signature": "sig.dec_ct1.opt_yes.v1",
+                "evidence": []
+              },
+              {
+                "id": "opt_no",
+                "label": "Not yet",
+                "signature": "sig.dec_ct1.opt_no.v1",
+                "evidence": []
+              }
+            ],
+            "suggested": null,
+            "group_key": null,
+            "group_rank": null,
+            "group_form": "single",
+            "version": 1,
+            "feed": "now"
+          },
+          {
+            "id": "dec_lb1",
+            "kind": "buy_label",
+            "item_id": "it_9s1a",
+            "state": "open",
+            "tier": "ask",
+            "why": "Sold on eBay. Ship by Monday.",
+            "deadline": "2026-11-17T23:59:00Z",
+            "options": [
+              {
+                "id": "opt_buy",
+                "label": "Buy label $8.40",
+                "signature": "sig.dec_lb1.opt_buy.v1",
+                "evidence": []
+              },
+              {
+                "id": "opt_skip",
+                "label": "I will ship it myself",
+                "signature": "sig.dec_lb1.opt_skip.v1",
+                "evidence": []
+              }
+            ],
+            "suggested": "opt_buy",
+            "group_key": "buy_label",
+            "group_rank": 1,
+            "group_form": "batch",
+            "version": 1,
+            "feed": "when_you_can"
+          },
+          {
+            "id": "dec_lb2",
+            "kind": "buy_label",
+            "item_id": "it_4m0z",
+            "state": "open",
+            "tier": "ask",
+            "why": "Sold on Mercari. Ship by Tuesday.",
+            "deadline": "2026-11-18T23:59:00Z",
+            "options": [
+              {
+                "id": "opt_buy",
+                "label": "Buy label $6.10",
+                "signature": "sig.dec_lb2.opt_buy.v1",
+                "evidence": []
+              },
+              {
+                "id": "opt_skip",
+                "label": "I will ship it myself",
+                "signature": "sig.dec_lb2.opt_skip.v1",
+                "evidence": []
+              }
+            ],
+            "suggested": "opt_buy",
+            "group_key": "buy_label",
+            "group_rank": 2,
+            "group_form": "batch",
+            "version": 1,
+            "feed": "when_you_can"
+          },
+          {
+            "id": "dec_rl1",
+            "kind": "relink",
+            "item_id": null,
+            "state": "open",
+            "tier": "ask",
+            "why": "Poshmark signed you out.",
+            "deadline": "2026-11-15T23:00:00Z",
+            "options": [
+              {
+                "id": "opt_relink",
+                "label": "Sign in again",
+                "signature": "sig.dec_rl1.opt_relink.v1",
+                "evidence": []
+              }
+            ],
+            "suggested": "opt_relink",
+            "account_id": "acc_po1",
+            "group_key": null,
+            "group_rank": null,
+            "group_form": "single",
+            "version": 1,
+            "feed": "now"
+          }
+        ],
+        "notices": [
+          {
+            "kind": "value_moved",
+            "item_id": "it_2k9p",
+            "text": "Switch OLED prices rose this week",
+            "citation_id": "ci_vm2"
+          }
+        ],
+        "last_open_at": "2026-11-15T02:58:00Z"
+      }
+    },
+    {
+      "name": "today.get.new_user",
+      "endpoint": "GET /v1/today",
+      "path": "/v1/today",
+      "status": 200,
+      "response": {
+        "headline": {
+          "kind": "next_setup_step",
+          "value": null,
+          "label": "Link Depop",
+          "sub": "Then we can bring in what you already list",
+          "citation_id": null,
+          "path": "/onboarding/sites"
+        },
+        "counts": {
+          "open": 0,
+          "due_today": 0,
+          "auto_done_since_last_open": 0
+        },
+        "decisions": [],
+        "notices": [],
+        "last_open_at": null
+      }
+    },
+    {
+      "name": "today.get.nothing_new",
+      "endpoint": "GET /v1/today",
+      "path": "/v1/today",
+      "status": 200,
+      "response": {
+        "counts": {
+          "open": 0,
+          "due_today": 0,
+          "auto_done_since_last_open": 0
+        },
+        "decisions": [],
+        "notices": [],
+        "last_open_at": "2026-11-15T02:58:00Z"
+      }
+    },
+    {
+      "name": "decisions.list",
+      "endpoint": "GET /v1/decisions",
+      "path": "/v1/decisions?state=open&limit=20",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "dec_51k",
+            "kind": "accept_offer",
+            "item_id": "it_7c2m",
+            "state": "open",
+            "tier": "ask",
+            "deadline": "2026-11-16T04:20:00Z",
+            "suggested": "opt_ctr",
+            "group_key": "it_7c2m:accept_offer",
+            "group_rank": 1,
+            "group_form": "single",
+            "version": 3,
+            "feed": "now"
+          },
+          {
+            "id": "dec_rl1",
+            "kind": "relink",
+            "item_id": null,
+            "state": "open",
+            "tier": "ask",
+            "deadline": "2026-11-15T23:00:00Z",
+            "suggested": "opt_relink",
+            "group_key": null,
+            "group_rank": null,
+            "group_form": "single",
+            "version": 1,
+            "feed": "now"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "decisions.act",
+      "endpoint": "POST /v1/decisions/:id/act",
+      "path": "/v1/decisions/dec_51k/act",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_act_01"
+        },
+        "body": {
+          "option_id": "opt_ctr",
+          "signature": "sig.dec_51k.opt_ctr.v3",
+          "version": 3
+        }
+      },
+      "status": 200,
+      "response": {
+        "decision": {
+          "id": "dec_51k",
+          "state": "acting",
+          "answered": {
+            "option_id": "opt_ctr",
+            "answered_at": "2026-11-15T04:21:00Z",
+            "edited": false
+          },
+          "version": 4
+        },
+        "event_id": "ev_a71",
+        "job": {
+          "id": "job_ao2",
+          "kind": "answer_offer",
+          "state": "running",
+          "stages": [
+            {
+              "name": "claim_check",
+              "state": "running",
+              "started_at": "2026-11-15T04:21:00Z",
+              "ended_at": null,
+              "found": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "decisions.act.edited",
+      "endpoint": "POST /v1/decisions/:id/act",
+      "path": "/v1/decisions/dec_51k/act",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_act_02"
+        },
+        "body": {
+          "option_id": "opt_ctr",
+          "signature": "sig.dec_51k.opt_ctr.v3",
+          "version": 3,
+          "edit": {
+            "counter_cents": {
+              "amount_cents": 9000,
+              "currency": "USD"
+            }
+          }
+        }
+      },
+      "status": 200,
+      "response": {
+        "decision": {
+          "id": "dec_51k",
+          "state": "acting",
+          "answered": {
+            "option_id": "opt_ctr",
+            "answered_at": "2026-11-15T04:21:00Z",
+            "edited": true
+          },
+          "version": 4
+        },
+        "event_id": "ev_a72",
+        "job": {
+          "id": "job_ao3",
+          "kind": "answer_offer",
+          "state": "queued",
+          "stages": []
+        }
+      }
+    },
+    {
+      "name": "decisions.act.stale",
+      "endpoint": "POST /v1/decisions/:id/act",
+      "path": "/v1/decisions/dec_51k/act",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_act_03"
+        },
+        "body": {
+          "option_id": "opt_acc",
+          "signature": "sig.dec_51k.opt_acc.v2",
+          "version": 2
+        }
+      },
+      "status": 409,
+      "response": {
+        "code": "stale",
+        "message": "the offer changed",
+        "failed_step": "version_check",
+        "retry": {
+          "by": "user"
+        },
+        "replacement": {
+          "id": "dec_52m",
+          "kind": "accept_offer",
+          "version": 1
+        }
+      }
+    },
+    {
+      "name": "decisions.act.locked",
+      "endpoint": "POST /v1/decisions/:id/act",
+      "path": "/v1/decisions/dec_sa1/act",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_act_04"
+        },
+        "body": {
+          "option_id": "opt_send",
+          "signature": "sig.dec_sa1.opt_send.v1",
+          "version": 1,
+          "via": "rule"
+        }
+      },
+      "status": 403,
+      "response": {
+        "code": "locked",
+        "message": "share_address needs the person's tap",
+        "failed_step": "policy_check",
+        "retry": {
+          "by": "user"
+        }
+      }
+    }
+  ]
+}

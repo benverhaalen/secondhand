@@ -1,0 +1,690 @@
+{
+  "examples": [
+    {
+      "name": "valuations.create",
+      "endpoint": "POST /v1/valuations",
+      "path": "/v1/valuations",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_val_01"
+        },
+        "body": {
+          "item_id": "it_7c2m"
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_9b",
+        "kind": "valuate",
+        "state": "running",
+        "item_id": "it_7c2m",
+        "stages": [
+          {
+            "name": "comps",
+            "state": "running",
+            "started_at": "2026-11-15T03:55:00Z",
+            "ended_at": null,
+            "found": {
+              "sources_searched": 4,
+              "results_found": 214,
+              "results_used": 41,
+              "dropped_by_reason": {
+                "other_variant": 120,
+                "lot": 9,
+                "stale": 44
+              },
+              "sites": {
+                "ebay": 23,
+                "depop": 12,
+                "mercari": 6
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "valuations.appraise_url",
+      "endpoint": "POST /v1/valuations",
+      "path": "/v1/valuations",
+      "auth": "user",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_val_02"
+        },
+        "body": {
+          "url": "https://www.facebook.com/marketplace/item/000000000000001",
+          "purpose": "appraise"
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_9e",
+        "kind": "valuate",
+        "state": "queued",
+        "stages": []
+      }
+    },
+    {
+      "name": "conversations.list",
+      "endpoint": "GET /v1/conversations",
+      "path": "/v1/conversations?limit=20",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "cv_6t1",
+            "site": "depop",
+            "item_id": "it_7c2m",
+            "listing_id": "ls_d22",
+            "role": "sell",
+            "intent_last": "offer",
+            "state": "open",
+            "last_read_at": "2026-11-15T04:19:00Z",
+            "unread": 1,
+            "last": {
+              "actor": "counterpart",
+              "text": "Would you take 85?",
+              "sent_at": "2026-11-15T04:18:00Z"
+            }
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "conversations.messages",
+      "endpoint": "GET /v1/conversations/:id/messages",
+      "path": "/v1/conversations/cv_6t1/messages",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "msg_c3",
+            "actor": "auto",
+            "sent_at": "2026-11-15T04:22:00Z",
+            "intent": "counter",
+            "facets": [],
+            "text": "Thanks! I can do $92."
+          },
+          {
+            "id": "msg_c2",
+            "actor": "counterpart",
+            "sent_at": "2026-11-15T04:18:00Z",
+            "intent": "offer",
+            "facets": [],
+            "text": "Would you take 85?",
+            "offer": {
+              "id": "of_k1",
+              "direction": "in",
+              "amount_cents": 8500,
+              "currency": "USD",
+              "you_keep_cents": {
+                "amount_cents": 7735,
+                "currency": "USD"
+              },
+              "state": "countered",
+              "expires_at": "2026-11-16T04:18:00Z"
+            }
+          },
+          {
+            "id": "msg_c1",
+            "actor": "counterpart",
+            "sent_at": "2026-11-15T04:15:00Z",
+            "intent": "question",
+            "facets": [],
+            "text": "Is it blanket lined?"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "conversations.reply",
+      "endpoint": "POST /v1/conversations/:id/messages",
+      "path": "/v1/conversations/cv_6t1/messages",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_msg_01"
+        },
+        "body": {
+          "text": "Yes, blanket lined. Ships tomorrow."
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_sm4",
+        "kind": "send_message",
+        "state": "running",
+        "stages": [
+          {
+            "name": "claim_check",
+            "state": "running",
+            "started_at": "2026-11-15T04:25:00Z",
+            "ended_at": null,
+            "found": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "orders.list",
+      "endpoint": "GET /v1/orders",
+      "path": "/v1/orders?kind=sale&limit=20",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "ord_2w8",
+            "kind": "sale",
+            "item_id": "it_9s1a",
+            "listing_id": "ls_e90",
+            "site": "ebay",
+            "state": "to_ship",
+            "price_cents": {
+              "amount_cents": 9620,
+              "currency": "USD"
+            },
+            "fees_cents": {
+              "amount_cents": 1278,
+              "currency": "USD"
+            },
+            "shipping_cents": {
+              "amount_cents": 840,
+              "currency": "USD"
+            },
+            "payout_cents": null,
+            "lines": [
+              {
+                "kind": "sale",
+                "amount_cents": 9620,
+                "currency": "USD",
+                "source": "site_report"
+              },
+              {
+                "kind": "fee",
+                "amount_cents": -1278,
+                "currency": "USD",
+                "source": "site_report"
+              }
+            ],
+            "label": null,
+            "clocks": {
+              "ship_by": "2026-11-17T23:59:00Z",
+              "claim_until": null,
+              "release_at": null
+            },
+            "external_order_id": "12-34567-89012",
+            "created_at": "2026-11-15T01:02:00Z",
+            "version": 2
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "orders.bought_it",
+      "endpoint": "POST /v1/orders",
+      "path": "/v1/orders",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_ord_01"
+        },
+        "body": {
+          "kind": "purchase",
+          "match_id": "mt_77",
+          "price_cents": {
+            "amount_cents": 4500,
+            "currency": "USD"
+          },
+          "site": "mercari"
+        }
+      },
+      "status": 201,
+      "response": {
+        "order": {
+          "id": "ord_p31",
+          "kind": "purchase",
+          "state": "paid",
+          "site": "mercari",
+          "price_cents": {
+            "amount_cents": 4500,
+            "currency": "USD"
+          },
+          "version": 1
+        },
+        "item": {
+          "id": "it_6bb2",
+          "state": "owned",
+          "cost": {
+            "amount_cents": 4500,
+            "currency": "USD",
+            "date": "2026-11-15",
+            "source": "bought_it"
+          }
+        }
+      }
+    },
+    {
+      "name": "appointments.list",
+      "endpoint": "GET /v1/appointments",
+      "path": "/v1/appointments",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "ap_p1",
+            "order_id": "ord_fb4",
+            "kind": "pickup",
+            "window": {
+              "start": "2026-11-16T00:00:00Z",
+              "end": "2026-11-16T00:30:00Z"
+            },
+            "place": {
+              "label": "Library parking lot"
+            },
+            "state": "booked"
+          },
+          {
+            "id": "ap_s1",
+            "order_id": "ord_2w8",
+            "kind": "ship_by",
+            "window": {
+              "start": "2026-11-15T01:02:00Z",
+              "end": "2026-11-17T23:59:00Z"
+            },
+            "place": null,
+            "state": "booked"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "orders.handed_over",
+      "endpoint": "POST /v1/orders/:id/handed-over",
+      "path": "/v1/orders/ord_fb4/handed-over",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_ho_01"
+        },
+        "body": {
+          "version": 3
+        }
+      },
+      "status": 200,
+      "response": {
+        "order": {
+          "id": "ord_fb4",
+          "state": "handed_over",
+          "version": 4
+        },
+        "item": {
+          "id": "it_3vv8",
+          "state": "handed_over"
+        },
+        "event_id": "ev_ho1",
+        "undo": {
+          "allowed": true,
+          "until": "2026-11-16T00:40:00Z"
+        }
+      }
+    },
+    {
+      "name": "orders.ship",
+      "endpoint": "POST /v1/orders/:id/ship",
+      "path": "/v1/orders/ord_2w8/ship",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_ship_01"
+        },
+        "body": {
+          "insure_cents": {
+            "amount_cents": 10000,
+            "currency": "USD"
+          }
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_lb7",
+        "kind": "label",
+        "state": "running",
+        "stages": [
+          {
+            "name": "rate",
+            "state": "arrived",
+            "started_at": "2026-11-15T05:00:00Z",
+            "ended_at": "2026-11-15T05:00:02Z",
+            "found": {}
+          },
+          {
+            "name": "buy",
+            "state": "running",
+            "started_at": "2026-11-15T05:00:02Z",
+            "ended_at": null,
+            "found": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "orders.labels",
+      "endpoint": "POST /v1/orders/labels",
+      "path": "/v1/orders/labels",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_lbl_01"
+        },
+        "body": {
+          "order_ids": [
+            "ord_2w8",
+            "ord_m19"
+          ],
+          "layout": "letter_2up"
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_lb8",
+        "kind": "label",
+        "state": "queued",
+        "stages": [],
+        "batch_id": "lb_b1"
+      }
+    },
+    {
+      "name": "orders.pick_list",
+      "endpoint": "GET /v1/orders/pick-list",
+      "path": "/v1/orders/pick-list",
+      "status": 200,
+      "response": {
+        "date": "2026-11-15",
+        "rows": [
+          {
+            "order_id": "ord_2w8",
+            "item_id": "it_9s1a",
+            "title": "Levi's 501, 32x30",
+            "location": {
+              "label": "Bin 2"
+            },
+            "package": {
+              "l_in": 12,
+              "w_in": 9,
+              "h_in": 3,
+              "weight_oz": 22
+            },
+            "ship_by": "2026-11-17T23:59:00Z"
+          }
+        ]
+      }
+    },
+    {
+      "name": "records.csv",
+      "endpoint": "GET /v1/records",
+      "path": "/v1/records?tax_year=2026&format=csv",
+      "status": 200,
+      "content_type": "text/csv",
+      "response": {
+        "file_ref": "rec_2026.csv",
+        "body_head": "date,site,item,sale,cost,fees,shipping,kept\n2026-11-15,ebay,Levi's 501,96.20,8.00,12.78,8.40,67.02\n",
+        "tax_estimate": {
+          "amount_cents": 0,
+          "currency": "USD",
+          "label": "estimate"
+        }
+      }
+    },
+    {
+      "name": "records.pdf",
+      "endpoint": "GET /v1/records",
+      "path": "/v1/records?tax_year=2026&format=pdf",
+      "proposed": true,
+      "status": 200,
+      "content_type": "application/pdf",
+      "response": {
+        "file_ref": "rec_2026.pdf"
+      }
+    },
+    {
+      "name": "limits.get",
+      "endpoint": "GET /v1/limits",
+      "path": "/v1/limits",
+      "status": 200,
+      "response": {
+        "handover": [
+          "ship",
+          "pickup"
+        ],
+        "pickup_windows": [
+          {
+            "weekday": "sat",
+            "from": "15:00",
+            "to": "18:00"
+          }
+        ],
+        "saved_spot": {
+          "label": "Library parking lot"
+        },
+        "ask_every_time": false,
+        "items": [
+          {
+            "item_id": "it_7c2m",
+            "floor_cents": {
+              "amount_cents": 7000,
+              "currency": "USD"
+            },
+            "always_accept_cents": null,
+            "plan_choice": "sell",
+            "gone_by": null,
+            "fallback": "ask",
+            "markdown_on": true,
+            "review_at": null,
+            "accept_mode": "ask_all"
+          }
+        ],
+        "version": 5
+      }
+    },
+    {
+      "name": "limits.put",
+      "endpoint": "PUT /v1/limits",
+      "path": "/v1/limits",
+      "request": {
+        "body": {
+          "version": 5,
+          "ask_every_time": true,
+          "items": [
+            {
+              "item_id": "it_7c2m",
+              "floor_cents": {
+                "amount_cents": 7500,
+                "currency": "USD"
+              },
+              "plan_choice": "reserve",
+              "fallback": "keep",
+              "accept_mode": "ask_all"
+            }
+          ]
+        }
+      },
+      "status": 200,
+      "response": {
+        "ask_every_time": true,
+        "items": [
+          {
+            "item_id": "it_7c2m",
+            "floor_cents": {
+              "amount_cents": 7500,
+              "currency": "USD"
+            },
+            "always_accept_cents": null,
+            "plan_choice": "reserve",
+            "gone_by": null,
+            "fallback": "keep",
+            "markdown_on": false,
+            "review_at": "2026-12-15T00:00:00Z",
+            "accept_mode": "ask_all"
+          }
+        ],
+        "version": 6
+      }
+    },
+    {
+      "name": "rules.list",
+      "endpoint": "GET /v1/rules",
+      "path": "/v1/rules",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "id": "ru_c1",
+            "kind": "counter_offer",
+            "scope": "all",
+            "state": "auto",
+            "unedited_approvals": 5,
+            "promoted_at": "2026-11-12T20:00:00Z",
+            "last_used_at": "2026-11-15T04:22:00Z",
+            "when": "an offer comes in",
+            "if": "it is at or above your lowest",
+            "then": "counter on the price path"
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "rules.promote",
+      "endpoint": "POST /v1/rules",
+      "path": "/v1/rules",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_rule_01"
+        },
+        "body": {
+          "from_decision_id": "dec_lb1"
+        }
+      },
+      "status": 201,
+      "response": {
+        "id": "ru_b2",
+        "kind": "buy_label",
+        "scope": "all",
+        "state": "auto",
+        "unedited_approvals": 3,
+        "promoted_at": "2026-11-15T05:02:00Z",
+        "version": 1
+      }
+    },
+    {
+      "name": "rules.create.locked",
+      "endpoint": "POST /v1/rules",
+      "path": "/v1/rules",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_rule_02"
+        },
+        "body": {
+          "kind": "share_address",
+          "scope": "all"
+        }
+      },
+      "status": 403,
+      "response": {
+        "code": "locked",
+        "message": "share_address is never automatic",
+        "failed_step": "policy_check",
+        "retry": {
+          "by": "none"
+        }
+      }
+    },
+    {
+      "name": "rules.delete",
+      "endpoint": "DELETE /v1/rules/:id",
+      "path": "/v1/rules/ru_b2",
+      "status": 204,
+      "response": null
+    },
+    {
+      "name": "events.list",
+      "endpoint": "GET /v1/events",
+      "path": "/v1/events?item_id=it_7c2m",
+      "list": true,
+      "status": 200,
+      "response": {
+        "data": [
+          {
+            "event_id": "ev_a71",
+            "item_id": "it_7c2m",
+            "action": "counter_offer",
+            "actor": "user",
+            "at": "2026-11-15T04:21:00Z",
+            "why": "You countered $92 on Depop",
+            "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+            "undo": {
+              "allowed": false,
+              "until": null
+            }
+          },
+          {
+            "event_id": "ev_p02",
+            "item_id": "it_7c2m",
+            "action": "listing.posted",
+            "actor": "auto",
+            "at": "2026-11-15T04:12:00Z",
+            "why": "Posted to Depop at $95",
+            "trace_id": "0af7651916cd43dd8448eb211c80319c",
+            "undo": {
+              "allowed": true,
+              "until": "2026-11-15T05:12:00Z"
+            }
+          }
+        ],
+        "next_cursor": null
+      }
+    },
+    {
+      "name": "events.undo",
+      "endpoint": "POST /v1/events/:id/undo",
+      "path": "/v1/events/ev_p02/undo",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_undo_01"
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_dx1",
+        "kind": "delist",
+        "state": "queued",
+        "stages": [],
+        "undo_of": "ev_p02"
+      }
+    },
+    {
+      "name": "events.undo.too_late",
+      "endpoint": "POST /v1/events/:id/undo",
+      "path": "/v1/events/ev_a71/undo",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_undo_02"
+        }
+      },
+      "status": 409,
+      "response": {
+        "code": "site_no_undo",
+        "message": "Depop has no way to take back a counter",
+        "failed_step": "undo",
+        "retry": {
+          "by": "none"
+        }
+      }
+    }
+  ]
+}

@@ -40,12 +40,12 @@
 .cam .stages li.done .ic { display: block; }
 
 .cam .ask { position: absolute; z-index: 4; top: var(--ask-top); left: var(--ask-side); right: var(--ask-side); margin: 0; text-align: center;
-  font: var(--w-regular) var(--t-18)/24px var(--font-text); color: var(--surface); text-shadow: var(--ask-shadow); }
+  font: var(--w-text) var(--t-18)/24px var(--font-text); color: var(--surface); text-shadow: var(--ask-shadow); }
 
 /* What the app read, for a moment: the name in ink on white, and a check on mint */
 .cam .found { position: absolute; z-index: 5; top: var(--found-top); left: 50%; transform: translateX(-50%); height: var(--found-h); border-radius: calc(var(--found-h) / 2);
   padding: 0 var(--s-2) 0 var(--s-5); display: flex; align-items: center; gap: 10px; background: var(--surface); color: var(--ink); box-shadow: var(--found-shadow);
-  font: var(--w-regular) var(--t-18)/24px var(--font-text); white-space: nowrap; }
+  font: var(--w-text) var(--t-18)/24px var(--font-text); white-space: nowrap; }
 .cam .found .dot { width: var(--found-dot); height: var(--found-dot); border-radius: var(--r-pill); background: var(--mint); display: grid; place-items: center; color: var(--ink); }
 .cam .found .ic { width: 16px; height: 16px; }
 

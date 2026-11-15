@@ -101,7 +101,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     const firstText = document.createTreeWalker(blk, NodeFilter.SHOW_TEXT, { acceptNode: x => /\S/.test(x.data) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP }).nextNode();
     const lead = firstText === n && /^(?:start|left|-webkit-auto)$/.test(getComputedStyle(blk).textAlign) && !/center|end|around|between|evenly/.test(getComputedStyle(blk.parentElement ?? blk).justifyContent);
     const control = !!p.closest('button, a, summary, [role=button], [role=link]'), disabled = !!p.closest('[disabled], [aria-disabled="true"]');
-    texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, weight: Number(cs.fontWeight), family: cs.fontFamily,
+    texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, lh: parseFloat(cs.lineHeight) ? Math.round(parseFloat(cs.lineHeight) / parseFloat(cs.fontSize) * 1000) / 1000 : null, tr: Math.round((parseFloat(cs.letterSpacing) || 0) / parseFloat(cs.fontSize) * 1000) / 1000, weight: Number(cs.fontWeight), family: cs.fontFamily,
       display: family === faces.display, textFace: family === faces.text, color: cs.webkitTextFillColor || cs.color, upper: cs.textTransform === 'uppercase',
       caps: cs.textTransform === 'capitalize' ? 'capitalized by CSS' : cs.fontVariantCaps !== 'normal' ? 'set in small capitals' : null, italic: cs.fontStyle !== 'normal', stroked: parseFloat(cs.webkitTextStrokeWidth) > 0,
       lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, disabled, lead, opacity: alpha,

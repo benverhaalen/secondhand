@@ -40,8 +40,8 @@ after(async () => { await browser?.close(); if (dir) rmSync(dir, { recursive: tr
 
 const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--page);color:var(--ink);font-family:var(--font-text);font-weight:400}
-.s{width:1920px;height:1080px;padding:96px;position:relative;overflow:hidden}.p{width:1080px;height:1350px;padding:72px;position:relative;overflow:hidden}
-.h{font-size:64px;font-family:var(--font-display);font-weight:600}.b{font-size:32px}.m{font-family:var(--font-display);font-weight:600;font-size:64px}.f{background:var(--field)}`;
+.s{width:1920px;height:1080px;padding:96px;position:relative;overflow:hidden;line-height:1.1}.s *,.p *,.st *{letter-spacing:-.02em}.p{width:1080px;height:1350px;padding:72px;position:relative;overflow:hidden;line-height:1.1}
+.h{font-size:64px;font-family:var(--font-display);font-weight:600}.b{font-size:32px}.s .m,.p .m,.st .m,.m{font-family:var(--font-display);font-weight:600;font-size:64px;letter-spacing:-.01em}.f{background:var(--field)}`;
 // On a deck the wordmark sits bottom left of every slide at 32, and alone at 64 on the closing slide.
 const MARK = '<p class="m" style="font-size:32px;position:absolute;left:96px;bottom:96px">secondhand</p>';
 const TITLE = `<section class="s f" data-view><p class="b">Sell used things from one app</p>${MARK}</section>`, END = '<section class="s" data-view style="display:grid;place-items:center"><p class="m">secondhand</p></section>';
@@ -130,7 +130,7 @@ const web = main => `<header style="padding:16px 64px"><p class="m" style="font-
 test('render: a web page passes at both widths', { skip: !pw }, async () => {
   assert.deepEqual(await ids(web('<p style="font-size:18px;max-width:600px">Sell used things from one app</p><div class="f" style="height:160px;margin-top:48px"></div>'), 'web'), []);
 });
-const STORY = last => `<section data-view style="width:1080px;height:1920px;padding:250px 96px 340px"><p style="font-size:48px">Listed in a minute</p><div class="f" style="height:480px;margin-top:96px"></div></section><section data-view style="width:1080px;height:1920px;display:grid;place-items:center">${last}</section>`;
+const STORY = last => `<section data-view class="st" style="width:1080px;height:1920px;padding:250px 96px 340px;line-height:1.1"><p style="font-size:48px">Listed in a minute</p><div class="f" style="height:480px;margin-top:96px"></div></section><section data-view class="st" style="width:1080px;height:1920px;display:grid;place-items:center;line-height:1.1">${last}</section>`;
 test('render: a story with the wordmark on its end card passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(STORY('<p class="m" style="font-size:120px">secondhand</p>'), 'story'), []);
 });
@@ -246,6 +246,7 @@ for (const [what, layout, inner, re] of [['a slide that names no layout', '', '<
   ['a list of seven rows', 'data-layout="list"', `<ul class="rows">${'<li data-part="row"><p class="body">Shoots</p></li>'.repeat(7)}</ul>`, /B37 view 1 is the layout "list" and does not hold what that is: two to six rows/]])
   test(`render B37: ${what} fails`, { skip: !pw }, async () => { const f = join(dir, `layout-${n++}.html`); writeFileSync(f, `<!doctype html>${SLIDE(layout, inner)}`);
     assert.match((await check(f, 'deck', { browser })).findings.map(o => `${o.id} ${o.where} ${o.msg}`).join('\n'), re); });
+CASES.push(['B14', 'slide text at the browser\'s own leading and tracking', deck('<p class="b" style="line-height:normal;letter-spacing:0">Listed in a minute</p>'), /B14 .*is set at leading normal and tracking 0em: on a deck a size of 32 and up is leading 1.1/]);
 CASES.push(['B37', 'a slide in a layout the deck does not have', `<section class="s" data-view data-layout="collage"><p class="b">Listed in a minute</p>${MARK}</section>${END}`, /B37 .*"collage", which a deck does not have/]);
 CASES.push(['B3', 'the closing wordmark in a corner', `${TITLE}<section class="s" data-view><p class="m">secondhand</p></section>`, /B3 .*alone at 64 px it goes in the middle/]);
 // U6 and U7 came from Ben's corrections at 03:49: logos that were not the saved square icons, and tabs that slid over when the current one changed.

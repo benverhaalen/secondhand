@@ -1,0 +1,141 @@
+[
+ {
+  "id": "ord_fx1",
+  "kind": "sale",
+  "item_id": "item_fx1",
+  "listing_id": "ls_fx1e",
+  "site": "ebay",
+  "state": "delivered",
+  "price_cents": 5000,
+  "fees_cents": 650,
+  "shipping_cents": 0,
+  "payout_cents": 4350,
+  "lines": [
+   {
+    "kind": "label",
+    "amount_cents": 700,
+    "source": "computed"
+   },
+   {
+    "kind": "promotion_spend",
+    "amount_cents": 100,
+    "source": "site_report"
+   }
+  ],
+  "external_order_id": "eb-fx-1",
+  "clocks": {}
+ },
+ {
+  "id": "ord_fx2",
+  "kind": "sale",
+  "item_id": "item_fx2",
+  "listing_id": "ls_fx2p",
+  "site": "poshmark",
+  "state": "delivered",
+  "price_cents": 4000,
+  "fees_cents": 800,
+  "shipping_cents": 0,
+  "payout_cents": 3200,
+  "lines": [],
+  "external_order_id": "po-fx-2",
+  "clocks": {}
+ },
+ {
+  "id": "ord_fx3",
+  "kind": "sale",
+  "item_id": "item_fx3",
+  "listing_id": "ls_fx3d",
+  "site": "depop",
+  "state": "delivered",
+  "price_cents": 2500,
+  "fees_cents": 125,
+  "shipping_cents": 0,
+  "payout_cents": 2375,
+  "lines": [
+   {
+    "kind": "label",
+    "amount_cents": 450,
+    "source": "computed"
+   }
+  ],
+  "external_order_id": "de-fx-3",
+  "clocks": {}
+ },
+ {
+  "id": "ord_fx4",
+  "kind": "sale",
+  "item_id": "item_fx4",
+  "listing_id": "ls_fx4m",
+  "site": "mercari",
+  "state": "delivered",
+  "price_cents": 1800,
+  "fees_cents": 180,
+  "shipping_cents": 0,
+  "payout_cents": 1620,
+  "lines": [],
+  "external_order_id": "me-fx-4",
+  "clocks": {}
+ },
+ {
+  "id": "ord_fx5",
+  "kind": "sale",
+  "item_id": "item_fx5",
+  "listing_id": "ls_fx5f",
+  "site": "facebook",
+  "state": "handed_over",
+  "price_cents": 3000,
+  "fees_cents": 150,
+  "shipping_cents": 0,
+  "payout_cents": 2850,
+  "lines": [],
+  "external_order_id": "fa-fx-5",
+  "clocks": {}
+ },
+ {
+  "id": "ord_fx6",
+  "kind": "sale",
+  "item_id": "item_fx6",
+  "listing_id": "ls_fx6e",
+  "site": "ebay",
+  "state": "cancelled",
+  "price_cents": 2200,
+  "fees_cents": 286,
+  "shipping_cents": 0,
+  "lines": [],
+  "external_order_id": "eb-fx-6",
+  "clocks": {}
+ },
+ {
+  "id": "ord_fx7",
+  "kind": "sale",
+  "item_id": "item_fx7",
+  "listing_id": "ls_fx7p",
+  "site": "poshmark",
+  "state": "paid",
+  "price_cents": 3500,
+  "fees_cents": 700,
+  "shipping_cents": 0,
+  "lines": [
+   {
+    "kind": "label",
+    "amount_cents": 500,
+    "source": "estimated"
+   }
+  ],
+  "external_order_id": "po-fx-7",
+  "clocks": {}
+ },
+ {
+  "id": "ord_fx8",
+  "kind": "purchase",
+  "item_id": "item_fx8",
+  "site": "ebay",
+  "state": "delivered",
+  "price_cents": 900,
+  "fees_cents": 117,
+  "shipping_cents": 0,
+  "lines": [],
+  "external_order_id": "eb-fx-8",
+  "clocks": {}
+ }
+]

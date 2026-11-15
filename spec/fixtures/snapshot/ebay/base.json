@@ -1,0 +1,61 @@
+{
+ "site": "ebay",
+ "account_id": "acc_fx1",
+ "user_id": "u_fx1",
+ "taken_at": "2026-11-10T09:00:00Z",
+ "route": "signed_in",
+ "notifications": [],
+ "listings": [
+  {
+   "external_id": "eb1-100237",
+   "state": "live",
+   "price_cents": 4000,
+   "likes": 3,
+   "watchers": 1,
+   "views": 40
+  },
+  {
+   "external_id": "eb1-100274",
+   "state": "live",
+   "price_cents": 2500,
+   "likes": 3,
+   "watchers": 0,
+   "views": 22
+  },
+  {
+   "external_id": "eb1-100311",
+   "state": "live",
+   "price_cents": 6000,
+   "likes": 1,
+   "watchers": 2,
+   "views": 75
+  },
+  {
+   "external_id": "eb1-100348",
+   "state": "live",
+   "price_cents": 1800,
+   "likes": 0,
+   "watchers": 0,
+   "views": 9
+  }
+ ],
+ "offers": [
+  {
+   "external_id": "eb1-o1",
+   "listing_external_id": "eb1-100311",
+   "amount_cents": 5000,
+   "state": "open",
+   "buyer_ref_hash": "53478ae559d0"
+  }
+ ],
+ "messages": [
+  {
+   "external_id": "eb1-m1",
+   "thread_ref": "eb1-t1",
+   "listing_external_id": "eb1-100311",
+   "at": "2026-11-10T08:30:00Z",
+   "from": "buyer"
+  }
+ ],
+ "orders": []
+}

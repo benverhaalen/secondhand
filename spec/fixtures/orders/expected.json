@@ -1,0 +1,64 @@
+{
+ "per_order_kept_cents": {
+  "ord_fx1": 3550,
+  "ord_fx2": 3200,
+  "ord_fx3": 1925,
+  "ord_fx4": 1620,
+  "ord_fx5": 2850,
+  "ord_fx7": null
+ },
+ "per_site": {
+  "ebay": {
+   "sales": 1,
+   "kept_cents": 3550,
+   "kept_unknown": 0,
+   "days_to_sell": [
+    10
+   ]
+  },
+  "poshmark": {
+   "sales": 2,
+   "kept_cents": 3200,
+   "kept_unknown": 1,
+   "days_to_sell": [
+    3
+   ]
+  },
+  "depop": {
+   "sales": 1,
+   "kept_cents": 1925,
+   "kept_unknown": 0,
+   "days_to_sell": [
+    10
+   ]
+  },
+  "mercari": {
+   "sales": 1,
+   "kept_cents": 1620,
+   "kept_unknown": 0,
+   "days_to_sell": [
+    2
+   ]
+  },
+  "facebook": {
+   "sales": 1,
+   "kept_cents": 2850,
+   "kept_unknown": 0,
+   "days_to_sell": [
+    3
+   ]
+  }
+ },
+ "censored_listing_ids": [
+  "ls_fx2e"
+ ],
+ "excluded": {
+  "cancelled": [
+   "ord_fx6"
+  ],
+  "purchases": [
+   "ord_fx8"
+  ]
+ },
+ "rule": "kept = payout - label - promotion_spend; null when payout is not yet reported; cancelled and purchases are not sales; a listing that ended because the item sold elsewhere is censored"
+}

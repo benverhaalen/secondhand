@@ -43,10 +43,10 @@ const prices = (ask, fair) => `<div class="two">${ask ? `<div><div class="t13 i2
 // The new match is the one thing on the field, so it is the news, said once
 const match = `<div class="card field match" data-part="card-match">
   <span class="big">${photo('carhartt-jacket', 'Carhartt Detroit jacket')}${site('depop')}</span>${V(12)}
-  <div class="read t15">${ic('tick')}${lb('Fair price')}</div>${V(4)}
+  <div class="read t15">${ic('tick')}${lb('Fair price')}</div>${V(8)}
   <div class="t18 one">Carhartt Detroit jacket, M</div>${V(12)}
   ${prices('$62', '$55 to $70')}${V(16)}
-  <div class="ln"><button class="pill" data-part="pill-card">${lb('View listing')}</button></div></div>`;
+  <div class="ln"><button class="pill tall grow" data-part="pill-bar">${lb('View listing')}</button>${H(8)}<button class="pill l2 tall" data-part="pill-bar">${lb('Watch')}</button>${H(8)}<button class="pill dot l2 tall" aria-label="More" data-part="pill-bar-icon">${ic('more')}</button></div></div>`;   // the kit's acts(): the act grows, a light second, the rest under More
 // No match yet: what they asked for, with their own photo of it, on a white card
 const waiting = `<div class="card" data-part="card-item"><div class="ln h72"><span class="thumb">${photo('carhartt-jacket', 'Carhartt Detroit jacket').replace('class="ph"', 'class="ph p72"')}</span>${H(12)}
   <div class="fx between"><div class="t13 i2">Nothing yet</div><div class="t18 one">Carhartt Detroit jacket, M</div><div class="t15 i2 one">Fair range <span class="ink">$55 to $70</span> delivered</div></div></div></div>`;
@@ -55,7 +55,7 @@ const tile = (pic, name, s, label) => `<div class="t">${photo(pic, name)}${V(8)}
 const watching = `<div class="shelf">${tile('nike-dunks', 'Nike Dunk Low', 'ebay', '$48 delivered')}${tile('switch-oled', 'Switch OLED', 'mercari', '$214 delivered')}${tile('patagonia-fleece', 'Patagonia fleece', 'poshmark', '$52 delivered')}</div>`;
 const bought = `<div class="shelf">${tile('levis-501', 'Levi’s 501', 'poshmark', 'Arrives Thursday')}${tile('brass-lamp', 'Brass lamp', 'ebay', 'Delivered')}</div>`;
 
-const buy = k => `<div class="sh fixed sep-tint wm-center buy" data-view data-moment="${k}"><i class="wash"></i>${os}${nav}${V(16)}
+const buy = k => `<div class="sh fixed wm-center buy" data-view data-moment="${k}"><i class="wash"></i>${os}${nav}${V(16)}
   ${line(find)}${V(32)}
   ${line(`<div class="ln mid"><h2 class="t18 fx">New finds</h2>${running}</div>`)}${V(12)}
   ${line(k === 'match' ? match : waiting)}${V(32)}

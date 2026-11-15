@@ -1,0 +1,363 @@
+{
+  "examples": [
+    {
+      "name": "me.get",
+      "endpoint": "GET /v1/me",
+      "path": "/v1/me",
+      "proposed": true,
+      "status": 200,
+      "response": {
+        "id": "usr_8f2k",
+        "locale": "en-US",
+        "currency": "USD",
+        "timezone": "America/Chicago",
+        "disclosure_pref": "plain",
+        "target_profit_cents": {
+          "amount_cents": 40000,
+          "currency": "USD"
+        },
+        "notification_pref": [
+          {
+            "event_kind": "sale",
+            "channel": "push",
+            "on": true
+          },
+          {
+            "event_kind": "offer",
+            "channel": "push",
+            "on": true
+          },
+          {
+            "event_kind": "digest",
+            "channel": "email",
+            "on": false
+          }
+        ],
+        "experiments_consent": false,
+        "tutorial_seen": false,
+        "last_open_at": "2026-11-15T02:58:00Z",
+        "auth_methods": [
+          {
+            "provider": "apple",
+            "linked_at": "2026-11-15T03:10:00Z"
+          }
+        ],
+        "onboarding": {
+          "done_steps": [
+            "signed_in",
+            "sites_picked",
+            "sites_linked"
+          ],
+          "finished_at": null,
+          "next_step": "imported"
+        },
+        "created_at": "2026-11-15T03:10:00Z",
+        "updated_at": "2026-11-15T03:14:00Z",
+        "version": 4
+      }
+    },
+    {
+      "name": "me.patch.onboarding",
+      "endpoint": "PATCH /v1/me",
+      "path": "/v1/me",
+      "request": {
+        "body": {
+          "version": 4,
+          "onboarding_step": "imported"
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "usr_8f2k",
+        "onboarding": {
+          "done_steps": [
+            "signed_in",
+            "sites_picked",
+            "sites_linked",
+            "imported"
+          ],
+          "finished_at": null,
+          "next_step": "email"
+        },
+        "version": 5
+      }
+    },
+    {
+      "name": "me.patch.notifications",
+      "endpoint": "PATCH /v1/me",
+      "path": "/v1/me",
+      "request": {
+        "body": {
+          "version": 5,
+          "onboarding_step": "notifications",
+          "push_token": "ExponentPushToken[example]",
+          "notification_pref": [
+            {
+              "event_kind": "sale",
+              "channel": "push",
+              "on": true
+            },
+            {
+              "event_kind": "offer",
+              "channel": "push",
+              "on": true
+            }
+          ]
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "usr_8f2k",
+        "notification_pref": [
+          {
+            "event_kind": "sale",
+            "channel": "push",
+            "on": true
+          },
+          {
+            "event_kind": "offer",
+            "channel": "push",
+            "on": true
+          }
+        ],
+        "push_registered": true,
+        "onboarding": {
+          "done_steps": [
+            "signed_in",
+            "sites_picked",
+            "sites_linked",
+            "imported",
+            "email",
+            "pickups",
+            "notifications"
+          ],
+          "finished_at": "2026-11-15T03:22:00Z",
+          "next_step": null
+        },
+        "version": 6
+      }
+    },
+    {
+      "name": "me.patch.tutorial_seen",
+      "endpoint": "PATCH /v1/me",
+      "path": "/v1/me",
+      "request": {
+        "body": {
+          "version": 6,
+          "tutorial_seen": true
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "usr_8f2k",
+        "tutorial_seen": true,
+        "version": 7
+      }
+    },
+    {
+      "name": "me.patch.stale",
+      "endpoint": "PATCH /v1/me",
+      "path": "/v1/me",
+      "request": {
+        "body": {
+          "version": 3,
+          "tutorial_seen": true
+        }
+      },
+      "status": 409,
+      "response": {
+        "code": "stale",
+        "message": "version 3 is behind 7",
+        "failed_step": "write",
+        "retry": {
+          "by": "user"
+        },
+        "current": {
+          "id": "usr_8f2k",
+          "tutorial_seen": true,
+          "version": 7
+        }
+      }
+    },
+    {
+      "name": "me.export",
+      "endpoint": "POST /v1/me/export",
+      "path": "/v1/me/export",
+      "request": {
+        "headers": {
+          "Idempotency-Key": "idk_export_01"
+        }
+      },
+      "status": 202,
+      "response": {
+        "id": "job_ex41",
+        "kind": "export_user",
+        "state": "queued",
+        "stages": [
+          {
+            "name": "gather",
+            "state": "started",
+            "started_at": "2026-11-15T03:30:00Z",
+            "ended_at": null,
+            "found": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "me.delete",
+      "endpoint": "DELETE /v1/me",
+      "path": "/v1/me",
+      "status": 202,
+      "response": {
+        "id": "job_dl07",
+        "kind": "delete_user",
+        "state": "queued",
+        "stages": [
+          {
+            "name": "unlink_accounts",
+            "state": "started",
+            "started_at": "2026-11-15T03:31:00Z",
+            "ended_at": null,
+            "found": {}
+          }
+        ]
+      }
+    },
+    {
+      "name": "me.style.get",
+      "endpoint": "GET /v1/me/style",
+      "path": "/v1/me/style",
+      "proposed": true,
+      "status": 200,
+      "response": {
+        "id": "sp_8f2k",
+        "facets": [
+          {
+            "name": "brand",
+            "value": "Carhartt",
+            "weight": 0.82,
+            "from": "sold",
+            "pinned": false,
+            "removed_at": null
+          },
+          {
+            "name": "size",
+            "value": "L",
+            "weight": 0.74,
+            "from": "kept",
+            "pinned": true,
+            "removed_at": null
+          },
+          {
+            "name": "era",
+            "value": "1990s",
+            "weight": 0.41,
+            "from": "saved",
+            "pinned": false,
+            "removed_at": null
+          },
+          {
+            "name": "price_band",
+            "value": "50-120",
+            "weight": 0.36,
+            "from": "bought",
+            "pinned": false,
+            "removed_at": null
+          }
+        ],
+        "edited_at": null,
+        "version": 3
+      }
+    },
+    {
+      "name": "me.style.patch",
+      "endpoint": "PATCH /v1/me/style",
+      "path": "/v1/me/style",
+      "proposed": true,
+      "request": {
+        "body": {
+          "version": 3,
+          "facets": [
+            {
+              "name": "size",
+              "value": "L",
+              "weight": 0.9,
+              "pinned": true
+            },
+            {
+              "name": "era",
+              "value": "1990s",
+              "remove": true
+            }
+          ]
+        }
+      },
+      "status": 200,
+      "response": {
+        "id": "sp_8f2k",
+        "facets": [
+          {
+            "name": "brand",
+            "value": "Carhartt",
+            "weight": 0.82,
+            "from": "sold",
+            "pinned": false,
+            "removed_at": null
+          },
+          {
+            "name": "size",
+            "value": "L",
+            "weight": 0.9,
+            "from": "edited",
+            "pinned": true,
+            "removed_at": null
+          },
+          {
+            "name": "era",
+            "value": "1990s",
+            "weight": 0.41,
+            "from": "saved",
+            "pinned": false,
+            "removed_at": "2026-11-15T03:33:00Z"
+          },
+          {
+            "name": "price_band",
+            "value": "50-120",
+            "weight": 0.36,
+            "from": "bought",
+            "pinned": false,
+            "removed_at": null
+          }
+        ],
+        "edited_at": "2026-11-15T03:33:00Z",
+        "version": 4
+      }
+    }
+  ],
+  "push": [
+    {
+      "name": "push.offer",
+      "proposed": true,
+      "payload": {
+        "kind": "accept_offer",
+        "decision_id": "dec_51k",
+        "item_id": "it_7c2m",
+        "path": "/today/dec_51k"
+      },
+      "title": "Offer on Carhartt jacket",
+      "body": "$85 on Depop. You keep $77."
+    },
+    {
+      "name": "push.sale",
+      "proposed": true,
+      "payload": {
+        "kind": "sale",
+        "item_id": "it_7c2m",
+        "path": "/items/it_7c2m"
+      },
+      "title": "Sold on eBay",
+      "body": "Carhartt Detroit jacket, $96.20"
+    }
+  ]
+}
