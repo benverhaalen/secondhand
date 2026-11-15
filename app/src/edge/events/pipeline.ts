@@ -156,7 +156,8 @@ export function createPipeline(d: PipelineDeps) {
   };
 
   async function call(j: JobRow, verb: string, args: Record<string, unknown>, stage?: string): Promise<unknown> {
-    const env: Envelope = await harness.call(j.site!, verb, args);
+    // The harness finds the account only under its own person (SV5), so every call names the job's person.
+    const env: Envelope = await harness.call(j.site!, verb, { ...args, person_id: j.user_id });
     if (env.ok) return env.data;
     if (stage) put(j.id, stage, { state: 'failed', ended_at: iso() });
     throw stopOf(j, verb, env.error);

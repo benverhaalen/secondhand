@@ -17,6 +17,7 @@ export interface SourceReach {
   cached: 'refreshing' | 'kept' | null;
   error: { code: string; reason: string } | null;
   at: string | null;
+  url: string | null;                        // the site's own results for the query, from the settled frame
 }
 
 export interface Reach {
@@ -119,7 +120,7 @@ function parse(raw: unknown, asked: Set<string> | null): Event | null {
 }
 
 const source = (id: string): SourceReach => ({ id, state: 'running', outcome: null, read: 0, kept: 0, dropped: [],
-  ms: null, pace: null, cost_usd_est: null, fallback: null, cached: null, error: null, at: null });
+  ms: null, pace: null, cost_usd_est: null, fallback: null, cached: null, error: null, at: null, url: null });
 const copyOffers = (rows: OfferView[]): OfferView[] => rows.map(o => ({ ...o, also_on: [...o.also_on],
   price_cents: o.price_cents ? { amount_cents: o.price_cents.amount_cents, currency: o.price_cents.currency } : null,
   delivered_cents: o.delivered_cents ? { amount_cents: o.delivered_cents.amount_cents, currency: o.delivered_cents.currency } : null }));
@@ -187,7 +188,11 @@ export function reach(start: unknown, frames: unknown[]): Reach {
       s.cached = pending.includes(s.id) ? 'refreshing' : null;
     } else {
       final = frame.data;
-      for (const s of sources.values()) s.cached = frame.data.searched.find(entry => entry.site === s.id)?.cached ? 'kept' : null;
+      for (const s of sources.values()) {
+        const entry = frame.data.searched.find(e => e.site === s.id) as (Searched & { url?: unknown }) | undefined;
+        s.cached = entry?.cached ? 'kept' : null;
+        s.url = typeof entry?.url === 'string' && entry.url.startsWith('https://') ? entry.url : null;
+      }
     }
   }
   if (final) {

@@ -6,23 +6,29 @@ import type { ParamStore } from '../param/param.ts';
 import { SITES } from '../../../../spec/sites.mjs';
 export type { State, Fact } from './select.ts';
 
-export type Question = {
+// One clarifying question, shared by capture and the buying chat (spec/engines/capture.md section 4, "The question block").
+export type Ask = {
   id: string;
   field: string;
-  fields?: string[];
-  kind: AskKind|'shot';
-  options: {value: unknown; proposed: boolean; label?: string; rests_on?: string[]}[];
+  kind: AskKind;
+  words: string;
+  options: {value: unknown; proposed: boolean; label?: string; rests_on?: string[]; cites?: string[]}[];
   other: boolean;
   max_length?: number;
   unit?: string;
   units?: string[];
   parts?: string[];
-  shot?: {step: string; reason: 'retake'|'add'; for?:'studio'; zone?:string; flaw_kind?:string};
   why: 'required'|'confirm'|'value'|'only_you_know';
+  replaces?: string;
+  answer: {method: 'PATCH'|'POST'; path: string};
+};
+// Capture's question is an Ask plus what only capture has.
+export type Question = Omit<Ask, 'kind'> & {
+  kind: AskKind|'shot';
+  fields?: string[];
+  shot?: {step: string; reason: 'retake'|'add'; for?:'studio'; zone?:string; flaw_kind?:string};
   required_by: Target[];
   unlocks: {required: number; ready_after: Target[]};
-  words: string;
-  answer: {method: 'PATCH'|'POST'; path: string};
 };
 type Resolved = {row: FieldRow; resolution: Resolution};
 type Candidate = {question: Question; rows: FieldRow[]};

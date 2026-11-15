@@ -1,3 +1,4 @@
+import { DataStatus } from '@/data/status';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useState } from 'react';
 import { cardLine } from '@/buy/read';
@@ -9,7 +10,7 @@ import { SegmentedControl } from '@/ui/parts/segmented-control';
 import { shortName } from '@/demo/short-name';
 import { CardGroup } from '@/ui/parts/card-group';
 import { ListRow } from '@/ui/parts/list-row';
-import { Card, EmptyState, List, MatchCard, Photo, Screen, SearchField, Stack, Txt } from '@/ui';
+import { Card, EmptyState, List, MatchCard, Photo, Pill, Screen, SearchField, Stack, Txt } from '@/ui';
 
 type Page = 'tracked' | 'appraised' | 'found';
 type TrackedWant = Want & { low_cents?: number | null; colours?: string[] };
@@ -31,7 +32,7 @@ const fits = (match: Match, want: TrackedWant) => {
 };
 
 export default function Buy() {
-  const { w, state } = usePage();
+  const { w, state, demo, refresh, refreshing, problems } = usePage();
   const params = useLocalSearchParams<{ view?: string; world?: string; state?: string }>();
   const link = (path: string): Href => params.world ? `${path}${path.includes('?') ? '&' : '?'}world=${encodeURIComponent(params.world)}` as Href : href(w, path);
   const [page, setPage] = useState<Page>(pages.some(option => option.id === params.view) ? params.view as Page : 'tracked');
@@ -45,17 +46,19 @@ export default function Buy() {
   if (state === 'loading') return <Loading name="buy" nav={nav} />;
   if (state === 'failed') return <Failed name="buy" nav={nav} what="your list" again={link('/buy')} />;
   return (
-    <Screen name="buy" state={state ?? 'typical'} wash nav={nav}>
+    <Screen name="buy" state={state ?? 'typical'} wash nav={nav} refreshing={refreshing} onRefresh={demo ? undefined : refresh}>
       <SegmentedControl id="buy-page" options={pages} value={page} onChange={value => setPage(value as Page)} />
       <SearchField id="buy-search" placeholder="Find an item or paste a link" onOpen={() => router.push(link('/shop'))}
         onCamera={() => router.push(link('/camera?mode=find'))} onSubmit={query => router.push(link(`/shop?q=${encodeURIComponent(query)}`))} />
+      <Pill id="buy-chat" kind="second" label="Shopping chat" onPress={() => router.push(link('/shop'))} />
+      <DataStatus demo={demo} resources={page === 'appraised' ? ['account', 'appraisals'] : page === 'found' ? ['account', 'wants', 'matches'] : ['account', 'wants']} />
       {state === 'offline' ? <OfflineLine /> : null}
       {page === 'tracked' ? wants.length ? (
         <List>{wants.map(want => (
           <ListRow key={want.id} id={`want-${want.id}`} label={trackedName(want)} detail={description(want)} value={priceRange(want)}
             onPress={() => router.push(link(`/want?id=${want.id}`))} />
         ))}</List>
-      ) : <EmptyState title="Nothing tracked yet" action={{ id: 'buy-track', label: 'Track an item', onPress: () => router.push(link('/want')) }} /> : null}
+      ) : !demo && problems.wants ? null : <EmptyState title="Nothing tracked yet" action={{ id: 'buy-track', label: 'Track an item', onPress: () => router.push(link('/want')) }} /> : null}
       {page === 'appraised' ? appraisals.length ? (
         <CardGroup>{appraisals.map(appraisal => (
           <Card key={appraisal.capture_id}>
@@ -68,7 +71,7 @@ export default function Buy() {
             </Stack>
           </Card>
         ))}</CardGroup>
-      ) : <EmptyState title="No appraisals yet" action={{ id: 'buy-appraise', label: 'Appraise an item', onPress: () => router.push(link('/camera?mode=worth')) }} /> : null}
+      ) : !demo && problems.appraisals ? null : <EmptyState title="No appraisals yet" action={{ id: 'buy-appraise', label: 'Appraise an item', onPress: () => router.push(link('/camera?mode=worth')) }} /> : null}
       {page === 'found' ? found.length ? found.map(({ want, matches }) => (
         <CardGroup key={want.id} label={`${trackedName(want)} · ${priceRange(want)}`}>
           <Txt role="body" tone="ink-2">{description(want)}</Txt>
@@ -76,7 +79,7 @@ export default function Buy() {
             verdict={match.verdict} likeness={match.label} {...cardLine(match)} when={ago(match.seen_at)}
             onPress={() => router.push(link(`/listing/${match.id}`))} />)}
         </CardGroup>
-      )) : <EmptyState title="No matches yet" line="Matches in your price range will appear here and in Messages." /> : null}
+      )) : !demo && (problems.matches || problems.wants) ? null : <EmptyState title="No matches yet" line="Matches in your price range will appear here and in Messages." /> : null}
     </Screen>
   );
 }

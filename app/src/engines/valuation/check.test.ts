@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { check, type CheckInput } from './check.ts';
-import { DEFAULTS, type Comp } from './comps.ts';
+import { comparables, DEFAULTS, type Comp } from './comps.ts';
 import { ceiling, MARKS, pointOnSite } from './posture.ts';
 import { planOf, weightedPercentile } from './path.ts';
 import { memoryStore } from '../param/param.ts';
@@ -223,15 +223,31 @@ test('uncitable ids, invalid or future evidence dates are counted per completed 
   assert.deepEqual(errors, [1, 2].map(batch => ({ where: 'valuation.check.uncitable', error: { batch, count: bad.length } })));
 });
 
-for (const fast of [undefined, { low: 3000, high: 6000, n: 24, as_of, basis: 'category' as const, state: 'rough' as const }]) {
-  test(`uncited retail prior hides rather than throws or cites an unused band (${!!fast})`, async () => {
-    const out = await check({ ...input(), warm_comps: [], kind: 'shoes', retail_cents: 10000, depreciation: .5, fast });
-    assert.equal(out.range.state, 'hidden'); assert.equal(out.range.hide_reason, 'no_citation');
-    assert.equal(out.range.q50, null); assert.equal(out.citation, null);
-    assert.equal(out.basis.count, 0);
-    assert.ok(out.per_site.every(s => s.state === 'hidden' && s.citation === null));
-  });
-}
+test('an uncited prior cannot hide a priced range: three cited sold rows answer alone and log the omission', async () => {
+  const notes: { name: string; fields: Record<string, unknown> }[] = [];
+  const x: CheckInput = { ...input(), warm_comps: comps.slice(0, 3), kind: 'shoes', retail_cents: 10000, depreciation: .5 };
+  x.log = { ...x.log, note: (name, fields) => notes.push({ name, fields }) };
+  const out = await check(x), rowsOnly = await check({ ...x, retail_cents: undefined });
+  assert.notEqual(out.range.state, 'hidden');
+  assert.deepEqual(out.range, rowsOnly.range);
+  assert.deepEqual(out.citation?.basis_ids, x.warm_comps.map(c => c.comp_id));
+  assert.ok(out.per_site.every(s => !s.citation?.basis_ids.includes('retail:p1')));
+  assert.deepEqual(notes, [{ name: 'valuation.check.retail_uncited', fields: { product_id: 'p1' } }]);
+});
+
+test('an uncited prior with no rows hides because nothing prices it', async () => {
+  const out = await check({ ...input(), warm_comps: [], kind: 'shoes', retail_cents: 10000, depreciation: .5 });
+  assert.equal(out.range.state, 'hidden'); assert.equal(out.range.q50, null);
+  assert.equal(out.citation, null); assert.equal(out.basis.count, 0);
+});
+
+test('an uncited prior leaves a cited warm band available', async () => {
+  const fast = { low: 3000, high: 6000, n: 24, as_of, basis: 'category' as const, state: 'rough' as const };
+  const out = await check({ ...input(), warm_comps: [], kind: 'shoes', retail_cents: 10000, depreciation: .5, fast });
+  assert.equal(out.range.state, 'not_checked_yet'); assert.equal(out.range.q50, null);
+  assert.equal(out.range.q10, fast.low); assert.equal(out.range.q90, fast.high);
+  assert.deepEqual(out.citation?.basis_ids, ['band:p1']);
+});
 
 test('a cited retail prior cites retail alone even with an unused warm band', async () => {
   const out = await check({ ...input(), warm_comps: [], kind: 'shoes', retail_cents: 10000, depreciation: .5,
@@ -281,10 +297,10 @@ test('a retail prior with zero surviving weight needs no citation', async () => 
   assert.deepEqual(out.citation?.basis_ids, comps.map(c => c.comp_id));
 });
 
-test('an uncited blended range hides its coverage share along with its prices', async () => {
+test('an uncited prior leaves checked sold coverage visible', async () => {
   const out = await check({ ...input(), kind: 'shoes', retail_cents: 10000, depreciation: .5,
     calibration: { Q_g: 0, group: 'g', coverage: .8, passes: true, n: 100, hits: 80 } });
-  assert.equal(out.range.state, 'hidden'); assert.equal(out.range.share_shown, null);
+  assert.equal(out.range.state, 'checked'); assert.equal(out.range.share_shown, .8);
 });
 
 test('unchecked .9 sale curve can win against checked .6 and labels the selection and price path', async () => {
@@ -497,4 +513,68 @@ test('modes use the resolved condition and size adjustments of the target', asyn
 test('recalled valuations and an empty set of site points hide every mode', async () => {
   assert.equal((await check({ ...modeInput(), recalled: true })).modes, null);
   assert.equal((await check({ ...modeInput(), sites: [] })).modes, null);
+});
+
+
+test('the prior weight cannot disagree between comparables and the citation after a kind band', async () => {
+  const x: CheckInput = { ...input(), kind: 'shoes', retail_cents: 10000, depreciation: .5,
+    retail_citation: 'retail:shoes', kind_band: { q10: 3000, q50: 4500, q90: 6000, n_eff: 12 } };
+  const found = comparables(x, x.warm_comps, as_of);
+  const withoutBand = comparables({ ...x, kind_band: undefined }, x.warm_comps, as_of);
+  assert.ok(found.retail_weight > 0 && found.retail_weight < withoutBand.retail_weight);
+  const out = await check(x);
+  assert.deepEqual(out.range.q50, found.range.q50);
+  const rows = found.comps.map(c => ({ id: c.comp_id, source: c.citation, at: c.sold_at, price_cents: c.adjusted_cents, weight: c.w }));
+  const { basisHash } = await import('../proof/proof.ts');
+  const expected = basisHash([...rows, { id: 'retail:p1', source: x.retail_citation!, at: as_of,
+    price_cents: 10000, weight: found.retail_weight }]);
+  assert.equal(out.citation?.basis_hash, expected);
+  assert.equal(out.per_site[0].citation?.basis_hash, expected);
+});
+
+test('a fee flag that could never fire uses the valuation date unless the sale supplies its own', async () => {
+  for (const [date, expected] of [['2026-12-15', true], ['2026-12-13', false]] as const) {
+    const out = await check({ ...input(), as_of: date });
+    assert.equal(out.per_site[0].fees_may_have_changed, expected);
+  }
+  const out = await check({ ...input(), as_of: '2026-12-15', sites: [{ site: 'ebay', sale: { as_of: '2026-12-13' } }] });
+  assert.equal(out.per_site[0].fees_may_have_changed, false);
+});
+
+test('a hard-coded tax rate cannot bypass the registry at Check or override a known buyer rate', async () => {
+  const store = memoryStore();
+  const { resolve } = await import('./params.ts'); resolve(store);
+  store.apply('valuation_sales_tax_rate', {}, () => ({ value: .1, weight: 1 }), as_of);
+  const x = { ...input(), store, warm_comps: comps.map(c => ({ ...c, price_cents: 10000 })) };
+  const out = await check(x);
+  assert.equal(out.per_site[0].keep_q50, 8464);
+  assert.ok(out.modes);
+  assert.equal(out.modes.sell.keep_cents, keep('ebay', out.modes.sell.ask_cents, { tax_rate: .1 }).keep_cents);
+  assert.equal(out.citation?.param_versions.valuation_sales_tax_rate, store.read('valuation_sales_tax_rate', {}).version);
+  const known = await check({ ...x, sites: [{ site: 'ebay', sale: { tax_rate: 0 } }] });
+  assert.equal(known.per_site[0].keep_q50, 8600);
+  assert.ok(known.modes);
+  assert.equal(known.modes.sell.keep_cents, keep('ebay', known.modes.sell.ask_cents, { tax_rate: 0 }).keep_cents);
+});
+
+test('last_sale prefers a variant over a newer product sale, falls back to product, then null', async () => {
+  const variant = { ...comps[0], comp_id: 'variant:older', sold_at: '2026-11-01' };
+  const product = { ...comps[1], comp_id: 'product:newer', level: 'product' as const, sold_at: '2026-11-14' };
+  const x = input();
+  assert.deepEqual((await check({ ...x, warm_comps: [variant, product] })).last_sale?.citation.basis_ids, [variant.comp_id]);
+  const fallback = (await check({ ...x, warm_comps: [product] })).last_sale;
+  assert.equal(fallback?.basis_level, 'product'); assert.equal(fallback?.price_cents, product.price_cents);
+  assert.deepEqual(fallback?.citation.basis_ids, [product.comp_id]);
+  assert.equal((await check({ ...x, warm_comps: [{ ...product, level: 'family' }] })).last_sale, null);
+  assert.equal((await check({ ...x, warm_comps: [] })).last_sale, null);
+});
+
+
+test('an uncited prior omission is still recorded by a legacy logger without note', async () => {
+  const entries: { where: string; fields: unknown }[] = [];
+  const x = { ...input(), warm_comps: comps.slice(0, 3), kind: 'shoes', retail_cents: 10000, depreciation: .5 };
+  x.log.error = (where, fields) => entries.push({ where, fields });
+  const out = await check(x);
+  assert.notEqual(out.range.state, 'hidden');
+  assert.deepEqual(entries, [{ where: 'valuation.check.retail_uncited', fields: { product_id: 'p1' } }]);
 });

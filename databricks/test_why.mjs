@@ -138,7 +138,7 @@ test('guard defines every predicate and status reads the latest cross-owner snap
   assert.match(parsed[5], /^CREATE OR REPLACE VIEW secondhand\.measures\.guard_status/)
   const wildcard = branches.find(s => s.includes("'principal_map_unlogged_wildcard' AS rule"))
   assert.ok(wildcard.includes("WHERE m.user_id = '*' AND NOT EXISTS (SELECT 1 FROM secondhand.governance.break_glass b WHERE b.principal = m.principal AND b.ended_at IS NULL)"))
-  assert.equal(branches.length, 8 + tables.filter(([, , body]) => /\bdata STRING/.test(body)).length)
+  assert.equal(branches.length, 16 + tables.filter(([, , body]) => /\bdata STRING/.test(body)).length)
   assert.match(parsed.at(-1), /SELECT violations AS violations_now,[\s\S]*checked_at AS last_checked_at[\s\S]*FROM secondhand\.measures\.guard_snapshot\s+ORDER BY checked_at DESC\s+LIMIT 1$/)
   assert.doesNotMatch(parsed.at(-1), /guard_violations/)
 })

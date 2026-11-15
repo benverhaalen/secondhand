@@ -1,0 +1,20 @@
+{
+  "header": {
+    "source": "identify worker brief, fixed colour-code table",
+    "mark": "agent proposal",
+    "date": "2026-11-15"
+  },
+  "rows": {
+    "BLK": "black",
+    "NVY": "navy",
+    "WHT": "white",
+    "GRY": "grey",
+    "BRN": "brown",
+    "RED": "red",
+    "GRN": "green",
+    "BLU": "blue",
+    "KHK": "khaki",
+    "OLV": "olive",
+    "TAN": "tan"
+  }
+}

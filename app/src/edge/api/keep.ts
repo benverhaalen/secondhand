@@ -3,23 +3,26 @@ const object = (value: unknown): value is Record<string, unknown> => typeof valu
 
 function copy(value: unknown, now: number) {
   let removed = 0;
-  const visit = (value: unknown, field?: string): unknown => {
+  const allowed = (row: unknown, searched: boolean, root = false): boolean => {
+    // searched[] describes source outcomes, not listing rows (spec/product.md answer).
+    // A frame or job envelope carries its source's site at the root, so the root is a row only by its own rights fields.
+    if (searched || !object(row) || !(typeof row.site === 'string' && !root || Object.hasOwn(row, 'may_store') || Object.hasOwn(row, 'keep_until'))) return true;
+    const keep = Object.hasOwn(row, 'may_store') && row.may_store === true && (row.keep_until === undefined || row.keep_until === null ||
+      typeof row.keep_until === 'string' && Date.parse(row.keep_until) > now);
+    if (!keep) removed++;
+    return keep;
+  };
+  const visit = (value: unknown, field?: string, checked = false, root = false): unknown => {
     if (Array.isArray(value)) {
-      return (value as unknown[]).filter(row => {
-        // searched[] describes source outcomes, not listing rows (spec/product.md answer).
-        if (field === 'searched' || !object(row) || typeof row.site !== 'string') return true;
-        const allowed = Object.hasOwn(row, 'may_store') && row.may_store === true && (row.keep_until === undefined || row.keep_until === null ||
-          typeof row.keep_until === 'string' && Date.parse(row.keep_until) > now);
-        if (!allowed) removed++;
-        return allowed;
-      }).map(row => visit(row));
+      return (value as unknown[]).filter(row => allowed(row, field === 'searched')).map(row => visit(row, undefined, true));
     }
+    if (!checked && !allowed(value, false, root)) return null;
     if (typeof value === 'object' && value !== null) {
       return Object.fromEntries(Object.entries(value).map(([key, nested]) => [key, visit(nested, key)]));
     }
     return value;
   };
-  const saved = visit(value);
+  const saved = visit(value, undefined, false, true);
   return { saved, removed };
 }
 

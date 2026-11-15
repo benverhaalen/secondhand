@@ -39,6 +39,10 @@ export const DECLARED: readonly Entry[] = [
   scalar('curve_min_events', 30, 'spec/determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price'),
   scalar('curve_max_error', .05, 'spec/determinations/money.md#d10-chance-of-sale-within-a-period-at-a-price', 0, 1),
   scalar('hot_days', 1, 'spec/determinations/money.md#d12-best-site-or-set-of-sites'),
+  // Tax Foundation, "2026 Sales Tax Rates: Midyear Update": population-weighted national average combined
+  // state and local rate, rates as of 2026-07-01. Asserted: read through a search summary on 2026-11-15, not opened.
+  // https://taxfoundation.org/data/all/state/2026-sales-tax-rates-midyear/
+  scalar('sales_tax_rate', .0753, 'https://taxfoundation.org/data/all/state/2026-sales-tax-rates-midyear/', 0, .2),
   scalar('budget_ms', 10000, 'spec/engines/valuation.md#5-speed', 1),
 ];
 export type Resolved = { values: Record<string, number>; versions: Record<string, number> };

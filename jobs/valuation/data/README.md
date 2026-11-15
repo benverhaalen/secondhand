@@ -6,7 +6,7 @@ Rebuild the six smaller sources from pinned public copies and check their input 
 
 Check: `./.venv/bin/python -m pytest jobs/valuation/data/test_rows.py -q`. The six-source rebuild takes about 90 seconds and writes 170 MB on a laptop (earlier source-thread observation). The rows are not in git, because the repo is public and most of these licences don't allow redistribution (plan §6). The manifests are in git: `manifests/<source>.json` holds each input's sha256, the output's sha256, row counts by price type and kind, the date range and what was dropped and why. A built copy sits in project files under `secondhand-data/sold/<source>/rows.csv.gz`.
 
-What each source is, its licence, its bias and what it can prove: [research/price/ben/sold-datasets.md](../../../../research/price/ben/sold-datasets.md).
+What each source is, its licence, its bias and what it can prove: [research/price/ben/sold-datasets.md](../../../research/price/ben/sold-datasets.md).
 
 | File | Role |
 |---|---|
@@ -81,9 +81,9 @@ Reproduce the aggregate audit without normalizing, freezing, or running a backte
 
 ### Every raw meta category
 
-*Observed*: counts below cover every raw row, before date exclusions or product sampling; they sum to 98,307,281. Names come from the pinned [codebook transcription](../../../../research/price/ben/sources/sold-followup-2026-11-15/codebook.txt), `bo_lists` D56:D93; cells are listed per row. All 35 observed IDs have a name there. Duplicate names for one ID are preserved.
+*Observed*: counts below cover every raw row, before date exclusions or product sampling; they sum to 98,307,281. Names come from the pinned [codebook transcription](../../../research/price/ben/sources/sold-followup-2026-11-15/codebook.txt), `bo_lists` D56:D93; cells are listed per row. All 35 observed IDs have a name there. Duplicate names for one ID are preserved.
 
-*Agent mapping*: kinds use [plan decision 30](../../../../spec/plans/backtest/plan.md)'s six kinds, as enumerated in [the collection note §6](../../../research/price/ben/what-predicts-price-and-speed.md#6-what-to-collect), or `other`. The broad Home, Art and Antiques meta categories cannot establish that an item is one-off furniture or unbranded, so none is assigned to the hard bucket solely from its meta ID. Shoes and bags cannot be separated from apparel here. These coarse assignments do not certify that each row has clear product identity.
+*Agent mapping*: kinds use [plan decision 30](../../../spec/plans/backtest/plan.md)'s six kinds, as enumerated in [the collection note §6](../../../research/price/ben/what-predicts-price-and-speed.md#6-what-to-collect), or `other`. The broad Home, Art and Antiques meta categories cannot establish that an item is one-off furniture or unbranded, so none is assigned to the hard bucket solely from its meta ID. Shoes and bags cannot be separated from apparel here. These coarse assignments do not certify that each row has clear product identity.
 
 | `meta_categ_id` | Raw rows | Codebook name | Codebook cells | `kind` |
 |---|---:|---|---|---|

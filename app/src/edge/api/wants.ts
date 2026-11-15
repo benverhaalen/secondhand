@@ -1,7 +1,7 @@
 // Rests-on: spec/product.md §7; spec/features/watch.md.
 import { createHash } from 'node:crypto';
 import { ApiError, deps, type Ctx, type Handler } from './http.ts';
-import { manifestFor, fromEngine, fields, text, version, money, oneOf, object, invalid, siteList, pagination } from './captures.ts';
+import { manifestFor, fromEngine, fields, text, version, money, oneOf, object, invalid, siteList, pagination, captureRows } from './captures.ts';
 import { example } from './examples.ts';
 import { store } from './store.ts';
 import type { Store, Row } from '../events/ports.ts';
@@ -9,6 +9,7 @@ import { watchRun, type Want, type Match, type Listing } from '../watch/watch.ts
 
 const owner = 'usr_8f2k';
 type WantRow = Row & { state: Want['state']; text: string; sites: string[]; alert: Want['alert']; created_at: string; checked: Record<string, string>; behind: string[] };
+const id = (v: unknown) => typeof v === 'string' && /^[a-z]+_[A-Za-z0-9]{1,64}$/.test(v);
 const missing = () => new ApiError('not_found', 'resource not found', 'read');
 export function seedWants(st: Store) {
   const detail = example('wants.get').response as Record<string, unknown> & { id: string };
@@ -44,7 +45,8 @@ export function wantsOn(st: Store): Record<string, Handler> {
   });
   return {
     'POST /v1/wants': wrap(ctx => {
-      fields(ctx.body, { text, max_total_cents: money, sites: siteList, alert: oneOf('available', 'under') }, { fit: object });
+      fields(ctx.body, { text, max_total_cents: money, sites: siteList, alert: oneOf('available', 'under') }, { fit: object, product_id: id, capture_id: id });
+      if (ctx.body.capture_id !== undefined && captureRows.get(ctx.body.capture_id as string)?.user_id !== ctx.user_id) throw new ApiError('not_found', 'capture not found', 'read');
       const key = ctx.headers.get('Idempotency-Key');
       const prior = key ? st.rows('want', { user_id: ctx.user_id!, create_key: key })[0] : undefined;
       const create_hash = createHash('sha256').update(JSON.stringify(ctx.body)).digest('hex');
