@@ -59,6 +59,7 @@
     }
     // The gradient wanders on three slow sines that never line up, so it never visibly repeats.
     const s = clock / 1000;
+    if (!reduce) turn();
     tint.style.backgroundPosition = `${50 + 30 * Math.sin(s / 23) + 12 * Math.sin(s / 9.7 + 1)}% ${50 + 26 * Math.cos(s / 31) + 9 * Math.sin(s / 13.3)}%`;
     // Leaving: the wall fades and opens up as the line rises away.
     if (opened) {
@@ -69,8 +70,23 @@
     }
     if (!reduce && opened) { swapIn -= dt; if (swapIn <= 0) { swap(); swapIn = rand(1600, 3200); } }
   }
+  // The field turns into the next one: one of its three colors is swapped for that color's neighbor on the ring, over
+  // a few seconds, after a full drift; four fields there and back (C2; Ben, 08:31: "a moving gradient that slowly changes
+  // color"). In dark the home field is the deep sky, mint and aqua of --field-1 to -3, and lilac comes in as its deep.
+  const dark = html.dataset.theme === 'dark', root = getComputedStyle(html), cv = document.createElement('canvas').getContext('2d');
+  const rgb = v => { cv.fillStyle = '#000'; cv.fillStyle = v.trim(); const h = cv.fillStyle.slice(1); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); };
+  const FIELDS = dark ? [['sky', 'mint', 'aqua'], ['lilac', 'mint', 'aqua'], ['lilac', 'mint', 'sky'], ['lilac', 'aqua', 'sky']]
+    : [['sky', 'mint', 'lime'], ['sky', 'aqua', 'lime'], ['sky', 'aqua', 'mint'], ['lilac', 'aqua', 'mint']];
+  const home = Object.fromEntries(FIELDS[0].map((n, i) => [n, rgb(root.getPropertyValue(`--field-${i + 1}`))]));
+  const hue = n => home[n] ?? rgb(root.getPropertyValue(dark ? `--${n}-deep` : `--${n}`));
+  const ORDER = [0, 1, 2, 3, 2, 1], HOLD = (parseFloat(root.getPropertyValue('--drift')) || 26) * 1000, SWAP = 6000;
+  function turn() {
+    const n = Math.floor(clock / (HOLD + SWAP)), u = smooth(HOLD, HOLD + SWAP, clock % (HOLD + SWAP));
+    const a = FIELDS[ORDER[n % 6]], b = FIELDS[ORDER[(n + 1) % 6]];
+    a.forEach((name, i) => { const x = hue(name), y = hue(b[i]); tint.style.setProperty(`--field-${i + 1}`, `rgb(${x.map((v, k) => Math.round(v + (y[k] - v) * u)).join(' ')})`); });
+  }
   let last = performance.now(), driven = false;
-  const loop = now => { if (!driven) frame(Math.min(64, now - last)); last = now; requestAnimationFrame(loop); };
+  const loop = now => { if (!driven) frame(Math.min(64, Math.max(0, now - last))); last = now; requestAnimationFrame(loop); };
 
   // "See how it works" glides to the next section; the scroll itself speeds the wall up and moves it out.
   document.querySelector('[data-go]')?.addEventListener('click', e => { e.preventDefault(); document.querySelector('#how').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); });
@@ -92,13 +108,13 @@
     lockup.style.visibility = 'hidden';
     const ease = 'cubic-bezier(.2,.8,.2,1)', inout = 'cubic-bezier(.65,0,.35,1)', run = [];
     // 1. The hands come in from either side and meet.
-    run.push(h1.animate([{ transform: 'translateX(-45vw) rotate(-28deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'translateX(3px) rotate(-10deg)', opacity: 1 }], { duration: 520, easing: ease, fill: 'forwards' }));
-    run.push(h2.animate([{ transform: 'translateX(45vw) scaleX(-1) rotate(-28deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'translateX(-3px) scaleX(-1) rotate(-10deg)', opacity: 1 }], { duration: 520, easing: ease, fill: 'forwards' }));
+    run.push(h1.animate([{ transform: 'translateX(-45vw) scaleX(-1) rotate(-28deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'translateX(3px) scaleX(-1) rotate(-10deg)', opacity: 1 }], { duration: 520, easing: ease, fill: 'forwards' }));
+    run.push(h2.animate([{ transform: 'translateX(45vw) rotate(-28deg)', opacity: 0 }, { opacity: 1, offset: .3 }, { transform: 'translateX(-3px) rotate(-10deg)', opacity: 1 }], { duration: 520, easing: ease, fill: 'forwards' }));
     // 2. The dap: a small bump where they meet.
     run.push(dap.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.08)' }, { transform: 'scale(1)' }], { duration: 220, delay: 500, easing: 'ease-out' }));
     // 3. They part, and the wordmark is between them.
-    run.push(h1.animate([{ transform: 'translateX(3px) rotate(-10deg)', marginRight: '0px' }, { transform: 'none', marginRight: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
-    run.push(h2.animate([{ transform: 'translateX(-3px) scaleX(-1) rotate(-10deg)', marginLeft: '0px' }, { transform: 'scaleX(-1)', marginLeft: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
+    run.push(h1.animate([{ transform: 'translateX(3px) scaleX(-1) rotate(-10deg)', marginRight: '0px' }, { transform: 'scaleX(-1)', marginRight: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
+    run.push(h2.animate([{ transform: 'translateX(-3px) rotate(-10deg)', marginLeft: '0px' }, { transform: 'none', marginLeft: `${g}px` }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
     run.push(word.animate([{ width: '0px', opacity: 0 }, { width: `${W}px`, opacity: 1 }], { duration: 480, delay: 760, easing: inout, fill: 'forwards' }));
     // 4. The mark settles into the header, and the page comes up under it.
     const settle = () => {
@@ -126,9 +142,22 @@
     const a = xh({ weight: cs.fontWeight, family: cs.fontFamily }), b = xh({ weight: hl.fontWeight, family: hl.fontFamily });
     if (a && b) html.style.setProperty('--hl-fit', (a / b).toFixed(3));
   }
-  // The hands as tall as the wordmark's ink and on its baseline (hands-fit.js, Ben 07:34).
-  const fitLockup = () => { const l = document.querySelector('header .lockup'); if (l && window.fitHands) fitHands(l, l.querySelector('.wordmark'), l.querySelectorAll('.hand')); };
+  // The hands as tall as the wordmark's ink and on its baseline, in the header and on either side of "secondhand" in the
+  // line (hands-fit.js; Ben, 07:34 and 08:31). The line's size follows the width, so they fit again on a resize.
+  // On a narrow screen "secondhand" with its hands can be wider than the column. The hands first close in to the
+  // smallest gap, 4; if it still does not fit, the line drops to the next size on the type scale, 36.
+  const fitLockup = () => {
+    if (!window.fitHands) return;
+    const head = document.querySelector('header .lockup'), lock = document.querySelector('.hl-lock'), h1 = document.querySelector('.hero-t');
+    const line = most => fitHands(lock, lock.querySelector('.hl'), lock.querySelectorAll('.hand'), most);
+    const fits = () => lock.getBoundingClientRect().width <= h1.clientWidth + 1;
+    if (head) fitHands(head, head.querySelector('.wordmark'), head.querySelectorAll('.hand'));
+    h1.style.fontSize = ''; line();
+    if (!fits()) line(4);
+    if (!fits()) { h1.style.fontSize = 'var(--t-36)'; fit(); line(); }
+  };
   document.fonts.ready.then(() => { fit(); fitLockup(); });
+  addEventListener('resize', () => requestAnimationFrame(fitLockup));
 
   // The menu on narrow screens: a sheet under the header, closed by the button, Escape or a link.
   const btn = document.querySelector('.menu-btn'), menu = document.querySelector('#menu');

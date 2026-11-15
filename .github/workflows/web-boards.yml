@@ -1,11 +1,15 @@
 name: web section boards
 # Draws the website's section boards (brand/explore/web-home/boards) in the brand faces, which are licensed and live only
 # in the BRAND_FONTS secret, audits each variant with the web brand check, and commits the renders to this branch.
+# Lean by default (Ben, 08:31): a push redraws and checks only the boards and pages its files touched, and nothing is
+# recorded. Recordings come only from a manual run with "record" on.
 on:
   push:
     branches: [claude/project-thread-dbgps7]
-    paths: ['brand/explore/web-home/**', '!brand/explore/web-home/boards/*/out/**', '.github/workflows/web-boards.yml']
+    paths: ['brand/explore/web-home/**', '!brand/explore/web-home/boards/*/out/**', '!brand/explore/web-home/hero/out/**', 'brand/tokens.css', '.github/workflows/web-boards.yml']
   workflow_dispatch:
+    inputs:
+      record: { description: 'Also record the motion boards and the hero open (mp4)', type: boolean, default: false }
 permissions:
   contents: write
 concurrency: web-boards
@@ -15,6 +19,22 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Find what this push touched
+        id: changed
+        env:
+          BEFORE: ${{ github.event.before }}
+        run: |
+          W=brand/explore/web-home
+          if [ "$GITHUB_EVENT_NAME" != push ] || ! git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then files=ALL; else files=$(git diff --name-only "$BEFORE" HEAD); fi
+          shared="^($W/site.css|$W/hands-fit.js|brand/tokens.css|scripts/brand-check.mjs|\.github/workflows/web-boards.yml)$"
+          all=no; { [ "$files" = ALL ] || printf '%s\n' "$files" | grep -Eq "$shared"; } && all=yes
+          boards=""; for d in $W/boards/*/; do
+            if [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -Eq "^${d}|^$W/boards/(render|audit)\.mjs$"; then boards="$boards $d"; fi; done
+          hands=no; { [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -q "^$W/boards/03-hands/"; } && hands=yes
+          hero=no; { [ $all = yes ] || printf '%s\n' "$files" | grep -v '/out/' | grep -Eq "^$W/(hero|photos/wall)/|^$W/boards/audit\.mjs$"; } && hero=yes
+          echo "boards=$boards" >> "$GITHUB_OUTPUT"; echo "hands=$hands" >> "$GITHUB_OUTPUT"; echo "hero=$hero" >> "$GITHUB_OUTPUT"
+          echo "boards:${boards:- none}; hand sheets: $hands; hero: $hero"
       - uses: actions/setup-node@v4
         with: { node-version: 22 }
       - name: Install Playwright and Chromium
@@ -22,7 +42,8 @@ jobs:
           npm install --prefix "$RUNNER_TEMP/pw" --no-save playwright@1.63.0
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
           echo "NODE_PATH=$RUNNER_TEMP/pw/node_modules" >> "$GITHUB_ENV"
-      - name: Install ffmpeg, for the motion boards' recordings
+      - name: Install ffmpeg, for the recordings
+        if: inputs.record
         run: command -v ffmpeg || (sudo apt-get update -qq && sudo apt-get install -y -qq --no-install-recommends ffmpeg)
       - name: Unpack the brand faces
         env:
@@ -36,11 +57,16 @@ jobs:
           else
             echo "::warning::BRAND_FONTS is not set, so the boards are drawn in a fallback face"
           fi
-      - name: Draw the boards
-        run: node brand/explore/web-home/boards/render.mjs brand/explore/web-home/boards/*/
-      - name: Draw every hand position in packs A, C and F
+      - name: Draw the boards this push touched
+        if: steps.changed.outputs.boards != ''
+        env: { RECORD: "${{ inputs.record && '1' || '0' }}" }
+        run: node brand/explore/web-home/boards/render.mjs ${{ steps.changed.outputs.boards }}
+      - name: Draw every hand position in each pack
+        if: steps.changed.outputs.hands == 'yes'
         run: node brand/explore/web-home/boards/03-hands/poses.mjs
-      - name: Check the hero on every screen, and record it
+      - name: Check the hero on every screen
+        if: steps.changed.outputs.hero == 'yes'
+        env: { RECORD: "${{ inputs.record && '1' || '0' }}" }
         run: |
           node brand/explore/web-home/hero/photos.mjs
           node brand/explore/web-home/hero/check.mjs || echo "::warning::the hero check found a screen that breaks; see hero/out/audit.json"

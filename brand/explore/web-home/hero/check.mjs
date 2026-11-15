@@ -3,9 +3,10 @@
 //   node brand/explore/web-home/hero/check.mjs
 // Widths from a small phone to a wide desktop, a phone on its side and two tablets: no sideways scroll, the button on
 // the first screen, the menu under 900 and the links above it, controls at least 44 tall, the two faces matched. The
-// text's worst contrast over the moving wall, and how many photos a visitor sees in a minute. Two recordings, phone
-// and desktop: the open, the wall, then "See how it works". Writes out/: one still per screen, menu.jpg,
-// open-390.mp4, open-1440.mp4, screens.jpg and audit.json. Exits 1 when a screen breaks.
+// text's worst contrast over the moving wall and through every field it turns into, how many photos a visitor sees in
+// a minute, and no script error on any screen. With RECORD=1, two recordings, phone and desktop: the open, the wall,
+// then "See how it works". Writes out/: one still per screen, menu.jpg, screens.jpg and audit.json, and the
+// recordings open-390.mp4 and open-1440.mp4 when asked for. Exits 1 when a screen breaks.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -25,7 +26,7 @@ const SCREENS = [[320, 568, 'small phone'], [375, 667, 'phone'], [390, 844, 'pho
 const open = async (w, h, opts = {}, query = '?intro=0') => {
   const touch = w < 1024 || h > w;
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: 2, hasTouch: touch, isMobile: touch && w < 900, ...opts });
-  const page = await ctx.newPage();
+  const page = await ctx.newPage(); page.errors = []; page.on('pageerror', e => page.errors.push(e.message));
   if (faces) await page.addInitScript(css => { document.addEventListener('DOMContentLoaded', () => { const s = document.createElement('style'); s.textContent = css; document.head.append(s); }); }, faces);
   await page.goto(pathToFileURL(file).href + query); await page.evaluate(() => document.fonts.ready); await page.waitForTimeout(400);
   return { ctx, page };
@@ -59,10 +60,12 @@ for (const [w, h, name] of SCREENS) {
     f.button_h < 44 && `the button is ${f.button_h}px tall`,
     f.menu && f.menu_h < 44 && `the menu button is ${f.menu_h}px tall`,
     !f.logos_round && 'a store logo is not round',
+    ...page.errors.map(e => `a script error: ${e}`),
   ].filter(Boolean);
   broken += f.problems.length;
   await page.screenshot({ path: join(out, `${w}x${h}.jpg`), type: 'jpeg', quality: 82 });
-  if (w === 390 || w === 1440) f.contrast_floor = await contrastFloor(page, { text: '.copy h1, .copy .lead', at: [0, 1, 2, 3, 4, 5], move: (p) => p.evaluate(() => window.__hero.step(2500)) });
+  // Six moments in each of the four fields the overlay turns through (32 s each), so the floor covers every color.
+  if (w === 390 || w === 1440) f.contrast_floor = await contrastFloor(page, { text: '.copy h1, .copy .lead', at: [...Array(24).keys()], move: (p) => p.evaluate(() => window.__hero.step(5300)) });
   if (w === 390) {
     await page.reload(); await page.evaluate(() => document.fonts.ready);
     f.photos_in_a_minute = await page.evaluate(() => { window.__hero.step(60000); return { shown: window.__hero.shown(), pool: window.__hero.pool(), kinds: window.__hero.kinds() }; });
@@ -74,7 +77,7 @@ for (const [w, h, name] of SCREENS) {
 }
 
 // The recordings: the open, a few seconds of the wall, then the button and the wall leaving.
-for (const [w, h] of [[390, 844], [1440, 900]]) {
+for (const [w, h] of process.env.RECORD === '1' ? [[390, 844], [1440, 900]] : []) {
   const vdir = mkdtempSync(join(tmpdir(), 'hero-'));
   const { ctx, page } = await open(w, h, { deviceScaleFactor: 1, recordVideo: { dir: vdir, size: { width: w, height: h } } }, '?intro=1');
   await page.waitForTimeout(5200); await page.click('.copy .pill'); await page.waitForTimeout(2600);
