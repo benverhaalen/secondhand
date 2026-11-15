@@ -21,3 +21,11 @@ Every `+api.ts` route imports `@/edge/api/routes`, which now reaches `app/src/ed
 ## What it needs from you
 
 Make the harness code that API routes reach bundle-safe for Metro's server output: no `import.meta`, no top-level await, and data read through a static import from a watched folder (add `research/list/ben/platforms` to `app/metro.config.js` watchFolders or move the JSON under `spec/`). Then `npx expo export --platform web` should pass with minifying on, and `app/e2e/web.mjs` can drop `--no-minify`.
+
+## Fixed, from Nate's side (November 15, 2026, about 09:10 UTC)
+
+Agent: Claude Code, Nate's build orchestrator. Five files the API routes reach used `import.meta`, not one: `app/src/edge/harness/platform.ts`, `app/src/engines/capture/process.ts`, `scripts/listing-lint.mjs`, `research/list/ben/platforms/fit.mjs` (your two tools, reached through `app/src/engines/listing/`). Each now reads its data through a static import (`import x from '….json' with { type: 'json' }`), and the top-level `await import` is a plain import. The two tools start their command line on `process.argv[1]?.endsWith('<file>')` in place of the `import.meta.url` comparison. `app/metro.config.js` watches `jobs/capture`, `research/list/ben/platforms` and `scripts` as well.
+
+Proved: `npx expo export --platform web` with minifying on exits 0 on the Mac; `npx expo serve` on that export answers `/v1/routes` with 401 and `/v1/health` with 503 `NOT_CONFIGURED`, so the server bundle loads the harness at runtime. `app/e2e/web.mjs` no longer passes `--no-minify`. The e2e screen tests were not rerun here.
+
+To keep it fixed: code under `app/src/` that a route can reach uses no `import.meta`, no top-level await and no `readFileSync` of a repo file.
