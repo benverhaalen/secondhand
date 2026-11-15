@@ -288,12 +288,18 @@ export const userStream = (s: JobStore = jobs): Handler => (ctx, req) => sse(s, 
 
 const shared = globalThis as { __secondhandJobsLive?: LiveJobs };
 export const jobs: JobStore = jobsOn(store, db(), process.env, shared.__secondhandJobsLive ??= liveJobs());
-seedExamples(jobs);
 
+// The contract example jobs are seeded on the first request to a job route, never at import: importing this module
+// (the runtime, the watch worker, capture, search) must leave the background queue free of example rows.
+let seeded = false;
+const seeding = (handler: Handler): Handler => (ctx, req) => {
+  if (!seeded) { seeded = true; seedExamples(jobs); }
+  return handler(ctx, req);
+};
 export const routeHandlers = {
-  'GET /v1/jobs/:id': getJob(),
-  'GET /v1/jobs/:id/events': jobEvents(),
-  'GET /v1/stream': userStream(),
+  'GET /v1/jobs/:id': seeding(getJob()),
+  'GET /v1/jobs/:id/events': seeding(jobEvents()),
+  'GET /v1/stream': seeding(userStream()),
 };
 const routeAuth: Record<string, 'user' | 'visitor' | 'none'> = {
   'GET /v1/jobs/:id': 'visitor',
