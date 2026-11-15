@@ -1959,3 +1959,9 @@ Nate, orchestrator's session, 2026-11-15, about 06:25 Central, after hearing tha
 > well instead of reading one by one, can we build the system to parse and even more effectively ascertain info
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate parsing and decisions driven by code, not a model reading each one
+Nate, orchestrator's session, 2026-11-15, about 06:50 Central.
+> we can parse and build things to be deterministicially or code driven no? would that be more optimized?
+
+Used in: `spec/engines/market-index.md` (the attribute extractor, when written), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
