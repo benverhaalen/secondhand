@@ -2,29 +2,23 @@
 
 Ben, 04:09: "i set everything up so it should just be able to run and i get a finished, professional, well designed, deep app (or website)". 04:10: "the system i created could be used to design any new page". This file is how one brief becomes a finished page with no one holding its hand. The loop itself is [frontend-standard §2](../../product/frontend-standard.md#2-build-the-loop); this file says how a builder runs it in this repo, today.
 
-## The method, and why it is the default
+## Start from the existing contract
 
-Ben loved the dark mode Today at 02:18 ("whatever principles you used to tell if something should exist or not ... were stellar"; "how much did you find issues and audit compared to just using the design system"). What made it work, from his 01:16 notes and how it was refined:
+Read `AGENTS.md` and `.agents/thinking.md`, then run:
 
-1. **Every element has to earn its place.** Before drawing, each thing on the screen was asked what the person loses without it. Most were cut. Minimal information, with the money and the deadline kept.
-2. **One kind, one size.** Every part got a fixed size whatever is inside it ("everything should be standardized size wise no matter whats in it"), and corners nest by arithmetic (36 less 16 is 20).
-3. **Measured, not eyeballed.** The real fonts were loaded, the screen was rendered at 390 x 844, and a script measured every box, gap, corner and contrast before Ben saw it. Optical errors were fixed by geometry: a corner inset of r − (r − p)/√2, ink instead of boxes.
-4. **Dark is a mirror of light.** Raised surfaces are lighter; separation comes from tone, not lines or shadows.
-5. **Every correction reaches everything.** A note on one card was applied to every card of its kind, and became a rule.
+```sh
+node scripts/ui-proof.mjs context --medium app /buy
+```
 
-Why other UI work fell short: image models drew whole screens and their sizes drifted; each thread kept its own mock and its own kit, so the same card looked different in three places; rules lived in documents with no script behind them (the logo rule only checked file shapes); and mocks reached Ben without passing the checks (one had 187 errors). So: one kit, no hand styling, no image-drawn UI, every rule a check, and nothing reaches Ben until its render passes.
+Replace `/buy` with the concrete route. If the web route manifest is absent, export the app first with `cd app && npx expo export --platform web`. Context selects the existing page job, behavior table, interaction rows, rule brief and relevant proposed interaction/copy sections. It also identifies missing contracts and actual test consumers. Open the cited sources that affect this change; hashes identify the version, not evidence that a source was read. Do not create a parallel page-purpose file or a second rule registry.
 
-## Read first, in this order
+Use [frontend-standard §1](../../product/frontend-standard.md#1-judge-the-order-of-questions-for-any-screen) for the order of decisions and medium distinctions. [Taste evidence](../../research/cross-cutting/ben/taste-evidence.md) records previous reactions. [Appllama usage](../vendor/appllama/appllama-usage/SKILL.md) guides flow research when the structure is uncertain. [The copy audit](../../spec/copy-cuts.md) is a proposal to inspect in context, not a batch-deletion instruction. The brand's [coder card](../../brand/coder-card.md) and the [shared parts](../../app/src/ui/README.md) define the visual vocabulary.
 
-1. [AGENTS.md](../../AGENTS.md) and [.agents/thinking.md](../thinking.md).
-2. [product/ui-constitution.md](../../product/ui-constitution.md), [brand/constitution.md](../../brand/constitution.md) Articles 5 to 11, [brand/coder-card.md](../../brand/coder-card.md), [product/frontend-standard.md](../../product/frontend-standard.md), [product/copy.md](../../product/copy.md).
-3. Your page in [spec/pages.md §6](../../spec/pages.md#6-the-pages), its rows in [spec/ways-out.md](../../spec/ways-out.md), [product/personas.md](../../product/personas.md), and `node scripts/evidence.mjs <slug>`.
-4. [research/cross-cutting/ben/taste-evidence.md](../../research/cross-cutting/ben/taste-evidence.md): what Ben praised and criticized.
-5. Emil Kowalski's skills, vendored in [.agents/vendor/emil/](../vendor/emil/): `emil-design-eng` before you build, `animate-expo` and `gestures` for motion and touch, `break-ui` after you build. Ben's own [ui-factory](../vendor/ui-factory/SKILL.md) references `check.md` and `critique-loop.md`.
+Prove a representative complete journey before expanding a redesign: normal entry and default content, one meaningful action, its confirmed result, then return. Include direct entry, refresh, failure and interrupted work where the platform permits them. An image idea does not establish behavior, and a logged tap does not establish its promised result.
 
 ## When something is not decided
 
-Reason it out as the best product designer you know would: what the product is for, which person on this screen matters most and what they want (not what they would say), how we want the page used, how a shipped app that people already know handles it, and what Ben praised or criticized. Research and earlier calls feed that reasoning; they are not a ranking. Decide, write one line of why in the page's `decisions` list in its behavior table, and keep going. Stop and ask only for a step that cannot be undone or that changes another page.
+Reason it out as the best product designer you know would: what the product is for, which person on this screen matters most and what they want (not what they would say), how we want the page used, how a shipped app that people already know handles it, and what Ben praised or criticized. Research and earlier calls feed that reasoning; they are not a ranking. Decide, write one line of why in the page's `decisions` list in its behavior table, and keep going. Continue reversible implementation within the authorized scope. Ask when a decision changes product direction, scope or locked taste, or needs an irreversible action; cross-page consistency work alone is not a reason to stop.
 
 ## The page, from brief to done
 
@@ -33,10 +27,10 @@ Reason it out as the best product designer you know would: what the product is f
 | Frame | Who uses it, how often, what they came to do, where a mistake costs most, the ways out from ways-out.md, the moment a person stays in the loop | Five lines at the top of `app/behavior/<page>.json` under `frame` |
 | Compose | Build the screen in `app/src/app/...` from the parts in `app/src/ui` only, starting from the recipes below. One version; a second only when the layout is truly open | It renders on web at 390 x 844 with demo data from `app/src/demo` |
 | Missing part | If no part fits, write the part in `app/src/ui/parts/` with its reason, every state, a data-part name and a row on the parts sheet. Never style a screen by hand | The parts sheet shows it in light and dark |
-| Behavior table | A fresh agent on a smaller model, which has not seen your code, writes `app/behavior/<page>.json` from the render: every state, every control, where Back goes | Every control on screen is in the table |
+| Behavior table | A fresh agent compares the intended journey and existing `app/behavior/<page>.json` with the render; reconcile every state, control and return path without replacing the contract from pixels alone | Every visible control has its intended result and a recovery path where needed |
 | Tests first | The same agent turns the table into tests in `app/e2e/<page>.test.mjs` against the web build (copy `app/e2e/today.test.mjs`; run `node --test "app/e2e/*.test.mjs"`), read from the event log, and a Maestro flow in `app/e2e/maestro/<page>.yaml` | They fail before the behavior exists |
 | Behavior | Make the tests pass. Motion and haptics from `app/src/ui/motion.ts` and frontend-standard §3 | Tests pass |
-| Check | `node scripts/app-check.mjs <route>`: brand-check on the real render (U6 logos, U7 nothing moves, sizes, contrast, corners) and Emil's checks; `node .agents/check.mjs` | Zero errors |
+| Check | Run the scoped proof command below, inspect the actual current renders and exercise the intended journey | Required checks pass, meaningful outcomes are asserted, and remaining judgment has a current artifact review |
 | Break it | Once for the whole app before a demo, not per page: `break-ui` and `review-animations` (long text, no data, slow network, huge numbers, dark mode, large type, fast taps; each persona and ways-out row) | Every defect went through the intake below |
 | Record | Every defect found, by anyone, goes through the intake below | The commit names the layer it was fixed in |
 
@@ -62,7 +56,17 @@ These are what fresh tests and Ben's gallery notes found missing, again and agai
 
 ## Spend checks where the change is
 
-Run `node scripts/app-check.mjs <route>` and the e2e file for the pages you changed, one file at a time (`--test-concurrency=1`); a shared part you changed adds the parts sheet and each page that uses it. The whole suite runs once before a demo, not after every merge. A mechanical change (a wording sweep, a test fix, a gap from a failing test) goes to a smaller model; judgment (what a page is for, a new part) stays with the builder.
+```sh
+node scripts/ui-proof.mjs check --medium app /buy --out logs/ui-proof
+```
+
+Use a supported Node version with dependencies installed in `app`. This executes the repository gate, associated browser behavior tests, the tab-shell suite for main tabs and `app-check` renders. Missing purpose/behavior/test contracts, failed commands, zero executed passing tests, missing or mismatched renders and inputs changed during execution fail the proof. The receipt records command outcomes and source/artifact hashes under the existing ignored logs directory. Each run has isolated render files, so parallel runs do not substitute each other's screenshots. A `checks-passed` result means only those checks passed; it does not approve design or establish native behavior.
+
+For a shared component or token change, add `--shared` to expand to all exported routes, resolving dynamic paths from concrete behavior states. Missing coverage fails explicitly. If two requested paths share a dynamic route, check them separately; the tool rejects ambiguous artifact identities. A local page check cannot establish safety for every consumer of a shared primitive. CI also runs the full browser suites; a local receipt is not a bypass for CI.
+
+A fresh reviewer gets the intended purpose, existing contracts, actual current render and completed journey, without the builder's preferred verdict. It checks priority, content ownership, density, comprehension and state continuity. Revise the contract if evidence shows it was wrong; never weaken a failing check merely to get green. The builder can iterate independently within accepted direction. Ben remains the decision maker for unresolved taste and product direction.
+
+`--medium web --source <file.html>` provides partial brand evidence and explicitly fails complete proof without behavior and visual review. Video has no registered temporal/audio proof here; a story-frame check is not a movie check. Use the actual delivery medium's review from frontend-standard §1. These gaps are visible limitations, not inferred passes.
 
 ## When the agent acts and when it hands off
 
@@ -85,7 +89,7 @@ Ben, 04:11: "what else would become a check? ... ensure your process is generali
 2. **Scope.** Name where it applies: global, app, web, deck, post or story (`media` on the rule's row). A rule for the app never binds the website unless the website has the same problem.
 3. **Fix it at the lowest layer.** A token, then a part, then the page. A fix in the page alone is allowed only for a defect that exists on one page.
 4. **Hold it.** If a script can decide it, a check with that fixture as its failing test and a `check` row in `.agents/ui-rules.json`. If not, one "Fail if" judge line with its source. A note with neither does not count.
-5. **Teach.** If a builder following this file would have made it again, change this file or the skill that misled them, in the same commit, and quote Ben's words in `product/words.md` when the defect came from him.
+5. **Teach.** If a builder following this file would have made it again, correct the existing source and its consumer in the same commit. Preserve scope and evidence; do not turn a local correction into a universal design prohibition. Quote Ben's words in `product/words.md` when the defect came from him. Retire a rule when it no longer catches a useful failure or rejects a justified design.
 
 ## Rules for parallel builders
 

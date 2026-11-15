@@ -7,6 +7,7 @@ Open the dashboard **secondhand: proof** (Dashboards, `/Shared/secondhand`) and 
 Two rules hold on every step:
 - **Backtest figures are history.** They come from public StockX sales of 2017 to 2019 and never stand for accuracy on live listings. Every such figure names its dataset.
 - **Thin answers are refused.** A rate over fewer than 30 shown prices is blank, and Genie answers "too few: N sales" instead of a price.
+- **Two engines, always named.** The workspace backtest (the metric view, section 2's first row, Genie's "Market model") scores the nightly market model, which the app does not serve. The engine the app serves is `measures.engine_ablation`, the engines lead's development reading on the same kind of sales: it trails the last sale by about a point and beats the 90-day median. Never present the market model's figure as the app's accuracy.
 
 ## What Databricks gave us, and what we built on it
 
@@ -20,8 +21,8 @@ Every row names an object a judge can open. Where the platform stopped us, the l
 | Delta: change data feed, MERGE, VACUUM (Catalog › `secondhand.core.param`) | Every change to a row kept and readable; merges; physical deletion | `measures.param_history` shows every weight move; loaders MERGE and skip erased people; vacuum finishes a deletion | CHECK constraints are refused on a row-filtered table, so the rule "a shown number has a citation" is held by a check at the door, a failing guard job and a SQL alert |
 | Table function (Catalog › `secondhand.measures.why`) | SQL functions that return rows | `why(id)` opens a shown price to the exact sales it rests on and rebuilds its hash | Unity Catalog lineage stops at tables and columns; this goes down to the rows and back up to the number |
 | MLflow (Experiments › `/Shared/secondhand/valuation-backtest`, `/Shared/secondhand/param-walk`) | Tracked runs with parameters, metrics and the data read | Each backtest and each monthly weight test is a run | Time travel is refused on a view, so a run records the Delta version of the table under it |
-| Metric view (Catalog › `secondhand.measures.valuation_metrics`) | Measures defined once, used by the dashboard and Genie | Accuracy by who priced it, week, sale price and dataset; every rate blank under 30 prices, as the app does | The CLI drops indented YAML, so the view is created through the Statements API |
-| AI/BI dashboard (Dashboards › `secondhand: proof`) | Charts, tables and filters over governed data, with Genie linked | The story page: a price opened to its sales, ours beside the usual guesses, prices held back, the weight, isolation, what is never automated | The counter truncates "98.5% of 39,707", so headline figures are a small Vega-Lite widget that shows the figure and its count |
+| Metric view (Catalog › `secondhand.measures.valuation_metrics`) | Measures defined once, used by the dashboard and Genie | Accuracy of the nightly market model and its baselines by week, sale price and dataset; every rate blank under 30 prices, as the app does. The served engine sits beside it in `measures.engine_ablation` | The CLI drops indented YAML, so the view is created through the Statements API |
+| AI/BI dashboard (Dashboards › `secondhand: proof`) | Charts, tables and filters over governed data, with Genie linked | The story page: a price opened to its sales, the market model and the served engine beside the usual guesses, prices held back, the weight, isolation, what is never automated | The counter truncates "98.5% of 39,707", so headline figures are a small Vega-Lite widget that shows the figure and its count |
 | Genie (Genie › `secondhand market`) | Questions in plain words, answered with SQL over chosen tables | Five judge questions with example SQL over `measures.shown_prices`, `measures.price_basis` and the metric view; thin questions answer "too few: N sales" | Genie calls no unregistered table function and reads no view over system information schema, so the rows behind `why(id)` are the view `measures.price_basis`, and the catalog policies are the snapshot `measures.locks_in_force`, refreshed on every governance run |
 | Volumes (Catalog › `secondhand.raw.landing`) | Files governed like tables | Benchmark runs and app logs land here, and loaders keep a reason for every rejected line | |
 | SQL alert (Alerts › `guard_violations_alert`) | A query on a schedule that raises when it crosses a line | Fires when `measures.guard_status` shows any rule broken | |
@@ -44,7 +45,7 @@ Section 1 of the dashboard: pick a price, see the earlier sales it was made from
 SELECT * FROM secondhand.measures.why('<a shown number id>');
 ```
 
-`equal = true` means the number rebuilds from exactly the rows it names. Unity Catalog lineage stops at tables and columns; this table function goes down to the rows and back up to the number.
+`equal = true` (Genie's `rebuilt_exactly`) means the number rebuilds from exactly the rows it names. It says nothing about whether those sales are verified or current. Unity Catalog lineage stops at tables and columns; this table function goes down to the rows and back up to the number.
 
 Uses: a SQL table function, the metric view `measures.valuation_metrics`, AI/BI dashboard cross-filtering.
 
@@ -57,7 +58,11 @@ SELECT * FROM secondhand.measures.bench_by_site ORDER BY run_id, tool, site;
 SELECT * FROM secondhand.measures.bench_cost ORDER BY run_id, tool;
 ```
 
-Then the backtest, on history: section 2 of the dashboard compares our price with the last sale and the 90-day median on the same held-out sales, by what the item sold for, and how often each range held the real price. Each run is an MLflow run under `/Shared/secondhand/valuation-backtest`.
+Then the backtest, on history. Section 2 of the dashboard shows two readings, each named. Its first row is the workspace backtest of the nightly market model, which the app does not serve, against the last sale and the 90-day median on the same held-out sales; each run is an MLflow run under `/Shared/secondhand/valuation-backtest`. Its second row is the engine the app serves, from the engines lead's ablation ([spec/engines/valuation.md §9](../spec/engines/valuation.md#9-proof)): it trails the last sale by about a point, paired on the sales both priced.
+
+```sql
+SELECT label, served, data, sales, within_20, median_error, range_held, vs_last_sale_points, vs_last_sale_lo, vs_last_sale_hi, vs_last_sale_n, reading FROM secondhand.measures.engine_ablation;
+```
 
 Uses: Delta tables loaded by a bundle job, MLflow, metric views.
 
@@ -98,6 +103,6 @@ Uses: Delta MERGE and VACUUM, a bundle job with a parameter.
 
 ## Ask it
 
-In Genie, ask "What is the median sold price among the earliest 10 StockX sales?" It answers "too few: 10 sales" instead of a price. Ask "How often was our price within 20 percent, by sale price band?" It reads the metric view.
+In Genie, ask "What is the median sold price among the earliest 10 StockX sales?" It answers "too few: 10 sales" instead of a price. Ask "How did our price do against the last sale and the 90-day median on the same sales?" It gives both readings, names the market model and the served engine, and says the served engine trails the last sale by about a point. What Genie answered to each judge question, with its SQL, is in [genie-answers.md](genie-answers.md), rewritten by `node databricks/genie/ask.mjs`.
 
 Everything above deploys from one bundle: `node deploy/deploy.mjs deploy --target dev --profile Nate`.

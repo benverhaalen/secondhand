@@ -8,7 +8,7 @@ import { plan, type State, type Fact } from '../../engines/capture/plan.ts';
 import { select } from '../../engines/capture/select.ts';
 import type { StudioAsk } from '../../engines/capture/select.ts';
 import { fieldState, viewsFor } from '../../engines/capture/fields.ts';
-import { table, type FieldRow, type Site } from '../../engines/capture/table.ts';
+import { bound, table, type FieldRow, type Site } from '../../engines/capture/table.ts';
 import { mergeAttribute, type Attribute } from '../card/card.ts';
 import type { AttributeEvidence } from '../../engines/proof/proof.ts';
 import { memoryStore } from '../../engines/param/param.ts';
@@ -135,8 +135,13 @@ function ownedCapture(user_id: string, capture_id: string): CaptureRow {
   if (!row || row.user_id !== user_id) throw new ApiError('not_found', 'capture not found', 'read');
   return row;
 }
+function effectiveState(row: CaptureRow): State {
+  const state=row.state;
+  return state.lookups==='running' && (state.lookups_at===undefined ||
+    deps.now()-Date.parse(state.lookups_at)>=bound(params,'capture_lookup_wait_s')*1000) ? {...state,lookups:'done'} : state;
+}
 function view(row: CaptureRow) {
-  const next = plan(row.state, params);
+  const next = plan(effectiveState(row), params);
   return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose,
     type: row.state.type, suggested_type: row.state.suggestion?.family ?? null, picker: open.picker,
     process: next.process, coverage: {needed: next.process.map(step => step.key).filter(key => !row.state.kept.includes(key)), kept: [...row.state.kept]},
@@ -270,6 +275,10 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
       for (const field of ['brand','model'] as const) {
         state.candidates[field]=[...new Set(result.set.flatMap(member=>member[field]===undefined?[]:[member[field]]))];
       }
+      const brand=state.facts.brand;
+      if (result.action==='confirm' && result.set.length===1 && first.brand!==undefined && brand?.source!=='you_said' && !brand?.confirmed &&
+        (!brand || brand.unknown_reason==='not_read' || brand.source==='lookup' || brand.confidence<first.c))
+        state.facts.brand={value:first.brand,source:'lookup',confidence:first.c};
       const dimensions=result.set.flatMap(member=>member.dimensions?[{label:member.label ?? member.product_id,value:structuredClone(member.dimensions),p:member.c}]:[]);
       state.variants={...state.variants,dimensions:dimensions.length>=2?dimensions:[]};
       if (dimensions.length===1 && result.action==='confirm' && state.facts.dimensions?.source!=='you_said')
@@ -344,7 +353,11 @@ export const handlers: Record<string, Handler> = {
       row.replacements[key]=(row.replacements[key] ?? 0)+(kept?1:0);
       if (kept && reads.some(read=>read.unknown_reason==='not_read')) row.state.retakes[key]=row.replacements[key];
       if (!kept) row.state.kept.push(key);
-      if (row.state.lookups==='none') row.state.lookups='running';
+      if (row.state.lookups==='none') {
+        row.state.lookups='running';
+        row.state.lookups_at=new Date(deps.now()).toISOString();
+        ctx.log.note('capture lookups started',{at:row.state.lookups_at});
+      }
       for (const read of reads) applyRead(row.state,read,key);
       if (photo.scan && selected.process.some(step=>step.key===key && step.kind==='scan')) {
         if (!photo.scan.scan_ok) row.state.object_capture=false;
@@ -376,7 +389,7 @@ export const handlers: Record<string, Handler> = {
     } else {
       const answer=ctx.body.answer as {field:string;value:unknown}|undefined;
       field=answer?.field ?? ctx.body.refuse as string;
-      const current=plan(row.state,params);
+      const current=plan(effectiveState(row),params);
       if (!current.questions.some(q=>q.field===field && q.kind!=='shot')) throw answerError(field);
       if (answer) {
         const definition=select(row.state,params).rows.find(r=>r.field===field)!;
@@ -386,14 +399,14 @@ export const handlers: Record<string, Handler> = {
       } else row.state.refused.push(field);
     }
     if (field) ctx.log.note('capture field updated',{field});
-    write(ctx,row,plan(row.state,params).status==='shooting'?'shooting':row.status,field?{field}:{});
+    write(ctx,row,plan(effectiveState(row),params).status==='shooting'?'shooting':row.status,field?{field}:{});
     return {status:200,body:{...view(row),item:{id:row.state.item_id,category:row.state.type}}};
   }),
   'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', async ctx=> {
     const {runtime}=await import('./runtime.ts');
     const row=read(ctx); writable(row); fields(ctx.body,{version},{note:text}); checkVersion(ctx,row);
     const at=new Date(deps.now()).toISOString();
-    const selected=select(row.state,params), keys=selected.process.map(step=>step.key);
+    const state=effectiveState(row), selected=select(state,params), keys=selected.process.map(step=>step.key);
     const sources:Record<Fact['source'],Attribute['source']>={label:'label',measured:'measured',lookup:'spec',you_said:'you_said',seen:'inferred',derived:'inferred'};
     const kinds:Record<Fact['source'],AttributeEvidence['kind']>={you_said:'owner',label:'label_text',measured:'depth',lookup:'lookup',seen:'image_region',derived:'image_region'};
     await ctx.log.call('db','capture.finish_item',{item_id:row.item_id},()=> {
@@ -402,7 +415,7 @@ export const handlers: Record<string, Handler> = {
         const attributes=[...(current?.attributes as Attribute[] ?? [])];
         for (const field of selected.rows) {
           if (field.field==='type' || field.field==='lot_count') continue;
-          const resolution=fieldState(field,row.state,keys,params);
+          const resolution=fieldState(field,state,keys,params);
           if (resolution.state!=='known') continue;
           const fact=resolution.fact!;
           const next:Attribute={name:field.field,value:structuredClone(fact.value),source:sources[fact.source],confidence:fact.confidence,

@@ -2050,6 +2050,29 @@ Nate, orchestrator's session, 2026-11-15, about 10:00 Central.
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), `spec/plans/completion.md` (the review).
 
+
+## 2026-11-15 Shared header, icon-only navigation and lowercase display type
+
+Ben, Codex chat, 2026-11-15; exact excerpt:
+
+> ui updates: the top left should be logo. top right should be the messages. under that should be a smaller font that is the page you are on. either today, sell, buy or you. the bottom pill should not have any text. all icons should be vertically aligned.
+
+> also quick note, everything in the word mark font should be lowercase.
+
+Scope: the shared main-tab shell and existing wordmark-typeface presentation. The broader page layouts requested in the same chat remain agent proposals for review.
+
+
+## 2026-11-15 Hierarchy, components, medium and independent implementation
+
+Ben, Codex, 2026-11-15, Secondhand UI review:
+
+> ensure to clean up and use intelligence to improve the system for all design. mainly focused to web and app. but also applicable to a video. the medium matters and design decisions matter in that medium. certain features cant be on everything.
+
+> and then ensuring an agent can work alone and those rules are enforced is something needed
+
+> whats your opinion on defining the intended hierarchy of the app and specific changes to components or rules of all ui design once and then letting it implement using building blocks and deterministic rules
+
+Scope: improve Secondhand's existing system. The last excerpt requests an opinion; it does not approve every proposed page layout. The review separates shared brand decisions, purpose and behavior contracts, medium-specific composition, executable checks and judgment. Broader page layouts remain proposals; the explicitly requested shared shell changes are implemented separately.
 ## 2026-11-15 nate if it is not in the repo, ben has not worked on it
 Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
 > If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
@@ -2090,3 +2113,26 @@ Ben, project chat, 11:32 UTC, in full.
 > actually, dont add gradient colors. also, should look very similar to how it currently looks, just adding another icon. the find and buy icons should do different things. one is like tracking a brewers jersey secondhand. find is finding out what an item is. selling an item goes through that flow. what's it worth appraises an item based on what the secondhand market prices it at now. think of where each of these are stored after. like where a draft post is stored. how that data and info is stored. where you should access items youre tracking. items you found recently. etc.
 
 Used in: `app/src/app/new.tsx`, `app/src/demo/capture.ts`, [spec/redesign/new-results.md](../spec/redesign/new-results.md), [packet 80](../.agents/team/packets/team/80-new-four-jobs-storage.md).
+## 2026-11-15 nate audit our own code first, then read Ben's plan
+Nate, orchestrator's session, 2026-11-15, about 05:25 Central (the session's earlier "Central" times were written six hours late; the machine clock is the source here).
+> Great, when data bricks closes out, compact, lets first fully audit and review through the codebase, then look at bens sessions new plan called whats left. But only after we get our own opinion of the fresh codebase
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate every search shows how far it reaches while it loads; scaffold the screens with everything wired so design can pass over
+Nate, orchestrator's session, 2026-11-15, about 05:45 Central.
+> In some way we need to deliver in every search, responsive ui for loading states that shows how broad we reach, how thorough and credible and impressive the search is, technical the computation is. Just a needed feature, there are im sure many examples of this type of ui being practiced with many professional sites now, even as animations on their site for marketing. Ben right now is working on the views and such, but its important we plan to integrate all working technologies and such, like we did for lidar, we can build out and template the needed views and screens, Utilize professional ui and ux skills, and expo skills to send a team lead and codex builder to fully understand and perfectly scaffold with everything integrated, that design can pass over.
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), the app-wiring lead's brief.
+
+## 2026-11-15 nate a $5 visitor cap that points to the repo, visitor photos allowed, and yes on vercel
+Nate, buying-conversation lead's session, 2026-11-15, about 07:45 Central.
+> yes $5 a spend cap, but also then indicate they go to the repo, with a responsive github logo widget popping in, we also have github and our linkedin's available. visitor photos can be sent sure, ideally no, maybe the system we built can pass over it. that'd be cool for safety reasons. but then again, isnt our system that checks images read by claude and other things that drive the image classification for capture. Did we confirm hetzner? and yes on vercel. You have vercel cli logged in no?
+
+Used in: `features/assist/README.md` (the cap and photos), `features/buy/README.md` (the cap's repo widget, the deploy).
+
+## 2026-11-15 nate wire more than search; finish the audit with expert reviewers, then Ben's list, then our own spec
+Nate, orchestrator's session, 2026-11-15, about 05:55 Central.
+> Wire more than that, we'll have you finish auditing the app right now, of course sending out expert subagent reviewers to capture every aspect, followed by checking in on bens to do list for additional understanding, and we formulate for ourselves whats needed, and spec out
+
+Used in: [the audit](../spec/plans/audit-2026-11-15.md), `spec/plans/finalization.md`, the app-wiring lead's brief.

@@ -1,0 +1,34 @@
+[
+  {
+    "id": "msg_replay",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-sonnet-5-5",
+    "content": [
+      {
+        "type": "text",
+        "text": "I cannot help with that request.",
+        "citations": null
+      }
+    ],
+    "stop_reason": "refusal",
+    "stop_sequence": null,
+    "stop_details": {
+      "type": "refusal",
+      "category": "cyber"
+    },
+    "container": null,
+    "diagnostics": null,
+    "usage": {
+      "input_tokens": 100,
+      "output_tokens": 10,
+      "cache_read_input_tokens": 50,
+      "cache_creation_input_tokens": 0,
+      "cache_creation": null,
+      "inference_geo": null,
+      "output_tokens_details": null,
+      "server_tool_use": null,
+      "service_tier": "standard"
+    }
+  }
+]

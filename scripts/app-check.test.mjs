@@ -2,11 +2,12 @@
 // in light or dark. Each planted defect here is one a page builder could ship, and it must fail.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { checkPage, slug, washRule } from './app-check.mjs';
+import { checkPage, checkRoute, parseArgs, RENDERS, slug, washRule } from './app-check.mjs';
 import { find } from '../app/e2e/web.mjs';
 import { playwright } from './brand-check.mjs';
 
@@ -78,4 +79,20 @@ test('app-check U8: a page with a top and no wash fails, a wash with no top fail
   assert.equal(washRule('(tabs)/index', true, true), null);
   assert.equal(washRule('item/[id]/ship', true, true), null);
   assert.equal(washRule('camera', false, false), null);
+});
+
+test('app-check: isolated output is an option, not a route, and default output stays unchanged', () => {
+  const got = parseArgs(['/buy', '--out', '/tmp/proof renders', '--json']);
+  assert.deepEqual(got.asked, ['/buy']); assert.equal(got.out, '/tmp/proof renders'); assert.ok(got.flags.has('--json'));
+  assert.equal(parseArgs(['/buy']).out, RENDERS);
+  assert.throws(() => parseArgs(['/buy', '--out']), /requires a directory/);
+});
+
+test('app-check: a saved route report identifies its concrete path in the requested output directory', { skip: !pw }, async () => {
+  const out = mkdtempSync(join(tmpdir(), 'app-proof-'));
+  try {
+    const got = await checkRoute({ route: 'item/[id]', path: '/missing-item' }, { browser, base, out });
+    const saved = JSON.parse(readFileSync(join(out, 'item-id.json'), 'utf8'));
+    assert.equal(got.path, '/missing-item'); assert.equal(saved.path, '/missing-item');
+  } finally { rmSync(out, { recursive: true, force: true }); }
 });

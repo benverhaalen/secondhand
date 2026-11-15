@@ -2,10 +2,50 @@
 
 Updated: 2026-11-15, about 05:40 Central. Owner: Nate. Agent: the buying-conversation lead (Claude Code). Read with [packet 55](55-team-leads-and-mac-workers.md) and [features/assist](../../../../features/assist/README.md). In progress; this packet is rewritten at the stop.
 
-## What is true
+## What exists and works today (main, 2026-11-15 about 07:30 Central)
 
-- The spec is [features/assist/README.md](../../../../features/assist/README.md) (the conversation, its tools, widget tags, the gate, the evaluation set) and [features/buy/README.md](../../../../features/buy/README.md) (the web page and the home hero).
-- The model path is checked: the official `@anthropic-ai/sdk` 1.8.0 against OpenRouter's Anthropic-format endpoint (`https://openrouter.ai/api`, model `anthropic/claude-sonnet-5.5`) ran a strict custom tool and `web_search_20260209` in parallel at `low` effort in 1.17 s for $0.0070 (2026-11-15, scratch probe). No Anthropic key is needed for today; `OPENROUTER_API_KEY` is set on Windows.
+- `app/src/edge/api/assist.ts`: `POST /v1/assist` is still the old route, signed-in only, answering only its contract example. Its model port throws. Proof: `node --test app/src/edge/api/assist.test.ts`, 10 pass.
+- `app/src/edge/api/buy.ts`: `POST /v1/compare` and `GET /v1/out` over the example offers, with the referral click recorded. Proof: `buy.test.ts`, 11 pass.
+- `app/src/edge/api/genie.ts`: Genie scoped to the user, answered only with a table snapshot and a citation, working against a stored example space. Proof: `genie.test.ts`, 13 pass.
+- New, merged as drafts:
+  - `app/src/edge/assist/tools.ts`, the five tools. The tools never read the Apify lane. Proof: `tools.test.ts`, 63 pass.
+  - `converse.ts` (the loop, the number gate, usage and cost) and `widgets.ts` (the `[widget:rN]` tags). Proof: `converse.test.ts` 24 pass, `widgets.test.ts` 5 pass.
+  - `prompt.ts`.
+  - `types.ts`, the contract.
+  - `bench/assist/`: 25 questions, the runner and the scorer. Proof: `score.test.mjs` 12 pass, `run.test.mjs` 7 pass, `check-set.mjs`.
+  - `tsc` is clean for every assistant file.
+- The model path is checked: the official `@anthropic-ai/sdk` 1.8.0 (now in `app/package.json`), against OpenRouter's Anthropic-format endpoint (`https://openrouter.ai/api`, `anthropic/claude-sonnet-5.5`). It ran a strict tool and `web_search_20260209` in parallel at `low` in 1.17 s for $0.0070 (a scratch probe).
+- Keys, by presence: `OPENROUTER_API_KEY` set, `ANTHROPIC_API_KEY` unset, `BROWSER_USE_API_KEY` set, the `DATABRICKS_*` and `GENIE_SPACE_ID` env vars unset in this shell. Nate does not need to supply a model key.
+
+## What does not work or is not joined
+
+- `converse` and the tools are joined to no route, so nothing serves the buying conversation yet.
+- The evaluation runner calls `converse` with the wrong shape (`run.mjs:49`; it needs `tools: {defs, run}`, `image.data_base64`, `now`, `log`, `signal`). A live run would record every question as failed. The tests passed only because the stand-in accepted any shape (a fresh Opus review).
+- More from that review, not yet fixed:
+  - Streamed text reaches the page before the gate cuts it (`converse.ts:221`), though the settled answer replaces it.
+  - Years 1900 to 2100 pass the gate unbacked (`:78`).
+  - "12 percent" and "50 dollars" are not normalised (`:72`).
+  - ISO dates in prose are cut (`:101`).
+  - Minor items in the side-session note `buy-spec-review-1.md` and the review in this session.
+- The tools diff has not had a fresh review.
+- `bench/assist/*.mjs` print with `process.stdout` and `process.stderr` writes, which the logging check refuses. Two commit trailers name pages that are not sources.
+- What the tools can reach:
+  - A visitor's search reaches Poshmark and Dupe only, because the harness port in `api/search.ts` is undefined.
+  - Valuation needs `SECONDHAND_LIVE_SITES`.
+  - There is no sale curve, so "when to list" has no answer and "where" is the keep after fees.
+  - The trend has no noise band, so it reads "noise".
+  - There is no TypeScript for identify, the attribute record (AD9), A11, AD5 or the stored-rows-first search (MI2), so each tool says what is not built.
+- `web/`, the Next.js site, is merged as a draft (3246f194): `next build` passes with `/`, `/buy` and `/states` static, and 24 tests pass, rerun by the lead. It has not been looked at in a browser or had a design-critic pass. It does not poll yet: it uses the event stream with a poll fallback.
+- No API host exists for the site to call (Nate's choice in `spec/plans/hosting.md`).
+
+## The answer shape for the fashion-trends question
+
+Three labelled parts:
+1. **From the web, with sources:** Pinterest Predicts 2026 (search data, Gen Z leads 67% of its trends: poetcore, utility dressing, cool blue) and the Lyst Index Q3 2026 (demand, no generation given). Each comes with the kind of evidence it rests on.
+2. **Measured by us now:** for the styles the web names, live reads on Poshmark and Dupe, giving count, median ask and likes per listing per site, labelled a one-day read of asking prices. It cannot yet tell rising from present.
+3. **The stand-in, marked:** Depop's audience for younger buyers (Apptopia: 17 to 25 was 39% of weekly users by August), cited. No platform stands in for millennials, so that part comes from trend sources only.
+
+It must not state a buyer age from our data, call a style rising without a trend result, or give a number no tool or source returned. The research is in `research/buy/nate/generations-and-platforms.md`. The expected shape is question 21 of `bench/assist/questions.json`.
 
 ## DBX-A1
 
@@ -41,7 +81,30 @@ For the Databricks lead ("Lead 2: Databricks, the dashboard rebuilt"). The conve
 
 The briefs are in the side-session notes folder of the orchestrator's group (`buy-brief-*.txt`), with the route follow-up (`buy-brief-route.txt`).
 
-## Queue
+## Queue, in order
+
+1. Fix the runner call (`bench/assist/run.mjs:49`), and add one test against the real `ConverseOptions`.
+2. Fix the gate items above (years in date context only; `percent` and `dollars`; ISO dates as one token; gate a sentence before it streams). Then get a fresh review of `tools.ts`.
+3. The route: send `buy-brief-route.txt` (in the shared notes folder) into a worktree with these files. Done when `assist.test.ts` passes the two-person test, the cap and the 503 for no key. A fresh review of the route (spend, visitors, photos) before merge.
+4. Fix the bench logging (print through `log/` sinks, as `bench/score.mjs` does).
+5. The first scored run, on Windows:
+   - set `SECONDHAND_LIVE_SITES=mercari,poshmark`
+   - run `node bench/assist/run.mjs --effort low`, then `--effort medium`
+   - run `node bench/assist/score.mjs <dir> --judge` on each
+   - set `assist_effort` by the bench README's rule
+6. Judge `buy-web-1`:
+   - its checks: `cd web && npx next build`, and `node --test` on `lib/*.test.ts`
+   - its owned files against the brief
+   - a design-critic pass on `/states` at 375 and 1280
+   - the polling change (below)
+   Built from Ben's work in the repo: `brand/tokens.css`, `brand/constitution.md`, `brand/coder-card.md`, `product/ui-constitution.md`, `product/frontend-standard.md`, `product/copy.md`.
+7. The cap state on the web: the GitHub widget and links from features/buy. Ask Nate for the LinkedIn addresses.
+8. The photo pass-over (features/assist "Open"): the identify step reads the photo, and the conversation gets only the attributes.
+9. Vercel: after Nate's `vercel login`, `cd web && vercel deploy` makes a preview. He said yes to Vercel, but ask again before production and before setting any env var there.
+10. DBX-A1 (above). The store tool can call `measures.why`, `why_summary`, `shown_prices` and `price_basis` today (the third Databricks lead, 11:10 UTC).
+
+Older notes kept for the next reader:
+
 
 1. Judge each worker: `git status` against its owned files, the diff, rerun its checks, and look for weakened tests, stand-ins and hard-coded answers. Then commit in the worktree, merge `origin/main` there, retest, and bring it to Windows.
 2. Merge `w/buy-tools-1` into the `buy-convo-1` worktree, and send `buy-brief-route.txt` with `AGAIN=1`. Done when `node --test app/src/edge/api/assist.test.ts` passes, including the two-person test and the cap.
@@ -72,3 +135,9 @@ The briefs are in the side-session notes folder of the orchestrator's group (`bu
 - The visitor spend cap `assist_daily_cents` (prior 500).
 - Whether a visitor's photo may go to the model provider.
 - Any Vercel deploy.
+
+## Learned the hard way
+
+- A runner tested against a stand-in that accepts any shape passes while the live call would fail. Test the call against the real options type.
+- `origin/main` moved under a worker: Facebook came on as an Apify lane, so a "site not on" test broke after the merge. The tools now exclude the Apify lane by rule, not by the `on` flag.
+- The Mac worktree's `app/node_modules` is a link to the main checkout. A worker that needs a new package gets its own `npm ci` in the worktree, done by the lead before it starts.

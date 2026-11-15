@@ -8,7 +8,7 @@ The contract a check reads is [page-jobs.json](page-jobs.json) (`scripts/page-jo
 
 A page does one job, said in one sentence. Its first screen shows that job and nothing that competes with it. Everything else the page could show opens from a row with a chevron, a See all, or a sheet ([pages §1](../../spec/pages.md#1-when-a-feature-gets-its-own-page)). This is the frontend standard's first question, "Job. What is the one thing this screen is for, and what is the next action?" ([frontend-standard](../../product/frontend-standard.md)), which no page had written down until now.
 
-The four tabs are one family: each opens with its name in the brand face at the same place (`TabNav`), the wash behind it, then its content the same distance below, in the same parts (`Shelf` for a section, `ListRow` for a row that opens a page, tiles or cards for things). That is how Mail, Music and Photos open (Apple HIG, Navigation bars, *asserted*).
+The four tabs share `TabNav`: the wordmark at the top left, Messages at the top right, and the lowercase page name below in the existing 18 px text role, smaller than the 21 px wordmark ([Ben’s shared header correction](../../product/words.md#2026-11-15-shared-header-icon-only-navigation-and-lowercase-display-type)). The wash sits behind the header, and content starts the same distance below, using the same parts (`Shelf` for a section, `ListRow` for a row that opens a page, tiles or cards for things).
 
 ## The jobs
 

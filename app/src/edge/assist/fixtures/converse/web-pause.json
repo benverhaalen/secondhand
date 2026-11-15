@@ -1,0 +1,92 @@
+[
+  {
+    "id": "msg_replay",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-sonnet-5-5",
+    "content": [
+      {
+        "type": "server_tool_use",
+        "id": "srvtool-a",
+        "name": "web_search",
+        "input": {
+          "query": "audience report"
+        },
+        "caller": {
+          "type": "direct"
+        }
+      }
+    ],
+    "stop_reason": "pause_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "container": null,
+    "diagnostics": null,
+    "usage": {
+      "input_tokens": 100,
+      "output_tokens": 10,
+      "cache_read_input_tokens": 50,
+      "cache_creation_input_tokens": 0,
+      "cache_creation": null,
+      "inference_geo": null,
+      "output_tokens_details": null,
+      "server_tool_use": null,
+      "service_tier": "standard"
+    }
+  },
+  {
+    "id": "msg_replay",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-sonnet-5-5",
+    "content": [
+      {
+        "type": "web_search_tool_result",
+        "tool_use_id": "srvtool-a",
+        "content": [
+          {
+            "type": "web_search_result",
+            "url": "https://example.org/report",
+            "title": "Audience report",
+            "page_age": "November 2026",
+            "encrypted_content": "replay"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "text": "The report found 73%.",
+        "citations": [
+          {
+            "type": "web_search_result_location",
+            "url": "https://example.org/report",
+            "title": "Audience report",
+            "cited_text": "The share was 73%.",
+            "encrypted_index": "replay"
+          }
+        ]
+      },
+      {
+        "type": "text",
+        "text": "[sources:web]",
+        "citations": null
+      }
+    ],
+    "stop_reason": "end_turn",
+    "stop_sequence": null,
+    "stop_details": null,
+    "container": null,
+    "diagnostics": null,
+    "usage": {
+      "input_tokens": 100,
+      "output_tokens": 10,
+      "cache_read_input_tokens": 50,
+      "cache_creation_input_tokens": 0,
+      "cache_creation": null,
+      "inference_geo": null,
+      "output_tokens_details": null,
+      "server_tool_use": null,
+      "service_tier": "standard"
+    }
+  }
+]

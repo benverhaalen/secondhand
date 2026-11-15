@@ -1,6 +1,6 @@
 # Assistant and generated inputs
 
-Status: specced 2026-11-15 for the buying conversation; building. Owner: Nate (backend), the buying-conversation lead. Packet topic: `assist`.
+Status: specced 2026-11-15; tools, loop and evaluation set merged as drafts, not yet joined to the route ([packet 78](../../.agents/team/packets/team/78-buying-conversation-handoff.md)). Owner: Nate (backend), the buying-conversation lead. Packet topic: `assist`.
 
 Spec of the asking side (agent proposal): [spec/features/assist.md](../../spec/features/assist.md). This page holds the answering side: the conversation a person types to or shows a photo to, and the tools it answers with.
 
@@ -80,7 +80,8 @@ The research behind it: [research/buy/nate/generations-and-platforms.md](../../r
 
 ## Open
 - The controls are proposed as new entries in Ben's component catalog: row B9 in [spec/open-questions.md](../../spec/open-questions.md).
-- For Nate: the visitor spend cap (`assist_daily_cents`), and whether a visitor's photo may go to the model provider at all.
+- Answered by Nate ([words](../../product/words.md#2026-11-15-nate-a-5-visitor-cap-that-points-to-the-repo-visitor-photos-allowed-and-yes-on-vercel)): the visitor cap is $5 a day (`assist_daily_cents` 500). When it is reached, the page says the demo is used up for today and a GitHub widget pops in, pointing to the repo, with the team's GitHub and LinkedIn beside it.
+- Visitor photos may be sent, "ideally no, maybe the system we built can pass over it". *Agent proposal:* a narrow identify step reads the photo and hands the conversation only the attributes (kind, brand, material, size), so the conversation model never sees the image. That keeps faces, rooms and any text written into a photo out of the conversation. It is still a hosted model, because capture's own image reading is one too (`jobs/studio/look.py`, through OpenRouter); a photo stays on our machines only if that step runs on our own hardware.
 
 ## Research
 Research for this feature is filed under [research/identify/](../../research/identify/), [research/watch/](../../research/watch/) and [research/buy/](../../research/buy/).
