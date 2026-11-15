@@ -140,7 +140,7 @@ The [coverage map](../../databricks/COVERAGE.md) (2026-11-15, read from the file
   | The route join (identify as a job, site questions answerable, photos with text and codes, the Blobs upload target) | brief written, not started (`brief-cap-identify-2.txt`) | waits on the identify engine merging and the server lead's `blobs.ts` |
   | Real uploads | agreed: the server lead's `Blobs` port | waits on `blobs.ts` landing |
   | The question widgets, client verbs and dev screen | worker `cap-ask-1` running | overlaps Ben's `app/src/capture/client.ts` (packet 83): keep one client |
-  | The LiDAR module | on `w/cap-depth-1` (bcbff73c), Ben's packet 87 on main | geometry 9 and fallback 3 pass, unsigned iOS build succeeded; a fresh review was running |
+  | The LiDAR module | on `w/cap-depth-1` (bcbff73c), Ben's packet 87 on main | geometry 9 and fallback 3 pass, unsigned iOS build succeeded; the fresh review says fix first (measurement on the ARKit queue, no depth noise in the tests) |
   | Parts of one item (F17) | parked on `w/cap-parts-1` | three parser tests red; conflicts with dfcab2c6 in `plan.ts` and `select.ts` |
 
 - **The website waits until the system works**, as Nate said. A draft front for the buying conversation is parked on `w/buy-web-1`; it needs the server hosted before it can show anything real. A preview on Vercel is public, so it needs Nate's yes.
