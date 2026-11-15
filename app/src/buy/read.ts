@@ -1,7 +1,7 @@
 // What the buy side's pages read from the demo world: no rendering here, so it loads in node tests (read.test.ts).
 // Names follow spec/product.md (want, match, match label) and spec/features/buy.md.
 import { product, SEARCH_DUNKS, SEARCH_EMPTY, SEARCH_SLOW, usd } from '../demo/index.ts';
-import type { Match, Product, SearchResult, Site, Want } from '../demo/index.ts';
+import type { Cut, Match, Product, SearchResult, Site, Want } from '../demo/index.ts';
 import colourData from './colours.json' with { type: 'json' };
 
 const dollars = (cents: number) => cents / 100;
@@ -90,6 +90,17 @@ export const CONDITIONS = [
   { id: 'good', label: 'Good', floor: 'Used, good' }, { id: 'fair', label: 'Fair', floor: 'Used, fair' },
 ];
 export const conditionId = (floor?: string) => CONDITIONS.find(c => c.floor === floor)?.id ?? 'fair';
+// Who it's cut for, for clothes only. On Poshmark's "brewers jersey" search, 12 of 48 results were women's or kids' cuts
+// whose size label alone passes for a man's L (research/watch/ben/brewers-alert-trial.md), so the cut is its own chip.
+export const CUTS: { id: Cut | 'any'; label: string }[] = [
+  { id: 'any', label: 'Any' }, { id: 'mens', label: 'Men’s' }, { id: 'womens', label: 'Women’s' }, { id: 'youth', label: 'Youth' },
+];
+export function cutWords(q: string): Cut | undefined {
+  if (/\b(youth|kids?|boys?|girls?|toddler)\b/i.test(q)) return 'youth';
+  if (/\b(women|womens|ladies)\b|women[’']s/i.test(q)) return 'womens';
+  if (/\b(men|mens)\b|\bmen[’']s/i.test(q)) return 'mens';
+  return undefined;
+}
 
 const SHOE_SIZES = (from: number, to: number) => Array.from({ length: (to - from) * 2 + 1 }, (_, i) => String(from + i / 2));
 const SIZES: Record<'shoes' | 'apparel', Sizes[]> = {
@@ -143,7 +154,7 @@ export function wantFromWords(q: string): WantDraft {
   const high = said?.high ?? mid, low = said?.low ?? (mid != null ? Math.round(mid * 0.8) : null);
   return {
     id: 'want_new', state: 'active', text: p ? `${p.brand} ${p.model}, ${p.variant}` : words, product_id: p?.id ?? null,
-    fit: { size: size.size ?? undefined, condition_floor: 'Used, good', radius_mi: 15 }, max_total_cents: high != null ? high * 100 : null,
+    fit: { size: size.size ?? undefined, cut: kind === 'apparel' ? cutWords(words) : undefined, condition_floor: 'Used, good', radius_mi: 15 }, max_total_cents: high != null ? high * 100 : null,
     sites: ALL_SITES, checked: {}, behind: [], quiet_hours: null, alert: 'under',
     low_cents: low != null ? low * 100 : null, how: 'both', colours: [], size_system: size.system,
   };

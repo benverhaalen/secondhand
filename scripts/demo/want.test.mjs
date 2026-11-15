@@ -31,7 +31,7 @@ test("judge: the site's department and category decide what a title can't", () =
   // a boys' XXL shows as "XXL"; only the department says it's a kid's
   assert.deepEqual(fit({ catalog: { department_obj: { display: 'Kids' }, category_feature_objs: [{ display: 'Jerseys' }] } }).reasons, ['department Kids']);
   assert.deepEqual(fit({ title: 'Milwaukee Brewers Jersey tee', catalog: { department_obj: { display: 'Men' }, category_feature_objs: [{ display: 'Tees' }] } }).reasons, ['cut or kind: \\btee\\b', 'category Tees']);
-  assert.deepEqual(fit({ title: 'Giannis Milwaukee Brewers giveaway jersey' }).reasons, ['cut or kind: \\bgiannis\\b']);
+  assert.equal(fit({ title: 'Giannis Milwaukee Brewers giveaway jersey' }).fits, true); // Ben, 08:36: the Giannis one counts
   assert.deepEqual(fit({ price_amount: { val: '75.0' } }).reasons, ['$75 over $60']);
   assert.deepEqual(fit({ inventory: { status: 'sold_out', size_quantities: [{ size_obj: { display: 'L' } }] } }).reasons, ['sold']);
   // the mislisting case: the title says 2XL, the size field says XL; the field wins, so a person checks before buying
