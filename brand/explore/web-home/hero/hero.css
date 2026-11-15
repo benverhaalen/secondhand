@@ -37,6 +37,25 @@ header { color: var(--ink); }
 .hero-t .ph { display: block; width: max-content; margin-inline: auto; white-space: nowrap; }
 /* Under 360 even 36 can't hold "Your second hand," on one line, so only there it breaks after "Your", never inside "second hand," */
 .hero-t.tight .ph { width: auto; white-space: normal; } .hero-t .nw { white-space: nowrap; }
+/* Desktop (Ben, 11:07: "make the sans font smaller and a less prominent color and align the wordmark to be centered and
+   choose the size of the text for it super carefully and the color too"; L62). The wordmark is the line's one loud thing:
+   - its size is the hero's, --t-hero (86.5 at 1440), the size the footer's wordmark already has (constitution Part III), so
+     the site shows the mark at two sizes only, 21 in the header and this one; it is set at that size, not fitted to the sans;
+   - its color is --ink, the color the wordmark is in the app's dark mode (C1): nothing on the screen is brighter;
+   - it stands in the screen's middle, by its ink (trimmed to its ascenders and baseline), with the button hanging under it.
+   The sans before it drops two steps, to --t-feature (24.9 at 1440), in --ink-2, the app's second text color, on one line.
+   Two steps, because one (58.3) leaves the sans wider than the wordmark and still the bigger shape; at 24.9 it is narrower
+   than the mark, so the mark is the widest and heaviest thing in the stack and the eye lands on it. It reads first because
+   it sits on top, and the sentence still runs into the mark. Between them is the mark's clear space, half its type size
+   (C1's unit, 43 at 1440), rounded up to the scale's 48 and measured ink to ink; the button keeps the same 48 below. */
+@media (min-width: 900px) {
+  .copy .hero-t { position: relative; }
+  .hero-t .kick { position: absolute; inset: auto 0 100% 0; margin-bottom: var(--s-8); font-size: var(--t-feature); line-height: 1.2; letter-spacing: -0.01em; color: var(--ink-2); white-space: nowrap; text-box: trim-both cap alphabetic; }
+  .hero-t .kick .ph { display: inline; width: auto; }
+  .hero-t .mark { text-box: trim-both cap alphabetic; }
+  .hero-t .mark .hl { font-size: 1em; }  /* in --ink, the line's own color */
+  .hero .act { margin-top: var(--s-8); }
+}
 
 /* the wall (L55): columns of tiles, softened and dimmed, straight on the page, up to the top edge with no fade at rest
    (L60; Ben, 10:23: "the top of the page with it fading to black can go away"). */
@@ -63,6 +82,10 @@ header { color: var(--ink); }
    around it: the screen is the product, a drawn phone is decoration. The step sits under its screen: its number in the
    second ink, its name, one line. On a phone the row scrolls sideways with each screen snapping to the edge, and runs
    out to the screen's edges (--bleed is the page margin turned back, so it stays on the spacing scale). */
+/* a section reached by a link starts under the fixed header, never behind it (actions.md: "See how it works") */
+section[id] { scroll-margin-top: var(--bar); }
+/* a heading that wraps breaks into even lines, never one word left alone on the last ("From one photo to / sold" at 390) */
+.section-t { text-wrap: balance; }
 .how { background: var(--page); }
 .steps3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-7); margin: var(--s-8) 0 0; padding: 0; list-style: none; }
 .steps3 li { display: grid; gap: var(--s-3); align-content: start; }

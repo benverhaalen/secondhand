@@ -1,6 +1,6 @@
 {
-  "commit": "0a5208ab3d27159b648c5db4f7ed69924ea4f6ff",
-  "faces": false,
+  "commit": "48eea26bc8a5a2e52fb74979a931fdc2c5448df2",
+  "faces": true,
   "shots": [
     {
       "id": "step-1-photo",
@@ -10,7 +10,7 @@
     {
       "id": "step-2-price",
       "path": "/item/it_tee/plan?world=clearing",
-      "moment": "What do you want?"
+      "moment": "Plan"
     },
     {
       "id": "step-3-sold",

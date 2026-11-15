@@ -78,8 +78,11 @@ export const ports: MessagePorts = {
     if (!row) throw new Error('message classification missing');
     return { intent: row.intent, facets: row.facets, signals: [], attribute_names: [], kind: row.offer ? 'counter_offer' : 'reply_other' };
   },
-  async context(owner, message) { return { user_id: owner.user_id, item_id: message.item_id, role: 'sell', checkout: false, orderPaid: false, local: false, attributes: [],
-    offer: { site: owner.site, offer_cents: texts.get(message.id)?.offer?.amount_cents ?? 0, ask_cents: 9500, floor_cents: 7000, always_accept_cents: 9500, keep: p => keep('depop', p).keep_cents, v_wait_cents: null, trust_block: false, ask_all: true } }; },
+  async context(owner, message) {
+    const parsed = texts.get(message.id)?.offer;
+    return { user_id: owner.user_id, item_id: message.item_id, role: 'sell', checkout: false, orderPaid: false, local: false, attributes: [],
+      ...(parsed ? { offer: { site: owner.site, offer_cents: parsed.amount_cents, ask_cents: 9500, floor_cents: 7000, always_accept_cents: 9500, keep: (p: number) => keep('depop', p).keep_cents, v_wait_cents: null, trust_block: false, ask_all: true } } : {}) };
+  },
   trust: async () => ({ action: 'none' }),
   negotiate: async state => offer(state, () => 0, .5),
   draft: async () => { throw new Error('stored conversations have no draft writer'); },

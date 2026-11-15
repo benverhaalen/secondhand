@@ -21,12 +21,13 @@ One sentence and one action. A stranger learns what secondhand is from the line,
 | Scroll down | the wall and the line | The wall speeds up, opens out and fades; the line rises and fades | follows the scroll | Spatial continuity: the screen leaves as you leave it |
 | Scroll down | the header | The header stays; a fade from the page color comes in behind it so text never runs under the pages pill | 200 ms in, 200 ms out | Ben, 10:23: "the fade at the top of the screen should only come in when you scroll". Appllama law 8: content under the top keeps a treatment |
 | Back at the top | the header | The fade goes; the wall shows to the top edge | 200 ms | At rest the page has no gradient (L56) |
+| The line on a screen 900 wide and up | the line | "Your second hand, for everything" on one line at 24.9 in the second ink; "secondhand" under it at 86.5 in the ink, in the screen's middle | none | Ben, 11:07: the sans quieter, the wordmark centered and sized with care (L62). The mark is the footer's size and the widest, brightest shape; the sans reads first because it sits on top |
 | The line on a phone | the line | Three lines, one phrase each, at 36; under 360 it breaks after "Your" and never inside "second hand," | none | A break inside a phrase reads as broken (the 10:23 render) |
 | Hover a pill or a page link (mouse) | the pill | The field fills it as a circle from where the pointer came in; the label turns to the ink on the field. Leaving drains it toward where the pointer left | 240 ms in, 160 ms out | L57. Exits faster than entrances (Appllama, Emil) |
 | Press a pill or a page link | the pill | Scales to .97 on press-in, back on release | 150 ms | The app's press (Appllama: press feedback on press-in, 100 to 150 ms, scale .97) |
 | Hover the mark in the header | the right hand | Waves twice in three held poses | 480 ms, twice | L58. The only delight on the screen, and only when asked for |
 | Click the mark | the page | Back to the top | smooth, or a jump with Reduce Motion | The mark is home, as everywhere on the web |
-| Click "See how it works" | the page | Glides to section 2 | smooth, or a jump with Reduce Motion | The button's promise is kept on the same page, no load |
+| Click "See how it works" | the page | Glides to section 2, its heading clear of the header | smooth, or a jump with Reduce Motion | The button's promise is kept on the same page, no load |
 | Click a page link | that page | Opens it. How it works scrolls to section 2; the others open their page once it exists | none | A link that goes nowhere is a defect; until a page exists its link says so in the mock's notes |
 | Click Sign in | sign-in | Opens web sign-in once it exists | none | Gray, not black: one black pill per view (C4, L50) |
 | Tab through | each control in reading order | Mark, the four pages, Sign in, See how it works. Each shows the focus ring | at once | Keyboard users get the same order the eye takes |

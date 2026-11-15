@@ -302,6 +302,8 @@ export function sitePrices(it: Item, price: Cents, sites: Site[], spread: Spread
   const home = spread === 'home_first' && live && sites.includes(live) ? live
     : sites.reduce((a, b) => (youKeep(b, price) > youKeep(a, price) ? b : a));
   const target = youKeep(home, price);
+  // No price yet (an item still being researched), or one the fees eat: nothing to even out, so one price everywhere.
+  if (target <= 0) return Object.fromEntries(sites.map(x => [x, price]));
   return Object.fromEntries(sites.map(x => [x, x === home ? price : Math.ceil(sitePrice(spread, home, x, target, price, siteMarket(it, x)).price / 100) * 100]));
 }
 

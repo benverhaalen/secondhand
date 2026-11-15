@@ -31,7 +31,7 @@ export function PhotoPager({ photos, label, faded = false }: {
   }
   return (
     <View {...mark('photo-pager', { count: String(photos.length), at: String(at + 1) })} style={{ gap: space.s3 }}>
-      <View onLayout={onLayout} style={{ borderRadius: radius.photo, overflow: 'hidden' }}>
+      <View onLayout={onLayout} style={{ borderRadius: radius.photo, borderCurve: 'continuous', overflow: 'hidden' }}>
         <ScrollView
           testID="photo-pager"
           horizontal
@@ -51,7 +51,7 @@ export function PhotoPager({ photos, label, faded = false }: {
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ flexDirection: 'row', justifyContent: 'center', gap: space.s2 }}>
         {photos.map((_, i) => (
           <View key={i} {...mark('page-dot', { on: i === at ? 'true' : 'false' })}
-            style={{ width: space.s2, height: space.s2, borderRadius: radius.pill, backgroundColor: i === at ? c.ink : c.inkDisabled }} />
+            style={{ width: space.s2, height: space.s2, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: i === at ? c.ink : c.inkDisabled }} />
         ))}
       </View>
     </View>

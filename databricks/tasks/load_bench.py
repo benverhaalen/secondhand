@@ -12,12 +12,14 @@ from pathlib import Path
 from typing import NamedTuple
 
 KEY = ('run_id', 'tool', 'item_id', 'question')
-MERGE_KEYS = {'record': KEY, 'number': (*KEY, 'position'), 'fact': (*KEY, 'position'), 'site': (*KEY, 'position')}
+MERGE_KEYS = {'record': KEY, 'number': (*KEY, 'position'), 'fact': (*KEY, 'position'), 'site': (*KEY, 'position'), 'read': (*KEY, 'position')}
+COST_COLUMNS = {'cost_cents': 'DOUBLE', 'browser_s': 'DOUBLE', 'proxy_bytes': 'BIGINT', 'model_calls': 'BIGINT'}
 SCHEMAS = {
-    'record': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, manifest_sha256 STRING, asked_at TIMESTAMP, first_at TIMESTAMP, full_at TIMESTAMP, first_ms DOUBLE, full_ms DOUBLE, ok BOOLEAN, error STRING, range_json STRING, delist_json STRING, raw_ref STRING',
+    'record': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, manifest_sha256 STRING, asked_at TIMESTAMP, first_at TIMESTAMP, full_at TIMESTAMP, first_ms DOUBLE, full_ms DOUBLE, ok BOOLEAN, error STRING, range_json STRING, delist_json STRING, raw_ref STRING, cost_cents DOUBLE, browser_s DOUBLE, proxy_bytes BIGINT, model_calls BIGINT',
     'number': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, position INT, name STRING, value_cents BIGINT, citation_id STRING, evidence ARRAY<STRING>',
     'fact': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, position INT, kind STRING, count BIGINT',
     'site': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, position INT, site STRING',
+    'read': 'run_id STRING, tool STRING, item_id STRING, question STRING, data STRING, position INT, site STRING, lane STRING, ms DOUBLE, outcome STRING, rows BIGINT, warm BOOLEAN',
     'load_report': 'run_id STRING, data STRING, file STRING, lines BIGINT, loaded BIGINT, rejected BIGINT, reasons STRING',
 }
 
@@ -27,6 +29,7 @@ class Parsed(NamedTuple):
     numbers: list[dict]
     facts: list[dict]
     sites: list[dict]
+    reads: list[dict]
     rejects: list[dict]
 
 
@@ -40,6 +43,15 @@ def _string(value, field, nullable=False):
 def _integer(value, field):
     if type(value) is not int or not -(2**63) <= value < 2**63:
         raise ValueError(f'{field} must be a 64-bit integer')
+
+
+def _nonnegative(value, field, integer=False):
+    if integer:
+        _integer(value, field)
+    elif type(value) not in (int, float) or not -sys.float_info.max <= value <= sys.float_info.max:
+        raise ValueError(f'{field} must be a nonnegative number')
+    if value < 0:
+        raise ValueError(f'{field} must be nonnegative')
 
 
 def _time(value, field, nullable=False):
@@ -87,6 +99,24 @@ def _validate(row):
         _array(row[field], field)
     for site in row['sites']:
         _string(site, 'site')
+    if 'reads' in row:
+        _array(row['reads'], 'reads')
+        for read in row['reads']:
+            _object(read, {'site', 'lane', 'ms', 'outcome', 'rows', 'warm'}, 'read')
+            for field in ('site', 'lane', 'outcome'):
+                _string(read[field], 'read.' + field)
+            if read['lane'] not in ('plain', 'cloud_browser', 'own_browser', 'official', 'mcp'):
+                raise ValueError('read.lane must be plain, cloud_browser, own_browser, official or mcp')
+            _nonnegative(read['ms'], 'read.ms')
+            _nonnegative(read['rows'], 'read.rows', integer=True)
+            if type(read['warm']) is not bool:
+                raise ValueError('read.warm must be a boolean')
+    if 'cost' in row:
+        _object(row['cost'], set(), 'cost')
+        for field in ('browser_s', 'proxy_bytes', 'model_calls', 'cents'):
+            value = row['cost'].get(field)
+            if value is not None:
+                _nonnegative(value, 'cost.' + field, integer=field in ('proxy_bytes', 'model_calls'))
     for fact in row['facts']:
         _object(fact, {'kind', 'count'}, 'fact')
         _string(fact['kind'], 'kind')
@@ -117,7 +147,7 @@ def _validate(row):
 
 
 def parse(lines) -> Parsed:
-    records, numbers, facts, sites, rejects = [], [], [], [], []
+    records, numbers, facts, sites, reads, rejects = [], [], [], [], [], []
     seen = set()
     for line_number, line in enumerate(lines, 1):
         try:
@@ -132,6 +162,11 @@ def parse(lines) -> Parsed:
             continue
         base = {k: row[k] for k in KEY}
         base['data'] = 'dataset:bench_' + row['manifest_sha256'][:12]
+        cost = row.get('cost', {})
+        usage = {column: cost.get('cents' if column == 'cost_cents' else column) for column in COST_COLUMNS}
+        for column, dtype in COST_COLUMNS.items():
+            if dtype == 'DOUBLE' and usage[column] is not None:
+                usage[column] = float(usage[column])
         records.append({**base, 'manifest_sha256': row['manifest_sha256'], 'asked_at': asked,
                         'first_at': first, 'full_at': full,
                         'first_ms': (first - asked).total_seconds() * 1000 if first else None,
@@ -139,16 +174,19 @@ def parse(lines) -> Parsed:
                         'ok': row['ok'], 'error': row['error'],
                         'range_json': json.dumps(row['range']) if row['range'] is not None else None,
                         'delist_json': json.dumps(row['delist']) if row['delist'] is not None else None,
-                        'raw_ref': row['raw_ref']})
+                        'raw_ref': row['raw_ref'], **usage})
         numbers.extend({**base, **n, 'position': i} for i, n in enumerate(row['numbers']))
         facts.extend({**base, **f, 'position': i} for i, f in enumerate(row['facts']))
         sites.extend({**base, 'site': s, 'position': i} for i, s in enumerate(row['sites']))
-    return Parsed(records, numbers, facts, sites, rejects)
+        reads.extend({**base, **{field: read[field] for field in ('site', 'lane', 'outcome', 'rows', 'warm')},
+                      'ms': float(read['ms']), 'position': i} for i, read in enumerate(row.get('reads', [])))
+    return Parsed(records, numbers, facts, sites, reads, rejects)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--root')
+    parser.add_argument('--migrate-only', action='store_true', help='Add missing columns before running benchmark SQL setup.')
     args = parser.parse_args()
     if args.root:
         root = Path(args.root)
@@ -170,9 +208,16 @@ def main():
                 if 'position' not in spark.table(table).columns:
                     spark.sql(f'ALTER TABLE {table} ADD COLUMNS (position INT)')
             log.call('db', 'migrate_bench_' + name, {'table': table}, migrate)
+        def migrate_cost():
+            table = 'secondhand.measures.bench_record'
+            columns = spark.table(table).columns
+            missing = [f'{column} {dtype}' for column, dtype in COST_COLUMNS.items() if column not in columns]
+            if missing:
+                spark.sql(f'ALTER TABLE {table} ADD COLUMNS ({", ".join(missing)})')
+        log.call('db', 'migrate_bench_cost', {'table': 'secondhand.measures.bench_record'}, migrate_cost)
         directory = Path('/Volumes/secondhand/raw/landing/bench')
-        files = log.call('tool', 'list_bench_files', {'path': str(directory)},
-                         lambda: sorted(directory.glob('*/records.jsonl')), describe=lambda paths: {'files': len(paths)})
+        files = [] if args.migrate_only else log.call('tool', 'list_bench_files', {'path': str(directory)},
+                                                    lambda: sorted(directory.glob('*/records.jsonl')), describe=lambda paths: {'files': len(paths)})
         for path in files:
             run_id = path.parent.name
             lines = log.call('tool', 'read_bench_file', {'file': str(path)},
@@ -185,7 +230,7 @@ def main():
                 raise ValueError(f'multiple manifest datasets in run {run_id}')
             for reject in parsed.rejects:
                 log.event('note', {'msg': 'benchmark line rejected', 'file': str(path), **reject}, 'warn')
-            for name, rows in zip(('record', 'number', 'fact', 'site'), parsed[:4]):
+            for name, rows in zip(('record', 'number', 'fact', 'site', 'read'), parsed[:5]):
                 table = 'secondhand.measures.bench_' + name
                 temp = 'bench_load_' + name
                 def merge():

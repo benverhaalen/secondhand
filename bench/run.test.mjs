@@ -1,4 +1,6 @@
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { scoreCli } from './score.mjs';
 import assert from 'node:assert/strict';
 import { readFile, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -168,4 +170,38 @@ test('a failed evidence fetch is logged without changing the answer or retrying 
   const records=await run({manifestPath:path,outRoot:dir,sleep:async()=>{},fetch:async()=>{calls++; throw new Error('capture unavailable');},ask:async endpoint=>endpoint==='/v1/search'?reply({searched:[{site:'poshmark',url:'https://example.test/',outcome:'page_changed',ms:1,count:0}],results:[]}):reply({code:'unauthenticated'},401)});
   assert.equal(calls,1); assert.ok(records.filter(r=>r.question==='search').every(r=>r.ok && !r.served_ref));
   assert.match(await readFile(join(dir,records[0].run_id,'run.jsonl'),'utf8'),/capture unavailable/);
+});
+
+test('Dupe results are removed from artifacts while its read count and other results survive', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-dupe-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]}));
+  const result={results:[{site:'dupe',url:'https://example.test/private',commercial_link:true,attribution:'Dupe.com'},{site:'ebay',url:'https://example.test/item',price_cents:100}],searched:[{site:'dupe',url:'https://mcp.dupe.com/search',outcome:'hit',ms:42,count:1},{site:'ebay',outcome:'hit',ms:10,count:1}]};
+  const records=await run({manifestPath:path,outRoot:dir,ask:async endpoint=>endpoint==='/v1/search'?reply(result):reply({code:'unauthenticated'},401)});
+  const record=records[0]; assert.deepEqual(record.reads.find(r=>r.site==='dupe'),{site:'dupe',lane:'mcp',ms:42,outcome:'hit',rows:1,warm:false});
+  assert.deepEqual(record.sites,['ebay']); assert.equal(record.facts.find(f=>f.kind==='live_listings').count,1);
+  const raw=await readFile(join(dir,record.run_id,record.raw_ref),'utf8');
+  assert.doesNotMatch(raw,/commercial_link|attribution|mcp\.dupe\.com|example\.test\/private/);
+  assert.match(raw,/example\.test\/item/);
+});
+
+test('each Dupe source marker removes its row without removing other sources', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-markers-')); const path=join(dir,'manifest.json');
+  await writeFile(path,JSON.stringify({market_items:[{id:'one',query:'coat'}]}));
+  const rows=[{route_id:'dupe.search.api',title:'route secret'},{via:'dupe',title:'via secret'},{commercial_link:true,title:'commercial secret'},{attribution:'Dupe.com',title:'attribution secret'},{url:'https://mcp.dupe.com/item',title:'host secret'},{site:'ebay',title:'kept'}];
+  const records=await run({manifestPath:path,outRoot:dir,ask:async endpoint=>endpoint==='/v1/search'?reply({results:rows}):reply({code:'unauthenticated'},401)});
+  const raw=await readFile(join(dir,records[0].run_id,records[0].raw_ref),'utf8');
+  assert.doesNotMatch(raw,/secret|commercial_link|attribution|mcp\.dupe\.com/); assert.match(raw,/kept/); assert.match(raw,/"dupe_count": 5/);
+});
+
+test('scoring and upload receive only scrubbed records from a benchmark run', async () => {
+  const dir=await mkdtemp(join(tmpdir(),'bench-upload-'));
+  const scoringManifest=JSON.parse(await readFile(new URL('./fixtures/score/manifest.json',import.meta.url)));
+  for(const item of scoringManifest.items) item.query='coat';
+  const manifestPath=join(dir,'manifest.json'); await writeFile(manifestPath,JSON.stringify(scoringManifest));
+  const records=await run({set:'owned',manifestPath,outRoot:dir,ask:async endpoint=>endpoint==='/v1/search'?reply({results:[{site:'dupe',commercial_link:true,url:'https://mcp.dupe.com/item'},{site:'ebay',url:'https://example.test/item',price_cents:100}],searched:[{site:'dupe',outcome:'hit',ms:42,count:1}]}):reply({code:'unauthenticated'},401)});
+  const runDir=join(dir,records[0].run_id), sent=[];
+  const code=await scoreCli({args:[runDir,'--manifest',manifestPath,'--set','owned','--upload'],execFileSync:(_cmd,args)=>{if(args[1]==='cp') sent.push(readFileSync(args[2],'utf8'));}});
+  assert.equal(code,0); assert.equal(sent.length,2);
+  for(const content of sent) assert.doesNotMatch(content,/commercial_link|attribution|mcp\.dupe\.com/);
+  assert.equal(records[0].facts.find(f=>f.kind==='live_listings').count,1);
 });

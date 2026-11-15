@@ -79,16 +79,16 @@ export function PriceTrack({ id, label, min, max, value, ticks = [], caption, on
         style={{ height: TALL + THUMB, ...(Platform.OS === 'web' ? ({ touchAction: 'pan-y', cursor: 'pointer', userSelect: 'none' } as object) : {}) }}>
         <View style={{ height: TALL }}>
           {w ? ticks.map((t, i) => (
-            <View key={i} style={{ position: 'absolute', left: xOf(t) - TICK / 4, bottom: 0, width: TICK / 2, height: TALL, borderRadius: radius.pill,
+            <View key={i} style={{ position: 'absolute', left: xOf(t) - TICK / 4, bottom: 0, width: TICK / 2, height: TALL, borderRadius: radius.pill, borderCurve: 'continuous',
               backgroundColor: t <= live ? c.ink : c.ink2, opacity: t <= live ? 1 : 0.35 }} />
           )) : null}
         </View>
         <View style={{ height: THUMB, justifyContent: 'center' }}>
-          <View style={{ height: TRACK, borderRadius: radius.pill, backgroundColor: c.gray }} />
+          <View style={{ height: TRACK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.gray }} />
           {w ? (
             <>
-              <View style={{ position: 'absolute', left: 0, width: xOf(live), height: TRACK, borderRadius: radius.pill, backgroundColor: c.ink }} />
-              <View style={{ position: 'absolute', left: xOf(live) - THUMB / 2, width: THUMB, height: THUMB, borderRadius: radius.pill, backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
+              <View style={{ position: 'absolute', left: 0, width: xOf(live), height: TRACK, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink }} />
+              <View style={{ position: 'absolute', left: xOf(live) - THUMB / 2, width: THUMB, height: THUMB, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
             </>
           ) : null}
         </View>

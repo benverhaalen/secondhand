@@ -37,6 +37,7 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
   const t = tone ?? (role === 'caption' ? 'ink-2' : 'ink');
   const quiet = t === 'ink-2';
   const ink = t === 'on-ink' ? c.page : t === 'on-color' ? c.onColor : ground === 'field' ? (quiet ? c.onField2 : c.onField) : quiet ? c.ink2 : c.ink;
+  const face = r.display ? FACE.display : FACE.text;
   return (
     <Text
       // The role on the web (data-role), so the composition checks read a page's levels (scripts/composition.mjs).
@@ -48,8 +49,9 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
         fontSize: r.fontSize,
         lineHeight: r.lineHeight,
         letterSpacing: 'letterSpacing' in r ? r.letterSpacing : 0,
-        fontFamily: (r.display ? FACE.display : FACE.text) ?? undefined,
-        fontWeight: Platform.OS === 'web' || !(r.display ? FACE.display : FACE.text) ? (r.display ? weight.display : weight.text) : undefined,
+        // The loaded face, or the platform's own when the brand files are missing (scripts/fonts.mjs says which).
+        ...(face ? { fontFamily: `${face}` } : {}),
+        fontWeight: Platform.OS === 'web' || !face ? (r.display ? weight.display : weight.text) : undefined,
         fontVariant: tabular ? ['tabular-nums'] : undefined,
         color: ink,
         textAlign: center ? 'center' : undefined,

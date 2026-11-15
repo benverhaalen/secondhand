@@ -65,6 +65,25 @@ The stock-photo guard: a photo whose pHash also matches a `retail_offer` image, 
 
 **F. Lots and sets** (model, then rules). A comp is a lot when its title or quantity says so, or the vision model counts more than one product in its photos. Each piece is identified through rungs 2 to 4 into `lot_parts[]`. A lot never enters a single product's sold range, because its price cannot be split without a guess. It counts once in its family's demand. A set that a catalogue lists as one thing (a LEGO set number, a suit) is one product; missing pieces are a condition attribute, not a different product. A person's own lot leans to one item card with the pieces as parts (J21, open in [studio](../features/studio.md#open-for-ben-and-nate) and identify).
 
+**G. The same thing under another brand** (code; [AD9](adaptation.md#6-named-fixes-for-the-engines-that-should-consume-them), [market-index §2](market-index.md#2-the-record-each-row-gets-code-first), the record of [A11](adaptation.md#a11-whether-the-brand-matters); engines lead, 2026-11-15, *agent proposal* where marked). [Nate](../../product/words.md#2026-11-15-nate-identify-the-product-find-the-same-thing-off-brand-and-learn-whether-the-brand-matters): find "similar types of the same quality, material, but different brand".
+
+1. **The record, by code.** Every row and the target get the attribute record of `jobs/measures/attributes.py` `record(row, kind)`: `kind_type`, `material`, `construction[]`, `size_class`, `capacity`, `condition_grade`, `brand_norm`, each with its span. The brand alias normaliser and the size-class parser are that file's `normalize_brand` and `_size` ("Vintage Levis 501" to `levis`; "32x32" and "W32 L32" to `32x32`; "US 10" to `us_10`; "EU 42" to `eu_42`; "OS" to `one_size`). The TypeScript twin is `app/src/engines/identity/attributes.ts`, equal to the Python on a shared fixture, spans included. No model runs in this pass; a model fills an empty attribute only as market-index §2 step 2 says, later.
+2. **When two records are the same thing** (`similar(item, row, kind)`, one function, both languages; the A11 measure reads the same function, so "similar" has one meaning). Every attribute the kind requires must be stated on both and agree; a missing one on the row puts the row in `missing`, a different one in `disagreed`:
+
+   | Kind | Required to agree |
+   |---|---|
+   | clothes | `kind_type`, `material`, at least one `construction` mark the item states, `size_class` when the item states one |
+   | shoes | `kind_type`, `material`, `size_class` when the item states one |
+   | furniture | `kind_type`, `material` |
+   | small goods | `kind_type`; `material`, or `cordless` in `construction`; `capacity` when the item states one |
+   | electronics | none: brand-locked, the pass does not run |
+
+   A type that fixes its material counts as stating it when no material word is present: `jeans` is `denim` (*agent proposal*; one row per such type in `IMPLIED_MATERIAL`, both languages). An item that lacks a required attribute itself finds no similar rows, and says which attribute is missing. Condition grade is not a match attribute here: it is the cell A11 compares within, so the measure and the shown list group by it after the match (this replaces "condition grade" in A11's required table, which defines its cell by grade anyway).
+3. **Where it runs.** In `app/src/edge/intel/reconcile.ts` `sameProduct`, first for each row whose normalised brand is stated and differs from the target's: before `idClash` (a different maker's GTIN always clashes) and before the `wrong_item` cut (score below 0.50, `reconcile.ts:46`), either of which drops every other-brand row today. A row that passes is `{match: 'similar_other_brand', keep: 'keep', in_basis: false, by: 'attributes', similar: {agreed, missing, disagreed}}`; one that does not falls through to the rules above unchanged, carrying its `similar` block so the rows left out can be counted. A row with no brand evidence is not called another brand (it may be the same one unnamed) and goes through the rules above. A row of the target's own brand never becomes `similar_other_brand`. The pass runs only when the target carries `kind` and its own fields; without them `sameProduct` behaves as before.
+4. **What it unlocks.** `in_basis` is false: an off-brand row never enters a price's basis until A11's L3 test passes. `rank()` in `app/src/edge/api/search.ts` shows it under the relation `similar`, never `same_product`. Jev's choice list is unchanged: the model is never asked to call a row similar.
+
+The match label `similar_other_brand` and the relation `similar` are new names for [canon](../product.md) (the match label row and the offer relation), sent to the orchestrator with the exact rows.
+
 ## 4. Learning
 
 The machinery is the shared [real-time weights](../features/data.md#real-time-weights-agent-proposal) and its [loop](../product.md#learning-loop-tap-to-label-to-changed-param).
@@ -125,6 +144,7 @@ The fixed set, assembled in a day from real items: the 500 labelled captures of 
 | 4 Lots on the 50 lots | at least 80% of pieces identified; no lot price in any single-product range |
 | 5 Learning | 50 replayed "Not the same" taps lower the merged near-miss count on a re-run, with no change to test 2's precision |
 | 6 Speed | 50 pairs scored in under 100 ms at p95 |
+| 7 Same thing, other brand (§3 G) | against a "Levi's 501 button fly jeans 32x32" record: "Wrangler cowboy cut button fly jeans 32x32 medium wash" is `similar_other_brand` with kind, material, construction and size agreeing and `in_basis` false; "Levi's 505 32x32" is not (same brand); "Wrangler corduroy pants 32x32" is not (type and material disagree); "Wrangler button fly jeans" with no size is not, with `size_class` in `missing`; an electronics target runs no pass; the TypeScript record equals the Python on the shared fixture |
 
 ## 10. Build tasks
 
@@ -138,6 +158,7 @@ Each task's code lives under `jobs/identity/`, written up in the [task shape](..
 | id-4 Offer groups, variants and lots | `groups.py`, `lots.py`, `test_groups.py` | none | `python -m pytest jobs/identity/test_groups.py` |
 | id-5 Learning: per-event Beta update, nightly EM fold, rollback | `learn.py`, `test_learn.py` | id-1 interface only | `python -m pytest jobs/identity/test_learn.py` |
 | id-6 The fixed set and the proof run | `proof/`, `test_proof.py` | id-1 to id-4 | `python -m pytest jobs/identity/test_proof.py` |
+| id-7 Same thing, other brand (§3 G, AD9) | `app/src/engines/identity/attributes.ts`, `similar.ts`, their tests, `jobs/identity/similar.py`, `test_similar.py`, the `similar_other_brand` pass in `edge/intel/reconcile.ts`, the `similar` relation in `edge/api/search.ts` `rank()` | `jobs/measures/attributes.py` on main for the parity half | test 7; `node --test app/src/engines/identity/similar.test.ts`, `app/src/edge/intel/reconcile.test.ts`, `pytest jobs/identity/test_similar.py` |
 
 ## Worked example
 

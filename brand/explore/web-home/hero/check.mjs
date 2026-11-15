@@ -62,6 +62,17 @@ const facts = () => {
     hands_ink: [...document.querySelectorAll('header .hand')].every(h => getComputedStyle(h).color === getComputedStyle(document.body).color),
     wall_faded: [getComputedStyle(document.querySelector('.cols')).maskImage, getComputedStyle(document.querySelector('.cols')).webkitMaskImage].some(m => m && m !== 'none'),
     header_fade: Number(getComputedStyle(document.querySelector('header'), '::before').opacity),
+    // The desktop line (L62; Ben, 11:07): the sans quiet and on one line, the wordmark at the hero size in the ink, the widest
+    // thing in the stack, its clear space kept, and in the screen's middle.
+    ...(() => { const k = document.querySelector('.hero-t .kick'), m = document.querySelector('.hero-t .mark'), hl = m.querySelector('.hl');
+      const lines = el => { const r = document.createRange(); r.selectNodeContents(el); return new Set([...r.getClientRects()].filter(b => b.width).map(b => Math.round(b.top / 4))).size; };
+      const kr = k.getBoundingClientRect(), mr = m.getBoundingClientRect(), hr = hl.getBoundingClientRect(), probe = document.createElement('div'); document.body.append(probe);
+      const px = v => { probe.style.width = v; const w = probe.getBoundingClientRect().width; return +w.toFixed(1); };
+      const out = { kick_lines: lines(k), kick_px: parseFloat(getComputedStyle(k).fontSize), kick_color: getComputedStyle(k).color, feature_px: px('var(--t-feature)'),
+        mark_px: parseFloat(getComputedStyle(hl).fontSize), mark_color: getComputedStyle(hl).color, hero_px: px('var(--t-hero)'),
+        kick_w: Math.round(kr.width ? [...(() => { const r = document.createRange(); r.selectNodeContents(k); return r.getClientRects(); })()].reduce((a, b) => Math.max(a, b.right), 0) - [...(() => { const r = document.createRange(); r.selectNodeContents(k); return r.getClientRects(); })()].reduce((a, b) => Math.min(a, b.left), 1e9) : 0),
+        mark_w: Math.round(hr.width), mark_gap: Math.round(mr.top - kr.bottom), ink: getComputedStyle(document.body).color };
+      probe.style.color = 'var(--ink-2)'; out.ink2 = getComputedStyle(probe).color; probe.remove(); return out; })(),
     off_center: (() => { const r = document.querySelector('.copy .hero-t').getBoundingClientRect(); return Math.round(r.top + r.height / 2 - innerHeight / 2); })(),
   };
 };
@@ -85,7 +96,14 @@ for (const [w, h, name] of SCREENS) {
     !f.hands_ink && 'a hand in the header is not the ink (L60)',
     f.wall_faded && 'the wall fades at the top at rest (L60)',
     f.header_fade > 0 && 'the header fade shows before any scroll (L60)',
-    f.headline_lines !== 3 && h >= 568 && w >= 360 && `the line takes ${f.headline_lines} lines: it breaks only between its three phrases`,
+    w < 900 && f.headline_lines !== 3 && h >= 568 && w >= 360 && `the line takes ${f.headline_lines} lines: it breaks only between its three phrases`,
+    w >= 900 && f.kick_lines !== 1 && `the sans before the wordmark takes ${f.kick_lines} lines; it is one (L62)`,
+    w >= 900 && Math.abs(f.kick_px - f.feature_px) > 0.5 && `the sans before the wordmark is ${f.kick_px}px, not --t-feature's ${f.feature_px} (L62)`,
+    w >= 900 && f.kick_color !== f.ink2 && 'the sans before the wordmark is not --ink-2 (L62)',
+    w >= 900 && Math.abs(f.mark_px - f.hero_px) > 0.5 && `the wordmark is ${f.mark_px}px, not --t-hero's ${f.hero_px} (L62)`,
+    w >= 900 && f.mark_color !== f.ink && 'the wordmark is not --ink (L62)',
+    w >= 900 && f.kick_w >= f.mark_w && `the sans (${f.kick_w}px) is as wide as the wordmark (${f.mark_w}px): the mark is the widest thing in the stack (L62)`,
+    w >= 900 && f.mark_gap < f.mark_px / 2 && `the sans sits ${f.mark_gap}px from the wordmark, inside its clear space of ${f.mark_px / 2} (C1, L62)`,
     h >= 568 && Math.abs(f.off_center) > Math.max(16, h * 0.02) && `the line sits ${f.off_center}px off the screen's middle`,
     ...page.errors.map(e => `a script error: ${e}`),
   ].filter(Boolean);
@@ -100,7 +118,21 @@ for (const [w, h, name] of SCREENS) {
     await page.screenshot({ path: join(out, 'scrolled-1440.jpg'), type: 'jpeg', quality: 82 });
     await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(400);
   }
-  if (w === 390 || w === 1440) f.contrast_floor = await contrastFloor(page, { text: '.copy h1', at: [...Array(24).keys()], move: (p) => p.evaluate(() => window.__hero.step(5300)) });
+  if (w === 390 || w === 1440) {
+    // "See how it works" lands on section 2 with its heading clear of the fixed header (actions.md), and the page there is
+    // what a person sees, so this is also the picture of section 2.
+    await page.click('a[data-go]');
+    await page.evaluate(async () => { let y = -1; for (let i = 0; i < 60 && y !== scrollY; i++) { y = scrollY; await new Promise(r => setTimeout(r, 100)); } });
+    f.how_heading_gap = await page.evaluate(() => Math.round(document.querySelector('#how h2').getBoundingClientRect().top - document.querySelector('header .wrap').getBoundingClientRect().bottom));
+    // A heading that wraps doesn't leave a short last line: under 40% of its longest reads as a word dropped off.
+    f.how_heading_last = await page.evaluate(() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('#how h2'));
+      const ws = [...r.getClientRects()].filter(b => b.width).map(b => b.width); return ws.length > 1 ? +(ws.at(-1) / Math.max(...ws)).toFixed(2) : 1; });
+    if (f.how_heading_last < 0.4) { f.problems.push(`the section 2 heading leaves a short last line (${f.how_heading_last} of its longest)`); broken++; }
+    if (f.how_heading_gap < 16) { f.problems.push(`"See how it works" leaves the section 2 heading under the header (${f.how_heading_gap}px clear)`); broken++; }
+    await page.screenshot({ path: join(out, `how-${w}.jpg`), type: 'jpeg', quality: 82 });
+    await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(400);
+  }
+  if (w === 390 || w === 1440) f.contrast_floor = await contrastFloor(page, { text: '.copy .kick, .copy .mark', at: [...Array(24).keys()], move: (p) => p.evaluate(() => window.__hero.step(5300)) });
   if (w === 390) {
     await page.reload(); await page.evaluate(() => document.fonts.ready);
     f.photos_in_a_minute = await page.evaluate(() => { window.__hero.step(60000); return { shown: window.__hero.shown(), pool: window.__hero.pool(), kinds: window.__hero.kinds() }; });
