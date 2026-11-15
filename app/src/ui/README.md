@@ -65,6 +65,10 @@ See every part in every state at **`/dev/parts`** (light) and **`/dev/parts?sche
 | `Choice` (parts/chip) | 56 | `id`, `label`, `line?`, `icon?`, `picked?`, `leads?` (a chevron), `disabled?`, `onPress`. A row in a `List` that does one thing: a pick in a sheet, or a way out at a page's end |
 | `Range` (parts/worth) | 50 + its line | `low`, `high`, `what`. A value as a range, one piece of text that breaks at a space |
 | `KeepRow` (parts/worth) | 56 | `site`, `keep?`, `line`, `note?`. What the person keeps on one site; no `keep` when there are too few sales |
+| `WeekChart` (parts/week-chart) | content width x 160 + three caption rows | `weeks: { label, amount, n, now? }[]`, `top` (a round axis top, dollars), `axis` (its title: "After fees"), `count: { name, one, many }`. A bar per week on a titled dollar axis, the day, the month and the count under each week |
+| `MoneyBar` (parts/money-bar) | a 12 bar, then 56 rows | `parts: { id, label, detail?, value, low, high?, fill: 'lime' \| 'mint' \| 'sky', onPress }[]`. Shares of one amount on one scale; a range draws its unsure part in the quieter step of its hue; each part is a row with its swatch |
+| `StateBar` (parts/state-bar) | a 12 bar, then 72 tiles two to a row | `parts: { id, word, count, fill, icon, note? }[]`, `onOpen(id)`. Counts by state on one bar, then a tile per state with its swatch, count, word and icon |
+| `PulseRow`, `PulseKey` (parts/pulse-row) | a 72 photo row, then a row of counts | `PulseRow`: `id`, `title`, `photo`, `sites`, `price`, `line?`, `cells: { value, word, share, said, muted? }[]`, `onPress?`. Each count over a track with the usual as a tick in its middle. `PulseKey`: `text`, the same mark as a legend |
 
 ### New and the camera (`parts/takeover.tsx`, `parts/camera.tsx`)
 

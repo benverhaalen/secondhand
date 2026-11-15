@@ -15,6 +15,10 @@ import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { WeekBars } from '@/ui/parts/week-bars';
+import { WeekChart } from '@/ui/parts/week-chart';
+import { MoneyBar } from '@/ui/parts/money-bar';
+import { StateBar } from '@/ui/parts/state-bar';
+import { PulseKey, PulseRow } from '@/ui/parts/pulse-row';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
@@ -285,6 +289,29 @@ function Sheetful() {
         </List>
         <GoalBar label="November goal" kept={132.33} target={300} />
         <WeekBars weeks={[{ label: 'Sep 22', amount: 31.3 }, { label: '29', amount: 0 }, { label: 'Oct 6', amount: 64 }, { label: '13', amount: 12.5 }, { label: '20', amount: 0 }, { label: '27', amount: 88.1 }, { label: 'Nov 3', amount: 40 }, { label: '10', amount: 132.33, now: true }]} />
+      </Section>
+
+      <Section title="You: the dashboard's week chart, money bar, state bar and how each is doing">
+        <WeekChart top={200} axis="After fees" count={{ name: 'Sales', one: 'sale', many: 'sales' }}
+          weeks={[{ label: 'Sep 21', amount: 0, n: 0 }, { label: '28', amount: 0, n: 0 }, { label: 'Oct 5', amount: 64, n: 2 }, { label: '12', amount: 0, n: 0 }, { label: '19', amount: 31.3, n: 1 }, { label: '26', amount: 0, n: 0 }, { label: 'Nov 2', amount: 120, n: 1 }, { label: '9', amount: 132.33, n: 3, now: true }]} />
+        <MoneyBar parts={[
+          { id: 'mb-paid', label: 'Paid out', detail: 'In your bank or your hand', value: '$31.30', low: 3130, fill: 'lime', onPress: () => {} },
+          { id: 'mb-way', label: 'On its way', detail: 'Ready on the site about Tuesday', value: '$132.33', low: 13233, fill: 'mint', onPress: () => {} },
+          { id: 'mb-could', label: 'Could still earn', detail: 'If your 4 live things sell', value: '$253 to $276', low: 25341, high: 27563, fill: 'sky', onPress: () => {} },
+        ]} />
+        <StateBar onOpen={() => {}} parts={[
+          { id: 'sb-ready', word: 'Getting ready', count: 2, fill: 'gray', icon: 'search-01' }, { id: 'sb-live', word: 'Live', count: 4, fill: 'sky', icon: 'live-streaming-02' },
+          { id: 'sb-sold', word: 'Sold', count: 4, fill: 'mint', icon: 'money-03' }, { id: 'sb-kept', word: 'Kept', count: 1, fill: 'lilac', icon: 'store-01', note: 'worth $70 to $95' },
+        ]} />
+        <List>
+          <PulseRow id="pr-1" title="Carhartt Detroit Jacket J97, brown duck, L" photo="carhartt-jacket" sites={['ebay', 'depop']} price="$95 to $98" line="Third cheapest of 14 like it. Should sell this week."
+            cells={[{ value: '63', word: 'views', share: 0.53, said: '63 views, about usual (usual 59)' }, { value: '15', word: 'likes', share: 0.47, said: '15 likes, about usual (usual 16)' },
+              { value: '2', word: 'offers', share: null, said: '2 offers' }, { value: '8', word: 'days up', share: 0.57, said: '8 days up, about usual (usual 7)' }]} onPress={() => {}} />
+          <PulseRow id="pr-2" title="Patagonia Retro-X fleece, cream, M" photo="patagonia-fleece" sites={['depop', 'poshmark']} price="$110 to $118" line="31 likes in 3 days. Similar ones get 8."
+            cells={[{ value: 'Not shown', word: 'views', share: null, said: 'No views shown on this site', muted: true }, { value: '37', word: 'likes', share: 1, said: '37 likes, more than usual (usual 9)' },
+              { value: '0', word: 'offers', share: null, said: '0 offers' }, { value: '3', word: 'days up', share: 0.09, said: '3 days up, shorter than usual (usual 16)' }]} onPress={() => {}} />
+        </List>
+        <PulseKey text="The tick is what’s usual for it" />
       </Section>
 
       <Section title="Tab bar">
