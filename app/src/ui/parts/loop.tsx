@@ -24,7 +24,7 @@ type Field = {
   value: string;
   onChange?: (next: string) => void;
   // headline: the text you type, 18 (Art. 6 roles). body: inside a sentence or a row, 15.
-  look?: 'headline' | 'body';
+  look?: 'headline' | 'body' | 'amount';
   // A number pad for an amount.
   numeric?: boolean;
 };
@@ -35,10 +35,11 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   const c = useColors(), ground = useGround();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
-  const t = look === 'headline' ? type.t18 : type.t15;
+  const t = look === 'amount' ? type.t50 : look === 'headline' ? type.t18 : type.t15;
+  const tinted = agent && look !== 'amount';
   const ink = ground === 'field' ? c.onField : c.ink;
-  const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: agent ? c.onColor : line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
-  const tint = agent ? { backgroundColor: c.lilacTint, paddingHorizontal: space.s1, borderTopLeftRadius: space.s1, borderTopRightRadius: space.s1 } : null;
+  const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: tinted ? c.onColor : line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
+  const tint = tinted ? { backgroundColor: c.lilacTint, paddingHorizontal: space.s1, borderTopLeftRadius: space.s1, borderTopRightRadius: space.s1 } : null;
   // A dotted guess the person opens and leaves as it is was still looked at: that confirms it, so it commits too.
   const commit = () => { setEditing(false); if (draft !== value || line === 'dotted') onChange?.(draft); };
   if (editing) {
@@ -63,7 +64,7 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   return (
     <Press id={id} label={`${name}: ${value || placeholder || 'empty'}`} onPress={() => { setDraft(value); setEditing(true); }} round={false} hit={{ top: 12, bottom: 12, left: 4, right: 4 }}>
       <View style={[{ alignSelf: 'flex-start', paddingBottom: 0 }, underline, tint]}>
-        <Txt role={look} tone={agent ? 'on-color' : value ? 'ink' : 'ink-2'}>{value || placeholder}</Txt>
+        <Txt role={look} tone={tinted ? 'on-color' : value ? 'ink' : 'ink-2'}>{value || placeholder}</Txt>
       </View>
     </Press>
   );
