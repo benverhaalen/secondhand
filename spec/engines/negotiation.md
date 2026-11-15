@@ -15,7 +15,7 @@
 | Opening offer, as a buyer | `buy_offer` | asks every time |
 | Answer to a seller's counter, as a buyer | `seller_counter`; `offer_over_ceiling` above max_pay | asks |
 
-Every output carries `{amount, keep_at_amount, p_accept, expected_keep, v_after, basis_n, basis_dates, policy: champion or challenger, param_version}`. The new row `offer_outcome` (a name the canon lacks) records each offer round: `{thread_id, item_id, site, round, side, offer, ask, counter, response: accepted, countered, declined, expired or walked, final_price, ms_to_response}`.
+Every output carries `{amount, keep_at_amount, p_accept, expected_keep, v_after, basis_n, basis_dates, policy: champion or challenger, param_version}`. The new row `offer_outcome` (a name the canon lacks) records each offer round: `{conversation_id, item_id, site, round, side, offer, ask, counter, response: accepted, countered, declined, expired or walked, final_price, ms_to_response}`.
 
 ## 2. Signals
 

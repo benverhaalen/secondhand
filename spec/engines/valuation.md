@@ -71,7 +71,7 @@ A row with `may_model: false` (eBay rows, per [data use](../data-use.md)) can be
 
 **The fast first answer.** Before step 1 returns, the engine answers from the warm table `family_band` (a name the canon lacks): per (product family or category, condition), the weighted p10 and p90 of adjusted sold prices over 90 days, its count, and its date. It is refreshed when a sale lands in the family. The person sees it as a rough band within 2 s. When the full object is ready, the band is replaced in place by the range, which marks what changed. A family with fewer than 20 sales falls back to the category. A category with fewer than 20 shows no band; it says "Pricing this..." until the Check.
 
-**When nothing qualifies:** the states in the cards stand: `too_few_sales`, `too_wide`, D4's "Not enough sales on Depop yet", and D10's "Not enough sales to say how fast". Each still shows the comps found and their count.
+**When nothing qualifies:** the states in the cards stand: `too_few`, `too_wide`, D4's "Not enough sales on Depop yet", and D10's "Not enough sales to say how fast". Each still shows the comps found and their count.
 
 ## 4. Learning
 

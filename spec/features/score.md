@@ -73,7 +73,7 @@ Nate's requirement: "It needs to be fast, credible and dynamic, yet transparent"
 
 | Thing | States |
 |---|---|
-| `score.state` | shown, hidden (`hide_reason`: `too_few_sales`, `interval_too_wide`, `gate_failed`, `below_noise_floor`, `panel_stale`, `ranker_changed`, `series_too_short`, `axis_hidden`) |
+| `score.state` | shown, hidden (`hide_reason`: `too_few`, `interval_too_wide`, `gate_failed`, `below_noise_floor`, `panel_stale`, `ranker_changed`, `series_too_short`, `axis_hidden`) |
 | `ranker_model` alias | Challenger, Champion, retired |
 | `experiment` | the strategy states: suggested, chosen, running, ended |
 | scoring `job` | queued, running, done, failed; stages started, running, arrived, failed |
