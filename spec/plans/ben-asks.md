@@ -2,6 +2,36 @@
 
 Status: a digest made 2026-11-15 about 05:40 Central by a reader over every packet Ben's side wrote or changed in the last day. The "already done?" column rests on file and search checks only; nothing was run. Each lead takes its rows; the orchestrator keeps the list. Packet paths are relative to `.agents/team/packets/`.
 
+## How we take these
+
+Nate ([words](../../product/words.md#2026-11-15-nate-take-bens-asks-as-ideas-keep-what-we-do-better-and-read-ebay-pages-anyway)): "not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better". An ask below is an idea to weigh against what the backend already does, not a spec to copy. For each one the lead who owns it decides, and writes the answer on Ben's packet:
+
+- **Needed as asked**: a product choice that is Ben's to make (what a person sees, what is never automatic, the words). Build it.
+- **We already do it better**: the backend has a stronger form of the same idea. Keep ours, and tell Ben what he gets that his version would not.
+- **Improved**: the idea is right and the form is weaker than we can build. Build the stronger form with Ben's number as its starting value.
+
+The pattern that comes up most: an ask names a fixed number where the backend has a learned one. Every tunable here is a `param` row with a scope down to the person, updated as outcomes arrive, promoted only on a held-out win and rolled back when it loses ([spec/product.md](../product.md), the `param` row). So a fixed number in an ask becomes that param's prior, never a constant in code. *Agent proposal* on each row below until its lead confirms it.
+
+| Ask | As asked | What we do better | Verdict |
+|---|---|---|---|
+| A reply kind is sent without asking after 3 unedited sends (team/51) | one count, the same for every person and every kind of question | a per-person, per-question-kind rate of "sent unedited" with its uncertainty: a kind is promoted when the lower bound of that rate clears a bar, demoted the moment an edit pattern returns, and never for a kind that touches money, an address, a time or a price. A careful person and a quick one stop being treated alike, and three lucky sends on a risky kind do not unlock it. 3 is the prior | improved |
+| The sold sweep runs every 15 minutes, or 23 to break even (data/66) | one cadence for every listing | a cadence per listing from its chance of selling soon (views, likes, offers, age, the demand engine's hazard), under one monthly budget per person: a listing with a live offer is checked in minutes, a stale one in hours. Faster take-down where a double sale is likely and lower cost overall than either fixed number | improved |
+| Re-read a fact before a match alert if it is older than 10 minutes (sold/56) | one freshness limit | the limit per site and per kind of fact from how fast that fact has been seen to change; 10 minutes is the prior | improved |
+| `rule.max_cents = 1.5 x max(earning approvals)`; auto rules pause when sale over range-mid leaves 0.85 to 1.15 across 30 sales or 90 days (today/57) | fixed multipliers and windows | the guard bands already in the proof layer: a rule's ceiling and the pause test come from the person's own approvals and the valuation's measured coverage in that category, with the count behind them shown. Ben's numbers are the priors | improved |
+| Auto pricing only where PPE20 is at least 70% (price/54, card 18) | one accuracy bar | the same bar, held per kind, site and price band with its interval, so a cell with 12 sales is not unlocked by a lucky 75%. The threshold stays Ben's | needed, with the interval |
+| Cross-listing starts on "same keep" (price/52) | one rule per account | needed as the default. The marketing engine already solves each site's price for an equal keep after fees; the per-item override can be suggested where a site's demand for that kind supports a higher price | needed, plus a suggestion |
+| A breaker per site and route: open on 3 failed writes in 15 minutes, half-open after 15, 30, 60 (list/55) | fixed counts | the harness already has route health with demotion, repair and a release gate; what it lacks is exactly this per-route breaker on writes. Build it on the existing health, counts as priors | needed |
+| Retries at 1, 5, 15, 60 minutes with the same `operation_id` (list/55) | a schedule | needed, with one hard edge the ask leaves out: a write whose outcome is unknown is never retried, it is reconciled by read-back first | needed, with the edge |
+| The Today headline as a ladder of five figures, chosen on the server (today/54) | a display rule | needed. Each figure is a guarded number with its citation, so a figure with too little behind it is hidden rather than shown small | needed |
+| Offer `worth_cents = keep_cents x p_complete`, ranked when more than 10% apart (sold/56) | a product of two numbers | negotiation already ranks by expected keep including the chance the buyer completes and the cost of waiting; expose that as `worth_cents` rather than a second formula. 10% becomes the tie band's prior | we already do it better |
+| Pickup: tapped days and times, the buyer picks, the person approves; no fixed windows, no calendar reading (team/51) | a flow | needed as asked: it is Ben's and it is simpler for the person. Spots can be ordered by the trust engine's safety signal | needed |
+| No AI redraw without a tape reading; exported photos carry no label (studio/55, studio/30) | rules | needed as asked. Capture makes the missing measurement the question that unlocks the render | needed |
+| Season and hot-item work stopped; the event-effect estimator parked (data/66) | scope | accepted: less to build. The season term stays a param that can be switched off in the backtest | needed |
+
+Asks not in this table are taken as written until their lead says otherwise.
+
+## Every ask, by packet
+
 | Packet | Ask of Nate's side | Lead | Already done? | Deadline / demo dependency |
 |---|---|---|---|---|
 | watch/62 | Make a demo Poshmark account (eBay as backup, never Ben's Depop). Pick an item you own and will sell at the stage price, drafted with photos. Time three posts tonight with Ben's watcher running: note tap time, time the find shows on Ben's phone, and the "found N s after listed" number. Take each down. Run the price drop once ($60 to $20). Say if Poshmark warns the account; at the first warning stop. | orchestrator (needs Nate himself) | Not done. `scripts/demo/stage-watch.mjs` and `app/src/app/v1/stage+api.ts` exist; no `logs/stage-alerts.json` yet, so no run. | Tonight. Beat choice depends on the worst-case time (under 90 s, or price drop becomes the main beat). |

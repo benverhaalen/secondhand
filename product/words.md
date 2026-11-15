@@ -1596,3 +1596,11 @@ Ben, project chat, 08:43 UTC.
 > switch research over to codex when you get the chance without setting the research back at all
 
 Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
+
+## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
+Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
+> not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
+
+> read ebay pages anyway
+
+Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [protocol and adapters, protections](../spec/engines/protocol-and-adapters.md#8-protections).
