@@ -59,7 +59,7 @@ export default function ItemPage() {
       : { id: 'failed-sell', label: 'Go to Sell', onPress: () => router.replace('/sell' as Href) };
     return (
       <Screen name="item" state="failed" skip={skipFor('failed')} nav={<Nav back={back} />}>
-        <EmptyState title="Can’t open this item" line="It was deleted, or it didn’t load." action={action} />
+        <EmptyState title="Can’t open this item" line={state === 'failed' ? 'This item didn’t load' : 'This item is no longer available'} action={action} />
       </Screen>
     );
   }
@@ -295,7 +295,7 @@ function Top({ w, item, m, head, openSum, openOffers, openWhy, online, onFill }:
 }) {
   if (m === 'researching') {
     return (
-      <Section title="Finding out what it is">
+      <Section>
         <List>
           {M.stages(item).map(s => (
             <Row key={s.id} lead={<Icon name={s.state === 'done' ? 'tick-02' : s.state === 'working' ? 'search-01' : 'clock-01'} tone={s.state === 'waiting' ? 'ink-2' : 'ink'} />}
@@ -346,7 +346,6 @@ function TreeTop({ w, item, onFill }: { w: World; item: Item; onFill: (field: st
   const [at, setAt] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
   const stop = t.stops[at];
-  const done = t.steps.filter(s => s.state === 'done').length;
   const answer = (value: string, typed: boolean) => {
     if (!stop) return;
     const label = typed ? value : stop.options.find(o => o.id === value)?.label ?? value;
@@ -357,7 +356,7 @@ function TreeTop({ w, item, onFill }: { w: World; item: Item; onFill: (field: st
   };
   return (
     <QuestionCard key={stop?.id ?? 'none'} id={stop ? `ask-${stop.id}` : 'ask'}
-      where={stop ? `Step ${stop.step} of ${t.steps.length}: ${t.steps[stop.step - 1].label}` : at ? 'Every question answered. Ready to plan' : `Steps 1 to ${done} of ${t.steps.length} done. Ready to plan`}
+      where={stop ? `Step ${stop.step} of ${t.steps.length}: ${t.steps[stop.step - 1].label}` : 'Ready to plan'}
       question={stop?.question ?? null} options={stop?.options} pick={picked ?? stop?.pick} typed={stop?.typed} onAnswer={answer} />
   );
 }

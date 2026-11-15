@@ -48,8 +48,9 @@
     {
       "state": "researching",
       "route": "/item/it_hoodie",
-      "shows": "Finding out what it is",
+      "shows": "What it is",
       "also": [
+        "Sales like it",
         "Researching"
       ],
       "absent": [
@@ -157,7 +158,7 @@
       "route": "/item/it_jacket?state=failed",
       "shows": "Can’t open this item",
       "also": [
-        "It was deleted, or it didn’t load.",
+        "This item didn’t load",
         "Retry"
       ],
       "why": "frontend-standard §4 Error: what failed and the one fix, Retry"
@@ -700,21 +701,21 @@
       "control": "No",
       "on_tap": "answers the stop; the field fills and the next stop takes the card’s place",
       "route": "/item/it_switch",
-      "shows": "Every question answered. Ready to plan"
+      "shows": "Ready to plan"
     },
     {
       "id": "ask-fact-joy_con_drift-yes",
       "control": "Yes",
       "on_tap": "answers the stop; the field fills and the next stop takes the card’s place",
       "route": "/item/it_switch",
-      "shows": "Every question answered. Ready to plan"
+      "shows": "Ready to plan"
     },
     {
       "id": "ask-fact-joy_con_drift-i-don-t-know",
       "control": "I don’t know",
       "on_tap": "answers that it isn’t known; the listing describes what can be seen",
       "route": "/item/it_switch",
-      "shows": "Every question answered. Ready to plan"
+      "shows": "Ready to plan"
     },
     {
       "id": "field-model",
