@@ -52,7 +52,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
       colors: [...new Set([...(bi.match(/(?:rgba?|hsla?|oklch|oklab|lch|lab|color|color-mix)\((?:[^()]|\([^()]*\))*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
-    els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
+    els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), link: el.matches('a[href], [role=link]'), button: el.matches('button, [role=button]'), pointer: cs.cursor === 'pointer', block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
       alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
@@ -95,11 +95,15 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     const family = first(cs.fontFamily);
     // An amount is alone when no words sit with it: in its own box, or in the row or block that holds it, up to three boxes out and never the whole view.
     let group = p; for (let a = p.parentElement, i = 0; a && i < 3 && a !== document.body && !a.hasAttribute('data-view'); a = a.parentElement, i++) { group = a; if (/\p{L}/u.test((a.innerText ?? '').replace(n.data, ''))) break; }
+    // lead: the first words of their block, set from its start edge. Those are the left edges the eye lines up.
+    let blk = p; while (blk.parentElement && blk !== document.body && /^inline|contents/.test(getComputedStyle(blk).display)) blk = blk.parentElement;
+    const firstText = document.createTreeWalker(blk, NodeFilter.SHOW_TEXT, { acceptNode: x => /\S/.test(x.data) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP }).nextNode();
+    const lead = firstText === n && /^(?:start|left|-webkit-auto)$/.test(getComputedStyle(blk).textAlign) && !/center|end|around|between|evenly/.test(getComputedStyle(blk.parentElement ?? blk).justifyContent);
     const control = !!p.closest('button, a, summary, [role=button], [role=link]'), disabled = !!p.closest('[disabled], [aria-disabled="true"]');
     texts.push({ text: n.data, size: Math.round(parseFloat(cs.fontSize) * 10) / 10, weight: Number(cs.fontWeight), family: cs.fontFamily,
       display: family === faces.display, textFace: family === faces.text, color: cs.webkitTextFillColor || cs.color, upper: cs.textTransform === 'uppercase',
       caps: cs.textTransform === 'capitalize' ? 'capitalized by CSS' : cs.fontVariantCaps !== 'normal' ? 'set in small capitals' : null, italic: cs.fontStyle !== 'normal', stroked: parseFloat(cs.webkitTextStrokeWidth) > 0,
-      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, disabled, opacity: alpha,
+      lines: new Set(rs.map(r => Math.round(r.top))).size, rect: rel(box), ground, el: ids.get(p), fx: [...new Set(fx)], scroller: rs.some(r => r.scroller), control, disabled, lead, opacity: alpha,
       cut: all.some(r => r.cut), dots: all.some(r => r.dots), fill: p.closest('[data-fill]')?.dataset.fill ?? null, full: rel(range.getBoundingClientRect()),
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
