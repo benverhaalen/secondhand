@@ -283,6 +283,51 @@ The screen never decides what to ask or when to stop. Layout, motion and the wor
 
 The job runner calls this function when a job ends. That call is the integration lead's, and it is not built.
 
+### The identify job
+
+Written 2026-11-15 by the fourth capture lead for Nate's flow ([words](../../product/words.md#2026-11-15-nate-the-camera-takes-each-types-shots-then-the-system-processes-then-the-generative-ui-asks-with-prefilled-selects)): the person finishes the type's shots, "the system processes what it can", and the questions open with "prepopulated selects ... when there are certain possible matches". Every line is *agent proposal* unless it links a decision. The routes and their order come from [identify](../features/identify.md#the-routes); the price and terms of each are in [identify from photos](../../research/identify/nate/identify-from-photos-2026-11.md).
+
+**When it runs.** Once per capture, when the last process step is kept (the plan leaves `shooting`), and again when a retake of a `tag`, `care_label` or `size_label` step is kept. One job row of kind `identify` per run, readable at `GET /v1/jobs/:id` with one stage per rung. Its end calls `applyJobResult`. A run that ends after finish is refused as stale (F13).
+
+**What goes in.** From the capture row only: `type` or the suggestion's family, `kind`, and each kept photo's `{key, role, text?: [{line, confidence}], codes?: [{symbology, payload}], file_ref?}`. `text` and `codes` are the phone's Vision reads (section 7); a `tag`, `care_label` or `size_label` photo carries `text` the same way a `read` step does. Without them the OCR and barcode ports read the stored bytes; with neither, the text rungs abstain.
+
+**The rungs.** Each rung abstains when it has nothing, and a later rung runs only for what the earlier ones left open. Scores are the ladder's (`jobs/identity/ladder.py`, `identity_rung_<n>`, priors 1.0, 0.8, 0.5, 0.3), so the TypeScript twin and the Python ladder give one answer (`jobs/identity/twin-parity.json`).
+
+| Rung | Reads | By | s |
+|---|---|---|---|
+| 1, a code | a GTIN, UPC, EAN or ISBN from `codes`, normalized by `gtin14`'s rule | code; the catalogue port turns it into a product (none composed by default, so it abstains) | 1 on a catalogue hit |
+| 2, the tag | the text lines of the tag, care label or size label | code: an RN or CA number in a committed table, the brand lexicon (longest word-bounded match, case-insensitive), a style code on the brand's line, the size token, fibre percentages, "Made in", a colour code from a fixed table | 1 for an RN or CA hit, 0.9 for a lexicon hit, 0.6 for a lexicon hit inside a longer unknown word run |
+| 3, visual search | the front photo's bytes | the visual port (eBay `searchByImage` first, since it is official and free; Lens or Web Detection only on Nate's yes); each hit's title runs through rung 2's brand parser | the share of the top hits that name the brand, weighted by rank |
+| 4, a model | the front and tag photos | a vision model through the model port, only when rungs 1 to 3 leave the family or the brand open; its answer is checked against a schema and the table's values before use. Off by default: a paid call needs Nate's yes, and tests replay a recorded answer | the model's own share, capped by the rung |
+
+**What comes out.** A candidate is a brand, and a brand with a model when a style code or a code hit names one: `product_id` is `brand:<slug>` or `brand:<slug>/model:<slug>`. `c` is the ladder's, the set is the ladder's conformal set (`c >= identity_q_kind`, prior 0.6) and the action is the ladder's (`confirm`, `pick`, `ask`). So a tag read alone can confirm a brand (0.8 ≥ 0.6), visual search alone can only propose one (0.5), and a model only adds options. The result is section 5's `identify` shape plus two fields:
+- `facts: [{field, value, source: label, confidence, rule, ref}]` for what rung 2 read (size, fibre, origin, colour, style code), each with the rule that read it and the photo key. These merge through the same source order as a phone read (section 6), so a `you_said` value is never replaced.
+- `rests_on` on each set member: one plain line per rung that found it ("RN 14806 on the tag", "6 of 10 similar listings").
+
+The plan then needs no change: `candidates.brand` and `candidates.model` become the options of the brand and model questions, and a proposed fact is the preselected option (section 2, the questions).
+
+**Where results may not go.** eBay's terms keep its content to eBay listings ([platform access](../../research/connect/nate/platform-access.md)): a visual hit's title and image are used inside the run and never stored; only our own candidate (`brand:<slug>`, `c`, `rests_on`) is kept. Photos sent to a route are crops of the item ([identify, facts to know](../features/identify.md#facts-to-know)).
+
+**Measure.** On the three real garments in `spec/items/capture-real/` with their recorded tag reads: the brand question opens with the right brand proposed on all three, by rung 2 alone (Carhartt by RN 14806 and the lexicon, Russell Athletic and Fruit of the Loom by the lexicon), and questions per item fall from 6 and 7 (section 10) by at least the brand and fabric. Then the fixed set of 20 in [the benchmark](../benchmark.md), once Nate's real items exist.
+
+### Listing classification
+
+*agent proposal*, 2026-11-15, for Nate's "intelligent listing classification" ([words](../../product/words.md#2026-11-15-nate-get-identification-listing-classification-and-the-generative-clarifying-ui-built)). Code: `app/src/engines/listing/classify.ts` (to build).
+
+`classify(item, sites, ports)` takes the item the capture wrote (kind, department, the garment or product type, brand, model and every attribute with its source and confidence) and returns, per linked site:
+- `category`: the site's category for the item (eBay a leaf id; Depop department and product type; Poshmark department, category and subcategory; Mercari its three levels; Facebook its form category), with `status` and `rests_on`;
+- `fields`: one row per field the site's form takes for that category, `{field, site_name, required, status, value?, source?}`.
+
+`status` is `known`, `proposed` or `missing`, decided by capture's own rule (`fields.ts` field state and `missingFor`, so a field is never known in one place and proposed in another): `known` when capture's state is known; `proposed` when a value exists below its rung's `min_conf`, or a category came only from the static table or a model; `missing` otherwise.
+
+Where the category comes from, in order: (1) eBay's Taxonomy API `getCategorySuggestions` on the item's title words when the eBay port is composed, then `getItemAspectsForCategory` read through `aspects.ts` `aspectRows`; (2) a committed table, `app/src/engines/listing/categories.json`, from our kind and department to each site's category, each row with its source (Ben's [item attributes by site](../../research/capture/ben/item-attributes-by-site.md)) and a mark. A kind with no row gives `category: missing` for that site, never a guess. eBay's content stays on eBay rows (`aspects.ts` header).
+
+A required field that is `missing` or `proposed` and that capture's table has no row for (an eBay aspect such as `ebay:Inseam`) becomes one more question in the plan: `pick_one` over the aspect's `allowed` values when eBay gives them (`SELECTION_ONLY`), else `text`, with eBay's own name as its words. It is asked only for a linked site that requires it, and counts toward the cap like any optional question unless the site requires it.
+
+### How a question is ordered by what it narrows
+
+Nate asked for questions that pin down "what it is" ([words](../../product/words.md#2026-11-15-nate-the-camera-takes-each-types-shots-then-the-system-processes-then-the-generative-ui-asks-with-prefilled-selects)). The identify job writes, beside `candidates`, each option's score and what it rests on (`state.candidate_detail[field][value] = {c, rests_on}`). The plan adds one order key after key 1 (the shaping fields): the entropy, in bits, of the field's candidate scores normalized to sum to 1 (`-Σ p log2 p`), descending. A field with no scored candidates has 0, so every existing walk keeps its order (`walk.test.ts`). Each option carries `rests_on` from the same map, so a screen can say why it is preselected. Agreement with [identify's design](../features/identify.md#design-choices) (expected information gain over the candidate set): with one answer collapsing the set to one value, the expected gain of asking a field is its entropy.
+
 ## 6. The capture row
 
 The Store shape the routes' map already holds, agreed with the integration lead:
