@@ -86,12 +86,12 @@ Ranked by stun times the chance it works every time, fast, at a table with bad w
 |---|---|---|---|---|
 | 1 | **Their own thing.** "Hand me something from your bag." Photograph it; it's named and priced per site with what you'd keep on each | it's their object, not our rehearsed one; nobody can fake that | depends on the identify route and the network | it identified 9 of 10 random objects in rehearsal, each in under 10 s. Otherwise use our own items |
 | 1b | **The same photo, the buying side.** Switch to Find this: the same thing across every site, the fair used price, the total with shipping, and the better official option when new or refurbished is the better buy | one engine for both sides; it widens the audience from sellers to everyone who buys used | depends on the public search readers answering at the table | the search answered in rehearsal on the same items; a slow site greys out, it never blocks |
-| 2 | **The photo lie detector.** Paint a stain out of a photo; it's held, with the box that failed. 116 of 117 planted lies caught | answers the mentor's worry in five seconds; visual | yes: no model, runs locally | always |
+| 2 | **The photo lie detector.** Paint a stain out of a photo; it's held, with the box that failed. 173 of 174 planted lies caught | answers the mentor's worry in five seconds; visual | yes: no model, runs locally | always |
 | 3 | **It sold, in half a second.** Paste any Poshmark listing; it says live or sold in 0.44 s from the public page | real site, real time, no login | yes, if the page shape holds; the fallback recovered 48 of 48 when it broke | always, with a sold listing bookmarked |
 | 4 | **The $20 shirt.** Type a price; you keep $18.69 on Depop and $16.00 on Poshmark; to keep $17, ask $18.25 on Depop and $21.25 on Poshmark | the money is the problem statement made concrete | yes: fixed fee table | always |
 | 5 | **The couch.** Facebook best; Depop avoid ("ships only, its buyers want clothes"); Poshmark blocked (15 lb cap) | shows judgment, not a copy-paste crosslister | yes | always |
 | 6 | **Today.** One feed: a buyer offer, a held reply, a double sale with both buyers and the cost of each cancel, who is coming to a pickup | the finished, un-sloppy UI; human in the loop as a decision | yes on demo data; say it's demo data | the screens render on the phone |
-| 7 | **The checker.** 60,936 orderings of posts, payments and delists on 3 sites: never a silent double sale, never stuck. Break the refund and it fails in 6 steps | for technical judges: we proved it, not hoped | yes: runs in seconds | a technical judge asks "what if both sell?" |
+| 7 | **The checker.** 60,936 orderings of posts, payments and delists on 3 sites, and 931,406 on 4: never a silent double sale, never stuck. Break the refund and it fails in 6 steps | for technical judges: we proved it, not hoped | yes: runs in seconds | a technical judge asks "what if both sell?" |
 | 8 | **A cloud browser reading a site live.** 48 Poshmark listings in under 4 s, with its live view | the engineering under the hood | network dependent | a recorded run is ready if it stalls |
 | 9 | **A real post going live, then taken down** | the whole promise | not yet run on a live account (milestone M7) | it ran end to end on the morning of the 15th; otherwise the recording, said to be one |
 | 10 | **Why? on a price, recomputed from its citation on Databricks** | for Databricks judges | only if deployed | the App and tables exist on the workspace |
@@ -119,7 +119,7 @@ Ben asked for claims that change how judges see the project. Each is said only w
 | "It's live: try it at [URL]" | the site is deployed and loads on a phone | the website thread is building it |
 | "We submitted it to the App Store" | an EAS build was submitted in App Store Connect; show the "Waiting for Review" screen. A TestFlight external beta review is the faster true version. Server-held site sessions may meet App Review guideline 5.1.1(v) ([connect](../spec/features/connect.md)) | not submitted; "App Store coming soon" is the honest line until then |
 | "There's a 2-minute video" | it's on Devpost | planned ([pitch-video.md](pitch-video.md)) |
-| "116 of 117 planted photo lies caught" | as measured | measured ([numbers](numbers.md)) |
+| "173 of 174 planted photo lies caught" | as measured | measured ([numbers](numbers.md)) |
 | "60,936 orders of events checked; a double sale is never silent" | as measured | measured |
 | "A sale seen in 0.44 s on Poshmark" | as observed | observed 2026-11-14 |
 | "What you keep differs by $2.69 on a $20 item, depending on the site" | as measured from fee pages read 2026-11-14 | measured |

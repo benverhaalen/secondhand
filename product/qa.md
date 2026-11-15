@@ -12,7 +12,7 @@ Judges forgive a feature that is designed but not built. They do not forgive a c
 |---|---|---|
 | Posts to N sites | a real listing went live on each of those sites from the app today | "eBay posts through its API; the others run through each site's own pages in your signed-in browser. Here is the run on Depop." |
 | Detects a sale and takes the rest down | one seeded sale was detected and every other listing came down, with the time | "The sale-to-delist path passes on recorded pages; the live bar is under 2 minutes" ([sold](../spec/features/sold.md#how-we-will-know-it-works)) |
-| Runs on Databricks | the App, Lakebase and the tables named are deployed on the workspace | "Built as a Databricks bundle; here is what is deployed" ([workspace checks](../research/data/nate/workspace-checks.md) found no Lakebase project and no Apps on 2026-11-14) |
+| Runs on Databricks | the App, Lakebase and the tables named are deployed on the workspace | "Built as a Databricks bundle; here is what is deployed" (on 2026-11-14 the [workspace checks](../research/data/nate/workspace-checks.md) created a probe Lakebase project and a probe App; only open models answered on the gateway, and Agent Bricks was not available) |
 | Genie answers market questions | the market Genie space exists and you tried 5 unseen questions | skip Genie |
 | The photo check catches lies | the benchmark thread's planted-lie run has a number | describe the check, show one side by side |
 | Any time or cost number | it came from our own logs or the benchmark sheet | give the method, not the number |
@@ -145,13 +145,13 @@ Per site, the cheapest signal first, then a signed-in read that proves it ([sold
 | eBay | the order read from its API; a signed push where it fires | the order |
 | Poshmark | the public listing page, checked every 1 to 2 min with no login: a sold listing stays public, marked out of stock | the signed-in read of the order |
 | Mercari | the public page shows sold out | the signed-in read |
-| Depop | a signed-in watcher on the notifications and orders, 1 to 2 min when active | the order id |
+| Depop | a signed-in sweep of notifications and orders: every 90 s while hot, 15 min while live, hourly when quiet | the order id |
 | Facebook | no checkout for local sales, so a sale is a chat agreement; you mark it sold, or we read the orders page for shipped sales | your tap |
 
 Other signals we treat as hints, never proof: the listing disappearing (the site can remove it for other reasons), quantity at 0, a buyer writing "just bought it", the shop's sales count going up. The rule: a public page never proves a sale; only a paid order read from your account does. A nightly reconcile compares every listing on every site with ours, and any difference becomes a card.
 
 **What if it sells on two sites at once?**
-There's a window between a sale on one site and the take-down landing on the others, about 2 minutes where the public-page check works. If two buyers pay inside it, you get one card that names both, what you keep on each, and what cancelling each costs (on eBay an out-of-stock cancel is a defect). It suggests keeping the first paid. One tap cancels the other with a drafted apology. It is never silent ([edge cases §1](../spec/edge-cases.md#1-two-sites-sell-it-at-once)).
+There's a window between a sale on one site and the take-down landing on the others. By design it is up to about 4 minutes (up to 2 to see the sale, then 2 per take-down, run in parallel); that is a budget, not a measurement, because no signed-in take-down has run on a live account yet. If two buyers pay inside it, you get one card that names both, what you keep on each, and what cancelling each costs (on eBay an out-of-stock cancel is a defect). It suggests keeping the first paid. One tap cancels the other with a drafted apology. It is never silent ([edge cases §1](../spec/edge-cases.md#1-two-sites-sell-it-at-once)).
 
 **How do take-downs work?**
 - After a sale: automatic, the buy-it-now sites first, each confirmed by reading the site back. A site still showing it after 5 minutes turns red: Try again, Open on the site, Mark unavailable.
@@ -191,7 +191,7 @@ Three parts, in this order on stage:
 3. **The real photo is always first** on every site. AI photos come after it.
 
 **Can you measure it?**
-Yes, and we did it on lies we planted ourselves ([numbers](numbers.md#the-mentors-questions-answered-with-numbers), measured). On Ben's 19 real photos we painted out details (a print, a label, a flaw), shifted the color and mirrored the photo: the check caught **116 of 117**. The one miss was a 24 px patch, 0.14% of the photo. It errs toward holding: 17 of 38 honest relights were held too, and then the real photo is used, so a held render costs a nicer photo, never a false one. The no-model Clean up edited 76 of 76 photos without moving the item's color past the limit (largest move 1.89 CIEDE2000, limit 2.0). For a judge, show [gate-side-by-side.jpg](../scripts/bench/out/gate-side-by-side.jpg): the real photo, an honest relight that passed, and the same relight with the print painted out, held, with the box that failed. Re-run: `python3 scripts/bench/gate.py`.
+Yes, and we did it on lies we planted ourselves ([numbers](numbers.md#the-mentors-questions-answered-with-numbers), measured). On Ben's 19 real photos we painted out or swapped details (a print, a label, a flaw), stretched the item, shifted the color and mirrored the photo: the check caught **173 of 174**. The one miss was a 24 px patch, 0.14% of the photo. The benchmark also found a hole and we closed it: lining the render up with the original undid a stretch, so at first only 16 of 38 stretched photos were caught; the gate now reads the stretch off the alignment and holds anything over 2%, which caught 38 of 38. These are edits we planted, not real Seedream output. It errs toward holding: 17 of 38 honest relights were held too, and then the real photo is used, so a held render costs a nicer photo, never a false one. The no-model Clean up edited 76 of 76 photos without moving the item's color past the limit (largest move 1.89 CIEDE2000, limit 2.0). For a judge, show [gate-side-by-side.jpg](../scripts/bench/out/gate-side-by-side.jpg): the real photo, an honest relight that passed, and the same relight with the print painted out, held, with the box that failed. Re-run: `python3 scripts/bench/gate.py`.
 
 **What stops the AI from telling a buyer something false?**
 Plain code decides every offer and every fact; the model only words the reply. Before anything is sent, each claim in it is matched to a fact on the item. A claim with no backing ("smoke-free home" when you never said so) holds the message and shows you the claim: Send without it, Edit, or It's true, which saves it as a fact ([messages, evidence gate](../spec/features/messages.md#evidence-gate)). Small fact-checking models alone miss about one claim in four, so the deterministic match runs first.
@@ -206,6 +206,8 @@ Open for Ben and Nate. *Agent proposal*: answers in the seller's own style, a sh
 Say what the build calls on the day. The plan: OpenAI image decisions for identify, Seedream or Nano Banana for studio renders, Claude models on the Databricks gateway for text, all through one gateway that logs every call ([Databricks §8](../spec/databricks.md#8-the-workspace)).
 
 ## 6. Data and Databricks
+
+Each piece with its status (built, observed or designed), and what each kind of judge looks for, is in [showcase.md](showcase.md#2-how-we-use-databricks).
 
 **Why Databricks and not Postgres plus S3?**
 Because the product's core loop is a data loop. Every listing we see and every sale we make becomes a comparable for the next price; every tap you make is a label for what the agent may do alone; every agent step is a trace you can open as the Why? screen. On Databricks those are one governed system: live state in Lakebase, history in Delta, photos in a volume, model calls through one gateway, traces and evaluation in MLflow ([Databricks spec](../spec/databricks.md)).
@@ -264,7 +266,7 @@ We never hold money, so refunds always happen on the site, under its rule, and a
 ## 8. Cost
 
 **What does one listing cost you to run?**
-About **$0.03 to $0.10** per item, or $0.28 to $0.35 with studio photos; an estimate from observed list prices, not yet billed ([numbers](numbers.md#what-a-listing-costs-us)). Identify is a cent or a few; posting to four sites is under 2 cents of cloud browser; the studio relight is the biggest line at about $0.25. The trap is watching: a browser kept open to watch for sales would be $1.44 a day per site per person, about $170 a month for four sites, so a free public-page read decides when the browser runs at all. On a $20 shirt, eBay's fee is $3.94; we spend cents.
+About **$0.02 to $0.08** per item, or $0.27 to $0.33 with studio photos; an estimate from observed list prices, not yet billed ([numbers](numbers.md#what-it-costs-us)). Identify is a cent or a few; posting to four sites is under 2 cents of cloud browser; the studio relight is the biggest line at about $0.25. The trap is watching for sales, which is paid every day per linked account. A browser kept open would be $1.44 a day per site, about $170 a month for four sites; a signed-in check every 2 minutes, $0.72 a day per site. So we don't: eBay pushes sales ($0), Facebook pickups are ours to know ($0), Poshmark and Mercari are a public page read (about $0), and only Depop needs a signed-in sweep, about $0.96 a day while an item is hot, $0.10 while live, $0.02 when quiet. On a $20 shirt, eBay's fee is $3.94; we spend cents.
 
 **Why is that cheap enough?**
 A person's time costs the same for a $5 shirt and a $200 bag, which is why consignment pays 3% of a $5 sale. An agent's cost per item is close to flat, which is the opening ([pitch evidence §1](../research/cross-cutting/ben/pitch-evidence.md#1-the-do-it-for-me-option-pays-almost-nothing-on-cheap-items)).
@@ -276,7 +278,7 @@ Recorded actions replace browser driving: once a site's action has been done onc
 
 The full case, with market reach, what has to be true and the hurdles, is in [business.md](business.md).
 
-**How does it make money if it's free?** Ben's direction, 05:43: completely free for the person. It works because listing an item costs us cents (about $0.03 to $0.10, an estimate, [numbers](numbers.md#what-a-listing-costs-us)). We earn when a buyer we sent buys: eBay's Partner Network pays a share of each sale (about 3 to 4% by one reading of its card, *asserted*), so one $40 referred purchase covers a month of someone's listings. Studio photos and a reseller plan are the paid extras. A referral never changes which listing we call best.
+**How does it make money if it's free?** Ben's direction, 05:43: completely free for the person. It works because listing an item costs us cents (about $0.02 to $0.08, an estimate, [numbers](numbers.md#what-it-costs-us)). We earn when a buyer we sent buys: eBay's Partner Network pays a share of each sale (about 3 to 4% by one reading of its card, *asserted*), so one $40 referred purchase covers a month of someone's listings. Studio photos and a reseller plan are the paid extras. A referral never changes which listing we call best.
 
 **Why not charge like everyone else?** Consignment takes most of the money on cheap items; subscriptions fit resellers, not someone clearing a closet once; a cut on top of the site's breaks the "most money" promise.
 

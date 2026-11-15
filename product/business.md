@@ -24,7 +24,7 @@ Every other model charges the person at the wrong moment:
 | A cut of each sale | marketplaces already do this (eBay 13.6%, Poshmark 20%) | a second cut on top of the site's makes the "most money" promise false |
 | Free, paid for by the buying side | anyone | the person never pays; we earn when a buyer we sent buys |
 
-So: **free to sell and free to buy.** It works only because an agent's cost per item is cents, not dollars. About $0.03 to $0.10 per item listed, or $0.28 to $0.35 with studio photos (an estimate from observed list prices, not yet billed; [numbers](numbers.md#what-a-listing-costs-us)). A person's time costs the same for a $5 shirt and a $200 bag; ours nearly doesn't change with the item.
+So: **free to sell and free to buy.** It works only because an agent's cost per item is cents, not dollars. About $0.02 to $0.08 per item listed, or $0.27 to $0.33 with studio photos, plus watching for sales, which is near $0 a day on eBay, Facebook, Poshmark and Mercari and $0.02 to $0.96 a day on Depop (an estimate from observed list prices, not yet billed; [numbers](numbers.md#what-it-costs-us)). A person's time costs the same for a $5 shirt and a $200 bag; ours nearly doesn't change with the item.
 
 ## How free pays
 
@@ -33,7 +33,7 @@ So: **free to sell and free to buy.** It works only because an agent's cost per 
 3. **A plan for resellers.** People with 50 live items cost us more to watch and get more from us; a flat monthly price under the crosslisters' is fair to them.
 4. **Later, anonymous market data.** What sells, where, for how much and how fast, across sites, from consenting sellers and sources whose terms allow it ([Nate](words.md#2026-11-14-nate-referrals-and-market-data)).
 
-The break-even, honestly (*inferred*): if a seller lists 10 items a month, they cost us about $0.30 to $1.00 a month plus watching. One referred eBay purchase a month by the same person covers it. Whether people buy through us that often is the number we don't have, and it decides whether free works.
+The break-even, honestly (*inferred*): if a seller lists 10 items a month, they cost us about $0.20 to $0.80 a month plus watching. One referred eBay purchase a month by the same person covers it. Whether people buy through us that often is the number we don't have, and it decides whether free works.
 
 ## Where we reach
 

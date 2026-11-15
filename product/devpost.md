@@ -54,15 +54,15 @@ We didn't want an agent that acts alone. In September, an assistant on another p
 ## Challenges
 
 - **Two sites can sell the same thing at once.** We modelled every order of events for one item on three sites, 60,936 of them, and checked that a second buyer never goes unnoticed and nothing gets stuck. We broke the refund rule on purpose to make sure the check can fail: it found the double sale in 6 steps.
-- **Proving an AI photo is honest.** We painted out details, shifted colors and mirrored Ben's own photos, then checked whether the gate caught them: 116 of 117. It's cautious, and holds about half of the honest relights too; when it holds one, you get your real photo instead.
+- **Proving an AI photo is honest.** We painted out details, swapped tag text, stretched, shifted colors and mirrored Ben's own photos, then checked whether the gate caught them: 173 of 174. The test found a hole first (lining the photos up undid a stretch), so the gate now checks for stretch too. It's cautious, and holds about half of the honest relights too; when it holds one, you get your real photo instead.
 - **Sites that refuse robots.** Depop and Mercari turned away a headless browser, so each site's harness is built from how that site actually works, and every action falls back to typed steps, then to an agent, when a page changes.
 - **Cost.** A browser left open to watch for sales would cost about $170 a month per person. The half-second public check is what makes a free app possible.
 
 ## Accomplishments we're proud of
 
 - [Live on the web at URL.] [Submitted to the App Store / App Store coming soon.]
-- 116 of 117 planted photo lies caught; 76 of 76 cleaned-up photos within the color limit.
-- 60,936 orders of events checked with no silent double sale.
+- 173 of 174 planted photo lies caught; 76 of 76 cleaned-up photos within the color limit.
+- 60,936 orders of events checked on 3 sites, and 931,406 on 4, with no silent double sale.
 - A sale seen in 0.44 s from a public page.
 - [1,420 tests on every push, once CI is green.]
 - 184 research notes, every claim marked observed, asserted or inferred, and 39 dated product decisions, so every rule in the app has a reason we can show.

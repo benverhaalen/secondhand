@@ -12,6 +12,7 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [product/pitch.md](product/pitch.md) | How secondhand is pitched: the problem in numbers, five narratives, the recommended order | Both; *agent proposal* until picked |
 | [product/qa.md](product/qa.md) | The hard questions judges and users ask, the answers, and the honesty gate before saying any of them; [faq.md](product/faq.md) is the website's version | Agents; *agent proposal* until said |
 | [product/business.md](product/business.md) | Why people want it, why it's free and how that pays, where we reach and don't, the hurdles | Agents; *agent proposal* |
+| [product/showcase.md](product/showcase.md) | What each audience looks for, how we use Databricks with the status of each piece, the full demo script for buying and selling, pricing anything, and what "hot" means | Agents; *agent proposal* |
 | [product/devpost.md](product/devpost.md) | The Devpost write-up draft | Agents; *agent proposal* |
 | [product/pitch-video.md](product/pitch-video.md) | The submission video: script, shot list, how to make it fast | Agents |
 | [product/words.md](product/words.md) | Ben's and Nate's exact product words, the source everything else cites | Append only |
