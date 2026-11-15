@@ -44,12 +44,12 @@ The same logic picks the sites. [D1](../../spec/determinations/listing-and-marke
 
 ## How the agent reaches each site
 
-Where a site offers an official route, the app uses it. Where it does not, a cloud browser keeps your login in a saved profile ([connect spec](../../spec/features/connect.md)). The app never holds your password.
+On every site the app first uses its own adapter over your signed-in session: a cloud browser keeps your login in a saved profile ([connect spec](../../spec/features/connect.md)). A site's official API is the last fallback, used only where ours cannot be made to work. The app never holds your password.
 
 | Site | Route | Sale signal |
 |---|---|---|
-| eBay | Official API with OAuth | A push notification, in seconds |
-| Depop | Its API, if a partner key is granted | Webhooks, in seconds |
+| eBay | Cloud browser, saved profile; official API with OAuth as last fallback | A push notification, in seconds |
+| Depop | Cloud browser, saved profile; its API as last fallback if a partner key is granted | Webhooks, in seconds |
 | Poshmark | Cloud browser, saved profile | A sale email wakes a check, about 2 minutes (inferred) |
 | Mercari | Cloud browser, saved profile | A sale email or poll, about 2 minutes (inferred) |
 | Facebook Marketplace | Cloud browser, saved profile | No source found, so the check is paced by you |

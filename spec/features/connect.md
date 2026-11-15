@@ -26,7 +26,7 @@ OfferUp and Grailed link as search and price only: posting there is planned, not
 
 | Choice | Options considered | Picked | Why | What would change it |
 |---|---|---|---|---|
-| How an account links | official OAuth ([platform-access](../../research/connect/nate/platform-access.md)); a cloud browser with a saved login ([posting-browser-use-ebay](../../research/list/ben/posting-browser-use-ebay.md)); a session on the phone; an extension in the person's browser ([crosslister-teardown](../../research/cross-cutting/nate/crosslister-teardown.md#5-capability-by-tool)) | OAuth inside the eBay harness, and Depop's if granted; a Browser Use saved profile on every other site | decided; Facebook has no OAuth for US sellers, Poshmark and Mercari have no API; agents run while the phone is locked | a partner grant on Facebook or Mercari moves that site's verbs to the API inside its harness |
+| How an account links | official OAuth ([platform-access](../../research/connect/nate/platform-access.md)); a cloud browser with a saved login ([posting-browser-use-ebay](../../research/list/ben/posting-browser-use-ebay.md)); a session on the phone; an extension in the person's browser ([crosslister-teardown](../../research/cross-cutting/nate/crosslister-teardown.md#5-capability-by-tool)) | a Browser Use saved profile on every site, our own adapter over the person's session as the primary route; eBay's OAuth, and Depop's if granted, only for the last-fallback API route | decided; Facebook has no OAuth for US sellers, Poshmark and Mercari have no API; agents run while the phone is locked | a partner grant on Facebook or Mercari gives that site a last-fallback API route, measured against our adapter; it does not become the default |
 | Where sessions live | cloud profile; device Keychain; both ([privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md#9-session-tokens-and-cookies-keychain-versus-server-vault)) | the cloud profile; Keychain holds only the app's own session | Keychain `WhenUnlockedThisDeviceOnly` cannot be read while the phone is locked | App Review's reading of guideline 5.1.1(v) on a server-held session (test below) |
 | When the harness looks | a fixed poll per site; events only; one loop with two triggers ([email-and-notification-detection](../../research/sold/nate/email-and-notification-detection.md)) | one loop: events set `next_check_at` to now, sweeps pick rows whose time has passed | Nate's words; a fixed poll is either slow or wasteful; Vendoo polls every 10 min | measured lag of each site's events against the sweep |
 | Sale detection on Poshmark and Mercari | sold-page poll; Gmail push; a forwarding filter ([email-and-notification-detection](../../research/sold/nate/email-and-notification-detection.md)) | the signed-in harness first, a sold-page poll at the tiers in [card 15](../determinations/managing-and-buyers.md#15-when-to-check-again); Gmail push as the fallback that wakes it ([Nate](../../product/words.md#2026-11-14-nate-sale-emails-the-expo-account-where-routes-are-hosted-and-a-buy-page-shaped-by-your-style)) | Gmail push has no published latency; a forwarding filter can be spoofed | measured email lag per site |
@@ -38,7 +38,7 @@ OfferUp and Grailed link as search and price only: posting there is planned, not
 
 ```mermaid
 flowchart LR
-  P["phone: Link"] -->|"Apps API POST /v1/accounts: job"| S["eBay OAuth or Browser Use cloud profile sign-in"]
+  P["phone: Link"] -->|"Apps API POST /v1/accounts: job"| S["Browser Use cloud profile sign-in (eBay OAuth only for the last-fallback API route)"]
   S -->|"Databricks secret scope: account token_ref, health ok"| A["Lakebase account"]
   A -->|"import job, harness read_stats and read_orders: item origin import or purchase, listing, order"| I["Lakebase item, listing, order"]
   T["event or check_due"] -->|"lease, policy in code, harness verb, read-back"| H["harness per site"]
@@ -77,9 +77,9 @@ Every harness has the same verbs: `post, revise, end, relist, read_inbox, send_m
 
 | Site | Route | Native underneath | Handoff (opens the site) | Detector (asserted) | Risk line shown |
 |---|---|---|---|---|---|
-| eBay | harness, API inside | Inventory and Offer, Fulfillment plus Notification, Message API, Best Offer and Negotiation, Browse | none | Akamai | "eBay bars AI agents from ordering without your review" |
+| eBay | own adapter first; API last fallback | Inventory and Offer, Fulfillment plus Notification, Message API, Best Offer and Negotiation, Browse | none | Akamai | "eBay bars AI agents from ordering without your review" |
 | Facebook | harness, US cloud browser | every verb in the browser | `read_offers`, `answer_offer` (no offers) | Arkose in some flows; warns before it restricts | "Facebook limits automated use; new listings capped at 20 a month" |
-| Depop | harness, partner API inside if granted | products, mark sold, orders and webhooks, offers to likers | listing offers (none in the API) | Cloudflare | "Depop bans scraping without permission" |
+| Depop | own adapter first; partner API last fallback if granted | products, mark sold, orders and webhooks, offers to likers | listing offers (none in the API) | Cloudflare | "Depop bans scraping without permission" |
 | Poshmark | harness, paced | every verb in the browser; sale email | none | Cequence and reCAPTCHA | "Poshmark bans automation; accounts were suspended in Nov 2025" |
 | Mercari | harness | every verb in the browser; sale email | none | Cloudflare | "Mercari bans bots and may hold funds" |
 | OfferUp, Grailed | search and price only | `search`, `read_stats` through Firecrawl, Exa, our scrapers, Apify | `post` and the rest | not researched | "search only" |

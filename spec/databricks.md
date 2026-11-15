@@ -147,7 +147,7 @@ flowchart LR
   due["A scheduled check falls due: next_check_at"]
   job[("One job row in Lakebase, with an idempotency key")]
   pol["Policy check, in code"]
-  act["Act: official API, or a cloud browser with the person's login"]
+  act["Act: our own adapter over the person's signed-in session; an official API last"]
   read["Read the site back"]
   log["Log, trace, set next_check_at"]
   dec["A decision in Today, only if a person is needed"]
@@ -167,9 +167,9 @@ flowchart LR
 
 | Site | Route | How sales and messages are detected | Notes |
 |---|---|---|---|
-| eBay | Official APIs (Inventory and Listing, Fulfillment, Message, Negotiation, Analytics, Notification), plus the harness where it is faster | Notification webhooks | Full API set (*observed*, [platform access](../research/connect/nate/platform-access.md)) |
+| eBay | Our own adapter first; the official APIs (Inventory and Listing, Fulfillment, Message, Negotiation, Analytics, Notification) as the last fallback | Notification webhooks | Full API set (*observed*, [platform access](../research/connect/nate/platform-access.md)) |
 | Facebook Marketplace | Harness | Sale and message emails | The Partnership route is EU and EEA only, and lists as a link-out (*observed*, platform access) |
-| Depop | Harness; a partner API exists | Sale and message emails | Partner API: OAuth PKCE S256, gated by email, access tokens of 1 hour, refresh tokens of 1 year that rotate (*observed*, platform access). Its calls must run inside the page (*asserted*) |
+| Depop | Our own adapter first; a partner API exists as the last fallback | Sale and message emails | Partner API: OAuth PKCE S256, gated by email, access tokens of 1 hour, refresh tokens of 1 year that rotate (*observed*, platform access). Its calls must run inside the page (*asserted*) |
 | Poshmark | Harness | Sale and message emails | No API (*observed*, platform access). It flags server IPs, so replay stays in the page (*asserted*) |
 | Mercari | Harness | Sale and message emails | API is partner-only (*asserted*, platform access) |
 | OfferUp, Grailed | Search and price only | n/a | Decided ([decisions](../product/decisions.md#2026-11-14-the-platform-list-is-set)) |

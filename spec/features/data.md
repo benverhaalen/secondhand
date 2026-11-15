@@ -124,7 +124,7 @@ One `param` registry holds every weight, threshold, prior, budget and hide rule;
 
 How rows are read, updated, folded, promoted, guarded and rolled back is in [product §6](../product.md#real-time-weights-agent-proposal).
 
-This replaces the 7-day router counters, the static table in [listing D11](../determinations/listing-and-marketing.md#d11-what-each-ranking-is-believed-to-reward) and `requirement_reorder` as a way of changing values.
+This replaces the 7-day router counters, the static table in [listing D11](../determinations/listing-and-marketing.md#d11-what-each-ranking-is-believed-to-reward) and the old weekly reorder of required fields as ways of changing values; field importance is now the `requirement_fold` challenger.
 
 ## Platform pieces, judged
 
