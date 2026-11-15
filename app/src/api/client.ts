@@ -5,6 +5,7 @@ import type { SearchStage } from '../edge/api/search.ts';
 import { fetch as platformFetch } from './fetch';
 import { origin as platformOrigin } from './origin';
 import { createSseParser } from './sse.ts';
+import { utf8Decoder } from './utf8.ts';
 
 export type Session = { token: string | null; visitor: string | null };
 export type SearchStart = Pick<ApiJobRow, 'id' | 'kind' | 'state'> & { stages: SearchStage[]; stream: string };
@@ -134,7 +135,7 @@ export function createClient(options: Options) {
         deliver(text);
         return terminal;
       }
-      const reader = response.body.getReader(), decoder = new TextDecoder();
+      const reader = response.body.getReader(), decoder = utf8Decoder();
       let ended = false;
       try {
         while (!signal?.aborted) {
@@ -142,7 +143,7 @@ export function createClient(options: Options) {
           try { chunk = await abortable(() => reader.read(), signal); }
           catch (cause) { throw new StreamInterrupted(cause); }
           if (chunk.done) { ended = true; deliver(decoder.decode()); return terminal; }
-          deliver(decoder.decode(chunk.value, { stream: true }));
+          deliver(decoder.decode(chunk.value));
           if (terminal) return true;
         }
         return false;

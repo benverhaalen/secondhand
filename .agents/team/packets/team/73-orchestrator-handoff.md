@@ -4,7 +4,7 @@ Updated: November 15, 2026, about 10:15 UTC. Owner: Nate. Agent: Claude Code, th
 
 The orchestrator holds the whole backend for Nate: it starts and briefs the team leads, takes the problems that change what was imagined, owns the site harnesses and the cloud browser (`app/src/edge/harness/`, `app/src/edge/browser/`), and records what Nate says in [words](../../../../product/words.md). Read first: [packet 55](55-team-leads-and-mac-workers.md), [completion](../../../../spec/plans/completion.md), [where the backend is not optimized](../../../../spec/plans/optimization-gaps.md), then the lead handoffs below.
 
-## 0a. Where things stand at 12:50 UTC on 2026-11-15 (the times written as "Central" elsewhere in this packet are UTC; the machine clock read 05:30 CST at 11:30 UTC)
+## 0a. Where things stand at 12:05 UTC on 2026-11-15 (the times written as "Central" elsewhere in this packet are UTC; the machine clock read 05:30 CST at 11:30 UTC)
 
 The audit is written and pushed: [audit of main](../../../../spec/plans/audit-2026-11-15.md), with the three evidence sweeps and five expert reviews in [its folder](../../../../spec/plans/audit-2026-11-15/). Ben's plan was read after it. Every fix, by lead, with its proof, is in [the finalization spec](../../../../spec/plans/finalization.md): read that before anything below, which is older.
 

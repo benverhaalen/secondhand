@@ -18,7 +18,9 @@ export function routesFromRenders(renders, selected = []) {
     if (!found) throw new Error(`No render for ${value}; use a render slug or its route.`);
     return found;
   });
-  return [...new Map(chosen.map(route => [route.slug, route])).values()];
+  // Camera last: on a real phone, opening the camera ends the test runner's connection, so nothing after it would be saved.
+  const unique = [...new Map(chosen.map(route => [route.slug, route])).values()];
+  return [...unique.filter(r => !/^camera/.test(r.slug)), ...unique.filter(r => /^camera/.test(r.slug))];
 }
 
 export function attachmentToSlug(name) {

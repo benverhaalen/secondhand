@@ -1,96 +1,96 @@
-Attributes: Application, 0x1020aa430, pid: 82482, label: 'secondhand'
+Attributes: Application, 0x103639530, pid: 19775, label: 'secondhand'
 Element subtree:
- →Application, 0x1020aa430, pid: 82482, label: 'secondhand'
-    Window (Main), 0x102084bd0, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x102081e60, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x1020855e0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x102085250, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x102084f00, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x102085970, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x102083dc0, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x10208b170, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x102083a50, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x1020883c0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x10208a080, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x1020844b0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x10740bfd0, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x107404c40, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x10740f090, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x10740f1b0, {{0.0, 0.0}, {402.0, 764.0}}
-                                    ScrollView, 0x102344e80, {{0.0, 0.0}, {402.0, 764.0}}
-                                      Other, 0x102343a60, {{0.0, 0.0}, {402.0, 855.7}}
-                                        Other, 0x102084800, {{0.0, 0.0}, {402.0, 855.7}}
-                                          Other, 0x102082560, {{0.0, 0.0}, {402.0, 298.0}}
-                                          Other, 0x102340f30, {{20.0, 62.0}, {362.0, 44.0}}
-                                            Button, 0x1020836e0, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                          StaticText, 0x102082fc0, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Gone by Friday'
-                                            StaticText, 0x102082c30, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Gone by Friday'
-                                          StaticText, 0x10208e970, {{20.0, 164.0}, {48.3, 20.3}}, label: 'Moving'
-                                            StaticText, 0x102083350, {{20.0, 164.0}, {48.3, 20.3}}, label: 'Moving'
-                                          Button, 0x10208a740, {{76.3, 163.3}, {95.3, 22.0}}, identifier: 'moving', label: 'Moving day: Friday, Nov 20'
-                                          StaticText, 0x102087520, {{20.0, 217.3}, {362.0, 24.3}}, label: 'Sell'
-                                            StaticText, 0x102088750, {{20.0, 217.3}, {362.0, 24.3}}, label: 'Sell'
-                                          StaticText, 0x10208c640, {{20.0, 249.7}, {362.0, 18.3}}, label: 'You get about $91 if it sells'
-                                            StaticText, 0x102088ac0, {{20.0, 249.7}, {362.0, 18.3}}, label: 'You get about $91 if it sells'
-                                          Button, 0x10208a3e0, {{20.0, 284.0}, {110.0, 138.3}}, identifier: 'thing-it_jacket', label: 'Carhartt Detroit Jacket J97, brown duck, L'
-                                          Button, 0x102088e30, {{20.0, 426.3}, {53.7, 20.0}}, identifier: 'price-it_jacket', label: 'Carhartt Detroit Jacket J97, brown duck, L: For $95'
-                                          StaticText, 0x102089190, {{20.0, 494.3}, {362.0, 24.3}}, label: 'Until Friday'
-                                            StaticText, 0x102095c00, {{20.0, 494.3}, {362.0, 24.3}}, label: 'Until Friday'
-                                          StaticText, 0x1020821c0, {{56.0, 546.7}, {326.0, 20.3}}, label: 'Today'
-                                            StaticText, 0x102086e20, {{56.0, 546.7}, {326.0, 20.3}}, label: 'Today'
-                                          Other, 0x102088060, {{20.0, 556.0}, {24.0, 24.0}}
-                                            Other, 0x102085cf0, {{22.2, 557.3}, {19.5, 21.5}}
-                                              Other, 0x102086ac0, {{22.2, 559.3}, {19.5, 19.5}}
-                                              Other, 0x102087190, {{27.2, 557.3}, {9.5, 5.5}}
-                                              Other, 0x102086740, {{22.2, 565.3}, {19.5, 1.5}}
-                                              Other, 0x102084140, {{26.5, 569.0}, {11.0, 6.0}}
-                                          StaticText, 0x102086050, {{56.0, 571.0}, {326.0, 18.3}}, label: 'Nothing changes yet'
-                                            StaticText, 0x10208b840, {{56.0, 571.0}, {326.0, 18.3}}, label: 'Nothing changes yet'
-                                          Other, 0x10208ae00, {{20.0, 601.3}, {362.0, 67.0}}
-                                          StaticText, 0x102089cf0, {{56.0, 613.7}, {326.0, 20.3}}, label: 'Wednesday at 9 am'
-                                            StaticText, 0x10208aaa0, {{56.0, 613.7}, {326.0, 20.3}}, label: 'Wednesday at 9 am'
-                                          Other, 0x10208b4d0, {{20.0, 623.0}, {24.0, 24.0}}
-                                            Other, 0x102095f70, {{22.2, 624.3}, {19.5, 21.5}}
-                                              Other, 0x10208c9c0, {{22.2, 626.3}, {19.5, 19.5}}
-                                              Other, 0x10208bbe0, {{27.2, 624.3}, {9.5, 5.5}}
-                                              Other, 0x10208df40, {{22.2, 632.3}, {19.5, 1.5}}
-                                              Other, 0x10208dbc0, {{26.5, 636.0}, {11.0, 6.0}}
-                                          StaticText, 0x10208c2e0, {{56.0, 638.0}, {326.0, 18.3}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
-                                            StaticText, 0x10208cd40, {{56.0, 638.0}, {326.0, 18.3}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
-                                          Other, 0x10208d860, {{20.0, 668.3}, {362.0, 70.3}}
-                                          StaticText, 0x102024f20, {{56.0, 680.7}, {326.0, 20.3}}, label: 'Thursday at 9 am'
-                                            StaticText, 0x10208e610, {{56.0, 680.7}, {326.0, 20.3}}, label: 'Thursday at 9 am'
-                                          Other, 0x102081ad0, {{20.0, 691.7}, {24.0, 24.0}}
-                                            Other, 0x102081770, {{22.2, 692.9}, {19.5, 21.5}}
-                                              Other, 0x1020943c0, {{22.2, 694.9}, {19.5, 19.5}}
-                                              Other, 0x102081410, {{27.2, 692.9}, {9.5, 5.5}}
-                                              Other, 0x1020810a0, {{22.2, 700.9}, {19.5, 1.5}}
-                                              Other, 0x10202b440, {{26.5, 704.7}, {11.0, 6.0}}
-                                          Button, 0x10202bf00, {{56.0, 705.0}, {153.3, 21.7}}, identifier: 'ending', label: 'What’s left Thursday: What’s left goes up free'
-                                          Other, 0x102094aa0, {{20.0, 739.0}, {362.0, 85.0}}
-                                          StaticText, 0x10208ecf0, {{56.0, 751.3}, {326.0, 20.3}}, label: 'Pickups until Thursday at 8 pm'
-                                            StaticText, 0x10202b0e0, {{56.0, 751.3}, {326.0, 20.3}}, label: 'Pickups until Thursday at 8 pm'
-                                          Other, 0x10208f3d0, {{20.0, 769.7}, {24.0, 24.0}}
-                                            Other, 0x10208f060, {{22.2, 770.9}, {19.6, 21.5}}
-                                              Other, 0x10202a9d0, {{22.2, 770.9}, {19.6, 21.5}}
-                                              Other, 0x10208e2a0, {{27.8, 776.4}, {8.5, 8.5}}
-                                          StaticText, 0x102095510, {{56.0, 775.7}, {326.0, 36.3}}, label: 'When a buyer asks, you pick the days and times. At Library parking lot, Main St.'
-                                            StaticText, 0x102094e00, {{56.0, 775.7}, {326.0, 36.3}}, label: 'When a buyer asks, you pick the days and times. At Library parking lot, Main St.'
-                                      Other, 0x102094050, {{369.0, 62.0}, {30.0, 702.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
-                                        Other, 0x1020951a0, {{396.0, 65.0}, {3.0, 621.3}}
-                                      Other, 0x102095870, {{0.0, 731.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x102090c30, {{3.0, 758.0}, {393.0, 3.0}}
-                                      Other, 0x102090fb0, {{369.0, 62.0}, {30.0, 702.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
-                                        Other, 0x1020908a0, {{396.0, 65.0}, {3.0, 621.3}}
-                                      Other, 0x10202d090, {{0.0, 731.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x102090500, {{3.0, 758.0}, {393.0, 3.0}}
-                                  Button, 0x10208f730, {{20.0, 776.0}, {362.0, 48.0}}, identifier: 'approve', label: 'Start the plan'
-                      Other, 0x1020924a0, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x102091a50, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x103639530, pid: 19775, label: 'secondhand'
+    Window (Main), 0x103636ba0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x10363c930, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x103636ee0, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x103635140, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x103638cf0, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x103639110, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x10363d8d0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x10363cc70, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x103641270, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x103640e50, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10363a310, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x10363f630, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x103641690, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x103635980, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x10363d090, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x10363d4b0, {{0.0, 0.0}, {402.0, 764.0}}
+                                    ScrollView, 0x103645960, {{0.0, 0.0}, {402.0, 764.0}}
+                                      Other, 0x103645a80, {{0.0, 0.0}, {402.0, 855.7}}
+                                        Other, 0x103645ba0, {{0.0, 0.0}, {402.0, 855.7}}
+                                          Other, 0x103645cc0, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x103645de0, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x103645f00, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                          StaticText, 0x103646020, {{20.0, 118.0}, {362.0, 41.3}}, label: 'gone by friday'
+                                            StaticText, 0x103646140, {{20.0, 118.0}, {362.0, 41.3}}, label: 'gone by friday'
+                                          StaticText, 0x103646260, {{20.0, 164.0}, {48.3, 20.3}}, label: 'Moving'
+                                            StaticText, 0x103646380, {{20.0, 164.0}, {48.3, 20.3}}, label: 'Moving'
+                                          Button, 0x1036464a0, {{76.3, 163.3}, {95.3, 22.0}}, identifier: 'moving', label: 'Moving day: Friday, Nov 20'
+                                          StaticText, 0x1036465c0, {{20.0, 217.3}, {362.0, 24.3}}, label: 'Sell'
+                                            StaticText, 0x1036466e0, {{20.0, 217.3}, {362.0, 24.3}}, label: 'Sell'
+                                          StaticText, 0x103646800, {{20.0, 249.7}, {362.0, 18.3}}, label: 'You get about $91 if it sells'
+                                            StaticText, 0x103646920, {{20.0, 249.7}, {362.0, 18.3}}, label: 'You get about $91 if it sells'
+                                          Button, 0x103646a40, {{20.0, 284.0}, {110.0, 138.3}}, identifier: 'thing-it_jacket', label: 'Carhartt Detroit Jacket J97, brown duck, L'
+                                          Button, 0x103646b60, {{20.0, 426.3}, {53.7, 20.0}}, identifier: 'price-it_jacket', label: 'Carhartt Detroit Jacket J97, brown duck, L: For $95'
+                                          StaticText, 0x103646c80, {{20.0, 494.3}, {362.0, 24.3}}, label: 'Until Friday'
+                                            StaticText, 0x103646da0, {{20.0, 494.3}, {362.0, 24.3}}, label: 'Until Friday'
+                                          StaticText, 0x103646ec0, {{56.0, 546.7}, {326.0, 20.3}}, label: 'Today'
+                                            StaticText, 0x103646fe0, {{56.0, 546.7}, {326.0, 20.3}}, label: 'Today'
+                                          Other, 0x103647100, {{20.0, 556.0}, {24.0, 24.0}}
+                                            Other, 0x103647220, {{22.2, 557.3}, {19.5, 21.5}}
+                                              Other, 0x103647340, {{22.2, 559.3}, {19.5, 19.5}}
+                                              Other, 0x103647460, {{27.2, 557.3}, {9.5, 5.5}}
+                                              Other, 0x103647580, {{22.2, 565.3}, {19.5, 1.5}}
+                                              Other, 0x1036476a0, {{26.5, 569.0}, {11.0, 6.0}}
+                                          StaticText, 0x1036477c0, {{56.0, 571.0}, {326.0, 18.3}}, label: 'Nothing changes yet'
+                                            StaticText, 0x1036478e0, {{56.0, 571.0}, {326.0, 18.3}}, label: 'Nothing changes yet'
+                                          Other, 0x103647a00, {{20.0, 601.3}, {362.0, 67.0}}
+                                          StaticText, 0x103647b20, {{56.0, 613.7}, {326.0, 20.3}}, label: 'Wednesday at 9 am'
+                                            StaticText, 0x103647c40, {{56.0, 613.7}, {326.0, 20.3}}, label: 'Wednesday at 9 am'
+                                          Other, 0x103647d60, {{20.0, 623.0}, {24.0, 24.0}}
+                                            Other, 0x103647e80, {{22.2, 624.3}, {19.5, 21.5}}
+                                              Other, 0x103647fa0, {{22.2, 626.3}, {19.5, 19.5}}
+                                              Other, 0x1036480c0, {{27.2, 624.3}, {9.5, 5.5}}
+                                              Other, 0x1036481e0, {{22.2, 632.3}, {19.5, 1.5}}
+                                              Other, 0x103648300, {{26.5, 636.0}, {11.0, 6.0}}
+                                          StaticText, 0x103648420, {{56.0, 638.0}, {326.0, 18.3}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
+                                            StaticText, 0x103648540, {{56.0, 638.0}, {326.0, 18.3}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
+                                          Other, 0x103648660, {{20.0, 668.3}, {362.0, 70.3}}
+                                          StaticText, 0x103648780, {{56.0, 680.7}, {326.0, 20.3}}, label: 'Thursday at 9 am'
+                                            StaticText, 0x1036488a0, {{56.0, 680.7}, {326.0, 20.3}}, label: 'Thursday at 9 am'
+                                          Other, 0x1036489c0, {{20.0, 691.7}, {24.0, 24.0}}
+                                            Other, 0x103648ae0, {{22.2, 692.9}, {19.5, 21.5}}
+                                              Other, 0x103648c00, {{22.2, 694.9}, {19.5, 19.5}}
+                                              Other, 0x103648d20, {{27.2, 692.9}, {9.5, 5.5}}
+                                              Other, 0x103648e40, {{22.2, 700.9}, {19.5, 1.5}}
+                                              Other, 0x103648f60, {{26.5, 704.7}, {11.0, 6.0}}
+                                          Button, 0x103649080, {{56.0, 705.0}, {153.3, 21.7}}, identifier: 'ending', label: 'What’s left Thursday: What’s left goes up free'
+                                          Other, 0x1036491a0, {{20.0, 739.0}, {362.0, 85.0}}
+                                          StaticText, 0x1036492c0, {{56.0, 751.3}, {326.0, 20.3}}, label: 'Pickups until Thursday at 8 pm'
+                                            StaticText, 0x1036493e0, {{56.0, 751.3}, {326.0, 20.3}}, label: 'Pickups until Thursday at 8 pm'
+                                          Other, 0x103649500, {{20.0, 769.7}, {24.0, 24.0}}
+                                            Other, 0x103649620, {{22.2, 770.9}, {19.6, 21.5}}
+                                              Other, 0x103649740, {{22.2, 770.9}, {19.6, 21.5}}
+                                              Other, 0x103649860, {{27.8, 776.4}, {8.5, 8.5}}
+                                          StaticText, 0x103649980, {{56.0, 775.7}, {326.0, 36.3}}, label: 'When a buyer asks, you pick the days and times. At Library parking lot, Main St.'
+                                            StaticText, 0x103649aa0, {{56.0, 775.7}, {326.0, 36.3}}, label: 'When a buyer asks, you pick the days and times. At Library parking lot, Main St.'
+                                      Other, 0x103649dc0, {{369.0, 62.0}, {30.0, 702.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                        Other, 0x103649ee0, {{396.0, 65.0}, {3.0, 621.3}}
+                                      Other, 0x10364a000, {{0.0, 731.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x10364a120, {{3.0, 758.0}, {393.0, 3.0}}
+                                      Other, 0x10364a240, {{369.0, 62.0}, {30.0, 702.0}}, label: 'Vertical scroll bar, 2 pages', value: 0%
+                                        Other, 0x10364a360, {{396.0, 65.0}, {3.0, 621.3}}
+                                      Other, 0x10364a480, {{0.0, 731.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x10364a5a0, {{3.0, 758.0}, {393.0, 3.0}}
+                                  Button, 0x1036404f0, {{20.0, 776.0}, {362.0, 48.0}}, identifier: 'approve', label: 'Start the plan'
+                      Other, 0x103640610, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x103640730, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x1020aa430, pid: 82482, label: 'secondhand'
+ →Application, 0x103639530, pid: 19775, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x102092f40, pid: 82482, label: 'secondhand'
+    Application, 0x103640a70, pid: 19775, label: 'secondhand'
   }

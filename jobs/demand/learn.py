@@ -15,7 +15,7 @@ from dataclasses import dataclass, replace
 import numpy as np
 from scipy.optimize import nnls
 
-from param.registry import MemoryStore
+from param.registry import MemoryStore, complete_row
 
 from datetime import date, timedelta
 from demand.params import resolved as resolved_params, DECLARED, validate_value
@@ -188,9 +188,9 @@ def fold(store: MemoryStore, name: str, scope: dict, *, champion: list[Forecast]
     if not won:
         return False, "lost held-out"
     latest = max((r["version"] for r in store.history(name, scope)), default=0)
-    row = store.propose({"name": name, "scope": scope, "family": "scalar", "value_or_hyperparams": value,
+    row = store.propose(complete_row({"name": name, "scope": scope, "family": "scalar", "value_or_hyperparams": value,
                          "prior": declaration['prior'], "fitted_on_ids_hash": sha256(json.dumps(
                              sorted((_key(f), f.resolved_value) for f in challenger)).encode()).hexdigest(), "n_eff": len(challenger), "metric": "pinball",
-                         "held_out_score": score, "guard_lo": declaration.get("guard_lo"), "guard_hi": declaration.get("guard_hi")}, expect_version=latest)
+                         "held_out_score": score, "guard_lo": declaration.get("guard_lo"), "guard_hi": declaration.get("guard_hi")}), expect_version=latest)
     # the paired bootstrap above already decided; the stored scores come from different resolved sets
     return store.promote(name, scope, row["version"], noise=float("-inf"), at=at)
