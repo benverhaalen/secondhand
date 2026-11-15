@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { createPool, type Launcher, type LaunchOptions, type PoolContext, type PoolPage } from './pool.ts';
 import { loadPlaywright, playwrightLauncher } from './playwright.ts';
 import { memoryAccounts, memoryVault, memoryProfileRegistry, type Accounts, type StorageState } from './auth.ts';
-import { browserUseCloud, cdpLauncher, localChrome, type CdpPw } from './cdp.ts';
+import { browserUseCloud, cdpLauncher, isCdpPw, localChrome, type CdpPw } from './cdp.ts';
 import { memoryLeases } from '../events/ports.ts';
 import { createLog } from '../../../../log/index.js';
 import { existsSync } from 'node:fs';
@@ -503,4 +503,26 @@ test('account lookup, dispatch and warm require the account owner', async () => 
   assert.equal(f.launched.length, 1);
   assert.equal((await pool.dispatch({ ...task, user_id: 'owner' })).ok, true);
   await pool.close();
+});
+
+test('Playwright is accepted only when its CDP entry point exists', () => {
+  assert.equal(isCdpPw({ chromium: { connectOverCDP: async () => ({}) } }), true);
+  assert.equal(isCdpPw({ chromium: {} }), false);
+  assert.equal(isCdpPw(null), false);
+});
+
+test('CDP cleanup failures reach the injected logger and do not hide later cleanup', async () => {
+  const errors: { where: string; error: unknown }[] = [];
+  const log = { error: (where: string, error: unknown) => { errors.push({ where, error }); } };
+  const context = { pages: () => [], newPage: async () => ({ close: async () => {} }), addCookies: async () => {}, addInitScript: async () => {},
+    storageState: async () => ({ cookies: [], origins: [] }), close: async () => {} };
+  const browser = { contexts: () => [context], newContext: async () => context, close: async () => { throw new Error('browser close'); }, on() {} };
+  const pw = { chromium: { connectOverCDP: async () => browser } } as CdpPw;
+  let stopped = 0;
+  const launcher = cdpLauncher(pw, { kind: 'local', open: async () => ({ cdpUrl: 'http://127.0.0.1:1', stop: async () => { stopped++; throw new Error('stop'); } }) }, log);
+  const ctx = await launcher.anonymous({ headless: true });
+  await ctx.close();
+  assert.deepEqual(errors.map(e => e.where), ['browser.cdp.close', 'browser.cdp.stop']);
+  assert.ok(errors.every(e => e.error instanceof Error));
+  assert.equal(stopped, 1);
 });

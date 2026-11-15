@@ -4,10 +4,14 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { VERBS, type Verb } from '../../protocol.ts';
-import { M, PATHS, poshmarkAdapters, readComments, readListing, readReviews, share, stillUp, toWatchSnapshot, type Client } from './adapter.ts';
+import { M, PATHS, poshmarkAdapters, readComments, readListing, readReviews, share, state, stillUp, toWatchSnapshot, type Client } from './adapter.ts';
 
 const fx = (f: string) => readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8');
 const s = new AbortController().signal;
+
+test('malformed Poshmark initial state is treated as missing page state', () => {
+  assert.equal(state('window.__INITIAL_STATE__={; (function'), undefined);
+});
 
 // Routes a request to its recording by the url the live client would open.
 function client(o: { signed_in?: boolean; status?: number; html?: string; challenge?: boolean } = {}): Client {
