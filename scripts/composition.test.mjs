@@ -36,9 +36,9 @@ test('U11: five lines before the first card on a main tab fails; a pushed page i
   assert.deepEqual(compose(s, { route: 'item/[id]' }), []);
 });
 
-test('U11: the tab frame is not read, and the top number with its window over it is one line', () => {
+test('U11: the top number with its window over it is one line', () => {
   const s = approved(); s.items[0].y = 330;
-  s.texts.push(t('Today', 'heading', 108, { frame: true }), t('Since yesterday', 'caption', 112, { news: true }));
+  s.texts.push(t('Today', 'heading', 108, { bar: true }), t('Since yesterday', 'caption', 112, { news: true }));
   s.texts.find(x => x.s === '$96.20').news = true; s.texts.find(x => x.s.startsWith('Kept')).news = true;
   s.texts.push(t('Needs you now', 'body', 250, { head: true }));
   assert.deepEqual(compose(s, { route: '(tabs)/index' }), []);
