@@ -57,8 +57,21 @@ export function cents(typed: string): Cents | null {
 
 // The brass lamp from a relative's spare room (the clearing world's it_lamp): two lamps look alike, so identify offers both
 // and "I don't know"; and a maker's mark on its base may mean it is worth far more (edge-cases §4).
+// The candidates come ranked with their odds as the identify job returns them (jobs/identity/ladder.py, odds at the starting
+// values, t 0.10 and b 0.30): image hits only, so none is exact and the person picks. The banker's lamp was found by two
+// routes (image search and the vision model), the others by one or two weaker ones; the 9% left is "none of these". A pick
+// fills what that product is known to be, each fact as the agent's suggestion until the person changes it. Lamps have no
+// confirmed captures yet, so the odds are the starting values', not calibrated: the sheet ranks them with bars and no percent.
+export type LampFacts = { kind: string; material: string; era: string; style: string };
 export const LAMP = {
   key: 'brass-lamp' as const,
-  candidates: ['Banker’s lamp', 'Desk lamp'] as const,
+  calibrated: false,
+  candidates: [
+    { id: 'banker', name: 'Banker’s lamp', seen: 'Shape and shade clip, 2 checks', odds: 0.489, fills: { kind: 'Banker’s lamp', material: 'Brass', era: '1930s to 1950s', style: 'Traditional' } },
+    { id: 'desk', name: 'Desk lamp', seen: 'Shape', odds: 0.344, fills: { kind: 'Desk lamp', material: 'Brass', era: '1970s', style: 'Mid-century' } },
+    { id: 'piano', name: 'Piano lamp', seen: 'Arm, 2 checks', odds: 0.073, fills: { kind: 'Piano lamp', material: 'Brass', era: '1950s', style: 'Traditional' } },
+  ] as const satisfies readonly { id: string; name: string; seen: string; odds: number; fills: LampFacts }[],
+  // The facts a pick fills, in the order their chips show.
+  facts: [{ key: 'kind', name: 'Kind' }, { key: 'material', name: 'Material' }, { key: 'era', name: 'Era' }, { key: 'style', name: 'Style' }] as const,
   mark: 'A maker’s mark on the base',
 };

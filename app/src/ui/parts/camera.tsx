@@ -347,25 +347,28 @@ function Point({ x, y, dx, dy, delay, shown, strength }: { x: number; y: number;
 
 // A fact as a chip on the foot bar: found, with a check, or a Blank with the fact's name that the person can fill by
 // hand. One height whatever is inside.
-export function FactChip({ id, name, value, onChange }: { id: string; name: string; value?: string | null; onChange?: (v: string) => void }) {
+// A fact the camera read sits on the lilac tint, the agent's ground (the Guess part's); one the person typed is plain,
+// so what the AI suggested and what the person set are told apart at a glance (Ben, 08:12).
+export function FactChip({ id, name, value, onChange, by = 'agent' }: { id: string; name: string; value?: string | null; onChange?: (v: string) => void; by?: 'agent' | 'person' }) {
+  const agent = !!value && by === 'agent';
   return (
     <Animated.View key={value ? 'found' : 'blank'} entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)}>
-      <ChipBody>
+      <ChipBody tint={agent}>
         {value ? (
-          <View {...mark('fact', { found: 'true', fit: 'content' })} accessibilityLabel={`${name}: ${value}`} style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>
-            <Icon name="tick-02" size={12} />
-            <Txt role="body">{value}</Txt>
+          <View {...mark('fact', { found: 'true', by, fit: 'content' })} accessibilityLabel={`${name}: ${value}${agent ? ', suggested' : ''}`} style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>
+            <Icon name="tick-02" size={12} tone={agent ? 'on-color' : 'ink'} />
+            <Txt role="body" tone={agent ? 'on-color' : 'ink'}>{value}</Txt>
           </View>
         ) : <Blank id={id} name={name} look="body" onChange={onChange} />}
       </ChipBody>
     </Animated.View>
   );
 }
-export function ChipBody({ children }: { children: ReactNode }) {
+export function ChipBody({ children, tint = false }: { children: ReactNode; tint?: boolean }) {
   const c = useColors();
   return (
     <OnGround ground="card">
-      <View {...mark('cam-chip', { fit: 'content' })} style={{ height: CHIP_H, borderRadius: radius.pill, backgroundColor: c.surface, borderWidth: 1, borderColor: c.rule, paddingHorizontal: space.s3, justifyContent: 'center' }}>{children}</View>
+      <View {...mark('cam-chip', { fit: 'content' })} style={{ height: CHIP_H, borderRadius: radius.pill, backgroundColor: tint ? c.lilacTint : c.surface, borderWidth: 1, borderColor: tint ? c.lilacTint : c.rule, paddingHorizontal: space.s3, justifyContent: 'center' }}>{children}</View>
     </OnGround>
   );
 }

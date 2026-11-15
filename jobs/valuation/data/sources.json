@@ -54,8 +54,9 @@
     "what": "eBay Best Offer listings, May 2012 to June 2013 (Backus, Blake, Larsen, Tadelis, QJE 2020)",
     "official": "https://www.nber.org/research/data/best-offer-sequential-bargaining",
     "mirror": null,
-    "download": "http://data.nber.org/data/bargaining/anon_bo_lists.csv.gz",
-    "files": []
+    "download": "https://back.nber.org/appendix/w24306/bargaining/anon_bo_lists.csv.gz",
+    "files": [],
+    "bytes": 4451661738
   },
   "ebay_comps_cc0": {
     "what": "570 eBay sold rows, September 2026, 15 keyword files",

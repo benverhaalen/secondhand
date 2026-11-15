@@ -8,13 +8,14 @@ import { buyer } from './worlds/buyer.ts';
 import { clearing } from './worlds/clearing.ts';
 import { flipper } from './worlds/flipper.ts';
 import { fresh } from './worlds/new.ts';
+import { stage } from './worlds/stage.ts';
 
-export const WORLDS = { new: fresh, clearing, flipper, buyer, edge, one } as const;
+export const WORLDS = { new: fresh, clearing, flipper, buyer, edge, one, stage } as const;
 export type AnyWorld = keyof typeof WORLDS;
 export const WORLD_NAMES = Object.keys(WORLDS) as AnyWorld[];
 export const DEFAULT_WORLD: WorldName = 'clearing';
 
-// world('clearing') by default. `edge` and `one` are for the break pass.
+// world('clearing') by default. `edge` and `one` are for the break pass; `stage` is the live posting demo.
 export const world = (name: AnyWorld = DEFAULT_WORLD): World => WORLDS[name];
 export default clearing;
 

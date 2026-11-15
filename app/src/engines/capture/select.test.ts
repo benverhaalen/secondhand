@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { table } from './table.ts';
 import { select, type State } from './select.ts';
 import { memoryStore } from '../param/param.ts';
 export const state = (patch: Partial<State> = {}): State => ({capture_id:'c',item_id:'i',purpose:'sell',confirm_mode:'tap',has_lidar:true,sites:['ebay'],type:null,kept:[],retakes:{},facts:{},lookups:'none',refused:[],...patch});
@@ -26,4 +27,23 @@ test('LiDAR with failed Object Capture uses ring and rewrites scan ways', () => 
 test('bundle scan ways follow ring keys per piece', () => {
   const selected = run({type:'bags',has_lidar:true,object_capture:false,pieces:2});
   assert.equal(selected.rows.find(row=>row.field==='dimensions.2')!.ways.find(way=>way.way==='measured')!.view, 'ring.2');
+});
+
+test('unknown rigid extent offers a medium hard scan; unknown rigidity stays soft', () => {
+  const rigid=run({type:'other',rigid:true});
+  assert.equal(rigid.dimension_class,'medium_hard','unknown extent must not imply a small item');
+  assert.ok(rigid.process.some(step=>step.kind==='scan'));
+  assert.equal(run({type:'other'}).dimension_class,'soft_goods');
+});
+
+test('bundle group and replacement front read their step definitions from the table', () => {
+  const steps=table.steps;
+  assert.ok(steps,'process.json must define group and front_still steps');
+  const group=structuredClone(steps.group),front=structuredClone(steps.front_still);
+  try {
+    steps.group.seconds=17;steps.front_still.seconds=23;
+    const selected=run({type:'electronics',extent_cm:6,pieces:2});
+    assert.deepEqual(selected.process[0],{...steps.group,key:'group'});
+    assert.deepEqual(selected.process.find(step=>step.key==='front.1'),{...steps.front_still,key:'front.1'});
+  } finally {steps.group=group;steps.front_still=front;}
 });

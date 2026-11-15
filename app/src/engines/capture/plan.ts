@@ -161,7 +161,7 @@ function orderQuestions(candidates: Candidate[], state: State, params: ParamStor
 function capQuestions(candidates: Candidate[], rows: FieldRow[], state: State, params: ParamStore): Question[] {
   const consumed = rows.filter(row => {
     const optional = linked(targets(state),row.required).length === 0;
-    const answered = state.facts[row.field]?.source === 'you_said' || state.refused.includes(row.field);
+    const answered = state.facts[row.field]?.source === 'you_said' || state.facts[row.field]?.confirmed === true || state.refused.includes(row.field);
     return optional && answered;
   }).length;
   let remaining = Math.max(0,bound(params,'capture_question_cap') - consumed);
@@ -188,13 +188,14 @@ export function plan(state: State, params: ParamStore) {
     state:resolution.state,
     value:resolution.fact?.value ?? null,
     source:resolution.fact?.source ?? null,
+    ...(resolution.auto_accepted ? {auto_accepted:true as const} : {}),
     ...(resolution.fact?.note?{note:resolution.fact.note}:{}),
     required_by:linked(targets(state),row.required),
     recommended_by:linked(targets(state),row.recommended),
   }));
   const shooting = keys.some(key => !state.kept.includes(key));
   const candidates = fieldQuestions(resolved,state,complete,shooting);
-  const {candidates:shotsToAsk,shots} = shotQuestions(resolved,state,keys,shooting);
+  const {candidates:shotsToAsk} = shotQuestions(resolved,state,keys,shooting);
   candidates.push(...shotsToAsk);
   if(state.studio?.requested && !shooting)for(const ask of state.studio.asks) {
     const step=studioStep(ask);
@@ -211,7 +212,7 @@ export function plan(state: State, params: ParamStore) {
   const questions = capQuestions(candidates,rows,state,params);
   const process = selected.process.map(step => ({
     ...step,
-    state:shots[step.key]?.shot.reason === 'retake' ? 'retake' as const : state.kept.includes(step.key) ? 'kept' as const : 'pending' as const,
+    state:questions.some(question=>question.shot?.step===step.key && question.shot.reason==='retake') ? 'retake' as const : state.kept.includes(step.key) ? 'kept' as const : 'pending' as const,
   }));
   const status = shooting ? 'shooting' as const : questions.length ? 'asking' as const : 'done' as const;
   const {rows:_rows,...selection} = selected;

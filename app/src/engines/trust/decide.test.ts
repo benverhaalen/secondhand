@@ -15,7 +15,7 @@ const ctx = (over: Partial<Ctx> = {}): Ctx => ({
 const msg = (text: string, n = 1): Msg => ({ id: 'm1', thread_id: 't1', site: 'facebook', n, text, at: '2026-11-14T10:00:00Z' });
 const WORKED = 'Still available? I will pay by Zelle now, send me your email so I can lock it in. Here is my number: https://my-pics.example/x';
 const thread = (over: Partial<ThreadIn> = {}): ThreadIn => ({
-  msg: msg(WORKED), ctx: ctx(), group: 'facebook_local', checkout: false, orderPaid: false, local: true, keep_q50: 300, refund_asked: 0, ...over,
+  msg: msg(WORKED), ctx: ctx(), group: 'facebook_local', checkout: false, orderPaid: false, local: true, keep_q50_cents: 30000, refund_asked_cents: 0, ...over,
 });
 const model = (...sigs: string[]): Deps['model'] => async () => sigs.map((signal) => ({ signal, confidence: 0.9, span: signal }));
 const deps = (m: Deps['model'], over: Partial<Deps> = {}): Deps => ({ store, model: m, ...over });
@@ -23,8 +23,8 @@ const deps = (m: Deps['model'], over: Partial<Deps> = {}): Deps => ({ store, mod
 test('worked example: s = 4.2, L = 300, F = 17.14, line 1.24, ask, share_address locked, no percentage', async () => {
   const d = await decideThread(deps(model('off_platform', 'asks_address_phone')), thread());
   assert.ok(Math.abs(d.s - 4.2) < 1e-9, String(d.s));
-  assert.equal(d.loss, 300);
-  assert.ok(Math.abs(d.friction - 17.14) < 1e-9);
+  assert.equal(d.loss_cents, 30000);
+  assert.ok(Math.abs(d.friction_cents - 1714) < 1e-9);
   assert.ok(Math.abs(d.line - 1.2434) < 0.001);
   assert.equal(d.action, 'ask');
   assert.equal(d.commitWaits, true);
@@ -34,9 +34,9 @@ test('worked example: s = 4.2, L = 300, F = 17.14, line 1.24, ask, share_address
 });
 
 test('the reference loss puts the ask line at exactly card 5\'s 1.5; loss has a $20 floor and counts the refund asked', () => {
-  assert.ok(Math.abs(askLine(50, p) - 1.5) < 0.01);
-  assert.equal(loss(5, 0, p), 20);
-  assert.equal(loss(100, 50, p), 150);
+  assert.ok(Math.abs(askLine(5000, p) - 1.5) < 0.01);
+  assert.equal(loss(500, 0, p), 2000);
+  assert.equal(loss(10000, 5000, p), 15000);
 });
 
 test('blocked: a scam script (the overpay message) is blocked and no draft is allowed', async () => {
@@ -47,7 +47,7 @@ test('blocked: a scam script (the overpay message) is blocked and no draft is al
 });
 
 test('a good buyer sees no friction: none, no reason, commit does not wait', async () => {
-  const d = await decideThread(deps(model()), thread({ msg: msg('Does it come with the case? I can pick up Saturday.', 3), ctx: ctx({ buyer: { age_days: 900, ratings: 60, good_purchases: 12 }, urgent: false, price_usd: 80 }), keep_q50: 80 }));
+  const d = await decideThread(deps(model()), thread({ msg: msg('Does it come with the case? I can pick up Saturday.', 3), ctx: ctx({ buyer: { age_days: 900, ratings: 60, good_purchases: 12 }, urgent: false, price_usd: 80 }), keep_q50_cents: 8000 }));
   assert.equal(d.action, 'none');
   assert.equal(d.commitWaits, false);
   assert.deepEqual(d.reasons, []);
@@ -55,13 +55,13 @@ test('a good buyer sees no friction: none, no reason, commit does not wait', asy
 
 test('a high-loss buyer over the line never passes: ask at $300 where $30 would not be asked', async () => {
   const c = ctx({ buyer: { age_days: 9, ratings: 0, good_purchases: 0 }, urgent: false, price_usd: 100 });
-  const hi = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50: 300 }));
-  const lo = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50: 25 }));
+  const hi = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50_cents: 30000 }));
+  const lo = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50_cents: 2500 }));
   assert.equal(hi.action, 'ask');
   assert.notEqual(lo.action, 'block');
   assert.ok(hi.commitWaits);
   // a high-loss thread is never dropped to none by a missing keep value
-  const none = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50: Number.NaN }));
+  const none = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50_cents: undefined }));
   assert.notEqual(none.action, 'none');
 });
 
@@ -101,8 +101,10 @@ test('299 resolved threads: no percentage; at 300 with 30 positives and ece with
   const none = await decideThread({ store: s2, model: model('off_platform') }, thread());
   assert.equal(none.percent, null);
   put(300, 0.02);
-  const some = await decideThread({ store: s2, model: model('off_platform') }, thread());
+  const some = await decideThread({ store: s2, model: model('off_platform') }, thread({ proof: { rows: Array.from({ length: 300 }, (_, i) => ({ id: `label${i}`, source: 'trust_label', at: '2026-11-14T00:00:00Z' })), now: '2026-11-14T10:00:00Z', scope: { site: 'facebook_local' }, code_version: 'fixture', table_versions: [{ table: 'trust_label', version: 1 }] } }));
   assert.ok(some.percent !== null && some.percent.checked === 300);
+  assert.equal(some.percent.probability.number.state, 'shown');
+  assert.equal(some.percent.probability.citation.param_versions.trust_calib, 2);
 });
 
 test('block from the score alone needs the gate and a calibrated p of 0.95', async () => {
