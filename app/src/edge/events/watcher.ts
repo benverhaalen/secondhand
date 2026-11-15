@@ -6,7 +6,7 @@ import { isWrite, type Harness, type Verb } from '../harness/protocol.ts';
 import { toWatchSnapshot } from '../harness/sites/depop/adapter.ts';
 import { decide, type PAccept } from '../../engines/negotiation/choose.ts';
 import { keep } from '../../engines/valuation/keep.ts';
-import { orderBook, ORDER_STATES, type OrderRead, type OrderRow } from '../orders/orders.ts';
+import { orderBook, ORDER_STATES, type OrderRead } from '../orders/orders.ts';
 import { confirmedOrder } from '../delist/delist.ts';
 import { confirm } from '../sold/sold.ts';
 import { diffSweep, toEvent } from './differ.ts';
@@ -20,7 +20,7 @@ import type { Citation } from '../../engines/proof/proof.ts';
 import { markStale, markRelinked } from './stale.ts';
 
 export interface WatchedListing {
-  kind?: string; views?: number; likes?: number; offers?: Snapshot['offers'];
+  price_cents?: number; kind?: string; views?: number; likes?: number; offers?: Snapshot['offers'];
   listing_id: string; item_id: string; site: Site; account_id: string; external_id: string; state: string;
 }
 export interface WatcherDeps {
@@ -29,7 +29,7 @@ export interface WatcherDeps {
     byExternal(user_id: string, site: Site, external_id: string): WatchedListing | undefined;
     ofItem(user_id: string, item_id: string): WatchedListing[];
   };
-  limits: { of(user_id: string, item_id: string): { ask_cents: number; floor_cents: number; always_accept_cents: number } | undefined };
+  limits: { of(user_id: string, item_id: string, listing?: WatchedListing): { ask_cents: number; floor_cents: number; always_accept_cents: number } | undefined };
   snapshots: Map<string, Snapshot>;
   pAccept: PAccept;
   cadenceOf?: CadenceOf;
@@ -97,7 +97,7 @@ export function createWatcher(d: WatcherDeps) {
   const orders = d.orders ?? orderBook(iso);
   if (!d.orders) for (const row of store.systemRows('order')) {
     const { version: _version, ...saved } = row;
-    Object.assign(orders.apply(saved as unknown as OrderRow).order, saved);
+    Object.assign(orders.apply(saved as unknown as OrderRead).order, saved);
   }
   const registry = d.cadenceParams ?? paramStore();
   for (const entry of WATCH_PARAMS) registry.declare(entry);
@@ -262,7 +262,7 @@ export function createWatcher(d: WatcherDeps) {
       if (change.action === 'offer.received') {
         const offer = next.offers?.find(o => o.external_id === change.ref);
         if (!offer || offer.state !== 'open') continue;
-        const limits = d.limits.of(a.user_id, listing.item_id);
+        const limits = limitsOf(a.user_id, listing.item_id, listing, next);
         const raw = data.offers?.find(o => o.external_id === offer.external_id);
         const received = typeof raw?.created_at === 'string' ? raw.created_at : at;
         const outcome = limits ? decide({ ...limits, site: a.site, offer_cents: offer.amount_cents,
@@ -279,6 +279,13 @@ export function createWatcher(d: WatcherDeps) {
     if (d.hazard) for (const h of hazards(a, next)) log.event('note', { msg: 'watcher listing hazard', account_id: a.account_id, ...h });
     log.event('note', { msg: 'watcher snapshot', account_id: a.account_id, site: a.site, tier: stateOf(a), baseline: prev === null });
     return { ok: true as const };
+  }
+
+  function limitsOf(user_id: string, item_id: string, listing?: WatchedListing, snapshot = listing && d.snapshots.get(listing.account_id)) {
+    const price_cents = snapshot?.listings?.find(l => l.external_id === listing?.external_id)?.price_cents ?? listing?.price_cents;
+    const context = listing && { ...listing, ...(price_cents !== undefined && { price_cents }) };
+    const limits = d.limits.of(user_id, item_id, context);
+    return limits && price_cents !== undefined ? { ...limits, ask_cents: price_cents } : limits;
   }
 
   const scheduling = () => scheduler ??= createScheduler({ accounts: () => linked.filter(a => !stale.has(a.account_id)), stateOf,
@@ -317,7 +324,8 @@ export function createWatcher(d: WatcherDeps) {
       code: 'policy_refused', message: 'negotiation requires approval', hint: { do: 'raise_decision', kind: jobArgs?.decision_kind ?? 'offer_to_likers' },
     }, meta };
     if (isWrite(verb as Verb) && !saleDelist) {
-      const limits = job?.item_id ? d.limits.of(job.user_id, job.item_id) : undefined;
+      const listing = job?.item_id ? d.listings.ofItem(job.user_id, job.item_id).find(l => l.listing_id === job.listing_id && l.account_id === account_id && l.site === site) : undefined;
+      const limits = job?.item_id ? limitsOf(job.user_id, job.item_id, listing) : undefined;
       const price = jobArgs!.price_cents!;
       if (!limits || price < limits.floor_cents || price > limits.ask_cents
         || jobArgs!.decision_kind === 'accept_offer' && price < limits.always_accept_cents) return { ok: false, error: {
@@ -354,34 +362,14 @@ export function createWatcher(d: WatcherDeps) {
   const pipeline = createPipeline({ ...d, harness, worker: 'watcher', engines: { async poll_orders(job) {
     if (!job.site || !job.account_id || !job.listing_id || !job.item_id) throw new Error('poll_orders requires account, listing and item');
     let failure: HarnessError | undefined;
-    let confirmed: OrderRow | undefined;
     const saleHarness: HarnessLike = { async call<T>(site: Site, verb: string, args = {}) {
       const env = await harness.call<T>(site, verb, { ...args, user_id: job.user_id });
       if (!env.ok) failure = env.error;
       return env;
     } };
-    const saleOrders: typeof orders = { ...orders, apply(read) {
-      const applied = orders.apply(read);
-      const saved = store.rows('order', { user_id: job.user_id }).find(row => row.site === read.site && row.external_order_id === read.external_order_id);
-      applied.order.id = typeof saved?.id === 'string' ? saved.id
-        : d.orders && !store.get('order', job.user_id, applied.order.id) ? applied.order.id
-        : `ord_${encodeURIComponent(read.site)}_${encodeURIComponent(read.external_order_id)}`;
-      confirmed = { ...applied.order };
-      return { ...applied, order: confirmed };
-    } };
-    const saleStore: Store = { ...store, tx: fn => store.tx(t => {
-      if (!confirmed) throw new Error('delist fan-out requires a confirmed order');
-      t.put('order', { ...confirmed });
-      return fn({ ...t,
-        insertEvent: event => t.insertEvent({ ...event, observed_at: iso(), effective_at: iso(),
-          payload: { ...event.payload, order_id: confirmed!.id } }),
-        insertJob: next => t.insertJob({ ...next, created_at: iso(), args: { ...next.args, order_id: confirmed!.id } }),
-      });
-    }) };
-    const result = await confirm({ store: saleStore, log, harness: saleHarness, orders: saleOrders, listingsOf: item => d.listings.ofItem(job.user_id, item)
+    const result = await confirm({ store, log, harness: saleHarness, orders, listingsOf: item => d.listings.ofItem(job.user_id, item)
       .filter(l => linked.some(a => a.user_id === job.user_id && a.account_id === l.account_id && a.site === l.site)) },
     { ...job, site: job.site, account_id: job.account_id, listing_id: job.listing_id, item_id: job.item_id });
-    if (result.outcome === 'sold') log.event('note', { msg: 'watcher order saved', order_id: result.order.id, item_id: job.item_id });
     if (result.outcome === 'paused') return { settle: 'pause', err: failure ?? { code: 'auth_expired', message: 'confirmation paused' } };
     if (result.outcome === 'error') {
       if (!failure) throw new Error('confirmation failed without a harness error');

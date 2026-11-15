@@ -9,11 +9,11 @@ import type { EventKind, EventRow, Site } from './event.ts';
 export type JobKind =
   | 'post' | 'delist' | 'send_message' | 'poll_inbox' | 'poll_orders' | 'reconcile' | 'score' | 'check_due'
   | 'answer_offer' | 'make_offer' | 'sweep' | 'relink' // these four NEW
-  | 'identify' | 'valuate' | 'search';
+  | 'identify' | 'valuate' | 'search' | 'delete_user' | 'export_user';
 export type JobState = 'queued' | 'running' | 'done' | 'failed';
 export type Mode = 'auto' | 'ask' | 'locked';
 
-export interface Stage { name: string; state: 'started' | 'running' | 'arrived' | 'failed'; result?: unknown; started_at?: string; ended_at?: string }
+export interface Stage { name: string; state: 'started' | 'running' | 'arrived' | 'planned' | 'failed'; result?: unknown; started_at?: string; ended_at?: string | null; found?: object }
 export interface JobRow {
   id: string;
   kind: JobKind;
@@ -26,7 +26,8 @@ export interface JobRow {
   listing_id?: string;
   args: Record<string, unknown>;
   state: JobState;
-  paused?: 'account_stale'; // NEW: a paused job is kept, never dropped, and resumes on relink
+  paused?: 'account_stale' | 'workspace_port_not_configured';
+  reason?: string;
   stages: Stage[]; // the durable checkpoints: a stage with state arrived is never run again
   attempts: number;
   result?: unknown;
@@ -85,6 +86,8 @@ export interface StoreState {
 }
 
 export interface Store {
+  deleteUser(user_id: string): { events: number; jobs: number; decisions: number; rows: Record<Table, number> };
+  exportUser(user_id: string): StoreState;
   put<T extends Row>(table: Table, row: T): T & { version: number };
   get<T extends Row>(table: Table, user_id: string, id: string): T | undefined;
   rows<T extends Row>(table: Table, filter: { user_id: string } & Record<string, unknown>): T[];
@@ -133,6 +136,32 @@ export function memoryStore(initial?: StoreState): Store & { claims: Map<string,
   const s: Store & { claims: Map<string, string>; dump(): StoreState } = {
     claims,
     dump: () => structuredClone({ events, jobs, decisions, rows }),
+    exportUser(user_id) {
+      return structuredClone({
+        events: events.filter(row => row.user_id === user_id),
+        jobs: jobs.filter(row => row.user_id === user_id),
+        decisions: decisions.filter(row => row.user_id === user_id),
+        rows: Object.fromEntries(TABLES.map(table => [table, (rows[table] ?? []).filter(row => row.user_id === user_id)])),
+      });
+    },
+    deleteUser(user_id) {
+      return s.tx(() => {
+        const counts = { events: 0, jobs: 0, decisions: 0, rows: {} as Record<Table, number> };
+        const keep = <T extends { user_id: string }>(list: T[]) => list.filter(row => row.user_id !== user_id);
+        counts.events = events.length; events = keep(events); counts.events -= events.length;
+        counts.jobs = jobs.length;
+        for (const job of jobs) if (job.user_id === user_id) claims.delete(job.id);
+        jobs = keep(jobs); counts.jobs -= jobs.length;
+        counts.decisions = decisions.length; decisions = keep(decisions); counts.decisions -= decisions.length;
+        for (const table of TABLES) {
+          const list = rows[table] ?? [];
+          counts.rows[table] = list.length;
+          if (rows[table]) rows[table] = keep(list);
+          counts.rows[table] -= rows[table]?.length ?? 0;
+        }
+        return counts;
+      });
+    },
     put(table, row) {
       const tableRows = rows[table] ?? [];
       const i = tableRows.findIndex(r => r.id === row.id && r.user_id === row.user_id);
