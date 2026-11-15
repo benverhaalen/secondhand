@@ -1,6 +1,6 @@
 // What sits over a screen or stands in for it: a sheet, the Undo toast, an empty screen, and a skeleton.
 import { useEffect, type ReactNode } from 'react';
-import { Modal, Pressable, View } from 'react-native';
+import { Modal, View } from 'react-native';
 import Animated, { Easing, FadeIn, FadeOut, ReduceMotion, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import { MOTIONS } from '../motion';
 import { Press } from '../press';
@@ -22,7 +22,8 @@ export function Sheet({ open, title, onClose, children }: { open: boolean; title
       <Theme scheme={scheme}>
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
           <Animated.View entering={FadeIn.duration(ms).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(motion.select)} style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: c.scrim }}>
-            <Pressable accessibilityLabel="Close" style={{ flex: 1 }} onPress={onClose} />
+            {/* The scrim is not a button that gives way: a tap anywhere on it closes the sheet, as on iOS. */}
+            <View accessibilityRole="button" accessibilityLabel="Close" style={{ flex: 1 }} onStartShouldSetResponder={() => true} onResponderRelease={onClose} />
           </Animated.View>
           <Animated.View entering={SlideInDown.duration(ms).easing(EASE_OUT).reduceMotion(ReduceMotion.System)} exiting={SlideOutDown.duration(motion.select)}>
             <Surface kind="sheet" part="sheet" box={{ paddingHorizontal: space.gutter, paddingTop: space.s6, paddingBottom: space.s8, gap: space.s4 }}>
