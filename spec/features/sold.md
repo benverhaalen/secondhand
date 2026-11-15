@@ -21,8 +21,8 @@ Ben's design shows red only after a failure and names no cancel cost; the backen
 
 | Choice | Options considered | Picked | Why | What would change it |
 |---|---|---|---|---|
-| Detection route | official events; sale email; cloud poll; phone notification listener ([email note](../../research/sold/nate/email-and-notification-detection.md)); person-paced | per site, table under Systems: the signed-in harness on each site first, email the fallback ([Nate](../../product/words.md#2026-11-14-nate-sale-emails-the-expo-account-where-routes-are-hosted-and-a-buy-page-shaped-by-your-style)) | eBay and Depop push; Poshmark and Mercari have none, so the harness polls about every 2 min; email only wakes the poll | the sample shows email slower than the poll |
-| Email route | Gmail read-only OAuth; forwarding filter; no email ([email note](../../research/sold/nate/email-and-notification-detection.md), [autonomous E1](../../research/cross-cutting/nate/autonomous-features.md)) | connect's `email` account (read-only), forwarding filter as fallback, a hint only | mail can be spoofed, so the site is read before a sale counts | launch verification cost (Open 1) |
+| Detection route | official events; sale email; cloud poll; phone notification listener ([email note](../../research/sold/nate/email-and-notification-detection.md)); person-paced | per site, table under Systems: for Poshmark and Mercari the public-page check is the frequent check and the signed-in read confirms; Depop by signed-in watchers; no sale email ([Nate](../../product/words.md#2026-11-14-nate-the-signed-in-harness-where-the-account-adds-capability-faster-public-paths-elsewhere), [handoff](../../.agents/team/packets/team/45-handoff-to-the-build-session.md), from Ben's [packet 44](../../.agents/team/packets/sold/44-cheap-sale-detection.md)) | a sold Poshmark listing stays public marked out of stock and Mercari's page marks it sold out (observed in [cheap-sale-detection](../../research/sold/ben/cheap-sale-detection.md)): no login, no browser minutes, no risk to the account | the public page stops showing the sold state |
+| Email route | Gmail read-only OAuth; forwarding filter; no email ([email note](../../research/sold/nate/email-and-notification-detection.md), [autonomous E1](../../research/cross-cutting/nate/autonomous-features.md)) | no email: a sale is seen by the public-page check, then the signed-in read ([handoff](../../.agents/team/packets/team/45-handoff-to-the-build-session.md)) | Gmail read scopes need a yearly assessment, mail can be spoofed, and the public page is faster and free | Nate reopens it |
 | Hold before payment | do nothing; pause (hide); delist ([crosspost-and-delist](../../research/list/ben/crosspost-and-delist.md)) | pause while unpaid, delist on `paid` | delisting an unpaid offer loses the sale if the buyer walks | no pause path on a site: the person decides, as on Facebook |
 | Red threshold | 3 min and 6 min (Ben's two notes, [crosspost](../../research/list/ben/crosspost-and-delist.md), [build plan](../../research/cross-cutting/ben/build-plan-posting-messages-ui.md)); one value | one value, 5 min from the sale read, every site | clears a 2 min poll plus pacing, inside the [bar](#how-we-will-know-it-works) | By site p95 after real sales |
 | Double-sale order | earlier paid; later paid; cheaper cancel ([trust-returns-disputes](../../research/sold/nate/trust-returns-disputes.md)) | suggest the later-paid order; flag when cancelling the earlier one costs less; the person taps | the first buyer paid first; cost shown per site | a site's cancel cost proves higher |
@@ -35,9 +35,9 @@ Ben's design shows red only after a failure and names no cancel cost; the backen
 ## Data flow
 ```mermaid
 flowchart LR
-  A[Site sale event or email hint] -->|public edge, 2xx fast| B[(Lakebase: job, order, next_check_at)]
+  A[Signed site push, public-page hit or watcher hit] -->|public edge checks the signature, 2xx fast| B[(Lakebase: job, order, next_check_at)]
   S[Lakeflow sweep and reconcile] -->|writes next_check_at| B
-  B -->|policy check in code| C[Harness: our own adapter over the Browser Use cloud session; official API last]
+  B -->|policy check in code| C[Harness: our own adapter over the person's session in our hosted browser; official API where one exists]
   C -->|delist, read back| D[Site]
   C -->|listing state, event, evidence| B
   B -->|SSE job stages| E[App: Today, Sell]
@@ -75,28 +75,28 @@ Order states from product §4. Triggers:
 Item: `live` to `sold` on the first paid order; `done` on `released`; `returned` or `disputed` while a case is open. A cancelled sale returns the item to `live` and relists the others, never on Poshmark. Listing states are from [lifecycle.mjs](../lifecycle.mjs), unchanged. A paid buyer beats dibs in code, not as a decision: the dibs buyer gets an automatic message and a place in the queue.
 
 ## Systems underneath
-Agent runtime, one loop and two triggers: an event or schedule becomes one `job` with an idempotency key; the policy check runs in code; the harness (`read_orders`, `end`, `relist`, `send_message`, per-site capability table) acts through our own adapter over the person's signed-in session (an official API only as the last fallback), reads back and logs. A lease keeps one job per account session, paced per site.
+Agent runtime, one loop and two triggers: an event or schedule becomes one `job` with an idempotency key; the policy check runs in code; the harness (`read_orders`, `end`, `relist`, `send_message`, per-site capability table) acts through our own adapter over the person's signed-in session in our hosted browser (an official API where one exists), reads back and logs. A lease keeps one job per account session, paced per site.
 
 | Piece | Job here |
 |---|---|
-| Thin public edge (*agent proposal*, [vision](../../product/vision.md), front door) | receives webhooks and forwarded mail, 2xx in under 1 s |
+| Thin public edge (*agent proposal*, [vision](../../product/vision.md), front door) | receives signed site pushes, 2xx in under 1 s; rejects an unsigned one: eBay by `X-EBAY-SIGNATURE` checked with `getPublicKey`, any HMAC-signed push over `timestamp.body` inside a time window ([packet 44](../../.agents/team/packets/sold/44-cheap-sale-detection.md), taken by Nate in the [handoff](../../.agents/team/packets/team/45-handoff-to-the-build-session.md)) |
 | Lakebase, SSE | order, job, clocks, decisions; job stages stream to the app |
 | Lakeflow | `check_due` order polls at the tiers in [card 15](../determinations/managing-and-buyers.md#15-when-to-check-again), the nightly `reconcile` ([connect](./connect.md#read-back-and-reconcile)), clock timers; Harness acts per site |
 | Label API | rates, buys and voids labels with insurance where the site issues none (*agent proposal*; a label API such as EasyPost or Shippo, picked by rate and carrier cover, not by where the backend runs) |
-| Gmail | connect's `email` account, read-only, a hint |
+| Public-page watcher | fetches each live Poshmark and Mercari listing page every 1 to 2 min from our server, no session; a sold or out-of-stock mark triggers the signed-in read |
 | Delta, MLflow | `sold_to_all_down_ms` per site; one trace per job, shown as "why?" |
 
-Detection per site (*agent proposal*, delays from the [email note](../../research/sold/nate/email-and-notification-detection.md)):
+Detection per site (*agent proposal*, delays from the [email note](../../research/sold/nate/email-and-notification-detection.md) and [cheap-sale-detection](../../research/sold/ben/cheap-sale-detection.md); Ben's agreement not recorded on the rows Nate changed):
 
 | Site | Route | Expected delay |
 |---|---|---|
-| eBay | `ORDER_CONFIRMATION` notification fires `poll_orders` now; `getOrders` backstop (a sold listing can stay Active at quantity 0) | seconds |
-| Depop | webhooks `order.new`, `order.update`, `order.refund`; order id is the dedupe key | seconds |
-| Poshmark | sale email ("... just sold to ... on Poshmark!", *asserted*) sets `next_check_at` to now; cloud-session sold-page poll about every 2 min | about 2 min (*inferred*) |
-| Mercari | SMS opt-in or poll; no subject lines found | about 2 min (*inferred*) |
-| Facebook | sold status is not emailed; the person marks sold, or an order-page watch | person-paced |
+| eBay | `getOrders` by the signed-in read at the watcher tiers (a sold listing can stay Active at quantity 0); whether the signed `ORDER_CONFIRMATION` push also fires `poll_orders` now is open for Nate ([open questions](../open-questions.md)) | seconds with the push, the watcher tier without |
+| Depop | signed-in watcher on the notification feed and orders, 1 to 2 min hot; order id is the dedupe key; no partner access, so no webhooks ([Nate](../../product/words.md#2026-11-14-nate-no-depop-partner-access-so-build-an-ai-driven-workaround)) | about 2 min (*inferred*) |
+| Poshmark | public listing page every 1 to 2 min (`oos` once sold, observed); a hit sets `next_check_at` to now and the signed-in read confirms | about 2 min (*inferred*) |
+| Mercari | public listing page every 1 to 2 min (sold out in the page data, observed); a hit triggers the signed-in read | about 2 min (*inferred*) |
+| Facebook | the person marks sold, or a signed-in watch of the orders page | person-paced |
 
-Delist: one job per listing, key `delist:{item}:{site}`; cancel in-flight post or revise jobs first; backoff 5 s, 15 s, 45 s, 2 min, then the cloud browser; Poshmark paced 2 to 5 s per action (*inferred*), open offer voided first; counts only after read-back.
+Delist: one job per listing, key `delist:{item}:{site}`; cancel in-flight post or revise jobs first; backoff 5 s, 15 s, 45 s, 2 min, then the browser agent in our hosted browser; Poshmark paced 2 to 5 s per action (*inferred*), open offer voided first; counts only after read-back.
 
 ## Contract for the frontend
 REST under `/v1`, prefixed ids, money `{amount_cents, currency}`, ISO 8601 UTC.
@@ -127,7 +127,7 @@ The policy check runs in code before any executor. `price_below_floor` and `pick
 | Login expired | `relink` card | that site pauses, others continue |
 | Ship-by near | card at 24 h and 4 h | `label` job |
 | Pickup no-show | `no_show` card | rebook, next in line, relist; sale stays open |
-| Email spoofed or wrong | nothing | email never proves a sale; the site read does |
+| Public page shows sold but the read finds no paid order | nothing | the page never proves a sale; the signed-in read does |
 | Claim reply has an unbacked line | `unbacked_claim` card | the line is dropped or the person supplies evidence |
 
 Account risk per site: a late delist that ends in a Poshmark cancellation counts toward its 3% rolling 90 day seller-cancellation rate, with a 24 hour restriction then a 14 day suspension (*observed* in trade articles, the count *inferred*). Poshmark's By site row shows it.
@@ -144,12 +144,12 @@ Account risk per site: a late delist that ends in a Poshmark cancellation counts
 On `return_open` or `dispute_open` a `claim_reply` decision is raised with one bundle assembled one bundle from the item card ([item-card.md](./item-card.md)): the capture frames, each disclosed flaw with its image region, the listing text at sale time, the tracking ref and the delivery scan. Each line carries its `evidence`. Weight and size are guarded numbers with a `citation`. The reply draft passes `claim_check`. It never claims what no capture settles: authenticity, whether it works, hidden condition.
 
 ## How we will know it works
-Bar, *observed*: the leading crosslister documents a 10 min sale poll (Vendoo, BETA, needs the computer on with Vendoo open in a browser tab, [help.vendoo.co](https://help.vendoo.co/en/articles/8047348-sale-detection-auto-delist), 2026-10-07; see [teardown](../../research/cross-cutting/nate/crosslister-teardown.md)). Others publish 15 or 30 min (*asserted*). We beat it with one bar, owned here (*agent proposal*, [assessment §6](../assessment.md#6-delist-after-a-sale-the-costliest-error)): from the sale known to delisted on every other site, `sold_to_all_down_ms` p95 under 2 min, with the 5 min red threshold above as the red line, and no device left on. The `delist` jobs are the first jobs a sale event creates and have no agent step; the hold at the first committed signal is reversed when the order is cancelled. Every other file links here for the number. By design this holds for eBay and Depop; Poshmark and Mercari rest on the poll and Facebook is person-paced, so the test decides.
+Bar, *observed*: the leading crosslister documents a 10 min sale poll (Vendoo, BETA, needs the computer on with Vendoo open in a browser tab, [help.vendoo.co](https://help.vendoo.co/en/articles/8047348-sale-detection-auto-delist), 2026-10-07; see [teardown](../../research/cross-cutting/nate/crosslister-teardown.md)). Others publish 15 or 30 min (*asserted*). We beat it with one bar, owned here (*agent proposal*, [assessment §6](../assessment.md#6-delist-after-a-sale-the-costliest-error)): from the sale known to delisted on every other site, `sold_to_all_down_ms` p95 under 2 min, with the 5 min red threshold above as the red line, and no device left on. The `delist` jobs are the first jobs a sale event creates and have no agent step; the hold at the first committed signal is reversed when the order is cancelled. Every other file links here for the number. By design this holds for eBay; Depop, Poshmark and Mercari rest on watchers and the public-page check and Facebook is person-paced, so the test decides.
 
 | Claim | Check |
 |---|---|
 | p95 under 2 min, red at 5 min | `sold_to_all_down_ms` p95 per site pair over 5 real or seeded sales on each pair |
-| Email hint is worth keeping | send-to-arrival on about 20 sample emails per site; drop the hint where median exceeds the poll |
+| Public-page check is faster than the signed-in read alone | sale-to-hit time on 5 seeded sales each on Poshmark and Mercari |
 | No sale unpaid or duplicated | replay through [replay.mjs](../replay.mjs): invariants hold |
 | Nothing silent | every `double_sale`, failed delist and cancel has a card within one poll |
 | Clocks right | ship-by and claim clocks match the table on three orders per site |
@@ -162,10 +162,10 @@ Marks as in the notes; "Launch" says what changes publicly.
 |---|---|---|
 | Vendoo polls every 10 min; Flyp 15, Nifty within 15, Treecat 30; Treecat says every tool polls | observed (Vendoo), asserted (others) | [teardown](../../research/cross-cutting/nate/crosslister-teardown.md) |
 | No tool offers real-time, device-independent delist, or warns before a missed delist becomes a Poshmark cancellation | observed | [teardown](../../research/cross-cutting/nate/crosslister-teardown.md) |
-| Gmail push: latency not published, 1 event per second per user, renewal at least every 7 days; the earlier "10 to 30 s" figure has no support | observed | [email note](../../research/sold/nate/email-and-notification-detection.md) |
+| Gmail push (not used; sale email is out): latency not published, 1 event per second per user, renewal at least every 7 days; the earlier "10 to 30 s" figure has no support | observed | [email note](../../research/sold/nate/email-and-notification-detection.md) |
 | `gmail.readonly` and `gmail.metadata` are restricted scopes: verification and an annual CASA assessment ($540 to $1,800 for Tier 2, "as of 2024"). Launch: a public app needs this; the build can use test users | observed, price asserted | [email note](../../research/sold/nate/email-and-notification-detection.md) |
 | A forwarding filter needs no OAuth but can be spoofed | observed | [email note](../../research/sold/nate/email-and-notification-detection.md) |
-| Depop: webhooks, no sale email found; Facebook: sold not emailed; Mercari US: SMS opt-in; Poshmark body fields not found; Android listener has no iOS route | observed, not found | [email note](../../research/sold/nate/email-and-notification-detection.md) |
+| Depop: webhooks exist for partners only (we have no partner access), no sale email found; Facebook: sold not emailed; Mercari US: SMS opt-in; Poshmark body fields not found; Android listener has no iOS route | observed, not found | [email note](../../research/sold/nate/email-and-notification-detection.md) |
 | eBay: 3 business days seller response; buyer-cancel 3 calendar days vs 3 business days | observed, conflict | [trust](../../research/sold/nate/trust-returns-disputes.md) |
 | Mercari: 72 h after delivery, ship in 3 business days. Poshmark: 72 hours vs 3 days to open a case; ship in 7 days; label cap 15 lb, overweight deduction from 2026-10-26 | observed, unresolved | [trust](../../research/sold/nate/trust-returns-disputes.md), [shipping](../../research/sold/nate/shipping-and-pickup.md) |
 | Facebook: ship in 7 vs 3 days, claim 7 vs 45 days (*asserted*). Depop: ship or add tracking within 10 days (Depop US, confirmed); 48 h to answer; "Other" shipping closes 2026-10-28; vacation mode still requires sold orders to ship | observed, conflict | [trust](../../research/sold/nate/trust-returns-disputes.md), [levers](../../research/list/nate/platform-levers.md) |
@@ -177,14 +177,14 @@ Marks as in the notes; "Launch" says what changes publicly.
 Rules that hold: home address only on the person's tap; buyers' personal data stays out of logs; recalled products are not relisted after a cancel; account risk is shown per site.
 
 ## Open for Ben and Nate
-1. **Email scope at launch.** Gmail read-only needs verification and an annual CASA assessment; the forwarding filter avoids it and can be spoofed. Recommendation: build on the filter plus test users, decide the scope before a public launch. Depends on the sample test.
+1. **Email scope at launch.** Answered by Nate: sale email is out; the public-page check and the signed-in read carry detection ([handoff](../../.agents/team/packets/team/45-handoff-to-the-build-session.md)).
 2. **Conflicting clocks** (eBay cancel days, Facebook 3 vs 7, Depop 10 vs 11, Poshmark 72 h vs 3 days). Recommendation: use the shorter one until a real order proves otherwise.
-3. **Email bodies.** Whether Poshmark and Mercari mail carries an order id and price is not found; sample mail settles it.
+3. **Email bodies.** Moot: sale email is out.
 4. **Business model.** A label fee, a cancel-cost protector or a payout advance could earn here. None is picked.
 
 ## Needs from the shared model
 - Order clock fields and a per-site clock table.
 - Invariants (*agent proposal*, [lifecycle.mjs](../lifecycle.mjs) untouched): `committed` hold; `delistOk` only from read-back; undetected `paid` plus `reconcile`; `saleCancelled` relists the others; unique `(site, order_id)`; claim evidence present when a case opens.
 - `LISTING_STATES` lacks `postUnknown`, `needsReauth` and per-site health; order states and `ship_by`, pickup, return actions are not in `lifecycle.mjs` ([spec/README](../README.md)).
-- connect adds an `email` account row; the sold decision kinds are in [events.json](../events.json).
+- the sold decision kinds are in [events.json](../events.json).
 - product.md §7: add `POST /v1/orders/:id/ship {insure_cents?}`, `POST /v1/orders/labels {order_ids[], layout}` and `GET /v1/orders/pick-list`; `order` gains `label {carrier, tracking_ref, insured_cents?, batch_id?}`.

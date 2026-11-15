@@ -230,6 +230,7 @@ The design gap is that none of them names where its metric is computed. The para
 | 596 | recompute 20 numbers after a week | **measure** | Any difference fails. |
 | 597 | whether Gateway fronts the image models | **check** | Register one endpoint and call it. |
 | 598 | teardown and a fresh deploy | **check** | Run `databricks bundle destroy`, then `bundle deploy`, from the README. |
+| harness | hosted browsers on Databricks compute (a first-hour check, *agent proposal*) | **check** | Start one headless browser in a container on classic Databricks compute and in a `system.ai.sandbox` call, open a site's login page with a steady address, and hold one session for an hour. Either passing means the hosted browsers can run there; both failing keeps them on our own containers outside Databricks ([databricks.md](databricks.md), [handoff](../.agents/team/packets/team/45-handoff-to-the-build-session.md)). |
 
 **Owner, 601–603:** the webhook receiver, selling data and permissions for a public launch. Recommend keeping the receiver at the edge, keeping selling data neutral until J6, and asking for permissions after the demonstration.
 
@@ -549,7 +550,7 @@ Confidence runs 1–5: 5 means others ship it and our pieces are observed or doc
 | Money D1 comps and fee arithmetic | 4 | Pure arithmetic over observed fees; the method is fully specified | D1 weighting + D6 range + the fee formula per site | 30 held-out recent eBay sales; coverage of the 80% range between 70 and 90% | price, list price per site (J10) |
 | Lakebase + job table with `SKIP LOCKED` | 4 | Postgres semantics are documented; the token refresh is unproven here | `job` table, two workers | §9.2 + §9.4: 1,000 rows, 0 duplicates; 70 min without an auth error | every background action (P2) |
 | Expo shell + edge routes | 5 | Already passes its check (8 of 8) | Add `log.call` to index.tsx's outside call; health → edge → App | Signed-in call reaches the App; anonymous call refused (§9.1) | every screen |
-| Gmail push sale detection (Poshmark, Mercari) | 4 | Gmail watch is documented; the email bodies are unread | Gmail watch on a label → parser | 5 test sales; all detected; p95 under 2 min (connect:165) | delist on the slow sites, sold |
+| Public-page sale detection (Poshmark, Mercari), replacing Gmail push now that sale email is out | 4 | the sold markers on the public page are observed in Ben's packet 44 | a public page check every 1 to 2 min, the signed-in read confirming | 5 test sales; all detected; p95 under 2 min (connect:165) | delist on the slow sites, sold |
 | Public search API over our own index | 4 | Our index plus AI Search; the rate limit is ours to set | `GET /v1/search` over `observation` + product | 100 visitor queries; p95 under 3 s; no identifying field in the event (databricks:330) | buy, the "search engine is an API" decision |
 | Read-side crawling of public result pages (Firecrawl or Jev) | 4 | Observed working in the repo (ScrapeCreators 24 listings in 1.32 s, watch:135; page-monitor `extractListings`) | `harness.call(site,'search_active')` on Depop, Poshmark, Mercari via the crawl route | 20 queries per site; ≥18 return parsed listings with price and URL | watch, market, comps on the non-API sites |
 | Delist through the official API or a kept browser session | 4 | eBay `EndItem` and Depop are documented; the browser path is replayed | `delist` job kind with an idempotency key | Kill mid-run; reconcile records it exactly once (databricks:276); API path p95 under 3 s | sold, cross-listing safety |
@@ -635,7 +636,7 @@ Every row below is *my proposal*. Budgets are quoted from the spec. "Today" is w
     - *Risks* a tone mismatch, so templates are in the seller's style, learned from their sent messages.
   - **Classify first, then generate.** A Haiku classifier labels the message: offer, availability, question about a fact, or other. Availability and fact answers come from the item card with a citation. Only "other" goes to Sonnet.
     - *Risks* misclassification, which the evidence gate catches.
-  - **Event sources:** eBay and Depop webhooks, and Gmail push for the rest. Polling remains only as reconcile.
+  - **Event sources:** eBay's signed push (whether to use it is open), the public listing page on Poshmark and Mercari, and signed-in watchers everywhere; no Depop webhooks and no sale email (later update from the [handoff](../.agents/team/packets/team/45-handoff-to-the-build-session.md)).
 
 ### 5. A product page
 
