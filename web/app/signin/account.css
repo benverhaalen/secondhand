@@ -3,12 +3,15 @@
   justify-items: center;
   width: 100%;
   max-width: none;
-  padding: clamp(108px, 17svh, 164px) var(--s-6) var(--s-9);
+  padding: calc(var(--s-9) * 2 + var(--s-7)) var(--s-6) var(--s-9);
   min-height: 84svh;
-  background: var(--wash) top center / 100% var(--wash-h) no-repeat;
+  background-image: var(--wash);
+  background-size: 100% var(--wash-h);
+  background-repeat: no-repeat;
+  background-position: top center;
 }
 .account-form-wrap { align-self: start; display: grid; width: min(100%, 360px); gap: var(--s-5); }
-.account-form-wrap h1 { font-size: clamp(34px, 4vw, 50px); line-height: 1.06; }
+.account-form-wrap h1 { font-size: var(--t-36); line-height: var(--lh-36); }
 .account-form-wrap label, .account-form-wrap form { display: grid; gap: var(--s-2); }
 .account-form-wrap form { gap: var(--s-4); }
 .account-form-wrap input {

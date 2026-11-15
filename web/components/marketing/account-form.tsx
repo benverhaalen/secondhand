@@ -49,7 +49,11 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
         setStatus(`We sent a code to ${body.email}.`);
       } else if (route !== 'email/start' && result === 200) {
         await rememberSession(response, route === 'google' ? googleProfile(body.id_token) : {});
-        router.replace('/app');
+        const next = new URLSearchParams(window.location.search).get('next');
+        const destination = new URL(next?.startsWith('/app') ? next : '/app', window.location.origin);
+        const privateRoute = destination.origin === window.location.origin
+          && (destination.pathname === '/app' || destination.pathname.startsWith('/app/'));
+        router.replace(privateRoute ? destination.pathname + destination.search + destination.hash : '/app');
       } else if (result === 429) {
         setError('Too many attempts. Try again later.');
       } else if (route === 'email/verify' && (result === 400 || result === 401 || result === 422)) {
@@ -96,7 +100,7 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
       <h1>{signup ? 'Create your account' : 'Sign in to secondhand'}</h1>
       {googleClientId && <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" onReady={showGoogleButton} onError={() => setGoogleProblem(true)} />}
       {googleClientId && !googleProblem && <div className="google-account-button" ref={googleButton} />}
-      {(!googleClientId || googleProblem) && <p className="account-quiet">Google sign-in is unavailable here. Use email to continue.</p>}
+      {googleClientId && googleProblem && <p className="account-quiet">Google sign-in is unavailable here. Use email to continue.</p>}
       {googleClientId && !googleProblem && <div className="account-divider">or use email</div>}
       <form onSubmit={send}>
         {step === 'email' ? <label>Email address<input type="email" name="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} required /></label>

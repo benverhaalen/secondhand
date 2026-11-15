@@ -1,3 +1,4 @@
+import { SellerFulfillment } from '@/selling/fulfillment';
 // Ship: get a sold thing out the door before its ship-by time (spec/pages.md §6.9, spec/features/sold.md "Shipping").
 // The label the site issues, or one bought for the box the measurements give; every label due printed in one go, with
 // each one's progress and failure on its own row (the Shopify batch, sold.md "Batch print"); where to drop it off; and the
@@ -51,6 +52,8 @@ export default function Ship() {
   // ?state= draws over the clearing world, or the flipper's six sales for dense (app/src/demo/screen.ts): one is this sale's
   // label alone, typical and dense the batch, empty a sale with nothing left to ship, and offline holds the print.
   const s = useScreen();
+  const { order } = useLocalSearchParams<{ order?: string }>();
+  if (!s.demo) return <SellerFulfillment id={String(p.id)} order={order} />;
   const asked = s.state;
   const base = p.world ? s.w : world(asked === 'dense' ? 'flipper' : 'clearing');
   // A state named in the URL wins over the double-sale case and over ?all, so every state opens from any of the page's links.

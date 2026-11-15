@@ -31,7 +31,7 @@ export default function Search() {
   if (!q) {
     return (
       <Screen name="search" state="new" skip={SKIP} nav={nav}>
-        <SearchField id="search-box" placeholder="Find an item or paste a link" onSubmit={next => router.setParams({ q: next, at: undefined })} onCamera={() => router.push(href(w, '/camera'))} />
+        <SearchField id="search-box" placeholder="Find an item or paste a link" onSubmit={next => router.setParams({ q: next, at: undefined })} onCamera={() => router.push(href(w, '/camera?mode=find'))} />
         <Txt role="body" tone="ink-2">Search five sites at once.</Txt>
       </Screen>
     );
@@ -44,7 +44,7 @@ export default function Search() {
   return (
     <Screen name="search" state={state ?? (waiting ? 'loading' : rows.length ? 'typical' : 'empty')} skip={SKIP} nav={nav}>
       <SearchField id="search-box" value={r.query} placeholder="Find an item or paste a link" working={waiting}
-        onSubmit={next => router.setParams({ q: next, at: undefined })} onCamera={() => router.push(href(w, '/camera'))} />
+        onSubmit={next => router.setParams({ q: next, at: undefined })} onCamera={() => router.push(href(w, '/camera?mode=find'))} />
       {state === 'offline' ? <OfflineLine /> : null}
 
       <Stack>

@@ -1,6 +1,6 @@
 # Landing page image sources
 
-The wall uses a selection of the repository's existing photo-wall collection in `brand/explore/web-home/photos/wall/tiles/`. Original attribution is maintained with that collection. The selection is recorded in `web/components/marketing/wall-photos.ts`.
+The wall uses a selection of the repository's existing photo-wall collection in `brand/explore/web-home/photos/wall/tiles/`. Original attribution is maintained with that collection. The selection is recorded in `web/components/marketing/wall-photos.ts`. The site keeps all 54 tiles as 288px WebP derivatives (Sharp quality 78). At narrow widths the browser skips the columns outside the viewport.
 
 Marketplace marks are unchanged copies from `assets/platforms/square/`. The paired-tag logo is the existing `web/public/brand/mark.svg`.
 

@@ -1,3 +1,4 @@
+import { SellerPrice } from '@/selling/price';
 // The Plan sheet, over the item (spec/pages.md §6.7; price.md, Selling intents). What the person wants first, then the
 // price, the lowest they take, the sites and the price drops, each saying what the agent will do. Every value the agent
 // filled in is a Guess until the person types over it; a price under the lowest always waits for the Approve tap
@@ -45,9 +46,10 @@ const count = (n: number) => `${n} ${n === 1 ? 'site' : 'sites'}`;
 
 export default function ItemPlan() {
   const { id, world, flip } = useLocalSearchParams<{ id: string; world?: string; flip?: string }>();
-  const { state } = useScreen();
+  const { state, demo } = useScreen();
   const found = state === 'failed' ? null : M.find(String(id), world);
   const next = useRef<Href | null>(null);
+  if (!demo) return <SellerPrice id={String(id)} />;
   const onClosed = () => { if (next.current) router.replace(next.current); else router.back(); };
   if (state === 'loading') {
     return (

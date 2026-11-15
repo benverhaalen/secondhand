@@ -69,7 +69,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A3 | Two weights per face, sizes by role (13, 15, 18, then Ben's 21, 36, 50), the 4-based space scale | constitution Art. 6 and 7 |
 | A4 | The family: every hue has a tint, a fill and a deep, built the same way | constitution Art. 5, The family |
 | A6 | The notice card is gray, or marigold tint when it needs the person. Ben left it to the agent in [round 7](../product/words.md#2026-11-15-round-7-picks) | constitution Art. 5, States |
-| A7 | Clofie is reserved for the lowercase secondhand wordmark. Ben superseded the earlier Round 8 usage rule. | Constitution Art. 6 |
+| A7 | Clofie sets the lowercase secondhand wordmark and the largest headline of a public marketing page. | Constitution Art. 6 |
 | A8 | Type is centered by its ink: a label is trimmed to its cap height and baseline, and Clofie moves down .12 em where text cannot be trimmed. Ben asked for the tailoring in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 6.10, [the numbers](../research/cross-cutting/ben/brand-round-11.md) |
 | A9 | A pill is balanced at its icon: one step less padding at an icon end, and a tag is 20 with a 12 icon. Ben saw the imbalance in [round 10](../product/words.md#2026-11-15-round-10-picks) | constitution Art. 7.7 |
 | A10 | State fills are checked under simulated protan and deutan vision. Closer than .05 in Oklab is a warning, not a failure: Ben is color blind, and he also wrote "dont weight to colorblindness too much" ([his words](../product/words.md#2026-11-15-do-not-weight-color-blindness-too-much)) | constitution Art. 5, State colors and color blindness |
