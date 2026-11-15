@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { router, type Href } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { api, ApiFailure } from '@/api/client';
+import { origin } from '@/api/origin';
 import type { Site } from '@/demo';
 import { FootButton, Line, List, Pill, Sheet, Stack, Txt, log } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
@@ -59,9 +60,8 @@ export function Services({ onChanged }: { onChanged?: () => void } = {}) {
   const show = async (handle: string, current: Pending) => {
     const { url } = await api.call<{ url: string }>(`POST /v1/connections/${encodeURIComponent(handle)}/view`);
     if (!/^https:\/\//.test(url)) throw new Error('The sign-in page is unavailable');
-    // ui=false hides the viewer's own tabs and toolbar so the service's page gets the screen (docs.browser-use.com, live preview).
-    const view = new URL(url); view.searchParams.set('ui', 'false');
-    const browser = await WebBrowser.openBrowserAsync(view.toString(), { presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN, dismissButtonStyle: 'done' });
+    // Our frame fits the remote desktop window to the phone and centres it; the live URL goes in the fragment, never to a log.
+    const browser = await WebBrowser.openBrowserAsync(`${origin.replace(/\/+$/, '')}/connect#${encodeURIComponent(url)}`, { presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN, dismissButtonStyle: 'done' });
     if (browser.type === 'cancel' || browser.type === 'dismiss') await check(current);
   };
   const reopen = async () => {

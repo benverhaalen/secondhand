@@ -8,7 +8,8 @@ export const ContentOrder = createContext(0);
 // pins the element at position absolute on a stale snapshot (layoutReanimation/web/componentUtils.ts, scheduleAnimationCleanup):
 // the shop's result rows were drawn over each other (Nate, 2026-11-15). The web takes the preset's own start instead.
 const down = (order: number) => FadeInDown.duration(motion.select).delay(order * motion.feedback);
+// Off on every device (Nate, 2026-11-15: sections re-entering from the top on each screen felt clunky); the timing stays for a later pass.
 export const arrival = (order = 0) => (Platform.OS === 'web' ? down(order)
-  : down(order).withInitialValues({ opacity: 0, transform: [{ translateY: space.s2 }] })).reduceMotion(ReduceMotion.System);
-export const departure = FadeOut.duration(motion.feedback).reduceMotion(ReduceMotion.System);
-export const reflow = LinearTransition.duration(motion.select).reduceMotion(ReduceMotion.System);
+  : down(order).withInitialValues({ opacity: 0, transform: [{ translateY: space.s2 }] })).reduceMotion(ReduceMotion.Always);
+export const departure = FadeOut.duration(motion.feedback).reduceMotion(ReduceMotion.Always);
+export const reflow = LinearTransition.duration(motion.select).reduceMotion(ReduceMotion.Always);
