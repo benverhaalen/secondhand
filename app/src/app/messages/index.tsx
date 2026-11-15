@@ -73,6 +73,12 @@ export default function Messages() {
         <Section title={now ? `${left.length} ${left.length === 1 ? 'reply' : 'replies'} to send` : 'Replies sent'}>
           {now ? (
             <Stack key={now.c.id}>
+              {/* Which thing the reply is about, by its picture first (Ben, 06:19: say it with more than words). */}
+              {now.item ? (
+                <Row lead={<Photo src={pic(now.item.photos[0].key)} label={now.item.title} />}>
+                  <Txt role="body" lines={2}>{now.item.title}</Txt>
+                </Row>
+              ) : null}
               {now.asked ? (
                 <Message side="theirs" id={`queue-thread-${now.c.id}`} label={`Open the thread with ${now.c.buyer}`} onPress={() => open(now.c.id)}
                   meta={<Meta text={`${now.c.buyer}, ${ago(now.asked.sent_at, w.now)}`} />}>{now.asked.text}</Message>

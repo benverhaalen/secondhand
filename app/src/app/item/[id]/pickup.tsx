@@ -10,7 +10,7 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Share } from 'react-native';
 import {
-  Approve, Blank, Message, Draft, EmptyState, FootButton, Icon, ItemCard, Line, List, Meta, Nav, Pill, Row, Screen, Section, Sheet, Skeleton, Stack,
+  Approve, Blank, Message, Draft, EmptyState, FootButton, Icon, ItemCard, Line, List, Meta, Nav, Pill, Row, Screen, Section, Sheet, SiteCopy, SiteLink, Skeleton, Stack,
   TimeSpan, Txt, UndoToast, type Span, type SpanValue,
 } from '@/ui';
 import { ago, itemById, ms, thread, usd, when, world, type World } from '@/demo';
@@ -70,12 +70,12 @@ export default function Pickup() {
   }
   // A state named in the URL wins over a case, so every state can be opened from any of the page's links.
   const mode: Mode = asked === 'empty' ? 'ask' : asked === 'one' ? 'pick' : asked ? 'booked' : p.case === 'ask' ? 'ask' : p.case === 'pick' ? 'pick' : 'booked';
-  return <PickupSheet w={w} itemId={item.id} orderId={order.id} mode={mode} q={p.world ? `?world=${p.world}` : ''} offline={asked === 'offline'} />;
+  return <PickupSheet w={w} itemId={item.id} orderId={order.id} mode={mode} q={p.world ? `?world=${p.world}` : ''} offline={asked === 'offline'} soonCase={!asked && p.case === 'soon'} />;
 }
 
-type Open = null | 'address' | 'late' | 'another' | 'cancel';
+type Open = null | 'address' | 'late' | 'another' | 'cancel' | 'copy';
 
-function PickupSheet({ w, itemId, orderId, mode, q, offline }: { w: World; itemId: string; orderId: string; mode: Mode; q: string; offline: boolean }) {
+function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }: { w: World; itemId: string; orderId: string; mode: Mode; q: string; offline: boolean; soonCase?: boolean }) {
   const item = itemById(w, itemId)!;
   const order = w.orders.find(o => o.id === orderId)!;
   const appt = w.appointments.find(a => a.order_id === orderId && a.kind === 'pickup')!;
@@ -85,7 +85,10 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline }: { w: World; itemI
   const asksHome = mode === 'booked' ? w.decisions.find(d => d.kind === 'share_address' && d.order_id === orderId && d.state === 'open') : undefined;
 
   const [stage, setStage] = useState<Mode | 'cancelled'>(mode);
-  const [meetAt, setMeetAt] = useState(mode === 'pick' ? MEET_PICK.at : appt.window.start);
+  // `soon` is the planned pickup 40 minutes away, the case the "within the hour" notification opens (no world holds one).
+  const [meetAt, setMeetAt] = useState(mode === 'pick' ? MEET_PICK.at : soonCase ? new Date(ms(w.now) + 40 * 60e3).toISOString() : appt.window.start);
+  const soon = ms(meetAt) - ms(w.now) <= 60 * 60e3 && ms(meetAt) > ms(w.now) - 30 * 60e3;
+  const siteUrl = item.listings.find(l => l.id === (conv?.listing_id ?? order.listing_id))?.url;
   const [place, setPlace] = useState(appt.place?.label ?? spot);
   const [approve, setApprove] = useState<'ready' | 'working' | 'done'>('ready');
   const [home, setHome] = useState<'ask' | 'kept' | 'sent'>(asksHome ? 'ask' : 'kept');
@@ -155,6 +158,15 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline }: { w: World; itemI
                 <Txt role="caption" lines={1}>{place === spot ? 'Your saved spot, out in public' : 'A place you picked'}</Txt>
               </Row>
             </List>
+            {/* Within the hour, the two things a person tells a buyer on the way come first (spec/notifications.md, "A pickup
+                within the hour": On my way, Running late). */}
+            {planned && soon ? (
+              <Line>
+                <Pill id="pickup-on-my-way" kind="second" icon="delivery-truck-01" label="On my way" state={busy ? 'working' : 'idle'} step="Telling them"
+                  onPress={() => tell(`Told ${buyer} you’re on your way`)} />
+                <Pill id="pickup-running-late" kind="second" label="Running late" onPress={() => setOpen('late')} />
+              </Line>
+            ) : null}
             {stage === 'pick' && approve !== 'done' ? (
               <Line>
                 <Pill id="meet-another" kind="second" label="Suggest another" onPress={() => setOpen('another')} />
@@ -170,6 +182,12 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline }: { w: World; itemI
                 <Pill id="cal-apple" kind="second" icon="calendar-03" label="Add to Apple Calendar" onPress={() => calendar('apple')} />
               </Line>
             ) : null}
+            {/* The site's own picture of the thread where the time was agreed, to check ours against, and the way back to the
+                site (Ben, 06:19: "It should use screenshots from the site when you need to verify certain things like scheduling"). */}
+            <Line>
+              {siteUrl ? <SiteLink id="pickup-site" site={order.site} onPress={() => { Linking.openURL(siteUrl).catch(() => {}); }} /> : null}
+              <Pill id="pickup-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setOpen('copy')} />
+            </Line>
           </Section>
 
           {home === 'ask' && asksHome ? (
@@ -191,7 +209,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline }: { w: World; itemI
           {planned ? (
             <Section title="If plans change">
               <Line>
-                <Pill id="pickup-running-late" kind="second" label="Running late" onPress={() => setOpen('late')} />
+                {soon ? null : <Pill id="pickup-running-late" kind="second" label="Running late" onPress={() => setOpen('late')} />}
                 <Pill id="pickup-another" kind="second" label="Suggest another time" onPress={() => setOpen('another')} />
                 <Pill id="pickup-share-plan" kind="second" icon="share-08" label="Share my plan" onPress={sharePlan} />
                 <Pill id="pickup-cancel" kind="second" label="Cancel pickup" onPress={() => setOpen('cancel')} />
@@ -200,6 +218,9 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline }: { w: World; itemI
           ) : null}
         </>
       )}
+
+      <SiteCopy id="pickup-copy" open={open === 'copy'} site={order.site} onClose={() => setOpen(null)}
+        onOpen={() => { setOpen(null); if (siteUrl) Linking.openURL(siteUrl).catch(() => {}); }} />
 
       <Sheet open={open === 'another'} title="Suggest another time" onClose={() => setOpen(null)}>
         {open === 'another' ? (
