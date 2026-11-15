@@ -7,34 +7,23 @@ sync:
   paths:
     - .
     - ../jobs
+    - ../databricks
 
 variables:
   catalog:
     description: Unity Catalog catalog that holds the schema
-    default: workspace
+    default: secondhand
+  warehouse_id:
+    lookup: { warehouse: "Serverless Starter Warehouse" }
+  market_schema:
+    default: market
   schema:
     description: Schema for Delta tables and volumes
     default: secondhand
 
+include: [resources/*.yml]
+
 resources:
-  schemas:
-    secondhand:
-      catalog_name: ${var.catalog}
-      name: ${var.schema}
-      comment: secondhand backend (observation, citation, history of param)
-
-  volumes:
-    captures:
-      catalog_name: ${var.catalog}
-      schema_name: ${resources.schemas.secondhand.name}
-      name: captures
-      comment: captures/<user_id>/<capture_id>/, written only by the API
-    snapshots:
-      catalog_name: ${var.catalog}
-      schema_name: ${resources.schemas.secondhand.name}
-      name: snapshots
-      comment: stored pages behind evidence.snapshot_ref, so a read can be replayed
-
   secret_scopes:
     vault:
       name: secondhand
@@ -61,31 +50,37 @@ resources:
       tasks:
         - task_key: identity
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [identity] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [identity, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: demand
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [demand] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [demand, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: analytics
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [analytics] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [analytics, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: style
+          depends_on: [{ task_key: identity }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [style] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [style, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: valuation
+          depends_on: [{ task_key: demand }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [valuation] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [valuation, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: negotiation
+          depends_on: [{ task_key: analytics }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [negotiation] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [negotiation, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: trust
+          depends_on: [{ task_key: style }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [trust] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [trust, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: score
+          depends_on: [{ task_key: valuation }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [score] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [score, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
         - task_key: person
+          depends_on: [{ task_key: negotiation }]
           environment_key: fits
-          spark_python_task: { python_file: ./tasks/fold.py, parameters: [person] }
+          spark_python_task: { python_file: ./tasks/fold.py, parameters: [person, "--catalog", "${var.catalog}", "--schema", "${var.market_schema}"] }
 
     purge_user:
       name: secondhand-purge-user
