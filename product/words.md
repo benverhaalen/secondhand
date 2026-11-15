@@ -670,3 +670,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate what other engines are needed and what is not strong enough
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Beyond marketing, what other engines are needed, what are things not strong enough as it stands
+
+## 2026-11-14 nate analytics per platform, engines that out-calculate the rest, a parallel build plan, and validated claims
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering the agent's list of engines that need a full spec.
+> Yes identify also how we have analytics per platform, tracking and giving data on which storefront is doing the best. How our engines can deliver and weigh to calculate claims more effectively than the rest. Plan for our development to have everything parallel that can be built, following an organized orchestrated plan with documented and efficient testing. Ensure you research and validate all claims, fix anything thats not true, and if it changes things significantly come back to me
