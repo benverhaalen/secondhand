@@ -245,7 +245,8 @@
                 "name": "read_label",
                 "state": "running",
                 "started_at": "2026-11-15T03:54:00Z",
-                "ended_at": null
+                "ended_at": null,
+                "found": {}
               }
             ]
           },
@@ -264,7 +265,8 @@
                 "name": "flat_lay",
                 "state": "started",
                 "started_at": "2026-11-15T03:54:00Z",
-                "ended_at": null
+                "ended_at": null,
+                "found": {}
               }
             ]
           },
