@@ -216,6 +216,7 @@ On the card "How far should buying go?" in the same session, Nate picked "Also n
 ## 2026-11-14 nate frameworks and goals
 Nate, same session, 2026-11-14, sent while cards on demo scope, the backend's front door, the buying side and disclosure were open. Nate said Ben was beside him.
 > Where there arent official connections, sources of information, harnesses to allow automated actions on each platform, we will build frameworks to allow for perfectly optimized actions and behaviors, a cloud based browser use system where login auth is persisted, the users actions open up their profiles with this cloud, and an api framework is built to allow for everything to work across the needed platforms, and additional sites of information, databases for sales and finance data, fully extend out how the internet serves us as sources of information to strenghten our analytics, accuracy and credibility of calculations on prices. We are in a way a highly intelligent analysis tool of second hand shopping, built to drive the best selling and management experience for users. There are incentives like money goals for the month, how many sales you've had, tracks progress
+||||||| 6693ac2
 
 Note: the line above ("||||||| 6693ac2") is a leftover merge marker from an agent's merge, not anyone's words.
 
