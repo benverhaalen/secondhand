@@ -295,6 +295,7 @@ def run_item(folder: str, out: str) -> dict:
     ks = P.SPEC["kinds"][kind]
     if ks["template"] in ("shirt", "sweatshirt") and meas.get("pit_to_pit") and meas.get("length"):
         look["tape_ratio"] = meas["pit_to_pit"] / meas["length"]
+    look["measured"] = meas  # stands in for the capture's LiDAR reading: tape.json, else the tape photos
     pl = P.plan(look)
     os.makedirs(out, exist_ok=True)
     log, made = [], []

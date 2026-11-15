@@ -165,7 +165,7 @@ def paste_print(ren: np.ndarray, hit: dict, box=None) -> np.ndarray:
     return (warped * f + ren * (1 - f)).astype(np.uint8)
 
 
-PRESS = 0.6  # share of the fold shading taken out; the rest keeps the cloth from looking flat-printed
+PRESS = 0.35  # share of the fold shading taken out. 60% (run 20261115-0836) left blotches that could read as stains; 35% did not
 
 
 def press(img: np.ndarray, mask: np.ndarray, k: float = PRESS) -> np.ndarray:

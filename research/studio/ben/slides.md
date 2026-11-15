@@ -92,6 +92,8 @@ Three full runs on Ben's real photos in `assets/demo-items/real/` (all *observed
 | [1](slides/runs/20261115-0616-43684634640/) | cover and back dropped: drawn 9 to 14% narrower than the tape, tiny "NCAA FINAL FOUR TEAM" garbled | cover dropped: invented neck tag, shape against a sprawled photo | cover kept; back dropped, Carhartt patch text changed | shape set to the tape; real print pixels pasted back; a messy photo is no longer the shape truth |
 | [2](slides/runs/20261115-0638-43686352420/) | all dropped: a square patch showed around the pasted print | **cover kept** (2 of 4) | **cover and back kept** | paste only the print's ink, not its box; five candidates |
 | [3](slides/runs/20261115-0652-43687372523/) | **cover kept, 5 of 5 passed**; back dropped, 5 of 5 (front neckline drawn on the back, micro-text in the 74) | **cover kept**, 2 of 5 (the others invented a neck tag or drew the dashed outline) | **cover kept**, 5 of 5; back dropped this time, 0 of 5 | |
+| [4](slides/runs/20261115-0800-43692434630/) | cover kept (a second pressing of seed 4); back dropped, 0 of 5 | cover kept, 4 of 5; sleeves now laid out with floor between them and the body | **cover and back kept** (second pressings) | the model keeps most fold shading: 15, 25 and 10% gone |
+| [5](slides/runs/20261115-0836-43695226533/) tee and hoodie | cover kept, 8 of 9 (with the press at 60%) | cover kept, 7 of 9 | not run | press down to 35%: 60% left blotches |
 
 Before and after, slide 1, run 3 ([tee](slides/runs/20261115-0652-43687372523/marquette-tee/before_after.jpg), [hoodie](slides/runs/20261115-0652-43687372523/chico-hoodie/before_after.jpg), [pants](slides/runs/20261115-0652-43687372523/carhartt-pants/before_after.jpg); every candidate with its reason in each `whole_cover.jpg` and `whole_back.jpg`):
 
@@ -103,6 +105,8 @@ Before and after, slide 1, run 3 ([tee](slides/runs/20261115-0652-43687372523/ma
 Each item took 2.5 to 6 minutes and $0.32 to $0.64 (reads, five candidates per whole slide, a judge per candidate). Time is mostly the judge and GrabCut, not the renders.
 
 **Planted lies on the kept redraws** ([bench_relay.py](../../../jobs/studio/bench_relay.py), [result](slides/bench/relay-lies-20261115.json), pixel checks only, no judge): 8 of 8 honest variants kept (as drawn, 8% brighter, turned 3°, 5% smaller). 13 of 16 lies dropped: print painted out, print swapped for another item's, hue turned 30° and 60°, 35% darker, mirrored, and on the tee 12% taller. On the tee a 12% wider lie was not dropped but set back to the tape, so what the buyer sees is the true shape. The 2 misses are both stretches of the hoodie, which has no tape and no flat real photo: **without a tape reading the shape is not checked, so the set asks for one.** The mirrored hoodie first passed, because C, H, I and O read the same flipped; the check now rejects flipped matches and needs the matches to span half the print.
+
+**Measurements and wrinkles, as numbers:** [measure-proof.md](measure-proof.md). In short: the model alone drew the tee 8 to 21% narrow 15 times out of 15; every published slide read within 1.2% of the tape, because the check sets the width to the tape.
 
 ## What is not done
 

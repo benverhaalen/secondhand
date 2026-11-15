@@ -8,7 +8,7 @@ off the tape photos), three pictures of the same item are measured with measure.
   drawn   the winning redraw exactly as the image model returned it, before any check or repair
   final   the cover slide as published
 Each is calibrated on its length (a photo has no scale of its own), then its pit to pit is read in inches and set against
-the tape. Writes per item: <name>.png for each picture with the two tape lines drawn on and nothing else (for the site
+the tape. Writes per item: <name>.jpg for each picture with the two tape lines drawn on and nothing else (for the site
 and the pitch to set their own type on), proof.json with every number, and preview.jpg, a captioned working sheet in a
 stand-in face. Also bench.json: the published slide stretched and squeezed on purpose, to show the ruler sees it.
 """
@@ -25,7 +25,6 @@ from PIL import Image, ImageDraw, ImageFont, ImageOps
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 from studio import check as C  # noqa: E402
 from studio import measure as M  # noqa: E402
-from studio import scale as S  # noqa: E402
 
 BAND = 0.05      # agent proposal: a published top reads within 5% of the tape (about one inch on a 21 in chest)
 TAPE_READ = 0.25  # inches: how well a person reads a cloth tape laid on a garment
@@ -96,45 +95,21 @@ def item(run_item: str, item_dir: str, out: str) -> dict | None:
             "final": os.path.join(run_item, cover["file"])}
     os.makedirs(out, exist_ok=True)
     rows = {}
-    ruler = print_ruler(item_dir, man) if tape.get("print_width") else None
     for k, path in pics.items():
         if not path or not os.path.exists(path):
             rows[k] = {"tested": False, "note": "no such picture"}
             continue
         im = C.fit(rgb(path))
         mx = M.measure(C.mask_of(im), tape.get("length"), im)
-        Image.fromarray(draw_lines(im, mx)).save(os.path.join(out, f"{k}.png"))
+        Image.fromarray(draw_lines(im, mx)).save(os.path.join(out, f"{k}.jpg"), quality=92)
         rows[k] = {**M.against_tape(mx, tape), "note": mx.get("note"), "length_px": mx["length_px"], "pit_px": mx.get("pit_px"),
                    "file": os.path.relpath(path)}
-        if ruler:  # the print as the ruler: both numbers are tests, nothing is calibrated on the tape
-            sc = S.print_px_per_inch(ruler["img"], im, ruler["box"], tape["print_width"])
-            if sc:
-                by = {"px_per_in": sc["px_per_in"], "length_in": round(mx["length_px"] / sc["px_per_in"], 2)}
-                by["length_off"] = round(by["length_in"] / tape["length"] - 1, 4) if tape.get("length") else None
-                if mx.get("pit_px"):
-                    by["pit_in"] = round(mx["pit_px"] / sc["px_per_in"], 2)
-                    by["pit_off"] = round(by["pit_in"] / tape["pit_to_pit"] - 1, 4) if tape.get("pit_to_pit") else None
-                rows[k]["by_print"] = by
-            else:
-                rows[k]["by_print"] = {"note": "the print was not found clearly enough to take a scale from"}
     res = {"item": man["item"], "kind": man["kind"], "tape": tape, "band": BAND, "tape_read_in": TAPE_READ, "pictures": rows,
            "redraw": {k: cover.get(k) for k in ("model", "seed", "pass", "from")}}
     with open(os.path.join(out, "proof.json"), "w") as f:
         json.dump(res, f, indent=1)
     preview(res, out)
     return res
-
-
-def print_ruler(item_dir: str, man: dict) -> dict | None:
-    """The front print's own close-up and its box, as the vision read placed it."""
-    front = [p for p in man["read"]["photos"] if p.get("role") == "graphic" and p.get("side") in ("front", None) and p.get("graphics")]
-    if not front:
-        return None
-    p = max(front, key=lambda q: max((g["box"][2] - g["box"][0]) * (g["box"][3] - g["box"][1]) for g in q["graphics"]))
-    g = max(p["graphics"], key=lambda g: (g["box"][2] - g["box"][0]) * (g["box"][3] - g["box"][1]))
-    y0, x0, y1, x1 = (v / 1000 for v in g["box"])
-    name = sorted(f for f in os.listdir(item_dir) if f.lower().endswith((".jpg", ".jpeg", ".png")))[p["index"]]
-    return {"img": rgb(os.path.join(item_dir, name)), "box": [x0, y0, x1, y1]}
 
 
 def bench(run_item: str, tape: dict, cover_file: str) -> list[dict]:
@@ -173,7 +148,7 @@ def preview(res: dict, out: str) -> None:
     sheet = Image.new("RGB", (side * 3, side + 150), "white")
     d = ImageDraw.Draw(sheet)
     for i, k in enumerate(("photo", "drawn", "final")):
-        p = os.path.join(out, f"{k}.png")
+        p = os.path.join(out, f"{k}.jpg")
         if os.path.exists(p):
             im = Image.open(p)
             im.thumbnail((side, side))
