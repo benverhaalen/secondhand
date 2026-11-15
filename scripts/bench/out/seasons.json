@@ -1,0 +1,112 @@
+{
+ "used_merchandise MRTSSM45330USN": {
+  "factors": {
+   "Jan": 0.91,
+   "Feb": 0.923,
+   "Mar": 1.079,
+   "Apr": 0.978,
+   "May": 1.057,
+   "Jun": 0.976,
+   "Jul": 0.976,
+   "Aug": 0.994,
+   "Sep": 1.022,
+   "Oct": 1.078,
+   "Nov": 0.983,
+   "Dec": 1.024
+  },
+  "high": "Mar",
+  "low": "Jan",
+  "range": 0.169,
+  "max_spread": 0.024,
+  "shown_by_m12_rule": true,
+  "months_of_ratios": 24
+ },
+ "clothing MRTSSM4481USN": {
+  "factors": {
+   "Jan": 0.748,
+   "Feb": 0.792,
+   "Mar": 0.976,
+   "Apr": 0.949,
+   "May": 1.06,
+   "Jun": 0.965,
+   "Jul": 0.992,
+   "Aug": 1.034,
+   "Sep": 0.901,
+   "Oct": 0.971,
+   "Nov": 1.157,
+   "Dec": 1.454
+  },
+  "high": "Dec",
+  "low": "Jan",
+  "range": 0.706,
+  "max_spread": 0.019,
+  "shown_by_m12_rule": true,
+  "months_of_ratios": 32
+ },
+ "furniture MRTSSM442USN": {
+  "factors": {
+   "Jan": 0.905,
+   "Feb": 0.916,
+   "Mar": 1.006,
+   "Apr": 0.968,
+   "May": 1.027,
+   "Jun": 0.97,
+   "Jul": 1.012,
+   "Aug": 1.048,
+   "Sep": 0.99,
+   "Oct": 0.991,
+   "Nov": 1.085,
+   "Dec": 1.081
+  },
+  "high": "Nov",
+  "low": "Jan",
+  "range": 0.181,
+  "max_spread": 0.029,
+  "shown_by_m12_rule": true,
+  "months_of_ratios": 32
+ },
+ "electronics MRTSSM443USN": {
+  "factors": {
+   "Jan": 0.942,
+   "Feb": 0.898,
+   "Mar": 0.944,
+   "Apr": 0.905,
+   "May": 0.989,
+   "Jun": 0.945,
+   "Jul": 0.981,
+   "Aug": 0.999,
+   "Sep": 0.953,
+   "Oct": 0.962,
+   "Nov": 1.143,
+   "Dec": 1.338
+  },
+  "high": "Dec",
+  "low": "Feb",
+  "range": 0.439,
+  "max_spread": 0.03,
+  "shown_by_m12_rule": true,
+  "months_of_ratios": 32
+ },
+ "sporting_hobby_books MRTSSM451USN": {
+  "factors": {
+   "Jan": 0.846,
+   "Feb": 0.804,
+   "Mar": 0.971,
+   "Apr": 0.896,
+   "May": 0.981,
+   "Jun": 0.978,
+   "Jul": 0.987,
+   "Aug": 1.089,
+   "Sep": 0.948,
+   "Oct": 0.95,
+   "Nov": 1.111,
+   "Dec": 1.437
+  },
+  "high": "Dec",
+  "low": "Feb",
+  "range": 0.634,
+  "max_spread": 0.021,
+  "shown_by_m12_rule": true,
+  "months_of_ratios": 32
+ }
+}
