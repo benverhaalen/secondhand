@@ -12,6 +12,7 @@ The rules for every clip:
 - **Real things.** Ben's and Nate's own things, shot in the basement. A demo-world screen says "demo data" in the corner. Never Ben's personal Depop ([05:54](words.md#2026-11-15-stop-using-my-personal-depop)); posts go to a demo account.
 - **The hand in frame for the phone, the screen recording for the result.** A phone filmed over the shoulder proves it's real; the clean screen capture makes it readable. Cut between the two.
 - **A caption with the proof.** "173 of 174 planted lies caught. Re-run: `python3 scripts/bench/gate.py`."
+- **Captions and title cards come from the brand system** ([Ben, 09:25](words.md#2026-11-15-every-designed-thing-uses-the-apps-design-system)): made from `brand/templates/story.html` (1080 × 1920) or `deck.html` (1920 × 1080), and placed in the editor as images, never typed in the editor's own text styles. See §2.
 
 | # | Clip | The moment it opens on | What we show | Proof in the caption | Status today |
 |---|---|---|---|---|---|
@@ -24,9 +25,9 @@ The rules for every clip:
 | 7 | Sold, coming down everywhere | the sold card | tiles go to gone one by one; a red one with Try again | "Seen from Poshmark's public page in 0.44 s (observed)" | the 0.44 s read live; the take-downs demo world until a signed-in delist runs |
 | 8 | Who's coming, then Add to Calendar | a pickup request | the picker, the who-is-coming card, the calendar button | none needed | demo world |
 | 9 | Find this, used | the same jacket photo on the Buy side | every site at once, a fair range, the total with shipping | the range with its n | live if search answers in rehearsal |
-| 10 | Both sell at once | two buyers pay within a minute | the one card that names both and suggests keeping the first paid | "60,936 orders checked; break the refund and it fails in 6 steps" | the checker live in a terminal; the card demo world |
+| 10 | Both sell at once | two buyers pay within a minute | the one card that names both and suggests keeping the first paid | "60,936 orders checked; break the refund and it fails in 6 steps" | the checker's output in the deck template's frame; the card demo world |
 | 11 | When the page changes | a site's page shape breaks our reader | the fallback finds the listings anyway | "48 of 48 in 0.64 s (observed 2026-11-15)" | recorded, trace hp-9 |
-| 12 | Nate posts, the find shows on Ben's phone | Nate's thumb on Post | the watcher's terminal, then Ben's phone: the want screen with the find, "Under your price" | "Found N s after it was listed, by Poshmark's own clock" | the watcher is built and tested on sample pages; record at tonight's rehearsal ([plan](live-buy-demo.md)) |
+| 12 | Nate posts, the find shows on Ben's phone | Nate's thumb on Post | Ben's phone, mirrored: the want screen with the find, "Under your price" | "Found N s after it was listed, by Poshmark's own clock" | the watcher is built and tested on sample pages; record at tonight's rehearsal ([plan](live-buy-demo.md)) |
 
 Clips 1, 3 and 10 are the three to shoot first: each is our own engineering, each runs today, and each answers a question judges ask ("will it put my couch on Depop?", "is the photo lying?", "what if both sell?").
 
@@ -36,16 +37,18 @@ Clips 1, 3 and 10 are the three to shoot first: each is our own engineering, eac
 
 Ben named the feature-launch videos from developer-tool companies (Exa, Firebase, Treg). We haven't studied those specific videos here; the techniques below are the ones that kind of video uses, written so we can make them in CapCut or with the website's own components.
 
+**Everything designed is in the app's family** ([Ben, 09:25](words.md#2026-11-15-every-designed-thing-uses-the-apps-design-system)). A card, a diagram, a thumbnail or a Devpost image starts from `brand/templates/` (`deck.html`, `story.html`, `post.html`). It takes colors only from `brand/tokens.css`, sets type in Clofie (the wordmark and large lines) and PP Neue Montreal (everything else), and shows UI only as the app's own screens (`features/app/renders/` from `node scripts/app-check.mjs`). It passes `node scripts/brand-check.mjs <file> --medium deck|story|post` before it's exported. Video moves the way brand constitution Article 11 says: hard cuts on the beat, a 200 to 300 ms ease-out where something must travel, no loops, spins or zoom blurs. A screen recording or a terminal is evidence, not a designed surface, so it's never restyled; it sits inside a template's frame with its caption in brand type.
+
 | Technique | What it looks like | Where we use it |
 |---|---|---|
-| The real UI, zoomed | a screen recording that pushes in on the one thing that changed, then pulls back | every clip in §1 |
-| One sentence on a plain card | the brand's type on the brand's background, one line, then straight back to the product | between clips: "AI can write a listing. That was never the hard part." |
+| The real UI, zoomed | a screen recording that pushes in on the one thing that changed, as a 200 to 300 ms ease-out with no blur, then cuts back | every clip in §1 |
+| One sentence on a plain card | one line in Clofie on the template's background, from `story.html` or `deck.html`, exported as an image, then straight back to the product | between clips: "AI can write a listing. That was never the hard part." |
 | The data moving | a diagram where a single item's facts flow out to five sites and the sale flows back | how it works, once (see the four diagrams below) |
-| Before and after on a slider | the same frame split down the middle, dragged | the photo gate: `gate-original.jpg`, `gate-lie.jpg`, `gate-heat.jpg` are already the same size and lined up |
-| The number counting up | a counter that runs to the measured figure, with its mark under it | 60,936; 173 of 174; $2.69 |
-| The terminal as a character | a real command typed and its real output | `node scripts/bench/bench.mjs` finding the double sale in 6 steps |
+| Before and after on a slider | the same frame split down the middle, dragged | the photo gate: `gate-original.jpg`, `gate-lie.jpg`, `gate-heat.jpg` are already the same size and lined up. The heat map's colors come from the script, not the tokens: re-render it in token colors before it goes in a video or on the Devpost; and the tee's size proof (`research/studio/ben/slides/proof/20261115-0836/marquette-tee/`) |
+| The number on a cut | the measured figure appears on a hard cut, in Clofie, with its mark under it in PP Neue Montreal; no counter running up, because video moves only by cuts and short eases (Article 11) | 60,936; 173 of 174; $2.69 |
+| The command as proof | the real command and its real output, cropped to the lines that matter, inside the deck template's frame with the caption in brand type; the terminal text itself is never restyled | `node scripts/bench/bench.mjs` finding the double sale in 6 steps |
 
-**The four diagrams**, each a still for the Devpost and a 6-second animation for the video. The website thread can build them from the site's components.
+**The four diagrams**, each a still for the Devpost and a 6-second animation for the video. Each is built from `brand/templates/deck.html` (Devpost and slides) or `story.html` (video) with the site's components, and passes `brand-check` for its medium before export.
 1. **One record, five listings.** A photo's regions become facts ("size M", from the tag), and the facts become a different listing per site.
 2. **Watching cheaply.** eBay pushes the sale; Poshmark and Mercari are read from the public page; Depop is a signed-in sweep that slows down when the item is quiet; a browser opens only to confirm.
 3. **Who decides.** Code checks the money and the address; the model only words things; anything over your line comes to you.
