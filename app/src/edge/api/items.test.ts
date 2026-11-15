@@ -5,12 +5,14 @@ import { deps, route } from './http.ts';
 import { EXAMPLES, type Example } from './examples.ts';
 import { handlers, manifest, resetItems } from './items.ts';
 
+process.env.SECONDHAND_LIVE_SITES = '';
+
 const prefixes = ["items"];
 const examples = EXAMPLES.filter(e => prefixes.includes(e.endpoint.split(' ')[1].split('/')[2]));
 beforeEach(t => {
   const fixture = examples.find(e => t.name.startsWith(e.name + ':'));
   const body = fixture?.request?.body as { version?: number } | undefined;
-  resetItems(fixture?.endpoint === 'PATCH /v1/items/:id/attributes/:name' ? body?.version : undefined);
+  resetItems(body?.version);
   deps.verify = async token => token === 'good' ? 'usr_8f2k' : token === 'other' ? 'usr_other' : null;
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
@@ -157,4 +159,56 @@ test('concurrent attribute corrections cannot overwrite the same item version', 
   const e = examples.find(e => e.name === 'items.attribute.correct')!;
   const responses = await Promise.all([call(e), call(e, { body: { version: 13, value: 'M' } })]);
   assert.deepEqual(responses.map(r => r.status).sort(), [200, 409]);
+});
+
+test('item edits persist, use Store versions, and do not queue a listing write without a price change', async () => {
+  const { runtime } = await import('./runtime.ts');
+  const e = examples.find(e => e.name === 'items.patch')!;
+  const count = runtime.store.jobs().length;
+  const response = await call(e, { body: { version: 12, title: 'Updated title', quantity: 2, location: { label: 'Bin 4' } } });
+  assert.equal(response.status, 200);
+  const card = await (await call(examples.find(e => e.name === 'items.get')!)).json();
+  assert.equal(card.title, 'Updated title'); assert.equal(card.quantity, 2); assert.equal(card.location.label, 'Bin 4');
+  assert.equal(runtime.store.jobs().length, count);
+  assert.equal((await call(e)).status, 409);
+});
+
+test('strategy writes the item limits and the next card shows them', async () => {
+  resetItems(15);
+  const response = await call(examples.find(e => e.name === 'items.strategy')!);
+  assert.equal(response.status, 200);
+  const { runtime } = await import('./runtime.ts');
+  const limits = runtime.store.get('limits', 'usr_8f2k', 'it_7c2m')!;
+  assert.equal(limits.plan_choice, 'fast'); assert.equal(limits.fallback, 'donate');
+  const card = await (await call(examples.find(e => e.name === 'items.get')!)).json();
+  assert.equal(card.limits.plan_choice, 'fast'); assert.equal(card.version, 16);
+});
+
+test('only a changed price creates post jobs backed by app.reprice events', async () => {
+  const { runtime } = await import('./runtime.ts');
+  const e = examples.find(e => e.name === 'items.patch')!;
+  const unchanged = await call(e, { body: { version: 12, price_cents: { amount_cents: 9800, currency: 'USD' } } });
+  assert.equal(unchanged.status, 200); assert.equal(runtime.store.jobs().length, 0);
+  const changed = await call(e, { body: { version: 13, price_cents: { amount_cents: 9900, currency: 'USD' } } });
+  assert.equal(changed.status, 200);
+  const jobs = runtime.store.jobs(); assert.equal(jobs.length, 2);
+  for (const job of jobs) {
+    assert.equal(job.kind, 'post'); assert.equal(job.args.price_cents, 9900);
+    assert.equal(runtime.store.events().find(event => event.id === job.event_id)?.action, 'app.reprice');
+  }
+});
+
+test('strategy on another owned item succeeds even without prepared strategy options', async () => {
+  const e = examples.find(e => e.name === 'items.strategy')!;
+  const response = await call(e, { path: '/v1/items/it_2k9p/strategy', body: { version: 4, plan_choice: 'reserve', floor_cents: { amount_cents: 10000, currency: 'USD' } } });
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.deepEqual(body.strategies, []); assert.equal(body.item_version, 5);
+});
+
+test('the sell list reflects the edited price rather than the seeded tile', async () => {
+  const response = await call(examples.find(e => e.name === 'items.patch')!, { body: { version: 12, price_cents: { amount_cents: 9900, currency: 'USD' } } });
+  assert.equal(response.status, 200);
+  const listed = await (await call(examples.find(e => e.name === 'items.list')!)).json();
+  assert.equal(listed.data.find((item: { id: string }) => item.id === 'it_7c2m').price_cents.amount_cents, 9900);
 });

@@ -2,6 +2,13 @@ from proof import basisHash
 from tasks.recompute import recompute
 
 
+def test_serverless_recompute_resolves_explicit_root(serverless_entrypoint, tmp_path):
+    module = serverless_entrypoint('databricks/tasks/recompute.py', ['--root', str(tmp_path)])
+    assert module['ROOT'] == tmp_path
+    assert str(tmp_path / 'databricks') in module['sys'].path
+    assert str(tmp_path / 'log') in module['sys'].path
+
+
 def test_recompute_detects_changed_prices_and_missing_basis_ids():
     comps = {'b': {'price_cents': 200}, 'a': {'price_cents': 100}}
     h = basisHash([{'id': k, **v} for k, v in comps.items()])

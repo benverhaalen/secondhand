@@ -1,124 +1,22 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileStore } from './file-store.ts';
-import { createWatcher, type WatchedListing, type WatcherDeps } from './watcher.ts';
+import { createWatcher, type WatcherDeps } from './watcher.ts';
 import { decide, type OfferState } from '../../engines/negotiation/choose.ts';
 import { keep } from '../../engines/valuation/keep.ts';
 import { orderBook } from '../orders/orders.ts';
-import { memoryStore, memoryParams, memoryLeases, type Store } from './ports.ts';
+import { memoryStore, memoryParams, memoryLeases, type Store, type JobRow } from './ports.ts';
+import { createPipeline } from './pipeline.ts';
+import { markRelinked } from './stale.ts';
 import { ingest } from './intake.ts';
-import { memoryAccounts, memoryVault } from '../browser/auth.ts';
-import { createHarness, fakeManifest, fail, type Adapter, type Harness, type Verb, type CallArgs } from '../harness/protocol.ts';
-import { depopAdapters, PATHS, type Client } from '../harness/sites/depop/adapter.ts';
-import type { Site, Snapshot } from './event.ts';
+import { createHarness, fakeManifest, fail, type Adapter, type Verb, type CallArgs } from '../harness/protocol.ts';
+import type { Snapshot, Site } from './event.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
-
-const json = <T>(path: string): T => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8')) as T;
-type Step = { minute: number; site: Site; kind: string; amount_cents?: number; id?: string };
-const script = json<Step[]>('./fixtures/days/script.json');
-const start = Date.parse('2026-11-16T00:00:00Z');
-const atMinute = (site: Site, kind: string) => {
-  const step = script.find(s => s.site === site && s.kind === kind);
-  if (!step) throw new Error(`day script missing ${site} ${kind}`);
-  return step.minute;
-};
-const pAccept = () => 0.5;
+import { week, hazardWeek, atMinute, start, pAccept } from './fixtures/week.ts';
 const requiresPAccept: undefined extends WatcherDeps['pAccept'] ? false : true = true;
-
-async function week(noLimits = false, path?: string) {
-  let minute = 0;
-  const now = () => start + minute * 60_000;
-  let store: Store = path ? fileStore(path) : memoryStore();
-  const sink = memorySink();
-  const log = createLog({ src: 'test', build: 'test', seed: 1, sink, now: () => new Date(now()) });
-  const vault = memoryVault();
-  const sites = ['depop', 'poshmark', 'ebay'] as const;
-  const rows = sites.map(site => ({ account_id: `acc_${site}`, person_id: 'usr_walk', site, token_ref: `test_${site}` }));
-  for (const row of rows) await vault.put(row.token_ref, { cookies: [], origins: [] });
-  const accounts = memoryAccounts(rows, vault);
-  for (const row of rows) store.put('account', { id: row.account_id, user_id: row.person_id, site: row.site, next_check_at: new Date(start).toISOString() });
-  const listings: WatchedListing[] = [...sites, 'facebook' as const].map(site => ({ listing_id: `listing_${site}`, item_id: 'it_walk', site,
-    account_id: `acc_${site}`, external_id: site === 'depop' ? '999002396' : `ext_${site}`, state: 'live' }));
-  const active = (site: Site, kind: string) => script.filter(s => s.site === site && s.kind === kind && s.minute <= minute);
-  const expired = () => minute >= atMinute('ebay', 'auth_expired') && minute < atMinute('ebay', 'relinked');
-  const ended = new Set<Site>();
-  const client: Client = { signed_in: true, async doc() { throw new Error('week must use fixture JSON, never the network'); }, async json(path) {
-    const fixtures = '../harness/sites/depop/fixtures/';
-    if (path === PATHS.products('shop_walk') || path === PATHS.sold('shop_walk')) {
-      const source = json<{ objects: Record<string, unknown>[] }>(fixtures + 'products.json');
-      const sold = active('depop', 'sale').length > 0;
-      const listing = structuredClone(source.objects[0]);
-      listing.status = sold ? 'STATUS_PURCHASED' : 'STATUS_ONSALE';
-      listing.pricing = { currency: 'USD', current_price: { price_breakdown: { price: { amount: '60.00' } } } };
-      const wantsSold = path === PATHS.sold('shop_walk');
-      return { status: 200, body: { objects: sold === wantsSold ? [listing] : [] } };
-    }
-    const replies = json<Record<string, { objects: Record<string, unknown>[] }>>('./fixtures/days/replies.json');
-    if (path === PATHS.offers) {
-      const row = json<{ objects: Record<string, unknown>[] }>(fixtures + 'offers.json').objects[0];
-      return { status: 200, body: { objects: active('depop', 'offer').map(s => ({ ...row, id: s.id, product_id: 999002396,
-        amount: { amount: ((s.amount_cents ?? 0) / 100).toFixed(2) }, created_at: new Date(start + s.minute * 60_000).toISOString(),
-        status: minute < atMinute('depop', 'quiet') ? 'pending' : 'accepted' })) } };
-    }
-    if (path === PATHS.inbox) return { status: 200, body: minute >= atMinute('depop', 'quiet') ? { objects: [] } : active('depop', 'message').length ? replies.inbox : { objects: [] } };
-    if (path === PATHS.orders) return { status: 200, body: active('depop', 'sale').length ? replies.orders : { objects: [] } };
-    throw new Error(`unexpected Depop path ${path}`);
-  } };
-  const adapters: Adapter[] = depopAdapters(client);
-  const verbs: Verb[] = ['read_listings', 'read_offers', 'read_inbox', 'read_orders', 'answer_offer', 'end'];
-  for (const site of ['poshmark', 'ebay'] as const) for (const verb of verbs) adapters.push({ route_id: `${site}.${verb}.week`, manifest: fakeManifest(site, verb), async run(args) {
-    if (site === 'ebay' && expired()) return fail('auth_expired', 'simulated expiry', { do: 'relink', site });
-    if (verb === 'end') { if (args.item_id === 'it_walk') { assert.equal(args.external_id, `ext_${site}`, 'delist carries target site id'); ended.add(site); } return { ok: true, data: { dry: true } }; }
-    if (verb === 'read_listings') return { ok: true, data: [{ external_id: `ext_${site}`, state: ended.has(site) ? 'ended' : 'live', price_cents: 6000 }] };
-    if (verb === 'read_offers') return { ok: true, data: active(site, 'quiet').length ? [] : active(site, 'offer').map(s => ({ external_id: s.id, listing_external_id: `ext_${site}`, amount_cents: s.amount_cents, state: 'open' })) };
-    return { ok: true, data: [] };
-  } });
-  const real = createHarness({ adapters, accounts, now });
-  const calls: { minute: number; site: Site; verb: Verb; args: CallArgs; dry?: boolean }[] = [];
-  const harness: Harness = { async call<T>(site: Site, verb: Verb, args: CallArgs = {}) {
-    assert.ok(rows.some(r => r.site === site && r.account_id === args.account_id), 'every harness call carries its linked account');
-    const call = { minute, site, verb, args, dry: false }; calls.push(call);
-    const result = await real.call<T>(site, verb, args);
-    call.dry = result.ok && !!(result.data as { dry?: boolean }).dry;
-    return result;
-  } };
-  const snapshots = new Map<string, Snapshot>();
-  const makeWatcher = () => createWatcher({ store, harness, accounts, leases: memoryLeases(now), params: memoryParams({ watch_cadence_s: 900, job_lease_ttl_ms: 120000, delist_max_attempts: 3 },
-    Object.fromEntries(sites.flatMap(site => Object.entries({ hot: 90, live: 900, quiet: 3600 }).map(([tier, cadence]) => [`watch_cadence_s@${site}/${tier}`, cadence])))), log, now,
-    snapshots, listings: { byExternal: (_u, site, external) => listings.find(l => l.site === site && l.external_id === external), ofItem: () => listings },
-    limits: { of: () => noLimits ? undefined : { ask_cents: 6000, floor_cents: 4500, always_accept_cents: 5800 } }, pAccept,
-    readArgs: a => a.site === 'depop' ? { shop_id: 'shop_walk' } : {},
-  });
-  let watcher = makeWatcher();
-  const sweeps: { site: Site; minute: number; tier: 'hot' | 'live' | 'quiet' }[] = [];
-  for (; minute < 10080; minute++) {
-    if (path && minute === 4320) {
-      store = fileStore(path);
-      assert.equal(store.get('account', 'usr_walk', 'acc_ebay')?.paused, 'auth_expired', 'day 4 reload preserves the stale account');
-      watcher = makeWatcher();
-    }
-    if (minute === atMinute('ebay', 'auth_expired')) ingest(store, log, { user_id: 'usr_walk', account_id: 'acc_ebay', site: 'ebay', source: 'watcher_signed_in', action: 'price.changed',
-      item_id: 'it_pause', listing_id: 'pause_ebay', actor: 'auto', dedupe_key: 'pause_probe', trace_id: 'week', observed_at: new Date(now()).toISOString(), effective_at: new Date(now()).toISOString(), payload: { external_id: 'pause_probe' } });
-    if (minute === atMinute('ebay', 'relinked')) {
-      assert.equal(store.decisions({ kind: 'relink', state: 'open' }).length, 1, 'one relink decision during expiry');
-      assert.equal(store.jobs().find(j => j.idempotency_key === 'pause_probe')?.paused, 'account_stale', 'stale jobs are paused, never failed');
-      await watcher.relinked('acc_ebay');
-      assert.equal(store.decisions({ kind: 'relink', state: 'open' }).length, 0, 'relink closes decision');
-    }
-    const result = await watcher.tick();
-    for (const id of result.ran) {
-      const site = rows.find(a => a.account_id === id)!.site;
-      const snapshot = snapshots.get(id)!;
-      const tier = site === 'depop' && minute >= atMinute('depop', 'offer') && minute < atMinute('depop', 'quiet') || site === 'poshmark' && minute >= atMinute('poshmark', 'offer') && minute < atMinute('poshmark', 'quiet')
-        ? 'hot' : snapshot.listings?.some(l => l.state === 'live') ? 'live' : 'quiet';
-      sweeps.push({ site, minute, tier });
-    }
-  }
-  return { store, calls, snapshots, sweeps };
-}
 
 const counts = (r: Awaited<ReturnType<typeof week>>) => ({ events: r.store.events().length, jobs: r.store.jobs().length,
     decisions: r.store.decisions().map(d => `${d.kind}:${d.state}`).sort(),
@@ -129,6 +27,11 @@ test('seven days: limits, drafts, stale sessions, confirmed sale, quiet cadence 
   const began = performance.now();
   const a = await week();
   assert.equal(a.calls.filter(c => c.site === 'facebook').length, 0);
+  for (const call of a.calls.filter(c => writeVerbs.has(c.verb))) {
+    assert.equal(call.args.decided_by, 'negotiation'); assert.equal(call.args.negotiation_ask, false);
+    assert.ok(Number(call.args.price_cents) >= Number(call.args.floor_cents));
+    assert.ok(Number(call.args.price_cents) <= Number(call.args.ask_cents));
+  }
   const answers = a.calls.filter(c => c.verb === 'answer_offer');
   assert.equal(answers.length, 1, 'only the 5900 rule answer reaches a site');
   assert.equal(answers[0].site, 'depop'); assert.equal(answers[0].dry, true);
@@ -188,11 +91,15 @@ function smallRig(run: Adapter['run'], overrides: Partial<Pick<WatcherDeps, 'pAc
   if (storage.due !== false) store.put('account', { id: account.account_id, user_id: account.person_id, site: account.site, next_check_at: new Date(start).toISOString() });
   const accounts = { async linked() { return [account]; }, async byId(id: string) { return id === account.account_id ? account : undefined; } };
   const calls: Verb[] = [];
-  const adapters: Adapter[] = (['read_listings', 'read_offers', 'read_inbox', 'read_orders', 'end', 'answer_offer'] as Verb[]).map(verb => ({
-    route_id: `test.${verb}`, manifest: fakeManifest('depop', verb), run: (args, signal) => { calls.push(verb); return run({ ...args, verb }, signal); },
+  const adapters: Adapter[] = (['read_listings', 'read_offers', 'read_inbox', 'read_orders', 'post', 'revise', 'end', 'relist', 'send_message', 'answer_offer', 'make_offer', 'save'] as Verb[]).map(verb => ({
+    route_id: `test.${verb}`, manifest: fakeManifest('depop', verb), run: (args, signal) => run({ ...args, verb }, signal),
   }));
   const snapshots = new Map<string, Snapshot>();
-  const deps = { store, log, accounts, harness: createHarness({ adapters, accounts }), now, snapshots, leases: memoryLeases(now),
+  const adapterHarness = createHarness({ adapters, accounts });
+  const harness: WatcherDeps['harness'] = { async call<T>(site: Site, verb: Verb, args: CallArgs = {}) {
+    calls.push(verb); return adapterHarness.call<T>(site, verb, args);
+  } };
+  const deps = { store, log, accounts, harness, now, snapshots, leases: memoryLeases(now),
     params: memoryParams({ watch_cadence_s: 900, job_lease_ttl_ms: 120000, delist_max_attempts: 3 }, {
       'watch_cadence_s@depop/hot': 90, 'watch_cadence_s@depop/live': 900, 'watch_cadence_s@depop/quiet': 3600 }),
     listings: { byExternal: () => ({ listing_id: 'listing_depop', item_id: 'it_walk', site: 'depop' as const, account_id: 'acc_depop', external_id: 'ext', state: 'live' }), ofItem: () => [] },
@@ -428,8 +335,8 @@ test('confirmation auth expiry keeps poll_orders paused and resumes the same job
 
 test('draining stops at a future retry rather than repeatedly calling the site', async () => {
   const rig = smallRig(async a => a.verb === 'end' ? fail('rate_limited', 'fixture throttle', { do: 'retry_after', after_s: 60 }) : { ok: true, data: [] });
-  ingest(rig.store, rig.log, { user_id: 'usr_walk', source: 'app', site: 'depop', account_id: 'acc_depop', action: 'app.delist',
-    actor: 'auto', dedupe_key: 'retry', trace_id: 'retry', observed_at: new Date(start).toISOString(), effective_at: new Date(start).toISOString(), payload: { slug: 'seller-item-slug' } });
+  ingest(rig.store, rig.log, { user_id: 'usr_walk', source: 'app', site: 'depop', account_id: 'acc_depop', action: 'app.delist', item_id: 'it_walk',
+    actor: 'auto', dedupe_key: 'retry', trace_id: 'retry', observed_at: new Date(start).toISOString(), effective_at: new Date(start).toISOString(), payload: { ...decidedFixture(), slug: 'seller-item-slug' } });
   await rig.watcher.tick(); await rig.watcher.tick();
   assert.equal(rig.calls.filter(v => v === 'end').length, 1);
   rig.advance(60000); await rig.watcher.tick(); assert.equal(rig.calls.filter(v => v === 'end').length, 2);
@@ -459,7 +366,7 @@ test('a Depop delist translates the product id to the listing slug read from Dep
   await rig.watcher.tick();
   ingest(rig.store, rig.log, { user_id: 'usr_walk', source: 'app', site: 'depop', account_id: 'acc_depop', action: 'app.delist',
     item_id: 'it_walk', listing_id: 'listing_depop', actor: 'auto', dedupe_key: 'slug', trace_id: 'slug', observed_at: new Date(start).toISOString(),
-    effective_at: new Date(start).toISOString(), payload: { external_id: 'ext' } });
+    effective_at: new Date(start).toISOString(), payload: { ...decidedFixture(), external_id: 'ext' } });
   await rig.watcher.tick();
   assert.equal(rig.calls.filter(v => v === 'end').length, 1);
   assert.equal(rig.store.jobs({ kind: 'delist' })[0].state, 'done');
@@ -470,8 +377,192 @@ test('a zero-delay retry cannot drain repeatedly within one clock tick', async (
   let attempts = 0;
   const rig = smallRig(async a => a.verb === 'end' && ++attempts < 3
     ? fail('rate_limited', 'immediate retry hint', { do: 'retry_after', after_s: 0 }) : { ok: true, data: [] });
-  ingest(rig.store, rig.log, { user_id: 'usr_walk', source: 'app', site: 'depop', account_id: 'acc_depop', action: 'app.delist', actor: 'auto',
-    dedupe_key: 'zero-retry', trace_id: 'zero-retry', observed_at: new Date(start).toISOString(), effective_at: new Date(start).toISOString(), payload: { slug: 'known-slug' } });
+  ingest(rig.store, rig.log, { user_id: 'usr_walk', source: 'app', site: 'depop', account_id: 'acc_depop', action: 'app.delist', item_id: 'it_walk', actor: 'auto',
+    dedupe_key: 'zero-retry', trace_id: 'zero-retry', observed_at: new Date(start).toISOString(), effective_at: new Date(start).toISOString(), payload: { ...decidedFixture(), slug: 'known-slug' } });
   await rig.watcher.tick();
   assert.equal(attempts, 1, 'one attempt per clock tick even with an immediate retry hint');
+});
+
+const writeVerbs = new Set<Verb>(['post', 'revise', 'end', 'relist', 'send_message', 'answer_offer', 'make_offer', 'save']);
+
+test('seven days: Depop likes 3 -> 4 open one offer_to_likers decision and never call a write verb', async () => {
+  let likes = 3;
+  const rig = smallRig(async a => ({ ok: true, data: a.verb === 'read_listings' ? [{ ...live, likes }] : [] }));
+  for (let minute = 0; minute < 10080; minute++) {
+    if (minute === 15) likes = 4;
+    await rig.watcher.tick(); rig.advance(60000);
+  }
+  assert.deepEqual(rig.calls.filter(v => writeVerbs.has(v)), [], 'a like has no negotiation result authorizing any write');
+  assert.equal(rig.store.events().filter(e => e.action === 'like.added').length, 1);
+  assert.equal(rig.store.decisions({ kind: 'offer_to_likers', state: 'open' }).length, 1);
+});
+
+function queueRead(rig: ReturnType<typeof smallRig>, user_id = 'usr_walk', account_id = 'acc_depop', kind: 'reconcile' | 'poll_orders' = 'reconcile') {
+  return rig.store.insertJob({ kind, user_id, account_id, site: 'depop', item_id: 'it_walk', listing_id: 'listing_depop',
+    args: {}, event_id: 'fixture', idempotency_key: `${kind}:${user_id}:${account_id}`, state: 'queued', stages: [], attempts: 0,
+    trace_id: 'fixture', created_at: new Date(start).toISOString() }).row;
+}
+
+test('another person carrying a linked account_id is policy_refused before any job adapter runs', async () => {
+  const rig = smallRig(async () => ({ ok: true, data: [] }));
+  await rig.watcher.tick(); const before = rig.calls.length;
+  const job = queueRead(rig, 'usr_other'); await rig.watcher.tick();
+  assert.equal(rig.calls.length, before);
+  assert.equal(rig.store.getJob(job.id)?.state, 'done');
+  assert.ok((rig.store.getJob(job.id)?.result as { refused?: string }).refused);
+});
+
+test('an unlinked confirmation job pauses with a relink decision for its own person and account', async () => {
+  const rig = smallRig(async () => ({ ok: true, data: [] }));
+  const job = queueRead(rig, 'usr_missing', 'acc_missing', 'poll_orders'); await rig.watcher.tick();
+  assert.equal(rig.store.getJob(job.id)?.paused, 'account_stale');
+  assert.equal(rig.store.decisions({ user_id: 'usr_missing', subject: 'acc_missing', kind: 'relink', state: 'open' }).length, 1);
+});
+
+for (const after_s of [undefined, NaN, Infinity]) test(`confirmation retry_after ${after_s} defaults to 60 seconds`, async () => {
+  let throttle = true;
+  const rig = smallRig(async a => a.verb === 'read_orders' && throttle
+    ? fail('rate_limited', 'fixture throttle', { do: 'retry_after', after_s } as Parameters<typeof fail>[2]) : { ok: true, data: [] });
+  const job = queueRead(rig, 'usr_walk', 'acc_depop', 'poll_orders');
+  await rig.watcher.tick();
+  const saved = rig.store.getJob(job.id) as typeof job & { next_run_at?: string };
+  assert.equal(saved.state, 'queued'); assert.equal(saved.next_run_at, new Date(start + 60000).toISOString());
+  throttle = false; rig.advance(59999); await rig.watcher.tick(); assert.equal(rig.store.getJob(job.id)?.attempts, 1);
+  rig.advance(1); await rig.watcher.tick(); assert.equal(rig.store.getJob(job.id)?.state, 'done');
+});
+
+test('engine pause settles atomically, survives fileStore reconstruction, and cannot undo a later relink', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'watcher-settle-')); t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'state.json'), writes: Partial<JobRow>[] = [];
+  const disk = fileStore(path), store: Store = { ...disk, updateJob(id, patch) { writes.push(patch); return disk.updateJob(id, patch); } };
+  const rig = smallRig(async () => ({ ok: true, data: [] }), {}, { store });
+  const job = queueRead(rig, 'usr_walk', 'acc_depop', 'poll_orders');
+  const pipeline = createPipeline({ ...rig, worker: 'test', engines: { poll_orders: () => ({ settle: 'pause', err: { code: 'auth_expired', message: 'expired' } }) } });
+  await pipeline.runOnce(1);
+  assert.equal(store.getJob(job.id)?.state, 'queued', 'runOnce itself must persist the pause');
+  assert.equal(store.getJob(job.id)?.paused, 'account_stale');
+  assert.ok(writes.some(p => p.state === 'queued' && p.paused === 'account_stale'), 'one write carries both state and pause');
+  assert.ok(!writes.some(p => p.state === 'done'), 'no crash window may expose a completed confirmation');
+  const recovered = fileStore(path); let runs = 0;
+  const restarted = createPipeline({ ...rig, store: recovered, worker: 'restart', engines: { poll_orders: () => { runs++; return { outcome: 'not_sold' }; } } });
+  await restarted.runOnce(1); assert.equal(runs, 0); assert.equal(recovered.getJob(job.id)?.paused, 'account_stale');
+  markRelinked(recovered, rig.log, { user_id: job.user_id, account_id: job.account_id! });
+  await restarted.runOnce(1); assert.equal(runs, 1); assert.equal(recovered.getJob(job.id)?.state, 'done');
+  assert.equal(recovered.getJob(job.id)?.paused, undefined);
+});
+
+
+test('seven days: live-offer hazard beats stale cadence, spends less than fixed tiers, and cold listings use kind/site d10 then views', async () => {
+  const adaptive = await hazardWeek(true), fixed = await hazardWeek(false);
+  const count = (id: string) => adaptive.calls.filter(c => c.account_id === id).length;
+  assert.ok(count('z_hot') > count('a_stale'), 'higher hazard must receive more reads');
+  assert.ok(adaptive.calls.length < fixed.calls.length, 'hazard cadence must save sweeps');
+  assert.ok(adaptive.calls.length <= Math.ceil(adaptive.budget * 7 / 30), 'week cannot borrow the rest of the monthly budget');
+  const cold = adaptive.bases.filter(b => b.listing_id === 'listing_new');
+  assert.ok(cold.some(b => b.minute < 1440 && b.basis === 'd10' && b.citation_id === 'd10:jacket:depop'), 'zero views must use the parent kind/site curve immediately');
+  assert.ok(cold.some(b => b.minute >= 1440 && b.basis === 'views'), 'one view can inform cadence; no evidence-count gate');
+});
+
+test('monthly hazard budget survives daily watcher restarts and slows the lowest-hazard account first', async () => {
+  const r = await hazardWeek(true, { days: 31, restart: true, budget: 90 });
+  for (const month of ['2026-11', '2026-12']) {
+    const calls = r.calls.filter(c => new Date(start + c.minute * 60000).toISOString().startsWith(month));
+    assert.ok(calls.length <= r.budget, `${month} exceeded its budget`);
+  }
+  assert.ok(r.calls.filter(c => c.account_id === 'z_hot').length > r.calls.filter(c => c.account_id === 'a_stale').length);
+});
+
+test("Nate's Mercari rule: wants, follows and matches never sweep; only the person's own linked account is read", async () => {
+  for (const linked of [false, true]) {
+    const rig = smallRig(async () => ({ ok: true, data: [] }));
+    rig.store.put('want', { id: 'want_mercari', user_id: 'usr_walk', site: 'mercari', query: 'fixture jacket' });
+    rig.store.put('match', { id: 'match_mercari', user_id: 'usr_walk', site: 'mercari', want_id: 'want_mercari' });
+    const mercari = { account_id: 'acc_mercari', person_id: 'usr_walk', site: 'mercari' as const, token_ref: 'fixture' };
+    const calls: { site: string; verb: string; account_id: unknown }[] = [];
+    const watcher = createWatcher({ ...rig,
+      accounts: { async linked() { return linked ? [mercari] : []; }, async byId(id) { return linked && id === mercari.account_id ? mercari : undefined; } },
+      harness: { async call<T>(site, verb, args = {}) {
+        calls.push({ site, verb, account_id: args.account_id });
+        return { ok: true, data: [] as T, meta: { route_id: 'fake.mercari', ms: 0, fell_back: false } };
+      } },
+    });
+    for (let minute = 0; minute < 1440; minute++) { await watcher.tick(); rig.advance(60000); }
+    if (!linked) assert.equal(calls.length, 0, 'a buy-side want cannot create a Mercari account sweep');
+    else {
+      assert.ok(calls.length > 0);
+      assert.ok(calls.every(c => c.site === 'mercari' && c.account_id === mercari.account_id && c.verb.startsWith('read_')));
+    }
+  }
+});
+
+
+// Durable jobs in the adapter/retry tests already carry the watcher's negotiation result.
+function decidedFixture() {
+  const limits = { ask_cents: 6000, floor_cents: 4500, always_accept_cents: 5800 };
+  const result = decide({ ...limits, site: 'depop', offer_cents: 5900, keep: price => keep('depop', price).keep_cents,
+    v_wait_cents: null, trust_block: false }, pAccept);
+  return { ...limits, decided_by: 'negotiation', price_cents: result.amount_cents, negotiation_ask: result.ask };
+}
+
+for (const kind of ['post', 'delist', 'answer_offer', 'send_message', 'make_offer'] as const) {
+  test(`${kind} cannot write without a watcher negotiation result even with an approved policy`, async () => {
+    const rig = smallRig(async () => ({ ok: true, data: [] }));
+    const stamp = new Date(start).toISOString();
+    const event = rig.store.insertEvent({ user_id: 'usr_walk', source: 'app', action: 'app.list', actor: 'user', site: 'depop',
+      account_id: 'acc_depop', dedupe_key: kind, trace_id: 'guard', observed_at: stamp, effective_at: stamp, payload: {} }).row;
+    rig.store.insertJob({ kind, user_id: 'usr_walk', account_id: 'acc_depop', site: 'depop', args: { slug: 'fixture' },
+      event_id: event.id, idempotency_key: kind, state: 'queued', stages: [], attempts: 0, trace_id: 'guard', created_at: stamp });
+    await rig.watcher.tick(); assert.deepEqual(rig.calls.filter(v => writeVerbs.has(v)), []);
+    assert.equal(rig.store.decisions({ kind: 'offer_to_likers', state: 'open' }).length, 1);
+  });
+}
+
+test('watcher passes cadenceOf the current snapshot instead of using a fixed tier', async () => {
+  const rig = smallRig(async a => ({ ok: true, data: a.verb === 'read_listings' ? [live] : [] }));
+  const watcher = createWatcher({ ...rig, cadenceOf: (account, snapshot) => {
+    assert.equal(account.account_id, 'acc_depop'); assert.equal(snapshot, rig.snapshots.get('acc_depop')); return 17;
+  } });
+  await watcher.tick(); rig.advance(16999); await watcher.tick(); assert.equal(rig.calls.filter(v => v === 'read_listings').length, 1);
+  rig.advance(1); await watcher.tick(); assert.equal(rig.calls.filter(v => v === 'read_listings').length, 2);
+});
+
+for (const patch of [{ price_cents: 4400 }, { price_cents: 6001 }, { floor_cents: NaN }, { ask_cents: NaN }, { negotiation_ask: true }]) {
+  test(`a marked negotiation write still refuses invalid limits: ${Object.keys(patch).join()}:${Object.values(patch).join()}`, async () => {
+    const rig = smallRig(async () => ({ ok: true, data: [] }));
+    const at = new Date(start).toISOString();
+    ingest(rig.store, rig.log, { user_id: 'usr_walk', source: 'app', site: 'depop', account_id: 'acc_depop', action: 'app.delist', item_id: 'it_walk', actor: 'auto',
+      dedupe_key: 'bad-limits', trace_id: 'guard', observed_at: at, effective_at: at, payload: { ...decidedFixture(), ...patch, slug: 'fixture' } });
+    await rig.watcher.tick(); assert.deepEqual(rig.calls.filter(v => writeVerbs.has(v)), []);
+  });
+}
+
+for (const outcome of [
+  { settle: 'later' as const, after_s: 60 },
+  { settle: 'fail' as const, err: { code: 'page_changed', message: 'fixture parser change' } },
+]) test(`pipeline settles the engine's ${outcome.settle} outcome instead of done`, async () => {
+  const rig = smallRig(async () => ({ ok: true, data: [] })); const job = queueRead(rig, 'usr_walk', 'acc_depop', 'poll_orders');
+  const pipeline = createPipeline({ ...rig, worker: 'test', engines: { poll_orders: () => outcome } });
+  await pipeline.runOnce(1);
+  assert.equal(rig.store.getJob(job.id)?.state, outcome.settle === 'later' ? 'queued' : 'failed');
+  if (outcome.settle === 'fail') assert.equal(rig.store.getJob(job.id)?.error?.code, 'page_changed');
+  else assert.equal((rig.store.getJob(job.id) as JobRow & { next_run_at: string }).next_run_at, new Date(start + 60000).toISOString());
+});
+
+
+test('a scarce monthly slot goes to the highest hazard even when both intervals clamp to the maximum', async () => {
+  const r = await hazardWeek(true, { days: 1, budget: 1 });
+  assert.deepEqual(r.calls.map(c => c.account_id), ['z_hot']);
+});
+
+test('a queued offer reply rechecks the current floor after a rate-limited first attempt', async () => {
+  let offered = false;
+  const rig = smallRig(async a => a.verb === 'answer_offer' ? fail('rate_limited', 'retry', { do: 'retry_after', after_s: 60 })
+    : { ok: true, data: a.verb === 'read_listings' ? [live] : a.verb === 'read_offers' && offered
+      ? [{ external_id: 'fresh-limit', listing_external_id: 'ext', amount_cents: 5900, state: 'open' }] : [] });
+  await rig.watcher.tick(); offered = true; rig.advance(900000); await rig.watcher.tick();
+  assert.equal(rig.calls.filter(v => v === 'answer_offer').length, 1);
+  rig.limits.of = () => ({ ask_cents: 6500, floor_cents: 6000, always_accept_cents: 6200 });
+  rig.advance(60000); await rig.watcher.tick();
+  assert.equal(rig.calls.filter(v => v === 'answer_offer').length, 1, 'captured limits cannot override the current floor');
+  assert.equal(rig.store.decisions({ kind: 'price_below_floor', state: 'open' }).length, 1);
 });

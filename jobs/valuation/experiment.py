@@ -180,7 +180,8 @@ class Model:
     """The Python market model (market.py), fitted once per test month on rows before the month minus the gap.
     Its range is market's calibrated interval; it abstains on market's own counts (fewer than MIN_12M sales of the
     product in 12 months or MIN_90D in 90 days), read from the product index rather than market.estimate's full scan,
-    which is too slow for 100,000 test sales."""
+    which is too slow for 100,000 test sales. Its middle starts from the product's own last sales in the frozen history
+    (market's anchor), and those sales are its comp_ids, so the leak check covers them."""
     name = "model"
 
     def fit(self, train):
@@ -189,12 +190,13 @@ class Model:
     def predict(self, item, as_of, history):
         if self.m is None:
             return dict(NOT_SHOWN)
-        q10, q50, q90 = self.m.interval(item, as_of)
         now, rs = ts(as_of), history.product(item["product_id"])
+        used = [r for r in rs if 0 < now - ts(r["at"]) <= market.ANCHOR_DAYS * 86400][-market.ANCHOR_K:] if self.m.anchor else []
+        q10, q50, q90 = self.m.interval(item, as_of, recent=used)
         n12 = sum(now - ts(r["at"]) <= 365 * 86400 for r in rs)
         n90 = sum(now - ts(r["at"]) <= 90 * 86400 for r in rs)
         shown = n12 >= market.MIN_12M and n90 >= market.MIN_90D and q90 - q10 <= q50
-        return {"q10": q10, "q50": q50, "q90": q90, "shown": shown, "comp_ids": []}
+        return {"q10": q10, "q50": q50, "q90": q90, "shown": shown, "comp_ids": [r["row_id"] for r in used]}
 
 
 class Oracle:

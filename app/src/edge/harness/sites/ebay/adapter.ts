@@ -201,6 +201,17 @@ async function readStorefront(c: Client, a: CallArgs, s: AbortSignal): Promise<A
   return out.ok ? { ok: true, data: out.data[0] } : out;
 }
 
+// --- public pages: the lane while no keyset exists (README.md, Terms) ---
+
+// Matched on the title and the first 20k characters of a document; a match is blocked and the page is never parsed.
+export const CHALLENGE = /just a moment|verify you are human|are you a robot|press (and|&) hold|unusual traffic|captcha|attention required|access denied|pardon our interruption|security measure/i;
+const W = HOSTS.production.www;
+export const URLS = {
+  search: (q: string, sold: boolean) => `${W}/sch/i.html?${new URLSearchParams({ _nkw: q, ...(sold ? { LH_Sold: '1', LH_Complete: '1' } : {}) })}`,
+  item: (id: string) => `${W}/itm/${encodeURIComponent(id)}`,
+  store: (user: string) => `${W}/usr/${encodeURIComponent(user)}`,
+};
+
 // --- account reads: user token through token_ref ---
 
 const LISTING_STATE = (offer: Obj): SnapListing['state'] => {

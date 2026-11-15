@@ -167,3 +167,22 @@ test('a thrown retry_after hint preserves its deadline instead of retrying at ca
     runSweep: async () => { throw Object.assign(new Error('wait'), { code: 'rate_limited', hint: { do: 'retry_after', after_s: 7200 } }); } });
   await s.tick(); assert.equal(state.due.a, 7200000, 'thrown errors must keep their retry hint');
 });
+
+test('cadenceOf receives the current account snapshot and overrides tier cadence on each sweep', async () => {
+  const c = clock(); let seconds = 17;
+  const snapshot = { site: 'depop' as const, account_id: 'a', user_id: 'u1', route: 'signed_in' as const, taken_at: new Date(0).toISOString(), listings: [] };
+  const s = readyScheduler({ params: params(), leases: memoryLeases(c.now), now: c.now, accounts: () => [acct('a')],
+    stateOf: () => 'live', snapshotOf: () => snapshot, cadenceOf: (account, current) => {
+      assert.equal(account.account_id, 'a'); assert.equal(current, snapshot); return seconds;
+    }, runSweep: async () => ({ ok: true }), onStale: () => {} });
+  await s.tick(); assert.equal(s.nextDue().a, 17000);
+  seconds = 31; c.add(17); await s.tick(); assert.equal(s.nextDue().a, 48000);
+});
+
+for (const after_s of [undefined, NaN, Infinity]) test(`short cadence honors a malformed retry hint (${after_s}) as 60 seconds`, async () => {
+  const c = clock();
+  const s = readyScheduler({ params: memoryParams({ watch_cadence_s: 10 }), leases: memoryLeases(c.now), now: c.now,
+    accounts: () => [acct('a')], stateOf: () => 'hot', onStale: () => {},
+    runSweep: async () => ({ ok: false, error: { code: 'rate_limited', message: 'wait', hint: { do: 'retry_after', after_s } } }) });
+  await s.tick(); assert.equal(s.nextDue().a, 60000);
+});

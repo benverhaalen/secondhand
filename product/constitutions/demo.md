@@ -37,6 +37,8 @@ A judge at a science-fair table gives each team a few minutes, among dozens, and
 
 **D9. Every point a judge could dock is answered somewhere in the demo or the Q&A.** *Why:* [05:36](../words.md#2026-11-15-what-could-dock-us-points-mitigated-everywhere); the list is [qa.md](../qa.md#where-judges-dock-points).
 
+**D10. A stage rate is a number, never a label, and never a secret.** On stage a check may run faster than in the product (a sale check, a want's search), or fire at once for a post we made ourselves. The speed is a server setting on the same code path, so nothing on screen says "demo" ([08:42](../words.md#2026-11-15-the-demo-runs-on-nates-harness-and-the-cadence-is-a-lever): "a demo mode that never says demo mode for the backend"). If a judge asks, we say the stage rate is faster than production, and give the production rate. *Why:* proof without sales allows a compressed clock, not a false one ([proof-without-sales](../proof-without-sales.md)); the production rates for a want are in [live-buy-demo](../live-buy-demo.md#what-to-say-and-not).
+
 ## Open
 
 - Which beats pass three rehearsals. Nothing has been rehearsed end to end yet; the five-site post and ranked identify are not built (see the [ledger](../../spec/intent-ledger.md)).

@@ -477,29 +477,29 @@
     "n": 41988,
     "priced": 39707,
     "hit_rate": 0.9457,
-    "within_10": 0.4562,
-    "within_20": 0.6785,
-    "median_pct_off": 0.1152,
-    "median_dollars_off": 33.87,
-    "bias": -0.0305,
-    "sold_above_our_middle": 0.58,
-    "off_by_over_30": 0.2169,
-    "coverage": 0.8043,
+    "within_10": 0.8897,
+    "within_20": 0.9846,
+    "median_pct_off": 0.0329,
+    "median_dollars_off": 10.35,
+    "bias": -0.0086,
+    "sold_above_our_middle": 0.584,
+    "off_by_over_30": 0.0046,
+    "coverage": 0.7826,
     "coverage_wilson_95": [
-     0.8004,
-     0.8082
+     0.7785,
+     0.7866
     ],
-    "median_range_width": 0.7694
+    "median_range_width": 0.136
    },
    "lift_vs_primary": {
-    "diff": -0.2232,
-    "lo": -0.2782,
-    "hi": -0.1753,
+    "diff": 0.0829,
+    "lo": 0.0652,
+    "hi": 0.0993,
     "n_items": 39707,
     "n_products": 660
    },
    "within_20_on_shared_items": {
-    "ours": 0.6784697912206916,
+    "ours": 0.984561916034956,
     "primary": 0.901679804568464
    },
    "slices": {
@@ -508,19 +508,19 @@
       "n": 41988,
       "priced": 39707,
       "hit_rate": 0.9457,
-      "within_10": 0.4562,
-      "within_20": 0.6785,
-      "median_pct_off": 0.1152,
-      "median_dollars_off": 33.87,
-      "bias": -0.0305,
-      "sold_above_our_middle": 0.58,
-      "off_by_over_30": 0.2169,
-      "coverage": 0.8043,
+      "within_10": 0.8897,
+      "within_20": 0.9846,
+      "median_pct_off": 0.0329,
+      "median_dollars_off": 10.35,
+      "bias": -0.0086,
+      "sold_above_our_middle": 0.584,
+      "off_by_over_30": 0.0046,
+      "coverage": 0.7826,
       "coverage_wilson_95": [
-       0.8004,
-       0.8082
+       0.7785,
+       0.7866
       ],
-      "median_range_width": 0.7694
+      "median_range_width": 0.136
      }
     },
     "condition": {
@@ -528,19 +528,19 @@
       "n": 41988,
       "priced": 39707,
       "hit_rate": 0.9457,
-      "within_10": 0.4562,
-      "within_20": 0.6785,
-      "median_pct_off": 0.1152,
-      "median_dollars_off": 33.87,
-      "bias": -0.0305,
-      "sold_above_our_middle": 0.58,
-      "off_by_over_30": 0.2169,
-      "coverage": 0.8043,
+      "within_10": 0.8897,
+      "within_20": 0.9846,
+      "median_pct_off": 0.0329,
+      "median_dollars_off": 10.35,
+      "bias": -0.0086,
+      "sold_above_our_middle": 0.584,
+      "off_by_over_30": 0.0046,
+      "coverage": 0.7826,
       "coverage_wilson_95": [
-       0.8004,
-       0.8082
+       0.7785,
+       0.7866
       ],
-      "median_range_width": 0.7694
+      "median_range_width": 0.136
      }
     },
     "site": {
@@ -548,19 +548,19 @@
       "n": 41988,
       "priced": 39707,
       "hit_rate": 0.9457,
-      "within_10": 0.4562,
-      "within_20": 0.6785,
-      "median_pct_off": 0.1152,
-      "median_dollars_off": 33.87,
-      "bias": -0.0305,
-      "sold_above_our_middle": 0.58,
-      "off_by_over_30": 0.2169,
-      "coverage": 0.8043,
+      "within_10": 0.8897,
+      "within_20": 0.9846,
+      "median_pct_off": 0.0329,
+      "median_dollars_off": 10.35,
+      "bias": -0.0086,
+      "sold_above_our_middle": 0.584,
+      "off_by_over_30": 0.0046,
+      "coverage": 0.7826,
       "coverage_wilson_95": [
-       0.8004,
-       0.8082
+       0.7785,
+       0.7866
       ],
-      "median_range_width": 0.7694
+      "median_range_width": 0.136
      }
     },
     "month": {
@@ -568,111 +568,111 @@
       "n": 11241,
       "priced": 10453,
       "hit_rate": 0.9299,
-      "within_10": 0.5719,
-      "within_20": 0.7662,
-      "median_pct_off": 0.0788,
-      "median_dollars_off": 22.68,
-      "bias": 0.0168,
-      "sold_above_our_middle": 0.417,
-      "off_by_over_30": 0.1026,
-      "coverage": 0.8997,
+      "within_10": 0.8998,
+      "within_20": 0.991,
+      "median_pct_off": 0.0341,
+      "median_dollars_off": 10.19,
+      "bias": -0.0006,
+      "sold_above_our_middle": 0.5049,
+      "off_by_over_30": 0.001,
+      "coverage": 0.7898,
       "coverage_wilson_95": [
-       0.8938,
-       0.9054
+       0.7819,
+       0.7975
       ],
-      "median_range_width": 0.8296
+      "median_range_width": 0.1342
      },
      "2018-12": {
       "n": 14884,
       "priced": 13849,
       "hit_rate": 0.9305,
-      "within_10": 0.4959,
-      "within_20": 0.7289,
-      "median_pct_off": 0.1013,
-      "median_dollars_off": 28.64,
-      "bias": 0.0034,
-      "sold_above_our_middle": 0.4922,
-      "off_by_over_30": 0.2014,
-      "coverage": 0.8159,
+      "within_10": 0.8696,
+      "within_20": 0.9849,
+      "median_pct_off": 0.0316,
+      "median_dollars_off": 9.43,
+      "bias": -0.0034,
+      "sold_above_our_middle": 0.5335,
+      "off_by_over_30": 0.0028,
+      "coverage": 0.7951,
       "coverage_wilson_95": [
-       0.8094,
-       0.8223
+       0.7883,
+       0.8018
       ],
-      "median_range_width": 0.7694
+      "median_range_width": 0.146
      },
      "2019-01": {
       "n": 10788,
       "priced": 10517,
       "hit_rate": 0.9749,
-      "within_10": 0.3856,
-      "within_20": 0.5663,
-      "median_pct_off": 0.1586,
-      "median_dollars_off": 49.92,
-      "bias": -0.0974,
-      "sold_above_our_middle": 0.7416,
-      "off_by_over_30": 0.3303,
-      "coverage": 0.6977,
+      "within_10": 0.9057,
+      "within_20": 0.9751,
+      "median_pct_off": 0.0311,
+      "median_dollars_off": 9.94,
+      "bias": -0.017,
+      "sold_above_our_middle": 0.6795,
+      "off_by_over_30": 0.0122,
+      "coverage": 0.7949,
       "coverage_wilson_95": [
-       0.6889,
-       0.7064
+       0.7871,
+       0.8025
       ],
-      "median_range_width": 0.7268
+      "median_range_width": 0.136
      },
      "2019-02": {
       "n": 5075,
       "priced": 4888,
       "hit_rate": 0.9632,
-      "within_10": 0.2484,
-      "within_20": 0.5892,
-      "median_pct_off": 0.1741,
-      "median_dollars_off": 72.48,
-      "bias": -0.1611,
-      "sold_above_our_middle": 0.83,
-      "off_by_over_30": 0.2617,
-      "coverage": 0.7964,
+      "within_10": 0.8905,
+      "within_20": 0.9902,
+      "median_pct_off": 0.0397,
+      "median_dollars_off": 14.61,
+      "bias": -0.0243,
+      "sold_above_our_middle": 0.6907,
+      "off_by_over_30": 0.001,
+      "coverage": 0.7052,
       "coverage_wilson_95": [
-       0.7849,
-       0.8075
+       0.6923,
+       0.7178
       ],
-      "median_range_width": 0.9219
+      "median_range_width": 0.1342
      }
     },
     "price_band_of_our_middle": {
      "100_to_500": {
-      "n": 34868,
-      "priced": 34868,
+      "n": 34132,
+      "priced": 34132,
       "hit_rate": 1.0,
-      "within_10": 0.4883,
-      "within_20": 0.7232,
-      "median_pct_off": 0.1036,
-      "median_dollars_off": 28.34,
-      "bias": -0.0378,
-      "sold_above_our_middle": 0.6081,
-      "off_by_over_30": 0.1731,
-      "coverage": 0.8457,
+      "within_10": 0.9061,
+      "within_20": 0.991,
+      "median_pct_off": 0.0308,
+      "median_dollars_off": 8.98,
+      "bias": -0.0073,
+      "sold_above_our_middle": 0.5729,
+      "off_by_over_30": 0.0017,
+      "coverage": 0.8101,
       "coverage_wilson_95": [
-       0.8419,
-       0.8495
+       0.8059,
+       0.8142
       ],
-      "median_range_width": 0.7694
+      "median_range_width": 0.136
      },
      "over_500": {
-      "n": 4839,
-      "priced": 4839,
+      "n": 5575,
+      "priced": 5575,
       "hit_rate": 1.0,
-      "within_10": 0.2248,
-      "within_20": 0.3559,
-      "median_pct_off": 0.3351,
-      "median_dollars_off": 171.98,
-      "bias": 0.1049,
-      "sold_above_our_middle": 0.3778,
-      "off_by_over_30": 0.5328,
-      "coverage": 0.5057,
+      "within_10": 0.7894,
+      "within_20": 0.9449,
+      "median_pct_off": 0.0499,
+      "median_dollars_off": 32.01,
+      "bias": -0.0248,
+      "sold_above_our_middle": 0.6522,
+      "off_by_over_30": 0.0222,
+      "coverage": 0.6145,
       "coverage_wilson_95": [
-       0.4916,
-       0.5198
+       0.6017,
+       0.6272
       ],
-      "median_range_width": 0.7694
+      "median_range_width": 0.1342
      },
      "not_priced": {
       "n": 2281,
@@ -733,5 +733,5 @@
   ],
   "min_peers": 3
  },
- "sentence": "On 39707 sales, the 90-day sold median beat us: 90% within 20% against our 68%"
+ "sentence": "On 39707 sales, within 20% of the sale price 98% of the time, against 90% for the 90-day sold median"
 }
