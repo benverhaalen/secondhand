@@ -18,65 +18,11 @@ import { parseArgs } from 'node:util';
 import { readFileSync, writeFileSync, appendFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
-import { check, confirm, listedAt } from './stage-watch.mjs';
-import { SITES, siteOf } from '../../research/watch/ben/page-monitor/monitor.mjs';
+import { check, listedAt } from './stage-watch.mjs';
+import { cards, judge, listingFacts } from './want.mjs';
+import { siteOf } from '../../research/watch/ben/page-monitor/monitor.mjs';
 
-// ---- reading a Poshmark search page: one row per card, with what the card itself says ----
-
-const decode = s => s.replace(/&amp;/g, '&').replace(/&#39;|&#x27;/g, "'").replace(/&quot;/g, '"').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
-const textOf = html => decode(html.replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
-// A Poshmark listing URL's slug is its title: /listing/Majestic-Milwaukee-Brewers-Jersey-<id>.
-export const titleFromSlug = url => { const m = /\/listing\/(.+)-[0-9a-f]{24}/.exec(url ?? ''); return m ? decodeURIComponent(m[1]).replace(/-/g, ' ').trim() : null; };
-
-export function cards(html) {
-  const re = new RegExp(SITES.poshmark.source, 'g'), first = new Map();
-  for (const m of html.matchAll(re)) if (!first.has(m[1])) first.set(m[1], { index: m.index, href: m[0] });
-  const ids = [...first.keys()];
-  return ids.map((id, i) => {
-    const { index, href } = first.get(id), end = i + 1 < ids.length ? first.get(ids[i + 1]).index : Math.min(html.length, index + 6000);
-    // The link starts inside a tag and the next card's link ends inside one: drop both partial tags before reading text.
-    const raw = html.slice(index, end), chunk = raw.slice(raw.indexOf('>') + 1, raw.lastIndexOf('<') > 0 ? raw.lastIndexOf('<') : raw.length);
-    const text = textOf(chunk);
-    const price = /\$\s?(\d{1,5}(?:,\d{3})*(?:\.\d{2})?)/.exec(text);
-    const size = /Size:?\s*([^$|]{1,24}?)(?=\s{0,2}(?:\$|\||$|[A-Z][a-z]+\s))/.exec(text);
-    const url = href.startsWith('http') ? href : `https://poshmark.com${href}`;
-    return { site_id: id, url, position: i + 1, title: titleFromSlug(url), price: price ? Number(price[1].replace(/,/g, '')) : null, size: size ? size[1].trim() : null, sold: /\bSOLD\b/.test(text) };
-  });
-}
-
-// What a listing's own page says: the structured price the stage watcher's confirm step needs, and the words a person reads.
-export function listingFacts(html, site_id, url) {
-  const confirmed = confirm({ site: 'poshmark', site_id, url }, html, Infinity);
-  const meta = name => decode((new RegExp(`<meta[^>]+(?:property|name)=["']${name}["'][^>]+content=["']([^"']*)`, 'i').exec(html) ?? [])[1] ?? '') || null;
-  const text = textOf(html);
-  const size = /\bSize\s*:?\s*((?:Youth|Boys|Girls|Kids|Toddler|Women'?s|Men'?s)?\s*(?:XXS|XS|S|M|L|XL|XXL|2XL|3XL|4XL|5XL|OS|One Size|\d{1,2}(?:T|\/\d{1,2})?))\b/i.exec(text);
-  return {
-    jsonld_price: confirmed?.price ?? null, // null: the confirm step can never pass on this page
-    available: confirmed ? true : /\bSOLD\b|not available/i.test(text) ? false : null,
-    title: meta('og:title'), description: (meta('og:description') ?? '').slice(0, 400), size: size ? size[1].trim() : null,
-  };
-}
-
-// ---- the want: what Ben would actually tell the app ----
-
-// want: { name, team: [regex], item: [regex], not: [regex], sizes: ["L","XL"], cap }
-export function judge(want, row, facts = null) {
-  const words = [row.title, facts?.title, facts?.description].filter(Boolean).join(' ');
-  const has = list => list.some(p => new RegExp(p, 'i').test(words));
-  const size = (facts?.size ?? row.size ?? '').trim();
-  const reasons = [];
-  if (!has(want.team)) reasons.push('not the team');
-  if (!has(want.item)) reasons.push('not a jersey');
-  const cut = want.not.find(p => new RegExp(p, 'i').test([row.title, facts?.title, size].filter(Boolean).join(' ')));
-  if (cut) reasons.push(`cut or kind: ${cut}`);
-  if (!size) reasons.push('size not stated');
-  else if (!want.sizes.some(s => new RegExp(`^(?:men'?s\\s*)?${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i').test(size))) reasons.push(`size ${size}`);
-  const price = facts?.jsonld_price ?? row.price;
-  if (price == null) reasons.push('no price');
-  else if (price > want.cap) reasons.push(`$${price} over $${want.cap}`);
-  if (facts && facts.available === false) reasons.push('sold');
-  return { fits: reasons.length === 0, reasons };
-}
+export { cards, judge, titleFromSlug } from './want.mjs';
 
 // ---- the trial ----
 
@@ -100,15 +46,15 @@ export async function trial({ want, searches, every_s, for_min, out, fetchPage, 
       w('reads.jsonl', { q: s.name, t: t0, ms, status, n: rows.length, ids: rows.map(r => r.site_id) });
       for (const r of rows) {
         if (s.seen.has(r.site_id)) continue;
-        const listed_at = listedAt('poshmark', r.site_id);
-        const rec = { q: s.name, ...r, listed_at, first_seen: t0, prev_read: lastRead[s.name], seed: seeding };
+        const created_at = listedAt('poshmark', r.site_id), listed_at = r.published_at ?? created_at;
+        const rec = { q: s.name, ...r, created_at, listed_at, first_seen: t0, prev_read: lastRead[s.name], seed: seeding };
         s.seen.set(r.site_id, rec);
         if (seeding) { w('seen.jsonl', rec); continue; }
         // The stage watcher's own decision on this read: a candidate under the cap (its rule), then its confirm step.
         const stageCandidate = out1.candidates.some(c => c.site_id === r.site_id) || (out1.candidates.length >= 3 && r.price != null);
         let facts = null;
         if (s.name === want.search) {
-          try { facts = listingFacts(await fetchPage(r.url), r.site_id, r.url); } catch (e) { facts = { error: String(e.message ?? e) }; }
+          try { facts = listingFacts(await fetchPage(r.url), r.site_id); } catch (e) { facts = { error: String(e.message ?? e) }; }
         }
         const stageRule = r.price != null && r.price <= want.cap; // all stage-watch.mjs checks before its confirm step
         const stageAlert = stageRule && facts && facts.jsonld_price != null && facts.jsonld_price <= want.cap && facts.available !== false;
@@ -128,7 +74,7 @@ export async function trial({ want, searches, every_s, for_min, out, fetchPage, 
   const truth = [];
   for (const s of Object.values(S)) for (let p = 1; p <= sweepPages; p++) {
     const u = p === 1 ? s.url : `${s.url}&max_id=${p}`;
-    try { for (const r of cards(await fetchPage(u))) truth.push({ q: s.name, page: p, ...r, listed_at: listedAt('poshmark', r.site_id) }); } catch (e) { truth.push({ q: s.name, page: p, error: String(e.message ?? e) }); }
+    try { for (const r of cards(await fetchPage(u))) truth.push({ q: s.name, page: p, ...r, listed_at: r.published_at ?? listedAt('poshmark', r.site_id) }); } catch (e) { truth.push({ q: s.name, page: p, error: String(e.message ?? e) }); }
     await sleep(2000);
   }
   for (const t of truth) w('truth.jsonl', t);
