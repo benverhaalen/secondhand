@@ -2480,3 +2480,19 @@ Nate, the orchestrator's session, 2026-11-15, about 14:35 UTC.
 Used in: [packet 97](../.agents/team/packets/team/97-the-plan-from-here-for-ben.md).
 
 *Orchestrator's note, 14:26 UTC by the machine clock:* the times on Nate's entries above from "organize, shut down what is finished" onward were written from memory and run up to fifteen minutes fast; their order is right.
+
+## 2026-11-15 nate add the keys, push everything to main, test every feature with leads and codex, benchmarks without eBay
+Nate, the orchestrator's session, 2026-11-15, between about 14:30 and 14:45 UTC by the machine clock, six messages in order. The first came with a pasted table of the variables each system needs (chat, email sign-in, browser reads, the photo lookup, Apify, eBay's API, Databricks).
+> WE HAVE NO TIME ADD THEM
+
+> great, ensure we push all to main, after fully seeing and just working and fixing it yourself
+
+> well address what tehy said needs fixing and do it, you are assured no conflicts so just go ahead
+
+> well finish whats not
+
+> just test all features, ensure they work, fully check all screens, all data, do it with leads and codex. did capture get everything needed. are all pipelines built? can we run benchmarks?
+
+> account for our benchmarks without ebay
+
+Acted on: four keys that exist on Nate's Windows machine were set on the Fly app by name through standard input (OPENROUTER_API_KEY, BROWSER_USE_API_KEY, TREG_TOKEN, APIFY_TOKEN), no value printed or written; the leads were put back to work as testers and fixers who do not merge; the benchmark is run with and without eBay.
