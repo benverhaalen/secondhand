@@ -1,0 +1,1 @@
+{"errors":[{"errorId":25709,"domain":"API_INVENTORY","subdomain":"Selling","category":"REQUEST","message":"Invalid value for price. The price must be greater than 0.99.","longMessage":"Invalid value for price.","parameters":[{"name":"price","value":"0.50"}]}]}

@@ -1,0 +1,5 @@
+{"href":"https://api.ebay.com/sell/fulfillment/v1/order?limit=50&offset=0","total":1,"limit":50,"offset":0,
+ "orders":[{"orderId":"12-34567-89012","creationDate":"2026-11-15T06:00:00.000Z","orderFulfillmentStatus":"NOT_STARTED","orderPaymentStatus":"PAID",
+  "buyer":{"username":"fixture_buyer_1"},"pricingSummary":{"total":{"value":"37.50","currency":"USD"}},
+  "lineItems":[{"lineItemId":"10000000001","legacyItemId":"110551234567","sku":"SH-0001","title":"Levi's 501 Jeans 32x30","quantity":1,
+   "lineItemCost":{"value":"30.00","currency":"USD"},"total":{"value":"37.50","currency":"USD"}}]}]}
