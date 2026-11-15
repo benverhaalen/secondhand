@@ -65,3 +65,12 @@ COMMENT 'Maintenance window ids and times; principal identities and free-text re
 AS
 SELECT id, started_at, ended_at, ended_at IS NULL AS is_open
 FROM secondhand.governance.break_glass;
+
+CREATE OR REPLACE VIEW secondhand.measures.shown_prices
+COMMENT 'Each shown valuation with the item it prices and the sales behind it; open one with measures.why(id). Caller row filters apply.'
+AS
+SELECT g.id, replace(t.title, '-', ' ') AS item, g.metric, g.value_cents, g.lo_cents, g.hi_cents,
+       g.basis_count, g.basis_level, g.as_of, g.data, t.price_cents AS sold_cents, t.at AS sold_at
+FROM secondhand.core.guarded_number g
+JOIN secondhand.market.comp t ON t.comp_id = g.item_id
+WHERE g.state = 'shown' AND g.metric LIKE 'valuation.%';

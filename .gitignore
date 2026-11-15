@@ -35,3 +35,4 @@ AuthKey_*
 .env.*
 !.env.example
 *storage-state*.json
+bench/out/

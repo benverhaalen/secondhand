@@ -1989,3 +1989,33 @@ Nate, orchestrator's session, 2026-11-15, about 07:30 Central.
 > The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both but we've accounted for how to handle multiple listings
 
 Used in: `spec/engines/adaptation.md` (AD5, rank sites by expected keep), `spec/plans/engines-queue.md`.
+
+## 2026-11-15 nate show how the engine weighs what it learned, with genie answering and every way databricks helped
+Nate, orchestrator's session, 2026-11-15, about 07:45 Central.
+> So we should exemplify how the engine we built to deliver and determinstically weigh aggregated and learned product information from official and second hand retailers. like if databricks builds stuff for genie to be able to answer questions than we can show off the product, exhbit all the ways databricks helped, the feature set it offered to us, how we expanded on it, and optimized to create what we present
+
+Used in: `databricks/DEMO.md`, `databricks/genie/market.json`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate technology is valued by its parts too, and a custom build is a clarifying question
+Nate, orchestrator's session, 2026-11-15, about 07:55 Central.
+> Also for technology, a userful thing when its being captured and identified, is for the system to perhaps determine the value of its individual pieces. like a desktop computer can have the system understand the ram, of course if its a custom build, I imagine that will be a clarifying question, and stuff like that
+
+Used in: [packet 72](../.agents/team/packets/team/72-capture-handoff.md) (the queue's parts row), `spec/engines/capture.md` (when specced).
+
+## 2026-11-15 nate start new leads as needed and work to complete everything
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Start all new leads as you see fit, evaluate, fix, address, and efficiently work to complete everything
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md) (the orchestrator starts a replacement lead when one hands off, without asking each time).
+
+## 2026-11-15 nate apify stays out of the latency path; store it and feed the engines from the store
+Nate, orchestrator's session, 2026-11-15, about 08:25 Central.
+> well we dont read apify in full if it affects latency, we can store stuff to then be generated and build the system to aid the models and ai engines in how the data is automatically given to them
+
+Used in: `spec/engines/market-index.md` (MI1, MI2), [packet 69](../.agents/team/packets/team/69-integration-handoff.md) (the Facebook source row).
+
+## 2026-11-15 nate a listing parser dropped onto each site's page, narrowing by type or keyword and checking the name
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central, continuing "we can parse and build things to be deterministicially or code driven".
+> that includes the way we scrape browsers, the system could drop like a listing parser onto every site with the listing that also narrows by the type or keyword and checks for the name, just things to improve accuracy, and efficeincy.
+
+Used in: `app/src/edge/harness/public-client.ts` (the in-page parser, when built), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).

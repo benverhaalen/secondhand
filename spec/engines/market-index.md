@@ -33,6 +33,16 @@ We read everything ([Nate](../../product/words.md#2026-11-15-nate-we-read-everyt
 | Dupe | **never**: re-asked live each time | no | licensed for the request; J1: "Dupe rows are never written" ([joins.md](../plans/joins.md)) |
 | Apify (eBay active, Facebook Marketplace) | yes, with `may_model: false`, `use_scope: hackathon_demo` | **no**: shown, never computed on | third-party scrape, terms not cleared ([apify README](../../app/src/edge/harness/sites/apify/README.md)) |
 
+**Official retail or secondhand.** [Nate](../../product/words.md#2026-11-15-nate-show-how-the-engine-weighs-what-it-learned-with-genie-answering-and-every-way-databricks-helped) asks for information "from official and second hand retailers". Every row carries `channel`: `official_retail` (the maker's own store or an authorised retailer, new) or `secondhand` (a person or reseller on a marketplace, new or used). The two are never pooled: every price spread, every A11 cell and every group's median is per channel. Which source gives which today (*sourced*: the field inventory; this morning's Dupe rows):
+
+| Source | Channel | How it is decided |
+|---|---|---|
+| Poshmark, Mercari, Depop, eBay page, Facebook Marketplace and eBay through Apify | `secondhand`, including new-with-tags listings | the source is a marketplace; a new item listed by a person is still secondhand, with its condition grade |
+| Dupe | mostly `official_retail` | by `source_site`, not by Dupe's `secondhand` flag, which is unreliable for eBay rows (they come back `secondhand: false`): a marketplace host is `secondhand`, a maker's or retailer's host is `official_retail` |
+| the official price lane (the maker's page) | `official_retail` | the route itself |
+
+A row whose channel cannot be decided by code is left out of every per-channel figure and counted.
+
 So the index is two things: stored rows for the sources that allow it, and, for Dupe, a stored *query* (the attribute record and the words) that is re-asked live when an answer needs it.
 
 ## 2. The record each row gets: code first
@@ -77,7 +87,7 @@ The similar group answers "what else is like this" the same way, with Dupe re-as
 
 ## 5. The analysis on the groups
 
-Per group, site and condition: the price spread (p10, p50, p90 of the ask, with the count), A11's brand premium and the kind's brand sensitivity, and time to sell where a site shows a sold state and the panel may re-read ([adaptation.md §4](adaptation.md#4-how-each-is-proved-before-it-is-trusted), P1). Each figure says it is an asking price unless it is not.
+Per group, channel, site and condition: the price spread (p10, p50, p90 of the ask, with the count), A11's brand premium and the kind's brand sensitivity, and time to sell where a site shows a sold state and the panel may re-read ([adaptation.md §4](adaptation.md#4-how-each-is-proved-before-it-is-trusted), P1). Each figure says it is an asking price unless it is not.
 
 ## 6. Today's slice
 
