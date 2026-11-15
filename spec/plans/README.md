@@ -29,18 +29,20 @@ Only Ben and Nate move a choice to Decided, accept a plan, or call a feature dem
   seat: lead | implementer | executor | reviewer | codex-worker     model: opus | sonnet | <codex model>     effort: medium | high
   owns: [paths only this task writes; shared state as resource:<name>]
   dependsOn: [task ids on the board]
+  rests: [the spec rows, decisions, words and research it follows, at the anchor; node scripts/evidence.mjs <slug> lists them]
   check: { argv: [...], expectExit: 0 }    run with no shell from the repo root
   accepts: [behaviour seen from outside, one per line; at least one starts "not:"]
   done: <one sentence: the state of the world when this is true>
 ```
 
-Rules: one writer per file across every plan; a task with no runnable check folds into one whose check covers it; no estimates, the task count is the size. Example:
+Rules: the task's commits carry its `rests` as `Rests-on:` trailers, and its reviewer is handed `node scripts/evidence.mjs brief <the commit before the task>`; one writer per file across every plan; a task with no runnable check folds into one whose check covers it; no estimates, the task count is the size. Example:
 
 ```
 sold-1 Model the Ship by pill
   lane: shared   owner: Nate   seat: implementer   model: sonnet   effort: high
   owns: [spec/lifecycle.mjs, spec/lifecycle.test.mjs, spec/README.md]
   dependsOn: []
+  rests: [spec/README.md#one-name-for-each-state, spec/features/sold.md]
   check: { argv: ["node", "--test", "spec/lifecycle.test.mjs"], expectExit: 0 }
   accepts:
     - a sold item with an open ship_by appointment shows Ship by

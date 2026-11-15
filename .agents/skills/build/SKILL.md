@@ -1,6 +1,6 @@
 ---
 name: build
-description: Use in secondhand before writing or changing code that runs (the app, the server, a cloud job, an agent loop, a site harness). States done and the command that proves it, writes the failing test first, takes names and states from spec/, logs through log/, and cleans the diff before saying done.
+description: Use in secondhand before writing or changing code that runs (the app, the server, a cloud job, an agent loop, a site harness). States done and the command that proves it, starts from what the decisions, spec and research settle, writes the failing test first, takes names and states from spec/, logs through log/, cites its sources in each commit, and gets a fresh review against them before saying done.
 ---
 
 # build
@@ -9,7 +9,11 @@ The failure this prevents: code that works today and that the next agent can't f
 
 **0. State done first.** Before the first edit, write what someone will be able to see or do, and the one command that proves it. Proof is a run of the real thing with its output shown. A mock, a helper's report or "it compiles" is not proof. Each program has one command that runs all of its checks (tests, types, lint), named at the top of its README, and the first code in a program adds it.
 
-**1. Find before you write.** Search for the function, component, state or event before adding one. Item states and actions come from [spec/lifecycle.mjs](../../../spec/lifecycle.mjs), log events from [spec/events.json](../../../spec/events.json), the data model and API from [spec/product.md](../../../spec/product.md), colors and type from `brand/tokens.css`. A second name for a thing that already has one is a bug.
+**1. Start from what is already settled** ([Ben's ask](../../../product/words.md#2026-11-15-agents-use-the-research-we-did)). Note the commit you start from (`git rev-parse HEAD`). Run `node scripts/evidence.mjs <slug>` for each feature the change touches. It lists the decisions, the spec and its determination cards, the research behind them with its evidence marks, research the spec has not caught up with, and the choices the coverage audit marks untested.
+- Open each source at the line you build on, not a summary of it. Spec lines are agent proposals until they link a decision ([spec/README](../../../spec/README.md#where-to-start)), so a decision beats a spec line, and a spec line beats memory. When two sources disagree, or a note says something the spec does not, run `decide` instead of choosing quietly.
+- A number, clock or rule that comes from research lives once in `spec/` with its evidence mark, and code reads it from there: marketplace facts through `fact(key, site)` in [spec/sites.mjs](../../../spec/sites.mjs) ([Ben](../../../product/words.md#2026-11-15-the-code-understands-each-app)). A value no source gives is a guess: say so in the commit and put it on the unfinished list.
+- Build a choice marked untested so its value can change without a rewrite.
+- Find before you write. Search for the function, component, state or event before adding one. Item states and actions come from [spec/lifecycle.mjs](../../../spec/lifecycle.mjs), log events from [spec/events.json](../../../spec/events.json), the data model and API from [spec/product.md](../../../spec/product.md), colors and type from `brand/tokens.css`. A second name for a thing that already has one is a bug.
 
 **2. Shape it so a search finds it.**
 - Each idea lives in one module that owns it, and the path says what it is: `listing/price/floor.ts`.
@@ -34,7 +38,9 @@ The failure this prevents: code that works today and that the next agent can't f
 - Imagine deleting each module you added. If nothing gets harder, it was a pass-through, so merge it into its caller. Add an interface with one implementation only when a second one is real, usually the test's.
 - Keep a comment only for what the code cannot say and we cannot change: a license, a public API's contract, a site's or vendor's quirk, a link to the rule that forces it. A comment explaining a surprise in our own code means rename or reshape the code.
 
-**6. End with "usable" or "not usable yet" and the unfinished list**, the same words the [UI constitution](../../../product/ui-constitution.md) asks for. Usable means your human can try it now, and you say how. Say "ready to ship" only when the proving command, the tests and the whole user path pass on `main` and the unfinished list is empty. Unfinished parts carry a visible mark in development builds.
+**6. Cite, then get a fresh review.** A commit that changes product code ends with a `Rests-on:` trailer naming the spec rows, decisions, words or research it follows, at the anchor, or `Rests-on: none (why)`. Add `Proved-by: <command>` when there is one. Before calling feature work usable, give `node scripts/evidence.mjs brief <start commit>` to a fresh agent as its whole prompt (in Claude Code a new subagent; from Codex, `codex exec -s read-only "$(node scripts/evidence.mjs brief <start commit>)" < /dev/null`). It gets the sources, the diff and the proving command, never your reasoning. Check each finding at its line before acting on it. How a screen looks is judged by the `ui-screen` loop, not here.
+
+**7. End with "usable" or "not usable yet" and the unfinished list**, the same words the [UI constitution](../../../product/ui-constitution.md) asks for. Usable means your human can try it now, and you say how. Say "ready to ship" only when the proving command, the tests and the whole user path pass on `main` and the unfinished list is empty. Unfinished parts carry a visible mark in development builds.
 
 When Ben or Nate corrects code, fix it, then turn the correction into a check if a script can find every instance (the row in [AGENTS.md](../../../AGENTS.md)).
 

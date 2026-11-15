@@ -16,7 +16,7 @@ The failure this prevents: relying on pretraining or another model's summary, an
    - *inferred*: your own reasoning.
    Add the model and date for any claim about model behavior.
 5. Give each reference a job, and say what to take from it, what to change, and why the reference is good, not just popular.
-6. Save the note as `research/<slug>/<person>/<topic>.md`, where `<person>` is your human. The header and format are in `research/README.md`. Add a one-line summary with a link on `features/<slug>/README.md`.
+6. Save the note as `research/<slug>/<person>/<topic>.md`, where `<person>` is your human. The header and format are in `research/README.md`. Add a one-line summary with a link on `features/<slug>/README.md`. If the note bears on a choice in `spec/features/<slug>.md`, link it from that row, or add the disagreement to the spec's Open section. Until the spec cites it, `node scripts/evidence.mjs <slug>` lists the note as research the spec has not caught up with.
 7. Say what you searched and what you couldn't reach. A limited search doesn't show that something doesn't exist.
 
 Run `node .agents/check.mjs`. It fails a note that has no header or no evidence marks.
