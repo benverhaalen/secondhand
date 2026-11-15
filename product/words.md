@@ -1159,3 +1159,25 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-15 nate write the benchmark up in full and push it
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15.
 > write up a full md detailing it and push it in the repo
+
+## 2026-11-15 nate the Mac as extra compute, Claude driving here and Codex there, and no more crashes
+Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Central, as the Mac Studio came online over Tailscale. Separate messages.
+> Lets have you though finish what was paused. And fully prepare all streams at a good point to then get it up. You can even copy everything currently local if you want and get everything up, using it as an extra machine for compute and testing and such. Of course update things as you see fit
+
+> ensure codex is up to date, and our config is pristine, no biggie if not just port what works and ensure it is even base codex with the necessary skills and optimized token spend per task
+
+> I would say one problem is none of your streams on this device finished, or at least none I can see. I would check on these, you can still leverage this for main development and pass bulk huge tests and running sessions onto that
+
+> this node issue is something wrong with what or how we run what we do. Its crashing on my computer and takes up so much memory on my mac
+
+> review through everything, now you can also clear up the stale streams like stream 1, 12, 13, 10 that all stopped
+
+> Lets check through real quick, Ill sign into claude on mac, ideally claude here, codex there
+
+> Utilize the mac to also run tests, utilize runs of the browser and building harnesses, you can use claude, port over the full config for this project and such, its however you feel best to perform and execute it very well
+
+> ensure we continue focused development, planning, and orchestration driven by you claude on this computer
+
+> you can update and utilize docker, take advantage of the ram, see all aspects such compute can aid us in performance and efficiency when building, but dont let the fact that the other device isn't fully configured out to affect how we develop, how much we spend, it should optimally follow how you prompt and instruct it
+
+> Now that we fixed the crash, ensure it doesnt happen again and perhaps push further now to handle more, not of course so much that it crashes either this computer or the mac but you understand how to effectively dispatch.
