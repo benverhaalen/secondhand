@@ -61,3 +61,11 @@ test('a size written as a word matches its letter: a want for L finds a listing 
   const suit: Want = { ...want, text: 'wool blazer', fit: { size: 'S' } };
   assert.equal(watchRun(suit, [l({ listing_id: 'b', size: '40' })], [], { now: new Date('2026-11-15T03:00:00Z'), localHour: 14 }).matches.length, 0);
 });
+
+test("a women's or kids' L never fits a want for a men's L, though the label says L", () => {
+  const jersey: Want = { ...want, text: 'brewers jersey', fit: { size: 'L', cut: 'mens' } };
+  const go = (department?: string) => watchRun(jersey, [l({ listing_id: department ?? 'none', size: 'L', department })], [], { now: new Date('2026-11-15T03:00:00Z'), localHour: 14 }).matches.length;
+  assert.deepEqual([go('Men'), go('Women'), go('Kids'), go(undefined)], [1, 0, 0, 1]);
+  const anyCut: Want = { ...jersey, fit: { size: 'L' } };
+  assert.equal(watchRun(anyCut, [l({ listing_id: 'w', size: 'L', department: 'Women' })], [], { now: new Date('2026-11-15T03:00:00Z'), localHour: 14 }).matches.length, 1);
+});
