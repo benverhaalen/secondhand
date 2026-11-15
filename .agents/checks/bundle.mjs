@@ -22,7 +22,8 @@ export function imports(file, raw) {
 export function bundle(root, { files }) {
   let ts;
   try {
-    ts = createRequire(join(root, 'app/package.json'))('typescript');
+    // The repo's own compiler only: a bare 'typescript' walks up past the repo to any copy above it.
+    ts = createRequire(join(root, 'app/package.json'))(join(root, 'app/node_modules/typescript'));
   } catch (error) {
     return [err('app/package.json', `Cannot load TypeScript for bundle check: ${error.message}`)];
   }

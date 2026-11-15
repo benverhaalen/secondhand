@@ -4,7 +4,7 @@ Updated: November 15, 2026. Owner: Nate. For: Ben. Agent: Claude Code, the captu
 
 ## What capture does with the studio's asks
 
-The studio's `plan.asks` in `manifest.json` (from `plan.py` `_ask()`, with each ask's type and fields) are not a list shown beside capture's questions. They enter the one question plan ([capture engine §11](../../../../spec/engines/capture.md#11-the-deterministic-plan), "Studio asks"). So the person is asked once, in the order that unblocks the most, and a measurement capture already holds is never asked again by the studio.
+The studio's `plan.asks` in `manifest.json` (from `plan.py` `_ask()`, with each ask's type and fields) are not a list shown beside capture's questions. They enter the one question plan ([capture engine §11](../../../../spec/engines/capture.md#2-the-plan), "Studio asks"). So the person is asked once, in the order that unblocks the most, and a measurement capture already holds is never asked again by the studio.
 
 - They count only after the person taps Generate (`studio.requested`). Retouch stays off unless they ask.
 - Then the studio is one more target after the linked sites, with the same contract as every other question: field, kind, options, why, what it unlocks.

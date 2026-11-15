@@ -2,9 +2,51 @@ import assert from 'node:assert/strict';
 import { test, beforeEach } from 'node:test';
 import { createLog, memorySink } from '../../../../log/index.js';
 import type { JobRow } from '../events/ports.ts';
-import { deps, route } from './http.ts';
+import { ApiError, deps, route } from './http.ts';
 import { EXAMPLES, STREAMS, example } from './examples.ts';
 import { getJob, jobEvents, memoryJobs, seedExamples, streamOpts, userStream, type JobStore } from './jobs.ts';
+import { searchParams } from '../intel/run.ts';
+
+test('prune expires terminal frames after the TTL, retaining running jobs and the exact boundary', () => {
+  const s = memoryJobs(), at = Date.now();
+  const ttl = (searchParams.read('search_frame_ttl_s', {}).value as number) * 1000;
+  for (const id of ['ended', 'running', 'failed']) {
+    s.put({ id, kind: 'assist', state: 'running' }, 'u');
+    s.append(id, 'job.state', { state: 'running', at: new Date(at - ttl * 2).toISOString() });
+  }
+  s.append('ended', 'job.state', { state: 'done', at: new Date(at).toISOString() });
+  s.append('failed', 'job.state', { state: 'failed', at: new Date(at).toISOString() });
+  s.prune(at + ttl);
+  assert.equal(s.framesAfter('ended', 0).length, 2);
+  s.prune(at + ttl + 1);
+  for (const id of ['ended', 'failed']) {
+    assert.deepEqual(s.framesAfter(id, 0), []);
+    assert.equal(s.get(id, 'u'), undefined);
+  }
+  assert.equal(s.framesAfter('running', 0).length, 1);
+  assert.equal(s.get('running', 'u')?.state, 'running');
+});
+
+test('prune also expires an assist row initially written as terminal', () => {
+  const s = memoryJobs(), now = Date.now();
+  s.put({ id: 'terminal', kind: 'assist', state: 'done' }, 'u');
+  const ttl = (searchParams.read('search_frame_ttl_s', {}).value as number) * 1000;
+  s.prune(now + ttl + 100);
+  assert.equal(s.get('terminal', 'u'), undefined);
+});
+
+test('prune drops ordinary search frames but never running search frames', () => {
+  const s = memoryJobs(), now = Date.now();
+  for (const id of ['ended_search', 'running_search']) {
+    s.put({ id, kind: 'search', state: 'running' }, 'u');
+    s.append(id, 'job.state', { state: 'running' });
+  }
+  s.append('ended_search', 'job.state', { state: 'done', at: new Date(now).toISOString() });
+  const ttl = (searchParams.read('search_frame_ttl_s', {}).value as number) * 1000;
+  s.prune(now + ttl + 1);
+  assert.deepEqual(s.framesAfter('ended_search', 0), []);
+  assert.equal(s.framesAfter('running_search', 0).length, 1);
+});
 
 beforeEach(() => {
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
@@ -67,9 +109,9 @@ test('seeded example jobs belong to the example user; the example visitor job is
 
 test('a stage frame with no found{} is refused; fact.found needs attribute.name and value', () => {
   const s = memoryJobs(); s.put(job('job_a'), 'usr_8f2k');
-  assert.throws(() => s.append('job_a', 'job.stage', { job_id: 'job_a', stage: 'x', state: 'running' }), (e: any) => e.code === 'invalid');
-  assert.throws(() => s.append('job_a', 'fact.found', { job_id: 'job_a', attribute: { value: 'x' } }), (e: any) => e.code === 'invalid');
-  assert.throws(() => s.append('job_a', 'fact.found', { job_id: 'job_a', attribute: { name: 'brand' } }), (e: any) => e.code === 'invalid');
+  assert.throws(() => s.append('job_a', 'job.stage', { job_id: 'job_a', stage: 'x', state: 'running' }), (e: unknown) => e instanceof ApiError && e.code === 'invalid');
+  assert.throws(() => s.append('job_a', 'fact.found', { job_id: 'job_a', attribute: { value: 'x' } }), (e: unknown) => e instanceof ApiError && e.code === 'invalid');
+  assert.throws(() => s.append('job_a', 'fact.found', { job_id: 'job_a', attribute: { name: 'brand' } }), (e: unknown) => e instanceof ApiError && e.code === 'invalid');
   assert.equal(s.framesAfter('job_a', 0).length, 0);
   s.append('job_a', 'job.stage', { job_id: 'job_a', stage: 'x', state: 'running', found: {} });
   s.append('job_a', 'fact.found', { job_id: 'job_a', attribute: { name: 'size', value: null, unknown_reason: 'not_visible' } });
