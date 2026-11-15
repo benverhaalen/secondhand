@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createHash } from 'node:crypto';
 import { plan } from './plan.ts';
+import { table } from './table.ts';
 import type { State } from './select.ts';
 import { SITES } from '../../../../spec/sites.mjs';
 const allSites = [...SITES] as State['sites'];
@@ -37,7 +38,15 @@ const walkHashes: Record<string,string> = {
   "E Chair": "fb3743b7e885a904d2e481b192c634259739ef6fb4dd502958796190cc5e38d6",
   "F Three T-shirts": "68c07c16d84f061b86821c914574dc5d5e8de4d8f57ebf95382c4a34d52eb7e1",
   "G1 Close table variants": "b03ecbb39c9cf59d9a2a35f3aba202bb52f73172f718831344e487e3ae4d3724",
-  "G2 Close table variants": "8499c52ce6cf93b99e84ab12bed322666b6271969b06703da7e7ced12124b496"
+  "G2 Close table variants": "8499c52ce6cf93b99e84ab12bed322666b6271969b06703da7e7ced12124b496",
+  // First baseline, recorded in F17 round 3.
+  "H Prebuilt desktop": "1072f280caad43f52c46746ea4b241161c7eb4ca7209bc09a4770297017fe1c0",
+  // First baseline, recorded in F17 round 3.
+  "I Custom desktop no screen": "d5cc438f5379f6cf728b0ff2a51984d38a3072c50e6c5217894dde1097019ab4",
+  // First baseline, recorded in F17 round 3.
+  "I Custom desktop screen read": "1b4f52c1addaf115f9b0dbf6796e799a44f77088eb99684e378121640a1d98f4",
+  // First baseline, recorded in F17 round 3.
+  "J Laptop": "d1fee28d58f3cdb38df2c9a81cc6f229d8388fae46783577280080a27dad5fb9"
 };
 test('without candidate detail every walk preserves its entire pinned plan sequence', () => {
  for(const fixture of walks) {
@@ -46,7 +55,9 @@ test('without candidate detail every walk preserves its entire pinned plan seque
    const facts=s.facts;Object.assign(s,event.patch);s.facts={...facts,...event.patch.facts};
    plans.push(plan(s,params));
   }
-  assert.equal(createHash('sha256').update(JSON.stringify(plans)).digest('hex'),walkHashes[fixture.name],fixture.name);
+  const serialized=JSON.stringify(plans,fixture.name==='D Phone' ? (key,value:unknown)=>key==='kind' && value==='phones' ? 'phones_laptops' : value : undefined);
+  assert.equal(createHash('sha256').update(serialized).digest('hex'),walkHashes[fixture.name],fixture.name);
+  if(fixture.name==='D Phone')for(const p of plans)assert.equal(p.kind,'phones');
  }
 });
 test('required site rows bypass a zero cap while optional, unlinked and capture-table rows do not', () => {
@@ -127,10 +138,10 @@ test('F19: no linked sites asks type first and uses all sites consistently after
 test('type first and suggestion proposal requires margin',()=>{const p=run({suggestion:{family:'apparel',p:.86,second_p:.05},lookups:'running',kept:['front']});assert.equal(p.questions[0].field,'type');assert.deepEqual(p.questions[0].options[0],{value:'apparel',proposed:true});assert.ok(!run({suggestion:{family:'apparel',p:.45,second_p:.4}}).questions[0].options.some(o=>o.proposed));});
 test('function from asked only never has a proposal',()=>{const q=run({type:'electronics',kept:['scan','model_plate']}).questions.find(q=>q.field==='function')!;assert.ok(q);assert.ok(q.options.every(o=>!o.proposed));});
 test('find skips condition and refused fields never reappear',()=>assert.ok(run({type:'shoes',purpose:'find',kept:['scan','size_label','soles'],refused:['size']}).questions.every(q=>!['condition','size'].includes(q.field))));
-test('required survives zero optional budget and fourth optional is capped',()=>{const p=run({type:'electronics',kind:'phones_laptops',kept:['about_screenshot','front_screen_on','back'],sites:['ebay'],facts:{type:{value:'electronics',source:'you_said',confidence:1}}});assert.ok(p.questions.some(q=>q.field==='signed_out'));assert.ok(p.questions.filter(q=>q.unlocks.required===0).length<=3);});
+test('required survives zero optional budget and fourth optional is capped',()=>{const p=run({type:'electronics',kind:'phones',kept:['about_screenshot','front_screen_on','back'],sites:['ebay'],facts:{type:{value:'electronics',source:'you_said',confidence:1}}});assert.ok(p.questions.some(q=>q.field==='signed_out'));assert.ok(p.questions.filter(q=>q.unlocks.required===0).length<=3);});
 test('plan pure with field output sorted and fixed paths',()=>{const s=state({type:'apparel',kept:['front','back','tag']});const p=plan(s,memoryStore());assert.deepEqual(p,plan(structuredClone(s),memoryStore()));assert.deepEqual(p.fields.map(f=>f.field),p.fields.map(f=>f.field).sort());assert.equal(p.questions.find(q=>q.field==='condition')?.answer.path,'/v1/captures/c');});
 test('optional cap drops the fourth and never caps required questions',()=>{const p=run({type:'bags',sites:['ebay'],kept:['scan','inside_tab'],lookups:'done'});assert.deepEqual(p.questions.filter(q=>q.unlocks.required===0).map(q=>q.field),['accessories','colour','brand']);assert.ok(p.questions.some(q=>q.field==='condition'));});
-test('answered and refused optional fields consume the same cap',()=>{const p=run({type:'electronics',kind:'phones_laptops',sites:['ebay'],kept:['about_screenshot','front_screen_on','back'],refused:['brand','colour'],facts:{carrier_lock:{value:'unlocked',source:'you_said',confidence:1}}});assert.equal(p.questions.filter(q=>q.unlocks.required===0).length,0);assert.deepEqual(p.questions.map(q=>q.field),['condition','function','signed_out','storage_gb','model']);});
+test('answered and refused optional fields consume the same cap',()=>{const p=run({type:'electronics',kind:'phones',sites:['ebay'],kept:['about_screenshot','front_screen_on','back'],refused:['brand','colour'],facts:{carrier_lock:{value:'unlocked',source:'you_said',confidence:1}}});assert.equal(p.questions.filter(q=>q.unlocks.required===0).length,0);assert.deepEqual(p.questions.map(q=>q.field),['condition','function','signed_out','storage_gb','model']);});
 test('question cap reads ParamStore instead of a hardcoded three',()=>{const params=memoryStore();const tuned={...params,read:(name:string,scope:Parameters<typeof params.read>[1])=>({...params.read(name,scope),...(name==='capture_question_cap'?{value:0}:{})})};const p=plan(state({type:'bags',kept:['scan','inside_tab']}),tuned);assert.ok(p.questions.length>0);assert.ok(p.questions.every(q=>q.unlocks.required>0));});
 test('text candidates select one with other and preserve a proposed value outside them',()=>{const p=run({type:'bags',sites:['depop'],kept:['scan','inside_tab'],candidates:{brand:['Coach','Gucci']},facts:{brand:{value:'Other brand',source:'lookup',confidence:.7}}});const q=p.questions.find(q=>q.field==='brand')!;assert.equal(q.kind,'pick_one');assert.equal(q.other,true);assert.deepEqual(q.options,[{value:'Other brand',proposed:true},{value:'Coach',proposed:false},{value:'Gucci',proposed:false}]);});
 test('type auto acceptance uses its own floor and lead',()=>{assert.ok(!run({confirm_mode:'auto',suggestion:{family:'shoes',p:.91,second_p:.04}}).questions.some(q=>q.field==='type'));assert.ok(run({confirm_mode:'auto',suggestion:{family:'shoes',p:.91,second_p:.45}}).questions.some(q=>q.field==='type'));});
@@ -364,6 +375,67 @@ test('zone-less graphic and flaw asks each collapse into one shot by type', () =
   assert.equal(settled.complete.studio!.ready,true);
   assert.ok(!settled.questions.some(q=>q.kind==='shot'));
  }
+});
+
+const desktop={type:'electronics' as const,kind:'desktops',sites:['ebay','facebook'] as State['sites'],kept:['scan','model_plate'],lookups:'done' as const};
+const said=(value:unknown)=>({value,source:'you_said' as const,confidence:1});
+test('no read offer or part question before custom build settles or while lookups run',()=>{
+  for(const patch of [{},{lookups:'running' as const,facts:{custom_build:said(true)}}]) {
+    const p=run({...desktop,...patch});
+    assert.ok(p.questions.every(q=>q.field!=='system_info'&&!q.field.startsWith('part.')));
+  }
+});
+test('custom_build sorts before model and every other optional question',()=>{
+  const p=run(desktop);assert.equal(p.questions[0].field,'custom_build');
+  assert.ok(p.questions.some(q=>q.field==='model'));
+});
+test('custom_build true derives Custom build ahead of a model plate read and never asks model',()=>{
+  const p=run({...desktop,facts:{custom_build:said(true),model:{value:'Case model',source:'label',confidence:1}}});
+  assert.equal(p.fields.find(f=>f.field==='model')!.value,'Custom build');
+  assert.equal(p.fields.find(f=>f.field==='model')!.source,'derived');
+  assert.ok(!p.questions.some(q=>q.field==='model'));
+});
+test('custom desktop optional list is build, one shot offer, then graphics and processor after skip',()=>{
+  const facts={colour:{value:['black'],source:'seen' as const,confidence:.95},brand:{value:'Example',source:'label' as const,confidence:.95},
+    dimensions:{value:{width:20,height:45,depth:40},source:'measured' as const,confidence:.95}};
+  const optional=(p:ReturnType<typeof plan>)=>p.questions.filter(q=>!q.required_by.length).map(q=>q.field);
+  assert.deepEqual(optional(run({...desktop,facts})),['custom_build']);
+  const settled={...facts,custom_build:said(true)};
+  const offered=run({...desktop,facts:settled});
+  assert.deepEqual(optional(offered),['system_info']);
+  const offer=offered.questions.find(q=>q.field==='system_info')!;
+  assert.equal(offer.kind,'shot');assert.deepEqual(offer.shot,{step:'system_info',reason:'add'});
+  assert.equal(offer.words,'Photo of the system information screen');
+  assert.deepEqual(optional(run({...desktop,facts:settled,refused:['system_info']})),['part.graphics','part.processor']);
+});
+test('refused read offer is never offered again and does not consume an answered slot',()=>{
+  const p=run({...desktop,refused:['system_info'],facts:{custom_build:said(true),colour:{value:['black'],source:'seen',confidence:.95}}});
+  assert.ok(!p.questions.some(q=>q.field==='system_info'));
+  assert.deepEqual(p.questions.filter(q=>!q.required_by.length).map(q=>q.field),['part.graphics','part.processor']);
+});
+test('ranks order graphics before processor before memory when the optional cap allows all',()=>{
+  const store=memoryStore(),read=store.read;store.read=(name,scope)=>({...read(name,scope),...(name==='capture_question_cap'?{value:20}:{})});
+  const p=plan(state({...desktop,refused:['system_info'],facts:{custom_build:said(true)}}),store);
+  assert.deepEqual(p.questions.filter(q=>q.field.startsWith('part.')).map(q=>q.field),['part.graphics','part.processor','part.memory','part.storage']);
+});
+test('prebuilt with all asked parts known gets no read offer even with unread unasked parts',()=>{
+  const facts:State['facts']={custom_build:{value:false,source:'lookup',confidence:.95}};
+  for(const [name,value] of Object.entries({graphics:'RTX 3060',processor:'Intel Core i7',memory:16,storage:512}))facts[`part.${name}`]={value,source:'lookup',confidence:.95};
+  assert.ok(run({...desktop,facts}).questions.every(q=>q.field!=='system_info'&&q.field!=='custom_build'&&!q.field.startsWith('part.')));
+});
+test('pending process shots hold the read offer and parts; a laptop process read is never offered',()=>{
+  assert.ok(!run({...desktop,kept:['scan'],facts:{custom_build:said(true)}}).questions.some(q=>q.field==='system_info'||q.field.startsWith('part.')));
+  const p=run({type:'electronics',kind:'laptops',kept:['about_screenshot','front_screen_on','back'],lookups:'done'});
+  assert.ok(!p.questions.some(q=>q.kind==='shot'||q.field.startsWith('part.')));
+});
+test('an ordinary ranked field cannot trigger a parts read offer when all asked parts are known',()=>{
+  const colour=table.fields.root.find(row=>row.field==='colour')!,rank=colour.rank;
+  try {
+    colour.rank=8;
+    const facts:State['facts']={custom_build:{value:false,source:'lookup',confidence:.95}};
+    for(const [name,value] of Object.entries({graphics:'RTX 3060',processor:'Intel Core i7',memory:16,storage:512}))facts[`part.${name}`]={value,source:'lookup',confidence:.95};
+    assert.ok(!run({...desktop,facts}).questions.some(q=>q.field==='system_info'));
+  } finally {if(rank===undefined)delete colour.rank;else colour.rank=rank;}
 });
 
 // Recorded from e2eaf9b before the F18/F19 implementation.

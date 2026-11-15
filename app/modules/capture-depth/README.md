@@ -34,7 +34,7 @@ const device = await capabilities(); // send as the capture's device field; catc
   style={{ flex: 1 }}
   onExtent={({ nativeEvent }: { nativeEvent: Extent }) => {
     // Save the latest proposal for the screen's confirmation step.
-    // nativeEvent: { extent_cm, extent_conf: 0, rigid: true, frames }
+    // nativeEvent: { extent_cm, extent_conf: 0, rigid: true, frames, distance_m }
   }}
   onStatus={({ nativeEvent }) => {
     // item_clipped: ask for the whole item inside the window before confirming size.
@@ -65,10 +65,11 @@ Owner: Nate. Lead: forward this section to Ben before merging. No screen integra
 
 ## Status events
 
-`onStatus` receives `{state}` and the wrapper logs it through the app logger. The native view emits a status only when it changes, including transitions back to an earlier state.
+`onStatus` receives `{state}` for lifecycle and geometry changes, including transitions back to an earlier state. It also receives `{state: 'distance', distance_m: number | null}` for each processed depth frame, including frames with no measurable box. Distance updates bypass status deduplication and logging; other statuses go through the app logger. Every `onExtent` also carries `distance_m`. Extent events always reach the caller; the wrapper logs only the first extent or a side/height change of at least 0.5 cm from the last logged extent.
 
 | State | Meaning |
 |---|---|
+| `distance` | Centre z-depth in metres, or `null` when fewer than 20 valid high-confidence samples are available. |
 | `requesting_camera_permission` | Waiting for the camera permission response. |
 | `unsupported` | This device has no scene depth; no session starts. |
 | `running` | The session started, or a usable measurement followed a geometry warning. |
@@ -81,6 +82,10 @@ Owner: Nate. Lead: forward this section to Ben before merging. No screen integra
 
 Errors remain `onError {code}`: camera configuration/permission errors, invalid buffer formats or dimensions, and AR session failures. Capability failures reject their promise.
 
+`distanceMeters(samples:width:height:)` computes the median positive, finite z-depth of high-confidence samples inside `DepthDistanceWindow`. This fixed square shares the sensor centre with `DepthWindow`; its side is 10% of the shorter continuous depth-window dimension (33.6 pixels at 640 × 480). Bounds include the lower edge and exclude the upper edge. It uses the same copied samples as extent fitting and does not require a support plane or box. A missing depth/confidence pair still emits `waiting_for_depth`, without a distance update.
+
+The shot guide's ranges live in param rows `capture_guide_distance_close_m` and `capture_guide_distance_m` ([capture §7a](../../../spec/engines/capture.md#7a-the-shot-guide)). The module only reports the distance; it does not choose a range or draw the guide.
+
 ## Geometry and limits
 
 Round 2 moves fitting off the delegate queue, bounds RANSAC work, refits the support plane, measures its noise, selects one connected item and reports clipping. The pure Swift package imports Foundation only. Its `samples(depth:depthStride:confidence:confidenceStride:width:height:isHigh:)` copies high-confidence pixels with independent byte strides and samples at `(x + 0.5, y + 0.5)`. The adapter checks buffer formats, matching dimensions and locks, and supplies ARKit's `.high` comparison. `DepthWindow` defines the central window once for both copying and fitting, including odd image sizes.
@@ -89,7 +94,7 @@ Round 2 moves fitting off the delegate queue, bounds RANSAC work, refits the sup
 
 Candidates rank by initial consensus size, then residual. Each candidate is refit by total least squares (the smallest covariance eigenvector) on its inliers. A second fit expands consensus to 9 mm so the initial 3 mm cutoff does not truncate the noise estimate. Identical initial consensus sets share one refit. The final inlier RMS residual, with three fitted degrees of freedom removed, supplies sigma. Both the above-plane margin and below-plane rejection distance are `max(5 mm, 3 × sigma)`. A candidate with too many points beneath that distance is rejected, so a dominant box top cannot become the table.
 
-Above-plane points are projected onto two support-plane axes and binned into a 1 cm grid. Eight-connected components select the cluster whose occupied cells contain the window-centre ray's intersection with the support plane, or the nearest cluster when the centre is empty. Ties follow input order. Detached clutter is excluded; touching clutter remains part of the item. Before trimming, each selected cell is projected back to pixels at its points' heights. A cell touching the window boundary returns `.clipped`; the native view emits `item_clipped` instead of `onExtent`.
+Above-plane points are projected onto two support-plane axes and binned into a 1 cm grid. Eight-connected components with at least `minimumPoints` samples select the cluster whose occupied cells contain the window-centre ray's intersection with the support plane, or the nearest cluster when the centre is empty. Ties follow input order. Detached clutter is excluded; touching clutter remains part of the item. Before trimming, each selected cell is projected back to pixels at its points' heights. A cell touching the window boundary returns `.clipped`; the native view emits `item_clipped` instead of `onExtent`.
 
 The cluster's 99th-percentile distance from its centroid trims the hull input. Its minimum-area rectangle sets width and depth. Height starts with the cluster's 98th-percentile plane distance. A raw percentile on a flat surface with 3 mm Gaussian noise overestimates height by about 6 mm, exceeding the requested 5 mm synthetic tolerance. Round 2 therefore subtracts the Gaussian 98th-percentile bias using an item-top noise estimate. That estimate is the median absolute deviation around the median of distances within three initial/noise sigmas below the raw height, divided by 0.6744897502. A quiet item above noisy support receives almost no correction; the separate support sigma still governs plane separation. Noisy rectangle edges also trim their outer 0.5% after orientation fitting. These are *agent proposal* noise corrections, beyond the requested raw percentiles, and assume a roughly planar, Gaussian-noisy item top.
 

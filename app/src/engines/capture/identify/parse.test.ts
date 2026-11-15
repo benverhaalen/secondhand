@@ -137,7 +137,7 @@ for (const line of ['Taille M', 'Talla M', 'Größe M', 'SIZE/TAILLE/TALLA: M', 
   });
 
 for (const [line, expected] of [
-  ['Fabric made in Italy\nMade in China', ['China']], ['Fabric made in Japan\nMade in USA', ['United States']],
+  ['Fabric made in Italy\nMade in China', []], ['Fabric made in Japan\nMade in USA', []],
   ['Made in China\nMade in Vietnam', []], ['Made in China / Made in Vietnam', []],
   ['Material made in Italy', []], ['Designed made in Italy', []], ['Something made in Italy', []],
   ['Fabric from Japan', []], ['Designed in USA', []], ['Assembled in USA', []], ['Printed in USA', []],
@@ -169,7 +169,7 @@ for (const [line, expected] of [
   ['Made in Viet Nam', ['Vietnam']], ['Made in Vietnam', ['Vietnam']],
   ['Made in USA', ['United States']], ['Made in U.S.A.', ['United States']],
   ['Made in the USA of imported fabric', ['United States']], ['Made in the USA of imported materials', ['United States']],
-  ['Made in China, Assembled in USA', ['China']], ['Made in China and Vietnam', []],
+  ['Made in China, Assembled in USA', []], ['Made in China and Vietnam', []],
   ['Made in Italy, fabric from Japan', ['Italy']], ['Made in China, Made in USA', []],
   ['Made in UK', ['United Kingdom']], ['Made in UAE', ['United Arab Emirates']], ['Made in PRC', ['China']],
   ['Made in Hong Kong', ['Hong Kong']], ['Made in Korea', ['South Korea']],
@@ -199,9 +199,9 @@ test('Carhartt AB1234 is not in the sourced brand style grammar', () => assert.e
 
 for (const line of ['champion quality', 'Apple juice stain', 'Amazon Prime', 'Wash with apple juice'])
   test(`ordinary sentence does not establish a common-word brand: ${line}`, () => assert.deepEqual(matchBrands(line), []));
-test('common-word brand capitals or trademark cue establish brand', () => {
+test('a whole common-word brand survives symbols but not trailing words', () => {
   for (const line of ['CHAMPION', 'Champion TM', 'Champion ®', 'Champion Inc.', 'Champion Co.'])
-    assert.equal(matchBrands(line)[0]?.brand, 'Champion');
+    assert.deepEqual(matchBrands(line).map(brand => brand.brand), ['CHAMPION', 'Champion ®'].includes(line) ? ['Champion'] : []);
 });
 
 test('translated fibre lines count identical composition once without carrying language across lines', () => {
@@ -224,9 +224,9 @@ test('flattened real-tag text does not invent lost size line boundaries', () => 
   }
 });
 
-test('capital common-word tag heading can share its line with a style or size', () => {
+test('a common-word tag heading cannot share an unlabelled line with a style or size', () => {
   for (const line of ['CHAMPION AB1234', 'CHAMPION Size M']) {
-    assert.equal(tag(line).brands[0]?.brand, 'Champion');
+    assert.deepEqual(tag(line).brands, []);
   }
   assert.equal(tag('CHAMPION AB1234').style_code, undefined);
 });
@@ -316,21 +316,21 @@ for (const line of [
   assert.deepEqual(tag(line).brands, []);
 });
 for (const [line, expected] of [
-  ['Nike', 'Nike'], [' (® Nike™) ', 'Nike'], ['© Patagonia', 'Patagonia'],
+  ['Nike', 'Nike'], [' (® Nike™) ', 'Nike'], ['© Patagonia', undefined],
   ["Levi's", "Levi's"], ['Brand: apple', 'Apple'], ['Marque: Nike', 'Nike'], ['Marca: Patagonia', 'Patagonia'],
   ['apple', 'Apple'], ['AMAZON\nM', 'Amazon'], ['Nike Size M', 'Nike'], ['Nike M', 'Nike'],
   ['Nike W32 L34', 'Nike'], ['Nike RN 12345 CA 12345 Size M', 'Nike'],
   ['Carhartt B324 BRN', 'Carhartt'], ['Carhartt J97 BLK Size L', 'Carhartt'],
   ['Carhartt RN 14806 B324 BRN', 'Carhartt'],
 ] as const) test(`R5 M1: the complete brand line accounts for every token: ${line}`, () => {
-  assert.ok(tag(line).brands.some(brand => brand.brand === expected && brand.rule === 'brand_lexicon'));
+  assert.deepEqual(tag(line).brands.filter(brand => brand.rule === 'brand_lexicon').map(brand => brand.brand), expected ? [expected] : []);
 });
 for (const line of [
   'Officially Licensed NINTENDO', 'Licensed NINTENDO', 'Licensed by NINTENDO', 'Under license from NINTENDO',
   '© NINTENDO Licensed', '© 2026 NINTENDO Licensed', 'TM & © NINTENDO', 'TM & © Brand: NINTENDO',
 ]) test(`R5 M2: a licensor never displaces a maker: ${line}`, () => {
   assert.deepEqual(tag(line).brands, []);
-  assert.deepEqual(tag(`${line}\nGILDAN\nULTRA COTTON\nXL\nMade in Nicaragua`).brands.map(brand => brand.brand), ['Gildan']);
+  assert.deepEqual(tag(`${line}\nGILDAN\nULTRA COTTON\nXL\nMade in Nicaragua`).brands, []);
 });
 for (const label of ['COLOUR', 'COLOR', 'COLORE', 'COULEUR', 'FARBE', 'Color:'])
   for (const value of ['APPLE', 'AMAZON', 'NIKE', 'PATAGONIA'])
@@ -427,8 +427,8 @@ for (const [line, expected] of [
   ['Made in Great Britain', 'United Kingdom'], ['Made in Holland', 'Netherlands'], ['Made in Hong Kong', 'Hong Kong'],
   ['Made in U.S.A. OF IMPORTED FABRIC', 'United States'],
   ['FABRIQUE AU MAROC / HECHO EN MARRUECOS', 'Morocco'],
-  ['MADE IN USA\nASSEMBLED IN MEXICO', 'United States'],
-]) test(`R5 review: whole-origin behavior remains unchanged: ${line}`, () => assert.deepEqual(field(tag(line), 'origin').map(fact => fact.value), [expected]));
+  ['MADE IN USA\nASSEMBLED IN MEXICO', undefined],
+] as const) test(`R5 review: only an unambiguous whole origin survives: ${line}`, () => assert.deepEqual(field(tag(line), 'origin').map(fact => fact.value), expected ? [expected] : []));
 for (const line of ['GAP\nSTYLE# 512345', 'GAP / STYLE# 512345', 'ITEM 1234567 / PO ...'])
   test(`R5 review: an unknown brand or inventory line cannot claim a maker: ${line}`, () => assert.deepEqual(tag(line).brands, []));
 test('R5 review: separate Nike brand and numeric catalogue code cannot invent a model', () => {
@@ -441,11 +441,11 @@ test('R5 review: separate Nike brand and numeric catalogue code cannot invent a 
 for (const [line, expected] of [
   ['R NIKE', 'Nike'], ['R RUSSELL ATHLETIC', 'Russell Athletic'], ['® (R) ™ NIKE', 'Nike'],
   ['FRUIT OF THE LOOM HEAVY cotton', 'Fruit of the Loom'], ['Nike unknown', 'Nike'],
-  ['Nike FY23', 'Nike'], ['Nike EU42', 'Nike'], ['CHAMPION AB1234', 'Champion'],
-  ['Carhartt 103828 BLK', 'Carhartt'], ['APPLE BOTTOMS', 'Apple'],
+  ['Nike FY23', 'Nike'], ['Nike EU42', 'Nike'], ['CHAMPION AB1234', undefined],
+  ['Carhartt 103828 BLK', 'Carhartt'], ['APPLE BOTTOMS', undefined],
   ['Nike training inspired by sport', 'Nike'],
 ] as const) test(`R6: a leading brand survives logo punctuation and ordinary trailing words: ${line}`, () => {
-  assert.deepEqual(tag(line).brands.map(brand => brand.brand), [expected]);
+  assert.deepEqual(tag(line).brands.map(brand => brand.brand), expected ? [expected] : []);
   assert.equal(tag(line).style_code, undefined);
 });
 for (const line of ['Inspired by Nike', 'R unrelated NIKE', 'R R NIKE', 'RR NIKE', 'Logo NIKE', '® R X NIKE'])
@@ -468,3 +468,92 @@ for (const line of ['CHAMPION\nAUTHENTIC ATHLETIC APPAREL\nL\n50% COTTON 50% POL
     assert.deepEqual(field(tag(line), 'fabric'), []);
     assert.equal(tag(line).style_code, undefined);
   });
+
+for (const line of [
+  'CONVERSE\nA NIKE, INC. COMPANY', 'HURLEY\nA NIKE COMPANY',
+  'A Fruit of the Loom Company\nVANITY FAIR', 'SPALDING\nA FRUIT OF THE LOOM COMPANY',
+  'JERZEES\nDISTRIBUTED BY\nFRUIT OF THE LOOM, INC.', 'HURLEY\nImported by\nNike USA, Inc.',
+  'DOCKERS\nManufactured for:\nLevi Strauss & Co.', 'Distributed by\nGildan Activewear SRL\nAMERICAN APPAREL',
+  'GOODTHREADS\nMADE FOR\namazon', 'MARIO KART\nLicensed by\nNintendo',
+  'LICENSED BY:\nNINTENDO OF AMERICA', 'Officially Licensed Product\nNINTENDO', 'OFFICIALLY LICENSED\nNIKE',
+  'MARIO\n© Nintendo', 'SUPER MARIO\n™ & © Nintendo', 'PLAYSTATION\n© Sony Interactive Entertainment LLC',
+  'TM & © 2023 Nintendo', '©2024 Nintendo', 'APPLE BOTTOMS', 'AMAZON GREEN\nL\nMade in China',
+]) test(`review 5: quoted parent, distributor, licensor or common word cannot supply a brand: ${line}`, () => {
+  assert.deepEqual(tag(line).brands, []);
+});
+
+for (const prefix of ['DISTRIBUTED BY', 'DISTRIBUTED FOR', 'IMPORTED BY', 'MANUFACTURED FOR', 'MADE FOR',
+  'EXCLUSIVELY FOR', 'LICENSED BY', 'LICENSED', 'OFFICIALLY LICENSED', 'UNDER LICENSE',
+  'A NIKE COMPANY', '©', 'TM &', '™ &'])
+  for (const label of [prefix, prefix.toLowerCase()])
+    for (const separator of [' ', '\n'])
+      test(`review 5: ${label} suppresses its line and next line but preserves RN: ${JSON.stringify(separator)}`, () => {
+        const line = `${label}${separator}Nike\nRN 14806`;
+        assert.deepEqual(tag(line).brands.map(brand => [brand.brand, brand.rule]), [['Carhartt', 'rn']]);
+        assert.deepEqual(tag(`Gildan\n${line}`).brands.map(brand => brand.brand), ['Gildan', 'Carhartt']);
+      });
+
+for (const name of ['Apple', 'Amazon', 'Gap', 'Express', 'Guess', 'Champion', 'Vans', 'Converse', 'Columbia', 'Patagonia', 'Lucky'])
+  test(`review 5: common word ${name} must occupy the whole unlabelled line`, () => {
+    const rows = JSON.parse(readFileSync(new URL('./brands.json', import.meta.url), 'utf8')) as {rows: {brand: string; common_word?: boolean}[]};
+    const row = rows.rows.find(row => row.brand === name);
+    if (row) {
+      assert.equal(row.common_word, true);
+      for (const line of [name, name.toUpperCase(), name.toLowerCase(), ` (® ${name}™). `, `Brand: ${name}`])
+        assert.deepEqual(tag(line).brands.map(brand => brand.brand), [name], line);
+    }
+    for (const suffix of ['BOTTOMS', 'GREEN', 'AB1234', 'Size M', '® unknown'])
+      assert.deepEqual(tag(`${name} ${suffix}`).brands, []);
+  });
+
+for (const line of ['NIKE\nM\n9.5', 'MENS 9\nM'])
+  test(`review 5: quoted shoe width cannot state a letter size: ${line}`, () => assert.deepEqual(field(tag(line), 'size_label'), []));
+for (const width of ['M', 'W', 'D', 'B', 'E', 'EE', '2E', '4E', 'N'])
+  for (const number of ['9.5', 'MENS 9', 'WOMENS 9', 'US 9'])
+    test(`review 5: shoe width ${width} on either side of ${number} abstains`, () => {
+      for (const line of [`${width}\n${number}`, `${number}\n${width}`, `${number} ${width}`])
+        for (const variant of [line, line.toLowerCase()]) assert.deepEqual(field(tag(variant), 'size_label'), []);
+    });
+
+for (const line of ['YOUTH\nL', 'BOYS\nM\n(8)', 'GIRLS\nXS\n4/5', "Nike\nBOYS'\nL",
+  'Champion\nYOUTH\nXL', 'Gildan\nYOUTH\nM', 'KIDS\nS\n6-7', 'XL\nTALL', 'PETITE\nM', 'L\nLONG'])
+  test(`review 5: quoted size qualifier cannot become an adult letter size: ${line}`, () => assert.deepEqual(field(tag(line), 'size_label'), []));
+for (const qualifier of ['YOUTH', 'KIDS', 'BOYS', 'GIRLS', 'TODDLER', 'TALL', 'PETITE', 'PLUS', 'BIG', 'MATERNITY', 'LONG'])
+  test(`review 5: ${qualifier} qualifies a size anywhere on the tag`, () => {
+    for (const line of [`${qualifier}\nXL`, `XL\n${qualifier}`, `${qualifier} XL`, `XL ${qualifier}`, `Carhartt J97 BLK Size L\n${qualifier}`])
+      for (const variant of [line, line.toLowerCase()]) assert.deepEqual(field(tag(variant), 'size_label'), []);
+    // Changed by review 6 must-fix 3: a qualifier two lines away still changes the size ("GILDAN / YOUTH / HEAVY COTTON / L").
+    assert.deepEqual(field(tag(`${qualifier}\nNike\nM`), 'size_label'), []);
+  });
+test('review 6: a qualifier three lines from the size, and an age line, both abstain', () => {
+  assert.deepEqual(field(tag('GILDAN\nYOUTH\nHEAVY COTTON\nL'), 'size_label'), []);
+  assert.deepEqual(field(tag('Age 7-8\nM'), 'size_label'), []);
+});
+test('review 6: licence and trademark lines give no brand, and a licensed-product line takes back the line above', () => {
+  for (const text of ['NINTENDO PROPERTIES ARE TRADEMARKS OF NINTENDO', 'SONY INTERACTIVE ENTERTAINMENT LLC', 'NINTENDO ™ & ©', 'MARVEL\nOfficially Licensed Product'])
+    assert.deepEqual(tag(text).brands.filter(brand => brand.rule !== 'rn' && brand.rule !== 'ca'), [], text);
+  assert.deepEqual(tag('GILDAN\nOFFICIALLY LICENSED\nNINTENDO').brands.map(brand => brand.brand), ['Gildan']);
+});
+test('review 6: a translated origin beside an assembly line abstains, the same country in three languages does not', () => {
+  assert.deepEqual(field(tag('Hecho en Mexico\nAssembled in USA'), 'origin'), []);
+  assert.equal(field(tag('MADE IN CHINA\nFABRIQUÉ EN CHINE\nHECHO EN CHINA'), 'origin').length, 1);
+});
+
+for (const line of ['FABRIC\nMADE IN JAPAN\nSEWN IN USA', 'LEATHER\nMADE IN ITALY\nASSEMBLED IN CHINA',
+  'Made in China\nMade in China', 'Made in China\nLeather from Italy', 'Shell made in Japan\nMade in China'])
+  test(`review 5: multiple origin statements cannot state garment origin: ${line}`, () => assert.deepEqual(field(tag(line), 'origin'), []));
+for (const section of ['FABRIC', 'LEATHER', 'SHELL', 'TRIM'])
+  test(`review 5: ${section} before a made-in line is component origin`, () => {
+    assert.deepEqual(field(tag(`${section}:\nMade in Japan`), 'origin'), []);
+    assert.deepEqual(field(tag(`${section.toLowerCase()}\nmade in japan`), 'origin'), []);
+    for (const separator of ['; ', ' / ', ' | ', '. '])
+      assert.deepEqual(field(tag(`${section}${separator}MADE IN JAPAN`), 'origin'), []);
+  });
+test('review 5: Model 2019 is not a style code', () => {
+  const out = tag('Model 2019\nMade in China');
+  assert.equal(out.style_code, undefined);
+  assert.deepEqual(field(out, 'style_code'), []);
+});
+test('review 5: unqualified Congo cannot choose between two countries', () => {
+  assert.deepEqual(field(tag('Made in Congo'), 'origin'), []);
+});

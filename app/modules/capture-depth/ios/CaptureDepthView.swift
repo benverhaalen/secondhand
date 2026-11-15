@@ -84,7 +84,14 @@ final class CaptureDepthView: ExpoView {
                         guard UIApplication.shared.applicationState == .active else { return }
                         self.onExtent(payload)
                     } else if event == "onError" { self.onError(payload) }
-                    else { self.emitStatus(payload["state"] as! String) }
+                    else {
+                        guard let state = payload["state"] as? String else {
+                            self.onError(["code": "invalid_status_payload"])
+                            return
+                        }
+                        if state == "distance" { self.onStatus(payload) }
+                        else { self.emitStatus(state) }
+                    }
                 }
             }
             capture = helper

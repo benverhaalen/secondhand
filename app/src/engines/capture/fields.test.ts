@@ -115,10 +115,10 @@ test('a promoted row does not move the known rule: higher scoped confidence make
 test('a param read with the wrong scope falls to another family row: family and kind rows stay isolated', () => {
   const store=memoryStore();
   promoteConfidence(store,'brand','label','electronics',.9,.99);
-  promoteConfidence(store,'brand','label','electronics.phones_laptops',.95,.98);
+  promoteConfidence(store,'brand','label','electronics.phones',.95,.98);
   for(const [type,kind,confidence,expected] of [
     ['apparel',undefined,.94,'known'],['electronics',undefined,.94,'proposed'],
-    ['electronics','phones_laptops',.97,'proposed'],['electronics','phones_laptops',.985,'known'],
+    ['electronics','phones',.97,'proposed'],['electronics','phones',.985,'known'],
   ] as const) {
     const s=state({type,kind,lookups:'done',facts:{brand:{value:'A',source:'label',confidence}}});
     const selected=select(s,store);s.kept=selected.process.map(step=>step.key);
@@ -143,7 +143,7 @@ test('dimension variant lookup and measured comparisons read the same scoped con
   }
 });
 test('walk outputs change with no param rows is a regression: original questions and counts', () => {
-  const counts=[3,2,4,5,5,2,9,1,2];
+  const counts=[3,2,4,5,5,2,9,1,2,2,6,4,3];
   for(const [index,fixture] of walks.entries()) {
     const store=memoryStore(),s=structuredClone(fixture.initial),asked=new Set<string>();
     for(const event of fixture.events) {
@@ -158,9 +158,52 @@ test('walk outputs change with no param rows is a regression: original questions
 
 test('no champion falls back to each row own prior after reading a different kind', () => {
   const store=memoryStore();
-  for(const kind of ['phones_laptops',undefined,'phones_laptops',undefined]) {
+  for(const kind of ['phones',undefined,'phones',undefined]) {
     const s=state({type:'electronics',kind,lookups:'done',facts:{brand:{value:'A',source:'label',confidence:.94}}});
     const selected=select(s,store);s.kept=selected.process.map(step=>step.key);
     assert.equal(fieldState(selected.rows.find(row=>row.field==='brand')!,s,s.kept,store).state,kind?'proposed':'known');
   }
+});
+
+test('desktop part waits for build, lookups and offer, then becomes askable after kept or refused',()=>{
+  for(const outcome of ['kept','refused'] as const) {
+    const s=state({type:'electronics',kind:'desktops',kept:['scan','model_plate'],lookups:'done'});
+    const row=select(s,params).rows.find(r=>r.field==='part.graphics')!;
+    assert.equal(fieldState(row,s,s.kept,params).state,'waiting','build unresolved');
+    s.facts.custom_build={value:true,source:'you_said',confidence:1};
+    assert.equal(fieldState(row,s,s.kept,params).state,'waiting','offer unresolved');
+    s[outcome].push('system_info');s.lookups='running';
+    assert.equal(fieldState(row,s,s.kept,params).state,'waiting','lookup running');
+    s.lookups='done';assert.equal(fieldState(row,s,s.kept,params).state,'missing',outcome);
+  }
+});
+test('known lookup part bypasses unsettled build and read offer',()=>{
+  const s=state({type:'electronics',kind:'desktops',lookups:'running',facts:{'part.memory':{value:32,source:'lookup',confidence:.95}}});
+  const row=select(s,params).rows.find(r=>r.field==='part.memory')!;
+  assert.equal(fieldState(row,s,[],params).state,'known');
+});
+test('part min_conf uses its kind scope and promoted threshold without moving another kind',()=>{
+  const store=memoryStore();promoteConfidence(store,'part.memory','label','electronics.desktops',.9,.98);
+  for(const kind of ['desktops','laptops']) {
+    const s=state({type:'electronics',kind,lookups:'done',kept:['scan','model_plate','system_info','about_screenshot','front_screen_on','back'],facts:{custom_build:{value:true,source:'you_said',confidence:1},'part.memory':{value:16,source:'label',confidence:.95}}});
+    const row=select(s,store).rows.find(r=>r.field==='part.memory')!;
+    assert.equal(fieldState(row,s,s.kept,store).state,kind==='desktops'?'proposed':'known');
+  }
+});
+test('refused build settles the part gate; a refused read does not wait on its label view',()=>{
+  const s=state({type:'electronics',kind:'desktops',kept:['scan','model_plate'],lookups:'done',refused:['custom_build','system_info']});
+  const row=select(s,params).rows.find(r=>r.field==='part.processor')!;
+  assert.equal(fieldState(row,s,s.kept,params).state,'missing');
+});
+test('kept component read resolves label facts and retakes an explicit failed read',()=>{
+  const s=state({type:'electronics',kind:'desktops',kept:['scan','model_plate','system_info'],lookups:'done',facts:{custom_build:{value:true,source:'you_said',confidence:1},'part.graphics':{value:'Example GPU',source:'label',confidence:.95,step:'system_info'}}});
+  const row=select(s,params).rows.find(row=>row.field==='part.graphics')!;
+  assert.equal(fieldState(row,s,['scan','model_plate'],params).state,'known');
+  s.facts['part.graphics']={value:null,source:'label',confidence:0,step:'system_info',unknown_reason:'not_read'};
+  assert.deepEqual(fieldState(row,s,['scan','model_plate'],params).shot,{step:'system_info',reason:'retake'});
+});
+test('unread unasked parts are unobtainable after the offer is refused',()=>{
+  const s=state({type:'electronics',kind:'desktops',kept:['scan','model_plate'],lookups:'done',refused:['custom_build','system_info']});
+  for(const row of select(s,params).rows.filter(row=>row.rank!==undefined && !row.ways.some(way=>way.way==='asked')))
+    assert.equal(fieldState(row,s,s.kept,params).state,'unobtainable',row.field);
 });
