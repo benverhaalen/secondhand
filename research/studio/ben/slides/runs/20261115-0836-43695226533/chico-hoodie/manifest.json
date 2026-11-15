@@ -1,0 +1,856 @@
+{
+ "item": "chico-hoodie",
+ "kind": "hoodie",
+ "read": {
+  "kind": "hoodie",
+  "name": "red Russell Athletic Chico State hoodie",
+  "item_text": "CHICO STATE R",
+  "tag_text": "R RUSSELL ATHLETIC XXL MADE IN MEXICO",
+  "photos": [
+   {
+    "index": 0,
+    "role": "front",
+    "side": "front",
+    "zone": null,
+    "item_box": [
+     14,
+     108,
+     909,
+     882
+    ],
+    "graphics": [
+     {
+      "zone": "chest_centre",
+      "box": [
+       372,
+       371,
+       522,
+       623
+      ],
+      "text": "CHICO STATE"
+     },
+     {
+      "zone": "pocket",
+      "box": [
+       797,
+       628,
+       820,
+       647
+      ],
+      "text": "R"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 1,
+    "laid_well": false
+   },
+   {
+    "index": 1,
+    "role": "detail",
+    "side": "front",
+    "zone": "pocket",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 2,
+    "role": "detail",
+    "side": "front",
+    "zone": "hood",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 3,
+    "role": "graphic",
+    "side": "front",
+    "zone": "chest_centre",
+    "item_box": null,
+    "graphics": [
+     {
+      "zone": "chest_centre",
+      "box": [
+       387,
+       196,
+       723,
+       784
+      ],
+      "text": "CHICO STATE"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 4,
+    "role": "detail",
+    "side": "front",
+    "zone": "cuff",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 5,
+    "role": "tag",
+    "side": "front",
+    "zone": "neck",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   }
+  ]
+ },
+ "read_model": "google/gemini-4-carbon",
+ "plan": {
+  "kind": "hoodie",
+  "whole_route": "relay",
+  "slides": [
+   {
+    "type": "cover",
+    "photo": "01_cover",
+    "crop": null,
+    "route": "relay",
+    "zone": null,
+    "why": "front photo",
+    "slot": 1
+   },
+   {
+    "type": "graphic",
+    "photo": "04",
+    "crop": null,
+    "route": "level0",
+    "zone": "chest_centre",
+    "why": "its own close-up",
+    "slot": 2
+   },
+   {
+    "type": "tag",
+    "photo": "06",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "brand and size",
+    "slot": 3
+   },
+   {
+    "type": "detail",
+    "photo": "05",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "detail",
+    "slot": 4
+   },
+   {
+    "type": "detail",
+    "photo": "03",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "detail",
+    "slot": 5
+   },
+   {
+    "type": "detail",
+    "photo": "02",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "detail",
+    "slot": 6
+   }
+  ],
+  "asks": [
+   {
+    "type": "back",
+    "text": "Turn it over where it lies and take the same photo."
+   },
+   {
+    "type": "graphic",
+    "text": "Get close to the pocket print so the letters fill the screen.",
+    "zone": "pocket"
+   },
+   {
+    "type": "measure",
+    "text": "Lay a tape straight across the pit to pit and take a photo where the numbers are readable.",
+    "name": "pit_to_pit"
+   }
+  ],
+  "notes": [
+   "no back photo, so no back slide: a back is never drawn from the front",
+   "the pocket print is 39 px in the front photo, under 560: asked, not upscaled",
+   "no tape photo: measurements for pit_to_pit, length, sleeve come from capture; the redraw's shape is checked against the real photo only when that photo is laid flat"
+  ]
+ },
+ "slides": [
+  {
+   "type": "cover",
+   "photo": "01_cover",
+   "crop": null,
+   "route": "relay",
+   "zone": null,
+   "why": "front photo",
+   "slot": 1,
+   "file": "slide_01_cover.jpg",
+   "how": "relay",
+   "ai_marked": true,
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "pass": 2,
+   "from": "gemini-nano-banana-2.1 seed 3",
+   "cand": 5
+  },
+  {
+   "type": "graphic",
+   "photo": "04",
+   "crop": null,
+   "route": "level0",
+   "zone": "chest_centre",
+   "why": "its own close-up",
+   "slot": 2,
+   "file": "slide_02_graphic.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "tag",
+   "photo": "06",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "brand and size",
+   "slot": 3,
+   "file": "slide_03_tag.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "detail",
+   "photo": "05",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "detail",
+   "slot": 4,
+   "file": "slide_04_detail.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "detail",
+   "photo": "03",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "detail",
+   "slot": 5,
+   "file": "slide_05_detail.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "detail",
+   "photo": "02",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "detail",
+   "slot": 6,
+   "file": "slide_06_detail.jpg",
+   "how": "level0",
+   "ai_marked": false
+  }
+ ],
+ "sites": {
+  "depop": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "mercari": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "ebay": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "facebook": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  }
+ },
+ "tape": {
+  "inches": {},
+  "from": "read off the tape photos"
+ },
+ "measure_audit": {
+  "photo": {
+   "tested": false,
+   "length_px": 652.0,
+   "pit_px": null,
+   "note": "the gap under the sleeve starts 66% of the way down, so a sleeve lies along the body"
+  },
+  "final": {
+   "tested": false,
+   "length_px": 686.0,
+   "pit_px": null,
+   "note": "the gap under the sleeve starts 49% of the way down, so a sleeve lies along the body"
+  },
+  "drawn": {
+   "tested": false,
+   "length_px": 650.0,
+   "pit_px": null,
+   "note": "the gap under the sleeve starts 49% of the way down, so a sleeve lies along the body"
+  }
+ },
+ "candidates": [
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "pass": 1,
+   "from": null,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 1.43,
+    "print_0": {
+     "found": true,
+     "inliers": 104,
+     "ncc": 0.98,
+     "cover": 0.83
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.31,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.8,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 6.68,
+     "left": 0.553
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "CHICO STATE",
+    "invented": [],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 2,
+    "laid": 3,
+    "why": "The redrawn image accurately preserves the hoodie's color, fleece texture, chest graphic, and pocket logo tab while straightening the hem, hood, and sleeves into a neat, symmetric flat lay."
+   },
+   "cost": 0.044145,
+   "seconds": 9.1
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "pass": 1,
+   "from": null,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: invented neck tag inside collar"
+   ],
+   "numbers": {
+    "color_before": 2.27,
+    "print_0": {
+     "found": true,
+     "inliers": 92,
+     "ncc": 0.979,
+     "cover": 0.81
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.24,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.81,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 5.65,
+     "left": 0.468
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": true,
+    "text_seen": "CHICO STATE R",
+    "invented": [
+     "neck tag inside collar"
+    ],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 3,
+    "laid": 3,
+    "why": "The redrawn image accurately preserves the hoodie's fabric, color, chest print, and pocket tab while laying the sleeves and body out neatly, but it invents a neck tag inside the collar that is not visible in the real photos."
+   },
+   "cost": 0.046275,
+   "seconds": 10.2
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3,
+   "pass": 1,
+   "from": null,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 2.19,
+    "print_0": {
+     "found": true,
+     "inliers": 108,
+     "ncc": 0.971,
+     "cover": 0.87
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.14,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.83,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 6.01,
+     "left": 0.497
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "CHICO STATE R",
+    "invented": [],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 2,
+    "laid": 3,
+    "why": "The hoodie retains its exact color, fleece texture, chest graphic, and pocket logo tab while being neatly unfolded into a symmetric flat lay."
+   },
+   "cost": 0.04458,
+   "seconds": 9.3
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 4,
+   "pass": 1,
+   "from": null,
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 1.96,
+    "print_0": {
+     "found": true,
+     "inliers": 120,
+     "ncc": 0.979,
+     "cover": 0.86
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.28,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.8,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 7.37,
+     "left": 0.61
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "CHICO STATE",
+    "invented": [],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 2,
+    "laid": 3,
+    "why": "The redrawn image accurately preserves the hoodie's exact color, fabric texture, chest graphic, and pocket logo tab while arranging the hem and sleeves into a neat, symmetric flat lay."
+   },
+   "cost": 0.044715,
+   "seconds": 9.8
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-3-pro-image",
+   "seed": 1,
+   "pass": 1,
+   "from": null,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: invented Russell Athletic neck tag inside the collar"
+   ],
+   "numbers": {
+    "color_before": 1.15,
+    "print_0": {
+     "found": true,
+     "inliers": 99,
+     "ncc": 0.976,
+     "cover": 0.61
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.32,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.8,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 6.25,
+     "left": 0.517
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": true,
+    "text_seen": "CHICO STATE",
+    "invented": [
+     "Russell Athletic neck tag inside the collar"
+    ],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The redrawn image accurately preserves the garment's color, print, and pocket logo, but invents a visible Russell Athletic neck tag inside the hood that is absent in the original photo."
+   },
+   "cost": 0.143096,
+   "seconds": 17.2
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "pass": 2,
+   "from": "gemini-nano-banana-2.1 seed 3",
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 1.36,
+    "print_0": {
+     "found": true,
+     "inliers": 91,
+     "ncc": 0.975,
+     "cover": 0.83
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.32,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.83,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 4.7,
+     "left": 0.39
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "CHICO STATE",
+    "invented": [],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 3,
+    "laid": 3,
+    "why": "The redrawn hoodie accurately preserves the cut, color, chest graphic, pocket logo tab, and vintage fleece wear while laying the sleeves and body out symmetrically and smoothly."
+   },
+   "cost": 0.038121,
+   "seconds": 9.1
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "pass": 2,
+   "from": "gemini-nano-banana-2.1 seed 3",
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 1.52,
+    "print_0": {
+     "found": true,
+     "inliers": 88,
+     "ncc": 0.98,
+     "cover": 0.74
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.16,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.83,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 5.21,
+     "left": 0.431
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "CHICO STATE",
+    "invented": [],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The redrawn hoodie preserves the original color, chest graphic, pocket tab, and vintage fabric character while unfolding the sleeves and smoothing major creases."
+   },
+   "cost": 0.0382035,
+   "seconds": 8.8
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "pass": 2,
+   "from": "gemini-nano-banana-2.1 seed 1",
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 1.41,
+    "print_0": {
+     "found": true,
+     "inliers": 100,
+     "ncc": 0.979,
+     "cover": 0.8
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.25,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.8,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 6.08,
+     "left": 0.504
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "CHICO STATE",
+    "invented": [],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The redrawn hoodie preserves the original graphics, pocket tab, color, and worn fleece texture while lying straighter and smoother."
+   },
+   "cost": 0.037731,
+   "seconds": 8.4
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "pass": 2,
+   "from": "gemini-nano-banana-2.1 seed 1",
+   "ok": true,
+   "reasons": [],
+   "numbers": {
+    "color_before": 1.11,
+    "print_0": {
+     "found": true,
+     "inliers": 90,
+     "ncc": 0.981,
+     "cover": 0.74
+    },
+    "print_1": {
+     "skipped": "too small to match; the judge reads it"
+    },
+    "color": 0.15,
+    "shape": {
+     "against": null,
+     "note": "not checked: no tape, and the real photo is not laid flat enough to measure"
+    },
+    "layout": {
+     "template": "sweatshirt",
+     "overlap": 0.8,
+     "tilt": 0.0
+    },
+    "wrinkle": {
+     "photo": 12.08,
+     "render": 5.64,
+     "left": 0.467
+    }
+   },
+   "repairs": [
+    "print 0 is the real pixels",
+    "fold shading pressed (60%)"
+   ],
+   "judge": {
+    "same_item": true,
+    "text_exact": true,
+    "text_seen": "CHICO STATE",
+    "invented": [],
+    "lost": [],
+    "wear_kept": true,
+    "color": "same",
+    "flat": 3,
+    "laid": 3,
+    "why": "The redrawn hoodie accurately preserves the exact cut, color, fleece texture, chest graphic, and pocket tab while laying the garment out smoothly and symmetrically."
+   },
+   "cost": 0.037881,
+   "seconds": 9.2
+  }
+ ],
+ "seconds": 330.7,
+ "cost": 0.4747
+}
