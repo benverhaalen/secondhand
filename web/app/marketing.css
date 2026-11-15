@@ -133,11 +133,6 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
 .marketing-footer nav { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-7); }
 .marketing-footer nav a { display: inline-flex; align-items: center; min-height: var(--control-min); font-size: var(--t-15); }
 .marketing-footer nav a:last-child { margin-left: auto; }
-.account-dialog { border: 1px solid var(--rule); border-radius: var(--r-card); background: var(--surface); color: var(--ink); width: min(480px, calc(100vw - 32px)); padding: var(--s-8) var(--s-7) var(--s-7); }
-.account-dialog::backdrop { background: var(--scrim); }
-.account-dialog h2 { font-size: var(--t-36); line-height: 1.15; margin-bottom: var(--s-5); }
-.account-dialog p { font-size: var(--t-18); line-height: 1.5; color: var(--ink-2); margin-bottom: var(--s-6); }
-.account-close { position: absolute; top: var(--s-2); right: var(--s-2); width: var(--control-min); padding: 0; background: transparent; font-size: var(--t-21); }
 @media (max-width: 1100px) {
   .marketing-home, .marketing-header { --marketing-gutter: 32px; --marketing-heading: 36px; --marketing-phone: 200px; }
   .marketing-header-row { gap: var(--s-4); }

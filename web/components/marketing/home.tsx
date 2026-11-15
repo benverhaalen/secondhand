@@ -1,47 +1,16 @@
 'use client';
 
 import Link from 'next/link';
+import { AccountAccess } from './chrome';
 import { useState } from 'react';
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTrigger } from '@ui-sdk/react/accordion';
 import { Carousel, CarouselContent, CarouselIndicator, CarouselIndicatorGroup, CarouselItem, CarouselNext, CarouselPlayToggle, CarouselPrevious, CarouselViewport } from '@ui-sdk/react/carousel';
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@ui-sdk/react/dialog';
 import { log } from '../../lib/log';
 import { wallPhotos } from './wall-photos';
 
 const repository = 'https://github.com/benverhaalen/secondhand';
 const docs = `${repository}/blob/main/product`;
-export const homeSections = [
-  ['how-it-works', 'How It Works'], ['features', 'Features'], ['data-use', 'Data Use'], ['faq', 'FAQ'],
-] as const;
-
-function ExternalArrow() {
-  return <svg className="external-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10" /></svg>;
-}
-
-export function Mark() {
-  return <Link className="marketing-lockup" href="/" aria-label="secondhand home"><img src="/brand/mark.svg" alt="" width="21" height="24" /><span>secondhand</span></Link>;
-}
-
-export function AccountAccess({ label, className = '' }: { label: string; className?: string }) {
-  const [open, setOpen] = useState(false);
-  return <Dialog open={open} onOpenChange={next => { setOpen(next); if (next) log.input('home', 'account-access', { label }); }}>
-    <DialogTrigger className={`marketing-pill ${className}`}>{label}</DialogTrigger>
-    <DialogContent className="account-dialog">
-      <DialogTitle>Account access is coming.</DialogTitle>
-      <DialogDescription>Web sign-in and account creation are still being connected. You can try the web search without an account.</DialogDescription>
-      <Link className="marketing-pill" href="/buy" onClick={() => setOpen(false)}>Try the web search <span aria-hidden="true">→</span></Link>
-      <DialogClose className="account-close" aria-label="Close account information">×</DialogClose>
-    </DialogContent>
-  </Dialog>;
-}
-
-export function MarketingHeader() {
-  return <header className="marketing-header"><div className="marketing-wrap marketing-header-row">
-    <Mark />
-    <nav className="marketing-nav" aria-label="Main">{homeSections.map(([id, label]) => <a key={id} href={`/#${id}`}>{label}</a>)}</nav>
-    <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <ExternalArrow /></a><AccountAccess label="Sign in" className="marketing-pill-secondary" /></div>
-  </div></header>;
-}
+export { AccountAccess } from './chrome';
 
 function Platforms({ labeled = false }: { labeled?: boolean }) {
   const platforms = [['ebay', 'eBay'], ['depop', 'Depop'], ['poshmark', 'Poshmark'], ['mercari', 'Mercari'], ['facebook', 'Facebook Marketplace']];
@@ -131,10 +100,6 @@ function FAQ() {
   return <section className="marketing-scene faq-scene" id="faq" aria-labelledby="faq-title"><div className="marketing-wrap marketing-split"><div className="marketing-copy"><p className="section-label">FAQ</p><h2 id="faq-title">What should you know before you start?</h2></div><div className="faq-content"><Accordion className="marketing-faq">{questions.map(item => <AccordionItem key={item.id} value={item.id} className="faq-item"><AccordionHeader><AccordionTrigger className="faq-trigger">{item.question}<span aria-hidden="true">+</span></AccordionTrigger></AccordionHeader><AccordionPanel className="faq-panel"><p>{item.answer}</p><a href={item.source}>See how it works <ExternalArrow /></a></AccordionPanel></AccordionItem>)}</Accordion><a className="marketing-text-link" href={`${docs}/pitch-constitution.md`}>Read about control and trust <ExternalArrow /></a></div></div></section>;
 }
 
-export function MarketingFooter() {
-  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{homeSections.map(([id, label]) => <a key={id} href={`/#${id}`}>{label}</a>)}<a href={`${docs}/vision.md`}>What’s Next <ExternalArrow /></a><Link href="/buy">Try search</Link><a href={repository}>GitHub <ExternalArrow /></a><a href="#top">Back to top ↑</a></nav></div></footer>;
-}
-
 export function MarketingHome() {
-  return <main id="main" className="marketing-home"><div id="top" /><Hero /><HowItWorks /><Features /><DataUse /><FAQ /><section className="marketing-scene signup-scene" id="access" aria-labelledby="signup-title"><div className="marketing-wrap signup-layout"><div className="marketing-copy"><p className="section-label">Sign Up</p><h2 id="signup-title">Start with one thing.</h2></div><AccountAccess label="Create an account" /></div></section><MarketingFooter /></main>;
+  return <main id="main" className="marketing-home"><div id="top" /><Hero /><HowItWorks /><Features /><DataUse /><FAQ /><section className="marketing-scene signup-scene" id="access" aria-labelledby="signup-title"><div className="marketing-wrap signup-layout"><div className="marketing-copy"><p className="section-label">Sign Up</p><h2 id="signup-title">Start with one thing.</h2></div><AccountAccess label="Create an account" /></div></section></main>;
 }
