@@ -71,3 +71,12 @@ test('an import failure is logged with its file and other route imports survive'
   assert.match(sink.text(), /fixture import failed/);
   assert.match(sink.text(), /"level":"warn"/);
 });
+
+
+test('malformed percent encoding in a path parameter returns no_route instead of throwing URIError', () => {
+  for (const segment of ['%E0', '%', '%GG']) {
+    for (const method of ['GET', 'TRACE']) {
+      assert.deepEqual(match(table, method, '/v1/items/' + segment), { kind: 'no_route' });
+    }
+  }
+});

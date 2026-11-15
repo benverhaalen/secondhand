@@ -60,9 +60,15 @@ export function match(table: readonly Route[], method: string, pathname: string)
     const segments = route.pattern.split('/');
     if (segments.length !== parts.length) continue;
     if (!segments.every((segment, i) => segment.startsWith(':') ? parts[i].length > 0 : segment === parts[i])) continue;
+    let params: Record<string, string>;
+    try {
+      params = Object.fromEntries(segments.flatMap((segment, i) => segment.startsWith(':') ? [[segment.slice(1), decodeURIComponent(parts[i])]] : []));
+    } catch (error) {
+      if (error instanceof URIError) return { kind: 'no_route' };
+      throw error;
+    }
     const handler = route.methods[method as Method];
     if (!handler) return { kind: 'no_method', allowed: METHODS.filter(name => route.methods[name]) };
-    const params = Object.fromEntries(segments.flatMap((segment, i) => segment.startsWith(':') ? [[segment.slice(1), decodeURIComponent(parts[i])]] : []));
     return { kind: 'match', handler, params, file: route.file };
   }
   return { kind: 'no_route' };

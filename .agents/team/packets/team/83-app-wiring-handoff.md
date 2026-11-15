@@ -1,6 +1,8 @@
 # 83: app wiring handoff. The phone app reaches the server, search first; what is next
 
-Updated: November 15, 2026, about 07:10 Central. Owner: Nate. Agent: Claude Code, the app-wiring lead (Opus 5.5). Base: `main` at 822ca173.
+Updated: November 15, 2026, about 07:45 Central. Owner: Nate. Agent: Claude Code, the app-wiring lead (Opus 5.5). Base: `main` at 36f1dcf9.
+
+Finalization section 6, as marked there: AP1 done but the simulator run (61abd599); AP2 done; AP3 map and the reply to Ben done ([packet 85](85-reply-to-79-left-to-wire.md)), wiring continues screen by screen; AP4 partly done, crash upload path open (server lead); AP5 prepared, waits on Nate's host and his go for a build.
 
 ## What is true on main, and what proves it
 
@@ -17,7 +19,7 @@ Nate's words for all of it are the 2026-11-15 entries in `product/words.md` from
 
 ## Open, in the order to do it
 
-1. **The chat's follow-ups need the server.** `POST /v1/assist` is user-auth and example-gated (`captures.ts:77`), and it does not stream. Asked of lead-engines-3: visitor auth, a 202 job whose `assist.tool`, `assist.text` and `assist.settled` frames are appended as they happen, and `history[]` in the body. Until then a follow-up says it couldn't answer. The client fold (`app/src/buy/chat/assist.ts`) is tested against a hand-written fixture.
+1. **The chat's follow-ups need the server.** The engines lead builds `POST /v1/assist` for visitors as BC3, to the shape the client already sends (`history[]`, `search_job_id`; 429 `cap: 'daily'` shows its own line). Run the chat against it on the dev server when BC3 lands. Until then a follow-up says it couldn't answer. The client fold (`app/src/buy/chat/assist.ts`) is tested against a hand-written fixture.
 2. **Poshmark is read twice**: directly, and through Dupe (`sources.ts:42` covers Poshmark), whose copies are then dropped as duplicates (17 of 40 for levi 501). Sent to lead-search.
 3. **The home view** Nate described: a small top bar with announcements, carousels of recommended products, insights and research findings below. Not started. It is Ben's screen, so it should be built from his design. The data is `/v1/today` (needs a token), `/v1/trends` (visitor) and `/v1/insights` (example-gated).
 4. **Sign-in**, which blocks 19 of 22 screens ([app-wiring.md](../../../../spec/plans/app-wiring.md#sign-in-the-large-one)). Apple is out (Nate). Email needs a code sender. The auth store in `app/src/edge/auth.ts:249` is split per route the same way the jobs store was, so a token one route issues is unknown to the next. The shared `store` in `store.ts` has the same split for every route without `SECONDHAND_DATA_DIR`.

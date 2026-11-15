@@ -14,7 +14,7 @@ test('one site uses the same reader and counts as searchAll, with exactly one fe
   const opts = { sources: SOURCES.filter(s => s.id === 'poshmark'), sites: ['poshmark'] as const, now: () => 0, fetchPage: async () => { calls++; return page(fixture); } };
   const one = await searchSite('poshmark', 'levi 501', 'search', opts);
   assert.equal(calls, 1);
-  assert.deepEqual(await searchAll('levi 501', opts), { results: one.rows.map(row => ({ site: 'poshmark', row })), searched: [{ ...one.searched, pace: opts.sources[0].pace }] });
+  assert.deepEqual(await searchAll('levi 501', opts), { results: one.rows.map(row => ({ site: 'poshmark', row: { ...row, may_store: true } })), searched: [{ ...one.searched, pace: opts.sources[0].pace }] });
   assert.equal(calls, 2);
 });
 
@@ -85,7 +85,7 @@ test('eBay sold uses only the asking person’s account and reports relink witho
   assert.equal(r.searched.error_code, 'auth_expired'); assert.equal(reads, 0);
 });
 
-test('the shared Dupe slot spends its 3 second gap once and starts the deadline after that gap', async t => {
+test('the shared Dupe slot spends its 3 second gap once inside the job deadline', async t => {
   _reset();
   t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 });
   const { createDupe } = await import('../../harness/sites/dupe/adapter.ts');
@@ -101,8 +101,8 @@ test('the shared Dupe slot spends its 3 second gap once and starts the deadline 
         : body.method === 'tools/list' ? recording('tools-list') : body.method === 'tools/call' ? recording('search') : '' };
     } });
   const source = SOURCES.find(s => s.site === 'dupe')!;
-  const ask = (query: string) => runPlan({ kind: 'listings_matching', slots: {}, protocol_version: 1, first_ms: 10, settled_ms: 20,
-    targets: [{ target_id: query, query, freshness_s: 0, deadline_ms: 20, routes: [{
+  const ask = (query: string) => runPlan({ kind: 'listings_matching', slots: {}, protocol_version: 1, first_ms: 10, settled_ms: 4000,
+    targets: [{ target_id: query, query, freshness_s: 0, deadline_ms: 4000, routes: [{
       route_id: 'dupe.search.api', host: 'mcp.dupe.com', site: 'dupe', lane: source.lane, pace: source.pace, p95_ms: 10, cache: false,
       async run(q) { const r = await searchSource(source, q, 'search', { dupe, paced: true }); return { outcome: 'hit', rows: r.rows }; },
     }] }], calculate: () => ({ facts: [] }) });
@@ -241,7 +241,7 @@ test('Apify without a composed token route returns no_route immediately; rows ke
     calls.push([lane, args]); return { ok: true, data: { rows: [apifyRow], dropped: 0, total: 1 } };
   } };
   const result = await searchSource(facebook(), 'levi 501', 'search', { caller: 'person', person_id: 'terms', apify, apifyRuns: memoryApifyRuns() });
-  assert.deepEqual(result.rows, [apifyRow], 'Apify rows lost their terms or provenance');
+  assert.deepEqual(result.rows, [{ ...apifyRow, may_store: true }], 'Apify rows lost their terms or provenance');
   assert.equal(result.searched.cost_usd_est, 0.005);
   assert.equal(result.searched.route_id, 'apify.facebook.search');
   assert.equal(calls.length, 1);
@@ -321,4 +321,45 @@ test('Apify requires a reservation port and honors a durable reservation refusal
     assert.equal(restarted.searched.reason, 'search_apify_runs_per_day');
   }
   assert.equal(calls, 0); assert.deepEqual(reservations, Array.from({ length: 2 }, () => ['person', new Date().toISOString().slice(0, 10)]));
+});
+
+test('SV2 source rights are required data and override a Dupe row claiming it may be stored', async () => {
+  const source = SOURCES.find(s => s.id === 'dupe')!;
+  const keep_until = '2040-01-01T00:00:00.000Z';
+  const result = await searchSource(source, 'rights', 'search', { paced: true, dupe: { search: async () => ({ ok: true, data: {
+    rows: [{ id: 'rights', title: 'chair', price_cents: 1000, currency: 'USD', url: 'https://example.test/item',
+      source_site: 'ebay', secondhand: true, commercial_link: true, attribution: 'Dupe.com', keep_until, may_store: true }],
+    dropped: 0, total: 1, keep_until,
+  } }) } });
+  for (const source of SOURCES) assert.equal(typeof source.rights.may_store, 'boolean', source.id);
+  assert.equal(result.rows[0].may_store, false);
+  assert.equal(result.rows[0].keep_until, keep_until);
+});
+
+test('SR4 source signals reach both page and harness read boundaries', async () => {
+  const controller = new AbortController();
+  const { createHarness, fakeAdapter } = await import('../../harness/protocol.ts');
+  const harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => ({ ok: true, data: [] }) }] });
+  const call = harness.call;
+  harness.call = (site, verb, args) => { assert.equal(args?.signal, controller.signal); return call(site, verb, args); };
+  await searchSource(SOURCES.find(s => s.id === 'ebay')!, 'signal', 'search', { paced: true, harness, signal: controller.signal });
+  await searchSource(SOURCES.find(s => s.id === 'poshmark')!, 'signal', 'search', { paced: true, signal: controller.signal,
+    fetchPage: async (_url, options) => { assert.equal((options as typeof options & { signal?: AbortSignal }).signal, controller.signal); return page('No results'); } });
+});
+
+test('SR4 the default public-page transport actually aborts its fetch when the source is cancelled', async t => {
+  const controller = new AbortController();
+  let observed: AbortSignal | undefined;
+  let entered!: () => void;
+  const started = new Promise<void>(resolve => { entered = resolve; });
+  t.mock.method(globalThis, 'fetch', (_input: Parameters<typeof fetch>[0], init?: RequestInit) => {
+    observed = init?.signal ?? undefined; entered();
+    return new Promise<Response>((_resolve, reject) => {
+      observed?.addEventListener('abort', () => reject(new Error('fixture fetch aborted')), { once: true });
+    });
+  });
+  const reading = searchSite('poshmark', 'abort', 'search', { signal: controller.signal, deadline_ms: 100 });
+  await started; controller.abort();
+  assert.equal(observed?.aborted, true, 'the source signal stopped at the fetch boundary');
+  assert.equal((await reading).searched.outcome, 'timeout');
 });

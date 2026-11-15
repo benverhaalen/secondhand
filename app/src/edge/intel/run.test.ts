@@ -21,7 +21,7 @@ const plan = (targets: PlanTarget[], over: Partial<Plan> = {}): Plan => ({
 
 test('streams partial per arrival, settles at the settled budget, then late', async () => {
   const seen: [AnswerEvent, number][] = [];
-  const a = await runPlan(plan([target('t1', [route('a', 10)]), target('t2', [route('b', 60)]), target('t3', [route('c', 400)])]), (e, x) => seen.push([e, x.facts.length]));
+  const a = await runPlan(plan([target('t1', [route('a', 10)]), target('t2', [route('b', 60)]), target('t3', [{ ...route('c', 400), async run() { await sleep(400); return { outcome: 'hit', rows: [{ id: 'c' }], site: 'ebay' }; } }])]), (e, x) => seen.push([e, x.facts.length]));
   await allEnded();
   assert.deepEqual(seen, [['answer.partial', 1], ['answer.partial', 2], ['answer.settled', 2], ['answer.late', 3]]);
   assert.equal(a.stage, 'settled');
@@ -105,8 +105,8 @@ test('20 searches share the Poshmark lane pace across plans; another site gets i
     async run() { starts.push(Date.now()); return { outcome: 'hit', rows: [{}] }; } };
   const flush = async () => { for (let i = 0; i < 30; i++) await Promise.resolve(); };
   const results = Array.from({ length: 20 }, (_, i) => runPlan(plan([
-    { ...target(String(i), [read], 20), query: `query ${i}` },
-  ], { settled_ms: 1 })));
+    { ...target(String(i), [read], 60000), query: `query ${i}` },
+  ], { settled_ms: 60000 })));
   await flush();
   const other = runPlan(plan([target('other', [{ ...read, route_id: 'ebay.search.page', host: 'ebay.com', site: 'ebay', lane: 'harness',
     async run() { return { outcome: 'hit', rows: [{}] }; } }])], { settled_ms: 1 }));
@@ -115,16 +115,16 @@ test('20 searches share the Poshmark lane pace across plans; another site gets i
   for (let i = 1; i < 20; i++) { t.mock.timers.tick(3000); await flush(); }
   const answers = await Promise.all(results);
   await allEnded();
-  assert.equal(starts.length, 20, 'a queued read still runs after the settlement budget');
+  assert.equal(starts.length, 20, 'every slot inside its deadline is read');
   assert.ok(starts.slice(1).every((start, i) => start - starts[i] >= 3000));
-  assert.ok(answers.every(a => a.searched[0]?.outcome === 'hit'), 'waiting for a slot does not spend the read deadline');
+  assert.ok(answers.every(a => a.searched[0]?.outcome === 'hit'), 'all twenty reads fit inside the job deadline');
 });
 
-test('a paced route reports its applied pace and gets its full deadline after the slot', async () => {
+test('a paced route reports its applied pace and queue time spends its deadline', async () => {
   const read: Route = { ...route('paced', 5), site: 'poshmark', lane: 'public_page', pace: { per_minute: 6000, min_gap_ms: 25 }, cache: false };
   const ask = (query: string) => runPlan(plan([{ ...target('p', [read], 15), query }], { settled_ms: 100 }));
   const first = await ask('first'), second = await ask('second');
-  assert.equal(second.searched[0].outcome, 'hit');
+  assert.equal(second.searched[0].outcome, 'timeout');
   assert.deepEqual(second.searched[0].pace, read.pace);
   assert.deepEqual(first.searched[0].pace, read.pace);
 });
@@ -135,4 +135,78 @@ test('fallbacks share the target active-read budget rather than receiving a fres
   const a = await runPlan(plan([target('one_budget', [first, second], 50)], { settled_ms: 1000 }));
   assert.deepEqual(a.searched.map(s => s.outcome), ['blocked', 'timeout']);
   assert.equal(a.facts.length, 0);
+});
+
+test('SR4 queue time spends the job deadline and an expired eBay slot is never sent', async t => {
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: 1000 });
+  const starts: number[] = [];
+  const read: Route = { route_id: 'ebay.deadline', host: 'ebay.com', site: 'ebay', lane: 'harness', cache: false,
+    pace: { per_minute: 6, min_gap_ms: 10000 }, p95_ms: 3000,
+    async run() { starts.push(Date.now()); await sleep(2000); return { outcome: 'empty', rows: [] }; } };
+  const flush = async () => { for (let i = 0; i < 80; i++) await Promise.resolve(); };
+  const ask = (query: string) => runPlan(plan([{ ...target(query, [read], 10000), query }], { settled_ms: 10000 }));
+  const first = ask('first'); await flush();
+  t.mock.timers.tick(1000);
+  const second = ask('second'); await flush();
+  t.mock.timers.tick(1000); await flush(); await first;
+  t.mock.timers.tick(9000); await flush();
+  const answer = await second;
+  assert.equal(answer.searched[0].outcome, 'timeout');
+  assert.ok(answer.ms.settled! <= 10000, 'settlement clock started after the pace wait');
+  t.mock.timers.tick(20000); await flush();
+  assert.deepEqual(starts, [1000], 'the expired queued read was sent');
+});
+
+test('SR4 settlement aborts the last shared reader and releases the lane before its own timeout', async () => {
+  let aborted = false, secondStarted = false;
+  const read: Route = { route_id: 'abort-lane', host: 'ebay.com', site: 'ebay', lane: 'harness', cache: false,
+    pace: { per_minute: 1e12, min_gap_ms: 0 }, p95_ms: 100,
+    run(q, { signal }) {
+      if (q === 'next') { secondStarted = true; return Promise.resolve({ outcome: 'empty', rows: [] }); }
+      return new Promise((_resolve, reject) => signal.addEventListener('abort', () => { aborted = true; reject(new Error('cancelled')); }, { once: true }));
+    } };
+  await runPlan(plan([{ ...target('old', [read], 1000), query: 'old' }], { settled_ms: 20 }));
+  assert.equal(aborted, true, 'last settled caller left its shared controller alive');
+  await runPlan(plan([{ ...target('next', [read], 100), query: 'next' }], { settled_ms: 100 }));
+  assert.equal(secondStarted, true);
+});
+
+test('SR4 an older caller ending cannot abort a read still needed by a later caller', async () => {
+  let aborted = false;
+  const read: Route = { ...route('shared-deadlines', 65), cache: false,
+    async run(q, ctx) { ctx.signal.addEventListener('abort', () => { aborted = true; }); return route('shared-deadlines', 65).run(q, ctx); } };
+  const older = runPlan(plan([target('older', [read], 30)], { settled_ms: 30 }));
+  await sleep(15);
+  const newer = runPlan(plan([target('newer', [read], 100)], { settled_ms: 100 }));
+  await older;
+  assert.equal(aborted, false, 'an active subscriber lost its shared read');
+  const answer = await newer;
+  assert.equal(answer.searched[0].outcome, 'hit');
+  assert.equal(outsideCallCount(), 1);
+});
+
+test('SR4 page and harness gaps start at the previous read end, and judgement holds no lane', async () => {
+  const { atPace } = await import('./run.ts');
+  for (const lane of ['public_page', 'harness']) {
+    let endedAt = 0, startedAt = 0;
+    const pace = { per_minute: 1e12, min_gap_ms: 15 };
+    const first = atPace('site', lane, pace, async readEnded => { await sleep(20); endedAt = Date.now(); readEnded(); await sleep(50); });
+    const next = atPace('site', lane, pace, async () => { startedAt = Date.now(); });
+    await Promise.all([first, next]);
+    assert.ok(startedAt - endedAt >= 14, `${lane} overlapped the read or measured its gap from start`);
+    assert.ok(startedAt - endedAt < 50, `${lane} held the lane during judgement`);
+  }
+});
+
+test('SR4 first is the first source ending even with only empty and failed sources', async () => {
+  const answer = await runPlan(plan([target('empty', [route('empty', 5, 'empty')]), target('blocked', [route('blocked', 10, 'blocked')])]));
+  assert.equal(typeof answer.ms.first, 'number');
+  assert.ok(answer.ms.first! <= answer.ms.settled!);
+});
+
+test('SR4 a plan cancelled before entry never sends even an unpaced read', async () => {
+  const controller = new AbortController(); controller.abort();
+  const answer = await runPlan(plan([target('cancelled', [route('must-not-send', 1)])], { signal: controller.signal }));
+  assert.equal(outsideCallCount(), 0, 'pre-cancelled plan sent an outside call');
+  assert.equal(answer.stage, 'settled');
 });

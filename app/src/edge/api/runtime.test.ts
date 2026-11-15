@@ -628,3 +628,17 @@ test('public clients route anonymous Depop and eBay reads with no live write sit
   await Promise.all([r.close(), r.close()]); await r.close();
   assert.equal(closes, 1, 'runtime close did not close the public client exactly once');
 });
+
+
+test('the watcher uses the runtime system account lookup with the owner scope when account ids overlap', async t => {
+  const r = createRuntime(memoryStore(), log());
+  for (const user_id of ['first', 'second']) {
+    r.store.put('account', { id: 'shared', user_id, site: 'depop', token_ref: 'fixture/' + user_id, paused: 'blocked' });
+    await r.vault.put('fixture/' + user_id, { cookies: [], origins: [] });
+  }
+  const linked = t.mock.method(r.accounts, 'linked');
+  await r.watcher.cleared('shared');
+  assert.deepEqual(linked.mock.calls.map(call => call.arguments), [[], ['first']], 'system byId must pass the person to linked');
+  assert.equal(r.store.get('account', 'first', 'shared')?.paused, null);
+  assert.equal(r.store.get('account', 'second', 'shared')?.paused, 'blocked');
+});

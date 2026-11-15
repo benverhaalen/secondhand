@@ -96,6 +96,14 @@ test('secrets: a type-only import from edge/ ships nothing, and tests and fixtur
   assert.match(bad, /mixed\.ts.*edge/);
 });
 
+test('secrets: an open font passes only in a fonts-open folder with its licence; ui: a font-face block names a family without using one', () => {
+  assert.deepEqual(run(secrets, { 'app/assets/fonts-open/outfit/Outfit-SemiBold.ttf': 'x', 'app/assets/fonts-open/outfit/OFL.txt': 'licence' }), []);
+  assert.match(errors(run(secrets, { 'app/assets/fonts-open/outfit/Outfit-SemiBold.ttf': 'x' })), /without its licence/);
+  assert.match(errors(run(secrets, { 'app/assets/fonts/Outfit-SemiBold.ttf': 'x', 'app/assets/fonts/OFL.txt': 'licence' })), /a font file is committed/);
+  assert.deepEqual(run(ui, { 'web/app/globals.css': '@font-face { font-family: "Outfit"; src: url(/x.ttf); }\n' }), []);
+  assert.match(errors(run(ui, { 'web/app/globals.css': '@font-face { font-family: "Outfit"; src: url(/x.ttf); }\nh1 { font-family: Outfit; }\n' })), /font Outfit/);
+});
+
 test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass', () => {
   const bad = run(ui, { 'app/Today.tsx': 'const s = { color: "#E63339", fontFamily: "Inter" };\nexport const T = () => <h1>Sold — nice</h1>;\n' });
   const e = errors(bad);
