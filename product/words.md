@@ -1147,3 +1147,7 @@ Ben, thread "Cross-list Depop listings and price with quant", 07:00 UTC, tapped 
 > Same take-home: Default is same money everywhere; seller can switch rule once for the account and override per item.
 
 Used in: [decisions.md](decisions.md#2026-11-15-cross-listing-starts-on-same-take-home), `SPREADS` in app/src/engines/listing/crosslist.ts.
+
+## 2026-11-15 nate benchmark our intelligence engines against the others in the open
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-15, early morning Central.
+> what is thriftx, a repo? I want to find things to benchmark our intelligence engines against, things to really show on our website how we are more reliable, accurate, and credible than these other systems. don't do just because of the eval for fact based pricing and such, but the swath of data that even paid enterprise sources don't. If there aren't things you can find, then list everything every competitor does, and we'll find aspects to what we can beat them on
