@@ -519,11 +519,25 @@ for (const line of ['YOUTH\nL', 'BOYS\nM\n(8)', 'GIRLS\nXS\n4/5', "Nike\nBOYS'\n
   'Champion\nYOUTH\nXL', 'Gildan\nYOUTH\nM', 'KIDS\nS\n6-7', 'XL\nTALL', 'PETITE\nM', 'L\nLONG'])
   test(`review 5: quoted size qualifier cannot become an adult letter size: ${line}`, () => assert.deepEqual(field(tag(line), 'size_label'), []));
 for (const qualifier of ['YOUTH', 'KIDS', 'BOYS', 'GIRLS', 'TODDLER', 'TALL', 'PETITE', 'PLUS', 'BIG', 'MATERNITY', 'LONG'])
-  test(`review 5: ${qualifier} qualifies the same and adjacent size lines`, () => {
+  test(`review 5: ${qualifier} qualifies a size anywhere on the tag`, () => {
     for (const line of [`${qualifier}\nXL`, `XL\n${qualifier}`, `${qualifier} XL`, `XL ${qualifier}`, `Carhartt J97 BLK Size L\n${qualifier}`])
       for (const variant of [line, line.toLowerCase()]) assert.deepEqual(field(tag(variant), 'size_label'), []);
-    assert.deepEqual(field(tag(`${qualifier}\nNike\nM`), 'size_label').map(fact => fact.value), ['M']);
+    // Changed by review 6 must-fix 3: a qualifier two lines away still changes the size ("GILDAN / YOUTH / HEAVY COTTON / L").
+    assert.deepEqual(field(tag(`${qualifier}\nNike\nM`), 'size_label'), []);
   });
+test('review 6: a qualifier three lines from the size, and an age line, both abstain', () => {
+  assert.deepEqual(field(tag('GILDAN\nYOUTH\nHEAVY COTTON\nL'), 'size_label'), []);
+  assert.deepEqual(field(tag('Age 7-8\nM'), 'size_label'), []);
+});
+test('review 6: licence and trademark lines give no brand, and a licensed-product line takes back the line above', () => {
+  for (const text of ['NINTENDO PROPERTIES ARE TRADEMARKS OF NINTENDO', 'SONY INTERACTIVE ENTERTAINMENT LLC', 'NINTENDO ™ & ©', 'MARVEL\nOfficially Licensed Product'])
+    assert.deepEqual(tag(text).brands.filter(brand => brand.rule !== 'rn' && brand.rule !== 'ca'), [], text);
+  assert.deepEqual(tag('GILDAN\nOFFICIALLY LICENSED\nNINTENDO').brands.map(brand => brand.brand), ['Gildan']);
+});
+test('review 6: a translated origin beside an assembly line abstains, the same country in three languages does not', () => {
+  assert.deepEqual(field(tag('Hecho en Mexico\nAssembled in USA'), 'origin'), []);
+  assert.equal(field(tag('MADE IN CHINA\nFABRIQUÉ EN CHINE\nHECHO EN CHINA'), 'origin').length, 1);
+});
 
 for (const line of ['FABRIC\nMADE IN JAPAN\nSEWN IN USA', 'LEATHER\nMADE IN ITALY\nASSEMBLED IN CHINA',
   'Made in China\nMade in China', 'Made in China\nLeather from Italy', 'Shell made in Japan\nMade in China'])
