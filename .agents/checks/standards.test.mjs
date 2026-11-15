@@ -21,7 +21,8 @@ test('standards N1: a rounded box with no continuous curve fails; one with it pa
 test('standards N2 and N3: legacy shadow props, elevation and Dimensions.get fail', () => {
   const bad = run({ [P]: "const a = { shadowColor: '#000', elevation: 4 };\nconst w = Dimensions.get('window').width;\n" });
   for (const want of [/x\.tsx:1 N2 shadowColor/, /x\.tsx:1 N2 elevation/, /x\.tsx:2 N3/]) assert.match(bad, want);
-  assert.equal(run({ [P]: "const a = { boxShadow: shadow.card };\nconst { width } = useWindowDimensions();\n" }), '');
+  assert.match(run({ [P]: "const { width } = useWindowDimensions();\n" }), /x\.tsx:1 N3 useWindowDimensions/);
+  assert.equal(run({ [P]: "const a = { boxShadow: shadow.card };\nconst { width } = useWindow();\n", 'app/src/ui/window.ts': 'const d = useWindowDimensions();\n' }), '');
 });
 
 test('standards N5: two labels for one intent fail across files; a chip value and a different intent pass', () => {

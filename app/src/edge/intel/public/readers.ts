@@ -8,8 +8,12 @@ export type Kind = 'search' | 'sold';
 export interface Row {
   id?: string; title?: string; price_cents?: number; currency?: string; url?: string;
   condition?: string; size?: string; listed_at?: string; image_url?: string; seller_hash?: string; sold?: true; sold_date?: string;
+  brand?: string; category?: string; likes?: number;
+  // Agent proposal: original price and per-listing comments/shares need canon rows (WORKER_REPORT.md).
+  original_price_cents?: number; comments?: number; shares?: number;
 }
-export type Read = ReturnType<typeof classifyRead<Row & Record<string, unknown>>> & { dropped?: number };   // dropped: cards left out for a missing required field
+type Yield = { rows: number; dropped: number; facts: number };
+export type Read = ReturnType<typeof classifyRead<Row & Record<string, unknown>>> & { dropped?: number; yield?: Yield };   // dropped: cards left out for a missing required field
 
 export const REQUIRED = ['id', 'title', 'price_cents', 'url'] as const;
 const FIELDS: Field[] = REQUIRED.map(name => ({ name, type: name === 'price_cents' ? 'number' : 'string', needs_session: false, required: true }) as Field);
@@ -24,6 +28,36 @@ const price = (t: string | undefined): { price_cents?: number; currency?: string
 };
 const image = (c: string) => grab(c, /<img[^>]+?(?:data-src|src)="(https?:[^"]+)"/i);
 const put = (r: Row, k: keyof Row, v: unknown) => { if (v !== undefined && v !== '') (r as Record<string, unknown>)[k] = v; };
+const wholeCents = (v: unknown) => {
+  if (typeof v !== 'string' || !/^\d+(?:\.\d{1,2})?$/.test(v)) return undefined;
+  const [units, fraction = ''] = v.split('.');
+  const cents = Number(`${units}${fraction.padEnd(2, '0')}`);
+  return Number.isSafeInteger(cents) ? cents : undefined;
+};
+const obj = (v: unknown): Record<string, unknown> => v !== null && typeof v === 'object' && !Array.isArray(v) ? v as Record<string, unknown> : {};
+const string = (v: unknown) => typeof v === 'string' && v !== '' ? v : undefined;
+
+function poshmarkRow(o: Record<string, unknown>): Row {
+  const listing = poshmarkListingRow(o), row: Row = {};
+  for (const [key, value] of Object.entries({ id: listing.external_id, title: listing.title, currency: listing.currency, url: listing.url,
+    condition: listing.condition, listed_at: listing.listed_at, brand: listing.brand })) put(row, key as keyof Row, value);
+  put(row, 'price_cents', wholeCents(obj(o.price_amount).val));
+  put(row, 'original_price_cents', wholeCents(obj(o.original_price_amount).val));
+  const inventory = obj(o.inventory), sizes = inventory.size_quantities;
+  const sizeNames = Array.isArray(sizes) ? sizes.map(s => string(obj(obj(s).size_obj).display)).filter((s): s is string => s !== undefined) : [];
+  put(row, 'size', sizeNames.length ? [...new Set(sizeNames)].join(', ') : string(o.size) ?? string(obj(o.size_obj).display));
+  const catalog = obj(o.catalog), categories = catalog.category_feature_objs;
+  const categoryNames = Array.isArray(categories) ? categories.map(c => string(obj(c).display)).filter((c): c is string => c !== undefined) : [];
+  put(row, 'category', categoryNames.length ? categoryNames.join(', ') : string(obj(catalog.category_obj).display));
+  for (const [key, value] of Object.entries({ likes: listing.likes, comments: listing.comments, shares: listing.shares }))
+    if (typeof value === 'number' && Number.isSafeInteger(value) && value >= 0) put(row, key as keyof Row, value);
+  put(row, 'image_url', string(obj(o.cover_shot).url) ?? string(obj(o.cover_shot).url_small));
+  if (listing.state === 'sold') row.sold = true;
+  return row;
+}
+
+const yieldOf = (rows: Row[], dropped: number): Yield => ({ rows: rows.length, dropped,
+  facts: rows.reduce((n, row) => n + Object.values(row).filter(v => v !== undefined && v !== null && v !== '').length, 0) });
 
 // Cards are the chunks between card-start markers; `anchor` counts item links so "zero cards but links present" is page_changed.
 interface Spec { start: RegExp; anchor: RegExp; card: (c: string) => Row }
@@ -41,7 +75,16 @@ const SPECS: Record<Exclude<Site, 'offerup'>, Spec> = {
     card: c => { const r: Row = {}; const href = grab(c, /href="(\/listing\/[^"]+)"/);
       put(r, 'url', href); put(r, 'id', grab(href ?? '', /-([0-9a-f]{24})$/));
       put(r, 'title', strip(grab(c, /tile-grid-redesign__title[^>]*>([\s\S]*?)<\/span>/) ?? ''));
-      Object.assign(r, price(strip(grab(c, /tile-grid-redesign__price-current[^>]*>([\s\S]*?)<\/span>/) ?? '')));
+      const current = strip(grab(c, /tile-grid-redesign__price-current[^>]*>([\s\S]*?)<\/span>/) ?? '');
+      const amount = grab(current, /[$£€]\s*([\d,]+(?:\.\d+)?)/)?.replaceAll(',', '');
+      const cents = wholeCents(amount);
+      if (cents !== undefined) Object.assign(r, { price_cents: cents, currency: price(current).currency });
+      for (const [key, cls] of [['size', 'size'], ['brand', 'brand'], ['condition', 'condition'], ['category', 'category'], ['listed_at', 'listed-date']] as const)
+        put(r, key, strip(grab(c, new RegExp(`tile-grid-redesign__${cls}["\\s][^>]*>([\\s\\S]*?)<\\/(?:span|a|div|time)>`)) ?? ''));
+      const original = strip(grab(c, /tile-grid-redesign__price-original[^>]*>([\s\S]*?)<\/span>/) ?? '');
+      put(r, 'original_price_cents', wholeCents(grab(original, /[$£€]\s*([\d,]+(?:\.\d+)?)/)?.replaceAll(',', '')));
+      const likes = grab(c, /(?:data-et-prop-likes|data-like-count)="(\d+)"/);
+      if (likes !== undefined && Number.isSafeInteger(Number(likes))) r.likes = Number(likes);
       put(r, 'image_url', image(c)); if (/tile-grid-redesign__condition-nwt/.test(c)) r.condition = 'NWT'; return r; },
   },
   // Seen live 2026-11-15: each card is a div carrying the item id, its price in cents and its status; the link wraps the rest.
@@ -85,6 +128,15 @@ const chunks = (html: string, start: RegExp): string[] => {
   const at = [...html.matchAll(start)].map(m => m.index as number);
   return at.map((s, i) => html.slice(s, at[i + 1] ?? html.length));
 };
+
+const poshmarkCards = (html: string): Row[] => chunks(html, SPECS.poshmark.start).map(chunk => {
+  let depth = 0;
+  for (const tag of chunk.matchAll(/<\/?div\b[^>]*>/gi)) {
+    depth += tag[0].startsWith('</') ? -1 : 1;
+    if (depth === 0) return SPECS.poshmark.card(chunk.slice(0, tag.index + tag[0].length));
+  }
+  return SPECS.poshmark.card(chunk);
+});
 
 const walkListings = (o: unknown, out: Record<string, unknown>[], d = 0): void => {
   if (d > 8 || !o || typeof o !== 'object') return;
@@ -138,27 +190,37 @@ export function searchUrl(site: Site, q: string, kind: Kind): string | null {
 export function readPage(site: Site, html: string, kind: Kind = 'search'): Read {
   const base = BASE[site];
   let rows: Row[]; let anchors: number;
-  const poshmarkGrid = site === 'poshmark' ? (poshmarkState(html)?.$_search as { gridData?: { data?: Record<string, unknown>[]; more?: { total?: number } } } | undefined)?.gridData : undefined;
-  if (poshmarkGrid && Array.isArray(poshmarkGrid.data)) {
-    rows = poshmarkGrid.more?.total === 0 ? [] : poshmarkGrid.data.map(o => {
-      const r = poshmarkListingRow(o);
-      return { id: r.external_id, title: r.title, price_cents: r.price_cents, currency: r.currency, url: r.url,
-        condition: r.condition, size: r.size, listed_at: r.listed_at, ...(r.state === 'sold' ? { sold: true as const } : {}) };
-    });
-    anchors = rows.length;
+  const state = site === 'poshmark' ? poshmarkState(html) : undefined;
+  const poshmarkGrid = obj(obj(state?.$_search).gridData);
+  if (site === 'poshmark') {
+    const s = SPECS.poshmark;
+    const markup = poshmarkCards(html).map(r => r.url ? { ...r, url: new URL(r.url, base).href } : r);
+    const listings = Array.isArray(poshmarkGrid.data) ? poshmarkGrid.data.map(obj) : [];
+    const detail = obj(obj(state?.$_listing_details).listingDetails);
+    if (Object.keys(detail).length) listings.push(detail);
+    const byId = new Map<string, Row>(), missingId: Row[] = [];
+    // State wins when both representations carry a field; markup contributes listings and fields absent there.
+    for (const row of [...markup, ...listings.map(poshmarkRow)]) {
+      if (!row.id) { missingId.push(row); continue; }
+      byId.set(row.id, { ...byId.get(row.id), ...row });
+    }
+    rows = poshmarkGrid.more && obj(poshmarkGrid.more).total === 0 ? [] : [...byId.values(), ...missingId];
+    anchors = rows.length || (poshmarkGrid.more && obj(poshmarkGrid.more).total === 0 ? 0 : (html.match(s.anchor) ?? []).length);
   } else if (site === 'offerup') ({ rows, anchors } = offerup(html, base));
   else {
     const s = SPECS[site];
     rows = chunks(html, s.start).map(c => s.card(c)).map(r => (r.url ? { ...r, url: new URL(r.url, base).href } : r));
     anchors = (html.match(s.anchor) ?? []).length;
   }
-  const shaped = rows.map(r => ({ ...r, ...(kind === 'sold' && !poshmarkGrid ? { sold: true as const } : {}) })) as (Row & Record<string, unknown>)[];
+  const shaped = rows.map(r => ({ ...r, ...(kind === 'sold' && !state ? { sold: true as const } : {}) })) as (Row & Record<string, unknown>)[];
   // Links present but no card read means the cards changed shape: every required field is missing.
-  if (anchors > 0 && shaped.length === 0) return fail('page_changed', `missing ${REQUIRED.join(', ')}`, { do: 'author', missing: [...REQUIRED] });
+  if (anchors > 0 && shaped.length === 0) return { ...fail('page_changed', `missing ${REQUIRED.join(', ')}`, { do: 'author', missing: [...REQUIRED] }),
+    ...(site === 'poshmark' ? { yield: yieldOf([], 0) } : {}) };
   // The system always answers: a card missing a required field is dropped and counted, and the rest are returned. Only a page
   // where no card carries every required field has changed shape (Nate, product/words.md 2026-11-15; before, one such card failed the page).
-  const whole = shaped.filter(r => REQUIRED.every(k => r[k] !== undefined && r[k] !== ''));
+  const whole = shaped.filter(r => REQUIRED.every(k => r[k] !== undefined && r[k] !== '') && (site !== 'poshmark' || Number.isSafeInteger(r.price_cents)));
   const read = classifyRead({ challenge: false, rows: whole.length > 0 ? whole : shaped }, { site, fields: FIELDS });
   const dropped = whole.length > 0 ? shaped.length - whole.length : 0;
-  return read.ok && dropped > 0 ? { ...read, dropped } : read;
+  const result = read.ok && dropped > 0 ? { ...read, dropped } : read;
+  return site === 'poshmark' ? { ...result, yield: yieldOf(whole, shaped.length - whole.length) } : result;
 }

@@ -169,12 +169,12 @@ export function rollbackRow(rows: Param[], cur: Param, at: string, keep_evidence
   const events: Param[] = [];
   let prev: Param | undefined = cur;
   while (prev) {
-    if (prev !== cur && prev.origin === 'fit') break;
+    if (prev !== cur && (cur.origin === 'fit' || prev.origin === 'fit')) break;
     if (prev.origin === 'event') events.push(prev);
     prev = prev.previous_version === null ? undefined : byVersion.get(prev.previous_version);
   }
   if (!prev) throw new Error(`${cur.name} has no earlier promoted fitted version`);
-  if (!keep_evidence) return { ...prev, status: 'champion', promoted_at: at };
+  if (cur.origin === 'fit' || !keep_evidence) return { ...prev, status: 'champion', promoted_at: at };
   if (cur.family !== 'beta' && cur.family !== 'gamma') throw new Error('keep_evidence supports beta or gamma');
   const value = { ...(prev.value_or_hyperparams as Record<string, number>) };
   let n_eff = prev.n_eff;

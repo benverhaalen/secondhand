@@ -24,6 +24,10 @@ dimensions:
   - name: Week
     expr: DATE_TRUNC('WEEK', as_of)
     comment: "Week of the estimate's freeze date."
+  - name: Sale price band
+    expr: CASE WHEN truth_cents < 15000 THEN '1. Under $150' WHEN truth_cents < 25000 THEN '2. $150 to $250' WHEN truth_cents < 50000 THEN '3. $250 to $500' ELSE '4. Over $500' END
+    comment: "What the item really sold for, so every price source is compared on the same sales."
+    synonyms: [price band, sale price]
   - name: Kind
     expr: kind
   - name: Dataset

@@ -222,6 +222,18 @@ Each trigger sets `next_check_at` to now for the affected items and runs the sam
 
 **Test:** inject a sold comp into a fixture comp set and assert the plan is re-scored, the stream emits `score.change`, and a lower price above the floor produces a `markdown` decision with no person step.
 
+### 3.8 Which of the person's sites, or both (AD5)
+
+[Nate](../product/words.md#2026-11-15-nate-the-system-picks-the-platform-a-listing-will-do-best-on-or-lists-on-both): "The system assess for the user, based on their given linked platforms, the one that it'd perform best on, or to possibly list both". The method is [money D12](determinations/money.md#d12-best-site-or-set-of-sites), stated once there; `jobs/analytics/placement.py` `pick()` runs all of it, and `app/src/engines/valuation/path.ts` `bestSites` is its twin on the shared `best-sites-parity.json`. What AD5 ([adaptation §6](engines/adaptation.md#6-named-fixes-for-the-engines-that-should-consume-them)) adds or fixes, engines lead, 2026-11-15:
+
+1. **Only linked sites are ranked.** A site with no linked account is priced and shown, but never picked: it carries `skip_reason: 'not_connected'`. The caller passes `linked: Site[]`; with none passed, nothing is picked and the sites are shown side by side (D12 "when it is not shown").
+2. **Expected keep per site, each term with its basis.** `K_s = P_s(sale within T at a) × keep_s(a)`: the supported price `a` (the site's own q50 from comparables, with its `basis_level` and `n_eff`), the chance of sale within the horizon `T` (D10's curve, with its level and count; `T` is the param `site_set.horizon_days`, prior 30), and `keep_s`, the price net of that site's fee and shipping (`keep.ts` `FEES`, from `spec/sites.mjs` and money D9, with the fee row's source). The answer lists every term with its level and count, so "best on eBay" can be opened to the numbers behind it.
+3. **Both sites only when the second pays for its risk.** D12 step 3's gain with its `P_double` formula, using a real cancel cost per site: Mercari 5% of the price up to $25; eBay, Poshmark and Depop a standing hit priced at the param `site_set.cancel_cost_cents`, prior 2500 (*agent proposal*: Mercari's cap as the price of a defect); Facebook 0. The fixed `P_DOUBLE` 0.01 is used only where `m` or `W` is unknown, as `pick()` does. `W` is the param `site_set.delist_window_min`, prior 4. D12 step 4's hot-item rule holds: a best site whose median time to sale is under 24 hours is listed alone.
+4. **A binding commitment keeps the item where it is.** A confirmed sale (`sold.confirm`) ends every other listing (sold.md). While an open offer on a site binds the seller (`offer.seller.binds` in `spec/sites.mjs`: eBay, Poshmark, Mercari), the plan is that site alone with `why: 'committed'`, and no second listing is added until the offer resolves.
+5. **The answer** is `site_plan: {ranked: [{site, expected_keep_cents, gain_cents, terms: {price, p_sale, keep}, chosen, skip_reason?}], sites, both, why}` beside `best_sites` (which stays the chosen list, so `staleStep` and `sources.ts` read it unchanged). `why` is one of `one_site`, `second_pays`, `hot_item`, `committed`, `none_linked`.
+
+**Test:** a fee change and a sell-through change each flip which site ranks first; a case where the second site's gain beats its double-sale risk lists both, and one where it does not lists one; an unlinked site with the highest `K` is not picked; an open binding offer holds the plan on its site; TypeScript equals Python on the parity fixture.
+
 ## 4. Speed
 
 Nate: "Im sure there are way more intuitive and genius ways to design out things to account for speed, while also maintaining the accuracy and focus realtime calculations give us" ([words](../product/words.md#2026-11-14-nate-speed-with-real-time-accuracy-and-score-what-to-build-and-test-first)). The design keeps the slow work warm and computes only the argmax on the event.
@@ -270,6 +282,16 @@ Each runs in a day on real pages through the harness and the information engines
 | Recompute | 20 plan numbers recomputed from their citations | 20 exact matches |
 | Re-plan | a sold comp injected for a live test item | the plan changes and `score.change` streams within 1 s |
 | Update rules | a fixed sequence of offer outcomes through the Beta update with forgetting | the posterior equals the closed form to the cent |
+
+## Open from the audit (checked 2026-11-15)
+
+Each row of the Marketing section of [engines/audit.md](engines/audit.md) was checked against the code. 18 of 21 are closed. These 3 are still open, worst first.
+
+| # | What is wrong | Where (file:line today) | Fix | Test that proves it |
+|---|---|---|---|---|
+| MK-A1 | The D1 basis gate is gone from `calculate`. `sales_12m` and `sales_90d` are still on the input type but nothing reads them, so a thin comp set can still produce a listing plan. Unclear whether `basisLevel` now covers it. | `app/src/engines/marketing/calc.ts:24` | Skip with `too_few` when `sales_12m < 6` or `sales_90d < 2` (either one fails), as `determinations/money.md` D1 says. | `sales_12m` 5 and `sales_90d` 5 gives verdict skip, reason `too_few`. 6 and 1 gives skip. 6 and 2 gives list. |
+| MK-A2 | The learned effects are not read when candidates are scored: offer accept rate, sale rate, free-ship uplift and promo lift. Callers pass opaque curves. | `calc.ts:183` | Declare the four params and resolve their current scoped values when building and scoring candidates. | Set `free_ship_uplift` to 1.2 for the site. The winning free-shipping candidate's `p_sale` rises by 20 percent (capped at 1) against the prior of 1.0, and `param_versions` lists the param. |
+| MK-A3 | No sale, view, offer or strategy event updates the marketing params. They are read at `calc.ts:161` and never observed, so section 3.5 of this page is not applied. | `calc.ts:161` | On each event call `observe` on the `marketing_*` params at site, segment and person scope, with parent pooling. | After 20 sale events at ebay in one segment, a read of `marketing_vis_exponent` for that scope has `version` above 0 and `n_eff` about 20. The same read of another person's `holding_cost` is unchanged. |
 
 ## 8. Worked example
 

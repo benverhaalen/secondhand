@@ -38,10 +38,15 @@ if (MISSING_FACES && typeof __DEV__ !== 'undefined' && __DEV__) console.warn('se
 const nativeMap: Record<string, number> = web ? {} : Object.fromEntries(FACES.filter(on).map(f => [f.key, f.file as number]));
 
 // On the web each face is declared at its one weight, so the browser never fakes a bold (Art. 6: no faux bold).
+// It is never ready on the first render, even with no faces to load: the static export renders on the server at 0 by 0,
+// and a first client render that hydrates that markup keeps its sizes (the camera drew 0 wide and the plan sheet ran off
+// the top on a checkout with no fonts, the website thread, 2026-11-15 10:41). Drawing after mount draws fresh, as it
+// always did when there were faces to wait for.
 function useWebFaces(): boolean {
-  const [ready, setReady] = useState(!web || !FACES.some(on));
+  const [ready, setReady] = useState(!web);
   useEffect(() => {
     if (ready || typeof document === 'undefined') return;
+    if (!FACES.some(on)) { setReady(true); return; }
     const css = FACES.filter(on).map(f => `@font-face{font-family:"${f.name}";src:url("${Asset.fromModule(f.file as number).uri}");font-weight:${f.weight};font-style:normal;font-display:block}`).join('\n');
     const el = document.createElement('style');
     el.textContent = css;

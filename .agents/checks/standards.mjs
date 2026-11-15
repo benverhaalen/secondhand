@@ -38,7 +38,9 @@ export function standards(root, { files }) {
     for (const m of text.matchAll(/\b(shadowColor|shadowOffset|shadowOpacity|shadowRadius|elevation):/g))
       out.push(err(`${f}:${lineOf(text, m.index)}`, `N2 ${m[1]}: depth is a boxShadow from the tokens, one elevation system for the app (Appllama, Native fidelity law 6)`));
     // N3 a size read once is wrong after rotation, split view or a font change (Appllama, Native fidelity law 12).
-    for (const m of text.matchAll(/\bDimensions\.get\(/g)) out.push(err(`${f}:${lineOf(text, m.index)}`, 'N3 Dimensions.get(): use useWindowDimensions(), which follows the window (Appllama, Native fidelity law 12)'));
+    for (const m of text.matchAll(/\bDimensions\.get\(/g)) out.push(err(`${f}:${lineOf(text, m.index)}`, 'N3 Dimensions.get(): use useWindow() from app/src/ui/window.ts, which follows the window (Appllama, Native fidelity law 12)'));
+    // ... and only through useWindow(), which is never 0 by 0 on the web's first render (the camera and plan sheet broke on it).
+    if (!/\/ui\/window\.ts$/.test(f)) for (const m of text.matchAll(/\buseWindowDimensions\(/g)) out.push(err(`${f}:${lineOf(text, m.index)}`, 'N3 useWindowDimensions(): read the window with useWindow() from app/src/ui/window.ts, which is never 0 by 0 on the web'));
     for (const m of text.matchAll(LABEL)) {
       // Only a control's label is an intent: a chip or option label names a value ("When: Later"), not a thing to do.
       const tag = text.slice(text.lastIndexOf('<', m.index), m.index).match(/^<(\w+)/)?.[1], before = text.slice(Math.max(0, m.index - 40), m.index);
