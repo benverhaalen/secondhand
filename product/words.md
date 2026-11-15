@@ -476,3 +476,11 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate a framework of fields for every kind of product, filled by the engines
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > well think about all the products that users buy and sell, all things we will make listings on, and imagine the framework we have to create, where each is assigned the necssary fields, our engines use the intelligence and aggregation gathering tools and workflows to find and fill the rest
+
+## 2026-11-14 nate compare us with existing tools and tell me what is worth adding
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Ensure when comparing our system and its strength to already existing tools, that that's told to me, as well as any additional questions, things you found from databricks and feature research, you stated would be worth adding and expanding
+
+## 2026-11-14 nate the search engine is an api, no feeds, no tax service, tags on retouched photos
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering the open questions the agent listed (the public search endpoint, feeds, a tax service, who builds the Expo project, accounts at risk, sharing pace, photo tags, studio cost).
+> We will make the out perfroming industry and product search engine an available to call api. We do not pay for a tax service, a persons listings published as feeeds? we dont serve what we have placed on secondhand, as secondhand inst a storefront, its an assistive managmeent tool and unified secondhand reselling platform, with also a highly advanced and accurate industry research and product engine. The expo project can be built by ben, im not sure which accounts are at risk when automated, so indicate that and we perhaps wont demo it. It can share and send offers however much is best. Ai tags on photos retouched, but not on ones taken. Studio cost will be calculated optimally.
