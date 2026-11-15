@@ -20,6 +20,13 @@ test('standards U16: two parts closer than 8 or overlapping fail; a row of one s
   assert.equal(ids({ stacks: [{ in: 'tile', row: true, kinds: ['site-badge', 'site-badge'], gaps: [4], at: 100 }, { in: 'card', row: false, kinds: ['tag', null], gaps: [2], at: 1 }] }), '');
 });
 
+// Messages, 11-15: the conversation rows of a List touch with a hairline between them, as in iOS Mail, and U16 called them crowded.
+test('standards U16: rows of a ruled list touch and pass; the same rows unruled fail', () => {
+  const rows = { in: 'screen', row: false, kinds: ['thread-row', 'thread-row', 'thread-row'], gaps: [0, 0], at: 184 };
+  assert.match(ids({ stacks: [rows] }), /U16 \[thread-row\] and \[thread-row\] are 0 apart/);
+  assert.equal(ids({ stacks: [{ ...rows, ruled: true }] }), '');
+});
+
 test('standards U17: a gap off the 4 grid fails, and one pair of parts at two distances in one stack fails', () => {
   assert.match(ids({ stacks: [{ in: 'screen', row: false, kinds: ['card', 'card'], gaps: [14], at: 0 }] }), /U17 \[card\] to \[card\] is 14/);
   assert.match(ids({ stacks: [{ in: 'screen', row: false, kinds: ['card', 'card', 'card'], gaps: [12, 16], at: 0 }] }), /U17 .*is 12 and 16 in one stack/);

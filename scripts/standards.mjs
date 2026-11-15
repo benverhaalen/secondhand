@@ -43,7 +43,9 @@ export function measure() {
     const kinds = kids.map(kind);
     if (kinds.filter(Boolean).length < 2) continue;
     const gaps = rects.slice(1).map((r, i) => Math.round((row ? r.left - rects[i].right : r.top - rects[i].bottom) * 10) / 10);
-    stacks.push({ in: box.closest('[data-part]')?.dataset.part ?? 'screen', row, kinds, gaps, at: Math.round(rects[0].top) });
+    // A ruled list (List): every row after the first carries the hairline on its top edge, as Mail and Settings draw rows.
+    const ruled = !row && kids.slice(1).every(k => parseFloat(getComputedStyle(k).borderTopWidth) > 0);
+    stacks.push({ in: box.closest('[data-part]')?.dataset.part ?? 'screen', row, kinds, gaps, at: Math.round(rects[0].top), ruled });
   }
   return { texts, stacks };
 }
@@ -76,7 +78,9 @@ export function standards(snap) {
 
   // U16 room between parts (HIG, Layout). Two parts in one stack closer than 8, or overlapping, are crowded: they read as one
   // thing, and a finger meant for one lands on the other.
-  for (const st of snap.stacks) st.gaps.forEach((g, i) => {
+  // Rows of a ruled list touch: the hairline between them is their room, and each row's own 12 above and below its words
+  // keeps them apart (iOS Mail, Messages and Settings; Messages, 11-15).
+  for (const st of snap.stacks) if (!st.ruled) st.gaps.forEach((g, i) => {
     const a = st.kinds[i], b = st.kinds[i + 1];
     if (!a || !b) return;
     if (g < -0.5) out.push(err('U16', `[${a}] and [${b}] overlap by ${-g} in [${st.in}] at ${st.at}: parts never sit on each other`));
