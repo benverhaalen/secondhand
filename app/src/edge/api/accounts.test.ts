@@ -40,7 +40,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
   if (e.response === null) assert.equal(await r.text(), '');
   else assert.deepEqual(await r.json(), e.response);
 });
-for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {
+for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && (e.endpoint.includes(':id')))) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
@@ -119,6 +119,7 @@ test('connect persists an unlinked account and unlink revokes it before the job 
   assert.equal(connected.status, 201);
   const account = runtime.store.get('account', 'usr_8f2k', 'acc_dp1')!;
   assert.ok(account); assert.equal(account.token_ref, undefined);
+  assert.equal(account.data, 'example', 'reconnect preserves seeded row provenance');
   assert.equal(await runtime.accounts.byId(account.id), undefined);
   const prior = runtime.store.get('account', 'usr_8f2k', 'acc_po1')!;
   runtime.store.put('account', { ...prior, token_ref: 'test/session' });
@@ -188,4 +189,37 @@ test('offline linked preview reports no_route, and a stale unlink leaves the lin
   const response = await call(examples.find(e => e.name === 'accounts.unlink')!, { path: '/v1/accounts/acc_dp1', headers: { 'If-Match': String(linked.version! - 1) } });
   assert.equal(response.status, 409); assert.equal((await response.json()).code, 'stale');
   assert.ok(await runtime.accounts.byId('acc_dp1'));
+});
+
+
+test('new people list empty accounts, connect their own and cannot act on each others ids', async () => {
+  const byName = (name: string) => examples.find(e => e.name === name)!;
+  const empty = await call(byName('accounts.list'), { token: 'other' });
+  assert.equal(empty.status, 200);
+  assert.deepEqual(await empty.json(), { data: [], next_cursor: null });
+  const connected = await call(byName('accounts.connect.depop'), { token: 'other' });
+  assert.equal(connected.status, 201);
+  const account = await connected.json();
+  assert.notEqual(account.id, 'acc_dp1');
+  const own = runtime.store.get('account', 'usr_other', account.id)!;
+  assert.ok(own); assert.equal(own.data, undefined);
+  const listed = await (await call(byName('accounts.list'), { token: 'other' })).json();
+  assert.deepEqual(listed.data.map((row: { id: string }) => row.id), [account.id]);
+  for (const [name, suffix] of [['accounts.unlink', ''], ['accounts.import_preview', '/import-preview'], ['accounts.import', '/import']]) {
+    assert.equal((await call(byName(name), { path: '/v1/accounts/' + account.id + suffix })).status, 404, name);
+    assert.equal((await call(byName(name), { token: 'other', path: '/v1/accounts/acc_dp1' + suffix })).status, 404, name);
+  }
+  assert.equal((await call(byName('accounts.unlink'), { token: 'other', path: '/v1/accounts/' + account.id })).status, 202);
+});
+
+test('successful harness listing reads carry live site provenance', async () => {
+  const original = runtime.harness.call;
+  runtime.harness.call = async () => ({ ok: true, data: [{ external_id: 'dp-1001', title: 'Test', price_cents: 1000 }] as never, meta: { route_id: 'test', adapter_version: '1', ms: 0, fell_back: false, observation_ids: [] } });
+  try {
+    assert.equal((await call(examples.find(e => e.name === 'accounts.import_preview')!)).status, 200);
+    const rows = runtime.store.rows('listing', { user_id: 'usr_8f2k', external_id: 'dp-1001' });
+    assert.equal(rows.find(row => row.preview_current === true)?.data, 'live:depop');
+    assert.equal(rows.find(row => row.id === 'ls_import_dp-1001')?.data, 'example', 'live reads preserve example provenance');
+    assert.equal(rows.find(row => row.id === 'ls_import_dp-1001')?.preview_current, false);
+  } finally { runtime.harness.call = original; }
 });
