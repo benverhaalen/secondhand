@@ -29,4 +29,8 @@ The plan and `applyJobResult` already take studio asks; no job puts them there.
 - When a studio plan job writes its `manifest.json`, call `applyJobResult(user, capture, {kind: 'studio_plan', plan: manifest.plan})`. The capture holds it until the person taps Generate (`PATCH {generate: true}`), then the asks join the one plan.
 - Done when: after `PATCH {generate: true}`, a studio run's `flaw` ask appears in the next GET's `plan.questions` as a `shot` with `for: studio` and its zone.
 
+## 4. F16: the item card shows the confidence
+
+Since b600bd23, finish writes each known fact to the item with its confidence (F4). `items.ts:29` reads every attribute's confidence as 0, and `items.ts:70` filters it out against the example shape, so the card cannot show it. Done when: `GET /v1/items/:id` after a capture shows each captured attribute's confidence as stored.
+
 Each of these touches a route that holds state, so each gets a two-person test before it merges.

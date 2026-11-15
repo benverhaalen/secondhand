@@ -32,8 +32,29 @@ Compose `browserUseCloud({apiKey, profileFor: registryProfileFor(registry), onSt
 
 `startLink(site, owner)` requires an existing, owned profile-registry row before calling the vendor. It keeps the new profile in memory and passes its id as `LaunchOptions.pending_profile_id` to the launcher. This is an internal launch option, never a caller-supplied account field. The old row and warm browser remain intact. An authenticated server viewer route redeems `liveView(user_id, handle)` once; never log or cache its URL.
 
-`finishLink(user_id, handle)` consumes the handle, reads the adapter's inbox, stops the browser and checks `profileSaved()`. Poshmark, Mercari and Depop currently return only message rows, with no owner or account evidence. Completion therefore returns `no_route` with `handoff`, even for a populated 200 response, and leaves the stored row unchanged. Publication remains disabled until an adapter returns positive evidence of the signed-in account. eBay linking returns `no_route`: its page adapter has no account verification read and `PROFILES.ebay.login` is null. Existing linked profiles still serve reads; eBay account-level reads require its OAuth `Client`.
+`finishLink(user_id, handle)` consumes the handle and opens the site's `account_url` in the pending link's own browser. Link facts live in `auth.ts`'s `PROFILES`, extending the shared platform profiles with `login_url`, `account_url` and `sign_in_markers`. The cloud-link eBay profile has a non-null login, `https://signin.ebay.com/`; `startLink` opens it like the other sites. Requests are never intercepted, and `solveCaptchas` remains false.
+
+Completion waits for navigation to settle and checks the final URL's origin and path, response status and existing page-state detector. Only the detector's state leaves the page; completion never fetches an inbox, exports page HTML, reads response bodies, or reads cookies, headers or storage. It passes only origin and path to the detector; query strings and fragments never reach logs or errors. A link succeeds only on the account URL's origin and a path starting with its account path, with a 2xx response and neither sign-in nor challenge state. Completion then stops the browser, confirms `profileSaved()`, checks the lease again, and publishes the linked row with timestamps. Adapter reads, including `read_inbox`, are unchanged.
+
+| Verification result | Returned result | Published row |
+|---|---|---|
+| Sign-in marker, or sign-in page on the account path | `auth_expired`, `relink` | unchanged |
+| Challenge or HTTP 403, even on a sign-in page | `blocked`, `pause_session`; nothing clicked or solved | unchanged |
+| Other final origin or path, non-2xx status, or no response | `page_changed`, `author` | unchanged |
+| Navigation, settle or state-read error | fixed `session.verify failed` error | unchanged |
+| Stop cannot be confirmed or lease expires | fixed stop/save error or `auth_expired`, `relink` | unchanged |
+
+Observed signed out on 2026-11-15 by the orchestrator in a plain browser, supplied to this worker:
+
+| Site | Account URL | Observation |
+|---|---|---|
+| eBay | `https://www.ebay.com/mys/home` | redirected to `https://signin.ebay.com/ws/eBayISAPI.dll`, a page with a password input |
+| Poshmark | `https://poshmark.com/user/account-info` | redirected to `https://poshmark.com/login`, a page with a password input |
+| Depop | `https://www.depop.com/settings/` | redirected to `https://www.depop.com/login/` |
+| Mercari | `https://www.mercari.com/mypage/` | HTTP 403, title "Just a moment...", before any redirect; account-route behavior unobserved |
+
+Redirect query strings are intentionally omitted. These are signed-out observations only; confirm the signed-in account routes on the first real link. Mercari's sign-in marker comes from the existing login URL and remains unconfirmed by an account redirect. A bot check is never evidence of signed-in or signed-out state.
 
 Failed setup or verification, cancellation and expiry stop the pending browser and delete its unpublished profile. Cleanup releases the account lease before attempting deletion and never deletes a profile referenced by an account row. Failed deletion records a fixed error and the profile id; it never records the vendor error. Wire `onStopFailed` to the existing browser cleanup owner. Handles and pending profiles live only in process memory; the supplied Store persists published registry rows. Process-crash recovery of pending vendor profiles is not implemented.
 
-The runtime is not composed here. No adapter or parser was changed. Signed-in fixtures remain synthetic; no live sign-in or read verification was run.
+The runtime is not composed here. No adapter was changed. Verification tests use fake pages; this worker made no network call, started no browser or server, and performed no real sign-in.

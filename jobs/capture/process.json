@@ -1710,7 +1710,8 @@
     "ask": {
      "kind": "pick_many",
      "words": "Colour?"
-    }
+    },
+    "max": 2
    },
    {
     "field": "package_weight",
@@ -1932,5 +1933,24 @@
    "needs_lidar": false,
    "seconds": 5
   }
+ },
+ "params": {
+  "capture_preselect_floor": 0.5,
+  "assist_preselect_margin": 0.2,
+  "capture_large_cm": 120,
+  "capture_small_cm": 10,
+  "capture_auto_accept": 0.95,
+  "capture_type_auto_floor": 0.9,
+  "capture_type_auto_margin": 0.5,
+  "capture_max_retakes": 2,
+  "capture_question_cap": 3,
+  "capture_dims_match_cm": 2,
+  "capture_dims_match_pct": 0.03,
+  "capture_effort_yes_no": 1,
+  "capture_effort_pick_one": 1,
+  "capture_effort_pick_many": 2,
+  "capture_effort_number_with_unit": 3,
+  "capture_effort_text": 3,
+  "capture_effort_shot": 4
  }
 }
