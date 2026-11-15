@@ -797,3 +797,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate no depop partner access, so build an ai-driven workaround
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > We are not getting depop partner access, so I want you to create a workaround ,utilizing ai driven technology, take into account the frameworks and harnesses i showed you
+
+## 2026-11-14 nate look into apify and build our own api on cloud browser use
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Look into https://apify.com/ and all made api's to create effectively our own api made through efficient anti bot detect browser use running cloud based
