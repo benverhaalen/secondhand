@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { registerHooks } from 'node:module';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { TOOL_DEFS, defaultDeps, format, runTool, toTrendComps, type ToolDeps, type StorePort } from './tools.ts';
 import type { ToolResult } from './types.ts';
@@ -160,6 +161,26 @@ function enough(): Search {
   return async site => ({ rows: Array.from({ length: 10 }, (_, i) => ({ ...sales[site].rows[0], external_id: `${site}-${i}`, title: 'jeans',
     condition: 'Good', price_cents: 2000, listed_at: '2026-11-14T00:00:00Z' })), outcome: 'hit' });
 }
+test('a band-only valuation returns too_few with no price figures', async () => {
+  const toolURL = new URL('./tools.ts?band-only', import.meta.url).href;
+  const checkURL = new URL('../../engines/valuation/check.ts', import.meta.url).href;
+  const replacement = `import { check as realCheck } from ${JSON.stringify(checkURL)};
+    export const check = x => realCheck({ ...x, warm_comps: [], sources: [],
+      fast: { low: 3000, high: 6000, n: 24, as_of: x.as_of, basis: 'family', state: 'rough' } });`;
+  const hook = registerHooks({ resolve(specifier, context, next) {
+    if (context.parentURL === toolURL && specifier.endsWith('/check.ts'))
+      return { url: 'data:text/javascript,' + encodeURIComponent(replacement), shortCircuit: true };
+    return next(specifier, context);
+  } });
+  try {
+    const { runTool: bandTool }: typeof import('./tools.ts') = await import(toolURL);
+    const r = await bandTool('value_item', { query: 'jeans', condition: 'good' }, deps({ sold: enough() }).d, signal());
+    assert.equal(r.ok, true); assert.equal(r.reason, 'too_few');
+    assert.equal(r.counts.n_comps, 0);
+    assert.ok(r.rows.every(row => row.q10_cents === null && row.q50_cents === null && row.q90_cents === null));
+    contract(r);
+  } finally { hook.deregister(); }
+});
 test('valuation returns display money beside cents, a rounded effective count and a citation from check()', async () => {
   const r = await call('value_item', { query: '  JEANS  ', condition: 'good' }, deps({ sold: enough() }).d);
   assert.equal(r.ok, true); assert.equal(r.reason, undefined); assert.equal(r.counts.n_comps, 20); assert.equal(r.counts.n_eff, 20);

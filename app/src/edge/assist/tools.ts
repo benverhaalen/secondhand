@@ -283,10 +283,10 @@ async function soldTool(name: 'value_item' | 'where_to_list' | 'price_trend', x:
   r.citation_ids = result.citation ? [result.citation.id] : [];
   const sites = [...new Set(result.comps.map(c => c.site))].join(' and ') || 'no sites';
   r.basis = `${result.basis.count} sold on ${sites}, ${result.basis.oldest ?? 'no date'} to ${result.basis.newest ?? 'no date'}, level ${found.level}; product_id ${product_id}; floor 0; objective balanced${unavailable.length ? `; ${unavailable.join('; ')}` : ''}`;
-  if (found.state === 'too_few') r.reason = 'too_few';
+  if (found.state === 'too_few' || result.range.q50 === null) r.reason = 'too_few';
   r.rows = result.per_site.map(s => {
     const local = comparables({ condition: q.condition, site: s.site }, comps, r.as_of);
-    const visible = local.state === 'ok';
+    const visible = local.state === 'ok' && s.q50 !== null;
     if (name === 'where_to_list') return { site: s.site,
       ...money('keep_q10', visible ? s.keep_q10 : null), ...money('keep_q50', visible ? s.keep_q50 : null), ...money('keep_q90', visible ? s.keep_q90 : null),
       p_sale_d7: null, p_sale_d30: null, p_sale_d90: null, days_t50: null, rests_on: 'fees only; no sale curve' };
@@ -294,7 +294,7 @@ async function soldTool(name: 'value_item' | 'where_to_list' | 'price_trend', x:
       ...money('keep', visible ? s.keep_q50 : null), p_sale_d30: s.p_sale?.d30 ?? null, days_t50: s.days?.t50 ?? null };
   });
   if (name === 'value_item') {
-    const visible = found.state === 'ok';
+    const visible = found.state === 'ok' && result.range.q50 !== null;
     r.rows.push({ site: 'all', ...money('q10', visible ? result.range.q10 : null), ...money('q50', visible ? result.range.q50 : null), ...money('q90', visible ? result.range.q90 : null) });
     r.not_built = ["eBay sold needs the person's linked account"];
   } else {
