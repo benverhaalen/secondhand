@@ -1,7 +1,7 @@
 // The pages under You (app/behavior/you/[page].json) on the web build: each page's states, the linking states, and every control.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { behavior, start } from './behavior.mjs';
+import { behavior, start, WAIT } from './behavior.mjs';
 import { youControlTests } from './you-common.mjs';
 
 const table = behavior('you/[page]');
@@ -45,7 +45,7 @@ for (const st of table.states) test(`you/[page]: ${st.state} shows ${st.shows.sl
   if (want.wait) await s.page.waitForTimeout(want.wait);
   for (const t of want.shows) await s.shows(t);
   if (want.state) assert.equal(await s.page.locator('[data-screen]').first().getAttribute('data-state'), want.state);
-  for (const t of want.hidden ?? []) assert.equal(await s.page.getByText(t, { exact: true }).count(), 0, `${st.state} should not show "${t}"`);
+  for (const t of want.hidden ?? []) assert.equal(await s.count(t, { exact: true }), 0, `${st.state} should not show "${t}"`);
 });
 
 // Linking one site never blocks another (Ben, 03:22): while Mercari signs in, Poshmark's Try again still works.
@@ -55,10 +55,10 @@ test('you/[page]: one site signing in never blocks the rest', async () => {
   await s.shows('Signing in');
   await s.tap('link-poshmark');
   await s.saw({ type: 'change', entity: 'account', id: 'poshmark', to: 'loading' });
-  await s.saw({ type: 'change', entity: 'account', id: 'poshmark', to: 'connected' }, { timeout: 4000 });
-  await s.saw({ type: 'change', entity: 'account', id: 'mercari', to: 'error' }, { timeout: 4000 });
+  await s.saw({ type: 'change', entity: 'account', id: 'poshmark', to: 'connected' }, { timeout: WAIT });
+  await s.saw({ type: 'change', entity: 'account', id: 'mercari', to: 'error' }, { timeout: WAIT });
   await s.tap('link-mercari');
-  await s.saw({ type: 'change', entity: 'account', id: 'mercari', to: 'connected' }, { timeout: 4000 });
+  await s.saw({ type: 'change', entity: 'account', id: 'mercari', to: 'connected' }, { timeout: WAIT });
 });
 
 // A rule under three unedited approvals cannot be switched on; one at three can (decisions: tiers that learn).
@@ -74,7 +74,7 @@ test('you/[page]: delete account waits for open sales to finish', async () => {
   const s = await app.open('/you/settings');
   await s.tap('delete-row');
   await s.shows('3 sales are still open. You can delete once they are done.');
-  assert.equal(await s.page.getByTestId('delete-confirm').count(), 0);
+  assert.equal(await s.countId('delete-confirm'), 0);
   const n = await app.open('/you/settings?world=new');
   await n.tap('delete-row');
   await n.shows('Delete account');
@@ -88,7 +88,7 @@ test('you/[page]: a payout shows its four words with dates, and instant payout w
   const s = await app.open('/you/payouts');
   await s.tap('payout-ord_kin');
   for (const t of ['Sold', 'On its way', 'After you ship', 'Ready on the site', 'About Tuesday', 'In your bank', 'About Friday', 'See the item']) await s.shows(t);
-  assert.equal(await s.page.getByTestId('payout-instant').count(), 0, 'no instant payout before the money is ready on the site');
+  assert.equal(await s.countId('payout-instant'), 0, 'no instant payout before the money is ready on the site');
   const f = await app.open('/you/payouts?world=flipper');
   await f.shows('Ready on the site. In your bank about Wednesday');
   await f.tap('payout-ord_f6');
@@ -116,7 +116,7 @@ test('you/[page]: what doesn’t match comes before the sites', async () => {
   assert.ok(top && site && top.y < site.y, 'Doesn’t match sits above the site rows');
   const c = await app.open('/you/connections');
   await c.shows('Your sites');
-  assert.equal(await c.page.getByText('Doesn’t match', { exact: true }).count(), 0);
+  assert.equal(await c.count('Doesn’t match', { exact: true }), 0);
 });
 
 // Every page under You draws the network states from ?state= (app/src/demo/screen.ts).
@@ -135,7 +135,7 @@ test('you/[page]: a kind that asks can be made Never, but not On its own, from d
   const s = await app.open('/you/permissions');
   await s.tap('perm-reply_other');
   await s.shows('To let it run on its own, approve it 3 times without a change.');
-  assert.equal(await s.page.getByTestId('mode-auto').count(), 0);
+  assert.equal(await s.countId('mode-auto'), 0);
   await s.tap('mode-never');
   await s.saw({ type: 'change', entity: 'permission', id: 'reply_other', to: 'never' });
 });
@@ -160,12 +160,13 @@ test('you/[page]: prices across sites start on Same take-home, and the numbers s
   await s.tap('spread-numbers');
   await s.shows('$95 now');
   await s.shows('$3.80 in fees');
-  assert.equal(await s.page.getByText('You get $91.20', { exact: true }).count(), 3, 'Depop, eBay and Facebook each pay $91.20');
+  assert.equal(await s.count('You get $91.20', { exact: true }), 3, 'Depop, eBay and Facebook each pay $91.20');
   await s.tap('spread-rules');
   await s.tap('spread-same_price');
   await s.saw({ type: 'change', entity: 'setting', id: 'crosslist_spread', to: 'same_price' });
   await s.tap('spread-numbers');
-  assert.equal(await s.page.getByText('Lists at $95', { exact: true }).count(), 2, 'one price on every site');
+  await s.shows('Lists at $95');
+  assert.equal(await s.count('Lists at $95', { exact: true }), 2, 'one price on every site');
 });
 
 youControlTests(test, table, () => app, '/you/settings');
