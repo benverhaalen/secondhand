@@ -4,8 +4,8 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
-  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
-  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  Amount, Approve, Blank, Composer, Count, DecisionCard, Draft, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Message, Meta, Nav, Notice, Pill,
+  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
   BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
   Feed, QueueView,
 } from '@/ui';
@@ -45,6 +45,8 @@ function Sheetful() {
   const [on, setOn] = useState(true);
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
+  const [msg, setMsg] = useState('');
+  const [span, setSpan] = useState({ start: 28, end: 32 });
   return (
     <Screen name="parts" state="all" sheet="parts" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
@@ -206,6 +208,24 @@ function Sheetful() {
 
       <Section title="Top slot, a new person">
         <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+      </Section>
+
+      <Section title="Messages: thread row, message, draft, composer">
+        <List>
+          <ThreadRow id="tr-need" who="canvasfan" photo="carhartt-jacket" title="Carhartt Detroit jacket" site="depop" need={{ state: 'need', word: 'Offer' }} last="Would you take $85?" time="5m ago" unread={2} />
+          <ThreadRow id="tr-did" who="vintage_workwear_collector_and_reseller_since_2009" photo="nike-dunks" title="Nike Dunk Low, 10.5" site="ebay" did="Sent for you" last="Yes, it’s still available. It ships tomorrow." mine time="Yesterday" unread={0} />
+        </List>
+        <Message side="theirs" meta={<Meta text="canvasfan, 5m ago" />}>What’s the inseam?</Message>
+        <Message side="mine" meta={<Meta text="Sent for you, 4m ago" info />}>It’s 32 inches.</Message>
+        <Draft id="dr-a" who="canvasfan" spans={[{ text: 'It’s ' }, { text: '36', guess: true }, { text: '. I measured it flat, ' }, { text: 'photo 3', guess: true, mine: true }, { text: '.' }]}
+          facts={[{ text: '36 inseam', from: 'the label' }, { text: '35 in', from: 'your tape' }]} />
+        <Draft id="dr-f" who="canvasfan" spans={[{ text: 'It’s 36.' }]} status="failed" failed="The site did not answer" lead={false} />
+        <Composer id="co" to="canvasfan" value={msg} onChange={setMsg} onSend={() => setMsg('')} />
+      </Section>
+
+      <Section title="Time span">
+        <TimeSpan id="ts-day" day="Mon 16" words="2 to 4 pm" value={span} onChange={setSpan} />
+        <TimeSpan id="ts-dark" day="Fri 20" words="6 to 8 pm" value={{ start: 36, end: 40 }} onChange={() => {}} note="Ends after dark" />
       </Section>
 
       <Section title="New and the camera (on the bar)">
