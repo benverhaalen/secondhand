@@ -29,11 +29,9 @@ test('screens S2: one id on two controls fails (a pager and a row both "photos")
   assert.equal(run({ [P + 'a.tsx']: '// one at a time: approve\n' + page('{a ? <Approve id="approve" /> : <Foot id="approve" />}') }), '');
 });
 
-test('screens S3: the wash on a page that is not a main tab fails, and a main tab without it fails', () => {
-  assert.match(run({ [P + 'a.tsx']: page('<Screen name="a" state={state} wash nav={<Nav onPress={() => go()} />}>x</Screen>') }), /a\.tsx:\d+ S3 <Screen wash> outside/);
-  assert.match(run({ [T + 'buy.tsx']: page('<Screen name="buy" state={state} nav={<Nav />}>x</Screen>') }), /buy\.tsx:\d+ S3 a main tab/);
-  assert.equal(run({ [P + 'a.tsx']: page('<Screen name="a" state={state} nav={<Nav />}>x</Screen>'), [T + 'buy.tsx']: page('<Screen name="buy" state={state} wash nav={<Nav onPress={() => a > b} />}>x</Screen>'),
-    [T + '_layout.tsx']: 'export default function L() { return null; }\n', 'app/src/app/dev/parts.tsx': page('<Screen name="parts" wash>x</Screen>') }), '');
+test('screens S3: a screen that turns the wash off fails; one that leaves it to Screen passes', () => {
+  assert.match(run({ [P + 'a.tsx']: page('<Screen name="a" state={state} wash={false} nav={<Nav />}>x</Screen>') }), /a\.tsx:\d+ S3 <Screen wash=\{false\}>/);
+  assert.equal(run({ [P + 'a.tsx']: page('<Screen name="a" state={state} nav={<Nav />}>x</Screen>'), [T + 'buy.tsx']: page('<Screen name="buy" state={state} wash nav={<Nav onPress={() => a > b} />}>x</Screen>') }), '');
 });
 
 test('screens S4: a screen that neither calls useScreen() nor passes skip= fails (B35); either one, usePage() and a re-export pass', () => {

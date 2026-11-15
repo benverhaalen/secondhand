@@ -1833,3 +1833,21 @@ Ben, same thread, 09:47 UTC.
 > wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
 
 Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
+
+## 2026-11-15 every page earns its spot, a title on every tab, Today sorted differently, the bar and the plus
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:56 UTC.
+
+> audit how you are ensuring the whole app meets the standard of expert ui design and try and improve it. i recall the way i had prompted the dark mode original design had somehow created something that was actually good. for some reason those principles were lost. everything needs to earn its spot on the screen and all composure and structure and evaluating the app as a whole should ensure similar things have similar hierarchy and tests need to be written with this. also hopefully you have some sort of decision tree for figuring out what animations when or if an animation should play. also there are some fixes i have for things that make no sense to me. i think the today page should be sorted completely differently. i think the money thing at the top should change. the bottom bar looks odd with the iphone curves. the middle + circle isnt aligned. each page isnt designed for how the user would want to do something. it isnt designed like how a user would probably end up wanting to do things. everything feels cramped. i feel like the font weight hierarchy is not imposed. i think the second hand font isnt used enough. the today page should say today, the sell sell, the buy page, buy. then the main actions a user would want to do should be there. messages should just list the messages. also the gradient at the top of the screen is on some pages and not on others. think of how to group things in today better. the color makes no sense to me too. ensure there is no excessive text. recall all text needs to be written with the de claudish skill i hae in my harness.
+
+Ben, same thread, 09:59 UTC.
+
+> another note, i think that there should be lint rules and you should continue making lint rules based on what you see too. also like i think some things are just too small. like the little tags for pickup or offers etc. also you need to ensure that data can effectively wire up to the ui too. it should all feel familiar and be organized in a familiar way
+
+Ben, same thread, 10:00 UTC.
+
+> also what ui would you remove or what would you add to show rather than tell. and improve hierarchy and coherence. note down on the screens all the issues with cohesiveness and a combined brand family and where it wasnt enforced and trying to improve all those checks and rules that are deterministic and not just a prompt
+
+Ben, same thread, 10:01 UTC.
+
+> the scale and organization of each page is completely intentional and standard to apple iphone design

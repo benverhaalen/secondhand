@@ -9,6 +9,7 @@ import { cardLine, offerAmounts, offerProblem, wantTag } from '@/buy/read';
 import { Failed, Loading, OfflineLine } from '@/buy/states';
 import { href, usePage } from '@/buy/world';
 import { ago, usd, unread, world, type Decision, type Want, type World } from '@/demo';
+import { TabNav } from '@/ui/parts/tab-nav';
 import {
   DecisionCard, EmptyState, ItemCard, Line, MatchCard, Nav, OfferSheet, Pill, Screen, SearchField, Section, Sheet, Stack, UndoToast,
 } from '@/ui';
@@ -77,7 +78,7 @@ export default function Buy() {
   };
 
   const offerMatch = match(offering?.match_id);
-  const nav = <Nav inbox={{ count: unread(w), onPress: () => router.push(href(w, '/messages')) }} />;
+  const nav = <TabNav title="Buy" inbox={{ count: unread(w), onPress: () => router.push(href(w, '/messages')) }} />;
   if (state === 'loading') return <Loading name="buy" nav={nav} />;
   if (state === 'failed') return <Failed name="buy" nav={nav} what="your list" again={href(w, '/buy')} />;
   return (

@@ -16,6 +16,7 @@ import {
   Stack, TopSlot, Txt, UndoToast, Approve, Guess, type PhotoSrc, type QueueEntry,
 } from '@/ui';
 import { Shelf } from '@/ui/parts/tile';
+import { TabNav } from '@/ui/parts/tab-nav';
 import { oneCardWorld, quietWorld, stopsWorld } from '@/today/stops';
 import { JOB_MS, TIER_LABEL, tiers as deriveTiers, backAt, cards as derive, entries as queueEntries, group, handledLine, log as autoLog, notices as deriveNotices, top as deriveTop, inbox, fit, sales as twoSales, single, type Action, type Card } from '@/today/cards';
 import { log } from '@/ui/log';
@@ -159,7 +160,7 @@ export default function Today() {
   return (
     // The wash sits on every main tab, whatever the top holds (Ben 06:21: "sometimes the gradient at the top of the screen is
     // there or isnt there").
-    <Screen name="today" state={state} wash nav={<Nav inbox={{ count: unread }} />} foot={queue ? undefined : toastEl}>
+    <Screen name="today" state={state} wash nav={<TabNav title="Today" inbox={{ count: unread }} />} foot={queue ? undefined : toastEl}>
       {/* The most flattering true number, by the ladder in cards.ts (Ben 07:12); with nothing listed, one way forward. */}
       {top && top.rung !== 'start' ? (
         <MoneyNews caption={top.caption} figure={top.figure} line={top.line} onPress={() => go(top.to)}
