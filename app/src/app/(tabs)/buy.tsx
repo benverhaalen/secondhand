@@ -11,8 +11,9 @@ import { href, usePage } from '@/buy/world';
 import { ago, usd, unread, world, type Decision, type Want, type World } from '@/demo';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { shortName } from '@/demo/short-name';
+import { CardGroup } from '@/ui/parts/card-group';
 import {
-  DecisionCard, EmptyState, ItemCard, Line, MatchCard, Nav, OfferSheet, Pill, Screen, SearchField, Section, Sheet, Stack, UndoToast,
+  DecisionCard, EmptyState, ItemCard, Line, MatchCard, Nav, OfferSheet, Pill, Screen, SearchField, Sheet, Stack, UndoToast,
 } from '@/ui';
 
 const dollars = (cents: number) => cents / 100;
@@ -94,17 +95,17 @@ export default function Buy() {
 
       {nothing ? <EmptyState title={w.name === 'new' ? 'Search five sites at once' : 'Nothing on your list'} line="Search for something, then watch it to hear when one turns up." /> : null}
 
-      {asks.length ? <Section title="Needs you">{asks.map((d, i) => card(d, i === 0))}</Section> : null}
+      {asks.length ? <CardGroup label="Needs you">{asks.map((d, i) => card(d, i === 0))}</CardGroup> : null}
 
       {fresh.length ? (
-        <Section title="New matches">
+        <CardGroup label="New matches">
           {fresh.map(m => <MatchCard key={m.id} id={`match-${m.id}`} title={shortName(m)} photo={m.key} site={m.site} verdict={m.verdict} likeness={m.label}
             {...cardLine(m)} when={ago(m.seen_at)} onPress={() => router.push(href(w, `/listing/${m.id}`))} />)}
-        </Section>
+        </CardGroup>
       ) : null}
 
       {wants.length ? (
-        <Section title="Looking for">
+        <CardGroup label="Looking for">
           {wants.map(x => {
             const n = found(x), tag = wantTag(x), p = w.products.find(pr => pr.id === x.product_id);
             // The want's photo: its product's, else the newest thing it found; with neither, the empty photo slot.
@@ -113,24 +114,24 @@ export default function Buy() {
               fact={{ label: n ? `${n} found under` : 'Nothing yet under', amount: x.max_total_cents == null ? undefined : usd(x.max_total_cents) }}
               onPress={() => router.push(href(w, `/want?id=${x.id}`))} />;
           })}
-        </Section>
+        </CardGroup>
       ) : null}
 
       {saved.length ? (
-        <Section title="Watching">
+        <CardGroup label="Watching">
           {saved.map(m => <MatchCard key={m.id} id={`match-${m.id}`} title={shortName(m)} photo={m.key} site={m.site} verdict={m.verdict} likeness={m.label}
             {...cardLine(m)} onPress={() => router.push(href(w, `/listing/${m.id}`))} />)}
-        </Section>
+        </CardGroup>
       ) : null}
 
       {bought.length ? (
-        <Section title="Bought">
+        <CardGroup label="Bought">
           {bought.map(o => {
             const it = w.items.find(i => i.id === o.item_id);
             return <ItemCard key={o.id} id={`bought-${o.id}`} title={it ? shortName(it) : 'Bought'} photo={it?.photos[0]?.key ?? null} site={o.site} state="paid" word="Bought"
               fact={{ label: 'Paid', amount: usd(o.price_cents + o.shipping_cents) }} onPress={() => router.push(href(w, `/item/${o.item_id}`))} />;
           })}
-        </Section>
+        </CardGroup>
       ) : null}
 
       {offering && offerMatch ? (
