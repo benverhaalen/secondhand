@@ -27,14 +27,14 @@ export type Attributes = Record<string, {
   confirmed: boolean;
   confidence?: number;
 }>;
-export type SelectionContext = Pick<State,'extent_cm'|'rigid'|'pieces'|'profile'> & {params?: ParamStore};
+export type SelectionContext = Pick<State,'extent_cm'|'rigid'|'pieces'|'profile'|'recall_flag'> & {params?: ParamStore};
 export function missingFor(attrs: Attributes,kind: string,site: Site,confirm_mode: State['confirm_mode'],context: SelectionContext = {}): string[] {
   const [family,subkind]=kind.split('.');
   if(!(FAMILIES as readonly string[]).includes(family))throw new Error(`unknown kind ${kind}`);
   const sources = {spec:'lookup',marketplace:'lookup',inferred:'seen',label:'label',measured:'measured',you_said:'you_said'} as const;
   const facts:Record<string,Fact>=Object.fromEntries(Object.entries(attrs).map(([field,attr])=>[field,{value:attr.value,source:sources[attr.source],confidence:attr.confidence ?? (attr.confirmed?1:0),confirmed:attr.confirmed}]));
   const state:State={capture_id:'',item_id:'',purpose:'sell',confirm_mode,has_lidar:true,sites:[site],type:family as Family,kind:subkind,
-    kept:[],retakes:{},facts,lookups:'done',refused:[],extent_cm:context.extent_cm,rigid:context.rigid,pieces:context.pieces,profile:context.profile};
+    kept:[],retakes:{},facts,lookups:'done',refused:[],recall_flag:context.recall_flag,extent_cm:context.extent_cm,rigid:context.rigid,pieces:context.pieces,profile:context.profile};
   const params=context.params ?? memoryStore();
   const selected=select(state,params);
   state.kept=selected.process.map(s=>s.key);

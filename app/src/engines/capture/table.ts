@@ -15,7 +15,7 @@ export type FieldRow = {
 };
 export type DimensionClass = 'flat_garment'|'footwear'|'bag'|'small_hard'|'medium_hard'|'large_bulky'|'soft_goods'|'set_bundle';
 export type ClassRow = {checks: string[]; weight: string; dimensions?: FieldRow};
-export type Table = { version: number; types: Record<string, Step[]>; no_lidar: Record<string, unknown>;
+export type Table = { version: number; steps: Record<'group'|'front_still',Step>; types: Record<string, Step[]>; no_lidar: Record<string, unknown>;
   family_class: Record<string, Exclude<DimensionClass,'set_bundle'>|null>;
   classes: Record<Exclude<DimensionClass,'set_bundle'>,ClassRow> & {set_bundle: {wraps: string; lot_count: FieldRow}};
   fields: Record<string, FieldRow[]> };
