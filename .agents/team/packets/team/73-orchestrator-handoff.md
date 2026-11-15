@@ -46,7 +46,7 @@ Main's check is red at this writing (`node .agents/check.mjs`): the real-time pr
 - Whether the Depop adapter's page-context calls to `webapi.depop.com` count as a private endpoint.
 - The host for the server (the audit recommends one Node container with a disk) and the sender for sign-in emails.
 - Whether the posture line's counter-instead-of-accept behaviour stays.
-- Yes or no to `databricks bundle deploy --force` over the dashboard he rejected, or the rebuilt one first ([packet 71](71-databricks-handoff.md)). Until one of them, the erasure, guard and governance fixes on main are not on the workspace.
+- His yes to the rebuilt dashboard's screenshot. He decided "Rebuild first": no `databricks bundle deploy --force` over the dashboard he rejected ([packet 71](71-databricks-handoff.md)). Until the rebuilt one deploys, the erasure, guard and governance fixes on main are not on the workspace.
 - Whether the `sh-probe` Lakebase and App are deleted; whether the Mercari competition data stays for the demo. Answered, as the Databricks lead relayed it: the judges see the trial workspace (a Databricks free trial, not Free Edition; every run spends its credits).
 - Real items photographed and measured (eight to ten for the stopwatch, twenty for the benchmark).
 - The issuer id and team id for his build command; rotating the two keys pasted into chat earlier.
