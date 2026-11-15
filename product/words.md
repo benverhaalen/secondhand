@@ -1493,3 +1493,9 @@ Nate, build session (orchestrator), 2026-11-15 about 03:45 Central.
 > Go for up to 7 subagents for each lead, if they see it needed, of course too much on one focus is crazy but if waiting because of the limit each can have up to 7 concurrent
 
 Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 nate no worker waits confused, and experts sweep the spec
+Nate, build session (orchestrator), 2026-11-15 about 04:00 Central, after the integration lead found the benchmark's item set unfilled.
+> Oh wow, well ensure workers aren't going to get confused and all wait in a way that connects to it working, that they check through all docs and that you have expert data scientists and ai software engineers, databricks professional subagents, sweep over the spec of whats imagined and suggest improvements
+
+Used in: [who is waiting on what](../spec/plans/waiting.md), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).

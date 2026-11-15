@@ -137,4 +137,6 @@ The orchestrator (Fable 5.2) oversees the four leads and answers to Nate. A lead
 
 ## Talking to each other
 
+Nobody waits idle, and no worker ever waits. What one seat needs from another is a row in [who is waiting on what](../../../../spec/plans/waiting.md), with one owner and what the waiter builds meanwhile; read its five rules and keep your rows true.
+
 A lead that needs something from another area sends the orchestrator one message naming the file, the change and why. A lead reports at the end of each piece: what is now true, the command that proves it, what is open.
