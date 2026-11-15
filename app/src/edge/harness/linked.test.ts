@@ -26,17 +26,17 @@ async function world() {
     const a = fakeAdapter(site, verb);
     return { ...a, run: (x: Record<string, unknown>, s: AbortSignal) => { runs.push(`${site}.${verb}`); return a.run(x, s); } };
   }));
-  return { vault, accounts, runs, harness: createHarness({ adapters, accounts: { ...accounts, byId: id => accounts.byId(id, 'p1') } }) };
+  return { vault, accounts, runs, harness: createHarness({ adapters, accounts }) };
 }
 
 test('harness: a call on an unlinked account runs no adapter', async () => {
   const { harness, runs } = await world();
-  const e = await harness.call('mercari', 'read_listings', { account_id: 'a-mercari' });
+  const e = await harness.call('mercari', 'read_listings', { account_id: 'a-mercari', person_id: 'p1' });
   assert.ok(!e.ok && e.error.code === 'policy_refused' && e.error.hint.do === 'raise_decision' && e.error.hint.kind === 'link_account');
-  const wrongSite = await harness.call('mercari', 'read_listings', { account_id: 'a-depop' });
+  const wrongSite = await harness.call('mercari', 'read_listings', { account_id: 'a-depop', person_id: 'p1' });
   assert.ok(!wrongSite.ok, 'a linked account cannot be used on another site');
   assert.deepEqual(runs, []);
-  assert.ok((await harness.call('depop', 'read_listings', { account_id: 'a-depop' })).ok);
+  assert.ok((await harness.call('depop', 'read_listings', { account_id: 'a-depop', person_id: 'p1' })).ok);
   const none = await harness.call('depop', 'post', { operation_id: 'op-1' });
   assert.ok(!none.ok && none.error.code === 'policy_refused', 'a signed-in verb with no account is refused too');
   assert.deepEqual(runs, ['depop.read_listings']);

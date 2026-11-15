@@ -189,7 +189,7 @@ for (const after_s of [undefined, NaN, Infinity]) test(`short cadence honors a m
 });
 
 
-test('storefront scheduler names the owner and skips another person without work or writes', async () => {
+test("schedule: one person's account id under another person is refused", async () => {
   const schedules: Record<string, number>[] = [{ a: 0 }, {}];
   for (const user_id of ['u1', 'other']) for (const due of schedules.map(due => ({ ...due }))) {
     const lookups: (string | undefined)[] = [], work: string[] = [];
@@ -200,7 +200,7 @@ test('storefront scheduler names the owner and skips another person without work
       lookups.push(person_id); return id === account.account_id && person_id === account.person_id ? account : undefined;
     } };
     const adapter = fakeAdapter('depop', 'read_storefront');
-    const harness = createHarness({ accounts: { ...accounts, byId: id => accounts.byId(id, user_id) },
+    const harness = createHarness({ accounts,
       adapters: [{ ...adapter, async run(args, signal) { work.push('adapter'); return adapter.run(args, signal); } }] });
     const s = createScheduler({ params: params(), leases: memoryLeases(), now: () => 0,
       accounts: () => [{ ...acct('a'), user_id }], stateOf: () => 'live', state,

@@ -235,7 +235,7 @@ export function createWatcher(d: WatcherDeps) {
     const data: Partial<Record<'listings' | 'offers' | 'messages' | 'orders', Row[]>> = {};
     for (const [verb, section] of sections) {
       if (hasVerb(a.site, verb) !== true) continue;
-      const env = await d.harness.call(a.site, verb, { ...d.readArgs?.(a), account_id: a.account_id });
+      const env = await d.harness.call(a.site, verb, { ...d.readArgs?.(a), account_id: a.account_id, person_id: a.user_id });
       log.event('note', { msg: 'watcher read', account_id: a.account_id, site: a.site, verb, ok: env.ok, ...(!env.ok && { code: env.error.code }) });
       if (!env.ok) return env;
       data[section] = rows(env.data, section);
@@ -337,7 +337,7 @@ export function createWatcher(d: WatcherDeps) {
     if (site === 'depop' && verb === 'end' && typeof slug !== 'string') return { ok: false, error: {
       code: 'policy_refused', message: 'Depop listing slug has not been read', hint: { do: 'raise_decision', kind: 'failed_delist' },
     }, meta };
-    const env = await d.harness.call<unknown>(site, verb as Verb, { ...d.readArgs?.(account), ...args,
+    const env = await d.harness.call<unknown>(site, verb as Verb, { ...d.readArgs?.(account), ...args, person_id: account.user_id,
       ...(site === 'depop' && verb === 'end' && { slug }),
       ...(verb === 'answer_offer' && { action: jobArgs?.response, amount_cents: jobArgs?.price_cents, now: iso() }),
     });

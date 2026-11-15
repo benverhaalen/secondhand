@@ -108,7 +108,7 @@ function smallRig(run: Adapter['run'], overrides: Partial<Pick<WatcherDeps, 'pAc
   const store = storage.store ?? memoryStore(), log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   const account = { account_id: 'acc_depop', person_id: 'usr_walk', site: 'depop' as const, token_ref: 'fixture' };
   if (storage.due !== false) store.put('account', { id: account.account_id, user_id: account.person_id, site: account.site, next_check_at: new Date(start).toISOString() });
-  const accounts = { async linked() { return [account]; }, async byId(id: string) { return id === account.account_id ? account : undefined; } };
+  const accounts = { async linked() { return [account]; }, async byId(id: string, person_id?: string) { return id === account.account_id && person_id === account.person_id ? account : undefined; } };
   const calls: Verb[] = [];
   const adapters: Adapter[] = (['read_listings', 'read_offers', 'read_inbox', 'read_orders', 'post', 'revise', 'end', 'relist', 'send_message', 'answer_offer', 'make_offer', 'save'] as Verb[]).map(verb => ({
     route_id: `test.${verb}`, manifest: fakeManifest('depop', verb), run: (args, signal) => run({ ...args, verb }, signal),
@@ -818,4 +818,23 @@ test('watcher resume resolves a linked row with its owner before writing', async
   await watcher.cleared(account.account_id);
   assert.deepEqual(lookups, [account.person_id, account.person_id]);
   assert.deepEqual(rig.calls, []);
+});
+
+
+test("watcher: one person's account id under another person is refused", async () => {
+  const seen: CallArgs[] = [];
+  const rig = smallRig(async args => { seen.push(args); return { ok: true, data: [] }; });
+  await rig.watcher.tick();
+  assert.equal(seen.length, 4, 'the owner still reads all four sweep sections');
+  assert.ok(seen.every(args => args.person_id === 'usr_walk'), 'sweeps carry the scheduled account owner');
+  const before = seen.length;
+  const wrong = queueRead(rig, 'usr_other');
+  await rig.watcher.tick();
+  assert.equal(seen.length, before, 'another person never reaches the account adapter');
+  assert.ok((rig.store.getJob(wrong.id)?.result as { refused?: string }).refused);
+  const own = queueRead(rig);
+  await rig.watcher.tick();
+  assert.equal(seen.length, before + 1, 'the owner still runs the queued read');
+  assert.equal(seen.at(-1)?.person_id, 'usr_walk', 'jobs carry their own user_id');
+  assert.equal(rig.store.getJob(own.id)?.state, 'done');
 });
