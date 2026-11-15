@@ -2178,3 +2178,9 @@ Nate, orchestrator's session, 2026-11-15, about 07:05 Central. The first line an
 > Please also get rid of any mention of [...] from the repo, rewrite history, and focus on ensuring databricks works, that we've accounted for everything fully planned and currently being built that alligns with the product
 
 Used in: [the finalization spec](../spec/plans/finalization.md), the data lead's brief.
+
+## 2026-11-15 nate search is the black bar, the home has a top bar and carousels, and a focused search turns white while the answer builds and each source animates in
+Nate, the app-wiring lead's session, 2026-11-15, about 06:10 Central (machine clock), on seeing the plain `/dev/search` scaffold.
+> This isnt what we want, there is no where we look at the top, there is no for sale in the search box, the black search bar is also the black add button, you click it and then select shop or sell, you can also add a listing in the button inside of the my shopping page. Theres also a small bar at the top of thier home view, which does have like announcments or notifications, followed by carousels of recommended products, maybe insights and findings from research below it. The search box then gets focused when pressed, turning everything in the background white, with the intelligent ui then building out the full response in black font, with the generative widgets coming in and such. During the loading periods for waiting for search, or as stuff searches in in real time, thats when we animate the source in, wiht its listings, like a logo of it. Utilize intelligent ui and ux component building. Align with what bens components are from his design.
+
+Used in: the app-wiring lead's search takeover (packet 81).
