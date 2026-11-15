@@ -1,4 +1,6 @@
-"""cap-5: the follow-up inputs (spec/engines/capture.md §3 step 6, spec/features/capture.md follow-up table).
+"""Superseded 2026-11-15 by the deterministic plan in app/src/engines/capture/plan.ts (spec/engines/capture.md §11): the routes run that engine; build nothing new on this file. Kept so its tests and the param priors it names stay readable.
+
+cap-5: the follow-up inputs (spec/engines/capture.md §3 step 6, spec/features/capture.md follow-up table).
 
 Empty facts whose ladder ends in `asked` or `lookup`, condition first, then importance x (1 - p(preselect
 is right)). At most 3 ordinary inputs; a field the type's process needs gets its own input past the cap

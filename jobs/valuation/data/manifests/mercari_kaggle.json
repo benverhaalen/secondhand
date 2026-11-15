@@ -1,8 +1,8 @@
 {
   "source": "mercari_kaggle",
-  "licence": "Kaggle Mercari Price Suggestion Challenge, Specific Rules A: competition use only (public search index, read 2026-11-15)",
-  "may_model": false,
-  "code_commit": "c60aeb95a5073eb68f19f04371dc5e853812412a",
+  "licence": "Kaggle Mercari Price Suggestion Challenge, Specific Rules A: competition use only (public search index, read 2026-11-15); used for the hackathon demo on Ben's call, 2026-11-15 09:09",
+  "may_model": true,
+  "code_commit": "5b47bcb3142fe31983b01fc2308a74479da3139e",
   "inputs": [
     {
       "file": "train.tsv",
@@ -12,7 +12,7 @@
   ],
   "output": {
     "file": "rows.csv.gz",
-    "sha256": "adcf75b96ee04922777f3885538fd65a4dcb3e7d5096416a99ecf160f2e38e5e",
+    "sha256": "26eba8417c6211ea5395bb40339975fe2e9c0a6e84c4e57e63cff10bd8ee7f74",
     "columns": [
       "row_id",
       "source",
@@ -42,6 +42,8 @@
       "may_model",
       "at_ask",
       "priced_from_our_number",
+      "retail_cents",
+      "released_at",
       "description",
       "retail_cents",
       "released_at",

@@ -1,4 +1,6 @@
-"""cap-4: the next view and the stop (spec/engines/capture.md §3 steps 4 and 5).
+"""Superseded 2026-11-15 by the deterministic plan in app/src/engines/capture/plan.ts (spec/engines/capture.md §11): the routes run that engine; build nothing new on this file. Kept so its tests and the param priors it names stay readable.
+
+cap-4: the next view and the stop (spec/engines/capture.md §3 steps 4 and 5).
 
 worth = importance x p(view fills the row) x value_at_stake; a process step that settles an unmet row is
 always asked; any other view is asked when worth / cost passes the bar, cost in effort-minutes
