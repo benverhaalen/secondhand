@@ -7,9 +7,9 @@ import re
 
 
 def gtin14(raw):
-    digits = re.sub(r'[^0-9]', '', raw or '')
+    digits = re.sub(r'[\s-]', '', raw or '')
     # GS1 identifiers have at most 14 digits; stripped leading zeroes may leave 8..14.
-    if not 8 <= len(digits) <= 14:
+    if not re.fullmatch(r'[0-9]{8,14}', digits):
         return None
     digits = digits.zfill(14)
     # GS1 mod-10: alternating weights 3 and 1 from the rightmost data digit.

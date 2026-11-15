@@ -101,10 +101,10 @@ def test_ascii_jaccard_twin():
 def test_gtin_shared_fixture():
     from identity.codes import gtin14
     fixture = Path(__file__).resolve().parents[2] / 'app/src/engines/trust/fixtures/gtin-parity.json'
-    rows = json.loads(fixture.read_text())
-    assert len(rows) >= 10
-    for row in rows:
-        assert gtin14(row['raw']) == row['expected'], row['name']
+    cases = json.loads(fixture.read_text())['cases']
+    assert len(cases) >= 10
+    for case in cases:
+        assert gtin14(case['input']) == case['expected'], case['input']
 
 
 def test_all_fitted_thresholds_are_on_w_scale_and_clock_is_explicit():
