@@ -2061,3 +2061,15 @@ Nate, orchestrator's session, 2026-11-15, about 10:45 Central, answering the orc
 > Sure delete the raw files from the benchmark. Its science fair style judging. Which valuation? we aren't done yet. I wanted us to assess where we were. archive the running leads. fully spec out and decide on finalizations, then launch new leads to see it through. for 4. it should be hourly until after judging. Yes we can host with fly.io, i also have a hetzner box. for the website, since bens busy i wnated us to work on it, but lets ensure the system and all features work. We are getting hosting to work, but can realtime test on the dev server. forget apple sign in. We probably need other modules right. Apples object capture kit, or no? Have apify replace fb marketplace and ebay for now. planned that when approved we get ebay, and hopefully fb. we wont be able to wait on ebay. for depop its ok if working but ensure we can perfectly evaluate the amount of times we catch it, identify why, if its because we get rejected, we can build a system to auto detect if we;re on the right page or someting, and immediately start a new one. Think through a solution, perhaps not that unless its the only/best way. Lets not do paid vector search. Lets utilize mercari data the best way we can
 
 Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate apify where it is better; monitor a person's listings instead of posting for them; market-research tools as a fallback
+Nate, orchestrator's session, 2026-11-15, about 11:25 Central, three messages in a row.
+> if the browser harness doesn't work, we at least need to be able to gather mass swarm intelligence on products and such, /research any open source repos that can aggregate all realtime product info from storefronts, not paid just hosted, and recently updated with a great amount of stars
+
+> if apify is better at ebay in general and fills all gaps then great. instead of automatically posting the listings, we can still at least harness the monitoring of alerts and messages and stuff, how many people are interested in the listing. We deliver all that data and track and tell them about it on the app
+
+> not so much agents, but just like ai intelligence gatherers or tools for searching that people have built for buisiness market research. If they require api's we fill gaps with apify and only automate reading user data for monitoring and such
+
+Also, on the buying assistant: "Wait, can genie ai be the buying ai people talk to?", "Like or some sort of ai model we build on it, combining databricks backend storage we do, with ai stuff like that", "or is that not recommended".
+
+Used in: `spec/plans/finalization.md`, [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
