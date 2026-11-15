@@ -37,7 +37,7 @@ Ben's design shows red only after a failure and names no cancel cost; the backen
 flowchart LR
   A[Site sale event or email hint] -->|public edge, 2xx fast| B[(Lakebase: job, order, next_check_at)]
   S[Lakeflow sweep and reconcile] -->|writes next_check_at| B
-  B -->|policy check in code| C[Harness: official API or Browser Use cloud session]
+  B -->|policy check in code| C[Harness: our own adapter over the Browser Use cloud session; official API last]
   C -->|delist, read back| D[Site]
   C -->|listing state, event, evidence| B
   B -->|SSE job stages| E[App: Today, Sell]
@@ -75,7 +75,7 @@ Order states from product §4. Triggers:
 Item: `live` to `sold` on the first paid order; `done` on `released`; `returned` or `disputed` while a case is open. A cancelled sale returns the item to `live` and relists the others, never on Poshmark. Listing states are from [lifecycle.mjs](../lifecycle.mjs), unchanged. A paid buyer beats dibs in code, not as a decision: the dibs buyer gets an automatic message and a place in the queue.
 
 ## Systems underneath
-Agent runtime, one loop and two triggers: an event or schedule becomes one `job` with an idempotency key; the policy check runs in code; the harness (`read_orders`, `end`, `relist`, `send_message`, per-site capability table) acts through the official route or the cloud browser, reads back and logs. A lease keeps one job per account session, paced per site.
+Agent runtime, one loop and two triggers: an event or schedule becomes one `job` with an idempotency key; the policy check runs in code; the harness (`read_orders`, `end`, `relist`, `send_message`, per-site capability table) acts through our own adapter over the person's signed-in session (an official API only as the last fallback), reads back and logs. A lease keeps one job per account session, paced per site.
 
 | Piece | Job here |
 |---|---|

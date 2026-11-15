@@ -82,7 +82,7 @@ flowchart LR
   I["item review"] -->|"draft job, Unity Gateway: listing draft, strategy suggested"| D["drafting area"]
   D -->|"recall check, CPSC: requirement flag"| R["claim_check on the draft"]
   R -->|"first_post card in Today: decision answered, strategy chosen"| P["post job on Apps API"]
-  P -->|"Browser Use harness per site, eBay API inside its harness: listing posting"| S["marketplace"]
+  P -->|"our own adapter per site over the person's session, eBay's API only as last fallback: listing posting"| S["marketplace"]
   S -->|"read-back in the harness: listing live, external_ids, event, strategy running"| L["Lakebase listing"]
 ```
 
@@ -201,7 +201,7 @@ Errors as in [product.md](../product.md#errors): a site refusing the post is `50
 | Field limits and counts per site | as marked in the table above | [listing-fields-by-platform](../../research/list/nate/listing-fields-by-platform.md) | unchanged |
 | Licences and terms are recorded as facts | decided | [decisions](../../product/decisions.md#2026-11-14-licences-and-site-terms-are-recorded-as-facts-and-do-not-shape-the-build) | each becomes an enforced `rights` tag |
 
-In listing creation each photo is its original. The photos step offers Generate (marked AI in the app) or Add photos, per [studio](studio.md#retouch-chosen-by-the-person). List orders kept photos by card 21, cuts each site's crop from the 1200x1600 frame ([capture-shots card 8](../determinations/capture-shots.md#8-the-one-frame-and-each-sites-crop)), and reads the export tag setting, studio Open 5.
+In listing creation each photo is its original; retouch runs only when the person asks to generate listing photos, and clothing is never listed in 3D ([Nate](../../product/words.md#2026-11-14-nate-answers-to-the-first-ten-questions-for-ben)). The photos step offers Generate (marked AI in the app) or Add photos, per [studio](studio.md#retouch-chosen-by-the-person). List orders kept photos by card 21, cuts each site's crop from the 1200x1600 frame ([capture-shots card 8](../determinations/capture-shots.md#8-the-one-frame-and-each-sites-crop)), and reads the export tag setting, studio Open 5.
 
 Each site's attributes and category come from [listing D6](../determinations/listing-and-marketing.md#d6-attributes-per-site) and [D7](../determinations/listing-and-marketing.md#d7-category-placement), which read `category_map` (kind, site, site category, versioned) over the kind tree in [fields-by-kind](../determinations/fields-by-kind.md#1-the-taxonomy-spine) (*agent proposal*).
 
@@ -212,7 +212,7 @@ Rules that protect people, unchanged: a home address goes out only on the person
 ## Open for Ben and Nate
 
 - Should a promoted `agent_revision` change title words on a live listing, or only photo order and price?
-- Is a photo tagged on export ([J11](../open-questions.md))? Nate: a retouched photo is tagged and a taken photo never is ([words](../../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)); Ben: no AI tag on exported photos, tracked on our side ([studio Open 5](studio.md)). Still open.
+- Is a photo tagged on export ([J11](../open-questions.md))? Nate: a retouched photo is tagged and a taken photo never is ([words](../../product/words.md#2026-11-14-nate-the-search-engine-is-an-api-no-feeds-no-tax-service-tags-on-retouched-photos)); Ben: no AI tag on exported photos, tracked on our side ([studio Open 5](studio.md)). Answered by Nate on 2026-11-14; Ben's agreement not recorded ([words](../../product/words.md#2026-11-14-nate-answers-to-the-first-ten-questions-for-ben)): a photo made with retouch carries an AI tag and a photo the person took never does; where a site requires AI photos to be tagged, the tag it requires is added; retouch is off by default and the per-site level is preset but never on by default.
 
 ## Needs from the shared model
 

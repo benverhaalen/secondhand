@@ -55,7 +55,7 @@ Shape: `{value or range, basis_count, as_of, citation_id, state: shown|hidden, h
 | Kept | `order` in `released` or `handed_over`, payout less nothing more | "You kept $X" | no payout recorded; a tap on "Got paid?" counts as `you_said` |
 | On its way | `order` in `paid` to `claim_window`, not refunded | "On its way $Y" | never added to Kept |
 | Could earn | `valuation` range of live items less estimated fees | "Could earn $A to $B" | an item's range is below the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) and [D5](../determinations/money.md#d5-fair-value-range-overall-and-per-site); method in [D22](../determinations/money.md#d22-could-earn-across-live-items) |
-| Worth of what you own | sum of each `owned` or live item's `valuation` range, with its change over 7 days | "Your things are worth $A to $B, up $C this week" | an item below the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) is left out and counted ("3 not valued yet"); never summed as exact |
+| Worth of what you own ([money D22a](../determinations/money.md#d22a-worth-of-what-you-own)) | sum of each `owned` or live item's `valuation` range, with its change over 7 days | "Your things are worth $A to $B, up $C this week" | an item below the minimum basis in [money D1](../determinations/money.md#d1-comparable-set-and-weights) is left out and counted ("3 not valued yet"); never summed as exact |
 | Total sold | `order` payouts reaching `paid`, all time | "$X sold so far" | never |
 | Listed value | our own `listing` prices | "Listed for $X" | never |
 | Sold count | `order` reaching `paid` | "N sold" | never |
