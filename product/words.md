@@ -477,6 +477,14 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > well think about all the products that users buy and sell, all things we will make listings on, and imagine the framework we have to create, where each is assigned the necssary fields, our engines use the intelligence and aggregation gathering tools and workflows to find and fill the rest
 
+## 2026-11-14 nate compare us with existing tools and tell me what is worth adding
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Ensure when comparing our system and its strength to already existing tools, that that's told to me, as well as any additional questions, things you found from databricks and feature research, you stated would be worth adding and expanding
+
+## 2026-11-14 nate the search engine is an api, no feeds, no tax service, tags on retouched photos
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering the open questions the agent listed (the public search endpoint, feeds, a tax service, who builds the Expo project, accounts at risk, sharing pace, photo tags, studio cost).
+> We will make the out perfroming industry and product search engine an available to call api. We do not pay for a tax service, a persons listings published as feeeds? we dont serve what we have placed on secondhand, as secondhand inst a storefront, its an assistive managmeent tool and unified secondhand reselling platform, with also a highly advanced and accurate industry research and product engine. The expo project can be built by ben, im not sure which accounts are at risk when automated, so indicate that and we perhaps wont demo it. It can share and send offers however much is best. Ai tags on photos retouched, but not on ones taken. Studio cost will be calculated optimally.
+
 ## 2026-11-15 round 7 picks
 Ben, on the round 7 picks page, saved 2026-11-15 00:09 UTC; he wrote "done" in the thread "Set the secondhand brand identity" at 00:09. The pick is what he tapped; the quote is the note he typed under it. The boards are in [brand/explore/round-7/boards/](../brand/explore/round-7/boards/).
 
@@ -509,6 +517,10 @@ Ben, on the round 7 picks page, saved 2026-11-15 00:09 UTC; he wrote "done" in t
 
 **Anything off on every board.**
 > do a quick pass after this about color and gradients and typefaces and the ambiguities of it all considering my prompts for all these things and what i want out of ui ux. do it without image gen real quick. i dont want the sans serif. dont worry about licenses if we win the hackathon we can get our license or have claude help us create our own font too. i need to see it for the feedback loops. ok also, with the fonts. i want to mirror qoves specific fonts and how they tweaked them exactly except for no mono font and then im trying to determine whether or not to have that other font, clofie be the main brand wordmark. deciding between no clofie, semibold, or regular. one of the three. help me pick out colors. you can use image gen to create the colors and the palettes and the nuances/edge cases/color changes in state and then after thats done you can just give me the colors options. the font options. as well as the different interpretations of my gradient type dilemma.
+
+## 2026-11-14 nate reverse analyse the others and build our own registries, adopt or outperform
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> reverse analyze / eng ThriftX dupe.com, and all other things, like instead of using treg, how can we build specialized registries to fit our needs using the same if not better methods than all of these did. Recreate so we either adopt everything or even outperform.
 
 ## 2026-11-15 pricing levers, signals and hot items
 Ben, project chat, 2026-11-15 00:12 UTC, starting the thread "Map each platform's pricing levers and analytics".

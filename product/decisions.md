@@ -2,6 +2,9 @@
 
 Newest first. Each entry gives what was decided, who agreed, the words it rests on, and what it changed. A later decision links back to the one it replaces; old entries are never rewritten.
 
+## 2026-11-15: one of Ben or Nate can decide; the other can reopen
+Agreed by: Ben, on the decision card "Can a line be Decided on your word alone while Nate is away?" in the repo-structure thread at 00:14 UTC. He picked "Ben decides, Nate can reopen". Decided: a line is Decided when Ben or Nate decides it. Nate can reopen any line, and his agreement is added when he gives it. Agents never decide. This replaces the vision's earlier rule that both must agree. Changed: every current decision stays, and `DECIDERS_NEEDED` in `.agents/checks/provenance.mjs` is 1.
+
 ## 2026-11-14: app end-to-end tests are Maestro files, explored with agent-device
 Agreed by: Ben, in words at 23:17 ([words](words.md#2026-11-14-maestro-and-callstack-for-app-tests)). Decided: an agent explores the Expo app with Callstack's [agent-device](https://github.com/callstack/agent-device), which reads the screen as an accessibility snapshot, and the steps that worked are saved as [Maestro](https://maestro.dev/mcp) flow files under `.maestro/`. Those files rerun from the command line and in CI with no model. The website uses Playwright. Evidence: each tool's own pages, read 2026-11-14; none was run. mobile-mcp saves no tests and Detox has no agent interface. Changed: nothing yet; the [build skill](../.agents/skills/build/SKILL.md) should name these tools once the app has a first screen.
 
