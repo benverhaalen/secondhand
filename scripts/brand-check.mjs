@@ -33,7 +33,7 @@ export function brandFaces(tokensCss, dir = fontDir()) {
 export function playwright() {
   for (const from of [import.meta.url, pathToFileURL(join(process.env.NODE_PATH?.split(':')[0] ?? '/nonexistent', 'x.js')).href, pathToFileURL('/opt/node-tools/x.js').href])
     try { return createRequire(from)('playwright'); } catch { /* try the next place */ }
-  return null;
+  try { return createRequire(join(root, 'app/package.json'))('playwright-core'); } catch { return null; }
 }
 
 // Runs in the page. Everything it returns is plain data.

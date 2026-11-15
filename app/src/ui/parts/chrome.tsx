@@ -29,8 +29,6 @@ export function Wash({ under = 0 }: { under?: number }) {
   );
 }
 
-// The nav, 350 by 44 (Art. 7.8). main: the wordmark centered (C1, L3) and the inbox right in a 44 target, with its count.
-// back: a pushed page, with Back on the left and at most one action on the right; its title is the page's own heading below.
 export function Nav({ inbox, back, action }: {
   inbox?: { count: number; onPress?: () => void };
   back?: () => void;
@@ -38,10 +36,7 @@ export function Nav({ inbox, back, action }: {
 }) {
   return (
     <View {...mark('nav')} style={{ height: size.navH, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-      <View style={{ width: size.controlMin, alignItems: 'flex-start' }}>
-        {back ? <IconButton id="nav-back" icon="arrow-left-01" label="Back" look="plain" onPress={back} /> : null}
-      </View>
-      {back ? <View /> : <Wordmark />}
+      {back ? <IconButton id="nav-back" icon="arrow-left-01" label="Back" look="plain" onPress={back} /> : <Wordmark />}
       <View style={{ width: size.controlMin, alignItems: 'flex-end' }}>
         {inbox ? (
           <IconButton id="nav-inbox" icon="inbox" label={inbox.count ? `Messages, ${inbox.count} new` : 'Messages'} look="plain" onPress={inbox.onPress ?? (() => router.push('/messages' as Href))}>
@@ -53,14 +48,10 @@ export function Nav({ inbox, back, action }: {
   );
 }
 
-// "secondhand" in Clofie, lowercase. Half its type size is kept clear on each side, where the two hand marks will sit (L52):
-// the slots are empty until the marks are drawn. Clofie sits low in its line box, so Txt nudges it down; the mark keeps
-// that much room above and below, so its glyphs stay inside its own box and its centre does not move (B34).
 function Wordmark() {
   const clear = Math.ceil(type.t21.fontSize / 2), room = Math.round(type.t21.fontSize * nudge.display);
   return (
     <View {...mark('wordmark', { fit: 'content' })} accessibilityRole="header" style={{ flexDirection: 'row', alignItems: 'center', height: type.t21.lineHeight + 2 * room }}>
-      <View {...mark('hand', { side: 'left' })} style={{ width: clear }} />
       <Txt role="title">secondhand</Txt>
       <View {...mark('hand', { side: 'right' })} style={{ width: clear }} />
     </View>
@@ -105,10 +96,6 @@ export function TopSlot({ news, setup }: {
   return null;
 }
 
-// The tab bar: five fixed equal slots, Today, Sell, New, Buy, You. Places only. The tab you are on is its filled icon on
-// a 56 by 32 pill of --tab-on, with its label in ink at the same weight (L29). Nothing moves when the tab changes: every
-// slot has the same box in every state, and the pill is drawn behind the icon (U7). Switching tabs has no animation (§3).
-// New is a raised 56 ink circle with a plus; it opens New, not a tab.
 export type TabKey = 'index' | 'sell' | 'buy' | 'you';
 const TABS: { key: TabKey | 'new'; word: string; icon: IconName }[] = [
   { key: 'index', word: 'Today', icon: 'home-01' },
@@ -144,10 +131,6 @@ export function TabBar({ current, badges = {}, onTab }: {
   );
 }
 
-// A tab: its icon over its word, centered in the capsule's height, the slot the capsule's full height (B31). The tab you are
-// on is its filled icon on a 56 by 32 pill of --tab-on, behind the icon only, with its word in ink at the same weight
-// (L29; Ben, 03:22: "a less subtle way to show what section you are on"). The pill is drawn behind the icon in a box every
-// state shares, so nothing moves when the tab changes (U7).
 const PILL = { w: 56, h: 32 };
 
 function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: string; icon: IconName; on: boolean; dot: boolean; onPress: () => void }) {
@@ -167,7 +150,6 @@ function TabSlot({ id, word, icon, on, dot, onPress }: { id: string; word: strin
               {dot ? <View style={{ position: 'absolute', top: -2, right: -4, width: 8, height: 8, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.marigold }} /> : null}
             </View>
           </View>
-          <Txt role="caption" tone={on ? 'ink' : 'ink-2'}>{word}</Txt>
         </View>
       </Press>
     </View>
