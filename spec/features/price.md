@@ -154,7 +154,7 @@ Every write sends an `Idempotency-Key`. Ids `val_`, `st_`, `cmp_`, `pr_`.
 | Fact | Mark | Link | At public launch |
 |---|---|---|---|
 | eBay API licence bans AI training on eBay content and auto-repricing against other sites | *observed* | [product](../product.md), [platform-access](../../research/connect/nate/platform-access.md) | eBay comps leave the model or consent is obtained; rights `may_model` enforced |
-| eBay data held 6 hours, no mixing with other sources | *observed* | [market-intelligence](../../research/data/nate/market-intelligence.md) | eBay comps are stored apart and expire |
+| eBay's API licence: displayed listing information at most 6 hours older than eBay's site (other content 24 hours, age shown); no price modelling, AI training or mixing with other sources. A display-freshness rule, not a storage cap | *observed* | [claims validated](../../research/cross-cutting/nate/claims-validated-specs.md) | recorded as a fact; applies only to rows read through eBay's API, which is the last fallback |
 | PriceCharting: internal use on a subscription, no public display | *observed* | same note | its numbers are not shown to visitors |
 | StockX: no storing, no display; WatchCharts under a bounded licence | *observed* | same note | dropped or licensed |
 | Meta bans automated collection without written permission | *observed* | [platform-access](../../research/connect/nate/platform-access.md) | Facebook comps need permission |
