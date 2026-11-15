@@ -69,7 +69,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   seedExamples(st);
   // shortcut: session state is process-local until the Databricks secret-scope AuthVault joins.
   const vault = memoryVault();
-  const accounts: Accounts = {
+  const accounts: Accounts & { byId(id: string, person_id?: string): Promise<LinkedAccount | undefined> } = {
     async linked(person_id) {
       const rows = person_id ? st.rows('account', { user_id: person_id }) : st.systemRows('account');
       const linked = await Promise.all(rows.map(async row => {
@@ -78,8 +78,12 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       }));
       return linked.filter((row): row is LinkedAccount => row !== undefined);
     },
-    async byId(id) { return (await accounts.linked()).find(row => row.account_id === id); },
+    async byId(id: string, person_id?: string) { return person_id ? (await accounts.linked(person_id)).find(row => row.account_id === id) : undefined; },
   };
+  const personScope = new AsyncLocalStorage<string>();
+  const scopedAccounts: Accounts = { ...accounts, byId: id => accounts.byId(id, personScope.getStore()) };
+  // A route never receives system accounts.
+  const systemAccounts: Accounts = { linked: () => accounts.linked(), byId: async id => (await accounts.linked()).find(row => row.account_id === id) };
   const liveSites = new Set((process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/));
   const live = liveSites.has('depop');
   const client: Client = {
@@ -119,7 +123,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   });
   const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');
   let mercariPool: ReturnType<typeof createPool<BrowserPage>> | undefined;
-  const mercari = linkedSearch({ accounts, async read(account_id, url, signal) {
+  const mercari = linkedSearch({ accounts: scopedAccounts, async read(account_id, url, signal) {
     if (!liveMercari) throw new Error('Mercari live reads are disabled');
     if (!mercariPool) {
       const executablePath = process.env.SECONDHAND_CHROME_PATH;
@@ -127,9 +131,9 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       const profileRoot = join(process.env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-linked-browsers');
       const pw = createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
       const launcher = cdpLauncher(pw, localChrome({ executablePath, scratch: join(profileRoot, 'anonymous') })) as Launcher<BrowserPage>;
-      mercariPool = createPool({ launcher, profileRoot, accounts, vault, leases: memoryLeases(), log });
+      mercariPool = createPool({ launcher, profileRoot, accounts: scopedAccounts, vault, leases: memoryLeases(), log });
     }
-    const result = await mercariPool.dispatch({ account_id, job_id: crypto.randomUUID(), run: page => readSearchPage(page, url, signal, log) });
+    const result = await mercariPool.dispatch({ account_id, user_id: personScope.getStore(), job_id: crypto.randomUUID(), run: page => readSearchPage(page, url, signal, log) });
     if (!result.ok) throw new Error(result.message);
     return result.value;
   } });
@@ -140,13 +144,14 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   })]));
   // Run the protocol's account/operation gate before entering a service, then preserve
   // the service's envelope (including fallback route, observations and stored write result).
-  const gate = createHarness({ accounts, now, adapters: adapters.map(adapter => ({
+  const gate = createHarness({ accounts: scopedAccounts, now, adapters: adapters.map(adapter => ({
     ...adapter, async run() { return { ok: true as const, data: null }; },
   })) });
   const harness: Harness = { async call(site, verb, args = {}) {
+    return personScope.run(typeof args.person_id === 'string' ? args.person_id : '', async () => {
     const admitted = await gate.call(site, verb, args);
     if (!admitted.ok) return admitted;
-    const account = typeof args.account_id === 'string' ? await accounts.byId(args.account_id) : undefined;
+    const account = typeof args.account_id === 'string' ? await accounts.byId(args.account_id, typeof args.person_id === 'string' ? args.person_id : undefined) : undefined;
     if (account && args.user_id !== undefined && args.user_id !== account.person_id)
       return { ...fail('policy_refused', 'account belongs to another person', { do: 'raise_decision', kind: 'link_account' }), meta: admitted.meta };
     if (isWrite(verb) && !liveSites.has(site)) {
@@ -155,6 +160,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     }
     return services.get(site)!.call(verb, { ...args,
       ...(isWrite(verb) && account && { user_id: account.person_id }),
+    });
     });
   } };
   const leases = memoryLeases(now);
@@ -209,7 +215,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       }) });
     },
   };
-  const watcher = createWatcher({ store: watcherStore, harness, accounts, leases, params, log, now, snapshots,
+  const watcher = createWatcher({ store: watcherStore, harness, accounts: systemAccounts, leases, params, log, now, snapshots,
     listings: {
       byExternal: (user_id, site, external_id) => listings(user_id).find(row => row.site === site && row.external_id === external_id),
       ofItem: (user_id, item_id) => listings(user_id).filter(row => row.item_id === item_id),
@@ -238,8 +244,8 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       const row = st.get('account', account.user_id, account.account_id)!;
       // shortcut: spec/plans/waiting.md "A site handle on the account row" is still open.
       // Pass stored handles only; a secondhand account id is never a marketplace handle.
-      return Object.fromEntries(['shop_id', 'username', 'seller_id'].flatMap(key =>
-        typeof row[key] === 'string' || typeof row[key] === 'number' ? [[key, row[key]]] : []));
+      return { person_id: account.user_id, ...Object.fromEntries(['shop_id', 'username', 'seller_id'].flatMap(key =>
+        typeof row[key] === 'string' || typeof row[key] === 'number' ? [[key, row[key]]] : [])) };
     },
   });
   // Pipeline's policy port carries prices but no tenant/item; keep the claimed job in its async scope.
@@ -247,7 +253,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
   const worker = 'edge.runtime';
   const pipelineStore: Store = { ...st, claimJobs() { const job = running.getStore(); return job ? [job] : []; } };
   const pipeline = createPipeline({
-    store: pipelineStore, harness, leases, params, log, worker, now,
+    store: pipelineStore, harness: { call: (site, verb, args) => harness.call(site, verb as Parameters<Harness['call']>[1], { ...args, person_id: running.getStore()?.user_id }) }, leases, params, log, worker, now,
     engines: {
       async unlink() { return { unlinked: true }; },
       async import(job) {

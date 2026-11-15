@@ -17,7 +17,7 @@ test('standards U15: one size set two ways on a screen fails, and across two scr
 test('standards U16: two parts closer than 8 or overlapping fail; a row of one small part at 4 passes', () => {
   assert.match(ids({ stacks: [{ in: 'card', row: false, kinds: ['tag', 'amount'], gaps: [4], at: 100 }] }), /U16 \[tag\] and \[amount\] are 4 apart/);
   assert.match(ids({ stacks: [{ in: 'card', row: false, kinds: ['tag', 'amount'], gaps: [-3], at: 100 }] }), /U16 .*overlap by 3/);
-  assert.equal(ids({ stacks: [{ in: 'tile', row: true, kinds: ['site-badge', 'site-badge'], gaps: [4], at: 100 }, { in: 'card', row: false, kinds: ['tag', null], gaps: [2], at: 1 }] }), '');
+  assert.equal(ids({ stacks: [{ in: 'tile', row: true, kinds: ['site-badge', 'site-badge'], gaps: [4], at: 100 }, { in: 'card', row: false, kinds: ['tag', null], gaps: [2], at: 1 }, { in: 'screen', row: false, kinds: ['keep-row', 'keep-row'], gaps: [0], at: 464 }] }), '');
 });
 
 test('standards U17: a gap off the 4 grid fails, and one pair of parts at two distances in one stack fails', () => {
@@ -29,4 +29,10 @@ test('standards U17: a gap off the 4 grid fails, and one pair of parts at two di
 test('standards U19: a fact shown twice on the first screen fails (Sell said "Needs you 8" twice); a word in a title passes', () => {
   assert.match(ids({ texts: [text('Needs you 8', 15, { part: 'chip' }), text('Needs you 8', 18, { part: 'shelf-head', lh: '24px' })] }), /U19 "Needs you 8" is shown twice/);
   assert.equal(ids({ texts: [text('Offer', 13, { part: 'tag' }), text('Offer', 13, { part: 'tag' }), text('Carhartt jacket', 18, { lh: '24px' })] }), '');
+});
+
+test('standards U20 and U21: a collapsed camera and a sheet run off the top fail (10:41); a full screen and a sheet in view pass', () => {
+  const bad = ids({ layout: { vw: 390, screen: 51, thin: [{ part: 'instruction', w: 0, s: 'Show the whole front' }], sheets: [{ top: -900, s: 'Plan' }] } });
+  for (const want of [/U20 the screen is 51 wide in a 390 window/, /U20 \[instruction\] holding "Show the whole front" is 0 wide/, /U21 the sheet \("Plan"\) starts at -900/]) assert.match(bad, want);
+  assert.equal(ids({ layout: { vw: 390, screen: 390, thin: [], sheets: [{ top: 120, s: 'Plan' }] } }), '');
 });

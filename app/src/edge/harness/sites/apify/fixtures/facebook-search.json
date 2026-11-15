@@ -1,0 +1,145 @@
+[
+ {
+  "facebookUrl": "https://www.facebook.com/marketplace/chicago/search?query=office%20chair",
+  "listingUrl": "https://www.facebook.com/marketplace/item/1000000000000001",
+  "id": "1000000000000001",
+  "primary_listing_photo": {
+   "photo_image_url": "https://scontent.xx.fbcdn.net/redacted.jpg"
+  },
+  "listing_price": {
+   "formatted_amount": "$20",
+   "amount_with_offset_in_currency": "2000",
+   "amount": "20.00"
+  },
+  "strikethrough_price": null,
+  "comparable_price": null,
+  "comparable_price_type": null,
+  "location": null,
+  "is_hidden": false,
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "is_viewer_seller": false,
+  "min_listing_price": null,
+  "max_listing_price": null,
+  "marketplace_listing_category_id": "1583634935226685",
+  "marketplace_listing_title": "Office Chair",
+  "custom_title": null,
+  "custom_sub_titles_with_rendering_flags": [],
+  "origin_group": null,
+  "listing_video": null,
+  "parent_listing": null,
+  "marketplace_listing_seller": null,
+  "delivery_types": [
+   "IN_PERSON"
+  ]
+ },
+ {
+  "facebookUrl": "https://www.facebook.com/marketplace/chicago/search?query=office%20chair",
+  "listingUrl": "https://www.facebook.com/marketplace/item/1000000000000002",
+  "id": "1000000000000002",
+  "primary_listing_photo": {
+   "photo_image_url": "https://scontent.xx.fbcdn.net/redacted.jpg"
+  },
+  "listing_price": {
+   "formatted_amount": "$10",
+   "amount_with_offset_in_currency": "1000",
+   "amount": "10.00"
+  },
+  "strikethrough_price": {
+   "formatted_amount": "$15",
+   "amount": "15.00"
+  },
+  "comparable_price": null,
+  "comparable_price_type": null,
+  "location": null,
+  "is_hidden": false,
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "is_viewer_seller": false,
+  "min_listing_price": null,
+  "max_listing_price": null,
+  "marketplace_listing_category_id": "1583634935226685",
+  "marketplace_listing_title": "Rolling Desk Chair",
+  "custom_title": null,
+  "custom_sub_titles_with_rendering_flags": [],
+  "origin_group": null,
+  "listing_video": null,
+  "parent_listing": null,
+  "marketplace_listing_seller": null,
+  "delivery_types": [
+   "IN_PERSON"
+  ]
+ },
+ {
+  "facebookUrl": "https://www.facebook.com/marketplace/chicago/search?query=office%20chair",
+  "listingUrl": "https://www.facebook.com/marketplace/item/1000000000000003",
+  "id": "1000000000000003",
+  "primary_listing_photo": {
+   "photo_image_url": "https://scontent.xx.fbcdn.net/redacted.jpg"
+  },
+  "listing_price": {
+   "formatted_amount": "$100",
+   "amount_with_offset_in_currency": "10000",
+   "amount": "100.00"
+  },
+  "strikethrough_price": null,
+  "comparable_price": null,
+  "comparable_price_type": null,
+  "location": null,
+  "is_hidden": false,
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": false,
+  "is_viewer_seller": false,
+  "min_listing_price": null,
+  "max_listing_price": null,
+  "marketplace_listing_category_id": "1583634935226685",
+  "marketplace_listing_title": "Office chair",
+  "custom_title": null,
+  "custom_sub_titles_with_rendering_flags": [],
+  "origin_group": null,
+  "listing_video": null,
+  "parent_listing": null,
+  "marketplace_listing_seller": null,
+  "delivery_types": [
+   "IN_PERSON"
+  ]
+ },
+ {
+  "facebookUrl": "https://www.facebook.com/marketplace/chicago/search?query=office%20chair",
+  "listingUrl": "https://www.facebook.com/marketplace/item/1000000000000004",
+  "id": "1000000000000004",
+  "primary_listing_photo": {
+   "photo_image_url": "https://scontent.xx.fbcdn.net/redacted.jpg"
+  },
+  "listing_price": {
+   "formatted_amount": "$10",
+   "amount_with_offset_in_currency": "1000",
+   "amount": "10.00"
+  },
+  "strikethrough_price": null,
+  "comparable_price": null,
+  "comparable_price_type": null,
+  "location": null,
+  "is_hidden": false,
+  "is_live": true,
+  "is_pending": false,
+  "is_sold": true,
+  "is_viewer_seller": false,
+  "min_listing_price": null,
+  "max_listing_price": null,
+  "marketplace_listing_category_id": "1583634935226685",
+  "marketplace_listing_title": "Office chair",
+  "custom_title": null,
+  "custom_sub_titles_with_rendering_flags": [],
+  "origin_group": null,
+  "listing_video": null,
+  "parent_listing": null,
+  "marketplace_listing_seller": null,
+  "delivery_types": [
+   "IN_PERSON"
+  ]
+ }
+]
