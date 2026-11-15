@@ -21,6 +21,7 @@ import { rules, tally } from './checks/rules.mjs';
 import { rests, commitsSince } from './checks/rests.mjs';
 import { states } from './checks/states.mjs';
 import { unreached } from './checks/evidence.mjs';
+import { waysOut } from './checks/waysout.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 const git = (...a) => { try { return execFileSync('git', a, { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }); } catch { return null; } };
@@ -41,6 +42,7 @@ const results = [
   ...layout(root).map(msg => ({ level: 'error', where: 'layout', msg })),
   ...links(root, { files, awaited: JSON.parse(read('.agents/awaited.json') || '[]') }), ...provenance(root, { wordsBase }), ...research(root, { files }),
   ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }), ...vague(root), ...logging(root, { files }), ...code(root, { files, changed }), ...parts(root, { files }), ...picks(root, { files }), ...rules(root),
+  ...waysOut(root),
   ...rests(root, { commits: commitsSince(root, base) }), ...states(root, { commits: commitsSince(root, base) }),
 ];
 // Keep each human in the loop on the other's work: research and packets that landed in the last day.

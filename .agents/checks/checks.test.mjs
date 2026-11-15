@@ -493,3 +493,17 @@ test('vague: a word of degree with nothing to pin it down fails in a scoped arti
   assert.match(errors(run(vague, { 'brand/constitution.md': '# C\n\n## Part III. Media\n\n### Each medium\n\nKeep a caption fairly short.\n\n## Part IV. Checks\n\nIt is usually fine.\n' })), /^[^\n]*"fairly"[^\n]*Part III[^\n]*$/);
   assert.equal(errors(run(vague, doc('The field drifts slowly: one pass takes 26 s.\nThe glow is faint, as `--pill-glow` sets it.\nBen: "a little more depth or a slight shadow".\nIt drifts slowly (C2).'))), '');
 });
+
+import { waysOut } from './waysout.mjs';
+test('waysOut: a page in pages.md §6 with no section in ways-out.md fails; a covered one and a range pass', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'waysout-'));
+  mkdirSync(join(dir, 'spec'));
+  writeFileSync(join(dir, 'spec/pages.md'), '## 6. The pages\n### 6.1 First launch\n### 6.2 Today\n### 6.3 Buy\n### 6.4 Search\n');
+  writeFileSync(join(dir, 'spec/ways-out.md'), '## §6.1 First launch\n## §6.3 to §6.4 Buy and Search\n');
+  const r = waysOut(dir);
+  assert.equal(r.length, 1);
+  assert.match(r[0].msg, /6\.2/);
+  writeFileSync(join(dir, 'spec/ways-out.md'), '## §6.1 First launch\n## §6.2 Today\n## §6.3 to §6.4 Buy and Search\n');
+  assert.equal(waysOut(dir).length, 0);
+  rmSync(dir, { recursive: true });
+});
