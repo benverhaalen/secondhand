@@ -54,11 +54,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     } finally { setBusy(false); }
   };
   return <Screen name="onboarding" state={busy ? 'loading' : error ? 'failed' : offline ? 'offline' : 'new'}
-    nav={<Nav back={phase === 'code' ? () => { setPhase('email'); setCode(''); setError(null); } : undefined} />}
-    foot={<FootButton id={phase === 'email' ? 'signin-email-send' : 'signin-email-verify'}
-      label={phase === 'email' ? 'Continue with email' : 'Continue'} step={phase === 'email' ? 'Sending code' : 'Signing in'}
-      state={googleBusy ? 'disabled' : busy ? 'working' : offline || (phase === 'email' ? !valid : code.length !== 6) ? 'disabled' : 'idle'}
-      onPress={phase === 'email' ? send : verify} />}>
+    nav={<Nav back={phase === 'code' ? () => { setPhase('email'); setCode(''); setError(null); } : undefined} />}>
     <Stack gap="tight">
       <Txt role="heading">{phase === 'email' ? 'Welcome' : 'Check your email'}</Txt>
       <Txt role="body" tone="ink-2">{phase === 'email' ? 'Sign in with Google or get a code by email.' : `Enter the code sent to ${email}.`}</Txt>
@@ -67,12 +63,18 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
       <GoogleSignInButton busy={googleBusy} disabled={emailBusy || offline} onPress={signInWithGoogle} />
       <Txt center tone="ink-2">or use your email</Txt>
     </> : null}
-    <AccountField kind={phase} value={phase === 'email' ? address : code} disabled={busy}
-      onChange={value => { setError(null); if (phase === 'email') setAddress(value); else setCode(value.replace(/\D/g, '').slice(0, 6)); }}
-      onSubmit={phase === 'email' ? send : verify} />
-    {offline ? <Txt role="body">Connect to the internet to sign in.</Txt> : null}
-    {error ? <Txt role="body">{error}</Txt> : null}
-    {phase === 'code' ? <Pill id="signin-resend" kind="second" label={wait ? `Resend in ${wait}s` : 'Send another code'}
-      state={busy || wait > 0 ? 'disabled' : 'idle'} onPress={send} /> : null}
+    <Stack gap="group">
+      <AccountField kind={phase} value={phase === 'email' ? address : code} disabled={busy}
+        onChange={value => { setError(null); if (phase === 'email') setAddress(value); else setCode(value.replace(/\D/g, '').slice(0, 6)); }}
+        onSubmit={phase === 'email' ? send : verify} />
+      {offline ? <Txt role="body">Connect to the internet to sign in.</Txt> : null}
+      {error ? <Txt role="body">{error}</Txt> : null}
+      <FootButton id={phase === 'email' ? 'signin-email-send' : 'signin-email-verify'}
+        label={phase === 'email' ? 'Continue with email' : 'Continue'} step={phase === 'email' ? 'Sending code' : 'Signing in'}
+        state={googleBusy ? 'disabled' : busy ? 'working' : offline || (phase === 'email' ? !valid : code.length !== 6) ? 'disabled' : 'idle'}
+        onPress={phase === 'email' ? send : verify} />
+      {phase === 'code' ? <Pill id="signin-resend" kind="second" label={wait ? `Resend in ${wait}s` : 'Send another code'}
+        state={busy || wait > 0 ? 'disabled' : 'idle'} onPress={send} /> : null}
+    </Stack>
   </Screen>;
 }

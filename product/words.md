@@ -2609,3 +2609,19 @@ Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026
 > actually all the screens that i never explicitly said anything about approving. most the in between non-main screens. the layout is weirdly spaced and an expert would rearrange it to be more intuitive. dont change any functionality though
 
 Scope: layout and component styling on unapproved intermediate screens. Preserve functionality and explicitly approved compositions.
+
+## 2026-11-15 — Ben: connect every UI to existing application capabilities
+
+Source: Ben's direct message in the selling UI chat; recorded November 15, 2026.
+
+> ensure all uis can effectively wire to actual app data and functionality that exists in the repo
+
+Scope: use existing repository data and action contracts. Keep unsupported backend capabilities explicit, and preserve intended interactions during layout changes.
+
+## 2026-11-15 — Ben: preserve UI and hand wiring findings to Nate
+
+Source: Ben's direct message in the selling UI chat; recorded November 15, 2026.
+
+> dont completely overhaul ui and remove things just send packets to nate about it all
+
+This narrows the preceding data-wiring request: retain existing screens and controls. Send the integration gaps to Nate as packets; do not replace screens or remove functionality to work around missing backend support.

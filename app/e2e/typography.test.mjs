@@ -12,8 +12,8 @@ const approved = {
   13: ['PP Neue Montreal', '500', '18px', '0px'],
   15: ['PP Neue Montreal', '500', '20px', '0px'],
   18: ['PP Neue Montreal', '500', '24px', '0px'],
-  21: ['Clofie', '600', '23px', '-0.21px'],
-  36: ['Clofie', '600', '41px', '-0.54px'],
+  21: ['PP Neue Montreal', '500', '23px', '-0.21px'],
+  36: ['PP Neue Montreal', '500', '41px', '-0.54px'],
   50: ['PP Neue Montreal', '500', '57px', '-1px'],
 };
 const item = { id: 'type_item', version: 1, title: 'Carhartt jacket', state: 'review', quantity: 1, location: { label: 'Madison' }, photos: [], listings: [], attributes: [], description: 'Brown canvas jacket.', price_cents: { amount_cents: 4500, currency: 'USD' } };
@@ -47,7 +47,7 @@ function renderedType() {
   ).map(el => {
     const style = getComputedStyle(el);
     return { s: el.value || el.getAttribute('placeholder') || el.textContent.trim(), id: el.getAttribute('data-testid'),
-      input: el.matches('input, textarea'), size: parseFloat(style.fontSize), face: style.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
+      role: el.closest('[data-role]')?.dataset.role ?? null, input: el.matches('input, textarea'), size: parseFloat(style.fontSize), face: style.fontFamily.split(',')[0].replace(/["']/g, '').trim(),
       weight: style.fontWeight, lh: style.lineHeight, ls: style.letterSpacing === 'normal' ? '0px' : style.letterSpacing,
       italic: style.fontStyle, stroke: parseFloat(style.webkitTextStrokeWidth) || 0 };
   });
@@ -55,7 +55,10 @@ function renderedType() {
 
 function violations(texts) {
   return texts.flatMap(text => {
-    const expected = approved[text.size], actual = [text.face, text.weight, text.lh, text.ls];
+    const expected = text.role === 'wordmark'
+      ? text.size === 21 && text.s === 'secondhand' ? ['Clofie', '600', '23px', '-0.21px'] : undefined
+      : approved[text.size];
+    const actual = [text.face, text.weight, text.lh, text.ls];
     return !expected || JSON.stringify(actual) !== JSON.stringify(expected) || text.italic !== 'normal' || text.stroke !== 0
       ? [{ text: text.s, id: text.id, size: text.size, expected, actual, italic: text.italic, stroke: text.stroke }] : [];
   });
@@ -72,7 +75,9 @@ async function inspect(screen, key) {
   assert.ok(texts.length, `${key}: no rendered text was measured`);
   const fonts = await page.evaluate(() => [...document.fonts].filter(font => font.status === 'loaded').map(font => font.family.replace(/["']/g, '')));
   for (const face of new Set(texts.map(text => text.face))) assert.ok(fonts.includes(face), `${key}: ${face} was declared but not loaded`);
-  measured[key] = { url: page.url(), texts, signatures: signatures({ texts }) };
+  measured[key] = { url: page.url(), texts,
+    signatures: signatures({ texts: texts.filter(text => text.role !== 'wordmark') }),
+    wordmarkSignatures: signatures({ texts: texts.filter(text => text.role === 'wordmark') }) };
   if (process.env.TYPOGRAPHY_REPORT) writeFileSync(process.env.TYPOGRAPHY_REPORT, JSON.stringify(measured, null, 2) + '\n');
   return texts;
 }
@@ -150,6 +155,7 @@ test('rendered typography rejects a changed weight, face, line height, tracking 
     assert.deepEqual(violations(await inspect(screen, 'mutation baseline')), []);
     for (const [selector, property, value] of [
       ['[data-role="body"]', 'fontWeight', '700'], ['[data-role="body"]', 'fontFamily', 'Arial'],
+      ['[data-role="heading"]', 'fontFamily', 'Clofie'],
       ['[data-role="body"]', 'lineHeight', '30px'], ['[data-role="body"]', 'letterSpacing', '2px'],
       ['input', 'fontWeight', '400'],
     ]) {
@@ -158,6 +164,17 @@ test('rendered typography rejects a changed weight, face, line height, tracking 
       await element.evaluate((el, [property, value]) => { el.style[property] = value; }, [property, value]);
       assert.ok(violations(await screen.page.evaluate(renderedType)).length, `${selector} ${property} mutation escaped the check`);
       await element.evaluate((el, original) => { el.setAttribute('style', original ?? ''); }, original);
+      assert.deepEqual(violations(await screen.page.evaluate(renderedType)), []);
+    }
+    await screen.page.goto(`${app.url}/?world=clearing`);
+    assert.deepEqual(violations(await inspect(screen, 'wordmark mutation baseline')), []);
+    const wordmark = screen.page.locator('[data-role="wordmark"]').filter({ visible: true }).first();
+    assert.equal(await wordmark.textContent(), 'secondhand');
+    for (const [property, value] of [['fontFamily', 'PP Neue Montreal'], ['fontSize', '36px'], ['fontWeight', '500']]) {
+      const original = await wordmark.getAttribute('style');
+      await wordmark.evaluate((el, [property, value]) => { el.style[property] = value; }, [property, value]);
+      assert.ok(violations(await screen.page.evaluate(renderedType)).length, `wordmark ${property} mutation escaped the check`);
+      await wordmark.evaluate((el, original) => { el.setAttribute('style', original ?? ''); }, original);
       assert.deepEqual(violations(await screen.page.evaluate(renderedType)), []);
     }
   } finally { await screen.page.close(); }
@@ -202,6 +219,7 @@ test('the development UI kit uses the same typography in light and dark', async 
   }
 });
 
-test('one type signature per size across every measured route, including navigation and inputs', () => {
+test('one text signature per size across routes and inputs, with the wordmark checked separately', () => {
   assert.deepEqual(typeAcross(Object.fromEntries(Object.entries(measured).map(([route, result]) => [route, result.signatures]))), []);
+  assert.deepEqual(typeAcross(Object.fromEntries(Object.entries(measured).map(([route, result]) => [route, result.wordmarkSignatures]))), []);
 });

@@ -3,8 +3,7 @@ import { TextInput } from 'react-native';
 import { router } from 'expo-router';
 import { api } from '@/api/client';
 import { useLiveData } from '@/data/live';
-import { FootButton, List, Nav, Pill, Screen, Stack, Txt, log } from '@/ui';
-import { ListRow } from '@/ui/parts/list-row';
+import { FootButton, List, Nav, Photo, Pill, Row, Screen, Stack, Txt, log } from '@/ui';
 import { useColors } from '@/ui/theme';
 import { space, type, weight } from '@/ui/tokens.generated';
 import { FACE } from '@/ui/fonts';
@@ -57,7 +56,7 @@ export function Archive({ accountId }: { accountId: string }) {
   };
   return <Screen name="archive-import" state={busy ? 'loading' : error ? 'failed' : 'ready'} nav={<Nav inbox={{ count: 0 }} />}
     onRefresh={busy ? undefined : () => load()}
-    foot={preview && !preview.needs_username ? <FootButton id="archive-import" label={`Import ${selected.size} items`} state={busy ? 'working' : selected.size ? 'idle' : 'disabled'} onPress={importSelected} /> : undefined}>
+    foot={preview && !preview.needs_username ? <Stack gap="tight"><FootButton id="archive-import" label={`Import ${selected.size} items`} state={busy ? 'working' : selected.size ? 'idle' : 'disabled'} onPress={importSelected} /><Pill id="archive-back" kind="second" label="Back" onPress={() => router.back()} /></Stack> : undefined}>
     <Stack gap="tight"><Txt role="heading">Import your archive</Txt><Txt role="body" tone="ink-2">Bring listings into your Secondhand account. Choose where to publish them later.</Txt></Stack>
     {preview?.needs_username ? <Stack>
       <Txt role="body">Enter the Depop shop to import. This selects a public shop; it does not verify that you own it.</Txt>
@@ -69,15 +68,12 @@ export function Archive({ accountId }: { accountId: string }) {
     {busy ? <Txt role="body">{job ? `Import ${progress || 'in progress'}…` : 'Reading your listings…'}</Txt> : null}
     {job?.state === 'done' ? <Txt role="body">Imported {job.result?.item_ids?.length ?? 0} items.</Txt> : null}
     {preview && !preview.needs_username ? <Stack>
-      <Txt role="caption">{preview.username ? `@${preview.username} · ` : ''}{preview.listings.length} listings</Txt>
-      <Pill id="archive-select-all" kind="second" label={selected.size === preview.listings.length ? 'Clear selection' : 'Select all'} state={busy ? 'disabled' : 'idle'} onPress={() => setSelected(selected.size === preview.listings.length ? new Set() : new Set(preview.listings.map(row => row.external_id)))} />
+      <Row trail={<Pill id="archive-select-all" kind="second" label={selected.size === preview.listings.length ? 'Clear selection' : 'Select all'} state={busy ? 'disabled' : 'idle'} onPress={() => setSelected(selected.size === preview.listings.length ? new Set() : new Set(preview.listings.map(row => row.external_id)))} />}><Txt role="caption">{preview.username ? `@${preview.username} · ` : ''}{preview.listings.length} listings</Txt></Row>
       {!preview.listings.length ? <Txt role="body">No listings were returned by this service.</Txt> : null}
-      <List>{preview.listings.map(row => <ListRow key={row.external_id} id={`archive-${row.external_id}`} photo={row.photo_url ?? null}
-        label={row.title || `Listing ${row.external_id}`} detail={`${row.state}${row.matches_item_id ? ' · Already imported' : ''}`}
-        value={`${row.price_cents.currency} ${(row.price_cents.amount_cents / 100).toFixed(2)}`}
-        trail={<Pill id={`select-${row.external_id}`} label={selected.has(row.external_id) ? 'Selected' : 'Select'} kind="second" state={busy ? 'disabled' : 'idle'} onPress={() => setSelected(prior => { const next = new Set(prior); if (next.has(row.external_id)) next.delete(row.external_id); else next.add(row.external_id); return next; })} />} />)}</List>
+      <List>{preview.listings.map(row => <Row key={row.external_id} lead={<Photo src={row.photo_url ?? null} label={row.title || `Listing ${row.external_id}`} fit="row" />}
+        trail={<Pill id={`select-${row.external_id}`} label={selected.has(row.external_id) ? 'Selected' : 'Select'} kind="second" state={busy ? 'disabled' : 'idle'} onPress={() => setSelected(prior => { const next = new Set(prior); if (next.has(row.external_id)) next.delete(row.external_id); else next.add(row.external_id); return next; })} />}><Txt role="body">{row.title || `Listing ${row.external_id}`}</Txt><Txt role="caption">{`${row.price_cents.currency} ${(row.price_cents.amount_cents / 100).toFixed(2)} · ${row.state}${row.matches_item_id ? ' · Already imported' : ''}`}</Txt></Row>)}</List>
     </Stack> : null}
     {error ? <Stack><Txt role="body">{error}</Txt><Pill id="archive-retry" kind="second" label={job && !['done', 'failed'].includes(job.state) ? 'Check import' : 'Try again'} onPress={job && !['done', 'failed'].includes(job.state) ? resume : () => load(username.trim())} /></Stack> : null}
-    <Pill id="archive-back" kind="second" label="Back" onPress={() => router.back()} />
+    {(!preview || preview.needs_username) ? <Pill id="archive-back" kind="second" label="Back" onPress={() => router.back()} /> : null}
   </Screen>;
 }

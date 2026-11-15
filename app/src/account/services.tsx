@@ -3,7 +3,7 @@ import { router, type Href } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { api, ApiFailure } from '@/api/client';
 import type { Site } from '@/demo';
-import { FootButton, List, Pill, Sheet, Stack, Txt, log } from '@/ui';
+import { FootButton, Line, List, Pill, Sheet, Stack, Txt, log } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { accountError } from './session';
 
@@ -82,7 +82,7 @@ export function Services({ onChanged }: { onChanged?: () => void } = {}) {
     })}</List>
     {error ? <Txt role="body">{error}</Txt> : null}
     {notice && !pending ? <Txt role="body">{notice}</Txt> : null}
-    <Pill id="services-refresh" kind="second" label="Refresh connections" state={loading ? 'working' : 'idle'} onPress={load} />
+    <Line><Pill id="services-refresh" kind="second" label="Refresh connections" state={loading ? 'working' : 'idle'} onPress={load} /></Line>
     <Sheet open={!!disconnect} title="Disconnect service" onClose={() => { if (!busy) setDisconnect(null); }}>
       <Txt role="body">This removes Secondhand’s access. Your listings stay on the service.</Txt>
       {error ? <Txt role="body">{error}</Txt> : null}

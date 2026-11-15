@@ -2,7 +2,7 @@ import { openMarketplace } from '@/navigation/open-marketplace';
 import { useEffect, useState } from 'react';
 import { api } from '@/api/client';
 import type { ApiJobRow } from '@/edge/api/jobs';
-import { FootButton, List, Photo, Section, Stack, Txt, log } from '@/ui';
+import { Line, List, Photo, Pill, Section, Stack, Txt, log } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { captureMessage, type Capture } from './client';
 
@@ -17,11 +17,11 @@ function JobResult({ job }: { job: CaptureJob }) {
   const candidates = Array.isArray(result.candidates) ? result.candidates : Array.isArray(result.set) ? result.set : [];
   const [linkError, setLinkError] = useState<string | null>(null);
   const open = (url: string) => { setLinkError(null); openMarketplace(url).catch(error => { log.error('capture.open_match', error); setLinkError('The listing did not open. Try again.'); }); };
-  if (job.kind === 'valuate') return <Stack>
-    {typeof range.q10 === 'number' && typeof range.q90 === 'number' ? <Txt role="headline">{`${dollars(range.q10)} to ${dollars(range.q90)}`}</Txt> : <Txt role="body">There is not enough evidence to show an appraisal yet.</Txt>}
-    <Section title="Why"><Txt role="body">{typeof basis.count === 'number' && basis.count > 0
+  if (job.kind === 'valuate') return <Stack gap="tight">
+    {typeof range.q10 === 'number' && typeof range.q90 === 'number' ? <Txt role="heading">{`${dollars(range.q10)} to ${dollars(range.q90)}`}</Txt> : <Txt role="body">There is not enough evidence to show an appraisal yet.</Txt>}
+    <Txt role="body" tone="ink-2">{typeof basis.count === 'number' && basis.count > 0
       ? `Based on ${basis.count} comparable sales${typeof result.condition === 'string' ? ` in ${words(result.condition)} condition` : ''}.`
-      : 'Comparable sales have not been returned.'}</Txt></Section>
+      : 'Comparable sales have not been returned.'}</Txt>
   </Stack>;
   if (job.kind === 'identify') return <Stack>
     <List>{candidates.map((value, index) => {
@@ -83,6 +83,6 @@ export function CaptureResults({ capture, initial, photo }: { capture: Capture; 
     {jobs.map(job => <Section key={job.id} title={job.kind === 'identify' ? 'Matches' : job.kind === 'valuate' ? 'Appraisal' : job.kind === 'studio' ? 'Photos' : words(job.kind)}>
       {errors[job.id] ? <Txt role="body">{errors[job.id]}</Txt> : job.state === 'cancelled' ? <Txt role="body">Cancelled</Txt> : job.state === 'failed' ? <Txt role="body">{job.error?.message ?? 'This step failed.'}</Txt> : job.state !== 'done' ? <Txt role="body">{job.state === 'queued' ? 'Waiting to start' : 'Working'}</Txt> : <JobResult job={job} />}
     </Section>)}
-    <FootButton id="capture-results-refresh" kind="second" label="Refresh results" onPress={() => { setErrors({}); setAttempt(value => value + 1); }} />
+    <Line><Pill id="capture-results-refresh" kind="second" label="Refresh results" onPress={() => { setErrors({}); setAttempt(value => value + 1); }} /></Line>
   </Stack>;
 }

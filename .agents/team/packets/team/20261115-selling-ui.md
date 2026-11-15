@@ -14,7 +14,7 @@ The backend GET item projection now returns stored price_cents and description; 
 
 ## Backend dependencies
 
-Capture finish's photo/title materialization and identify/Lens join stay with Nate's capture workstream. The latest capture packet says that join is built on its branch; it was not merged on the inspected main. Attributes, sell/listing creation and shipping-label/appointment routes still use example gating on that main. This UI does not invoke them as if they were production. Typed/link Sell import offers camera capture instead of opening a fixed demo item.
+Capture finish's photo/title materialization and identify/Lens join stay with Nate's capture workstream. The refreshed main now includes the route join and uploaded-photo persistence; these were integrated without duplicating the worker implementation. Attributes, sell/listing creation and shipping-label/appointment routes still use example gating on that main. This UI does not invoke them as if they were production. Typed/link Sell import offers camera capture instead of opening a fixed demo item.
 
 The handoff exports title, description, quantity, attributes and asking price. Photos must be added on the selling site. It does not connect accounts or detect publication from opening a link. Quantity is preserved without inventing a per-unit versus lot-price contract.
 
