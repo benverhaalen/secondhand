@@ -13,6 +13,11 @@ import { deps } from './http.ts';
 
 type ItemView = Record<string, unknown> & { id: string; title: string; state: string; quantity: number; product_id?: string; updated_at: string; version: number; attributes: (Omit<Attribute, 'confidence' | 'method' | 'at'> & { id: string })[]; photos: (CardRecord['photos'][number] & Record<string, unknown>)[]; listings: (CardRecord['listings'][number] & Record<string, unknown>)[] };
 const view = example('items.get').response as ItemView;
+const tileExamples = (example('items.list').response as { data: Record<string, unknown>[] }).data;
+const selectFields = (row: object, shapes: object[]) => {
+  const keys = new Set(shapes.flatMap(shape => Object.keys(shape)));
+  return Object.fromEntries(Object.entries(row).filter(([key]) => keys.has(key)));
+};
 export const ports: CardPort & { write(user: string, row: CardRecord, expectedVersion: number): Promise<number> } = {
   async read(user, id) {
     const row = runtime.store.get('item', user, id);
@@ -51,7 +56,7 @@ export const handlers: Record<string, Handler> = {
     const data = [];
     for (const row of runtime.store.rows('item', { user_id: ctx.user_id! }).filter(row => !row.deleted)) {
       const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
-      const tile = row.tile as Record<string, unknown> ?? publicRow(row, true);
+      const tile = selectFields((row.tile as Record<string, unknown> | undefined) ?? row, tileExamples);
       data.push({ ...tile, ...(row.price_cents ? { price_cents: row.price_cents } : {}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
     }
     return { ...seed, body: { ...body, data } };
@@ -59,10 +64,10 @@ export const handlers: Record<string, Handler> = {
   'GET /v1/items/:id': engine(async (ctx) => {
     const row = owned('item', ctx, ctx.params.id);
     const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
-    const { user_id, tile, strategy_options, ...body } = row;
+    const body = selectFields(row, [view]);
     const limits = runtime.store.get('limits', ctx.user_id!, row.id);
     return { status: 200, body: { ...body, title: card.item.title, state: card.item.state, quantity: card.item.quantity,
-      attributes: card.attributes.map(a => { const { confidence, method, at, ...attribute } = a; return attribute; }),
+      attributes: card.attributes.map(a => selectFields(a, view.attributes)),
       missing_fields: [...new Set(card.listings.flatMap(l => l.missing_fields))],
       photos: card.photos.map(p => { const { file_ref, ...photo } = p; return photo; }),
       listings: runtime.store.rows('listing', { user_id: ctx.user_id!, item_id: row.id }).filter(l => !l.import_preview).map(l => publicRow(l)),

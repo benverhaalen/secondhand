@@ -30,3 +30,12 @@ test('missingFor accepts dimensions and selection context with supplied params',
   assert.ok(!missingFor({},'lighting_home','ebay','tap',{extent_cm:130,rigid:true,params}).includes('dimensions'));
   assert.ok(missingFor({},'apparel','depop','tap',{pieces:2,profile:{handover:'pickup'}}).includes('size_label.2'));
 });
+
+test('missingFor and completeness agree on recall for every linked site', () => {
+  const s=state({type:'other',sites:['ebay','facebook','depop','poshmark','mercari'],recall_flag:true});
+  const complete=completeness(select(s,params).rows,s,params);
+  for(const site of s.sites) {
+    const options: Parameters<typeof missingFor>[4]={recall_flag:true};
+    assert.deepEqual(missingFor({},'other',site,'tap',options),complete[site]!.missing.map(field=>field.field),`${site} recall must block listing as it blocks capture`);
+  }
+});
