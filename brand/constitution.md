@@ -288,7 +288,7 @@ How secondhand sounds, in every medium and language. The rules for app strings a
 2. **Numbers mean something.** "Similar ones sold for $36 to $52", not "n=41". "You keep $46.95", not "Net: 46.95".
 3. **No chatter.** No greetings, taglines, motivational lines, "AI-powered", "seamless", "unlock". A feeling is carried by the design, never stated (copy.md C7).
 4. **Short.** Headlines under 8 words, captions under 2 sentences, buttons a verb and an object.
-5. **No exclamation marks, no em dashes, no emoji** as decoration, in any language.
+5. **No exclamation marks, no em dashes and no emoji**, in any language. Ben: "ban all emojis" ([words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)).
 6. **Never invent** a number, a customer, a quote or a result. A slot without a source stays visibly empty.
 
 ### Article 13. Not AI-made
@@ -321,7 +321,7 @@ Each AI tell is paired with what to reach for, because banning one default moves
 2. **Pick the codes the medium can carry** (Part III table). Every output uses C1 and at least one of C2 or C3.
 3. **Map the values** with the medium table (sizes, margins, safe areas).
 4. **Make three cheap variants** that differ on one named axis (for example: where the field sits). Ben directs by reacting (thesis §0.3), so show him variants, not a single answer.
-5. **Run the checks** in Part IV and write the reason ledger (Article 1).
+5. **Run the checks.** Write anything that is not the app as HTML that reads `tokens.css`, one `data-view` per slide, panel or frame, then run `node scripts/brand-check.mjs <file> --medium <app, web, post, story or deck>`. Hand the render and `node scripts/ui-rules.mjs judge <medium>` to a fresh agent, and write the reason ledger (Article 1).
 6. **Show it at true size** in its real context: a phone screen at 390 pt, a post in an Instagram grid, a video on a phone.
 
 ---
@@ -338,7 +338,10 @@ Each AI tell is paired with what to reach for, because banning one default moves
 | Item (C3) | Every item row and card | Real items in every example | The item is the post | Real item footage | Real screenshots and photos |
 | Act (C4) | One per decision | One per section | None (posts don't have buttons); a plain line instead | None | None |
 | Text sizes | 13 / 15 / 18 / 21 / 36 / 50 | Display, Ben's sizes from 390 to 1440 wide: hero 50 to 86.5, section 36 to 58.3, feature 21 to 24.9 (`clamp()` between). Text 15 and 18 at every width | Body 40, heading 72, one number up to 200 | Captions 48, titles 96 | Body 32, heading 64, one number up to 200 |
+| Unit: the space and radius scales are multiplied by it (agent decision) | 1 | 1 | 3 | 3 | 2 |
 | Longest text | One sentence per card | Two short paragraphs per section | 20 words per slide | 8 words on screen at once | 15 words per slide |
+
+The numbers in this table are also in [media.json](media.json), which the checker reads. A test fails when the two differ, so change both in one commit. A view the field fills (a title slide, an end card, a sale) is exempt from the one-third color rule, and an output has as many of those as the Field row allows: two in a deck, one anywhere else.
 
 Post and video notes:
 - A carousel tells one story per slide in order: the item, what it is worth, where it sold, what you kept.
@@ -349,39 +352,41 @@ Post and video notes:
 
 ## Part IV. Checks
 
-Each rule has an id, a check, and who runs it. **Script** means a deterministic check an agent writes and runs on the rendered output (DOM, pixels or the edit timeline). **Look** means a single human or fresh-agent glance. Brand feel always goes to Ben. **Not built** means the check is scriptable but no script exists yet, so it runs as a Look until one does. For an image or a video frame with no source file, every DOM check runs as a Look on the render at true size; checks that need source (B13, B15, B22, B27) are reported as not applicable.
+Each rule has an id, a check, and who runs it. **Script** means [scripts/brand-check.mjs](../scripts/brand-check.mjs) holds it on the rendered output, in any medium written as HTML: it measures the page in a browser and [render.mjs](../.agents/checks/render.mjs) fails what breaks the rule. **Script (source)** means a check that reads app code on every push. **Look** means one "Fail if" line handed to a fresh agent with the render and nothing else. Brand feel always goes to Ben. **Not built** means a script could hold it and none does yet, so it runs as a Look. Each row's holder is in [ui-rules.json](../.agents/ui-rules.json), and the repo check fails when that list and this table disagree. An image or a video frame with no HTML source gets the Looks only.
 
 | Id | Rule | Check | Runs |
 |---|---|---|---|
 | B1 | Every element has a reason (Art. 1) | Reason ledger has zero blanks and no reason from the list in Art. 1.2 | Look |
 | B2 | Squint test (E1) | Blur the render 8 px; the first visible mass is an item photo or an amount (except outputs whose job is brand recognition) | Look |
-| B3 | Wordmark lowercase, placed by medium (C1) | Text content equals "secondhand"; app: centered in nav bar ±1 px | Not built |
-| B4 | One field per view (C2) | Count elements using the field token; must be ≤ 1 | Not built |
-| B5 | Field is a soft mesh (C2) | The field element has at least three color points and no line or noise layer | Not built |
-| B6 | Text contrast (Art. 5.1) | Every text node ≥ 4.5:1 with what is behind it (≥ 3:1 at 24 px and up). On field, state and category fills, text is ink only. White text only on the black pill and brick | Not built |
-| B7 | No colored text, lines or icons on white (Art. 5.1) | Computed `color`, `border-color`, SVG `stroke` on white grounds are black or black 65%, except logos, brick and the unread dot | Script (colors in source only) |
-| B8 | Color ≤ one third of the view (Art. 5.2) | Pixel share that is non-neutral and non-photo ≤ 33%; translucent black counts as black | Not built |
-| B9 | Every item has a photo (C3) | Every item element contains an `img` with a non-empty `alt` | Not built |
-| B10 | One black pill per decision (C4) | Count primary buttons per card ≤ 1 | Not built |
+| B3 | Wordmark lowercase, placed by medium (C1) | Text content equals "secondhand"; app: centered in nav bar ±1 px | Script |
+| B4 | One field per view (C2) | Count elements using the field token; must be ≤ 1 | Script |
+| B5 | Field is a soft mesh (C2) | The field element has at least three color points and no line or noise layer | Script |
+| B6 | Text contrast (Art. 5.1) | Every text node ≥ 4.5:1 with what is behind it (≥ 3:1 at 24 px and up). On field, state and category fills, text is ink only. White text only on the black pill and brick | Script |
+| B7 | No colored text, lines or icons on white (Art. 5.1) | Computed `color`, `border-color`, SVG `stroke` on white grounds are black or black 65%, except logos, brick and the unread dot | Script |
+| B8 | Color ≤ one third of the view (Art. 5.2) | Pixel share that is non-neutral and non-photo ≤ 33%; translucent black counts as black. A view the field fills is exempt, and Part III caps how many an output has | Script |
+| B9 | Every item has a photo (C3) | Every item element contains an `img` with a non-empty `alt` | Script |
+| B10 | One black pill per decision (C4) | Count primary buttons per card ≤ 1 | Script |
 | B11 | Logos not names (C5) | No marketplace name as visible text where a logo slot exists; logo `aria-label` present | Not built |
-| B12 | Money: tabular, labelled, no highlight (C6) | Money nodes have `tabular-nums` and no background; each amount has a label within its group | Not built |
-| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {400, 500, 600}; 600 only in the display face; 500 only on buttons and the selected tab | Script (the set only) |
-| B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) | Not built |
-| B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script (no literal font names in source) |
-| B16 | Sentence case (Art. 6.5) | No string, other than logos and proper nouns, is all caps or title case | Not built |
+| B12 | Money: tabular, labelled, no highlight (C6) | Each amount has words in its group that say what it is | Script |
+| B13 | Weights (Art. 6.1) | Computed `font-weight` values ⊆ {400, 500, 600}; 600 only in the display face; 500 only on buttons and the selected tab | Script |
+| B14 | Size steps only (Art. 6.2) | At the default text size, computed sizes ⊆ the medium's set. Web: at 390 and 1440 wide each display size equals its endpoint, and text sizes ⊆ {15, 18}. The wordmark is exempt (its size is in Part III) | Script |
+| B15 | No banned faces (Art. 6) | Computed `font-family` contains no Inter; loaded fonts match the picks | Script |
+| B16 | Sentence case (Art. 6.5) | No string, other than logos and proper nouns, is all caps or title case | Script |
 | B17 | Spacing scale (Art. 7.1) | Every gap inside a component ∈ {0, 4, 8, 12, 16, 20, 24, 32, 48, 64}; canvas margins and safe areas come from Part III | Script |
 | B18 | Inside tighter than between (Art. 7.2) | For each card, max internal gap < gap to its sibling | Not built |
 | B19 | No box in a box (Art. 7.3) | No bordered or filled element inside another bordered or filled element, except photos, buttons and state pills | Not built |
 | B20 | Radius scale (Art. 9.1) | Border radii ⊆ {0, 8, 14, 20, 999} | Script |
-| B21 | One depth system (Art. 9.2) | Not both borders and shadows on cards in one view | Not built |
+| B21 | One depth system (Art. 9.2) | Not both borders and shadows on cards in one view | Script |
 | B22 | One icon set (Art. 10) | All icons from Hugeicons Stroke Rounded | Not built |
 | B23 | Words (Art. 12; copy.md) | `node scripts/copy-lint.mjs` clean or each hit justified; no `!`, `—` or emoji | Script |
 | B24 | Numbers a person can say back (E3) | Read each number aloud with its label to someone new; they can explain it | Look |
 | B25 | Default test (Art. 13) | Side by side with the no-brand default; fewer than 3 matching axes (an axis matches when a fresh agent would call the two the same choice) | Look |
 | B26 | Video text holds (Art. 11.3) | Each on-screen text duration ≥ 0.3 s per word (2 characters in CJK) + 1 s | Not built |
 | B27 | Locale (Art. 6) | Money and dates rendered through the locale formatter; no hard-coded "$" in strings | Not built |
-| B28 | True scale (Art. 7.6) | App renders are 390 × 844 pt; images judged at 390 CSS px wide | Not built |
+| B28 | True scale (Art. 7.6) | App renders are 390 × 844 pt; images judged at 390 CSS px wide | Script |
 | B29 | Feel | Ben looks at it | Ben |
+| B30 | Longest text (Part III) | Words in a view ≤ the medium's limit, not counting the wordmark | Script |
+| B31 | Things of one kind are one size, whatever is in them (Ben, [words](../product/words.md#2026-11-15-standard-sizes-darker-dark-colors-deslop-skills-and-ban-all-emojis)) | Every element with the same `data-part` name renders at one height, within 1 px | Script |
 
 A check that passes is not proof of taste ("scripts can't prove it looks good"). It is proof the rules were followed. Record results with the output.
 

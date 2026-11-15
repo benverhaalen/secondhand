@@ -10,7 +10,6 @@ const warn = (id, where, msg) => ({ level: 'warn', id, where, msg });
 export const RING = ['lilac', 'sky', 'aqua', 'mint', 'lime', 'marigold', 'peach', 'pink'];
 const SITES = /\b(?:eBay|Poshmark|Depop|Mercari|Grailed|OfferUp|Etsy|Vinted|Facebook Marketplace)\b/;
 const MONEY = /^[\s(]*[-+]?[$€£¥]\s?\d[\d,.]*[kKmM]?[\s)]*$/;
-export const EMOJI = /(?![©®™])\p{Extended_Pictographic}|[\u{1F1E6}-\u{1F1FF}]/u;
 
 // "rgb(1, 2, 3)" or "rgba(1, 2, 3, 0.5)" as [r, g, b, a]. Anything else (oklch(), color()) is not a token value.
 export const rgba = s => { const m = /^rgba?\(\s*(\d+)[ ,]+(\d+)[ ,]+(\d+)(?:\s*[,/]\s*([\d.]+%?))?\s*\)$/.exec(s ?? ''); return m ? [+m[1], +m[2], +m[3], m[4] == null ? 1 : m[4].endsWith('%') ? parseFloat(m[4]) / 100 : +m[4]] : null; };
@@ -99,8 +98,7 @@ function checkView(view, ctx) {
       else if (titleCase(t.text)) W('B16', q, 'looks like title case: sentence case everywhere, unless these are names (Art. 6.5)');
       if (/\bSecond[Hh]and\b|\bSECONDHAND\b/.test(t.text)) E('B3', q, 'the name is written "secondhand", lowercase (C1)');
     }
-    if (EMOJI.test(t.text)) E('B23', q, 'has an emoji: no emoji anywhere (Art. 12.5)');
-    for (const h of scan(t.text)) (h.id === 'O13' || h.id === 'S1' ? E : W)('B23', q, `"${h.match}" ${h.why} (product/copy.md ${h.id})`);
+    for (const h of scan(t.text)) (['O13', 'S1', 'S2'].includes(h.id) ? E : W)('B23', q, `"${h.match}" ${h.why} (product/copy.md ${h.id})`);
     if (SITES.test(t.text)) W('B11', q, `names ${SITES.exec(t.text)[0]} in words: where a marketplace is meant, show its logo from assets/platforms (C5)`);
     // C6 an amount says what it is
     if (MONEY.test(t.text) && t.alone) E('B12', q, 'is an amount with nothing beside it saying what it is: "You keep $46.95", not "$46.95" (C6)');
