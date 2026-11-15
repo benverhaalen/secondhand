@@ -16,7 +16,7 @@ export function ui(root, { files }) {
     for (const m of code.matchAll(/#[0-9a-fA-F]{3,8}\b(?![\w-])|\b(?:rgba?|hsla?|oklch)\(/g))
       if (!/^#\d+$/.test(m[0]) || m[0].length > 4) out.push(err(`${f}:${lineOf(code, m.index)}`, `raw color ${m[0]}: use var(--token) from brand/tokens.css`));
     for (const m of code.matchAll(/font-?[Ff]amily["']?\s*[:=]\s*["']?([^;"'\n,}]+)/g))
-      if (!/^\s*(var\(|inherit|\$\{)/.test(m[1]) && m[1].trim()) out.push(err(`${f}:${lineOf(code, m.index)}`, `font ${m[1].trim()}: use the font token from brand/tokens.css`));
+      if (!/^\s*(var\(|inherit|`?\$\{)/.test(m[1]) && m[1].trim()) out.push(err(`${f}:${lineOf(code, m.index)}`, `font ${m[1].trim()}: use the font token from brand/tokens.css`));
     for (const { s, i } of strings(text)) for (const h of scan(s)) {
       const where = `${f}:${lineOf(text, i)}`, msg = `"${h.match}" ${h.why} (product/copy.md ${h.id})`;
       out.push(h.id === 'O13' || h.id === 'S2' ? err(where, msg) : warn(where, msg));
