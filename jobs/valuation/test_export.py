@@ -4,6 +4,7 @@ import hashlib
 import json
 import math
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -40,7 +41,9 @@ def test_envelope_and_every_param_match_the_shared_contract():
     assert {r['name'] for r in out['params']} == {'valuation_sale_curve', 'valuation_calibration'}
     fixture = json.loads((ROOT / 'app/src/engines/param/row.json').read_text())
     for row in out['params']:
-        assert set(row) == set(fixture) == set(FIELDS)
+        assert set(fixture) == set(FIELDS) and set(row) == set(FIELDS) | {'citation'}
+        assert row['citation'] == ('run-test:market.comp_for_model' if row['name'] == 'valuation_sale_curve'
+                                   else 'run-test:measures.backtest_estimate')  # eng-en3-export-shape: run id + table
         assert row['scope'] == {'kind': 'electronics', 'site': 'ebay' if row['name'] == 'valuation_sale_curve' else None}
         assert row['family'] == 'model_ref' and row['status'] == 'champion'
         assert row['origin'] == 'fit' and row['version'] == 1 and row['frozen'] is False
@@ -144,7 +147,7 @@ def test_calibration_hits_include_both_issued_endpoints():
 
 def test_estimates_without_split_at_exits_nonzero_naming_the_flag(tmp_path):
     result = subprocess.run([
-        str(ROOT / '.venv/bin/python'), str(ROOT / 'jobs/valuation/export.py'),
+        sys.executable, str(ROOT / 'jobs/valuation/export.py'),
         '--comps', str(tmp_path / 'rows.csv.gz'), '--estimates', str(tmp_path / 'estimates.jsonl'),
         '--run-id', 'missing-split', '--out', str(tmp_path / 'params.json'),
     ], capture_output=True, text=True)

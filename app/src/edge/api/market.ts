@@ -28,11 +28,12 @@ export const handlers: Record<string, Handler> = {
     ctx.log.event('state.change', { entity: 'follow', id: row.id, to: row.state });
     return { ...seed, body: { ...body, target: { product_id: active[0] }, channel: row.channel, state: row.state } };
   })),
-  'GET /v1/follows': fromEngine(exampleHandler('GET /v1/follows', undefined, undefined, async (ctx, seed) => {
+  // A person's own follows, read from the store: a new person gets an empty list, not the example gate's 404.
+  'GET /v1/follows': fromEngine(async ctx => {
     const rows = (await ports.read(ctx.user_id!)).filter(row => row.user_id === ctx.user_id && row.state !== 'removed');
     const active = new Set(followedProducts(ctx.user_id!, rows));
-    return { ...seed, body: { data: rows.map(row => ({ id: row.id, target: { product_id: row.product_id }, channel: row.channel, state: active.has(row.product_id) ? 'active' : 'muted', muted_at: row.muted_at ?? null, version: row.version })), next_cursor: null } };
-  })),
+    return { status: 200, body: { data: rows.map(row => ({ id: row.id, target: { product_id: row.product_id }, channel: row.channel, state: active.has(row.product_id) ? 'active' : 'muted', muted_at: row.muted_at ?? null, version: row.version })), next_cursor: null } };
+  }),
   'PATCH /v1/follows/:id': fromEngine(exampleHandler('PATCH /v1/follows/:id', c => fields(c.body, { version, muted: bool }), undefined, async (ctx, seed) => {
     const rows = await ports.read(ctx.user_id!), row = rows.find(row => row.id === ctx.params.id && row.user_id === ctx.user_id);
     if (!row) throw invalid('follow not available');

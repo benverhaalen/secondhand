@@ -43,3 +43,5 @@ export function setBlobs(blobs: Blobs | undefined): void { upload = blobs ? crea
 export const handlers: Record<string, Handler> = {
   'PUT /v1/uploads/:id': (ctx, req) => (upload ??= createUploads(photos()))(ctx, req),
 };
+
+export const manifest = [{ endpoint: 'PUT /v1/uploads/:id', source: 'engine' as const, auth: 'none' as const }];
