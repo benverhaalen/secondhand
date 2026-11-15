@@ -5,7 +5,7 @@ import { memoryStore, memoryParams } from '../events/ports.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
 
 const log = () => createLog({ src: 'test', build: 'test', sink: memorySink() });
-const L = (id: string, site: ItemListing['site'], state = 'live'): ItemListing => ({ listing_id: id, item_id: 'i1', site, account_id: `acc-${site}`, state });
+const L = (id: string, site: ItemListing['site'], state = 'live'): ItemListing => ({ listing_id: id, item_id: 'i1', site, account_id: `acc-${site}`, external_id: `external-${id}`, state });
 const listings = [L('L-dep', 'depop'), L('L-ebay', 'ebay'), L('L-posh', 'poshmark'), L('L-merc', 'mercari', 'delisted'), L('L-fb', 'facebook', 'delistFailed')];
 const sale = (confirmed: boolean) => ({ user_id: 'u1', item_id: 'i1', sold_listing_id: 'L-dep', confirmed, trace_id: 't1', listings });
 
@@ -21,6 +21,7 @@ test('a confirmed sale delists every other buyable listing, never the sold one, 
   assert.ok('jobs' in r);
   assert.deepEqual(r.jobs.map(j => j.listing_id).sort(), ['L-ebay', 'L-fb', 'L-posh']);
   assert.ok(r.jobs.every(j => j.kind === 'delist' && j.args.verb === 'end'));
+  for (const job of r.jobs) assert.equal(job.args.external_id, `external-${job.listing_id}`, 'each delist carries its own site id');
   fanOut(s, log(), sale(true)); // the sale event delivered again
   assert.equal(s.jobs({ kind: 'delist' }).length, 3);
   assert.equal(s.events().length, 3);

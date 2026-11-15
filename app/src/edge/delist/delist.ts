@@ -15,7 +15,7 @@ import { write, logReceived, type LogLike } from '../events/intake.ts';
 import type { Site } from '../events/event.ts';
 import type { JobRow, Params, Store } from '../events/ports.ts';
 
-export interface ItemListing { listing_id: string; item_id: string; site: Site; account_id: string; state: string }
+export interface ItemListing { listing_id: string; item_id: string; site: Site; account_id: string; external_id?: string; state: string }
 const BUYABLE = new Set(['live', 'delistFailed', 'posting']);
 
 export function fanOut(store: Store, log: LogLike, s: {
@@ -29,7 +29,7 @@ export function fanOut(store: Store, log: LogLike, s: {
     user_id: s.user_id, source: 'app', site: l.site, account_id: l.account_id, action: 'app.delist',
     item_id: s.item_id, listing_id: l.listing_id, dedupe_key: `delist:${l.listing_id}`, actor: 'auto',
     why: 'sold on another site', observed_at: at, effective_at: at, trace_id: s.trace_id,
-    payload: { verb: 'end', decision_kind: 'delist_after_sale', sold_listing_id: s.sold_listing_id },
+    payload: { verb: 'end', decision_kind: 'delist_after_sale', sold_listing_id: s.sold_listing_id, external_id: l.external_id },
   }, () => at)));
   for (const r of done) logReceived(log, r);
   return { jobs: done.map(r => r.job) };
