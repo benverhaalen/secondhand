@@ -1,7 +1,7 @@
 # Secondary UI: preserve screens and connect their existing actions
 
 Owner: Ben. Recipient: Nate. Agent: Codex. Updated: 2026-11-15.
-Inspected base: origin/main `5558541c`, integrated with selling work at `9d6daa1e`.
+Inspected base: origin/main `5558541c`, with capture/valuation updates rechecked through `587c7981`.
 
 ## Direction
 
@@ -21,7 +21,7 @@ The main Today, Sell, Buy and You compositions and New chooser remain protected.
 | Matched listing | `app/src/app/listing/[id].tsx` reads matches but Watch, offer, Bought and size-feedback paths simulate completion. Its fallback also includes demo search rows. | `POST /v1/matches/:id/act` supports `save`, `dismiss`, `not_same`, `bought`. No unsave contract was found; dismissal is not an equivalent. No general offer-send endpoint was found. Preserve the UI while defining these missing contracts. Open-on-site is already connected. |
 | New: typed/link Sell | The chooser retains its original entry fields and actions. The existing completion path still opens a fixed demo draft ID. | Connect text/link entry to creation/import of an owned item, then navigate to that returned ID. Do not remove its input controls or replace the entry with camera capture. |
 | Search | `app/src/app/search.tsx` uses fixture `searchFor()` for normal queries. | The existing `/shop` implementation already uses actual search, assist and SSE results. Reuse its data mechanism in the existing search UI; do not substitute static marketplace results. |
-| Worth | `app/src/app/worth.tsx` falls back to a fixture product when an actual item lacks valuation. Keep/look-deeper flows are local. | `POST /v1/valuations` has an actual owned-item path, but its default observation port still needs composition. Complete that dependency, then read the returned job and q10/q90 evidence. URL/capture variants still go through the legacy example handler in the inspected source. Never substitute a fixture appraisal for missing evidence. |
+| Worth | `app/src/app/worth.tsx` falls back to a fixture product when an actual item lacks valuation. Keep/look-deeper flows are local. | `POST /v1/valuations` has an actual owned-item path; latest main now composes its store-backed observation port. Connect the returned job and q10/q90 evidence to the existing Worth UI. This audit did not run a production valuation. URL/capture variants still go through the legacy example handler in the inspected source. Never substitute a fixture appraisal for missing evidence. |
 | Product history | `app/src/app/product/[id].tsx` reads the global demo catalog; Follow is local. | Catalog/history routes remain example handlers; follow creation validates an example product. Build the missing product projection and follow contract, then connect the existing screen. |
 | Gone-by | Room choices/deadlines are local; a timeout advances to a posting-success state. | Versioned item strategy and limits APIs exist, including `gone_by`, floor and fallback. Bulk room publication is not implemented; item listings/sell routes are still example handlers. Preserve the existing plan UI and connect supported persistence separately from actual publication. |
 
