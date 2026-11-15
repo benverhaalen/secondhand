@@ -236,3 +236,32 @@ test('links: a link to a file someone has not pushed yet is a question until its
   const landed = run(links, { ...doc, 'spec/databricks.md': '# d' }, { awaited, now: 0 });
   assert.match(landed.find(o => o.level === 'warn').msg, /has landed: delete its entry/);
 });
+
+test('parts: a screen that lays itself out with raw React Native fails; one built from app/src/ui passes', async () => {
+  const { parts } = await import('./parts.mjs');
+  const { tokensTs } = await import('../../scripts/tokens-to-ts.mjs');
+  const css = ':root {\n  --ink: #0A0A0A;\n  --s-1: 4px;\n}\n';
+  const base = { 'brand/tokens.css': css, 'app/src/ui/tokens.generated.ts': tokensTs(css) };
+  const raw = "import { StyleSheet, Text, View } from 'react-native';\nexport default () => <View><Text>Sold</Text></View>;\n";
+  const built = "import { Platform } from 'react-native';\nimport { Screen } from '@/ui/layout';\nexport default () => <Screen>{Platform.OS}</Screen>;\n";
+  const bad = errors(run(parts, { ...base, 'app/src/app/sell.tsx': raw }));
+  assert.match(bad, /app\/src\/app\/sell\.tsx:1 .*StyleSheet, Text, View/);
+  assert.equal(errors(run(parts, { ...base, 'app/src/app/sell.tsx': built, 'app/src/ui/layout.tsx': raw })), '');
+});
+
+test('parts: brand values that changed without regenerating the app copy fail, and the generated copy is not read as raw color', async () => {
+  const { parts } = await import('./parts.mjs');
+  const { tokensTs } = await import('../../scripts/tokens-to-ts.mjs');
+  const css = ':root {\n  --ink: #0A0A0A;\n  --s-1: 4px;\n}\n';
+  const stale = { 'brand/tokens.css': css.replace('#0A0A0A', '#111111'), 'app/src/ui/tokens.generated.ts': tokensTs(css) };
+  assert.match(errors(run(parts, stale)), /tokens\.generated\.ts .*node scripts\/tokens-to-ts\.mjs/);
+  assert.equal(errors(run(ui, { 'app/src/ui/tokens.generated.ts': tokensTs(css) })), '');
+});
+
+test('brand: spacing written as a token name passes, and a raw number off the scale still fails', async () => {
+  const { brand } = await import('./brand.mjs');
+  const constitution = '| B13 | w | ⊆ {400, 500} | Script |\n| B17 | s | ∈ {0, 4, 8, 12} | Script |\n| B20 | r | ⊆ {0, 8} | Script |\n';
+  const base = { 'brand/constitution.md': constitution, 'brand/tokens.css': ':root { --s-1: 4px; }' };
+  assert.equal(errors(run(brand, { ...base, 'app/src/ui/a.tsx': 'const s = { padding: space.s1, margin: -space.s3, gap: GAP.section };' })), '');
+  assert.match(errors(run(brand, { ...base, 'app/src/ui/a.tsx': 'const s = { padding: 7 };' })), /7 is off the B17/);
+});

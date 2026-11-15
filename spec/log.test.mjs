@@ -296,3 +296,22 @@ sys.stdout.write(sink.text())`);
   const ends = events.filter(e => e.event === 'call.end'), last = events.at(-3);
   assert.deepEqual([ends[3].result, ends[4].result, last.event, last.steps, last.ok], [null, 'kept', 'agent.end', 1, false]);
 });
+
+test('the numbers include how long each tap took to show its result, slowest first', () => {
+  const at = ms => new Date(Date.UTC(2026, 10, 15, 0, 0, 0, ms)).toISOString();
+  const line = (session, seq, ms, event, rest) => ({ ts: at(ms), session, seq, src: 'app', level: 'info', event, ...rest });
+  const sum = summarize([
+    line('s_1', 1, 0, 'ui.show', { screen: 'sell' }),
+    line('s_1', 2, 1000, 'user.input', { screen: 'sell', control: 'tile' }),
+    line('s_2', 1, 1010, 'ui.show', { screen: 'today' }),          // another session never answers this tap
+    line('s_1', 3, 1040, 'ui.show', { screen: 'item' }),
+    line('s_1', 4, 2000, 'user.input', { screen: 'item', control: 'post' }),
+    line('s_1', 5, 2300, 'ui.show', { screen: 'item', state: 'posting' }),
+    line('s_1', 6, 2900, 'ui.show', { screen: 'item', state: 'live' }),  // not a second answer to the same tap
+    line('s_1', 7, 5000, 'user.input', { screen: 'item', control: 'back' }),
+  ]);
+  assert.deepEqual(sum.tap_to_show, {
+    n: 2, p50_ms: 300, p95_ms: 300, unanswered: 1,
+    slowest: [{ screen: 'item', control: 'post', ms: 300 }, { screen: 'sell', control: 'tile', ms: 40 }],
+  });
+});
