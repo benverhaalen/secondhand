@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from negotiation.fit import Logistic, fit, online_update, nightly, calibration_error, log_loss
+from negotiation.fit import Logistic, fit, online_update, nightly, calibration_error, log_loss, bounds
 from param.registry import MemoryStore
 
 
@@ -20,8 +20,8 @@ def test_poisoned_offers_are_capped_and_zero_prior_can_learn():
     model = Logistic({'global': 1., 'site:ebay': 0.}, [1.])
     for _ in range(100):
         model = online_update(model, {**rows(1)[0], 'features': [1e12], 'accepted': 0}, days=0)
-    assert .5 <= model.weights[0] <= 1.5
-    assert .5 <= model.terms['global'] <= 1.5
+    assert 1 - np.log(49) <= model.weights[0] <= 1 + np.log(49)
+    assert 1 - np.log(49) <= model.terms['global'] <= 1 + np.log(49)
     assert -np.log(49) <= model.terms['site:ebay'] < 0
     assert .02 <= model.predict(rows(1)[0]) <= .98
 
@@ -63,8 +63,30 @@ def test_forbidden_rows_and_nonfinite_features_refused():
 def test_nightly_fit_respects_the_same_guards_as_event_updates():
     prior = Logistic({'global': 1.}, [1.])
     model = fit([{**r, 'accepted': 0} for r in rows()], prior)
-    assert .5 <= model.terms['global'] <= 1.5
-    assert .5 <= model.weights[0] <= 1.5
+    assert 1 - np.log(49) <= model.terms['global'] < 0
+    assert 1 - np.log(49) <= model.weights[0] < 1
+
+
+@pytest.mark.parametrize('prior', [0., 1e-6, -1e-6, 1., -1., 10., -10.])
+@pytest.mark.parametrize('p_lo,p_hi', [(.02, .98), (.05, .98)])
+def test_every_prior_has_at_least_half_the_logit_guard_span(prior, p_lo, p_hi):
+    from negotiation.params import resolve
+    params = resolve()
+    params['values'].update(negotiation_p_lo=p_lo, negotiation_p_hi=p_hi, negotiation_prior_guard_share=.5)
+    logit_width = (np.log(p_hi / (1 - p_hi)) - np.log(p_lo / (1 - p_lo))) / 2
+    width = max(abs(prior) * .5, logit_width)
+    assert bounds(prior, params) == pytest.approx((prior - width, prior + width))
+
+
+@pytest.mark.parametrize('prior', [1e-6, -1e-6])
+def test_tiny_nonzero_priors_can_learn_in_nightly_and_event_updates(prior):
+    model = Logistic({'global': prior}, [prior])
+    accepted = [{**r, 'accepted': 1} for r in rows()]
+    fitted = fit(accepted, model)
+    updated = online_update(model, accepted[0])
+    for learned in (fitted, updated):
+        assert learned.terms['global'] > .1
+        assert learned.weights[0] > .1
 
 
 def test_zero_prior_and_new_hierarchy_terms_have_bounded_learning_range():
