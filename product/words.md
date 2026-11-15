@@ -2084,7 +2084,7 @@ Scope: improve Secondhand's existing system. The last excerpt requests an opinio
 Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
 > If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
 
-Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
+Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the site is built from what the repo holds).
 
 ## 2026-11-15 nate answers at the wrap-up: assess, archive, spec the finalizations, then new leads
 Nate, orchestrator's session, 2026-11-15, about 10:45 Central, answering the orchestrator's numbered questions.
