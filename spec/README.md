@@ -30,6 +30,7 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
   - every other listing comes down or is flagged after a sale, without a tap
 
   It plants four bugs and checks that each is caught. One test shows why a price below your floor can never be promoted (Ben, [20:41](../product/decisions.md#2026-11-14-a-price-below-your-floor-always-asks)): if it could, automation would break the floor.
+- `sites.mjs` holds what each marketplace does as single facts (offer clocks, offer floors and waits, whether accepting an offer is a sale, whether relisting is penalized), each with its evidence mark and source note. Timers, messages and checks read `fact(key, site)` or the functions built on it (`offerExpiresAt`, `afterAccept`, `sellerOffer`, `exposedUntil`); nothing else may hold its own copy, and `sites.test.mjs` fails product code that does. An unconfirmed fact throws instead of returning a guess. Listing limits stay in [platform-fit.json](../research/list/ben/platforms/platform-fit.json) and fees in the [money fee table](determinations/money.md).
 - `replay.mjs` checks a real app log against the same model, using the logged `price` and `floor`: `node spec/replay.mjs app.jsonl ebay,depop`.
 - `events.json` is the log contract and `log.mjs` checks a log against it ([Logging](#logging)).
 

@@ -196,6 +196,22 @@ No platform we read bans AI-edited photos by name. eBay and Depop both ship tool
 9. **Relisting is not a free win.** Mercari says it favors real updates over delete and relist *observed*. Depop ranks popularity above age *observed*, so a relist throws away likes. Only Facebook and a Poshmark listing with zero likes gain from a relist.
 10. **Facebook now writes listings with Meta AI and has a Seller app** (2026) *observed*. A judge may ask how we differ: we measure the item, price from sold data and route across sites.
 
+## Platform rules as code, and what goes wrong without them
+
+Ben asked that the code understand each app: "if depop offers only last 24 hours, whatever depends on that fact should actually depend on that" ([words](../../../product/words.md#2026-11-15-the-code-understands-each-app)). [spec/sites.mjs](../../../spec/sites.mjs) holds each such rule once, with its evidence mark, and `node --test spec/sites.test.mjs` proves the cases below. *Agent proposal.*
+
+| What goes wrong | Why | What the code does |
+|---|---|---|
+| A timer shows the wrong expiry | eBay counters and sent offers last 96 hours, everything on Depop and Mercari 24, Facebook chat offers have no clock | `offerExpiresAt(site, kind, sent)` reads the one fact; Facebook returns no clock |
+| We pull the other listings when a Depop offer is accepted, and the buyer never pays | On Depop acceptance charges nobody; the buyer has 24 hours and anyone else can still buy | `afterAccept('depop')` says it is not a sale yet and the others stay up |
+| We leave the other listings up after a Poshmark or Mercari acceptance | There the buyer is charged at once | `afterAccept` says sale, delist the others now |
+| An offer we sent on Mercari is accepted after the item sold on eBay | A sent offer binds for 24 hours on Mercari, 96 on eBay | `sellerOffer` refuses to send while the item is promised elsewhere; `exposedUntil` gives the time the listing can still sell |
+| A sent offer is rejected by the site | Floors differ: 5% under on eBay and Depop, 10% on Poshmark and Mercari, and on Mercari 10% under the lowest price so far; eBay waits 48 hours, Mercari 72 | `sellerOffer` returns the reason before the call goes out |
+| Code acts on a number nobody confirmed | Poshmark's help center blocks readers, so its clocks are from memory | An unknown fact throws; `unconfirmed()` lists the facts an adapter must read from the live page first |
+| A second copy of a rule drifts | Someone types 24 into a message template | The test fails any product code line that holds an offer clock |
+
+Not in the module yet: cancellation penalties, shipping deadlines, selling limits and prohibited items (the last is the fit list above). Fees belong to the money fee table.
+
 ## Open for Ben
 
 - Should "ok" platforms be on or off by default? Proposal: off.
