@@ -10,7 +10,7 @@ resources:
       parent_path: /Shared/secondhand
       embed_credentials: false
   experiments:
-    valuation_backtest:
+    valuation_backtest_experiment:
       name: /Shared/secondhand/valuation-backtest
-    param_walk:
+    param_walk_experiment:
       name: /Shared/secondhand/param-walk
