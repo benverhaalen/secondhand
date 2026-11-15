@@ -22,14 +22,14 @@ For us, digging in meant not stopping at the first answer. At each step of selli
 
 That changed where we use AI. Most of secondhand isn't a language model: prices come from sales records, fees come from a table, and listing titles are assembled by rules. A model reads your photos and answers follow-up questions, and when it does, it works through the app's own interface. It fills in facts as small labels you confirm, asks by offering options to tap, and answers with a table or a price range. A person confirms every step.
 
-```mermaid
-flowchart LR
-    A["You<br/>a few photos"] --> B["AI<br/>fills in brand, size, condition"]
-    B --> C["You<br/>confirm or correct"]
-    C --> D["Code<br/>a price from sold listings"]
-    D --> E["Code<br/>a listing built for each site"]
-    E --> F["You<br/>read, edit, post"]
-```
+| Step | Who | What happens |
+|---|---|---|
+| 1 | **You** | Take a few photos |
+| 2 | **AI** | Fills in brand, size and condition |
+| 3 | **You** | Confirm or correct |
+| 4 | **Code** | A price from sold listings |
+| 5 | **Code** | A listing built for each site |
+| 6 | **You** | Read, edit, post |
 
 ## What is the item?
 
@@ -59,14 +59,13 @@ A seller's next question is "why that number?", and we wanted a real answer. Thi
 
 Unity Catalog can tell you which tables and columns a number came from. A seller is asking about rows: which sales? So we wrote a SQL table function, `why(id)`. Give it any price or figure the workspace holds, and it returns the exact sales behind it and rebuilds the number from them. Today those are the figures from our backtests on public sales. A price made on your phone shows its sold listings in the app, and those listings don't land in the workspace yet. We ran the rebuild on all 42,405 figures in the workspace. 42,399 came back exactly. The other six are five asking-price figures and one sold-price figure, and the workspace lists them.
 
-```mermaid
-flowchart LR
-    P["A price in the app"] --> W["why(id)<br/>our SQL table function"]
-    W --> R["The exact sold listings<br/>behind that price"]
-    R --> S["Each row's source<br/>and what that source allows"]
-    R --> C["Rebuild the number<br/>and compare"]
-    C --> G["Scheduled job and SQL alert<br/>if any number can't be rebuilt"]
-```
+**A price in the app** → **`why(id)`**, our SQL table function → **the exact sold listings** behind that price
+
+From those listings:
+
+- each row's source, and what that source allows
+- the number is rebuilt and compared with the one shown
+- a scheduled job and a SQL alert flag any number that can't be rebuilt
 
 Here is the path one sale record takes to make that possible.
 
@@ -134,15 +133,14 @@ If the thing you want isn't there at your price, you can track it. The app keeps
 
 ## How it fits together
 
-```mermaid
-flowchart LR
-    P["Phone<br/>Expo app, Swift camera"] --> S["Our server<br/>TypeScript: identify, price, list, search"]
-    S --> M["Marketplaces<br/>eBay API, or a real browser"]
-    S --> A["Models<br/>read photos, match products, answer questions"]
-    S -.->|"Genie, built, no screen yet"| D
-    J["Python twins of the pricing code"] --> D["Databricks<br/>public sales, backtests, why(id), Genie"]
-    S ---|"compared on the same inputs"| J
-```
+| Part | What it is | What it talks to |
+|---|---|---|
+| **Phone** | Expo app with a Swift camera | Our server |
+| **Our server** | TypeScript: identify, price, list, search | Marketplaces, models, Databricks |
+| **Marketplaces** | The eBay API, or a real browser | |
+| **Models** | Read photos, match products, answer questions | |
+| **Python twins of the pricing code** | Compared with the server's code on the same inputs | Databricks |
+| **Databricks** | Public sales, backtests, `why(id)`, Genie (built, no screen in the app yet) | |
 
 The phone talks to one server. The pricing, fee, listing and search code lives there as plain TypeScript, each part with its own tests. A model is called in three places: reading photos, deciding whether two results are the same product, and answering a follow-up question. Each time, code checks what came back before you see it.
 
