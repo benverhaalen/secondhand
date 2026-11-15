@@ -107,7 +107,7 @@ function Sheetful() {
       </Section>
 
       <Section title="Pile: the lower tiers, layered, fanned out on a tap">
-        <Shelf id="p" title="When you can" count={3} onAll={piled ? undefined : () => setPiled(true)} onFold={piled ? () => setPiled(false) : undefined}>
+        <Shelf id="p" title="Can wait" count={3} onAll={piled ? undefined : () => setPiled(true)} onFold={piled ? () => setPiled(false) : undefined}>
           <Pile id="p" open={piled} onOpen={() => setPiled(true)}>
             {PILE.map(k => (
               <DecisionCard key={k.id} id={k.id} kind={k.kind} word={k.word} title={k.title} photo={k.photo} site="ebay"

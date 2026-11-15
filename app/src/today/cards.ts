@@ -332,7 +332,7 @@ export function cards(w: World): Card[] {
 
 // The three tiers, each under its header, always, as Sell's shelves are (Ben 06:19: "the sell one seems very organized and
 // it's very easy to see like needs you in progress"). The risk order holds inside each (pages §5).
-export const TIER_LABEL: Record<Feed, string> = { now: 'Needs you now', when_you_can: 'When you can', good_to_know: 'Good to know' };
+export const TIER_LABEL: Record<Feed, string> = { now: 'Needs you now', when_you_can: 'Can wait', good_to_know: 'Good to know' };
 export function tiers(list: Card[]): { tier: Feed; label: string | null; cards: Card[] }[] {
   const out: { tier: Feed; label: string | null; cards: Card[] }[] = [];
   for (const c of list) {

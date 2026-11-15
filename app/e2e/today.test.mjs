@@ -17,7 +17,7 @@ const text = s => s.page.locator('body').innerText();
 
 // Each state: how to reach it, and what must then be on screen.
 const STATES = {
-  typical: async () => { const s = await open(); for (const t of ['Since yesterday', '$97.33', '2 sold, after fees', 'Needs you now', 'Due first, today at 3 pm', 'When you can', 'Good to know', 'Meet in public', 'Send address', 'Possible scam', /You get \$81\.55/, 'Accept $85', 'Counter $92', 'Buy 2 labels', 'Took 2 listings down, and 1 more']) await s.shows(t); },
+  typical: async () => { const s = await open(); for (const t of ['Since yesterday', '$97.33', '2 sold, after fees', 'Needs you now', 'Due first, today at 3 pm', 'Can wait', 'Good to know', 'Meet in public', 'Send address', 'Possible scam', /You get \$81\.55/, 'Accept $85', 'Counter $92', 'Buy 2 labels', 'Took 2 listings down, and 1 more']) await s.shows(t); },
   new: async () => { const s = await open(ROUTE.new); await s.shows('Start here'); await s.shows('See what your things are worth'); assert.doesNotMatch(await text(s), /\$0/); assert.equal(await count(s, '[data-part="card-decision"]'), 0); },
   dense: async () => { const s = await open(ROUTE.flipper); await s.shows('Since this morning'); await s.tap('shelf-when_you_can-all'); await s.shows('5 to ship'); await s.shows('40 to post'); await s.shows('Review 40'); assert.equal(await count(s, '[data-part="card-stack"]'), 1); },
   empty: async () => {

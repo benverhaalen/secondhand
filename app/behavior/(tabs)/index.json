@@ -26,27 +26,28 @@
     "An amount typed under the person's lowest asks once in the sheet ('Under your lowest, $70. Tap again to send it.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona).",
     "One black pill per view (C4, DecisionCard): only the lead card, nearest its deadline, and any card due within the hour lead with black; every other card leads with the light fill.",
     "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Try again, and a card that failed is the failed state reached with ?fail=.",
-    "Every tier sits under its header with its count, always (Needs you now, When you can, Good to know), drawn with Sell's shelf head, so Today reads as organized as Sell (Ben 06:19: \"the sell one seems very organized and it's very easy to see like needs you in progress\"); the risk order holds inside each.",
+    "Every tier sits under its header with its count, always (Needs you now, Can wait, Good to know), drawn with Sell's shelf head, so Today reads as organized as Sell (Ben 06:19: \"the sell one seems very organized and it's very easy to see like needs you in progress\"); the risk order holds inside each.",
     "The lead card keeps its state gradient and says why over it, with a clock: Due first, today at 3 pm (Ben 06:19: \"I don't really know why the first entry is like colored\"). The color is the one card due soonest; nothing else is colored.",
     "Money that reaches the person reads one way on every card, You get $81.55, after fees and shipping, beside the buyer's price on the pill (Ben 06:19: \"you keep this much money. There's probably a better way to word that\").",
     "A buyer asking to pay off the site is tagged Possible scam, with Block and Say no (Ben 06:19: \"rather than careful, it could be like possibly a scam\").",
     "The top is always the most flattering true number, by a ladder in cards.ts (top), each rung unit-tested (Ben 07:12: \"the top thing should be the most flattering metric ... what do you say when nothings gone on yet\"): a. money since the last open with the photos of what sold; b. else this week's money, else this month's; c. never sold and something live: what it could bring, the low end of its worth with the high end named, before fees; d. else views, likes and watchers since the last open; c again when nothing came in; e. nothing listed: no number, See what your things are worth, opening the camera. Never $0, never rounded up, always its window. It is drawn by the MoneyNews part: the caption names the window, the figure at the peak size, the photos with their site badges.",
     "A sale on Today reads as its push does (spec/notifications.md, It sold): the Sold tag on the site's badge, the item, You get, and the ship-by clock.",
     "Every card's More has Open on the site with a link icon, the card's site badge saying which site (Ben 06:19: \"you should always have a way to go back to the site\"). The wash is on Today whatever the top holds (Ben 06:21).",
-    "When you can and Good to know draw as a pile when they hold more than one card: the top card in full and the edges of the next two (Pile part), so the shape says there is more. A tap on the edges, or Show all in the shelf's header, fans them out in place with a spring of --t-panel (Reduce Motion: at once); Show less folds them back (Ben 07:12: \"use the collapsable pile where they are layered and an animation expands them\"). Needs you now stays spread, since hiding a deadline there breaks Today's promise (research/today/ben/top-of-today-and-stacking.md §2). The piled height is fixed; only the person's tap moves it (U7).",
+    "Can wait and Good to know draw as a pile when they hold more than one card: the top card in full and the edges of the next two (Pile part), so the shape says there is more. A tap on the edges, or Show all in the shelf's header, fans them out in place with a spring of --t-panel (Reduce Motion: at once); Show less folds them back (Ben 07:12: \"use the collapsable pile where they are layered and an animation expands them\"). Needs you now stays spread, since hiding a deadline there breaks Today's promise (research/today/ben/top-of-today-and-stacking.md §2). The piled height is fixed; only the person's tap moves it (U7).",
     "The top card of a pile is the tier's first in the feed's order, the soonest deadline and then the most money; a queue, being its own stack, is never on top.",
-    "The states new, one and empty each land on a different rung of the ladder: new is e (nothing listed), one is b (the clearing person looked after this week's sales), empty is d (a quiet month: sold in October, three things live, interest since yesterday; app/src/today/stops.ts quietWorld). /?world=one shows c."
+    "The states new, one and empty each land on a different rung of the ladder: new is e (nothing listed), one is b (the clearing person looked after this week's sales), empty is d (a quiet month: sold in October, three things live, interest since yesterday; app/src/today/stops.ts quietWorld). /?world=one shows c.",
+    "The middle tier reads Can wait, not When you can: it pairs with Needs you now at a glance, and its count no longer sits 2 px off the one above (B36)."
   ],
   "states": [
     {
       "state": "typical",
       "route": "/?world=clearing",
-      "shows": "the wash; Since yesterday $97.33 beside the chair and the jacket that sold, each on its site; Needs you now 4: Due first, today at 3 pm over the pickup on its state gradient (Meet in public, Send address), the jacket's 2 offers (You get $81.55), Possible scam, the signed-out site; When you can 4 as a pile: 2 to ship on top, the edges of two cards under it, Show all in its header; Good to know: a review, two notices and the handled line"
+      "shows": "the wash; Since yesterday $97.33 beside the chair and the jacket that sold, each on its site; Needs you now 4: Due first, today at 3 pm over the pickup on its state gradient (Meet in public, Send address), the jacket's 2 offers (You get $81.55), Possible scam, the signed-out site; Can wait 4 as a pile: 2 to ship on top, the edges of two cards under it, Show all in its header; Good to know: a review, two notices and the handled line"
     },
     {
       "state": "fanned",
       "route": "/?world=clearing",
-      "shows": "after Show all or a tap on the pile's edges, When you can's four cards spread 16 apart with a spring, and Show less in its header folds them back to one"
+      "shows": "after Show all or a tap on the pile's edges, Can wait's four cards spread 16 apart with a spring, and Show less in its header folds them back to one"
     },
     {
       "state": "could bring",
@@ -71,7 +72,7 @@
     {
       "state": "one",
       "route": "/?state=one",
-      "shows": "This week $163.63, 3 sold, after fees, beside what sold, and one card, the pickup on its state gradient with the one black pill, Meet in public; nothing else"
+      "shows": "This week $132.33, 3 sold, after fees, beside what sold, and one card, the pickup on its state gradient with the one black pill, Meet in public; nothing else"
     },
     {
       "state": "loading",
@@ -345,7 +346,7 @@
     },
     {
       "id": "shelf-when_you_can-all",
-      "control": "Show all, in the When you can header",
+      "control": "Show all, in the Can wait header",
       "on_tap": "fans the pile out: every card, 16 apart"
     },
     {
@@ -355,7 +356,7 @@
     },
     {
       "id": "shelf-when_you_can-less",
-      "control": "Show less, in the When you can header",
+      "control": "Show less, in the Can wait header",
       "on_tap": "folds the cards back into the pile"
     }
   ],
