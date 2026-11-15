@@ -116,6 +116,16 @@ The fixture is never loosened to pass. When the site itself changed shape, a fre
 
 ### 3.5 Starting routes, site by verb
 
+**Signed-in or public, by what the read needs** ([Nate](../../product/words.md#2026-11-14-nate-the-signed-in-harness-where-the-account-adds-capability-faster-public-paths-elsewhere): "For the things we can leverage with user auth ... its better to adhere to that harness. Of course faster and cheaper for when better, but not when we are limitting capability."). A linked account's session is stored and leased to background jobs, overnight included, so a job acting for the person never waits for them.
+
+| The read or action | Route | Why |
+|---|---|---|
+| Anything the site ties to the person's account: their listings, orders, offers, messages, their own stats and watcher counts, what the site shows or ranks for them, every write | the signed-in harness, always | the public page does not carry it, or carries less |
+| Broad market reads: sold prices, top listings, a product's page, a seller's public shop, reviews | the fastest public path (a server fetch, embedded page data, our fetch engine) | no account is needed, and it works for a person with nothing linked |
+| A read that both can serve, such as "did my listing sell" | the public path as the cheap, frequent check; the signed-in read to confirm and for the detail only it has (the paid order, the buyer, the amount) | faster and cheaper where it loses nothing; never chosen where it would limit what we can do |
+
+The route table holds this as `needs_session` per verb and field. A public route is never promoted over a signed-in one for a field it cannot return, whatever its speed.
+
 Each cell is the first route recon targets (*inferred* from the canon site table at [product.md](../product.md#the-harness-protocol), which puts our own adapter first everywhere). An API named in a cell is the last fallback and a fact on record. "page" means a page-driving recipe; "endpoint" means recon expects an internal endpoint.
 
 | Verb | eBay | Facebook | Depop | Poshmark | Mercari | OfferUp | Grailed |
