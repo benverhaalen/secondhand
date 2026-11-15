@@ -15,8 +15,9 @@ const STATES: TagState[] = ['need', 'live', 'hot', 'stuck', 'sold', 'ship', 'pai
 
 export default function Parts() {
   const { scheme } = useLocalSearchParams<{ scheme?: string }>();
+  if (scheme !== 'dark' && scheme !== 'light') return <Sheetful />;
   return (
-    <Theme scheme={scheme === 'dark' ? 'dark' : 'light'}>
+    <Theme scheme={scheme}>
       <Sheetful />
     </Theme>
   );

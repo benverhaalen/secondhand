@@ -7,7 +7,7 @@ import { TAGS, type TagState } from '../states';
 import { Txt } from '../text';
 import { Theme, useColors, useGround } from '../theme';
 import { radius, size, space } from '../tokens.generated';
-import { mark } from './mark';
+import { FLAT, mark } from './mark';
 
 type TagProps = {
   state: TagState;
@@ -36,7 +36,7 @@ function TagBody({ state, word, place = 'inline' }: TagProps) {
     <View
       {...mark('tag', { state, fit: 'content' })}
       accessibilityLabel={word ?? t.word}
-      style={[{ height: size.tagH, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.s1, paddingLeft: space.s1, paddingRight: space.s2, alignSelf: 'flex-start' }, fill, edge]}>
+      style={[{ height: size.tagH, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', gap: space.s1, paddingLeft: space.s1, paddingRight: space.s2, alignSelf: 'flex-start', ...FLAT }, fill, edge]}>
       <Icon name={t.icon} size={12} tone={t.iconInk ?? (quiet ? 'ink-2' : 'ink')} />
       <Txt role="caption" tone={quiet ? 'ink-2' : 'ink'} lines={1}>{word ?? t.word}</Txt>
     </View>

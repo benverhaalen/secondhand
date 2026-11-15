@@ -13,10 +13,10 @@ import { Press } from '../press';
 import { TAGS, type TagState } from '../states';
 import { Surface } from '../surface';
 import { Txt } from '../text';
-import { useColors } from '../theme';
+import { useColors, useScheme } from '../theme';
 import { radius, size, space } from '../tokens.generated';
 import { IconButton, Pill } from './buttons';
-import { mark, money, timeLeft, type Site } from './mark';
+import { FLAT, mark, money, timeLeft, type Site } from './mark';
 import { SiteBadge } from './small';
 import { Tag } from './tag';
 
@@ -30,7 +30,7 @@ export function useMinute(): number {
 // A calm countdown: a 12 clock and the time left in secondary ink, never red, never pulsing (frontend-standard §5, Honesty).
 function Countdown({ due, now }: { due: number; now: number }) {
   return (
-    <View {...mark('countdown', { fit: 'content' })} style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>
+    <View {...mark('countdown', { fit: 'content' })} style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1, ...FLAT }}>
       <Icon name="clock-01" size={12} tone="ink-2" />
       <Txt role="caption" tone="ink-2" tabular>{timeLeft(due, now)}</Txt>
     </View>
@@ -161,11 +161,11 @@ export function DecisionCard(p: DecisionCardProps) {
 // A queue is drawn as a stack: the layers under the card at 75% then 40%, scaled .97 and .93, each 12 lower, with the
 // one blur the app allows under them, in light only (Art. 9.2, --shadow-stack; Ben: "some sort of depth with shadows").
 function Queue({ layers, children }: { layers: number; children: ReactNode }) {
-  const c = useColors();
+  const c = useColors(), scheme = useScheme();
   const layer = (i: number) => (
     <View key={i} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: space.s3 * (i + 1), height: size.cardDecisionH, borderRadius: radius.card,
-      backgroundColor: c.surface, borderWidth: 1, borderColor: c.cardEdge, opacity: i === 0 ? 0.75 : 0.4, transform: [{ scale: i === 0 ? 0.97 : 0.93 }],
-      boxShadow: `0 6px 14px ${c.stackShade}` }} />
+      backgroundColor: c.surface, opacity: i === 0 ? 0.75 : 0.4, transform: [{ scale: i === 0 ? 0.97 : 0.93 }],
+      ...(scheme === 'dark' ? { borderWidth: 1, borderColor: c.cardEdge } : { boxShadow: `0 6px 14px ${c.stackShade}` }) }} />
   );
   return (
     <View {...mark('card-stack')} style={{ paddingBottom: space.s3 * layers }}>

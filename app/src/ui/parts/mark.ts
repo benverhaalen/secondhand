@@ -24,3 +24,6 @@ export function timeLeft(due: number, now: number): string {
   if (min < 24 * 60) return `${Math.floor(min / 60)}h ${min % 60}m`;
   return new Intl.DateTimeFormat(undefined, { weekday: 'short', hour: 'numeric' }).format(new Date(due));
 }
+
+// A thing that is not a button never shows the hand cursor on the web, even inside a card that is one (U1).
+export const FLAT = { cursor: 'default' } as {};

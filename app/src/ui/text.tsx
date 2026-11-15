@@ -48,7 +48,8 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, childr
         fontVariant: tabular ? ['tabular-nums'] : undefined,
         color: ink,
         // Clofie sits .12 em above center in its line; it moves down where text cannot be trimmed (Art. 6.10).
-        transform: r.display ? [{ translateY: Math.round(r.fontSize * nudge.display) }] : undefined,
+        position: r.display ? 'relative' : undefined,
+        top: r.display ? Math.round(r.fontSize * nudge.display) : undefined,
       }}>
       {children}
     </Text>
