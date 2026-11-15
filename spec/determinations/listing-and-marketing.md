@@ -726,7 +726,7 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 
 | Site | Lever | Runs on its own when | Pace limit (starting value) | Account risk |
 |---|---|---|---|---|
-| Poshmark | share own listings to followers | the person turned it on; a session counts as engagement | 1 share per live listing a day, spread over the day, never bursts | high: Poshmark's policy against unauthorised automation and its Excessive Listing Removal policy (*observed*, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)) |
+| Poshmark | share own listings to followers | the person turned it on; a session counts as engagement | 1 share per live listing a day, spread over the day, never bursts | high: Poshmark retired its Excessive Listing Removal policy on 2026-07-23; its policy against unauthorised automation and the Seller Cancellation Policy (3% of orders in a rolling 90 days, secondary source) remain (*observed*, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)) |
 | Poshmark, Mercari, eBay | offer to likers or watchers | [D17](#d17-offer-to-likers-or-watchers) passes and the offer is at or above `always_accept_cents` | D17's 7-day cooldown | low: a site-provided button |
 | Depop | refresh (edit to move up) | interest is behind plan per [D15](#d15-interest-against-plan) | once a week per listing | medium: no stated rule found |
 | Grailed | bump | the site's interval has passed; with a drop, D20 rounds it to 10% | the site's own interval | low: a site-provided button |

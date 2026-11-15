@@ -305,11 +305,11 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 | source | what it contributes | weight or rank | why that weight |
 |---|---|---|---|
-| card or marker of known size in the plane | scale | fallback: used only when the size chart and the plane disagree or no size chart exists, because it is extra input | 4.10 to 4.20% error (Kowaleczko 2022 in [garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) |
+| card or marker of known size in the plane | scale | fallback: used only when the size chart and the plane disagree or no size chart exists, because it is extra input | 6.45% mean percentage error (up to 7.13% for pants); 4.10% for tops and 4.20% for skirts only after a trained correction network, so this path is stated at about 6.5% without one (Kowaleczko 2022, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)) |
 | LiDAR depth plus keypoints | metric points | path 1 for items 20 cm to 2 m on matte surfaces | 1.59 to 2.08% (Kim 2022, same note) |
 | published size chart of the confirmed product ([card 9](#9-which-product-it-is-and-when-identity-is-confirmed)) | scale from one known span | path 1 without LiDAR | maker's spec, but sizes vary by production run (inferred) |
 | ARKit plane | scale | cross-check for the size chart | no published accuracy figure |
-| monocular depth (UniDepthV2, MoGe-2) | cross-check only | never sets a value | ARel 6.8% and Rel 15.7, too loose ([measure](../features/measure.md)) |
+| monocular depth (UniDepthV2, MoGe-2) | cross-check only | never sets a value | ARel 6.8%, and MoGe-2's relative metric-depth error of 15.7 averaged over seven mixed datasets ([claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)), too loose ([measure](../features/measure.md)) |
 | person's tape | value | overrides | owner statement |
 | weight | not measured | none | weight is never read from photos |
 
@@ -535,7 +535,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
    - the person refused, which ends that field without a re-ask.
 5. Model step: an LLM writes the question's words only, from the chosen field and options. It cannot add or drop options.
 
-**Why this method**: EIG-chosen questions beat zero-shot LLM questions in arXiv 2502.04485, and unneeded questions cut success from 65% to 27% in arXiv 2504.16331 (both observed (excerpt), [clarifying-inputs §3 and §4](../../research/identify/nate/clarifying-inputs.md)). So the choice of whether and what to ask is arithmetic and capped. The alternative is to let a model decide when to ask. Models both over-ask and under-ask in the cited studies.
+**Why this method**: EIG-chosen questions beat zero-shot LLM questions in arXiv 2502.04485, (observed (excerpt), [clarifying-inputs §3](../../research/identify/nate/clarifying-inputs.md)), and on coding tasks asking clarifying questions raised pass rate from 27% to 65% (arXiv 2504.16331, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)); neither is tested on listings. So the choice of whether and what to ask is arithmetic and capped. The alternative is to let a model decide when to ask. Models both over-ask and under-ask in the cited studies.
 
 **When it is not shown**: nothing passes the stop rule. No question appears, and the open fields show their unknown reason.
 

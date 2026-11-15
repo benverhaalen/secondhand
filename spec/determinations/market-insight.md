@@ -749,7 +749,7 @@ A referral never enters any of M24 to M29: the inputs below list every source, a
 | The accepted price behind a sold-tag, outside eBay with a seller session | the site shows the last ask; weighted per money.md D1, never corrected to a guessed value (M3 step 6) |
 | StockX and GOAT prices and premiums on our pages | the terms bar commercial use and display (*observed*, [market-intelligence](../../research/data/nate/market-intelligence.md#5-rights-and-limits)); recorded as a fact, used nowhere person-facing |
 | Seasonality and depreciation from our own data before 2 years | too short; M10 and M12 lean on Keepa and Trends until then, labelled |
-| A hype forecast for an unreleased product | no sales exist; a thesis-level model at 65 to 70% accuracy on profit or not ([market-intelligence](../../research/data/nate/market-intelligence.md#25-academic-work), *observed*) is not a number to show |
+| A hype forecast for an unreleased product | no sales exist; a thesis-level model with an R-squared of about 0.65 on resale premium ([claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)) ([market-intelligence](../../research/data/nate/market-intelligence.md#25-academic-work), *observed*) is not a number to show |
 | Why a trend happened | the counts say that, not why; no source ties a rise to a cause |
 | Authenticity and hidden condition in any market number | not known from a listing; the condition band is what the seller showed |
 
