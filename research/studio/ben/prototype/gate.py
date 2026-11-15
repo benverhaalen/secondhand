@@ -22,6 +22,9 @@ THRESH = dict(
                             # benign relights scored 1.5-3.1, an 18 degree hue shift on denim 5.7 (3 items only)
     struct_floor=0.55,      # worst 5% of item tiles: gradient-orientation agreement
     region_floor=0.60,      # each protected box: same measure
+    shape_skew=0.02,        # the render may turn and scale the item evenly, never stretch it. Alignment alone let a 4% stretch
+                            # through. On Ben's 19 photos (scripts/bench/gate.py) a 4% stretch read 0.032 or more, and 36 of
+                            # 38 honest relights 0.014 or less; set on those same photos, so not yet a held-out result
     background_floor=0.75,  # touch-up only: median tile agreement outside the item;
                             # 4 touch-ups on Seedream 5.0 Pro scored 0.89-0.94 (a proposal, not calibrated on scene swaps)
 )
@@ -118,6 +121,10 @@ def gate(src, render, mask, protected, preset_cast=(1.0, 1.0, 1.0), keep_backgro
     if H is None or inl < THRESH["align_inliers"]:
         out["verdict"] = "reject: framing changed, cannot verify"
         return out
+    # alignment would undo a stretch, so the stretch is read off the alignment itself: an even scale has equal singular values
+    sv = np.linalg.svd(H[:2, :2] / H[2, 2], compute_uv=False)
+    skew = float(sv[0] / sv[1] - 1)
+    out["shape"] = (skew, skew <= THRESH["shape_skew"])
     # bring render into the source frame
     back = warp(render, np.linalg.inv(H), src.shape)
     valid = warp(np.ones(render.shape[:2], np.uint8), np.linalg.inv(H), src.shape)

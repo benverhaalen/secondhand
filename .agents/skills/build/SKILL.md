@@ -42,6 +42,8 @@ The failure this prevents: code that works today and that the next agent can't f
 
 **7. End with "usable" or "not usable yet" and the unfinished list**, the same words the [UI constitution](../../../product/ui-constitution.md) asks for. Usable means your human can try it now, and you say how. Say "ready to ship" only when the proving command, the tests and the whole user path pass on `main` and the unfinished list is empty. Unfinished parts carry a visible mark in development builds.
 
+**8. A number you will report** (a benchmark, an accuracy, a cost): vet it with poteto's [benchmark checklist](../../vendor/poteto/skills/benchmark-checklist/SKILL.md) and [explain the number](../../vendor/poteto/skills/principle-explain-the-number/SKILL.md) before it goes in [product/numbers.md](../../../product/numbers.md) with its mark. Making something faster or cheaper is the `hillclimb` skill.
+
 When Ben or Nate corrects code, fix it, then turn the correction into a check if a script can find every instance (the row in [AGENTS.md](../../../AGENTS.md)).
 
 Retire a line here when agents follow it without being told, or when it becomes a check.

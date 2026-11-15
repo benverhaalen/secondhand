@@ -12,6 +12,7 @@
     "offline"
   ],
   "skip": "",
+  "catalog": false,
   "status": "fail",
   "findings": [
     {

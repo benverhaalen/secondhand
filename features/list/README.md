@@ -15,6 +15,9 @@ Not designed yet. Keep the mechanism here once research picks one, together with
 ## Decided
 Nothing yet. Each entry here links to [decisions.md](../../product/decisions.md).
 
+## Built (agent proposal, not yet decided)
+- **Cross-list existing listings.** `app/src/edge/connect/depop-import.ts` turns Depop products (Partner API shape) into source listings; `app/src/engines/listing/crosslist.ts` routes each one by product type, prices every other linked site to keep the same payout and the same floor (`priceForKeep`; with no floor the draft asks for one), skips a site where the item is already live and a listing not in US dollars, builds each draft with `buildListing`, and posts only ready drafts whose first_post decision was approved, through the harness `post` verb with one operation id per listing and site. Sold listings become comps, not drafts. Run `node scripts/crosslist.mjs` on the made-up shop in `spec/fixtures/depop/shop.json`. Not run on a real account: no Depop adapter reads a shop yet, and no site adapter posts.
+
 ## Open
 - Automatic posting or one tap by the user? There is a risk of account bans. (See the vision's Open section.)
 

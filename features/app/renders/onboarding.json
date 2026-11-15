@@ -9,6 +9,7 @@
     "offline"
   ],
   "skip": "empty: first launch is only for a new person, who has nothing yet; one: first launch is only for a new person; dense: first launch is only for a new person",
+  "catalog": false,
   "status": "clean",
   "findings": []
 }

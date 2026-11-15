@@ -1,0 +1,52 @@
+# The camera (app/behavior/camera.json) on a phone or simulator: the same states as app/e2e/camera.test.mjs, with the
+# live camera in place of the photo. Grant camera access when asked.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/camera.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/camera.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+- openLink: ${URL}--/camera?world=new
+# aiming: the first instruction, the empty stages, Blank chips, the modes.
+- extendedWaitUntil:
+    visible: "Show the whole front"
+    timeout: 30000
+- assertVisible: "Brand"
+- assertVisible: "Worth"
+# judging, then found: the pop says what it read and the first stage fills.
+- tapOn: { id: "cam-shutter" }
+- extendedWaitUntil:
+    visible: "Carhartt"
+    timeout: 5000
+- extendedWaitUntil:
+    visible: "Turn it over"
+    timeout: 5000
+- tapOn: { id: "cam-shutter" }
+- extendedWaitUntil:
+    visible: "Closer on the tag"
+    timeout: 6000
+# Skip leaves its facts Blank.
+- tapOn: { id: "cam-skip" }
+- assertVisible: "Smooth it flat"
+- tapOn: { id: "cam-shutter" }
+- extendedWaitUntil:
+    visible: "Closer on any wear"
+    timeout: 6000
+- tapOn: { id: "cam-shutter" }
+# done: the real comparison and the one act.
+- extendedWaitUntil:
+    visible: "Matching against 41 sold jackets"
+    timeout: 8000
+- tapOn: { id: "cam-done" }
+# same: a still that matches a held jacket asks first.
+- openLink: ${URL}--/camera?world=clearing
+- tapOn: { id: "cam-shutter" }
+- extendedWaitUntil:
+    visible: "Same thing?"
+    timeout: 8000
+- tapOn: { id: "same-no" }
+- assertVisible: "Turn it over"
+# Close shrinks it back into the ＋.
+- tapOn: { id: "cam-close" }

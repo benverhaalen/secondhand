@@ -6,6 +6,7 @@ import { useState } from 'react';
 import {
   Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
   Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
   Feed, QueueView,
 } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
@@ -45,7 +46,7 @@ function Sheetful() {
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
   return (
-    <Screen name="parts" state="all" wash nav={<Nav inbox={{ count: 2 }} />}>
+    <Screen name="parts" state="all" sheet="parts" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
 
       <Section title="Decision card, the lead (state gradients, by time left)">
@@ -205,6 +206,33 @@ function Sheetful() {
 
       <Section title="Top slot, a new person">
         <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+      </Section>
+
+      <Section title="New and the camera (on the bar)">
+        <FeedSwatch>
+          <ChoiceCapsule id="nc-sell" label="Sell this" icon="tag-01" lead index={0} shown />
+          <ChoiceCapsule id="nc-worth" label="What’s it worth" icon="money-03" index={1} shown />
+          <Line>
+            <BarPill id="nc-link" icon="link-01" label="Paste a link" />
+            <BarPill id="nc-describe" icon="pencil-edit-02" label="Describe it" />
+          </Line>
+          <StageBubbles stages={[{ name: 'Kind', state: 'done' }, { name: 'Photos', state: 'now' }, { name: 'Label', state: 'skipped' }, { name: 'Measure', state: 'later' }, { name: 'Condition', state: 'later' }]} />
+          <Instruction text="Closer on the tag" />
+          <Chips>
+            <FactChip id="nc-brand" name="Brand" value="Carhartt" />
+            <FactChip id="nc-size" name="Size" />
+            <CamNote icon="clock-01" text="2 photos waiting for signal" />
+            <FixChip id="nc-clean" label="Clean up" on onPress={() => {}} />
+            <FixChip id="nc-ai" label="Enhance with AI" on={false} onPress={() => {}} />
+          </Chips>
+          <Modes modes={[{ mode: 'sell', label: 'Sell', icon: 'tag-01' }, { mode: 'worth', label: 'Worth', icon: 'money-03' }, { mode: 'find', label: 'Find', icon: 'search-01' }]} current="sell" onPick={() => {}} />
+          <Line gap="group">
+            <CamButton id="nc-library" icon="image-01" label="Choose photos" />
+            <Shutter id="nc-shutter" />
+            <Shutter id="nc-shutter-wait" waiting />
+            <CamWord id="nc-skip" label="Skip" />
+          </Line>
+        </FeedSwatch>
       </Section>
 
       <Section title="You: tab nav, list rows, switch, goal, week bars">

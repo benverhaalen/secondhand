@@ -11,6 +11,7 @@
     "offline"
   ],
   "skip": "one: a site page counts its rows in sections, so one row is drawn as typical",
+  "catalog": false,
   "status": "fail",
   "findings": [
     {

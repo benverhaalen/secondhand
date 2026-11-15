@@ -1,0 +1,194 @@
+// New, the ＋ (spec/pages.md §6.4; Ben, 03:17: "it should take over the screen with an animation and once you press the
+// button a subtle animation should go into the camera"). The 56 ink button grows into a circle that covers the screen,
+// its ＋ turns to ×, and three large choices rise out of it one after another. A choice opens the camera out of the circle
+// it was touched on. × plays it all back into the button.
+//
+// New draws on the camera's bar (useBar in ./camera): the ink black of the ＋ in light, so the button visibly becomes the
+// circle; the dark page in dark, so a full-screen light circle never flashes at night. It is the door to the camera, and
+// the camera wears the same ground.
+//
+// Sizes, each with its reason:
+//   PLUS 56      the tab bar's New button (chrome.tsx), so the circle starts exactly where the button is.
+//   CHOICE 88    a choice: large, so the three doors read at a glance. Its icon well is 88 less 2 × 16, so 56, and its
+//                corner nests in the capsule's (Art. 9.1).
+import { useEffect, type ReactNode } from 'react';
+import { View, useWindowDimensions, type ViewStyle } from 'react-native';
+import Animated, { Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
+import { Icon, type IconName } from '../icon';
+import { MOTIONS } from '../motion';
+import { Press, slop } from '../press';
+import { Txt } from '../text';
+import { OnGround, useColors, useScheme } from '../theme';
+import { motion, radius, size, space } from '../tokens.generated';
+import { useBar } from './camera';
+import { mark } from './mark';
+
+const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
+const ms = (k: keyof typeof MOTIONS) => { const v = MOTIONS[k].ms; return typeof v === 'number' ? v : motion.panel; };
+// How New and the camera sit in the navigator: over the screen they came from, with no card of their own and no slide,
+// because the circle is their entrance and their exit.
+export const OVER = { animation: 'none', presentation: 'transparentModal', contentStyle: { backgroundColor: 'transparent' } } as const;
+// The icon of each of New's doors, which the camera's modes carry too.
+export const MODE_ICON = { sell: 'tag-01', worth: 'money-03', find: 'search-01' } as const satisfies Record<string, IconName>;
+export const PLUS = 56;
+export const CHOICE = 88;
+const WELL = CHOICE - 2 * space.s4;
+// Each choice rises 30 ms after the one before (emil-design-eng: a stagger of 30 to 80 ms that never blocks).
+const STAGGER = 30;
+const fill: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 };
+
+// Where the ＋ sits: centered in the tab bar, standing 12 above its top line (chrome.tsx, NewCircle), under the 1 px rule.
+export function usePlus() {
+  const { width, height } = useWindowDimensions();
+  return { x: width / 2, y: height - size.tabH + 1 - space.s3 + PLUS / 2, width, height };
+}
+
+export type CirclePhase = 'opening' | 'open' | 'closing' | 'closed';
+// A circle that grows from a point to cover the screen, or shrinks back into it. What is inside stays where it would be on
+// the screen, so a circle of the camera's feed grows into the camera itself. Reduce Motion: it fades in place.
+export function CircleStage({ origin, start = PLUS, phase, ground, onSettled, children }: {
+  origin: { x: number; y: number };
+  // The circle's size at its smallest: the button or icon well it grows out of.
+  start?: number;
+  phase: CirclePhase;
+  // The circle's own fill, when it is a color and not a picture: the bar's ground.
+  ground?: 'bar';
+  onSettled?: (phase: CirclePhase) => void;
+  children?: ReactNode;
+}) {
+  const b = useBar(), reduced = useReducedMotion(), { width, height } = useWindowDimensions();
+  const r = Math.ceil(Math.max(Math.hypot(origin.x, origin.y), Math.hypot(width - origin.x, origin.y), Math.hypot(origin.x, height - origin.y), Math.hypot(width - origin.x, height - origin.y)));
+  const least = start / (2 * r);
+  const grow = useSharedValue(phase === 'open' ? 1 : 0);
+  useEffect(() => {
+    if (phase === 'open' || phase === 'closed') { grow.set(phase === 'open' ? 1 : 0); return; }
+    // Out of the button in --t-panel; back into it a little faster, in --t-select (an exit is shorter than its entrance).
+    const enter = phase === 'opening', d = enter ? ms('newOpen') : motion.select;
+    grow.set(withTiming(enter ? 1 : 0, { duration: d, easing: EASE_OUT, reduceMotion: ReduceMotion.System }));
+    const t = setTimeout(() => onSettled?.(enter ? 'open' : 'closed'), d);
+    return () => clearTimeout(t);
+  }, [phase, grow, onSettled]);
+  const look = useAnimatedStyle(() => (reduced
+    ? { opacity: grow.get() }
+    : { opacity: Math.min(1, grow.get() * 8), transform: [{ scale: least + (1 - least) * grow.get() }] }));
+  return (
+    <View pointerEvents={children ? 'box-none' : 'none'} style={[fill, { overflow: 'hidden' }]}>
+      <Animated.View {...mark('circle-stage', { phase })}
+        style={[{ position: 'absolute', left: origin.x - r, top: origin.y - r, width: 2 * r, height: 2 * r, borderRadius: r, overflow: 'hidden', backgroundColor: ground ? b.bar : undefined }, look]}>
+        {children ? <View style={{ position: 'absolute', left: r - origin.x, top: r - origin.y, width, height }}>{children}</View> : null}
+      </Animated.View>
+    </View>
+  );
+}
+
+// New's root: the screen's name and state for the checks and the log, and the states it does not draw, with why.
+export function TakeoverPlace({ name, state, skip, children }: { name: string; state: string; skip?: string; children: ReactNode }) {
+  return (
+    <OnGround ground="page">
+      <View {...({ dataSet: { screen: name, state, skip } } as object)} style={{ flex: 1 }}>{children}</View>
+    </OnGround>
+  );
+}
+
+// The ＋ that became ×: the same 56 circle where the button was, its plus turned 45° (Art. 11, Arrive: from what you touched).
+// On the bar it is the bar's opposite, so it reads as the one way back.
+export function PlusClose({ open, onPress }: { open: boolean; onPress: () => void }) {
+  const b = useBar(), reduced = useReducedMotion(), plus = usePlus();
+  const turn = useSharedValue(0);
+  useEffect(() => { turn.set(withTiming(open ? 1 : 0, { duration: motion.select, easing: EASE_OUT, reduceMotion: ReduceMotion.System })); }, [open, turn]);
+  const look = useAnimatedStyle(() => ({ transform: [{ rotate: `${(reduced ? (open ? 1 : 0) : turn.get()) * 45}deg` }] }));
+  return (
+    <View style={{ position: 'absolute', left: plus.x - PLUS / 2, top: plus.y - PLUS / 2 }}>
+      <Press id="new-close" label="Close" onPress={onPress}>
+        {({ pressed }) => (
+          <View {...mark('new-button', { open: String(open) })} style={{ width: PLUS, height: PLUS, borderRadius: radius.pill, backgroundColor: b.on, opacity: pressed ? 0.85 : 1, alignItems: 'center', justifyContent: 'center' }}>
+            <Animated.View style={look}><Icon name="add-01" tone={b.iconOnOn} /></Animated.View>
+          </View>
+        )}
+      </Press>
+    </View>
+  );
+}
+
+// The column of choices and the ways out, standing on the × with 24 between (the choices stack bottom up, nearest first).
+export function ChoiceColumn({ ways, children }: { ways?: ReactNode; children: ReactNode }) {
+  const plus = usePlus();
+  return (
+    <View style={{ position: 'absolute', left: space.gutter, right: space.gutter, bottom: plus.height - plus.y + PLUS / 2 + space.s6, gap: space.s6 }}>
+      {ways}
+      <View style={{ flexDirection: 'column-reverse', gap: space.s3 }}>{children}</View>
+    </View>
+  );
+}
+
+// One choice: a capsule 88 tall with its icon in a 56 well and its name, raised off the bar. `lead` is the one used last:
+// its well is ink, the one emphasis on the view; the others' wells are gray. It rises out of the button `index` places
+// after the first; `shown` false sinks it back, faster.
+export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onPress }: {
+  id: string; label: string; icon: IconName; lead?: boolean; index: number; shown: boolean; onPress?: () => void;
+}) {
+  const reduced = useReducedMotion();
+  const rise = useSharedValue(0);
+  useEffect(() => {
+    rise.set(shown
+      ? withDelay(ms('newOpen') / 3 + index * STAGGER, withTiming(1, { duration: ms('newChoice'), easing: EASE_OUT, reduceMotion: ReduceMotion.System }))
+      : withTiming(0, { duration: motion.feedback, easing: EASE_OUT, reduceMotion: ReduceMotion.System }));
+  }, [shown, index, rise]);
+  const look = useAnimatedStyle(() => (reduced
+    ? { opacity: rise.get() }
+    : { opacity: rise.get(), transform: [{ translateY: (1 - rise.get()) * space.s6 }, { scale: 0.97 + 0.03 * rise.get() }] }));
+  return (
+    <Animated.View style={look}>
+      <Press id={id} label={label} onPress={onPress} round={false}>
+        {({ pressed }) => <CapsuleBody label={label} icon={icon} lead={lead} pressed={pressed} />}
+      </Press>
+    </Animated.View>
+  );
+}
+function CapsuleBody({ label, icon, lead, pressed }: { label: string; icon: IconName; lead: boolean; pressed: boolean }) {
+  const b = useBar(), c = useColors(), dark = useScheme() === 'dark';
+  return (
+    <View {...mark('choice', { lead: String(lead) })}
+      style={{ height: CHOICE, borderRadius: radius.pill, padding: space.s4, flexDirection: 'row', alignItems: 'center', gap: space.s4, backgroundColor: pressed ? b.raisedPress : b.raised }}>
+      <View style={{ width: WELL, height: WELL, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: lead ? c.ink : dark ? c.surface : c.gray }}>
+        <Icon name={icon} tone={lead ? 'page' : 'ink'} />
+      </View>
+      <Txt role="headline">{label}</Txt>
+    </View>
+  );
+}
+
+// Where a choice's icon well sits on the screen, so the camera opens out of the circle that was touched.
+export function wellCenter(index: number, plus: { x: number; y: number; width: number; height: number }) {
+  const bottom = plus.y - PLUS / 2 - space.s6;
+  return { x: space.gutter + space.s4 + WELL / 2, y: bottom - index * (CHOICE + space.s3) - CHOICE / 2 };
+}
+
+// The ways out above the choices, arriving with the last of them.
+export function WaysOut({ shown, count, children }: { shown: boolean; count: number; children: ReactNode }) {
+  const reduced = useReducedMotion();
+  const rise = useSharedValue(0);
+  useEffect(() => {
+    rise.set(shown
+      ? withDelay(ms('newOpen') / 3 + count * STAGGER, withTiming(1, { duration: ms('newChoice'), easing: EASE_OUT, reduceMotion: ReduceMotion.System }))
+      : withTiming(0, { duration: motion.feedback, easing: EASE_OUT, reduceMotion: ReduceMotion.System }));
+  }, [shown, count, rise]);
+  const look = useAnimatedStyle(() => (reduced ? { opacity: rise.get() } : { opacity: rise.get(), transform: [{ translateY: (1 - rise.get()) * space.s6 }] }));
+  return <Animated.View style={[{ flexDirection: 'row', flexWrap: 'wrap', gap: space.s2 }, look]}>{children}</Animated.View>;
+}
+
+// A quiet way out on the bar: a pill raised off it, as the choices are, its icon and words in ink. 40 tall, the kit's
+// pill, with a 44 reach.
+export function BarPill({ id, icon, label, onPress }: { id: string; icon: IconName; label: string; onPress?: () => void }) {
+  const b = useBar();
+  return (
+    <Press id={id} label={label} onPress={onPress} hit={slop(size.controlMin, size.pillCardH, { y: space.s2 })}>
+      {({ pressed }) => (
+        <View {...mark('pill', { kind: 'second', state: 'idle', fit: 'content' })} style={{ height: size.pillCardH, borderRadius: radius.pill, paddingHorizontal: space.s4, flexDirection: 'row', alignItems: 'center', gap: space.s2, backgroundColor: pressed ? b.raisedPress : b.raised }}>
+          <Icon name={icon} size={20} />
+          <Txt role="body">{label}</Txt>
+        </View>
+      )}
+    </Press>
+  );
+}
