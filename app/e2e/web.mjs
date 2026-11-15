@@ -32,10 +32,16 @@ export async function build({ force = false, log = () => {} } = {}) {
   } finally { rmdirSync(lock); }
 }
 
-// Every screen a person can open, as the path to visit. A route with a [param] is left out: pass a real path for it.
+// Every screen a person can open: its route as the file names it ("(tabs)/index", "item/[id]"), the path to visit, and whether it needs a value.
 export function routes() {
   const json = JSON.parse(readFileSync(routesFile, 'utf8'));
-  return json.htmlRoutes.filter(r => !r.generated).map(r => ({ page: r.page, path: path(r.page), dynamic: Object.keys(r.routeKeys ?? {}).length > 0 }));
+  return json.htmlRoutes.filter(r => !r.generated).map(r => ({ route: r.page.replace(/^\/+/, ''), page: r.page, path: path(r.page), regex: new RegExp(r.namedRegex), dynamic: Object.keys(r.routeKeys ?? {}).length > 0 }));
+}
+// What a person typed ("today", "/today", "(tabs)/today", "item/42") as { route, path }: the route of the export that answers the path.
+export function find(arg, list = routes()) {
+  const p = path(String(arg).replace(/^\/+/, '') || 'index');
+  const hit = list.find(r => r.route === String(arg).replace(/^\/+/, '')) ?? list.find(r => !r.dynamic && r.path === p) ?? list.find(r => r.regex.test(p));
+  return hit ? { route: hit.route, path: hit.dynamic && hit.route === String(arg).replace(/^\/+/, '') ? null : p } : { route: p.slice(1) || 'index', path: p };
 }
 // "/(tabs)/today/index" is visited at "/today".
 export const path = page => '/' + page.split('/').filter(s => s && !/^\(.*\)$/.test(s)).filter((s, i, a) => !(s === 'index' && i === a.length - 1)).join('/');

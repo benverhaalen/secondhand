@@ -1,24 +1,23 @@
 #!/usr/bin/env node
-// Checks every screen of the app on its real render: node scripts/app-check.mjs [route ...] [--dark] [--sheet] [--json]
-// It exports the web build (skipped while fresh), serves it, opens each route at 390 x 844 and runs the brand checks
-// (.agents/checks/render.mjs, the app medium) on the live page, each screenful of a screen that scrolls.
-// It saves features/app/renders/<route>[-dark].png at 2x; --sheet also saves contact.png, every screen side by side.
-// No routes means every route in the export. Exit code 1 on any error.
+// Checks every screen of the app on its real render: node scripts/app-check.mjs [route ...] [--sheet] [--json]
+// It exports the web build (skipped while fresh), serves it, opens each route at 390 x 844 in light and in dark, and runs
+// the brand checks (.agents/checks/render.mjs, the app medium) on the live page, each screenful of a screen that scrolls.
+// Per route it writes features/app/renders/<slug>.png, <slug>-dark.png (2x) and <slug>.json, which scripts/app-gallery.mjs reads.
+// --sheet also saves contact.png, every screen side by side. No routes means every route, and then features/app/gallery.html too.
+// Exit code 1 on any error.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { collect, playwright } from './brand-check.mjs';
+import { page as galleryPage, screens, slug } from './app-gallery.mjs';
 import { judge } from '../.agents/checks/render.mjs';
 import { scales } from '../.agents/checks/brand.mjs';
-import { path as visitPath, routes, serve } from '../app/e2e/web.mjs';
+import { find, routes, serve } from '../app/e2e/web.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
 export const RENDERS = join(root, 'features/app/renders');
 const W = 390, H = 844, MAX_SCREENS = 8;
-
-// "today", "/today", "(tabs)/today" and "items/42" are the paths /today and /items/42; "index" and "/" are /.
-export const toPath = route => visitPath(String(route).replace(/^\/+/, '') || 'index');
-export const slug = p => p.replace(/^\/+|\/+$/g, '').replace(/[^\w.-]+/g, '-') || 'index';
+export { slug };
 
 // Waits until the screen has drawn: the network is quiet, fonts are in, and no animation is still running.
 async function settle(page) {
@@ -106,40 +105,77 @@ export async function contactSheet(shots, file, { browser }) {
 
 const line = f => `${f.level === 'error' ? 'ERROR' : 'warn '} ${f.id}  ${f.where}  ${f.msg}`;
 
+// The page names itself: data-screen on the screen's root, and data-state there (or on each data-view) for the state it is drawn in.
+const names = page => page.evaluate(() => {
+  const el = document.querySelector('[data-screen]'), states = [el, ...document.querySelectorAll('[data-view][data-state]')].flatMap(e => (e?.dataset.state ?? '').split(/[\s,]+/)).filter(Boolean);
+  return { screen: el?.dataset.screen ?? null, states: [...new Set(states)] };
+});
+async function readNames(url, { browser }) {
+  const page = await browser.newPage({ viewport: { width: W, height: H } });
+  try { await page.goto(url, { waitUntil: 'load' }); await settle(page); return await names(page); } finally { await page.close(); }
+}
+// A status a person or a builder set ("tests", "fixed") stands while the checks stay clean.
+const kept = file => { try { const s = JSON.parse(readFileSync(file, 'utf8')).status; return ['built', 'tests', 'fixed'].includes(s) ? s : null; } catch { return null; } };
+
+// Checks one route light and dark, saves <slug>.png, <slug>-dark.png and <slug>.json, and returns what it wrote.
+export async function checkRoute({ route, path }, { browser, base, out = RENDERS }) {
+  const name = slug(route), json = join(out, `${name}.json`), url = base + path;
+  const status = await fetch(url).then(r => r.status, () => 0);
+  if (status === 404 || !status) {
+    const result = { route, screen: null, states: [], status: 'fail', findings: [{ level: 'error', id: 'A0', where: path, msg: `no screen answers at ${path} (${status || 'no answer'}): check the file under app/src/app` }] };
+    writeFileSync(json, JSON.stringify(result, null, 2) + '\n'); return { ...result, path, screens: 0 };
+  }
+  const findings = [], screens = {};
+  for (const dark of [false, true]) {
+    const got = await checkPage(url, { browser, dark });
+    screens[dark ? 'dark' : 'light'] = got.screens;
+    findings.push(...got.findings.map(f => dark ? { ...f, where: `dark ${f.where}` } : f));
+    await shoot(url, join(out, `${name}${dark ? '-dark' : ''}.png`), { browser, dark });
+  }
+  // A finding the light and the dark run share is one finding.
+  const seen = new Set(), list = findings.filter(f => { const k = `${f.id}|${f.where.replace(/^dark /, '')}|${f.msg}`; if (seen.has(k)) return false; seen.add(k); return true; });
+  const errors = list.filter(f => f.level === 'error').length;
+  const result = { route, ...await readNames(url, { browser }), status: errors ? 'fail' : kept(json) ?? 'clean', findings: list };
+  writeFileSync(json, JSON.stringify(result, null, 2) + '\n');
+  return { ...result, path, screens };
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const args = process.argv.slice(2), flags = new Set(args.filter(a => a.startsWith('--'))), asked = args.filter(a => !a.startsWith('--'));
   const unknown = [...flags].filter(f => !['--dark', '--sheet', '--json'].includes(f));
-  if (unknown.length) { process.stderr.write(`unknown ${unknown.join(' ')}\n${readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 7).join('\n')}\n`); process.exit(2); }
+  if (unknown.length) { process.stderr.write(`unknown ${unknown.join(' ')}\n${readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 8).join('\n')}\n`); process.exit(2); }
   const pw = playwright(); if (!pw) { process.stderr.write('Playwright is not installed here, so nothing can be rendered\n'); process.exit(2); }
   const json = flags.has('--json'), say = json ? () => {} : s => console.log(s);
   let site;
   try { site = await serve({ log: say }); } catch (e) { process.stderr.write(`${e.message}\n`); process.exit(2); }
-  const browser = await pw.chromium.launch(), report = [], shots = [];
+  const browser = await pw.chromium.launch(), report = [];
   try {
-    let paths = asked.map(toPath);
-    if (!paths.length) {
-      const all = routes();
-      for (const r of all.filter(r => r.dynamic)) say(`warn  skipped ${r.page}: it needs a real value, so name it, as in  node scripts/app-check.mjs ${r.path.replace(/\[\.*(\w+)\]/g, '1')}`);
-      paths = all.filter(r => !r.dynamic).map(r => r.path);
+    const all = routes(); let todo = asked.map(a => find(a, all));
+    if (!asked.length) {
+      for (const r of all.filter(r => r.dynamic)) say(`warn  skipped ${r.route}: it needs a real value, so name one, as in  node scripts/app-check.mjs ${r.path.replace(/\[\.*(\w+)\]/g, '1')}`);
+      todo = all.filter(r => !r.dynamic);
     }
+    for (const r of todo.filter(r => !r.path)) say(`warn  skipped ${r.route}: it needs a real value, so name a path, as in  item/1`);
     mkdirSync(RENDERS, { recursive: true });
-    for (const p of paths) for (const dark of flags.has('--dark') ? [false, true] : [false]) {
-      const url = site.url + p, name = `${slug(p)}${dark ? '-dark' : ''}`, file = join(RENDERS, `${name}.png`);
-      const status = await fetch(url).then(r => r.status, () => 0);
-      if (status === 404) { report.push({ route: p, dark, findings: [{ level: 'error', id: 'A0', where: p, msg: 'no screen answers at this path (404): check the file under app/src/app' }] }); say(`\n${p}${dark ? ' dark' : ''}\nERROR A0  ${p}  no screen answers at this path (404)`); continue; }
-      const { findings, screens } = await checkPage(url, { browser, dark });
-      await shoot(url, file, { browser, dark }); shots.push({ file, label: `${p}${dark ? ' dark' : ''}` });
-      report.push({ route: p, dark, screens, render: file, findings });
-      const n = findings.filter(f => f.level === 'error').length;
-      say(`\n${p}${dark ? ' dark' : ''}  (${screens} screenful${screens > 1 ? 's' : ''})`);
-      for (const f of findings) say(line(f));
-      say(`${n ? `${n} error(s)` : 'ok'}  ${file.slice(root.length + 1)}`);
+    for (const r of todo.filter(r => r.path)) {
+      const got = await checkRoute(r, { browser, base: site.url });
+      report.push(got);
+      const n = got.findings.filter(f => f.level === 'error').length;
+      say(`\n${got.route}  ${got.path}${got.screen ? `  screen ${got.screen}` : ''}${got.states.length ? `  states ${got.states.join(', ')}` : ''}`);
+      for (const f of got.findings) say(line(f));
+      say(`${n ? `${n} error(s)` : 'ok'}  features/app/renders/${slug(got.route)}${got.screens ? '{.png,-dark.png,.json}' : '.json'}`);
     }
-    let sheet = null;
-    if (flags.has('--sheet') && shots.length) { sheet = join(RENDERS, 'contact.png'); await contactSheet(shots, sheet, { browser }); say(`\ncontact sheet  ${sheet.slice(root.length + 1)}`); }
+    let sheet = null, gallery = null;
+    if (flags.has('--sheet') && report.length) {
+      sheet = join(RENDERS, 'contact.png');
+      const shots = report.flatMap(r => r.screens ? ['', '-dark'].map(d => ({ file: join(RENDERS, `${slug(r.route)}${d}.png`), label: `${r.route}${d && ' dark'}` })) : []);
+      await contactSheet(shots, sheet, { browser }); say(`\ncontact sheet  features/app/renders/contact.png`);
+    }
+    // A full run leaves the gallery current, so Ben sees every screen beside what its checks found.
+    if (!asked.length) { gallery = join(root, 'features/app/gallery.html'); writeFileSync(gallery, galleryPage(screens(RENDERS), { renders: relative(dirname(gallery), RENDERS) })); say(`gallery  features/app/gallery.html`); }
     const errors = report.reduce((n, r) => n + r.findings.filter(f => f.level === 'error').length, 0);
-    if (json) process.stdout.write(JSON.stringify({ errors, sheet, pages: report }, null, 2) + '\n');
-    else say(`\n${report.length} screen(s) checked, ${errors ? `${errors} error(s).` : 'app checks ok.'} A pass means the rules were followed, not that it looks good: look at the renders, then run break-ui.`);
+    if (json) process.stdout.write(JSON.stringify({ errors, sheet, gallery, pages: report }, null, 2) + '\n');
+    else say(`\n${report.length} screen(s) checked in light and dark, ${errors ? `${errors} error(s).` : 'app checks ok.'} A pass means the rules were followed, not that it looks good: look at the renders, then run break-ui.`);
     process.exitCode = errors ? 1 : 0;
   } finally { await browser.close(); await site.close(); }
 }

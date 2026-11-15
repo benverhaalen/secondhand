@@ -6,7 +6,8 @@ import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { checkPage, slug, toPath } from './app-check.mjs';
+import { checkPage, slug } from './app-check.mjs';
+import { find } from '../app/e2e/web.mjs';
 import { playwright } from './brand-check.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
@@ -36,9 +37,12 @@ const ids = async (body, opts) => (await checkPage(serve(body), { browser, ...op
 
 const tabs = current => `<nav style="display:flex;padding:16px 0;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" style="flex:1 1 0;text-align:center" ${i ? '' : current}>${t}</a>`).join('')}</nav>`;
 
-test('app-check: a route names the path it is visited at, and its render file', () => {
-  assert.deepEqual(['index', '/', 'today', '/today', '(tabs)/today', 'items/42', '(tabs)/index'].map(toPath), ['/', '/', '/today', '/today', '/today', '/items/42', '/']);
-  assert.deepEqual(['/', '/today', '/items/42'].map(slug), ['index', 'today', 'items-42']);
+test('app-check: what a builder types finds the route of the export, the path to open, and the gallery name', () => {
+  const list = [['/(tabs)/index', '^/(?:/)?$'], ['/(tabs)/sell', '^/sell(?:/)?$'], ['/item/[id]', '^/item/(?<id>[^/]+?)(?:/)?$', { id: 'id' }]]
+    .map(([page, re, keys = {}]) => ({ route: page.slice(1), page, path: page.replace(/\/\(\w+\)/, '').replace(/\/index$/, '') || '/', regex: new RegExp(re), dynamic: Object.keys(keys).length > 0 }));
+  const got = ['index', '/', 'sell', '/sell', '(tabs)/sell', 'item/42', 'item/[id]'].map(a => find(a, list));
+  assert.deepEqual(got.map(g => `${g.route} ${g.path}`), ['(tabs)/index /', '(tabs)/index /', '(tabs)/sell /sell', '(tabs)/sell /sell', '(tabs)/sell /sell', 'item/[id] /item/42', 'item/[id] null']);
+  assert.deepEqual(['(tabs)/index', 'item/[id]', 'index'].map(slug), ['tabs-index', 'item-id', 'index']);
 });
 
 test('app-check: a current tab that grows and pushes its neighbours over fails (U7)', { skip: !pw }, async () => {
