@@ -8,12 +8,13 @@
   --surface:     #FFFFFF;               /* a card, a sheet, the receipt: what lies on the page */
   --ink:         #0A0A0A;               /* all text, icons, the black pill (C4) */
   --on-color:    #0A0A0A;               /* text on a state fill, in light and dark */
-  --on-field:    #0A0A0A;               /* text on the field: the ink of its mode */
-  --on-field-2:  rgb(10 10 10 / .65);   /* secondary text on the field (5.3:1 on sky) */
-  --sec-on-field: rgb(255 255 255 / .72); /* a second button on the field */
   --ink-2:       rgb(10 10 10 / .65);   /* secondary text on white (6.1:1) and gray (5.4:1) only; 13px and up */
   --gray:        #EFF1F2;               /* filled secondary buttons, photo tiles (ref-12, ref-15) */
   --rule:        rgb(10 10 10 / .08);   /* hairlines */
+  /* on the field. These sit after --ink and --ink-2 on purpose: a checker that names a color by its value takes the first name */
+  --on-field:    #0A0A0A;               /* text on the field: the ink of its mode */
+  --on-field-2:  rgb(10 10 10 / .65);   /* secondary text on the field (5.3:1 on sky) */
+  --sec-on-field: rgb(255 255 255 / .72); /* a second button on the field */
   /* the ring (Art. 5; Ben, round 8): eight light hues under one rule, in ring order. A field is three neighbors on it */
   --lilac:       #DDCEFE;               /* no meaning yet. Not a state: under simulated deutan vision it sits .004 from sky (Art. 5, States) */
   --sky:         #A5E1FE;               /* state "live" (Ben, round 10) */
