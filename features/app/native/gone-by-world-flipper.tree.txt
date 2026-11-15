@@ -1,123 +1,124 @@
-Attributes: Application, 0x12d5557c0, pid: 71096, label: 'secondhand'
+Attributes: Application, 0x10221ce40, pid: 82428, label: 'secondhand'
 Element subtree:
- →Application, 0x12d5557c0, pid: 71096, label: 'secondhand'
-    Window (Main), 0x12d555e00, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x12d5552c0, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x12d5561c0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x12d556300, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x12d556080, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x12d555f40, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x12d556bc0, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x12d556e40, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x12d5566c0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x12d556440, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x12d556940, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x12d556800, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x12d556a80, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x12d556d00, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x12d554140, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x12d554000, {{0.0, 62.0}, {402.0, 736.0}}
-                                    ScrollView, 0x12d5543c0, {{0.0, 62.0}, {402.0, 736.0}}
-                                      Other, 0x12d554280, {{0.0, 62.0}, {402.0, 1508.7}}
-                                        Other, 0x12d554500, {{0.0, 62.0}, {402.0, 1508.7}}
-                                          Other, 0x12d5548c0, {{20.0, 62.0}, {362.0, 44.0}}
-                                            Button, 0x12d554a00, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                          StaticText, 0x12d554780, {{20.0, 118.0}, {362.0, 36.3}}, label: 'Gone by Friday'
-                                            StaticText, 0x12d554640, {{20.0, 118.0}, {362.0, 36.3}}, label: 'Gone by Friday'
-                                          StaticText, 0x12819fc00, {{20.0, 159.0}, {42.7, 17.7}}, label: 'Moving'
-                                            StaticText, 0x12819e800, {{20.0, 159.0}, {42.7, 17.7}}, label: 'Moving'
-                                          Button, 0x12819f840, {{70.7, 158.3}, {84.0, 19.3}}, identifier: 'moving', label: 'Moving day: Friday, Nov 20'
-                                          StaticText, 0x12819d2c0, {{20.0, 209.7}, {362.0, 21.3}}, label: 'Sell'
-                                            StaticText, 0x12819f980, {{20.0, 209.7}, {362.0, 21.3}}, label: 'Sell'
-                                          StaticText, 0x129966a80, {{20.0, 239.0}, {362.0, 16.0}}, label: 'You get about $470 if all 8 sell'
-                                            StaticText, 0x129964780, {{20.0, 239.0}, {362.0, 16.0}}, label: 'You get about $470 if all 8 sell'
-                                          Button, 0x1299666c0, {{20.0, 271.0}, {110.0, 135.7}}, identifier: 'thing-it_f000', label: 'Carhartt Detroit Jacket J97, brown duck, L'
-                                          Button, 0x129966440, {{146.0, 271.0}, {110.0, 135.7}}, identifier: 'thing-it_f001', label: 'Levi’s 501, 32x30, light wash'
-                                          Button, 0x1299648c0, {{272.0, 271.0}, {110.0, 135.7}}, identifier: 'thing-it_f002', label: 'Nike Dunk Low Grey Fog, men’s 10'
-                                          Button, 0x129966580, {{20.0, 411.0}, {44.7, 19.0}}, identifier: 'price-it_f000', label: 'Carhartt Detroit Jacket J97, brown duck, L: For $91'
-                                          Button, 0x129964280, {{146.0, 411.0}, {48.3, 19.0}}, identifier: 'price-it_f001', label: 'Levi’s 501, 32x30, light wash: For $40'
-                                          Button, 0x129966800, {{272.0, 411.0}, {47.7, 19.0}}, identifier: 'price-it_f002', label: 'Nike Dunk Low Grey Fog, men’s 10: For $82'
-                                          Button, 0x129966f80, {{20.0, 446.7}, {110.0, 135.7}}, identifier: 'thing-it_f003', label: 'Patagonia Retro-X fleece, cream, M'
-                                          Button, 0x129966940, {{146.0, 446.7}, {110.0, 135.7}}, identifier: 'thing-it_f009', label: 'Russell Athletic Chico State hoodie, crimson, XXL'
-                                          Button, 0x129964000, {{272.0, 446.7}, {110.0, 135.7}}, identifier: 'thing-it_f010', label: 'Marquette 74 Final Four tee, gold, XL'
-                                          Button, 0x129966300, {{20.0, 586.7}, {52.0, 19.0}}, identifier: 'price-it_f003', label: 'Patagonia Retro-X fleece, cream, M: For $107'
-                                          Button, 0x129967340, {{146.0, 586.7}, {48.0, 19.0}}, identifier: 'price-it_f009', label: 'Russell Athletic Chico State hoodie, crimson, XXL: For $34'
-                                          Button, 0x129966bc0, {{272.0, 586.7}, {48.0, 19.0}}, identifier: 'price-it_f010', label: 'Marquette 74 Final Four tee, gold, XL: For $36'
-                                          Button, 0x1299643c0, {{20.0, 622.3}, {110.0, 135.7}}, identifier: 'thing-it_f011', label: 'Carhartt Active Jacket J130, brown, XL'
-                                          Button, 0x129967200, {{146.0, 622.3}, {110.0, 135.7}}, identifier: 'thing-it_f012', label: 'Levi’s 505, 34x32, medium wash'
-                                          Button, 0x129966d00, {{20.0, 762.3}, {47.7, 19.0}}, identifier: 'price-it_f011', label: 'Carhartt Active Jacket J130, brown, XL: For $95'
-                                          Button, 0x129966e40, {{146.0, 762.3}, {47.7, 19.0}}, identifier: 'price-it_f012', label: 'Levi’s 505, 34x32, medium wash: For $44'
-                                          StaticText, 0x1299670c0, {{20.0, 830.0}, {362.0, 21.3}}, label: 'Already sold'
-                                            StaticText, 0x129967840, {{20.0, 830.0}, {362.0, 21.3}}, label: 'Already sold'
-                                          Button, 0x1299675c0, {{20.0, 867.3}, {110.0, 135.7}}, identifier: 'thing-it_f018', label: 'IKEA Ingolf chair, white'
-                                          Button, 0x129965cc0, {{146.0, 867.3}, {110.0, 135.7}}, identifier: 'thing-it_f019', label: 'Carhartt double knee pants, brown, 34x32'
-                                          Button, 0x129967d40, {{272.0, 867.3}, {110.0, 135.7}}, identifier: 'thing-it_f020', label: 'Champion reverse weave hoodie, grey, L'
-                                          StaticText, 0x129965540, {{20.0, 1009.0}, {110.0, 16.0}}, label: 'You get $24.80'
-                                            StaticText, 0x129967c00, {{20.0, 1009.0}, {110.0, 16.0}}, label: 'You get $24.80'
-                                          StaticText, 0x129965900, {{146.0, 1009.0}, {110.0, 16.0}}, label: 'You get $35.72'
-                                            StaticText, 0x1299657c0, {{146.0, 1009.0}, {110.0, 16.0}}, label: 'You get $35.72'
-                                          StaticText, 0x129967980, {{272.0, 1009.0}, {110.0, 16.0}}, label: 'You get $32.07'
-                                            StaticText, 0x129965180, {{272.0, 1009.0}, {110.0, 16.0}}, label: 'You get $32.07'
-                                          Button, 0x1299652c0, {{20.0, 1043.0}, {110.0, 135.7}}, identifier: 'thing-it_f021', label: '1990s Chicago Bulls tee, black, L'
-                                          StaticText, 0x129965e00, {{20.0, 1184.7}, {110.0, 16.0}}, label: 'You get $38.14'
-                                            StaticText, 0x129964140, {{20.0, 1184.7}, {110.0, 16.0}}, label: 'You get $38.14'
-                                          StaticText, 0x129964dc0, {{20.0, 1250.7}, {362.0, 21.3}}, label: 'Until Friday'
-                                            StaticText, 0x129965400, {{20.0, 1250.7}, {362.0, 21.3}}, label: 'Until Friday'
-                                          Other, 0x129964c80, {{20.0, 1307.0}, {24.0, 24.0}}
-                                            Other, 0x129964f00, {{22.2, 1308.2}, {19.5, 21.5}}
-                                              Other, 0x129964b40, {{22.2, 1310.2}, {19.5, 19.5}}
-                                              Other, 0x1299661c0, {{27.2, 1308.2}, {9.5, 5.5}}
-                                              Other, 0x129966080, {{22.2, 1316.2}, {19.5, 1.5}}
-                                              Other, 0x129964640, {{26.5, 1320.0}, {11.0, 6.0}}
-                                          StaticText, 0x129964a00, {{56.0, 1300.0}, {326.0, 17.7}}, label: 'Today'
-                                            StaticText, 0x129965a40, {{56.0, 1300.0}, {326.0, 17.7}}, label: 'Today'
-                                          StaticText, 0x129965b80, {{56.0, 1321.7}, {326.0, 16.0}}, label: 'Nothing changes yet'
-                                            StaticText, 0x129965f40, {{56.0, 1321.7}, {326.0, 16.0}}, label: 'Nothing changes yet'
-                                          Other, 0x129967e80, {{20.0, 1349.7}, {362.0, 62.0}}
-                                          Other, 0x129967700, {{20.0, 1369.0}, {24.0, 24.0}}
-                                            Other, 0x129965040, {{22.2, 1370.2}, {19.5, 21.5}}
-                                              Other, 0x129965680, {{22.2, 1372.2}, {19.5, 19.5}}
-                                              Other, 0x1299c8000, {{27.2, 1370.2}, {9.5, 5.5}}
-                                              Other, 0x1299c8140, {{22.2, 1378.2}, {19.5, 1.5}}
-                                              Other, 0x1299c8280, {{26.5, 1382.0}, {11.0, 6.0}}
-                                          StaticText, 0x1299c83c0, {{56.0, 1362.0}, {326.0, 17.7}}, label: 'Wednesday at 9 am'
-                                            StaticText, 0x1299c8500, {{56.0, 1362.0}, {326.0, 17.7}}, label: 'Wednesday at 9 am'
-                                          StaticText, 0x1299c8640, {{56.0, 1383.7}, {326.0, 16.0}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
-                                            StaticText, 0x1299c8780, {{56.0, 1383.7}, {326.0, 16.0}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
-                                          Other, 0x1299c88c0, {{20.0, 1411.7}, {362.0, 65.0}}
-                                          StaticText, 0x1299c8a00, {{56.0, 1424.0}, {326.0, 17.7}}, label: 'Thursday at 9 am'
-                                            StaticText, 0x1299c8b40, {{56.0, 1424.0}, {326.0, 17.7}}, label: 'Thursday at 9 am'
-                                          Other, 0x1299c8c80, {{20.0, 1432.3}, {24.0, 24.0}}
-                                            Other, 0x1299c8dc0, {{22.2, 1433.6}, {19.5, 21.5}}
-                                              Other, 0x1299c8f00, {{22.2, 1435.6}, {19.5, 19.5}}
-                                              Other, 0x1299c9040, {{27.2, 1433.6}, {9.5, 5.5}}
-                                              Other, 0x1299c9180, {{22.2, 1441.6}, {19.5, 1.5}}
-                                              Other, 0x1299c92c0, {{26.5, 1445.3}, {11.0, 6.0}}
-                                          Button, 0x1299c9400, {{56.0, 1445.7}, {135.3, 19.0}}, identifier: 'ending', label: 'What’s left Thursday: What’s left goes up free'
-                                          Other, 0x1299c9540, {{20.0, 1477.0}, {362.0, 62.0}}
-                                          Other, 0x1299c9680, {{20.0, 1496.3}, {24.0, 24.0}}
-                                            Other, 0x1299c97c0, {{22.2, 1497.6}, {19.6, 21.5}}
-                                              Other, 0x1299c9900, {{22.2, 1497.6}, {19.6, 21.5}}
-                                              Other, 0x1299c9a40, {{27.8, 1503.1}, {8.5, 8.5}}
-                                          StaticText, 0x1299c9b80, {{56.0, 1489.3}, {326.0, 17.7}}, label: 'Pickups until Thursday at 8 pm'
-                                            StaticText, 0x1299c9cc0, {{56.0, 1489.3}, {326.0, 17.7}}, label: 'Pickups until Thursday at 8 pm'
-                                          StaticText, 0x1299c9e00, {{56.0, 1511.0}, {326.0, 16.0}}, label: 'When a buyer asks, you pick the days and times. At your spot.'
-                                            StaticText, 0x1299c9f40, {{56.0, 1511.0}, {326.0, 16.0}}, label: 'When a buyer asks, you pick the days and times. At your spot.'
-                                      Other, 0x1299ca080, {{369.0, 62.0}, {30.0, 736.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
-                                        Other, 0x1299ca1c0, {{396.0, 65.0}, {3.0, 419.0}}
-                                      Other, 0x1299ca300, {{0.0, 765.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x1299ca440, {{3.0, 792.0}, {393.0, 3.0}}
-                                      Other, 0x1299ca580, {{369.0, 62.0}, {30.0, 736.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
-                                        Other, 0x1299ca6c0, {{396.0, 65.0}, {3.0, 419.0}}
-                                      Other, 0x1299ca800, {{0.0, 765.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x1299ca940, {{3.0, 792.0}, {393.0, 3.0}}
-                                  Button, 0x1299caa80, {{20.0, 810.0}, {362.0, 48.0}}, identifier: 'approve', label: 'Start the plan'
-                      Toolbar, 0x1299cabc0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
-                        Other, 0x1299cad00, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x10221ce40, pid: 82428, label: 'secondhand'
+    Window (Main), 0x1022255d0, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x102225990, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x102225ab0, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x1022256f0, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x102225810, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x102226050, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x102225bd0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x102225cf0, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x102225e10, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x102225f30, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x102226170, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x102226290, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x1022263b0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x1022264d0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x1022265f0, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x102226710, {{0.0, 0.0}, {402.0, 764.0}}
+                                    ScrollView, 0x102226830, {{0.0, 0.0}, {402.0, 764.0}}
+                                      Other, 0x102226950, {{0.0, 0.0}, {402.0, 1641.3}}
+                                        Other, 0x102223520, {{0.0, 0.0}, {402.0, 1641.3}}
+                                          Other, 0x102223640, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x102223760, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x102223880, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                          StaticText, 0x1022239a0, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Gone by Friday'
+                                            StaticText, 0x102223ac0, {{20.0, 118.0}, {362.0, 41.3}}, label: 'Gone by Friday'
+                                          StaticText, 0x10222a8e0, {{20.0, 164.0}, {48.3, 20.3}}, label: 'Moving'
+                                            StaticText, 0x10222aa00, {{20.0, 164.0}, {48.3, 20.3}}, label: 'Moving'
+                                          Button, 0x10222ab20, {{76.3, 163.3}, {95.3, 22.0}}, identifier: 'moving', label: 'Moving day: Friday, Nov 20'
+                                          StaticText, 0x10222ac40, {{20.0, 217.3}, {362.0, 24.3}}, label: 'Sell'
+                                            StaticText, 0x10222ad60, {{20.0, 217.3}, {362.0, 24.3}}, label: 'Sell'
+                                          StaticText, 0x10222ae80, {{20.0, 249.7}, {362.0, 18.3}}, label: 'You get about $470 if all 8 sell'
+                                            StaticText, 0x10222afa0, {{20.0, 249.7}, {362.0, 18.3}}, label: 'You get about $470 if all 8 sell'
+                                          Button, 0x10222b0c0, {{20.0, 284.0}, {110.0, 138.3}}, identifier: 'thing-it_f000', label: 'Carhartt Detroit Jacket J97, brown duck, L'
+                                          Button, 0x10222b1e0, {{146.0, 284.0}, {110.0, 138.3}}, identifier: 'thing-it_f001', label: 'Levi’s 501, 32x30, light wash'
+                                          Button, 0x10222b300, {{272.0, 284.0}, {110.0, 138.3}}, identifier: 'thing-it_f002', label: 'Nike Dunk Low Grey Fog, men’s 10'
+                                          Button, 0x10222b420, {{20.0, 426.3}, {50.0, 20.0}}, identifier: 'price-it_f000', label: 'Carhartt Detroit Jacket J97, brown duck, L: For $91'
+                                          Button, 0x10222b540, {{146.0, 426.3}, {54.3, 20.0}}, identifier: 'price-it_f001', label: 'Levi’s 501, 32x30, light wash: For $40'
+                                          Button, 0x10222b660, {{272.0, 426.3}, {53.7, 20.0}}, identifier: 'price-it_f002', label: 'Nike Dunk Low Grey Fog, men’s 10: For $82'
+                                          Button, 0x10222b780, {{20.0, 462.3}, {110.0, 138.3}}, identifier: 'thing-it_f003', label: 'Patagonia Retro-X fleece, cream, M'
+                                          Button, 0x10222b8a0, {{146.0, 462.3}, {110.0, 138.3}}, identifier: 'thing-it_f009', label: 'Russell Athletic Chico State hoodie, crimson, XXL'
+                                          Button, 0x10222b9c0, {{272.0, 462.3}, {110.0, 138.3}}, identifier: 'thing-it_f010', label: 'Marquette 74 Final Four tee, gold, XL'
+                                          Button, 0x1022278e0, {{20.0, 604.7}, {58.3, 20.0}}, identifier: 'price-it_f003', label: 'Patagonia Retro-X fleece, cream, M: For $107'
+                                          Button, 0x102227a00, {{146.0, 604.7}, {53.7, 20.0}}, identifier: 'price-it_f009', label: 'Russell Athletic Chico State hoodie, crimson, XXL: For $34'
+                                          Button, 0x102227b20, {{272.0, 604.7}, {54.0, 20.0}}, identifier: 'price-it_f010', label: 'Marquette 74 Final Four tee, gold, XL: For $36'
+                                          Button, 0x102227c40, {{20.0, 640.7}, {110.0, 138.3}}, identifier: 'thing-it_f011', label: 'Carhartt Active Jacket J130, brown, XL'
+                                          Button, 0x102227d60, {{146.0, 640.7}, {110.0, 138.3}}, identifier: 'thing-it_f012', label: 'Levi’s 505, 34x32, medium wash'
+                                          Button, 0x102227e80, {{20.0, 783.0}, {53.7, 20.0}}, identifier: 'price-it_f011', label: 'Carhartt Active Jacket J130, brown, XL: For $95'
+                                          Button, 0x102227fa0, {{146.0, 783.0}, {53.7, 20.0}}, identifier: 'price-it_f012', label: 'Levi’s 505, 34x32, medium wash: For $44'
+                                          StaticText, 0x1022280c0, {{20.0, 851.0}, {362.0, 24.3}}, label: 'Already sold'
+                                            StaticText, 0x1022281e0, {{20.0, 851.0}, {362.0, 24.3}}, label: 'Already sold'
+                                          Button, 0x102228300, {{20.0, 891.3}, {110.0, 138.3}}, identifier: 'thing-it_f018', label: 'IKEA Ingolf chair, white'
+                                          Button, 0x102228420, {{146.0, 891.3}, {110.0, 138.3}}, identifier: 'thing-it_f019', label: 'Carhartt double knee pants, brown, 34x32'
+                                          Button, 0x102228540, {{272.0, 891.3}, {110.0, 138.3}}, identifier: 'thing-it_f020', label: 'Champion reverse weave hoodie, grey, L'
+                                          StaticText, 0x1022287b0, {{20.0, 1034.3}, {110.0, 18.3}}, label: 'You get $24.80'
+                                            StaticText, 0x1022288d0, {{20.0, 1034.3}, {110.0, 18.3}}, label: 'You get $24.80'
+                                          StaticText, 0x1022289f0, {{146.0, 1034.3}, {110.0, 18.3}}, label: 'You get $35.72'
+                                            StaticText, 0x102228b10, {{146.0, 1034.3}, {110.0, 18.3}}, label: 'You get $35.72'
+                                          StaticText, 0x102228c30, {{272.0, 1034.3}, {110.0, 18.3}}, label: 'You get $32.07'
+                                            StaticText, 0x10222dcc0, {{272.0, 1034.3}, {110.0, 18.3}}, label: 'You get $32.07'
+                                          Button, 0x10222dde0, {{20.0, 1069.7}, {110.0, 138.3}}, identifier: 'thing-it_f021', label: '1990s Chicago Bulls tee, black, L'
+                                          StaticText, 0x10222df00, {{20.0, 1212.7}, {110.0, 18.3}}, label: 'You get $38.14'
+                                            StaticText, 0x10222e020, {{20.0, 1212.7}, {110.0, 18.3}}, label: 'You get $38.14'
+                                          StaticText, 0x10222e140, {{20.0, 1280.0}, {362.0, 24.3}}, label: 'Until Friday'
+                                            StaticText, 0x10222e260, {{20.0, 1280.0}, {362.0, 24.3}}, label: 'Until Friday'
+                                          StaticText, 0x10222e380, {{56.0, 1332.3}, {326.0, 20.3}}, label: 'Today'
+                                            StaticText, 0x10222e4a0, {{56.0, 1332.3}, {326.0, 20.3}}, label: 'Today'
+                                          Other, 0x10222e5c0, {{20.0, 1341.7}, {24.0, 24.0}}
+                                            Other, 0x10222e6e0, {{22.2, 1342.9}, {19.5, 21.5}}
+                                              Other, 0x10222e800, {{22.2, 1344.9}, {19.5, 19.5}}
+                                              Other, 0x10222e920, {{27.2, 1342.9}, {9.5, 5.5}}
+                                              Other, 0x10222ea40, {{22.2, 1350.9}, {19.5, 1.5}}
+                                              Other, 0x10222eb60, {{26.5, 1354.7}, {11.0, 6.0}}
+                                          StaticText, 0x10222ec80, {{56.0, 1356.7}, {326.0, 18.3}}, label: 'Nothing changes yet'
+                                            StaticText, 0x10222eda0, {{56.0, 1356.7}, {326.0, 18.3}}, label: 'Nothing changes yet'
+                                          Other, 0x10222eec0, {{20.0, 1387.0}, {362.0, 67.0}}
+                                          StaticText, 0x10222efe0, {{56.0, 1399.3}, {326.0, 20.3}}, label: 'Wednesday at 9 am'
+                                            StaticText, 0x10222f100, {{56.0, 1399.3}, {326.0, 20.3}}, label: 'Wednesday at 9 am'
+                                          Other, 0x10222f220, {{20.0, 1408.7}, {24.0, 24.0}}
+                                            Other, 0x10222f340, {{22.2, 1409.9}, {19.5, 21.5}}
+                                              Other, 0x10222f460, {{22.2, 1411.9}, {19.5, 19.5}}
+                                              Other, 0x10222f580, {{27.2, 1409.9}, {9.5, 5.5}}
+                                              Other, 0x10222f6a0, {{22.2, 1417.9}, {19.5, 1.5}}
+                                              Other, 0x10222f7c0, {{26.5, 1421.7}, {11.0, 6.0}}
+                                          StaticText, 0x10222f8e0, {{56.0, 1423.7}, {326.0, 18.3}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
+                                            StaticText, 0x10222fa00, {{56.0, 1423.7}, {326.0, 18.3}}, label: 'What’s left drops to your lowest. Shipping stops at 8 pm.'
+                                          Other, 0x10222fb20, {{20.0, 1454.0}, {362.0, 70.3}}
+                                          StaticText, 0x10222fc40, {{56.0, 1466.3}, {326.0, 20.3}}, label: 'Thursday at 9 am'
+                                            StaticText, 0x10222fd60, {{56.0, 1466.3}, {326.0, 20.3}}, label: 'Thursday at 9 am'
+                                          Other, 0x10222fe80, {{20.0, 1477.3}, {24.0, 24.0}}
+                                            Other, 0x10222ffa0, {{22.2, 1478.6}, {19.5, 21.5}}
+                                              Other, 0x1022300c0, {{22.2, 1480.6}, {19.5, 19.5}}
+                                              Other, 0x1022301e0, {{27.2, 1478.6}, {9.5, 5.5}}
+                                              Other, 0x102230300, {{22.2, 1486.6}, {19.5, 1.5}}
+                                              Other, 0x102230420, {{26.5, 1490.3}, {11.0, 6.0}}
+                                          Button, 0x102228660, {{56.0, 1490.7}, {153.3, 21.7}}, identifier: 'ending', label: 'What’s left Thursday: What’s left goes up free'
+                                          Other, 0x102230980, {{20.0, 1524.7}, {362.0, 85.0}}
+                                          StaticText, 0x102230aa0, {{56.0, 1537.0}, {326.0, 20.3}}, label: 'Pickups until Thursday at 8 pm'
+                                            StaticText, 0x102230bc0, {{56.0, 1537.0}, {326.0, 20.3}}, label: 'Pickups until Thursday at 8 pm'
+                                          Other, 0x102230ce0, {{20.0, 1555.3}, {24.0, 24.0}}
+                                            Other, 0x102230e00, {{22.2, 1556.6}, {19.6, 21.5}}
+                                              Other, 0x102230f20, {{22.2, 1556.6}, {19.6, 21.5}}
+                                              Other, 0x102231040, {{27.8, 1562.1}, {8.5, 8.5}}
+                                          StaticText, 0x102344e80, {{56.0, 1561.3}, {326.0, 36.3}}, label: 'When a buyer asks, you pick the days and times. At your spot.'
+                                            StaticText, 0x102343a60, {{56.0, 1561.3}, {326.0, 36.3}}, label: 'When a buyer asks, you pick the days and times. At your spot.'
+                                      Other, 0x102081e60, {{369.0, 62.0}, {30.0, 702.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
+                                        Other, 0x10730a6e0, {{396.0, 65.0}, {3.0, 324.0}}
+                                      Other, 0x107306440, {{0.0, 731.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x10730b7c0, {{3.0, 758.0}, {393.0, 3.0}}
+                                      Other, 0x102231160, {{369.0, 62.0}, {30.0, 702.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
+                                        Other, 0x102231280, {{396.0, 65.0}, {3.0, 324.0}}
+                                      Other, 0x107204ff0, {{0.0, 731.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x107208580, {{3.0, 758.0}, {393.0, 3.0}}
+                                  Button, 0x107208f60, {{20.0, 776.0}, {362.0, 48.0}}, identifier: 'approve', label: 'Start the plan'
+                      Other, 0x10730b8e0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10730ba00, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x12d5557c0, pid: 71096, label: 'secondhand'
+ →Application, 0x10221ce40, pid: 82428, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x1299cae40, pid: 71096, label: 'secondhand'
+    Application, 0x1022317e0, pid: 82428, label: 'secondhand'
   }

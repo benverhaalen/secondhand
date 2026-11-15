@@ -1,50 +1,51 @@
-Attributes: Application, 0x129fc0a00, pid: 71115, label: 'secondhand'
+Attributes: Application, 0x102233680, pid: 83552, label: 'secondhand'
 Element subtree:
- →Application, 0x129fc0a00, pid: 71115, label: 'secondhand'
-    Window (Main), 0x129fc26c0, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x129fc0500, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x129fc03c0, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x129fc35c0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x129fc3980, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x129fc17c0, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x129fc3840, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x129fc2e40, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x129fc1b80, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x129fc1a40, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x129fc2080, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x129fc1680, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x129fc2300, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x129fc12c0, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x129fc2580, {{0.0, 0.0}, {402.0, 874.0}}
-                                  Other, 0x129fc2440, {{0.0, 62.0}, {402.0, 812.0}}
-                                    ScrollView, 0x129fc1900, {{0.0, 62.0}, {402.0, 812.0}}
-                                      Other, 0x129fc3e80, {{0.0, 62.0}, {402.0, 812.0}}
-                                        Other, 0x129fc1f40, {{0.0, 62.0}, {402.0, 812.0}}
-                                          Other, 0x129fc21c0, {{20.0, 62.0}, {362.0, 44.0}}
-                                            Button, 0x129fc2940, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
-                                          Other, 0x129fc1e00, {{20.0, 114.0}, {362.0, 48.0}}
-                                          Button, 0x129fc3ac0, {{68.0, 114.0}, {258.0, 48.0}}, identifier: 'search-box', label: 'Find an item or paste a link'
-                                          Button, 0x1283afc00, {{338.0, 118.0}, {40.0, 40.0}}, identifier: 'search-box-camera', label: 'Search with a photo'
-                                          Other, 0x1283ad680, {{36.0, 128.0}, {20.0, 20.0}}
-                                            Other, 0x1283ad040, {{37.9, 129.9}, {16.2, 16.2}}
-                                              Other, 0x1283ac640, {{37.9, 129.9}, {14.6, 14.6}}
-                                              Other, 0x1283ada40, {{49.5, 141.5}, {4.6, 4.6}}
-                                          StaticText, 0x1283aef80, {{20.0, 194.0}, {362.0, 35.3}}, label: 'Type what you want, paste a link, or take a photo. It looks on five sites at once.'
-                                            StaticText, 0x1283afe80, {{20.0, 194.0}, {362.0, 35.3}}, label: 'Type what you want, paste a link, or take a photo. It looks on five sites at once.'
-                                      Other, 0x1283ad7c0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x1283af0c0, {{396.0, 65.0}, {3.0, 772.0}}
-                                      Other, 0x1283afac0, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x1283af5c0, {{3.0, 834.0}, {396.0, 3.0}}
-                                      Other, 0x1283acc80, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
-                                        Other, 0x1283aee40, {{396.0, 65.0}, {3.0, 772.0}}
-                                      Other, 0x1283af200, {{62.0, 807.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                        Other, 0x1283aebc0, {{3.0, 834.0}, {396.0, 3.0}}
-                      Toolbar, 0x129ecf0c0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
-                        Other, 0x129ecf340, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x102233680, pid: 83552, label: 'secondhand'
+    Window (Main), 0x10222af40, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x1022381a0, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x102228840, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x10710ce40, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x102351130, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x102344e80, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x10213ce40, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x10211c790, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x1021671b0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x1021785b0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x102180fe0, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x10216a5d0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x1021194d0, {{0.0, 0.0}, {402.0, 874.0}}
+                                  Other, 0x102125ea0, {{0.0, 0.0}, {402.0, 874.0}}
+                                    ScrollView, 0x102159550, {{0.0, 0.0}, {402.0, 874.0}}
+                                      Other, 0x1021566b0, {{0.0, 0.0}, {402.0, 874.0}}
+                                        Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 874.0}}
+                                          Other, 0x10212a620, {{0.0, 0.0}, {402.0, 298.0}}
+                                          Other, 0x10216abd0, {{20.0, 62.0}, {362.0, 44.0}}
+                                            Button, 0x102131330, {{20.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-back', label: 'Back'
+                                          Other, 0x10217fdc0, {{20.0, 114.0}, {362.0, 48.0}}
+                                          Button, 0x102174370, {{68.0, 114.0}, {258.0, 48.0}}, identifier: 'search-box', label: 'Find an item or paste a link'
+                                          Button, 0x102153c70, {{338.0, 118.0}, {40.0, 40.0}}, identifier: 'search-box-camera', label: 'Search with a photo'
+                                          Other, 0x1021637e0, {{36.0, 128.0}, {20.0, 20.0}}
+                                            Other, 0x10216f810, {{37.9, 129.9}, {16.2, 16.2}}
+                                              Other, 0x10217d160, {{37.9, 129.9}, {14.6, 14.6}}
+                                              Other, 0x10211c370, {{49.5, 141.5}, {4.6, 4.6}}
+                                          StaticText, 0x1021662f0, {{20.0, 194.0}, {362.0, 40.3}}, label: 'Type what you want, paste a link, or take a photo. It looks on five sites at once.'
+                                            StaticText, 0x1021603e0, {{20.0, 194.0}, {362.0, 40.3}}, label: 'Type what you want, paste a link, or take a photo. It looks on five sites at once.'
+                                      Other, 0x102181340, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x102164b00, {{396.0, 65.0}, {3.0, 744.0}}
+                                      Other, 0x102151010, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x102185c80, {{65.0, 868.0}, {272.0, 3.0}}
+                                      Other, 0x102185da0, {{369.0, 62.0}, {30.0, 750.0}}, label: 'Vertical scroll bar, 1 page', value: 0%
+                                        Other, 0x102185ec0, {{396.0, 65.0}, {3.0, 744.0}}
+                                      Other, 0x102185fe0, {{62.0, 841.0}, {278.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                        Other, 0x102186100, {{65.0, 868.0}, {272.0, 3.0}}
+                      Other, 0x102186220, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x102183100, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x129fc0a00, pid: 71115, label: 'secondhand'
+ →Application, 0x102233680, pid: 83552, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x129ecc640, pid: 71115, label: 'secondhand'
+    Application, 0x10217dc20, pid: 83552, label: 'secondhand'
   }
