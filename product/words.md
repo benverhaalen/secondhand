@@ -932,3 +932,7 @@ Ben, thread "Make gradients and colors carry meaning", 2026-11-15 03:41 UTC, on 
 ## 2026-11-15 rules per surface, and research per surface in the loop
 Ben, thread "Make gradients and colors carry meaning", 2026-11-15 03:42 UTC, right after the note above.
 > also being conscious of what rules are only for certain surfaces and in the loop understanding what surfaces need more research and when and how based on previous effective research ive directed you in
+
+## 2026-11-15 image models sketch ideas and mock placeholders for judging, and the build uses the system parts
+Ben, the thread of the plan "Fastest path to a cohesive UI", 2026-11-15 04:01 UTC, on the plan's change after his 03:24 note.
+> the image models can create ideas for them. for mocks they can create placeholders just for my judgement. but i still want it to work relatively the same but for the image to code part it should utilize the components and things from the system

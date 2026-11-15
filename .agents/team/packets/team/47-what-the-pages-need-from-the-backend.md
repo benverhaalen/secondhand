@@ -58,18 +58,18 @@ Also `POST /v1/auth/google {id_token}`, `POST /v1/auth/email/start {email}` (202
 {"event": "job.stage", "job_id": "job_9b", "stage": "comps", "found": {"comps": 214, "kind": "sold jackets"}}
 ```
 
-**7. Your style** endpoint: `GET`, `PATCH /v1/me/style` over the existing `style_profile`.
+**7. Your style**: `GET`, `PATCH /v1/me/style` is already in product.md §7; nothing to add.
 
 **7b. Smaller asks**, each a row in [pages §8](../../../../spec/pages.md#8-what-the-pages-need-that-the-canon-does-not-have-yet): a purpose on the capture (`sell`, `appraise`, `find`) beside `capture.mode`; a realtime session for talk mode; an import preview ("We found these"); job events for a visitor's search; the open-decision count and top kind per item on `GET /v1/items`; web sessions (storage, CORS, Apple and Google web client ids); `format=pdf` on records, or tell us to drop it.
 
 **7c. Ways out** ([spec/ways-out.md](../../../../spec/ways-out.md), from Ben at 03:55: no one gets stuck in the AI flow). Each is one tap off the main path:
-- per-kind "ask me first" over the auto kinds (beside `ask_every_time`); `user.auto_reply` (`on`, `drafts`, `off`, per site)
-- `user.paused_until` with a Pause selling job (each site's own away mode, else end and relist on the date)
+- a person-set ask on promotable auto kinds through your existing `POST /v1/rules` (never `delist_after_sale`); `user.auto_reply` (`on`, `drafts`, `off`, per site; offers still follow the plan)
+- `user.paused_until` with a Pause selling job (each site's own away mode; else end, then a `relist` card on the date, never on Poshmark)
 - `POST /v1/decisions/:id/snooze {until}` (never past the deadline); an act option `done_elsewhere` that closes a card and reads the site
 - an item from words, with no photo (Post asks for one before posting); one listing imported by link
 - `attribute.locked` (the agent never proposes a change to that field); a typed price on the plan
-- `POST /v1/items/:id/sold-elsewhere {price_cents?}`, keep or donated at any time, `DELETE /v1/items/:id`, copy an item, split an item
-- self-ship on `POST /v1/orders/:id/ship {carrier, tracking?}`; moving a pickup time
+- `POST /v1/items/:id/sold-elsewhere {price_cents?}` (a user transition to `done` with an order of kind `offline`), `DELETE /v1/items/:id` (refused with an open order), copy an item, split an item, a capture that matches a held item asks Same thing?; photo add, remove and reorder on a live item
+- self-ship on `POST /v1/orders/:id/ship {carrier, tracking?}`; moving a pickup time; quiet hours for sellers; per-site price and returns terms
 - `user.prefs {suggest_edits}` (never offer photo edits); "Not my size" on a match
 
 **8. One name for the relink card.** The canon's decision kind is `relink`; [protocol and adapters §3.6](../../../../spec/engines/protocol-and-adapters.md#36-how-every-event-reaches-the-system-agent-proposal) says `account_stale`. Pick one; the pages use whichever you keep.
