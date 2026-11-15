@@ -2649,3 +2649,9 @@ Ben, in the Secondhand UI chat, recorded 2026-11-15:
 > why is it not using the wordmark font for the big text??? also why is everything so squished and condensed
 
 Implementation reading: restore Clofie SemiBold for large app screen headings. Preserve text and monetary roles in PP Neue Montreal. Evaluate spacing in rendered screens; spacing-token compliance alone does not establish comfortable composition. Preserve existing controls and functionality.
+
+## 2026-11-15 nate yes, wire Lens
+Nate, the capture lead's session, 2026-11-15, after the trace showed an app capture reaches identify with no tag text, no codes and no reader composed, and the question "Shall I wire Lens into the server now, switched on only by a TREG_TOKEN secret on Fly?".
+> Yes, wire Lens
+
+Used in: `app/src/edge/identify/compose.ts`, [the capture design](../spec/engines/capture.md) (the paid visual rung).
