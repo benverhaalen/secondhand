@@ -1892,3 +1892,9 @@ Nate, orchestrator's session, 2026-11-15, about 05:15 Central, after the Apify t
 > Now you have access to both ebay pricing, listings, etc, and facebook marketplace, alot of possible sources we should selectively integrate, improve benchmarks, of course not just utilizing apis
 
 Used in: `app/src/edge/harness/sites/apify/` (in build), [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate not focused on old data unless it holds relevance
+Nate, adaptation lead's session, 2026-11-15, evening Central, on the NBER eBay 2012 to 2013 backtests.
+> i dont like that you're still focused on such old data, unless it can hold some relevance
+
+Used in: [spec/engines/adaptation.md §4](../spec/engines/adaptation.md#4-how-each-is-proved-before-it-is-trusted), [spec/engines/credibility.md](../spec/engines/credibility.md#what-data-can-prove-what).
