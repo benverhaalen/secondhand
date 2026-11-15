@@ -42,6 +42,28 @@ Reason it out as the best product designer you know would: what the product is f
 
 A beautiful page with a dead control fails. So does a working page that drifts from the kit.
 
+## Right the first time: what every page already needs
+
+These are what fresh tests and Ben's gallery notes found missing, again and again, on pages that had passed their checks (44 gaps on Item, Plan and Post alone; the same kinds on Ship, Today and You). Build them in from the first render; the tests will look for them.
+
+| Every page has | How, with the part that does it |
+|---|---|
+| All eight states from `useScreen()` (`app/src/demo/screen.ts`), or `<Screen skip="state: why">` | failed is the page with what did not load and Try again (`EmptyState` with an action); offline is the last copy, and every action on it says "Waiting for signal" and does nothing else: never "Saved", "Posted" or "Accepted" |
+| A way back to the site on anything that lives there | `SiteLink` (the logo and "Open on the site", never the site's name in words); where the person checks a time or a listing's state, `SiteCopy` with the site's own screenshot (`parts/site-link.tsx`) |
+| "Why?" on every number the agent chose | The reason in plain words first, the numbers on a tap (Ben 06:53: "in plain language ... then see numbers if need be"); the same pattern as the price rule on You, Settings |
+| An honest Undo, or a warning before | A step that can be undone shows as done with `UndoToast`; one that cannot says so on the button or the line above it before the tap |
+| Money as "You get $X" | What reaches the person after fees. Never "You keep". A big amount always has its words (C6) |
+| Controls that say what they are | A switch has role switch and on or off and names its subject ("Post on eBay"); a header that folds passes `expanded` to `Press`; one testID per control on a screen (a pager and a row both called `photos` fail) |
+| Every input logged | Scrim taps, sheet closes and failed saves go through `log/`; a `catch` that only hides an error fails the code check |
+| Facts that agree with the state | A sold thing offers no Post; a live thing's changed plan shows Save; a brand typed wrong is corrected ("Carhart" to "Carhartt") |
+| The wash only if it is a main tab | `<Screen wash>` on `(tabs)/` routes and nowhere else (U8) |
+
+**Recipes that already exist; reach for them before writing a part.** A grid of things: `Tile` in a `Shelf` (folds from its header, `onAll` for See all). A tier of cards that can wait: `Pile` (piled, fans out on tap, `onLess` folds it back). The money at the top: `MoneyNews` with the best true number (`top()` in `app/src/today/cards.ts`). A dashboard: `MoneyBar`, `WeekChart`, `StateBar`, `PulseRow`. A choice of rules with its reason: the list on You, App defaults, then the numbers on a second sheet. A price range: `Range`. Sales the person can leave out: `SaleRow`. Times for a pickup: day chips and `TimeSpan`.
+
+## Spend checks where the change is
+
+Run `node scripts/app-check.mjs <route>` and the e2e file for the pages you changed, one file at a time (`--test-concurrency=1`); a shared part you changed adds the parts sheet and each page that uses it. The whole suite runs once before a demo, not after every merge. A mechanical change (a wording sweep, a test fix, a gap from a failing test) goes to a smaller model; judgment (what a page is for, a new part) stays with the builder.
+
 ## When the agent acts and when it hands off
 
 Ben, 04:04: design around human in the loop and show it off; 04:12: not as a slogan, as "a decision when navigating when to hand off to human vs agent". Decide it per action, on every page, with this rule (the tiers are in [decisions](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)):
