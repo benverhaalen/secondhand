@@ -6,11 +6,16 @@ import { useState } from 'react';
 import {
   Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Guess, IconButton, ItemCard, Line, Nav, Notice, Pill,
   Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type TabKey, type TagState,
+  Feed, QueueView,
 } from '@/ui';
 
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
 const at = (h: number) => Date.now() + h * HOUR;
+const QUEUE: Record<string, { title: string; photo: 'brass-lamp' | 'kindle' | 'ikea-chair' }> = {
+  q1: { title: 'Brass desk lamp', photo: 'brass-lamp' }, q2: { title: 'Kindle Paperwhite', photo: 'kindle' }, q3: { title: 'IKEA Stefan chair', photo: 'ikea-chair' },
+};
+const QUEUE_SITES: ('ebay' | 'depop')[] = ['ebay', 'depop'];
 const STATES: TagState[] = ['need', 'live', 'hot', 'stuck', 'sold', 'ship', 'paid', 'failed', 'draft', 'ended', 'working'];
 
 export default function Parts() {
@@ -27,6 +32,8 @@ function Sheetful() {
   const [tab, setTab] = useState<TabKey>('index');
   const [sheet, setSheet] = useState(false);
   const [size, setSize] = useState('');
+  const [fed, setFed] = useState(['f-a', 'f-b']);
+  const [queued, setQueued] = useState<string[] | null>(null);
   return (
     <Screen name="parts" state="all" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
@@ -60,6 +67,23 @@ function Sheetful() {
           due={at(22)} form="batch" status="working" step="2 of 3" primary={{ id: 'd-batch-run-print', label: 'Print 3 labels' }} second={{ id: 'd-batch-run-each', label: 'One by one' }} />
         <DecisionCard id="d-queue" kind="need" word="Offer" title="Kindle Paperwhite" photo="kindle" site="ebay" fact={{ label: 'You keep', amount: 51 }}
           due={at(6)} form="queue" waiting={4} primary={{ id: 'd-queue-accept', label: 'Accept $58' }} second={{ id: 'd-queue-counter', label: 'Counter' }} />
+      </Section>
+
+      <Section title="Feed: an answered card leaves and the gap closes">
+        <Feed>
+          {fed.map(k => (
+            <DecisionCard key={k} id={k} kind="need" word="Offer" title={k === 'f-a' ? 'Brass desk lamp' : 'Kindle Paperwhite'} photo={k === 'f-a' ? 'brass-lamp' : 'kindle'} site="ebay"
+              fact={{ label: 'You keep', amount: 28.9 }} primary={{ id: `${k}-accept`, label: 'Accept $32', onPress: () => setFed(f => f.filter(x => x !== k)) }} />
+          ))}
+        </Feed>
+        <Line><Pill id="f-reset" kind="second" label="Bring them back" onPress={() => setFed(['f-a', 'f-b'])} /></Line>
+      </Section>
+
+      <Section title="Queue view: one of many, full screen">
+        <Line><Pill id="q-open" kind="second" label="Open a queue of 3" onPress={() => setQueued(['q1', 'q2', 'q3'])} /></Line>
+        <QueueView id="q" open={!!queued} title="Ready to post" total={3} does="Post at $45 on 2 sites" onClose={() => setQueued(null)}
+          entries={(queued ?? []).map(k => ({ id: k, title: QUEUE[k].title, photo: QUEUE[k].photo, price: '$45', sites: QUEUE_SITES }))}
+          onApprove={e => setQueued(q => (q && q.length > 1 ? q.filter(x => x !== e.id) : null))} onSkip={e => setQueued(q => (q && q.length > 1 ? q.filter(x => x !== e.id) : null))} onEdit={() => setQueued(null)} />
       </Section>
 
       <Section title="Item card">
