@@ -6,7 +6,7 @@ The browser follows `/v1/stream`, refreshes on focus, and reads visible resource
 
 ## Current server boundaries
 
-The UI does not simulate posting. At the original integration baseline, `POST /v1/items/:id/sell` and `POST /v1/items/:id/listings` were restricted example handlers. Capture upload accepted real image bytes, but finish returned a copied example job and created an item with no photo references. Those require genuine backend wiring before upload-to-approved-publication can be demonstrated. Item edits, watch management, signed decisions, live search, settings, connection-service availability, and message submission use existing engine handlers. Message submission means queued, not delivered.
+The UI does not simulate posting. At the original integration baseline, `POST /v1/items/:id/sell` and `POST /v1/items/:id/listings` were restricted example handlers. Capture finish now waits for its existing identify work, preserves uploaded photo references and returns only the real job. Photos are served through an authenticated endpoint; the desktop fetches them with its bearer session. Approved publishing still needs genuine backend wiring before upload-to-approved-publication can be demonstrated. Item edits, watch management, signed decisions, live search, settings, connection-service availability, and message submission use existing engine handlers. Message submission means queued, not delivered.
 
 ## Design
 

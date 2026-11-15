@@ -575,8 +575,25 @@ export const handlers: Record<string, Handler> = {
   }),
   'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', async ctx=> {
     const {runtime}=await import('./runtime.ts');
-    const row=read(ctx); writable(row); fields(ctx.body,{version},{note:text}); checkVersion(ctx,row);
-    if (row.data==='captured' && !row.identify_job_id) startIdentify(row,ctx.log);
+    let row=read(ctx); writable(row); fields(ctx.body,{version},{note:text,title:text}); checkVersion(ctx,row);
+    const uploaded: {id:string;role:string;url:string;use:'real';ai_marked:false}[]=[];
+    if (row.data==='captured') {
+      for (const photo of row.photo_rows ?? []) {
+        if (!row.state.kept.includes(photo.key)) continue;
+        if (!await photoStore().read(row.user_id,photo.id)) throw invalid('Upload each photo before saving the item',['photos']);
+        uploaded.push({id:photo.id,role:photo.role,url:`/v1/photos/${photo.id}`,use:'real',ai_marked:false});
+      }
+      if (!uploaded.length && !runtime.store.get('item',row.user_id,row.item_id)) throw invalid('Add a photo before saving the item',['photos']);
+      if (!row.identify_job_id) startIdentify(row,ctx.log);
+      let pending=identifyRuns.get(row.id);
+      while (pending) {
+        await pending;
+        const next=identifyRuns.get(row.id);
+        if (next===pending) break;
+        pending=next;
+      }
+      row=read(ctx);writable(row);
+    }
     const at=new Date(deps.now()).toISOString();
     const state=effectiveState(row), selected=select(state,params), keys=selected.process.map(step=>step.key);
     const sources:Record<Fact['source'],Attribute['source']>={label:'label',measured:'measured',lookup:'spec',you_said:'you_said',seen:'inferred',derived:'inferred'};
@@ -597,11 +614,15 @@ export const handlers: Record<string, Handler> = {
           const merged=mergeAttribute(index<0?next:attributes[index],next,next.source==='you_said'?'user':'auto');
           if (index<0) attributes.push(merged); else attributes[index]=merged;
         }
-        st.put('item',current?{...current,attributes,updated_at:at}:{id:row.item_id,user_id:row.user_id,title:'',state:'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos:[],created_at:at,updated_at:at});
+        const priorPhotos=Array.isArray(current?.photos)?current.photos as {id:string}[]:[];
+        const photos=[...priorPhotos.filter(photo=>!uploaded.some(next=>next.id===photo.id)),...uploaded];
+        const title=typeof ctx.body.title==='string'?ctx.body.title:current?.title ?? '';
+        st.put('item',current?{...current,title,attributes,photos,updated_at:at}:{id:row.item_id,user_id:row.user_id,title,state:row.data==='captured'?'review':'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos,created_at:at,updated_at:at});
       });
       write(ctx,row,'judged');
     },()=>({item_id:row.item_id}));
-    return {status:202,body:{...structuredClone(example('captures.finish').response as Record<string,unknown>),capture:view(row),item:{id:row.state.item_id,state:'researching'},...(row.data==='captured'?{jobs:[{id:row.identify_job_id,kind:'identify',stream:`/v1/jobs/${row.identify_job_id}/events`}]}:{})}};
+    if (row.data==='captured') return {status:202,body:{capture:view(row),item:{id:row.item_id,state:runtime.store.get('item',row.user_id,row.item_id)!.state},jobs:row.identify_job_id?[{id:row.identify_job_id,kind:'identify',stream:`/v1/jobs/${row.identify_job_id}/events`}]:[]}};
+    return {status:202,body:{...structuredClone(example('captures.finish').response as Record<string,unknown>),capture:view(row),item:{id:row.state.item_id,state:'researching'}}};
   }),
   'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c=>fields(c.body,{voice:bool})),
 };

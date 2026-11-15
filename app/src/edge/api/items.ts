@@ -57,7 +57,8 @@ export const handlers: Record<string, Handler> = {
     for (const row of rows) {
       const card = await assembleCard(ctx.user_id!, row.id, ports, ctx.log);
       const tile = selectFields((row.tile as Record<string, unknown> | undefined) ?? row, tileExamples);
-      data.push({ ...tile, id: row.id, ...(row.price_cents ? { price_cents: row.price_cents } : {}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
+      const cover=card.photos.find(photo=>typeof (photo as Record<string,unknown>).url==='string') as {url?:string}|undefined;
+      data.push({ ...tile, id: row.id, ...(row.price_cents ? { price_cents: row.price_cents } : {}), ...(cover?.url?{cover_photo_url:cover.url}:{}), title: card.item.title, state: card.item.state, quantity: card.item.quantity, version: row.version });
     }
     const sample = example('items.list').response as { data: { id: string }[]; next_cursor: string | null };
     const exampleOnly = ctx.user_id === EXAMPLE_USER && examplesServed() && rows.every(row => row.data === 'example') && sample.data.every(tile => rows.some(row => row.id === tile.id));
