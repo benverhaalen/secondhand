@@ -29,11 +29,11 @@ class Database:
     def __init__(self):
         self.db = sqlite3.connect(':memory:')
         self.db.row_factory = sqlite3.Row
-        self.db.execute('CREATE TABLE principal_map (principal, user_id)')
+        self.db.execute('CREATE TABLE principal_map (principal, user_id, grant_id)')
         self.db.execute('CREATE TABLE break_glass (id, principal, reason, started_at, ended_at, reason_closed)')
         self.db.execute('CREATE TABLE violation (user_id, table_name, row_id, rule, data)')
-        self.db.execute("INSERT INTO principal_map VALUES ('runner', 'system')")
-        self.db.execute("INSERT INTO principal_map VALUES ('runner', 'usr_backtest')")
+        self.db.execute("INSERT INTO principal_map VALUES ('runner', 'system', NULL)")
+        self.db.execute("INSERT INTO principal_map VALUES ('runner', 'usr_backtest', NULL)")
         self.now = datetime.now(timezone.utc).replace(tzinfo=None)
         self.calls = []
 
@@ -52,10 +52,10 @@ def test_sweep_closes_stale_windows_and_unlogged_wildcards_but_leaves_fresh_acce
     from tasks.guard_job import sweep
     sql = Database()
     for principal, age, ended in [('stale', 61, None), ('fresh', 59, None), ('boundary', 60, None), ('closed', 90, sql.now)]:
-        sql.db.execute('INSERT INTO principal_map VALUES (?, ?)', (principal, '*'))
+        sql.db.execute('INSERT INTO principal_map VALUES (?, ?, ?)', (principal, '*', principal))
         sql.db.execute('INSERT INTO break_glass VALUES (?, ?, ?, ?, ?, NULL)',
                        (principal, principal, 'maintenance', (sql.now - timedelta(minutes=age)).isoformat(' '), ended.isoformat(' ') if ended else None))
-    sql.db.execute("INSERT INTO principal_map VALUES ('rogue', '*')")
+    sql.db.execute("INSERT INTO principal_map VALUES ('rogue', '*', NULL)")
     found = sweep(sql)
     assert {r['row_id'] for r in found} == {'closed', 'rogue'}
     assert all(r['rule'] == 'principal_map_unlogged_wildcard' for r in found)
@@ -64,6 +64,29 @@ def test_sweep_closes_stale_windows_and_unlogged_wildcards_but_leaves_fresh_acce
     assert stale['ended_at'] and stale['reason_closed'] == 'swept by guard'
     assert sql.db.execute("SELECT ended_at FROM break_glass WHERE id = 'fresh'").fetchone()[0] is None
     assert sql.db.execute("SELECT count(*) FROM break_glass WHERE reason = 'unlogged wildcard found by guard' AND ended_at IS NOT NULL").fetchone()[0] == 2
+
+
+def test_sweep_isolates_live_grants_from_unlogged_closed_stale_and_null_grants_of_same_principal():
+    from tasks.guard_job import sweep
+    sql = Database()
+    sql.db.executemany('INSERT INTO principal_map VALUES (?, ?, ?)',
+                      [('runner', '*', grant) for grant in ('live', 'closed', 'stale', 'unlogged', None)])
+    for grant, age, ended in [('live', 1, None), ('closed', 1, sql.now), ('stale', 61, None)]:
+        sql.db.execute('INSERT INTO break_glass VALUES (?, ?, ?, ?, ?, NULL)',
+                       (grant, 'runner', 'maintenance', (sql.now - timedelta(minutes=age)).isoformat(' '),
+                        ended.isoformat(' ') if ended else None))
+    found = sweep(sql)
+    assert len(found) == 3
+    assert all(row['rule'] == 'principal_map_unlogged_wildcard' and row['row_id'] == 'runner' for row in found)
+    assert [dict(row) for row in sql.db.execute("SELECT * FROM principal_map WHERE user_id = '*'")] == [
+        {'principal': 'runner', 'user_id': '*', 'grant_id': 'live'}]
+    assert sql.db.execute("SELECT ended_at FROM break_glass WHERE id = 'live'").fetchone()[0] is None
+    assert sql.db.execute("SELECT reason_closed FROM break_glass WHERE id = 'stale'").fetchone()[0] == 'swept by guard'
+    deletes = [(statement, args) for statement, args in sql.calls if statement.startswith('DELETE')]
+    assert {args['id'] for statement, args in deletes if 'WHERE grant_id = :id' in statement} == {'closed', 'stale', 'unlogged'}
+    assert [(statement, args) for statement, args in deletes if 'grant_id IS NULL' in statement] == [
+        ("DELETE FROM secondhand.governance.principal_map WHERE principal = :principal AND user_id = '*' AND grant_id IS NULL",
+         {'principal': 'runner'})]
 
 
 @pytest.mark.parametrize('bad_row', [False, True])
@@ -115,7 +138,7 @@ def test_swept_unlogged_access_is_still_in_the_failure_snapshot():
     from tasks.guard_job import run_guard
     from types import SimpleNamespace as NS
     sql = Database()
-    sql.db.execute("INSERT INTO principal_map VALUES ('rogue', '*')")
+    sql.db.execute("INSERT INTO principal_map VALUES ('rogue', '*', NULL)")
     saved = {}
     spark = NS(createDataFrame=lambda rows, schema: NS(write=NS(mode=lambda _: NS(saveAsTable=lambda table: saved.update({table: rows})))))
     with pytest.raises(ValueError, match='guard violations'):
