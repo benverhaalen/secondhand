@@ -37,7 +37,8 @@ test('shop: each source comes in as asked, the failed ones say why, then the ans
   // Building: the four no_route sources have landed, Poshmark and Dupe are still asked.
   await v.shows('Asking', { timeout: WAIT });
   await v.page.waitForFunction(() => document.body.innerText.split('Not connected').length - 1 === 4, null, { timeout: WAIT });
-  assert.equal(await v.count('Asking', { exact: true }), 2);
+  // The lanes come in one after another (sourceIn, 60 ms apart), so wait for the last to arrive.
+  await v.page.waitForFunction(() => document.body.innerText.split(/\n/).filter(l => l.trim() === 'Asking').length === 2, null, { timeout: WAIT });
   // Chat: the reconnect carried on after frame 9, the line of logos says the settled counts, the bar is at the bottom.
   await state(v, 'chat');
   await v.shows(/^88 read, 69 kept in 1\.5\s?s$/);
