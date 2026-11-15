@@ -10,6 +10,7 @@ import { handlers, manifest, createAssistHandler, visitorBudget } from './assist
 import { memoryJobs, jobsOn, getJob, jobEvents } from './jobs.ts';
 import { sqliteStore } from '../events/sqlite-store.ts';
 import { assistParams } from '../../engines/param/param.ts';
+import { kv } from '../store/kv.ts';
 import type { StreamClient } from '../assist/converse.ts';
 import type { ToolResult } from '../assist/types.ts';
 
@@ -87,6 +88,7 @@ test('non-storable tool rows survive only in the live job and expire with it', a
   database.close();
 });
 function setup() {
+  deps.kv = kv(new DatabaseSync(':memory:')); // each test counts its own prompts, as a restart would
   const jobs = memoryJobs(), sink = memorySink(), tasks: (() => Promise<void>)[] = [], requests: MessageCreateParamsBase[] = [];
   let now = NOW;
   const client: StreamClient = { messages: { stream(params) {
@@ -214,6 +216,21 @@ test('twenty concurrent visitor turns reserve exactly 500 cents before running; 
   assert.equal((await t.post('vis_next')).status, 202);
 });
 
+test('each person gets three prompts per UTC day, counted in the shared kv, and the fourth is the daily 429', async () => {
+  const t = setup(), day = (iso: string) => Date.parse(iso);
+  const limited = (owner: string) => rejects(t.post(owner), 'rate_limited', 429);
+  for (const owner of ['person-a', 'vis_a']) {
+    for (let i = 0; i < 3; i++) assert.equal((await t.post(owner)).status, 202);
+    await assert.rejects(t.post(owner), (e: unknown) => e instanceof ApiError && e.status === 429 && e.code === 'rate_limited' && e.extra.cap === 'daily');
+  }
+  assert.equal((await t.post('person-b')).status, 202, 'another person is unaffected');
+  assert.equal((await t.post('vis_b')).status, 202, 'another visitor is unaffected');
+  await limited('person-a');
+  t.setNow(day('2026-11-16T00:00:00Z'));
+  assert.equal((await t.post('person-a')).status, 202, 'the count resets the next UTC day');
+  assert.equal((await t.post('vis_a')).status, 202);
+});
+
 test('completed visitor reservations settle to actual cost and release unused budget', async () => {
   const t = setup();
   for (let i = 0; i < 20; i++) await t.post('vis_' + i);
@@ -232,7 +249,7 @@ test('visitor pool reaches exactly 500 cents of actual cost and resets at UTC mi
   const handler = createAssistHandler({ env: { SECONDHAND_EXAMPLES: '0' }, jobs: t.jobs, now: () => NOW, params: assistParams,
     client: { client, model: 'stand-in' }, tools, budget: visitorBudget(), schedule: task => tasks.push(task) });
   for (let i = 0; i < 20; i++) {
-    await handler(t.ctx('vis_a'), new Request('http://test'));
+    await handler(t.ctx('vis_a' + i), new Request('http://test'));
     await tasks.at(-1)!();
   }
   await assert.rejects(Promise.resolve().then(() => handler(t.ctx('vis_b'), new Request('http://test'))),
@@ -274,9 +291,9 @@ test('example mode preserves the specified POST contract and the Expo entry uses
 test('legacy surfaces and signed-in reference ids are validated, recorded by presence, and disclose missing readers', async () => {
   const t = setup();
   for (const surface of ['buy', 'sell', 'capture', 'market', 'item', 'want']) {
-    const r = await t.post('person-a', { surface, text: 'jacket', item_id: 'it_a', want_id: 'want_a', capture_id: 'cap_a' });
+    const owner = 'person-' + surface, r = await t.post(owner, { surface, text: 'jacket', item_id: 'it_a', want_id: 'want_a', capture_id: 'cap_a' });
     await t.tasks.at(-1)!();
-    const answer = t.jobs.get(r.body.id, 'person-a')!.result as { not_built: string[] };
+    const answer = t.jobs.get(r.body.id, owner)!.result as { not_built: string[] };
     for (const field of ['item_id', 'want_id', 'capture_id']) assert.ok(answer.not_built.some(line => line.includes(field)));
   }
   for (const value of ['it_a', 'want_a', 'cap_a']) assert.ok(!t.sink.text().includes('"' + value + '"'));

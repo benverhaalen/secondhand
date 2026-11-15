@@ -327,4 +327,5 @@ for (const declaration of [
   { name: 'assist_turn_max_usd', family: 'scalar', prior: 0.25, guard_lo: 0 },
   { name: 'assist_turn_deadline_ms', family: 'scalar', prior: 90000, guard_lo: 1 },
   { name: 'assist_visitor_daily_cents', family: 'scalar', prior: 500, guard_lo: 0 },
+  { name: 'assist_prompts_per_day', family: 'scalar', prior: 3, guard_lo: 0 },
 ] satisfies Declared[]) assistParams.declare(declaration);

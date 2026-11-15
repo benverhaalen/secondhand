@@ -1,7 +1,7 @@
 // Rests-on: spec/product.md §7 Resources and Jobs; features/assist/README.md "The route".
 import type { Ask } from '../../engines/capture/plan.ts';
 import { sha256Hex } from '../../engines/proof/sha256.ts';
-import { ApiError, type Handler } from './http.ts';
+import { ApiError, deps, type Handler } from './http.ts';
 import { fields, text, oneOf, object, pagination, invalid, fromEngine } from './captures.ts';
 import { example, examplesServed } from './examples.ts';
 import { jobs, type JobStore } from './jobs.ts';
@@ -10,6 +10,8 @@ import { clientFromEnv } from '../assist/converse.ts';
 import { runTurn, type RunTurnDeps, type TurnInput } from '../assist/run-turn.ts';
 
 const DAY_MS = 86400000;
+const dailyLimit = (now: number) => new ApiError('rate_limited', 'The daily conversation limit has been reached.', 'assist',
+  { by: 'auto', after_s: Math.ceil(((Math.floor(now / DAY_MS) + 1) * DAY_MS - now) / 1000) }, { cap: 'daily' });
 export function visitorBudget() {
   const days = new Map<number, { used: number; reserved: number }>();
   return {
@@ -19,8 +21,7 @@ export function visitorBudget() {
       const pool = days.get(day) ?? { used: 0, reserved: 0 };
       const reserved = max_usd * 100;
       if (pool.used + pool.reserved + reserved > cap_cents + 1e-9 || pool.used + pool.reserved >= cap_cents) {
-        throw new ApiError('rate_limited', 'The daily conversation limit has been reached.', 'assist',
-          { by: 'auto', after_s: Math.ceil(((day + 1) * DAY_MS - now) / 1000) }, { cap: 'daily' });
+        throw dailyLimit(now);
       }
       days.set(day, pool);
       pool.reserved += reserved;
@@ -40,6 +41,7 @@ export interface AssistDeps extends Partial<Omit<RunTurnDeps, 'log' | 'jobs' | '
   jobs?: JobStore;
   params?: Pick<ParamStore, 'read'>;
   budget?: ReturnType<typeof visitorBudget>;
+  kv?: Pick<typeof deps.kv, 'get' | 'set'>;
   schedule?(task: () => Promise<void>): void;
 }
 const history = (value: unknown) => Array.isArray(value) && value.length <= 10 && value.every(turn =>
@@ -118,7 +120,12 @@ export function createAssistHandler(overrides: AssistDeps = {}): Handler {
     const configured = overrides.client ?? clientFromEnv({ ANTHROPIC_API_KEY: env.ANTHROPIC_API_KEY, OPENROUTER_API_KEY: env.OPENROUTER_API_KEY });
     if (!configured) throw new ApiError('unavailable', 'The conversation is not configured here.', 'assist', { by: 'none' }, { reason: 'not_configured' });
     const max_usd = params.read('assist_turn_max_usd', {}).value as number;
+    // Accepted prompts per person per UTC day, in the shared kv so a restart does not reset them; the visitor dollar pool stays a second ceiling.
+    const prompts = overrides.kv ?? deps.kv, promptKey = `${owner}:${Math.floor(now() / DAY_MS)}`;
+    const asked = prompts.get<number>('assist_prompts', promptKey) ?? 0;
+    if (asked >= (params.read('assist_prompts_per_day', {}).value as number)) throw dailyLimit(now());
     const settle = ctx.user_id ? undefined : (overrides.budget ?? budget).reserve(now(), max_usd, params.read('assist_visitor_daily_cents', {}).value as number);
+    prompts.set('assist_prompts', promptKey, asked + 1, 2 * DAY_MS);
     const job = store.put({ kind: 'assist', state: 'running', stages: [] }, owner);
     ctx.log.job(job.id, 'assist', 'running');
     const input: TurnInput = { ...ctx.body as unknown as TurnInput, answer: answered, user_id: ctx.user_id ?? undefined };
