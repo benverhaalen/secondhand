@@ -111,6 +111,7 @@ Each axis shares its figures with the [analytics suite](insights.md#analytics-su
 | Bandit state | a small Unity Catalog table served from the Online Feature Store on Lakebase |
 | Data profiling | drift on features and on predictions, between windows and against a baseline |
 | Model serving | scoring endpoint read by the Apps API |
+| Lakeflow job `requirement_reorder` (*agent proposal*) | weekly, computes each field's three importance effects (match, value, rank) per node by [fields-by-kind F2](../determinations/fields-by-kind.md); the value effect reads [money D2](../determinations/money.md#d2-condition-variant-completeness-and-size-adjustment)'s per-field adjustment, the rank effect reads `fit_ranker`'s attributions; writes a new `requirement` version a person approves |
 | Re-plan | after any fit, test result or notice, re-score each listing and set its `next_check_at` to now |
 
 ## Data flow

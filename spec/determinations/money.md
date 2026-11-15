@@ -57,7 +57,7 @@ Weight of comp i: `w_i = w_type x w_match x w_age x w_extract`. All numbers are 
 |---|---|---|---|
 | Sold, price known (eBay sold, Mercari sold, Depop sold, our own orders) | a price someone paid | w_type 1.0 | a sale is the market clearing; asks are not sales ([what-market-value-is.md](../../research/price/ben/what-market-value-is.md), *observed* MMR uses transactions only) |
 | Our own completed orders | a sale with known condition, fees and days | w_type 1.2 | condition is measured by us, not read from a stranger's text; "our own outcomes are the moat" ([sold-price-data.md](../../research/price/ben/sold-price-data.md)) |
-| eBay Best Offer accepted, amount unknown | an upper bound on the sale | w_type 0.6, price x (1 - d_offer,cat) | the shown price overstates the sale; vendor claim of 20 to 40% inflation is *asserted* ([comps-sources-live.md](../../research/price/ben/comps-sources-live.md)); d_offer,cat is learned where the accepted amount is known |
+| eBay Best Offer accepted, amount unknown | an upper bound on the sale | w_type 0.6, price x (1 - d_offer,cat) | the shown price overstates the sale; vendor claim of 20 to 40% inflation is *asserted* ([comps-sources-live.md](../../research/price/ben/comps-sources-live.md)); d_offer,cat is learned where the accepted amount is known. When the amount is read through the person's eBay seller session ([market-insight M3](market-insight.md#m3-used-price-per-site-over-time), *agent proposal*), the row is a plain sold row at the read amount and also trains d_offer,cat |
 | Live ask | an upper bound and the queue a new listing joins | w_type 0 for value; used for the cap in D5 and rank in D10 | an ask says what one seller hopes; it is evidence of supply, not of value |
 | Ended unsold | a price that did not clear | w_type 0 for value; censored row in D10 | survivorship: dropping it biases speed ([range-calibration.md](../../research/price/nate/range-calibration.md) section 5, *observed* Opendoor) |
 | Retail price (D7) | an anchor for new-with-tags | never a comp | retail is a different channel ([adjacent-valuation.md](../../research/price/ben/adjacent-valuation.md), *observed* MMR keeps channels apart) |
@@ -125,6 +125,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 2. For each attribute a with a difference: `beta_a = (n_a x beta_cat + k x beta_parent) / (n_a + k)`, with k = 50 sold rows (shrinkage). Below 30 rows in the parent too, use the prior.
 3. `factor = exp(sum over differing a of (beta_a(item value) - beta_a(comp value)))`.
 4. `adjusted = sold x factor x time_factor` (D3). Each step is written out: "+10% for better condition".
+5. Exposed per field (*agent proposal*): for every `requirement` field of the item's kind, D2 publishes its `beta_a` per value with `n_a` and the rank it came from (paired, category, parent, prior), versioned with the nightly fit. Score's `requirement_reorder` reads these as the value effect of each field ([fields-by-kind](fields-by-kind.md)); D2 does not rank fields itself.
 
 **Why this method**: shrinking a category estimate toward its parent is the empirical-Bayes answer to thin categories (*inferred*). It keeps one sparse category from producing a wild factor. The alternative is a fixed condition table for everything. It is simpler, but condition premiums differ by category (new-with-tags matters more in fashion than in tools), so a learned factor with a shrinkage fallback is better (*inferred*). The 25% total cap in D1 limits damage from a wrong factor (*asserted* real-estate heuristic in [valuation-engine.md](../../research/price/ben/valuation-engine.md)).
 
@@ -522,7 +523,7 @@ Poshmark relist is never promotable ([price.md](../features/price.md)), so on Po
 
 For resellers, the verdict is Buy when `a <= max_pay` (D17).
 
-**Why this method**: comparing the delivered price with the same quantiles the seller side uses keeps the two sides consistent (*inferred*). The alternative, comparing against the item's own ask history, says nothing about the market.
+**Why this method**: comparing the delivered price with the same quantiles the seller side uses keeps the two sides consistent (*inferred*). The alternative, comparing against the item's own ask history, says nothing about the market. Phia shows a high, typical or fair label against a large set of listings (*asserted*, [teardown](../../research/watch/nate/teardown-search-and-similar-finders.md#4-phia-beni-encore-croissant)); this label is against sold, delivered prices with a stated range, and on a catalog `product` it is the same label against that product's [M3](market-insight.md#m3-used-price-per-site-over-time) range in the listing's condition band (*agent proposal*, [parity](../parity.md#cross-marketplace-search-and-similar-item-finders)).
 
 **When it is not shown**: when D5 is hidden for that product and condition. The person sees the comps without a label.
 
@@ -848,7 +849,7 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 |---|---|
 | Facebook Marketplace sale prices and days to sell | listings vanish without a sold flag or price; a delisting is not a sale. Only our own orders give Facebook numbers, so D4 translation is the only route |
 | Poshmark days to sell from public data | no public final-sale dates (*asserted*, [range-calibration.md](../../research/price/nate/range-calibration.md)); only our own listings give it |
-| The accepted price of an eBay Best Offer sale, when not exposed | only a learned discount (D1), never the real figure |
+| The accepted price of an eBay Best Offer sale, when not exposed (no eBay seller session connected) | only a learned discount (D1), never the real figure |
 | A stated coverage for categories with under 30 held-out sales | the Wilson bound cannot reach 70%; they stay "not checked yet" |
 | Taxable gain, and the cash value of a donation | needs the person's tax situation; the app never says a sale is taxable ([insights.md](../features/insights.md)) |
 | Original retail for vintage, unbranded and handmade items | no identifier and no dated official page |
