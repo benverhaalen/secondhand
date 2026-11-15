@@ -2007,3 +2007,9 @@ Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
 > Start all new leads as you see fit, evaluate, fix, address, and efficiently work to complete everything
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md) (the orchestrator starts a replacement lead when one hands off, without asking each time).
+
+## 2026-11-15 nate apify stays out of the latency path; store it and feed the engines from the store
+Nate, orchestrator's session, 2026-11-15, about 08:25 Central.
+> well we dont read apify in full if it affects latency, we can store stuff to then be generated and build the system to aid the models and ai engines in how the data is automatically given to them
+
+Used in: `spec/engines/market-index.md` (MI1, MI2), [packet 69](../.agents/team/packets/team/69-integration-handoff.md) (the Facebook source row).
