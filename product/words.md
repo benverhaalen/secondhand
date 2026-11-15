@@ -2381,3 +2381,9 @@ Nate, the engines lead's session, 2026-11-15, about 13:37 UTC, answering the eng
 > thats ok for photos to reach, seeing any market score? yeah i want benchmarks great enough to put on the site. and lets put 3 requests free for every user just for the hackathon, with it free to download on github, open source, alongside with a companion mcp server to give everyones agent access to the secondhand search engine
 
 Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate three free requests in total for the hackathon, then a referral-link partner
+Nate, the engines lead's session, 2026-11-15, about 13:39 UTC, answering what counts as one of the three free requests and over what period (options were three searches a day, three in total, or three conversation turns a day).
+> 3 total for hackathon, with plans to parenter with a link referrel service or however best to say that
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
