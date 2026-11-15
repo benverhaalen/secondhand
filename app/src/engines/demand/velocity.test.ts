@@ -73,3 +73,58 @@ test('a cold product borrows the kind mean at two weeks, never its entire sample
   const cold = velocity(store, product, at), prior = gammaPosterior(4, 2);
   for (const field of ['mean', 'p10', 'p90'] as const) assert.equal(cold[field], prior[field], field);
 });
+
+test('a fresh product seeds the pooled kind mean at prior weeks without adding the inherited prior twice', () => {
+  const store = memoryStore(), scope = { kind: product.kind, segment: product.product_id };
+  for (const d of DECLARED) store.declare(d);
+  store.observe('demand_velocity', { kind: product.kind }, { count: 8, exposure: 2, weight: 1 }, at);
+  const parent = store.readPooled('demand_velocity', { kind: product.kind });
+  assert.ok('mean' in parent);
+  const inherited = store.read('demand_velocity', scope).value;
+  onExposure(store, product, 0, at);
+  const row = store.rows('demand_velocity', scope).find(r => r.status === 'champion')!;
+  assert.deepEqual(row.value_or_hyperparams, { shape: parent.mean * 2, rate: 2 });
+  assert.deepEqual(row.prior, inherited);
+  assert.equal(row.n_eff, 0);
+});
+
+test('idle demand decays signed evidence toward the current kind baseline at the declared half-life', () => {
+  const store = memoryStore(), scope = { kind: product.kind, segment: product.product_id };
+  for (const d of DECLARED) store.declare(d);
+  store.observe('demand_velocity', { kind: product.kind }, { count: 8, exposure: 2, weight: 1 }, at);
+  const parent = store.readPooled('demand_velocity', { kind: product.kind });
+  assert.ok('mean' in parent);
+  onSoldComp(store, product, at);
+  onExposure(store, product, 4, at);
+  store.observe('demand_velocity', { kind: product.kind }, { count: 8, exposure: 0, weight: 1 }, at);
+  const baseline = store.readPooled('demand_velocity', { kind: product.kind });
+  assert.ok('mean' in baseline);
+  const row = store.rows('demand_velocity', scope).find(r => r.status === 'champion')!;
+  const prior = row.prior as { shape: number; rate: number };
+  const target = { shape: baseline.mean * 2 - prior.shape, rate: 2 - prior.rate };
+  const evidence = { shape: parent.mean * 2 + 1 - prior.shape, rate: 6 - prior.rate };
+  velocity(store, product, '2026-09-26T00:00:00Z');
+  const posterior = store.read('demand_velocity', scope).value as { shape: number; rate: number };
+  assert.ok(Math.abs(posterior.shape - (prior.shape + target.shape + (evidence.shape - target.shape) * .5)) < 1e-12);
+  assert.ok(Math.abs(posterior.rate - (prior.rate + target.rate + (evidence.rate - target.rate) * .5)) < 1e-12);
+  assert.ok(Math.abs(store.read('demand_velocity', scope).n_eff - row.n_eff * .5) < 1e-12);
+});
+
+test('reading demand at zero elapsed time leaves the event posterior and versions unchanged', () => {
+  const store = memoryStore(), scope = { kind: product.kind, segment: product.product_id };
+  onSoldComp(store, product, at);
+  onExposure(store, product, 2, at);
+  const immediate = store.read('demand_velocity', scope);
+  assert.deepEqual(immediate.value, { shape: 5, rate: 4 });
+  velocity(store, product, at);
+  assert.deepEqual(store.read('demand_velocity', scope), immediate);
+});
+
+test('a product seed subtracts the raw inherited prior when its kind read is clamped', () => {
+  const store = memoryStore(), scope = { kind: product.kind, segment: product.product_id };
+  store.declare({ ...DECLARED[0], guard_hi: 2 });
+  store.observe('demand_velocity', { kind: product.kind }, { count: 20, exposure: 1, weight: 1 }, at);
+  onExposure(store, product, 0, at);
+  assert.deepEqual(store.read('demand_velocity', scope).value, { shape: 4, rate: 2 });
+  assert.deepEqual(store.rows('demand_velocity', scope)[0].prior, { shape: 24, rate: 3 });
+});

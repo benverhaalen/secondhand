@@ -1,5 +1,5 @@
-import { memoryStore, type Declared, type ParamStore, type Scope } from '../param/param.ts';
-import { gammaPosterior, gammaValue, timestamp, recorded, type EventLog } from '../demand/velocity.ts';
+import { evidence, memoryStore, type Declared, type ParamStore, type Scope } from '../param/param.ts';
+import { gammaPosterior, gammaValue, timestamp, recorded, type EventLog, type Gamma } from '../demand/velocity.ts';
 
 export type Listing = { kind: string; site?: string; listing_id?: string };
 type Entry = Declared & { scopes: (keyof Scope)[]; source: string };
@@ -35,7 +35,7 @@ function advance(store: ParamStore, scope: Scope, at: string): void {
   if (time < previous) throw new RangeError('out-of-order stats observation');
   if (time === previous || row.frozen) return;
   store.apply('view_rate', scope, (value, keep) => {
-    const v = gammaValue(value);
+    const v = value as Gamma;
     return { value: { shape: v.shape * keep, rate: v.rate * keep }, weight: 0 };
   }, at);
 }
@@ -56,10 +56,11 @@ function stats(store: ParamStore, listing: Listing, views: number, hours: number
   if (!row && scope.segment !== undefined) {
     const { segment: _segment, ...parent } = scope;
     const pooled = store.readPooled('view_rate', parent);
-    const gamma = gammaValue(store.read('view_rate', parent).value);
+    const inherited = store.read('view_rate', parent), gamma = gammaValue(inherited.value);
+    const prior = store.rows('view_rate', inherited.scope).find(r => r.status === 'champion')?.value_or_hyperparams ?? inherited.value;
     const mean = 'mean' in pooled ? pooled.mean : gamma.shape / gamma.rate;
-    const prior = gammaValue(store.read('view_rate', {}).value);
-    store.apply('view_rate', scope, () => ({ value: { shape: mean * prior.rate, rate: prior.rate }, weight: 0 }), at);
+    const rate = gammaValue(store.read('view_rate', {}).value).rate;
+    store.apply('view_rate', scope, () => ({ value: evidence('gamma', { shape: mean * rate, rate }, prior), weight: 0 }), at);
   }
   const updated = store.observe('view_rate', scope, { count: views, exposure: hours, weight: 1 }, at);
   if (!updated.applied) return updated;

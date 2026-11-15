@@ -1,4 +1,4 @@
-import { FORGET_DAYS, memoryStore, type Declared, type ParamStore, type Scope } from '../param/param.ts';
+import { evidence, FORGET_DAYS, memoryStore, type Declared, type ParamStore, type Scope } from '../param/param.ts';
 import type { Log } from '../../../../log/index.js';
 
 export type EventLog = Pick<Log, 'note' | 'error' | 'timed'>;
@@ -73,10 +73,10 @@ function advance(store: ParamStore, scope: Scope, at: string): void {
   const parent = store.readPooled('demand_velocity', { kind: scope.kind });
   const parentMean = 'mean' in parent ? parent.mean : gammaValue(parent.value).shape / gammaValue(parent.value).rate;
   const rate = positive(params.values.demand_prior_weeks, 'demand_prior_weeks');
-  const baseline = { shape: parentMean * rate, rate };
+  const baseline = evidence('gamma', { shape: parentMean * rate, rate }, row.prior) as Gamma;
   const halfLife = positive(params.values.demand_half_life_weeks, 'demand_half_life_weeks') * 7; // Fixed: days per week.
   store.apply('demand_velocity', scope, (value, keep) => {
-    const v = gammaValue(value);
+    const v = value as Gamma;
     // Convert the registry's timestamp-derived decay to this engine's declared half-life.
     const retained = keep ** (FORGET_DAYS / halfLife);
     return { value: { shape: baseline.shape + (v.shape - baseline.shape) * retained,
@@ -90,7 +90,9 @@ function initialize(store: ParamStore, scope: Scope, at: string): void {
   const pooled = store.readPooled('demand_velocity', { kind: scope.kind });
   const mean = 'mean' in pooled ? pooled.mean : gammaValue(pooled.value).shape / gammaValue(pooled.value).rate;
   const rate = positive(resolve(store, scope).values.demand_prior_weeks, 'demand_prior_weeks');
-  store.apply('demand_velocity', scope, () => ({ value: { shape: mean * rate, rate }, weight: 0 }), at);
+  const inherited = store.read('demand_velocity', scope);
+  const prior = store.rows('demand_velocity', inherited.scope).find(r => r.status === 'champion')?.value_or_hyperparams ?? inherited.value;
+  store.apply('demand_velocity', scope, () => ({ value: evidence('gamma', { shape: mean * rate, rate }, prior), weight: 0 }), at);
 }
 
 export function onSoldComp(store: ParamStore, product: Product, at: string, log?: EventLog) {

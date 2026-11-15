@@ -46,3 +46,64 @@ test('zero-view exposure is evidence, a zero-zero poll is not, and quiet reads f
   const later = interest(store, listing, '2026-08-31T00:00:00Z');
   assert.deepEqual(interest(store, listing, '2026-08-31T00:00:00Z'), later);
 });
+
+test('a fresh listing seeds its kind mean at prior rate with the inherited prior counted once', () => {
+  const store = memoryStore(), scope = { kind: listing.kind, site: listing.site, segment: listing.listing_id };
+  onStats(store, { kind: listing.kind }, 20, 2, at);
+  const parent = store.readPooled('view_rate', { kind: listing.kind, site: listing.site });
+  assert.ok('mean' in parent);
+  const inherited = store.read('view_rate', scope).value;
+  onStats(store, listing, 0, 1, at);
+  const seed = store.rows('view_rate', scope)[0];
+  const gamma = seed.value_or_hyperparams as { shape: number; rate: number };
+  assert.ok(Math.abs(gamma.shape - parent.mean) < 1e-12);
+  assert.equal(gamma.rate, 1);
+  assert.deepEqual(seed.prior, inherited);
+  assert.equal(seed.n_eff, 0);
+  const posterior = store.read('view_rate', scope).value as { shape: number; rate: number };
+  assert.ok(Math.abs(posterior.shape - parent.mean) < 1e-12);
+  assert.equal(posterior.rate, 2);
+});
+
+test('idle interest decays signed evidence for thirty days and restores the row prior once', () => {
+  const store = memoryStore(), scope = { kind: listing.kind, site: listing.site, segment: listing.listing_id };
+  onStats(store, { kind: listing.kind }, 20, 2, at);
+  const parent = store.readPooled('view_rate', { kind: listing.kind, site: listing.site });
+  assert.ok('mean' in parent);
+  onStats(store, listing, 0, 1, at);
+  const row = store.rows('view_rate', scope).find(r => r.status === 'champion')!;
+  const prior = row.prior as { shape: number; rate: number };
+  interest(store, listing, '2026-08-31T00:00:00Z');
+  const posterior = store.read('view_rate', scope).value as { shape: number; rate: number };
+  assert.ok(Math.abs(posterior.shape - (prior.shape + (parent.mean - prior.shape) * .5)) < 1e-12);
+  assert.equal(posterior.rate, prior.rate + (2 - prior.rate) * .5);
+  assert.equal(store.read('view_rate', scope).n_eff, row.n_eff * .5);
+});
+
+test('reading interest at zero elapsed time leaves the event posterior and versions unchanged', () => {
+  const store = memoryStore(), scope = { kind: listing.kind, site: listing.site, segment: listing.listing_id };
+  onStats(store, listing, 20, 2, at);
+  onStats(store, listing, 0, 1, at);
+  const immediate = store.read('view_rate', scope);
+  assert.deepEqual(immediate.value, { shape: 21, rate: 4 });
+  interest(store, listing, at);
+  assert.deepEqual(store.read('view_rate', scope), immediate);
+});
+
+test('idle interest accepts zero view-count evidence and preserves the declared prior', () => {
+  const store = memoryStore();
+  onStats(store, listing, 0, 2, at);
+  interest(store, listing, '2026-08-31T00:00:00Z');
+  assert.deepEqual(store.read('view_rate', { kind: listing.kind, site: listing.site, segment: listing.listing_id }).value,
+    { shape: 1, rate: 2 });
+});
+
+test('a listing seed subtracts the raw inherited prior when its kind read is clamped', () => {
+  const store = memoryStore(), scope = { kind: listing.kind, site: listing.site, segment: listing.listing_id };
+  interest(store, listing, at);
+  store.declare({ name: 'view_rate', family: 'gamma', prior: { shape: 1, rate: 1 }, guard_hi: 1 });
+  store.observe('view_rate', { kind: listing.kind }, { count: 20, exposure: 2, weight: 1 }, at);
+  onStats(store, listing, 0, 1, at);
+  assert.deepEqual(store.read('view_rate', scope).value, { shape: 1, rate: 2 });
+  assert.deepEqual(store.rows('view_rate', scope)[0].prior, { shape: 21, rate: 3 });
+});
