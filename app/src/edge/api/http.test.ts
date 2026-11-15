@@ -445,6 +445,30 @@ test('raw handlers can reject a request before reading its body', async () => {
   await stream.cancel();
 });
 
+test('PUT, PATCH and DELETE replay under one Idempotency-Key; a changed body or another id under that key is idempotency_mismatch', async () => {
+  for (const method of ['PUT', 'PATCH', 'DELETE'] as const) {
+    let n = 0;
+    const h = route(`${method} /v1/rules/:id`, () => ({ status: 200, body: { n: ++n } }));
+    const init = { method, headers: { 'Idempotency-Key': `k-${method}` }, body: JSON.stringify({ value: 1 }) };
+    const first = await (await call(h, '/v1/rules/ru_a', init)).json();
+    const again = await call(h, '/v1/rules/ru_a', init);
+    assert.equal(again.status, 200, method); assert.deepEqual(await again.json(), first, method); assert.equal(n, 1, `${method} ran twice`);
+    assert.equal(again.headers.get('Idempotent-Replayed'), 'true', method);
+    const changed = await call(h, '/v1/rules/ru_a', { ...init, body: JSON.stringify({ value: 2 }) });
+    assert.equal(changed.status, 409, method); assert.equal((await changed.json()).code, 'idempotency_mismatch', method);
+    const elsewhere = await call(h, '/v1/rules/ru_b', init);
+    assert.equal(elsewhere.status, 409, `${method} replayed another id's answer`); assert.equal((await elsewhere.json()).code, 'idempotency_mismatch');
+  }
+});
+
+test('a DELETE body reaches the handler', async () => {
+  const h = route('DELETE /v1/lookups', ctx => ({ status: 200, body: { got: ctx.body } }));
+  const r = await call(h, '/v1/lookups', { method: 'DELETE', body: JSON.stringify({ ids: ['cap_1'] }) });
+  assert.deepEqual((await r.json()).got, { ids: ['cap_1'] });
+  const empty = await call(h, '/v1/lookups', { method: 'DELETE' });
+  assert.deepEqual((await empty.json()).got, {});
+});
+
 for (const reply of ['object', 'response', 'throw', 'auth'] as const) test(`raw ${reply} refusal without reading closes the connection`, async () => {
   let pulls = 0;
   const stream = new ReadableStream<Uint8Array>({ pull(c) { pulls++; c.enqueue(Uint8Array.of(1)); } }, { highWaterMark: 0 });

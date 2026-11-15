@@ -171,7 +171,7 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
       let body: Record<string, unknown> = {};
       let binary: Promise<Uint8Array> | undefined;
       const read = opts.body === 'raw' ? () => binary ??= readRaw(req, opts.max_bytes, log).then(bytes => { rawRead = true; return bytes; }) : undefined;
-      const raw = opts.body === 'raw' || ['GET', 'DELETE'].includes(method) ? '' : await req.text();
+      const raw = opts.body === 'raw' || method === 'GET' ? '' : await req.text();
       if (raw) {
         try { body = JSON.parse(raw); } catch { throw new ApiError('invalid', 'body is not JSON', 'parse', { by: 'user' }); }
         if (!body || typeof body !== 'object' || Array.isArray(body)) throw new ApiError('invalid', 'body must be an object', 'parse', { by: 'user' });
@@ -187,12 +187,15 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
       }
       const ctx: Ctx = { user_id, visitor_id, request_id, params, query, body, ...(read ? { readRaw: read } : {}), headers: req.headers, log: log.child({ user: user_id ?? visitor_id ?? 'none' }) };
 
-      const key = opts.body !== 'raw' && method === 'POST' ? req.headers.get('Idempotency-Key') : null;
+      // Every write takes a key; the fingerprint is the path and the body, so one key reused on another id is refused.
+      const key = opts.body !== 'raw' && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) ? req.headers.get('Idempotency-Key') : null;
       const slot = key ? `${user_id ?? visitor_id ?? 'none'} ${endpoint} ${key}` : null;
-      const claimed = slot ? storage.add('idem', slot, { hash: raw, state: 'running', at: deps.now() }, DAY_MS) : false;
+      const fingerprint = `${url.pathname}
+${raw}`;
+      const claimed = slot ? storage.add('idem', slot, { hash: fingerprint, state: 'running', at: deps.now() }, DAY_MS) : false;
       if (slot && !claimed) {
         const seen = storage.get<Idempotency>('idem', slot)!;
-        if (seen.hash !== raw) throw new ApiError('idempotency_mismatch', `key ${key} was used with a different body`, 'idempotency');
+        if (seen.hash !== fingerprint) throw new ApiError('idempotency_mismatch', `key ${key} was used with a different body`, 'idempotency');
         if (seen.state === 'running') throw new ApiError('stale', 'the same request is still running', 'idempotency', { by: 'auto', after_s: 1 });
         res = new Response(seen.body || null, { status: seen.status, headers: { ...seen.headers, 'Idempotent-Replayed': 'true' } });
       } else {
@@ -209,7 +212,7 @@ export function route(endpoint: string, handler: Handler, opts: RouteOptions = {
             storage.delete('idem', slot);
           } else {
             const copy = res.clone(); const headers: Record<string, string> = {}; copy.headers.forEach((v, k) => { headers[k] = v; });
-            storage.set('idem', slot, { hash: raw, state: 'finished', status: res.status, body: await copy.text(), headers, at: deps.now() }, DAY_MS);
+            storage.set('idem', slot, { hash: fingerprint, state: 'finished', status: res.status, body: await copy.text(), headers, at: deps.now() }, DAY_MS);
           }
           claimedSlot = null;
         }

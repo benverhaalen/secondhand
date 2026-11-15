@@ -173,3 +173,54 @@ test('new people read default limits, create their limits and own rules with mut
   assert.equal((await call(byName('rules.delete'), { token: 'other', path: '/v1/rules/' + rule.id })).status, 204);
   assert.deepEqual(await (await call(byName('rules.list'), { token: 'other' })).json(), { data: [], next_cursor: null });
 });
+
+test('rules: a real decision with the example id cannot copy the example rule or numbers', async () => {
+  deps.verify = async token => token === 'good' ? 'usr_real_one' : token === 'other' ? 'usr_real_two' : null;
+  runtime.store.updateDecision('dec_lb1', { user_id: 'usr_real_one' });
+  const e = examples.find(e => e.name === 'rules.promote')!;
+  const response = await call(e);
+  assert.equal(response.status, 201);
+  const rule = await response.json();
+  assert.notEqual(rule.id, (e.response as { id: string }).id, 'real rules must never reuse the contract id');
+  assert.equal(rule.when, undefined, 'the contract condition is not the person’s rule');
+  assert.deepEqual((await (await call(examples.find(e => e.name === 'rules.list')!, { token: 'other' })).json()).data, []);
+});
+
+test('rules and limits: disabling examples hides already seeded rows', async t => {
+  const previous = process.env.SECONDHAND_EXAMPLES;
+  t.after(() => { if (previous === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = previous; });
+  process.env.SECONDHAND_EXAMPLES = '0';
+  const rules = await call(examples.find(e => e.name === 'rules.list')!);
+  assert.deepEqual((await rules.json()).data, []);
+  const limits = await call(examples.find(e => e.name === 'limits.get')!);
+  assert.deepEqual(await limits.json(), { handover: [], pickup_windows: [], saved_spot: null, ask_every_time: false, items: [], version: 0 });
+});
+
+test('rules: real people own their creates, replay only their own keys and cannot delete each other’s rule', async () => {
+  deps.verify = async token => token === 'good' ? 'usr_real_one' : token === 'other' ? 'usr_real_two' : null;
+  const create = examples.find(e => e.name === 'rules.promote')!, remove = examples.find(e => e.name === 'rules.delete')!;
+  const headers = { 'Idempotency-Key': 'real-rule' }, body = { kind: 'reply_other', scope: 'all' };
+  const created = await call(create, { headers, body }); assert.equal(created.status, 201);
+  const rule = await created.json();
+  const again = await call(create, { headers, body }); assert.equal(again.status, 201); assert.deepEqual(await again.json(), rule);
+  const changed = await call(create, { headers, body: { ...body, kind: 'accept_offer' } });
+  assert.equal(changed.status, 409); assert.equal((await changed.json()).code, 'idempotency_mismatch');
+  const foreign = await call(remove, { token: 'other', path: '/v1/rules/' + rule.id });
+  assert.equal(foreign.status, 404); assert.equal((await foreign.json()).code, 'not_found');
+  const second = await call(create, { token: 'other', headers, body }); assert.equal(second.status, 201);
+  assert.notEqual((await second.json()).id, rule.id, 'keys are scoped to each person');
+  assert.equal((await call(remove, { path: '/v1/rules/' + rule.id })).status, 204);
+});
+
+test('limits: another person cannot set the owner’s item floor, even by sending user_id', async () => {
+  deps.verify = async token => token === 'good' ? 'usr_real_one' : token === 'other' ? 'usr_real_two' : null;
+  runtime.store.put('item', { id: 'it_real', user_id: 'usr_real_one', title: 'Test item', state: 'review' });
+  const e = examples.find(e => e.name === 'limits.put')!;
+  const body = { version: 0, user_id: 'usr_real_one', items: [{ item_id: 'it_real', floor_cents: { amount_cents: 12347, currency: 'USD' } }] };
+  const foreign = await call(e, { token: 'other', body });
+  assert.equal(foreign.status, 404); assert.equal((await foreign.json()).code, 'not_found');
+  const own = await call(e, { body }); assert.equal(own.status, 200);
+  assert.equal((await own.json()).items[0].floor_cents.amount_cents, 12347);
+  const other = await call(examples.find(e => e.name === 'limits.get')!, { token: 'other' });
+  assert.deepEqual((await other.json()).items, []);
+});

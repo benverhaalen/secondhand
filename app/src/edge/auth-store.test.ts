@@ -120,8 +120,10 @@ for (const kind of ['memory', 'sqlite'] as const) {
     assert.equal(await store.putUser({ ...u, version: 2 }, 1), true);
     assert.equal(await store.putUser({ ...u, locale: 'de', version: 2 }, 1), false);
     const style = await store.getStyle(u.id);
+    assert.equal(style.facets.length, 0, 'a new person starts with no example taste facets');
+    style.facets.push({ name: 'brand', value: 'mutated', weight: 1, from: 'edited' as const, pinned: false, removed_at: null });
+    assert.deepEqual((await store.getStyle(u.id)).facets, [], 'a read is detached from the stored style');
     style.facets.length = 0;
-    assert.ok((await store.getStyle(u.id)).facets.length > 0);
     assert.equal(await store.putStyle(u.id, { ...style, version: 2 }, 1), true);
     assert.equal(await store.putStyle(u.id, { ...style, version: 3 }, 1), false);
     const identity = (await store.identitiesOf(u.id))[0];
