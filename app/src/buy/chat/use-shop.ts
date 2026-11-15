@@ -134,8 +134,9 @@ export function useShop() {
   const retry = useCallback(() => {
     const q = turns.find(t => t.kind === 'ask');
     if (!q || q.kind !== 'ask') return;
-    setFailure(null); setTurns([q]); search.run(q.text);
-  }, [turns, search]);
+    analysed.current = false;
+    setFailure(null); setTurns([q]); search.run(q.text, off.length ? SOURCE_IDS.filter(s => !off.includes(s)) : undefined);
+  }, [turns, search, off]);
 
   const askOffered = useCallback(() => { if (offer) { setOffer(null); ask(offer); } }, [offer, ask]);
   return { turns, phase: phaseOf(turns), reach, failure, saved, offer, askOffered, ask, answerAsk, close, reopen, forget, retry, off, toggleSource };

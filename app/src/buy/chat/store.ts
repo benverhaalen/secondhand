@@ -23,7 +23,8 @@ const isDupe = (r: { site?: unknown; attribution?: unknown }) => r.site === 'dup
 
 // What may be written: the chat with every Dupe row taken out of its search turns.
 export function storable(chat: Chat): Chat {
-  return { ...chat, turns: chat.turns.map(t => t.kind === 'search' ? { ...t, reach: { ...t.reach, results: t.reach.results.filter(r => !isDupe(r)) } } : t) };
+  // A search still running when the chat closed is kept as settled: nothing will finish it after a reopen.
+  return { ...chat, turns: chat.turns.map(t => t.kind === 'search' ? { ...t, reach: { ...t.reach, ...(t.reach.state === 'running' ? { state: 'done' as const } : {}), results: t.reach.results.filter(r => !isDupe(r)) } } : t) };
 }
 
 // A row read back is checked for the fields the screen needs; anything else is dropped, never trusted.

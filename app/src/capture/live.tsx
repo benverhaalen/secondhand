@@ -92,6 +92,7 @@ export function LiveCapture({ mode }: { mode: string }) {
     const current = capture ?? await start();
     const next = await uploadStills(current, photos);
     setCapture(next); setPending([]);
+    return next;
   };
   const shoot = () => run('Checking photo', async () => {
     if (!camera.current) throw new Error('Allow the camera or choose a photo.');
@@ -118,8 +119,10 @@ export function LiveCapture({ mode }: { mode: string }) {
     void run('Saving answer', async () => { setCapture(await answerCapture(capture, question, value)); setQuestion(null); });
   };
   const finish = () => run(studio ? 'Preparing photos' : 'Saving item', async () => {
-    if (!capture || capture.plan.status !== 'done' || pending.length) return;
-    const result = await api.call<{ jobs?: CaptureJob[] }>(`POST /v1/captures/${encodeURIComponent(capture.id)}/finish`, { body: { version: capture.version } });
+    // Photos still waiting go up first, so finish never does nothing; finish then reads the capture they produced.
+    const current = pending.length ? await send(pending) : capture;
+    if (!current || current.plan.status !== 'done') return;
+    const result = await api.call<{ jobs?: CaptureJob[] }>(`POST /v1/captures/${encodeURIComponent(current.id)}/finish`, { body: { version: current.version } });
     setJobs(result.jobs ?? []);
     setFinished(true);
   });
