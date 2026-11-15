@@ -85,6 +85,8 @@ CREATE TABLE IF NOT EXISTS secondhand.core.param (
   version INT NOT NULL, fitted_on_ids_hash STRING, n_eff DOUBLE NOT NULL, metric STRING,
   held_out_score DOUBLE COMMENT 'Required on a challenger written by a fit.', guard_lo DOUBLE, guard_hi DOUBLE,
   status STRING NOT NULL COMMENT 'champion, challenger, retired.', frozen BOOLEAN NOT NULL, promoted_at TIMESTAMP,
+  origin STRING COMMENT 'fit or event.', previous_version INT COMMENT 'Version this one replaces.',
+  keep STRING COMMENT 'JSON: retained evidence fraction.', days_since_last DOUBLE COMMENT 'Days since the previous update.',
   moved_by STRING COMMENT 'What wrote this version: propose, promote, rollback, and the job run.'
 ) COMMENT 'Every learned weight, threshold and interval, one row per version. Promote on a held-out win; rollback restores the last promoted version. Delta history and the change feed keep every move.'
 TBLPROPERTIES ('delta.enableChangeDataFeed' = 'true');
