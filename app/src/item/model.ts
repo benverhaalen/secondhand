@@ -7,6 +7,8 @@ import {
 } from '../demo/index.ts';
 import { MORE_SHOTS } from '../demo/item-shots.ts';
 import { LISTING_FORMS, RETURNS, fitOf, listingTitle, titleOn } from '../demo/listing-forms.ts';
+import { DEFAULT_SPREAD, SPREADS, sitePrice, type Spread } from '../engines/listing/spreads.ts';
+import { FEES, keep } from '../engines/valuation/keep.ts';
 
 // The five moments of one item (pages.md §6.6), with drafting split in two because its top differs: Researching fills in,
 // Review asks for the four facts. Offer is Live with an offer waiting. Done is shipped and paid; Kept and Unsold end it.
@@ -126,7 +128,8 @@ export function headline(w: World, it: Item, m: Moment): Headline | null {
     const kept = sale.price_cents - sale.fees_cents - sale.shipping_cents;
     const sum = [{ label: 'Sold for', amount: sale.price_cents }, { label: 'Site fee', amount: -sale.fees_cents }];
     if (sale.shipping_cents) sum.push({ label: 'Label', amount: -sale.shipping_cents });
-    return { amount: kept, what: m === 'done' ? 'Kept, after fees' : 'You keep, after fees', sum: [...sum, { label: 'You keep', amount: kept }], site: sale.site };
+    // "You get", never "You keep" (Ben, 06:19: "the words like you keep this much money. There's probably a better way").
+    return { amount: kept, what: m === 'done' ? 'You got, after fees' : 'You get, after fees', sum: [...sum, { label: m === 'done' ? 'You got' : 'You get', amount: kept }], site: sale.site };
   }
   if (m === 'live' || m === 'offer') {
     const ls = liveListings(it).filter(l => l.state === 'live');
@@ -134,7 +137,7 @@ export function headline(w: World, it: Item, m: Moment): Headline | null {
     // The site that keeps the most leads; the sum shows each site's price and keep.
     const best = [...ls].sort((a, b) => youKeep(b.site, b.price_cents) - youKeep(a.site, a.price_cents))[0];
     return {
-      amount: youKeep(best.site, best.price_cents), what: `You keep at ${usd(best.price_cents)}, after fees`, site: best.site,
+      amount: youKeep(best.site, best.price_cents), what: `You get at ${usd(best.price_cents)}, after fees`, site: best.site,
       sum: ls.flatMap(l => [{ label: `Price`, amount: l.price_cents }, { label: 'Site fee', amount: youKeep(l.site, l.price_cents) - l.price_cents }]),
     };
   }
@@ -153,7 +156,10 @@ export function clocks(w: World, it: Item): { id: string; label: string; at: str
   if (pickup) out.push({ id: 'pickup', label: `Pickup, ${pickup.place?.label ?? 'your spot'}`, at: when(pickup.window.start, w.now), done: pickup.state === 'done' });
   else if (sale.clocks.ship_by) out.push({ id: 'ship', label: 'Ship by', at: when(sale.clocks.ship_by, w.now), done: ['shipped', 'delivered', 'released'].includes(sale.state) });
   else if (sale.label?.tracking_ref) out.push({ id: 'ship', label: 'Shipped', at: day(sale.created_at, w.now), done: true });
+  // When the money arrives (pages.md §6.6, Sold: "the order's clocks (ship by, money arrives)"). A payout date is a guarded
+  // number (sold.md, Proof layer): until the site gives one, the clock says what it waits on rather than a date we made up.
   if (sale.clocks.release_at) out.push({ id: 'paid', label: sale.state === 'released' ? 'Paid' : 'Money arrives', at: day(sale.clocks.release_at, w.now), done: sale.state === 'released' });
+  else if (!pickup) out.push({ id: 'paid', label: 'Money arrives', at: 'When the site pays out', done: false });
   return out;
 }
 
@@ -263,24 +269,89 @@ export function priceFor(it: Item, c: Choice): Cents | null {
   return Math.max(whole(at), floor);
 }
 
-// What a listing at this price would keep on each site the plan uses, and what a site that is left out says. `flipped`
+// The cross-listing price rule this item uses: its own, or the account's, Same take-home for a new seller (decisions.md,
+// 2026-11-15, cross-listing starts on same take-home). The names and reasons are the engine's (spreads.ts), the same words
+// You > Defaults shows.
+export const spreadOf = (it: Item): Spread => it.limits?.spread ?? DEFAULT_SPREAD;
+export const rules = (it: Item) => (Object.keys(SPREADS) as Spread[])
+  // Your shop first needs a shop the item came from; an item made in the app has none.
+  .filter(k => k !== 'home_first' || it.origin === 'import')
+  .map(k => ({ id: k, label: SPREADS[k].name, does: SPREADS[k].says }));
+
+// The middle of what sold on one site, to the dollar, for What each site pays; none when the site shows too few sales.
+function siteMarket(it: Item, site: Site): Cents | undefined {
+  const p = it.valuation?.per_site.find(x => x.site === site);
+  return p && p.low !== null && p.high !== null && p.basis_count >= 3 ? Math.round((p.low + p.high) / 200) * 100 : undefined;
+}
+
+// Each site's price under the rule (agent proposal for how the Plan's one price meets the rule): the price the person sets
+// is what the site that takes the least shows, so it is the lowest on screen, and the rule prices every other site from
+// what that one pays. Same price puts it everywhere. A price is rounded up to the dollar, so no site pays less.
+export function sitePrices(it: Item, price: Cents, sites: Site[], spread: Spread = spreadOf(it)): Partial<Record<Site, Cents>> {
+  if (spread === 'same_price' || sites.length < 2) return Object.fromEntries(sites.map(x => [x, price]));
+  const live = it.listings.find(l => l.state === 'live')?.site;
+  const home = spread === 'home_first' && live && sites.includes(live) ? live
+    : sites.reduce((a, b) => (youKeep(b, price) > youKeep(a, price) ? b : a));
+  const target = youKeep(home, price);
+  return Object.fromEntries(sites.map(x => [x, x === home ? price : Math.ceil(sitePrice(spread, home, x, target, price, siteMarket(it, x)).price / 100) * 100]));
+}
+
+// What a listing at the plan's price would pay on each site the plan uses, and what a site that is left out says. `flipped`
 // holds the sites the person switched from the agent's pick: a site it picked, skipped; a linked one it left out, added.
 // Which sites this kind of thing fits (edge-cases §11): a blocked site can't be added and says why; an avoided one is
 // greyed with its reason and a tap still adds it. Each site also carries its returns rule in one line (edge-cases §10).
-export type PlanSite = { site: Site; on: boolean; can: boolean; why: string; keep: Cents | null; avoid: boolean; returns: string };
-export function planSites(w: World, it: Item, price: Cents, flipped: Site[] = []): PlanSite[] {
+export type PlanSite = { site: Site; on: boolean; can: boolean; why: string; price: Cents; keep: Cents | null; avoid: boolean; returns: string };
+export function planSites(w: World, it: Item, price: Cents, flipped: Site[] = [], spread: Spread = spreadOf(it)): PlanSite[] {
   const listed = new Set(it.listings.map(l => l.site));
-  return w.connections.map(c => {
+  const rows = w.connections.map(c => {
     const linked = !!c.account && c.account.health !== 'broken' && !c.error;
     const fit = fitOf(it.category, c.site);
     const blocked = fit?.verdict === 'blocked', avoid = fit?.verdict === 'avoid';
     const can = linked && !blocked;
-    const on = can && listed.has(c.site) !== flipped.includes(c.site);
-    const why = blocked ? `Not allowed here. ${fit!.why}` : !c.account ? 'Not linked' : !linked ? 'Signed out'
-      : on ? `Posts at ${usd(price)}. You keep ${usd(youKeep(c.site, price))}`
-      : listed.has(c.site) ? 'You skipped it' : avoid ? fit!.why : 'Not posting here';
-    return { site: c.site, on, can, why, keep: can ? youKeep(c.site, price) : null, avoid: avoid && !on, returns: RETURNS[c.site] };
+    return { c, fit, blocked, avoid, can, linked, on: can && listed.has(c.site) !== flipped.includes(c.site) };
   });
+  const on = rows.filter(r => r.on).map(r => r.c.site);
+  // A site that is off is priced as if it were added, so its numbers say what it would pay.
+  const prices = { ...sitePrices(it, price, rows.filter(r => r.can).map(r => r.c.site), spread), ...sitePrices(it, price, on, spread) };
+  return rows.map(({ c, fit, blocked, avoid, can, linked, on }) => {
+    const p = prices[c.site] ?? price;
+    const why = blocked ? `Not allowed here. ${fit!.why}` : !c.account ? 'Not linked' : !linked ? 'Signed out'
+      : on ? `Posts at ${usd(p)}. You get ${usd(youKeep(c.site, p))}`
+      : listed.has(c.site) ? 'You skipped it' : avoid ? fit!.why : 'Not posting here';
+    return { site: c.site, on, can, why, price: p, keep: can ? youKeep(c.site, p) : null, avoid: avoid && !on, returns: RETURNS[c.site] };
+  });
+}
+
+// The numbers under one site's price (Ben, 06:53: the reason first, "then see numbers if need be"): the price, the fee,
+// what the fee is charged on, and what the person gets. From the fee table the money engine uses (money.md D9).
+export function feeLine(site: Site, price: Cents): { price: Cents; fee: Cents; on: string; get: Cents } {
+  const k = keep(site, price), base = FEES[site].base;
+  const on = base.shipping && base.tax ? 'the price, shipping and tax' : base.shipping ? 'the price and shipping' : base.tax ? 'the price and tax' : 'the price';
+  return { price, fee: k.fee_cents, on, get: k.keep_cents };
+}
+
+// The Why sheet (pages.md §6.6: "Why? on any field or number"; "Why (sheet: the item's events with undo)"): first the
+// reason in plain words, then the numbers behind the price range and each site's fee, then what the agent did and why.
+export type Why = {
+  title: string; says: string;
+  sales: { site: Site; low: Cents; high: Cents; count: number }[];
+  fees: { site: Site; price: Cents; fee: Cents; on: string; get: Cents }[];
+  basis: string;
+  events: { id: string; why: string; site: Site | null; at: string; undo: boolean }[];
+};
+export function why(w: World, it: Item): Why | null {
+  const v = it.valuation?.state === 'shown' ? it.valuation : null;
+  if (!v) return null;
+  const n = v.basis_count, sites = v.per_site.length;
+  const ls = it.listings.filter(l => l.state === 'live' || l.state === 'none');
+  return {
+    title: `Why ${usd(v.range.low)} to ${usd(v.range.high)}`,
+    says: `${n} like it sold lately on ${sites} ${sites === 1 ? 'site' : 'sites'}, most between ${usd(v.range.low)} and ${usd(v.range.high)}. Each site takes a fee from the price, so you get a little less.`,
+    sales: v.per_site.filter(p => p.low !== null && p.high !== null).map(p => ({ site: p.site, low: p.low!, high: p.high!, count: p.basis_count })),
+    fees: ls.map(l => ({ site: l.site, ...feeLine(l.site, l.price_cents) })),
+    basis: `Checked ${day(v.as_of, w.now).toLowerCase()}`,
+    events: w.events.filter(e => e.item_id === it.id).map(e => ({ id: e.event_id, why: e.why, site: e.site, at: day(e.at, w.now), undo: e.undo.allowed })),
+  };
 }
 
 // The price drops the plan will make (money.md D15, its age table): the next rung at the plan's median days, the one
@@ -307,6 +378,21 @@ export function postWords(prices: Cents[]): string {
   if (!prices.length) return 'Pick a site';
   const lo = Math.min(...prices), same = prices.every(p => p === lo);
   return `Post ${same ? `at ${usd(lo)}` : `from ${usd(lo)}`} on ${prices.length} ${prices.length === 1 ? 'site' : 'sites'}`;
+}
+
+// The sold prices the Plan's price track draws as ticks (pages.md §6.7 row 2), in dollars. The demo worlds hold each site's
+// sold range and count, not each sale, so a site's sales are spread evenly over its range until the comps engine hands the
+// page the sales themselves.
+export function soldTicks(it: Item): number[] {
+  const v = it.valuation?.state === 'shown' ? it.valuation : null;
+  if (!v) return [];
+  return v.per_site.flatMap(p => (p.low === null || p.high === null ? [] : Array.from({ length: p.basis_count },
+    (_, i) => Math.round((p.low! + ((p.high! - p.low!) * (i + 0.5)) / p.basis_count) / 100))));
+}
+
+// When Gone fast should be gone by (pages.md §6.7 row 4; limits.gone_by): three days, a week, or two weeks out.
+export function goneByChoices(now: string): { id: string; label: string; at: string }[] {
+  return [3, 7, 14].map(d => ({ id: String(d), label: `By ${day(inDays(d, now), now)}`, at: inDays(d, now) }));
 }
 
 // Delete is refused while an order is open (ways-out §6.6): a claim window, a return or a dispute.
