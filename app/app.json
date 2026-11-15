@@ -51,7 +51,8 @@
           "photosPermission": "secondhand opens your photos when you choose ones you already took."
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,
