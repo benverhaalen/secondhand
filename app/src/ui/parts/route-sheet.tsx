@@ -6,7 +6,8 @@
 // (Emil, gestures: track 1:1, release with the velocity). A tap on the scrim closes it. Under Reduce Motion it fades.
 import { usePathname } from 'expo-router';
 import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import { useWindow } from '../window';
 import { GestureDetector, GestureHandlerRootView, usePanGesture } from 'react-native-gesture-handler';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useSharedValue, withSpring, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -38,7 +39,7 @@ export function RouteSheet({ name, state, skip, title, foot, onClosed, children 
   onClosed: () => void;
   children: ReactNode;
 }) {
-  const c = useColors(), insets = useSafeAreaInsets(), { height } = useWindowDimensions(), screen = usePathname();
+  const c = useColors(), insets = useSafeAreaInsets(), { height } = useWindow(), screen = usePathname();
   const y = useSharedValue(height);
   const enter = typeof MOTIONS.sheet.ms === 'number' ? MOTIONS.sheet.ms : motion.panel;
   const leave = typeof MOTIONS.select.ms === 'number' ? MOTIONS.select.ms : motion.select;
