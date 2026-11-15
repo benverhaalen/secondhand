@@ -119,10 +119,10 @@
       "at": "/sell?world=flipper"
     },
     {
-      "control": "Kept, folded",
-      "on_tap": "opens the folded Kept shelf",
+      "control": "A shelf header (Kept, folded at first)",
+      "on_tap": "opens the Kept shelf; tapped again, folds it",
       "id": "shelf-kept-fold",
-      "does": "opens the folded Kept shelf",
+      "does": "opens the Kept shelf; tapped again, folds it",
       "at": "/sell?world=clearing"
     },
     {
@@ -155,6 +155,13 @@
       "id": "sell-retry",
       "does": "loads the things again",
       "at": "/sell?state=failed"
+    },
+    {
+      "control": "A shelf header (Needs you, open at first)",
+      "on_tap": "folds the Needs you shelf to its header and count",
+      "id": "shelf-needs_you-fold",
+      "does": "folds the Needs you shelf to its header and count",
+      "at": "/sell?world=clearing"
     }
   ],
   "flows": [
@@ -206,6 +213,15 @@
         "select-done"
       ],
       "then": "tiles open items again"
+    },
+    {
+      "flow": "fold and come back",
+      "steps": [
+        "shelf-in_progress-fold",
+        "tile-it_jacket",
+        "back"
+      ],
+      "then": "In progress is still folded: each fold is kept for the person"
     }
   ],
   "back": "Sell is a tab: no back. Android back leaves the app from here.",
@@ -231,8 +247,8 @@
       "why": "pages §6.10 says each shelf scrolls sideways, but a sideways shelf under a sideways filter row is two horizontal gestures stacked, and the decided Sell is a photo grid. Two rows and See all keep the flipper's 64 things to one screen a shelf."
     },
     {
-      "decision": "Unsold and Kept are folded: their header and count, and a chevron that opens them",
-      "why": "pages §6.10: \"Unsold and Kept folded at the bottom\". They are not for sale, so they never push live things down."
+      "decision": "Every shelf folds and opens from its header; Unsold and Kept start folded",
+      "why": "Ben, 06:19: \"I wish on the sell site like the needs you and in progress parts they were collapsible\" (product/words.md#2026-11-15-notes-on-the-first-gallery-today-must-explain-itself-you-is-a-dashboard-the-camera-frames-the-listing-photo). Unsold and Kept are not for sale, so they start folded (pages §6.10)."
     },
     {
       "decision": "Needs you is in Today's order, not newest first",
@@ -273,6 +289,22 @@
     {
       "decision": "Failed says the things didn’t load, with Try again; offline keeps the last copy and a change waits, its button saying Waiting for signal",
       "why": "ways-out, Everywhere: nothing is guessed, and a tap without signal is held, not lost (as Today holds it)."
+    },
+    {
+      "decision": "The header is the press: title, count and a chevron that turns right when folded and down when open; See all stays on the right",
+      "why": "The way a section folds in Files and Reminders. The count shows in both states so a folded shelf still says how much is in it; the header is one size in both, so folding moves nothing in it (U7)."
+    },
+    {
+      "decision": "The fold opens with a fade and the shelves below glide, in the select time (shelfFold, 200 ms, ease-out)",
+      "why": "frontend-standard §3: a state change, done tens of times a day, so short and subtle; opacity and transform only; under Reduce Motion it is instant."
+    },
+    {
+      "decision": "Each fold is remembered for the person",
+      "why": "Someone who folds Live every visit should not have to fold it again. Kept in memory for the demo and in the browser on the web."
+    },
+    {
+      "decision": "Sell carries the wash",
+      "why": "Ben, 06:21: \"sometimes the gradient at the top of the screen is there or isnt there\" (product/words.md#2026-11-15-notes-on-the-first-gallery-today-must-explain-itself-you-is-a-dashboard-the-camera-frames-the-listing-photo). The wash sits on every main tab and on no pushed page or sheet."
     }
   ]
 }
