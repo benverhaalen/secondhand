@@ -118,3 +118,27 @@ test('run: writes an empty file at the start, then the file the app reads after 
   assert.deepEqual(writes[0], { alerts: [] });
   assert.equal(writes.at(-1).alerts[0].price_cents, 1800);
 });
+
+// --want: the alert fires only for a listing that fits the want, read from Poshmark's own page data.
+const want = { team: ['\\bbrewers\\b'], item: ['\\bjersey\\b'], not: ['\\btee\\b'], departments: ['Men'], category: 'Jerseys', sizes: ['L', 'XL'], cap: 60 };
+const W = '6551f0a1b2c3d4e5f6a7b8d1', T = '6551f0a1b2c3d4e5f6a7b8d2', K = '6551f0a1b2c3d4e5f6a7b8d3';
+const poshCard = (id, title, price, size, dept = 'Men', cat = 'Jerseys') => ({ id, title, price_amount: { val: String(price) }, inventory: { status: 'available', size_quantities: [{ size_obj: { display: size } }] },
+  catalog: { department_obj: { display: dept }, category_feature_objs: [{ display: cat }] }, first_published_at: '2023-11-13T09:47:20Z' });
+const poshPage = (...cs) => `<html><script>window.__INITIAL_STATE__ = ${JSON.stringify({ $_search: { gridData: { data: cs } } })};</script>${cs.map(c => `<a href="/listing/x-${c.id}">${c.title}</a><span>$${c.price_amount.val}</span>`).join('')}</html>`;
+const poshListing = c => `<html><script type="application/ld+json">${JSON.stringify({ '@type': 'Product', name: c.title, url: `https://poshmark.com/listing/x-${c.id}`, offers: { price: c.price_amount.val, priceCurrency: 'USD', availability: 'https://schema.org/InStock' } })}</script><script>window.__INITIAL_STATE__ = ${JSON.stringify({ $_listing_details: { listingDetails: c } })};</script></html>`;
+
+test('run --want: a cheaper tee and a kids jersey never ping; the fitting jersey does, timed from its publish time', async () => {
+  let t = Date.parse('2023-11-13T09:48:00Z'), reads = 0;
+  const jersey = poshCard(W, 'Milwaukee Brewers Jersey', 45, 'L'), tee = poshCard(T, 'Brewers jersey tee', 12, 'L', 'Men', 'Tees'), kids = poshCard(K, 'Brewers Jersey', 20, 'XL', 'Kids');
+  // three cheaper new listings in the same read must not push the fitting one out of the three-a-check limit
+  const cheap = poshCard('6551f0a1b2c3d4e5f6a7b8d4', 'Brewers jersey tee', 10, 'L', 'Men', 'Tees');
+  const seed = poshPage(poshCard(A, 'Old Brewers Jersey', 80, 'L'));
+  const pages = [seed, seed, poshPage(tee, kids, cheap, jersey, poshCard(A, 'Old Brewers Jersey', 80, 'L'))];
+  const byId = { [W]: jersey, [T]: tee, [K]: kids, [cheap.id]: cheap };
+  const fetchPage = async url => { const id = /-([0-9a-f]{24})$/.exec(url)?.[1]; return id ? poshListing(byId[id]) : pages[Math.min(reads++, pages.length - 1)]; };
+  const out = await run({ url: 'https://poshmark.com/search?query=brewers%20jersey&sort_by=added_desc', want, every_s: 10, for_min: 1,
+    fetchPage, post: async () => ({}), sleep: async ms => { t += ms; }, now: () => t });
+  assert.deepEqual(out.alerts.map(a => a.site_id), [W]);
+  assert.equal(out.alerts[0].listed_at, Date.parse('2023-11-13T09:47:20Z'));
+  assert.equal(out.alerts[0].size, 'L');
+});

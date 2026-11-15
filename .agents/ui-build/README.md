@@ -31,13 +31,13 @@ Reason it out as the best product designer you know would: what the product is f
 | Step | What you do | Done when |
 |---|---|---|
 | Frame | Who uses it, how often, what they came to do, where a mistake costs most, the ways out from ways-out.md, the moment a person stays in the loop | Five lines at the top of `app/behavior/<page>.json` under `frame` |
-| Compose | Build the screen in `app/src/app/...` from the parts in `app/src/ui` only. Two or three variants in code when the layout is not obvious, each leaning toward one persona; merge what serves one and costs nobody | It renders on web at 390 x 844 with demo data from `app/src/demo` |
+| Compose | Build the screen in `app/src/app/...` from the parts in `app/src/ui` only, starting from the recipes below. One version; a second only when the layout is truly open | It renders on web at 390 x 844 with demo data from `app/src/demo` |
 | Missing part | If no part fits, write the part in `app/src/ui/parts/` with its reason, every state, a data-part name and a row on the parts sheet. Never style a screen by hand | The parts sheet shows it in light and dark |
-| Behavior table | A fresh agent that has not seen your code writes `app/behavior/<page>.json` from the render: every state, every control, where Back goes | Every control on screen is in the table |
-| Tests first | A fresh agent turns the table into tests in `app/e2e/<page>.test.mjs` against the web build (copy `app/e2e/today.test.mjs`; run `node --test "app/e2e/*.test.mjs"`), read from the event log, and a Maestro flow in `app/e2e/maestro/<page>.yaml` | They fail before the behavior exists |
+| Behavior table | A fresh agent on a smaller model, which has not seen your code, writes `app/behavior/<page>.json` from the render: every state, every control, where Back goes | Every control on screen is in the table |
+| Tests first | The same agent turns the table into tests in `app/e2e/<page>.test.mjs` against the web build (copy `app/e2e/today.test.mjs`; run `node --test "app/e2e/*.test.mjs"`), read from the event log, and a Maestro flow in `app/e2e/maestro/<page>.yaml` | They fail before the behavior exists |
 | Behavior | Make the tests pass. Motion and haptics from `app/src/ui/motion.ts` and frontend-standard §3 | Tests pass |
 | Check | `node scripts/app-check.mjs <route>`: brand-check on the real render (U6 logos, U7 nothing moves, sizes, contrast, corners) and Emil's checks; `node .agents/check.mjs` | Zero errors |
-| Break it | Run `break-ui` and `review-animations` on the page: long text, no data, slow network, huge numbers, dark mode, large type, fast taps; walk it as each persona and each ways-out row | Every defect went through the intake below |
+| Break it | Once for the whole app before a demo, not per page: `break-ui` and `review-animations` (long text, no data, slow network, huge numbers, dark mode, large type, fast taps; each persona and ways-out row) | Every defect went through the intake below |
 | Record | Every defect found, by anyone, goes through the intake below | The commit names the layer it was fixed in |
 
 A beautiful page with a dead control fails. So does a working page that drifts from the kit.
