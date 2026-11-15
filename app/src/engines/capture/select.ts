@@ -1,13 +1,18 @@
 import { processFor, type Family, type Step } from './process.ts';
 import { SITES } from '../../../../spec/sites.mjs';
-import { table, rowsFor, classFor, bound, compare, type Site, type DimensionClass } from './table.ts';
+import { table, rowsFor, classFor, bound, compare, type Site, type DimensionClass, type Target } from './table.ts';
 import type { ParamStore } from '../param/param.ts';
 export type Fact = { value: unknown; source: 'seen'|'label'|'measured'|'derived'|'lookup'|'you_said'; confidence: number;
-  confirmed?: boolean; unknown_reason?: 'not_read'; step?: string };
+  confirmed?: boolean; unknown_reason?: 'not_read'; step?: string; note?: string };
+export type StudioAsk = {type:'cover'|'back'|'tag'|'graphic'|'flaw'|'measure'; text:string; zone?:string; kind?:string; name?:string};
+export const studioStep = (ask: StudioAsk): string => ['graphic','flaw'].includes(ask.type) ? `${ask.type}:${ask.zone}` : ask.type;
+export const targets = (state: State): Target[] => state.studio?.requested ? [...state.sites,'studio'] : [...state.sites];
 export type State = {
   capture_id: string; item_id: string; purpose: 'sell'|'appraise'|'find'; confirm_mode: 'tap'|'auto'; has_lidar: boolean; object_capture?: boolean;
   sites: Site[]; type: Family|null; suggestion?: {family: Family; p: number; second_p: number}; kind?: string;
   extent_cm?: number; rigid?: boolean; pieces?: number; kept: string[]; retakes: Record<string,number>;
+  variants?: {dimensions?: {label:string;value:Record<string,number>;p:number}[]};
+  studio?: {requested:boolean;measurements:string[];asks:StudioAsk[]};
   facts: Record<string,Fact>; candidates?: Record<string,string[]>; lookups: 'none'|'running'|'done';
   profile?: {handover?: 'pickup'|'delivery'|'either'}; refused: string[]; recall_flag?: boolean;
 };
@@ -47,6 +52,18 @@ export function select(state: State, params: ParamStore) {
   }
   const cls=classFor(inner);
   if(cls.dimensions)merged.push(structuredClone(cls.dimensions));
+  if(state.studio?.requested) {
+    let dimensions=merged.find(row=>row.field==='dimensions');
+    if(!dimensions) {
+      dimensions=structuredClone(classFor('bag').dimensions!);
+      const view=steps.find(step=>step.step==='scan' || step.step==='front' || step.step==='ring')?.step;
+      dimensions.ways=dimensions.ways.filter(way=>way.way!=='measured' || !!view).map(way=>way.way==='measured'?{...way,view}:way);
+      dimensions.ask!.parts=[];
+      merged.push(dimensions);
+    }
+    dimensions.required=[...(dimensions.required==='all'?state.sites:dimensions.required),'studio'];
+    dimensions.ask!.parts=[...new Set([...(dimensions.ask!.parts ?? []),...state.studio.measurements])];
+  }
   if(bundle)merged.push(structuredClone(table.classes.set_bundle.lot_count));
   for (const row of merged) {
     row.ways = row.ways.map(way => usesRing && way.view === 'scan' ? {...way,view:'ring'} : way);
