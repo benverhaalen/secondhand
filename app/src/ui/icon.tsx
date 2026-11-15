@@ -27,7 +27,7 @@ export function Icon({ name, size = 24, tone = 'ink', filled = false, label }: {
   }[tone];
   const stroke = size < 20 ? 1.9 : 1.5;
   return (
-    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" accessibilityLabel={label} accessible={!!label}>
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" accessibilityLabel={label} {...(label ? { accessible: true } : {})}>
       {(ICONS[name] as readonly (readonly [string, Readonly<Record<string, string>>])[]).map(([tag, a], i) => {
         // Filled: every closed shape fills with the ink and every line stays the ink, so an icon whose outline is not its
         // first path (search's handle, the person's shoulders) keeps its whole shape (the phone audit, 2026-11-15: Buy

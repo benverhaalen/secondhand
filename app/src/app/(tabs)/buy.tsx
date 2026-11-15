@@ -100,7 +100,7 @@ export default function Buy() {
   return (
     <Screen name="buy" state={state ?? (nothing ? (w.name === 'new' ? 'new' : 'empty') : 'typical')} wash nav={nav}
       foot={toast ? <UndoToast id={toast.id} text={toast.text} onUndo={toast.undo} onGone={() => setToast(null)} /> : undefined}>
-      <SearchField id="buy-search" placeholder="Find an item or paste a link" onCamera={() => router.push(href(w, '/camera'))}
+      <SearchField id="buy-search" placeholder="Find an item or paste a link" onOpen={() => router.push(href(w, '/shop'))} onCamera={() => router.push(href(w, '/camera'))}
         onSubmit={q => router.push(href(w, `/search?q=${encodeURIComponent(q)}`))} />
       {state === 'offline' ? <OfflineLine /> : null}
 

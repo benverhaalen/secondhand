@@ -47,7 +47,7 @@
     {
       "state": "loading",
       "route": "/sell?state=loading",
-      "shows": "Sell"
+      "shows": "sell"
     },
     {
       "state": "failed",
