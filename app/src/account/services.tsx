@@ -47,7 +47,9 @@ export function Services({ onChanged }: { onChanged?: () => void } = {}) {
       const current = { ...result, site }; setPending(current);
       const { url } = await api.call<{ url: string }>(`POST /v1/connections/${encodeURIComponent(result.handle)}/view`);
       if (!/^https:\/\//.test(url)) throw new Error('The sign-in page is unavailable');
-      const browser = await WebBrowser.openBrowserAsync(url);
+      // ui=false hides the viewer's own tabs and toolbar so the service's page gets the screen (docs.browser-use.com, live preview).
+      const view = new URL(url); view.searchParams.set('ui', 'false');
+      const browser = await WebBrowser.openBrowserAsync(view.toString(), { presentationStyle: WebBrowser.WebBrowserPresentationStyle.FULL_SCREEN, dismissButtonStyle: 'done' });
       if (browser.type === 'cancel' || browser.type === 'dismiss') await check(current);
     } catch (failure) { log.error('connections.start', new Error('Service sign-in could not open')); setError(accountError(failure)); }
     finally { setBusy(null); }
@@ -89,7 +91,7 @@ export function Services({ onChanged }: { onChanged?: () => void } = {}) {
       <FootButton id="connection-disconnect" label="Disconnect" state={busy ? 'working' : 'idle'} onPress={unlink} />
     </Sheet>
     <Sheet open={!!pending} title="Finish connecting" onClose={() => { void cancel(); }}>
-      <Txt role="body">Sign in on the service’s page. Secondhand checks the connection before saving it.</Txt>
+      <Txt role="body">Sign in on the service’s page, then tap Done. Secondhand checks the connection before saving it.</Txt>
       {notice ? <Txt role="body">{notice}</Txt> : null}
       {error ? <Txt role="body">{error}</Txt> : null}
       <FootButton id="connection-check" label="Check connection" state={busy ? 'working' : 'idle'} onPress={() => check()} />
