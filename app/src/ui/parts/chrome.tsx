@@ -7,7 +7,7 @@ import { alpha } from '../paint';
 import { Press } from '../press';
 import { Txt } from '../text';
 import { OnGround, useColors } from '../theme';
-import { radius, size, space, type } from '../tokens.generated';
+import { nudge, radius, size, space, type } from '../tokens.generated';
 import { IconButton } from './buttons';
 import { mark, money } from './mark';
 import { Count } from './small';
@@ -51,11 +51,12 @@ export function Nav({ inbox, back, action }: {
 }
 
 // "secondhand" in Clofie, lowercase. Half its type size is kept clear on each side, where the two hand marks will sit (L52):
-// the slots are empty until the marks are drawn.
+// the slots are empty until the marks are drawn. Clofie sits low in its line box, so Txt nudges it down; the mark keeps
+// that much room above and below, so its glyphs stay inside its own box and its centre does not move (B34).
 function Wordmark() {
-  const clear = Math.ceil(type.t21.fontSize / 2);
+  const clear = Math.ceil(type.t21.fontSize / 2), room = Math.round(type.t21.fontSize * nudge.display);
   return (
-    <View {...mark('wordmark', { fit: 'content' })} accessibilityRole="header" style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <View {...mark('wordmark', { fit: 'content' })} accessibilityRole="header" style={{ flexDirection: 'row', alignItems: 'center', height: type.t21.lineHeight + 2 * room }}>
       <View {...mark('hand', { side: 'left' })} style={{ width: clear }} />
       <Txt role="title">secondhand</Txt>
       <View {...mark('hand', { side: 'right' })} style={{ width: clear }} />
@@ -85,7 +86,8 @@ export function TopSlot({ news, setup }: {
       <Press id={setup.id} label={setup.step} onPress={setup.onPress} round={false}>
         <View {...mark('top-setup')} style={{ gap: space.s1 }}>
           <Txt role="caption" tone="ink-2">{setup.line}</Txt>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2 }}>
+          {/* Room above and below for the display face's nudge, so the step's glyphs stay inside the slot (B34). */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s2, height: type.t21.lineHeight + 2 * Math.round(type.t21.fontSize * nudge.display) }}>
             <Txt role="title">{setup.step}</Txt>
             <Icon name="arrow-right-01" size={20} />
           </View>
