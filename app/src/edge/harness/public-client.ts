@@ -1,14 +1,16 @@
 // Anonymous browser reads: spec/engines/protocol-and-adapters.md §8, “Where a read runs”.
 import type { Log } from '../../../../log/index.js';
 import type { Launcher, PoolContext } from '../browser/pool.ts';
-import type { PageClient } from './sites/ebay/adapter.ts';
+import { parseListings, type ListingAsk, type ListingResult, type ListingSpec } from './listing-parser.ts';
+import { CHALLENGE, ebayListingSpec, type EbayPage, type ListingRead, type PageClient } from './sites/ebay/adapter.ts';
 import { API, WWW, type Client, type Reply } from './sites/depop/adapter.ts';
 
 export type PublicPage = {
   goto(url: string, options: { waitUntil: 'domcontentloaded'; timeout: number }): Promise<{ status(): number } | null>;
   content(): Promise<string>;
   waitForTimeout(ms: number): Promise<void>;
-  evaluate<T, A>(fn: (arg: A) => Promise<T>, arg: A): Promise<T>;
+  waitForSelector(selector: string, options: { state: 'attached'; timeout: number }): Promise<unknown>;
+  evaluate<T, A>(fn: string | ((arg: A) => T | Promise<T>), arg: A): Promise<T>;
   on(event: 'close' | 'crash', fn: () => void): void;
   off(event: 'close' | 'crash', fn: () => void): void;
   close(): Promise<void>;
@@ -37,6 +39,7 @@ type Slot = {
   detach?(): void;
 };
 type Lane = { slot?: Slot; tail: Promise<void> };
+type ReadMetrics = { bytes_out: number; parsed?: 'page' | 'server'; waited_ms?: number; fallback?: 'evaluation' | 'shape' | 'zero_cards' | 'page_state' };
 type Outcome<T> = { ok: true; value: T } | { ok: false; error: PublicClientError };
 
 export function publicClients({ launcher, log, now = () => performance.now(), idleMs = 120_000, timeoutMs = 30_000 }: {
@@ -88,9 +91,9 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
   }
 
   async function read<T>(site: Site, url: string, signal: AbortSignal,
-    work: (page: PublicPage, status: (value: number) => void, cold: boolean) => Promise<T>): Promise<T> {
+    work: (page: PublicPage, status: (value: number) => void, cold: boolean, metrics: ReadMetrics) => Promise<T>): Promise<T> {
     const target = new URL(url), fields = { site, origin: target.origin, path: target.pathname };
-    const started = now(), lane = lanes[site];
+    const started = now(), lane = lanes[site], metrics: ReadMetrics = { bytes_out: 0 };
     let held: Slot | undefined, interrupted: PublicClientError | undefined, status = 0, warm = false;
     let rejectStop!: (error: PublicClientError) => void;
     const stopped = new Promise<never>((_resolve, reject) => { rejectStop = reject; });
@@ -116,7 +119,7 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
       try {
         const page = await Promise.race([prepare(held), stopped, held.failure]);
         if (interrupted) throw interrupted;
-        return await Promise.race([work(page, value => { status = value; }, !warm), stopped, held.failure]);
+        return await Promise.race([work(page, value => { status = value; }, !warm, metrics), stopped, held.failure]);
       } catch (error) {
         await retire(held);
         throw error;
@@ -135,7 +138,7 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
         catch (error) {
           return { ok: false, error: error instanceof PublicClientError ? error : new PublicClientError(error instanceof Error && error.name === 'TimeoutError' ? 'timeout' : 'browser') };
         }
-      }, out => ({ ...fields, status, warm, result: { ok: out.ok, code: out.ok ? 'ok' : out.error.code, ms: Math.round(now() - started) } }));
+      }, out => ({ ...fields, status, warm, ...metrics, result: { ok: out.ok, code: out.ok ? 'ok' : out.error.code, ms: Math.round(now() - started) } }));
       if (!outcome.ok) throw outcome.error;
       return outcome.value;
     } finally {
@@ -143,28 +146,67 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
     }
   }
 
-  const doc: Client['doc'] = (url, signal) => read('depop', url, signal, async (page, status) => {
+  const doc: Client['doc'] = (url, signal) => read('depop', url, signal, async (page, status, _cold, metrics) => {
     const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
     const code = response?.status() ?? 0; status(code);
-    const html = await page.content();
+    const html = await page.content(); metrics.bytes_out = Buffer.byteLength(html); metrics.parsed = 'server';
     return { status: code, html, challenge: /just a moment|captcha|are you a robot/i.test(html.slice(0, 20_000)) };
   });
+  const ebayRead = (url: string, signal: AbortSignal, spec?: ListingSpec, ask: ListingAsk = {}): Promise<EbayPage | ListingRead> => read('ebay', url, signal, async (page, status, _cold, metrics) => {
+    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
+    const code = response?.status() ?? 0; status(code);
+    const data = spec ?? ebayListingSpec(), started = now();
+    const selector = [data.card_selector, data.empty_selector].filter(Boolean).join(', ');
+    try {
+      await page.waitForSelector(selector, { state: 'attached', timeout: 1500 });
+      metrics.waited_ms = Math.round(now() - started);
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== 'TimeoutError') throw error;
+      // The readiness cap is normal for item pages, errors and layout changes.
+      metrics.waited_ms = 1500;
+    }
+    const server = async (): Promise<EbayPage> => {
+      const html = await page.content(); metrics.parsed = 'server'; metrics.bytes_out = Buffer.byteLength(html);
+      return { status: code, html };
+    };
+    if (!spec) return server();
+    if (code >= 400) { metrics.fallback = 'page_state'; return server(); }
+    try {
+      const state = await page.evaluate(({ spec, challenge }: { spec: ListingSpec; challenge: string }) => {
+        const title = document.title;
+        const empty = spec.empty_selector && document.querySelector(spec.empty_selector);
+        const heading = spec.heading_selector && document.querySelector(spec.heading_selector);
+        return {
+          blocked: new RegExp(challenge, 'i').test(title) || new RegExp(challenge, 'i').test(document.documentElement.outerHTML.slice(0, 20_000)),
+          signin: /^sign in or register\b/i.test(title), error: /^error page\b/i.test(title),
+          heading: !spec.heading_selector || !!heading,
+          empty: !!((empty && (!spec.empty_pattern || new RegExp(spec.empty_pattern).test(empty.textContent ?? ''))) || (heading && spec.empty_heading_pattern && new RegExp(spec.empty_heading_pattern).test(heading.textContent?.trim() ?? ''))),
+        };
+      }, { spec, challenge: CHALLENGE.source });
+      if (state.blocked || state.signin || state.error || !state.heading) { metrics.fallback = 'page_state'; return server(); }
+      // Playwright evaluates source directly in the page's realm; there is no captured module scope.
+      const parsed: unknown = await page.evaluate(`(${parseListings.toString()})(document, ${JSON.stringify(spec)}, ${JSON.stringify(ask)})`, undefined);
+      if (!isListingResult(parsed, spec)) { metrics.fallback = 'shape'; return server(); }
+      if (parsed.total === 0 && !state.empty) { metrics.fallback = 'zero_cards'; return server(); }
+      metrics.parsed = 'page'; metrics.bytes_out = Buffer.byteLength(JSON.stringify(parsed.rows));
+      return { status: code, ...parsed };
+    } catch {
+      // Browser evaluation errors can hold page text/URLs. The fallback reason is bounded and logged by read().
+      metrics.fallback = 'evaluation';
+      if (signal.aborted) throw new PublicClientError('aborted');
+      return server();
+    }
+  });
   return {
-    ebay: { signed_in: false, page: (url, signal) => read('ebay', url, signal, async (page, status) => {
-      const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
-      const code = response?.status() ?? 0; status(code);
-      // The proved live-page.ts path lets eBay settle before capturing the rendered document.
-      await page.waitForTimeout(1500);
-      return { status: code, html: await page.content() };
-    }) },
-    depop: { signed_in: false, doc, json: (path, signal) => read<Reply>('depop', API + path, signal, async (page, status, cold) => {
+    ebay: { signed_in: false, page: (url, signal) => ebayRead(url, signal) as Promise<EbayPage>, listings: ebayRead },
+    depop: { signed_in: false, doc, json: (path, signal) => read<Reply>('depop', API + path, signal, async (page, status, cold, metrics) => {
       // live.ts first navigates via search. A standalone JSON read also needs an open Depop origin for CORS.
       if (cold) await page.goto(WWW + '/', { waitUntil: 'domcontentloaded', timeout: timeoutMs });
       const reply = await page.evaluate(async (url: string) => {
         const response = await fetch(url, { credentials: 'omit' });
         return { status: response.status, body: response.ok ? await response.json() : null };
       }, API + path);
-      status(reply.status);
+      status(reply.status); metrics.bytes_out = Buffer.byteLength(JSON.stringify(reply));
       return reply;
     }) },
     close() {
@@ -175,4 +217,22 @@ export function publicClients({ launcher, log, now = () => performance.now(), id
       return closing;
     },
   };
+}
+
+function isListingResult(value: unknown, spec: ListingSpec): value is ListingResult {
+  if (!value || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  if (Object.keys(v).length !== 5 || !Object.keys(v).every(key => ['rows', 'dropped', 'total', 'facts', 'narrowed_out'].includes(key))) return false;
+  if (!['total', 'dropped', 'facts', 'narrowed_out'].every(k => Number.isSafeInteger(v[k]) && Number(v[k]) >= 0) || !Array.isArray(v.rows)) return false;
+  let facts = 0;
+  for (const row of v.rows) {
+    if (!row || typeof row !== 'object' || Array.isArray(row)) return false;
+    const r = row as Record<string, unknown>;
+    if (typeof r.item_id !== 'string' || !r.item_id || !Number.isSafeInteger(r.price_cents) || Number(r.price_cents) < 0 ||
+        !Number.isSafeInteger(r.rank) || Number(r.rank) < 1 || Number(r.rank) > Number(v.total) || !['all', 'some', 'none'].includes(String(r.name_match))) return false;
+    if (!Object.entries(r).every(([key, field]) => (key === 'rank' || key === 'name_match' || key in spec.fields) &&
+        (typeof field === 'string' || typeof field === 'boolean' || (typeof field === 'number' && Number.isFinite(field))))) return false;
+    facts += Object.entries(r).filter(([key, field]) => key !== 'name_match' && field !== '').length;
+  }
+  return facts === v.facts && v.rows.length + Number(v.dropped) + Number(v.narrowed_out) <= Number(v.total);
 }
