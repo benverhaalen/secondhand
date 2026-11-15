@@ -1,6 +1,20 @@
 # 86: server core handoff
 
-Updated: 2026-11-15, about 09:30 Central (15:30 UTC), at the halt, by the second server-core lead; first written about 13:15 UTC. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
+Updated: 2026-11-15, about 10:20 Central (16:20 UTC), at the TestFlight hold, by the second server-core lead; first written about 13:15 UTC. Owner: Nate. Agent: Claude Code, the server-core lead (Opus 5.5), handing off at about half context per [packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills). Area: [finalization §2](../../../../spec/plans/finalization.md#2-server-core-lead-server), rows SV0 to SV10. Nothing was deployed, nothing was created on Fly, no secret was set anywhere.
+
+## Now, 2026-11-15 about 16:20 UTC (second server-core lead, at the TestFlight hold; read this first)
+
+**Hosted.** Fly `secondhand-api` runs release v7 (deployed by the capture lead), whose code main covers from 61ee012f. **From now only the orchestrator deploys to Fly.** The account is a free trial (Nate confirmed): the machine stops 5 minutes after each start until a card is added; then `%USERPROFILE%\.fly\bin\flyctl.exe machine start 8e170ec76731d8 -a secondhand-api`. Live by IP 66.241.124.170 (the campus resolver answers NXDOMAIN): `/healthz` 200 in about 50 ms, `/v1/routes` 401, a bad upload token 404, email start 503 (no sender), search composed with the Browser Use cloud browser. OPENROUTER_API_KEY is set with no daily cap on the Jev call each anonymous search makes; Nate redeployed knowing that ("Yes, redeploy").
+
+**Fixed since the halt section below, all on main:** the five red gate tests (example jobs seeded at import; 29b0fdd8); the journey over every route with a second person locked out, idempotency for PUT/PATCH/DELETE, no example taste facets for a new person, opt-in `JOURNEY_TIMINGS` (via w/srv-final); the photo route in the uploads handlers and routes example; the Fly v3 boot crash ("Cannot find module 'playwright-core'"): it is a runtime dependency now and composition survives a missing browser library (b43f5718, proved by booting the image in Docker with a browser key).
+
+**Benchmark.** Five journey runs, 1,515 requests over all 100 routes: p50 0.7 ms, p95 1.9 ms, max 15.1 ms; 41 routes work end to end, 20 answer `unavailable` honestly, 23 were probed only for refusals, 15 are other leads' and still serve examples (market, compare, out, POST accounts, genie, items sell and listings, captures talk). Table: `side-session-notes/.../server-route-timings-2026-11-15.md`.
+
+**Capture, decided and not built.** Nate, to "Should a capture save and identify with whatever photos arrived?": "Yes, keep what arrived" (this changes Ben's d1006a17 rule; the orchestrator's last relay still said Ben's rule stands, so settle it with Ben). Not built: rebuild on main after w/cap-final, changing the one test the capture lead named, then rerun `node scripts/capture-e2e.mjs`; brief in `server-core-briefs/capture-keep-what-arrived.md`. The old branch `w/srv-capture-fallback` is not to be landed.
+
+**Why photos may not arrive, for the TestFlight build:** the upload address is `SECONDHAND_PUBLIC_ORIGIN` or `http://localhost:<PORT>` (uploads.ts `photos()`), so a physical phone against a dev server PUTs to itself (set on Fly, so a build pointed at Fly is fine); library picks label any non-PNG as image/jpeg (`capture/live.tsx:111`), so a HEIC is refused 415.
+
+**Next, after the hold:** srv-fix-4 (vault and SV7 review fixes, the rights rule); a daily Jev cap (the search lead's files) and a per-person chat cap; the email faults before Resend; CORS if the site calls Fly directly; a body size cap before auth; SV8 for the 15 routes above with their owners.
 
 ## Redeploy of current main to Fly, prepared and not run (2026-11-15, about 16:00 UTC)
 

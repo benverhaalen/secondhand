@@ -40,3 +40,14 @@ export async function googleSignIn(requestIdToken: GoogleTokenProvider = request
   await client.signIn({ access_token: issued.access_token, refresh_token: issued.refresh_token, expires_at: issued.expires_at });
   return true;
 }
+
+// Apple, on an iPhone: Apple signs the SHA-256 of a nonce we make into its token, and the server checks the raw nonce
+// against it (edge/auth.ts verifyApple), so a token cannot be replayed. Null when the person cancels.
+export type AppleTokenProvider = () => Promise<{ identity_token: string; nonce: string } | null>;
+export async function appleSignIn(request: AppleTokenProvider, client: Client = api): Promise<boolean> {
+  const proof = await request();
+  if (!proof) return false;
+  const issued = await client.call<SignedIn>('POST /v1/auth/apple', { body: proof });
+  await client.signIn({ access_token: issued.access_token, refresh_token: issued.refresh_token, expires_at: issued.expires_at });
+  return true;
+}

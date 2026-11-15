@@ -2704,3 +2704,10 @@ Nate, relayed by the orchestrator's session to the website session, 2026-11-15, 
 The orchestrator's brief adds, in its words, not Nate's: Nate also asked for that link and for short instructions for a person sharing it.
 
 Used in: the website home, the Try the build section ([agent-prompt.ts](../web/lib/agent-prompt.ts)); the exclamation mark is dropped on screen by [copy.md](copy.md) (no exclamation marks in UI).
+## 2026-11-15 nate the chat answers with what has arrived
+Nate, the native-walks lead's session, 2026-11-15, about 16:15 UTC, relayed by that lead; on the chat answering before every source has come back.
+> that can be faster, if after 25 seconds, don have it,
+
+> no just keep whats there, we'll treat it like we do other responses where the ai begins outputting even though it hasnt recieved all outpuits yet
+
+Used in: the chat keeps answering from the rows that have arrived when asked. Separate from this: on the hosted server one answer counted 64 listings for a finished search of 346 (it read the stored copy of the frames, which leaves out rows we may not keep); that is for an update branch.
