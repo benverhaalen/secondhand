@@ -139,3 +139,11 @@ test('genie: an answer without a replayable table snapshot is refused', async ()
   const response = await route('POST /v1/genie', handler)(new Request('http://edge.test/v1/genie', { method: 'POST', headers: { Authorization: 'Bearer good' }, body: JSON.stringify({ question: 'Which site?' }) }));
   assert.equal(response.status, 503); const error = await response.json(); assert.equal(error.code, 'waking'); assert.equal(error.failed_step, 'citation');
 });
+
+test('default Genie runs the engine transport and stores the example citation', async () => {
+  const { ports } = await import('./genie.ts');
+  const response = await call(examples.find(e => e.name === 'genie')!);
+  assert.equal(response.status, 200);
+  const body = await response.json();
+  assert.ok(ports.proof.citation(body.citation_id), 'an example-only response has no engine proof');
+});
