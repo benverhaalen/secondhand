@@ -889,3 +889,7 @@ Nate, build session (orchestrator), 2026-11-14 about 21:45 Central, after the ei
 ## 2026-11-14 nate do not cut steps that add to the result, be efficient, focus on the app, the hackathon and the experience
 Nate, build session (orchestrator), 2026-11-14 about 21:50 Central.
 > well dont cut things that add processes, just be the best at understanding and being efficient at building. sometimes you redudndently check things you are already skilled enough to know. Focus on the app, the hackathon, the user experience
+
+## 2026-11-14 nate the Databricks profile for the build is Nate
+Nate, build session (orchestrator), 2026-11-14 about 22:00 Central, asked "Which Databricks CLI profile is the event workspace?" with the choices DEFAULT and Nate.
+> Nate
