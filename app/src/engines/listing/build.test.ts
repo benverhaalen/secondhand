@@ -56,7 +56,7 @@ test('photos are strongest first, capped per site, stable on ties and never muta
   const card = item(), before = structuredClone(card);
   for (const site of ['ebay', 'depop', 'facebook', 'poshmark', 'mercari'] as const) {
     const listing = buildListing(card, site, opts);
-    assert.deepEqual(listing.photo_ids, [...card.photos].sort((a, b) => b.score - a.score).slice(0, platforms[site].photos.max).map(p => p.photo_id));
+    assert.deepEqual(listing.photo_ids, [...card.photos].sort((a, b) => b.score - a.score || a.photo_id.localeCompare(b.photo_id)).slice(0, platforms[site].photos.max).map(p => p.photo_id));
     assert.deepEqual(buildListing(card, site, opts), listing);
   }
   assert.deepEqual(card, before);
@@ -101,4 +101,13 @@ test('site field limits cut only at whole words; false and zero remain allowed v
   const listing = buildListing(card, 'ebay', { ...opts, rows: limited });
   assert.equal(listing.fields.Brand, 'Alpha Beta');
   assert.equal(listing.fields.fabric, false); assert.equal(listing.fields.sleeve_length, 0);
+});
+
+test('money boundaries reject invalid floor and price with the field name', () => {
+  for (const field of ['price_cents', 'floor_cents']) for (const value of [-1, .5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])
+    assert.throws(() => buildListing(item(), 'ebay', {...opts, [field]: value}), new RegExp(field));
+});
+test('tied photo scores use photo id', () => {
+  const card = item(); card.photos = [{photo_id:'b',score:1},{photo_id:'a',score:1}];
+  assert.deepEqual(buildListing(card,'ebay',opts).photo_ids, ['a','b']);
 });

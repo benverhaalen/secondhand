@@ -105,7 +105,15 @@ test('each spread prices the other sites its own way, keeps the same floor, and 
     assert.deepEqual(p.sites.map(d => d.floor_cents), keepSame.sites.map(d => d.floor_cents));
     for (const d of p.sites.filter(d => d.price_cents !== undefined)) {
       assert.ok(!/\$|\d/.test(d.why!.says), `the reason is words, not numbers: ${d.why!.says}`);
-      assert.match(d.why!.numbers, /you get \$/);
+      assert.equal(d.why!.numbers, '', 'arithmetic hides until a fresh basis is supplied');
     }
+  }
+});
+
+test('a low market ask cannot lower the transferred floor', () => {
+  const plan = planItem(tee(), {rows, linked: LINKED, spread: 'site_market', site_market: () => 100});
+  for (const d of plan.sites.filter(d => d.price_cents !== undefined)) {
+    assert.ok(d.price_cents! >= d.floor_cents!);
+    assert.ok(keep(d.site as Parameters<typeof keep>[0], d.floor_cents!).keep_cents >= keep('depop',2400).keep_cents);
   }
 });

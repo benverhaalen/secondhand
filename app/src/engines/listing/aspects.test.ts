@@ -41,3 +41,7 @@ test("a value outside a selection-only aspect's list is flagged, so it never rea
   const gaps = aspectGaps(tee({ brand: said('Patagonia'), size_label: said('Medium'), department: said('Men') }), rows);
   assert.deepEqual(gaps.invalid, [{ field: 'size_label', aspect: 'Size', value: 'Medium', allowed: ['S', 'M', 'L', 'XL'] }]);
 });
+
+test('an unknown free text aspect limit refuses rather than guessing 65', () => {
+  assert.throws(() => aspectRows('apparel', {aspects: [{localizedAspectName: 'Brand', aspectConstraint: {aspectMode:'FREE_TEXT'}}]}), /aspectMaxLength/);
+});
