@@ -156,13 +156,12 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
     return failure;
   }
   // Depop's public search payload has no title; its listing slug is the adapter's only item text.
-  const rows = result.data.map(row => ({ id: row.external_id, title: row.title ?? (site === 'depop' ? row.slug : undefined), price_cents: row.price_cents,
-    currency: row.currency, url: row.url, condition: row.condition, size: row.size, listed_at: row.listed_at, sold_date: row.sold_at,
-    ...Object.fromEntries(Object.entries({ image_url: row.image_url, brand: row.brand, likes: row.likes, comments: row.comments, shares: row.shares, seller_hash: row.seller_ref_hash,
-      shipping_cents: row.shipping_cents, price_high_cents: row.price_high_cents, buying_format: row.buying_format, bid_count: row.bid_count,
-      best_offer: row.best_offer, sold_count: row.sold_count, watchers: row.watchers, ships_from: row.ships_from, sponsored: row.sponsored,
-    }).filter(([, value]) => value !== undefined)),
-    ...(row.host ? { host: row.host } : {}), ...(row.converted ? { converted: true } : {}), ...('stock' in row ? { stock: row.stock as SearchRow['stock'] } : {}), ...(row.state === 'sold' ? { sold: true as const } : {}) }));
+  // Every field the read returned stays on the row (the photo, brand, shipping, watchers: Nate, "ensure all data is sent
+  // to the server"), under the row's names. The slug holds the seller's handle and the state is folded into sold.
+  const rows = result.data.map(({ external_id, slug, state, sold_at, seller_ref_hash, ...rest }: (typeof result.data)[number] & { seller_ref_hash?: string }) => ({
+    ...rest, id: external_id, title: rest.title ?? (site === 'depop' ? slug : undefined), sold_date: sold_at,
+    ...(seller_ref_hash ? { seller_hash: seller_ref_hash } : {}), ...(state === 'sold' ? { sold: true as const } : {}) }));
+
   const read = classifyRead({ challenge: false, rows }, { site: source.site, fields });
   if (!read.ok && noListingCard(read.error)) return { rows: [], searched: { ...blocked('no listing card').searched, outcome: 'unknown', ms: result.meta.ms, dropped: rows.length } };
   if (!read.ok) return { rows: [], searched: { ...blocked(read.error.message).searched, outcome: 'page_changed', error_code: 'page_changed', ms: result.meta.ms, dropped: rows.length } };
