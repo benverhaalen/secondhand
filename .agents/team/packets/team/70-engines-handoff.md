@@ -104,7 +104,9 @@ Mac facts learned: the shared `app/node_modules` is stale (it lacks `@anthropic-
   - the writer refuses rows whose `may_store` is not true;
   - SV6 is mine.
   - At the wrap-up SV7 had not landed. Its brief is `srv-obs-1` (packet 86), and the next server lead sends the commit. Until then the route's stand-in port stays. The Apify ruling only flips the rows' `may_model`; the reader does not change.
-- **Data lead (DB4):** the export shape above. On the Apify rule's effect on DB1, I asked which way to set `may_model` for Apify rows; the answer is pending.
+- **Data lead (DB4):** the export shape above, still in build on Mac branch `w/dbx-export-1`, unmerged; the sample file comes from it. Packet 71 adds a `measures.market_score` table per {site, kind} for EN7.
+- **`may_model` is set once, at write time** (agreed with the data lead at the wrap-up): Apify rows whose source site is not eBay get true, and every eBay row, direct or through an Apify actor, gets false (data-use.md:105). The loader, the views and every fit read only `may_model` and never re-derive it from the source. `use_scope` stays "hackathon_demo".
+  On our side, the place to set it is `app/src/engines/valuation/sold.ts`, which today writes `may_model: false` on every scraped row. A queue item for the next lead: change it for non-eBay Apify rows, with a test, and tell the next server lead, so the observation writer keeps the flag as given.
 - **App-wiring lead:** `POST /v1/assist`, auth visitor:
   - request `{surface:'buy', text ≤ 2000, history? ≤ 10 turns {role, text ≤ 4000}, search_job_id?, image? (person only), item_id?/want_id?/capture_id? (person only)}`;
   - it answers `202 {id, kind:'assist', state:'running', stages, stream}`;
