@@ -20,11 +20,12 @@ const PHOTOS: Record<PhotoKey, ImageSourcePropType> = {
 
 // The square logos from assets/platforms/square, unaltered. Put the site's name in accessibilityLabel, never as words.
 const LOGOS: Record<Site, ImageSourcePropType> = {
-  ebay: require('../../assets/demo/sites/ebay.png'),
-  facebook: require('../../assets/demo/sites/facebook.png'),
-  depop: require('../../assets/demo/sites/depop.png'),
-  poshmark: require('../../assets/demo/sites/poshmark.png'),
-  mercari: require('../../assets/demo/sites/mercari.png'),
+  // The saved square icons (ledger L17), copied inside app/ because Metro watches only app/. U6 holds every logo to this folder.
+  ebay: require('../../assets/platforms/square/ebay.png'),
+  facebook: require('../../assets/platforms/square/facebook.png'),
+  depop: require('../../assets/platforms/square/depop.png'),
+  poshmark: require('../../assets/platforms/square/poshmark.png'),
+  mercari: require('../../assets/platforms/square/mercari.png'),
 };
 
 export const photo = (key: PhotoKey): ImageSourcePropType => PHOTOS[key];
