@@ -284,7 +284,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
    | A notice | 350 by 56 | 28 | 16 left, 12 right; a 24 icon, text at 15, a 20 chevron |
    | A button in a card | 40 tall, in a 44 touch area | 20 | 20 at each text end |
    | An icon button in a card | 40 by 40, in a 44 touch area | 20 | |
-   | The nav | 350 by 44 | | the wordmark left, the inbox right in a 44 target |
+   | The nav | 350 by 44 | | the wordmark (C1), the inbox right in a 44 target |
    | A count | at least 20 by 20 | 10 | text at 13, a 2 ring in the page color |
 
    Gaps: 12 inside a card, 16 between cards, 32 between sections, 8 from the nav to what follows it.
