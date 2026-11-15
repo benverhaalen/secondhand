@@ -2090,3 +2090,9 @@ Nate, capture lead's session, 2026-11-15, evening Central. Asked "can you push t
 > Build the module first
 
 Used in: `spec/engines/capture.md` §7 (the Swift capture module), `.agents/team/packets/team/72-capture-handoff.md` (queue item 5).
+
+## 2026-11-15 the desktop line quieter, and the wordmark centered and sized with care
+Ben, website thread, 2026-11-15 11:07 UTC.
+> for the desktop screen, make the sans font smaller and a less prominent color and align the wordmark to be centered and choose the size of the text for it super carefully and the color too.
+
+Used in: [ledger L62](../brand/ledger.md), [the first screen's actions](../brand/explore/web-home/hero/actions.md).
