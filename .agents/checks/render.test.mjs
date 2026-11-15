@@ -110,6 +110,11 @@ const CASES = [
 ];
 // An app mock: the phone's own bars are skipped, a screen may be taller than the phone, a row may scroll past the margin, and text an ancestor clips is not on the page.
 const app = (inner, h = 844) => `<section data-view style="width:390px;height:${h}px;position:relative;overflow:hidden"><div data-chrome style="height:54px;font:600 16px Arial">9:41</div><p class="m" style="font-size:21px;padding-left:20px">secondhand</p>${inner}</section>`;
+browserTest('render: A7 permits the app heading face at 36 and rejects it for body text', { skip: !pw }, async () => {
+  const heading = '<p style="font-family:var(--font-display);font-weight:600;font-size:36px;margin:32px 20px">review your item</p>';
+  assert.deepEqual((await ids(app(heading), 'app')).filter(message => message.startsWith('A7 ')), []);
+  assert.ok((await ids(app(heading.replace('36px', '18px')), 'app')).some(message => message.startsWith('A7 ')));
+});
 browserTest('render: an app mock with a status bar, a tall screen, a scrolling row and clipped text passes', { skip: !pw }, async () => {
   assert.deepEqual(await ids(app(`<div style="overflow-x:auto;white-space:nowrap;padding:0 20px;margin-top:16px"><span style="font-size:15px">Draft</span>${'<span style="font-size:15px;padding:0 64px">Live</span>'.repeat(6)}</div>
     <div style="height:20px;overflow:hidden;padding:0 20px"><p style="font-size:15px;height:20px">Carhartt jacket</p><p style="font-size:15px">Hidden below the fold of its box</p></div>

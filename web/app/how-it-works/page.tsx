@@ -14,18 +14,18 @@ const sellingSteps = [
   {
     id: 'selling', number: '01', title: 'Start with photos',
     body: 'Add the item and any detail that could change its price, like a label or a flaw.',
-    image: 'capture', alt: 'App review after adding one photo of the sample Carhartt jacket.',
+    image: 'capture', alt: 'App review after adding one photo of a Carhartt jacket.',
   },
   {
     id: 'price', number: '02', title: 'Review the price',
     body: 'Check similar sales and choose an asking price.',
-    image: 'plan', alt: 'The asking-price screen for the same sample jacket.',
+    image: 'plan', alt: 'The asking-price screen for the same jacket.',
     href: '/data-use', link: 'Where the prices come from',
   },
   {
     id: 'review', number: '03', title: 'Review the listing',
     body: 'Check the photos, price and item details. Copy the listing details when you’re ready to finish on the marketplace you choose.',
-    image: 'preview', alt: 'The same sample jacket in the listing preview.',
+    image: 'preview', alt: 'The same jacket in the listing preview.',
   },
 ];
 
@@ -33,10 +33,10 @@ function Arrow({ down = false }: { down?: boolean }) {
   return <Icon name={down ? "arrow-down-01" : "arrow-right-01"} size={16} />;
 }
 
-function Phone({ name, alt, eager = false, caption = 'App preview · Sample data' }: { name: string; alt: string; eager?: boolean; caption?: string }) {
+function Phone({ name, alt, eager = false, caption }: { name: string; alt: string; eager?: boolean; caption?: string }) {
   return <figure className={styles.phone}>
     <AppPreviewImage name={name} alt={alt} sizes="(max-width: 359px) 240px, 280px" eager={eager} />
-    <figcaption>{caption}</figcaption>
+    {caption && <figcaption>{caption}</figcaption>}
   </figure>;
 }
 
@@ -67,7 +67,6 @@ export default function HowItWorksPage() {
           {index === 0 ? <div className={styles.phonePair}>
             <Phone name={step.image} alt={step.alt} eager caption="Add your item" />
             <div className={styles.pairedPreview}><Phone name="preview" alt={sellingSteps[2].alt} caption="Ready for review" /></div>
-            <p className={styles.sampleNote}>App preview · Sample data</p>
           </div> : <Phone name={step.image} alt={step.alt} />}
         </div>
       </section>)}
@@ -80,7 +79,7 @@ export default function HowItWorksPage() {
           <h2 id="shipping-title">Check what the sale paid out</h2>
           <p className={styles.body}>See what the buyer paid and what you kept. Continue on the marketplace for shipping.</p>
         </div>
-        <Phone name="ship" alt="Sale details and a marketplace handoff for a sample e-reader." caption="Separate sale example · Sample data" />
+        <Phone name="ship" alt="Sale details and a marketplace handoff for an e-reader." />
       </div>
     </section>
 

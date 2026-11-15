@@ -13,7 +13,7 @@ const approved = {
   15: ['PP Neue Montreal', '500', '20px', '0px'],
   18: ['PP Neue Montreal', '500', '24px', '0px'],
   21: ['PP Neue Montreal', '500', '23px', '-0.21px'],
-  36: ['PP Neue Montreal', '500', '41px', '-0.54px'],
+  36: ['Clofie', '600', '41px', '-0.54px'],
   50: ['PP Neue Montreal', '500', '57px', '-1px'],
 };
 const item = { id: 'type_item', version: 1, title: 'Carhartt jacket', state: 'review', quantity: 1, location: { label: 'Madison' }, photos: [], listings: [], attributes: [], description: 'Brown canvas jacket.', price_cents: { amount_cents: 4500, currency: 'USD' } };
@@ -155,7 +155,7 @@ test('rendered typography rejects a changed weight, face, line height, tracking 
     assert.deepEqual(violations(await inspect(screen, 'mutation baseline')), []);
     for (const [selector, property, value] of [
       ['[data-role="body"]', 'fontWeight', '700'], ['[data-role="body"]', 'fontFamily', 'Arial'],
-      ['[data-role="heading"]', 'fontFamily', 'Clofie'],
+      ['[data-role="heading"]', 'fontFamily', 'PP Neue Montreal'],
       ['[data-role="body"]', 'lineHeight', '30px'], ['[data-role="body"]', 'letterSpacing', '2px'],
       ['input', 'fontWeight', '400'],
     ]) {

@@ -1,5 +1,4 @@
 // Every word on screen goes through this, so size, face and tone come from the brand and nowhere else (Art. 6).
-// There is no size prop: a size is a role. Text is one weight, 500, at every size; Clofie 600 sets the wordmark.
 import type { ReactNode } from 'react';
 import { Platform, Text } from 'react-native';
 import { FACE } from './fonts';
@@ -38,8 +37,8 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
   const t = tone ?? (role === 'caption' ? 'ink-2' : 'ink');
   const quiet = t === 'ink-2';
   const ink = t === 'on-ink' ? c.page : t === 'on-color' ? c.onColor : ground === 'field' ? (quiet ? c.onField2 : c.onField) : quiet ? c.ink2 : c.ink;
-  const wordmark = role === 'wordmark';
-  const face = wordmark ? FACE.display : FACE.text;
+  const display = role === 'wordmark' || role === 'heading';
+  const face = display ? FACE.display : FACE.text;
   return (
     <Text
       // The role on the web (data-role), so the composition checks read a page's levels (scripts/composition.mjs).
@@ -53,14 +52,14 @@ export function Txt({ role = 'body', tone, lines, tabular = false, label, center
         letterSpacing: 'letterSpacing' in r ? r.letterSpacing : 0,
         // The loaded face, or the platform's own when the brand files are missing (scripts/fonts.mjs says which).
         ...(face ? { fontFamily: `${face}` } : {}),
-        fontWeight: Platform.OS === 'web' || !face ? (wordmark ? weight.display : weight.text) : undefined,
+        fontWeight: Platform.OS === 'web' || !face ? (display ? weight.display : weight.text) : undefined,
         fontVariant: tabular ? ['tabular-nums'] : undefined,
         color: ink,
         textAlign: center ? 'center' : undefined,
-        textTransform: wordmark ? 'lowercase' : undefined,
+        textTransform: display ? 'lowercase' : undefined,
         // Clofie sits .12 em above center in its line; it moves down where text cannot be trimmed (Art. 6.10).
-        position: wordmark ? 'relative' : undefined,
-        top: wordmark ? Math.round(r.fontSize * nudge.display) : undefined,
+        position: display ? 'relative' : undefined,
+        top: display ? Math.round(r.fontSize * nudge.display) : undefined,
       }}>
       {children}
     </Text>

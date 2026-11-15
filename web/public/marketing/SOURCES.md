@@ -4,7 +4,7 @@ The wall uses a selection of the repository's existing photo-wall collection in 
 
 Marketplace marks are unchanged copies from `assets/platforms/square/`. The paired-tag logo is the existing `web/public/brand/mark.svg`.
 
-The phone images show the current app routes at `22f37f6dc29e275a940e4a72357143f179d1d7fd` on November 15, 2026. The captures used isolated API fixtures and the shell frames complete app viewports.
+The phone images show the current app routes at `22f37f6dc29e275a940e4a72357143f179d1d7fd` on November 15, 2026. The captures used isolated API fixtures and the shell frames complete app viewports. The browser uses 320, 480 or 720px WebP derivatives (Sharp quality 88), while the PNGs retain the full captures.
 
 | Asset | App scene |
 | --- | --- |

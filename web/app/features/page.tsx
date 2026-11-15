@@ -40,7 +40,6 @@ export default function Features() {
         </div>
         <figure className={styles.heroFigure}>
           <AppPreviewImage name="preview" alt="Secondhand listing review for a Carhartt jacket, with the photo, item details and asking price." sizes="(max-width: 1100px) 244px, 268px" eager />
-          <figcaption>Listing review<span>App preview · Sample data</span></figcaption>
         </figure>
       </div>
     </section>
@@ -56,14 +55,14 @@ export default function Features() {
       <div className={styles.reasonBand}><div><h3>One record for each item</h3><p>A wrong size or condition can change the price. The adapter design reuses one reviewed record so every marketplace gets the same item facts. The current app hands posting back to you.</p></div><Source path="spec/engines/protocol-and-adapters.md">Inside the adapters</Source></div>
       <details className={styles.disclosure}>
         <summary><span>Can a photo edit change what you’re selling?</span><Icon name="add-01" size={20} className={styles.expand} /></summary>
-        <div className={styles.disclosureBody}><p>A photo edit can remove a flaw that a buyer needs to see. We tested the photo check with deliberately altered images and honest lighting changes.</p><div className={styles.testResults}><p><span>173 / 174</span>planted edits caught across 19 photos</p><p><span>17 / 38</span>honest relights also held for review</p></div><p>Even an honest lighting change can end up in review.</p><Source path="scripts/bench/out/gate.json">Read the full photo test</Source></div>
+        <div className={styles.disclosureBody}><p>A photo edit can remove a flaw that a buyer needs to see. We tested the photo check with deliberately altered images and honest lighting changes.</p><div className={styles.testResults}><p><span>173 / 174</span>planted edits caught across 19 photos</p><p><span>17 / 38</span>honest relights also held for review</p></div><Source path="scripts/bench/out/gate.json">Read the full photo test</Source></div>
       </details>
     </section>
 
     <section id="take-home" className={`${styles.section} ${styles.wrap}`} aria-labelledby="take-home-title">
-      <div className={styles.chartHeading}><div><p className={styles.eyebrow}>Compare what you keep</p><h2 id="take-home-title">Same sale.<br/>Different take-home</h2></div><p className={styles.metric}><span>$2.69</span>more to keep in this example</p></div>
+      <div className={styles.chartHeading}><div><p className={styles.eyebrow}>Compare what you keep</p><h2 id="take-home-title">Same sale.<br/>Different take-home</h2></div><p className={styles.metric}><span>$2.69</span>more after fees</p></div>
       <figure className={styles.chart}>
-        <figcaption>Illustrative take-home on the same $20 sale</figcaption>
+        <figcaption>Modeled take-home on a $20 sale</figcaption>
         <div className={styles.barRows}>
           <div className={styles.barRow}><span>Depop</span><div className={styles.track}><div className={styles.depopBar}/></div><span>$18.69</span></div>
           <div className={styles.barRow}><span>Poshmark</span><div className={styles.track}><div className={styles.poshmarkBar}/></div><span>$16.00</span></div>
@@ -71,13 +70,13 @@ export default function Features() {
         </div>
         <div className={styles.chartFoot}><p>Repository fee model, November 14, 2026. Buyer pays $6 shipping; label cost passes through. No tax or boost. Actual fees depend on the marketplace and account. This compares modeled fees, not the chance of a sale.</p><Source path="scripts/bench/out/bench-sites-4.json">See the calculation</Source></div>
       </figure>
-      <p className={styles.afterChart}>The asking price is only part of the decision. Showing the payout beside it helps you choose where to list with both amounts in view.</p>
+
     </section>
 
     <section id="find" className={styles.find} aria-labelledby="find-title">
       <div className={`${styles.wrap} ${styles.findGrid}`}>
         <div><p className={styles.eyebrow}>Find what fits</p><h2 id="find-title">A good match has<br/> to fit your life</h2><p className={styles.intro}>A low price means little if it is the wrong size, too worn or expensive to ship.</p><dl className={styles.criteria}><div><dt>Your size</dt><dd>The fit and cut you are looking for.</dd></div><div><dt>Your budget</dt><dd>What you would pay, including delivery.</dd></div><div><dt>Your condition</dt><dd>How much wear you are willing to accept.</dd></div><div><dt>Missing details</dt><dd>Visible before you decide to buy.</dd></div></dl><Source path="spec/features/watch.md">How a want becomes a search</Source></div>
-        <figure className={styles.watchFigure}><img src="/marketing/app/watch.png" width="880" height="1840" loading="lazy" decoding="async" alt="Secondhand Watch screen with a Brewers jersey request and controls for fit, budget and delivery."/><figcaption>Tell it what counts as a match.<span>App preview · Sample data</span></figcaption></figure>
+        <figure className={styles.watchFigure}><AppPreviewImage name="watch" alt="Brewers jersey tracking request with a target price, size and color." sizes="(max-width: 1100px) 244px, 268px" /></figure>
       </div>
     </section>
 
@@ -95,7 +94,7 @@ export default function Features() {
     <section id="compare" className={`${styles.section} ${styles.wrap}`} aria-labelledby="compare-title">
       <p className={styles.eyebrow}>The alternatives</p>
       <h2 id="compare-title">Compare the work<br/> and the cost</h2>
-      <p className={styles.intro}>Compare the work each tool handles and the price of its entry plan.</p>
+      <p className={styles.intro}>Check what each tool handles and what its entry plan costs.</p>
       <div className={styles.tableScroll} tabIndex={0} role="region" aria-label="Tool and subscription comparison; scroll horizontally on small screens">
         <table className={styles.comparison}>
           <caption>Published capabilities and monthly subscription prices</caption>
@@ -104,7 +103,7 @@ export default function Features() {
             <tr><th scope="row"><a href="https://www.ebay.com/help/selling/selling-tools/product-research?id=4853">eBay Product Research <ExternalArrow/></a></th><td>Researching actual eBay sales, including accepted offers.</td><td><a href="https://www.ebay.com/sellercenter/resources/seller-updates/2024-summer/tools">Free for eligible sellers <ExternalArrow/></a></td></tr>
             <tr><th scope="row"><a href="https://fliptip.ai/">FlipTip Starter <ExternalArrow/></a></th><td>Photo appraisal, sold-price lookup where supported, listing drafts and profit tracking.</td><td>$1.99 <span>US · 40 scans per month</span></td></tr>
             <tr><th scope="row"><a href="https://www.vendoo.co/pricing">Vendoo Starter <ExternalArrow/></a></th><td>Cross-listing, inventory management, sale detection and automatic delisting.</td><td>$14.99 <span>US, billed monthly</span></td></tr>
-            <tr className={styles.ownRow}><th scope="row">secondhand</th><td>An app preview combining pricing, listing review and finding, with decisions returned to the person.</td><td>Pricing undecided</td></tr>
+            <tr className={styles.ownRow}><th scope="row">secondhand</th><td>Pricing from comparable sales, listing preparation and saved searches.</td><td>Pricing undecided</td></tr>
           </tbody>
         </table>
       </div>
