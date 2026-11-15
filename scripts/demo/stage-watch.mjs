@@ -90,7 +90,7 @@ export async function run({ url, cap, want = null, every_s = 10, for_min = 15, n
     try { html = await fetchPage(url); } catch (e) { log?.error('stage_watch.search', e, { url }); }
     checks++;
     const rows = want && html != null ? new Map(cards(html).map(r => [r.site_id, r])) : null;
-    const keep = rows ? c => rows.has(c.site_id) && judge(want, rows.get(c.site_id)).fits : null;
+    const keep = rows ? c => rows.has(c.site_id) && judge(want, rows.get(c.site_id), null, { words: false }).fits : null;
     const out = html == null ? null : check(state, html, { site, now: now(), keep });
     if (!out || out.blocked) {
       wait = Math.min(wait * 2, BACKOFF_MAX_MS);

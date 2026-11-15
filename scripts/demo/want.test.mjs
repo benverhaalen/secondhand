@@ -38,6 +38,18 @@ test("judge: the site's department and category decide what a title can't", () =
   assert.equal(fit({ title: 'Milwaukee Brewers Jersey 2XL' }).fits, true);
 });
 
+test('judge: "Large", "X-Large" and an MLB chest size of 48 or 52 are the same sizes as L and XL', () => {
+  const fit = size => judge(want, cards(page(card({ inventory: { status: 'available', size_quantities: [{ size_obj: { display: size } }] } })))[0]).fits;
+  assert.deepEqual(['L', 'Large', 'X-Large', "Men's XL", '48', '52', 'M', '44', 'XXL'].map(fit), [true, true, true, true, true, true, false, false, false]);
+});
+
+test('judge: a card titled without the team passes the card check, and the listing description decides', () => {
+  const row = cards(page(card({ title: '1982 Yount #19 jersey' })))[0];
+  assert.deepEqual(judge(want, row).reasons, ['not the team']);
+  assert.equal(judge(want, row, null, { words: false }).fits, true);
+  assert.equal(judge(want, row, { description: 'Brewers 1982 throwback', size: 'XL', department: 'Men', category: 'Jerseys', jsonld_price: 29, available: true }).fits, true);
+});
+
 test('listingFacts: the listing page gives the structured price and its own fields', () => {
   const id = '6af905c3a69358be5fa9a36b';
   const html = `<html><script type="application/ld+json">${JSON.stringify({ '@type': 'Product', name: 'Brewers Jersey', url: `https://poshmark.com/listing/x-${id}`, offers: { price: '43', priceCurrency: 'USD', availability: 'https://schema.org/InStock' } })}</script>
