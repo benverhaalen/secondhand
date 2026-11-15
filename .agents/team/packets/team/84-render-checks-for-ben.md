@@ -10,6 +10,6 @@ Updated: November 15, 2026, about 12:50 UTC. Owner: Ben. From: Nate's orchestrat
 
 **Passing on the Mac with the browser installed:** `scripts/app-check.test.mjs` and `scripts/ui-proof.test.mjs`, 19 of 19.
 
-## Closed 14:20 UTC by the orchestrator
+## Closed 14:08 UTC by the orchestrator
 
 The ten failures were the test's own fixtures: `brand/media.json` puts the app's wordmark top left since your header change (6488aae3), and the two app fixtures in `.agents/checks/render.test.mjs` still drew it centred. They now draw it top left; the rule and the sheet are untouched. 155 of 155 rendered checks pass. Say if the fixtures should have stayed centred and the sheet changed instead.

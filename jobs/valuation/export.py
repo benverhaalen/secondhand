@@ -20,13 +20,13 @@ from param.registry import FIELDS, complete_row, scope_key
 from valuation.sale_curve import _timestamp, fit_group
 
 
-def _param(name, scope, value, ids, now):
+def _param(name, scope, value, ids, now, citation):
     row = complete_row({'name': name, 'scope': scope, 'family': 'model_ref',
                         'value_or_hyperparams': value, 'version': 1,
                         'fitted_on_ids_hash': hashlib.sha256('\n'.join(sorted(ids)).encode()).hexdigest(),
                         'n_eff': len(ids), 'status': 'champion', 'frozen': False,
                         'promoted_at': now, 'origin': 'fit'})
-    return {field: row[field] for field in FIELDS}
+    return {**{field: row[field] for field in FIELDS}, 'citation': citation}  # eng-en3-export-shape: run id + table
 
 
 def _groups(rows):
@@ -89,7 +89,8 @@ def build_rows(comps, estimates, contestant, now, run_id, code_version, *, split
     for scope, members in _groups(allowed):
         value = fit_group(members)
         if value is not None:
-            params.append(_param('valuation_sale_curve', scope, value, [r['row_id'] for r in members], now))
+            params.append(_param('valuation_sale_curve', scope, value, [r['row_id'] for r in members], now,
+                                 f'{run_id}:market.comp_for_model'))
         else:
             counts['omitted_sale_groups'] = counts.get('omitted_sale_groups', 0) + 1
     valid = []
@@ -118,7 +119,7 @@ def build_rows(comps, estimates, contestant, now, run_id, code_version, *, split
         holdout = [r for r in members if r['as_of'] >= cutoff]
         if len(fit) >= 30:
             params.append(_param('valuation_calibration', scope, _calibration(fit, holdout, split_at),
-                                 [r['item_id'] for r in fit], now))
+                                 [r['item_id'] for r in fit], now, f'{run_id}:measures.backtest_estimate'))
         else:
             counts['omitted_calibration_groups'] = counts.get('omitted_calibration_groups', 0) + 1
     return {'version': 1, 'exported_at': now, 'run_id': run_id, 'code_version': code_version, 'params': params}
