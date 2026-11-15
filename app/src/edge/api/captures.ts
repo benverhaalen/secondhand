@@ -1,9 +1,14 @@
 // Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §1; spec/examples/captures.json.
-// Capture persistence, upload signing and realtime credentials have no route service yet.
+// Upload signing and realtime credentials remain contract examples.
 // The shared example boundary stays here until the contract layer's owner can move it to http.ts.
 import { ApiError, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
 import { EXAMPLES, example, type Example } from './examples.ts';
-import { FAMILIES } from '../../engines/capture/process.ts';
+import { FAMILIES, type Family } from '../../engines/capture/process.ts';
+import { plan, type State, type Fact } from '../../engines/capture/plan.ts';
+import { select } from '../../engines/capture/select.ts';
+import type { FieldRow, Site } from '../../engines/capture/table.ts';
+import { memoryStore } from '../../engines/param/param.ts';
+import { SITES } from '../../../../spec/sites.mjs';
 
 export const invalid = (message: string, fields?: string[]) => new ApiError('invalid', message, 'validate', { by: 'user' }, fields ? { fields } : {});
 export const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -89,13 +94,134 @@ export function exampleHandler(endpoint: string, validate: (ctx: Ctx) => void = 
   };
 }
 
+type CaptureRow = { user_id: string; version: number; state: State; status: string; mode: string; photos: number };
+const open = example('captures.open').response as {id: string; item_id: string; created_at: string; picker: string[]};
+const linkedSites = (example('accounts.list').response as {data: {site: string}[]}).data
+  .map(account => account.site).filter((site): site is Site => SITES.includes(site));
+const params = memoryStore();
+const captures = new Map<string, CaptureRow>();
+function initial(body: Record<string, unknown>): State {
+  const device = body.device as {has_lidar?: boolean; object_capture?: boolean} | undefined;
+  const has_lidar = device?.has_lidar ?? true;
+  return { capture_id: open.id, item_id: body.item_id as string ?? open.item_id,
+    purpose: body.purpose as State['purpose'], confirm_mode: body.confirm_mode as State['confirm_mode'] ?? 'tap',
+    has_lidar, object_capture: device?.object_capture ?? has_lidar, sites: [...linkedSites], type: null,
+    ...(body.suggestion === undefined ? {} : {suggestion: structuredClone(body.suggestion) as State['suggestion']}),
+    ...(body.pieces === undefined ? {} : {pieces: body.pieces as number}),
+    kept: [], retakes: {}, facts: {}, lookups: 'none', refused: [] };
+}
+export function resetCaptures() {
+  captures.clear();
+  captures.set(open.id, {user_id: 'usr_8f2k', version: 1, state: initial(example('captures.open').request!.body as Record<string, unknown>), status: 'framing', mode: 'shots', photos: 0});
+}
+resetCaptures();
+function read(ctx: Ctx): CaptureRow {
+  const row = captures.get(ctx.params.id);
+  if (!row || row.user_id !== ctx.user_id) throw new ApiError('not_found', 'capture not found', 'read');
+  return row;
+}
+async function versionOf(ctx: Ctx) { return read(ctx).version; }
+function view(row: CaptureRow) {
+  const next = plan(row.state, params);
+  return {id: row.state.capture_id, item_id: row.state.item_id, state: row.status, mode: row.mode, purpose: row.state.purpose,
+    type: row.state.type, suggested_type: row.state.suggestion?.family ?? null, picker: open.picker,
+    process: next.process, coverage: {needed: next.process.map(step => step.key).filter(key => !row.state.kept.includes(key)), kept: [...row.state.kept]},
+    created_at: open.created_at, version: row.version, plan: next};
+}
+function write(ctx: Ctx, row: CaptureRow, status: string) {
+  row.status = status; row.version++;
+  ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, to: status});
+}
+const probability = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1;
+const number = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
+const family = oneOf(...FAMILIES);
+class InvalidAnswer extends ApiError { get status() { return 422; } }
+function answerError(field: string) { return new InvalidAnswer('invalid', `${field} is not valid for the current question`, 'validate', {by: 'user'}, {fields: [field]}); }
+function validValue(row: FieldRow, value: unknown): boolean {
+  switch(row.type) {
+    case 'text': return text(value);
+    case 'enum': return !!row.values?.includes(value as string | number);
+    case 'number': return number(value);
+    case 'bool': return bool(value);
+    case 'dimensions': return object(value) && (row.ask?.parts ?? []).every(part => number(value[part]));
+    case 'list': return Array.isArray(value) && new Set(value).size === value.length &&
+      (row.values ? value.length <= row.values.length && value.every(v => row.values!.includes(v)) : value.every(text));
+  }
+}
+type PhotoRead = {field: string; value: unknown; source?: 'seen'|'label'|'measured'; confidence?: number; unknown_reason?: 'not_read'};
+type Photo = {role: string; step: string; key?: string; reads?: PhotoRead[]};
+function validRead(v: unknown): boolean {
+  return object(v) && text(v.field) && Object.hasOwn(v, 'value') && (v.value === null
+    ? v.unknown_reason === 'not_read'
+    : oneOf('seen', 'label', 'measured')(v.source) && probability(v.confidence));
+}
+const rank: Record<Fact['source'], number> = {seen: 0, label: 1, measured: 2, derived: 3, lookup: 4, you_said: 5};
+
 export const handlers: Record<string, Handler> = {
-  'POST /v1/captures': exampleHandler('POST /v1/captures', c => fields(c.body, { mode: oneOf('shots', 'scan', 'talk'), purpose: oneOf('sell', 'appraise', 'find') }, { first_photo_hint: text })),
-  'POST /v1/captures/:id/photos': exampleHandler('POST /v1/captures/:id/photos', c => {
-    fields(c.body, { photos: v => Array.isArray(v) && v.length > 0 && v.every(p => object(p) && text(p.role) && text(p.step) && oneOf('image/heic', 'image/jpeg', 'image/png')(p.content_type) && version(p.bytes)) });
-  }),
-  'PATCH /v1/captures/:id': exampleHandler('PATCH /v1/captures/:id', c => fields(c.body, { version, type: oneOf(...FAMILIES) })),
-  'POST /v1/captures/:id/finish': exampleHandler('POST /v1/captures/:id/finish', c => fields(c.body, { version }, { note: text })),
-  'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c => fields(c.body, { voice: bool })),
+  'POST /v1/captures': fromEngine(exampleHandler('POST /v1/captures', c => fields(c.body,
+    {mode: oneOf('shots', 'scan', 'talk'), purpose: oneOf('sell', 'appraise', 'find')},
+    {first_photo_hint: text, item_id: text, device: v => object(v) && bool(v.has_lidar) && (v.object_capture === undefined || bool(v.object_capture)),
+      suggestion: v => object(v) && family(v.family) && probability(v.p) && probability(v.second_p) && v.second_p <= v.p,
+      pieces: v => integer(v) && v >= 1 && v <= 12, confirm_mode: oneOf('tap', 'auto')}), undefined, async (ctx, seed) => {
+    const row: CaptureRow = {user_id: ctx.user_id!, version: 1, state: initial(ctx.body), status: 'framing', mode: ctx.body.mode as string, photos: 0};
+    captures.set(open.id, row);
+    ctx.log.event('state.change', {entity: 'capture', id: open.id, to: row.status});
+    return {...seed, body: view(row)};
+  })),
+  'GET /v1/captures/:id': fromEngine(exampleHandler('GET /v1/captures/:id', c => {read(c);}, undefined, async ctx => ({status: 200, body: view(read(ctx))}))),
+  'POST /v1/captures/:id/photos': fromEngine(exampleHandler('POST /v1/captures/:id/photos', c => {
+    read(c);
+    fields(c.body, {photos: v => Array.isArray(v) && v.length > 0 && v.every(p => object(p) && text(p.role) && text(p.step) &&
+      oneOf('image/heic', 'image/jpeg', 'image/png')(p.content_type) && version(p.bytes) &&
+      (p.key === undefined || text(p.key)) && (p.reads === undefined || Array.isArray(p.reads) && p.reads.every(validRead)))});
+  }, undefined, async (ctx, seed) => {
+    const row = read(ctx);
+    const uploads = (example('captures.photos').response as {photos: {upload: {expires_at: string}}[]}).photos;
+    const photos = (ctx.body.photos as Photo[]).map(photo => {
+      const key = photo.key ?? photo.step;
+      const kept = row.state.kept.includes(key);
+      if (kept && photo.reads?.some(read => read.unknown_reason === 'not_read')) row.state.retakes[key] = (row.state.retakes[key] ?? 0) + 1;
+      if (!kept) row.state.kept.push(key);
+      if (row.state.lookups === 'none') row.state.lookups = 'running';
+      for (const read of photo.reads ?? []) {
+        const old = row.state.facts[read.field];
+        const source = read.source ?? 'label';
+        if (!old || old.source !== 'you_said' && rank[source] >= rank[old.source]) row.state.facts[read.field] = {
+          value: read.value, source, confidence: read.confidence ?? 0, step: key,
+          ...(read.unknown_reason ? {unknown_reason: read.unknown_reason} : {}),
+        };
+      }
+      const id = `ph_a${++row.photos}`;
+      return {id, role: photo.role, step: photo.step, upload: {url: `https://uploads.example/v/${id}?sig=example`, method: 'PUT', expires_at: uploads[0].upload.expires_at}};
+    });
+    write(ctx, row, 'uploading');
+    return {...seed, body: {photos, capture: view(row)}};
+  })),
+  'PATCH /v1/captures/:id': fromEngine(exampleHandler('PATCH /v1/captures/:id', c => {
+    read(c); fields(c.body, {version}, {type: family, answer: v => object(v) && text(v.field) && Object.hasOwn(v,'value'), refuse: text});
+    if (['type', 'answer', 'refuse'].filter(key => c.body[key] !== undefined).length !== 1) throw invalid('choose exactly one of type, answer or refuse', ['type','answer','refuse']);
+  }, c => c.body.answer ? 'captures.answer' : c.body.refuse ? 'captures.refuse' : 'captures.set_type', async (ctx, seed) => {
+    const row = read(ctx);
+    if (ctx.body.type !== undefined) row.state.type = ctx.body.type as Family;
+    else {
+      const answer = ctx.body.answer as {field: string; value: unknown} | undefined;
+      const field = answer?.field ?? ctx.body.refuse as string;
+      const current = plan(row.state, params);
+      if (!current.questions.some(q => q.field === field && q.kind !== 'shot')) throw answerError(field);
+      if (answer) {
+        const definition = select(row.state,params).rows.find(r => r.field === field)!;
+        if (!validValue(definition, answer.value)) throw answerError(field);
+        row.state.facts[field] = {value: structuredClone(answer.value), source: 'you_said', confidence: 1, confirmed: true};
+        if (field === 'type') row.state.type = answer.value as Family;
+      } else row.state.refused.push(field);
+    }
+    write(ctx, row, 'shooting');
+    return {...seed, body: {...view(row), item: {id: row.state.item_id, category: row.state.type}}};
+  }, versionOf)),
+  'POST /v1/captures/:id/finish': fromEngine(exampleHandler('POST /v1/captures/:id/finish', c => {read(c); fields(c.body, {version}, {note: text});}, undefined, async (ctx, seed) => {
+    const row = read(ctx); write(ctx, row, 'judged');
+    return {...seed, body: {...seed.body as Record<string, unknown>, capture: view(row), item: {id: row.state.item_id, state: 'researching'}}};
+  }, versionOf)),
+  'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c => fields(c.body, {voice: bool})),
 };
 export const manifest = manifestFor(handlers);

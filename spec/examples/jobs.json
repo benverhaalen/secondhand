@@ -390,6 +390,10 @@
                 "first": 1,
                 "settled": null
               }
+            },
+            "identity": {
+              "by": "default",
+              "model_ok": false
             }
           }
         },
@@ -462,6 +466,10 @@
                 "first": 1,
                 "settled": null
               }
+            },
+            "identity": {
+              "by": "default",
+              "model_ok": false
             }
           }
         },
@@ -540,6 +548,10 @@
                 "first": 1,
                 "settled": null
               }
+            },
+            "identity": {
+              "by": "default",
+              "model_ok": false
             }
           }
         },
@@ -579,7 +591,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1000,
@@ -603,7 +615,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1900,
@@ -627,7 +639,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2000,
@@ -651,7 +663,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2300,
@@ -675,7 +687,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -699,7 +711,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -723,7 +735,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -747,7 +759,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3400,
@@ -771,7 +783,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3500,
@@ -795,7 +807,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 6500,
@@ -819,7 +831,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 22000,
@@ -843,7 +855,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 24300,
@@ -912,6 +924,10 @@
                 "first": 1,
                 "settled": null
               }
+            },
+            "identity": {
+              "by": "model",
+              "model_ok": true
             }
           }
         },
@@ -931,7 +947,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1000,
@@ -955,7 +971,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1900,
@@ -979,7 +995,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2000,
@@ -1003,7 +1019,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2300,
@@ -1027,7 +1043,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -1051,7 +1067,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -1075,7 +1091,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -1099,7 +1115,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3400,
@@ -1123,7 +1139,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3500,
@@ -1147,7 +1163,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 6500,
@@ -1171,7 +1187,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 22000,
@@ -1195,7 +1211,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 24300,
@@ -1311,6 +1327,10 @@
                 "first": 1,
                 "settled": 4
               }
+            },
+            "identity": {
+              "by": "model",
+              "model_ok": true
             }
           }
         },
@@ -1334,7 +1354,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 1000,
@@ -1358,7 +1378,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 1900,
@@ -1382,7 +1402,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2000,
@@ -1406,7 +1426,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2300,
@@ -1430,7 +1450,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2500,
@@ -1454,7 +1474,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2500,
@@ -1478,7 +1498,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2500,
@@ -1502,7 +1522,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 3400,
@@ -1526,7 +1546,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 3500,
@@ -1550,7 +1570,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 6500,
@@ -1574,7 +1594,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 22000,
@@ -1598,7 +1618,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 24300,
@@ -1662,7 +1682,11 @@
                   "ms": 4,
                   "count": 12
                 }
-              ]
+              ],
+              "identity": {
+                "by": "model",
+                "model_ok": true
+              }
             }
           }
         }

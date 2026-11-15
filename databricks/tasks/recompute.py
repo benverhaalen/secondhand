@@ -27,8 +27,20 @@ def recompute(citations: list[dict], comps_by_id: dict) -> list[dict]:
     for citation in citations:
         ids = citation['basis_ids']
         missing = [id for id in ids if id not in comps_by_id]
-        rows = [{'id': id, 'price_cents': comps_by_id[id].get('price_cents')}
-                for id in ids if id in comps_by_id]
+        weights = citation.get('basis_weights')
+        rows = []
+        for id in ids:
+            if id not in comps_by_id:
+                continue
+            comp = comps_by_id[id]
+            at = comp['at']
+            if isinstance(at, datetime):
+                at = (at.replace(tzinfo=timezone.utc) if at.tzinfo is None else at.astimezone(timezone.utc))
+                at = at.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+            row = {'id': id, 'source': comp['source'], 'at': at, 'weight': weights[id] if weights is not None else 1}
+            if comp.get('price_cents') is not None:
+                row['price_cents'] = comp['price_cents']
+            rows.append(row)
         digest = basisHash(rows)
         checks.append({'citation_id': citation['id'], 'metric': citation['metric'], 'basis_count': len(ids),
                        'stored_hash': citation['basis_hash'], 'recomputed_hash': digest,
@@ -44,13 +56,19 @@ def main() -> dict:
     log.job('recompute', 'recompute', 'running')
     try:
         spark = SparkSession.getActiveSession() or SparkSession.builder.getOrCreate()
+        def read_citations():
+            table = spark.table('secondhand.core.citation')
+            columns = ['id', 'metric', 'basis_ids', 'basis_hash']
+            if 'basis_weights' in table.columns:
+                columns.append('basis_weights')
+            return [r.asDict() for r in table.select(*columns).collect()]
+
         citations = log.call('db', 'read_citations', {'table': 'secondhand.core.citation'},
-                             lambda: [r.asDict() for r in spark.table('secondhand.core.citation')
-                                      .select('id', 'metric', 'basis_ids', 'basis_hash').collect()],
+                             read_citations,
                              describe=lambda rows: {'rows': len(rows)})
         comps = log.call('db', 'read_comps', {'table': 'secondhand.market.comp'},
                         lambda: [r.asDict() for r in spark.table('secondhand.market.comp')
-                                 .select('comp_id', 'price_cents').collect()], describe=lambda rows: {'rows': len(rows)})
+                                 .select('comp_id', 'source', 'at', 'price_cents').collect()], describe=lambda rows: {'rows': len(rows)})
         checks = recompute(citations, {r['comp_id']: r for r in comps})
         checked_at = datetime.now(timezone.utc)
         rows = [{**r, 'checked_at': checked_at, 'code_sha': code_sha} for r in checks]

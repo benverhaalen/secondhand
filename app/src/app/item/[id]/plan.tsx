@@ -4,8 +4,12 @@
 // (decision 2026-11-14, a price below your floor always asks). Ways out (ways-out §6.7): type my own price, skip a site,
 // price drops off, every adjustment open under any choice. Typing slips (edge-cases §3, agent proposal): a typed price
 // far outside what similar ones sold for asks once with the range; a lowest over the price is refused in place.
+// Under the choice, the three ways to price side by side, each with its price, what you get and how fast it sells
+// when that is known (Ben, 09:09: "shouldnt it end up showing what each of these toggles is meant to show?";
+// M.priceModes), so the trade is seen before picking, not after. The picked one is in ink with a tick.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
+import { View } from 'react-native';
 import { Approve, Blank, EmptyState, FootButton, Guess, Icon, Line, List, Pill, Row, SiteBadge, Skeleton, Stack, Txt } from '@/ui';
 import { Chips } from '@/ui/parts/chips';
 import { RouteSheet, useCloseSheet } from '@/ui/parts/route-sheet';
@@ -93,7 +97,8 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
 
   const consequence = choice === 'check' ? 'Lists only where an offer doesn’t bind you. Every offer asks you.'
     : choice === 'reserve' ? 'Waits for your price. No drops, never marked slow.'
-    : [choice === start && outlook ? `About ${outlook.days_lo} to ${outlook.days_hi} days` : null, best !== null ? `You keep up to ${usd(best)}` : null].filter(Boolean).join('. ');
+    : choice === start && outlook && price !== null ? `At ${usd(price)}, about ${outlook.days_lo} to ${outlook.days_hi} days` : '';
+  const modes = M.priceModes(w, item, flipped);
 
   const foot = draft
     ? <PreviewButton disabled={!on.length || price === null || far} under={under} price={price} toPost={() => price !== null && toPost(price, flipped)} />
@@ -110,6 +115,17 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
       <Stack>
         <Txt role="caption">What do you want?</Txt>
         <Chips id="choice" name="What do you want" value={choice} options={M.CHOICES} onChange={c => { setChoice(c as M.Choice); setTyped(null); setSaved(false); }} />
+        {modes.length ? (
+          <List>
+            {modes.map(r => (
+              <Row key={r.choice} lead={r.choice === choice ? <Icon name="tick-02" size={12} /> : <View style={{ width: 12 }} />}
+                trail={<Txt role="body" tabular tone={r.choice === choice ? 'ink' : 'ink-2'}>{usd(r.price)}</Txt>}>
+                <Txt role="body" tone={r.choice === choice ? 'ink' : 'ink-2'}>{r.label}</Txt>
+                {r.line ? <Txt role="caption">{r.line}</Txt> : null}
+              </Row>
+            ))}
+          </List>
+        ) : null}
         {consequence ? <Txt role="body">{consequence}</Txt> : null}
       </Stack>
 

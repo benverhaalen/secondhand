@@ -50,7 +50,8 @@ def test_shelf_product_and_seller_caps_opt_in_and_recipient_isolation():
     assert all(sum(x['product_id']==r['product_id'] for x in shelf)<=2 for r in shelf)
     assert all(sum(x['seller_ref_hash']==r['seller_ref_hash'] for x in shelf[j:j+20])<=3 for j in range(len(shelf)) for r in shelf[j:j+20])
     assert for_you(s,rows,NOW,opted_in=False,signal_count=3)==[]
-    assert for_you(s,rows,NOW,opted_in=True,signal_count=2)==[]
+    assert for_you(s,rows,NOW,opted_in=True,signal_count=2)
+    assert for_you(s,rows,NOW,opted_in=True,signal_count=0)
 
 
 def test_reset_clears_facets_and_cached_scores_alerts_spaced():
