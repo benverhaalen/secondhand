@@ -25,7 +25,7 @@
     "Every card's More ends with I did this already, Open the chat and Open the item (ways-out, Today: 'I already did that on the site', 'None of these buttons').",
     "An amount typed under the person's lowest asks once in the sheet ('Below your minimum of $70.') instead of refusing: it is their call, made on purpose (edge-cases §3, Min persona).",
     "One black pill per view (C4, DecisionCard): only the lead card, nearest its deadline, and any card due within the hour lead with black; every other card leads with the light fill.",
-    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Try again, and a card that failed is the failed state reached with ?fail=.",
+    "The state one is one card drawn from the clearing day (the pickup), since the demo's one world has nothing to decide and on Today that is the empty state; failed asked for in the URL is the page that did not load, with Retry, and a card that failed is the failed state reached with ?fail=.",
     "Every tier sits under its header with its count, always (Needs you now, Can wait, Good to know), drawn with Sell's shelf head, so Today reads as organized as Sell (Ben 06:19: \"the sell one seems very organized and it's very easy to see like needs you in progress\"); the risk order holds inside each.",
     "The lead card keeps its state gradient, and its countdown is the soonest on the screen; the 'Due first' line over it is cut (spec/redesign/tabs.md, Today; clean-copy rung 2): the card already carries its deadline, and a fourth level of hierarchy over a card breaks Art. 7.11.",
     "Money that reaches the person reads one way on every card, You get $81.55, after fees and shipping, beside the buyer's price on the pill (Ben 06:19: \"you keep this much money. There's probably a better way to word that\").",
@@ -99,7 +99,7 @@
     {
       "state": "did not load",
       "route": "/?state=failed",
-      "shows": "Today didn’t load and Try again, with no money and no cards; Try again draws Today"
+      "shows": "Today didn’t load and Retry, with no money and no cards; Retry draws Today"
     },
     {
       "state": "batch failed",
@@ -333,7 +333,7 @@
     {
       "id": "retry",
       "route": "/?state=failed",
-      "control": "Try again, when Today did not load",
+      "control": "Retry, when Today did not load",
       "on_tap": "loads Today again"
     },
     {

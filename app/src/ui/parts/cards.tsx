@@ -145,7 +145,7 @@ export function DecisionCard(p: DecisionCardProps) {
   const gradient = p.lead && !failed ? GRADIENT[p.kind] : undefined;
   const hours = p.due == null ? null : (p.due - now) / 3600000;
   const working = status === 'working';
-  const fact: Fact = failed ? { label: p.step ?? 'This did not go through' } : p.fact;
+  const fact: Fact = failed ? { label: p.step ?? `Could not ${p.primary.label.toLowerCase()}` } : p.fact;
   // C4's rule for when: the lead decision and any whose clock is under 60 minutes take the black pill; every other one,
   // failed or not, leads with the light fill, so a feed of ten offers is not ten black pills.
   const act = p.lead || (hours != null && hours < 1) ? 'primary' : 'second';

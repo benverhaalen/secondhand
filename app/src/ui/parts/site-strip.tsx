@@ -45,9 +45,9 @@ export function SiteStrip({ id, slots, onToggle }: { id: string; slots: SiteSlot
 
 function Slot({ slot, centered = false }: { slot: SiteSlot; centered?: boolean }) {
   const c = useColors();
-  const words = slot.state === 'off' ? 'Off' : slot.state === 'none' ? 'None' : slot.state === 'behind' ? 'Behind' : slot.note ?? '';
+  const words = slot.state === 'off' ? 'Off' : slot.state === 'none' ? 'None' : slot.state === 'behind' ? 'Retrying' : slot.note ?? '';
   return (
-    <View {...mark('site-slot', { state: slot.state })} accessibilityLabel={`${SITES[slot.site].name}: ${slot.state === 'waiting' ? 'still searching' : words}`}
+    <View {...mark('site-slot', { state: slot.state })} accessibilityLabel={`${SITES[slot.site].name}: ${slot.state === 'waiting' ? 'still searching' : slot.state === 'behind' ? 'retrying search' : words}`}
       style={{ gap: space.s1, height: size.siteBadge + space.s1 + type.t13.lineHeight, width: space.s9, alignItems: centered ? 'center' : 'flex-start', ...FLAT }}>
       <View style={{ opacity: slot.state === 'off' ? 0.4 : 1 }}><SiteBadge site={slot.site} /></View>
       <View style={{ height: type.t13.lineHeight, justifyContent: 'center', alignItems: centered ? 'center' : 'flex-start' }}>

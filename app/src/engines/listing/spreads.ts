@@ -17,7 +17,7 @@ import { money } from './money.ts';
 // `says` is the plain reason the person reads first; the numbers sit under it, shown on a tap (Ben, 06:53).
 export const SPREADS = {
   same_keep: { name: 'Same take-home', says: 'You get the same money wherever it sells. Sites with higher fees show a higher price.' },
-  same_price: { name: 'Same price', says: 'Every site shows one price, so buyers who look around see the same thing. You get less where fees are higher.' },
+  same_price: { name: 'Same price', says: 'Every site shows one price; you get less where fees are higher' },
   site_market: { name: 'What each site pays', says: "Each site asks what buyers there have paid for things like this. You may get more on one site than another." },
   home_first: { name: 'Your shop first', says: 'Your own shop stays the cheapest place to buy it, so sales and reviews build up there.' },
 } as const;

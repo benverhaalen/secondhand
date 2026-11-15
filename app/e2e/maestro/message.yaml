@@ -15,7 +15,7 @@ env:
 - tapOn: { id: "draft-edit" }
 - tapOn: { id: "draft-done" }
 - tapOn: { id: "draft-take" }
-- assertVisible: "You answer here. Offers still follow your Plan"
+- assertVisible: "Offers still follow your Plan"
 # A possible scam: block, then undo.
 - openLink: ${URL}/--/messages/cv_lf
 - extendedWaitUntil:

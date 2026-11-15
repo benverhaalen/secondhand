@@ -73,7 +73,7 @@ export const isPage = (p: unknown): p is PageKey => typeof p === 'string' && p i
 
 // Linking a site, as the demo plays it (spec/features/connect.md; ways-out.md "It wants a code from my phone"). A tap starts a
 // sign-in that takes about a second. The first try on Mercari stops at the site's own code step and times out, so the error
-// and Try again are seen; the second try links. Each site runs on its own: one linking never blocks another (Ben, 03:22).
+// and Retry are seen; the second try links. Each site runs on its own: one linking never blocks another (Ben, 03:22).
 export type LinkState = { state: 'connected' | 'loading' | 'error' | 'not_connected'; note: string | null; tried?: boolean };
 export const SITE_ORDER: Site[] = ['ebay', 'facebook', 'depop', 'poshmark', 'mercari'];
 const SIGN_IN_MS = 1200;

@@ -71,7 +71,7 @@ export function settle(store: Store, log: LogLike, params: Params, job: JobRow, 
   store.updateJob(job.id, { state: 'failed', attempts, error: env.error, result: { listing_state: 'delistFailed' } });
   const d = store.raiseDecision({
     user_id: job.user_id, kind: 'failed_delist', subject: job.listing_id ?? job.id, item_id: job.item_id, job_id: job.id,
-    why: `${job.site} did not take the listing down`, options: [{ id: 'retry', label: 'Try again' }, { id: 'open_site', label: `Open ${job.site}` }],
+    why: `${job.site} did not take the listing down`, options: [{ id: 'retry', label: 'Retry' }, { id: 'open_site', label: `Open ${job.site}` }],
     suggested: 'retry',
   });
   if (!d.duplicate) log.event('decision.open', { decision: d.row.id, kind: 'failed_delist', tier: 'ask' });

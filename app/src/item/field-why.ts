@@ -25,8 +25,8 @@ export function fieldWhy(it: Item, f: Field, now: string | null = f.value): Fiel
   const title = `${f.name}: ${now ?? 'blank'}`;
   const shot = it.id === DRAFT_ID ? shotOf(f.attr.name) : null;
   const source = shot ? `${f.from}: ${shot}` : f.from;
-  if (f.value === null) return { title, says: `${f.from}, so it’s yours to fill.`, source };
-  if (now !== f.value) return { title, says: `You changed it to ${now}.`, source: `Was ${f.value}. ${source}` };
+  if (f.value === null) return { title, says: f.from, source };
+  if (now !== f.value) return { title, says: 'You changed it.', source: `Was ${f.value}. ${source}` };
   const v = f.value;
   const says = f.attr.name === 'era' && f.attr.source === 'label' ? `The tag’s style dates it to the ${v}.`
     : ({
@@ -61,7 +61,7 @@ export function titleWhy(it: Item): FieldWhy {
 
 export function descriptionWhy(it: Item): FieldWhy {
   return {
-    title: 'Description', says: 'Written from the details below, with the flaw named so a buyer isn’t surprised.',
+    title: 'Description', says: 'Written from the details below',
     source: `From ${fields(it).filter(f => f.value).length} details below`,
   };
 }
