@@ -39,7 +39,7 @@
     {
       "state": "handoff",
       "route": "/listing/mt_d2?world=buyer",
-      "shows": "Ready to send",
+      "shows": "Your offer",
       "also": [
         "Send a $65 offer",
         "Watching"
@@ -81,7 +81,7 @@
     {
       "state": "offline",
       "route": "/listing/mt_d1?state=offline",
-      "shows": "Waiting for signal. This is the last copy."
+      "shows": "Waiting for signal; showing saved results."
     }
   ],
   "controls": [

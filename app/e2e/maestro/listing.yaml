@@ -131,21 +131,21 @@ env:
 # State: handoff
 - openLink: ${URL}/listing/mt_d2?world=buyer
 - extendedWaitUntil:
-    visible: "Ready to send"
+    visible: "Your offer"
     timeout: 15000
 - assertVisible: "Send a \\$65 offer"
 - assertVisible: "Watching"
 # listing-ask: opens the chat with the seller
 - openLink: ${URL}/listing/mt_d2?world=buyer
 - extendedWaitUntil:
-    visible: "Ready to send"
+    visible: "Your offer"
     timeout: 15000
 - tapOn: { id: "listing-more" }
 - tapOn: { id: "listing-ask" }
 # listing-send: sends the agent's offer
 - openLink: ${URL}/listing/mt_d2?world=buyer
 - extendedWaitUntil:
-    visible: "Ready to send"
+    visible: "Your offer"
     timeout: 15000
 - tapOn: { id: "listing-send" }
 - extendedWaitUntil:
@@ -154,14 +154,14 @@ env:
 # listing-offer-amount: edits the guessed amount in place
 - openLink: ${URL}/listing/mt_d2?world=buyer
 - extendedWaitUntil:
-    visible: "Ready to send"
+    visible: "Your offer"
     timeout: 15000
 - tapOn: { id: "listing-offer-amount" }
 - assertVisible: { id: "listing-offer-amount-input" }
 # listing-open-second: opens the listing on its site
 - openLink: ${URL}/listing/mt_d2?world=buyer
 - extendedWaitUntil:
-    visible: "Ready to send"
+    visible: "Your offer"
     timeout: 15000
 - tapOn: { id: "listing-open-second" }
 # State: pickup
@@ -216,5 +216,5 @@ env:
 # State: offline
 - openLink: ${URL}/listing/mt_d1?state=offline
 - extendedWaitUntil:
-    visible: "Waiting for signal\\. This is the last copy\\."
+    visible: "Waiting for signal; showing saved results\\."
     timeout: 15000
