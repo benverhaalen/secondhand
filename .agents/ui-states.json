@@ -101,7 +101,14 @@
         "failed",
         "offline"
       ],
-      "known": []
+      "known": [
+        "filtered",
+        "select",
+        "glance",
+        "check",
+        "unsure",
+        "kept"
+      ]
     },
     "job": {
       "required": [
@@ -125,5 +132,25 @@
         "selected"
       ]
     }
+  },
+  "seen": {
+    "screen filtered": [
+      "Sell, one shelf or one site (app/behavior/(tabs)/sell.json)"
+    ],
+    "screen select": [
+      "Sell, picking many to change at once"
+    ],
+    "screen glance": [
+      "What's it worth, the rough first answer"
+    ],
+    "screen check": [
+      "What's it worth, the settled answer"
+    ],
+    "screen unsure": [
+      "What's it worth, the photo was not enough to name it"
+    ],
+    "screen kept": [
+      "What's it worth, kept and valued"
+    ]
   }
 }

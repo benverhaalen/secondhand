@@ -12,7 +12,9 @@ after(async () => { await app?.stop(); });
 // How each state is reached: its route, and the taps after it.
 const STATES = {
   empty: { taps: [] },
-  shelves: { taps: [] },
+  typical: { taps: [] },
+  one: { taps: [] },
+  dense: { taps: [] },
   filtered: { taps: [] },
   select: { taps: ['sell-select'] },
 };
@@ -52,7 +54,7 @@ test('sell: each tile shows its state tag on the photo and its site badges on th
 test('sell: the shelves come in their order', async () => {
   const screen = await app.open('/sell?world=clearing');
   await screen.shows('Needs you');
-  const titles = await screen.page.locator('[data-part="shelf"]').evaluateAll(els => els.map(e => e.getAttribute('data-shelf')));
+  const titles = await screen.page.locator('[data-shelf]').evaluateAll(els => els.map(e => e.getAttribute("data-shelf")));
   const ORDER = ['needs_you', 'in_progress', 'live', 'sold', 'unsold', 'kept'];
   assert.deepEqual(titles, ORDER.filter(t => titles.includes(t)));
 });

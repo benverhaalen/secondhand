@@ -15,9 +15,19 @@
       "shows": "Nothing for sale"
     },
     {
-      "state": "shelves",
+      "state": "typical",
       "route": "/sell?world=clearing",
       "shows": "Needs you"
+    },
+    {
+      "state": "one",
+      "route": "/sell?world=one",
+      "shows": "Live"
+    },
+    {
+      "state": "dense",
+      "route": "/sell?world=flipper",
+      "shows": "See all"
     },
     {
       "state": "filtered",
