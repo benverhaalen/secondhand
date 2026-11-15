@@ -90,6 +90,7 @@
           "family": "apparel",
           "kind": null,
           "dimension_class": "flat_garment",
+          "inner_class": null,
           "fallback": null,
           "process": [
             {
@@ -474,6 +475,7 @@
             "family": "apparel",
             "kind": null,
             "dimension_class": "flat_garment",
+            "inner_class": null,
             "fallback": null,
             "process": [
               {
@@ -799,6 +801,7 @@
           "family": "apparel",
           "kind": null,
           "dimension_class": "flat_garment",
+          "inner_class": null,
           "fallback": null,
           "process": [
             {
@@ -1044,6 +1047,7 @@
             "family": "apparel",
             "kind": null,
             "dimension_class": "flat_garment",
+            "inner_class": null,
             "fallback": null,
             "process": [
               {
@@ -1353,6 +1357,7 @@
           "family": "apparel",
           "kind": null,
           "dimension_class": "flat_garment",
+          "inner_class": null,
           "fallback": null,
           "process": [
             {
@@ -1677,6 +1682,7 @@
           "family": "apparel",
           "kind": null,
           "dimension_class": "flat_garment",
+          "inner_class": null,
           "fallback": null,
           "process": [
             {
@@ -2003,6 +2009,7 @@
           "family": "apparel",
           "kind": null,
           "dimension_class": "flat_garment",
+          "inner_class": null,
           "fallback": null,
           "process": [
             {
