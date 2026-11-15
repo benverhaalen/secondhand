@@ -924,3 +924,15 @@ Ben, project chat, 2026-11-15 03:55 UTC, after asking for one thread to build th
 ## 2026-11-14 nate an OpenRouter key for secondhand supports jev and more
 Nate, build session (orchestrator), 2026-11-14 about 22:25 Central. The key itself is left out: it is a secret and this repo is public.
 > we have an established open router key utilized for secondhand that can support our jev use, and more [key redacted]
+
+## 2026-11-15 hot is red like fire, no glow, state gradients with the multicolor, intensity as deadlines arise, a brand motion constitution
+Ben, thread "Make gradients and colors carry meaning", 2026-11-15 03:41 UTC, on the board "What the colors mean" (ember hot with a glow, state gradients, light gradients in dark).
+> i dont like the glow, it feels too ai slop like. i think hot should be red. like fire. think about what the symbol means too and how humans interpret that. also try and pull updated ui tips and skills there was some stuff i had said to another agent the one that made dark mode and i really liked how it did it and i inserted this gigantic prompt to it. align with the dark mode design style and ensure the little things that have made each ui agent drift away get fixed and set in stone in the design constitution and the brand system etc. i like the same rule and really thinking about what urgency and what should come when also thinking about animations and what happens when a button is pressed and how everything feels and the brand animation consitution created similar to the other brand constutution and integrated into it. but i liked the multicolor. if there is a medium where the gradients are tailored and even like intensity changes as deadlines arise that would be super cool. align with the other dark mode agent. synthesize the corrections in context and how i want everything to feel and be decided on. and then ensure it generalizes to all domains
+
+## 2026-11-15 rules per surface, and research per surface in the loop
+Ben, thread "Make gradients and colors carry meaning", 2026-11-15 03:42 UTC, right after the note above.
+> also being conscious of what rules are only for certain surfaces and in the loop understanding what surfaces need more research and when and how based on previous effective research ive directed you in
+
+## 2026-11-15 image models sketch ideas and mock placeholders for judging, and the build uses the system parts
+Ben, the thread of the plan "Fastest path to a cohesive UI", 2026-11-15 04:01 UTC, on the plan's change after his 03:24 note.
+> the image models can create ideas for them. for mocks they can create placeholders just for my judgement. but i still want it to work relatively the same but for the image to code part it should utilize the components and things from the system

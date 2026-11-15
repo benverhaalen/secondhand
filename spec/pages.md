@@ -271,7 +271,7 @@ One per product, for visitors and users: what it is, used price per site (sold a
 | **Automation** | each rule as when, if, then, with its log and undo; Ask, Auto and Never alone shown as such | `GET /v1/rules`, `GET /v1/events` |
 | **Pickups** | windows, saved spot, Ask me every time | `GET`, `PUT /v1/limits` |
 | **Notifications** | per kind: push now, batch, off | new: `PATCH /v1/me {notification_pref}` |
-| **Your style** | what it learned from what you sell, keep, save and buy, each with its reason; edit or remove | new: `GET`, `PATCH /v1/me/style` (`style_profile` exists in the canon, its endpoint does not) |
+| **Your style** | what it learned from what you sell, keep, save and buy, each with its reason; edit or remove | specced: `GET`, `PATCH /v1/me/style` (`style_profile` exists in the canon, its endpoint does not) |
 | **Records and tax** | the year's sales, fees, costs, a CSV (a PDF is not specced yet; asked in §8) | `GET /v1/records` |
 | **Account** | sign-in method, sign out, export, delete | `POST /v1/me/export`, `DELETE /v1/me`; new: `POST /v1/auth/signout` |
 | **Ask** | questions over your sales in words (Genie) | `POST /v1/genie` |
@@ -321,7 +321,6 @@ Sent to Nate as [packet 47](../.agents/team/packets/team/47-what-the-pages-need-
 | Facts one at a time, and the comp count, while the camera is open | Camera | a `fact.found` frame per attribute (name, value or blank, source) and `found.comps` on the identify and valuate job streams |
 | Seller intent | Plan, standing, every automatic move | on `limits` per item: `plan_choice`, `gone_by?`, `fallback`, `markdown_on`, `accept_mode`, `review_at?` ([price](features/price.md#selling-intents)) |
 | Standing | tiles, item, Today | `listing.market_standing {word, place {rank, of}, outlook, fix?, citation_id}` (not `standing`, which the canon's `strategy` already uses for its standing levers), judged against the intent ([score](features/score.md#standing-against-the-market)) |
-| Style profile endpoint | Your style | `GET`, `PATCH /v1/me/style` |
 | The five choices with their consequences | Plan sheet | a read of each choice's days and you-keep from sold data before one is picked, e.g. `GET /v1/items/:id/plan-choices`, and per-site sold prices for the ticks |
 | Why the camera opened | Camera | a purpose on the capture (`sell`, `appraise`, `find`) beside the canon's `capture.mode` (shots, scan, talk) |
 | Talk mode | Camera | a realtime session for talk mode (token and transport) |

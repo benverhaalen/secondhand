@@ -39,7 +39,7 @@ before(async () => { if (pw) { browser = await pw.chromium.launch(); dir = mkdte
 after(async () => { await browser?.close(); if (dir) rmSync(dir, { recursive: true }); });
 
 const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--page);color:var(--ink);font-family:var(--font-text);font-weight:400}
+const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--page);color:var(--ink);font-family:var(--font-text);font-weight:var(--w-text)}
 .s{width:1920px;height:1080px;padding:96px;position:relative;overflow:hidden;line-height:1.1}.s *,.p *,.st *{letter-spacing:-.02em}.p{width:1080px;height:1350px;padding:72px;position:relative;overflow:hidden;line-height:1.1}
 .h{font-size:64px;font-family:var(--font-display);font-weight:600}.b{font-size:32px}.s .m,.p .m,.st .m,.m{font-family:var(--font-display);font-weight:600;font-size:64px;letter-spacing:-.01em}.f{background:var(--field)}`;
 // On a deck the wordmark sits bottom left of every slide at 32, and alone at 64 on the closing slide.
@@ -64,7 +64,7 @@ const CASES = [
   ['B28', 'a slide at the wrong size', `<section data-view style="width:1280px;height:720px"><p class="m">secondhand</p></section>`, /B28 .*1280 by 720/],
   ['B15', 'a face that is not ours', deck('<p class="b" style="font-family:Arial">Listed in a minute</p>'), /B15 .*Arial/],
   ['B13', 'bold text', deck('<p class="b" style="font-weight:700">Listed in a minute</p>'), /B13 .*weight 700/],
-  ['B13', 'medium weight where there are no buttons', deck('<p class="b" style="font-weight:500">Listed in a minute</p>'), /B13 .*weight 500/],
+  ['B13', 'book weight on a slide', deck('<p class="b" style="font-weight:400">Listed in a minute</p>'), /B13 .*the text face at weight 400: text is 500 everywhere/],
   ['B14', 'a size off the set', deck('<p style="font-size:28px">Listed in a minute</p>'), /B14 .*28 px/],
   ['B14', 'two peak numbers', deck('<p class="b">You keep</p><p style="font-size:200px">$46.95</p><p style="font-size:160px">$12</p>'), /B14 .*one peak number/],
   ['A7', 'a number in the display face', deck('<p class="h">Sold in 3 days</p>'), /A7 .*number in the display face/],
@@ -137,7 +137,7 @@ test('render: a story with the wordmark on its end card passes', { skip: !pw }, 
 CASES.push(['B9', 'an item with no photo', deck('<div data-item><p class="b">Carhartt jacket</p></div>'), /B9 .*item with no photo/],
   ['B10', 'two black pills in one card', app(`<div data-part="card" style="margin:16px 20px"><div><button style="${PILL}">Accept $38</button></div><div style="margin-top:16px"><button style="${PILL}">Send a counter</button></div></div>`), /B10 .*\[card\] holds two black pills/, 'app'],
   ['B10', 'a black pill with a round corner that is not the token', deck('<span class="b" style="display:inline-block;background:var(--ink);color:var(--page);border-radius:64px;padding:16px 32px">Accept $38</span>'), /B10 .*black pill/],
-  ['B13', 'medium weight on text that is not a button', app('<p style="font-size:15px;font-weight:500;padding:16px 20px">Carhartt jacket</p>'), /B13 .*not a button label/, 'app'],
+  ['B13', 'book weight on a row in the app', app('<p style="font-size:15px;font-weight:400;padding:16px 20px">Carhartt jacket</p>'), /B13 .*the text face at weight 400/, 'app'],
   ['B12', 'a band of color behind an amount', deck('<div><p class="b">You keep <span style="background:var(--lime)">$46.95</span></p></div>'), /B12 .*band of color/],
   ['B16', 'a phrase in capitals', deck('<p class="b">SOLD TODAY</p>'), /B16 .*all capitals/],
   ['B31', 'one kind of thing at two widths', deck('<div style="display:flex;gap:16px"><div data-part="tile" style="height:160px;width:160px;background:var(--gray)"></div><div data-part="tile" style="height:160px;width:240px;background:var(--gray)"></div></div>'), /B31 view 2 \[tile\] is 160, 240 px wide/],
@@ -207,7 +207,7 @@ CASES.push(['B34', 'a chip that grows with its words', app('<div data-part="chip
   ['B35', 'a screen drawn in one state only', SCREEN('data-screen="today" data-state="typical"'), /B35 screen "today" is not drawn in the states new, empty, one, dense, loading, failed, offline/, 'app'],
   ['B35', 'a state nobody has listed', SCREEN('data-screen="today" data-state="haunted"'), /B35 screen "today" is drawn in the state "haunted", which is not on the list/, 'app'],
   ['B35', 'a job drawn only while it runs', SCREEN('', '<p data-job="pricing" data-state="running" style="font-size:15px;margin-top:16px">Pricing on eBay</p>'), /B35 job "pricing" is not drawn in the states started, arrived, failed, slow/, 'app']);
-const LOGO = h => `<img alt="eBay" data-logo src="${PX}" style="height:${h}px;width:${h}px;margin-right:16px">`;
+const LOGO = h => `<img alt="eBay" data-logo src="${pathToFileURL(join(root, 'assets/platforms/square/ebay.png')).href}" style="height:${h}px;width:${h}px;margin-right:16px">`;
 CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-view><p class="m" style="display:inline-block;transform:rotate(-4deg);text-shadow:0 2px 4px var(--scrim)">secondhand</p></section>`, /B32 .*transformed and shadowed/],
   ['B32', 'a line crowding the wordmark', `<section class="s" data-view><p class="m">secondhand</p><p class="b">Sell used things</p></section>`, /B32 .*"Sell used things" sits within 32 px/],
   ['B32', 'the wordmark twice on a slide', `<section class="s" data-view><p class="m">secondhand</p><p class="m" style="margin-top:96px">secondhand</p></section>`, /B32 .*2 times/],
@@ -249,6 +249,19 @@ for (const [what, layout, inner, re] of [['a slide that names no layout', '', '<
 CASES.push(['B14', 'slide text at the browser\'s own leading and tracking', deck('<p class="b" style="line-height:normal;letter-spacing:0">Listed in a minute</p>'), /B14 .*is set at leading normal and tracking 0em: on a deck a size of 32 and up is leading 1.1/]);
 CASES.push(['B37', 'a slide in a layout the deck does not have', `<section class="s" data-view data-layout="collage"><p class="b">Listed in a minute</p>${MARK}</section>${END}`, /B37 .*"collage", which a deck does not have/]);
 CASES.push(['B3', 'the closing wordmark in a corner', `${TITLE}<section class="s" data-view><p class="m">secondhand</p></section>`, /B3 .*alone at 64 px it goes in the middle/]);
+// U6 and U7 came from Ben's corrections at 03:49: logos that were not the saved square icons, and tabs that slid over when the current one changed.
+const SQ = site => pathToFileURL(join(root, `assets/platforms/square/${site}.png`)).href, OLD = site => pathToFileURL(join(root, `assets/platforms/${site}.svg`)).href;
+const TABS = (slot, on) => app(`<nav style="position:absolute;left:0;right:0;bottom:34px;height:50px;display:flex;justify-content:space-around;align-items:center;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" style="${slot}" ${i ? '' : on}>${t}</a>`).join('')}</nav><style>nav a.on{padding:4px 16px;background:var(--gray)}nav a[aria-current=page] i{opacity:1}nav a i{position:absolute;inset:0;opacity:0;background:var(--gray);border-radius:var(--r-pill)}</style>`);
+test('render U6 and U7: saved square logos, and a current tab drawn behind fixed slots, pass', { skip: !pw }, async () => {
+  const found = await ids(app(`<div style="display:flex;gap:8px;padding:16px 20px"><img alt="eBay" src="${SQ('ebay')}" style="width:24px;height:24px"><img alt="Depop" src="${SQ('depop')}" style="width:24px;height:24px"></div>`), 'app');
+  assert.deepEqual(found.filter(f => /^U[67]/.test(f)), []);
+  const tabs = await ids(app(`<nav style="position:absolute;left:0;right:0;bottom:34px;height:50px;display:flex;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" style="flex:1 1 0;text-align:center;position:relative;line-height:50px" ${i ? '' : 'aria-current="page"'}><i></i>${t}</a>`).join('')}</nav><style>nav a i{position:absolute;inset:9px 20%;opacity:0;background:var(--gray);border-radius:var(--r-pill);z-index:-1}nav a[aria-current=page] i{opacity:1}</style>`), 'app');
+  assert.deepEqual(tabs.filter(f => /^U7/.test(f)), []);
+});
+CASES.push(['U6', 'an old line-drawn logo in place of the square icon', app(`<img alt="eBay" src="${OLD('ebay')}" style="width:24px;height:24px;margin:16px 20px">`), /U6 .*platforms\/ebay\.svg as the eBay logo: a site's logo is its saved square icon/, 'app'],
+  ['U6', 'a copy of the icon kept somewhere else', app(`<img alt="Depop" src="${PX}" data-x style="width:24px;height:24px;margin:16px 20px">`), /U6 .*an inline picture as the Depop logo/, 'app'],
+  ['U7', 'a current tab whose gray box pushes the others over', TABS('', 'class="on"'), /U7 .*moves [\d.]+ px when \.on on "Items"/, 'app'],
+  ['U7', 'a current tab marked by aria-current that grows', app(`<nav style="display:flex;gap:8px;padding:16px 20px;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" ${i ? '' : 'aria-current="page"'}>${t}</a>`).join('')}</nav><style>nav a[aria-current=page]{padding:0 12px}</style>`), /U7 .*when aria-current on "Items"/, 'app']);
 for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.

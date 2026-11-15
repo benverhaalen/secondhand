@@ -9,6 +9,8 @@ const warn = (id, where, msg) => ({ level: 'warn', id, where, msg });
 
 export const RING = ['lilac', 'sky', 'aqua', 'mint', 'lime', 'marigold', 'peach', 'pink'];
 const SITES = /\b(?:eBay|Poshmark|Depop|Mercari|Grailed|OfferUp|Etsy|Vinted|Facebook Marketplace)\b/;
+const SITE_FILE = /(?:^|[\/_.-])(ebay|depop|poshmark|mercari|facebook|grailed|offerup|etsy|vinted)(?=[\/_.-])[^\/]*\.(?:png|svg|jpe?g|webp|gif)$/i;
+const SITE_NAME = { ebay: 'eBay', depop: 'Depop', poshmark: 'Poshmark', mercari: 'Mercari', facebook: 'Facebook', grailed: 'Grailed', offerup: 'OfferUp', etsy: 'Etsy', vinted: 'Vinted' };
 const MONEY = /^[\s(]*[-+]?(?:[A-Z]{2,3})?\p{Sc}\s?\d[\d,.]*[kKmM]?[\s)]*$|^[\s(]*[-+]?\d[\d,.]*\s?\p{Sc}[\s)]*$/u;
 
 // "rgb(1, 2, 3)" or "rgba(1, 2, 3, 0.5)" as [r, g, b, a]. Anything else (oklch(), color()) is not a token value.
@@ -89,10 +91,7 @@ function checkView(view, ctx) {
     // B15 faces, B13 weights
     if (/(?:^|,)\s*["']?inter(?: [\w ]+)?["']?\s*(?:,|$)/i.test(t.family)) E('B15', q, 'names Inter in its font list: Inter is banned, even as a fallback (Art. 6)');
     if (!t.display && !t.textFace) E('B15', q, `is set in ${t.family.split(',')[0]}: the faces are the text face and the display face from tokens.css (Art. 6)`);
-    if (!scales.weight.has(t.weight)) E('B13', q, `is weight ${t.weight}: the weights are ${[...scales.weight].join(', ')} (Art. 6.1)`);
-    else if (t.display !== (t.weight === 600)) E('B13', q, `is ${t.display ? 'the display face' : 'the text face'} at ${t.weight}: 600 is the display face's one weight and no other face uses it (Art. 6.1)`);
-    else if (t.weight === 500 && !sheet.act) E('B13', q, `is weight 500: medium is for button labels and the selected tab, and a ${medium} has neither (Art. 6.1)`);
-    else if (t.weight === 500 && !t.control) E('B13', q, 'is weight 500 and is not a button label: everything else is 400, and stands out by size or ink (Art. 6.1)');
+    if (t.weight !== (t.display ? 600 : ctx.textWeight)) E('B13', q, `is ${t.display ? 'the display face' : 'the text face'} at weight ${t.weight}: text is ${ctx.textWeight} everywhere and the display face is 600, so nothing stands out by weight (Art. 6.1)`);
     if (t.italic) E('B13', q, 'is italic: the faces have no italic, so this is a slanted fake (Art. 6)');
     if (t.stroked && !isMark(t)) E('B13', q, 'has a stroke on its letters: that is a fake bold (Art. 6)');
     // B14 sizes
@@ -301,6 +300,11 @@ function checkView(view, ctx) {
   if (view.els.length > 12 && !view.els.some(e => e.part)) W('B31', '', 'marks nothing data-part, so nothing was checked for one size: mark each kind of repeated thing');
   // L2 not only black and white: a view with no color and no photo. A warning, because a closing slide may be the wordmark alone.
   if (view.share && view.share.color < .005 && !view.els.some(e => e.photo)) W('L2', '', 'is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)');
+  // U6 a site's logo is its saved square icon (ledger L17; Ben, 03:49: "you should always use the icdons you grabbed"). A picture whose file or alt names a marketplace, or that sits where a logo goes, comes from assets/platforms/square/.
+  for (const el of view.els) { if (el.src == null) continue; const file = el.src.split(/[?#]/)[0], site = SITE_NAME[(file.match(SITE_FILE) ?? [])[1]?.toLowerCase()] ?? (SITES.test(el.alt ?? '') && (el.alt ?? '').trim().split(/\s+/).length <= 2 ? SITES.exec(el.alt)[0] : null);
+    if ((site || el.logo) && !/assets\/platforms\/square\/[a-z]+\.png$/.test(file)) E('U6', `<${el.tag}${el.alt ? ` "${el.alt}"` : ''}>`, `shows ${file.startsWith('data:') ? 'an inline picture' : file.split('/').slice(-3).join('/')} as ${site ? `the ${site} logo` : 'a logo'}: a site's logo is its saved square icon, assets/platforms/square/${(site ?? 'site').toLowerCase().split(' ')[0]}.png (ledger L17)`); }
+  // U7 a state changes how a thing looks, never where it or its neighbours sit (Ben, 03:49: "when the gray box is there, things are moving over"). scripts/brand-check.mjs moves the current mark to each sibling and measures.
+  for (const s of view.shifts ?? []) E('U7', `"${s.who}"`, `moves ${s.by} px when ${s.how}: a state changes how a thing looks, never where it or its neighbours sit. Give every item the same box in every state (fixed slots, the state drawn inside or behind)`);
   view.fields = fields.length;
   return out;
 }
@@ -320,7 +324,7 @@ function underStress(view, base, baseOut, ctx) {
 
 // facts: { views: [...], stressed: [...], fontsLoaded }, as scripts/brand-check.mjs collects them. Returns the findings.
 export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
-  const pal = palette(colors, facts.grads ?? {}), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [], named: facts.named ?? {} }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
+  const pal = palette(colors, facts.grads ?? {}), ctx = { medium, sheet, scales, pal, lengths: facts.lengths ?? [], named: facts.named ?? {}, textWeight: facts.textWeight ?? 400 }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
   const byIndex = new Map(facts.views.map((v, i) => [v.index, i])), stress = (facts.stressed ?? []).flatMap(v => underStress(v, facts.views[byIndex.get(v.index)], per[byIndex.get(v.index)], ctx));
   const once = new Set(); for (const o of stress) { const k = `${o.where} ${o.msg}`; if (!once.has(k)) { once.add(k); out.push(o); } }
   // B28 everything that shows was measured

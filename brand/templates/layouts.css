@@ -3,7 +3,7 @@
    Every size here is a variable from media.css, so nothing is a raw number. Copy a template; do not write a new layout in place. */
 * { box-sizing: border-box; }
 html, body { margin: 0; background: var(--page); }
-body { color: var(--ink); font-family: var(--font-text); font-weight: var(--w-regular); }
+body { color: var(--ink); font-family: var(--font-text); font-weight: var(--w-text); }
 p, h2, ul, li, figure, figcaption { margin: 0; padding: 0; }
 ul { list-style: none; }
 [data-medium="story"] { --mt-body: var(--mt-caption); --mt-heading: var(--mt-title); }
