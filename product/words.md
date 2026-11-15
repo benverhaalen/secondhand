@@ -718,3 +718,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate understand and finalise how it is built, and tests that expect what breaks
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about how build seats should work.
 > Do you think this is worse? Im not stating you should lock in our subagents to a few specific behaviors, but like dont just guess and check, really understand and finalize the spec with how things should be built before we finish building. Then when testing in parallel the features that are finished building, the tests should already anticipate the things that likely break it, so in the case of an error its quickly identified
+
+## 2026-11-14 nate capture opens on the type pick, a confident suggestion may skip the tap, and the tutorial is animated steps
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, answering the capture questions.
+> Lets do on the type pick, A confident type suggestion can skip the tap entirely, but ideally the tap makes it easier to identify, we can try both ways. The tutorial will be a helpful step by step of animations for capturing the image, similar to other apps and how they show what to do like id verfiication platforms do sometimes
