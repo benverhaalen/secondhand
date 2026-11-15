@@ -66,6 +66,7 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | SR8 | Every Depop read is classified (answered, empty, refused, challenged, shape changed, timed out) and counted, shown in `/v1/sources/health`. A refusal or a challenge makes the site back off; nothing retries around one | A day's counts by class from the log |
 | SR9 | Swallowed errors in the harness and browser files logged with their cause; the static findings under `harness/sites/` cleared | The gate shows none in those folders |
 | SR10 | The server cannot call Depop's own web data address by setting a variable; that read stays inside the site's page | A test that the "live" setting does not reach it |
+| SR11 | The person picks the sources: `POST /v1/search` takes `sources` (ids, or `osint` for the group), every source, stage and searched entry says `platform` or `osint`, and Dupe rows keep "via Dupe.com". eBay is read in every buy search and lands last, the conversation answering from the earlier frames ([Nate](../../product/words.md#2026-11-15-nate-ebay-last-in-every-buy-search-with-the-conversation-answering-while-it-waits-dupe-keeps-its-row-credit)) | Tests for the filter, the refusals and the group on every source | Briefed (search-route-1, round 3) |
 
 ## 4. Engines and the buying conversation (lead: engines)
 
