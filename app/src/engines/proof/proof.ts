@@ -31,14 +31,15 @@ export type Citation = {
 export type HideReason = 'too_few' | 'too_wide' | 'stale' | 'mixed_types' | 'source_gap' | 'conflict' | 'noise';
 export type GuardedNumber = {
   value: number | { lo: number; hi: number }; basis_count: number; as_of: string; citation_id: string;
-  state: 'shown' | 'hidden'; hide_reason?: HideReason;
+  basis_level: string; notes: HideReason[]; state: 'shown' | 'hidden'; hide_reason?: HideReason;
 };
 
 // What an answer rests on: its sources, counts, dates and the proof rows it passed.
 export type Basis = {
   ids: string[]; sources: string[]; count: number; n_eff: number; oldest: string; newest: string; age_days: number; passed: string[];
 };
-export type Answer<T> = { ok: true; value: T; basis: Basis; citation: Citation } | { ok: false; refused: 'no_basis' };
+export type Answer<T> = { ok: true; value: T; basis_level: string; basis: Basis; citation: Citation } | { ok: false; refused: 'no_basis' | 'conflict' };
+export type AnswerInput = { basis_level?: string; conflict?: boolean };
 
 export type BasisRow = { id: string; source: string; at: string; weight?: number; price_cents?: number };
 
@@ -105,44 +106,86 @@ function citationId(cite: CitationInput, basis_hash: string): string {
 }
 
 // Wrap a computed value with a frozen basis and citation; invalid evidence is refused.
-export function answer<T>(value: T, rows: BasisRow[], cite: CitationInput, now: string, passed: string[] = []): Answer<T> {
+export function answer<T>(value: T, rows: BasisRow[], cite: CitationInput, now: string, passed: string[] = [], input: AnswerInput = {}): Answer<T> {
+  if (input.conflict) return { ok: false, refused: 'conflict' };
   if (!Number.isFinite(Date.parse(now)) || rows.length === 0 || rows.some((r) => !r.id || !r.source || !Number.isFinite(Date.parse(r.at)) || Date.parse(r.at) > Date.parse(now))) return { ok: false, refused: 'no_basis' };
   const basis = basisOf(rows, now, passed);
   const basis_hash = basisHash(rows);
   const citation: Citation = { ...structuredClone(cite), id: citationId(cite, basis_hash), basis_ids: [...basis.ids].sort(), basis_hash, computed_at: now };
-  return { ok: true, value, basis, citation };
+  return { ok: true, value, basis_level: input.basis_level ?? 'variant', basis, citation };
 }
 
-// The guard rules, read from params by the caller (proof_min_n_eff starts at 6, proof_max_age_days at 14; product.md §6).
-export type GuardRules = { min_n_eff: number; max_age_days: number };
+type NumberValue = GuardedNumber['value'];
+export type LadderLevel<T extends NumberValue = NumberValue> = { basis_level: string; rows: BasisRow[]; value: T | null | undefined };
+export type LadderInput = { store?: ParamStore; scope?: Scope; conflict?: boolean };
 
-export function guard(a: Answer<number | { lo: number; hi: number }>, rules: GuardRules): GuardedNumber | { state: 'hidden'; hide_reason: 'source_gap'; basis_count: 0 } {
-  for (const name of ['min_n_eff', 'max_age_days'] as const) {
-    if (!Number.isFinite(rules[name]) || rules[name] <= 0) throw new RangeError(`${name} must be finite and positive`);
-  }
-  if (!a.ok) return { state: 'hidden', hide_reason: 'source_gap', basis_count: 0 };
-  const value = a.value;
+function validateValue(value: NumberValue): void {
   if (typeof value === 'number') {
     if (!Number.isFinite(value)) throw new RangeError('value must be finite');
   } else if (!Number.isFinite(value.lo) || !Number.isFinite(value.hi) || value.lo > value.hi) {
     throw new RangeError('range must have finite ordered bounds');
   }
-  const g: GuardedNumber = { value: a.value, basis_count: a.basis.count, as_of: a.basis.newest, citation_id: a.citation.id, state: 'shown' };
+}
+
+// spec/engines/valuation.md §3: blend local evidence with the next stated level; the caller supplies the value's units.
+export function ladder<T extends NumberValue>(levels: LadderLevel<T>[], cite: CitationInput, now: string, passed: string[] = [], input: LadderInput = {}): Answer<T> {
+  if (input.conflict) return { ok: false, refused: 'conflict' };
+  const stated: Extract<Answer<T>, { ok: true }>[] = [];
+  for (const level of levels) {
+    if (!level.rows.length || level.value === null || level.value === undefined) continue;
+    validateValue(level.value);
+    const a = answer(level.value, level.rows, cite, now, passed, { basis_level: level.basis_level });
+    if (!a.ok) continue;
+    stated.push(a);
+    if (typeof a.value !== 'number') break;
+  }
+  if (!stated.length) return { ok: false, refused: 'no_basis' };
+  const { values, versions, scopes } = resolve(input.store, input.scope ?? {}, ['proof_blend_k']);
+  const k = values.proof_blend_k;
+  const first = stated[0];
+  let value = stated[stated.length - 1].value;
+  for (let i = stated.length - 2; i >= 0; i--) {
+    const local = stated[i];
+    if (typeof local.value !== 'number' || typeof value !== 'number') throw new RangeError('numeric ladder levels must have numeric values');
+    const weight = local.basis.n_eff / (local.basis.n_eff + k);
+    value = (weight * local.value + (1 - weight) * value) as T;
+  }
+  const frozen = stated.map(a => ({ basis_level: a.basis_level, value: a.value, basis_hash: a.citation.basis_hash }));
+  const basis_hash = hash(frozen);
+  const citation: Citation = {
+    ...first.citation,
+    filters: { calculation: structuredClone(cite.filters), ladder: structuredClone(frozen), param_scopes: { proof_blend_k: scopes.proof_blend_k } },
+    param_versions: { ...cite.param_versions, proof_blend_k: versions.proof_blend_k },
+    basis_ids: [...new Set(stated.flatMap(a => a.citation.basis_ids))].sort(), basis_hash,
+  };
+  citation.id = citationId(citation, basis_hash);
+  return { ...first, value, citation };
+}
+
+// The guard rules, read from params by the caller (proof_min_n_eff starts at 6, proof_max_age_days at 14; product.md §6).
+export type GuardRules = { min_n_eff: number; max_age_days: number };
+
+export function guard(a: Answer<NumberValue>, rules: GuardRules): (GuardedNumber & { state: 'shown'; hide_reason?: never }) | { state: 'hidden'; hide_reason: 'source_gap' | 'conflict'; basis_count: 0 } {
+  for (const name of ['min_n_eff', 'max_age_days'] as const) {
+    if (!Number.isFinite(rules[name]) || rules[name] <= 0) throw new RangeError(`${name} must be finite and positive`);
+  }
+  if (!a.ok) return { state: 'hidden', hide_reason: a.refused === 'conflict' ? 'conflict' : 'source_gap', basis_count: 0 };
+  validateValue(a.value);
   const v = a.value;
   const age_days = (Date.parse(a.citation.computed_at) - Date.parse(a.basis.newest)) / DAY;
   // Fixed algebra: hi - lo > (lo + hi) / 2 iff hi > 3 * lo; an overflowed threshold still compares correctly.
   const too_wide = typeof v !== 'number' && v.hi > 3 * v.lo;
-  const reason: HideReason | undefined =
-    a.basis.n_eff < rules.min_n_eff ? 'too_few'
-    : age_days > rules.max_age_days ? 'stale'
-    : too_wide ? 'too_wide'
-    : undefined;
-  return reason ? { ...g, state: 'hidden', hide_reason: reason } : g;
+  const notes: HideReason[] = [];
+  if (a.basis.n_eff < rules.min_n_eff) notes.push('too_few');
+  if (age_days > rules.max_age_days) notes.push('stale');
+  if (too_wide) notes.push('too_wide');
+  return { value: a.value, basis_count: a.basis.count, as_of: a.basis.newest, citation_id: a.citation.id,
+    basis_level: a.basis_level, state: 'shown', notes };
 }
 
 // Return the guarded result and its updated citation so it can be stored under the same id.
 export function guardWith(store: ParamStore | undefined, scope: Scope, a: Answer<number | { lo: number; hi: number }>) {
-  const { values, versions, scopes } = resolve(store, scope);
+  const { values, versions, scopes } = resolve(store, scope, ['proof_min_n_eff', 'proof_max_age_days']);
   const citation = a.ok ? { ...structuredClone(a.citation),
     filters: { calculation: structuredClone(a.citation.filters), param_scopes: scopes },
     param_versions: { ...a.citation.param_versions, ...versions },
