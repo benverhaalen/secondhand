@@ -90,8 +90,8 @@ test('4: the real reconciler refuses to invent a product relation without identi
 });
 
 test('5: no gathered observation or evidence is persisted', () => {
-  gap(5, 'built, not called', 'valuate writes new source rows through ObservationPort; the route does not call it and the shared Store has no observation table.');
-  assert.ok(!report.observed.tables.includes('observation'));
+  gap(5, 'built, not called', 'the Store has an observation table and writer (SV7, events/observations.ts); neither search nor valuate calls it yet.');
+  assert.ok(report.observed.tables.includes('observation'));
   assert.deepEqual(report.observed.observations, []);
   assert.equal(report.observed.observation_writes, 0);
   assert.equal(report.observed.observation_import_in_search, false);
