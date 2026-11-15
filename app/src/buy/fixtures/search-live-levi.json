@@ -1,5 +1,5 @@
 {
- "recorded": "2026-11-15 05:50 Central, the dev server (npm run web), POST /v1/search {\"text\":\"levi 501\"} as a visitor, then GET /v1/jobs/:id/events. Results are cut to the first 3 in each frame; every other field is as recorded.",
+ "recorded": "2026-11-15 05:50 Central, the dev server (npm run web), POST /v1/search {\"text\":\"levi 501\"} as a visitor, then GET /v1/jobs/:id/events. Results are cut to the first 3 in each frame; every other field is as recorded. Dupe rows are removed (Dupe allows no stored rows); Dupe's counts and timing stay.",
  "start": {
   "id": "job_8d4i5",
   "kind": "search",
@@ -691,98 +691,7 @@
     "job_id": "job_8d4i5",
     "site": "dupe",
     "product": null,
-    "results": [
-     {
-      "id": "ls_dupe_dupe-73fd5a92454e",
-      "listing_id": "ls_dupe_dupe-73fd5a92454e",
-      "external_id": "dupe-73fd5a92454e",
-      "title": "Levi's Men's Cotton 501 Straight Leg Button Fly Original Fit Denim",
-      "url": "https://dupe.com/redirect/rRyKiL9ZZQ1ynwNmQCgR3EsVlKoR8MOucOgL3Gt_zwEVZ5uHveaeNWDLA-IG63PnYScyM-YKhhK4KF51xbuh83rVQID4ceg99jyndFlkLCyKpG8aA6lXgw3DFjvE_11QdzVjXUdQLVsBWGeXn8Xo3ckT1cLNOSHCt23VcS_CZ7mFvKxx7hJA7bL29VD6wkSHoVt5CGnN1X-6FG2xEPu2GPqEK6Dr29myscS1zZH8NBU?shopKey=https%3A%2F%2Febay.com&mcp=true&shoppingToken=XpcwbKqsjLmL92yIiDqErhJPRN0b74ooC81iKxWknyjESf2QJH6kpicW0rNIzsqRm57-eGy1zvnTxcO7rI2XrKj2w-P9DY4LFtt1xCpQ91h2eiTiqjSNgEeSo7uVqIBuCeAc9zZroM1RuEDw1CfL2vyXwlBh9q48SkUNOwftENHQC2jz7B4gZz9XQDC_1noe93bD3lGNDxmVOOykKAozi2Kr-69jLHVgdDIx75AtDJyIc5P-bLFw5hLF1hsTO-v32D401L2ytzwP5JgNFODKUNcKWtL5vrT79ioqPnaIjLYbdIkw8pkrX6ibBgv_laWsxCl9bfxtb4Xlz6WpaxLpJ69UjHFrh4-EPcgcfbUqbtEt0tMI1GfoUtTyNVTuLw6tQCUtrjaiZO1Bk1o-yt4IqX13pl1mjzTvYDj8SJIIjaOxiMOwG3UCQHJVWGdX3PQDbJF9eBDK3bBxH3Y1DdRPxL_bUOeN9ta2J4PV-dgfqWycgq6Dr2IYiKNAzolQOwl5WrzcppmhVcNHwrQ3dpWmZ4o7spHmhlyJYKXuZ9AvUZ3mI_dI4HFd0iUbwAVc6le67Dv_zMW9LOZRvV5qBc85xg6fK-_8XcrOnEhjSu17PVGRS6mh1MldHuiJE7sH23jSY5wSs-3kAItsrSy3B-qQzTk32mbshDNEdTQWKTVYpa1Vip_vm8pZIct4l4cVGrAw-hKDxTPkQIICHWQ0uvZTJEbQWrHbIZVe62fFuB7fWjutCDYBNj8ZbxYhYDJ-hJDuigDX3rlWN1vnoAXlIew808VaJPSJTDaSzZit1yhp_x9aK62UJOYcB1XRb90T4vB5X56blN7-525iHczZhdZbHmjseI8-SaNIoEJDD55Bl57Am14zFGg8AJbGOsH_uH2CKQ8bE8VXI6wUlBFPXazx55dcFp_fth4OTZp5ci7JdmC0dq29Sn7Swwpay6VThImRvTUGjbaQeUhxDFKcaFvs8BrhQoSIDxe74w_t2LeKDKAhX-u0y4filZDqdRMiROB5BOAeW5p4rkQ8tR_jK_RcWVJ-1zqRSHnMU7_v5eBUkk1ZidNd9ThE8nBRKM3e1DzPcfsSX4GxPR9B44LNkXUqT8AIRDuGDWlCB_iHcdIIirc5yd6rOc5Zu986sEbv4KLB3QHyqml_QgAiBjMOFUr5Z9mIsxq75qWDvGMxLDKqnYnm5jFgxbxiDpqv2R0O2bgmk9fI5Ham9KRyrc0dKj_GxiRWSIJFGFPnD4GmJh7IbNLq7-AJTcvX3OgYAU69oLMY5xLi2HlPakY2C_Cs7pm5aaVSmzuTw0emRiE3ETDLBbkF_XweXZBktNHi1II-Jl82GPKZ7uKjp584HRkL_2-ed4eYZzaL4h3IpuWMtgrj1vXluw7WemXx7-HUtuE6LIKF6gVQFuPAWLiKWn58AM4QEaTejJdbJ3pr71nLN9gODbR3AsVBstogG6-W0sUr2FSZSUH6y-WyHSAZvuwVqJPUwAXpURnz42namu7eADdKHMrvPHyNG2itrMhChc3oCfVAwhHwR1U9jlPW3azbP0Z5i_VZylZPOOKGOC7RMmFONgw2bqZo8ehKpdNoCMUu8bpk7WpsA76AhlsKGdXphaKN0GjWNc9D_f7tWrMjh9H83KuMp1ucco5PSZPXdRx6fiNT9Zwuw3Fbb6rUf-W7_UxUKuDz6vyzaYVbJ7V8zf6HcDWB81hWGd7xOz7cmmS_U5qN-VZzcCTbH610xqetqA93nweDPF4A_0OaD6-A005w5sh4hFn1HOig8ocyaLw2LVE6-woN_iHUKwaNxYvNAbq-SlespEb5g2OugWGDk71avDIi_ya_lz0dI97-Sm6PKlYKI9jO4bdyzgUHn1_DiwSyPkT68z9VK7ED4pCs2CR6TpFcWp7aln7PkdgDoQEqoou--_eEc4WbTfMXAgFbHrb01JnLzcFqbeHqqbY3DacsgaD6lr8gZZX73R09w0WWnGsokNfRRr0UEy5vJDJnIkBrnjzbHTRawJqtgOkrokqd_mdV4HX3aRHVZ2j1XOzRmeO6ur7PO53CgLiZMysQc_hg8RXVJ_cOOR4H_3v1ZFLqLgCDpBEGd4ulIHo-j1C3jKqDfm3PnP1ip_DrjmrJGys0D-MvLKaSRfOq7Q9JjsYL8_zZq3I_tEGM-AVuctPK_1ar2epXYov8wqsqqzWu580oI0SzJlOode9psYueTFvp14fctJ4iDWMMHu_8jAMx2z20RAym4rKU3vn5-N7dasF-5ydLy2tQLtyKHcGQCu2k2Vrs3sKfvjtcHVeZ3a0snD8_usEXsG-mntbu1m0BeU3VVOpluRslQMitEo7o3914nkjBnjPMqyn3qbVk27EkYGG-ORk_wCzDnFH5ELMCQ1Ew8rw7Sg0lVaO7aCMlFLGoyqtWqhlbS6089kdxy1KVyMJCQFZK-33fsJAkzN58J3qmBvyi2kw4d-NvA_mUb6L7XAQN__8kgwcKOSF3XemrA216B81sTonRJwX5JWQ-UQr_ZLa1D9Za-wH__lHlvdYhILHmvUyqKfautGbYlQ-Qav6R_9rxkGyf3yjXC4MQDhx2nP3VVQONPdFtBS3_7AJh9oXXYWFQ-eKZErIpVOa7mP0NvenhFY-_9fcZoAD4DRYzIae2zFp5iz2VdfJ33veZF3ZiMp552Lk2hDI_TnOxLzbA-YzHPygqPMdEO_J89nQokuUw9Mq3nJmx9mEIQjzrc1vzyFYb13LMwIgnVU1sViw",
-      "site": "dupe",
-      "route_id": "dupe.search.api",
-      "data": "live:dupe",
-      "condition": "unknown",
-      "relation": "exact",
-      "source_kind": "marketplace",
-      "price_cents": {
-       "amount_cents": 7299,
-       "currency": "USD"
-      },
-      "shipping_cents": null,
-      "delivered_cents": {
-       "amount_cents": 7299,
-       "currency": "USD"
-      },
-      "shipping_estimated": true,
-      "also_on": [],
-      "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcSMQb3fgJ_ZiEphMw4fSHFti61s14nyQ2PkEaA_bR3Cjfw6PE3Z2i-yFKKFUS4E841lzZiw8ZgJHUQvZ9cTqL0vfuohpB8RBhFEPSy8jjCut10jqRhDtg_wAA",
-      "commercial_link": true,
-      "attribution": "Dupe.com",
-      "source_site": "eBay",
-      "secondhand": true,
-      "keep_until": "2026-11-15T11:48:36.625Z"
-     },
-     {
-      "id": "ls_dupe_dupe-38893fe3804d",
-      "listing_id": "ls_dupe_dupe-38893fe3804d",
-      "external_id": "dupe-38893fe3804d",
-      "title": "Levi’s 501 Jeans",
-      "url": "https://dupe.com/redirect/lAgNFxaJ8Y1RC6EUSriXu9i1bPxgbKh58x8ifqAtOdnHTW0LOTyCp3TqA6TqOxQI0WtwtobRgXwndE1oNz_1yhuPyrKXNyMCuezZIJIJVIovlodECPd9R2YsTabMiDAmM5w47J7ZgLEVLjMz5Wtk_8S0XBS1uJABI1hgGBQ56eJQYxFkded1iEqdFn8fjmutMHhrEfcUPdaEO1-zZCiUB02E9h__XmNm7BJ-6OUVSc-M?shopKey=https%3A%2F%2Fcurtsy.com&mcp=true&shoppingToken=9-lOBHwXlDMvyJWHLcc0ki9uPSRMgM-_H8jeo6BXm1neAYDcsI4VBx3VxhnoRra3lzttPQ4KdzLYoC2VI0pQKzki6EIDQ-r6mpkc7NOp3gXUpHSDxMsn8SEu4iOeGh2SU3_yPa19YnpMMJi4pt63gnHbcuTWd21-b1llR3nLlGW9Wyy2kKEKaJ8uxG6XgdnU40KOUUZPBsKIGL1FtKCVfPkwyi_0Lxe4FmEhVLDOqIgOhx-FMjyvDXn6ZQBNLs0U06IDKoM-xZ57koreP42cRJ8GmlLT4y3Eh_Mo6YokfkVIQQ7oy-cVlzpvQP0UWPLA5FdzpbtpRF8AHOVD0OfRk_n1moA1O4dYdz-PdWEaEyvLD2hW30xqBTbyp2aEUo5gXc7chIWzVmcCIKgimjKvtTYYfw4Sy4G2r4dDWtM9a2FJ7p7vWATIRHr27frdbg-zUSabzKpjezdDZY_TFxzsdwnD1vnhMZWrRWM2Czc__KmWrAgbnT3t-DI3hWzog8Lhog793o2bc2v52H6YvzuWEeBQS0cUGJ-7pB4i7cWzyDRfT__AHpjR7zGqIT6cnyy3aBlw7KH7tTwCaunbLxVYR9FuolgLUQfSZZ6-H8Qb5-md9lAJv_GZPKka_5tWeJSMguQB2PDgUQETL3qFtZg2PTc5B26P0ROMocBpQ0eOd83oS_dXwXPWTKoq5B5fCpyNTK5R7er2LKhe5CAA28FYyhgGHUPvF2cLjaIGjxdKNlxOPXgcoV-XVglddAyGwpvoZjqVDEDvZqmAokH0IPhFVVP0KrXPV_BvQeOvLJ4ylQooI5FyHgXzbd0dPeOtTNR-YtRFU2BSG2V_7nTq4UlrrYeOLEv-VRRX-27VM76FbYq1bR9rBOWiVx1FtsCOunNxNc3zMP7GJOPAJDQetI7KyZEcvg35FuJvubbwVFcQpht16j1nDsh8-AMF_6XBluWzFIo0cdCxTFzgulSqK8Qq0faMDvpirUbkmwFfv9b1d9QRWccI75-0rcArosk3uuqzoCzJOIMvuIhwPdHAd-R4tDmGrpZa2h9XRI8957lfveVL122iAJh8FkhExrTpFC-7QOFsZbcx4y36wIhdG5X3a6uMcs6YwnHoYwxKhd-EvK7583dilHD2qXz42aWqVdhVI7BfzPG90lY3c1VeayvTA2l7KIUTW0PPzjIFWz8tKhq3ZvyGuJVJEm5sGpOS5Gm8T5-x_oFlxgjNKAQ69_hyO4a1HTOih7to1LeyKifapmcLgoRSz6e8Emv_NxH53-UpCWvJwfaN9r5SgVvNuQthCZywJduh3wYSDgLhSJ9CLGv7H4YxBchu5AJhHFFipIOjUc0dcRijI03KCHAM6OKXAhASI5hLNvy7Jq3aDuz2QLeFWGjefapMqIP3bECsG8bkEV-fr_0GZLGronFCE3GiQO6cu5m6zwSPPCHMNAvd3blTByxEY6hff2sLPpLPvsFcPi9yfZKhK48mKrvQytV_4FkbWTyHFaZZy5uyu35vlbj097n8wBRobT040CZ74kiV5qFyywhTVj0XFTZfjMGYkbgGl6vYVrau37q4U9qyYdDJ26A3z-IasEaGP5KpBRJ3r_z0ELWSjLHjfx9oKMGQspMPn8uXY2iKWul1F7WBGh4dMnFhxrjcEIw4MnpfK7XxTzTJLnWegmOdic-0K2HDBgwTKt3U4SmIx1gy1SZtLu_QOf_NA05ZGeOv35XRadq5FPQuPmNeVnJwyPJNx0NUWL5lFihV1w_7pupSCyfAl3rEPNPxoCtXXy9i3LsNoRrhiTwy00UubU9pV9C3HjO_AxbQmx8niYTwRTl5H52Qi8vIKquWyI1vG_6TRhUObx-Y5OaA8F3wQhFjE0YPgTup2RL3Noi961SgOjyV6RhEScpS-wxtHB-ovOFtDTWWNcINSobU9_lDgj40Yxah7vFBT8MZ_4JGcxZIrlebNVBMHJh1EObWdg29VjhfdXirB1M7hAP4zOrW7AnFYCDFPhab6M2BGbZGamJcgaAxP1D7Zkzv_lLN8XYwOjlNa6kcRut8dtEdyZy2KBOwxJjZ3bN0DY4Etcv4XoV8kAtUm7z5YUBs-AlFl6f13v6tfshMZL_y5hviqClxCAUHqS51ivuGDxAKDLJyh0f5RZHCiY6zj2Ab818sV9PsXvQiNuPv4HizJPSHZPIZFsFGgGfHfQt107WG-BpGYES7i4Ob7tEzjE0gUZ_wIsVWJ1bCH1E4GfWNrtMbkAa17E2sTUPZQLhbajCrZvi8qXnYGkodQTckPTfyruwAc0TRp-Frt-RFPViZYwKpnDodyniII6Q-pfzGl-KffMEzNtcxMfZroJWiRj8lWkyEAM2e-OEFqgXOZnDASgufpGnkqtGP_b-bNAA0VBHCuJ2Q8QYvBhfvJGv9evFdpm8ivPKi81vtWnpz4UA83TRuh7wu_rj3BPNr8ze1PDYXpt6G8w8D0FUYTAa0hon7aH9sZ7XBLQlrFaFWIc3aof9d1D4nu2zcJIZPA36HhZKkw0zSljlhcjbRBWr8Uy4ehMbUn5KZlfzrPZr8uXjAg68KAdKNtzOwWiaQ_1E8ZP1y6bVovDWtNtY0mTwEUm-nW81zwkRJFan6t863hPkkJMp3grjBaAC5hsfvOe1mHR55RWWsVWJuyO8aIAr7YUqhiuUI7N-rKH4TObbVl6NEGypMbgZVEFSmwYoOyBQjeOok0qUdiaHjMDPZ7dxDzaZuAXHWsVenksxWe0wLNBPryI4R7HvWXURQ3DRfP31mtpRtUvvvd5qRqDjcNrUGmjUf4OKSclmz5nut7cbfJfLz2PoTiusrmw",
-      "site": "dupe",
-      "route_id": "dupe.search.api",
-      "data": "live:dupe",
-      "condition": "unknown",
-      "relation": "likely_same_model",
-      "source_kind": "marketplace",
-      "price_cents": {
-       "amount_cents": 4825,
-       "currency": "USD"
-      },
-      "shipping_cents": null,
-      "delivered_cents": {
-       "amount_cents": 4825,
-       "currency": "USD"
-      },
-      "shipping_estimated": true,
-      "also_on": [],
-      "image_url": "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQ_0llVYgv-dz8C1wTKy0ctrFXXCEKg3I0fLQs_R27TMvuodeKdlBpFrMdpAw_YBEJCLv8y79KDObuoZwbzT--q5soGb3RkC4ZVof1MGSBb",
-      "commercial_link": true,
-      "attribution": "Dupe.com",
-      "source_site": "Curtsy",
-      "secondhand": false,
-      "keep_until": "2026-11-15T11:48:36.625Z"
-     },
-     {
-      "id": "ls_dupe_dupe-f9aba830f7c8",
-      "listing_id": "ls_dupe_dupe-f9aba830f7c8",
-      "external_id": "dupe-f9aba830f7c8",
-      "title": "Levi's Men's 501 Original Fit Jeans",
-      "url": "https://dupe.com/redirect/Ltc_H5q7A-sIGxtn66TkCJMu4G9tNI7oP94mGUmFEwfWzyyfPOP85EdZjmDSDqwX1QK40tsKDKW8K57RByntkW_HVT5WwheBZZBcYe8q9a9gzE8JojCqiWIPRTaNwT8UGDrJZe09RHbFbXMFYXCAiopzhDQ6-KJ587sBiT4_6zTIr0ylBVqaIglk8upExlDBknPGk41QzL6hInQ-KjJDmShrVEiiAcDS3-SUq9qQUaE?shopKey=https%3A%2F%2Febay.com&mcp=true&shoppingToken=xf-I4LiKyNKkVtyH9_nSiY-R2g8sdM1XlURVbAnnaKddvEeXrTulfZCYcHKt8HuWnSD0qEE4TEaSpT7yT3DEuucGRRDCSAgpe5ohgHV6laJlIjXIlR5UIBN8eTo_E2PYdpPH-dMWTHGHupF0bemCZHYJf9KsXmvUWMlXNYzV07Vv3yYxUXeQVgZ4s1lMNHPikuZo2nR5SousAZ7jpEqEpKub-iSbWsQ_wV-YKI9Pyu3NhVQoz_Flkg5zSYkgmHPUpgbUwYRW1lyCmMI2tRfeJG4fHhY5G0jPlIv6JZQL5GQ33Dc9OzUnVamXoAKg6M9OoMyr5lRV5L1EbQfCNinVYNU9JdlfX92kJvZ0LPDVNaKLRopCIDjEr3Sh_rUFaCAF7T1B1hAio_Bnxbxo7EdnicVgxMEFD83pmwc5NDy6psXd45iLQ1HDnQxg6sV25ZP7r-tU5RSg62wQ_74wBzmwWX7sumnpC7soaAvkx_ysh7VlIcFZt07j-xR68SYGl8ESTh0r4CylqiCxdivdgW7sDJZ7sKzkXMeoyEaPmE433Dy4fhwRZqwnLs2R0BE3xRnF28DwJPMCwB8KtDS87nqsuTqOrVonzCg3vTf4emX6sog_hJZPaT_IkaKwh_29MZV-2Th759OnPSQd799ahKNpvuOy7EsJqIKFHHHJL8x0aKhQ_j4f9l6p9yJHCg1y8FozCOb1iWJ45RBfWec_lmHh578DKnK-UPu57RoWEbUYhu7krA0PY5lKYdlwNDqrl_Jwm-wBQ2oqzfe-Flpiz0AM52Siqhh_eTGrP2IyoS_evqgK7M1FuCb8V0TI2I1ar-1Kdl81xoP2zSR9GyrQDtuP2J33mPWyAW3qbySG2y-2sLZoQLgkvvV7dK37f_c_Iy0FTcD3snFHjpw1fE6wJ6aXM8kLE140iRJ-rXG_7kWLfl9XnXTMjE-wX9Yi6FEvE1BBgdCR3ndJu4PNp8lqv1xOJ0qp3nS8E46roXR9NJA79ZQx_zPcK7faRT8nTINiohKkh2PRBvWNITkoQIU5ywWPgnFz7RTYLdGdSngbJ9SvS7PayNczg4NnT51SluKpRzxiH2Og-mxrRNGpDUQCKz_WJewiNdma9RiYEimMsXV1lnjlebRqTiwgQD665VDSTI37RiGLeucNbZuoaU8krktfS-GFcMdHH2LRqignRzto8Jp67aSP0uk6L6X-uh33ay4ch78BJJV-466bSBmT1ZqLn-PH3YuRKS3HQhx-JWX5GgaYTcY8lITWMEHIrSjGmNcbrJUXeO0HBVrxYrNtLegHXCmcocBMSJqYc6uVc-vmhxLJUVHrbdCZFjZg3eDJx2dpFvEQ8-AmMab5hEuoVK2jTh9CBc2koIGqk34QYwv9jS6dUlGq-VVYpVBAAyYEmeRGkqa8BE3aF3qb4DG9mN6ZsX8p9gJTffDeWRktUvhlEKSeHHDCaXeR7jNceAHyohkRCFa-nubohzSjSYqi3GBcY85CZxLfq51mEb8sMPdETVDH4WfSmLC41OmH9sSWcoAQ2GechB0MffmOurlPrJ99ZZmckDJtOlDuzM-UE3Kj3s-CxB8r7y567i7du1QwzMjUlci85l7MMtj3oThIWtIKrsvjGhpQeltnnfZlD6OH8Am9OQg0LaVHX8CCF2UVDo7xPWo7T7nR8zOvDbQ9YMi4kBAP6sXiA_Q-iBWRWUn3f8b8PkkCo8gcwhjH_YPHue996Dh9JmzR0AYtBTK4ev5vhHvoxUD_-nRLe3n3NH4Dz3k0JRXjntCSpZE4yZbU3Obzq3OVhCT_749JwU6JirSf96D_HneVjdbHXfw20qfPvWyIbm5rQpF8LSMtSHTxkMtCUnO98KTSmD-SR3_rW7pbPVNDV7WZkhXmA6RdL7BazGAFLIytG9J3xdb-DPAi3f323VPJSDizbmXGDfRc3h9TdUmev4BkjJFCGFy-V8ZudMFHlazP1YJm85S8QAmfjV5vsko3Ip0v6u71XJhxTqgbRNP3ZNuxagdbkTSgV-knEDDtZVKWDAuZKAZJNfVPkku4DZRT78JvBz2NcvQto5YzxEd4C7e1ABKdCrcjQcBIpw778LRvfAUTwhhbnjZIx4OBPZLj4317NioA_F0EjX2YNefeTOa14evMb_CYpQTw3XwsCg8PPTo9Q3gjf6bGzgNIG1cbV02Y-_kmMMLEiklrsvxTX9PZVdpsEa3A8bKzcPHSE9Irs3Hn1ebhPQ5hCn6asDCR9FJ0w1zau1nqY5kO5AzxBuSTYtJrngMr9eK_t-ZJdohNQjATPZ7dj-SpkQDvSYnDco3EPRi1yuWjd0T0qYYH2r0iqpkC91VwUpEENVJbQye6JxqWU2_o99CoacUfb1PJYLOOwTu0ADmOc2Ub61kFzlqomVQDSqm93QJw5Ddx6KrBCKFZox6YOBUZ_IiNM4EVhXEP9CNoNVW3FSjYqC0IEg_mmV2TbNjsoPCFk6PHBGEr7tCdVyeX50gp80Y557-PrT5i922xZUczKjPXfP8NoM99-jG9CpBkd7b3qeBAagaMl2m08AqmjtRrIKEKx0iJfLbxGEjEcvKddJf-z0-sjZO7i0PGfa3qIA7q_dGUl_A9-tp7eyq3zuubuGRZbKBeY2yYB3aQUlFNRWh3uJOxes2wfbtmSfjXxuYIp2JWTMR2nm8Dn3-fd0eKxtQW24J6Rw8Vdf1rTU6c8LN5u-VqRtjGeGbthhzOx26QT3yXVaAyiMERP_cIL7bDfd3gRUUN3Xm7YLts5aZf7GZs_fAOS-i2PVenWteX7RjUhrUT1pB11XaEJKAcpI_LjThgvU7mpY6xW0BKONRgLdMuTKMNB905wjyzTjFo1VF636t77cfVy3bl-S6t4LW_zRt-wxHpLF4saWQZp3KVnGFNny9671B0D46TDRCtlGIbb7a16BXBpX1A8UQMmHCPBQZyLwkrjc_E89xj9c1JmNfaRwbIdpY",
-      "site": "dupe",
-      "route_id": "dupe.search.api",
-      "data": "live:dupe",
-      "condition": "unknown",
-      "relation": "likely_same_model",
-      "source_kind": "marketplace",
-      "price_cents": {
-       "amount_cents": 5695,
-       "currency": "USD"
-      },
-      "shipping_cents": null,
-      "delivered_cents": {
-       "amount_cents": 5695,
-       "currency": "USD"
-      },
-      "shipping_estimated": true,
-      "also_on": [],
-      "image_url": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcTVAAOvChXXUeqCND7EAUyUduRLAl9HOiMKrZ3aj1BGTCpeEooF6iWczcI9hqR2A7_flsYXFRTyhYlzNFq5MEMkKtIvsOPvbsjmqtiGy33MPyyPDPwHMCQwqUY",
-      "commercial_link": true,
-      "attribution": "Dupe.com",
-      "source_site": "eBay",
-      "secondhand": true,
-      "keep_until": "2026-11-15T11:48:36.625Z"
-     }
-    ],
+    "results": [],
     "identity": {
      "by": "model",
      "model_ok": true
