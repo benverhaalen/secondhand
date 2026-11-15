@@ -11,10 +11,9 @@
 // the ai one) and showing that live before going into a posting"). Enhance with AI waits for the LiDAR scan's
 // measurement, since a redraw is only held to its real size by it (Ben, 08:09; 09:09: "only allow this from lidar flow
 // too"; jobs/studio/check.py).
-import * as Linking from 'expo-linking';
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
 import { Approve, Blank, EmptyState, Guess, Icon, Line, List, MOTIONS, Photo, Pill, Row, Skeleton, Stack, Txt, log, type PhotoSrc } from '@/ui';
 import { ActionRow } from '@/ui/parts/action-row';
 import { Chips } from '@/ui/parts/chips';
@@ -73,11 +72,8 @@ export default function ItemPost() {
 
 type Status = 'ready' | 'working' | 'done' | 'failed';
 
-// The site opens beside the app, so the preview is still here after (on the web, a new tab; expo-linking's web openURL
-// would replace this page).
 const openSite = (url: string) => {
-  if (Platform.OS === 'web') { globalThis.open?.(url, '_blank', 'noopener'); return; }
-  Linking.openURL(url).catch(e => log.error('item-post.myself', e));
+  openMarketplace(url).catch(e => log.error('item-post.myself', e));
 };
 
 function Post({ w, item, price, flipped, offline, fails, recalled }: {

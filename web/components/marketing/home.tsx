@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { AccountAccess } from './chrome';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Accordion, AccordionHeader, AccordionItem, AccordionPanel, AccordionTrigger } from '@ui-sdk/react/accordion';
-import { Carousel, CarouselContent, CarouselIndicator, CarouselIndicatorGroup, CarouselItem, CarouselNext, CarouselPlayToggle, CarouselPrevious, CarouselViewport } from '@ui-sdk/react/carousel';
 import { log } from '../../lib/log';
 import { wallPhotos } from './wall-photos';
 
@@ -57,15 +56,76 @@ const features = [
 ];
 
 function Features() {
-  const [page, setPage] = useState(1);
-  const feature = features[page - 1];
+  const viewport = useRef<HTMLDivElement>(null);
+  const [page, setPage] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(true);
+  const [inView, setInView] = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const feature = features[page];
+
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      setReducedMotion(preference.matches);
+      if (preference.matches) setPlaying(false);
+    };
+    update();
+    setPlaying(!preference.matches);
+    preference.addEventListener('change', update);
+    const visibility = () => setVisible(document.visibilityState === 'visible');
+    visibility();
+    document.addEventListener('visibilitychange', visibility);
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.intersectionRatio >= .5), { threshold: .5 });
+    if (viewport.current) {
+      setPage(Math.round(viewport.current.scrollLeft / viewport.current.clientWidth));
+      observer.observe(viewport.current);
+    }
+    return () => {
+      preference.removeEventListener('change', update);
+      document.removeEventListener('visibilitychange', visibility);
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!playing || !inView || hovered || !visible) return;
+    const timer = window.setInterval(() => {
+      const element = viewport.current;
+      element?.scrollTo({ left: ((page + 1) % features.length) * element.clientWidth, behavior: reducedMotion ? 'instant' : 'smooth' });
+    }, 5000);
+    return () => window.clearInterval(timer);
+  }, [playing, inView, hovered, visible, page, reducedMotion]);
+
+  const select = (next: number) => {
+    const target = (next + features.length) % features.length;
+    setPlaying(false);
+    const element = viewport.current;
+    element?.scrollTo({ left: target * element.clientWidth, behavior: reducedMotion ? 'instant' : 'smooth' });
+    log.input('home', 'feature-page', { value: target + 1 });
+  };
+
   return <section className="marketing-scene features-scene" id="features" aria-labelledby="features-title">
-    <Carousel className="marketing-wrap feature-carousel" aria-label="What you can do with secondhand" defaultPlaying onPageChange={next => { setPage(next); log.input('home', 'feature-page', { value: next }); }}>
-      <CarouselViewport className="feature-viewport"><CarouselContent className="feature-track">{features.map(item => <CarouselItem className="feature-slide" key={item.screen} aria-label={item.title}><div className="feature-phone-ground marketing-atmosphere" data-tone="features"><Phone screen={item.screen} alt={item.alt} /></div></CarouselItem>)}</CarouselContent></CarouselViewport>
-      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live.</h2><p className="section-body feature-summary">It reads item details from photos, drafts listings for different sites, and helps buyers find what fits.</p><div className="feature-explanation"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <span aria-hidden="true">→</span></Link></div>
-      <div className="carousel-controls"><CarouselPrevious className="carousel-arrow" aria-label="Previous feature">←</CarouselPrevious><CarouselIndicatorGroup className="carousel-dots" aria-label="Choose a feature">{features.map((item, index) => <CarouselIndicator key={item.screen} page={index + 1} aria-label={item.title} />)}</CarouselIndicatorGroup><CarouselNext className="carousel-arrow" aria-label="Next feature">→</CarouselNext><CarouselPlayToggle className="carousel-play">{state => state.playing ? 'Pause' : 'Play'}</CarouselPlayToggle></div>
+    <div className="marketing-wrap feature-carousel" role="region" aria-roledescription="carousel" aria-label="What you can do with secondhand"
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      onFocusCapture={event => { if (!(event.target as HTMLElement).closest('.carousel-play')) setPlaying(false); }}>
+      <div className="feature-viewport" ref={viewport} tabIndex={0} aria-label="Feature screenshots"
+        onPointerDown={() => setPlaying(false)}
+        onKeyDown={event => {
+          const next = event.key === 'ArrowRight' ? page + 1 : event.key === 'ArrowLeft' ? page - 1 : event.key === 'Home' ? 0 : event.key === 'End' ? features.length - 1 : null;
+          if (next !== null) { event.preventDefault(); select(next); }
+        }}
+        onScroll={event => {
+          const element = event.currentTarget;
+          setPage(Math.max(0, Math.min(features.length - 1, Math.round(element.scrollLeft / element.clientWidth))));
+        }}>
+        <div className="feature-track">{features.map((item, index) => <div className="feature-slide" key={item.screen} role="group" aria-roledescription="slide" aria-label={`${index + 1} of ${features.length}: ${item.title}`} aria-hidden={index !== page}><div className="feature-phone-ground marketing-atmosphere" data-tone="features"><Phone screen={item.screen} alt={item.alt} /></div></div>)}</div>
+      </div>
+      <div className="marketing-copy feature-copy"><p className="section-label">Features</p><h2 id="features-title">AI does the prep. You decide what goes live.</h2><p className="section-body feature-summary">It reads item details from photos, drafts listings for different sites, and helps buyers find what fits.</p><div className="feature-explanation" aria-live={playing ? 'off' : 'polite'} aria-atomic="true"><h3>{feature.title}</h3><p className="section-body">{feature.body}</p></div><Link className="marketing-text-link" href="/features">Explore features <span aria-hidden="true">→</span></Link></div>
+      <div className="carousel-controls"><button className="carousel-arrow" type="button" aria-label="Previous feature" onClick={() => select(page - 1)}>←</button><div className="carousel-dots" role="group" aria-label="Choose a feature">{features.map((item, index) => <button key={item.screen} type="button" aria-current={index === page ? 'true' : undefined} aria-label={item.title} onClick={() => select(index)} />)}</div><button className="carousel-arrow" type="button" aria-label="Next feature" onClick={() => select(page + 1)}>→</button><button className="carousel-play" type="button" aria-label={playing ? 'Pause automatic feature changes' : 'Play automatic feature changes'} onClick={() => setPlaying(!playing)}>{playing ? 'Pause' : 'Play'}</button></div>
       <p className="feature-sample-note">App screens with sample data.</p>
-    </Carousel>
+    </div>
   </section>;
 }
 

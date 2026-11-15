@@ -7,6 +7,7 @@
 // is locked). The two cases no world holds are asked for: `case=ask` (a buyer wants to meet) and `case=pick` (their pick).
 // Behavior: app/behavior/item/[id]/pickup.json.
 // one at a time: pickup-running-late (alternatives of one state each; .agents/checks/screens.mjs S2)
+import { openMarketplace } from '@/navigation/open-marketplace';
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, Share } from 'react-native';
@@ -187,7 +188,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
             {/* The site's own picture of the thread where the time was agreed, to check ours against, and the way back to the
                 site (Ben, 06:19: "It should use screenshots from the site when you need to verify certain things like scheduling"). */}
             <Line>
-              {siteUrl ? <SiteLink id="pickup-site" site={order.site} onPress={() => { Linking.openURL(siteUrl).catch(e => log.error('pickup.open', e)); }} /> : null}
+              {siteUrl ? <SiteLink id="pickup-site" site={order.site} onPress={() => { openMarketplace(siteUrl).catch(e => log.error('pickup.open', e)); }} /> : null}
               <Pill id="pickup-snapshot" kind="second" icon="image-01" label="See the site’s copy" onPress={() => setOpen('copy')} />
             </Line>
           </Section>
@@ -222,7 +223,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
       )}
 
       <SiteCopy id="pickup-copy" open={open === 'copy'} site={order.site} onClose={() => setOpen(null)}
-        onOpen={() => { setOpen(null); if (siteUrl) Linking.openURL(siteUrl).catch(e => log.error('pickup.open', e)); }} />
+        onOpen={() => { setOpen(null); if (siteUrl) openMarketplace(siteUrl).catch(e => log.error('pickup.open', e)); }} />
 
       <Sheet open={open === 'another'} title="Suggest another time" onClose={() => setOpen(null)}>
         {open === 'another' ? (
