@@ -64,6 +64,16 @@ function Sources({ reach, onBurst }: { reach: Reach; onBurst: (id: string, at: P
   );
 }
 
+// Words beside the logos while a search runs: which sites are still being read and how many listings have come in.
+function Progress({ reach }: { reach: Reach }) {
+  if (reach.state !== 'running') return null;
+  const sources = reach.sources.filter(shown);
+  const asking = sources.filter(s => s.state === 'running').map(s => nameOf(s.id));
+  const found = sources.reduce((n, s) => n + (s.state === 'running' ? 0 : s.kept ?? 0), 0);
+  const names = asking.length > 1 ? `${asking.slice(0, -1).join(', ')} and ${asking.at(-1)}` : asking[0];
+  return <Txt role="body" tone="ink-2">{`${asking.length ? `Searching ${names}` : 'Putting the results together'}${found ? ` · ${found} listings so far` : ''}`}</Txt>;
+}
+
 // What the listings say, in one card: the spread of asks, each site's middle ask, and the words most listings use.
 function Read({ reach, query }: { reach: Reach; query: string }) {
   const r = insights(reach, query);
@@ -249,6 +259,7 @@ export function ShopView({ phase, state, skip, turns, failure, saved, offer, off
         : t.kind === 'search' ? (
           <Stack key={i} gap="cards">
             <Sources reach={t.reach} onBurst={startBurst(t.reach)} />
+            <Progress reach={t.reach} />
             {t.reach.state === 'running' ? null : <Found reach={t.reach} query={query} onOpen={(url, id) => { onOpen(url, id); }} />}
           </Stack>
         )
