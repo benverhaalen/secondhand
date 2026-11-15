@@ -151,6 +151,11 @@ test('a copied tokens.css holds raw colours, and the line-gap-override of a font
   assert.match(errors(run(brand, { ...scales, 'web/app/globals.css': '.a { gap: 9.7%; }' })), /B17/);
 });
 
+test('links: a vendored skill keeps a link to a file its author did not ship', () => {
+  assert.deepEqual(run(links, { '.agents/vendor/emil/prototype/SKILL.md': '[picker](PICKER.md)\n' }), []);
+  assert.match(errors(run(links, { '.agents/skills/build/SKILL.md': '[picker](PICKER.md)\n' })), /does not exist/);
+});
+
 test('server code is not a screen and hand-run probes are tooling: no logo, spacing or print rule there', async () => {
   const scales = { 'brand/constitution.md': '| B13 | x | {400, 500} | S |\n| B17 | x | {0, 4, 8, 16} | S |\n| B20 | x | {0, 8, 999} | S |\n' };
   assert.equal(await pick('L6', { 'app/src/edge/harness/sites/ebay/adapter.ts': "export const why = 'Listed on eBay';" }), '');
