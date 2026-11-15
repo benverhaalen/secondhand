@@ -1,0 +1,26 @@
+name: website wall photos
+# Fetches the open-licensed photos for the website hero's wall (brand/explore/web-home/photos/wall), since the session
+# machines can't reach Openverse, and commits the tiles and credits.json to this branch.
+on:
+  push:
+    branches: [claude/project-thread-dbgps7]
+    paths: ['brand/explore/web-home/photos/wall/queries.json', 'brand/explore/web-home/photos/wall/fetch.py']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: web-wall
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install --quiet pillow
+      - run: python3 brand/explore/web-home/photos/wall/fetch.py
+      - name: Commit the photos
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@users.noreply.github.com"
+          git add brand/explore/web-home/photos/wall
+          git commit -m "chore(web): open-licensed photos for the hero wall, with credits" || exit 0
+          git pull --no-rebase origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"

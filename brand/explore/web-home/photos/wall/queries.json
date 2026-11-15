@@ -1,0 +1,13 @@
+{
+  "why": "The hero's wall: real photos of real things people resell, many kinds, so a visitor sees their own stuff in it. Open licences only (CC0, public domain, CC BY, CC BY-SA), credited on the site's credits page. Listing photos from marketplaces belong to their sellers, so none are used.",
+  "per_query": 6,
+  "queries": {
+    "clothes": ["denim jacket", "leather jacket", "hoodie", "flannel shirt", "jeans", "summer dress", "wool sweater", "baseball cap", "scarf", "vintage t-shirt"],
+    "shoes": ["sneakers", "running shoes", "leather boots", "high heels", "sandals"],
+    "bags and accessories": ["handbag", "backpack", "sunglasses", "wristwatch", "jewelry necklace"],
+    "tech": ["wireless earbuds", "headphones", "smartphone", "laptop", "game controller", "video game console", "mechanical keyboard", "digital camera"],
+    "home": ["armchair", "wooden chair", "desk lamp", "coffee table", "ceramic vase", "houseplant pot", "mirror", "rug"],
+    "hobbies": ["vinyl records", "record player", "film camera", "acoustic guitar", "skateboard", "bicycle", "books stack", "board game", "lego"],
+    "kitchen": ["cast iron pan", "coffee mug", "espresso machine", "teapot"]
+  }
+}
