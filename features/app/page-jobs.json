@@ -1,0 +1,68 @@
+{
+  "about": "One job per page (Ben, 10:27, product/words.md: \"each page should have one purpose\"). Read by scripts/page-jobs.mjs from app-check on every route. first: what must be wholly on the first screen, above the tab bar, in the typical world (a CSS selector on the web render). title: the words the page opens with. sections: the most section headers the whole page may have. never: parts that belong on another page, with where they go. Why each is so: features/app/page-jobs.md.",
+  "pages": {
+    "(tabs)/index": {
+      "job": "Clear what needs you, the most urgent first.",
+      "title": "Today",
+      "first": "[data-part=\"card-decision\"]",
+      "sections": 5,
+      "never": { "week-chart": "You > Insights", "week-bars": "You > Insights", "goal-bar": "You > Insights", "money-bar": "You > Insights" }
+    },
+    "(tabs)/sell": {
+      "job": "See everything you sell by where it is, and open one.",
+      "title": "Sell",
+      "first": "[data-part=\"tile\"]",
+      "sections": 5,
+      "never": { "week-chart": "You > Insights", "goal-bar": "You > Insights", "money-news": "Today" }
+    },
+    "(tabs)/buy": {
+      "job": "Find a thing, or see what your searches found.",
+      "title": "Buy",
+      "first": "[data-part=\"search-field\"]",
+      "sections": 4,
+      "never": { "week-chart": "You > Insights", "goal-bar": "You > Insights" }
+    },
+    "(tabs)/you": {
+      "job": "See how you are doing at a glance, and get to each thing about you.",
+      "title": "You",
+      "first": "[data-testid=\"you-insights\"]",
+      "sections": 3,
+      "never": { "week-chart": "You > Insights", "week-bars": "You > Insights", "goal-bar": "You > Insights", "price-chart": "You > Insights", "switch": "its own page under Settings", "site-toggle": "You > Your sites", "site-strip": "You > Your sites" }
+    },
+    "messages/index": {
+      "job": "Every conversation, newest first.",
+      "title": "Messages",
+      "first": "[data-part=\"thread-row\"]",
+      "sections": 1,
+      "never": { "queue-stack": "Today", "card-decision": "Today", "money-news": "Today" }
+    },
+    "item/[id]/index": {
+      "job": "One thing: where it is, and its next step.",
+      "first": "[data-part=\"photo-pager\"]",
+      "sections": 6,
+      "never": { "week-chart": "You > Insights" }
+    },
+    "search": {
+      "job": "Find one thing across every site.",
+      "first": "[data-part=\"search-field\"]",
+      "sections": 3,
+      "never": {}
+    },
+    "worth": {
+      "job": "Know what a thing is worth, then decide to sell or keep it.",
+      "sections": 4,
+      "never": {}
+    },
+    "want": {
+      "job": "Say what you are looking for, and how much you would pay.",
+      "sections": 4,
+      "never": {}
+    },
+    "camera": {
+      "job": "Get a thing in, one photo at a time.",
+      "first": "[data-part=\"shutter\"]",
+      "sections": 0,
+      "never": {}
+    }
+  }
+}

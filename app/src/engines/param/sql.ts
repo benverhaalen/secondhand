@@ -112,8 +112,8 @@ export function sqlStore(tx: Tx): AsyncParamStore {
       if (!cur) throw new Error(`${n} has no champion to roll back`);
       const restored = rollbackRow(rows, cur, at, keep_evidence);
       await setStatus(n, s, cur.version, 'retired', null);
-      if (keep_evidence) await insertEvent(restored);
-      else await setStatus(n, s, restored.version, 'champion', at);
+      if (rows.some((p) => p.version === restored.version)) await setStatus(n, s, restored.version, 'champion', at);
+      else await insertEvent(restored);
       return { ...restored, promoted_at: new Date(at).toISOString() };
     },
     async freeze(n, s, on) {

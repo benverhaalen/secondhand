@@ -12,7 +12,8 @@
 //   SHUTTER 76   the phone camera's shutter; its fill is 76 less two rings of 4, so 60.
 //   HOLD 1500    how long the found pop-up holds: Art. 11, on-screen words hold 0.3 s a word plus 1 s, at least 1.5 s.
 import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
-import { Platform, ScrollView, View, useWindowDimensions, type ImageSourcePropType, type ViewStyle } from 'react-native';
+import { Platform, ScrollView, View, type ImageSourcePropType, type ViewStyle } from 'react-native';
+import { useWindow } from '../window';
 import { Image } from 'expo-image';
 import Animated, { Easing, FadeIn, FadeOut, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -77,7 +78,7 @@ export const haptic = {
 // ---- where things sit, so the pop knows where its bubble is ----
 
 export function useCameraLayout() {
-  const { width, height } = useWindowDimensions(), insets = useSafeAreaInsets();
+  const { width, height } = useWindow(), insets = useSafeAreaInsets();
   const barTop = insets.top + space.s2;
   const askTop = barTop + size.controlMin + space.s3;
   // The top bar ends 16 under the instruction's 24 line; the pop drops in 16 under that, over the feed.
@@ -181,8 +182,8 @@ export function CamButton({ id, icon, label, onPress }: { id: string; icon: Icon
   return (
     <Press id={id} label={label} onPress={onPress} hit={slop(size.pillCardH, size.pillCardH)}>
       {({ pressed }) => (
-        <View {...mark('cam-button')} style={{ width: size.pillCardH, height: size.pillCardH, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center' }}>
-          <View style={[fill, { borderRadius: radius.pill, backgroundColor: b.on, opacity: pressed ? 0.24 : 0.12 }]} />
+        <View {...mark('cam-button')} style={{ width: size.pillCardH, height: size.pillCardH, borderRadius: radius.pill, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center' }}>
+          <View style={[fill, { borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: b.on, opacity: pressed ? 0.24 : 0.12 }]} />
           <Icon name={icon} tone={b.icon} />
         </View>
       )}
@@ -224,8 +225,8 @@ function StageDot({ name, state }: { name: string; state: Bubble }) {
   return (
     <View {...mark('stage', { state })} accessibilityLabel={`${name}, ${state === 'done' ? 'done' : state === 'now' ? 'now' : state === 'skipped' ? 'skipped' : 'to come'}`}
       style={{ width: STAGE, height: STAGE }}>
-      <View style={[fill, { borderRadius: radius.pill, borderWidth: state === 'now' ? 2 : 1.5, borderColor: b.on, opacity: state === 'now' ? 1 : 0.4 }]} />
-      <Animated.View style={[fill, { borderRadius: radius.pill, backgroundColor: b.on, alignItems: 'center', justifyContent: 'center' }, look]}>
+      <View style={[fill, { borderRadius: radius.pill, borderCurve: 'continuous', borderWidth: state === 'now' ? 2 : 1.5, borderColor: b.on, opacity: state === 'now' ? 1 : 0.4 }]} />
+      <Animated.View style={[fill, { borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: b.on, alignItems: 'center', justifyContent: 'center' }, look]}>
         <Icon name="tick-02" size={12} tone={b.iconOnOn} />
       </Animated.View>
     </View>
@@ -285,9 +286,9 @@ function PopBody({ text }: { text: string }) {
   return (
     <OnGround ground="card">
       <View {...mark('found-pop', { fit: 'content' })} accessibilityLiveRegion="assertive" accessibilityLabel={`Found ${text}`}
-        style={{ height: POP_H, borderRadius: radius.pill, backgroundColor: c.surface, borderWidth: 1, borderColor: c.rule, paddingLeft: space.s5, paddingRight: space.s2, flexDirection: 'row', alignItems: 'center', gap: space.s3, boxShadow: `0 8px 24px ${alpha(color.ink, 0.25)}` } as ViewStyle}>
+        style={{ height: POP_H, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.surface, borderWidth: 1, borderColor: c.rule, paddingLeft: space.s5, paddingRight: space.s2, flexDirection: 'row', alignItems: 'center', gap: space.s3, boxShadow: `0 8px 24px ${alpha(color.ink, 0.25)}` } as ViewStyle}>
         <Txt role="headline">{text}</Txt>
-        <View style={{ width: POP_DOT, height: POP_DOT, borderRadius: radius.pill, backgroundColor: c.ink, alignItems: 'center', justifyContent: 'center' }}>
+        <View style={{ width: POP_DOT, height: POP_DOT, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink, alignItems: 'center', justifyContent: 'center' }}>
           <Icon name="tick-02" size={20} tone="page" />
         </View>
       </View>
@@ -309,7 +310,7 @@ export function PointCloud({ outline, features, phase, spread }: {
   // How long the clusters take to arrive, in ms: the still's real judging time.
   spread: number;
 }) {
-  const screen = useWindowDimensions();
+  const screen = useWindow();
   const per = features.length ? Math.max(motion.feedback, spread / features.length) : 0;
   return (
     <View {...mark('point-cloud', { phase })} pointerEvents="none" style={fill}>
@@ -340,7 +341,7 @@ function Point({ x, y, dx, dy, delay, shown, strength }: { x: number; y: number;
     ? { opacity: p.get() * strength }
     : { opacity: p.get() * strength, transform: [{ translateX: (1 - p.get()) * dx }, { translateY: (1 - p.get()) * dy }] }));
   // absolute, no children: one point of the cloud. White with a faint black edge, so it reads on a pale wall and on the item.
-  return <Animated.View style={[{ position: 'absolute', left: x - DOT / 2, top: y - DOT / 2, width: DOT, height: DOT, borderRadius: radius.pill, backgroundColor: color.surface, boxShadow: `0 0 0 1px ${alpha(color.ink, 0.3)}` } as ViewStyle, look]} />;
+  return <Animated.View style={[{ position: 'absolute', left: x - DOT / 2, top: y - DOT / 2, width: DOT, height: DOT, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: color.surface, boxShadow: `0 0 0 1px ${alpha(color.ink, 0.3)}` } as ViewStyle, look]} />;
 }
 
 // ---- the foot: the facts, the modes, the shutter ----
@@ -368,7 +369,7 @@ export function ChipBody({ children, tint = false }: { children: ReactNode; tint
   const c = useColors();
   return (
     <OnGround ground="card">
-      <View {...mark('cam-chip', { fit: 'content' })} style={{ height: CHIP_H, borderRadius: radius.pill, backgroundColor: tint ? c.lilacTint : c.surface, borderWidth: 1, borderColor: tint ? c.lilacTint : c.rule, paddingHorizontal: space.s3, justifyContent: 'center' }}>{children}</View>
+      <View {...mark('cam-chip', { fit: 'content' })} style={{ height: CHIP_H, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: tint ? c.lilacTint : c.surface, borderWidth: 1, borderColor: tint ? c.lilacTint : c.rule, paddingHorizontal: space.s3, justifyContent: 'center' }}>{children}</View>
     </OnGround>
   );
 }
@@ -411,7 +412,7 @@ export function Modes<M extends string>({ modes, current, onPick }: { modes: rea
           <Press key={m.mode} id={`cam-mode-${m.mode}`} label={m.label} selected={on} onPress={() => onPick(m.mode)} hit={slop(size.controlMin, CHIP_H, { x: space.s2 })}>
             {({ pressed }) => (
               <View {...mark('mode', { current: String(on), fit: 'content' })}
-                style={{ height: CHIP_H, borderRadius: radius.pill, paddingLeft: space.s2, paddingRight: space.s3, flexDirection: 'row', alignItems: 'center', gap: space.s1, backgroundColor: on ? b.on : undefined, opacity: pressed && !on ? 0.7 : 1 }}>
+                style={{ height: CHIP_H, borderRadius: radius.pill, borderCurve: 'continuous', paddingLeft: space.s2, paddingRight: space.s3, flexDirection: 'row', alignItems: 'center', gap: space.s1, backgroundColor: on ? b.on : undefined, opacity: pressed && !on ? 0.7 : 1 }}>
                 <Icon name={m.icon} size={20} tone={on ? b.iconOnOn : b.icon} />
                 <Txt role="body" tone={on ? b.toneOnOn : b.tone}>{m.label}</Txt>
               </View>
@@ -435,8 +436,8 @@ export function Shutter({ id, waiting = false, onPress }: { id: string; waiting?
 function ShutterBody({ pressed, waiting }: { pressed: boolean; waiting: boolean }) {
   const b = useBar();
   return (
-    <View {...mark('shutter', { waiting: String(waiting) })} style={{ width: SHUTTER, height: SHUTTER, borderRadius: radius.pill, borderWidth: RING, borderColor: b.on, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{ width: FILL, height: FILL, borderRadius: radius.pill, backgroundColor: b.on, opacity: waiting ? 0.4 : pressed ? 0.85 : 1 }} />
+    <View {...mark('shutter', { waiting: String(waiting) })} style={{ width: SHUTTER, height: SHUTTER, borderRadius: radius.pill, borderCurve: 'continuous', borderWidth: RING, borderColor: b.on, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: FILL, height: FILL, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: b.on, opacity: waiting ? 0.4 : pressed ? 0.85 : 1 }} />
     </View>
   );
 }
@@ -461,7 +462,7 @@ function BarButton({ id, label, first = true, onPress }: { id: string; label: st
     <Press id={id} label={label} onPress={onPress}>
       {({ pressed }) => (
         <View {...mark('button', { kind: first ? 'primary' : 'secondary', state: 'idle' })}
-          style={{ height: size.buttonH, borderRadius: radius.pill, paddingHorizontal: space.s6, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: b.on, backgroundColor: first ? b.on : b.bar, opacity: pressed ? 0.85 : 1 }}>
+          style={{ height: size.buttonH, borderRadius: radius.pill, borderCurve: 'continuous', paddingHorizontal: space.s6, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: b.on, backgroundColor: first ? b.on : b.bar, opacity: pressed ? 0.85 : 1 }}>
           <Txt role="body" tone={first ? b.toneOnOn : b.tone}>{label}</Txt>
         </View>
       )}
@@ -502,5 +503,5 @@ export function CameraFoot({ children }: { children: ReactNode }) {
 // The camera's bar on the parts sheet: its parts drawn on the ground they live on. Sheet only.
 export function FeedSwatch({ children }: { children: ReactNode }) {
   const b = useBar();
-  return <View {...mark('feed-swatch')} style={{ backgroundColor: b.bar, borderRadius: radius.card, padding: space.s4, gap: space.s4 }}>{children}</View>;
+  return <View {...mark('feed-swatch')} style={{ backgroundColor: b.bar, borderRadius: radius.card, borderCurve: 'continuous', padding: space.s4, gap: space.s4 }}>{children}</View>;
 }

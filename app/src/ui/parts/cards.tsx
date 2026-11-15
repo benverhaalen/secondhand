@@ -168,7 +168,7 @@ export function DecisionCard(p: DecisionCardProps) {
 function Queue({ layers, children }: { layers: number; children: ReactNode }) {
   const c = useColors(), scheme = useScheme();
   const layer = (i: number) => (
-    <View key={i} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: space.s3 * (i + 1), height: size.cardDecisionH, borderRadius: radius.card,
+    <View key={i} pointerEvents="none" style={{ position: 'absolute', left: 0, right: 0, top: space.s3 * (i + 1), height: size.cardDecisionH, borderRadius: radius.card, borderCurve: 'continuous',
       backgroundColor: c.surface, opacity: i === 0 ? 0.75 : 0.4, transform: [{ scale: i === 0 ? 0.97 : 0.93 }],
       ...(scheme === 'dark' ? { borderWidth: 1, borderColor: c.cardEdge } : { boxShadow: `0 6px 14px ${c.stackShade}` }) }} />
   );
@@ -188,7 +188,7 @@ export function Notice({ id, icon, text, tone = 'plain', onPress }: { id: string
       {({ pressed }) => (
         <View
           {...mark('notice', { tone })}
-          style={{ height: size.noticeH, borderRadius: radius.pill, paddingLeft: space.s4, paddingRight: space.s3, flexDirection: 'row', alignItems: 'center', gap: space.s3,
+          style={{ height: size.noticeH, borderRadius: radius.pill, borderCurve: 'continuous', paddingLeft: space.s4, paddingRight: space.s3, flexDirection: 'row', alignItems: 'center', gap: space.s3,
             backgroundColor: tone === 'need' ? c.marigoldTint : pressed ? c.gray : c.surface, borderWidth: tone === 'need' ? 0 : 1, borderColor: c.cardEdge }}>
           <Icon name={icon} tone={tone === 'need' ? 'on-color' : 'ink'} />
           <View style={{ flex: 1 }}><Txt role="body" tone={tone === 'need' ? 'on-color' : 'ink'} lines={1}>{text}</Txt></View>

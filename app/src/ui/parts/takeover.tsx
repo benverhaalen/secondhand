@@ -19,7 +19,8 @@
 //   CHOICE 88    a choice: large, so the three doors read at a glance. Its icon well is 88 less 2 × 16, so 56, and its
 //                corner nests in the capsule's (Art. 9.1).
 import { useEffect, type ReactNode } from 'react';
-import { View, useWindowDimensions, type ViewStyle } from 'react-native';
+import { View, type ViewStyle } from 'react-native';
+import { useWindow } from '../window';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { Icon, type IconName } from '../icon';
@@ -51,7 +52,7 @@ const fill: ViewStyle = { position: 'absolute', top: 0, left: 0, right: 0, botto
 
 // Where the ＋ sits: centered in the tab bar, standing 12 above its top line (chrome.tsx, NewCircle), under the 1 px rule.
 export function usePlus() {
-  const { width, height } = useWindowDimensions();
+  const { width, height } = useWindow();
   return { x: width / 2, y: height - size.tabH + 1 - space.s3 + PLUS / 2, width, height };
 }
 
@@ -68,7 +69,7 @@ export function CircleStage({ origin, start = PLUS, phase, ground, onSettled, ch
   onSettled?: (phase: CirclePhase) => void;
   children?: ReactNode;
 }) {
-  const b = useBar(), c = useColors(), reduced = useReducedMotion(), { width, height } = useWindowDimensions();
+  const b = useBar(), c = useColors(), reduced = useReducedMotion(), { width, height } = useWindow();
   const r = Math.ceil(Math.max(Math.hypot(origin.x, origin.y), Math.hypot(width - origin.x, origin.y), Math.hypot(origin.x, height - origin.y), Math.hypot(width - origin.x, height - origin.y)));
   const least = start / (2 * r);
   const grow = useSharedValue(phase === 'open' ? 1 : 0);
@@ -86,7 +87,7 @@ export function CircleStage({ origin, start = PLUS, phase, ground, onSettled, ch
   return (
     <View pointerEvents={children ? 'box-none' : 'none'} style={[fill, { overflow: 'hidden' }]}>
       <Animated.View {...mark('circle-stage', { phase, ground: ground ?? 'picture' })}
-        style={[{ position: 'absolute', left: origin.x - r, top: origin.y - r, width: 2 * r, height: 2 * r, borderRadius: r, overflow: 'hidden', backgroundColor: ground === 'bar' ? b.bar : ground === 'field' ? c.field1 : undefined }, look]}>
+        style={[{ position: 'absolute', left: origin.x - r, top: origin.y - r, width: 2 * r, height: 2 * r, borderRadius: r, borderCurve: 'continuous', overflow: 'hidden', backgroundColor: ground === 'bar' ? b.bar : ground === 'field' ? c.field1 : undefined }, look]}>
         {/* The field spans the screen, not the circle, so the whole of it shows at every size the circle passes through. It is
             --field as tokens.css writes it: lime and mint glowing up from the foot over sky. */}
         {ground === 'field' ? <View style={{ position: 'absolute', left: r - origin.x, top: r - origin.y, width, height, backgroundColor: c.field1, backgroundImage: `radial-gradient(at 30% 100%, ${c.field2}, ${alpha(c.field2, 0)} 60%), radial-gradient(at 100% 100%, ${c.field3}, ${alpha(c.field3, 0)} 65%)` } as ViewStyle} /> : null}
@@ -116,7 +117,7 @@ export function PlusClose({ open, onPress }: { open: boolean; onPress: () => voi
     <View style={{ position: 'absolute', left: plus.x - PLUS / 2, top: plus.y - PLUS / 2 }}>
       <Press id="new-close" label="Close" onPress={onPress}>
         {({ pressed }) => (
-          <View {...mark('new-button', { open: String(open) })} style={{ width: PLUS, height: PLUS, borderRadius: radius.pill, backgroundColor: c.ink, opacity: pressed ? 0.85 : 1, alignItems: 'center', justifyContent: 'center' }}>
+          <View {...mark('new-button', { open: String(open) })} style={{ width: PLUS, height: PLUS, borderRadius: radius.pill, borderCurve: 'continuous', backgroundColor: c.ink, opacity: pressed ? 0.85 : 1, alignItems: 'center', justifyContent: 'center' }}>
             <Animated.View style={look}><Icon name="add-01" tone="page" /></Animated.View>
           </View>
         )}
@@ -165,7 +166,7 @@ export function ChoiceCapsule({ id, label, icon, lead = false, index, shown, onP
     ? { opacity: rise.get() }
     : { opacity: rise.get(), transform: [{ translateY: (1 - rise.get()) * space.s6 }, { scale: 0.97 + 0.03 * rise.get() }] }));
   return (
-    <Animated.View style={[{ height: CHOICE, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', backgroundColor: b.raised }, look]}>
+    <Animated.View style={[{ height: CHOICE, borderRadius: radius.pill, borderCurve: 'continuous', flexDirection: 'row', alignItems: 'center', backgroundColor: b.raised }, look]}>
       <View style={{ flex: 1 }}>
         <Press id={id} label={label} onPress={onPress} round={false}>
           {({ pressed }) => <CapsuleMain label={label} icon={icon} lead={lead} pressed={pressed} />}
@@ -186,8 +187,8 @@ function CapsuleMain({ label, icon, lead, pressed }: { label: string; icon: Icon
   // The name is centered in the room between the well and the pencil, so the three read as one centered column.
   return (
     <View {...mark('choice', { lead: String(lead) })}
-      style={{ height: CHOICE, borderRadius: radius.pill, padding: WELL_INSET, flexDirection: 'row', alignItems: 'center', gap: space.s4, backgroundColor: pressed ? b.raisedPress : b.raised }}>
-      <View style={{ width: WELL, height: WELL, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: lead ? c.ink : dark ? c.surface : c.gray }}>
+      style={{ height: CHOICE, borderRadius: radius.pill, borderCurve: 'continuous', padding: WELL_INSET, flexDirection: 'row', alignItems: 'center', gap: space.s4, backgroundColor: pressed ? b.raisedPress : b.raised }}>
+      <View style={{ width: WELL, height: WELL, borderRadius: radius.pill, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center', backgroundColor: lead ? c.ink : dark ? c.surface : c.gray }}>
         <Icon name={icon} tone={lead ? 'page' : 'ink'} />
       </View>
       <View style={{ flex: 1, alignItems: 'center' }}><Txt role="headline">{label}</Txt></View>
@@ -198,7 +199,7 @@ function CapsuleMain({ label, icon, lead, pressed }: { label: string; icon: Icon
 function TypeBody({ pressed }: { pressed: boolean }) {
   const b = useBar(), c = useColors(), dark = useScheme() === 'dark';
   return (
-    <View {...mark('choice-type')} style={{ width: TYPE, height: TYPE, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? b.raisedPress : dark ? c.surface : c.gray }}>
+    <View {...mark('choice-type')} style={{ width: TYPE, height: TYPE, borderRadius: radius.pill, borderCurve: 'continuous', alignItems: 'center', justifyContent: 'center', backgroundColor: pressed ? b.raisedPress : dark ? c.surface : c.gray }}>
       <Icon name="pencil-edit-02" size={20} />
     </View>
   );

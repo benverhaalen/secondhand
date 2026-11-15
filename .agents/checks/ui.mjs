@@ -17,9 +17,11 @@ export function ui(root, { files }) {
       if (!/^#\d+$/.test(m[0]) || m[0].length > 4) out.push(err(`${f}:${lineOf(code, m.index)}`, `raw color ${m[0]}: use var(--token) from brand/tokens.css`));
     for (const m of code.matchAll(/font-?[Ff]amily["']?\s*[:=]\s*["']?([^;"'\n,}]+)/g))
       if (!/^\s*(var\(|inherit|`?\$\{)/.test(m[1]) && m[1].trim()) out.push(err(`${f}:${lineOf(code, m.index)}`, `font ${m[1].trim()}: use the font token from brand/tokens.css`));
-    for (const { s, i } of strings(text)) for (const h of scan(s)) {
+    // The server's code (edge, engines) holds no words a person reads in the app; its strings are code.
+    if (!/^app\/src\/(edge|engines)\//.test(f)) for (const { s, i } of strings(text)) for (const h of scan(s)) {
       const where = `${f}:${lineOf(text, i)}`, msg = `"${h.match}" ${h.why} (product/copy.md ${h.id})`;
-      out.push(h.id === 'O13' || h.id === 'S2' ? err(where, msg) : warn(where, msg));
+      // Every hit is an error: all text passes the anti-claudish pass (Ben, 10:11, product/words.md).
+      out.push(err(where, msg));
     }
   }
   return out;

@@ -8,8 +8,8 @@ const expectedTables = [
   'measures.valuation_accuracy', 'measures.backtest_headline', 'measures.backtest_run',
   'measures.param_moves', 'measures.param_timeline', 'measures.citation_coverage',
   'measures.hidden_numbers', 'measures.decisions_by_policy', 'measures.never_automated',
-  'measures.rights_audit_summary', 'measures.policies_in_force', 'measures.guard_violations',
-  'measures.bench_coverage', 'measures.bench_speed', 'measures.backtest_estimate', 'measures.governance_coverage',
+  'measures.rights_audit_summary', 'measures.locks_in_force', 'measures.price_basis', 'measures.guard_violations',
+  'measures.bench_coverage', 'measures.bench_speed', 'measures.backtest_estimate', 'measures.shown_prices', 'measures.pipeline_funnel', 'governance.source_rights',
 ].map(name => `secondhand.${name}`).sort()
 const categorical = ['source', 'site', 'kind', 'brand', 'category', 'condition'].sort()
 const ddl = directory => readdirSync(new URL(directory, import.meta.url))
@@ -60,6 +60,8 @@ function checkSQL(sql, path) {
     if (token !== 'from' && token !== 'join' && !(token === ',' && fromAt.has(depth))) continue
     fromAt.add(depth)
     if (tokens[i + 1] === '(') continue
+    const lateral = tokens[i + 1] === 'lateral'
+    if (lateral) i++
     let name = tokens[++i]
     while (tokens[i + 1] === '.') { name += '.' + tokens[i + 2]; i += 2 }
     if (ctes.has(name)) continue
@@ -67,8 +69,9 @@ function checkSQL(sql, path) {
     assert.ok(registry.has(name), `${path}: unknown SQL relation ${name}`)
     assert.equal(registry.get(name) === 'FUNCTION', tokens[i + 1] === '(', `${path}: table/function call shape for ${name}`)
     if (name === 'secondhand.measures.why') {
-      assert.equal(tokens[i + 2], '<literal>', `${path}: why() needs a literal id; subqueries are not supported`)
-      assert.equal(tokens[i + 3], ')', `${path}: why() needs exactly one literal id`)
+      // A literal id, or under LATERAL one column of the row on its left; never a subquery.
+      const column = lateral && /^\w+$/.test(tokens[i + 2]) && tokens[i + 3] === '.' && /^\w+$/.test(tokens[i + 4]) && tokens[i + 5] === ')'
+      assert.ok(column || (tokens[i + 2] === '<literal>' && tokens[i + 3] === ')'), `${path}: why() needs a literal id or a LATERAL column; subqueries are not supported`)
     }
   }
 }
@@ -221,7 +224,7 @@ test('instructions keep cents, thin counts, historical scope, provenance, proof 
   const rules = JSON.parse(read('genie/market.json')).instructions.text_instructions[0].content.join('\n')
   for (const pattern of [/integer.*cents/i, /divid\w* by 100/i, /fewer than 30/i, /too few: N sales/, /wider date range/, /parent kind/,
     /every accuracy answer/i, /dataset/, /families/, /backtest_run/, /backtest_headline/, /2017-09/, /2019-02/, /never.*today.s market/i,
-    /synthetic/, /example/, /SELECT \* FROM secondhand\.measures\.why\('<id>'\)/, /report equal/i, /may_model = true/, /secondhand\.market\.comp_for_model/]) assert.match(rules, pattern)
+    /synthetic/, /example/, /secondhand\.measures\.price_basis/, /SELECT \* FROM secondhand\.measures\.why\('<id>'\), which Genie does not call/, /report rebuilt_exactly as given/i, /may_model = true/, /secondhand\.market\.comp_for_model/]) assert.match(rules, pattern)
 })
 
 test('examples and benchmarks cover the required judge questions with guarded SQL shapes', () => {
@@ -233,10 +236,10 @@ test('examples and benchmarks cover the required judge questions with guarded SQ
   for (const pattern of [/count_if\(.*may_model/i, /CASE WHEN count\(\*\) >= 30[\s\S]*percentile_approx/i,
     /backtest_headline[\s\S]*backtest_run[\s\S]*row_number\(\)/i, /product_90d_median/,
     /param_moves[\s\S]*ORDER BY/i, /never_automated[\s\S]*allow = true/i,
-    /(?=[\s\S]*governance_coverage)(?=[\s\S]*has_row_filter)/i, /secondhand\.measures\.why\('[^']+'\)/]) {
+    /(?=[\s\S]*locks_in_force)(?=[\s\S]*has_owner_tag)/i, /secondhand\.measures\.price_basis[\s\S]*WHERE b\.id = '[^']+'/]) {
     assert.ok(sqls.some(sql => pattern.test(sql)), `missing example shape: ${pattern}`)
   }
-  const why = examples.find(e => e.sql.join(' ').includes('secondhand.measures.why('))
+  const why = examples.find(e => e.id.endsWith('208'))
   assert.match(why.usage_guidance.join(' '), /substitute.*id/i)
   assert.equal(space.benchmarks.questions.length, 10)
   const refusals = space.benchmarks.questions.filter(q => q.answer.every(a => a.content.length === 0))
