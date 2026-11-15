@@ -7,7 +7,7 @@ const pages = [
   ['/how-it-works', 'How It Works'],
   ['/features', 'Features'],
   ['/data-use', 'Data Use'],
-  ['/#faq', 'FAQ'],
+  ['/faq', 'FAQ'],
 ] as const;
 
 export function AccountAccess({ label, className = '' }: { label: string; className?: string }) {
@@ -30,7 +30,7 @@ export function MarketingHeader({ current }: { current: string }) {
 }
 
 export function MarketingFooter() {
-  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{pages.map(([url, label]) => <Link key={url} href={url}>{label}</Link>)}<a href={repository + '/blob/main/product/vision.md'}>What’s Next ↗</a><Link href="/buy">Try search</Link><a href={repository}>GitHub ↗</a><a href="#main">Back to top ↑</a></nav></div></footer>;
+  return <footer className="marketing-footer"><div className="marketing-wrap"><Mark /><nav aria-label="Footer">{pages.map(([url, label]) => <Link key={url} href={url}>{label}</Link>)}<Link href="/whats-next">What’s Next</Link><Link href="/buy">Try search</Link><a href={repository}>GitHub ↗</a><a href="#main">Back to top ↑</a></nav></div></footer>;
 }
 
 export function isMarketingRoute(path: string) {
