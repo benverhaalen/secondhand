@@ -48,7 +48,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     const tag = el.tagName.toLowerCase(), map = el.computedStyleMap(), bi = cs.backgroundImage;
     const px = p => { const v = map.get(p); return v && v.unit === 'px' ? v.value : null; };
     const photo = ['img', 'video', 'canvas'].includes(tag) && !el.closest('[data-logo]') && !/platforms\//.test(el.currentSrc || el.src || '') || el.hasAttribute('data-photo') || /url\(/.test(bi) && !(cs.backgroundRepeat.startsWith('no-repeat') && cs.backgroundSize.split(' ').every(v => v === 'auto' || v.endsWith('px') && parseFloat(v) <= 32));
-    const gradient = /gradient\(/.test(bi) ? { radial: /radial-gradient\(/.test(bi), repeating: /repeating-/.test(bi), conic: /conic-gradient\(/.test(bi),
+    const gradient = /gradient\(/.test(bi) ? { raw: bi, base: cs.backgroundColor, radial: /radial-gradient\(/.test(bi), repeating: /repeating-/.test(bi), conic: /conic-gradient\(/.test(bi),
       colors: [...new Set([...(bi.match(/(?:rgba?|hsla?|oklch|oklab|lch|lab|color|color-mix)\((?:[^()]|\([^()]*\))*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
@@ -127,18 +127,20 @@ async function share({ png, photos, w, h }) {
 // Opens the output at each of the medium's canvas sizes and measures every view.
 export async function collect(file, { medium, sheet, tokensCss, browser, cases = [], kinds = [] }) {
   const names = [...tokensCss.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].filter(m => COLOR.test(m[2].trim()) || /^var\(--/.test(m[2].trim())).map(m => m[1]);
-  const views = [], stressed = [], outside = []; let colors, lengths = [], fontsLoaded = true, screens = 0, scaled = false;
+  const views = [], stressed = [], outside = []; let colors, lengths = [], named = {}, grads = {}, fontsLoaded = true, screens = 0, scaled = false;
   for (const canvas of sheet.canvas) {
     const page = await browser.newPage({ viewport: { width: canvas[0], height: canvas[1] }, deviceScaleFactor: 1 });
     await page.goto(pathToFileURL(resolve(file)).href); await page.evaluate(() => document.fonts.ready);
     const theme = await page.evaluate(() => document.documentElement.dataset.theme ?? '');
     const probe = await browser.newPage(); await probe.setContent(`<html><style>${tokensCss}</style><body><i id="p"></i>`); await probe.evaluate(t => { if (t) document.documentElement.dataset.theme = t; }, theme);
-    const got = await probe.evaluate(({ names, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [] }; p.style.display = 'block';
+    const got = await probe.evaluate(({ names, grads, lengths }) => { const p = document.getElementById('p'), cs = getComputedStyle(p), out = { colors: {}, faces: {}, lengths: [], named: {}, grads: {} }; p.style.display = 'block';
       for (const n of [...new Set(names)]) { p.style.color = 'rgb(1, 2, 3)'; p.style.color = `var(--${n})`; const a = cs.color; p.parentElement.style.color = 'rgb(3, 2, 1)'; p.style.color = `var(--${n})`; if (cs.color === a) out.colors[n] = a; p.parentElement.style.color = ''; }
-      for (const [k, v] of lengths) { p.style.width = `var(--${k})`; out.lengths.push(parseFloat(cs.width) || v); }
+      // The gradients the tokens hold (the field, the wash), as the browser writes them, so a page's gradient can be told from one it rebuilt.
+      for (const n of grads) { p.style.background = `var(--${n})`; if (/gradient\(/.test(cs.backgroundImage)) out.grads[n] = { raw: cs.backgroundImage, base: cs.backgroundColor }; p.style.background = ''; }
+      for (const [k, v] of lengths) { p.style.width = `var(--${k})`; out.lengths.push(parseFloat(cs.width) || v); out.named[k] = parseFloat(cs.width) || v; }
       for (const f of ['text', 'display']) { p.style.fontFamily = `var(--font-${f})`; out.faces[f] = cs.fontFamily.split(',')[0].trim().replace(/^["']|["']$/g, '').toLowerCase(); }
-      return out; }, { names, lengths: [...tokensCss.matchAll(/--((?!s-|t-|r-|lh-|tr-)[\w-]+)\s*:\s*(\d+(?:\.\d+)?)px\s*;/g)].map(m => [m[1], Number(m[2])]) });
-    await probe.close(); colors = got.colors; lengths = got.lengths;
+      return out; }, { names, grads: [...new Set([...tokensCss.matchAll(/--([\w-]+)\s*:/g)].map(m => m[1]))], lengths: [...tokensCss.matchAll(/--((?!s-|t-|r-|lh-|tr-)[\w-]+)\s*:\s*(\d+(?:\.\d+)?)px\s*;/g)].map(m => [m[1], Number(m[2])]) });
+    await probe.close(); colors = got.colors; lengths = got.lengths; named = got.named; grads = got.grads;
     // A face is here when text set in it measures differently from the same text in two generic fallbacks. document.fonts.check() says yes to a face it has never heard of.
     fontsLoaded &&= await page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
       return [f.text, f.display].every(face => ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`)) && ['monospace', 'serif'].every(fb => w(`40px "${face}", ${fb}`) === w(`40px "${face}", ${fb === 'serif' ? 'monospace' : 'serif'}`))); }, got.faces);
@@ -182,7 +184,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     }
     await page.close();
   }
-  return { views, stressed, colors, lengths, fontsLoaded, outside: [...new Set(outside)], screens, scaled };
+  return { views, stressed, colors, lengths, named, grads, fontsLoaded, outside: [...new Set(outside)], screens, scaled };
 }
 
 export async function check(file, medium, { browser } = {}) {
