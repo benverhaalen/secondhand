@@ -11,7 +11,7 @@ env:
 # typical: the five choices, the price with the sold range beside it, each site's returns rule.
 - openLink: ${URL}/--/item/it_jacket/plan
 - extendedWaitUntil:
-    visible: "What do you want\\?"
+    visible: "If it doesn’t sell"
     timeout: 30000
 - assertVisible: "Similar ones sold for \\$85 to \\$115"
 - assertVisible: "Returns as you set them"
@@ -21,14 +21,14 @@ env:
 - tapOn: { id: "plan-price" }
 - inputText: "500"
 - pressKey: Enter
-- assertVisible: "Similar ones sold for \\$85 to \\$115. List at \\$500\\?"
+- assertVisible: "List at \\$500\\?"
 - assertNotVisible: { id: "save-plan" }
 - tapOn: { id: "far-yes" }
 - assertVisible: { id: "save-plan" }
 # A lowest over the price is refused in place.
 - openLink: ${URL}/--/item/it_jacket/plan
 - extendedWaitUntil:
-    visible: "What do you want\\?"
+    visible: "If it doesn’t sell"
     timeout: 10000
 - tapOn: { id: "plan-floor" }
 - inputText: "120"
@@ -37,7 +37,7 @@ env:
 # Skip a site; add one the agent left out; Save names the price and the count, with Undo.
 - openLink: ${URL}/--/item/it_jacket/plan
 - extendedWaitUntil:
-    visible: "What do you want\\?"
+    visible: "If it doesn’t sell"
     timeout: 10000
 - scrollUntilVisible:
     element: { id: "site-facebook" }
@@ -49,7 +49,7 @@ env:
 # An avoided site says why and a tap adds it; a blocked site says why (edge-cases §11).
 - openLink: ${URL}/--/item/it_chair/plan
 - extendedWaitUntil:
-    visible: "What do you want\\?"
+    visible: "If it doesn’t sell"
     timeout: 10000
 - scrollUntilVisible:
     element: "Not allowed here. Over the 15 lb cap, no pickup"

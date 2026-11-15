@@ -32,7 +32,7 @@ export default function Search() {
     return (
       <Screen name="search" state="new" skip={SKIP} nav={nav}>
         <SearchField id="search-box" placeholder="Find an item or paste a link" onSubmit={next => router.setParams({ q: next, at: undefined })} onCamera={() => router.push(href(w, '/camera'))} />
-        <Txt role="body" tone="ink-2">Type what you want, paste a link, or take a photo. It looks on five sites at once.</Txt>
+        <Txt role="body" tone="ink-2">Search five sites at once.</Txt>
       </Screen>
     );
   }

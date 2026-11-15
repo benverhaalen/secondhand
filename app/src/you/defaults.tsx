@@ -73,9 +73,9 @@ export function Defaults() {
           <List>
             <ListRow id="clean-row" label="Clean up" detail={clean ? 'Straightens, crops and evens the light. The thing is never changed' : 'Photos go up as you took them'}
               trail={<Switch id="clean-up" label="Clean up" on={clean} onChange={toggle('clean_up', setClean)} />} />
-            <ListRow id="enhance-row" label="Enhance with AI" detail={enhance ? 'Each enhanced photo is marked, next to the real one' : 'Off: photos are never redrawn'}
+            <ListRow id="enhance-row" label="Enhance with AI" detail={enhance ? 'Each enhanced photo is marked, next to the real one' : undefined}
               trail={<Switch id="enhance-ai" label="Enhance with AI" on={enhance} onChange={toggle('enhance_ai', setEnhance)} />} />
-            <ListRow id="edits-row" label="Never suggest photo edits" detail={noEdits ? 'Your photos go up as you took them' : 'Edits are offered, never made without you'}
+            <ListRow id="edits-row" label="Never suggest photo edits" detail={noEdits ? undefined : 'Edits are offered, never made without you'}
               trail={<Switch id="never-edit" label="Never suggest photo edits" on={noEdits} onChange={toggle('never_suggest_edits', setNoEdits)} />} />
           </List>
         </Section>
@@ -112,7 +112,7 @@ export function Defaults() {
           {linked.map((s: Site) => <ListRow key={s} id={`default-site-row-${s}`} site={s} label={sites[s] ? 'On' : 'Off'}
             trail={<Switch id={`default-site-${s}`} label="Post here by default" on={!!sites[s]} onChange={v => { setSites(x => ({ ...x, [s]: v })); changed('default_site', s, v ? 'on' : 'off'); }} />} />)}
         </List>
-        <Txt role="caption">Only linked sites can be defaults. Each listing can still skip one.</Txt>
+        <Txt role="caption">Each listing can skip a default site.</Txt>
       </Sheet>
     </Screen>
   );

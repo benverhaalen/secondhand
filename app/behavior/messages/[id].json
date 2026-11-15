@@ -111,7 +111,7 @@
       "state": "didnt-load",
       "route": "/messages/cv_pd?state=failed",
       "shows": "Messages with canvasfan didn’t load",
-      "why": "the thread did not load; Try again asks again"
+      "why": "the thread did not load; Retry asks again"
     }
   ],
   "controls": [

@@ -1,7 +1,8 @@
 // One site's listing as that site will show it, on the Post preview (spec/pages.md §6.8): its cover with the site's logo,
 // the title in that site's form (cut where the site cuts it), the price and what the person keeps there, how its photos
-// differ, and a blank where the site still needs a field. The switch takes the site in or out. A card, so it is the
-// card's corner, padding and edge (Art. 7.8, 9.2), and one height whatever is in it: a 72 row, 12, a 20 line, 12, a 24 line.
+// differ, and a blank where the site still needs a field. The switch takes the site in or out, and says by itself whether
+// it posts there. A card, so it is the card's corner, padding and edge (Art. 7.8, 9.2): a 72 row, 12, a 20 line, and a
+// 24 line only when the site still needs a field.
 import type { ReactNode } from 'react';
 import { View } from 'react-native';
 import { Photo, type PhotoSrc } from '../photo';
@@ -23,8 +24,8 @@ export function ListingPreview({ site, photo, title, price, keep, photos, audien
   keep: number;
   // How the photos go up here: "8 photos, square", "First 8 of 9 photos".
   photos: string;
-  // Who buys here and what the listing does for them, in one line: "Searched by model: specs in the title".
-  audience: string;
+  // A developer specimen's note on who buys here; the app passes none.
+  audience?: string;
   // The one field this site still needs, as a Blank the person fills in place; or nothing when it is ready.
   needs?: ReactNode;
   // The switch that takes this site in or out.
@@ -48,11 +49,9 @@ export function ListingPreview({ site, photo, title, price, keep, photos, audien
         </View>
         <View style={{ justifyContent: 'center' }}>{toggle}</View>
       </View>
-      <View style={{ height: space.s5, justifyContent: 'center', paddingHorizontal: INSET }}><Txt role="caption" lines={1}>{audience}</Txt></View>
+      {audience ? <View style={{ height: space.s5, justifyContent: 'center', paddingHorizontal: INSET }}><Txt role="caption" lines={1}>{audience}</Txt></View> : null}
       <View style={{ height: space.s5, justifyContent: 'center', paddingHorizontal: INSET }}><Txt role="caption" lines={1}>{photos}</Txt></View>
-      <View style={{ height: space.s6, justifyContent: 'center', paddingHorizontal: INSET }}>
-        {needs ?? <Txt role="caption" lines={1}>{off ? 'Not posting here' : 'Ready'}</Txt>}
-      </View>
+      {needs ? <View style={{ height: space.s6, justifyContent: 'center', paddingHorizontal: INSET }}>{needs}</View> : null}
     </Surface>
   );
 }

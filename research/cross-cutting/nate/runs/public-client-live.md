@@ -1,4 +1,5 @@
 # The anonymous clients, live: eBay and Depop for a person who is not signed in
+Researched 2026-11-15 by Nate. Feature: cross-cutting.
 
 Run 2026-11-15, about 07:20 Central, from the Windows machine, by the orchestrator. One script, `publicClients` from `app/src/edge/harness/public-client.ts` (main at 556e6b64) over a Browser Use cloud browser (`browserUseCloud` and `cdpLauncher`), handed to the existing `ebayPageAdapters` and `depopAdapters`. Nobody signed in, no request intercepted, no challenge met. Every figure below is observed in this one run: two reads a site, not a distribution.
 

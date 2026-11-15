@@ -4,25 +4,30 @@
 //   node --no-warnings app/src/edge/harness/sites/depop/live.ts [query]
 import { freemem } from 'node:os';
 import { createRequire } from 'node:module';
-import { browserUseCloud, cdpLauncher, type CdpPw } from '../../../browser/cdp.ts';
+import { createLog, consoleSink } from '../../../../../../log/index.js';
+import { browserUseCloud, cdpLauncher, isCdpPw, type CdpPw } from '../../../browser/cdp.ts';
 import { API, depopAdapters, PATHS, readListing, readReviews, stillUp, type Client } from './adapter.ts';
 
 type Route = { request(): { resourceType(): string }; abort(): Promise<void>; continue(): Promise<void> };
-type Page = { goto(url: string, o: { waitUntil: string; timeout: number }): Promise<{ status(): number } | null>; content(): Promise<string>;
+type Page = { close(): Promise<void>; goto(url: string, o: { waitUntil: string; timeout: number }): Promise<{ status(): number } | null>; content(): Promise<string>;
   evaluate<R, A>(fn: (a: A) => Promise<R>, a: A): Promise<R>; route(p: string, h: (r: Route) => void): Promise<void> };
+
+const log = createLog({ src: 'app.src.edge.harness.sites.depop.live', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink });
 
 const q = process.argv[2] ?? 'carhartt hoodie';
 const apiKey = process.env.BROWSER_USE_API_KEY;
 if (!apiKey) { console.error('BROWSER_USE_API_KEY is not in this process (it is read by presence only)'); process.exit(2); }
 if (freemem() < 4 * 2 ** 30) { console.error(`only ${(freemem() / 2 ** 30).toFixed(1)} GB free: not starting`); process.exit(3); }
 
-const pw = createRequire(import.meta.url)('playwright-core') as CdpPw;
+const loadedPw: unknown = createRequire(import.meta.url)('playwright-core');
+if (!isCdpPw<Page>(loadedPw)) throw new Error('Playwright CDP interface unavailable');
+const pw: CdpPw<Page> = loadedPw;
 const t0 = performance.now(), ms = () => Math.round(performance.now() - t0);
 const ctx = await cdpLauncher(pw, browserUseCloud({ apiKey, timeoutMin: 2 })).anonymous({ headless: true });
 console.log(JSON.stringify({ connected_ms: ms() }));
 const s = AbortSignal.timeout(110_000);
 try {
-  const page = await ctx.newPage() as unknown as Page;
+  const page = await ctx.newPage();
   await page.route('**/*', r => { if (['image', 'media', 'font'].includes(r.request().resourceType())) void r.abort(); else void r.continue(); });
   const client: Client = {
     signed_in: false,
@@ -59,7 +64,7 @@ try {
   }
   await timed('search_empty', () => ads.search.run({ q: 'qqzxqqzxqqzx vvbnm' }, s));
 } catch (e) {
-  console.log(JSON.stringify({ error: (e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[url]').slice(0, 200) }));
+  log.error('live', e);
 } finally {
   await ctx.close(); // stops the cloud browser and its billing
   console.log(JSON.stringify({ stopped_ms: ms() }));

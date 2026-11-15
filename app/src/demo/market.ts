@@ -49,6 +49,18 @@ export const PRODUCTS: Product[] = [
     history: [{ month: '2026-09', new_cents: 15999, used_cents: 9200 }, { month: '2026-10', new_cents: 15999, used_cents: 9700 }, { month: '2026-11', new_cents: 15999, used_cents: 10100 }],
     cheaper: [],
   },
+  {
+    id: 'pr_kindle', brand: 'Amazon', model: 'Kindle Paperwhite', variant: '11th gen, 16 GB, black', category: 'electronics', key: 'kindle',
+    used_price: { range: { low: 6500, high: 8500 }, basis_count: 64, as_of: inHours(-2), citation_id: 'ci_pr_kin', state: 'shown' },
+    retail_price_cents: 14999, trend: 'flat',
+    by_site: [
+      { site: 'ebay', sold: { low: 6500, high: 8800 }, asking: { low: 7000, high: 11000 }, for_sale: 88, median_days: 5, basis_count: 47 },
+      { site: 'mercari', sold: { low: 6000, high: 8000 }, asking: { low: 6500, high: 9500 }, for_sale: 35, median_days: 6, basis_count: 17 },
+      { site: 'facebook', sold: null, asking: { low: 5000, high: 9000 }, for_sale: 12, median_days: null, basis_count: 0 },
+    ],
+    history: [{ month: '2026-09', new_cents: 14999, used_cents: 7600 }, { month: '2026-10', new_cents: 14999, used_cents: 7500 }, { month: '2026-11', new_cents: 14999, used_cents: 7500 }],
+    cheaper: [],
+  },
 ];
 
 export const RETAIL: RetailOffer[] = [
