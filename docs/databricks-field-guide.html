@@ -1,0 +1,446 @@
+<title>Databricks Field Guide</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500&family=Geist+Mono:wght@400&display=swap">
+<style>
+/* Layout: one reading column, a soft colored field only behind the opener, white cards elsewhere. Light only, on purpose, like the secondhand brand. */
+:root {
+  color-scheme: light;
+  --page: #FFFFFF;
+  --ink: #0A0A0A;
+  --ink-2: rgb(10 10 10 / .65);
+  --gray: #EFF1F2;
+  --rule: rgb(10 10 10 / .08);
+  --sky: #90D1EF; --sky-deep: #4EBAF7; --mint: #88DCB9; --lime: #E6EA6A;
+  --sky-tint: #DEF4FF; --mint-tint: #D5FAE9; --lime-tint: #F1F4D1; --marigold-tint: #FFEED2; --lilac-tint: #F2EDFE;
+  --field: radial-gradient(at 0% 0%, var(--sky-deep), transparent 55%), radial-gradient(at 30% 100%, var(--mint), transparent 60%), radial-gradient(at 100% 100%, var(--lime), transparent 65%), var(--sky);
+  --font-text: "Geist", "Noto Sans", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--ink); font-family: var(--font-text); font-size: 16px; line-height: 1.55; font-weight: 400; }
+.wrap { max-width: 760px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+h1, h2, h3 { font-weight: 350; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(36px, 7vw, 50px); line-height: 1.05; font-weight: 300; }
+h2 { font-size: 28px; line-height: 1.15; }
+h3 { font-size: 18px; font-weight: 500; line-height: 1.3; }
+p { margin: 0; max-width: 65ch; }
+a { color: var(--ink); text-underline-offset: 3px; }
+a:focus-visible, summary:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 4px; }
+code { font-family: var(--font-mono); font-size: .88em; background: var(--gray); padding: 1px 5px; border-radius: 5px; }
+
+/* opener */
+.field { background: var(--field); padding-block: 56px 40px; }
+.field .wrap { display: grid; gap: 16px; }
+.field .lede { font-size: 21px; line-height: 1.4; max-width: 34ch; }
+.field .meta { font-size: 13px; color: var(--ink-2); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; }
+
+/* tags that say how sure we are */
+.tag { display: inline-block; font-size: 12px; line-height: 1; padding: 4px 8px; border-radius: 999px; font-weight: 500; vertical-align: 2px; white-space: nowrap; }
+.t-repo { background: var(--ink); color: var(--page); }
+.t-guess { background: var(--marigold-tint); color: var(--ink); border: 1px solid rgb(10 10 10 / .12); }
+.t-prop { background: var(--lilac-tint); color: var(--ink); border: 1px solid rgb(10 10 10 / .12); }
+.t-general { background: var(--gray); color: var(--ink); }
+
+/* nav */
+nav.toc { position: sticky; top: env(safe-area-inset-top, 0px); background: var(--page); border-bottom: 1px solid var(--rule); z-index: 5; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--page); }
+nav.toc .wrap { display: flex; gap: 6px; overflow-x: auto; padding-block: 10px; scrollbar-width: none; }
+nav.toc a { flex: none; font-size: 13px; text-decoration: none; padding: 6px 12px; border-radius: 999px; background: var(--gray); }
+nav.toc a:hover { background: #E2E5E7; }
+
+section { padding-block: 48px 8px; }
+section > .wrap { display: grid; gap: 20px; }
+.kicker { font-size: 13px; color: var(--ink-2); }
+.sub { color: var(--ink-2); }
+
+/* one roof comparison */
+.roof { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.roof > div { border-radius: 16px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.roof .usual { background: var(--gray); }
+.roof .dbx { background: var(--mint-tint); }
+.roof h3 { font-size: 15px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 13px; padding: 5px 10px; border-radius: 8px; background: var(--page); border: 1px solid var(--rule); }
+.roof .dbx .chips { padding: 10px; border: 1.5px solid var(--ink); border-radius: 12px; }
+.roof small { font-size: 13px; color: var(--ink-2); }
+
+/* parts */
+.parts { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 12px; }
+.part { border: 1px solid var(--rule); border-radius: 16px; padding: 16px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.part .like { font-size: 15px; }
+.part .us { font-size: 14px; color: var(--ink-2); }
+.part .us b { font-weight: 500; color: var(--ink); }
+.part .name { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.group-label { font-size: 15px; font-weight: 500; margin-top: 8px; }
+
+/* trip */
+.trip { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; counter-reset: step; }
+.trip li { display: grid; grid-template-columns: 40px 1fr; gap: 14px; position: relative; padding-bottom: 22px; }
+.trip li::before { counter-increment: step; content: counter(step); width: 32px; height: 32px; border-radius: 50%; background: var(--ink); color: var(--page); display: grid; place-items: center; font-size: 14px; font-weight: 500; z-index: 1; }
+.trip li::after { content: ""; position: absolute; left: 15.5px; top: 32px; bottom: 0; width: 1px; background: var(--rule); }
+.trip li:last-child::after { display: none; }
+.trip .body { display: grid; gap: 4px; min-width: 0; padding-top: 4px; }
+.trip .where { font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px; }
+.trip .where span { background: var(--sky-tint); padding: 2px 8px; border-radius: 6px; }
+
+/* map */
+.map { border-radius: 16px; background: var(--gray); padding: 16px; overflow-x: auto; }
+.map svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.map text { font-family: var(--font-text); fill: var(--ink); }
+
+/* status */
+.status { display: grid; gap: 8px; }
+.row { display: grid; grid-template-columns: 92px 1fr; gap: 12px; padding: 12px 14px; border-radius: 12px; align-items: start; }
+.row .st { font-size: 12px; font-weight: 500; padding: 4px 8px; border-radius: 999px; text-align: center; }
+.row.done { background: var(--mint-tint); }
+.row.done .st { background: var(--mint); }
+.row.todo { background: var(--gray); }
+.row.todo .st { background: var(--page); border: 1px solid rgb(10 10 10 / .15); }
+.row p { font-size: 15px; }
+
+/* quotes */
+blockquote { margin: 0; padding: 16px 18px; border-radius: 16px; background: var(--sky-tint); display: grid; gap: 8px; }
+blockquote p { font-size: 17px; line-height: 1.45; }
+blockquote cite { font-style: normal; font-size: 13px; color: var(--ink-2); }
+.quotes { display: grid; gap: 10px; }
+
+/* decision card */
+.decision { border: 1.5px solid var(--ink); border-radius: 16px; padding: 18px; display: grid; gap: 12px; }
+.decision ul, .why ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; }
+.timer { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.timer > div { border-radius: 12px; padding: 12px; font-size: 14px; min-width: 0; }
+.timer .a { background: var(--mint-tint); }
+.timer .b { background: var(--lime-tint); }
+.timer .arrow { font-size: 13px; text-align: center; color: var(--ink-2); }
+.timer b { font-weight: 500; display: block; margin-bottom: 4px; }
+.why { display: grid; gap: 12px; }
+.bar { display: grid; gap: 6px; }
+.bar .track { height: 10px; background: var(--gray); border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; background: var(--ink); border-radius: 99px; }
+.bar .lbl { font-size: 13px; display: flex; justify-content: space-between; gap: 8px; color: var(--ink-2); }
+
+/* pitch */
+.pitch { background: var(--field); border-radius: 20px; padding: 22px; display: grid; gap: 14px; }
+.pitch .big { font-size: 21px; line-height: 1.35; font-weight: 350; }
+.demos { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+.demos > div { background: rgb(255 255 255 / .85); border-radius: 12px; padding: 14px; display: grid; gap: 6px; align-content: start; font-size: 14px; }
+.demos b { font-weight: 500; font-size: 15px; }
+
+/* talk */
+.say { display: grid; gap: 8px; }
+.say div { padding: 12px 14px; border-radius: 12px; background: var(--gray); font-size: 15px; }
+details { border: 1px solid var(--rule); border-radius: 12px; padding: 12px 14px; }
+details[open] { background: var(--page); }
+summary { cursor: pointer; font-size: 15px; font-weight: 500; list-style-position: outside; }
+details p { margin-top: 8px; font-size: 14px; color: var(--ink-2); }
+.qs { display: grid; gap: 8px; }
+dl.gloss { display: grid; grid-template-columns: minmax(110px, 180px) 1fr; gap: 10px 16px; margin: 0; font-size: 15px; }
+dl.gloss dt { font-weight: 500; }
+dl.gloss dd { margin: 0; color: var(--ink-2); min-width: 0; }
+footer { padding-block: 40px 56px; font-size: 13px; color: var(--ink-2); }
+footer .wrap { display: grid; gap: 6px; }
+
+@media (max-width: 560px) {
+  .roof { grid-template-columns: 1fr; }
+  .timer { grid-template-columns: 1fr; }
+  .timer .arrow { transform: rotate(90deg); }
+  .row { grid-template-columns: 1fr; gap: 6px; }
+  .row .st { justify-self: start; }
+  dl.gloss { grid-template-columns: 1fr; gap: 2px 0; }
+  dl.gloss dd { margin-bottom: 10px; }
+  h2 { font-size: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+html { scroll-behavior: smooth; }
+section[id] { scroll-margin-top: 56px; }
+</style>
+
+<header class="field">
+  <div class="wrap">
+    <div class="kicker">secondhand · for Ben · before talking to the Databricks people</div>
+    <h1>Databricks, in plain words</h1>
+    <p class="lede">What it is, the pieces we use, what Nate set up, why we went all in, and what to say at the booth.</p>
+    <div class="legend">
+      <span class="tag t-repo">from the repo</span>
+      <span class="tag t-prop">proposal, not decided</span>
+      <span class="tag t-guess">my read</span>
+      <span class="tag t-general">general knowledge</span>
+    </div>
+    <p class="meta">Untagged lines come straight from the repo: Nate's <code>spec/databricks.md</code>, <code>product/decisions.md</code>, <code>product/words.md</code>, the team packets and the research notes. Read on 15 Nov, so anything built after that isn't here.</p>
+  </div>
+</header>
+
+<nav class="toc" aria-label="Sections">
+  <div class="wrap">
+    <a href="#what">What it is</a>
+    <a href="#parts">The pieces</a>
+    <a href="#trip">One shirt's trip</a>
+    <a href="#nate">What Nate built</a>
+    <a href="#why">Why all in</a>
+    <a href="#pitch">Our pitch</a>
+    <a href="#talk">At the booth</a>
+  </div>
+</nav>
+
+<main>
+<section id="what">
+  <div class="wrap">
+    <h2>What it is</h2>
+    <p>Databricks started as hosted Apache Spark, a way to crunch huge data on rented computers. Today one account holds your data, the computers that work on it, a normal Postgres database, app hosting, AI agents and a log of every AI call.</p>
+    <p>Think of a normal backend as five rented spaces from five companies, with five sets of keys and five bills. Databricks is one building: the stockroom, the shop counter, the staff and the ledger are under one roof with one key system.</p>
+    <div class="roof" role="img" aria-label="Usual stack: five separate services and bills. Databricks: the same pieces inside one account with one key system.">
+      <div class="usual">
+        <h3>The usual way</h3>
+        <div class="chips">
+          <span class="chip">Postgres host</span><span class="chip">File storage</span><span class="chip">Vector DB</span><span class="chip">Model API</span><span class="chip">Logging tool</span>
+        </div>
+        <small>Five logins, five bills, glue code between each.</small>
+      </div>
+      <div class="dbx">
+        <h3>Databricks</h3>
+        <div class="chips">
+          <span class="chip">Lakebase</span><span class="chip">Volumes</span><span class="chip">AI Search</span><span class="chip">Unity Gateway</span><span class="chip">MLflow</span>
+        </div>
+        <small>Same jobs, one account, one permission system, one bill.</small>
+      </div>
+    </div>
+    <p class="sub">The word you'll hear is <b>lakehouse</b>: cheap open files (the "lake") that behave like a tidy database (the "warehouse"). <span class="tag t-general">general knowledge</span></p>
+  </div>
+</section>
+
+<section id="parts">
+  <div class="wrap">
+    <h2>The pieces we use</h2>
+    <p class="sub">Each card: the real name, what it's like, and what secondhand uses it for.</p>
+
+    <div class="group-label">Where things are kept</div>
+    <div class="parts">
+      <div class="part">
+        <div class="name"><h3>Delta tables</h3></div>
+        <p class="like">A spreadsheet with an undo history. Every change is logged, so you can read the table as it was last week, and every row gets a name tag that never changes.</p>
+        <p class="us"><b>For us:</b> sales and listings we compare against ("comps"), facts about each item, events, rollups.</p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>Volumes</h3></div>
+        <p class="like">The photo closet. Plain files, locked with the same keys as the tables.</p>
+        <p class="us"><b>For us:</b> item photos, depth maps, saved copies of marketplace pages.</p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>Lakebase</h3></div>
+        <p class="like">A normal Postgres database for the app, like the shop's cash register. It can copy itself in seconds ("branches"), sleeps when idle, and sends every receipt to the back office (Delta).</p>
+        <p class="us"><b>For us:</b> the app's live state: items, listings, offers, jobs, your decisions.</p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>Unity Catalog</h3></div>
+        <p class="like">The building's key system plus a family tree. It says who can touch what, and records what was made from what, without any code.</p>
+        <p class="us"><b>For us:</b> permissions on everything, and lineage for "where did this number come from".</p>
+      </div>
+    </div>
+
+    <div class="group-label">What does the work</div>
+    <div class="parts">
+      <div class="part">
+        <div class="name"><h3>Jobs, pipelines, SQL warehouse</h3></div>
+        <p class="like">Staff who clock in only when there's work. A job can start on a schedule, when a table changes, or when a new photo lands.</p>
+        <p class="us"><b>For us:</b> processing photos as they arrive, keeping comps fresh, nightly rollups. Nate's health check runs on the SQL warehouse today.</p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>Databricks Apps</h3></div>
+        <p class="like">A web server that lives inside the building, next to the data. Only people with a workspace login can walk in.</p>
+        <p class="us"><b>For us:</b> the backend API (FastAPI). That login rule is why we need a small public "edge" in front (more below).</p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>Agent Bricks</h3></div>
+        <p class="like">Databricks' way to host AI agents. The current path is code agents deployed with the Agent Bricks CLI. The older Knowledge Assistant and Supervisor Agent went legacy on 12 October.</p>
+        <p class="us"><b>For us:</b> the agents that post, answer messages and follow up. Which runtime runs the long jobs (Agent Bricks, DBOS on Lakebase, or Flue) is still open. <span class="tag t-prop">proposal: DBOS</span></p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>Genie</h3></div>
+        <p class="like">A data analyst you can text. Ask in plain English and it writes the SQL over the tables you picked.</p>
+        <p class="us"><b>For us:</b> "Ask" over your items and sales, and a public market space anyone can quiz. <span class="tag t-prop">market space is a proposal</span></p>
+      </div>
+    </div>
+
+    <div class="group-label">AI plumbing</div>
+    <div class="parts">
+      <div class="part">
+        <div class="name"><h3>Unity Gateway</h3></div>
+        <p class="like">One front door for every AI model, ours or a provider's. It handles budgets, fallbacks and rate limits, logs every call, and its policies can stop an answer before you see it.</p>
+        <p class="us"><b>For us:</b> every model call goes through it. We'd add a check that each fact an AI states matches our records. <span class="tag t-prop">proposal</span></p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>MLflow 3</h3></div>
+        <p class="like">A flight recorder. It traces every step an agent takes, and "judges" score those steps afterwards.</p>
+        <p class="us"><b>For us:</b> the "why?" timeline on every item, and your approve or edit taps become the labels that grade the agents.</p>
+      </div>
+      <div class="part">
+        <div class="name"><h3>AI Search</h3></div>
+        <p class="like">Finds things that are alike, by meaning and by keyword. It used to be called Vector Search.</p>
+        <p class="us"><b>For us:</b> matching an item to similar sales. It embeds text only, so photo matching may go in Lakebase (pgvector). <span class="tag t-guess">my read on the split</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="trip">
+  <div class="wrap">
+    <h2>Follow one shirt through it</h2>
+    <p class="sub">The plan in Nate's spec, as one item's trip. Most of this is designed, not built yet. <span class="tag t-prop">the how is a proposal</span></p>
+    <ol class="trip">
+      <li><div class="body"><h3>You take the photos</h3><p>They land in a Volume. A new file wakes up a job, so nothing runs while you're idle.</p><div class="where"><span>Volume</span><span>Jobs</span></div></div></li>
+      <li><div class="body"><h3>AI reads the shirt</h3><p>Models, called through the Gateway, pull out facts like "size M". Each fact keeps its proof: which photo, which part of it, which model version.</p><div class="where"><span>Unity Gateway</span><span>Delta</span></div></div></li>
+      <li><div class="body"><h3>It gets a price</h3><p>Comps and the market data give a range. If there aren't enough sales, the number refuses to show and says why ("3 sales in 90 days").</p><div class="where"><span>Delta</span><span>Genie</span></div></div></li>
+      <li><div class="body"><h3>The app remembers it</h3><p>The item, its listings and offers live in Lakebase. Every change flows back into Delta tables for analysis.</p><div class="where"><span>Lakebase</span><span>Delta</span></div></div></li>
+      <li><div class="body"><h3>Every step is written down</h3><p>MLflow traces each step. You see it as the "why?" timeline on the item.</p><div class="where"><span>MLflow</span></div></div></li>
+      <li><div class="body"><h3>You approve, and it learns</h3><p>Approvals and edits become grading labels. After three approvals with no edits, the app offers "Always do this" and links the three traces.</p><div class="where"><span>MLflow</span><span>Lakebase</span></div></div></li>
+    </ol>
+  </div>
+</section>
+
+<section id="nate">
+  <div class="wrap">
+    <h2>What Nate set up</h2>
+    <p>Nate made the Expo app (SDK 58, Expo Router), linked it to EAS, and connected it to the workspace. Right now the only screen is a placeholder that says whether Databricks answered.</p>
+
+    <div class="map" role="img" aria-label="Phone calls the edge, the server routes inside the Expo project. The edge holds the workspace identity and calls the SQL warehouse today. Later it will call the Databricks App, which talks to Lakebase and Delta.">
+      <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0A0A0A"/></marker></defs>
+        <rect x="10" y="60" width="130" height="70" rx="14" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5"/>
+        <text x="75" y="91" text-anchor="middle" font-size="15" font-weight="500">Phone</text>
+        <text x="75" y="111" text-anchor="middle" font-size="12" fill="#0A0A0A" opacity=".65">no Databricks key</text>
+        <line x1="142" y1="95" x2="198" y2="95" stroke="#0A0A0A" stroke-width="1.5" marker-end="url(#ar)"/>
+        <rect x="200" y="50" width="170" height="90" rx="14" fill="#DEF4FF" stroke="#0A0A0A" stroke-width="1.5"/>
+        <text x="285" y="82" text-anchor="middle" font-size="15" font-weight="500">The edge</text>
+        <text x="285" y="102" text-anchor="middle" font-size="12" opacity=".65">server routes in the</text>
+        <text x="285" y="118" text-anchor="middle" font-size="12" opacity=".65">Expo project, holds the key</text>
+        <line x1="372" y1="80" x2="458" y2="45" stroke="#0A0A0A" stroke-width="1.5" marker-end="url(#ar)"/>
+        <line x1="372" y1="112" x2="458" y2="150" stroke="#0A0A0A" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#ar)"/>
+        <rect x="460" y="12" width="250" height="62" rx="14" fill="#D5FAE9" stroke="#0A0A0A" stroke-width="1.5"/>
+        <text x="585" y="38" text-anchor="middle" font-size="15" font-weight="500">SQL warehouse</text>
+        <text x="585" y="58" text-anchor="middle" font-size="12" opacity=".65">works today: GET /v1/health</text>
+        <rect x="460" y="120" width="250" height="78" rx="14" fill="#FFFFFF" stroke="#0A0A0A" stroke-width="1.5" stroke-dasharray="5 5"/>
+        <text x="585" y="148" text-anchor="middle" font-size="15" font-weight="500">Databricks App + Lakebase</text>
+        <text x="585" y="168" text-anchor="middle" font-size="12" opacity=".65">next: not built yet</text>
+        <text x="585" y="186" text-anchor="middle" font-size="12" opacity=".65">(Delta, Jobs, MLflow behind it)</text>
+      </svg>
+    </div>
+
+    <div class="status">
+      <div class="row done"><span class="st">Works</span><p><code>GET /v1/health</code> runs one tiny query on the workspace's SQL warehouse and returns the catalog name and the time. Checked in a browser against the real workspace.</p></div>
+      <div class="row done"><span class="st">Works</span><p>No Databricks key on the phone. On a laptop the server borrows your Databricks CLI login (<code>databricks auth login</code>), so no token sits in a file. Every call goes through the shared logger.</p></div>
+      <div class="row done"><span class="st">Written</span><p><code>spec/databricks.md</code>: Nate's full explanation of the platform and where every feature runs. He asked for it and said "Yes, push it".</p></div>
+      <div class="row todo"><span class="st">Not yet</span><p>The Databricks App and Lakebase behind the edge. A hosted edge (it needs a service identity in its secrets). A run on a real phone or an EAS build.</p></div>
+    </div>
+
+    <p><b>Why the edge exists.</b> A Databricks App only lets in people with a workspace login. It has no public mode in the docs. Our users, marketplace webhooks and visitors don't have workspace logins, so a thin public layer takes their calls and passes them in with its own identity. Think of a receptionist who signs guests into a members-only building.</p>
+    <p><b>Which workspace.</b> Nate's first workspace looked like Free Edition (3 apps that stop after 24 hours, 1 Lakebase project, no GPU, open models only). When asked, Nate said "The event gives a full one", so those limits should go away.</p>
+
+    <div class="quotes">
+      <blockquote><p>"Lets also discuss databricks being our backend layer and how to build every feature set to this. [...] we want to exemplify that we expertly can utilize and understand their platform, we don't just achieve the standard but truly go beyond and do what's considered impressive on there."</p><cite>Nate, 14 Nov</cite></blockquote>
+      <blockquote><p>"Developing a feature for our app, and making it a thing for databricks, something databricks lacks already that we know we can build."</p><cite>Nate, 14 Nov</cite></blockquote>
+      <blockquote><p>"Ensure we arent limiting what we do though because we're trying to adhere to databricks so much."</p><cite>Nate, 14 Nov</cite></blockquote>
+      <blockquote><p>"Well when it comes to uncertainty, we try and can easily achieve collecting enough information to become certain."</p><cite>Nate, 14 Nov, on being told a Databricks hackathon scored "evidence and uncertainty"</cite></blockquote>
+    </div>
+  </div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <h2>Why we went all in, with a timer</h2>
+    <div class="decision">
+      <div class="kicker">Decided 14 Nov, 19:41, by you on the Databricks card</div>
+      <ul>
+        <li>Databricks Apps hosts the backend. Agent Bricks runs the agents.</li>
+        <li>Lakebase is the app database, synced to Delta. Unity Gateway calls the models.</li>
+        <li>MLflow traces every step, shown as a "why?" timeline on each item.</li>
+        <li>Your approvals are grading labels that move actions between "Ask" and "Auto".</li>
+        <li>Genie answers questions over your items and sales.</li>
+      </ul>
+      <div class="timer">
+        <div class="a"><b>All in</b>Everything on Databricks.</div>
+        <div class="arrow">Lakebase or Apps not working 2 hours after setup →</div>
+        <div class="b"><b>Hybrid</b>The app and its database move off. Comps, pricing, traces, grading and Genie stay on. The product doesn't change.</div>
+      </div>
+    </div>
+
+    <div class="why">
+      <h3>The reasoning</h3>
+      <ul>
+        <li><b>The judging rewards depth.</b> Your words: "databricks is judging based on how well you use databricks platform / creativity sort of. its super general no clear criteria." MadHacks posts no Databricks rubric.</li>
+        <li><b>Past rubrics agree.</b> DAIS 2026 asked "are Databricks capabilities used well?" and scored "Evidence and Uncertainty" as its own criterion. Bharat Bricks asked "Is Delta Lake/Spark actually doing work, or just present?"</li>
+        <li><b>The bar is low.</b> In the winning repos Ben's research read, most used the platform thinly. Only one used Unity Catalog functions as agent tools with an MLflow eval run, and none used the Gateway, MLflow judges or pipelines.</li>
+        <li><b>The timer protects the demo.</b> The app hosting and database are the riskiest parts: Lakebase logins expire every hour, Apps have no public door, and idle things take a moment to wake. <span class="tag t-guess">my read on why 2 hours</span></li>
+      </ul>
+      <div class="bar" aria-label="Of the winner repos read, one in six went past the basics.">
+        <div class="lbl"><span>Winner repos read that went past the basics</span><span>1 of 6</span></div>
+        <div class="track"><div class="fill" style="width:16.7%"></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="pitch">
+  <div class="wrap">
+    <h2>What we add that Databricks doesn't have</h2>
+    <div class="pitch">
+      <p class="big">Every fact keeps where it came from. Every number is cited, or it refuses to show. Every row carries what its source allows.</p>
+      <p style="font-size:14px">The gap: Databricks lineage goes down to tables, columns and file paths. It can't say which part of which photo produced "size M", or which exact sales produced a price. <span class="tag t-prop">proposal, from Nate's spec</span></p>
+      <div class="demos">
+        <div><b>"Where did size M come from?"</b>Tap it, see the photo with a box drawn on the tag, the model version, and "you confirmed".</div>
+        <div><b>A number that refuses</b>Ask a thin question and it says "not enough sales" with the count. Ask a good one and it recomputes live from the sales it used.</div>
+        <div><b>A score that knows its limits</b>Each site gets four scores with a range. If a site changes its search, the visibility score hides itself and says why.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="talk">
+  <div class="wrap">
+    <h2>At the booth</h2>
+    <h3>Things you can say</h3>
+    <div class="say">
+      <div>"We're building secondhand. You snap an item, it works out what it is, prices it, and lists it on every marketplace. Databricks is the whole backend."</div>
+      <div>"Every number we show carries its sources, and it refuses to show when the data is thin."</div>
+      <div>"MLflow traces are a screen in our app. Every item has a 'why?' timeline."</div>
+      <div>"Your approvals grade the agent. Three clean approvals and it asks if it can just do that next time."</div>
+      <div>"We hit the wall where Apps need a workspace login, so a thin edge sits in front for the phone."</div>
+    </div>
+
+    <h3>Good questions to ask them</h3>
+    <p class="sub">Each one is an open question in our spec, so the answer helps the build. Tap for why it matters.</p>
+    <div class="qs">
+      <details><summary>"For a consumer phone app, is a thin edge in front of an App the pattern you'd use, or is there a public way in?"</summary><p>Apps only take workspace sign-in. A forum says anonymous calls get redirected. Our whole architecture leans on this.</p></details>
+      <details><summary>"Lakebase tokens last an hour. What's your recommended way to keep a connection pool alive in an App?"</summary><p>Tokens expire hourly and don't work through PgBouncer, and waking from sleep drops session state. This is part of the 2-hour timer.</p></details>
+      <details><summary>"Can row-level security work for our app's users, who aren't workspace users?"</summary><p>Row-level security keys on the database role, which is the app's. We'd carry the user's id ourselves.</p></details>
+      <details><summary>"Can a Unity Gateway Python policy read a Unity Catalog table?"</summary><p>That decides whether our fact checker can run inside the Gateway before an answer is released.</p></details>
+      <details><summary>"Is row-level lineage on the roadmap?"</summary><p>Lineage stops at columns. Our pitch fills that gap, so it's good to know if they're building it.</p></details>
+      <details><summary>"Which image-capable models does this workspace serve, and can the Gateway sit in front of outside image models?"</summary><p>Some hosted Claude models take text only on some workspaces. We need images for identifying items.</p></details>
+      <details><summary>"For long agent jobs, would you use the Agent Bricks CLI or DBOS on Lakebase?"</summary><p>The agent servers can run a tool twice after a crash. DBOS records each step so it doesn't repeat. This is open question J2.</p></details>
+      <details><summary>"Genie Ontology went GA on 11 November. Is it on our workspace, and would you use it for a resale market?"</summary><p>It's a learned map of business terms over metric views. It could power the public market questions.</p></details>
+      <details><summary>"Has anyone aligned an MLflow judge to real user approve and edit taps?"</summary><p>That's MemAlign. No winner Ben's research read did it, and it's our clearest "beyond the standard" piece.</p></details>
+    </div>
+
+    <h3>If they say this, they mean</h3>
+    <dl class="gloss">
+      <dt>UC</dt><dd>Unity Catalog, the key system and family tree.</dd>
+      <dt>DBU</dt><dd>Databricks Unit, how compute is billed. <span class="tag t-general">general knowledge</span></dd>
+      <dt>Serverless</dt><dd>Compute that starts when work arrives and stops when it ends. You pay for work, not idle machines.</dd>
+      <dt>Medallion, bronze, silver, gold</dt><dd>Raw data, cleaned data, ready-to-use data, in layers. <span class="tag t-general">general knowledge</span></dd>
+      <dt>Asset Bundles</dt><dd>The whole setup as config in the repo, deployed with <code>databricks bundle deploy</code>. At one hackathon, judges tried to rebuild each demo from its repo. <span class="tag t-prop">proposal: ship one</span></dd>
+      <dt>Free Edition</dt><dd>The free tier, with tight limits. We should be on a full workspace from the event.</dd>
+      <dt>Time travel</dt><dd>Reading a table as it was earlier. About 7 days by default.</dd>
+      <dt>CDF</dt><dd>Change data feed: read only what changed since a version.</dd>
+    </dl>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Sources in the repo: <code>spec/databricks.md</code>, <code>product/decisions.md</code> (14 Nov, "Databricks runs the whole backend"), <code>product/words.md</code>, <code>app/README.md</code>, team packets 32, 40 and 41, and the notes in <code>research/data/</code>.</p>
+    <p>Quotes are copied as written, typos kept.</p>
+  </div>
+</footer>

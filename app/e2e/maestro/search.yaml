@@ -1,0 +1,128 @@
+# The search screen (app/behavior/search.json) on a phone or simulator: the same states and controls as app/e2e/search.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/search.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/search.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081/--
+---
+- launchApp
+# State: typical
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- assertVisible: "Price history and recent sales"
+- assertVisible: "Fair, pickup 4 mi \\$60"
+- assertVisible: "Other size or color"
+# nav-back: goes back to where the search started
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "nav-back" }
+# search-watch: starts a want from this search, every value guessed
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "search-watch" }
+# search-box: opens the box to change the search
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "search-box" }
+- assertVisible: { id: "search-box-input" }
+# search-product: opens the product's price history and recent sales
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "search-product" }
+# result-mt_d3: opens the cheapest listing
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "result-mt_d3" }
+# result-mt_d1: opens the good-price listing
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "result-mt_d1" }
+# result-mt_d2: opens the fair-price listing
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "result-mt_d2" }
+# result-mt_d4: opens the likely match
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "result-mt_d4" }
+# result-mt_d5: opens the listing priced high
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "result-mt_d5" }
+# result-mt_d6: opens the listing in another size
+- openLink: ${URL}/search?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- tapOn: { id: "result-mt_d6" }
+# State: loading
+- openLink: ${URL}/search?q=nike%20dunk&at=slow
+- extendedWaitUntil:
+    visible: "Nike Dunk Low, Grey Fog, men’s 10"
+    timeout: 15000
+- assertVisible: "High price"
+# State: empty
+- openLink: ${URL}/search?q=banjo%20case
+- extendedWaitUntil:
+    visible: "Nothing for sale right now"
+    timeout: 15000
+# search-box-camera: searches with a photo
+- openLink: ${URL}/search?q=banjo%20case
+- extendedWaitUntil:
+    visible: "Nothing for sale right now"
+    timeout: 15000
+- tapOn: { id: "search-box-camera" }
+# search-empty-watch: watches the search that found nothing
+- openLink: ${URL}/search?q=banjo%20case
+- extendedWaitUntil:
+    visible: "Nothing for sale right now"
+    timeout: 15000
+- tapOn: { id: "search-empty-watch" }
+# State: new
+- openLink: ${URL}/search
+- extendedWaitUntil:
+    visible: "Type what you want, paste a link, or take a photo\\. It looks on five sites at once\\."
+    timeout: 15000
+# State: one
+- openLink: ${URL}/search?state=one
+- extendedWaitUntil:
+    visible: "Fair, pickup 4 mi \\$60"
+    timeout: 15000
+# State: failed
+- openLink: ${URL}/search?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this search"
+    timeout: 15000
+- assertVisible: "Try again"
+# search-retry: loads the page afresh
+- openLink: ${URL}/search?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this search"
+    timeout: 15000
+- tapOn: { id: "search-retry" }
+# State: offline
+- openLink: ${URL}/search?state=offline
+- extendedWaitUntil:
+    visible: "Waiting for signal\\. This is the last copy\\."
+    timeout: 15000

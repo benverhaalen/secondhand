@@ -14,7 +14,7 @@ env:
 # typical: the money kept since the last look, the tiers, the cards.
 - assertVisible: "Since yesterday"
 - assertVisible: "2 sold, after fees"
-- assertVisible: "Keep the lot"
+- assertVisible: "Meet in public"
 - assertVisible: "Accept \\$85"
 # working, then done: the pill shows the step, the card leaves, the toast offers Undo.
 - tapOn: { id: "dec_jacket-acc" }

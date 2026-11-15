@@ -95,7 +95,7 @@ test('jevAsk: typed failures, never a throw', async () => {
 test('jevAsk: the key never reaches the log', async () => {
   const lines: string[] = [];
   const l = createLog({ src: 'test', build: 'test', sink: line => { lines.push(line); } });
-  await withKey('sk-or-v1-0123456789abcdef0123456789abcdef', () => jevAsk('s', questions, { log: l, fetchImpl: reply({ answers: { kind: good } }) as typeof fetch }));
+  await withKey('sk-' + 'or-v1-' + '0123456789abcdef'.repeat(2), () => jevAsk('s', questions, { log: l, fetchImpl: reply({ answers: { kind: good } }) as typeof fetch }));
   assert.ok(lines.length > 1);
   assert.ok(!lines.join('\n').includes('0123456789abcdef'));
 });

@@ -100,7 +100,8 @@ export function matching(n = PRODUCT.used_price.basis_count): string {
 // Where each choice ends (pages §6.4, "Ends in").
 export const ENDS: Record<Mode, { label: string; to: string }> = {
   sell: { label: 'Review the draft', to: '/sell' },
-  worth: { label: 'See what it’s worth', to: '/worth' },
+  // What's it worth values the product the camera read, so the page shows the jacket that was shot.
+  worth: { label: 'See what it’s worth', to: `/worth?product=${PRODUCT.id}` },
   find: { label: 'See matches', to: '/search' },
 };
 

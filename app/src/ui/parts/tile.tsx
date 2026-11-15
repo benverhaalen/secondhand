@@ -77,6 +77,21 @@ export function Tile({ id, title, photo, state, word, sites = [], fact, faded = 
   );
 }
 
+// A tile while the grid loads: the same square and two lines, in gray (Art. 5, Loading), so nothing moves when it arrives.
+export function TileSkeleton() {
+  const c = useColors();
+  const line = (w: `${number}%`, h: number) => (
+    <View style={{ height: 20, justifyContent: 'center' }}><View style={{ width: w, height: h, borderRadius: radius.pill, backgroundColor: c.gray }} /></View>
+  );
+  return (
+    <View {...mark('tile', { skeleton: 'true' })} accessibilityLabel="Loading" style={{ gap: space.s1 }}>
+      <View style={{ aspectRatio: 1, borderRadius: radius.photo, backgroundColor: c.gray, marginBottom: space.s1 }} />
+      {line('80%', 14)}
+      {line('50%', 12)}
+    </View>
+  );
+}
+
 export function Shelf({ id, title, count, onAll, folded, onOpen, children }: {
   // The shelf's name in the data: needs_you, live, kept. It names the controls and data-shelf.
   id: string;

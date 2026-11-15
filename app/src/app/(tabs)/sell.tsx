@@ -5,8 +5,9 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Approve, EmptyState, FootButton, Grid, List, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';
 import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
-import { Shelf, Tile, type TileFact } from '@/ui/parts/tile';
-import { day, feed, pill, sellItem, shelves, unread, usd, world, WORLD_NAMES, type AnyWorld, type Item, type World } from '@/demo';
+import { Shelf, Tile, TileSkeleton, type TileFact } from '@/ui/parts/tile';
+import { day, feed, pill, sellItem, shelves, unread, usd, type Item, type World } from '@/demo';
+import { useScreen } from '@/demo/screen';
 import { photo } from '@/demo/photos';
 import { filtersFor, viewItems, type Site, type Sort } from '@/sell/grid';
 
@@ -72,8 +73,14 @@ function tileOf(w: World, it: Item): { state: TagState; word?: string; fact: Til
 }
 
 export default function Sell() {
-  const params = useLocalSearchParams<{ world?: string; filter?: string }>();
-  const base = world(WORLD_NAMES.includes(params.world as AnyWorld) ? (params.world as AnyWorld) : undefined);
+  const params = useLocalSearchParams<{ filter?: string }>();
+  // The person and the state, from the URL (app/src/demo/screen.ts). Empty is this person with nothing for sale; loading,
+  // failed and offline are drawn over their things.
+  const { w: base, state: asked, name } = useScreen();
+  const [retried, setRetried] = useState(false);
+  // A change approved with no signal waits for it, saying so on its button.
+  const [held, setHeld] = useState(false);
+  const shown = retried ? null : asked;
   const [shelf, setShelf] = useState<string>(params.filter ?? 'all');
   const [site, setSite] = useState<Site | null>(null);
   const [sort, setSort] = useState<Sort>('latest');
@@ -95,8 +102,8 @@ export default function Sell() {
       if (m === 'sold_elsewhere') return { ...i, state: 'done' as const, listings: i.listings.map(l => ({ ...l, state: l.state === 'live' ? 'delisted' as const : l.state })) };
       return i;
     });
-    return { ...base, items, decisions: base.decisions.filter(d => !d.item_id || !moved[d.item_id]) };
-  }, [base, moved]);
+    return { ...base, items: shown === 'empty' ? [] : items, decisions: base.decisions.filter(d => !d.item_id || !moved[d.item_id]) };
+  }, [base, moved, shown]);
 
   const all = shelves(w);
   const selling = all.flatMap(s => s.items);
@@ -121,10 +128,20 @@ export default function Sell() {
     );
   };
 
+  const nav = <Nav inbox={{ count: unread(w) }} />;
   if (!selling.length) {
+    // A new person and someone whose things have all gone see the same page: the camera is the one thing to point to.
     return (
-      <Screen name="sell" state="empty" nav={<Nav inbox={{ count: unread(w) }} />}>
+      <Screen name="sell" state={name === 'new' ? 'new' : 'empty'} nav={nav}>
         <EmptyState title="Nothing for sale" action={{ id: 'sell-empty-camera', label: 'Sell something', onPress: () => router.push('/camera' as Href) }} />
+      </Screen>
+    );
+  }
+  if (shown === 'failed') {
+    // The list did not come back. Nothing is guessed: what failed, and one tap to try again (ways-out, Everywhere).
+    return (
+      <Screen name="sell" state="failed" nav={nav}>
+        <EmptyState title="Your things didn’t load" action={{ id: 'sell-retry', label: 'Try again', onPress: () => setRetried(true) }} />
       </Screen>
     );
   }
@@ -155,7 +172,8 @@ export default function Sell() {
   const showing = all.filter(s => s.items.length && (!site || s.items.some(i => sellItem(w, i).sites.includes(site))));
   const filtered = shelf !== 'all' || !!site;
   // The edge states the UI system asks every screen about (.agents/ui-states.json): one thing, a typical person, dense.
-  const state = picking ? 'select' : filtered ? 'filtered' : selling.length === 1 ? 'one' : selling.length > 20 ? 'dense' : 'typical';
+  const loading = shown === 'loading', offline = shown === 'offline';
+  const state = loading ? 'loading' : offline ? 'offline' : picking ? 'select' : filtered ? 'filtered' : selling.length === 1 ? 'one' : selling.length > 20 ? 'dense' : 'typical';
   const sortChip = SORTS.find(s => s.id === sort)!.chip;
 
   const foot = toast
@@ -165,14 +183,14 @@ export default function Sell() {
       : undefined;
 
   return (
-    <Screen name="sell" state={state} nav={<Nav inbox={{ count: unread(w) }} />} foot={foot}>
+    <Screen name="sell" state={state} nav={nav} foot={foot}>
       <Stack>
-        <Row trail={picking
+        <Row trail={loading ? undefined : picking
           ? <Pill id="select-done" kind="second" label="Done" onPress={() => { setPicking(false); setPicked([]); }} />
           : <Pill id="sell-select" kind="second" label="Select" onPress={() => setPicking(true)} />}>
           <Txt role="heading">Sell</Txt>
         </Row>
-        <FilterRow>
+        {loading ? null : <FilterRow>
           <Chip id="filter-sort" icon="sorting-01" label={sortChip} onPress={() => setSorting(true)} />
           <Chip id="filter-all" label="All" picked={shelf === 'all'} onPress={() => setShelf('all')} />
           {all.filter(s => s.items.length).map(s => (
@@ -181,10 +199,14 @@ export default function Sell() {
           {offered.sites.map(s => (
             <Chip key={s} id={`filter-site-${s}`} site={s} picked={site === s} onPress={() => setSite(site === s ? null : s)} />
           ))}
-        </FilterRow>
+        </FilterRow>}
+        {/* Offline: the last copy stays, and a change waits for the signal (ways-out, Everywhere). */}
+        {offline ? <Txt role="body" tone="ink-2">Waiting for signal</Txt> : null}
       </Stack>
 
-      {shelf === 'all' ? showing.map(s => {
+      {loading ? <Grid columns={COLUMNS}>{[0, 1, 2, 3].map(i => <TileSkeleton key={i} />)}</Grid> : null}
+
+      {loading ? null : shelf === 'all' ? showing.map(s => {
         const items = order(s.items, s.id);
         const folded = (s.id === 'unsold' || s.id === 'kept') && !opened.includes(s.id);
         return (
@@ -217,7 +239,7 @@ export default function Sell() {
           <Choice id="bulk-delete" icon="cancel-01" label="Delete" line={blocked.length ? `${blocked.length} ${blocked.length === 1 ? 'has an open order and stays' : 'have open orders and stay'}` : 'Removes them and their photos. No undo.'} picked={change === 'delete'} onPress={() => setChange('delete')} />
         </List>
         {change ? (doing.length
-          ? <Approve id="bulk-approve" does={DOES[change]} onApprove={apply} />
+          ? <Approve id="bulk-approve" does={DOES[change]} status={held ? 'working' : 'ready'} step="Waiting for signal" onApprove={() => (offline ? setHeld(true) : apply())} />
           : <FootButton id="bulk-approve" label={`Nothing to ${change === 'delete' ? 'delete' : 'change'}`} state="disabled" />) : null}
       </Sheet>
     </Screen>

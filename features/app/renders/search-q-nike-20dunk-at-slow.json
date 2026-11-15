@@ -1,0 +1,36 @@
+{
+  "route": "search?q=nike%20dunk&at=slow",
+  "screen": "search",
+  "states": [
+    "loading",
+    "new",
+    "empty",
+    "one",
+    "typical",
+    "failed",
+    "offline"
+  ],
+  "skip": "dense: a search lists what the sites answer, and the longest answer the demo has is typical’s six rows",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen \"Nike Dunk Low, Grey Fog, men’s 10\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen \"Nike Dunk Low Grey Fog, men’s 10\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

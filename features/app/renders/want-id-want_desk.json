@@ -1,0 +1,29 @@
+{
+  "route": "want?id=want_desk",
+  "screen": "want",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "one: a want is one thing, with no list in it to hold one or many; dense: the same, a want has no list to fill",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "screen 1",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

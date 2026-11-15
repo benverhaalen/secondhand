@@ -1,0 +1,220 @@
+# The listing screen (app/behavior/listing/[id].json) on a phone or simulator: the same states and controls as app/e2e/listing.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/listing.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/listing.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081/--
+---
+- launchApp
+# State: typical
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- assertVisible: "Open on site"
+- assertVisible: "Offer"
+- assertVisible: "Watch"
+- assertVisible: "Good price"
+# nav-back: goes back
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "nav-back" }
+# listing-open: opens the listing on its site, through the referral link
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-open" }
+# listing-offer: opens the offer picker
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-offer" }
+- extendedWaitUntil:
+    visible: "Something else"
+    timeout: 5000
+# listing-pick-amount-other: chooses Something else and shows a blank amount
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-offer" }
+- tapOn: { id: "listing-pick-amount-other" }
+- assertVisible: { id: "listing-pick-other" }
+# listing-pick-amount-54: picks $54
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-offer" }
+- tapOn: { id: "listing-pick-amount-54" }
+- extendedWaitUntil:
+    visible: "Send a \\$54 offer"
+    timeout: 5000
+# listing-pick-send: sends the $54 offer
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-offer" }
+- tapOn: { id: "listing-pick-amount-54" }
+- tapOn: { id: "listing-pick-send" }
+- extendedWaitUntil:
+    visible: "Offer of \\$54 sent\\. You pay on the site if they accept\\."
+    timeout: 5000
+# listing-pick-amount-other: Something else starts blank, and the send button says to pick an amount
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-offer" }
+- tapOn: { id: "listing-pick-amount-other" }
+- extendedWaitUntil:
+    visible: "Pick an amount"
+    timeout: 5000
+# listing-watch: saves it to Watching, with Undo
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-watch" }
+- extendedWaitUntil:
+    visible: "Saved to Watching"
+    timeout: 5000
+# listing-undo-watch: takes the save back
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-watch" }
+- tapOn: { id: "listing-undo-watch" }
+- extendedWaitUntil:
+    visible: "Watch"
+    timeout: 5000
+# listing-product: opens the product's price history
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-product" }
+# listing-more: opens the rest of the acts
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-more" }
+- assertVisible: { id: "listing-ask" }
+# listing-not-size: hides it and teaches the want, with Undo
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-more" }
+- tapOn: { id: "listing-not-size" }
+- extendedWaitUntil:
+    visible: "Hidden\\. Your search skips this size now\\."
+    timeout: 5000
+# listing-bought: adds it to Bought, with Undo
+- openLink: ${URL}/listing/mt_d1?world=buyer
+- extendedWaitUntil:
+    visible: "Delivered, with shipping\\. They ask \\$64\\."
+    timeout: 15000
+- tapOn: { id: "listing-more" }
+- tapOn: { id: "listing-bought" }
+- extendedWaitUntil:
+    visible: "Added to Bought"
+    timeout: 5000
+# State: handoff
+- openLink: ${URL}/listing/mt_d2?world=buyer
+- extendedWaitUntil:
+    visible: "Ready to send"
+    timeout: 15000
+- assertVisible: "Send a \\$65 offer"
+- assertVisible: "Watching"
+# listing-ask: opens the chat with the seller
+- openLink: ${URL}/listing/mt_d2?world=buyer
+- extendedWaitUntil:
+    visible: "Ready to send"
+    timeout: 15000
+- tapOn: { id: "listing-more" }
+- tapOn: { id: "listing-ask" }
+# listing-send: sends the agent's offer
+- openLink: ${URL}/listing/mt_d2?world=buyer
+- extendedWaitUntil:
+    visible: "Ready to send"
+    timeout: 15000
+- tapOn: { id: "listing-send" }
+- extendedWaitUntil:
+    visible: "Offer of \\$65 sent\\. You pay on the site if they accept\\."
+    timeout: 5000
+# listing-offer-amount: edits the guessed amount in place
+- openLink: ${URL}/listing/mt_d2?world=buyer
+- extendedWaitUntil:
+    visible: "Ready to send"
+    timeout: 15000
+- tapOn: { id: "listing-offer-amount" }
+- assertVisible: { id: "listing-offer-amount-input" }
+# listing-open-second: opens the listing on its site
+- openLink: ${URL}/listing/mt_d2?world=buyer
+- extendedWaitUntil:
+    visible: "Ready to send"
+    timeout: 15000
+- tapOn: { id: "listing-open-second" }
+# State: pickup
+- openLink: ${URL}/listing/mt_d3?world=buyer
+- extendedWaitUntil:
+    visible: "No site cover on a pickup\\. Pay when you see it\\."
+    timeout: 15000
+# State: visitor
+- openLink: ${URL}/listing/mt_d1?visitor=1
+- extendedWaitUntil:
+    visible: "Open on site"
+    timeout: 15000
+# listing-watch: asks a visitor to sign in
+- openLink: ${URL}/listing/mt_d1?visitor=1
+- extendedWaitUntil:
+    visible: "Open on site"
+    timeout: 15000
+- tapOn: { id: "listing-watch" }
+# State: gone
+- openLink: ${URL}/listing/mt_d4?world=buyer
+- extendedWaitUntil:
+    visible: "This listing is gone"
+    timeout: 15000
+# State: empty
+- openLink: ${URL}/listing/mt_none
+- extendedWaitUntil:
+    visible: "This listing is gone"
+    timeout: 15000
+# listing-gone-back: goes to Buy
+- openLink: ${URL}/listing/mt_none
+- extendedWaitUntil:
+    visible: "This listing is gone"
+    timeout: 15000
+- tapOn: { id: "listing-gone-back" }
+# State: new
+- openLink: ${URL}/listing/mt_d1?state=new
+- extendedWaitUntil:
+    visible: "Open on site"
+    timeout: 15000
+# State: failed
+- openLink: ${URL}/listing/mt_d1?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this listing"
+    timeout: 15000
+- assertVisible: "Try again"
+# listing-retry: loads the page afresh
+- openLink: ${URL}/listing/mt_d1?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this listing"
+    timeout: 15000
+- tapOn: { id: "listing-retry" }
+# State: offline
+- openLink: ${URL}/listing/mt_d1?state=offline
+- extendedWaitUntil:
+    visible: "Waiting for signal\\. This is the last copy\\."
+    timeout: 15000

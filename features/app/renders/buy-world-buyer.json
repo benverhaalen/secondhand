@@ -1,0 +1,31 @@
+{
+  "route": "buy?world=buyer",
+  "screen": "buy",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "one",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 1 \"Nike Dunk Low Grey Fog, men’s 10\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}
