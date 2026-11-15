@@ -11,7 +11,7 @@ For every feature in your lane, list each specific thing Ben or Nate planned for
 1. `AGENTS.md`, `product/vision.md`, `.agents/thinking.md`.
 2. For each slug in your lane: `node scripts/evidence.mjs <slug>` (what the decisions and spec settle), then `features/<slug>/README.md`, `spec/features/<slug>.md`, and the decisions it lists in `product/decisions.md`.
 3. What Ben and Nate said: `grep -n -i '<slug or feature words>' product/words.md`, then read the matching entries in full. A quote is the most specific statement of what was planned; quote it short and link its anchor.
-4. The page map `spec/pages.md`, the page jobs `features/app/page-jobs.md`, the build board `spec/plans/board.md` and the joins `spec/plans/joins.md`. A board row ticked with a commit id is strong evidence; an unticked row is a plan, not evidence.
+4. The page map `spec/pages.md`, the page jobs `features/app/page-jobs.md`, the build board `spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator` and the joins `spec/plans/joins.md`. A board row ticked with a commit id is strong evidence; an unticked row is a plan, not evidence.
 5. The code: screens in `app/src/app/` and `app/src/{today,sell,buy,item,you}/`, engines in `app/src/engines/`, server and outside calls in `app/src/edge/`, jobs in `jobs/` and `databricks/`, the data model in `db/`. Tests sit next to the code (`*.test.ts`, `*.test.mjs`, `test_*.py`).
 6. Phone evidence: `features/app/native/` (`*.png` captures and `*.tree.txt` view trees from the real phone build) and `features/app/renders/`. A capture shows a screen exists and what it shows; it does not show where its data comes from.
 

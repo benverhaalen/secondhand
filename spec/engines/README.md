@@ -1,6 +1,6 @@
 # spec/engines/
 
-One document per engine. All are *agent proposal* for Ben and Nate. Every document has the same ten sections: what it decides, signals, the calculation, learning, speed, what the person sees, how it beats what exists, protections, proof, build tasks. The tasks that can start at once are in [plans/start-now.md](../plans/start-now.md); the full graph is `plans/backend/plan.md` when it lands.
+One document per engine. All are *agent proposal* for Ben and Nate. Every document has the same ten sections: what it decides, signals, the calculation, learning, speed, what the person sees, how it beats what exists, protections, proof, build tasks. The tasks that can start at once are in [plans/finalization.md#13-what-works-kept-by-the-orchestrator](../plans/finalization.md#13-what-works-kept-by-the-orchestrator); the full graph is `plans/backend/plan.md` when it lands.
 
 Read [protocol-and-adapters](protocol-and-adapters.md) and [intelligence-api](intelligence-api.md) first: every other engine reads and acts through them.
 

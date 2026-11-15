@@ -134,7 +134,7 @@ Done: the module's Swift tests pass on the Mac; `cd app && npx tsc --noEmit -p .
 | Row 7's design: the parts of one item (F17). Kinds `electronics.desktops`, `electronics.laptops`, `electronics.phones` (renamed from `phones_laptops`); `components` in the table; `custom_build` with a derived model; a read offer (`system_info`) the person may skip; the parser; label over lookup for parts. Reviewed twice by a fresh Opus seat against the code: 11 findings, then 10, all folded in | c7ea4676 | The review is `cap-parts-review-1.md` in the session notes folder (`side-session-notes/local_4b3a0b4d-...`). Links check clean. |
 | Packet 77 to the engines lead: what a part attribute holds and what capture guarantees (row 8) | c7ea4676 | Nothing to run. |
 
-Completion: capture's row in [completion](../../../../spec/plans/completion.md) is still 26 of 40. F4 does not move a cell; the joins wait on the job runner (F6).
+Completion: capture's row in [completion](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator) is still 26 of 40. F4 does not move a cell; the joins wait on the job runner (F6).
 
 `node .agents/check.mjs` on Windows at b600bd23 failed only outside capture: `.agents/skills/image-gen/run.test.mjs` refuses a temp folder under the user's home (8 tests), and "no product code carries its own copy of an offer clock". Neither is capture's.
 

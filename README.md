@@ -2,6 +2,21 @@
 
 Buy and sell used things across every marketplace from one app. You take a few guided photos and the app measures, identifies, prices and photographs the item. It then lists the item where it will sell best and handles the buyers. On the buying side, it watches every platform for the thing you want. Built by Ben and Nate at MadHacks 2026.
 
+## Where it stands (November 15, 2026)
+
+Working on main: sign-in, search across the marketplaces in one query, the chat that answers from the listings it found (every figure checked against a listing), capture of 14 kinds of item from photo to identified item, valuation of an item from real sold listings, and the market tables on Databricks. Measured in [bench/RESULTS.md](bench/RESULTS.md); what works and what is left in [finalization §13](spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
+
+## Run it
+
+```
+cd app
+cp .env.example .env.local   # set NODE_ENV=development, SECONDHAND_DEV_CODE, SECONDHAND_DATA_DIR
+npm install
+npm run web                  # or npm start for a phone on the same network
+```
+
+Sign in with any email and the code you set. [app/.env.example](app/.env.example) says what each other key turns on (the chat, eBay, Google Shopping, sold prices). The server alone: `node server/main.ts` from the repo root.
+
 ## Where things are
 
 | Path | What it holds | Who writes it |
@@ -29,6 +44,7 @@ Buy and sell used things across every marketplace from one app. You take a few g
 | [spec/](spec/README.md) | The canon, one spec per feature, the engines, the method cards, the build plans, and the checked model of an item's life | Agents propose; Ben and Nate decide |
 | [docs/how-it-works/](docs/how-it-works/README.md) | The system explained for people: how we price, market, prove and compare | Agents |
 | [app/](app/README.md) | The Expo app and its server routes | Screens Ben, routes Nate |
+| [bench/](bench/README.md) | The benchmark runners and [the results](bench/RESULTS.md) | Agents |
 | [ideas/](ideas/README.md) | Ideas for after the product works, one file each, sorted | Both |
 | [research/](research/README.md) | Raw research: `research/<slug>/ben/` and `research/<slug>/nate/` | Each person's subfolder: only that person and their agents |
 | [log/](log/README.md) | The logger every program writes through, the steps to wire each one, and how to read a log | Agents |

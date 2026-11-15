@@ -23,13 +23,13 @@ Everything under `spec/` that is not code is an *agent proposal* for Ben and Nat
 | [databricks-build.md](databricks-build.md) | What is built on Databricks: tables, lineage, pipeline, parity, governance and the demo path |
 | [items/](items/manifest.json) | The benchmark's fixed item set (`manifest.json`), its scorer (`score.mjs`) and a real capture |
 | [coverage.md](coverage.md) | Which research backs which feature, and the gaps |
-| [plans/board.md](plans/board.md) | Build progress and proving commands |
-| [plans/workstreams.md](plans/workstreams.md) | Build ownership, delivery and seams |
-| [plans/start-now.md](plans/start-now.md) | Every task that can begin this minute |
+| [plans/finalization.md#13-what-works-kept-by-the-orchestrator](plans/finalization.md#13-what-works-kept-by-the-orchestrator) | Build progress and proving commands |
+| [plans/finalization.md#13-what-works-kept-by-the-orchestrator](plans/finalization.md#13-what-works-kept-by-the-orchestrator) | Build ownership, delivery and seams |
+| [plans/finalization.md#13-what-works-kept-by-the-orchestrator](plans/finalization.md#13-what-works-kept-by-the-orchestrator) | Every task that can begin this minute |
 | [plans/](plans/README.md) | How the build is organised: stages, task shape, test layers, the first tasks |
-| [plans/waiting.md](plans/waiting.md) | Who is waiting on what, each row with an owner and a "meanwhile" |
+| [plans/finalization.md#13-what-works-kept-by-the-orchestrator](plans/finalization.md#13-what-works-kept-by-the-orchestrator) | Who is waiting on what, each row with an owner and a "meanwhile" |
 | [plans/joins.md](plans/joins.md) | The join map: the demo path link by link, real, example or missing |
-| [plans/ben-asks.md](plans/ben-asks.md) | What Ben's packets ask of the backend, and what we do with each |
+| [plans/finalization.md#13-what-works-kept-by-the-orchestrator](plans/finalization.md#13-what-works-kept-by-the-orchestrator) | What Ben's packets ask of the backend, and what we do with each |
 | [plans/sweep/](plans/sweep/) | Audits of the build and the repo; [round-2/repo-organization.md](plans/sweep/round-2/repo-organization.md) is the repo organisation plan |
 | [hard-calls.md](hard-calls.md) | Calls on conflicting goals, silence, partial failures and disputes |
 | [open-questions.md](open-questions.md) | What only Ben or Nate can settle, each with a recommendation |

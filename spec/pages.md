@@ -282,7 +282,7 @@ One per product, for visitors and users: what it is, used price per site (sold a
 
 ### 6.17 The website
 
-Ben wants the site built in tandem with the app and alive, not static ([words](../product/words.md#2026-11-15-every-feature-the-ui-builds-for-the-site-in-tandem-and-image-runs-rate-limited)). Signed out it is Home (the product's own flow playing as the hero in code: a photo becoming listings on five sites, [bold-and-alive](../research/cross-cutting/ben/bold-and-alive.md)), Search, Product pages and Sign in; a visitor can search and open product pages ([visitors](product.md#visitors-and-full-users)). Signed in it has every page in §6 except the Camera, which is photo upload, and talks to the same `/v1` API. How it is built in parallel with the app is in [plans/parallel-build.md](plans/parallel-build.md).
+Ben wants the site built in tandem with the app and alive, not static ([words](../product/words.md#2026-11-15-every-feature-the-ui-builds-for-the-site-in-tandem-and-image-runs-rate-limited)). Signed out it is Home (the product's own flow playing as the hero in code: a photo becoming listings on five sites, [bold-and-alive](../research/cross-cutting/ben/bold-and-alive.md)), Search, Product pages and Sign in; a visitor can search and open product pages ([visitors](product.md#visitors-and-full-users)). Signed in it has every page in §6 except the Camera, which is photo upload, and talks to the same `/v1` API. How it is built in parallel with the app is in [plans/finalization.md#13-what-works-kept-by-the-orchestrator](plans/finalization.md#13-what-works-kept-by-the-orchestrator).
 
 ## 7. Where features split, at a glance
 
@@ -356,7 +356,7 @@ Ben, 02:52: "theres a lot i probably missed so i need to know again. all the fea
 | Code that knows each app's rules (a Depop offer clock is one fact) | [the code understands each app](../product/words.md#2026-11-15-the-code-understands-each-app) | every countdown reads [sites.mjs](sites.mjs) | yes |
 | Logging of everything | [logging](../product/words.md#2026-11-14-logging-of-everything) | every page logs through [log/](../log/README.md) | yes, by the build skill |
 | A website with sign-in, same features, photo upload | [app first](../product/words.md#2026-11-14-app-first-and-ui-factory-after-the-brand) | §6.17 | yes |
-| AI images allowed on the website if masked and touched up | [the ui loop](../product/words.md#2026-11-14-the-ui-loop) | the website's Home and feature shots | yes, in [parallel-build §5](plans/parallel-build.md#5-generated-images-allowed-and-rate-limited) |
+| AI images allowed on the website if masked and touched up | [the ui loop](../product/words.md#2026-11-14-the-ui-loop) | the website's Home and feature shots | yes, in [parallel-build §5](plans/finalization.md#13-what-works-kept-by-the-orchestrator5-generated-images-allowed-and-rate-limited) |
 | Messages that make you perk up, not slop | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) | Notifications step; the push rules | yes |
 | Countdowns for time; money that stands out; a kind tag on each card | the same | §3, Today | yes |
 | Clickability: a card that leads somewhere looks it | the same | every card and row | for the UI loop |

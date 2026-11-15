@@ -17,7 +17,7 @@ Also decided on Nate's side, by the engines lead: the valuation backtest uses re
 
 ## Where they meet your plans
 
-Found by a reader over your packets ([the full list of your asks, by lead](../../../../spec/plans/ben-asks.md)).
+Found by a reader over your packets ([the full list of your asks, by lead](../../../../spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator)).
 
 | Your page | It says | The ruling it meets | Needs |
 |---|---|---|---|
