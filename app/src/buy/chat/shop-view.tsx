@@ -217,10 +217,10 @@ const SOURCE_CHIPS: { id: string; site?: Site; label?: string }[] = [
   { id: 'dupe', label: 'Dupe' }, { id: 'google_shopping', label: 'Google Shopping' },
 ];
 
-export function ShopView({ phase, state, skip, turns, failure, saved, offer, off = [], onToggleSource, onAsk, onAnswer, onAskOffered, onClose, onOpen, onReopen, onRetry }: {
+export function ShopView({ phase, state, skip, turns, failure, saved, recent = [], offer, off = [], onToggleSource, onAsk, onAnswer, onAskOffered, onClose, onOpen, onReopen, onRetry }: {
   // The sources switched off for the next search, and the press that switches one. Shown before the first ask only.
   off?: string[]; onToggleSource?: (id: string) => void;
-  phase: Phase; state: string; skip: string; turns: Turn[]; failure: ApiFailure | null; saved: Chat[]; offer: string | null;
+  phase: Phase; state: string; skip: string; turns: Turn[]; failure: ApiFailure | null; saved: Chat[]; recent?: string[]; offer: string | null;
   onAsk: (text: string) => void; onAnswer?: OnAnswer; onAskOffered: () => void; onClose: () => void; onOpen: (url: string, id: string) => Promise<void>;
   onReopen: (chat: Chat) => void; onRetry: () => void;
 }) {
@@ -253,6 +253,7 @@ export function ShopView({ phase, state, skip, turns, failure, saved, offer, off
           {SOURCE_CHIPS.map(s => <Chip key={s.id} id={`shop-source-${s.id}`} {...(s.site ? { site: s.site } : { label: s.label })} picked={!off.includes(s.id)} onPress={() => onToggleSource(s.id)} />)}
         </View>
       ) : null}
+      {phase === 'ask' && recent.length ? <Rail>{recent.map(q => <Pill key={q} id={`shop-recent-${q}`} kind="second" label={q} onPress={() => onAsk(q)} />)}</Rail> : null}
       {phase === 'ask' && saved.length ? <List>{saved.map(chat => <ListRow key={chat.id} id={`shop-chat-${chat.id}`} label={chat.title} lead="clock-01" onPress={() => onReopen(chat)} />)}</List> : null}
       {turns.map((t, i) => t.kind === 'ask'
         ? t === first ? <Txt key={i} role="title">{t.text}</Txt> : <Message key={i} side="mine">{t.text}</Message>

@@ -81,3 +81,18 @@ test('lookups: delete one, then delete all, and an unknown or non-lookup capture
   assert.equal((await send('DELETE /v1/lookups', '/v1/lookups')).status, 204);
   assert.deepEqual((await list()).data, []);
 });
+
+test('a person’s searches are kept newest first, once each, at most twenty, and forgotten on request', async () => {
+  const { rememberSearch, searchesOf, forgetSearches } = await import('./lookups.ts');
+  const rows = new Map<string, unknown>();
+  const kv = { get: <T,>(_ns: string, key: string) => rows.get(key) as T | undefined, set: (_ns: string, key: string, value: unknown) => { rows.set(key, value); }, delete: (_ns: string, key: string) => { rows.delete(key); } };
+  rememberSearch(kv, 'usr_a', 'levi 501', '2026-11-15T10:00:00Z');
+  rememberSearch(kv, 'usr_a', 'carhartt jacket', '2026-11-15T10:01:00Z');
+  rememberSearch(kv, 'usr_a', 'Levi 501', '2026-11-15T10:02:00Z');
+  assert.deepEqual(searchesOf(kv, 'usr_a').map(r => r.q), ['Levi 501', 'carhartt jacket']);
+  assert.deepEqual(searchesOf(kv, 'usr_b'), []);
+  for (let i = 0; i < 25; i++) rememberSearch(kv, 'usr_a', `q${i}`, `2026-11-15T11:${String(i).padStart(2, '0')}:00Z`);
+  assert.equal(searchesOf(kv, 'usr_a').length, 20);
+  forgetSearches(kv, 'usr_a');
+  assert.deepEqual(searchesOf(kv, 'usr_a'), []);
+});

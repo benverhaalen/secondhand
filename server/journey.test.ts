@@ -298,11 +298,12 @@ test('7. A find capture appears only in its owner’s lookups and can be hidden'
   const created = await call(t, 'POST', '/v1/captures', bearer(one), { mode: 'shots', purpose: 'find', intent: 'find' });
   status(created, 201); captureId = string(created.body.id); assert.equal(created.body.intent, 'find');
   const own = await call(t, 'GET', '/v1/lookups', bearer(one)); status(own, 200);
-  assert.deepEqual(rows(own.body).map(row => row.capture_id), [captureId]);
+  assert.deepEqual(rows(own.body).filter(row => row.kind !== 'search').map(row => row.capture_id), [captureId]);
+  assert.ok(rows(own.body).filter(row => row.kind === 'search').every(row => row.capture_id === null && typeof row.short_name === 'string'), 'a person’s own searches are listed beside their lookups');
   const other = await call(t, 'GET', '/v1/lookups', bearer(two)); status(other, 200); assert.deepEqual(rows(other.body), []);
   typedError(await call(t, 'DELETE', `/v1/lookups/${captureId}`, bearer(two)), 404, 'not_found');
   const removed = await call(t, 'DELETE', `/v1/lookups/${captureId}`, bearer(one)); status(removed, 204); assert.equal(removed.text, '');
-  const hidden = await call(t, 'GET', '/v1/lookups', bearer(one)); status(hidden, 200); assert.deepEqual(rows(hidden.body), []);
+  const hidden = await call(t, 'GET', '/v1/lookups', bearer(one)); status(hidden, 200); assert.deepEqual(rows(hidden.body).filter(row => row.kind !== 'search'), []);
 });
 
 test('8. A want belongs to its author and an idempotency key cannot change its body', async t => {

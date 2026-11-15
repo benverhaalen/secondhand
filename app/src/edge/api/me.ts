@@ -3,6 +3,8 @@ import { auth as defaultAuth, iso, store as defaultStore, type Auth, type AuthSt
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { runtime as defaultRuntime } from './runtime.ts';
 import { captureRows } from './captures.ts';
+import { forgetSearches } from './lookups.ts';
+import { deps } from './http.ts';
 import { photos } from './uploads.ts';
 import type { Blobs } from '../store/blobs.ts';
 import type { Store, JobKind } from '../events/ports.ts';
@@ -105,6 +107,7 @@ export function makeMeHandlers(o: {
       // Captures still live in their own map (captures.ts), outside the store: a deleted person's go with them.
       let captures = 0;
       for (const [id, row] of captureRows) if (row.user_id === user_id) { captureRows.delete(id); captures++; }
+      forgetSearches(deps.kv, user_id);
       c.log.event('state.change', { entity: 'user', id: user_id, to: 'deleted', ...counts, captures });
       const failures: unknown[] = [];
       try { await call('tool', 'photos.removeUser', () => (o.blobs ?? photos()).removeUser(user_id), count => ({ count })); }
