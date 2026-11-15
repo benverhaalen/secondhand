@@ -9,7 +9,7 @@ import { memoryStore, type JobRow } from '../events/ports.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { fileStore } from '../events/file-store.ts';
 import { depopAdapters, PATHS } from '../harness/sites/depop/adapter.ts';
-import { fakeAdapter, fail, type Adapter } from '../harness/protocol.ts';
+import { fakeAdapter, fail, WRITE_VERBS, type Adapter, type CallArgs } from '../harness/protocol.ts';
 import { URLS, type PageClient } from '../harness/sites/ebay/adapter.ts';
 
 test('offline eBay search tries endpoint then page, both no_route, without network', async t => {
@@ -154,13 +154,51 @@ test('site services label writes live only for the enabled site', async t => {
   }
 });
 
-for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule']) test(`watcher respects ${setting} before a ledger write`, async () => {
+for (const liveSites of [undefined, '', 'depop']) test(`write guard enforces the per-site live list (${liveSites ?? 'unset'}) for every write verb`, async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  if (liveSites === undefined) delete process.env.SECONDHAND_LIVE_SITES;
+  else process.env.SECONDHAND_LIVE_SITES = liveSites;
+  const seen = new Map<string, CallArgs>();
+  const adapters: Adapter[] = (['depop', 'poshmark'] as const).flatMap(site => [...WRITE_VERBS, 'search' as const].map(verb => ({
+    ...fakeAdapter(site, verb), async run(args) {
+      seen.set(`${site}:${verb}:${args.operation_id ?? 'read'}`, args);
+      return { ok: true as const, data: {} };
+    },
+  })));
+  const sink = memorySink();
+  const r = createRuntime(memoryStore(), createLog({ src: 'test', build: 'test', sink }), { adapters });
+  for (const site of ['depop', 'poshmark'] as const) {
+    const account_id = `acc_guard_${site}`;
+    r.store.put('account', { id: account_id, user_id: 'usr_guard', site, token_ref: `fixture/${site}` });
+    await r.vault.put(`fixture/${site}`, { cookies: [], origins: [] });
+    for (const verb of WRITE_VERBS) for (const dry of [false, true, undefined]) {
+      const args = Object.freeze({ account_id, operation_id: `guard-${site}-${verb}-${dry}`, ...(dry !== undefined && { dry }) });
+      const result = await r.harness.call(site, verb, args);
+      assert.ok(result.ok, JSON.stringify(result));
+      const received = seen.get(`${site}:${verb}:${args.operation_id}`)!;
+      assert.equal(received.dry, liveSites === site ? dry : true, `${site}.${verb} must respect its own live permission`);
+      assert.equal(args.dry, dry, 'the guard must not mutate caller arguments');
+    }
+    assert.ok((await r.harness.call(site, 'search', { dry: false })).ok);
+    assert.equal(seen.get(`${site}:search:read`)?.dry, false, 'reads must keep their arguments');
+  }
+  const forced = sink.text().trim().split('\n').map(line => JSON.parse(line)).filter(line => line.msg === 'marketplace write forced dry');
+  assert.equal(forced.length, WRITE_VERBS.length * 3 * (liveSites === 'depop' ? 1 : 2), 'each forced write must log exactly once');
+  for (const line of forced) {
+    assert.ok(line.site === 'poshmark' || liveSites !== 'depop' && line.site === 'depop');
+    assert.ok(WRITE_VERBS.includes(line.verb));
+    assert.ok(String(line.operation_id).startsWith(`guard-${line.site}-${line.verb}-`));
+  }
+});
+
+for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule', 'counter_without_model', 'below_floor_without_model']) test(`watcher respects ${setting} before a ledger write`, async () => {
   let now = Date.parse('2026-11-15T12:00:00Z'), offers = false;
   const products = JSON.parse(readFileSync(new URL('../harness/sites/depop/fixtures/products.json', import.meta.url), 'utf8'));
   const offer = JSON.parse(readFileSync(new URL('../harness/sites/depop/fixtures/offers.json', import.meta.url), 'utf8')).objects[0];
   const adapters = depopAdapters({ signed_in: true, async doc() { throw new Error('unexpected document read'); }, async json(path) {
     const body = path === PATHS.products('fixture-shop') ? products : path === PATHS.offers && offers
-      ? { objects: [{ ...offer, product_id: 999002396, amount: { amount: '75.00' }, created_at: new Date(now).toISOString(), status: 'pending' }] } : { objects: [] };
+      ? { objects: [{ ...offer, product_id: 999002396, amount: { amount: setting === 'counter_without_model' ? '62.00' : setting === 'below_floor_without_model' ? '45.00' : '75.00' }, created_at: new Date(now).toISOString(), status: 'pending' }] } : { objects: [] };
     return { status: 200, body };
   } });
   const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
@@ -178,7 +216,15 @@ for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule']) te
   assert.ok(job, 'an observed offer must create a job');
   if (setting !== 'auto') {
     assert.equal(r.store.systemRows('operation').length, 0, setting + ' must ask before writing');
-    assert.ok(r.store.decisions({ user_id: 'usr_offer', state: 'open' }).length > 0);
+    const decisions = r.store.decisions({ user_id: 'usr_offer', state: 'open' });
+    assert.ok(decisions.length > 0);
+    const why = 'No acceptance model weighed this; the counter is the midpoint inside your limits.';
+    if (setting.endsWith('_without_model') || setting === 'stricter_rule') {
+      assert.equal(decisions[0].kind, setting === 'below_floor_without_model' ? 'price_below_floor' : 'counter_offer');
+      assert.equal(decisions[0].why, why, 'a midpoint counter must disclose that no acceptance model weighed it');
+      assert.equal(job.args.response, 'counter');
+      assert.ok(Number(job.args.price_cents) >= 5000 && Number(job.args.price_cents) < 8000);
+    } else assert.ok(decisions.every(decision => decision.why !== why), 'other approval requests must keep their own reason');
     return;
   }
   assert.equal(job.args.decided_by, 'negotiation');
