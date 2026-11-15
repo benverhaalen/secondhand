@@ -1,7 +1,7 @@
 {
  "model": "bytedance-seed/seedream-5-5",
  "aspect_ratio": "3:2",
- "pause_seconds": 20,
+ "pause_seconds": 25,
  "job": "A photo for the top of the website of a resale app, for college students and people in their twenties clearing out their stuff. It shows the moment just before an item gets listed: {scene}. {refs_line} Late afternoon window light, warm, from one side. Leave calm, plain space on one side, where interface cards will be laid over the photo.",
  "variants": {
   "person": "One person is in the frame doing it, seen from a few steps away. Their face is turned away or out of frame.",
