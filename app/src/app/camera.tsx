@@ -11,8 +11,10 @@
 // spells it; when it isn't sure what the thing is, it shows what it might be, most likely first with the odds of each, and
 // a tap fills in what that thing is known to be (Ben, 08:09); "I don't know" is an answer; a maker's mark stops the quick
 // path and suggests an appraisal; and Clean up and Enhance with AI are two named choices, both off until picked. The AI
-// redraw can't be picked until the thing is measured, since a redraw is only trusted once it is held to a tape (Ben,
-// 08:09: "it can only ai beautify if you have dimensions or else you cannot trust it"; jobs/studio/check.py).
+// redraw can't be picked until the LiDAR scan has measured the thing, since a redraw is only trusted once it is held to
+// its real size (Ben, 08:09: "it can only ai beautify if you have dimensions or else you cannot trust it"; 09:09: "only
+// allow this from lidar flow too"; jobs/studio/check.py). A size the person typed doesn't count. ?lidar=0 draws a phone
+// without LiDAR: the Measure stage finds no sizes, and AI stays off.
 //
 // What the camera or a model filled sits on the lilac tint; what the person typed is plain (Ben, 08:12).
 import { Stack, router, useLocalSearchParams, type Href } from 'expo-router';
@@ -42,15 +44,17 @@ type Ask = 'unsure' | 'valuable';
 const DONT_KNOW = 'I don’t know';
 // None of these: the kind is left as a blank to type, and nothing is filled.
 const NONE = 'None of these';
-// The measurements that hold a redraw to its real size (jobs/studio/check.py: width over length set back to the tape's).
-const SIZED: FactKey[] = ['chest', 'length'];
+// The measurements that hold a redraw to its real size (jobs/studio/check.py: width over length set back to the scan's).
+// Only the LiDAR scan finds them (engines/capture/fields.ts: the measured way needs has_lidar).
+const SIZED: FactKey[] = ['chest', 'length', 'sleeve'];
+const scannedBy = (lidar: boolean) => (f: { fact: FactKey }) => lidar || !SIZED.includes(f.fact);
 const MODES = CHOICES.map(c => ({ mode: c.mode, icon: MODE_ICON[c.mode], label: c.mode === 'sell' ? 'Sell' : c.mode === 'worth' ? 'Worth' : 'Find' }));
-const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat('en-US').format(n)} ${new Intl.PluralRules('en-US').select(n) === 'one' ? one : many}`;
+const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat('en-US').format(n)} ${n === 1 ? one : many}`;
 
 // Where a drawn moment starts: which stages are done, what is known, how many stills.
-function start(drawn: Drawn | null, mode: Mode) {
+function start(drawn: Drawn | null, mode: Mode, lidar: boolean) {
   const steps = stepsFor(mode), all = (n: number) => steps.slice(0, n);
-  const known = (n: number) => Object.fromEntries(all(n).flatMap(s => s.finds.map(f => [f.fact, f.value]))) as Partial<Record<FactKey, string>>;
+  const known = (n: number) => Object.fromEntries(all(n).flatMap(s => s.finds.filter(scannedBy(lidar)).map(f => [f.fact, f.value]))) as Partial<Record<FactKey, string>>;
   switch (drawn) {
     case 'loading': return { done: [], facts: {}, stills: 1, phase: 'loading' as Phase, cur: steps[0].stage };
     case 'found': return { done: [], facts: known(1), stills: 1, phase: 'found' as Phase, cur: steps[0].stage };
@@ -64,12 +68,13 @@ function start(drawn: Drawn | null, mode: Mode) {
 }
 
 export default function Camera() {
-  const params = useLocalSearchParams<{ mode?: string; state?: string }>();
+  const params = useLocalSearchParams<{ mode?: string; state?: string; lidar?: string }>();
+  const lidar = params.lidar !== '0';
   const drawn = DRAWN.includes(params.state as Drawn) ? (params.state as Drawn) : null;
   // The person it is drawn for (useScreen is the one way a page reads ?world=); the camera's own moments are its ?state=.
   const { w } = useScreen();
   const first = (['sell', 'worth', 'find'] as Mode[]).includes(params.mode as Mode) ? (params.mode as Mode) : 'sell';
-  const begin = useMemo(() => start(drawn, first), [drawn, first]);
+  const begin = useMemo(() => start(drawn, first, lidar), [drawn, first, lidar]);
 
   const [mode, setMode] = useState<Mode>(first);
   const [phase, setPhase] = useState<Phase>(begin.phase);
@@ -127,9 +132,9 @@ export default function Camera() {
     setPhase('loading');
     if (drawn) return;
     judge.current = setTimeout(() => {
-      setFacts(f => ({ ...f, ...Object.fromEntries(step.finds.map(x => [x.fact, x.value])) }));
+      setFacts(f => ({ ...f, ...Object.fromEntries(step.finds.filter(scannedBy(lidar)).map(x => [x.fact, x.value])) }));
       setPhase('found');
-      cue({ type: 'found', stage: step.stage, text: step.pop });
+      cue({ type: 'found', stage: step.stage, text: popOf(step) });
     }, step.judgeMs);
   };
   // The pop reached its bubble: the stage is done.
@@ -161,7 +166,9 @@ export default function Camera() {
   const valued = (first: boolean) => { setAppraise(first); setAsking(null); cue({ type: 'show', screen: 'camera', appraise: first }); };
   const typed = (key: FactKey, v: string) => { setMine(m => [...m, key]); setFacts(x => ({ ...x, [key]: NAMED.includes(key) ? correct(v) : v.trim() })); };
   const typedLamp = (key: keyof LampFacts, v: string) => { setMine(m => [...m, key]); setLampFacts(x => ({ ...x, [key]: v.trim() })); };
-  const sized = SIZED.some(k => facts[k]);
+  // Without LiDAR the Measure still finds no size, so its pop doesn't claim one: the sizes are left to type.
+  const popOf = (st: NonNullable<typeof step>) => (!lidar && st.finds.every(f => SIZED.includes(f.fact)) ? 'Type the sizes' : st.pop);
+  const sized = lidar && SIZED.some(k => facts[k] && !mine.includes(k));
   const leave = useCallback((p: CirclePhase) => { if (p === 'closed') { if (router.canGoBack()) router.back(); else router.replace('/' as Href); } }, []);
   const close = () => setCircle('closing');
 
@@ -215,7 +222,7 @@ export default function Camera() {
             )) : null) : [...factsFor(mode)].sort((a, b) => Number(!facts[a.key]) - Number(!facts[b.key])).map(f => (
               <FactChip key={f.key} id={`fact-${f.key}`} name={f.name} value={facts[f.key]} by={mine.includes(f.key) ? 'person' : 'agent'} onChange={v => typed(f.key, v)} />
             ))}
-            {phase === 'done' && !sized ? <CamNote icon="information-circle" text="Measure it to use AI" /> : null}
+            {phase === 'done' && !sized ? <CamNote icon="information-circle" text={lidar ? 'Scan it to use AI' : 'AI needs a phone with LiDAR'} /> : null}
           </Chips>
         )}
         bottom={(
@@ -240,7 +247,7 @@ export default function Camera() {
             )}
           </CameraFoot>
         )}>
-        {phase === 'found' && step ? <FoundPop key={step.stage} text={step.pop} to={target} stay={!!drawn} onLanded={landed} /> : null}
+        {phase === 'found' && step ? <FoundPop key={step.stage} text={popOf(step)} to={target} stay={!!drawn} onLanded={landed} /> : null}
       </Viewfinder>
       <Sheet open={same && !!held} title="Same thing?" onClose={() => setSame(false)}>
         {held ? (

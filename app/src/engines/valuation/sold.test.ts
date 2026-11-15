@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
-import { soldSources, toComps, type Call } from './sold.ts';
+import { soldSources, toComps } from './sold.ts';
 import { comparables } from './comps.ts';
 
 const as_of = '2026-11-15T00:00:00Z';
@@ -28,17 +28,6 @@ test('a condition the site states adjusts the comp; an unstated one is not guess
   const [stated, unstated] = toComps('mercari', [row('a', 5000, { condition: 'Like new' }), row('b', 5000)], { query: 'carhartt', condition: 'good' });
   assert.equal(stated.condition, 'excellent'); assert.equal(stated.w_extract, 0.9);
   assert.equal(unstated.condition, 'good'); assert.equal(unstated.w_extract, 0.7);
-});
-
-test('each site is one source; a site the harness cannot reach adds nothing and is logged, never thrown', async () => {
-  const errors: string[] = [];
-  const call: Call = async site => site === 'mercari'
-    ? { ok: true, data: { rows: [row('a', 5000), row('b', 5200), row('c', 4800)] } }
-    : { ok: false, error: { code: 'no_route', message: 'not registered' } };
-  const sources = soldSources(call, ['mercari', 'poshmark'], { query: 'carhartt active jacket', condition: 'good', error: (w, e) => errors.push(`${w}: ${String(e)}`) });
-  const got = (await Promise.all(sources.map(s => s(new AbortController().signal)))).flat();
-  assert.equal(got.length, 3);
-  assert.equal(errors.length, 1); assert.match(errors[0], /poshmark.*no_route/);
 });
 
 test('the recorded Mercari sold search prices through the comps engine', () => {

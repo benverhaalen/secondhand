@@ -29,6 +29,7 @@ export const INPUTS = {
   post_and_delist: { value: 0.015, unit: '$/item', mark: 'inferred', source: 'product/numbers.md: post $0.003-0.012 plus delist $0.003-0.012, midpoints' },
   nano_banana_candidate: { value: 0.037, unit: '$/image', mark: 'observed', source: 'research/studio/ben/slides.md: Nano Banana 2.1 rendered in 6.8 s for $0.037 in the smoke run' },
   gemini_pro_candidate: { value: 0.14, unit: '$/image', mark: 'observed', source: 'research/studio/ben/slides.md: Gemini 3 Pro Image in 14.6 s for $0.14' },
+  steam_slides: { value: 2, unit: 'slides', mark: 'inferred', source: 'jobs/studio/slides_run.py: STEAM_TOP=2 passing redraws x 2 Nano Banana seeds on each relay slide = 4 renders and 4 judge reads a slide; 2 is the upper case where both slides relay (research/cross-cutting/ben/affiliate-economics.md Part 2)' },
   judge_read: { value: 0.005, unit: '$/read', mark: 'assumption', source: 'one vision read per candidate (jobs/studio/slides_run.py VISION); not billed yet' },
   // what watching for sales costs
   depop_live_day: { value: 0.10, unit: '$/account-day', mark: 'inferred', source: 'product/numbers.md: a signed-in Depop sweep every 15 min while live, about $0.10 a day' },
@@ -44,8 +45,10 @@ export const INPUTS = {
 const v = k => INPUTS[k].value;
 
 // The studio as slides_run.py runs it (Ben, 08:33: stay on Nano Banana): cover and back, each four Nano Banana 2.1 seeds and
-// one Gemini 3 Pro Image second opinion, and one judge read per candidate.
-export const studioCostPerItem = () => 2 * (4 * v('nano_banana_candidate') + v('gemini_pro_candidate')) + 10 * v('judge_read');
+// one Gemini 3 Pro Image second opinion, and one judge read per candidate; then a second pressing of the two smoothest
+// redraws on each relay slide, counted at its upper case.
+export const studioCostPerItem = () => 2 * (4 * v('nano_banana_candidate') + v('gemini_pro_candidate')) + 10 * v('judge_read')
+  + v('steam_slides') * 4 * (v('nano_banana_candidate') + v('judge_read'));
 
 const RATE = {
   ebay_fashion: () => v('ebay_fashion'), ebay_home: () => v('ebay_home'), ebay_electronics: () => v('ebay_electronics'),
@@ -55,11 +58,14 @@ const RATE = {
 export const commission = (aov, dest) => Math.round(aov * RATE[dest]() * 1e6) / 1e6;
 
 // Blended commission per referred purchase. eBay is split fashion-heavy like the first person we build for (clothes).
-export function perPurchase(aov = v('aov_resale')) {
+// Programs with no verified rate a new app can join (Poshmark, Depop, Mercari through a network; Etsy) count as zero
+// unless a scenario says otherwise (affiliate-economics.md: "Working 0").
+export function perPurchase(aov = v('aov_resale'), { unverified = false } = {}) {
   const m = v('mix');
+  const u = unverified ? 1 : 0;
   const ebay = 0.6 * commission(aov, 'ebay_fashion') + 0.25 * commission(aov, 'ebay_home') + 0.15 * commission(aov, 'ebay_electronics');
-  return m.ebay * ebay + m.network_resale * commission(aov, 'network_resale') + m.amazon_retail * commission(aov, 'amazon_retail')
-    + m.etsy * commission(aov, 'etsy') + m.facebook * commission(aov, 'facebook');
+  return m.ebay * ebay + u * m.network_resale * commission(aov, 'network_resale') + m.amazon_retail * commission(aov, 'amazon_retail')
+    + u * m.etsy * commission(aov, 'etsy') + m.facebook * commission(aov, 'facebook');
 }
 
 // Chance a second buyer pays before the other listings are down, if each other listing sells as a Poisson process with
@@ -70,18 +76,19 @@ export function doubleSaleRate({ windowMin, otherListings, meanDaysToSell }) {
 
 // Scenario knobs per monthly active person (MAU). Each is an assumption the first 100 users replace.
 export const SCENARIOS = {
-  conservative: { purchases_per_mau: 0.05, items_per_mau: 1.0, studio_attach: 0.05, plan_share: 0.01, searches_per_mau: 3, depop_account_days_per_mau: 0.3 * 20, depop_partner_api: false },
-  base: { purchases_per_mau: 0.2, items_per_mau: 1.5, studio_attach: 0.10, plan_share: 0.02, searches_per_mau: 5, depop_account_days_per_mau: 0.3 * 15, depop_partner_api: false },
-  flattering: { purchases_per_mau: 0.5, items_per_mau: 2.0, studio_attach: 0.15, plan_share: 0.03, searches_per_mau: 8, depop_account_days_per_mau: 0.3 * 15, depop_partner_api: true },
+  conservative: { purchases_per_mau: 0.05, items_per_mau: 1.0, studio_attach: 0.05, plan_share: 0.01, searches_per_mau: 3, depop_account_days_per_mau: 0.3 * 20, depop_partner_api: false, unverified: false },
+  base: { purchases_per_mau: 0.2, items_per_mau: 1.5, studio_attach: 0.10, plan_share: 0.02, searches_per_mau: 5, depop_account_days_per_mau: 0.3 * 15, depop_partner_api: false, unverified: false },
+  flattering: { purchases_per_mau: 0.5, items_per_mau: 2.0, studio_attach: 0.15, plan_share: 0.03, searches_per_mau: 8, depop_account_days_per_mau: 0.3 * 15, depop_partner_api: true, unverified: true },
 };
 
 export function perMau(s) {
-  const buy = s.purchases_per_mau * perPurchase();
+  const buy = s.purchases_per_mau * perPurchase(undefined, s);
   const studio = s.items_per_mau * s.studio_attach * v('studio_price');
   const plan = s.plan_share * v('plan_price');
   const listing = s.items_per_mau * (v('identify') + v('post_and_delist'));
   const studioCost = s.items_per_mau * s.studio_attach * studioCostPerItem();
-  const watching = s.depop_partner_api ? 0 : s.depop_account_days_per_mau * v('depop_live_day');
+  // depop_live_day is priced at a 15-minute sweep; cost scales with sweeps a day (product/cadence.md proposes 120 min while live).
+  const watching = s.depop_partner_api ? 0 : s.depop_account_days_per_mau * v('depop_live_day') * 15 / (s.depop_live_min ?? 15);
   const search = s.searches_per_mau * v('search');
   const platform = v('platform_per_mau');
   const revenue = buy + studio + plan, cost = listing + studioCost + watching + search + platform;
@@ -91,7 +98,7 @@ export function perMau(s) {
 // Referred purchases per person per month at which the variable margin is zero.
 export function breakEvenPurchases(s) {
   const r = perMau({ ...s, purchases_per_mau: 0 });
-  return Math.max(0, -r.margin / perPurchase());
+  return Math.max(0, -r.margin / perPurchase(undefined, s));
 }
 
 export function atScale(s, mau) {
@@ -113,8 +120,8 @@ export function sellerValue(price = 20) {
 const money = x => (Math.abs(x) >= 1000 ? `$${Math.round(x).toLocaleString('en-US')}` : `$${x.toFixed(x < 1 && x > -1 ? 3 : 2)}`);
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  console.log(`One referred purchase at the $${v('aov_resale')} resale order value earns ${money(perPurchase())} blended.`);
-  console.log(`Studio costs ${money(studioCostPerItem())} an item as the run is built (2 slides x 5 candidates).`);
+  console.log(`One referred purchase at the $${v('aov_resale')} resale order value earns ${money(perPurchase())} from verified programmes, ${money(perPurchase(undefined, { unverified: true }))} if the unverified ones pay.`);
+  console.log(`Studio costs ${money(studioCostPerItem())} an item as the run is built (2 slides x 5 candidates, plus a second pressing of the 2 smoothest on each relay slide, upper case).`);
   console.log(`Honey for scale: ${money(v('honey_rev_per_mau_month'))} per monthly user per month (2018 revenue over 2019 users; all revenue, not a purchase-rate check).\n`);
   console.log('| per MAU per month | ' + Object.keys(SCENARIOS).join(' | ') + ' |');
   console.log('|---|' + Object.keys(SCENARIOS).map(() => '---').join('|') + '|');

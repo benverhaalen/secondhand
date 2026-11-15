@@ -1,7 +1,8 @@
 // Rows 1, 2, 3, 8 and 10 of spec/benchmark.md.
 // Prove: node --test --test-concurrency=1 bench/score.test.mjs
-// Run: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned]
+// Run: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned] [--baseline <run_dir>] [--upload]
 import fs from 'node:fs';
+import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
@@ -65,6 +66,25 @@ function validate(record, hash, ids, runId) {
     if (number.citation_id !== null && !text(number.citation_id)) fail(record, 'numbers citation_id must be a string or null');
     if (!Array.isArray(number.evidence) || !number.evidence.every(text)) fail(record, 'numbers evidence must be an array of references');
   }
+  if (record.cited_facts !== undefined) {
+    if (!Number.isSafeInteger(record.cited_facts) || record.cited_facts < 0) fail(record,'cited_facts must be a nonnegative integer');
+    if (record.cited_facts !== record.numbers.filter(n=>text(n.citation_id) || n.evidence.length>0).length) fail(record,'cited_facts must match cited numbers');
+  }
+  if (record.reads !== undefined) {
+    if (!Array.isArray(record.reads)) fail(record,'reads must be an array');
+    for (const read of record.reads) {
+      if (!read || !text(read.site) || !['plain','cloud_browser','own_browser','official','mcp'].includes(read.lane) ||
+          !Number.isFinite(read.ms) || read.ms < 0 || !text(read.outcome) || !Number.isSafeInteger(read.rows) || read.rows < 0 || typeof read.warm !== 'boolean') fail(record,'reads must carry site, lane, nonnegative ms and rows, outcome and warm');
+    }
+  }
+  if (record.cost !== undefined) {
+    if (!record.cost || typeof record.cost !== 'object' || Array.isArray(record.cost)) fail(record,'cost must be an object');
+    for (const field of ['browser_s','proxy_bytes','model_calls','cents']) {
+      const value=record.cost[field];
+      if (value !== null && (!Number.isFinite(value) || value < 0)) fail(record,`cost.${field} must be nonnegative or null`);
+      if (['proxy_bytes','model_calls'].includes(field) && value !== null && !Number.isSafeInteger(value)) fail(record,`cost.${field} must be an integer or null`);
+    }
+  }
   if (record.range !== null) {
     if (!record.range || !Number.isSafeInteger(record.range.low_cents) || !Number.isSafeInteger(record.range.high_cents) || record.range.low_cents > record.range.high_cents) fail(record, 'range must have ordered integer cents');
     time(record, 'range.as_of', record.range.as_of);
@@ -80,12 +100,12 @@ function validate(record, hash, ids, runId) {
   if (!text(record.raw_ref) || !record.raw_ref.startsWith('raw/') || record.raw_ref.includes('\\') || record.raw_ref.split('/').some(part => part === '..' || part === '.')) fail(record, 'raw_ref must be a relative path under raw/');
 }
 
-function readRecords(runDir, hash, ids) {
+function readRecords(runDir, hash, ids, recordsFile = 'records.jsonl') {
   const lines = fs.readFileSync(path.join(runDir, 'records.jsonl'), 'utf8').split('\n');
   const records = [];
   for (const [index, line] of lines.entries()) {
     if (!line.trim()) continue;
-    const ref = `records.jsonl:${index + 1}`;
+    const ref = `${recordsFile}:${index + 1}`;
     let record;
     try { record = JSON.parse(line); }
     catch (error) { throw new Error(`${ref}: invalid JSON: ${error.message}`); }
@@ -127,6 +147,42 @@ function timings(records, field) {
     p95: metric(percentile(samples.map(s=>s.value), .95), samples.length, records.length, basis.length ? basis : all),
     samples: samples.map(s=>({ seconds: metric(s.value, 1, 1, [s.record.ref]) })),
     missing: metric(missing.length, missing.length, records.length, missing.length ? refs(missing) : all),
+  };
+}
+
+function distribution(samples, records, unit) {
+  const basis=refs(samples.map(s=>s.record)), all=refs(records);
+  return {
+    p50:metric(percentile(samples.map(s=>s.value),.5),samples.length,records.length,basis.length?basis:all),
+    p95:metric(percentile(samples.map(s=>s.value),.95),samples.length,records.length,basis.length?basis:all),
+    samples:samples.map(s=>({item_id:s.record.item_id,[unit]:metric(s.value,1,1,[s.record.ref])})),
+  };
+}
+function listed(matching, records) {
+  return {...metric(matching.length,matching.length,records.length,matching.length?refs(matching):refs(records)),
+    items:matching.map(r=>({item_id:r.item_id,question:r.question,records:[r.ref]}))};
+}
+function speed(records) {
+  const cited=records.filter(r=>r.cited_facts>0 && r.full_at!==null);
+  const missing=records.filter(r=>r.cited_facts===undefined || (r.cited_facts>0 && r.full_at===null));
+  const knownCost=records.filter(r=>r.cost?.cents!==undefined && r.cost.cents!==null);
+  const reads=records.flatMap(record=>(record.reads??[]).map(read=>({record,read,value:read.ms/1000})));
+  const sites=[...new Set(reads.map(s=>s.read.site))].sort();
+  return {
+    first:timings(records,'first_at'), full:timings(records,'full_at'),
+    seconds_per_cited_fact:{
+      ...distribution(cited.map(record=>({record,value:(Date.parse(record.full_at)-Date.parse(record.asked_at))/1000/record.cited_facts})),records,'seconds'),
+      zero_cited_facts:listed(records.filter(r=>r.cited_facts===0),records),missing:listed(missing,records),
+    },
+    reads_by_lane:sites.flatMap(site=>[...new Set(reads.filter(s=>s.read.site===site).map(s=>s.read.lane))].sort().map(lane=>{
+      const matching=reads.filter(s=>s.read.site===site && s.read.lane===lane);
+      return {site,lane,...distribution(matching,matching.map(s=>s.record),'seconds')};
+    })),
+    cold_warm:sites.map(site=>{
+      const matching=reads.filter(s=>s.read.site===site);
+      return {site,...Object.fromEntries([['cold',false],['warm',true]].map(([name,warm])=>[name,distribution(matching.filter(s=>s.read.warm===warm),matching.map(s=>s.record),'seconds')]))};
+    }),
+    cost:{...distribution(knownCost.map(record=>({record,value:record.cost.cents})),records,'cents'),unknown:listed(records.filter(r=>r.cost?.cents===undefined || r.cost.cents===null),records)},
   };
 }
 
@@ -183,12 +239,12 @@ function scoreTool(tool, records, itemsToScore) {
     },
     '2': { items, median:metric(median(items.map(i=>i.kinds.value)),items.length,itemsToScore.length,all), max:metric(Math.max(...items.map(i=>i.kinds.value)),items.length,itemsToScore.length,all) },
     '3':share(numbers.filter(n=>text(n.number.citation_id) || n.number.evidence.length>0).length,numbers.length,numbers.length ? refs(numbers.map(n=>n.record)) : all),
-    '8':{ first:timings(records,'first_at'), full:timings(records,'full_at') },
+    '8':speed(records),
     '10':delists(records),
   } };
 }
 
-export function scoreRun(runDir, manifestPath = MANIFEST, set = 'market') {
+export function scoreRun(runDir, manifestPath = MANIFEST, set = 'market', baselineRunDir) {
   if (!['market','owned'].includes(set)) throw new Error('invalid set: '+set);
   const bytes = fs.readFileSync(manifestPath);
   const manifest = JSON.parse(bytes);
@@ -197,7 +253,9 @@ export function scoreRun(runDir, manifestPath = MANIFEST, set = 'market') {
   const itemsToScore = manifest[set === 'market' ? 'market_items' : 'items'];
   if (!Array.isArray(itemsToScore) || !itemsToScore.length || itemsToScore.some(i=>!text(i?.id)) || new Set(itemsToScore.map(i=>i.id)).size !== itemsToScore.length) throw new Error('manifest rejected: items need unique nonempty ids');
   const hash = createHash('sha256').update(bytes).digest('hex');
-  const records = readRecords(runDir,hash,new Set(itemsToScore.map(i=>i.id)));
+  const ids=new Set(itemsToScore.map(i=>i.id));
+  const records = readRecords(runDir,hash,ids);
+  if (baselineRunDir) records.push(...readRecords(baselineRunDir,hash,ids,path.relative(runDir,path.join(baselineRunDir,'records.jsonl'))));
   return {
     run_id:records[0].run_id,
     manifest_sha256:hash,
@@ -205,26 +263,45 @@ export function scoreRun(runDir, manifestPath = MANIFEST, set = 'market') {
   };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+export async function scoreCli({ args = process.argv.slice(2), execFileSync: execute = execFileSync, writeStdout = line => process.stdout.write(line+'\n') } = {}) {
   const log = createLog({ src:'bench.score', build:'benchmark-rows-1-2-3-8-10', sink:line=>process.stderr.write(line+'\n') });
+  let exitCode=0;
   try {
-    const [runDir, ...args] = process.argv.slice(2);
-    let manifestPath, set='market';
-    if (!runDir || runDir.startsWith('--')) throw new Error('usage: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned]');
-    for (let i=0; i<args.length; i++) {
-      if (args[i]==='--manifest' && args[i+1] && !args[i+1].startsWith('--')) manifestPath=args[++i];
-      else if (args[i]==='--set' && args[i+1] && !args[i+1].startsWith('--')) set=args[++i];
-      else throw new Error(`unknown or incomplete argument: ${args[i]}`);
+    const [runDir, ...options] = args;
+    let manifestPath, baselineRunDir, set='market', upload=false;
+    if (!runDir || runDir.startsWith('--')) throw new Error('usage: node bench/score.mjs <run_dir> [--manifest spec/items/manifest.json] [--set market|owned] [--baseline <run_dir>] [--upload]');
+    for (let i=0; i<options.length; i++) {
+      if (options[i]==='--manifest' && options[i+1] && !options[i+1].startsWith('--')) manifestPath=options[++i];
+      else if (options[i]==='--baseline' && options[i+1] && !options[i+1].startsWith('--')) baselineRunDir=options[++i];
+      else if (options[i]==='--set' && options[i+1] && !options[i+1].startsWith('--')) set=options[++i];
+      else if (options[i]==='--upload') upload=true;
+      else throw new Error(`unknown or incomplete argument: ${options[i]}`);
     }
-    log.note('score input', { run_dir:runDir, manifest:manifestPath ?? MANIFEST, set });
-    const result = log.timed('bench.score',()=>scoreRun(runDir,manifestPath,set));
+    log.note('score input', { run_dir:runDir, manifest:manifestPath ?? MANIFEST, set, baseline:baselineRunDir });
+    const result = log.timed('bench.score',()=>scoreRun(runDir,manifestPath,set,baselineRunDir));
     const output = path.join(runDir,'results.json');
     fs.writeFileSync(output,JSON.stringify(result,null,2)+'\n');
     log.note('results written', { run_id:result.run_id, output });
+    if (upload) {
+      const landing=`dbfs:/Volumes/secondhand/raw/landing/bench/${result.run_id}`;
+      try {
+        await log.call('databricks','fs mkdir',{target:landing,profile:'Nate'},()=>execute('databricks',['fs','mkdir',landing,'--profile','Nate']),()=>({result:'completed'}));
+        for (const file of ['records.jsonl','results.json']) {
+          const source=path.join(runDir,file), target=`${landing}/${file}`;
+          await log.call('databricks','fs cp',{source,target,overwrite:true,profile:'Nate'},()=>execute('databricks',['fs','cp',source,target,'--overwrite','--profile','Nate']),()=>({result:'completed'}));
+        }
+      } catch (error) {
+        const reason=(error instanceof Error ? error.message : String(error)).split(/\r?\n/,1)[0];
+        writeStdout(`upload skipped: ${reason}`);
+      }
+    }
   } catch (error) {
     log.error('bench.score',error);
-    process.exitCode=1;
+    exitCode=1;
   } finally {
     log.end();
   }
+  return exitCode;
 }
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) process.exitCode=await scoreCli();

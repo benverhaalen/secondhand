@@ -1,0 +1,247 @@
+[
+  {
+    "scope": {},
+    "key": "{}"
+  },
+  {
+    "scope": {
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\"}"
+  },
+  {
+    "scope": {
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\"}"
+  },
+  {
+    "scope": {
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\"}"
+  },
+  {
+    "scope": {
+      "segment": "segment_value"
+    },
+    "key": "{\"segment\":\"segment_value\"}"
+  },
+  {
+    "scope": {
+      "segment": "segment_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"segment\":\"segment_value\"}"
+  },
+  {
+    "scope": {
+      "segment": "segment_value",
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\",\"segment\":\"segment_value\"}"
+  },
+  {
+    "scope": {
+      "segment": "segment_value",
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\",\"segment\":\"segment_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value"
+    },
+    "key": "{\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value",
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\",\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value",
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\",\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value",
+      "segment": "segment_value"
+    },
+    "key": "{\"segment\":\"segment_value\",\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value",
+      "segment": "segment_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"segment\":\"segment_value\",\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value",
+      "segment": "segment_value",
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\",\"segment\":\"segment_value\",\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "state": "state_value",
+      "segment": "segment_value",
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\",\"segment\":\"segment_value\",\"state\":\"state_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value"
+    },
+    "key": "{\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "segment": "segment_value"
+    },
+    "key": "{\"segment\":\"segment_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "segment": "segment_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"segment\":\"segment_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "segment": "segment_value",
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\",\"segment\":\"segment_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "segment": "segment_value",
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\",\"segment\":\"segment_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value"
+    },
+    "key": "{\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value",
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\",\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value",
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\",\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value",
+      "segment": "segment_value"
+    },
+    "key": "{\"segment\":\"segment_value\",\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value",
+      "segment": "segment_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"segment\":\"segment_value\",\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value",
+      "segment": "segment_value",
+      "site": "site_value"
+    },
+    "key": "{\"site\":\"site_value\",\"segment\":\"segment_value\",\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "person": "person_value",
+      "state": "state_value",
+      "segment": "segment_value",
+      "site": "site_value",
+      "kind": "kind_value"
+    },
+    "key": "{\"kind\":\"kind_value\",\"site\":\"site_value\",\"segment\":\"segment_value\",\"state\":\"state_value\",\"person\":\"person_value\"}"
+  },
+  {
+    "scope": {
+      "site": "a|b=c\"é"
+    },
+    "key": "{\"site\":\"a|b=c\\\"é\"}"
+  }
+]

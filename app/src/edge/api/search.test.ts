@@ -10,14 +10,16 @@ import { jobs, getJob, jobEvents } from './jobs.ts';
 import { SITES, type Site } from '../harness/protocol.ts';
 import { searchAll } from '../intel/public/search.ts';
 import { SOURCES } from '../intel/public/sources.ts';
-import { BASE } from '../intel/public/readers.ts';
-import { _reset } from '../intel/run.ts';
+import { BASE, readPage } from '../intel/public/readers.ts';
+import { _reset, outsideCallCount, searchParams } from '../intel/run.ts';
+import { createDupe } from '../harness/sites/dupe/adapter.ts';
 import type { PageResult } from '../intel/fetch.ts';
 import type { Found } from '../intel/answer.ts';
 import { memoryVault, memoryAccounts } from '../browser/auth.ts';
-import { createHarness } from '../harness/protocol.ts';
+import { createHarness, fakeManifest, fail } from '../harness/protocol.ts';
 import { mercariAdapters, type Page as MercariPage } from '../harness/sites/mercari/adapter.ts';
 
+let depopRead: () => Promise<PageResult>;
 const originalPorts = { ...ports };
 const vault = memoryVault();
 const accountRows = [{ account_id: 'acc_search', person_id: 'usr_8f2k', site: 'mercari' as const, token_ref: 'test-search' }];
@@ -48,7 +50,18 @@ beforeEach(() => {
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
   _reset();
-  Object.assign(ports, { ...originalPorts, deadline_ms: 80, fetchPage: async () => blocked(),
+  searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 0 });
+  depopRead = async () => blocked();
+  const harness = createHarness({ adapters: [{ route_id: 'depop.search.page', manifest: fakeManifest('depop', 'search'),
+    async run() {
+      const p = await depopRead();
+      if (!p.ok) return fail('blocked', p.reason, { do: 'pause_session', site: 'depop' });
+      const r = readPage('depop', p.html);
+      if (!r.ok) return r;
+      return { ok: true, data: r.data.map(row => ({ ...row, external_id: row.id, state: 'active' })) };
+    },
+  }] });
+  Object.assign(ports, { ...originalPorts, harness, dupe: { search: async () => ({ ok: true, data: { rows: [], dropped: 0, total: 0, keep_until: new Date().toISOString() } }) }, deadline_ms: 80, fetchPage: async () => blocked(),
     ask: async (_state: object, questions: Record<string, unknown>) => ({ ok: true, ms: 0,
       answers: Object.fromEntries(Object.keys(questions).map(k => [k, { choice: k.startsWith('m') ? 'likely_same_model' : 'keep' }])) }),
   });
@@ -190,18 +203,19 @@ test('202 is returned before any page answers, including a page that never resol
   assert.deepEqual(job.stages.map((s: { name: string }) => s.name), SOURCES.filter(s => s.on).map(s => `site:${s.id}`));
   assert.ok(job.stages.every((s: { state: string; found: Found }) => s.state === 'running' && s.found.results_found === 0));
   await new Promise(resolve => setImmediate(resolve));
-  assert.deepEqual([...started].sort(), ['depop', 'facebook', 'poshmark'], 'public sources start together; Mercari requires the linked harness');
+  assert.deepEqual([...started].sort(), ['poshmark'], 'Depop uses its harness and Facebook stays off');
   assert.equal(jobs.st.getJob(job.id)?.state, 'running');
 });
 
 test('site batches reach polling and a live SSE reader in landing order, with exact found counts', async () => {
   const release = new Map<Site, (p: PageResult) => void>();
+  depopRead = () => new Promise(resolve => release.set('depop', resolve));
   ports.fetchPage = async u => new Promise(resolve => release.set(siteOf(u), resolve));
   const job = await start();
   const res = await poll(job.id, 'vis_search01', true);
   const reader = res.body!.getReader();
   let early = '';
-  while (!early.includes('event: answer.partial')) early += new TextDecoder().decode((await bounded(reader.read())).value); // unlinked Mercari settles first
+  while ((early.match(/event: answer.partial/g) ?? []).length < 2) early += new TextDecoder().decode((await bounded(reader.read())).value); // unlinked Mercari settles first
   for (const site of ['depop', 'poshmark'] as const) {
     release.get(site)!(page(fixture(site)));
     const frames = [];
@@ -220,10 +234,9 @@ test('site batches reach polling and a live SSE reader in landing order, with ex
     assert.deepEqual(stage.found, { sources_searched: 1, results_found: 12,
       results_used: 12, dropped_by_reason: {}, sites: { [site]: 12 } });
     assert.equal((partial.data.results as unknown[]).length, stage.found.results_used);
-    assert.equal(stored.state, 'running');
+    assert.equal(stored.state, site === 'depop' ? 'running' : 'done');
   }
   await reader.cancel();
-  release.get('facebook')!(blocked());
   await ended(job.id);
   const result = (await (await poll(job.id)).json()).result;
   assert.equal(result.results.length, 24);
@@ -248,15 +261,15 @@ test('a late site is recorded and a done job cannot be changed by its eventual p
   assert.equal(jobs.framesAfter(job.id, 0).length, count);
 });
 
-test('403 and a login wall are blocked with zero rows, and are streamed before a slow site ends', async () => {
+test('a Depop harness block is a failed site with its code before a slow site ends', async () => {
   ports.fetchPage = async u => siteOf(u) === 'poshmark' ? new Promise(() => {}) : siteOf(u) === 'facebook' ? page('<form action="/login">Log in</form>') : blocked();
   const job = await start();
   await new Promise(resolve => setTimeout(resolve, 10));
   const saved = await (await poll(job.id)).json();
   assert.equal(saved.state, 'running');
-  for (const site of ['facebook', 'depop']) {
+  for (const site of ['depop']) {
     const searched = saved.result.searched.find((s: { site: string }) => s.site === site);
-    assert.equal(searched.outcome, 'blocked'); assert.equal(searched.count, 0);
+    assert.equal(searched.outcome, 'failed'); assert.equal(searched.error_code, 'blocked'); assert.equal(searched.count, 0);
     const stage = saved.stages.find((s: { name: string }) => s.name === `site:${site}`);
     assert.equal(stage.found.results_found, 0);
   }
@@ -271,7 +284,7 @@ test('a different visitor cannot poll or stream a new job; SSE resumes strictly 
   assert.equal(await (await poll(job.id, 'vis_search01', true, frames.at(-1)!.id)).text(), '');
 });
 
-test('sameProduct receives the query, a look-alike is not same_product, and drops balance counts', async () => {
+test('sameProduct receives the query, labels a look-alike comparable, and drops balance counts', async () => {
   ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
   ports.ask = async (state, questions) => {
     assert.equal((state as { target: string }).target, 'levi 501');
@@ -282,22 +295,103 @@ test('sameProduct receives the query, a look-alike is not same_product, and drop
   const job = await start({ text: 'levi 501', filters: { max_delivered_cents: { amount_cents: 4000, currency: 'USD' } } });
   await ended(job.id);
   const saved = await (await poll(job.id)).json();
-  assert.equal(saved.result.results.find((r: { external_id: string }) => r.external_id === '6af924447625b11bb42ec837').relation, 'functional_equivalent');
+  assert.equal(saved.result.results.find((r: { external_id: string }) => r.external_id === '6af924447625b11bb42ec837').relation, 'comparable');
   assert.equal(saved.result.found.results_found, 12);
   assert.equal(saved.result.found.results_used, 8);
   assert.deepEqual(saved.result.found.dropped_by_reason, { wrong_item: 1, max_delivered_cents: 3 });
 });
 
-test('background reconciliation failure ends the job as failed with the contract error', async () => {
+test('Jev without a key keeps every landed row unresolved and reports default identity on partials and the result', async () => {
+  ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
+  ports.ask = async () => ({ ok: false, reason: 'no_key', ms: 0 });
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.state, 'done');
+  assert.equal(saved.result.results.length, 12, 'missing Jev key must not discard the landed rows');
+  assert.ok(saved.result.results.every((r: { relation: string }) => r.relation === 'unresolved'));
+  assert.equal(saved.result.found.results_used, saved.result.results.length);
+  assert.deepEqual(saved.result.found.dropped_by_reason, {});
+  assert.deepEqual(saved.result.identity, { by: 'default', model_ok: false });
+  const partials = jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial');
+  for (const f of partials) assert.deepEqual(f.data.identity, { by: 'default', model_ok: false });
+  const landed = partials.find(f => f.data.site === 'poshmark')!;
+  assert.deepEqual(landed.data.results, saved.result.results);
+  assert.equal((landed.data.answer as { found: Found }).found.results_used, saved.result.found.results_used);
+  const totals = saved.result.results.map((r: { delivered_cents: { amount_cents: number } }) => r.delivered_cents.amount_cents);
+  assert.deepEqual(totals, [...totals].sort((a, b) => a - b));
+});
+
+test('judged match certainty precedes price in partial and merged results, and only keep verdicts exclude identity rows', async () => {
+  ports.fetchPage = async u => ['poshmark', 'depop'].includes(siteOf(u)) ? page(fixture(siteOf(u))) : blocked();
+  depopRead = async () => page(fixture('depop'));
+  const matches: Record<string, string> = { m0: 'unresolved', m1: 'likely_same_model', m11: 'exact', m2: 'same_family_other_variant' };
+  ports.ask = async (_state, questions) => ({ ok: true, ms: 0,
+    answers: Object.fromEntries(Object.keys(questions).map(k => [k, { choice: k.startsWith('m')
+      ? (matches[k] ?? 'unresolved')
+      : k === 'k3' ? 'spam' : 'keep' }])) });
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.deepEqual(saved.result.identity, { by: 'model', model_ok: true });
+  assert.equal(saved.result.found.results_found, 24);
+  assert.equal(saved.result.found.results_used, 22);
+  assert.deepEqual(saved.result.found.dropped_by_reason, { spam: 2 });
+  const rows = saved.result.results as { relation: string; delivered_cents: { amount_cents: number } }[];
+  assert.deepEqual(rows.slice(0, 4).map(r => r.relation), ['exact', 'exact', 'likely_same_model', 'likely_same_model']);
+  assert.equal(rows.filter(r => r.relation === 'same_family_other_variant').length, 2);
+  for (const relation of new Set(rows.map(r => r.relation))) {
+    const totals = rows.filter(r => r.relation === relation).map(r => r.delivered_cents.amount_cents);
+    assert.deepEqual(totals, [...totals].sort((a, b) => a - b));
+  }
+  for (const f of jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial' && (f.data.results as unknown[]).length)) {
+    assert.deepEqual(f.data.identity, { by: 'model', model_ok: true });
+    assert.equal((f.data.results as { relation: string }[])[0].relation, 'exact');
+  }
+});
+
+test('an invalid model answer reports default identity alongside exact matches, including cached partials', async () => {
+  ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
+  ports.ask = async (_state, questions) => ({ ok: true, ms: 0,
+    answers: Object.fromEntries(Object.keys(questions).map(k => [k, { choice: k.startsWith('m')
+      ? k === 'm11' ? 'exact' : 'invalid match'
+      : 'keep' }])) });
+  for (let i = 0; i < 2; i++) {
+    const job = await start(); await ended(job.id);
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.result.results.length, 12, 'invalid judgements retain the default keep verdict');
+    assert.equal(saved.result.results[0].relation, 'exact', 'the exact row outranks cheaper unresolved rows');
+    assert.ok(saved.result.results.slice(1).every((r: { relation: string }) => r.relation === 'unresolved'));
+    assert.deepEqual(saved.result.identity, { by: 'default', model_ok: false }, 'a partial model answer must disclose default fallback');
+    assert.deepEqual(saved.result.found.dropped_by_reason, {});
+    for (const f of jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial' && f.data.site === 'poshmark')) {
+      assert.deepEqual(f.data.identity, saved.result.identity);
+      assert.deepEqual(f.data.results, saved.result.results);
+    }
+  }
+});
+
+test('merged found counts returned listings once when two sources land the same site rows', async () => {
+  const source = SOURCES.find(s => s.id === 'poshmark')!;
+  ports.sources = [source, { ...source, id: 'poshmark_repeat' }];
+  ports.fetchPage = async () => page(fixture('poshmark'));
+  ports.ask = async () => ({ ok: false, reason: 'no_key', ms: 0 });
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.result.results.length, 12);
+  assert.deepEqual(saved.result.found, { sources_searched: 2, results_found: 24, results_used: 12,
+    dropped_by_reason: { unavailable_or_duplicate: 12 }, sites: { poshmark: 12 } });
+});
+
+test('reconciliation failure fails only its source stage and the job finishes done', async () => {
   ports.fetchPage = async u => siteOf(u) === 'poshmark' ? page(fixture('poshmark')) : blocked();
   ports.ask = async () => { throw new Error('judge unavailable'); };
   const job = await start(); await ended(job.id);
   const saved = await (await poll(job.id)).json();
-  assert.equal(saved.state, 'failed');
-  assert.equal(saved.error.code, 'site_failed');
-  assert.equal(saved.error.failed_step, 'search');
-  assert.equal(saved.error.retry.by, 'user');
-  assert.equal(jobs.framesAfter(job.id, 0).at(-1)!.data.state, 'failed');
+  assert.equal(saved.state, 'done');
+  const stage = saved.stages.find((s: { name: string }) => s.name === 'site:poshmark');
+  assert.equal(stage.state, 'failed');
+  assert.equal(stage.error.code, 'site_failed');
+  assert.equal(saved.error, undefined);
+  assert.equal(jobs.framesAfter(job.id, 0).at(-1)!.data.state, 'done');
 });
 
 test('a fresh repeat streams the standing result before its live delta; filters are not cached', async () => {
@@ -343,20 +437,22 @@ test('concurrent warm repeats both receive the shared live delta after their cac
   for (const job of [a, b]) assert.equal((await (await poll(job.id)).json()).result.results.length, 0);
 });
 
-test('a shared reconciliation error fails every joining job and cleans held promises', async () => {
+test('a shared reconciliation error fails that site for every joining job and cleans held promises', async () => {
   let release!: (p: PageResult) => void, reads = 0;
   ports.fetchPage = async u => {
     if (siteOf(u) !== 'poshmark') return blocked();
     reads++; return new Promise(resolve => { release = resolve; });
   };
   ports.ask = async () => { throw new Error('shared judge failure'); };
-  const a = await start(), b = await start();
+  const [a, b] = await Promise.all([start(), start()]);
   release(page(fixture('poshmark')));
   await Promise.all([ended(a.id), ended(b.id)]);
   assert.equal(reads, 1);
   for (const job of [a, b]) {
     const saved = await (await poll(job.id)).json();
-    assert.equal(saved.state, 'failed'); assert.equal(saved.error.code, 'site_failed');
+    assert.equal(saved.state, 'done');
+    const stage = saved.stages.find((s: { name: string }) => s.name === 'site:poshmark');
+    assert.equal(stage.state, 'failed'); assert.equal(stage.error.code, 'site_failed');
   }
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(searchJobs.pendingSearches.has(a.id), false);
@@ -401,10 +497,11 @@ test('search logs successful and late site transitions through the existing log 
 
 test('source rows control targets: eBay stays off and a planted source runs without runner changes', async () => {
   assert.deepEqual(SOURCES.map(({ id, on, needs_ask, reason }) => ({ id, on, needs_ask, reason })), [
+    { id: 'dupe', on: true, needs_ask: false, reason: undefined },
     { id: 'depop', on: true, needs_ask: false, reason: undefined },
     { id: 'poshmark', on: true, needs_ask: false, reason: undefined },
     { id: 'mercari', on: true, needs_ask: true, reason: undefined },
-    { id: 'facebook', on: true, needs_ask: false, reason: undefined },
+    { id: 'facebook', on: false, needs_ask: false, reason: 'not built' },
     { id: 'ebay', on: false, needs_ask: false, reason: 'page lane not built' },
   ]);
   const planted = { id: 'planted', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true } as const;
@@ -423,7 +520,7 @@ test('source rows control targets: eBay stays off and a planted source runs with
 test('background and omitted callers never fetch Mercari even when explicitly selected', async () => {
   for (const caller of ['background', undefined] as const) {
     const fetched: string[] = [];
-    const result = await searchAll('levi 501', { caller, sites: ['mercari', 'depop'],
+    const result = await searchAll('levi 501', { sources: SOURCES.filter(s => s.id !== 'dupe'), caller, sites: ['mercari', 'depop'],
       fetchPage: async u => { fetched.push(u); return page('No results'); } });
     assert.equal(fetched.filter(u => u.includes('mercari')).length, 0, 'a want or background run must make zero Mercari fetches');
     assert.deepEqual(result.searched.map(s => s.site), ['depop']);
@@ -465,7 +562,7 @@ test('Mercari runs only through the person’s linked harness, never an anonymou
     assert.deepEqual(result.searched, []); assert.equal(reads, 0);
   }
   const denied = await searchAll('carhartt hoodie', { caller: 'person', sites: ['mercari'], person_id: 'usr_other', accounts, harness, fetchPage });
-  assert.equal(denied.searched[0].outcome, 'blocked'); assert.equal(reads, 0);
+  assert.equal(denied.searched[0].outcome, 'needs_account'); assert.equal(reads, 0);
   const allowed = await searchAll('carhartt hoodie', { caller: 'person', sites: ['mercari'], person_id: 'usr_8f2k', accounts, harness, fetchPage });
   assert.equal(reads, 1); assert.ok(allowed.results.length > 0); assert.equal(allowed.searched[0].outcome, 'hit');
   ports.accounts = accounts; ports.harness = harness;
@@ -493,4 +590,120 @@ test('a harness card missing its title is page_changed, never a kept offer', asy
   const stored = jobs.get(job.id, 'usr_8f2k')!.result as { results: unknown[]; searched: { site: Site; outcome: string }[] };
   assert.deepEqual(stored.results, []);
   assert.equal(stored.searched.find(s => s.site === 'mercari')!.outcome, 'page_changed');
+});
+
+
+test('a throw in the failure path store writes is logged and the background promise resolves', async () => {
+  const sink = memorySink(); deps.log = createLog({ src: 'test', build: 'test', sink });
+  const update = jobs.update;
+  const job = await start();
+  jobs.update = () => { throw new Error('store unavailable'); };
+  try {
+    await bounded(Promise.all(searchJobs.pendingSearches.values()));
+    assert.match(sink.text(), /search.background/);
+    assert.match(sink.text(), /store unavailable/);
+    assert.equal(searchJobs.pendingSearches.has(job.id), false);
+  } finally { jobs.update = update; jobs.append(job.id, 'job.state', { state: 'failed' }); }
+});
+
+
+test('a recorded Dupe reply lands as its own ranked batch with exact links and disclosures, never cached', async () => {
+  let searches = 0, now = 0;
+  const sleeps: number[] = [], queries: string[] = [];
+  const recording = (name: string) => readFileSync(new URL(`../harness/sites/dupe/fixtures/${name}.sse`, import.meta.url), 'utf8');
+  ports.sources = SOURCES.filter(s => s.id === 'dupe');
+  ports.dupe = createDupe({ log: deps.log, now: () => now, sleep: async ms => { sleeps.push(ms); now += ms; },
+    send: async (_url, init) => {
+      const body = JSON.parse(init.body);
+      if (body.method === 'tools/call') { searches++; queries.push(body.params.arguments.query); }
+      return { status: 200, headers: new Headers(), text: async () => body.method === 'initialize' ? recording('initialize')
+        : body.method === 'tools/list' ? recording('tools-list') : body.method === 'tools/call' ? recording('search') : '' };
+    } });
+  const rpc = JSON.parse(recording('search').split('data: ')[1]);
+  const products = JSON.parse(rpc.result.content[0].text).products as { link: string; source: string; secondhand: boolean }[];
+  const query = "Levi's 501 32x32 Medium Wash";
+  for (let i = 0; i < 2; i++) {
+    const job = await start({ text: query }); await ended(job.id);
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.state, 'done');
+    assert.equal(saved.result.results.length, 6);
+    assert.deepEqual(saved.result.found, { sources_searched: 1, results_found: 6, results_used: 6, dropped_by_reason: {}, sites: { dupe: 6 } });
+    for (const row of saved.result.results) {
+      const product = products.find(p => p.link === row.url);
+      assert.ok(product, 'the URL must be byte-identical to a recorded link');
+      assert.equal(row.commercial_link, true); assert.equal(row.attribution, 'Dupe.com');
+      assert.equal(row.source_site, product.source); assert.equal(row.secondhand, product.secondhand);
+      assert.equal(row.site, 'dupe'); assert.equal(row.route_id, 'dupe.search.api');
+      assert.equal(row.data, 'live:dupe'); assert.ok(row.keep_until);
+    }
+    const partials = jobs.framesAfter(job.id, 0).filter(f => f.event === 'answer.partial');
+    assert.equal(partials.length, 1, 'a repeat must not emit a standing-index Dupe batch');
+    assert.equal(partials[0].data.site, 'dupe');
+    assert.deepEqual(partials[0].data.results, saved.result.results);
+    assert.equal(saved.result.searched[0].cached, undefined);
+    assert.equal(outsideCallCount(), i + 1, 'no request-only route output is retained in the run cache');
+  }
+  assert.equal(searches, 2); assert.deepEqual(queries, [query, query]); assert.deepEqual(sleeps, [3000]);
+});
+
+test('a Dupe protocol failure fails only Dupe with the original code and keeps the other batch', async () => {
+  ports.sources = SOURCES.filter(s => ['dupe', 'poshmark'].includes(s.id));
+  ports.dupe = { search: async () => ({ ok: false, error: { code: 'rate_limited', message: 'wait', hint: { do: 'retry_after', after_s: 3 } } }) };
+  ports.fetchPage = async () => page(fixture('poshmark'));
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.state, 'done'); assert.equal(saved.result.results.length, 12);
+  const failed = saved.stages.find((s: { name: string }) => s.name === 'site:dupe');
+  assert.equal(failed.state, 'failed'); assert.equal(failed.error.code, 'rate_limited');
+  assert.equal(saved.result.searched.find((s: { site: string }) => s.site === 'dupe').error_code, 'rate_limited');
+});
+
+
+test('Depop gets one browser-start allowance for the search and reuses the configured harness on refresh', async () => {
+  searchParams.declare({ name: 'search_browser_start_ms', family: 'scalar', prior: 60 });
+  ports.deadline_ms = 20;
+  ports.sources = SOURCES.filter(s => s.id === 'depop');
+  let reads = 0;
+  depopRead = async () => { reads++; await new Promise(resolve => setTimeout(resolve, 40)); return page(fixture('depop')); };
+  ports.fetchPage = async () => { assert.fail('Depop must never retry the known 403 public-page lane'); };
+  const harness = ports.harness;
+  for (let i = 0; i < 2; i++) {
+    const job = await start(); await ended(job.id);
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.result.results.length, 12, 'browser startup is allowed before the page-read deadline');
+    assert.equal(saved.stages[0].state, 'arrived');
+    assert.equal(ports.harness, harness);
+  }
+  assert.equal(reads, 2);
+});
+
+
+test('Mercari without an account is needs_account in polling and answer frames and has no failed stage', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'mercari');
+  const job = await start(); await ended(job.id);
+  const saved = await (await poll(job.id)).json();
+  assert.equal(saved.state, 'done'); assert.equal(saved.stages[0].state, 'arrived');
+  assert.equal(saved.stages[0].error, undefined);
+  assert.equal(saved.result.searched[0].outcome, 'needs_account');
+  assert.equal(saved.result.searched[0].reason, "needs the person's account");
+  for (const frame of jobs.framesAfter(job.id, 0).filter(f => f.event.startsWith('answer.'))) {
+    const answer = frame.data.answer as { searched: { outcome: string; reason: string }[] };
+    assert.equal(answer.searched[0].outcome, 'needs_account');
+    assert.equal(answer.searched[0].reason, "needs the person's account");
+  }
+});
+
+
+test('public page failures fail only their source stage, including a shared read', async () => {
+  ports.sources = SOURCES.filter(s => s.id === 'poshmark');
+  let release!: (p: PageResult) => void;
+  ports.fetchPage = async () => new Promise(resolve => { release = resolve; });
+  const [a, b] = await Promise.all([start(), start()]);
+  release(blocked());
+  await Promise.all([ended(a.id), ended(b.id)]);
+  for (const job of [a, b]) {
+    const saved = await (await poll(job.id)).json();
+    assert.equal(saved.state, 'done'); assert.equal(saved.stages[0].state, 'failed');
+    assert.equal(saved.stages[0].error.code, 'blocked');
+  }
 });

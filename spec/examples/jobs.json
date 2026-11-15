@@ -332,17 +332,21 @@
           "event": "job.stage",
           "data": {
             "job_id": "job_sr1",
-            "stage": "site:mercari",
-            "state": "arrived",
-            "at": "2026-11-15T05:06:01Z",
+            "stage": "site:depop",
+            "state": "failed",
+            "at": "2026-11-15T05:06:00Z",
             "found": {
               "sources_searched": 1,
               "results_found": 0,
               "results_used": 0,
               "dropped_by_reason": {},
               "sites": {
-                "mercari": 0
+                "depop": 0
               }
+            },
+            "error": {
+              "code": "no_route",
+              "message": "cloud launcher not configured"
             }
           }
         },
@@ -351,14 +355,18 @@
           "event": "answer.partial",
           "data": {
             "job_id": "job_sr1",
-            "site": "mercari",
+            "site": "depop",
             "product": null,
             "results": [],
+            "identity": {
+              "by": "default",
+              "model_ok": false
+            },
             "official": [],
             "sites_pending": [
-              "depop",
+              "dupe",
               "poshmark",
-              "facebook"
+              "mercari"
             ],
             "answer": {
               "id": "job_sr1",
@@ -374,20 +382,22 @@
                 "results_used": 0,
                 "dropped_by_reason": {},
                 "sites": {
-                  "mercari": 0
+                  "depop": 0
                 }
               },
               "searched": [
                 {
-                  "route_id": "mercari.search.page",
+                  "route_id": "depop.search.page",
                   "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 1
+                  "outcome": "failed",
+                  "ms": 1,
+                  "error_code": "no_route",
+                  "reason": "cloud launcher not configured"
                 }
               ],
               "stage": "first",
               "ms": {
-                "first": 1,
+                "first": 3,
                 "settled": null
               }
             }
@@ -398,16 +408,16 @@
           "event": "job.stage",
           "data": {
             "job_id": "job_sr1",
-            "stage": "site:facebook",
+            "stage": "site:mercari",
             "state": "arrived",
-            "at": "2026-11-15T05:06:02Z",
+            "at": "2026-11-15T05:06:00Z",
             "found": {
               "sources_searched": 1,
               "results_found": 0,
               "results_used": 0,
               "dropped_by_reason": {},
               "sites": {
-                "facebook": 0
+                "mercari": 0
               }
             }
           }
@@ -417,12 +427,16 @@
           "event": "answer.partial",
           "data": {
             "job_id": "job_sr1",
-            "site": "facebook",
+            "site": "mercari",
             "product": null,
             "results": [],
+            "identity": {
+              "by": "default",
+              "model_ok": false
+            },
             "official": [],
             "sites_pending": [
-              "depop",
+              "dupe",
               "poshmark"
             ],
             "answer": {
@@ -439,27 +453,30 @@
                 "results_used": 0,
                 "dropped_by_reason": {},
                 "sites": {
-                  "mercari": 0,
-                  "facebook": 0
+                  "depop": 0,
+                  "mercari": 0
                 }
               },
               "searched": [
                 {
-                  "route_id": "mercari.search.page",
+                  "route_id": "depop.search.page",
                   "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 1
+                  "outcome": "failed",
+                  "ms": 1,
+                  "error_code": "no_route",
+                  "reason": "cloud launcher not configured"
                 },
                 {
-                  "route_id": "public.facebook",
+                  "route_id": "mercari.search.page",
                   "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 2
+                  "outcome": "needs_account",
+                  "ms": 1,
+                  "reason": "needs the person's account"
                 }
               ],
               "stage": "first",
               "ms": {
-                "first": 1,
+                "first": 3,
                 "settled": null
               }
             }
@@ -470,87 +487,9 @@
           "event": "job.stage",
           "data": {
             "job_id": "job_sr1",
-            "stage": "site:depop",
-            "state": "arrived",
-            "at": "2026-11-15T05:06:03Z",
-            "found": {
-              "sources_searched": 1,
-              "results_found": 0,
-              "results_used": 0,
-              "dropped_by_reason": {},
-              "sites": {
-                "depop": 0
-              }
-            }
-          }
-        },
-        {
-          "id": "7",
-          "event": "answer.partial",
-          "data": {
-            "job_id": "job_sr1",
-            "site": "depop",
-            "product": null,
-            "results": [],
-            "official": [],
-            "sites_pending": [
-              "poshmark"
-            ],
-            "answer": {
-              "id": "job_sr1",
-              "kind": "listings_matching",
-              "slots": {
-                "text": "levi 501"
-              },
-              "protocol_version": 1,
-              "facts": [],
-              "found": {
-                "sources_searched": 3,
-                "results_found": 0,
-                "results_used": 0,
-                "dropped_by_reason": {},
-                "sites": {
-                  "mercari": 0,
-                  "facebook": 0,
-                  "depop": 0
-                }
-              },
-              "searched": [
-                {
-                  "route_id": "mercari.search.page",
-                  "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 1
-                },
-                {
-                  "route_id": "public.facebook",
-                  "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 2
-                },
-                {
-                  "route_id": "public.depop",
-                  "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 3
-                }
-              ],
-              "stage": "first",
-              "ms": {
-                "first": 1,
-                "settled": null
-              }
-            }
-          }
-        },
-        {
-          "id": "8",
-          "event": "job.stage",
-          "data": {
-            "job_id": "job_sr1",
             "stage": "site:poshmark",
             "state": "arrived",
-            "at": "2026-11-15T05:06:04Z",
+            "at": "2026-11-15T05:06:00Z",
             "found": {
               "sources_searched": 1,
               "results_found": 12,
@@ -563,7 +502,7 @@
           }
         },
         {
-          "id": "9",
+          "id": "7",
           "event": "answer.partial",
           "data": {
             "job_id": "job_sr1",
@@ -579,7 +518,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1000,
@@ -603,7 +542,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1900,
@@ -627,7 +566,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2000,
@@ -651,7 +590,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2300,
@@ -675,7 +614,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -699,7 +638,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -723,7 +662,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -747,7 +686,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3400,
@@ -771,7 +710,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3500,
@@ -795,7 +734,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 6500,
@@ -819,7 +758,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 22000,
@@ -843,7 +782,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 24300,
@@ -859,6 +798,126 @@
                 "data": "example"
               }
             ],
+            "identity": {
+              "by": "default",
+              "model_ok": false
+            },
+            "official": [],
+            "sites_pending": [
+              "dupe"
+            ],
+            "answer": {
+              "id": "job_sr1",
+              "kind": "listings_matching",
+              "slots": {
+                "text": "levi 501"
+              },
+              "protocol_version": 1,
+              "facts": [],
+              "found": {
+                "sources_searched": 3,
+                "results_found": 12,
+                "results_used": 12,
+                "dropped_by_reason": {},
+                "sites": {
+                  "depop": 0,
+                  "mercari": 0,
+                  "poshmark": 12
+                }
+              },
+              "searched": [
+                {
+                  "route_id": "depop.search.page",
+                  "query": "levi 501",
+                  "outcome": "failed",
+                  "ms": 1,
+                  "error_code": "no_route",
+                  "reason": "cloud launcher not configured"
+                },
+                {
+                  "route_id": "mercari.search.page",
+                  "query": "levi 501",
+                  "outcome": "needs_account",
+                  "ms": 1,
+                  "reason": "needs the person's account"
+                },
+                {
+                  "route_id": "public.poshmark",
+                  "query": "levi 501",
+                  "outcome": "hit",
+                  "ms": 1
+                }
+              ],
+              "stage": "first",
+              "ms": {
+                "first": 3,
+                "settled": null
+              }
+            }
+          }
+        },
+        {
+          "id": "8",
+          "event": "job.stage",
+          "data": {
+            "job_id": "job_sr1",
+            "stage": "site:dupe",
+            "state": "arrived",
+            "at": "2026-11-15T05:06:00Z",
+            "found": {
+              "sources_searched": 1,
+              "results_found": 1,
+              "results_used": 1,
+              "dropped_by_reason": {},
+              "sites": {
+                "dupe": 1
+              }
+            }
+          }
+        },
+        {
+          "id": "9",
+          "event": "answer.partial",
+          "data": {
+            "job_id": "job_sr1",
+            "site": "dupe",
+            "product": null,
+            "results": [
+              {
+                "id": "ls_dupe_dupe-5021d41260cb",
+                "listing_id": "ls_dupe_dupe-5021d41260cb",
+                "external_id": "dupe-5021d41260cb",
+                "title": "Levi's Jeans | Levi's 501 Original Straight Leg Jeans 32X32 Button Fly Medium Wash | Color: Blue | Size: 32 X 32",
+                "url": "https://dupe.com/redirect/wEbRnwMpjBXpupnOcjEr154D_jEORTi0tDqtfwcxf_Hzjv5yGWzmOsCDloAFVJGVeGewGJJFz4182i0VWRfVKzzE9M5v3SJ2MhLBWLt_VN1J_Vp1yUAPHxuoBAOY2wXUQP5BBiA4gwJiHN5Vg1fgJiPCxxnW_3DAivntknXiox1izryaC5vrC9MFkfLOi8IB_bB2Y4GYf3Gj6B8iWx5rZfmTE0-h7A?shopKey=https%3A%2F%2Fposhmark.com&mcp=true",
+                "site": "dupe",
+                "route_id": "dupe.search.api",
+                "data": "example",
+                "condition": "unknown",
+                "relation": "unresolved",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 1500,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 1500,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": [],
+                "image_url": "https://th.bing.com/th/id/OPHS.KG1t4EZs0pWrPA474C474?w=220&h=210&c=17&o=5&pid=21.1",
+                "commercial_link": true,
+                "attribution": "Dupe.com",
+                "source_site": "Poshmark",
+                "secondhand": true,
+                "keep_until": "2026-11-15T05:06:00.000Z"
+              }
+            ],
+            "identity": {
+              "by": "default",
+              "model_ok": false
+            },
             "official": [],
             "sites_pending": [],
             "answer": {
@@ -871,45 +930,48 @@
               "facts": [],
               "found": {
                 "sources_searched": 4,
-                "results_found": 12,
-                "results_used": 12,
+                "results_found": 13,
+                "results_used": 13,
                 "dropped_by_reason": {},
                 "sites": {
-                  "mercari": 0,
-                  "facebook": 0,
                   "depop": 0,
-                  "poshmark": 12
+                  "mercari": 0,
+                  "poshmark": 12,
+                  "dupe": 1
                 }
               },
               "searched": [
                 {
+                  "route_id": "depop.search.page",
+                  "query": "levi 501",
+                  "outcome": "failed",
+                  "ms": 1,
+                  "error_code": "no_route",
+                  "reason": "cloud launcher not configured"
+                },
+                {
                   "route_id": "mercari.search.page",
                   "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 1
-                },
-                {
-                  "route_id": "public.facebook",
-                  "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 2
-                },
-                {
-                  "route_id": "public.depop",
-                  "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 3
+                  "outcome": "needs_account",
+                  "ms": 1,
+                  "reason": "needs the person's account"
                 },
                 {
                   "route_id": "public.poshmark",
                   "query": "levi 501",
                   "outcome": "hit",
-                  "ms": 4
+                  "ms": 1
+                },
+                {
+                  "route_id": "dupe.search.api",
+                  "query": "levi 501",
+                  "outcome": "hit",
+                  "ms": 1
                 }
               ],
               "stage": "first",
               "ms": {
-                "first": 1,
+                "first": 3,
                 "settled": null
               }
             }
@@ -931,7 +993,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1000,
@@ -947,6 +1009,36 @@
                 "data": "example"
               },
               {
+                "id": "ls_dupe_dupe-5021d41260cb",
+                "listing_id": "ls_dupe_dupe-5021d41260cb",
+                "external_id": "dupe-5021d41260cb",
+                "title": "Levi's Jeans | Levi's 501 Original Straight Leg Jeans 32X32 Button Fly Medium Wash | Color: Blue | Size: 32 X 32",
+                "url": "https://dupe.com/redirect/wEbRnwMpjBXpupnOcjEr154D_jEORTi0tDqtfwcxf_Hzjv5yGWzmOsCDloAFVJGVeGewGJJFz4182i0VWRfVKzzE9M5v3SJ2MhLBWLt_VN1J_Vp1yUAPHxuoBAOY2wXUQP5BBiA4gwJiHN5Vg1fgJiPCxxnW_3DAivntknXiox1izryaC5vrC9MFkfLOi8IB_bB2Y4GYf3Gj6B8iWx5rZfmTE0-h7A?shopKey=https%3A%2F%2Fposhmark.com&mcp=true",
+                "site": "dupe",
+                "route_id": "dupe.search.api",
+                "data": "example",
+                "condition": "unknown",
+                "relation": "unresolved",
+                "source_kind": "marketplace",
+                "price_cents": {
+                  "amount_cents": 1500,
+                  "currency": "USD"
+                },
+                "shipping_cents": null,
+                "delivered_cents": {
+                  "amount_cents": 1500,
+                  "currency": "USD"
+                },
+                "shipping_estimated": true,
+                "also_on": [],
+                "image_url": "https://th.bing.com/th/id/OPHS.KG1t4EZs0pWrPA474C474?w=220&h=210&c=17&o=5&pid=21.1",
+                "commercial_link": true,
+                "attribution": "Dupe.com",
+                "source_site": "Poshmark",
+                "secondhand": true,
+                "keep_until": "2026-11-15T05:06:00.000Z"
+              },
+              {
                 "id": "ls_poshmark_6acc277c24cc87fabe88bca4",
                 "listing_id": "ls_poshmark_6acc277c24cc87fabe88bca4",
                 "external_id": "6acc277c24cc87fabe88bca4",
@@ -955,7 +1047,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 1900,
@@ -979,7 +1071,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2000,
@@ -1003,7 +1095,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2300,
@@ -1027,7 +1119,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -1051,7 +1143,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -1075,7 +1167,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 2500,
@@ -1099,7 +1191,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3400,
@@ -1123,7 +1215,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 3500,
@@ -1147,7 +1239,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 6500,
@@ -1171,7 +1263,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 22000,
@@ -1195,7 +1287,7 @@
                 "site": "poshmark",
                 "route_id": "public.poshmark",
                 "condition": "unknown",
-                "relation": "same_product",
+                "relation": "likely_same_model",
                 "source_kind": "marketplace",
                 "price_cents": {
                   "amount_cents": 24300,
@@ -1211,53 +1303,59 @@
                 "data": "example"
               }
             ],
+            "identity": {
+              "by": "default",
+              "model_ok": false
+            },
             "official": [],
             "sites_pending": [],
             "found": {
               "sources_searched": 4,
-              "results_found": 12,
-              "results_used": 12,
+              "results_found": 13,
+              "results_used": 13,
               "dropped_by_reason": {},
               "sites": {
-                "mercari": 0,
-                "facebook": 0,
                 "depop": 0,
-                "poshmark": 12
+                "mercari": 0,
+                "poshmark": 12,
+                "dupe": 1
               }
             },
             "searched": [
               {
+                "site": "depop",
+                "kind": "search",
+                "url": null,
+                "outcome": "failed",
+                "ms": 1,
+                "count": 0,
+                "reason": "cloud launcher not configured",
+                "error_code": "no_route"
+              },
+              {
                 "site": "mercari",
                 "kind": "search",
                 "url": null,
-                "outcome": "blocked",
+                "outcome": "needs_account",
                 "ms": 1,
                 "count": 0,
-                "reason": "linked account required"
-              },
-              {
-                "site": "facebook",
-                "kind": "search",
-                "url": "https://www.facebook.com/marketplace/search?query=levi%20501",
-                "outcome": "blocked",
-                "ms": 2,
-                "count": 0
-              },
-              {
-                "site": "depop",
-                "kind": "search",
-                "url": "https://www.depop.com/search/?q=levi%20501",
-                "outcome": "blocked",
-                "ms": 3,
-                "count": 0
+                "reason": "needs the person's account"
               },
               {
                 "site": "poshmark",
                 "kind": "search",
                 "url": "https://poshmark.com/search?query=levi%20501",
                 "outcome": "hit",
-                "ms": 4,
+                "ms": 1,
                 "count": 12
+              },
+              {
+                "site": "dupe",
+                "kind": "search",
+                "url": null,
+                "outcome": "hit",
+                "ms": 1,
+                "count": 1
               }
             ],
             "answer": {
@@ -1270,46 +1368,49 @@
               "facts": [],
               "found": {
                 "sources_searched": 4,
-                "results_found": 12,
-                "results_used": 12,
+                "results_found": 13,
+                "results_used": 13,
                 "dropped_by_reason": {},
                 "sites": {
-                  "mercari": 0,
-                  "facebook": 0,
                   "depop": 0,
-                  "poshmark": 12
+                  "mercari": 0,
+                  "poshmark": 12,
+                  "dupe": 1
                 }
               },
               "searched": [
                 {
+                  "route_id": "depop.search.page",
+                  "query": "levi 501",
+                  "outcome": "failed",
+                  "ms": 1,
+                  "error_code": "no_route",
+                  "reason": "cloud launcher not configured"
+                },
+                {
                   "route_id": "mercari.search.page",
                   "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 1
-                },
-                {
-                  "route_id": "public.facebook",
-                  "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 2
-                },
-                {
-                  "route_id": "public.depop",
-                  "query": "levi 501",
-                  "outcome": "blocked",
-                  "ms": 3
+                  "outcome": "needs_account",
+                  "ms": 1,
+                  "reason": "needs the person's account"
                 },
                 {
                   "route_id": "public.poshmark",
                   "query": "levi 501",
                   "outcome": "hit",
-                  "ms": 4
+                  "ms": 1
+                },
+                {
+                  "route_id": "dupe.search.api",
+                  "query": "levi 501",
+                  "outcome": "hit",
+                  "ms": 1
                 }
               ],
               "stage": "settled",
               "ms": {
-                "first": 1,
-                "settled": 4
+                "first": 3,
+                "settled": 5
               }
             }
           }
@@ -1321,7 +1422,7 @@
             "job_id": "job_sr1",
             "kind": "search",
             "state": "done",
-            "at": "2026-11-15T05:06:04Z",
+            "at": "2026-11-15T05:06:00Z",
             "result": {
               "product": null,
               "results": [
@@ -1334,7 +1435,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 1000,
@@ -1350,6 +1451,36 @@
                   "data": "example"
                 },
                 {
+                  "id": "ls_dupe_dupe-5021d41260cb",
+                  "listing_id": "ls_dupe_dupe-5021d41260cb",
+                  "external_id": "dupe-5021d41260cb",
+                  "title": "Levi's Jeans | Levi's 501 Original Straight Leg Jeans 32X32 Button Fly Medium Wash | Color: Blue | Size: 32 X 32",
+                  "url": "https://dupe.com/redirect/wEbRnwMpjBXpupnOcjEr154D_jEORTi0tDqtfwcxf_Hzjv5yGWzmOsCDloAFVJGVeGewGJJFz4182i0VWRfVKzzE9M5v3SJ2MhLBWLt_VN1J_Vp1yUAPHxuoBAOY2wXUQP5BBiA4gwJiHN5Vg1fgJiPCxxnW_3DAivntknXiox1izryaC5vrC9MFkfLOi8IB_bB2Y4GYf3Gj6B8iWx5rZfmTE0-h7A?shopKey=https%3A%2F%2Fposhmark.com&mcp=true",
+                  "site": "dupe",
+                  "route_id": "dupe.search.api",
+                  "data": "example",
+                  "condition": "unknown",
+                  "relation": "unresolved",
+                  "source_kind": "marketplace",
+                  "price_cents": {
+                    "amount_cents": 1500,
+                    "currency": "USD"
+                  },
+                  "shipping_cents": null,
+                  "delivered_cents": {
+                    "amount_cents": 1500,
+                    "currency": "USD"
+                  },
+                  "shipping_estimated": true,
+                  "also_on": [],
+                  "image_url": "https://th.bing.com/th/id/OPHS.KG1t4EZs0pWrPA474C474?w=220&h=210&c=17&o=5&pid=21.1",
+                  "commercial_link": true,
+                  "attribution": "Dupe.com",
+                  "source_site": "Poshmark",
+                  "secondhand": true,
+                  "keep_until": "2026-11-15T05:06:00.000Z"
+                },
+                {
                   "id": "ls_poshmark_6acc277c24cc87fabe88bca4",
                   "listing_id": "ls_poshmark_6acc277c24cc87fabe88bca4",
                   "external_id": "6acc277c24cc87fabe88bca4",
@@ -1358,7 +1489,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 1900,
@@ -1382,7 +1513,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2000,
@@ -1406,7 +1537,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2300,
@@ -1430,7 +1561,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2500,
@@ -1454,7 +1585,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2500,
@@ -1478,7 +1609,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 2500,
@@ -1502,7 +1633,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 3400,
@@ -1526,7 +1657,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 3500,
@@ -1550,7 +1681,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 6500,
@@ -1574,7 +1705,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 22000,
@@ -1598,7 +1729,7 @@
                   "site": "poshmark",
                   "route_id": "public.poshmark",
                   "condition": "unknown",
-                  "relation": "same_product",
+                  "relation": "likely_same_model",
                   "source_kind": "marketplace",
                   "price_cents": {
                     "amount_cents": 24300,
@@ -1614,53 +1745,59 @@
                   "data": "example"
                 }
               ],
+              "identity": {
+                "by": "default",
+                "model_ok": false
+              },
               "official": [],
               "sites_pending": [],
               "found": {
                 "sources_searched": 4,
-                "results_found": 12,
-                "results_used": 12,
+                "results_found": 13,
+                "results_used": 13,
                 "dropped_by_reason": {},
                 "sites": {
-                  "mercari": 0,
-                  "facebook": 0,
                   "depop": 0,
-                  "poshmark": 12
+                  "mercari": 0,
+                  "poshmark": 12,
+                  "dupe": 1
                 }
               },
               "searched": [
                 {
+                  "site": "depop",
+                  "kind": "search",
+                  "url": null,
+                  "outcome": "failed",
+                  "ms": 1,
+                  "count": 0,
+                  "reason": "cloud launcher not configured",
+                  "error_code": "no_route"
+                },
+                {
                   "site": "mercari",
                   "kind": "search",
                   "url": null,
-                  "outcome": "blocked",
+                  "outcome": "needs_account",
                   "ms": 1,
                   "count": 0,
-                  "reason": "linked account required"
-                },
-                {
-                  "site": "facebook",
-                  "kind": "search",
-                  "url": "https://www.facebook.com/marketplace/search?query=levi%20501",
-                  "outcome": "blocked",
-                  "ms": 2,
-                  "count": 0
-                },
-                {
-                  "site": "depop",
-                  "kind": "search",
-                  "url": "https://www.depop.com/search/?q=levi%20501",
-                  "outcome": "blocked",
-                  "ms": 3,
-                  "count": 0
+                  "reason": "needs the person's account"
                 },
                 {
                   "site": "poshmark",
                   "kind": "search",
                   "url": "https://poshmark.com/search?query=levi%20501",
                   "outcome": "hit",
-                  "ms": 4,
+                  "ms": 1,
                   "count": 12
+                },
+                {
+                  "site": "dupe",
+                  "kind": "search",
+                  "url": null,
+                  "outcome": "hit",
+                  "ms": 1,
+                  "count": 1
                 }
               ]
             }

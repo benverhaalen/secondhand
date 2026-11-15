@@ -1709,8 +1709,107 @@ Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting t
 
 Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).
 
+## 2026-11-15 ben pricing modes and a reason for every number; backtests wait for the backend
+
+Ben, project chat, 2026-11-15 09:09 UTC. Full message; the earlier studio block records an excerpt.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too. also understand why companies pay for affiliate links. also consider pricing the different ways of pricing. our algorithm can price to sell. it can price to the market. can price other ways. shouldnt it end up showing what each of these toggles is meant to show? let nate do the nber stuff. so there is no public way to access mercari data? if its there lets use it its for a hackathon demo
+
+Used in: [pricing modes](../spec/plans/backtest/pricing-modes.md), [backtest plan](../spec/plans/backtest/plan.md#10-why-each-number-and-the-runs-that-wait-for-the-backend).
 ## 2026-11-15 nate use the platforms that sit on the ebay api or the like, and build on what they have proven
 Nate, build session (orchestrator), 2026-11-15 about 10:20 Central.
 > Well the aggregation or other platforms that utilize the ebay api or something of that nature can be used instead, perhaps for even more information, they might lend features proven we can piggy back on and drive to empower all engines.
 
 Used in: `research/data/nate/data-services-on-marketplace-apis.md` when it lands.
+
+## 2026-11-15 nate turn on the captcha solver if it solves problems, and assess completion as a percent
+Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
+> Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
+
+Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.
+
+## 2026-11-15 nate correct the answers that come in, and check the engines' spec makes scientific sense and the real-time gathering works
+Nate, build session (orchestrator), 2026-11-15 about 11:30 Central.
+> Ensure all answers that come in are corrected. assess that the engines and how things are determined and weighted, is written out in a spec that makes research proven and scientific sense, that the realtime gathering of this works
+
+Used in: `spec/plans/sweep/science-audit.md` and `scripts/realtime-proof.mjs` when they land.
+
+## 2026-11-15 five reasons answered, cleo's style in the app's family, and site images through codex
+Ben, project chat, 09:23 UTC, answering the five rules that had no stated reason (D2, W1, W8, W10, W13).
+> scrap 1/d2. 2 yea keep this. 3. yes. cleos style more than layout just adapted to how the app's ui looks. they all should look like the same family. 4. yes. 5. site images through codex cli
+
+Used in: [demo D2](constitutions/demo.md), [web W1, W8, W10, W13](constitutions/web.md), [intent ledger](../spec/intent-ledger.md#constitution-reasons-still-needed).
+## 2026-11-15 nate production ready, the auditors once more, organize the repo, and prepare on the mac for testflight
+Nate, build session (orchestrator), 2026-11-15 about 11:45 to 11:55 Central. Two messages.
+> Get everything fully production ready and prepared, run the professional auditors across the app once more, understand how to apply the correct lenses to everything, organize the repo
+
+> We will prepare, rigorously and accurately on mac test to prepare for testflight in hands development
+
+Used in: the second round of audits under `spec/plans/sweep/round-2/`; [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 every designed thing uses the app's design system
+
+Ben, project chat, 09:25 UTC.
+> and can you ensure for all designed things everything is used right for any videos, or other pages, etc.
+
+Used in: [demo-reel.md](demo-reel.md#2-showing-how-it-works), [pitch-constitution.md](pitch-constitution.md#part-vii-before-going-on), [live-buy-demo.md](live-buy-demo.md).
+## 2026-11-15 nate valuation is critical, find where others hold the ebay data and harness onto it
+Nate, build session (orchestrator), 2026-11-15 about 12:20 Central, after the orchestrator reported that eBay's API licence bars using its content to model prices.
+> we need valuation, that is critical
+> Find a workaround, understand where other platforms utilize the api and have all ebay data so we can just harness onto that
+
+Used in: `research/price/nate/sold-price-sources-for-valuation.md` when it lands.
+
+## 2026-11-15 nate we own the backtests
+Nate, build session (orchestrator), 2026-11-15 about 12:30 Central, answering whether Ben's thread should own the backtest method and published runs.
+> we own backtests and such
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 ben research how depop and other resale apps estimate prices
+
+Ben, project chat, 2026-11-15 09:31 UTC.
+
+> i know depop does price estimates in there app, research that and similar reselling platforms that share similar features
+
+Used in: [how resale platforms suggest prices](../research/price/ben/platform-price-suggestions.md).
+## 2026-11-15 nate backtest as we build, and the steps for testflight
+Nate, build session (orchestrator), 2026-11-15 about 13:10 Central. Two messages.
+> Please also give me the steps to set up the bundler id and everything for expo to get testflight builds and everything set up
+
+> well lets backtest as we build to evaluate and improve, but keep building to fully optimized production
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate ben has given me the backend
+Nate, build session (orchestrator), 2026-11-15 about 13:20 Central.
+> Ben has given full reign for me to handle backend
+
+Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
+
+## 2026-11-15 nate mercari in real time, fix the search, and work every percent to perfection
+Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
+> Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
+
+Used in: [state of completion](../spec/plans/completion.md).
+
+## 2026-11-15 nate the apple account is his, and the first testflight build is the demo we improve
+Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is left out of this public file.
+> its [his own name] my apple account, the testflight build is the demo for us to test and improve continously before we finalize. I expect we can continously improve the ui/ux and strive to fit the perfect presentation to ensure us winning the compeition
+
+Used in: [production readiness](../spec/plans/sweep/round-2/production-readiness.md), decisions 1 and 5.
+
+## 2026-11-15 nate wrap the leads up at a good spot, then spec from what we have
+Nate, build session (orchestrator), 2026-11-15 about 15:30 Central.
+> Everything you just ascertained, lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop, meanwhile, give me the full command to put into the terminal with the path for the p8 and everything prewritten
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "The spec pass".
+
+## 2026-11-15 nate where are we not optimized, an expert lead for real-time adaptation, the bundle identifier, and sessions end before they fill
+Nate, build session (orchestrator), 2026-11-15 between about 15:45 and 16:00 Central. Three messages.
+> Where have we not optimized in speed, accuracy, all aspects to the retrieval and operations of data and such features and everything driven with our custom build pipelines and api protocols. /research and assess. Addtionally, fully focus an expert team lead to apply the relevant skills, research out and continously with codex address things to fit the realtime adapt to each specific platform product type engines, taking into account the data we can gather and calculate things against, combining things to create metrics, all researched and credibly proven
+
+> com.bnvg.secondhand
+
+> ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "A session ends before it fills"; `spec/plans/optimization-gaps.md`.

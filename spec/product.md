@@ -173,7 +173,7 @@ Every state machine lives here; a feature may add a transition, never a state na
 | strategy | suggested, chosen, running, ended | |
 | want | active, paused, ended | |
 | match | found, alerted, saved, asked, offered, bought, dismissed, gone | |
-| job | queued, running, done, failed | stage states: started, running, arrived, failed. These are the [events.json](events.json) names, so stream, log and screen use one set |
+| job | queued, running, done, failed | stage states: started, running, arrived, planned, failed. `planned` (*agent proposal*, integration lead 2026-11-15, after the security audit found a dry plan recorded as arrived): a write that was planned dry and not sent; the site is unchanged, nothing that depends on the write having happened may proceed, and the person is asked. These are the [events.json](events.json) names, so stream, log and screen use one set |
 | label | proposed, in_use, retired | |
 | conversation | open, closed, blocked | |
 | experiment | suggested, chosen, running, ended | ended carries a reason: result reached, price floor or exploration budget reached, or a `ranker_changed` notice on the site |
@@ -617,7 +617,7 @@ Image judgements and text judgements are separate parts of the harness, and the 
 
 ## 7. Contract conventions
 
-The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_` (this page adds `cap_`, `ph_`, `att_`, `pr_`, `cmp_`, `val_`, `st_`, `cv_`, `msg_`, `of_`, `ru_`, `mt_`, `ap_`, `gl_`, `ev_`, `rec_`, `acc_`, `lb_`, `sr_`, and for the proof layer, score and market `ci_`, `sc_`, `rk_`, `ro_`, `ex_`, `arm_`, `nt_`, `rq_`, `cc_`, `vi_`, `fo_`, `rc_`, `ps_`, `mm_`, `ip_`, and for assist `in_` (intent), *agent proposal*); [log/example.mjs](../log/example.mjs) writes `jb_` and moves to `job_`. Money `{amount_cents, currency}`; ISO 8601 UTC times; provenance `{value, unit?, source, confidence, evidence[], confirmed}`; range `{low, high, basis_count, as_of, per_site}`, worded per [copy.md](../product/copy.md); a shown number wraps either in the guarded number shape (§3), so it also carries `citation_id`, `state` and `hide_reason`.
+The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_` (this page adds `q_` (a capture question, `q_<capture_id>_<field or step>`), `cap_`, `ph_`, `att_`, `pr_`, `cmp_`, `val_`, `st_`, `cv_`, `msg_`, `of_`, `ru_`, `mt_`, `ap_`, `gl_`, `ev_`, `rec_`, `acc_`, `lb_`, `sr_`, and for the proof layer, score and market `ci_`, `sc_`, `rk_`, `ro_`, `ex_`, `arm_`, `nt_`, `rq_`, `cc_`, `vi_`, `fo_`, `rc_`, `ps_`, `mm_`, `ip_`, and for assist `in_` (intent), *agent proposal*); [log/example.mjs](../log/example.mjs) writes `jb_` and moves to `job_`. Money `{amount_cents, currency}`; ISO 8601 UTC times; provenance `{value, unit?, source, confidence, evidence[], confirmed}`; range `{low, high, basis_count, as_of, per_site}`, worded per [copy.md](../product/copy.md); a shown number wraps either in the guarded number shape (§3), so it also carries `citation_id`, `state` and `hide_reason`.
 
 ### Requests
 
@@ -633,7 +633,7 @@ The frame's shapes are binding: ids `it_`, `ls_`, `job_`, `dec_`, `ord_`, `want_
 
 | Endpoint | Does |
 |---|---|
-| `POST /v1/captures`, `POST /v1/captures/:id/photos`, `PATCH /v1/captures/:id {type}`, `POST /v1/captures/:id/finish` | open a session (returns the suggested type, the picker order and `process[]`), get upload targets, change the type (*agent proposal*), finish (returns the research jobs) |
+| `POST /v1/captures`, `POST /v1/captures/:id/photos`, `PATCH /v1/captures/:id {type}`, `POST /v1/captures/:id/finish`, `GET /v1/captures/:id` | open a session (returns the suggested type, the picker order and `process[]`), get upload targets, change the type (*agent proposal*), finish (returns the research jobs), read a capture with its derived `plan` |
 | `GET /v1/items`, `GET /v1/items/:id`, `PATCH /v1/items/:id` | items by state; the full item card; edit title, location, quantity, cost |
 | `PATCH /v1/items/:id/attributes/:name` | the person corrects a fact (stored as `you_said`, confirmed) or unpins it (`confirmed: false`, logs `attribute.unpinned`) |
 | `POST /v1/items/:id/sell` | "Sell this" on an owned item |

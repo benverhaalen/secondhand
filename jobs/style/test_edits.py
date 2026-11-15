@@ -50,18 +50,19 @@ def test_edit_without_weight_keeps_current_weight_and_pins_it():
     assert brand(s.facets)["weight"] == w and brand(s.facets)["pinned"]
 
 
-def test_removed_facet_needs_three_new_events_and_says_why():
+def test_removed_facet_blends_only_new_events_and_says_why():
     s = PersonState("a")
     old = saves(4, 40)
     fold(s, old, NOW - timedelta(days=12))
     remove(s, "brand", "Arcteryx", NOW - timedelta(days=10))
     new2 = [Event(f"n{i}", "a", "save", NOW - timedelta(days=8 - i * 3), {"brand": "Arcteryx"}) for i in range(2)]
     fold(s, old + new2, NOW)
-    assert brand(s.facets) is None  # old events never count after remove, 2 new are not enough
+    assert brand(s.facets)["count"] == 2  # old events never count after remove
+    weight2 = brand(s.facets)["weight"]
     new3 = new2 + [Event("n2", "a", "save", NOW - timedelta(days=1), {"brand": "Arcteryx"})]
     fold(s, old + new3, NOW)
     f = brand(s.facets)
-    assert f and f["count"] == 3
+    assert f and f["count"] == 3 and f["weight"] > weight2
     d = NOW - timedelta(days=10)
     assert f["back_because"] == f"back because you saved 3 since {d.day} {d:%b}"
 

@@ -37,8 +37,8 @@ export function changed(entity: string, id: string, to: string, was?: string) {
 }
 
 // "1 sale", "4 sales": a count always agrees with its noun (break-ui, E21).
-const rules = new Intl.PluralRules('en-US');
-export const plural = (n: number, one: string, many: string) => `${new Intl.NumberFormat().format(n)} ${rules.select(n) === 'one' ? one : many}`;
+import { plural } from '../ui/parts/mark';
+export { plural };
 
 // Money is whole cents in the world; the parts format dollars in the person's locale.
 export const cash = (cents: number) => money(cents / 100);

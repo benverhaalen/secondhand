@@ -38,13 +38,17 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
+    "prestart": "node ../scripts/fonts.mjs",
     "start": "expo start",
+    "preandroid": "node ../scripts/fonts.mjs",
     "android": "expo start --android",
+    "preios": "node ../scripts/fonts.mjs",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "node --test \"src/**/*.test.ts\"",
-    "check": "tsc --noEmit && node --test \"src/**/*.test.ts\""
+    "check": "tsc --noEmit && node --test \"src/**/*.test.ts\"",
+    "fonts": "node ../scripts/fonts.mjs --check"
   },
   "private": true
 }

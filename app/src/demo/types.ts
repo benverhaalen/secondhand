@@ -32,9 +32,19 @@ export type Listing = { id: string; item_id: string; site: Site; state: ListingS
   interest_new?: { views?: number; watchers?: number; likes?: number }; posted_at: Iso | null; market_standing?: MarketStanding; error?: string };
 
 export type PlanChoice = 'sell' | 'fast' | 'best' | 'reserve' | 'check';
-export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null; plan_choice: PlanChoice; gone_by: Iso | null; fallback: 'ask' | 'donate' | 'keep' | 'trade_in' | 'relist'; markdown_on: boolean };
+// spread: this item's own cross-listing price rule, when it is not the account's (app/src/engines/listing/spreads.ts).
+// accept_mode: ask means every offer waits for the person, under any choice (ways-out §6.7, "Ask me before every offer").
+export type Spread = 'same_keep' | 'same_price' | 'site_market' | 'home_first';
+export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null; plan_choice: PlanChoice; gone_by: Iso | null; fallback: 'ask' | 'donate' | 'keep' | 'trade_in' | 'relist'; markdown_on: boolean;
+  spread?: Spread; accept_mode?: 'ask' | 'rules' };
 
-export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cents | null; high: Cents | null; basis_count: number }[]; level: 1 | 2 | 3 };
+export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cents | null; high: Cents | null; basis_count: number }[]; level: 1 | 2 | 3;
+  // Each way to price as the engine's Check sets it (engines/valuation/check.ts, modes): posture's point at that mode's
+  // mark on the same comps as the range, on the site that gets the person the most. p_sale_30 and days_t50 are null
+  // until a sale curve exists; modes is null when the range is hidden or the item recalled.
+  modes?: Record<'fast' | 'sell' | 'best', ModePoint> | null };
+export type ModePoint = { site: Site; ask_cents: Cents; list_cents: Cents; keep_cents: Cents; p_sale_30: number | null; days_t50: number | null;
+  held_by: 'floor' | 'ceiling' | 'top_listings' | null };
 
 export type Item = {
   id: string; state: ItemState; title: string; category: KindFamily; product_id?: string;

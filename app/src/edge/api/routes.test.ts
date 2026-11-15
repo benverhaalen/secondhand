@@ -61,6 +61,8 @@ test('every handler module exports a manifest consumed by the aggregate', async 
   const modules = readdirSync(new URL('./', import.meta.url)).filter(f => f.endsWith('.ts') && !f.endsWith('.test.ts') && !['routes.ts', 'http.ts', 'examples.ts', 'store.ts'].includes(f));
   for (const file of modules) {
     const module = await import(new URL(file, import.meta.url).href);
+    // A helper beside the routes (no handlers of its own) is not a handler module.
+    if (!module.handlers && !module.routeHandlers && !module.manifest) continue;
     assert.ok(Array.isArray(module.manifest), `${file}: missing module manifest`);
     if (module.handlers && Object.keys(module.handlers).every(key => key.includes(' /v1/'))) assert.deepEqual(module.manifest.map((row: { endpoint: string }) => row.endpoint).sort(), Object.keys(module.handlers).sort(), `${file}: handler absent from module manifest`);
     if (module.routeHandlers) {
@@ -86,7 +88,7 @@ test('the routes example preserves every contract field with the explicit engine
   assert.ok(existsSync(new URL('spec/examples/routes.json', root)), 'missing routes example');
   const examples = JSON.parse(read('spec/examples/routes.json')).examples;
   assert.equal(examples[0].endpoint, 'GET /v1/routes');
-  const joined = new Set(["POST /v1/valuations", "GET /v1/items", "GET /v1/items/:id", "PATCH /v1/items/:id/attributes/:name", "GET /v1/items/:id/plan-choices", "GET /v1/scores", "GET /v1/insights", "GET /v1/sources/health", "GET /v1/conversations", "GET /v1/conversations/:id/messages", "POST /v1/search", "POST /v1/compare", "GET /v1/out", "POST /v1/follows", "GET /v1/follows", "PATCH /v1/follows/:id", "DELETE /v1/follows/:id", "POST /v1/assist", "POST /v1/genie", "GET /v1/orders", "GET /v1/accounts", "POST /v1/accounts", "DELETE /v1/accounts/:id", "GET /v1/accounts/:id/import-preview", "POST /v1/accounts/:id/import", "GET /v1/limits", "PUT /v1/limits", "GET /v1/rules", "POST /v1/rules", "DELETE /v1/rules/:id", "POST /v1/items/:id/strategy", "PATCH /v1/items/:id", "POST /v1/wants", "GET /v1/wants", "GET /v1/wants/:id", "PATCH /v1/wants/:id", "GET /v1/wants/:id/matches", "POST /v1/matches/:id/act", "POST /v1/conversations/:id/messages"]);
+  const joined = new Set(["POST /v1/valuations", "GET /v1/items", "GET /v1/items/:id", "PATCH /v1/items/:id/attributes/:name", "GET /v1/items/:id/plan-choices", "GET /v1/scores", "GET /v1/insights", "GET /v1/sources/health", "GET /v1/conversations", "GET /v1/conversations/:id/messages", "POST /v1/search", "POST /v1/compare", "GET /v1/out", "POST /v1/follows", "GET /v1/follows", "PATCH /v1/follows/:id", "DELETE /v1/follows/:id", "POST /v1/assist", "POST /v1/genie", "GET /v1/orders", "GET /v1/accounts", "POST /v1/accounts", "DELETE /v1/accounts/:id", "GET /v1/accounts/:id/import-preview", "POST /v1/accounts/:id/import", "GET /v1/limits", "PUT /v1/limits", "GET /v1/rules", "POST /v1/rules", "DELETE /v1/rules/:id", "POST /v1/items/:id/strategy", "PATCH /v1/items/:id", "POST /v1/wants", "GET /v1/wants", "GET /v1/wants/:id", "PATCH /v1/wants/:id", "GET /v1/wants/:id/matches", "POST /v1/matches/:id/act", "POST /v1/conversations/:id/messages", "POST /v1/captures", "POST /v1/captures/:id/photos", "PATCH /v1/captures/:id", "POST /v1/captures/:id/finish"]);
   const expected = { ...examples[0].response, data: examples[0].response.data.map((row: { endpoint: string; source: string }) => joined.has(row.endpoint) ? { ...row, source: 'engine' } : row) };
   assert.deepEqual(expected, { data: manifest, next_cursor: null });
 });

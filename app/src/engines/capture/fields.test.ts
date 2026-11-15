@@ -65,7 +65,8 @@ const bagVariants = [
 test('unsettled variants wait for their view or lookup and preserve unmatched readings', () => {
  const reading={value:{width:60,height:50,depth:30},source:'measured' as const,confidence:.9};
  for(const patch of [{kept:['inside_tab'],lookups:'done' as const},{kept:['scan','inside_tab'],lookups:'running' as const},{kept:['scan','inside_tab'],lookups:'done' as const}]) {
-  for(const facts of [{},{dimensions:reading}]) {
+  const factsList: State['facts'][]=[{},{dimensions:reading}];
+  for(const facts of factsList) {
    const s=state({type:'bags',variants:{dimensions:bagVariants},...patch,facts});
    const selected=select(s,params),row=selected.rows.find(row=>row.field==='dimensions')!;
    const result=fieldState(row,s,selected.process.map(step=>step.key),params);

@@ -1,6 +1,7 @@
 // The two faces (Art. 6): PP Neue Montreal Medium for every word, Clofie SemiBold for the wordmark and the screen title.
-// The files are licensed and never committed (.gitignore). Copy them into app/assets/fonts/; when they are missing the
-// app falls back to the platform's own face and still builds, because the folder is read with require.context.
+// The files are licensed and never committed (.gitignore). `npm run fonts` in app/ (scripts/fonts.mjs, run before start,
+// ios and android) copies them into app/assets/fonts/ from fonts/ at the repo root or $SECONDHAND_FONTS. When they are
+// missing the app still builds, because the folder is read with require.context, and falls back to the platform's face.
 import { Asset } from 'expo-asset';
 import { useFonts } from 'expo-font';
 import { useEffect, useState } from 'react';
@@ -8,7 +9,8 @@ import { Platform } from 'react-native';
 import { font, weight } from './tokens.generated';
 
 const files = require.context('../../assets/fonts', false, /\.(otf|ttf)$/);
-const find = (f: string): number | undefined => (files.keys().some((k: string) => k.endsWith(f)) ? files('./' + f) : undefined);
+// Case is ignored: a Mac's disk does not care, and Metro's file map does, so ./Ppneuemontreal-Medium.otf would load on one and not the other.
+const find = (f: string): number | undefined => { const k = files.keys().find((n: string) => n.toLowerCase().endsWith(f.toLowerCase())); return k ? files(k) : undefined; };
 
 // On the web the names are the ones tokens.css uses, so the brand check knows them; on a phone, the key passed to useFonts.
 const FACES = [
@@ -28,7 +30,10 @@ export const FACE = {
   display: web
     ? `"${DISPLAY.name}", "${TEXT.name}", ${WEB_TAIL}`
     : on(DISPLAY) ? DISPLAY.key : on(TEXT) ? TEXT.key : undefined,
-};
+} as { text: string | undefined; display: string | undefined };
+// True when a phone build has no brand faces: the screen draws in the platform's face, and the dev build says so once.
+export const MISSING_FACES = !web && !FACES.every(on);
+if (MISSING_FACES && typeof __DEV__ !== 'undefined' && __DEV__) console.warn('secondhand: brand fonts missing from app/assets/fonts; run `npm run fonts` in app/');
 
 const nativeMap: Record<string, number> = web ? {} : Object.fromEntries(FACES.filter(on).map(f => [f.key, f.file as number]));
 

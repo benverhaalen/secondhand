@@ -1,5 +1,5 @@
 /**
- * Sold comps from the harness's public sold searches (Mercari `itemStatuses=2`, Poshmark `availability=sold_out`),
+ * Sold comps from the approved search lanes (Mercari through the asking person's linked account; Poshmark public pages),
  * turned into the comps engine's rows (money D1). One source per site, so a slow or blocked site never holds the rest:
  * check() races every source against its deadline. A site the harness cannot reach adds nothing and is logged.
  *
@@ -18,8 +18,6 @@ import { DEFAULTS, type Comp } from './comps.ts';
 export type SoldSite = 'mercari' | 'poshmark';
 export type SoldRow = { external_id?: unknown; url?: unknown; state?: unknown; price_cents?: unknown; title?: unknown;
   listed_at?: unknown; sold_at?: unknown; condition?: unknown; size?: unknown };
-type Reply = { ok: true; data: unknown } | { ok: false; error: { code: string; message: string } };
-export type Call = (site: SoldSite, verb: 'search', args: Record<string, unknown>) => Promise<Reply>;
 
 const GRADES: Record<string, string> = { 'new with tags': 'new_with_tags', nwt: 'new_with_tags', new: 'new_without_tags',
   'new without tags': 'new_without_tags', 'like new': 'excellent', excellent: 'excellent', good: 'good', fair: 'fair',
@@ -44,11 +42,15 @@ export function toComps(site: SoldSite, rows: readonly SoldRow[], q: { query: st
   return out;
 }
 
-export function soldSources(call: Call, sites: readonly SoldSite[], q: { query: string; condition: string; error(where: string, e: unknown): void }) {
-  return sites.map(site => async (_signal: AbortSignal): Promise<Comp[]> => {
-    const reply = await call(site, 'search', { q: q.query, status: 'sold' }).catch((e: unknown) => ({ ok: false as const, error: { code: 'thrown', message: String(e) } }));
-    if (!reply.ok) { q.error(`valuation.sold.${site}`, `${reply.error.code}: ${reply.error.message}`); return []; }
-    const rows = Array.isArray(reply.data) ? reply.data : Array.isArray((reply.data as { rows?: unknown })?.rows) ? (reply.data as { rows: SoldRow[] }).rows : [];
-    return toComps(site, rows as SoldRow[], q);
+type Reply = { rows: SoldRow[]; outcome: string; reason?: string };
+export type Search = (site: SoldSite, query: string, signal: AbortSignal) => Promise<Reply>;
+
+export function soldSources(search: Search, sites: readonly SoldSite[], q: { query: string; condition: string; error(where: string, e: unknown): void }) {
+  return sites.map(site => async (signal: AbortSignal): Promise<Comp[]> => {
+    try {
+      const result = await search(site, q.query, signal);
+      if (result.outcome !== 'hit' && result.outcome !== 'empty') q.error(`valuation.sold.${site}`, `${result.outcome}: ${result.reason ?? 'source did not answer'}`);
+      return toComps(site, result.rows, q);
+    } catch (e) { q.error(`valuation.sold.${site}`, e); return []; }
   });
 }

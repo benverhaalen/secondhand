@@ -1,4 +1,5 @@
 # Determinations: asking and intent
+Spec pass 2026-11-15: cards marked **Built** say where the code is; the capture engine's rules live in [capture engine](../engines/capture.md).
 
 Status: *agent proposal* for Ben and Nate. Written 2026-11-14.
 
@@ -167,6 +168,8 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 **Check later.** Share of answers outside the set (Other or escape): target under 10%.
 
 ## 7. Which option is preselected, and when none is
+
+**Built:** for capture's type suggestion only, in [capture engine §2](../engines/capture.md#selection-by-type-and-size-selectts) (`app/src/engines/capture/select.ts` `suggestionPasses`, `fields.ts` `known`). The bounds are the params `capture_preselect_floor` 0.5 and `assist_preselect_margin` 0.2 ([capture engine §3](../engines/capture.md#3-thresholds)), which match this card. This card owns the rule; the capture page links here and does not restate it. In capture the suggestion picks the process without the person's tap, and `jobs/capture/suggest.py` repeats the bounds as defaults, not as params (capture engine fix F2). The assist side is not built here. The auto-accept bounds for a type (0.9 and 0.5) are the capture engine's own and are not this card's.
 
 **Determines** `suggested` on the `clarify` decision, which is also the assumption results run on.
 

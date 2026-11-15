@@ -6,7 +6,8 @@ import { isWrite, type Harness, type Verb } from '../harness/protocol.ts';
 import { toWatchSnapshot } from '../harness/sites/depop/adapter.ts';
 import { decide, type PAccept } from '../../engines/negotiation/choose.ts';
 import { keep } from '../../engines/valuation/keep.ts';
-import { orderBook, ORDER_STATES, type OrderRead } from '../orders/orders.ts';
+import { orderBook, ORDER_STATES, type OrderRead, type OrderRow } from '../orders/orders.ts';
+import { confirmedOrder } from '../delist/delist.ts';
 import { confirm } from '../sold/sold.ts';
 import { diffSweep, toEvent } from './differ.ts';
 import type { Snapshot, Site } from './event.ts';
@@ -47,6 +48,37 @@ export const WATCH_PARAMS = [
 ] as const satisfies readonly Declared[];
 
 type Row = Record<string, unknown>;
+type WatcherJobArgs = Record<string, unknown> & {
+  account_id?: string;
+  operation_id?: string;
+  user_id?: string;
+  slug?: string;
+  response?: 'accept' | 'decline' | 'counter';
+  price_cents?: number;
+  floor_cents?: number;
+  ask_cents?: number;
+  negotiation_ask?: boolean;
+  external_id?: string;
+  decision_kind?: string;
+  decided_by?: 'negotiation';
+};
+function watcherJobArgs(value: unknown): WatcherJobArgs | undefined {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined;
+  const args = value as Record<string, unknown>;
+  if (args.account_id !== undefined && typeof args.account_id !== 'string'
+    || args.operation_id !== undefined && typeof args.operation_id !== 'string'
+    || args.user_id !== undefined && typeof args.user_id !== 'string'
+    || args.slug !== undefined && typeof args.slug !== 'string'
+    || args.response !== undefined && args.response !== 'accept' && args.response !== 'decline' && args.response !== 'counter'
+    || args.price_cents !== undefined && typeof args.price_cents !== 'number'
+    || args.floor_cents !== undefined && typeof args.floor_cents !== 'number'
+    || args.ask_cents !== undefined && typeof args.ask_cents !== 'number'
+    || args.negotiation_ask !== undefined && typeof args.negotiation_ask !== 'boolean'
+    || args.external_id !== undefined && typeof args.external_id !== 'string'
+    || args.decision_kind !== undefined && typeof args.decision_kind !== 'string'
+    || args.decided_by !== undefined && args.decided_by !== 'negotiation') return undefined;
+  return args as WatcherJobArgs;
+}
 function rows(data: unknown, section: string): Row[] {
   const value = Array.isArray(data) ? data : data && typeof data === 'object' ? (data as Row)[section] : undefined;
   if (!Array.isArray(value) || !value.every(r => r !== null && typeof r === 'object' && !Array.isArray(r)))
@@ -63,6 +95,10 @@ export function createWatcher(d: WatcherDeps) {
   const posted = new Map<string, number>();
   const slugs = new Map<string, string>();
   const orders = d.orders ?? orderBook(iso);
+  if (!d.orders) for (const row of store.systemRows('order')) {
+    const { version: _version, ...saved } = row;
+    Object.assign(orders.apply(saved as unknown as OrderRow).order, saved);
+  }
   const registry = d.cadenceParams ?? paramStore();
   for (const entry of WATCH_PARAMS) registry.declare(entry);
   let scheduler: ReturnType<typeof createScheduler> | undefined;
@@ -152,12 +188,32 @@ export function createWatcher(d: WatcherDeps) {
   }
   const risk = (a: Account) => Math.max(0, ...hazards(a).map(h => h.per_hour));
   const cadenceOf: CadenceOf | undefined = d.cadenceOf ?? (d.hazard ? (a, snapshot) => {
-    const min = watchParam('watch_interval_min_s', a), max = watchParam('watch_interval_max_s', a);
-    if (min > max) throw new RangeError('watch interval minimum exceeds maximum');
-    const own = hazards(a, snapshot);
-    const total = linked.filter(other => other.user_id === a.user_id && !stale.has(other.account_id)).reduce((sum, other) => sum + risk(other), 0);
-    const budget_share = month().seconds * total / watchParam('sweeps_per_person_month', a);
-    return Math.min(max, ...own.map(h => Math.max(min, Math.min(max, h.per_hour ? budget_share / h.per_hour : max))));
+    const window = month(), budget = Math.floor(watchParam('sweeps_per_person_month', a));
+    const used = store.rows('account', { user_id: a.user_id }).filter(row => row.watch_month === window.start)
+      .reduce((sum, row) => sum + Number(row.watch_sweeps ?? 0), 0);
+    const secondsLeft = (window.end - now()) / 1000;
+    const rate = Math.min(budget / window.seconds, Math.max(0, budget - used) / secondsLeft);
+    const accounts = linked.filter(other => other.user_id === a.user_id && !stale.has(other.account_id)
+      && !store.get('account', other.user_id, other.account_id)?.paused).map(other => {
+      const per_hour = other.account_id === a.account_id ? Math.max(0, ...hazards(a, snapshot).map(h => h.per_hour)) : risk(other);
+      const lo = watchParam('watch_interval_min_s', other), hi = watchParam('watch_interval_max_s', other);
+      if (lo > hi) throw new RangeError('watch interval minimum exceeds maximum');
+      return { account_id: other.account_id, per_hour, rate: 1 / Math.max(lo, Math.min(hi, per_hour ? lo / per_hour : hi)) };
+    });
+    accounts.sort((a, b) => a.per_hour - b.per_hour || a.account_id.localeCompare(b.account_id));
+    const highest = accounts.at(-1);
+    const constrained = highest && highest.rate > rate;
+    const total = accounts.reduce((sum, other) => sum + other.per_hour, 0);
+    let excess = accounts.reduce((sum, other) => sum + other.rate, 0) - rate;
+    for (const other of accounts) {
+      if (excess <= 0) break;
+      const share = constrained ? (total ? rate * other.per_hour / total : rate / accounts.length) : 0;
+      const reduction = Math.min(excess, Math.max(0, other.rate - share));
+      other.rate -= reduction;
+      excess -= reduction;
+    }
+    const allocated = accounts.find(other => other.account_id === a.account_id)?.rate ?? 0;
+    return allocated > 0 ? Math.min(secondsLeft, 1 / allocated) : secondsLeft;
   } : undefined);
 
   // Reserve before the read: a crash may spend a slot, but cannot replay it and overspend.
@@ -166,11 +222,9 @@ export function createWatcher(d: WatcherDeps) {
     const reserved = store.tx(t => {
       const rows = t.rows('account', { user_id: a.user_id }).filter(row => row.watch_month === window.start);
       const used = rows.reduce((sum, row) => sum + Number(row.watch_sweeps ?? 0), 0);
-      const next = Math.max(window.start, ...rows.map(row => Number(row.watch_next_at ?? 0)));
-      if (used >= budget || now() < next) return false;
+      if (used >= budget) return false;
       const row = t.get('account', a.user_id, a.account_id)!;
-      t.put('account', { ...row, watch_month: window.start, watch_sweeps: (row.watch_month === window.start ? Number(row.watch_sweeps ?? 0) : 0) + 1,
-        watch_next_at: now() + window.seconds * 1000 / budget });
+      t.put('account', { ...row, watch_month: window.start, watch_sweeps: (row.watch_month === window.start ? Number(row.watch_sweeps ?? 0) : 0) + 1 });
       return true;
     });
     if (reserved) log.event('note', { msg: 'watcher sweep budget reserved', account_id: a.account_id, month: window.start, budget });
@@ -236,10 +290,11 @@ export function createWatcher(d: WatcherDeps) {
   // The pipeline's policy checks price and kind, but has no negotiation.ask input. Preserve that
   // stricter engine decision at the harness boundary before any adapter can run.
   const harness: HarnessLike = { async call<T>(site: Site, verb: string, args = {}) {
-    const account_id = typeof args.account_id === 'string' ? args.account_id : '';
-    const operation = typeof args.operation_id === 'string' ? args.operation_id : '';
+    const jobArgs = watcherJobArgs(args);
+    const account_id = jobArgs?.account_id ?? '';
+    const operation = jobArgs?.operation_id ?? '';
     const job = store.getJob(operation.slice(0, operation.lastIndexOf(':')));
-    const user_id = job?.user_id ?? args.user_id;
+    const user_id = job?.user_id ?? jobArgs?.user_id;
     const account = linked.find(a => a.account_id === account_id && a.site === site);
     const meta = { route_id: 'watcher', ms: 0, fell_back: false };
     if (account && account.user_id !== user_id) return { ok: false, error: {
@@ -250,34 +305,39 @@ export function createWatcher(d: WatcherDeps) {
     if (store.get('account', account.user_id, account_id)?.paused === 'blocked') return { ok: false, error: {
       code: 'blocked', message: 'account check pending', hint: { do: 'pause_session', site },
     }, meta };
-    if (isWrite(verb as Verb) && (args.decided_by !== 'negotiation' || args.negotiation_ask !== false
-      || typeof args.price_cents !== 'number' || !Number.isSafeInteger(args.price_cents)
-      || typeof args.floor_cents !== 'number' || !Number.isSafeInteger(args.floor_cents) || args.floor_cents < 0 || args.price_cents < args.floor_cents
-      || typeof args.ask_cents !== 'number' || !Number.isSafeInteger(args.ask_cents) || args.price_cents > args.ask_cents)) return { ok: false, error: {
-      code: 'policy_refused', message: 'negotiation requires approval', hint: { do: 'raise_decision', kind: typeof args.decision_kind === 'string' ? args.decision_kind : 'offer_to_likers' },
+    const saleDelist = verb === 'end' && job?.args.decision_kind === 'delist_after_sale';
+    if (saleDelist && !confirmedOrder(store, job!)) return { ok: false, error: {
+      code: 'policy_refused', message: 'delist requires a confirmed order', hint: { do: 'raise_decision', kind: 'failed_delist' },
     }, meta };
-    if (isWrite(verb as Verb)) {
+    if (isWrite(verb as Verb) && !saleDelist && (!jobArgs || !jobArgs.account_id || jobArgs.decided_by !== 'negotiation' || jobArgs.negotiation_ask !== false
+      || typeof jobArgs.price_cents !== 'number' || !Number.isSafeInteger(jobArgs.price_cents)
+      || typeof jobArgs.floor_cents !== 'number' || !Number.isSafeInteger(jobArgs.floor_cents) || jobArgs.floor_cents < 0 || jobArgs.price_cents < jobArgs.floor_cents
+      || typeof jobArgs.ask_cents !== 'number' || !Number.isSafeInteger(jobArgs.ask_cents) || jobArgs.price_cents > jobArgs.ask_cents
+      || verb === 'answer_offer' && !jobArgs.response)) return { ok: false, error: {
+      code: 'policy_refused', message: 'negotiation requires approval', hint: { do: 'raise_decision', kind: jobArgs?.decision_kind ?? 'offer_to_likers' },
+    }, meta };
+    if (isWrite(verb as Verb) && !saleDelist) {
       const limits = job?.item_id ? d.limits.of(job.user_id, job.item_id) : undefined;
-      const price = args.price_cents as number;
+      const price = jobArgs!.price_cents!;
       if (!limits || price < limits.floor_cents || price > limits.ask_cents
-        || args.decision_kind === 'accept_offer' && price < limits.always_accept_cents) return { ok: false, error: {
+        || jobArgs!.decision_kind === 'accept_offer' && price < limits.always_accept_cents) return { ok: false, error: {
         code: 'policy_refused', message: 'negotiation no longer meets current limits', hint: { do: 'raise_decision',
-          kind: limits && price < limits.floor_cents ? 'price_below_floor' : String(args.decision_kind ?? 'counter_offer') },
+          kind: limits && price < limits.floor_cents ? 'price_below_floor' : String(jobArgs!.decision_kind ?? 'counter_offer') },
       }, meta };
     }
-    const slug = slugs.get(`${account_id}:${args.external_id}`) ?? args.slug;
+    const slug = slugs.get(`${account_id}:${jobArgs?.external_id}`) ?? jobArgs?.slug;
     if (site === 'depop' && verb === 'end' && typeof slug !== 'string') return { ok: false, error: {
       code: 'policy_refused', message: 'Depop listing slug has not been read', hint: { do: 'raise_decision', kind: 'failed_delist' },
     }, meta };
     const env = await d.harness.call<unknown>(site, verb as Verb, { ...d.readArgs?.(account), ...args,
       ...(site === 'depop' && verb === 'end' && { slug }),
-      ...(verb === 'answer_offer' && { action: args.response, amount_cents: args.price_cents, now: iso() }),
+      ...(verb === 'answer_offer' && { action: jobArgs?.response, amount_cents: jobArgs?.price_cents, now: iso() }),
     });
     log.event('note', { msg: 'watcher job call', account_id, site, verb, ok: env.ok, ...(!env.ok && { code: env.error.code }) });
     if (!env.ok) {
       if (env.error.code === 'auth_expired') staleAccount(account);
-      if (env.error.code === 'rate_limited' || env.error.hint.do === 'retry_after') return { ...env, error: { ...env.error,
-        hint: { ...env.error.hint, do: 'retry_after', after_s: retryAfter(env.error.hint.after_s) },
+      if (env.error.code === 'rate_limited' || 'after_s' in env.error.hint) return { ...env, error: { ...env.error,
+        hint: { ...env.error.hint, do: 'retry_after', after_s: retryAfter('after_s' in env.error.hint ? env.error.hint.after_s : undefined) },
       } };
       return env;
     }
@@ -286,7 +346,7 @@ export function createWatcher(d: WatcherDeps) {
       if (typeof row.listing_external_id !== 'string' || typeof row.external_order_id !== 'string' || typeof row.price_cents !== 'number' || !ORDER_STATES.includes(row.state as OrderRead['state']))
         throw new Error('watcher orders: missing order identity, price or state');
       const listing = d.listings.byExternal(account.user_id, site, row.listing_external_id);
-      return { ...row, listing_id: listing?.listing_id, fees_cents: row.fees_cents ?? 0, shipping_cents: row.shipping_cents ?? 0 };
+      return { ...row, listing_id: listing?.listing_id, fees_cents: row.fees_cents ?? null, shipping_cents: row.shipping_cents ?? 0 };
     });
     return { ...env, data: { orders: normalized } as T };
   } };
@@ -294,31 +354,34 @@ export function createWatcher(d: WatcherDeps) {
   const pipeline = createPipeline({ ...d, harness, worker: 'watcher', engines: { async poll_orders(job) {
     if (!job.site || !job.account_id || !job.listing_id || !job.item_id) throw new Error('poll_orders requires account, listing and item');
     let failure: HarnessError | undefined;
-    let salePrice: number | undefined;
+    let confirmed: OrderRow | undefined;
     const saleHarness: HarnessLike = { async call<T>(site: Site, verb: string, args = {}) {
       const env = await harness.call<T>(site, verb, { ...args, user_id: job.user_id });
-      if (env.ok && verb === 'read_orders') {
-        const paid = rows(env.data, 'orders').find(r => r.listing_id === job.listing_id && r.state !== 'cancelled');
-        if (typeof paid?.price_cents === 'number') salePrice = paid.price_cents;
-      }
       if (!env.ok) failure = env.error;
       return env;
     } };
-    // confirm/fanOut has no clock port; stamp its transactional writes with this tick's clock.
-    const saleStore: Store = { ...store, tx: fn => store.tx(t => fn({ ...t,
-      insertEvent: event => t.insertEvent({ ...event, observed_at: iso(), effective_at: iso() }),
-      insertJob: next => {
-        const limits = d.limits.of(job.user_id, job.item_id!);
-        const outcome = limits && salePrice !== undefined ? decide({ ...limits, site: job.site!, offer_cents: salePrice,
-          keep: price => keep(job.site!, price).keep_cents, v_wait_cents: null, trust_block: false }, d.pAccept) : undefined;
-        return t.insertJob({ ...next, created_at: iso(), args: { ...next.args, ...limits,
-          ...(outcome && { decided_by: 'negotiation', price_cents: outcome.amount_cents, negotiation_ask: outcome.ask }),
-        } });
-      },
-    })) };
-    const result = await confirm({ store: saleStore, log, harness: saleHarness, orders, listingsOf: item => d.listings.ofItem(job.user_id, item)
+    const saleOrders: typeof orders = { ...orders, apply(read) {
+      const applied = orders.apply(read);
+      const saved = store.rows('order', { user_id: job.user_id }).find(row => row.site === read.site && row.external_order_id === read.external_order_id);
+      applied.order.id = typeof saved?.id === 'string' ? saved.id
+        : d.orders && !store.get('order', job.user_id, applied.order.id) ? applied.order.id
+        : `ord_${encodeURIComponent(read.site)}_${encodeURIComponent(read.external_order_id)}`;
+      confirmed = { ...applied.order };
+      return { ...applied, order: confirmed };
+    } };
+    const saleStore: Store = { ...store, tx: fn => store.tx(t => {
+      if (!confirmed) throw new Error('delist fan-out requires a confirmed order');
+      t.put('order', { ...confirmed });
+      return fn({ ...t,
+        insertEvent: event => t.insertEvent({ ...event, observed_at: iso(), effective_at: iso(),
+          payload: { ...event.payload, order_id: confirmed!.id } }),
+        insertJob: next => t.insertJob({ ...next, created_at: iso(), args: { ...next.args, order_id: confirmed!.id } }),
+      });
+    }) };
+    const result = await confirm({ store: saleStore, log, harness: saleHarness, orders: saleOrders, listingsOf: item => d.listings.ofItem(job.user_id, item)
       .filter(l => linked.some(a => a.user_id === job.user_id && a.account_id === l.account_id && a.site === l.site)) },
     { ...job, site: job.site, account_id: job.account_id, listing_id: job.listing_id, item_id: job.item_id });
+    if (result.outcome === 'sold') log.event('note', { msg: 'watcher order saved', order_id: result.order.id, item_id: job.item_id });
     if (result.outcome === 'paused') return { settle: 'pause', err: failure ?? { code: 'auth_expired', message: 'confirmation paused' } };
     if (result.outcome === 'error') {
       if (!failure) throw new Error('confirmation failed without a harness error');

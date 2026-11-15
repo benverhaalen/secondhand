@@ -99,13 +99,13 @@ function manifest(verb: Verb, o: { session: Manifest['session']; route_kind: Man
   };
 }
 const LISTING = [F('external_id', 'string'), F('url', 'url'), F('state', 'string'), F('price_cents', 'cents'), F('currency', 'string'),
-  F('title', 'string', { opt: true }), F('brand', 'string', { opt: true }), F('likes', 'number', { opt: true }), F('listed_at', 'datetime', { opt: true })];
+  F('condition', 'string', { opt: true }), F('size', 'string', { opt: true }), F('title', 'string', { opt: true }), F('brand', 'string', { opt: true }), F('likes', 'number', { opt: true }), F('listed_at', 'datetime', { opt: true })];
 const PLAN = [F('dry', 'boolean'), F('url', 'url'), F('steps', 'string[]'), F('request', 'object')];
 
 const itemRow = (o: Obj) => {
   const id = str(o.id);
   return { external_id: id, url: id && ROUTES.item(id), state: stateOf(o.status), price_cents: cents(o.price), currency: 'USD', title: str(o.name),
-    brand: str(at(o, 'brand', 'name')), likes: num(o.numLikes), listed_at: iso(o.created) };
+    condition: str(at(o, 'itemCondition', 'name')), size: str(at(o, 'itemSize', 'name')), brand: str(at(o, 'brand', 'name')), likes: num(o.numLikes), listed_at: iso(o.created) };
 };
 
 // --- the public reads ---
