@@ -207,7 +207,7 @@ CASES.push(['B34', 'a chip that grows with its words', app('<div data-part="chip
   ['B35', 'a screen drawn in one state only', SCREEN('data-screen="today" data-state="typical"'), /B35 screen "today" is not drawn in the states new, empty, one, dense, loading, failed, offline/, 'app'],
   ['B35', 'a state nobody has listed', SCREEN('data-screen="today" data-state="haunted"'), /B35 screen "today" is drawn in the state "haunted", which is not on the list/, 'app'],
   ['B35', 'a job drawn only while it runs', SCREEN('', '<p data-job="pricing" data-state="running" style="font-size:15px;margin-top:16px">Pricing on eBay</p>'), /B35 job "pricing" is not drawn in the states started, arrived, failed, slow/, 'app']);
-const LOGO = h => `<img alt="eBay" data-logo src="${PX}" style="height:${h}px;width:${h}px;margin-right:16px">`;
+const LOGO = h => `<img alt="eBay" data-logo src="${pathToFileURL(join(root, 'assets/platforms/square/ebay.png')).href}" style="height:${h}px;width:${h}px;margin-right:16px">`;
 CASES.push(['B32', 'a tilted wordmark with a shadow', `<section class="s" data-view><p class="m" style="display:inline-block;transform:rotate(-4deg);text-shadow:0 2px 4px var(--scrim)">secondhand</p></section>`, /B32 .*transformed and shadowed/],
   ['B32', 'a line crowding the wordmark', `<section class="s" data-view><p class="m">secondhand</p><p class="b">Sell used things</p></section>`, /B32 .*"Sell used things" sits within 32 px/],
   ['B32', 'the wordmark twice on a slide', `<section class="s" data-view><p class="m">secondhand</p><p class="m" style="margin-top:96px">secondhand</p></section>`, /B32 .*2 times/],
@@ -248,6 +248,19 @@ for (const [what, layout, inner, re] of [['a slide that names no layout', '', '<
     assert.match((await check(f, 'deck', { browser })).findings.map(o => `${o.id} ${o.where} ${o.msg}`).join('\n'), re); });
 CASES.push(['B37', 'a slide in a layout the deck does not have', `<section class="s" data-view data-layout="collage"><p class="b">Listed in a minute</p>${MARK}</section>${END}`, /B37 .*"collage", which a deck does not have/]);
 CASES.push(['B3', 'the closing wordmark in a corner', `${TITLE}<section class="s" data-view><p class="m">secondhand</p></section>`, /B3 .*alone at 64 px it goes in the middle/]);
+// U6 and U7 came from Ben's corrections at 03:49: logos that were not the saved square icons, and tabs that slid over when the current one changed.
+const SQ = site => pathToFileURL(join(root, `assets/platforms/square/${site}.png`)).href, OLD = site => pathToFileURL(join(root, `assets/platforms/${site}.svg`)).href;
+const TABS = (slot, on) => app(`<nav style="position:absolute;left:0;right:0;bottom:34px;height:50px;display:flex;justify-content:space-around;align-items:center;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" style="${slot}" ${i ? '' : on}>${t}</a>`).join('')}</nav><style>nav a.on{padding:4px 16px;background:var(--gray)}nav a[aria-current=page] i{opacity:1}nav a i{position:absolute;inset:0;opacity:0;background:var(--gray);border-radius:var(--r-pill)}</style>`);
+test('render U6 and U7: saved square logos, and a current tab drawn behind fixed slots, pass', { skip: !pw }, async () => {
+  const found = await ids(app(`<div style="display:flex;gap:8px;padding:16px 20px"><img alt="eBay" src="${SQ('ebay')}" style="width:24px;height:24px"><img alt="Depop" src="${SQ('depop')}" style="width:24px;height:24px"></div>`), 'app');
+  assert.deepEqual(found.filter(f => /^U[67]/.test(f)), []);
+  const tabs = await ids(app(`<nav style="position:absolute;left:0;right:0;bottom:34px;height:50px;display:flex;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" style="flex:1 1 0;text-align:center;position:relative;line-height:50px" ${i ? '' : 'aria-current="page"'}><i></i>${t}</a>`).join('')}</nav><style>nav a i{position:absolute;inset:9px 20%;opacity:0;background:var(--gray);border-radius:var(--r-pill);z-index:-1}nav a[aria-current=page] i{opacity:1}</style>`), 'app');
+  assert.deepEqual(tabs.filter(f => /^U7/.test(f)), []);
+});
+CASES.push(['U6', 'an old line-drawn logo in place of the square icon', app(`<img alt="eBay" src="${OLD('ebay')}" style="width:24px;height:24px;margin:16px 20px">`), /U6 .*platforms\/ebay\.svg as the eBay logo: a site's logo is its saved square icon/, 'app'],
+  ['U6', 'a copy of the icon kept somewhere else', app(`<img alt="Depop" src="${PX}" data-x style="width:24px;height:24px;margin:16px 20px">`), /U6 .*an inline picture as the Depop logo/, 'app'],
+  ['U7', 'a current tab whose gray box pushes the others over', TABS('', 'class="on"'), /U7 .*moves [\d.]+ px when \.on on "Items"/, 'app'],
+  ['U7', 'a current tab marked by aria-current that grows', app(`<nav style="display:flex;gap:8px;padding:16px 20px;font-size:13px">${['Today', 'Items', 'You'].map((t, i) => `<a href="#" ${i ? '' : 'aria-current="page"'}>${t}</a>`).join('')}</nav><style>nav a[aria-current=page]{padding:0 12px}</style>`), /U7 .*when aria-current on "Items"/, 'app']);
 for (const [id, what, body, re, medium, theme] of CASES) test(`render ${id}: ${what} fails`, { skip: !pw }, async () => assert.match((await ids(body, medium, 'error', theme)).join('\n'), re));
 
 // The rule list knows the render checks, the media, and Part IV's "Runs" column.

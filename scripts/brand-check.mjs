@@ -53,7 +53,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
     els.push({ tag, part: el.dataset.part ?? null, item: el.hasAttribute('data-item'), link: el.matches('a[href], [role=link]'), button: el.matches('button, [role=button]'), pointer: cs.cursor === 'pointer', block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
-      alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
+      alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), src: tag === 'img' ? decodeURI(el.currentSrc || el.src || '') : /url\(/.test(bi) ? decodeURI(bi.match(/url\(["']?([^"')]+)/)?.[1] ?? '') : null, noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
       radius: ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(c => cs[`border${c}Radius`].split(' ')[0]).filter(v => parseFloat(v) > 0),
@@ -109,6 +109,39 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
       alone: !/\p{L}/u.test((group.innerText ?? '').replace(n.data, '')) });
   }
   return { index, w: vw, h: vh, els, texts };
+}
+
+// Where a state moves things (U7). Runs in the page. For each group of siblings where one is marked current (aria-current, aria-selected,
+// aria-pressed, aria-checked, or a class such as "on" or "active" that only it has), the mark is moved to each sibling in turn,
+// and every sibling, everything inside them, and their parent must stay where it was. A state changes how a thing looks, not where things sit.
+function shifts({ rect }) {
+  const [vx, vy, vw, vh] = rect, out = [], done = new Set(), ARIA = ['aria-current', 'aria-selected', 'aria-pressed', 'aria-checked'], CLASS = /^(?:is-)?(?:on|active|current|selected|sel)$/;
+  const inView = r => r.width > 0 && r.height > 0 && r.right > vx && r.left < vx + vw && r.bottom > vy && r.top < vy + vh;
+  const name = e => (e.getAttribute('aria-label') || e.innerText || e.getAttribute('alt') || '').replace(/\s+/g, ' ').trim().slice(0, 24) || `<${e.tagName.toLowerCase()}${e.dataset.part ? ` ${e.dataset.part}` : ''}>`;
+  const still = document.createElement('style'); still.textContent = '*, *::before, *::after { transition: none !important; animation: none !important; }'; document.head.append(still);
+  for (const cur of document.querySelectorAll('body *')) {
+    const aria = ARIA.find(a => cur.hasAttribute(a) && cur.getAttribute(a) !== 'false');
+    if (!aria && ![...cur.classList].some(c => CLASS.test(c))) continue;
+    const p = cur.parentElement; if (!p || done.has(p) || !inView(cur.getBoundingClientRect())) continue;
+    const sibs = [...p.children].filter(s => s.tagName === cur.tagName && getComputedStyle(s).display !== 'none'); if (sibs.length < 2 || !sibs.includes(cur)) continue;
+    const only = [...cur.classList].filter(c => CLASS.test(c) && sibs.every(s => s === cur || !s.classList.contains(c)));
+    if (!aria && !only.length) continue;
+    done.add(p);
+    const was = sibs.map(s => ({ s, v: aria ? s.getAttribute(aria) : null, c: s.className }));
+    const snap = () => ({ p: p.getBoundingClientRect(), all: sibs.map(s => [s, ...s.querySelectorAll('*')].map(e => { const b = e.getBoundingClientRect(), cs = getComputedStyle(e);
+      return cs.display === 'none' || cs.visibility === 'hidden' || !b.width || !b.height ? null : { e, b }; })) });
+    const on = aria && cur.getAttribute(aria), mark = to => { for (const s of sibs) { if (aria) s.setAttribute(aria, s === to ? on : 'false');
+      for (const c of only) s.classList.toggle(c, s === to); } };
+    const base = snap();
+    for (const to of sibs) { if (to === cur) continue; mark(to); const now = snap(), how = aria ? `${aria} on "${name(to)}"` : `.${only[0]} on "${name(to)}"`, seen = new Set();
+      const d = (a, b) => Math.max(Math.abs(a.left - b.left), Math.abs(a.top - b.top), Math.abs(a.width - b.width), Math.abs(a.height - b.height));
+      if (d(base.p, now.p) > .5) out.push({ how, who: `the row holding "${name(cur)}"`, by: Math.round(d(base.p, now.p)) });
+      base.all.forEach((list, i) => list.forEach((x, j) => { const y = now.all[i][j]; if (!x || !y || seen.has(i)) return; const m = d(x.b, y.b);
+        if (m > .5) { seen.add(i); out.push({ how, who: name(x.e), by: Math.round(m * 10) / 10 }); } })); }
+    for (const w of was) { if (aria) { if (w.v == null) w.s.removeAttribute(aria); else w.s.setAttribute(aria, w.v); } w.s.className = w.c; }
+  }
+  still.remove();
+  return out.slice(0, 6);
 }
 
 // Share of a screenshot that is color, photo or neutral. Runs in the page, on a copy shrunk to 320 wide.
@@ -175,6 +208,7 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
       if (tall) { const r = await page.evaluate(i => { const b = document.querySelectorAll('[data-view]')[i].getBoundingClientRect(); return [b.left, b.top, b.width, b.height]; }, i); rect.splice(0, 4, ...r); }
       const view = await page.evaluate(measure, { index, rect, faces: got.faces, medium, kinds });
       view.marks = marked ? await page.evaluate(({ i, kinds }) => { const d = document.querySelectorAll('[data-view]')[i].dataset; return d.state == null && !kinds.some(k => d[k]) ? null : { state: d.state ?? null, skip: d.skip ?? '', names: Object.fromEntries(kinds.filter(k => d[k]).map(k => [k, d[k]])) }; }, { i, kinds }) : null;
+      if (!old) view.shifts = await page.evaluate(shifts, { rect });
       view.layout = marked ? await page.evaluate(i => document.querySelectorAll('[data-view]')[i].dataset.layout ?? null, i) : null;
       if (old) view.share = old.share;
       else { const clip = { x: Math.max(0, rect[0]), y: Math.max(0, rect[1]), width: Math.min(rect[2], canvas[0]), height: Math.min(rect[3], tall ? Math.ceil(rect[3]) : canvas[1]) };
