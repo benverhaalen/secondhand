@@ -3,31 +3,23 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { authRequest, getSession, rememberSession, signOutSession, type Profile } from '../../lib/browser-session';
 
-type AuthRoute = 'email/start' | 'email/verify' | 'google' | 'refresh' | 'signout';
 type GoogleIdentity = {
   initialize(config: { client_id: string; callback: (response: { credential: string }) => void }): void;
   renderButton(parent: HTMLElement, config: { theme: 'filled_black'; shape: 'pill'; size: 'large'; text: 'signup_with' | 'signin_with'; width: number }): void;
 };
 const identity = () => (window as Window & { google?: { accounts?: { id?: GoogleIdentity } } }).google?.accounts?.id;
 
-async function auth(route: AuthRoute, body: Record<string, string>) {
-  const response = await fetch('/v1/auth/' + route, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Idempotency-Key': crypto.randomUUID() },
-    credentials: 'same-origin',
-    cache: 'no-store',
-    body: JSON.stringify(body),
-  });
-  return response.status;
-}
-
-const cookieProof = { refresh_token: '__cookie__' };
-let refreshInFlight: Promise<number> | undefined;
-
-function checkAccount() {
-  refreshInFlight ??= auth('refresh', cookieProof).finally(() => { refreshInFlight = undefined; });
-  return refreshInFlight;
+function googleProfile(credential: string): Profile {
+  try {
+    const payload = credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const data = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(payload), char => char.charCodeAt(0))));
+    return {
+      name: typeof data.name === 'string' ? data.name : undefined,
+      photo: typeof data.picture === 'string' && /^https:\/\/lh[0-9]+\.googleusercontent\.com\//.test(data.picture) ? data.picture : undefined,
+    };
+  } catch { return {}; }
 }
 
 export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup'; googleClientId?: string }) {
@@ -50,11 +42,13 @@ export function AccountForm({ mode, googleClientId }: { mode: 'signin' | 'signup
     setError('');
     setStatus('');
     try {
-      const result = await auth(route, body);
+      const response = await authRequest(route, body);
+      const result = response.status;
       if (route === 'email/start' && result === 202) {
         setStep('code');
         setStatus('Check your email for a six-digit code.');
       } else if (route !== 'email/start' && result === 200) {
+        await rememberSession(response, route === 'google' ? googleProfile(body.id_token) : {});
         router.replace('/account');
       } else if (result === 429) {
         setError('Too many requests. Wait a moment before trying again.');
@@ -123,8 +117,8 @@ export function AccountStatus() {
 
   useEffect(() => {
     let mounted = true;
-    void checkAccount().then(status => {
-      if (mounted) setState(status === 200 ? 'active' : status === 401 ? 'signed-out' : 'error');
+    void getSession().then(session => {
+      if (mounted) setState(session ? 'active' : 'signed-out');
     }).catch(() => { if (mounted) setState('error'); });
     return () => { mounted = false; };
   }, []);
@@ -133,8 +127,8 @@ export function AccountStatus() {
     setSigningOut(true);
     setError('');
     try {
-      if (await auth('signout', cookieProof) === 204) router.replace('/');
-      else setError('Could not sign out. Try again.');
+      await signOutSession();
+      router.replace('/');
     } catch {
       setError('Could not sign out. Try again.');
     } finally {

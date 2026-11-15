@@ -1,10 +1,12 @@
 import Link from 'next/link';
+import { useEffect, useSyncExternalStore } from 'react';
+import { getSession, sessionSnapshot, subscribeToSession } from '../../lib/browser-session';
 
 const repository = 'https://github.com/benverhaalen/secondhand';
 const pages = [
   ['/how-it-works', 'How It Works'],
   ['/features', 'Features'],
-  ['/#data-use', 'Data Use'],
+  ['/data-use', 'Data Use'],
   ['/#faq', 'FAQ'],
 ] as const;
 
@@ -18,10 +20,12 @@ function Mark() {
 }
 
 export function MarketingHeader({ current }: { current: string }) {
+  const session = useSyncExternalStore(subscribeToSession, sessionSnapshot, () => undefined);
+  useEffect(() => { void getSession().catch(() => undefined); }, []);
   return <header className="marketing-header"><div className="marketing-wrap marketing-header-row">
     <Mark />
     <nav className="marketing-nav" aria-label="Main">{pages.map(([url, label]) => <Link key={url} href={url} aria-current={current === url ? 'page' : undefined}>{label}</Link>)}</nav>
-    <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <span aria-hidden="true">↗</span></a><AccountAccess label="Sign in" className="marketing-pill-secondary" /></div>
+    <div className="marketing-header-actions"><a className="github-link" href={repository}>GitHub <span aria-hidden="true">↗</span></a>{session ? <Link className="marketing-avatar" aria-label="Open your account" href="/account">{session.profile.photo ? <img src={session.profile.photo} alt="" referrerPolicy="no-referrer" /> : <span aria-hidden="true">{session.profile.name?.slice(0, 1) || <img src="/brand/mark.svg" alt="" />}</span>}</Link> : <AccountAccess label="Sign in" className="marketing-pill-secondary" />}</div>
   </div></header>;
 }
 

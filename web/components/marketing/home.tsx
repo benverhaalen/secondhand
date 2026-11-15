@@ -89,7 +89,7 @@ function PricingProof() {
 }
 
 function DataUse() {
-  return <section className="marketing-scene data-scene" id="data-use" aria-labelledby="data-title"><div className="marketing-wrap data-layout"><div className="marketing-copy"><p className="section-label">Data Use</p><h2 id="data-title">From messy listings to a price you can check.</h2><p className="section-body">We use Databricks to check incoming records, record how they can be used, and show the sales behind an estimate.</p><a className="marketing-text-link" href={`${docs}/proof-without-sales.md`}>Explore Data Use <ExternalArrow /></a></div><div className="data-figures"><DataPipeline /><PricingProof /></div></div></section>;
+  return <section className="marketing-scene data-scene" id="data-use" aria-labelledby="data-title"><div className="marketing-wrap data-layout"><div className="marketing-copy"><p className="section-label">Data Use</p><h2 id="data-title">From messy listings to a price you can check.</h2><p className="section-body">We use Databricks to check incoming records, record how they can be used, and show the sales behind an estimate.</p><Link className="marketing-text-link" href="/data-use">Explore Data Use <span aria-hidden="true">→</span></Link></div><div className="data-figures"><DataPipeline /><PricingProof /></div></div></section>;
 }
 
 function FAQ() {
