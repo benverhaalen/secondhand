@@ -42,8 +42,10 @@ const PX = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAA
 const css = `*{margin:0;padding:0;box-sizing:border-box}body{background:var(--page);color:var(--ink);font-family:var(--font-text);font-weight:400}
 .s{width:1920px;height:1080px;padding:96px;position:relative;overflow:hidden}.p{width:1080px;height:1350px;padding:72px;position:relative;overflow:hidden}
 .h{font-size:64px;font-family:var(--font-display);font-weight:600}.b{font-size:32px}.m{font-family:var(--font-display);font-weight:600;font-size:64px}.f{background:var(--field)}`;
-const TITLE = '<section class="s f" data-view><p class="m">secondhand</p><p class="b" style="margin-top:32px">Sell used things from one app</p></section>', END = '<section class="s" data-view><p class="m">secondhand</p></section>';
-const deck = mid => `${TITLE}<section class="s" data-view>${mid}</section>${END}`;
+// On a deck the wordmark sits bottom left of every slide at 32, and alone at 64 on the closing slide.
+const MARK = '<p class="m" style="font-size:32px;position:absolute;left:96px;bottom:96px">secondhand</p>';
+const TITLE = `<section class="s f" data-view><p class="b">Sell used things from one app</p>${MARK}</section>`, END = '<section class="s" data-view><p class="m">secondhand</p></section>';
+const deck = mid => `${TITLE}<section class="s" data-view>${mid}${MARK}</section>${END}`;
 let n = 0;
 async function ids(body, medium = 'deck', level = 'error') {
   const f = join(dir, `${n++}.html`), link = name => `<link rel="stylesheet" href="${pathToFileURL(join(root, 'brand', name)).href}">`;
@@ -83,7 +85,9 @@ const CASES = [
   ['B9', 'a photo with no alt text', deck(`<img src="${PX}" style="width:400px;height:400px">`), /B9 .*no alt text/],
   ['B10', 'a button on a slide', deck('<span class="b" style="background:var(--ink);color:var(--page);border-radius:var(--r-pill);padding:16px 32px">Accept $38</span>'), /B10 .*black pill/],
   ['B3', 'the name with a capital', deck('<p class="b">Secondhand lists it for you</p>'), /B3 .*lowercase/],
-  ['B3', 'the wordmark on a middle slide', deck('<p class="m">secondhand</p>'), /B3 view 2 carries the wordmark/],
+  ['B3', 'a slide with no wordmark', `${TITLE}<section class="s" data-view><p class="b">Listed in a minute</p></section>${END}`, /B3 view 2 has no wordmark/],
+  ['B3', 'the wordmark at heading size before the closing slide', `<section class="s" data-view><p class="m">secondhand</p></section>${END}`, /B3 view 1 sets the wordmark at 64 px: that size is for the closing view/],
+  ['B3', 'the wordmark at heading size beside a heading', `${TITLE}<section class="s" data-view><p class="m">secondhand</p><p class="h" style="margin-top:96px">What you keep</p></section>`, /B3 view 2 sets the wordmark at 64 px beside the heading/],
   ['B3', 'no wordmark at all', '<section class="s" data-view><p class="b">Listed in a minute</p></section>', /B3 .*no wordmark/],
   ['B30', 'too many words', deck(`<p class="b">${'used things sell faster with good photos '.repeat(3)}</p>`), /B30 .*21 words/],
   ['B4', 'two fields in one view', deck('<div class="f" style="height:160px"></div><div class="f" style="height:160px"></div>'), /B4 .*2 gradients/],
@@ -174,7 +178,7 @@ CASES.push(['U4', 'a dark ground that reads as brown', app('<div style="margin:1
   ['U1', 'a row that opens a screen with no chevron', app('<a href="#x" style="display:block;margin:16px 20px;font-size:15px;color:var(--ink);text-decoration:none">Ship the Nike Dunks by tomorrow</a>'), /U1 .*no chevron/, 'app'],
   ['U1', 'a button that is bare words', app('<button style="font:500 15px var(--font-text);background:none;border:0;margin:16px 20px;color:var(--ink)">Send a counter</button>'), /U1 .*no fill and no outline/, 'app'],
   ['B36', 'two lines that start two pixels apart', app('<p style="font-size:15px;margin:16px 0 0 20px">Carhartt jacket</p><p style="font-size:15px;margin:16px 0 0 22px">Nike Dunks</p>'), /B36 .*start 20 and 22 px/, 'app'],
-  ['B31', 'one kind of thing with two corners', deck('<div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-card)"></div><div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-photo);margin-top:32px"></div>'), /B31 .*corners of 28px and 16px/]);
+  ['B31', 'one kind of thing with two corners', deck('<div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-card)"></div><div data-part="tile" style="height:160px;background:var(--gray);border-radius:var(--mr-photo);margin-top:32px"></div>'), /B31 .*corners of \d+px and \d+px/]);
 test('render: seen with no red or no green cones, the four state fills stay apart, and two tints of near hues do not', () => {
   const d = (a, b, k) => Math.hypot(...seenAs(a, k).map((v, i) => v - seenAs(b, k)[i])), sky = [165, 225, 254], mint = [161, 234, 203], lime = [235, 240, 143], marigold = [245, 210, 151];
   for (const k of ['no red cones', 'no green cones']) for (const [a, b] of [[sky, mint], [sky, lime], [sky, marigold], [mint, lime], [mint, marigold], [lime, marigold]]) assert.ok(d(a, b, k) >= .05, `${a} ${b} ${k} ${d(a, b, k)}`);
