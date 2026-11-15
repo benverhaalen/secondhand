@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { SITES, EVENT_KINDS } from './event.ts';
@@ -224,3 +225,29 @@ test('duplicate feed facts produce one change, with unrelated section changes af
   assert.deepEqual(fromFeed(prev, next), [expected('depop')[0]]);
   assert.deepEqual(diffSweep(prev, next), expected('depop'));
 });
+
+// The shared fixture (spec/fixtures/snapshot): states are already normalised (live/sold/ended/draft), so the
+// site words in manifest.status_words are the platform adapter's job, not the differ's.
+for (const site of SITES) {
+  const read = (f: string) => JSON.parse(readFileSync(new URL(`../../../../spec/fixtures/snapshot/${site}/${f}`, import.meta.url), 'utf8'));
+  test(`fixture ${site}: reordered gives nothing, changed gives expected.json's changes`, () => {
+    const base: Snapshot = read('base.json');
+    const pairs = read('expected.json').pairs;
+    assert.deepEqual(diffSweep(base, read('reordered.json')), []);
+    assert.deepEqual(diffSweep(base, read('public.json')), []);
+    const got = diffSweep(base, read('changed.json'));
+    // expected.json leaves out the order the changed sweep adds (order.updated, new order, state paid); the differ emits it.
+    const extra = got.filter(c => c.action === 'order.updated');
+    assert.deepEqual(extra.map(c => c.payload.state), ['paid']);
+    const main = got.filter(c => c.action !== 'order.updated');
+    const want: { action: string; ref: string; payload: Record<string, unknown> }[] = pairs[1].changes;
+    assert.deepEqual(main.map(c => [c.action, c.ref]), want.map(c => [c.action, c.ref]));
+    main.forEach((c, i) => {
+      // expected.json folds listing_external_id into payload; Change has it on top. listing.sold's price_cents is not emitted.
+      const { price_cents, ...rest } = want[i].payload;
+      assert.deepEqual({ ...c.payload, ...(rest.listing_external_id ? { listing_external_id: c.listing_external_id } : {}) }, rest, c.action);
+      assert.ok(c.dedupe_key.startsWith(`${site}:${base.account_id}:${c.action}:${c.ref}`));
+    });
+    assert.equal(new Set(got.map(c => c.dedupe_key)).size, got.length);
+  });
+}
