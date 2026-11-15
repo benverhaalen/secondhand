@@ -1880,3 +1880,9 @@ Nate, orchestrator's session, 2026-11-15, about 05:00 Central, asked whether to 
 > Rebuild first
 
 Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md), [packet 71](../.agents/team/packets/team/71-databricks-handoff.md).
+
+## 2026-11-15 nate apify is set up for the hackathon
+Nate, orchestrator's session, 2026-11-15, about 05:10 Central, with a screenshot of his Apify console (the Facebook Marketplace scraper and an eBay listings and prices scraper). Asked whether the token he typed should be set and whether this is his go on third-party feeds.
+> You set it, ill rotate after hackathon
+
+Read by the orchestrator (agent proposal, until he says otherwise): a go to use those two Apify actors as sources for the hackathon demo, labelled as such and never modelled on. Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
