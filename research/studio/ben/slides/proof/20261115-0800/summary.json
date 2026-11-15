@@ -1,0 +1,25 @@
+{
+ "run": "research/studio/ben/slides/runs/20261115-0800-43692434630",
+ "band": 0.05,
+ "items": 3,
+ "tested": 1,
+ "untested": {
+  "carhartt-pants": "pants: the ruler reads tops only so far",
+  "chico-hoodie": "the gap under the sleeve starts 50% of the way down, so a sleeve lies along the body"
+ },
+ "photo": {
+  "n": 0,
+  "within_band": 0,
+  "max_off": null
+ },
+ "drawn": {
+  "n": 1,
+  "within_band": 0,
+  "max_off": 0.1369
+ },
+ "final": {
+  "n": 1,
+  "within_band": 1,
+  "max_off": 0.0117
+ }
+}

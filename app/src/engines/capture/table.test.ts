@@ -41,3 +41,10 @@ test('rigid dimensions try published lookup before measurement and asking', () =
     assert.deepEqual(table.classes[name].dimensions!.ways.map(w=>[w.way,w.min_conf]),[['lookup',.9],['measured',.8],['asked',undefined]]);
   }
 });
+
+test('furniture brand uses lookup then asked and only depop requires it', () => {
+  const brand=table.fields.furniture.find(row=>row.field==='brand')!;
+  assert.deepEqual(brand.ways,[{way:'lookup',min_conf:.9},{way:'asked'}]);
+  assert.deepEqual(brand.required,['depop']);assert.deepEqual(brand.recommended,[]);
+  assert.deepEqual(brand.ask,{kind:'pick_one',words:'Brand?'});
+});

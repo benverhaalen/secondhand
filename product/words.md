@@ -1406,6 +1406,19 @@ Ben, project chat, 07:42 UTC.
 
 Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), app/src/engines/listing/aspects.ts.
 
+## 2026-11-15 prove the redraw keeps the real size, on LiDAR phones
+
+Ben, project chat (relayed), 07:51 UTC.
+> is there any downside to doing it on the dev acct? also another thing - there could be a hesitation with how the ai enhancement of the shirts or clothing etc dewrinkling and like essentially just ironing them and framing the pictures nicely people could say it lies. how do we prove in some respect it doesnt. by using its actual measurements (of course with a boundary of error) to audit and compare the ai generated outputs against the actual image of the shirt. it looks like it isnt getting rid of wrinkles as much as i thought though. but keeping dimensions super accurate. how do you prove this? we have measurements from the items. can show images are accurate to measurements by knowing what the pit to pit and length on a shirt is and plan on showing this visually somewhere on the website or pitch etc.
+
+Ben, studio thread, 08:14 UTC.
+> no, the marquette listing in the photos shows the actual measurements. also considering it being scrunched and all and estimating some error there but the alternate photos show it with actual measurements and use those to measure size too. like how are you going to detect like in the scrunched photo how you would know the actual pit to pit or top to bottom say it would be flattened. think about solving that problem
+
+Ben, studio thread, 09:00 UTC.
+> how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md), jobs/studio/plan.py (`relay_measured`).
+
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
 Ben, project chat, 07:46 UTC.
@@ -1636,3 +1649,35 @@ Ben, project thread on UI flows, 09:04 and 09:05 UTC, after the demo's AI cover 
 > nano banana in api key
 
 Used in: [app flows, photos](app-flows.md#photos-before-and-after-live).
+
+## 2026-11-15 every why explained, numbers that help, and a statistic we can defend
+Ben, project chat, 08:59 UTC.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [evidence constitution](constitutions/evidence.md), [price constitution](constitutions/price.md).
+## 2026-11-15 nate there is a way to use browser use cloud we are not considering
+Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eBay finding.
+> Theres some way to browser use cloud you aren't considering
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 ben every number and decision says why; the StockX statistic is how much more money than the median
+Ben, project timeline, 08:59 UTC, after the 20 and 80 targets were explained.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [pitch constitution R11](pitch-constitution.md#part-vi-rules), [the money statistic](../spec/plans/backtest/money-statistic.md).
+## 2026-11-15 nate build on firecrawl or a substrate that reads the dom, we only need to read, and it cannot run on the phone
+Nate, build session (orchestrator), 2026-11-15 about 08:20 to 08:45 Central. Two messages.
+> We can build something off of firecrawl to develop it in a way that reduces the bot detect, or a substrate like built to pipe in and retrieve from the dom
+
+> Well we only really need to read right? we can't have the dom substrate run on the ios phone can we? understand and engineer around this
+
+Used in: the read-lanes design, `spec/engines/protocol-and-adapters.md` when it is written.
+
+## 2026-11-15 nate browser use's own benchmark shows a way through on ebay
+Nate, build session (orchestrator), 2026-11-15 about 09:00 Central. Two messages, each a link.
+> https://browser-use.com/benchmarks/consumer/sites/ebay Here, theres a work around
+
+> https://browser-use.com/benchmarks/consumer
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
