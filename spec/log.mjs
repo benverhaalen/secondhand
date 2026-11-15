@@ -102,8 +102,14 @@ const pct = (sorted, p) => sorted.length ? sorted[Math.min(sorted.length - 1, Ma
 // The numbers to read before changing anything. Each counts log lines, so work that was never logged is not in them.
 export function summarize(events) {
   const count = {}, calls = {}, started = new Map(), opened = new Set(), settled = new Set();
-  let cost = 0;
+  const waiting = new Map(), taps = [];  // per session: the tap that no screen has answered yet
+  let cost = 0, unanswered = 0;
   for (const e of events) {
+    if (e.event === 'user.input') { if (waiting.has(e.session)) unanswered++; waiting.set(e.session, e); }
+    if (e.event === 'ui.show' && waiting.has(e.session)) {
+      const tap = waiting.get(e.session); waiting.delete(e.session);
+      taps.push({ screen: tap.screen, control: tap.control, ms: Date.parse(e.ts) - Date.parse(tap.ts) });
+    }
     count[e.event] = (count[e.event] ?? 0) + 1;
     if (e.event === 'call.start') started.set(`${e.session} ${e.call}`, `${e.kind} ${e.name}`);
     if (e.event === 'call.end') {
@@ -115,7 +121,10 @@ export function summarize(events) {
     if (e.event === 'decision.answer' || e.event === 'decision.close') settled.add(e.decision);
   }
   for (const c of Object.values(calls)) { c.ms.sort((a, b) => a - b); c.p50_ms = pct(c.ms, 0.5); c.p95_ms = pct(c.ms, 0.95); delete c.ms; }
+  const tapMs = taps.map(t => t.ms).sort((a, b) => a - b);
   return {
+    // From a tap (user.input) to the next thing shown (ui.show) in the same session: the wait a person feels.
+    tap_to_show: { n: taps.length, p50_ms: pct(tapMs, 0.5), p95_ms: pct(tapMs, 0.95), unanswered: unanswered + waiting.size, slowest: taps.sort((a, b) => b.ms - a.ms).slice(0, 5) },
     lines: events.length, sessions: new Set(events.map(e => e.session)).size, events: count,
     errors: events.filter(e => e.level === 'error').length,
     jobs_failed: events.filter(e => e.event === 'job.state' && e.state === 'failed').length,

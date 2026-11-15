@@ -14,7 +14,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 1. Item kind
 
-**Determines**: which of the 13 kinds in [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md) the item is. The kind chooses the fields, views, condition scale and checks.
+**Determines**: which family in [fields-by-kind](fields-by-kind.md#families-kinds-and-inheritance) the item is (`apparel`, `shoes`, `bags`, `jewellery_watches`, `furniture`, `lighting_home`, `electronics`, `appliances_tools`, `media`, `cards_collectibles`, `toys_lego`, `bikes_sports`, `baby_gear`, `other`), after [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md). The family chooses the fields, views, condition scale and checks.
 
 **Sources and weights**
 
@@ -27,7 +27,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 **Method**
 
-1. Model step: each source returns `p_s(k)` over the 13 kinds. A code source returns 1 for its mapped kind and 0 for the rest.
+1. Model step: each source returns `p_s(k)` over the families. A code source returns 1 for its mapped kind and 0 for the rest.
 2. Arithmetic: `S(k) = sum_s w_s * p_s(k) / sum_s w_s`, over the sources present.
 3. Accept the top kind when `S(top) >= 0.60` and `S(top) - S(second) >= 0.20` (start).
 4. Otherwise raise decision `category_unsure`, showing the top 2 or 3 kinds as chips plus "Something else".
@@ -41,7 +41,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 **Speed**: the phone estimate is ready in under a second. The cloud vote runs once at the `judging` state. The category map is kept ready in Lakebase.
 
-**Check later**: build a confusion matrix on 300 hand-labelled captures spread over the 13 kinds. It is wrong if more than 1 in 50 accepted kinds is wrong, or if more than 1 in 5 items needs the question.
+**Check later**: build a confusion matrix on 300 hand-labelled captures spread over the families. It is wrong if more than 1 in 50 accepted kinds is wrong, or if more than 1 in 5 items needs the question.
 
 ## 2. Whether a frame is a usable view
 

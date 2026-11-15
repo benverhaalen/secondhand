@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { chmodSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
@@ -10,7 +10,7 @@ import { createLog, memorySink } from '../../../log/index.js';
 import { checkLog } from '../../../spec/log.mjs';
 
 const job = (id, more = {}) => ({ id, prompt: `make ${id}`, ...more });
-const quiet = () => ({ load1: 0, cpu: 0, mem: 0 });
+const quiet = () => ({ load1: 0, cpu: 0, mem: 0, swap: 0 });
 const img = (file, more = {}) => ({ file, take: 'the colors.', ...more });
 const of = (id, more = {}) => ({ job: id, take: 'this screen. Edit it.', ...more });
 // Stands in for the Codex CLI: records what each call was given, waits, then leaves the files a real call would.
@@ -67,12 +67,22 @@ test('a busy machine gets one new call every few ticks, not a burst', async () =
   const starts = p => p.calls.map(c => c.at);
   const calm = fake({ ms: 150 }), busy = fake({ ms: 150 }), jobs = () => plan(['a', 'b', 'c'].map(id => job(id)), { max: 3, ramp: 9 });
   await go(jobs(), calm);
-  const done = await go(jobs(), busy, { probe: () => ({ load1: 99, cpu: 0, mem: 0 }) });
+  const done = await go(jobs(), busy, { probe: () => ({ load1: 99, cpu: 0, mem: 0, swap: 0 }) });
   assert.ok(starts(calm)[2] - starts(calm)[0] < 15, 'a calm machine starts all three on one tick');
   assert.ok(starts(busy)[1] - starts(busy)[0] >= 20 && starts(busy)[2] - starts(busy)[1] >= 20, `starts were ${starts(busy)}`);
   assert.equal(busy.peak(), 3, 'calls that are waiting on the server still overlap');
   assert.ok(done.held > 0);
   assert.equal(done.failed, 0);
+});
+
+test('a machine that is swapping runs one call at a time until it stops', async () => {
+  let swapped = 0;
+  const swapping = () => ({ load1: 0, cpu: 0, mem: 0, swap: swapped += 1000 });
+  const f = fake({ ms: 30 }), done = await go(plan(['a', 'b', 'c'].map(id => job(id)), { max: 3, ramp: 9 }), f, { probe: swapping });
+  assert.equal(f.peak(), 1);
+  assert.ok(done.held > 0);
+  assert.equal(done.failed, 0);
+  assert.ok(done.peak.swap > 10, `peak swap was ${done.peak.swap} MB a second`);
 });
 
 test('a call that leaves two images fails, and what waited for it is skipped', async () => {
@@ -140,4 +150,50 @@ test('the machine probe counts a call and what it started, and nothing else', po
   const none = machine(new Set()), self = machine(new Set([process.pid]));
   assert.equal(none.cpu, 0); assert.equal(none.mem, 0);
   assert.ok(self.mem > 10, `this process holds more than 10 MB, got ${self.mem}`);
+});
+
+test('the machine probe reads how much the machine has swapped so far', posixOnly, () => {
+  assert.ok(Number.isFinite(machine().swap) && machine().swap >= 0);
+});
+
+// Stands in for a codex call that never ends, with a child of its own: the leftovers that pile up.
+function hanging() {
+  const dir = mkdtempSync(join(tmpdir(), 'image-hang-')), bin = join(dir, 'bin'), home = join(dir, 'home'), pidFile = join(dir, 'pids');
+  mkdirSync(bin); mkdirSync(join(home, '.codex'), { recursive: true });
+  writeFileSync(join(home, '.codex', 'auth.json'), '{}');
+  writeFileSync(join(bin, 'codex'), `#!/usr/bin/env node
+const { spawn } = require('node:child_process'), { appendFileSync } = require('node:fs');
+const kid = spawn(process.execPath, ['-e', 'setInterval(() => {}, 1000)'], { stdio: 'ignore' });
+appendFileSync(process.env.PID_FILE, process.pid + ' ' + kid.pid + '\\n');
+setInterval(() => {}, 1000);
+`);
+  chmodSync(join(bin, 'codex'), 0o755);
+  const env = { ...process.env, HOME: home, PATH: bin + delimiter + process.env.PATH, PID_FILE: pidFile };
+  delete env.CODEX_HOME;
+  const planFile = more => { writeFileSync(join(dir, 'plan.json'), JSON.stringify({ out: join(dir, 'out'), jobs: [job('a'), job('b')], ...more })); return join(dir, 'plan.json'); };
+  const pids = () => readFileSync(pidFile, 'utf8').split(/\s+/).filter(Boolean).map(Number);
+  const alive = pid => { try { process.kill(pid, 0); return true; } catch { return false; } };
+  return { dir, env, planFile, pids, alive };
+}
+const runner = fileURLToPath(new URL('./run.mjs', import.meta.url));
+
+test('a call that runs past its time is stopped with everything it started', posixOnly, () => {
+  const h = hanging();
+  const ran = spawnSync(process.execPath, [runner, h.planFile({ timeout: 1 })], { env: h.env, encoding: 'utf8' });
+  assert.equal(ran.status, 1, ran.stdout + ran.stderr);
+  const jobs = JSON.parse(readFileSync(join(h.dir, 'out', 'run.json'), 'utf8')).jobs;
+  assert.deepEqual(jobs.map(j => j.state), ['failed', 'failed']);
+  assert.match(jobs[0].why, /stopped after 1 second/);
+  assert.equal(h.pids().length, 4);
+  assert.deepEqual(h.pids().filter(h.alive), []);
+});
+
+test('a runner that is told to stop stops its calls and what they started', posixOnly, async () => {
+  const h = hanging();
+  const child = spawn(process.execPath, [runner, h.planFile({ timeout: 600 })], { env: h.env, stdio: 'ignore' });
+  for (let i = 0; i < 100; i++) { try { if (h.pids().length === 4) break; } catch {} await new Promise(r => setTimeout(r, 100)); }
+  assert.equal(h.pids().length, 4, 'both calls started');
+  child.kill('SIGTERM');
+  await new Promise(r => child.on('exit', r));
+  assert.deepEqual(h.pids().filter(h.alive), []);
 });

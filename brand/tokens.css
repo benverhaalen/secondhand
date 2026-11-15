@@ -1,4 +1,4 @@
-/* secondhand brand tokens. Status: agent proposals until Ben picks (brand/ledger.md).
+/* secondhand brand tokens. What Ben locked and what is still open is in brand/ledger.md.
    Every value here matches brand/constitution.md; change both in the same commit (Part V.3).
    Write var(--name) only; never raw values in components. */
 :root {
@@ -10,22 +10,26 @@
   --ink-2:       rgb(10 10 10 / .65);   /* secondary text on white (6.1:1) and gray (5.4:1) only; 13px and up */
   --gray:        #EFF1F2;               /* filled secondary buttons, photo tiles (ref-12, ref-15) */
   --rule:        rgb(10 10 10 / .08);   /* hairlines */
-  --sky:         #90D1EF;               /* field; state "shipping" */
-  --sky-deep:    #4EBAF7;               /* the field's deep corner only */
-  --mint:        #88DCB9;               /* field; state "live" */
-  --lime:        #E6EA6A;               /* field; money: states "sold" and "paid" */
-  --peach:       #FBB383;               /* field corner only */
-  --marigold:    #F9C76F;               /* state "needs you" only */
-  --coral:       #EF956E;               /* category */
-  --lilac:       #B08DF1;               /* category */
+  /* the ring (Art. 5; Ben, round 8): eight light hues under one rule, in ring order. A field is three neighbors on it */
+  --lilac:       #DDCEFE;               /* category */
+  --sky:         #A5E1FE;               /* state "shipping" */
+  --aqua:        #91EAE9;               /* category */
+  --mint:        #A1EACB;               /* state "live" */
+  --lime:        #EBF08F;               /* money: states "sold" and "paid" */
+  --marigold:    #F5D297;               /* state "needs you" only */
+  --peach:       #FECCAA;               /* category */
+  --pink:        #FEC6D2;               /* category */
   --brick:       #C52B17;               /* failed; destructive confirm; white text on it 5.6:1 */
-  /* the family (Art. 5, The family): every hue has three steps, built in OKLCH from the sampled fill.
-     tint = L .955 C .045 (black text 17:1) · fill = sampled (black text 9:1+) · deep = L .42 (white text 8:1+) */
-  --sky-tint: #DEF4FF;      --sky-deep-ink: #0B556F;
-  --mint-tint: #D5FAE9;     --mint-deep: #035C42;
-  --lime-tint: #F1F4D1;     --lime-deep: #505100;
-  --marigold-tint: #FFEED2; --marigold-deep: #654702;
+  /* the family (Art. 5, The family): every hue has three steps, built in OKLCH with the hue kept.
+     tint = L .955 C .045 (black text 17:1) · fill = L .88 C .085, lime L .93 C .12 (black text 13:1+) · deep = L .42 (white text 8:1+) */
   --lilac-tint: #F2EDFE;    --lilac-deep: #563D80;
+  --sky-tint: #DFF4FF;      --sky-deep: #035571;
+  --aqua-tint: #CEFAF9;     --aqua-deep: #005959;
+  --mint-tint: #D5FAE9;     --mint-deep: #035C42;
+  --lime-tint: #F1F4D1;     --lime-deep: #505101;
+  --marigold-tint: #FFEED2; --marigold-deep: #654702;
+  --peach-tint: #FEECE1;    --peach-deep: #763B00;
+  --pink-tint: #FFEAEE;     --pink-deep: #7C2E46;
   --brick-deep: #892315;
   /* states and interaction (Art. 5, States) */
   --brick-tint:  #FEEBE8;               /* failed fill; black text 17.2:1 */
@@ -35,26 +39,26 @@
   --ink-disabled: rgb(10 10 10 / .3);   /* disabled labels; never the only sign */
   --scrim:       rgb(10 10 10 / .4);
   --focus-ring:  0 0 0 2px var(--page), 0 0 0 4px var(--ink);
+  --pill-glow:   0 6px 18px rgb(129 207 252 / .55), 0 2px 10px rgb(238 243 151 / .7);   /* under the black pill (C4; Ben, round 8) */
   /* the field (C2): one per view, soft, no lines and no grain, black text only. Use background: var(--field); never rebuild it.
-     A mesh of sky, mint and lime from ref-12; the colors and positions are open in the ledger. */
-  --field-mesh: radial-gradient(at 0% 0%, var(--sky-deep), transparent 55%), radial-gradient(at 30% 100%, var(--mint), transparent 60%), radial-gradient(at 100% 100%, var(--lime), transparent 65%);
-  --field-peach: radial-gradient(at 100% 0%, var(--peach), transparent 30%);   /* optional corner layer */
+     Home is sky, mint and lime. The rest of the set, and how one field changes into the next, is open in the ledger (R17). */
+  --field-mesh: radial-gradient(at 30% 100%, var(--mint), transparent 60%), radial-gradient(at 100% 100%, var(--lime), transparent 65%);
   --field: var(--field-mesh), var(--sky);
 
-  /* type (Art. 6). Faces are open: Ben picks in the kit */
+  /* type (Art. 6; Ben, rounds 7 and 8): Neue Montreal as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
   /* never system-ui: it can resolve to an Inter-derived face. Scripts a face lacks fall to Noto */
-  --font-text:    "Geist", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
-  --font-display: "Marist", var(--font-text);                     /* wordmark and headings */
-  --w-display: 350;                                               /* Marist Book and Book Italic */
+  --font-text:    "Neue Montreal", "Noto Sans", "Noto Sans JP", "Noto Sans Arabic", "Noto Sans Devanagari", -apple-system, sans-serif;
+  --font-display: "Clofie", var(--font-text);                     /* the wordmark and what Art. 6 lists, nothing else */
+  --w-display: 600;                                               /* Clofie SemiBold, the only display weight */
   --w-regular: 400; --w-medium: 500;                              /* text face; medium only on buttons and the selected tab */
   /* app sizes by role (Art. 6 roles); line heights are ratios so they grow with the text setting */
   --t-13: 13px; --lh-13: 1.385;                   /* caption, time, tab label */
   --t-15: 15px; --lh-15: 1.333;                   /* body, rows, buttons */
-  --t-18: 18px; --lh-18: 1.333; --tr-18: -0.01em; /* headline in a card; text you type */
-  --t-21: 21px; --lh-21: 1.1;   --tr-21: -0.01em; /* wordmark, feature heading (Ben: 21/23.1, -0.2px) */
-  --t-36: 36px; --lh-36: 1.05;  --tr-36: -0.01em; /* screen heading (Ben: 36/37.8, -0.01em) */
-  --t-50: 50px; --lh-50: .95;   --tr-50: -0.02em; /* peak amount (Ben: 50/47.5, -0.02em) */
-  /* web display, Ben's Marist spec from 390 to 1440 wide */
+  --t-18: 18px; --lh-18: 1.333; --tr-18: 0em;     /* headline in a card; text you type (QOVES card title: 18/24, no tracking) */
+  --t-21: 21px; --lh-21: 1.1;   --tr-21: -0.01em; /* wordmark */
+  --t-36: 36px; --lh-36: 1.125; --tr-36: -0.015em; /* screen title (QOVES phone hero: 32/36, -0.015em) */
+  --t-50: 50px; --lh-50: 1.14;  --tr-50: -0.02em; /* peak amount (QOVES big number: 51.66/59.04, -0.02em) */
+  /* web display, Ben's sizes from 390 to 1440 wide */
   --t-hero:    clamp(50px, 36.44px + 3.476vw, 86.5px);
   --t-section: clamp(36px, 27.72px + 2.124vw, 58.3px);
   --t-feature: clamp(21px, 19.55px + 0.371vw, 24.9px);

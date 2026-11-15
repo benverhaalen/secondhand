@@ -2,7 +2,7 @@
 
 Status: *agent proposal* for Ben and Nate. Written 2026-11-14.
 
-How [assist](../features/assist.md) decides which words of a prompt need a look, which input each gets, what is preselected, what is assumed when the person does nothing, when inputs leave, and what a buyer's purpose is before anything is asked. Every weight and threshold below is a starting value, set from the cited evidence or by judgment where none exists, and refit from labels ([card 17](#17-how-corrections-are-learned)). The model steps parse and write words; every decision to ask is arithmetic. Which capture question comes next is [card 17 of seeing-the-item](seeing-the-item.md#17-which-question-to-ask-next-and-when-to-stop) and is not restated here: a capture gap enters this file only as a span with a `requirement_id`, and leaves by that card's stop rule.
+How [assist](../features/assist.md) decides which words of a prompt need a look, which input each gets, what is preselected, what is assumed when the person does nothing, when inputs leave, and what a buyer's purpose is before anything is asked. Every weight and threshold below is a starting value, set from the cited evidence or by judgment where none exists, and refit from labels ([card 17](#17-how-corrections-are-learned)). The model steps parse and write words; every decision to ask is arithmetic. Which capture question comes next is [card 17 of seeing-the-item](seeing-the-item.md#17-which-question-to-ask-next-and-when-to-stop) and is not restated here: a capture gap enters this file only as a span with a `requirement_id`, and leaves by that card's stop rule. Cards 20 to 25 take the two modes of Liu's intra-turn interface, Feedforward and Leaving Blanks, from [packet 41](../../.agents/team/packets/today/41-intra-turn-ui-for-nate.md#the-short-version) (observed there from the demo, its code and 152 replies; no live model was run, [limits](../../.agents/team/packets/today/41-intra-turn-ui-for-nate.md#limits)).
 
 Thresholds named here live in the `thresholds` row ([product.md §3](../product.md#3-the-data-model)): `assist_span_open`, `assist_preselect_margin`, `assist_value_floor`.
 
@@ -454,6 +454,7 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 | An answer equal to the preselection, not fast (card 18) | confirms | 0.5 | |
 | A fast unchanged tap (card 18) | confirms weakly | 0.1 | |
 | An ignored span | nothing | 0 | silence is not consent |
+| A mark seen and kept, a blank filled, a mark dropped | by mark state | [card 21](#21-what-each-mark-state-teaches) | seen and kept is not chosen |
 
 **Method**
 1. Server: each answer posts an MLflow `human_decision` assessment on the assist trace ([openai-decisions-api](../../research/identify/ben/openai-decisions-api.md#calibration-loop-also-a-databricks-story)) and a `label` row ([§8.3](../../research/identify/nate/clarifying-inputs.md#83-what-gets-logged-so-answers-become-labels)).
@@ -521,6 +522,173 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 
 **Check later.** Reformulations per visitor search against signed-in searches.
 
+## 20. Whether a fact is a guess or a blank
+
+**Determines** whether a missing fact is shown as a preselected mark (Feedforward) or as an empty blank in the drafted text (Leaving Blanks), per [packet 41](../../.agents/team/packets/today/41-intra-turn-ui-for-nate.md#ui-1-feedforward-on-a-trip-plan-video-0-to-18-s).
+
+**Sources and weights** (starting values)
+
+| Source | What it contributes | Weight or rank | Why that weight |
+|---|---|---|---|
+| A word the person marked themselves | a mark, guess or blank by the ranks below | rank 0 | they asked |
+| `requirement.obtained_by` is `asked`, or `claim_check` marks the sentence unbacked | blank | rank 1 | no source can observe it: a flaw the photos miss, a smoke-free home, a receipt, pickup hours |
+| A buyer's purpose slot with no history | left empty, never a blank | rank 2 | a search never stops ([card 10](#10-the-buyers-purpose-slots-and-what-is-inferred-before-asking)) |
+| A candidate from a photo, tag, lookup, sold comps or history | guess | rank 3 | something observed it |
+| The model's own `kind` (only_you, unsure, yours) | a hint | 0.3 | the demo's model picks the kind itself (observed in the packet); our ranks decide |
+
+**Method**
+1. Arithmetic: the first rank that applies decides.
+2. Mapping of the demo's kinds (inferred): only_you is a blank; unsure is a guess with no preselection; yours (a taste choice) is preselected from the person's history and never written as a fact about the item.
+3. Server: a value the model writes into a blank is discarded and logged as a parser error.
+
+**Why this method.** The packet's thesis line is "The hard design question becomes which uncertainty can safely remain a blank" (observed, [packet 41](../../.agents/team/packets/today/41-intra-turn-ui-for-nate.md#ui-3-leaving-blanks-on-a-birthday-dinner-video-38-to-58-s)). The answer here is whether a source can observe the fact, which is the same line `claim_check` already draws. The alternative, letting the model's kind decide, was rejected: the model is the thing that invents.
+
+**When it is not shown.** A guess is not shown when card 3 finds no value in resolving it. A blank is always shown, or the sentence is cut.
+
+**How it is explained.** A long press on a blank: "Only you know this."
+
+**Speed.** Arithmetic, at parse.
+
+**Check later.** Blanks whose fill matched what a guess would have been; over 5% would say the rank 1 rule is too wide.
+
+## 21. What each mark state teaches
+
+**Determines** the label weight of each mark state, what the answer model is told, and which approvals count toward earned autonomy ([decisions](../../product/decisions.md#2026-11-14-automation-runs-in-tiers-that-learn)).
+
+**Sources and weights** (starting values)
+
+| Mark state | Means | Label weight | Counts as an unedited approval |
+|---|---|---|---|
+| changed | they chose another option or wrote Something else | 1.0 | no; it is an edit and resets the count |
+| filled | they wrote an only-you fact | 1.0, `owner` evidence | no; it is new input |
+| said | their own words say it | 1.0, for the parse eval only | not applicable |
+| kept, opened, not fast ([card 18](#18-whether-a-tap-is-trusted-as-an-answer)) | they looked at the options and left the default | 0.5 | yes |
+| kept, glanced (in view 1.5 s with typing paused, or in the decision list), never opened | they could have seen it | 0.1 | no |
+| guessed and unseen, dropped, pending | nothing | 0 | no |
+
+**Method**
+1. Client: log `seen_at`, `opened` and `dwell_ms` per mark.
+2. Server: on send, the answer model gets four groups, the packet's three (observed, [how it works](../../.agents/team/packets/today/41-intra-turn-ui-for-nate.md#how-it-works-underneath-from-the-demo-sites-code)) and one more: "they chose this" (changed, filled), "as their own words say" (said), "your default; they saw it and kept it" (kept), and "your default; not seen" (guessed).
+3. Arithmetic: an approval counts toward "Always do this" only when every money or claim mark on it (price, condition, sites, any blank) was kept and opened, or changed.
+4. Arithmetic: on 5% of guesses that are not money or claims, nothing is preselected; a pick-rate gap over 5 points against the preselected arm drops the glanced weight to 0.
+
+**Why this method.** A default left in place is weaker evidence than a choice, and a default nobody saw is none; the packet keeps the first two apart and this card adds the third. Promotion on unseen defaults would teach the system its guesses are right because nobody looked. The alternative, counting every send as approval of every mark, was rejected for that reason.
+
+**When it is not shown.** Never shown.
+
+**How it is explained.** Not shown to the person.
+
+**Speed.** Arithmetic.
+
+**Check later.** The anchoring gap each week, and promotions later undone.
+
+## 22. Decisions tied to no word, and the decision list
+
+**Determines** where a guess that no word anchors is shown.
+
+**Sources and weights** (starting values)
+
+| Source | What it contributes | Weight or rank | Why that weight |
+|---|---|---|---|
+| The define's `kind` (goal, focus, context) | goes to the interpretation line | rank 1 | the demo's route (observed in the packet) |
+| The define's `template` ("Size {}.") | one decision list line | | |
+| The mark state | order: unseen first | | unseen defaults need a look most |
+
+**Method**
+1. Arithmetic: at most 3 chips on the interpretation line, by card 3's value; the rest stay assumed.
+2. Server: when the result arrives, the decision list above it shows one line per decision from its template, each row an `AssumptionChip` that opens its picker.
+3. Server: each template passes copy-lint, else the field name and value.
+
+**Why this method.** A decision the person cannot see cannot be corrected. The alternative, a summary paragraph, was rejected: one line per decision can each be opened.
+
+**When it is not shown.** No decision tied to no word and no unseen default: no line and no list.
+
+**How it is explained.** By the line itself.
+
+**Speed.** With the result.
+
+**Check later.** Decisions changed from the list, against from the marks.
+
+## 23. When a filled value is reused, reopened or goes stale
+
+**Determines** what happens to the text after a blank is filled or a value is changed.
+
+**Sources and weights** (starting values)
+
+| Source | What it contributes | Weight or rank | Why that weight |
+|---|---|---|---|
+| The blank's `key` and `wait` | where the job paused | | |
+| The first sentence that used the key | where a rerun starts | | |
+| The fill's evidence | carried by every reuse | | |
+
+**Method**
+1. Server: `wait: true` pauses the job at the blank; a fill resumes it in the same message, written `[[key: value]]` and reused as `[[key]]`, as the demo does (observed in the packet).
+2. Server: a change reruns from the first sentence that used the key; that text shows as stale ("Rewriting") and nothing before it moves.
+3. Client: a slider previews live and commits on release.
+4. Server: a reused value carries the fill's `owner` evidence, so `claim_check` passes it.
+
+**Why this method.** Rerunning only what depends on a value keeps the rest stable. The alternative, regenerating the whole draft, was rejected because it moves words the person already read.
+
+**When it is not shown.** Nothing is reopened.
+
+**How it is explained.** The stale text itself.
+
+**Speed.** The rerun streams.
+
+**Check later.** Reruns that changed text before the key's first use, which should be 0.
+
+## 24. When one form beats a picker per blank
+
+**Determines** whether open blanks are asked inline or as one short form.
+
+**Sources and weights** (starting values)
+
+| Source | What it contributes | Weight or rank | Why that weight |
+|---|---|---|---|
+| Count of open blanks in one text | 4 or more gives one form | starting value | many independent facts at once read faster as a form |
+| Whether the blanks were raised while nobody was there | a form on the Today card | rank 1 | nobody is reading the draft |
+| A blank whose wording depends on its sentence | stays inline | rank 0 | the sentence is the question |
+
+**Method**
+1. Arithmetic: the first rank that applies, then the count.
+
+**Why this method.** A reply asked why each blank is its own picker instead of one generated form, and the author answered that he did not want to break the text-answer form factor yet (observed, [reply](https://x.com/YousieGoosie/status/2121083479710716395), [pushback](../../.agents/team/packets/today/41-intra-turn-ui-for-nate.md#what-people-pushed-back-on-from-the-152-replies)). Both hold: inline for a few dependent facts, a form for many independent ones.
+
+**When it is not shown.** Under 4 open blanks with a person present: no form.
+
+**How it is explained.** Not explained.
+
+**Speed.** Arithmetic.
+
+**Check later.** Time to fill per blank, form against inline.
+
+## 25. What a blank does when nobody is there
+
+**Determines** what a blank does when the job runs without a person present, such as a reply drafted overnight.
+
+**Sources and weights** (starting values)
+
+| Source | What it contributes | Weight or rank | Why that weight |
+|---|---|---|---|
+| A live session | the blank shown in place | rank 0 | |
+| The action's own deadline (the reply due, `offer.expires_at`, the post time) | the decision's `deadline` | rank 1 | |
+| Whether the claim is required for the action | wait or proceed | | |
+
+**Method**
+1. Server: with no live session, raise the existing `unbacked_claim` decision ([product.md §3](../product.md#3-the-data-model)) with the action's deadline; its options are fill (which writes the attribute with `owner` evidence), send without the claim, and edit.
+2. Server: at the deadline, if the action is otherwise automatic, it goes ahead without the claim; the fact is never invented. If the claim is required, the action waits and the decision expires.
+3. Server: push only by Today's rule, when the deadline is within 1 h.
+
+**Why this method.** It reuses the kind `claim_check` already raises, so nothing new is asked of Today. The alternative, waking the person for each blank, was rejected as noise.
+
+**When it is not shown.** The person is present: card 24 or inline.
+
+**How it is explained.** The Today card names the sentence and what is missing.
+
+**Speed.** As Today.
+
+**Check later.** Sales lost after a claim was left out; over 2% of such sales (starting value) would argue for waiting instead.
+
 ## Summary of all determinations
 
 | Name | Owning feature | Sources | Method in five words | Hide rule |
@@ -544,14 +712,21 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 | 17 Learning | assist | labels, assessments | priors now, thresholds weekly | never shown |
 | 18 Trusted tap | assist | card_ms, edited | fast unchanged counts weakly | never shown |
 | 19 Visitor | assist | prompt, session, demand | same cards, session only | saving needs sign-up |
+| 20 Guess or blank | assist (read by list, messages) | requirement, claim_check, candidates | observable guesses, only-you blanks | a buyer's search never stops |
+| 21 Mark learning | assist | mark state, dwell, opened | weight by what was seen | never shown |
+| 22 Unanchored decisions | assist | define kind, template | interpretation line, decision list | no unseen defaults, no list |
+| 23 Reuse and stale | assist | key, first use, fills | rerun from first use | nothing reopened |
+| 24 Form or pickers | assist | open blanks, presence | four or more, one form | under four stay inline |
+| 25 Nobody there | assist (read by today) | session, action deadline | unbacked_claim, else omit claim | person present |
 
 ## What cannot be determined credibly
 
 - Why the person wants something when they have not said it and have no history: the use slot is left empty rather than guessed from demographics.
 - Who "for whom" is beyond the words: "my son" gives a child, not an age, until an order or an answer says so.
 - A colour or fit as the person sees it, from words alone: "the nice blue" stays free text unless a photo is attached.
-- Whether a highlight was seen and ignored, or not seen: both are treated as "ignored" and assumed.
-- Whether inline marks in a search box beat chips below it: no shipped case study was found (inferred from search), so the bar in [assist](../features/assist.md#how-we-will-know-it-works) is the test.
+- Whether a highlight was read, past the signals card 21 uses (opened, in view with typing paused, shown in the decision list): a glance that leaves no signal counts as unseen.
+- Whether inline marks in a search box beat chips below it for shopping: the pattern is built and working in Liu's demo (observed in [packet 41](../../.agents/team/packets/today/41-intra-turn-ui-for-nate.md#the-original-posts), recorded examples only), but no shopping product doing it was found (inferred from search), so the bar in [assist](../features/assist.md#how-we-will-know-it-works) compares against the pattern's own behaviour.
+- Whether seeing a preselected guess bends what the person would have said: only the no-preselection arm of card 21 measures it.
 
 ## What this area needs from other areas
 
@@ -560,4 +735,6 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 - From [identify](../features/identify.md) and [capture](../features/capture.md): the `requirement` rows and card 17's score, so capture gaps become spans without a second ranking.
 - From [measure](../features/measure.md): garment measurements to convert sizes (card 12).
 - From the shared model ([product.md §3](../product.md#3-the-data-model)): the `intent` entity, the span fields on `decision`, the three thresholds and the `assist.*` events.
-- From Ben: catalog rows 54 to 67 ([assist](../features/assist.md#widget-vocabulary)).
+- From Ben: catalog rows 54 to 77 ([assist](../features/assist.md#widget-vocabulary)).
+- From [list](../features/list.md) and [messages](../features/messages.md): drafts written as text with `<blank>` records where `claim_check` finds no backing, and a resume when a blank is filled (card 23).
+- From [today](../features/today.md) and the shared model: `unbacked_claim` raised from a blank with the action's own deadline, and its expiry going ahead without the claim (card 25); promotion counting only approvals whose money and claim marks were seen (card 21).

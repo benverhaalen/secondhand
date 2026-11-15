@@ -2,6 +2,24 @@
 
 The rules the app's behavior has to keep, written as code so they can be checked rather than just read. This is an *agent proposal* built from Ben's decisions. If a decision changes, change it here as well.
 
+## Where to start
+
+Everything under `spec/` that is not code is an *agent proposal* for Ben and Nate until a line links a decision.
+
+| Read | For |
+|---|---|
+| [product.md](product.md) | The canon: every entity, state, verb, endpoint, decision kind, job and event. Where another file differs, this one wins |
+| [features/](features/) | One spec per feature (21): what the person does and sees, design choices, data flow, the frontend contract, failures, how we will know it works |
+| [determinations/](determinations/) | Every thing the system works out, as cards: sources, weights, method, when it is hidden, how it is explained |
+| [parity.md](parity.md) | Every capability a rival tool has, whether we adopt its method or use a better one, and where that lives |
+| [databricks.md](databricks.md) | How the platform works, where it is strong and weak for us, and how each feature is built on it |
+| [coverage.md](coverage.md) | Which research backs which feature, and the gaps |
+| [plans/](plans/README.md) | How the build is organised: stages, task shape, test layers, the first tasks |
+| [open-questions.md](open-questions.md) | What only Ben or Nate can settle, each with a recommendation |
+| [../docs/how-it-works/](../docs/how-it-works/README.md) | The same system explained for people, not for the agents that build it |
+
+## The checked model
+
 - `lifecycle.mjs` models an item's life across sites: posting, failures, payments, dibs, delisting, markdowns and pickup ([functions.md §1](../product/functions.md#1-the-one-picture-underneath-an-items-life)). The tier rules come from [decisions.md](../product/decisions.md).
 - `lifecycle.test.mjs` walks every interleaving across 3 sites (about 61,000 states) and checks six invariants:
   - a second payment always opens a refund. Across sites a double sale can't be prevented (a delist can fail and leave the listing up), so the spec proves it is never silent, not that it never happens

@@ -2,7 +2,7 @@
 import { read, err, lineOf } from './util.mjs';
 
 const UI = /\.(tsx|jsx|ts|js|css|scss|html|vue|svelte)$/;
-const NOT_APP = /^(brand|research|assets|scripts|spec|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\./;
+const NOT_APP = /^(brand|research|assets|scripts|spec|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\./;
 
 export function scales(constitution) {
   const row = id => (constitution.match(new RegExp(`^\\|\\s*${id}\\s*\\|.*$`, 'm')) ?? [''])[0];
@@ -11,7 +11,8 @@ export function scales(constitution) {
 }
 // Lengths in px (a bare number is px, as in React styles); rem counts as 16px; negative margins use their size.
 // Any other unit (em, pt, %, vh) can't be checked against a px scale, so it comes back NaN and fails: use a token.
-const px = v => [...v.replace(/var\([^)]*\)/g, '').matchAll(/(-?\d*\.?\d+)(px|rem|em|pt|vh|vw|ch|ex|%)?/g)]
+// A name (space.s3, GAP.section) is a token, so only numbers written in place are measured.
+const px = v => [...v.replace(/var\([^)]*\)/g, '').replace(/(?<![\w.])[A-Za-z_$][\w$.]*/g, '').matchAll(/(-?\d*\.?\d+)(px|rem|em|pt|vh|vw|ch|ex|%)?/g)]
   .map(([, n, u]) => !u || u === 'px' ? Math.abs(Number(n)) : u === 'rem' ? Math.abs(Number(n)) * 16 : NaN);
 
 export function brand(root, { files }) {

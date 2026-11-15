@@ -525,3 +525,25 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-15 pricing levers, signals and hot items
 Ben, project chat, 2026-11-15 00:12 UTC, starting the thread "Map each platform's pricing levers and analytics".
 > secondhand should be able to tell when something is ‘hot’ like monitor when it got things wrong and dynamically manage supply demand of the business. and we collect that data and can better manage business with ai from such signals. also everything is relative. views correlate differently from likes, shares, offers, etc. maybe use rdd with x algorithm and have this as a potential future feature maybe out of scope. but training a model to know what to move price by, how, etc. also there are other things that you should psychologically research that could be useful in the product we are building now. for the pricing thing, each platform has specific levers. this should also be a feature selling point. like depop you can discount. set defaults in the app for auto accepting. and you should have thorough enough looped research to be able to identify this all in each of these platforms. knowing exactly what information and analytics that say depop or ebay or facebook gives and then being able to integrate and display that well in our platform and aggregate that data.
+
+## 2026-11-15 strategize deeply on listing seo
+Ben, project chat, 00:11 UTC.
+> use strategize deeply to figure out how to optimize for seo. my harness skill
+
+## 2026-11-15 round 8 picks
+Ben, on the round 8 picks page, saved 2026-11-15 00:26 UTC; he wrote "alright they are done" in the thread "Set the secondhand brand identity" at 00:26. The pick is what he tapped; the quote is the note he typed under it. This round was drawn in code, without image generation. The font sheets are in [brand/explore/round-8/inputs/](../brand/explore/round-8/inputs/).
+
+**The wordmark and the type** (B, Clofie SemiBold wordmark, Neue Montreal for the rest).
+> clofie, but some bigger things in the app can be clofie. classify based on expert research what should or shouldn't.
+
+**The palette** (C, a wider set of hues under one rule).
+
+**What a gradient may be** (B, a set, by rule).
+> A set but a larger set. maybe write them with code so you can manipulate them a bit more. i kind of imagine a gradient changing into another gradient into another. also i feel like the palette could be lacking deeper colors? i want to know if you agree or disagree.
+
+**Depth on the black button** (C, a faint glow).
+
+**The selected tab** (A, filled icon only).
+
+**The item in a feed** (no pick).
+> definitely B or C, let me know what a better designer would do. im fine possibly amending some decisions earlier. if we could mix B and C. or have some sort of in between of them. also something with the spacing of all the elements and everything seems like slop. it needs to be super intentional.

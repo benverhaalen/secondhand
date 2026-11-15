@@ -25,7 +25,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L17 | Platform logos are square, 1:1, from each site's own icon | [round 6](../product/words.md#2026-11-14-round-6-picks) |
 | L18 | State on a photo is a corner tag in a soft gradient of the state's color, still readable | [round 6](../product/words.md#2026-11-14-round-6-picks), [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L19 | The gradient is soft: no lines and no grain | [round 6](../product/words.md#2026-11-14-round-6-picks), [round 7](../product/words.md#2026-11-15-round-7-picks) |
-| L20 | Type mirrors QOVES's fonts and how QOVES sets them, without the mono. The wordmark's face is open (R11) | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L20 | Type mirrors QOVES's fonts and how QOVES sets them, without the mono: Neue Montreal for everything but the wordmark | [round 7](../product/words.md#2026-11-15-round-7-picks), [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L21 | The sale amount is never in Marist | [round 6](../product/words.md#2026-11-14-round-6-picks) |
 | L22 | Light is standard. Dark mode comes later, and light and dark differ only in color | [round 6](../product/words.md#2026-11-14-round-6-picks), [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L23 | Grids have one airy default size. The person can pinch them denser or looser, as in Photos, and details drop out as tiles shrink | [round 7](../product/words.md#2026-11-15-round-7-picks) |
@@ -34,9 +34,13 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L26 | The gradient sits on one card at rest. On a sale it fills the whole screen as an animation, with a haptic and a sound | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L27 | The gradient drifts slowly. It is never static | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L28 | No lime band. A kind of amount looks the same everywhere | [round 7](../product/words.md#2026-11-15-round-7-picks) |
-| L29 | The selected tab is the filled icon with a medium label | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L29 | The selected tab is the filled icon with a medium label, and nothing under it | [round 7](../product/words.md#2026-11-15-round-7-picks), [round 8](../product/words.md#2026-11-15-round-8-picks) |
 | L30 | Motion carries continuity: the photo you tap grows into its page, and buttons feel alive and pressable | [round 7](../product/words.md#2026-11-15-round-7-picks) |
 | L31 | The brand says which gradients are allowed and which are not | [round 7](../product/words.md#2026-11-15-round-7-picks) |
+| L32 | The wordmark is Clofie SemiBold. Some bigger things in the app can be Clofie too | [round 8](../product/words.md#2026-11-15-round-8-picks) |
+| L33 | The palette is the wider set: eight light hues under one rule | [round 8](../product/words.md#2026-11-15-round-8-picks) |
+| L34 | Gradients are a set by rule, and a larger set. They are written in code, and one can change into the next | [round 8](../product/words.md#2026-11-15-round-8-picks) |
+| L35 | The black button's depth is a faint glow | [round 8](../product/words.md#2026-11-15-round-8-picks) |
 
 ## Decided by agents (means; Ben can veto)
 
@@ -48,19 +52,18 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | A4 | The family: every hue has a tint, a fill and a deep, built the same way | constitution Art. 5, The family |
 | A5 | Dark mode flips only the page, the surfaces and the ink | constitution Art. 5, Dark mode |
 | A6 | The notice card is gray, or marigold tint when it needs the person. Ben left it to the agent in [round 7](../product/words.md#2026-11-15-round-7-picks) | constitution Art. 5, States |
+| A7 | Where Clofie goes: the wordmark, the screen title, the headline of a moment, web and post headlines. Never a number, never words a person wrote. Ben asked for the classing in [round 8](../product/words.md#2026-11-15-round-8-picks) | constitution Art. 6, [the reasons](explore/round-9/clofie-use.md) |
 
-## Open (Ben picks; round 8)
+## Open (Ben picks; round 9)
 
-Round 7 picks are recorded in [words.md](../product/words.md#2026-11-15-round-7-picks). Ben asked for this round without image generation first: colors, gradients and typefaces.
+Round 8 picks are recorded in [words.md](../product/words.md#2026-11-15-round-8-picks). This round is drawn in code on the [picks page](https://claude.ai/artifact/7a98Pc4VWDoarvKACEhvVP), with every space measured. The Clofie sheets are in [explore/round-9/inputs/](explore/round-9/inputs/).
 
 | # | Decision | Options | Leaning |
 |---|---|---|---|
-| R11 | The wordmark's face | A: Marist Book, no Clofie. B: Clofie SemiBold. C: Clofie Regular | open |
-| R12 | The palette | A: as now. B: lighter, the same hues. C: a wider set of hues under one rule | B (agent) |
-| R13 | What a gradient may be | A: one signature gradient only. B: a rule, any neighbors on the color wheel at the same lightness. C: the rule, and a gradient per state | B (agent) |
-| R14 | Depth on the black button | A: near-black, flat. B: lit from above with a soft shadow. C: a faint glow | B (agent) |
-| R15 | The selected tab | A: filled icon only. B: a faint glow under it. C: a soft shadow | open |
-| R16 | The item in a feed | A: ruled row. B: a hairline box. C: a gray box | open |
+| R16 | The item in a feed. Ben: "definitely B or C", a mix or an in-between, and "im fine possibly amending some decisions earlier" (L16) | A: white box with a hairline. B: gray box, no line. C: the in-between, a lighter gray with a hairline | B (agent) |
+| R17 | Which gradients are in the set, and how soft, how fast and how deep they are | The eight sets of three neighbors on the ring, adjusted in the lab on the page | open |
+| R18 | Deeper colors. Ben: "the palette could be lacking deeper colors? i want to know if you agree or disagree" | A: none, as now. B: one stronger point in each gradient and the deep step for small marks. C: deep fills with white text | B (agent) |
+| R19 | Spacing by relationship, and radii that nest | The measured rule on the page, yes or no | yes (agent) |
 
 ## Later
 

@@ -79,11 +79,14 @@ Sources: Apple HIG Motion, NN/g on animation duration, Emil Kowalski's animation
 
 ### secondhand's motion moments
 
+What each moment is built with in the Expo app, and how tap-to-show time is measured, is in [motion-and-speed.md](../research/cross-cutting/ben/motion-and-speed.md). Continuity is for the same object on both screens; when the next screen is a different thing, it pushes in the usual way.
+
 Each moment names its borrowed pattern, its timing and its fallback.
 
 | Moment | How often | Motion | Borrowed from | Reduce Motion |
 |---|---|---|---|---|
-| Tap a button or pill | Constant | Press to scale 0.97, `--t-feedback` | iOS system buttons | Opacity dip |
+| Tap a button or pill | Constant | Scales to 0.97 the moment the finger lands and springs back on release, so a second touch carries on from where it is. A light haptic only when the press commits something | iOS system buttons | Opacity dip |
+| Open an item from a grid or a row | Many per day | The photo grows into the item page and shrinks back on return. The page shows what the tile already knew and fills in the rest | Apple Photos, App Store cards | Crossfade |
 | Switch tabs | Constant | None; the content swaps | iOS tab bar | Same |
 | Open all messages (chat icon, top right) | Several per day | Pushes in from the right like any iOS navigation, `--t-panel`; unread count crossfades | iOS navigation push; eBay and Marketplace header icon | Instant |
 | Open ＋ (Sell this / What's it worth / Find this) | Daily | Sheet rises from the bottom, `--t-panel`, drag to dismiss | iOS sheet | Fade |
@@ -95,6 +98,10 @@ Each moment names its borrowed pattern, its timing and its fallback.
 | Something failed | Rare | Red ✕ badge fades in once, warning haptic. No shaking or looping | iOS failed iMessage "Not Delivered" | Badge only |
 | Auto action done | Many per day | None. A quiet `AUTO` label and Undo in the log | Gmail "Sent. Undo" | Same |
 | Offer arrives (push) | Several per day | System notification; in app the card inserts at the top, `--t-select` | iMessage new message | Instant insert |
+
+### Layout
+
+Screens are built from the fixed parts in [app/src/ui](../app/src/ui/README.md), which also says which separator means what. `node .agents/check.mjs` fails a screen that lays itself out by hand.
 
 ## 4. States every screen must design
 
