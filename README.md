@@ -1,10 +1,40 @@
 # secondhand
 
-Buy and sell used things across every marketplace from one app. You take a few guided photos and the app measures, identifies, prices and photographs the item. It then lists the item where it will sell best and handles the buyers. On the buying side, it watches every platform for the thing you want. Built by Ben and Nate at MadHacks 2026.
+<p align="center"><img src="product/graphics/devpost/secondhand-logo-1x1.png" alt="secondhand" width="240"></p>
+
+Your second hand for buying and selling used things. Built by Ben Verhaalen and Nate Garelik at MadHacks 2026.
+
+I thrift most of my clothes. Over time I grew out of a lot of them, but they still have value, so I always mean to sell them and they pile up in my room. I have hundreds of photos of clothes from different angles. Getting one listing up took me hours. I had to shoot it, sort the photos, write it, note the flaws and work out a price. Then you do most of that again on the next site.
+
+So we built the thing I wanted. You take a few photos. secondhand works out what the item is, prices it from what similar items sold for, shows you the sales behind that price, and builds a draft listing for each marketplace. If you're buying, one search reads the marketplaces for you, and you can track an item at your price.
+
+The full write-up, with screenshots, is in [product/devpost.md](product/devpost.md).
 
 ## Where it stands (November 15, 2026)
 
 Working on main: sign-in, search across the marketplaces in one query, the chat that answers from the listings it found (every figure checked against a listing), capture of 14 kinds of item from photo to identified item, valuation of an item from real sold listings, and the market tables on Databricks. Measured in [bench/RESULTS.md](bench/RESULTS.md); what works and what is left in [finalization §13](spec/plans/finalization.md#13-what-works-kept-by-the-orchestrator).
+
+## Engineering decisions
+
+These are the calls we spent the most time on, and why we made them.
+
+**AI reads, code decides.** A model reads your photos and fills in the brand, model and size, and you confirm each one. Prices, fees and listing titles come from code, so a number can always be traced back and a title can't contain a word you didn't confirm.
+
+**No price when we can't back it.** The price comes from sold listings. If the app can't tell what the item is, it doesn't give one. We backtested the pricing code on 41.9k StockX sneaker sales ([results](bench/RESULTS.md)).
+
+**Every price opens to its sales.** On Databricks, a SQL table function, `why(id)`, returns the exact sales behind any figure and rebuilds the number from them. Unity Catalog's lineage stops at columns, and a seller is asking about rows ([how to try it](databricks/DEMO.md)).
+
+**The same item listed twice counts once.** People post one item on several marketplaces. Counted separately, those posts would bend the price data. The pricing code compares photos with a perceptual hash and titles by text similarity, and treats matching posts as one item ([cluster.py](jobs/identity/cluster.py)).
+
+**Two buyers at the same moment.** If an item is up on four sites, two people can pay before any listing comes down. Only a paid order counts as a sale, and when a second buyer pays anyway, the seller sees both and chooses which buyer to refund. We checked those rules with a model that walks through every order of events for one item on four sites, 931,406 states. We also broke the refund rule on purpose, and the check found the double sale in six steps ([numbers](product/numbers.md)). This tests our rules. It hasn't run against live sales.
+
+**A listing built for each site.** A fit table decides which sites an item belongs on. A requirements table holds each site's fields, their limits and what that site's search cares about. The title is assembled from those, and the asking price on each site is solved so you keep the same amount after that site's fees ([build.ts](app/src/engines/listing/build.ts), [crosslist.ts](app/src/engines/listing/crosslist.ts)).
+
+**Drafts, and you post.** It's your account and your name on the listing, so the app hands you a draft for each site.
+
+**A site's own API first.** eBay has one, so we use it. Where a site turns ordinary automated requests away, we read the page through a real browser with Browser Use Cloud and Playwright.
+
+**AI photos stayed out.** We got an image model to lay a wrinkled shirt flat from a photo and an outline, and it worked. After talking with a mentor we left it out, because an edited photo of a used item can show something the seller doesn't own.
 
 ## Run it
 

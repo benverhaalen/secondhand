@@ -8,6 +8,36 @@ Ben's two meanings of the name, 19:15 ([words](words.md#2026-11-14-pitch-and-str
 
 The brand thread's recommended wordmark already carries both: the o is a clock with a red second hand.
 
+## What we want people to remember
+
+[Ben's main points](words.md#2026-11-15-the-main-points-across-the-site-devpost-and-video) set the direction for every public surface. Use the strongest statement the evidence supports. Keep the buyer's outcome alongside the seller's.
+
+| Point | What to show now | What would support the stronger claim |
+|---|---|---|
+| **Price to the market.** | Show the sale records behind a price. On 39,707 historical StockX sales both methods priced, the research model had **84% fewer big pricing misses** than the 90-day median. Put the dataset and coverage beside the result. [How we measured pricing misses](#how-we-measured-pricing-misses) | Lower errors or better realized outcomes across current categories, using the app engine. An estimation result alone measures neither savings nor sales. |
+| **Sell sooner across marketplaces.** | One item record, the previews or verified listings it produces, and an action after posting. Name actual support per marketplace. | Time to a confirmed sale on comparable items. Listing reach and time to publish are separate outcomes. |
+| **Make a good listing with less work.** | Show the photo, sourced facts and review-ready listing for the same item. Show the photo comparison as evidence of faithful presentation. | Run the same items to the same reviewed endpoint across tools. Report active time, factual corrections, omissions and completion. |
+| **Find the right used item sooner.** | Show one request, the best verified match that fits, the delivered price and a near miss. | Matched search tasks showing time to an eligible result and successful matches. Time to purchase needs a separate observation. |
+| **Make it affordable and useful.** | Compare documented subscription prices and capabilities by job. Show a dated take-home example and keep internal cost estimates separate. | Publish confirmed customer prices and matched coverage. The lowest-cost or broadest-feature claim needs a defined comparison set and equal scope. |
+| **Use Databricks to make an answer inspectable.** | Follow one price to exact rows and a recorded run. Show Lakeflow quality checks, Unity Catalog rights, Delta versions, the SQL basis check and MLflow evaluation. [Workspace guide](../databricks/DEMO.md) | Publish the reviewed scope of the governance and traceability checks. The recorded run has six unresolved rebuilds. [Handoff](../.agents/team/packets/team/71-databricks-handoff.md) |
+| **Keep people in charge of AI-assisted decisions.** | Show the buyer reply as a draft and the person deciding what to send. Show a proposed action with its limit, reason and consequence. | Confirm approval behavior at each supported action. Describe code-enforced limits and human checkpoints separately. |
+| **Engineer for cost, speed and easy interaction.** | Show a targeted follow-up instead of another full form, and a source returning while others are pending when a recording exists. A dated source trial measured a median under 1.1 seconds for Depop reads, 32 of 32 queries answered. [Read trial](../research/cross-cutting/nate/runs/public-client-live.md) | End-to-end latency and billed cost per completed job. A source-read time is a component measurement. |
+| **Show the reasoning, including when it goes wrong.** | Show actual failure cases and the decisions they forced: two payments, a changed photo detail and thin price evidence. Link the design and test. | Keep unresolved cases and follow-up tests visible. Add availability when the underlying workflow is verified. |
+
+### How we measured pricing misses
+
+**Approved headline: 84% fewer big pricing misses.** A big miss is an estimate more than 20% above or below the actual sale price. On a $100 sale, an estimate below $80 or above $120 counts as a miss.
+
+Of 41,988 historical test sales, the research model and the 90-day median both priced 39,707. On that paired set the miss rates were 1.54% and 9.83%. The relative reduction, calculated before rounding, was 84.3%. That is roughly one big miss in 65 estimates compared with one in 10. The test used earlier sales to estimate later StockX sales of new Off-White x Nike and Yeezy 350 sneakers from November 2018 to February 2019. The research model is separate from the app's served engine.
+
+Put **Method and full results** beside the headline wherever it appears. [Historical test output](../scripts/bench/out/backtest-stockx.json) · [Valuation test scope and model distinctions](../spec/engines/valuation.md#the-backtest-on-released-sold-data-and-what-it-may-claim)
+
+## How each medium makes the case
+
+- **Public website.** Home shows the problem and leads to real product states. How It Works follows the person's job. Features shows the engineering choices and fair comparisons. Data Use opens prices to source rows and records how we tested them. FAQ answers objections in complete sentences. What's Next explains the appraisal and business direction. Give **How we dug in** a short panel on Features with links to cases on Features and Data Use. Home retains its existing section order.
+- **Devpost.** Lead with the work that keeps someone from selling or finding what they want. Then show one product decision. Put **Let's dig in** after the problem or first worked example. Use it to pair the essay's idea of human judgment with one price, one approval and one failure we tested. Link the artifacts so the reader can verify them after the presentation. [Three-part draft](devpost.md#lets-dig-in)
+- **Video.** Open with finding the item, show real product states for capture, price and review, and let one decision visibly come back to the person. Use a labeled recording or simulation where that is the evidence. Give one result a legible caption and link the website for details. Use motion to show the transition or sequence.
+
 ## The problem in one sentence
 
 For most things people own, there are two ways to sell, and both are bad: hand it to a consignor and keep 15% of a $20 sale, or do it yourself, keep about 85%, and do work that fewer than 1 in 10 cheap listings finish within a month.
@@ -96,7 +126,7 @@ The canonical list of every feature worth showing is [features-proof.md](feature
 
 ## How deep we dug
 
-When a judge asks "how much is really here?" or "what did you do with the tech?", the answer, with every count and a link to each file, is the "How deep we dug" section of [devpost.md](devpost.md#how-deep-we-dug). Two halves: how the project was made (44 decisions with their reasons, 314 quotes from Ben and Nate, 227 research notes with every claim marked, 23 checks that fail the build, about 2,900 tests, a backtest designed before any data) and technology used in ways we haven't seen (a model checker for one item on four sites, AI photos measured against the tape, a price that refuses when sales are thin, identification that measures its own doubt, site readers that repair themselves, Databricks as the home of every learned number, Codex as an image pipeline with a judge). Pick one from each half; don't recite the list.
+When a judge asks what we did with the technology, open [Let's dig in](devpost.md#lets-dig-in) and the [tested cases](devpost.md#challenges). Start with an item the judge can picture, trace its price through Databricks, and show the photo check that initially missed a stretch. This gives the judge a concrete example of why the work matters, what the tools enabled, and what changed when the team found an error.
 
 ## Proof without sales
 

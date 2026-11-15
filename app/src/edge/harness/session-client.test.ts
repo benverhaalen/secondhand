@@ -78,7 +78,7 @@ test('two signed-in verbs share one cloud profile browser and never import or ex
     assert.equal((await ads.find(a => a.manifest.verb === 'read_inbox')!.run({}, signal())).ok, true);
     f.setBody(fixture('poshmark', 'orders.json'));
     assert.equal((await ads.find(a => a.manifest.verb === 'read_orders')!.run({}, signal())).ok, true);
-    assert.equal(f.creates.length, 1); assert.equal(f.creates[0].profileId, 'profile_a'); assert.equal(f.creates[0].solveCaptchas, false);
+    assert.equal(f.creates.length, 1); assert.equal(f.creates[0].profileId, 'profile_a'); assert.equal(f.creates[0].solveCaptchas, true);
     assert.equal(f.counts().imports, 0); assert.equal(f.counts().exports, 0); assert.equal(f.pool.stats().leased, 0);
   } finally { await f.pool.close(); }
   assert.equal(f.counts().stops, 1);
@@ -520,11 +520,11 @@ test('pending launch option cannot bypass registry ownership for a published pro
   assert.equal(await resolve('/unused', { ...owner, headless: true }), 'profile_a');
 });
 
-test('eBay startLink opens its sign-in page with no interception or solver', async () => {
+test('eBay startLink opens its sign-in page without interception and enables cloud CAPTCHA handling', async () => {
   const f = setup('ebay'); await f.registry.put(owner.user_id, row('ebay'));
   const handle = await f.service.startLink('ebay', owner);
   assert.deepEqual(f.visits, ['https://signin.ebay.com/']);
-  assert.equal(f.creates[0].solveCaptchas, false);
+  assert.equal(f.creates[0].solveCaptchas, true);
   assert.equal(f.counts().routes, 0);
   await f.service.cancelLink(owner.user_id, handle);
 });

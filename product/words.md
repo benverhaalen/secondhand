@@ -2278,6 +2278,34 @@ Nate, orchestrator's session, 2026-11-15, about 07:50 Central.
 
 Used in: `research/data/nate/databricks-retail-solutions.md`, [the finalization spec](../spec/plans/finalization.md).
 
+
+## 2026-11-15 the main points across the site, Devpost and video
+
+Ben, Codex, on what the presentation should convey:
+
+> here are the central points to make across the whole thing. we price to the market and it works. we help you sell faster by listing across all platforms. we help you create the best listings faster than anything else. our services are cheaper than any competing products with more features. we leveraged the databricks platform exceptionally and we were creative with the tools they have. a human in the loop is central to all ai decisions. we built cost effective and fast solutions with ai and really engineered new unique ways of interaction. we thought of everything you thought of and have reasons behind all our decisions.
+
+> but our website (public), the devpost, or any video should all convey these in a different way. oh also, for the website and devpost especially have a section about digging in.
+
+These are the intended selling points. The [pitch evidence map](pitch.md#what-we-want-people-to-remember) records the proof and pending comparisons for each.
+
+
+## 2026-11-15 dig through your closet, how we did it, and what we got wrong
+
+Ben, Codex, refining the theme and the StockX comparison:
+
+> theres got to be a better way to talk about the 98.5 vs 90.2. like what does that difference mean about our product. how about dig through your closet. how did we do it. we dug into complex tooling. this is how:. We also dig into what we got wrong. i like these things
+
+Used in [Let's dig in](devpost.md#lets-dig-in) and [the pitch evidence map](pitch.md#what-we-want-people-to-remember).
+
+
+## 2026-11-15 approved pricing miss headline and method link
+
+Ben, Codex:
+
+> yes i agree with this stat: "**84% fewer big pricing misses" save this but ensure to not leave out a link for more in depth into it.**
+
+The approved wording and its scope are in [How we measured pricing misses](pitch.md#how-we-measured-pricing-misses).
 ## 2026-11-15 nate dupe's copies of listings already read are dropped, its new ones kept
 Nate, search lead's session, 2026-11-15, about 06:55 Central, after the app-wiring lead measured Dupe returning Poshmark listings the direct Poshmark read already had ("you called poshmark twice").
 > dupes arent considered if copies, if they are new then they are read as additional info, but duplicates from dupe are dropped
@@ -2731,3 +2759,25 @@ Nate, session "production site read and the engine page", 2026-11-15, three mess
 > wait but show complexity, realtime scores. Every platform has a scoring metric generated depending on teh specific item. AI is already incredible at the way it specializes around a user experience, but now it can be used to assist users at specializing their listing across an entire market of products. Each platform and its differences also weigh which is suggested to run on
 
 Used in: `web/app/engine/` (the Engine page of the site).
+
+## 2026-11-15 ben the devpost and readme: an essay about digging into each problem, his own story, humble and specific
+Ben, session "devpost write-up", 2026-11-15, several messages while the write-up was drafted.
+> the whole thing should essentially be an essay about digging deep on each problem. implicitly. you can talk about digging deep as the thesis statement after you introduce the problem
+
+> i think it needs to describe selling first then buying and asking what if we dug deep and got really creative about using ai tools without using a chatbot. could also discuss dynamic ui.
+
+> we, after talking with a mentor, decided to not use it in the product because of the risks of posting a false product. but still showing what it did could exemplify our thoroughness.
+
+> i have a bunch of clothes i get from thrifting and over time ive grown out of them all but i feel like they still have value so i always intend to sell them and they pile up in my room. like i actually do have hundreds of photos of clothes at different angles and it actually took hours to do it all and organize and write listings and annotate and price just for one listing.
+
+> say you have something and have no clue how much it costs. you dont know what something is. say you are old and dont understand what technology is and someone pays hundreds less for something valuable. also say i really want an item, im a brewers fan so i want a brewers jersey. but i dont want to pay a crazy amount because jerseys are overpriced. i can set my price and i get notified when something comes up in my price range.
+
+> you dont have to redefine the essay in the devpost they know what it is. you just have to explain how you interpreted the concept and used it when building
+
+> also we dont really use generative llms as much as you think and when we do we use a very unique intelligent ui
+
+> for stockx talk about backtesting ... say 41.9k sales. say it technically the experiment and then plainly.
+
+> also explain engineering decisions like say there are duplicate marketplace postings or someone buys your item at the same time ... maybe add like a challenges section to it. decisions api comes from openrouter.
+
+Used in: [devpost.md](devpost.md) (*agent proposal* until Ben and Nate approve; benchmark numbers need both) and the top of the [README](../README.md).
