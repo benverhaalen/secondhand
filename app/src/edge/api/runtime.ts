@@ -8,7 +8,7 @@ import { linkedSearch, readSearchPage, type BrowserPage } from '../harness/sites
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
-import { ports as searchPorts } from './search.ts';
+import { runtimePorts as searchRuntime } from '../intel/public/search.ts';
 import { createApify } from '../harness/sites/apify/adapter.ts';
 import { example } from './examples.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
@@ -166,10 +166,10 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     });
     });
   } };
-  const routed: typeof searchPorts.routed = site => site === 'depop' || site === 'ebay'
+  const routed: typeof searchRuntime.routed = site => site === 'depop' || site === 'ebay'
     ? liveSites.has(site) || !!options.publicClients
     : site === 'mercari' && liveMercari;
-  Object.assign(searchPorts, { harness, accounts, routed, apify: options.apifyToken ? createApify({ token: options.apifyToken, log }) : undefined });
+  Object.assign(searchRuntime, { harness, accounts, routed, apify: options.apifyToken ? createApify({ token: options.apifyToken, log }) : undefined });
   let closing: Promise<void> | undefined;
   const close = () => closing ??= Promise.resolve().then(() => options.publicClients?.close());
   const leases = memoryLeases(now);

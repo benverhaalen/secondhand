@@ -1,7 +1,7 @@
 // Rests-on: spec/product.md §7 Jobs and the event stream, §8 search budget; int-search-1 brief.
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid, pagination } from './captures.ts';
-import { searchSource, sourceUnavailable, type SearchOpts, type SiteSearched, type SearchRow } from '../intel/public/search.ts';
+import { searchSource, sourceUnavailable, runtimePorts as searchRuntime, type SearchOpts, type SiteSearched, type SearchRow } from '../intel/public/search.ts';
 import { BASE, searchUrl } from '../intel/public/readers.ts';
 import { fetchPage } from '../intel/fetch.ts';
 import { SOURCES, sourcesFor, routeId, type Caller, type Source, type SourceSite } from '../intel/public/sources.ts';
@@ -14,9 +14,9 @@ import { searchAll as rankOffers, type BuyOffer, type BuyRow } from '../buy/buy.
 import { jobs, type ApiJobRow } from './jobs.ts';
 
 const protocol = PROTOCOLS.listings_matching;
-export const ports: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe' | 'apify'> & { fetchPage: typeof fetchPage; ask: typeof jevAsk; deadline_ms: number; sources: readonly Source[]; routed: NonNullable<SearchOpts['routed']> } = {
-  fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES, accounts: undefined, harness: undefined, apify: undefined, routed: () => !!ports.harness,
-};
+export const ports = Object.assign(searchRuntime, {
+  fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES as readonly Source[],
+});
 // The shared job store owns the promises as well as their rows; nothing is detached without a rejection handler.
 export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string, Promise<void>>() });
 type ActiveRead = { rows?: JudgedRow[]; searched?: SiteSearched };

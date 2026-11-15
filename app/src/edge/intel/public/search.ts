@@ -26,6 +26,9 @@ export interface SearchOpts {
   sites?: readonly Site[]; kinds?: readonly Kind[]; deadline_ms?: number;
   fetchPage?: (url: string, o: FetchOpts) => Promise<PageResult>; log?: FetchOpts['log']; now?: () => number;
 }
+export const runtimePorts: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe' | 'apify'> & { routed: NonNullable<SearchOpts['routed']> } = {
+  accounts: undefined, harness: undefined, apify: undefined, routed: () => !!runtimePorts.harness,
+};
 export interface SearchResult { results: Found[]; searched: SiteSearched[] }
 
 export interface SiteResult { searched: SiteSearched; rows: SearchRow[] }
