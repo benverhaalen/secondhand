@@ -21,7 +21,7 @@ Every task's own check in `spec/plans/backend/plan.json` was run with `node scri
 | 2 | 58 of 104 | analytics `pa-2` to `pa-7`; style `rs-3` to `rs-6`; valuation `va-5` `va-6`; negotiation `ng-3` `ng-5`; trust `tr-6`; marketing `mk-1` `mk-2`; score `ss-1` `ss-2`; the four site adapters `ad-ebay` `ad-facebook` `ad-poshmark` `ad-mercari`; features `msg-1` `st-1` `ap-1` `ins-1` `me-1` `ic-1` `rk-1`; routes `rt-market` `rt-sources` `rt-items` `rt-valuations` `rt-conversations` `rt-orders` `rt-records` `rt-rules` `rt-wants` `rt-buy` `rt-assist` `rt-search` `rt-genie` `rt-scores` `rt-accounts` `rt-insights` |
 | 3 | 1 of 6 | the five live site runs `lv-*`; these wait on the adapters and on Nate's go per site |
 
-Two plan entries, `rt-scores:` and `rt-out:`, are malformed copies and are not counted. The walk (`scripts/walk.mjs`) is not written, so no wave has its end-to-end line.
+Two plan entries, `rt-scores:` and `rt-out:`, are malformed copies and are not counted. The walk (`node scripts/walk.mjs`) was written at about 01:50 Central on the 15th and exits 0 on both machines: twelve stages, ten on real code and two on fakes (`post` and `answer_offer`, which wait on a site adapter), one item sold on Poshmark and delisted on eBay and Depop. It is not yet reviewed against its accepts, so `wk-1` and the 23:30 checkpoint are not ticked.
 
 ## Milestones (the order of the build since 23:00 Central, 2026-11-14)
 
