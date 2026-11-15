@@ -1,0 +1,11 @@
+{
+  "screen": "index",
+  "what": "Development placeholder until the first real screen lands. It shows whether the backend answers.",
+  "states": [
+    { "state": "loading", "shows": "the name and \"Checking Databricks\"" },
+    { "state": "connected", "shows": "the name, the catalog and the time the backend answered" },
+    { "state": "not ready", "shows": "the name and the state Databricks reported" },
+    { "state": "unreachable", "shows": "the name and \"The server did not answer\"" }
+  ],
+  "controls": []
+}
