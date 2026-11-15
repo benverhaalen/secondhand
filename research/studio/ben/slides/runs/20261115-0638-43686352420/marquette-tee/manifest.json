@@ -1,0 +1,921 @@
+{
+ "item": "marquette-tee",
+ "kind": "tee",
+ "read": {
+  "kind": "tee",
+  "name": "gold Fruit of the Loom Marquette 74 tee",
+  "item_text": "MARQUETTE 74 NCAA FINAL FOUR TEAM",
+  "tag_text": "FRUIT OF THE LOOM HEAVY cotton XL 100% COTTON PRESHRUNK MADE IN HONDURAS",
+  "photos": [
+   {
+    "index": 0,
+    "role": "front",
+    "side": "front",
+    "zone": null,
+    "item_box": [
+     69,
+     33,
+     908,
+     955
+    ],
+    "graphics": [
+     {
+      "zone": "left_chest",
+      "box": [
+       266,
+       535,
+       380,
+       651
+      ],
+      "text": "MARQUETTE 74 NCAA FINAL FOUR TEAM"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 3,
+    "laid_well": false
+   },
+   {
+    "index": 1,
+    "role": "front",
+    "side": "front",
+    "zone": null,
+    "item_box": [
+     104,
+     51,
+     903,
+     934
+    ],
+    "graphics": [
+     {
+      "zone": "left_chest",
+      "box": [
+       291,
+       532,
+       400,
+       643
+      ],
+      "text": "MARQUETTE 74 NCAA FINAL FOUR TEAM"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 3,
+    "laid_well": false
+   },
+   {
+    "index": 2,
+    "role": "graphic",
+    "side": "front",
+    "zone": "left_chest",
+    "item_box": null,
+    "graphics": [
+     {
+      "zone": "left_chest",
+      "box": [
+       537,
+       326,
+       760,
+       559
+      ],
+      "text": "MARQUETTE 74 NCAA FINAL FOUR TEAM"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 3,
+    "role": "graphic",
+    "side": "front",
+    "zone": "left_chest",
+    "item_box": null,
+    "graphics": [
+     {
+      "zone": "left_chest",
+      "box": [
+       475,
+       298,
+       777,
+       606
+      ],
+      "text": "MARQUETTE 74 NCAA FINAL FOUR TEAM"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 4,
+    "role": "tag",
+    "side": "front",
+    "zone": "collar",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 5,
+    "role": "measure",
+    "side": null,
+    "zone": "hem",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": {
+     "name": "length",
+     "value_in": 27
+    },
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 6,
+    "role": "measure",
+    "side": "front",
+    "zone": "chest_centre",
+    "item_box": null,
+    "graphics": [],
+    "flaws": [],
+    "measure": {
+     "name": "pit_to_pit",
+     "value_in": 21.25
+    },
+    "wrinkled": null,
+    "laid_well": null
+   },
+   {
+    "index": 7,
+    "role": "back",
+    "side": "back",
+    "zone": null,
+    "item_box": [
+     81,
+     28,
+     891,
+     970
+    ],
+    "graphics": [
+     {
+      "zone": "upper_back",
+      "box": [
+       238,
+       326,
+       515,
+       674
+      ],
+      "text": "MARQUETTE 74"
+     }
+    ],
+    "flaws": [],
+    "measure": null,
+    "wrinkled": 3,
+    "laid_well": false
+   }
+  ]
+ },
+ "read_model": "google/gemini-4-carbon",
+ "plan": {
+  "kind": "tee",
+  "whole_route": "relay",
+  "slides": [
+   {
+    "type": "cover",
+    "photo": "01_cover",
+    "crop": null,
+    "route": "relay",
+    "zone": null,
+    "why": "front photo",
+    "slot": 1
+   },
+   {
+    "type": "back",
+    "photo": "08",
+    "crop": null,
+    "route": "relay",
+    "zone": null,
+    "why": "back photo",
+    "slot": 2
+   },
+   {
+    "type": "graphic",
+    "photo": "03",
+    "crop": null,
+    "route": "level0",
+    "zone": "left_chest",
+    "why": "its own close-up",
+    "slot": 3
+   },
+   {
+    "type": "graphic",
+    "photo": "08",
+    "crop": [
+     0.2216,
+     0.0981,
+     0.7784,
+     0.6549
+    ],
+    "route": "level0",
+    "zone": "upper_back",
+    "why": "cut from the back photo at 601 px",
+    "slot": 4
+   },
+   {
+    "type": "graphic",
+    "photo": "04",
+    "crop": null,
+    "route": "level0",
+    "zone": "left_chest",
+    "why": "its own close-up",
+    "slot": 5
+   },
+   {
+    "type": "tag",
+    "photo": "05",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "brand and size",
+    "slot": 6
+   },
+   {
+    "type": "measure",
+    "photo": "07",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "measure",
+    "slot": 7
+   },
+   {
+    "type": "measure",
+    "photo": "06",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "measure",
+    "slot": 8
+   },
+   {
+    "type": "extra",
+    "photo": "02",
+    "crop": null,
+    "route": "level0",
+    "zone": null,
+    "why": "front photo, kept",
+    "slot": 9
+   }
+  ],
+  "asks": [],
+  "notes": []
+ },
+ "slides": [
+  {
+   "type": "cover",
+   "photo": "01_cover",
+   "crop": null,
+   "route": "relay",
+   "zone": null,
+   "why": "front photo",
+   "slot": 1,
+   "file": "slide_01_cover.jpg",
+   "how": "level0",
+   "ai_marked": false,
+   "fallback": "every redraw was dropped; the real photo is used"
+  },
+  {
+   "type": "back",
+   "photo": "08",
+   "crop": null,
+   "route": "relay",
+   "zone": null,
+   "why": "back photo",
+   "slot": 2,
+   "file": "slide_02_back.jpg",
+   "how": "level0",
+   "ai_marked": false,
+   "fallback": "every redraw was dropped; the real photo is used"
+  },
+  {
+   "type": "graphic",
+   "photo": "03",
+   "crop": null,
+   "route": "level0",
+   "zone": "left_chest",
+   "why": "its own close-up",
+   "slot": 3,
+   "file": "slide_03_graphic.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "graphic",
+   "photo": "08",
+   "crop": [
+    0.2216,
+    0.0981,
+    0.7784,
+    0.6549
+   ],
+   "route": "level0",
+   "zone": "upper_back",
+   "why": "cut from the back photo at 601 px",
+   "slot": 4,
+   "file": "slide_04_graphic.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "graphic",
+   "photo": "04",
+   "crop": null,
+   "route": "level0",
+   "zone": "left_chest",
+   "why": "its own close-up",
+   "slot": 5,
+   "file": "slide_05_graphic.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "tag",
+   "photo": "05",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "brand and size",
+   "slot": 6,
+   "file": "slide_06_tag.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "measure",
+   "photo": "07",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "measure",
+   "slot": 7,
+   "file": "slide_07_measure.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "measure",
+   "photo": "06",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "measure",
+   "slot": 8,
+   "file": "slide_08_measure.jpg",
+   "how": "level0",
+   "ai_marked": false
+  },
+  {
+   "type": "extra",
+   "photo": "02",
+   "crop": null,
+   "route": "level0",
+   "zone": null,
+   "why": "front photo, kept",
+   "slot": 9,
+   "file": "slide_09_extra.jpg",
+   "how": "level0",
+   "ai_marked": false
+  }
+ ],
+ "sites": {
+  "depop": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+   ],
+   "dropped": [
+    9
+   ],
+   "flaw_in_text": []
+  },
+  "mercari": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "ebay": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  },
+  "facebook": {
+   "slots": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+   ],
+   "dropped": [],
+   "flaw_in_text": []
+  }
+ },
+ "candidates": [
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: invented discolored square box around chest logo, blank white neck tag",
+    "judge: lost Fruit of the Loom print on neck tag"
+   ],
+   "numbers": {
+    "color_before": 2.38,
+    "shape_drawn": {
+     "render": 0.692,
+     "tape": 0.787,
+     "off": -0.121
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 65,
+     "ncc": 0.743
+    },
+    "color": 0.14,
+    "shape": {
+     "render": 0.794,
+     "truth": 0.787,
+     "against": "tape",
+     "off": 0.009
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.87,
+     "tilt": -1.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.14)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": true,
+    "text_seen": "MARQUETTE 74 NCAA FINAL FOUR TEAM",
+    "invented": [
+     "discolored square box around chest logo",
+     "blank white neck tag"
+    ],
+    "lost": [
+     "Fruit of the Loom print on neck tag"
+    ],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The redrawn shirt adds a faint discolored square patch around the chest graphic and replaces the printed neck tag with a blank white label."
+   },
+   "cost": 0.0428025,
+   "seconds": 8.1
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: invented dark rectangular box artifact around chest logo"
+   ],
+   "numbers": {
+    "color_before": 2.3,
+    "shape_drawn": {
+     "render": 0.695,
+     "tape": 0.787,
+     "off": -0.117
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 74,
+     "ncc": 0.769
+    },
+    "color": 0.23,
+    "shape": {
+     "render": 0.788,
+     "truth": 0.787,
+     "against": "tape",
+     "off": 0.001
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.88,
+     "tilt": 0.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.13)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": true,
+    "text_seen": "MARQUETTE 74 NCAA FINAL FOUR TEAM",
+    "invented": [
+     "dark rectangular box artifact around chest logo"
+    ],
+    "lost": [],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The redrawn shirt matches in cut, color, and text, but adds an unintended dark square discoloration around the chest graphic."
+   },
+   "cost": 0.042675,
+   "seconds": 8.1
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: invented square discolored patch around the chest logo, red-bordered neck tag replacing the Fruit of the Loom tag"
+   ],
+   "numbers": {
+    "color_before": 2.37,
+    "shape_drawn": {
+     "render": 0.704,
+     "tape": 0.787,
+     "off": -0.106
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 54,
+     "ncc": 0.909
+    },
+    "color": 0.33,
+    "shape": {
+     "render": 0.788,
+     "truth": 0.787,
+     "against": "tape",
+     "off": 0.001
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.86,
+     "tilt": 0.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.12)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": true,
+    "text_seen": "MARQUETTE 74 NCAA FINAL FOUR TEAM",
+    "invented": [
+     "square discolored patch around the chest logo",
+     "red-bordered neck tag replacing the Fruit of the Loom tag"
+    ],
+    "lost": [],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "A visible square composite patch surrounds the chest graphic and the visible neck tag no longer matches the original."
+   },
+   "cost": 0.0458625,
+   "seconds": 13.6
+  },
+  {
+   "slide": "cover",
+   "model": "google/gemini-3-pro-image",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: invented faint square discolored box surrounding the chest logo"
+   ],
+   "numbers": {
+    "color_before": 1.66,
+    "shape_drawn": {
+     "render": 0.682,
+     "tape": 0.787,
+     "off": -0.133
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 74,
+     "ncc": 0.842
+    },
+    "color": 0.14,
+    "shape": {
+     "render": 0.792,
+     "truth": 0.787,
+     "against": "tape",
+     "off": 0.006
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.88,
+     "tilt": 0.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.15)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": true,
+    "text_seen": "MARQUETTE 74 NCAA FINAL FOUR TEAM",
+    "invented": [
+     "faint square discolored box surrounding the chest logo"
+    ],
+    "lost": [],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "A visible square discolored patch artifact was added around the chest print that does not exist on the original tee."
+   },
+   "cost": 0.142428,
+   "seconds": 17.0
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: printed text changed",
+    "judge: invented front crewneck collar, dark grey inner neck taping, rectangular seam artifact above text",
+    "judge: lost legible micro-text inside the numbers"
+   ],
+   "numbers": {
+    "color_before": 0.7,
+    "shape_drawn": {
+     "render": 0.681,
+     "tape": 0.787,
+     "off": -0.135
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 190,
+     "ncc": 0.923
+    },
+    "color": 0.13,
+    "shape": {
+     "render": 0.793,
+     "truth": 0.787,
+     "against": "tape",
+     "off": 0.008
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.87,
+     "tilt": 0.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.16)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": false,
+    "text_seen": "MARQUETTE 74",
+    "invented": [
+     "front crewneck collar",
+     "dark grey inner neck taping",
+     "rectangular seam artifact above text"
+    ],
+    "lost": [
+     "legible micro-text inside the numbers"
+    ],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The redraw converts the back of the shirt into a front view with invented dark neck taping, blurs the fine print inside the numbers, and leaves a rectangular paste artifact above the lettering."
+   },
+   "cost": 0.0453075,
+   "seconds": 12.9
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 2,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: printed text changed",
+    "judge: invented rectangular shading artifact above MARQUETTE",
+    "judge: lost fine printed roster and score text inside the 74 numerals"
+   ],
+   "numbers": {
+    "color_before": 1.01,
+    "shape_drawn": {
+     "render": 0.696,
+     "tape": 0.787,
+     "off": -0.116
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 234,
+     "ncc": 0.935
+    },
+    "color": 0.37,
+    "shape": {
+     "render": 0.789,
+     "truth": 0.787,
+     "against": "tape",
+     "off": 0.002
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.87,
+     "tilt": 0.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.13)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": false,
+    "text_seen": "MARQUETTE 74 (small text inside numerals is illegible)",
+    "invented": [
+     "rectangular shading artifact above MARQUETTE"
+    ],
+    "lost": [
+     "fine printed roster and score text inside the 74 numerals"
+    ],
+    "color": "same",
+    "flat": 2,
+    "laid": 3,
+    "why": "The fine printed text inside the '74' numerals is garbled into unreadable marks, and there is an artificial rectangular compositing seam visible just above 'MARQUETTE'."
+   },
+   "cost": 0.042465,
+   "seconds": 8.2
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-nano-banana-2.1",
+   "seed": 3,
+   "ok": false,
+   "reasons": [
+    "judge: not the same item",
+    "judge: printed text changed",
+    "judge: invented faint rectangular box artifact above the graphic",
+    "judge: lost legible micro-text inside the 74 graphic"
+   ],
+   "numbers": {
+    "color_before": 0.83,
+    "shape_drawn": {
+     "render": 0.677,
+     "tape": 0.787,
+     "off": -0.14
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 224,
+     "ncc": 0.935
+    },
+    "color": 0.37,
+    "shape": {
+     "render": 0.788,
+     "truth": 0.787,
+     "against": "tape",
+     "off": 0.001
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.88,
+     "tilt": 0.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.16)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": false,
+    "text_seen": "MARQUETTE 74",
+    "invented": [
+     "faint rectangular box artifact above the graphic"
+    ],
+    "lost": [
+     "legible micro-text inside the 74 graphic"
+    ],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The fine print inside the 74 is garbled and a faint rectangular artifact appears around the graphic."
+   },
+   "cost": 0.042465,
+   "seconds": 8.6
+  },
+  {
+   "slide": "back",
+   "model": "google/gemini-3-pro-image",
+   "seed": 1,
+   "ok": false,
+   "reasons": [
+    "proportions -15% against the tape",
+    "judge: not the same item",
+    "judge: printed text changed",
+    "judge: invented front neckline with visible Fruit of the Loom tag, pasted rectangular patch artifact around the graphic",
+    "judge: lost legible micro-text inside the numbers 74, back neckline cut"
+   ],
+   "numbers": {
+    "color_before": 1.32,
+    "shape_drawn": {
+     "render": 0.671,
+     "tape": 0.787,
+     "off": -0.147
+    },
+    "print_0": {
+     "found": true,
+     "inliers": 239,
+     "ncc": 0.935
+    },
+    "color": 0.23,
+    "shape": {
+     "render": 0.671,
+     "truth": 0.787,
+     "against": "tape",
+     "off": -0.147
+    },
+    "layout": {
+     "template": "shirt",
+     "overlap": 0.86,
+     "tilt": 0.0
+    }
+   },
+   "repairs": [
+    "width set to the tape (x1.00)",
+    "print 0 is the real pixels"
+   ],
+   "judge": {
+    "same_item": false,
+    "text_exact": false,
+    "text_seen": "MARQUETTE 74",
+    "invented": [
+     "front neckline with visible Fruit of the Loom tag",
+     "pasted rectangular patch artifact around the graphic"
+    ],
+    "lost": [
+     "legible micro-text inside the numbers 74",
+     "back neckline cut"
+    ],
+    "color": "same",
+    "flat": 2,
+    "laid": 2,
+    "why": "The back-of-shirt graphic was pasted onto a front-of-shirt template with an invented neck tag, leaving a rectangular border artifact and turning the micro-text illegible."
+   },
+   "cost": 0.141732,
+   "seconds": 22.9
+  }
+ ],
+ "seconds": 317.0,
+ "cost": 0.5457
+}
