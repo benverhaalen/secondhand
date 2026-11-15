@@ -1451,3 +1451,11 @@ Ben, thread "Cross-list Depop listings and price with quant", 08:15 UTC, answeri
 > no dont do any applications i dont think they would get accepted yet.
 
 Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), [packet 61](../.agents/team/packets/list/61-ebay-item-specifics.md).
+
+## 2026-11-15 nate use the mac, sonnet and opus under each lead, test but not overtest, problems come up to the rep
+Nate, build session (orchestrator), 2026-11-15 about 02:40 Central. Two messages.
+> You can take alot of advantage with the mac compute. and utilize sonnet 5.5 and other opuses for some of these sessions being delegated by their opus 5.5 team lead. YOu are the fable 5.2 company rep overseeing all the leads, who report back to you. All should be ensured to test, but not overtest, to develop and build and optimize perfectly, updating docs and the progress indicating with benchmarks and measurments and tests, full things to support and show how incredible we are. With problems, have them sent to you, ones that greatly affect what we imagined and require rethinking
+
+> careful not to overdoo it, we have alot of sessions running so keep this amount of team leads
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).

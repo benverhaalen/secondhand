@@ -38,7 +38,9 @@ The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes nga
 | Bring it to Windows | `git fetch -q mac 'refs/heads/w/*:refs/remotes/mac/w/*'` then `git merge mac/w/<name>` |
 
 - A worker name is new each time and starts with the lead's name: `eng-valuation-1`, `dbx-dashboard-2`. The worktree is cut from `main` as the Mac has it, so push before starting a worker that needs your latest commit.
-- At most two workers per lead at once, and never start one when `pgrep -f "codex exec" | wc -l` on the Mac shows eight or more.
+- Up to three workers per lead at once; the script refuses to start one when twelve are running. The Mac has 16 cores and 64 GB, measured 93% free with one worker running (2026-11-15 02:40 Central), so use it, without piling on: Nate, "careful not to overdoo it, we have alot of sessions running".
+- The Mac also runs the heavy things: a long test file, a benchmark, a backtest, a Docker service a test needs. Run them in a worker's worktree over SSH, one per worktree, and bring back the numbers.
+- Claude Code on the Mac is not signed in, so Claude seats run from the Windows sessions (below); only Codex and plain commands run on the Mac.
 - The Mac cannot push to GitHub. Work reaches `origin` only through a Windows merge and push.
 - No key goes to the Mac in a brief, a file or a command line. A task that needs a key on the Mac goes to the orchestrator.
 - End every brief with the worker rules below, unchanged.
@@ -62,7 +64,17 @@ Five sessions share `C:\dev\secondhand`. It crashed three times under thirteen, 
 - Commit with explicit paths the moment a piece passes, then `git pull --no-rebase` and `git push`. If `index.lock` is held, wait two seconds and try again. Never `git add -A`, never stash, reset, rebase or force-push.
 - A merge needs a clean index: commit or leave alone your own edits first, and never touch another session's uncommitted files.
 - One test file at a time (`node --test --test-concurrency=1 <file>`). Never `node .agents/check.mjs` and never `scripts/prove.mjs --wave` or `--tune` from a lead: the orchestrator runs the full check before a push that needs it. Heavy or long runs go to the Mac.
-- No subagent fan-out on Windows beyond one reviewer at a time.
+- A lead may hand work to Claude seats of its own (the Agent tool, in the lead's session): Sonnet 5.5 for a specified piece (a doc update, a brief, reading a diff against its brief, a lookup), another Opus 5.5 for a design question or a fresh review. At most two at once per lead, and they do not run tests or builds here: those go to the Mac. A lead starts no new sessions; there are four leads and that number stays.
+
+## Tests, measurements and the record
+
+- Test what can break and what a person would see break: one test per real failure mode, the edges of money and state, each join between two parts. Do not test the same thing at three levels, do not test a constant, and do not rerun a suite that did not change. A piece is done when its own checks pass and a fresh reader has read the diff, not when every test in the repo has run again.
+- Every piece ends with a number someone can check: accuracy against real data, time to answer, cost per call, share of shown numbers with a citation, endpoints on engines against on examples. Record the number, the command that produced it and the date on the lead's rows of [the board](../../../../spec/plans/board.md) and in the spec or feature page it belongs to. A number that got better says what it was before.
+- Docs change in the same commit as the thing they describe. A reader who opens the board should see what is proved without asking anyone.
+
+## Problems
+
+The orchestrator (Fable 5.2) oversees the four leads and answers to Nate. A lead solves the problems inside its area itself and says what it chose. It sends the orchestrator, at once and in one message, any problem that changes what was imagined: a feature that cannot work as the spec says, a site or platform limit that removes a capability, a measured result far from what the design assumed, two areas that cannot both be right, a cost or time that makes the plan unworkable. The message says what was found, the evidence, the options, and the lead's recommendation. The orchestrator rethinks it with the leads it touches and takes to Nate what is his to decide.
 
 ## Limits that hold for everyone
 
