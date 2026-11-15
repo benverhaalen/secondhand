@@ -696,3 +696,18 @@ test('the watcher uses the runtime system account lookup with the owner scope wh
   assert.equal(r.store.get('account', 'first', 'shared')?.paused, null);
   assert.equal(r.store.get('account', 'second', 'shared')?.paused, 'blocked');
 });
+
+test('seeded example rows are unreadable after examples are disabled, including copied foreign example data', async t => {
+  const { owned, seedExamples } = await import('./runtime.ts');
+  const { deps, route } = await import('./http.ts');
+  const env = process.env.SECONDHAND_EXAMPLES, saved = runtime.store;
+  t.after(() => { runtime.store = saved; if (env === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = env; });
+  const st = memoryStore(); seedExamples(st); runtime.store = st;
+  st.put('item', { id: 'it_copy', user_id: 'usr_other', data: 'example' });
+  deps.verify = async token => token;
+  deps.log = log();
+  const read = route('GET /v1/items/:id', ctx => ({ status: 200, body: owned('item', ctx, ctx.params.id) }));
+  assert.equal((await read(new Request('http://test/v1/items/it_copy', { headers: { Authorization: 'Bearer usr_other' } }))).status, 404);
+  process.env.SECONDHAND_EXAMPLES = '0';
+  assert.equal((await read(new Request('http://test/v1/items/it_7c2m', { headers: { Authorization: 'Bearer usr_8f2k' } }))).status, 404);
+});

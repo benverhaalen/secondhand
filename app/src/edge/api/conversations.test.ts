@@ -38,6 +38,11 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor' && e.name !== 'conversations.reply')) test(e.name + ': wrong user cannot read or act on example data', async () => {
   const r = await call(e, { token: 'other' });
+  if (['items.list', 'conversations.list', 'orders.list'].includes(e.name)) { // a list: a person who owns nothing gets an empty list, never the example rows
+    assert.equal(r.status, 200);
+    for (const value of Object.values(await r.json() as Record<string, unknown>)) if (Array.isArray(value)) assert.deepEqual(value, [], `${e.name} shows another person's rows`);
+    return;
+  }
   assert.equal(r.status, 404); assert.equal((await r.json()).code, 'not_found');
 });
 for (const e of examples.filter(e => e.status < 400 && e.endpoint.includes(':id'))) test(e.name + ': unknown resource is 404', async () => {
@@ -99,14 +104,12 @@ test('conversations: owned Expo files bind auth and export the contract method',
   }
 });
 
-test('conversation reads validate stored incoming messages through handleMessages', async () => {
-  const { ports } = await import('./conversations.ts');
-  const read = ports.read_messages;
-  try {
-    ports.read_messages = async account => (await read(account)).map(row => ({ ...row, sent_at: 'not-a-date' }));
-    const response = await call(examples.find(e => e.name === 'conversations.messages')!);
-    assert.equal(response.status, 503);
-  } finally { ports.read_messages = read; }
+test('conversation reads validate stored incoming messages before returning history', async () => {
+  const row = replyPorts.store.get('conversation', 'usr_8f2k', 'cv_6t1')!;
+  const messages = (EXAMPLES.find(e => e.name === 'conversations.messages')!.response as { data: Record<string, unknown>[] }).data;
+  replyPorts.store.put('conversation', { ...row, messages: messages.map(message => ({ ...message, sent_at: 'not-a-date' })) });
+  const response = await call(examples.find(e => e.name === 'conversations.messages')!);
+  assert.equal(response.status, 503);
 });
 
 test('a message without an offer raises no offer decision; a parsed offer raises one with its amount', async () => {
@@ -218,4 +221,26 @@ test('reply: a new person can reply in their own conversation while foreign conv
   assert.equal(st.events({ user_id: 'usr_other' }).length, 1);
   assert.equal(st.events({ user_id: 'usr_8f2k' }).length, 0);
   assert.deepEqual(st.get('conversation', 'usr_other', 'cv_new')?.outgoing, [{ id: job.args.text_ref, text: 'Thanks!' }]);
+});
+
+
+test('owned conversation reads return only stored rows and history, never the example thread', async () => {
+  const messages = [{ id: 'msg_own', actor: 'counterpart', text: 'Hello', sent_at: '2026-11-15T12:00:00Z', intent: 'greeting', facets: [] }];
+  replyPorts.store.put('conversation', { id: 'cv_own', user_id: 'usr_other', site: 'depop', messages });
+  const response = await call(examples.find(e => e.name === 'conversations.list')!, { token: 'other' });
+  assert.equal(response.status, 200);
+  assert.deepEqual((await response.json()).data.map((row: { id: string }) => row.id), ['cv_own']);
+  const history = await call(examples.find(e => e.name === 'conversations.messages')!, { token: 'other', path: '/v1/conversations/cv_own/messages' });
+  assert.equal(history.status, 200);
+  assert.deepEqual(await history.json(), { data: messages, next_cursor: null });
+});
+
+test('conversation example seeding and existing rows obey the examples switch', async t => {
+  const previous = process.env.SECONDHAND_EXAMPLES;
+  t.after(() => { if (previous === undefined) delete process.env.SECONDHAND_EXAMPLES; else process.env.SECONDHAND_EXAMPLES = previous; });
+  process.env.SECONDHAND_EXAMPLES = '0';
+  const empty = memoryStore(); seedConversations(empty);
+  assert.deepEqual(empty.rows('conversation', { user_id: 'usr_8f2k' }), []);
+  const history = await call(examples.find(e => e.name === 'conversations.messages')!);
+  assert.equal(history.status, 404, 'previously seeded example history stays hidden');
 });

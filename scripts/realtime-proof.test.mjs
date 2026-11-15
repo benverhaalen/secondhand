@@ -66,10 +66,10 @@ test('3: the configured recorded source reaches the real reader only after a sep
   assert.deepEqual(s.searched.map(r => [r.site, r.outcome]), [['poshmark', 'hit']]);
   const config = report.observed.search_replay;
   assert.deepEqual(config.selected, ['poshmark']);
-  assert.deepEqual(config.excluded.map(s => s.id), ['dupe', 'depop', 'mercari', 'facebook', 'ebay']);
+  assert.deepEqual(config.excluded.map(s => s.id), ['dupe', 'google_shopping', 'depop', 'mercari', 'facebook', 'ebay']);
   assert.ok(config.excluded.every(s => s.reason));
   assert.deepEqual(config.sources.map(s => [s.id, s.lane, s.on, s.needs_ask]), [
-    ['dupe', 'mcp', true, false], ['depop', 'harness', true, false],
+    ['dupe', 'mcp', true, false], ['google_shopping', 'treg', true, false], ['depop', 'harness', true, false],
     ['poshmark', 'public_page', true, false], ['mercari', 'harness', true, true],
     ['facebook', 'apify', true, false], ['ebay', 'harness', true, false],
   ], 'source rows changed: review the replay coverage before updating this pin');
