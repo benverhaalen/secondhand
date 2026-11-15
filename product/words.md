@@ -2349,3 +2349,15 @@ Nate, the capture lead's session, 2026-11-15, about 13:30 UTC.
 > Ensure the capture onboarding is svg indicating what to do, line art with glass like shaded blurry background so you can still transparently see whats in the camera, similar to how apple measure places graphics telling people to move closer or further. For each product type selected, the onboarding then automatically is set to indicate the photo to take, they press once to dismiss the photo, and cpature the image to move on to the next of several or few more needed steps.
 
 Used in: [the capture design §7a](../spec/engines/capture.md#7a-the-shot-guide), [packet 90](../.agents/team/packets/team/90-capture-shot-guide-for-ben.md).
+
+## 2026-11-15 nate ensure these mistakes dont happen again
+Nate, the orchestrator's session, 2026-11-15, about 13:10 UTC, pasting the server-core lead's note that commit 8560d836 had put stale copies of 18 files over its request-state work.
+> ensure these mistakes dont happen again
+
+Used in: [the hooks](../.agents/hooks/stale-copy.mjs), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md) (a worker's branch lands by merge and no other way), [the git rules](../.agents/coordination.md#when-use-git-often).
+
+## 2026-11-15 nate the goal: finalize all systems, test, fix, get them realized
+Nate, the orchestrator's session, 2026-11-15, about 13:12 UTC, set as the session's goal.
+> is to finalize all systems, test, fix, get them realized
+
+Used in: [the finalization spec](../spec/plans/finalization.md).
