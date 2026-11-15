@@ -1133,3 +1133,9 @@ Ben, project chat (relayed), 2026-11-15 05:54 UTC.
 > hey stop using my personal dpop
 
 Used in: [showcase.md](showcase.md#6-bringing-existing-depop-listings-over).
+
+## 2026-11-15 show the magic: clips, basement demos, faster loops, and the intelligence engine
+Ben, project chat (relayed), 2026-11-15 06:01 UTC.
+> also did you ever fully flesh out the image creation thing. like for pants and sweatshirts and short sleeve and long sleeve clearly defining roughly what the image should look like when unwrinkled and what should be slide 1, slide 2, etc. and ensuring edge cases. defect photo is hard to do. where different graphics could be. how to effectively organize a slide of photos and generate them from not taking individual photos with the tool and then giving templates effectively to magically get each image beautified and perfected. ensure this capability on the backend actually works super well. also think of evidence to back the problem the best is just showing the magic of it. the different features and flows and letting the demos or the videos of them talk. us actually demoing them in the basement. try to make the demoing loops faster for website and app too. also think about how to visually convey how it works. use things like exa and firebase and treg x videos that they do to demo new features. here are some new notes second hand monitors and manages markets for you. explaining all our thought processes. official apis and when and how. how there is low risk on your end. an intelligence engine. more than just reselling clothes as we see this scale you can effectively create a way to price anything you own against the market and for the purpose you want.
+
+Used in: [demo-reel.md](demo-reel.md), [pitch.md](pitch.md#the-new-framing-it-watches-and-manages-your-markets).

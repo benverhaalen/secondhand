@@ -59,6 +59,33 @@ For a technical or Databricks judge who asks "how does it actually work?" Two mi
 6. **It earns its autonomy.** Every approval is a label. After three unedited approvals of the same kind, it offers "Always do this". Address, payment and off-site deals never become automatic.
 7. **Databricks holds the loop.** Live state in Lakebase, every event and comparable sale in Delta, photos in a volume, every model call through the gateway, every agent step as an MLflow trace that the app shows as Why?. Every number cites the rows it read and hides itself when they are too few. Each sale writes back its real price and days to sell, so the next price is better.
 
+## The new framing: it watches and manages your markets
+
+Ben, 06:01 ([words](words.md#2026-11-15-show-the-magic-clips-basement-demos-faster-loops-and-the-intelligence-engine)): "second hand monitors and manages markets for you... official apis and when and how. how there is low risk on your end. an intelligence engine... price anything you own against the market and for the purpose you want." *Agent proposal*. Each line below has the condition that keeps it true.
+
+**The line:** "secondhand watches the market for everything you own, and manages it for you: where to list, what to ask, who to answer, when it sold, and what to take down."
+
+**How we think about each step, said out loud.** Judges score the reasoning, so say why before what:
+- *Where to list:* the buyers decide, not the fee. A couch goes to Facebook pickup because Depop ships only and its buyers want clothes.
+- *What to ask:* we solve the price from what lands in your account, so you see the same money everywhere.
+- *Who to answer:* code decides anything about money or your address; the model only words it.
+- *When it sold:* only a paid order counts, and we watch in the cheapest way each site allows.
+
+**Official APIs, when and how.** The rule: use the site's own API wherever one exists for a person like you; otherwise act as you, in your own signed-in session, after your approval, at a person's pace.
+
+| Site | Official route | What we do |
+|---|---|---|
+| eBay | public API: Inventory to list, Fulfillment and notifications for orders, Negotiation for offers, Browse for search (named in eBay's API docs; some pages we couldn't open, [platform access](../research/connect/nate/platform-access.md)) | the API, signed in with eBay's own OAuth |
+| Depop | a partner API with listings, orders, offers and sale webhooks, but only for approved partners (*observed*, partnerapi.depop.com) | apply; until accepted, your own session |
+| Facebook Marketplace | a partner program for businesses, EU only, link-out listings (*observed*) | no US route; your own session, and pickups stay yours |
+| Poshmark, Mercari | no public API found | your own session; sales seen from the public page |
+
+**Low risk on your end, said precisely.** Say "low", never "no". What we hold fixed: it never sells under your minimum, never gives out your address, never sends a claim your item doesn't back, confirms every action by reading the site back, and stops at a site's first warning. What isn't ours to remove: some sites' terms bar automated access, and an account limit is possible. That's why official APIs come first, and why the app is designed to show each site's risk before you link it ([qa §10](qa.md#10-blockers-and-risks)).
+
+**An intelligence engine.** Built (`app/src/edge/intel`, with tests): one engine plans which sources to ask for a question (a photo, a link, a name), fetches them under a deadline and budget, decides which results are the same product, reconciles sources that disagree, and returns an answer that says what it searched and what it dropped ([intelligence engine spec](../spec/engines/intelligence-api.md)). Run on fixtures and in dated traces, not yet at scale.
+
+**Price anything, for the purpose you want.** The pricing engine is general: comparable sales weighted by type, match, age and how cleanly they were read ([showcase §4](showcase.md#4-pricing-anything-and-how-it-scales)). The same item gets a different answer for a different purpose: sell it fast, only at my price, just checking what it's worth, best price, or reselling. Where the market is thin it says "still learning" and shows a wide range. Claim: "it can price anything that has a market, for what you want to do with it, and it tells you how sure it is." Don't claim it prices everything today; it runs on fixtures, not live market data at scale.
+
 ## The three-minute version, with the demo
 
 Same order as the recommendation above, with times for a 3-minute slot. If the slot is 2 minutes, cut steps 4 and 5 to one sentence each.
