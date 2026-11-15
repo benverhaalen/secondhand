@@ -34,9 +34,10 @@ test('shop: each source comes in as asked, the failed ones say why, then the ans
   const v = await app.open('/shop?q=levi%20501', { api: { '/v1/search': fixture.start, [events]: r => s.answer(r) } });
   await state(v, 'building');
   await v.shows('levi 501');
-  // Building: the four no_route sources have landed, Poshmark and Dupe are still asked.
+  // Building: the four no_route sources have landed and are not listed (Nate: "if not connected, don't list it");
+  // Poshmark and Dupe are still asked.
   await v.shows('Asking', { timeout: WAIT });
-  await v.page.waitForFunction(() => document.body.innerText.split('Not connected').length - 1 === 4, null, { timeout: WAIT });
+  for (const id of ['depop', 'mercari', 'facebook', 'ebay']) assert.equal(await v.countId(`source-${id}`), 0, `${id} is not connected, so not listed`);
   // The lanes come in one after another (sourceIn, 60 ms apart), so wait for the last to arrive.
   await v.page.waitForFunction(() => document.body.innerText.split(/\n/).filter(l => l.trim() === 'Asking').length === 2, null, { timeout: WAIT });
   // Chat: the reconnect carried on after frame 9, the line of logos says the settled counts, the bar is at the bottom.

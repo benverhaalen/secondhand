@@ -36,6 +36,22 @@ Each lead owns one section, works its rows in order, and changes a row's state h
 | SV9 | Monitoring a linked account: the signed-in client composed, and the watcher reading inbox, offers, orders and listing interest on its schedule. Writes stay dry | One real account linked by Nate in the live view; a read of each kind recorded |
 | SV10 | The rest of the server review: a decision signing key that is required and shared, a visitor id the server issues and signs, the idempotency slot taken before the handler runs, a replayed refresh token revoking its family, example rows no longer seeded into the real store, push tokens not stored raw, a refusal to start when a required variable is missing | The test the [review](audit-2026-11-15/review-server.md) names for each |
 
+**State** (server lead, 2026-11-15, about 12:40 UTC; a row is done only when someone who did not write it reran its proof):
+
+| Id | State | Where |
+|---|---|---|
+| SV0 | built, on main; fresh Opus review running | the store is SQLite through node:sqlite (decision: [server-store.md](server-store.md)), c19e8af6; `node server/main.ts`, 9221b28a; proof `node --test server/main.test.ts` (6/6 on the Mac: a session written in `auth.ts` is read by the `/v1/me` route; limits and rules written in turn both survive). The full email sign-in through the server waits on SV3 |
+| SV1 | building | Mac workers srv-auth-1 (sign-in state), srv-http-1 (idempotency, visitor limits, decision key and versions, last open), srv-jobs-1 (jobs and frames on disk) |
+| SV2 | building | srv-jobs-1: a row is written only when its own `may_store` is true and `keep_until` has not passed; the search lead adds those fields to every row |
+| SV3 | building | srv-auth-1: the `sendCode` port, `SECONDHAND_DEV_CODE` for development only, refused in production; the vendor is open (§9.2) |
+| SV4 | partly on main | the entry starts the watcher and the pipeline (watch ticks logged, SIGTERM exits 0, run on the Mac); Dockerfile and fly.toml building (srv-host-1). Nothing created on Fly |
+| SV5 | partly on main; review running | account lookups scoped by person, fd545dcb; the job read and the example visitor in srv-jobs-1 |
+| SV6 | the engines lead's (EN6), agreed 2026-11-15 | built on the SV7 port |
+| SV7 | next | land the observation writer from `w/int-obs-1` with the rights refusal and per-row fields; ports agreed with the engines and data leads |
+| SV8 | not started | |
+| SV9 | not started | needs Nate's linked account (§9.3) |
+| SV10 | building in part | srv-http-1 (signing key required, signed visitor id, idempotency slot first, required variables), srv-auth-1 (refresh replay revokes the family), srv-vault-1 next (vault on disk, push tokens in the vault, examples off in production) |
+
 ## 3. Search and the sources (lead: search)
 
 | Id | Fix | Proof | State |

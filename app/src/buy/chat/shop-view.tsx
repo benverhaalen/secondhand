@@ -20,10 +20,9 @@ const WORDS = {
   close: 'Close',
   asking: 'Asking',
   nothing: 'Nothing here',
-  needsAccount: 'Needs your account',
   late: 'Too slow',
   saved: 'Saved copy',
-  failed: { no_route: 'Not connected', blocked: 'Refused us', page_changed: 'Couldn’t read it', unknown: 'Couldn’t read it' } as Record<string, string>,
+  failed: { blocked: 'Refused us', page_changed: 'Couldn’t read it', unknown: 'Couldn’t read it' } as Record<string, string>,
   couldNot: 'Couldn’t search',
   again: 'Nothing changed. Try again in a moment.',
   retry: 'Try again',
@@ -47,16 +46,19 @@ const priceOf = (r: Row) => { const m = amount(r); return m ? money(m.amount_cen
 function status(s: SourceReach): string {
   if (s.state === 'running') return s.cached === 'refreshing' ? WORDS.saved : WORDS.asking;
   if (s.state === 'late') return WORDS.late;
-  if (s.outcome === 'needs_account') return WORDS.needsAccount;
   if (s.state === 'failed') return WORDS.failed[s.error?.code ?? ''] ?? WORDS.couldNot;
   if (s.read === 0) return WORDS.nothing;
   return [WORDS.read(s.read, s.kept), s.ms != null ? WORDS.took(seconds(s.ms)!) : null].filter(Boolean).join(' ');
 }
 
+// A source this person has no way to reach (no route here, or it needs their account) is not listed (Nate, 2026-11-15:
+// "if not connected, don't list it"). A source that was reached and failed or ran late still says so.
+const connected = (s: SourceReach) => s.error?.code !== 'no_route' && s.outcome !== 'needs_account';
+
 function Lanes({ reach }: { reach: Reach }) {
   return (
     <Stack>
-      {reach.sources.map((s, i) => (
+      {reach.sources.filter(connected).map((s, i) => (
         <SourceLane key={s.id} id={s.id} name={nameOf(s.id)} status={status(s)} index={i} faded={s.state === 'failed' || s.state === 'late'}
           photos={reach.results.filter(r => r.site === s.id).map(r => ({ key: r.id, src: r.image_url ?? null, label: r.title }))} />
       ))}
