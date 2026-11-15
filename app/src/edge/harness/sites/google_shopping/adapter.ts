@@ -46,8 +46,8 @@ function row(value: unknown, keep_until: string): ShoppingRow | undefined {
   const title = text(value.title), url = text(value.link), price_cents = cents(value.price);
   if (!title || !url || price_cents === undefined) return undefined;
   // The API ranks with URL(), so reject unusable links at the input boundary.
-  let parsed: URL;
-  try { parsed = new URL(url); } catch { return undefined; /* unreadable_card, counted by parse */ }
+  if (!URL.canParse(url)) return undefined;   // unreadable_card, counted by parse
+  const parsed = new URL(url);
   if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return undefined;
   const merchant = (text(value.source) ?? '').trim().toLowerCase(), site = merchant.match(resale)?.[1];
   const source_site = site ?? merchant;
