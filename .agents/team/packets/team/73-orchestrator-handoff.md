@@ -8,6 +8,8 @@ The orchestrator holds the whole backend for Nate: it starts and briefs the team
 
 **What happens next, in Nate's order** ([words](../../../../product/words.md), the entries from 10:00 on): the lead sessions are wrapped up and archived; then "first fully audit and review through the codebase", forming our own opinion of the code as it stands; only after that, read Ben's session's new plan called "whats left" and compare; then write `spec/plans/finalization.md` (what works, what does not, what is left, and the decisions), and start new leads to see it through. The website is ours to build once the system and every feature work. Judging is science-fair style.
 
+**Ben's plan, not to be opened before our own audit is written** (Nate: "But only after we get our own opinion of the fresh codebase"): [77-whats-left-on-the-backend](77-whats-left-on-the-backend.md) and [79-redesign-left-to-wire](79-redesign-left-to-wire.md). Found by file name only; unread at this writing. The audit is its own page first (`spec/plans/audit-2026-11-15.md`: per area, what the code does, proved by rerunning it, with no reference to either plan), then the comparison.
+
 **Where each area's three lists are** (works, does not, left): integration [69](69-integration-handoff.md), engines [70](70-engines-handoff.md), Databricks [71](71-databricks-handoff.md), capture [72](72-capture-handoff.md), adaptation and the product index [74](74-adaptation-handoff.md), the buying conversation 78. A packet is its lead's report, not proof: the audit reruns what it quotes.
 
 **Decided by Nate today, each in his words in `product/words.md`:**
