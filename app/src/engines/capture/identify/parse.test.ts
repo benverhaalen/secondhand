@@ -14,10 +14,10 @@ function garment(item: string) {
 }
 const field = (result: ReturnType<typeof parseTag>, name: string) => result.facts.filter(fact => fact.field === name);
 
-test('Carhartt RN and lexicon survive while flattened unsegmented facts abstain', () => {
+test('Carhartt RN survives while the embedded lexicon brand and unsegmented facts abstain', () => {
   const out = garment('carhartt-pants');
   assert.ok(out.brands.some(b => b.brand === 'Carhartt' && b.s === 1 && b.rule === 'rn'));
-  assert.ok(out.brands.some(b => b.brand === 'Carhartt' && b.s === 0.9 && b.rule === 'brand_lexicon'));
+  assert.deepEqual(out.brands.filter(b => b.rule === 'brand_lexicon'), []);
   for (const name of ['fabric', 'origin']) assert.deepEqual(field(out, name), []);
   assert.equal(out.style_code, undefined);
   assert.deepEqual(field(out, 'colour'), []);
@@ -192,8 +192,9 @@ test('numeric Size label alone is not a shoe-size system', () => assert.deepEqua
 
 for (const line of ['AB1234 Size M', 'AB1234 BLK M', 'Carhartt\nAB1234 BLK Size M'])
   test(`style proximity alone is not a brand line or label: ${line}`, () => assert.equal(tag(line).style_code, undefined));
-for (const line of ['Style AB1234 Size M', 'Style No. AB1234', 'Art AB1234', 'Model AB1234', 'Item AB1234'])
+for (const line of ['Style AB1234 Size M', 'Style No. AB1234', 'Art AB1234', 'Model AB1234'])
   test(`style brand line or explicit label establishes code: ${line}`, () => assert.equal(tag(line).style_code?.value, 'AB1234'));
+test('Item AB1234 is an inventory number, not a style label', () => assert.equal(tag('Item AB1234').style_code, undefined));
 test('Carhartt AB1234 is not in the sourced brand style grammar', () => assert.equal(tag('Carhartt AB1234').style_code, undefined));
 
 for (const line of ['champion quality', 'Apple juice stain', 'Amazon Prime', 'Wash with apple juice'])
@@ -298,5 +299,172 @@ for (const line of ['Lot 28x30', 'B324 BLK 38 X 36', "Levi's 38 X 36"])
 for (const [line, expected] of [['28x30', '28x30'], ['Size 28x30', '28x30'], ['Sz: 28 × 30', '28x30'], ['W32 L34', '32x34'], ['Nike W32 L34', '32x34']])
   test(`waist length needs a size line, label or both markers: ${line}`, () => {
     assert.deepEqual(field(tag(line), 'size_label').map(fact => fact.value), [expected]);
+    assert.equal(tag(line).style_code, undefined);
+  });
+
+for (const line of [
+  "Fits like Levi's 501\nW32 L32\n100% cotton\nMade in China",
+  'Merino wool sourced from Patagonia, Argentina\n100% wool\nMade in Peru\nM',
+  'Wool from Patagonia\n100% wool\nMade in Uruguay',
+  'Compare to Nike\n100% Polyester\nMade in China\nM',
+  'NIKE-INSPIRED TRAINING TEE\nL\n100% polyester', 'Do not use with Sony devices\nL',
+  'sourced from Patagonia, Argentina', 'Originals by adidas', 'Hanes | Champion\nEcoSmart',
+  'PINEAPPLE', 'SONYA', 'Championship Edition', 'UEFA Champions League',
+  "LEV1'S", 'GlLDAN', 'lululernon', 'Brand: Compare to Nike', 'Brand: Nike-inspired',
+  'Brand: Apple juice', 'Brand: Nike unknown',
+]) test(`R6 M1: embedded prose, rejected labels and OCR slips cannot state a tag brand: ${line}`, () => {
+  assert.deepEqual(tag(line).brands, []);
+});
+for (const [line, expected] of [
+  ['Nike', 'Nike'], [' (® Nike™) ', 'Nike'], ['© Patagonia', 'Patagonia'],
+  ["Levi's", "Levi's"], ['Brand: apple', 'Apple'], ['Marque: Nike', 'Nike'], ['Marca: Patagonia', 'Patagonia'],
+  ['apple', 'Apple'], ['AMAZON\nM', 'Amazon'], ['Nike Size M', 'Nike'], ['Nike M', 'Nike'],
+  ['Nike W32 L34', 'Nike'], ['Nike RN 12345 CA 12345 Size M', 'Nike'],
+  ['Carhartt B324 BRN', 'Carhartt'], ['Carhartt J97 BLK Size L', 'Carhartt'],
+  ['Carhartt RN 14806 B324 BRN', 'Carhartt'],
+] as const) test(`R5 M1: the complete brand line accounts for every token: ${line}`, () => {
+  assert.ok(tag(line).brands.some(brand => brand.brand === expected && brand.rule === 'brand_lexicon'));
+});
+for (const line of [
+  'Officially Licensed NINTENDO', 'Licensed NINTENDO', 'Licensed by NINTENDO', 'Under license from NINTENDO',
+  '© NINTENDO Licensed', '© 2026 NINTENDO Licensed', 'TM & © NINTENDO', 'TM & © Brand: NINTENDO',
+]) test(`R5 M2: a licensor never displaces a maker: ${line}`, () => {
+  assert.deepEqual(tag(line).brands, []);
+  assert.deepEqual(tag(`${line}\nGILDAN\nULTRA COTTON\nXL\nMade in Nicaragua`).brands.map(brand => brand.brand), ['Gildan']);
+});
+for (const label of ['COLOUR', 'COLOR', 'COLORE', 'COULEUR', 'FARBE', 'Color:'])
+  for (const value of ['APPLE', 'AMAZON', 'NIKE', 'PATAGONIA'])
+    test(`R5 M3: ${label} reserves its following line for colour: ${value}`, () => {
+      assert.deepEqual(tag(`${label}\n${value}\nM`).brands, []);
+      assert.deepEqual(tag(`${label.replace(/:$/, '')}: ${value}\nL`).brands, []);
+      assert.deepEqual(tag(`GILDAN\n${label}\n${value}\nM`).brands.map(brand => brand.brand), ['Gildan']);
+    });
+for (const width of ['M', 'W', 'D', 'B', 'E', 'EE', '2E', '4E', 'N'])
+  for (const number of ['9', '9.5', 'US 9', 'Size 9'])
+    test(`R5 M4: shoe width ${width} after ${number} is never a letter size`, () => {
+      for (const separator of ['\n', ' ']) assert.deepEqual(field(tag(`SKECHERS\n${number}${separator}${width}\nMADE IN VIETNAM`), 'size_label'), []);
+    });
+for (const line of ['ITEM 1234567\nPO 4500123456\nMADE IN CHINA', 'Item: 1068827\nKIRKLAND SIGNATURE\nM\nMade in Vietnam',
+  'Item AB1234', 'Item 30', 'Art. 30', 'Art. AB1234', 'SKU AB1234', 'UPC 123456789012', 'PO 4500123456'])
+  test(`R5 M5: an inventory number is not a style: ${line}`, () => {
+    assert.equal(tag(line).style_code, undefined);
+    assert.deepEqual(field(tag(line), 'style_code'), []);
+  });
+for (const [brand, marketing] of [['CHAMPION', 'AUTHENTIC ATHLETIC APPAREL'], ['GILDAN', 'HEAVY COTTON'],
+  ['Hanes', 'BEEFY-T'], ['Polo', 'CUSTOM SLIM FIT']])
+  test(`R5 S1: ${marketing} does not hide the complete fabric below it`, () => {
+    assert.deepEqual(field(tag(`${brand}\n${marketing}\nL\n50% COTTON 50% POLYESTER`), 'fabric').map(fact => fact.value), ['50% cotton, 50% polyester']);
+    assert.deepEqual(field(tag(`${brand}\n${marketing}\nLining:\n100% POLYESTER`), 'fabric'), []);
+    assert.deepEqual(field(tag(`Unknown:\n${marketing}\n100% COTTON`), 'fabric'), []);
+  });
+for (const line of ['MADE lN CHINA', 'MADE IN CHlNA', 'MADE IN MEXlCO', '6O% COTTON', '100% C0TTON'])
+  test(`R5 S2: OCR slips still abstain: ${line}`, () => assert.deepEqual(tag(line).facts, []));
+for (const line of ['M / 170/92A', 'CN 180/100A', '12-18 M', 'XL (12)', 'L (14-16)', '7-8Y',
+  'SIZE M/M', 'SIZE XL TALL', 'L/G', 'XL/TG', 'L REG', 'Model is 5\'10" wearing size S', 'LEVIS 32 X 32', '29W x 32L'])
+  test(`R5 review: incomplete size grammar still abstains: ${line}`, () => assert.deepEqual(field(tag(line), 'size_label'), []));
+for (const line of ['W32 L34', 'w32 l34', 'SIZE 30x30'])
+  test(`R5 review: complete waist length survives: ${line}`, () => assert.equal(field(tag(line), 'size_label')[0]?.value, line.includes('30') ? '30x30' : '32x34'));
+for (const line of ['FABRIC MADE IN USA\nASSEMBLED IN HONDURAS', 'Made in USA fabric\nSewn in Mexico',
+  'Made in Indiana', 'Made in Georgia USA', 'Made in America', 'Made in Jersey knit', 'KNIT IN CHINA'])
+  test(`R5 review: unsupported origins still abstain: ${line}`, () => assert.deepEqual(field(tag(line), 'origin'), []));
+for (const [line, expected] of [['STYLE 2023', '2023'], ['STYLE NO. 1952', '1952'], ['STYLE# 512345', '512345']])
+  test(`R5 review: explicit style labels survive: ${line}`, () => assert.equal(tag(line).style_code?.value, expected));
+
+for (const number of ['9½', '9 1/2', '9 ⅔', '9,5'])
+  test(`R5 M4: fractional numeric shoe size ${number} also reserves M as width`, () => {
+    for (const separator of ['\n', ' ']) assert.deepEqual(field(tag(`${number}${separator}M`), 'size_label'), []);
+  });
+test('R5 M1: brand spans retain the original punctuation offsets', () => {
+  const line = '  (® Nike™)  ';
+  const brand = tag(line).brands[0];
+  assert.ok(brand);
+  assert.equal(line.slice(brand.span.start, brand.span.end), 'Nike');
+  assert.equal(brand.span.text, 'Nike');
+});
+for (const line of ['RN# 14806 CA# 26044', 'RN: 14806'])
+  test(`R5 M1: RN lookup remains independent of whole-line brand grammar: ${line}`, () => {
+    assert.ok(tag(line).brands.some(brand => brand.brand === 'Carhartt' && brand.rule === 'rn' && brand.s === 1));
+  });
+
+for (const value of ['M', 'Style B324', '100% cotton', 'Made in China'])
+  test(`R5 M3: a colour value cannot supply another fact: ${value}`, () => {
+    assert.deepEqual(tag(`COLOR:\n${value}`).facts, []);
+    assert.deepEqual(tag(`COLOR: ${value}`).facts, []);
+  });
+
+for (const heading of ['Hanes', 'Polo', 'LEVI STRAUSS & CO.'])
+  test(`R5 S1: known non-structural heading ${heading} never resets a fabric section`, () => {
+    assert.deepEqual(field(tag(`${heading}\n501\n100% COTTON`), 'fabric').map(fact => fact.value), ['100% cotton']);
+    assert.deepEqual(tag(heading).brands.map(brand => brand.brand), heading.startsWith('LEVI') ? ["Levi's"] : []);
+    for (const section of ['Unknown:', 'Lining:', 'Sleeves', 'Panel 2'])
+      assert.deepEqual(field(tag(`${section}\n${heading}\nHEAVY COTTON\n100% cotton`), 'fabric'), []);
+  });
+
+for (const line of ['Nike Size L (G)', 'Carhartt J97 BLK Size L (G)', '(Brand: Nike)', '(Marque: Nike)', 'Nike Size L (G).'])
+  test(`R5 M1: surrounding punctuation does not erase a complete label or size grammar: ${line}`, () => {
+    assert.equal(tag(line).brands[0]?.brand, line.startsWith('Carhartt') ? 'Carhartt' : 'Nike');
+  });
+
+test('R6: accepting a brand before marketing words preserves its separate fabric, size and origin facts', () => {
+  const out = garment('marquette-tee');
+  assert.deepEqual(out.brands.map(brand => brand.brand), ['Fruit of the Loom']);
+  assert.deepEqual(field(out, 'fabric').map(fact => fact.value), ['100% cotton']);
+  assert.deepEqual(field(out, 'size_label').map(fact => fact.value), ['XL']);
+  assert.deepEqual(field(out, 'origin').map(fact => fact.value), ['Honduras']);
+});
+
+for (const line of ["Fits like Levi's 501", 'Wool from Patagonia', 'Compare to Nike', 'NIKE-INSPIRED TRAINING TEE',
+  'COLOUR\nAPPLE', 'COLOR:\nAMAZON', 'Hanes | Champion / EcoSmart'])
+  test(`R5 review: shortened identify input still cannot state a brand: ${line}`, () => assert.deepEqual(tag(line).brands, []));
+for (const [line, expected] of [
+  ['Carhartt J97 BLK Size L', ['J97', 'black', 'L']],
+  ['CARHARTT B324 BRN\nW32 L34', ['B324', 'brown', '32x34']],
+] as const) test(`R5 review: attested style keeps its colour and size: ${line}`, () => {
+  assert.deepEqual(['style_code', 'colour', 'size_label'].map(name => field(tag(line), name)[0]?.value), expected);
+});
+for (const [line, expected] of [
+  ['Made in Macau', 'Macau'], ['Made in P.R.C.', 'China'], ['Made in Korea', 'South Korea'],
+  ['Made in Great Britain', 'United Kingdom'], ['Made in Holland', 'Netherlands'], ['Made in Hong Kong', 'Hong Kong'],
+  ['Made in U.S.A. OF IMPORTED FABRIC', 'United States'],
+  ['FABRIQUE AU MAROC / HECHO EN MARRUECOS', 'Morocco'],
+  ['MADE IN USA\nASSEMBLED IN MEXICO', 'United States'],
+]) test(`R5 review: whole-origin behavior remains unchanged: ${line}`, () => assert.deepEqual(field(tag(line), 'origin').map(fact => fact.value), [expected]));
+for (const line of ['GAP\nSTYLE# 512345', 'GAP / STYLE# 512345', 'ITEM 1234567 / PO ...'])
+  test(`R5 review: an unknown brand or inventory line cannot claim a maker: ${line}`, () => assert.deepEqual(tag(line).brands, []));
+test('R5 review: separate Nike brand and numeric catalogue code cannot invent a model', () => {
+  const out = tag('NIKE\nM\nCU4489-010');
+  assert.equal(out.brands[0]?.brand, 'Nike');
+  assert.equal(out.style_code, undefined);
+  assert.deepEqual(field(out, 'size_label').map(fact => fact.value), ['M']);
+});
+
+for (const [line, expected] of [
+  ['R NIKE', 'Nike'], ['R RUSSELL ATHLETIC', 'Russell Athletic'], ['® (R) ™ NIKE', 'Nike'],
+  ['FRUIT OF THE LOOM HEAVY cotton', 'Fruit of the Loom'], ['Nike unknown', 'Nike'],
+  ['Nike FY23', 'Nike'], ['Nike EU42', 'Nike'], ['CHAMPION AB1234', 'Champion'],
+  ['Carhartt 103828 BLK', 'Carhartt'], ['APPLE BOTTOMS', 'Apple'],
+  ['Nike training inspired by sport', 'Nike'],
+] as const) test(`R6: a leading brand survives logo punctuation and ordinary trailing words: ${line}`, () => {
+  assert.deepEqual(tag(line).brands.map(brand => brand.brand), [expected]);
+  assert.equal(tag(line).style_code, undefined);
+});
+for (const line of ['Inspired by Nike', 'R unrelated NIKE', 'R R NIKE', 'RR NIKE', 'Logo NIKE', '® R X NIKE'])
+  test(`R6: more than one logo character or prose before the brand abstains: ${line}`, () => {
+    assert.deepEqual(tag(line).brands, []);
+  });
+for (const line of ['NIKE-TRAINING', 'NIKE-UNKNOWN', 'NIKE-inspiredness'])
+  test(`R6: a hyphen-joined suffix cannot state a standalone brand: ${line}`, () => {
+    assert.deepEqual(tag(line).brands, []);
+  });
+for (const suffix of ['inspired', 'style', 'type', 'compatible', 'replica', 'alike', 'for', 'fits'])
+  for (const separator of [' ', '-'])
+    for (const word of [suffix, suffix.toUpperCase()])
+      test(`R6: immediate disqualifying suffix ${separator}${word} cannot state Nike`, () => {
+        assert.deepEqual(tag(`NIKE${separator}${word} TRAINING TEE`).brands, []);
+      });
+for (const line of ['CHAMPION\nAUTHENTIC ATHLETIC APPAREL\nL\n50% COTTON 50% POLYESTER...',
+  'LEVI STRAUSS & CO.\n501...100% COTTON', 'CARHARTT B324 BRN / W32 L34 ...'])
+  test(`R5 review: an ellipsis is not a complete fabric or style grammar: ${line}`, () => {
+    assert.deepEqual(field(tag(line), 'fabric'), []);
     assert.equal(tag(line).style_code, undefined);
   });

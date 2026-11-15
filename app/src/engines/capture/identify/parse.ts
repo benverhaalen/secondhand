@@ -13,15 +13,17 @@ export type Parsed = {facts: Fact[]; brands: Brand[]; style_code?: {value: strin
 const span = (line: number, start: number, text: string): Span => ({line, start, end: start + text.length, text});
 const escape = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-export function matchBrands(text: string, line = 0): Brand[] {
+export function matchBrands(text: string, line = 0, wholeLine = false): Brand[] {
   const matches: Brand[] = [];
   for (const row of lexicon.rows) for (const name of [row.brand, ...row.aliases]) {
     const pattern = new RegExp(`(?<![\\p{L}\\p{N}])${escape(name)}(?![\\p{L}\\p{N}])`, 'giu');
     for (const match of text.matchAll(pattern)) {
       const before = text.slice(text.lastIndexOf('\n', match.index - 1) + 1, match.index);
       const after = text.slice(match.index + match[0].length, text.indexOf('\n', match.index) < 0 ? text.length : text.indexOf('\n', match.index));
-      if ('common_word' in row && row.common_word && !commonWordTag(match[0], before, after)) continue;
-      matches.push({brand: row.brand, s: 0.9, rule: 'brand_lexicon', span: span(line, match.index, match[0])});
+      const candidate = {brand: row.brand, s: 0.9, rule: 'brand_lexicon', span: span(line, match.index, match[0])};
+      if (wholeLine ? !brandTag(text, candidate) :
+        'common_word' in row && row.common_word && !commonWordTag(match[0], before, after)) continue;
+      matches.push(candidate);
     }
   }
   matches.sort((a, b) => b.span.text.length - a.span.text.length || a.span.start - b.span.start);
@@ -63,14 +65,40 @@ type Reading = {value: string; rule: string};
 type Composition = {value: string; n: number; name: string; language: string; line: number};
 const mainSections = new Set(sections.main.map(folded));
 const partSections = new Set(sections.part.map(folded));
+const nonStructuralLines = new Set([...sections.marketing, ...sections.branding].map(folded));
 const sectionNames = [...mainSections, ...partSections].sort((a, b) => b.length - a.length).map(escape).join('|');
 const sectionLabel = new RegExp(`^(${sectionNames})(?:\\s*[:.-]\\s*|\\s+(?=\\d|[\\p{L}]+\\s+\\d+\\s*%)|$)`, 'u');
 const sectionBoundary = new RegExp(`\\s+(?=(?:${sectionNames})\\s*:)`, 'u');
 const sizeLabel = /^(?:(?:size|sz|taille|talla|große)(?:\s*\/\s*(?:size|sz|taille|talla|große))*)(?:\s*[:.]\s*|\s+)/i;
 const claimedNumberLine = /\b(?:pat(?:ent)?\.?|rn|ca|lot|date|style|art|model|item)\b|\b\d{2,4}[-/]\d{1,2}[-/]\d{1,4}\b/i;
 const originLabel = /^(?:made\s+in|hecho\s+en|fabrique\s+(?:au|en))\s+/;
-const styleLabel = /^(?:Style(?:\s+No\.?)?|Art|Model|Item)\s*[:#.]?\s+/i;
+const styleLabel = /^(?:(?:Style(?:\s+No\.?)?|Model)\s*[:#.]?\s+|Art\s+)/i;
 const notStyle = /^(?:(?:RN|CA|LOT|US|UK|EU|EUR|FR|IT|JP|CN|MX|XXXL|XXL|XXS|XS|XL|S|M|L|W)\d+|(?:FW|SS|AW|FY|F|S|H|SP|FA|HO|SU)(?:\d{2}|\d{4}))$/i;
+const colourLabel = /^(?:colour|color|colore|couleur|farbe)\s*:?$/i;
+const colourSegment = /^(?:colour|color|colore|couleur|farbe)\s*:/i;
+const licensorLine = /^(?:officially\s+licensed\b|licensed\b|under\s+license\s+from\b|©.*\blicensed\b|TM\s*&\s*©)/i;
+const shoeWidth = /^(?:M|W|D|B|E|EE|2E|4E|N)$/i;
+const numericSize = /^(?:(?:size|sz)\s*:?\s*)?(?:(?:US|UK|EU|EUR|CM)\s*)?\d+(?:[.,]\d+|\s+\d+\/\d+|\s*[¼½¾⅓⅔])?$/i;
+const undecoratedStart = (text: string) => text.replace(/[®™©]/g, '').replace(/^[\s\p{P}]+/u, '').trim();
+
+function brandTag(text: string, brand: Brand): boolean {
+  if (licensorLine.test(text.trim())) return false;
+  const before = text.slice(0, brand.span.start);
+  if (!/^(?:brand|marque|marca)\s*:[\s\p{P}]*$/iu.test(undecoratedStart(before))) {
+    if (!/^[\s\p{P}®™©]*(?:[\p{L}\p{N}][\s\p{P}®™©]*)?$/u.test(before)) return false;
+    const after = text.slice(brand.span.end);
+    if (/^-+[\p{L}\p{N}]/u.test(after)) return false;
+    return !/^[\s\p{P}®™©]*(?:inspired|style|type|compatible|replica|alike|for|fits)(?![\p{L}\p{N}_])/iu.test(after);
+  }
+  let after = undecoratedStart(text.slice(brand.span.end).replace(/\b(?:RN\s*[:#]?\s*\d{4,6}|CA\s*[:#]?\s*\d{5,6})\b/gi, ''));
+  const name = brand.span.text;
+  for (;;) {
+    if (!after || sizeSegment(after) || styleSegment(`${name} ${after}`, 0, [{...brand, span: span(0, 0, name)}])) return true;
+    const trimmed = after.replace(/[\s\p{P}]$/u, '').trimEnd();
+    if (trimmed === after) return false;
+    after = trimmed;
+  }
+}
 
 function sizeSegment(text: string): Reading|undefined {
   const labelled = sizeLabel.test(text);
@@ -174,18 +202,23 @@ export function parseTag(input: unknown): Parsed {
         const row = rnRows[rule === 'rn' ? match[1] : `CA${match[1]}`];
         if (row) brands.push({brand: row.brand, s: 1, rule, span: span(index, match.index, match[0])});
       }
-    brands.push(...matchBrands(line, index));
+    const colourValue = index > 0 && colourLabel.test(lines[index - 1].line.trim());
+    if (colourValue || colourSegment.test(line.trim())) return;
+    brands.push(...matchBrands(line, index, true));
     const normalized = folded(line).trim();
     const style = styleSegment(line, index, brands);
     if (style) styles.push(style);
-    else if (styleLabel.test(normalized) || brands.some(brand => brand.span.line === index && brand.span.start === 0 &&
+    else if (styleLabel.test(normalized) || matchBrands(line, index).some(brand => brand.span.start === 0 &&
       /\d/.test(line.slice(brand.span.end)))) uncertainStyle = true;
 
     const segments = factSegments(normalized);
     const styleSize = style && /\b(?:size|sz|taille|talla|große)\b.*$/.exec(normalized)?.[0];
     const labelledSize = styleSize ? sizeSegment(styleSize) : undefined;
     if (labelledSize) sizes.push({...labelledSize, line: index});
-    if (!claimedNumberLine.test(normalized)) for (const segment of segments) {
+    const width = shoeWidth.test(normalized) && index > 0 && numericSize.test(lines[index - 1].line.trim());
+    const inlineWidth = /\s+(M|W|D|B|E|EE|2E|4E|N)$/i.exec(normalized);
+    if (width || (inlineWidth && numericSize.test(normalized.slice(0, inlineWidth.index)))) uncertainSize = true;
+    if (!width && !claimedNumberLine.test(normalized)) for (const segment of segments) {
       const localBrand = brands.find(brand => brand.span.line === index && brand.span.start === 0);
       const waistAfterBrand = localBrand && /^w\s*\d{2,3}\s+l\s*\d{2,3}$/.test(normalized.slice(localBrand.span.end).trim())
         ? normalized.slice(localBrand.span.end).trim() : undefined;
@@ -205,6 +238,7 @@ export function parseTag(input: unknown): Parsed {
     }
 
     for (const segment of segments.flatMap(text => text.split(/\s*[;|]\s*|\s+\/\s+/)).flatMap(text => text.split(sectionBoundary))) {
+      if (nonStructuralLines.has(segment)) continue;
       const heading = sectionLabel.exec(segment);
       if (heading) section = mainSections.has(heading[1]) ? 'main' : 'part';
       else if (/^[\p{L}\s-]+\s*:|^[\p{L}\s-]+\s*[.-]$/u.test(segment)) section = 'unknown';
