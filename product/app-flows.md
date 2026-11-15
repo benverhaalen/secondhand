@@ -94,7 +94,7 @@ Ben, 08:12: "photos before after done already. everything set. and then being ab
 
 - On the Post preview, when the studio has run, the cover sits on top at full width with two switches: Clean up ("Light only. The color stays true") and Enhance with AI ("Redrawn, then checked against your photos and tape"). Every site's preview changes with them.
 - Enhance with AI is disabled until the item has a measured attribute, and says "Measure it first"; the camera's chip says "Measure it to use AI". The tape is what holds a redraw to its real size (`jobs/studio/check.py`).
-- The demo's three covers are Ben's Marquette tee: as shot, cleaned by `level0` (one exposure gain, no hue moves), and the redraw that passed the check in run 20261115-0652. That redraw was made by Nano Banana; Ben named **Seedream 5.5**, so it is swapped for a Seedream render once one passes the same check (studio thread).
+- The demo's three covers are Ben's Marquette tee: as shot, cleaned by `level0` (one exposure gain, no hue moves), and the redraw that passed the check in run 20261115-0652. That redraw was made by Nano Banana, which Ben decided to keep; it stays as long as it passes the tape check.
 
 ## AI fields in their own color
 
