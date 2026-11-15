@@ -188,11 +188,76 @@ Errors use `{code, message, failed_step, retry}`; a site refusing sign-in is `50
 
 Rules that protect people, unchanged: a home address goes out only on the person's tap; buyers' data is handled as in [privacy-and-data](../../research/cross-cutting/nate/privacy-and-data.md); a recalled product is not listed; the risk to each real account is shown on its row.
 
+## Signing in to secondhand
+
+*Agent proposal*, from Ben at 02:46: "onboarding. first is getting everything connected and getting accounts. like obviously sign in with apple, google, email. and then connecting the platforms you want to use" ([words](../../product/words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready)). Everything above is about linking marketplaces; this is the person's own secondhand account, which comes first. The screens are in [pages §6.1](../pages.md#61-first-launch-onboarding).
+
+### The order on first launch
+
+| # | Step | Why it is here | Skippable |
+|---|---|---|---|
+| 1 | Sign in with Apple, Google or an email code | nothing else can be saved without an account; a visitor on the website can still search ([visitors](../product.md#visitors-and-full-users)) | no |
+| 2 | Pick the sites you use | sets which sheets follow; also tells the plan which sites to consider | yes |
+| 3 | Link each picked site (the table at the top of this page, moments 2 to 4) | the decided setup-first order ([decision](../../product/decisions.md#2026-11-14-first-launch-is-setup-first)) | each one |
+| 4 | Bring in what we found (listings, purchases) | the person's existing shop appears at once | yes |
+| 5 | Gmail for sale emails | Poshmark and Mercari sale detection | yes |
+| 6 | Pickup windows and meetup spot, or Ask me every time | decided | yes |
+| 7 | Notifications | the three kinds that interrupt; the rest batched | yes |
+
+Progress is saved after each step on the server, so a person who quits at step 4 resumes there on any device.
+
+### How the person signs in
+
+| Method | On the phone | On the website | We keep |
+|---|---|---|---|
+| Apple | the native Sign in with Apple sheet (`expo-apple-authentication`, *asserted*) | Sign in with Apple JS | Apple's stable user id; the email, which may be Apple's private relay |
+| Google | Google's own sign-in (`@react-native-google-signin/google-signin` or `expo-auth-session`, *asserted*) | Google Identity Services | Google's subject id and verified email |
+| Email | a 6-digit code sent to the address; no password | the same | the verified email (hashed in `user.email_ref`, as the canon has it) |
+
+No passwords are ever held, for the app or for a marketplace. A store rule to check before submission: an app that offers Google sign-in must also offer a privacy-focused option such as Sign in with Apple (App Store Review Guideline 4.8, *asserted* from memory; read the live guideline before submission). Account deletion is in the app already (`DELETE /v1/me`), and deleting an account that used Apple must also revoke its Apple token (*asserted*; check Apple's current docs).
+
+**Same person, two methods.** A Google sign-in and an email code with the same verified address are one account. Apple's private relay address never merges on its own; the person links another method from You > Account.
+
+### Design choices
+
+| Choice | Options considered | Picked (*agent proposal*) | Why | What would change it |
+|---|---|---|---|---|
+| Who runs sign-in | a hosted service (Clerk, Supabase Auth, Firebase Auth); a library on our edge storing users in our own Postgres (Better Auth, which has an Expo integration, *asserted*); our own token checks | a library on the edge (Better Auth) with its tables in Lakebase, next to `user` | the edge already exists in [app/](../../app/README.md) as Expo Router API routes; one database for users and everything else; no second vendor holding identities | Lakebase unreachable from the edge in the first hour (the [Databricks fallback clock](../../product/decisions.md#2026-11-14-databricks-runs-the-whole-backend-with-a-hybrid-fallback)): then Clerk, which needs no database of ours |
+| Session on the phone | a cookie; a short access token plus a refresh token | access token about 1 h, refresh token in the Keychain through `expo-secure-store` | the canon already puts the app's own session in the Keychain (§6, secrets) | none |
+| Where the user id comes from for the API | the edge forwards a verified user id with its service identity; the phone holds a Databricks token | the edge forwards it, as option A in [product §6](../product.md#front-door-open-9) | an App accepts only Databricks sign-in | the hosting probe passing option B |
+
+### Contract (new; asked of Nate in [packet 47](../../.agents/team/packets/team/47-what-the-pages-need-from-the-backend.md))
+
+| Endpoint | Body | Returns |
+|---|---|---|
+| `POST /v1/auth/apple` | `{identity_token, nonce, name?}` | `{access_token, refresh_token, user, created}` |
+| `POST /v1/auth/google` | `{id_token}` | the same |
+| `POST /v1/auth/email/start` | `{email}` | `202`; a code is sent, valid 10 minutes, 5 tries |
+| `POST /v1/auth/email/verify` | `{email, code}` | the same as Apple |
+| `POST /v1/auth/refresh` | `{refresh_token}` | a new pair; the old refresh token stops working |
+| `POST /v1/auth/signout` | | `204`; the refresh token is revoked |
+| `GET /v1/me` | | `user` plus `onboarding {done_steps[], finished_at?}` and `auth_methods[]` |
+| `PATCH /v1/me` | `{onboarding_step?, notification_pref?, push_token?, tutorial_seen?}` | the user |
+
+Errors follow §7: a wrong or expired code is `400 invalid` with `retry.by: user`; too many tries is `429`.
+
+### How it fails
+
+| Failure | What happens |
+|---|---|
+| The person cancels the Apple or Google sheet | back on Welcome, nothing saved |
+| The email code never arrives | Resend after 30 s; a different address |
+| Apple hides the email | the account works; the relay address is stored; nothing merges on its own |
+| The refresh token is revoked or expired | the next call answers `401`; the app shows Welcome with the last method first |
+
 ## Open for Ben and Nate
 
-None. The framework choice and the after-the-tap conflict are open in [product.md](../product.md#9-open-for-ben-and-nate).
+- Who runs app sign-in: Better Auth on our edge with users in Lakebase (recommended), or a hosted service such as Clerk ([Signing in](#signing-in-to-secondhand)). Nate owns the edge.
+
+Otherwise none. The framework choice and the after-the-tap conflict are open in [product.md](../product.md#9-open-for-ben-and-nate).
 
 ## Needs from the shared model
 
 - A verb, or a named use of `read_stats`, that reads the seller's own active listings for `import`.
 - The risk line's text per site as a field on `account.capabilities`.
+- `user.auth_methods[] {provider, subject_hash, linked_at}` with provider one of apple, google, email; `user.onboarding {done_steps[], finished_at?}`, `user.push_token_ref`, and the `/v1/auth/*` endpoints in [Signing in](#signing-in-to-secondhand).
