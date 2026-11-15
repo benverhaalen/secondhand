@@ -12,13 +12,21 @@ import { startTicks } from './ticks.ts';
 // The phone's frame for a service sign-in: the cloud browser's live view (a desktop window) fitted to the phone's width and
 // centred on dark, with the step to take under it. The live URL rides in the fragment, so it never reaches this server's logs.
 const CONNECT_PAGE = `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Sign in</title><style>html,body{margin:0;height:100%;background:#0a0a0a;color:#fff;font:15px -apple-system,system-ui,sans-serif}
-main{min-height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
-iframe{width:100vw;aspect-ratio:1440/900;border:0;background:#000}@media (orientation:landscape){iframe{width:auto;height:88vh}}
-p{margin:0 16px;opacity:.7;text-align:center;line-height:1.4}</style>
-<main><iframe id="f" title="Service sign-in" allow="autoplay; clipboard-read; clipboard-write"></iframe>
-<p id="h">Sign in above, then tap Done. Turn your phone sideways for a larger view.</p></main>
-<script>const u=decodeURIComponent(location.hash.slice(1));if(/^https:\/\/([a-z0-9-]+\.)*browser-use\.com\//.test(u))document.getElementById('f').src=u;else document.getElementById('h').textContent='This sign-in link is not valid. Start again from the app.';</script></html>`;
+<title>Sign in</title><style>html,body{margin:0;height:100%;background:#0a0a0a;color:#fff;font:15px -apple-system,system-ui,sans-serif;overflow:hidden}
+#w{position:absolute;inset:0 0 64px 0;overflow:auto;-webkit-overflow-scrolling:touch}#s{position:relative}
+iframe{position:absolute;left:0;top:0;width:1440px;height:900px;border:0;background:#fff;transform-origin:0 0}
+p{position:absolute;left:0;right:0;bottom:0;height:64px;margin:0;display:flex;align-items:center;justify-content:center;padding:0 16px;opacity:.75;text-align:center;line-height:1.35}</style>
+<div id="w"><div id="s"><iframe id="f" title="Service sign-in" allow="autoplay; clipboard-read; clipboard-write"></iframe></div></div>
+<p id="h">Sign in on the page, then tap Done. Drag to see more of it.</p>
+<script>
+const u=decodeURIComponent(location.hash.slice(1)),f=document.getElementById('f'),w=document.getElementById('w'),s=document.getElementById('s');
+// The remote window is a 1440 by 900 desktop; a login form sits in its middle. Zoom so the middle 600 px fill the phone's width,
+// centre on it, and let the person drag to the rest.
+function fit(){const k=Math.max(w.clientWidth/600,w.clientHeight/900*0.5);f.style.transform='scale('+k+')';s.style.width=1440*k+'px';s.style.height=900*k+'px';
+w.scrollLeft=(1440*k-w.clientWidth)/2;w.scrollTop=Math.max(0,(900*k-w.clientHeight)/2-80*k);}
+if(/^https:\/\/([a-z0-9-]+\.)*browser-use\.com\//.test(u)){f.src=u;fit();addEventListener('resize',fit);}
+else document.getElementById('h').textContent='This sign-in link is not valid. Start again from the app.';
+</script></html>`;
 
 const log = createLog({ src: 'server', build: process.env.BUILD_SHA ?? 'dev', sink: line => { process.stderr.write(line + '\n'); } });
 
