@@ -1,0 +1,50 @@
+# New, the ＋ (app/behavior/new.json) on a phone or simulator: the same states as app/e2e/new.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/new.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/new.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081
+---
+- launchApp
+- openLink: ${URL}
+- extendedWaitUntil:
+    visible: "secondhand"
+    timeout: 30000
+# open: the ＋ grows over the screen and the three choices rise, with the two ways out above them.
+- tapOn: { id: "tab-new" }
+- extendedWaitUntil:
+    visible: "Sell this"
+    timeout: 5000
+- assertVisible: "What’s it worth"
+- assertVisible: "Find this"
+- assertVisible: "Paste a link"
+- assertVisible: "Describe it"
+# × plays it back into the button.
+- tapOn: { id: "new-close" }
+- extendedWaitUntil:
+    notVisible: "Sell this"
+    timeout: 3000
+# link: Paste a link opens its sheet.
+- tapOn: { id: "tab-new" }
+- tapOn: { id: "new-link" }
+- assertVisible: "Bring it in"
+- tapOn: { id: "link-field" }
+- inputText: "https://example.invalid/listing/42"
+- tapOn: { id: "link-go" }
+- extendedWaitUntil:
+    visible: "Sell"
+    timeout: 5000
+# describe: Describe it opens its sheet.
+- tapOn: { id: "tab-new" }
+- tapOn: { id: "new-describe" }
+- assertVisible: "Make a draft"
+- tapOn: { id: "describe-field" }
+- inputText: "A blue sofa, three seats"
+- tapOn: { id: "describe-go" }
+# Sell this opens the camera out of the capsule.
+- tapOn: { id: "tab-new" }
+- tapOn: { id: "new-sell" }
+- extendedWaitUntil:
+    visible: "Show the whole front"
+    timeout: 5000

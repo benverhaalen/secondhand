@@ -1,0 +1,30 @@
+{
+  "route": "search?q=banjo%20case",
+  "screen": "search",
+  "states": [
+    "empty",
+    "new",
+    "one",
+    "typical",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "dense: a search lists what the sites answer, and the longest answer the demo has is typical’s six rows",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "dark screen",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    }
+  ]
+}

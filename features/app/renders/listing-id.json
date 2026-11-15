@@ -1,0 +1,29 @@
+{
+  "route": "listing/[id]",
+  "screen": "listing",
+  "states": [
+    "typical",
+    "new",
+    "empty",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "one: a listing is one thing, with no list in it to hold one or many; dense: the same",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 1 \"Nike Dunk Low Grey Fog, men’s 10\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    }
+  ]
+}

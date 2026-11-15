@@ -4,10 +4,12 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
-  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
-  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  Amount, Approve, Blank, Composer, Count, DecisionCard, Draft, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Message, Meta, Nav, Notice, Pill,
+  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, ThreadRow, TimeSpan, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  BarPill, CamButton, CamNote, CamWord, ChoiceCapsule, Chips, FactChip, FeedSwatch, FixChip, Instruction, Modes, Shutter, StageBubbles,
   Feed, QueueView,
 } from '@/ui';
+import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
@@ -17,6 +19,8 @@ import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
 import { Shelf, Tile } from '@/ui/parts/tile';
 import { KeepRow, Range } from '@/ui/parts/worth';
 import { photo } from '@/demo/photos';
+import { ItemParts } from '@/ui/parts/item-parts-sheet';
+import colourData from '@/buy/colours.json' with { type: 'json' };
 
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
@@ -44,6 +48,8 @@ function Sheetful() {
   const [on, setOn] = useState(true);
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
+  const [msg, setMsg] = useState('');
+  const [span, setSpan] = useState({ start: 28, end: 32 });
   return (
     <Screen name="parts" state="all" sheet="parts" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
@@ -186,6 +192,7 @@ function Sheetful() {
           <Choice id="p-c-off" icon="search-01" label="Looking deeper" line="It lands on Today when it’s done." disabled onPress={() => {}} />
         </List>
       </Section>
+      <ItemParts />
 
       <Section title="Sheet, toast">
         <Line><Pill id="s-open" kind="second" label="Open a sheet" onPress={() => setSheet(true)} /></Line>
@@ -205,6 +212,52 @@ function Sheetful() {
 
       <Section title="Top slot, a new person">
         <TopSlot setup={{ id: 'top-setup', line: 'Next step', step: 'Connect a site' }} />
+      </Section>
+
+      <Section title="Messages: thread row, message, draft, composer">
+        <List>
+          <ThreadRow id="tr-need" who="canvasfan" photo="carhartt-jacket" title="Carhartt Detroit jacket" site="depop" need={{ state: 'need', word: 'Offer' }} last="Would you take $85?" time="5m ago" unread={2} />
+          <ThreadRow id="tr-did" who="vintage_workwear_collector_and_reseller_since_2009" photo="nike-dunks" title="Nike Dunk Low, 10.5" site="ebay" did="Sent for you" last="Yes, it’s still available. It ships tomorrow." mine time="Yesterday" unread={0} />
+        </List>
+        <Message side="theirs" meta={<Meta text="canvasfan, 5m ago" />}>What’s the inseam?</Message>
+        <Message side="mine" meta={<Meta text="Sent for you, 4m ago" info />}>It’s 32 inches.</Message>
+        <Draft id="dr-a" who="canvasfan" spans={[{ text: 'It’s ' }, { text: '36', guess: true }, { text: '. I measured it flat, ' }, { text: 'photo 3', guess: true, mine: true }, { text: '.' }]}
+          facts={[{ text: '36 inseam', from: 'the label' }, { text: '35 in', from: 'your tape' }]} />
+        <Draft id="dr-f" who="canvasfan" spans={[{ text: 'It’s 36.' }]} status="failed" failed="The site did not answer" lead={false} />
+        <Composer id="co" to="canvasfan" value={msg} onChange={setMsg} onSend={() => setMsg('')} />
+      </Section>
+
+      <Section title="Time span">
+        <TimeSpan id="ts-day" day="Mon 16" words="2 to 4 pm" value={span} onChange={setSpan} />
+        <TimeSpan id="ts-dark" day="Fri 20" words="6 to 8 pm" value={{ start: 36, end: 40 }} onChange={() => {}} note="Ends after dark" />
+      </Section>
+
+      <BuySide />
+      <Section title="New and the camera (on the bar)">
+        <FeedSwatch>
+          <ChoiceCapsule id="nc-sell" label="Sell this" icon="tag-01" lead index={0} shown />
+          <ChoiceCapsule id="nc-worth" label="What’s it worth" icon="money-03" index={1} shown />
+          <Line>
+            <BarPill id="nc-link" icon="link-01" label="Paste a link" />
+            <BarPill id="nc-describe" icon="pencil-edit-02" label="Describe it" />
+          </Line>
+          <StageBubbles stages={[{ name: 'Kind', state: 'done' }, { name: 'Photos', state: 'now' }, { name: 'Label', state: 'skipped' }, { name: 'Measure', state: 'later' }, { name: 'Condition', state: 'later' }]} />
+          <Instruction text="Closer on the tag" />
+          <Chips>
+            <FactChip id="nc-brand" name="Brand" value="Carhartt" />
+            <FactChip id="nc-size" name="Size" />
+            <CamNote icon="clock-01" text="2 photos waiting for signal" />
+            <FixChip id="nc-clean" label="Clean up" on onPress={() => {}} />
+            <FixChip id="nc-ai" label="Enhance with AI" on={false} onPress={() => {}} />
+          </Chips>
+          <Modes modes={[{ mode: 'sell', label: 'Sell', icon: 'tag-01' }, { mode: 'worth', label: 'Worth', icon: 'money-03' }, { mode: 'find', label: 'Find', icon: 'search-01' }]} current="sell" onPick={() => {}} />
+          <Line gap="group">
+            <CamButton id="nc-library" icon="image-01" label="Choose photos" />
+            <Shutter id="nc-shutter" />
+            <Shutter id="nc-shutter-wait" waiting />
+            <CamWord id="nc-skip" label="Skip" />
+          </Line>
+        </FeedSwatch>
       </Section>
 
       <Section title="You: tab nav, list rows, switch, goal, week bars">
@@ -228,5 +281,79 @@ function Sheetful() {
         <TabBar current={tab} badges={{ buy: true }} onTab={k => k !== 'new' && setTab(k)} />
       </Section>
     </Screen>
+  );
+}
+
+// The buy side's parts, every state: the search box, a found listing, where a search looked, a price against its range,
+// the history, the photos, one answer of a few, and the offer sheet.
+function BuySide() {
+  const [offer, setOffer] = useState(false);
+  return (
+    <>
+      <Section title="Search field: empty, filled, working">
+        <SearchField id="sf-empty" placeholder="Find an item or paste a link" onCamera={() => {}} />
+        <SearchField id="sf-filled" value="nike dunk low grey 10" placeholder="Find an item or paste a link" onCamera={() => {}} />
+        <SearchField id="sf-working" value="nike dunk low grey 10" placeholder="Find an item or paste a link" working />
+      </Section>
+      <Section title="Match card: good, fair, high, not the same, gone">
+        <MatchCard id="m-good" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="mercari" verdict="good" what="Delivered" amount="$72.50" when="12m ago" />
+        <MatchCard id="m-fair" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="ebay" verdict="fair" what="Delivered" amount="$76.50" />
+        <MatchCard id="m-high" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="ebay" verdict="high" what="Delivered" amount="$119" />
+        <MatchCard id="m-like" title="Kindle Paperwhite, 16 GB, signature edition" photo="kindle" site="mercari" verdict="high" likeness="likely_same_model" what="Delivered" amount="$96.50" />
+        <MatchCard id="m-gone" title="Nike Dunk Low Grey Fog, men’s 10" photo="nike-dunks" site="depop" verdict="fair" what="Delivered" amount="$93" gone />
+      </Section>
+      <Section title="Site strip: in, waiting, none, behind, off; as toggles">
+        <SiteStrip id="ss" slots={[{ site: 'ebay', state: 'in', note: '41' }, { site: 'mercari', state: 'waiting' }, { site: 'depop', state: 'in', note: '4m' }, { site: 'facebook', state: 'none' }, { site: 'poshmark', state: 'off' }]} />
+        <SiteStrip id="ss2" slots={[{ site: 'ebay', state: 'in', note: '4m ago' }, { site: 'mercari', state: 'behind' }, { site: 'depop', state: 'in', note: 'Just now' }, { site: 'facebook', state: 'waiting' }, { site: 'poshmark', state: 'off' }]} />
+        <SiteStrip id="ss3" onToggle={() => {}} slots={[{ site: 'ebay', state: 'in', note: '4m ago' }, { site: 'mercari', state: 'behind' }, { site: 'depop', state: 'in', note: 'Just now' }, { site: 'facebook', state: 'waiting' }, { site: 'poshmark', state: 'off' }]} />
+      </Section>
+      <Section title="Price range, with a price and without">
+        <PriceRange low={65} high={95} at={76.5} words="The same one sold for" />
+        <PriceRange low={65} high={95} at={119} words="The same one sold for" />
+        <PriceRange low={65} high={95} />
+      </Section>
+      <Section title="Price chart">
+        <PriceChart id="pc" points={[{ label: 'Jun', value: 98 }, { label: 'Jul', value: 94 }, { label: 'Aug', value: 90 }, { label: 'Sep', value: 86 }, { label: 'Oct', value: 82 }, { label: 'Nov', value: 79 }]} reference={{ label: 'New', value: 115 }} />
+      </Section>
+      <Section title="Gallery, three photos">
+        <Gallery id="gal" photos={['nike-dunks', 'levis-501', 'kindle']} label="Nike Dunk Low" />
+      </Section>
+      <Section title="Offer sheet">
+        <Line><Pill id="os-open" kind="second" label="Make an offer" onPress={() => setOffer(true)} /></Line>
+        <OfferSheet id="os" open={offer} amounts={[60, 65, 68]} notes={{ 65: 'Your most' }} pick={65} onSend={() => setOffer(false)} onClose={() => setOffer(false)} />
+      </Section>
+      <WantByTouch />
+    </>
+  );
+}
+
+// A want set by touch (spec/features/watch.md): the range over the sales, the toggle and chips, the swatches, the sizes.
+function WantByTouch() {
+  const [range, setRange] = useState<[number, number]>([64, 80]);
+  const [how, setHow] = useState('both');
+  const [cond, setCond] = useState('good');
+  const [colours, setColours] = useState<string[]>(['navy']);
+  const [size, setSize] = useState<[string, string | null]>(['mens', '10']);
+  const sold = [68, 70, 71, 72, 74, 75, 75, 76, 77, 78, 78, 79, 80, 80, 81, 82, 83, 84, 86, 88, 90, 92];
+  return (
+    <>
+      <Section title="Range slider: with sales, without">
+        <RangeSlider id="rs" label="Price, delivered" min={35} max={125} low={range[0]} high={range[1]} dots={sold} caption={`Each dot is a sale of the same one: ${sold.length} sold`} onChange={(a, b) => setRange([a, b])} />
+        <RangeSlider id="rs-none" label="Price, delivered" min={25} max={95} low={48} high={72} caption="Not enough sales yet to show" onChange={() => {}} />
+      </Section>
+      <Section title="Chips: a three-way toggle, a wrapping row">
+        <ChoiceChips id="chips-how" label="How it gets to you" value={how} onChange={setHow} options={[{ id: 'ship', label: 'Ship' }, { id: 'pickup', label: 'Pickup' }, { id: 'both', label: 'Both' }]} />
+        <ChoiceChips id="chips-cond" label="Condition, at least" value={cond} onChange={setCond} options={[{ id: 'new', label: 'New with tags' }, { id: 'like-new', label: 'Like new' }, { id: 'good', label: 'Good' }, { id: 'fair', label: 'Fair' }]} />
+      </Section>
+      <Section title="Colour swatches: any, one picked">
+        <ColourSwatches id="cs" value={colours} onChange={c => setColours(c === 'any' ? [] : colours.includes(c) ? colours.filter(k => k !== c) : [...colours, c])}
+          swatches={colourData.jersey} />
+      </Section>
+      <Section title="Size picker: two systems, one">
+        <SizePicker id="sp" system={size[0]} value={size[1]} onChange={(a, b) => setSize([a, b])}
+          systems={[{ id: 'mens', label: 'Men’s US', sizes: ['8', '8.5', '9', '9.5', '10', '10.5', '11', '12'] }, { id: 'womens', label: 'Women’s US', sizes: ['6', '7', '8', '9', '10'] }]} />
+        <SizePicker id="sp-one" system="letter" value={null} onChange={() => {}} systems={[{ id: 'letter', label: 'Letter', sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'] }]} />
+      </Section>
+    </>
   );
 }

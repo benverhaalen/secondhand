@@ -7,3 +7,4 @@ The renders and the gallery that show Ben every screen of the app, in light and 
 | `renders/<slug>.png`, `<slug>-dark.png` | Each route at 390 x 844, at 2x |
 | `renders/<slug>.json` | The route, its screen and states, its status and its brand-check findings |
 | `gallery.html` | Every screen side by side, grouped by tab, written by `scripts/app-gallery.mjs` |
+| `demos/<flow>.mp4`, `<flow>.png` | A flow recorded as a short clip and its last frame, written by `scripts/app-demo.mjs` ([how](../../app/e2e/README.md#a-demo-video)) |

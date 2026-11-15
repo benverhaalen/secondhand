@@ -271,7 +271,9 @@ export async function collect(file, { medium, sheet, tokensCss, browser, cases =
     const mine = [];
     for (let i = 0; i < steps; i++) { const v = await shot(i, views.length); views.push(v); mine.push(v); }
     // The same views again with each piece of extreme content from .agents/ui-states.json put into the slots marked data-fill, then put back.
-    for (const c of marked ? cases : []) {
+    // Only the extreme content whose slot the page has: the rest would fill nothing and put nothing back.
+    const fills = marked ? await page.evaluate(() => [...new Set([...document.querySelectorAll('[data-fill]')].map(el => el.dataset.fill))]) : [];
+    for (const c of cases.filter(c => fills.includes(c.fill))) {
       const slots = await page.evaluate(c => { const slots = [...document.querySelectorAll(`[data-fill="${c.fill}"]`)];
         window.__undo = slots.map(el => { if (c.fill !== 'photo') { const was = { el, html: el.innerHTML }; el.textContent = c.value; return was; }
           const img = el.matches('img') ? el : el.querySelector('img') ?? el, was = { el: img, src: img.getAttribute('src'), bg: img.style.backgroundImage }; img.removeAttribute('src'); img.style.backgroundImage = 'none'; return was; });

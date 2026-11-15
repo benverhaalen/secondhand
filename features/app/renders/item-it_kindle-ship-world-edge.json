@@ -1,0 +1,36 @@
+{
+  "route": "item/it_kindle/ship?world=edge",
+  "screen": "ship",
+  "states": [
+    "one",
+    "empty",
+    "typical",
+    "dense",
+    "loading",
+    "failed",
+    "offline"
+  ],
+  "skip": "new: Ship opens only from a sale, and a person who has done nothing has sold nothing",
+  "catalog": false,
+  "status": "clean",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 1 \"USPS Ground Advantage\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "warn",
+      "id": "L2",
+      "where": "dark screen 2",
+      "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    }
+  ]
+}

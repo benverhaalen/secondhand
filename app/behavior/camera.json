@@ -1,16 +1,60 @@
 {
   "screen": "camera",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "The camera: the person presses the shutter for every still and the app judges each one, out loud, with stage bubbles, a point cloud where it finds things, the found pop-up and fact chips. spec/pages.md §6.5, spec/features/capture.md, spec/ways-out.md §6.4 and §6.5.",
+  "frame": {
+    "who": "Clearing out, with a pile, often on poor signal; Holding a minimum, with one good thing; Testing the water, in Worth mode. Once per item, tens of stills a day.",
+    "came_to": "Get the thing in without thinking: one instruction at a time, press, see what it read, next.",
+    "costly_mistake": "A wrong fact going into the listing unseen: every fact is a chip the person can see and a blank they can fill; a duplicate asks Same thing? before making a second item.",
+    "ways_out": "Choose photos from the library; skip a step; switch Sell, Worth and Find without losing the stills; camera access denied offers Settings and the library; no signal keeps shooting and waits.",
+    "in_the_loop": "The person takes every still; the app says what it read and shows what it has not; the draft waits for their review."
+  },
+  "decisions": [
+    "The camera sits between two solid bars, ink black in light and the dark page in dark, as the phone's own camera; the feed shows between them, and nothing light covers the screen at night.",
+    "Words sit on the bars, never on the feed (Art. 5.1); a fact over the feed is a chip on the surface color with ink words.",
+    "One pop per still, its most identifying fact; the other facts fill their chips quietly, so the pop is never a queue.",
+    "The pop holds 1.5 s: Art. 11's on-screen hold for one or two words is at least 1.5 s.",
+    "The check is ink, not mint: mint means sold everywhere else (Art. 5.3).",
+    "The point cloud gathers in clusters where features were found and leaves when the still is judged; nothing loops or repeats.",
+    "Sell, Worth and Find sit as words above the shutter, like the phone camera's modes, so a wrong choice on New costs one tap and no stills.",
+    "Paste a link and Describe it live on New; the library button lives here, left of the shutter, as on the phone's camera.",
+    "A still that matches something already held asks Same thing? with that item, and the agent's guess (same) is the black pill.",
+    "A brand or model typed into its blank is matched to the catalog with spelling tolerance before the chip shows it: Carhart reads Carhartt (edge-cases §3).",
+    "When two things look alike, the camera offers both and I don’t know as three answers of one weight; I don’t know lists it from what can be seen (edge-cases §4).",
+    "A maker’s mark, hallmark or signature stops the quick path: a sheet says why and offers Appraise first as the black pill, with Price it anyway beside it; until then nothing is sold fast or marked down (edge-cases §4).",
+    "Clean up and Enhance with AI are two chips side by side once the stills are done, Clean up first, both off until picked; one only adjusts the photo, the other redraws it and says so in its name (edge-cases §6)."
+  ],
   "states": [
-    {
-      "state": "stub",
-      "shows": "the nav and the screen title"
-    }
+    { "state": "typical", "shows": "the feed, five empty stage bubbles with the current one ringed, Show the whole front, the outline points, Blank chips for each fact, Sell Worth Find, the library, the shutter and Skip" },
+    { "state": "loading", "shows": "the point cloud gathering where features were found, and the shutter waiting" },
+    { "state": "found", "shows": "the pop-up with Carhartt and a check under the instruction, then it flies to the first bubble, which fills to a check; the Brand chip reads Carhartt" },
+    { "state": "same", "shows": "a sheet asking Same thing? with the jacket already held, Same one and Another one" },
+    { "state": "offline", "shows": "a chip saying the stills are waiting for signal, and the shutter still working" },
+    { "state": "done", "shows": "every bubble checked, Matching against 41 sold jackets, every chip filled, Clean up and Enhance with AI off, and Review the draft" },
+    { "state": "denied", "shows": "Camera is off, how to allow it in Settings, Open Settings and Choose photos" },
+    { "state": "unsure", "shows": "the brass lamp, and a sheet asking Which one is it? with Banker’s lamp, Desk lamp and I don’t know" },
+    { "state": "valuable", "shows": "the brass lamp, and a sheet saying It may be worth more: a maker’s mark on the base, with Appraise first and Price it anyway" }
   ],
   "controls": [
-    {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
-    }
-  ]
+    { "control": "Close", "id": "cam-close", "on_tap": "the camera shrinks back into the ＋ and the screen behind returns", "does": "closes the camera", "goes": "/" },
+    { "control": "Shutter", "id": "cam-shutter", "on_tap": "takes a still; the feed blinks, the point cloud gathers, and the found pop-up says what it read", "does": "takes a still" },
+    { "control": "Library", "id": "cam-library", "on_tap": "opens the photo library; photos chosen there become drafts", "does": "opens the library" },
+    { "control": "Skip", "id": "cam-skip", "on_tap": "skips this step; its facts stay Blank for the review", "does": "skips the step" },
+    { "control": "Sell", "id": "cam-mode-sell", "on_tap": "switches to Sell, keeping the stills", "does": "switches mode" },
+    { "control": "Worth", "id": "cam-mode-worth", "on_tap": "switches to Worth, keeping the stills", "does": "switches mode" },
+    { "control": "Find", "id": "cam-mode-find", "on_tap": "switches to Find, keeping the stills", "does": "switches mode" },
+    { "control": "Size blank", "id": "fact-size", "on_tap": "types the size by hand", "does": "edits a fact" },
+    { "control": "Review the draft", "id": "cam-done", "on_tap": "the draft opens in Sell’s In progress", "does": "opens the draft", "goes": "/sell", "state": "done" },
+    { "control": "Same one", "id": "same-yes", "on_tap": "opens the item already held instead of making a second", "does": "opens the held item", "goes": "/item/it_jacket", "state": "same" },
+    { "control": "Another one", "id": "same-no", "on_tap": "closes the sheet and keeps going as a new item", "does": "keeps going", "state": "same" },
+    { "control": "Open Settings", "id": "denied-settings", "on_tap": "opens the phone’s Settings for this app", "does": "opens Settings", "state": "denied" },
+    { "control": "Choose photos", "id": "denied-library", "on_tap": "opens the photo library", "does": "opens the library", "state": "denied" },
+    { "control": "Clean up", "id": "cam-clean", "on_tap": "crops, straightens, sets exposure and white balance and blurs the background, with no generative model; a second tap goes back to the original", "does": "cleans up the photos", "state": "done" },
+    { "control": "Enhance with AI", "id": "cam-ai", "on_tap": "turns on the AI redraw, which is checked against the original before it is used; a second tap turns it off", "does": "turns on AI enhancement", "state": "done" },
+    { "control": "Banker’s lamp", "id": "unsure-1", "on_tap": "says it is a banker’s lamp, then the maker’s mark is asked about", "does": "picks a candidate", "state": "unsure" },
+    { "control": "Desk lamp", "id": "unsure-2", "on_tap": "says it is a desk lamp, then the maker’s mark is asked about", "does": "picks a candidate", "state": "unsure" },
+    { "control": "I don’t know", "id": "unsure-none", "on_tap": "an answer, not a failure: it is listed from what can be seen, then the maker’s mark is asked about", "does": "answers I don’t know", "state": "unsure" },
+    { "control": "Appraise first", "id": "valuable-appraise", "on_tap": "keeps it off the quick path and notes Appraise first on the camera", "does": "holds it for an appraisal", "state": "valuable" },
+    { "control": "Price it anyway", "id": "valuable-price", "on_tap": "closes the sheet; the mark stays on the item, so no quick sale or markdown", "does": "keeps going", "state": "valuable" }
+  ],
+  "back": "Close or the system back: the camera shrinks into the ＋ and the screen behind returns"
 }

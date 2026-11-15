@@ -1,16 +1,322 @@
 {
   "screen": "messages/[id]",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "route": "/messages/cv_jd",
+  "frame": [
+    "Who: every seller, opening one buyer's conversation from Messages, Today or a push. Carol reads every word; a flipper wants the draft and Send.",
+    "Came to: read what the buyer said, see what the agent answered or holds for them, and answer an offer where it was made.",
+    "A mistake costs most where a reply states something untrue about the item, an offer is accepted by accident, or money moves off the site.",
+    "Ways out (spec/ways-out.md §6.3): Edit the draft or Take over, which stops drafts here until it is handed back and leaves offers to the Plan; Correct it on anything sent for you drafts a fix instead of sending one; Block with Undo; see the site's own copy of the thread; open on the site.",
+    "In the loop: a draft waits for Send; an offer waits for Accept or Counter; a possible scam waits for Block. Only facts the person set are sent for them, and each says why."
+  ],
+  "decisions": [
+    {
+      "decision": "The buyer's name is the headline, with the item as a card under it",
+      "why": "Who you are talking to comes first, as in Messages; the card opens the item."
+    },
+    {
+      "decision": "The buyer's bubbles are gray on the left, the person's white with an edge on the right",
+      "why": "iMessage's sides, while black stays reserved for the one act (C4)."
+    },
+    {
+      "decision": "A time shows only after a gap of more than 30 minutes, and at the end",
+      "why": "As iMessage does, so a short exchange reads as one."
+    },
+    {
+      "decision": "What the agent sent says \"Sent for you\" and opens why, with Correct it and Ask me first",
+      "why": "Every automatic act explains itself and can be stopped (ways-out, \"Stop doing that for me\")."
+    },
+    {
+      "decision": "An offer in the thread is the same card as on Today, after the message that made it",
+      "why": "The same actions in both places (brief), so an offer is answered where it was read."
+    },
+    {
+      "decision": "The draft sits in place under the last message, dotted where the agent guessed",
+      "why": "spec/features/assist.md: dotted until the person changes a word, solid after."
+    },
+    {
+      "decision": "\"Take over\" swaps the draft for the composer and says offers still follow the Plan; More holds \"Hand it back\"",
+      "why": "ways-out §6.3: Take over stops automatic replies in that thread until the person hands it back; offers are not messages."
+    },
+    {
+      "decision": "A possible scam is a calm block of text with the reason and Block as the black pill",
+      "why": "The suggested act is the first decision in view (C4); calm, because a flag is not a verdict."
+    },
+    {
+      "decision": "Each message on the person's side says who wrote it: You, Sent for you, or Drafted and sent by you",
+      "why": "ways-out §6.3, \"What has it been saying?\" (Ben, 05:18)."
+    },
+    {
+      "decision": "The draft shows a chip per fact it states, with its source",
+      "why": "ways-out §6.3: chips for the facts it used with where each came from."
+    },
+    {
+      "decision": "\"See the site's copy\" in More opens the site's own screenshot of the thread; the demo has none, so the sheet says so",
+      "why": "edge-cases §16, \"Proof the agent got it right\" (Ben, 05:24); never draw a fake of a site's screen. The label avoids the site's name in words (kit, SiteBadge)."
+    }
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "offer",
+      "route": "/messages/cv_jd",
+      "shows": "Counter",
+      "why": "a buyer made an offer in the thread"
+    },
+    {
+      "state": "draft",
+      "route": "/messages/cv_pd",
+      "shows": "Draft to canvasfan",
+      "why": "the agent holds a reply with guessed words"
+    },
+    {
+      "state": "scam",
+      "route": "/messages/cv_lf",
+      "shows": "Possible scam",
+      "why": "the buyer asked to pay off the site"
+    },
+    {
+      "state": "pickup",
+      "route": "/messages/cv_cf",
+      "shows": "Draft to Jordan",
+      "why": "a local buyer with a pickup booked"
+    },
+    {
+      "state": "failed",
+      "route": "/messages/nope",
+      "shows": "This conversation is gone",
+      "why": "the conversation no longer exists"
+    },
+    {
+      "state": "one",
+      "route": "/messages/cv_pd?state=one",
+      "shows": "Draft to canvasfan",
+      "why": "the buyer's first message alone, as a thread looks the moment it starts"
+    },
+    {
+      "state": "loading",
+      "route": "/messages/cv_pd?state=loading",
+      "shows": "canvasfan",
+      "why": "the buyer's name over the item card's skeleton"
+    },
+    {
+      "state": "offline",
+      "route": "/messages/cv_pd?state=offline",
+      "shows": "Waiting for signal",
+      "why": "the last copy; Send holds on its pill until the signal returns"
+    },
+    {
+      "state": "didnt-load",
+      "route": "/messages/cv_pd?state=failed",
+      "shows": "Messages with canvasfan didn’t load",
+      "why": "the thread did not load; Try again asks again"
     }
   ],
   "controls": [
     {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "id": "nav-back",
+      "does": "goes back, or to Messages when opened directly",
+      "goes": "/messages"
+    },
+    {
+      "id": "thread-more",
+      "does": "opens the sheet: open on the site, open the item, block"
+    },
+    {
+      "id": "more-site",
+      "does": "opens the listing on the site",
+      "after": [
+        "thread-more"
+      ]
+    },
+    {
+      "id": "more-item",
+      "does": "opens the item",
+      "after": [
+        "thread-more"
+      ],
+      "goes": "/item/it_jacket"
+    },
+    {
+      "id": "more-block",
+      "does": "blocks the buyer, with Undo",
+      "after": [
+        "thread-more"
+      ]
+    },
+    {
+      "id": "block-undo",
+      "does": "unblocks the buyer",
+      "after": [
+        "thread-more",
+        "more-block"
+      ]
+    },
+    {
+      "id": "thread-item",
+      "does": "opens the item",
+      "goes": "/item/it_jacket"
+    },
+    {
+      "id": "why-msg_jd2",
+      "does": "opens why the agent sent that message"
+    },
+    {
+      "id": "why-correct",
+      "does": "drafts a correction to send, in place",
+      "after": [
+        "why-msg_jd2"
+      ]
+    },
+    {
+      "id": "why-ask-first",
+      "does": "asks first next time, with Undo",
+      "after": [
+        "why-msg_jd2"
+      ]
+    },
+    {
+      "id": "offer-of_j1-open",
+      "does": "opens the item the offer is for",
+      "goes": "/item/it_jacket"
+    },
+    {
+      "id": "offer-accept",
+      "does": "accepts the offer"
+    },
+    {
+      "id": "offer-counter",
+      "does": "opens the counter sheet with the suggested price"
+    },
+    {
+      "id": "counter-amount",
+      "does": "edits the counter price",
+      "after": [
+        "offer-counter"
+      ]
+    },
+    {
+      "id": "counter-send",
+      "does": "sends the counter",
+      "after": [
+        "offer-counter"
+      ]
+    },
+    {
+      "id": "offer-more",
+      "does": "opens the offer's sheet: when it runs out, decline, open the item"
+    },
+    {
+      "id": "offer-decline",
+      "does": "declines the offer",
+      "after": [
+        "offer-more"
+      ]
+    },
+    {
+      "id": "offer-item",
+      "does": "opens the item",
+      "after": [
+        "offer-more"
+      ],
+      "goes": "/item/it_jacket"
+    },
+    {
+      "id": "composer-send",
+      "does": "sends the person's own message",
+      "fill": [
+        "composer-input",
+        "Yes, still here"
+      ]
+    },
+    {
+      "id": "thread-block",
+      "does": "blocks the buyer flagged as a possible scam",
+      "route": "/messages/cv_lf"
+    },
+    {
+      "id": "why-msg_lf2",
+      "does": "opens why the agent sent that message",
+      "route": "/messages/cv_lf"
+    },
+    {
+      "id": "draft-text",
+      "does": "edits the draft in place",
+      "route": "/messages/cv_pd"
+    },
+    {
+      "id": "draft-edit",
+      "does": "edits the draft in place",
+      "route": "/messages/cv_pd"
+    },
+    {
+      "id": "draft-done",
+      "does": "keeps the edit; changed words turn solid",
+      "route": "/messages/cv_pd",
+      "after": [
+        "draft-edit"
+      ]
+    },
+    {
+      "id": "draft-send",
+      "does": "sends the draft",
+      "route": "/messages/cv_pd"
+    },
+    {
+      "id": "draft-take",
+      "does": "puts the draft away for the composer; drafts stop here until handed back",
+      "route": "/messages/cv_pd"
+    },
+    {
+      "id": "why-msg_cf2",
+      "does": "opens why the agent sent that message",
+      "route": "/messages/cv_cf"
+    },
+    {
+      "id": "thread-pickup",
+      "does": "opens the pickup",
+      "route": "/messages/cv_cf",
+      "goes": "/item/it_chair/pickup"
+    },
+    {
+      "id": "gone-back",
+      "does": "goes to Messages",
+      "route": "/messages/nope",
+      "goes": "/messages"
+    },
+    {
+      "id": "more-snapshot",
+      "does": "opens the site's own copy of the thread",
+      "after": [
+        "thread-more"
+      ]
+    },
+    {
+      "id": "snapshot-site",
+      "does": "opens the listing on the site",
+      "after": [
+        "thread-more",
+        "more-snapshot"
+      ]
+    },
+    {
+      "id": "more-handback",
+      "does": "hands the thread back, so drafts come again",
+      "route": "/messages/cv_pd",
+      "after": [
+        "draft-take",
+        "thread-more"
+      ]
+    },
+    {
+      "id": "thread-retry",
+      "does": "loads the thread again",
+      "route": "/messages/cv_pd?state=failed",
+      "goes": "/messages/cv_pd"
     }
-  ]
+  ],
+  "back": "Back goes to the screen it came from; opened directly, to Messages.",
+  "skips": {
+    "new": "a thread exists only once a buyer writes, so a person who has done nothing has none to open",
+    "empty": "a thread with no messages is never listed",
+    "dense": "no world holds a thread longer than six messages"
+  }
 }
