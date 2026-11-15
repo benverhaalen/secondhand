@@ -12,6 +12,18 @@ def money(value, field):
     return int(value)
 
 
+def _amount(value, field):
+    if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0:
+        raise ValueError(f'{field} must be finite, zero or more')
+    return value
+
+
+def _bounds(lo_cents, hi_cents):
+    lo = _amount(lo_cents, 'lo_cents')
+    hi = MAX_SAFE if hi_cents == math.inf else _amount(hi_cents, 'hi_cents')
+    return math.ceil(lo), math.floor(hi)
+
+
 def _rule(rule):
     rule = DEFAULT_ENDING if rule is None else rule
     money(rule['above_cents'], 'above_cents')
@@ -21,20 +33,18 @@ def _rule(rule):
 
 
 def endings(lo_cents, hi_cents, rule=None):
-    lo, hi, rule = money(lo_cents, 'lo_cents'), money(hi_cents, 'hi_cents'), _rule(rule)
+    lo, hi = _bounds(lo_cents, hi_cents)
+    rule = _rule(rule)
     return [c for c in range(((lo + DOLLAR - 1) // DOLLAR) * DOLLAR, hi + 1, DOLLAR)
             if c <= rule['above_cents'] or (c // DOLLAR) % 10 in rule['digits']]
 
 
 def round_to_ending(cents, rule=None, lo_cents=0, hi_cents=MAX_SAFE):
-    cents = money(cents, 'cents')
-    # Infinity is the existing TypeScript caller protocol for an unbounded search.
-    if hi_cents == math.inf:
-        hi_cents = MAX_SAFE
-    lo, hi, rule = money(lo_cents, 'lo_cents'), money(hi_cents, 'hi_cents'), _rule(rule)
+    cents = _amount(cents, 'cents')
+    lo, hi = _bounds(lo_cents, hi_cents)
+    rule = _rule(rule)
     if lo > hi:
         return None
-    target = min(hi, max(lo, cents))
     cycle = 10 * DOLLAR  # Fixed decimal ending cycle.
-    near = endings(max(lo, math.ceil(target - cycle), 0), min(hi, math.floor(target + cycle)), rule)
+    near = endings(max(lo, math.ceil(cents - cycle), 0), min(hi, math.floor(cents + cycle)), rule)
     return min(near, key=lambda c: abs(c - cents)) if near else None

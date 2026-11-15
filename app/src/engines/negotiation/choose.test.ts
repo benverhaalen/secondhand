@@ -220,3 +220,8 @@ test('money: round expected keep once after the full continuation calculation', 
   const d = decide({ ...base, keep: () => 1, v_wait_cents: 1, q_return: () => .5, returning_keep: () => 2 }, () => .5, 'challenger');
   assert.equal(d.candidates.find(c => c.amount_cents === 6500)?.expected_keep, 1);
 });
+
+test('audit R1: equal expected keeps choose the lowest counter, independent of ending digit order', () => {
+  const s = { ...base, keep: () => 1000, v_wait_cents: 1000, accept_line_cents: 7200 };
+  for (const digits of [[5, 8], [8, 5]]) assert.equal(decide({ ...s, ending: { above_cents: 2000, digits } }, () => .5, 'challenger').amount_cents, 6500);
+});
