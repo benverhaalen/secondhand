@@ -32,7 +32,7 @@ The Mac is `ngarelik@glados` over Tailscale. Always `ssh -n -o BatchMode=yes nga
 | Step | Command |
 |---|---|
 | Put the brief on the Mac | `ssh -o BatchMode=yes ngarelik@glados 'cat > /tmp/brief-<name>.txt' < brief.txt` |
-| Start a worker | `ssh -n ... 'zsh -lc "zsh ~/dev/projects/secondhand/scripts/mac-worker.sh <name> /tmp/brief-<name>.txt"'` |
+| Start a worker | `ssh -n ... 'zsh -lc "MODEL=<id> EFFORT=<effort> zsh ~/dev/projects/secondhand/scripts/mac-worker.sh <name> /tmp/brief-<name>.txt"'` (model and effort optional; see below) |
 | See if it is done | `ssh -n ... '[ -f ~/dev/projects/secondhand-wt/<name>/WORKER_REPORT.md ] && echo done; pgrep -f "codex exec" \| wc -l'` |
 | Commit its work (the worker never commits) | `ssh -n ... 'cd ~/dev/projects/secondhand-wt/<name> && git add <explicit paths> && git commit -q -m "<type(scope): plain words>"'` |
 | Bring it to Windows | `git fetch -q mac 'refs/heads/w/*:refs/remotes/mac/w/*'` then `git merge mac/w/<name>` |
@@ -55,6 +55,34 @@ How to work:
 - Do every task in the brief. If one truly cannot be done from the repo, say exactly what is missing and move to the next.
 - When finished, write WORKER_REPORT.md in the folder root: one line per task with its check command and exit code, the files you created, and anything not done with the reason.
 ```
+
+## Getting the most from a Codex worker
+
+Nate: "Ensure the team leads are best utilizing codex, understand the proper models, efforts, and how to effectively prompt and configure for using such workers too" ([words](../../../../product/words.md#2026-11-15-nate-the-leads-use-codex-well)). The Mac runs codex-cli 0.169.0 with its own worker home (`~/.codex-worker`: no desktop plugins, default effort medium). The script takes the model and effort per worker: `MODEL=<id> EFFORT=<low|medium|high> zsh ~/dev/projects/secondhand/scripts/mac-worker.sh <name> <brief>`.
+
+**Which model, at which effort.** The ids are the ones this Mac's Codex serves (its `models_cache.json`, read 2026-11-15).
+
+| Piece | Model | Effort |
+|---|---|---|
+| A specified build: owned files, tests named, the pattern already in the folder. Most pieces | `gpt-6.1-sol` (the script's default) | medium |
+| A build with design left inside it: an algorithm, money or state edges, several files that must agree | `gpt-6.1-sol` | high |
+| A long piece run unattended where staying inside the brief decides it: many files, a refactor across an area, anything a worker might fake or wander on | `gpt-6-astra` | high |
+| Mechanical work: a rename, fixtures from a stated shape, a doc brought in line with code, lint fixes | `gpt-6-luna` | high |
+
+Astra costs about five times Sol per token, so it is for the pieces that earn it. Efforts above high are not used without a measured gain; the script refuses them. If a model is refused, the worker's log (`/tmp/worker-<name>.log`) says so in its first lines: fall back to `gpt-6.1-sol`.
+
+**How to write the brief.** A worker starts with nothing but the brief and the repo. It reads `AGENTS.md` and the skills itself, so do not paste them.
+
+1. The outcome in one sentence, then what done looks like as commands with the exit code expected.
+2. The files it owns (it changes nothing else) and the files it must read first, by path.
+3. The facts it cannot look up: it has no network, so anything from a vendor's docs goes in with its source and version.
+4. The failure modes to test, named, so the tests are written first and each failure says its cause. Name the edges you care about; do not ask for "full coverage".
+5. What is out of scope, and what to do when blocked: say what is missing and move on, never invent data or loosen a test.
+6. The worker rules above, unchanged, at the end.
+
+One outcome per worker, sized to finish in about half an hour. A piece too big to state that way is two briefs. Say what and why and leave how to the worker where the folder already shows the pattern; spell out the design only where you have made a decision the worker could not know.
+
+**How to judge what comes back.** A worker's report is a claim. Before merging: `git status` in its worktree against the owned list (anything else changed is sent back), read the diff, rerun its checks yourself, and look for the three ways a worker makes a check pass without doing the work: a test weakened or deleted, the thing under test replaced by a stand-in, a hard-coded answer. A fix to the same piece is a follow-up brief into the same worktree (`AGAIN=1 zsh … mac-worker.sh <same name> <new brief>`), which keeps its files and saves the worker rereading the area. Two failed rounds on one piece means the brief or the design is wrong: rethink it yourself, or bring in an Opus seat, before a third.
 
 ## The Windows checkout
 
