@@ -2,6 +2,7 @@
 // The API verbs are endpoint routes; search and read_storefront also have page routes for while no keyset exists. Reads parse untrusted replies at the boundary; writes are dry by default and a dry write
 // returns the exact documented request with the token as a placeholder, sending nothing. Tokens live behind account.token_ref
 // (connect/ebay.ts through the vault port) and never enter a row, a plan or a log. Sources and dates: README.md.
+import type { ListingAsk, ListingField, ListingResult, ListingRow, ListingSpec } from '../../listing-parser.ts';
 import { createHash } from 'node:crypto';
 import { setTimeout as delay } from 'node:timers/promises';
 
@@ -214,8 +215,10 @@ export const PAGE_HOSTS = [
   { www: 'https://www.ebay.co.uk', params: { _salic: '1', LH_LocatedIn: '1' }, converted: true }, // eBay's own filter: items located in the United States
 ] as const;
 export const HOST_PAUSE_MS = 5000; // the one regional 403 came late in a run, so hosts are not tried back to back
+// Owner observation, 2026-11-15: signed-out /sch/i.html?_nkw=<query>&_ipg=240 served 242 s-card cards (~4 MB); default ~60.
+export const PAGE_SIZE = 240;
 export const URLS = {
-  search: (q: string, sold: boolean, host = 0) => `${PAGE_HOSTS[host]!.www}/sch/i.html?${new URLSearchParams({ _nkw: q, ...PAGE_HOSTS[host]!.params, ...(sold ? { LH_Sold: '1', LH_Complete: '1' } : {}) })}`,
+  search: (q: string, sold: boolean, host = 0) => `${PAGE_HOSTS[host]!.www}/sch/i.html?${new URLSearchParams({ _nkw: q, _ipg: String(PAGE_SIZE), ...PAGE_HOSTS[host]!.params, ...(sold ? { LH_Sold: '1', LH_Complete: '1' } : {}) })}`,
   item: (id: string) => `${W}/itm/${encodeURIComponent(id)}`,
   store: (user: string) => `${W}/usr/${encodeURIComponent(user)}`,
 };
@@ -223,15 +226,57 @@ export const URLS = {
 // One loaded document. challenge: the browser saw a bot check. Nothing on the page is intercepted (README.md, Public pages).
 export type EbayPage = { status: number; html: string; challenge?: boolean };
 // signed_in: the client carries the person's linked eBay sign-in; only sold search needs it.
-export type PageClient = { signed_in: boolean; page(url: string, signal: AbortSignal): Promise<EbayPage> };
+export type ListingRead = ListingResult & { status: number };
+export type PageClient = { signed_in: boolean; page(url: string, signal: AbortSignal): Promise<EbayPage>;
+  listings?(url: string, signal: AbortSignal, spec: ListingSpec, ask: ListingAsk): Promise<ListingRead | EbayPage>;
+};
+// The card's selectors and extraction rules are data; the parser has no eBay branch.
+export function ebayListingSpec(state: 'live' | 'sold' = 'live', host: (typeof PAGE_HOSTS)[number] = PAGE_HOSTS[0]): ListingSpec {
+  const sources = ['.s-card__attribute-row', '.s-card__footer--row', '.s-card__subtitle'];
+  const facts = (pattern: string, cleaner?: ListingField['cleaner'], group = 0): ListingField[] => sources.map(selector => ({ selector, pattern, cleaner, group }));
+  const price = (cleaner: ListingField['cleaner']): ListingField => ({ selector: '.s-card__price', cleaner });
+  const id: ListingField[] = [{ attribute: 'data-listingid', pattern: '^\\d+$' }, { selector: 'a.s-card__link', attribute: 'href', pattern: '/itm/(?:[^/?]+/)?(\\d+)', group: 1 }];
+  const count = (pattern: string) => facts(pattern, 'integer', 1);
+  const date = (pattern: string) => facts(pattern, undefined, 1);
+  return {
+    card_selector: 'li.s-card', heading_selector: '[id="srp-results-heading"], .srp-results-heading',
+    empty_selector: '.srp-save-null-search__heading', empty_pattern: 'No exact matches found', empty_heading_pattern: '^0\\s+results', cut_selector: '.srp-river-answer--REWRITE_START',
+    skip: { title: 'Shop on eBay', unless_attribute: 'data-item-pos' }, fields: {
+      external_id: id, item_id: id,
+      title: { selector: '.s-card__title', remove: 'Opens in a new window or tab', preserve_space: true },
+      url: [{ selector: 'a.s-card__link', attribute: 'href', cleaner: 'url' }, { value: 'https://www.ebay.com/itm/{item_id}' }],
+      state: { value: state }, price_cents: price('money'), currency: price('currency'), price_high_cents: price('money_high'),
+      condition: { selector: '.s-card__subtitle', pattern: '^(?:Pre-Owned|New|Brand New|Used|Open box|For parts|Certified|Refurbished|Seller refurbished|Like New|Good|Very Good|Acceptable).*' },
+      size: { selector: '.s-card__subtitle', pattern: '^Size\\s+(.+?)\\s*·\\s*(.+)$', group: 1 },
+      brand: { selector: '.s-card__subtitle', pattern: '^Size\\s+(.+?)\\s*·\\s*(.+)$', group: 2 },
+      shipping_cents: [...facts('^(?=.*(?:shipping|delivery|postage))(?=.*\\bfree\\b).*').map(f => ({ ...f, as: 0 })), ...facts('^.*(?:shipping|delivery|postage).*$', 'money')],
+      buying_format: [...facts('\\bauction\\b|[\\d,]+\\s+bids?\\b').map(f => ({ ...f, as: 'Auction' })), ...facts('\\bBuy It Now\\b').map(f => ({ ...f, as: 'Buy It Now' }))],
+      bid_count: count('([\\d,]+)\\s+bids?\\b'), best_offer: facts('\\bbest offer\\b', 'true'),
+      sold_count: count('([\\d,]+)\\s+sold\\b'), watchers: count('([\\d,]+)\\s+(?:watchers?|watching)\\b'),
+      listed_at: date('\\bListed\\s+(.+?)(?=\\s*·|$)'), sold_at: date('(?:^|·\\s*)Sold\\s+(.+?)(?=\\s*·|$)'),
+      ships_from: date('^(?:Located in|from)\\s+(.+)$'), sponsored: { selector: '.s-card__footer--row', pattern: '\\b(?:Sponsored|Promoted|derosnopS)\\b', cleaner: 'true' },
+      image_url: { selector: 'img.s-card__image', attribute: ['data-src', 'src'] },
+      ...(host.converted ? { converted: { value: true } } : {}), host: { value: new URL(host.www).host },
+    },
+  };
+}
 const changed = (what: string) => fail('page_changed', `${what} is not where the page kept it`, { do: 'author', missing: [what] });
 const titleOf = (h: string) => h.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1]?.trim() ?? '';
 const text = (h: string, sep = '') => h.replace(/<[^>]*>/g, sep).replace(/&nbsp;/g, ' ').replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&amp;/g, '&').trim();
-const SYMBOL: Record<string, string> = { $: 'USD', '£': 'GBP' };
-// "$39.00", "US $39.00" or "£25.00" to { cents, currency }; a range keeps its low end.
+const SYMBOL: Record<string, string> = { $: 'USD', '£': 'GBP', '€': 'EUR' };
+// The shown low and high are preserved separately. An unsafe or fractional cent is not a price.
 const pagePrice = (v: string | undefined) => {
-  const m = v?.replaceAll('&pound;', '£').match(/([$£])\s?([\d,]+\.\d{2})/);
-  return m ? { cents: cents(m[2]!.replaceAll(',', '')), currency: SYMBOL[m[1]!] } : undefined;
+  const matches = [...(v ?? '').replaceAll('&pound;', '£').replaceAll('&euro;', '€').matchAll(/([$£€])\s*([\d,]+(?:\.\d+)?)/g)];
+  const amounts = matches.map(m => {
+    const value = m[2]!.replaceAll(',', '');
+    const [units, fraction = ''] = value.split('.');
+    const c = /^\d+(?:\.\d{1,2})?$/.test(value) ? Number(`${units}${fraction.padEnd(2, '0')}`) : NaN;
+    return Number.isSafeInteger(c) ? c : undefined;
+  });
+  if (!matches.length || amounts.some(c => c === undefined)) return undefined;
+  const currency = SYMBOL[matches[0]![1]!];
+  if (matches.some(m => SYMBOL[m[1]!] !== currency)) return undefined;
+  return { cents: amounts[0]!, currency, ...(amounts.length > 1 ? { high: amounts[1]! } : {}) };
 };
 const int = (v: string | undefined) => (v ? Number(v.replaceAll(',', '')) : undefined);
 const isErrorPage = (p: EbayPage) => /^error page\b/i.test(titleOf(p.html));
@@ -250,21 +295,93 @@ function judge(p: EbayPage, url: string): { ok: true; html: string } | Failed {
 
 // Result cards above the "Results matching fewer words" divider; the leading card without data-item-pos is eBay's placeholder.
 // undefined: the results heading is gone, so the page changed.
-function searchRows(h: string, state: 'live' | 'sold', host: (typeof PAGE_HOSTS)[number]): Obj[] | undefined {
+type Yield = { rows: number; dropped: number; facts: number };
+type PageRead = AdapterResult & { yield: Yield };
+const pageYield = (rows: Obj[], dropped = 0): Yield => ({ rows: rows.length, dropped,
+  facts: rows.reduce((n, row) => n + Object.entries(row).filter(([key]) => key !== 'name_match').map(([, value]) => value).filter(v => v !== undefined && v !== null && v !== '').length, 0) });
+
+const cardAttr = (tag: string, name: string) => {
+  const match = tag.match(new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`, 'i'));
+  return match ? text(match[1] ?? match[2] ?? '') : undefined;
+};
+// One pass through the card's tags. Nested carousel li nodes cannot end the outer card, and seller/footer text
+// is never searched as a whole: facts come only from the named title, subtitle, attribute and footer rows.
+function cardParts(card: string) {
+  const parts = new Map<string, string[]>(), stack: { tag: string; classes: string[]; value: string }[] = [];
+  let href: string | undefined, image: string | undefined, depth = 0;
+  const wanted = new Set(['s-card__title', 's-card__subtitle', 's-card__attribute-row', 's-card__footer--row', 's-card__price']);
+  for (const token of card.matchAll(/<[^>]*>|[^<]+/g)) {
+    const raw = token[0];
+    if (!raw.startsWith('<')) { for (const node of stack) if (node.classes.length) node.value += raw; continue; }
+    const tag = raw.match(/^<\/?([\w-]+)/)?.[1]?.toLowerCase();
+    if (!tag) continue;
+    if (raw.startsWith('</')) {
+      const index = stack.findLastIndex(node => node.tag === tag);
+      if (index >= 0) for (const node of stack.splice(index)) for (const cls of node.classes) {
+        const value = cls === 's-card__title' ? text(node.value) : text(node.value, ' ').replace(/\s+/g, ' ').trim();
+        parts.set(cls, [...(parts.get(cls) ?? []), value]);
+      }
+      if (tag === 'li' && --depth === 0) break;
+      continue;
+    }
+    if (tag === 'li') depth++;
+    const classes = (cardAttr(raw, 'class') ?? '').split(/\s+/);
+    if (tag === 'a' && classes.includes('s-card__link') && href === undefined) href = cardAttr(raw, 'href');
+    if (tag === 'img' && classes.includes('s-card__image') && image === undefined) image = cardAttr(raw, 'data-src') ?? cardAttr(raw, 'src');
+    if (!/^(?:area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/.test(tag) && !raw.endsWith('/>'))
+      stack.push({ tag, classes: classes.filter(cls => wanted.has(cls)), value: '' });
+  }
+  return { parts, href, image };
+}
+
+export function searchRows(h: string, state: 'live' | 'sold', host: (typeof PAGE_HOSTS)[number], ask: ListingAsk = {}): ListingResult | undefined {
   const cut = h.split('srp-river-answer--REWRITE_START')[0]!;
   const head = cut.match(/<h1[^>]*srp-results-heading[^>]*>([\s\S]*?)<\/h1>/)?.[1];
   if (head === undefined) return undefined;
-  if (/^0\s+results/.test(text(head)) || /No exact matches found/.test(cut)) return [];
-  const li = [...cut.matchAll(/<li\b[^>]*data-listingid="(\d+)"[^>]*>/g)];
-  return li.flatMap((m, i) => {
-    if (!/data-item-pos=/.test(m[0])) return [];
-    const card = cut.slice(m.index, li[i + 1]?.index), id = m[1]!;
-    const title = card.match(/class="s-card__title"[^>]*>\s*<span[^>]*>([\s\S]*?)<\/span>/)?.[1];
-    const price = pagePrice(card.match(/s-card__price"[^>]*>([^<]*)/)?.[1]);
-    // url: the listing on ebay.com, the same id on every host. host: which eBay site served the row.
-    return [clean({ external_id: id, item_id: id, title: title && text(title), url: URLS.item(id), state, price_cents: price?.cents, currency: price?.currency,
-      converted: host.converted || undefined, host: new URL(host.www).host })];
-  });
+  if (/^0\s+results/.test(text(head)) || /No exact matches found/.test(cut)) return { rows: [], dropped: 0, total: 0, facts: 0, narrowed_out: 0 };
+  const li = [...cut.matchAll(/<li\b[^>]*class=["'][^"']*\bs-card\b[^"']*["'][^>]*>/g)];
+  const rows: ListingRow[] = []; let dropped = 0, rank = 0;
+  for (const [i, m] of li.entries()) {
+    const { parts, href, image } = cardParts(cut.slice(m.index, li[i + 1]?.index));
+    const title = parts.get('s-card__title')?.[0]?.replace(/Opens in a new window or tab/g, '').trim();
+    if (title === 'Shop on eBay' && !cardAttr(m[0], 'data-item-pos')) continue;
+    rank++;
+    const id = cardAttr(m[0], 'data-listingid')?.match(/^\d+$/)?.[0] ?? href?.match(/\/itm\/(?:[^/?]+\/)?(\d+)/)?.[1];
+    const price = pagePrice(parts.get('s-card__price')?.[0]);
+    if (!id || price === undefined) { dropped++; continue; }
+    const attr = parts.get('s-card__attribute-row') ?? [], footer = parts.get('s-card__footer--row') ?? [];
+    const subtitles = parts.get('s-card__subtitle') ?? [];
+    const facts = [...attr, ...footer, ...subtitles];
+    const shipping = facts.find(t => /(?:shipping|delivery|postage)/i.test(t));
+    const shippingPrice = pagePrice(shipping);
+    const sizeBrand = subtitles.find(t => /^Size\s/.test(t))?.match(/^Size\s+(.+?)\s*·\s*(.+)$/);
+    const count = (re: RegExp) => { const value = facts.map(t => t.match(re)?.[1]).find(v => v !== undefined); const n = int(value); return Number.isSafeInteger(n) ? n : undefined; };
+    const date = (re: RegExp) => facts.map(t => t.match(re)?.[1]?.trim()).find(Boolean);
+    const url = href && /^https?:\/\//.test(href) && URL.canParse(href) ? new URL(href) : undefined;
+    const bids = count(/([\d,]+)\s+bids?\b/i);
+    if (url) { url.search = ''; url.hash = ''; }
+    rows.push(clean({ external_id: id, item_id: id, title, url: url?.href ?? URLS.item(id), state, price_cents: price.cents, currency: price.currency,
+      price_high_cents: price.high, condition: subtitles.find(t => /^(?:Pre-Owned|New|Brand New|Used|Open box|For parts|Certified|Refurbished|Seller refurbished|Like New|Good|Very Good|Acceptable)/i.test(t)),
+      size: sizeBrand?.[1], brand: sizeBrand?.[2], shipping_cents: shipping && /\bfree\b/i.test(shipping) ? 0 : shippingPrice?.cents,
+      buying_format: bids !== undefined || facts.some(t => /\bauction\b/i.test(t)) ? 'Auction' : facts.some(t => /\bBuy It Now\b/i.test(t)) ? 'Buy It Now' : undefined,
+      bid_count: bids, best_offer: facts.some(t => /\bbest offer\b/i.test(t)) || undefined,
+      sold_count: count(/([\d,]+)\s+sold\b/i), watchers: count(/([\d,]+)\s+(?:watchers?|watching)\b/i),
+      listed_at: date(/\bListed\s+(.+?)(?=\s*·|$)/i), sold_at: date(/(?:^|·\s*)Sold\s+(.+?)(?=\s*·|$)/i),
+      ships_from: date(/^(?:Located in|from)\s+(.+)$/i), sponsored: footer.some(t => /\b(?:Sponsored|Promoted|derosnopS)\b/i.test(t)) || undefined,
+      image_url: image, rank, name_match: nameMatch(title ?? '', ask), converted: host.converted || undefined, host: new URL(host.www).host }) as ListingRow);
+  }
+  const kinds = (ask.kind_words ?? []).flatMap(word => word.toLowerCase().split(/\W+/).filter(Boolean));
+  const kept = ask.narrow ? rows.filter(row => row.name_match !== 'none' && (!kinds.length || kinds.some(kind => String(row.title ?? '').toLowerCase().split(/\W+/).includes(kind)))) : rows;
+  const limited = ask.limit === undefined ? kept : kept.slice(0, Math.max(0, Math.floor(ask.limit)));
+  return { rows: limited, dropped, total: rank, facts: pageYield(limited).facts, narrowed_out: rows.length - kept.length };
+}
+
+// Mirrors intel/reconcile.ts words(), independently of the in-page parser.
+function nameMatch(title: string, ask: ListingAsk): 'all' | 'some' | 'none' {
+  const words = (s: string) => s.toLowerCase().split(/\W+/).filter(Boolean);
+  const titleWords = new Set(words(title)), tokens = [...new Set((ask.tokens ?? []).flatMap(words))];
+  const matched = tokens.filter(t => titleWords.has(t)).length;
+  return matched === tokens.length ? 'all' : matched ? 'some' : 'none';
 }
 
 // Sold search needs the person's sign-in on every host; the regional sites are not a way around it.
@@ -274,11 +391,18 @@ async function searchPage(c: PageClient, a: CallArgs, s: AbortSignal): Promise<A
   if (sold && !c.signed_in) return relink(); // eBay shows sold listings only to a signed-in person
   for (let i = 0; i < PAGE_HOSTS.length; i++) {
     if (i) await delay(HOST_PAUSE_MS, undefined, { signal: s });
-    const url = URLS.search(q, sold, i), p = await c.page(url, s);
+    const url = URLS.search(q, sold, i), ask: ListingAsk = { tokens: q.toLowerCase().split(/\W+/).filter(Boolean), narrow: a.narrow === true,
+      ...(Array.isArray(a.kind_words) ? { kind_words: a.kind_words.filter((v): v is string => typeof v === 'string') } : {}),
+      ...(typeof a.limit === 'number' ? { limit: a.limit } : {}) };
+    const p = c.listings ? await c.listings(url, s, ebayListingSpec(sold ? 'sold' : 'live', PAGE_HOSTS[i]!), ask) : await c.page(url, s);
+    if (!('html' in p)) {
+      const judged = judge({ status: p.status, html: '' }, url); if (!judged.ok) return judged;
+      return { ...classifyRead({ challenge: false, rows: p.rows }, MP.search), yield: { rows: p.rows.length, dropped: p.dropped, facts: p.facts }, ...(ask.narrow ? { narrowed_out: p.narrowed_out } : {}) } as PageRead;
+    }
     if (isErrorPage(p) && i + 1 < PAGE_HOSTS.length) continue;
     const r = judge(p, url); if (!r.ok) return r;
-    const rows = searchRows(r.html, sold ? 'sold' : 'live', PAGE_HOSTS[i]!);
-    return rows ? classifyRead({ challenge: false, rows }, MP.search) : changed('srp-results-heading');
+    const parsed = searchRows(r.html, sold ? 'sold' : 'live', PAGE_HOSTS[i]!, ask);
+    return parsed ? { ...classifyRead({ challenge: false, rows: parsed.rows }, MP.search), yield: pageYield(parsed.rows, parsed.dropped), ...(ask.narrow ? { narrowed_out: parsed.narrowed_out } : {}) } as PageRead : changed('srp-results-heading');
   }
   return changed('PAGE_HOSTS'); // unreachable: the last host never continues
 }
@@ -564,15 +688,22 @@ export function ebayAdapters(client: Client): Adapter[] {
 // Register after ebayAdapters: the endpoint answers no_route without a keyset and the kernel falls to the page route.
 const page = (verb: 'search' | 'read_storefront', o: Parameters<typeof manifest>[1]): Manifest => ({ ...manifest(verb, { ...o, per_minute: 6 }), route_kind: 'page' });
 export const MP = {
-  search: page('search', { session: 'public', version: '0.1.0', input: { q: 'string', status: 'string' }, fixture_ref: 'page-search.html',
-    fields: [...ITEM.map(f => (f.name === 'sold_at' ? { ...f, needs_session: true } : f)), F('converted', 'boolean', { opt: true }), F('host', 'string', { opt: true })] }),
+  search: page('search', { session: 'public', version: '1.0.0', input: { q: 'string', status: 'string', narrow: 'boolean', kind_words: 'string[]', limit: 'number' }, fixture_ref: 'page-search.html',
+    fields: [...ITEM.map(f => (f.name === 'sold_at' ? { ...f, needs_session: true } : f)), F('converted', 'boolean', { opt: true }), F('host', 'string', { opt: true }),
+      ...['condition', 'size', 'brand', 'ships_from'].map(name => F(name, 'string', { opt: true })), F('shipping_cents', 'cents', { opt: true }), F('image_url', 'url', { opt: true }),
+      // Agent proposal: these page facts need canon rows; WORKER_REPORT.md lists their meaning for the lead.
+      F('price_high_cents', 'cents', { opt: true }), F('buying_format', 'string', { opt: true }), F('bid_count', 'number', { opt: true }),
+      F('best_offer', 'boolean', { opt: true }), F('sold_count', 'number', { opt: true }), F('sponsored', 'boolean', { opt: true }), F('rank', 'number', { opt: true }), F('name_match', 'string', { opt: true })] }),
   read_storefront: page('read_storefront', { session: 'public', version: '0.1.0', input: { username: 'string' }, fixture_ref: 'page-store.html',
     fields: [F('rating', 'number', { opt: true }), F('review_count', 'number', { opt: true }), F('active_count', 'number', { opt: true }), F('sold_count', 'number', { opt: true }),
       F('followers', 'number', { opt: true }), F('joined_at', 'string', { opt: true })] }),
 };
 export function ebayPageAdapters(c: PageClient): Adapter[] {
   return [
-    { route_id: 'ebay.search.page', manifest: MP.search, run: (a, s) => searchPage(c, a, s) },
+    { route_id: 'ebay.search.page', manifest: MP.search, run: async (a, s) => {
+      const read = await searchPage(c, a, s);
+      return 'yield' in read ? read : { ...read, yield: pageYield([]) };
+    } },
     { route_id: 'ebay.read_storefront.page', manifest: MP.read_storefront, run: (a, s) => storefrontPage(c, a, s) },
   ];
 }

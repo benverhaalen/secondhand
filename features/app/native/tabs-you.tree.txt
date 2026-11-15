@@ -1,182 +1,183 @@
-Attributes: Application, 0x12d554500, pid: 71122, label: 'secondhand'
+Attributes: Application, 0x1021671b0, pid: 83694, label: 'secondhand'
 Element subtree:
- →Application, 0x12d554500, pid: 71122, label: 'secondhand'
-    Window (Main), 0x12d557d40, {{0.0, 0.0}, {402.0, 874.0}}
-      Other, 0x12d554000, {{0.0, 0.0}, {402.0, 874.0}}
-        Other, 0x12d556800, {{0.0, 0.0}, {402.0, 874.0}}
-          Other, 0x12d5561c0, {{0.0, 0.0}, {402.0, 874.0}}
-            Other, 0x12d555cc0, {{0.0, 0.0}, {402.0, 874.0}}
-              Other, 0x12d556bc0, {{0.0, 0.0}, {402.0, 874.0}}
-                Other, 0x12d556a80, {{0.0, 0.0}, {402.0, 874.0}}
-                  Other, 0x12d557480, {{0.0, 0.0}, {402.0, 874.0}}
-                    Other, 0x12d557ac0, {{0.0, 0.0}, {402.0, 874.0}}
-                      Other, 0x12d555f40, {{0.0, 0.0}, {402.0, 874.0}}
-                        Other, 0x12d556440, {{0.0, 0.0}, {402.0, 874.0}}
-                          Other, 0x12d554dc0, {{0.0, 0.0}, {402.0, 874.0}}
-                            Other, 0x12d555400, {{0.0, 0.0}, {402.0, 874.0}}
-                              Other, 0x12d557700, {{0.0, 0.0}, {402.0, 874.0}}
-                                Other, 0x12d556080, {{0.0, 0.0}, {402.0, 790.0}}
-                                  Other, 0x12d557e80, {{0.0, 0.0}, {402.0, 790.0}}
-                                    Other, 0x12d556e40, {{0.0, 0.0}, {402.0, 790.0}}
-                                      Other, 0x129fc35c0, {{0.0, 0.0}, {402.0, 790.0}}
-                                        Other, 0x129fc03c0, {{0.0, 0.0}, {402.0, 790.0}}
-                                          Other, 0x129fc0500, {{0.0, 0.0}, {402.0, 790.0}}
-                                            Other, 0x129fc26c0, {{0.0, 0.0}, {402.0, 790.0}}
-                                              Other, 0x129fc0a00, {{0.0, 0.0}, {402.0, 790.0}}
-                                                ScrollView, 0x129fc1540, {{0.0, 0.0}, {402.0, 790.0}}
-                                                  Other, 0x129fc2d00, {{0.0, 0.0}, {402.0, 2338.0}}
-                                                    Other, 0x129fc3340, {{0.0, 0.0}, {402.0, 2338.0}}
-                                                      Other, 0x129fc3200, {{0.0, 0.0}, {402.0, 298.0}}
-                                                      Other, 0x129fc3c00, {{20.0, 62.0}, {362.0, 44.0}}
-                                                        Button, 0x129fc2300, {{342.0, 64.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 4 new'
-                                                        StaticText, 0x129fc2440, {{185.7, 73.7}, {30.7, 20.3}}, label: 'You'
-                                                          StaticText, 0x129fc12c0, {{185.7, 73.7}, {30.7, 20.3}}, label: 'You'
-                                                      Other, 0x129fc1680, {{20.0, 114.0}, {362.0, 76.0}}
-                                                        Other, 0x129fc2080, {{20.0, 132.0}, {40.0, 40.0}}, label: 'Poshmark'
-                                                          Other, 0x129fc1a40, {{20.0, 132.0}, {40.0, 40.0}}, label: 'Poshmark'
-                                                            Image, 0x129fc1b80, {{20.0, 132.0}, {40.0, 40.0}}, label: 'Poshmark'
-                                                        StaticText, 0x129fc17c0, {{72.0, 135.3}, {210.0, 17.7}}, label: 'Signed out yesterday at 9 pm'
-                                                          StaticText, 0x129fc2e40, {{72.0, 135.3}, {210.0, 17.7}}, label: 'Signed out yesterday at 9 pm'
-                                                        Button, 0x129fc3840, {{294.0, 132.0}, {88.0, 40.0}}, identifier: 'you-signin-poshmark', label: 'Sign in'
-                                                        StaticText, 0x1299c8f00, {{72.0, 153.0}, {210.0, 16.0}}, label: 'Nothing sells there until you sign in'
-                                                          StaticText, 0x1299c9540, {{72.0, 153.0}, {210.0, 16.0}}, label: 'Nothing sells there until you sign in'
-                                                      StaticText, 0x1299c9180, {{20.0, 222.0}, {362.0, 50.3}}, label: '$163.63'
-                                                        StaticText, 0x1299cbc00, {{20.0, 222.0}, {362.0, 50.3}}, label: '$163.63'
-                                                      StaticText, 0x1299ca1c0, {{20.0, 276.3}, {362.0, 17.7}}, label: 'Earned after fees, from 4 sales'
-                                                        StaticText, 0x1299c9680, {{20.0, 276.3}, {362.0, 17.7}}, label: 'Earned after fees, from 4 sales'
-                                                      Other, 0x1299c97c0, {{20.0, 310.0}, {25.3, 12.0}}
-                                                        Other, 0x1299c9040, {{20.0, 310.0}, {25.3, 12.0}}
-                                                      Other, 0x1299cb5c0, {{49.3, 310.0}, {106.7, 12.0}}
-                                                        Other, 0x1299c92c0, {{49.3, 310.0}, {106.7, 12.0}}
-                                                      Other, 0x1299cb980, {{160.0, 310.0}, {222.0, 12.0}}
-                                                        Other, 0x1299c9cc0, {{160.0, 310.0}, {204.0, 12.0}}
-                                                        Other, 0x1299cbac0, {{364.3, 310.0}, {18.0, 12.0}}
-                                                      Button, 0x1299c8280, {{20.0, 334.0}, {362.0, 56.0}}, identifier: 'you-paid-out', label: 'Paid out, In your bank or your hand, $31.30'
-                                                      Button, 0x1299c8a00, {{20.0, 390.0}, {362.0, 56.0}}, identifier: 'you-on-its-way', label: 'On its way, Ready on the site about Tuesday, $132.33'
-                                                      Button, 0x1299cb840, {{20.0, 446.0}, {362.0, 56.0}}, identifier: 'you-live', label: 'Could still earn, If your 4 live things sell, $253 to $276'
-                                                      StaticText, 0x1299cb700, {{20.0, 534.0}, {362.0, 21.3}}, label: 'Sales each week'
-                                                        StaticText, 0x1299cbd40, {{20.0, 534.0}, {362.0, 21.3}}, label: 'Sales each week'
-                                                      StaticText, 0x1299cbe80, {{20.0, 571.3}, {132.0, 16.0}}, label: 'After fees'
-                                                        StaticText, 0x1299c9e00, {{20.0, 571.3}, {132.0, 16.0}}, label: 'After fees'
-                                                      StaticText, 0x1299cb340, {{27.7, 596.3}, {28.3, 16.0}}, label: '$200'
-                                                        StaticText, 0x1299c9a40, {{27.7, 596.3}, {28.3, 16.0}}, label: '$200'
-                                                      Other, 0x1299ca300, {{64.0, 602.3}, {318.0, 1.0}}
-                                                      Other, 0x1299ca080, {{357.7, 646.3}, {16.0, 85.0}}
-                                                      StaticText, 0x1299c8b40, {{30.3, 660.3}, {25.7, 16.0}}, label: '$100'
-                                                        StaticText, 0x1299ca800, {{30.3, 660.3}, {25.7, 16.0}}, label: '$100'
-                                                      Other, 0x1299c9400, {{64.0, 666.3}, {318.0, 1.0}}
-                                                      Other, 0x1299c8780, {{235.3, 711.3}, {16.0, 20.0}}
-                                                      StaticText, 0x1299ca580, {{41.7, 724.3}, {14.3, 16.0}}, label: '$0'
-                                                        StaticText, 0x1299ca440, {{41.7, 724.3}, {14.3, 16.0}}, label: '$0'
-                                                      Other, 0x1299c8dc0, {{64.0, 730.3}, {318.0, 1.0}}
-                                                      StaticText, 0x1299cb200, {{75.0, 739.3}, {10.7, 16.0}}, label: '21'
-                                                        StaticText, 0x1299c9f40, {{75.0, 739.3}, {10.7, 16.0}}, label: '21'
-                                                      StaticText, 0x1299c8c80, {{114.0, 739.3}, {13.7, 16.0}}, label: '28'
-                                                        StaticText, 0x1299c9b80, {{114.0, 739.3}, {13.7, 16.0}}, label: '28'
-                                                      StaticText, 0x1299c9900, {{158.7, 739.3}, {6.7, 16.0}}, label: '5'
-                                                        StaticText, 0x1299cabc0, {{158.7, 739.3}, {6.7, 16.0}}, label: '5'
-                                                      StaticText, 0x1299cae40, {{197.3, 739.3}, {10.7, 16.0}}, label: '12'
-                                                        StaticText, 0x1299ca940, {{197.3, 739.3}, {10.7, 16.0}}, label: '12'
-                                                      StaticText, 0x1299caf80, {{237.7, 739.3}, {11.0, 16.0}}, label: '19'
-                                                        StaticText, 0x1299ca6c0, {{237.7, 739.3}, {11.0, 16.0}}, label: '19'
-                                                      StaticText, 0x1299caa80, {{277.0, 739.3}, {13.7, 16.0}}, label: '26'
-                                                        StaticText, 0x1299c8640, {{277.0, 739.3}, {13.7, 16.0}}, label: '26'
-                                                      StaticText, 0x1299cb0c0, {{321.7, 739.3}, {6.7, 16.0}}, label: '2'
-                                                        StaticText, 0x1299c8500, {{321.7, 739.3}, {6.7, 16.0}}, label: '2'
-                                                      StaticText, 0x1299c88c0, {{362.0, 739.3}, {7.0, 16.0}}, label: '9'
-                                                        StaticText, 0x1299cad00, {{362.0, 739.3}, {7.0, 16.0}}, label: '9'
-                                                      StaticText, 0x1299cb480, {{70.0, 763.3}, {20.3, 16.0}}, label: 'Sep'
-                                                        StaticText, 0x1299c8140, {{70.0, 763.3}, {20.3, 16.0}}, label: 'Sep'
-                                                      StaticText, 0x1299c83c0, {{119.7, 763.3}, {2.7, 16.0}}, label: ' '
-                                                        StaticText, 0x129ecd900, {{119.7, 763.3}, {2.7, 16.0}}, label: ' '
-                                                      StaticText, 0x129ece080, {{152.7, 763.3}, {18.7, 16.0}}, label: 'Oct'
-                                                        StaticText, 0x129eccc80, {{152.7, 763.3}, {18.7, 16.0}}, label: 'Oct'
-                                                      StaticText, 0x129ecc500, {{201.3, 763.3}, {2.7, 16.0}}, label: ' '
-                                                        StaticText, 0x129ecdcc0, {{201.3, 763.3}, {2.7, 16.0}}, label: ' '
-                                                      StaticText, 0x129ecfd40, {{242.0, 763.3}, {2.7, 16.0}}, label: ' '
-                                                        StaticText, 0x129ecfe80, {{242.0, 763.3}, {2.7, 16.0}}, label: ' '
-                                                      StaticText, 0x129ecf980, {{282.7, 763.3}, {2.7, 16.0}}, label: ' '
-                                                        StaticText, 0x129ecd040, {{282.7, 763.3}, {2.7, 16.0}}, label: ' '
-                                                      StaticText, 0x129ece1c0, {{314.7, 763.3}, {20.3, 16.0}}, label: 'Nov'
-                                                        StaticText, 0x129ecca00, {{314.7, 763.3}, {20.3, 16.0}}, label: 'Nov'
-                                                      StaticText, 0x129ecf340, {{364.3, 763.3}, {2.7, 16.0}}, label: ' '
-                                                        StaticText, 0x129ecf0c0, {{364.3, 763.3}, {2.7, 16.0}}, label: ' '
-                                                      StaticText, 0x129ecf5c0, {{20.0, 787.3}, {44.0, 16.0}}, label: 'Sales'
-                                                        StaticText, 0x129ecc000, {{20.0, 787.3}, {44.0, 16.0}}, label: 'Sales'
-                                                      StaticText, 0x129ecf700, {{76.7, 787.3}, {7.3, 16.0}}, label: '0'
-                                                        StaticText, 0x129ecc640, {{76.7, 787.3}, {7.3, 16.0}}, label: '0'
-                                                      StaticText, 0x129ecc140, {{117.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                        StaticText, 0x129ecc780, {{117.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                      StaticText, 0x129ece6c0, {{158.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                        StaticText, 0x129ece580, {{158.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                      StaticText, 0x129ecef80, {{199.0, 787.3}, {7.3, 16.0}}, label: '0'
-                                                        StaticText, 0x129eccb40, {{199.0, 787.3}, {7.3, 16.0}}, label: '0'
-                                                      StaticText, 0x129ecebc0, {{241.3, 787.3}, {4.0, 16.0}}, label: '1'
-                                                        StaticText, 0x129ecd400, {{241.3, 787.3}, {4.0, 16.0}}, label: '1'
-                                                      StaticText, 0x129ecea80, {{280.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                        StaticText, 0x129eccdc0, {{280.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                      StaticText, 0x129eccf00, {{321.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                        StaticText, 0x129ecd7c0, {{321.3, 787.3}, {7.3, 16.0}}, label: '0'
-                                                      StaticText, 0x129ecd680, {{362.0, 787.3}, {7.0, 16.0}}, label: '3'
-                                                        StaticText, 0x129ecd2c0, {{362.0, 787.3}, {7.0, 16.0}}, label: '3'
-                                                      StaticText, 0x129ecf200, {{20.0, 835.3}, {362.0, 21.3}}, label: 'Your things'
-                                                        StaticText, 0x129ece300, {{20.0, 835.3}, {362.0, 21.3}}, label: 'Your things'
-                                                      Other, 0x129ecee40, {{20.0, 872.7}, {63.7, 12.0}}
-                                                      Other, 0x129ecfc00, {{87.7, 872.7}, {127.3, 12.0}}
-                                                      Other, 0x129ece800, {{219.0, 872.7}, {127.3, 12.0}}
-                                                      Other, 0x129ecd180, {{350.3, 872.7}, {31.7, 12.0}}
-                                                      Button, 0x129ecf480, {{20.0, 896.7}, {177.0, 73.3}}, identifier: 'things-in_progress', label: '2, Getting ready'
-                                                      Button, 0x129ecc280, {{205.0, 896.7}, {177.0, 73.3}}, identifier: 'things-live', label: '4, Live'
-                                                      Button, 0x129ecc8c0, {{20.0, 978.0}, {177.0, 73.3}}, identifier: 'things-sold', label: '4, Sold'
-                                                      Button, 0x129ecdb80, {{205.0, 978.0}, {177.0, 73.3}}, identifier: 'things-kept', label: '1, Kept, worth $70 to $95'
-                                                      StaticText, 0x129ecdf40, {{20.0, 1083.3}, {362.0, 21.3}}, label: 'How they’re doing'
-                                                        StaticText, 0x129ecfac0, {{20.0, 1083.3}, {362.0, 21.3}}, label: 'How they’re doing'
-                                                      Button, 0x129ecc3c0, {{20.0, 1120.7}, {362.0, 173.7}}, identifier: 'pulse-it_lamp', label: 'Brass desk lamp with cream shade'
-                                                      Other, 0x12d564000, {{20.0, 1294.3}, {362.0, 174.0}}
-                                                      Button, 0x12d564140, {{20.0, 1294.7}, {362.0, 173.7}}, identifier: 'pulse-it_jacket', label: 'Carhartt Detroit Jacket J97, brown duck, L'
-                                                      Other, 0x12d564280, {{20.0, 1468.3}, {362.0, 174.0}}
-                                                      Button, 0x12d5643c0, {{20.0, 1468.7}, {362.0, 173.7}}, identifier: 'pulse-it_pants', label: 'Carhartt canvas work pants, faded black, 38x36'
-                                                      Other, 0x12d564500, {{20.0, 1642.3}, {362.0, 174.0}}
-                                                      Button, 0x12d564640, {{20.0, 1642.7}, {362.0, 173.7}}, identifier: 'pulse-it_fleece', label: 'Patagonia Retro-X fleece, cream, M'
-                                                      Other, 0x12d564780, {{20.0, 1838.3}, {32.0, 4.0}}
-                                                      Other, 0x12d5648c0, {{20.0, 1838.3}, {22.3, 4.0}}
-                                                      Other, 0x12d564a00, {{35.0, 1834.3}, {2.0, 12.0}}
-                                                      StaticText, 0x12d564b40, {{60.0, 1832.3}, {138.3, 16.0}}, label: 'The tick is what’s usual for it'
-                                                        StaticText, 0x12d564c80, {{60.0, 1832.3}, {138.3, 16.0}}, label: 'The tick is what’s usual for it'
-                                                      Button, 0x12d564dc0, {{20.0, 1880.3}, {362.0, 56.0}}, identifier: 'you-insights', label: 'By site'
-                                                      Other, 0x12d564f00, {{20.0, 1936.3}, {362.0, 56.3}}
-                                                      Button, 0x12d565040, {{20.0, 1936.7}, {362.0, 56.0}}, identifier: 'you-records', label: 'Records'
-                                                      Button, 0x12d565180, {{20.0, 2024.7}, {362.0, 56.0}}, identifier: 'you-connections', label: 'Your sites, 3 of 5'
-                                                      Other, 0x12d5652c0, {{20.0, 2080.7}, {362.0, 56.3}}
-                                                      Button, 0x12d565400, {{20.0, 2081.0}, {362.0, 56.0}}, identifier: 'you-rules', label: 'Rules and limits, 3 on their own'
-                                                      Other, 0x12d565540, {{20.0, 2137.0}, {362.0, 56.3}}
-                                                      Button, 0x12d565680, {{20.0, 2137.3}, {362.0, 56.0}}, identifier: 'you-log', label: 'Activity'
-                                                      Other, 0x12d5657c0, {{20.0, 2193.3}, {362.0, 56.3}}
-                                                      Button, 0x12d565900, {{20.0, 2193.7}, {362.0, 56.0}}, identifier: 'you-notifications', label: 'Notifications'
-                                                      Other, 0x12d565a40, {{20.0, 2249.7}, {362.0, 56.3}}
-                                                      Button, 0x12d565b80, {{20.0, 2250.0}, {362.0, 56.0}}, identifier: 'you-settings', label: 'Settings'
-                                                  Other, 0x12d565cc0, {{369.0, 62.0}, {30.0, 728.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
-                                                    Other, 0x12d565e00, {{396.0, 65.0}, {3.0, 244.0}}
-                                                  Other, 0x12d565f40, {{0.0, 757.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                    Other, 0x12d566080, {{3.0, 784.0}, {393.0, 3.0}}
-                                                  Other, 0x12d5661c0, {{369.0, 62.0}, {30.0, 728.0}}, label: 'Vertical scroll bar, 3 pages', value: 0%
-                                                    Other, 0x12d566300, {{396.0, 65.0}, {3.0, 244.0}}
-                                                  Other, 0x12d566440, {{0.0, 757.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
-                                                    Other, 0x12d566580, {{3.0, 784.0}, {393.0, 3.0}}
-                                    Toolbar, 0x12d5666c0, {{0.0, 0.0}, {402.0, 790.0}}, identifier: 'Toolbar', label: 'Toolbar'
-                                      Other, 0x12d566800, {{0.0, 0.0}, {402.0, 790.0}}
-                                Other, 0x12d566940, {{0.0, 790.0}, {402.0, 84.0}}
-                                Button, 0x12d566a80, {{0.0, 791.0}, {80.3, 84.0}}, identifier: 'tab-today', label: 'Today'
-                                Button, 0x12d566bc0, {{80.3, 791.0}, {80.3, 84.0}}, identifier: 'tab-sell', label: 'Sell'
-                                Button, 0x12d566d00, {{173.0, 791.0}, {56.0, 44.0}}, identifier: 'tab-new', label: 'New'
-                                Button, 0x12d566e40, {{241.3, 791.0}, {80.3, 84.0}}, identifier: 'tab-buy', label: 'Buy'
-                                Button, 0x12d566f80, {{321.7, 791.0}, {80.3, 84.0}}, identifier: 'tab-you', label: 'You', Selected
-                      Toolbar, 0x12d5670c0, {{0.0, 0.0}, {402.0, 874.0}}, identifier: 'Toolbar', label: 'Toolbar'
-                        Other, 0x12d567200, {{0.0, 0.0}, {402.0, 874.0}}
+ →Application, 0x1021671b0, pid: 83694, label: 'secondhand'
+    Window (Main), 0x10213ce40, {{0.0, 0.0}, {402.0, 874.0}}
+      Other, 0x1021265f0, {{0.0, 0.0}, {402.0, 874.0}}
+        Other, 0x1021785b0, {{0.0, 0.0}, {402.0, 874.0}}
+          Other, 0x102183100, {{0.0, 0.0}, {402.0, 874.0}}
+            Other, 0x10217dbe0, {{0.0, 0.0}, {402.0, 874.0}}
+              Other, 0x10218aa10, {{0.0, 0.0}, {402.0, 874.0}}
+                Other, 0x10216a5d0, {{0.0, 0.0}, {402.0, 874.0}}
+                  Other, 0x10216f810, {{0.0, 0.0}, {402.0, 874.0}}
+                    Other, 0x1021603e0, {{0.0, 0.0}, {402.0, 874.0}}
+                      Other, 0x1021662f0, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10218add0, {{0.0, 0.0}, {402.0, 874.0}}
+                          Other, 0x1021633c0, {{0.0, 0.0}, {402.0, 874.0}}
+                            Other, 0x1021566b0, {{0.0, 0.0}, {402.0, 874.0}}
+                              Other, 0x1021194d0, {{0.0, 0.0}, {402.0, 874.0}}
+                                Other, 0x102153c70, {{0.0, 0.0}, {402.0, 783.0}}
+                                  Other, 0x10215bdb0, {{0.0, 0.0}, {402.0, 783.0}}
+                                    Other, 0x102131330, {{0.0, 0.0}, {402.0, 783.0}}
+                                      Other, 0x102183440, {{0.0, 0.0}, {402.0, 783.0}}
+                                        Other, 0x102174370, {{0.0, 0.0}, {402.0, 783.0}}
+                                          Other, 0x10218e1f0, {{0.0, 0.0}, {402.0, 783.0}}
+                                            Other, 0x10212a620, {{0.0, 0.0}, {402.0, 783.0}}
+                                              Other, 0x10217fdc0, {{0.0, 0.0}, {402.0, 783.0}}
+                                                ScrollView, 0x102159550, {{0.0, 0.0}, {402.0, 783.0}}
+                                                  Other, 0x102164b00, {{0.0, 0.0}, {402.0, 2400.7}}
+                                                    Other, 0x10211c370, {{0.0, 0.0}, {402.0, 2400.7}}
+                                                      Other, 0x10217d160, {{0.0, 0.0}, {402.0, 298.0}}
+                                                      Other, 0x102181340, {{20.0, 62.0}, {362.0, 48.0}}
+                                                        StaticText, 0x1021637e0, {{20.0, 69.3}, {60.7, 41.3}}, label: 'You'
+                                                          StaticText, 0x102151010, {{20.0, 69.3}, {60.7, 41.3}}, label: 'You'
+                                                        Button, 0x10216abd0, {{342.0, 66.0}, {40.0, 40.0}}, identifier: 'nav-inbox', label: 'Messages, 4 new'
+                                                      Other, 0x10218d3f0, {{20.0, 118.0}, {362.0, 76.0}}
+                                                        Other, 0x10218d510, {{20.0, 136.0}, {40.0, 40.0}}, label: 'Poshmark'
+                                                          Other, 0x10218d630, {{20.0, 136.0}, {40.0, 40.0}}, label: 'Poshmark'
+                                                            Image, 0x10218d750, {{20.0, 136.0}, {40.0, 40.0}}, label: 'Poshmark'
+                                                        StaticText, 0x10218d870, {{72.0, 136.7}, {210.0, 20.3}}, label: 'Signed out yesterday at 9 pm'
+                                                          StaticText, 0x10218d990, {{72.0, 136.7}, {210.0, 20.3}}, label: 'Signed out yesterday at 9 pm'
+                                                        Button, 0x10218dab0, {{294.0, 136.0}, {88.0, 40.0}}, identifier: 'you-signin-poshmark', label: 'Sign in'
+                                                        StaticText, 0x10218dbd0, {{72.0, 157.0}, {210.0, 18.3}}, label: 'Nothing sells there until you sign in'
+                                                          StaticText, 0x102190a70, {{72.0, 157.0}, {210.0, 18.3}}, label: 'Nothing sells there until you sign in'
+                                                      StaticText, 0x102190b90, {{20.0, 226.0}, {362.0, 57.3}}, label: '$163.63'
+                                                        StaticText, 0x102190cb0, {{20.0, 226.0}, {362.0, 57.3}}, label: '$163.63'
+                                                      StaticText, 0x102190dd0, {{20.0, 287.3}, {362.0, 20.3}}, label: 'Earned after fees, from 4 sales'
+                                                        StaticText, 0x102190ef0, {{20.0, 287.3}, {362.0, 20.3}}, label: 'Earned after fees, from 4 sales'
+                                                      Other, 0x102191010, {{20.0, 323.7}, {25.3, 12.0}}
+                                                        Other, 0x102191130, {{20.0, 323.7}, {25.3, 12.0}}
+                                                      Other, 0x102191250, {{49.3, 323.7}, {106.7, 12.0}}
+                                                        Other, 0x102191370, {{49.3, 323.7}, {106.7, 12.0}}
+                                                      Other, 0x102191490, {{160.0, 323.7}, {222.0, 12.0}}
+                                                        Other, 0x1021915b0, {{160.0, 323.7}, {204.0, 12.0}}
+                                                        Other, 0x1021916d0, {{364.3, 323.7}, {18.0, 12.0}}
+                                                      Button, 0x1021917f0, {{20.0, 347.7}, {362.0, 56.0}}, identifier: 'you-paid-out', label: 'Paid out, In your bank or your hand, $31.30'
+                                                      Button, 0x102191910, {{20.0, 403.7}, {362.0, 56.0}}, identifier: 'you-on-its-way', label: 'On its way, Ready on the site about Tuesday, $132.33'
+                                                      Button, 0x102191a30, {{20.0, 459.7}, {362.0, 56.0}}, identifier: 'you-live', label: 'Could still earn, If your 4 live things sell, $253 to $276'
+                                                      StaticText, 0x102191b50, {{20.0, 547.7}, {362.0, 24.3}}, label: 'Sales each week'
+                                                        StaticText, 0x102191c70, {{20.0, 547.7}, {362.0, 24.3}}, label: 'Sales each week'
+                                                      StaticText, 0x102191d90, {{20.0, 588.0}, {132.0, 18.3}}, label: 'After fees'
+                                                        StaticText, 0x102191eb0, {{20.0, 588.0}, {132.0, 18.3}}, label: 'After fees'
+                                                      StaticText, 0x102191fd0, {{24.0, 610.7}, {32.0, 18.3}}, label: '$200'
+                                                        StaticText, 0x1021920f0, {{24.0, 610.7}, {32.0, 18.3}}, label: '$200'
+                                                      Other, 0x102192210, {{64.0, 619.0}, {318.0, 1.0}}
+                                                      Other, 0x102192330, {{357.7, 663.0}, {16.0, 85.0}}
+                                                      StaticText, 0x102192450, {{27.0, 674.7}, {29.0, 18.3}}, label: '$100'
+                                                        StaticText, 0x102192570, {{27.0, 674.7}, {29.0, 18.3}}, label: '$100'
+                                                      Other, 0x102192690, {{64.0, 683.0}, {318.0, 1.0}}
+                                                      Other, 0x1021927b0, {{235.3, 728.0}, {16.0, 20.0}}
+                                                      StaticText, 0x1021928d0, {{39.7, 738.7}, {16.3, 18.3}}, label: '$0'
+                                                        StaticText, 0x1021929f0, {{39.7, 738.7}, {16.3, 18.3}}, label: '$0'
+                                                      Other, 0x102192b10, {{64.0, 747.0}, {318.0, 1.0}}
+                                                      StaticText, 0x102192c30, {{74.3, 756.0}, {12.0, 18.3}}, label: '21'
+                                                        StaticText, 0x102192d50, {{74.3, 756.0}, {12.0, 18.3}}, label: '21'
+                                                      StaticText, 0x102192e70, {{113.3, 756.0}, {15.3, 18.3}}, label: '28'
+                                                        StaticText, 0x102192f90, {{113.3, 756.0}, {15.3, 18.3}}, label: '28'
+                                                      StaticText, 0x1021930b0, {{158.0, 756.0}, {7.7, 18.3}}, label: '5'
+                                                        StaticText, 0x1021931d0, {{158.0, 756.0}, {7.7, 18.3}}, label: '5'
+                                                      StaticText, 0x1021932f0, {{196.7, 756.0}, {12.0, 18.3}}, label: '12'
+                                                        StaticText, 0x102193410, {{196.7, 756.0}, {12.0, 18.3}}, label: '12'
+                                                      StaticText, 0x102193530, {{237.0, 756.0}, {12.3, 18.3}}, label: '19'
+                                                        StaticText, 0x102193650, {{237.0, 756.0}, {12.3, 18.3}}, label: '19'
+                                                      StaticText, 0x102193770, {{276.3, 756.0}, {15.3, 18.3}}, label: '26'
+                                                        StaticText, 0x102193890, {{276.3, 756.0}, {15.3, 18.3}}, label: '26'
+                                                      StaticText, 0x102193b00, {{321.0, 756.0}, {7.7, 18.3}}, label: '2'
+                                                        StaticText, 0x102193c20, {{321.0, 756.0}, {7.7, 18.3}}, label: '2'
+                                                      StaticText, 0x102193d40, {{361.7, 756.0}, {8.0, 18.3}}, label: '9'
+                                                        StaticText, 0x102193e60, {{361.7, 756.0}, {8.0, 18.3}}, label: '9'
+                                                      StaticText, 0x102193f80, {{68.7, 782.3}, {23.0, 18.3}}, label: 'Sep'
+                                                        StaticText, 0x1021940a0, {{68.7, 782.3}, {23.0, 18.3}}, label: 'Sep'
+                                                      StaticText, 0x1021941c0, {{119.3, 782.3}, {3.0, 18.3}}, label: ' '
+                                                        StaticText, 0x1021942e0, {{119.3, 782.3}, {3.0, 18.3}}, label: ' '
+                                                      StaticText, 0x102194400, {{151.3, 782.3}, {21.3, 18.3}}, label: 'Oct'
+                                                        StaticText, 0x1020e6c80, {{151.3, 782.3}, {21.3, 18.3}}, label: 'Oct'
+                                                      StaticText, 0x102082c70, {{201.0, 782.3}, {3.0, 18.3}}, label: ' '
+                                                        StaticText, 0x10208d860, {{201.0, 782.3}, {3.0, 18.3}}, label: ' '
+                                                      StaticText, 0x10208ae00, {{241.7, 782.3}, {3.0, 18.3}}, label: ' '
+                                                        StaticText, 0x102086050, {{241.7, 782.3}, {3.0, 18.3}}, label: ' '
+                                                      StaticText, 0x102081770, {{282.3, 782.3}, {3.0, 18.3}}, label: ' '
+                                                        StaticText, 0x102089cf0, {{282.3, 782.3}, {3.0, 18.3}}, label: ' '
+                                                      StaticText, 0x10208aaa0, {{313.3, 782.3}, {23.0, 18.3}}, label: 'Nov'
+                                                        StaticText, 0x102082fc0, {{313.3, 782.3}, {23.0, 18.3}}, label: 'Nov'
+                                                      StaticText, 0x102082560, {{364.0, 782.3}, {3.0, 18.3}}, label: ' '
+                                                        StaticText, 0x102095f70, {{364.0, 782.3}, {3.0, 18.3}}, label: ' '
+                                                      StaticText, 0x10208df40, {{20.0, 808.7}, {44.0, 18.3}}, label: 'Sales'
+                                                        StaticText, 0x10208f730, {{20.0, 808.7}, {44.0, 18.3}}, label: 'Sales'
+                                                      StaticText, 0x102094aa0, {{76.0, 808.7}, {8.3, 18.3}}, label: '0'
+                                                        StaticText, 0x102090fb0, {{76.0, 808.7}, {8.3, 18.3}}, label: '0'
+                                                      StaticText, 0x10202a9d0, {{116.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                        StaticText, 0x1020844b0, {{116.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                      StaticText, 0x10202c620, {{157.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                        StaticText, 0x10208c9c0, {{157.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                      StaticText, 0x102087520, {{198.3, 808.7}, {8.3, 18.3}}, label: '0'
+                                                        StaticText, 0x10208a740, {{198.3, 808.7}, {8.3, 18.3}}, label: '0'
+                                                      StaticText, 0x10208b840, {{241.0, 808.7}, {4.7, 18.3}}, label: '1'
+                                                        StaticText, 0x10202d090, {{241.0, 808.7}, {4.7, 18.3}}, label: '1'
+                                                      StaticText, 0x102085cf0, {{279.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                        StaticText, 0x102090500, {{279.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                      StaticText, 0x102024f20, {{320.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                        StaticText, 0x1020951a0, {{320.7, 808.7}, {8.3, 18.3}}, label: '0'
+                                                      StaticText, 0x102081ad0, {{361.7, 808.7}, {8.0, 18.3}}, label: '3'
+                                                        StaticText, 0x10208b4d0, {{361.7, 808.7}, {8.0, 18.3}}, label: '3'
+                                                      StaticText, 0x10208dbc0, {{20.0, 859.0}, {362.0, 24.3}}, label: 'Your things'
+                                                        StaticText, 0x10208cd40, {{20.0, 859.0}, {362.0, 24.3}}, label: 'Your things'
+                                                      Other, 0x1020916c0, {{20.0, 899.3}, {63.7, 12.0}}
+                                                      Other, 0x1020863a0, {{87.7, 899.3}, {127.3, 12.0}}
+                                                      Other, 0x102090c30, {{219.0, 899.3}, {127.3, 12.0}}
+                                                      Other, 0x102088ac0, {{350.3, 899.3}, {31.7, 12.0}}
+                                                      Button, 0x10202b0e0, {{20.0, 923.3}, {177.0, 78.7}}, identifier: 'things-in_progress', label: '2, Getting ready'
+                                                      Button, 0x1020908a0, {{205.0, 923.3}, {177.0, 78.7}}, identifier: 'things-live', label: '4, Live'
+                                                      Button, 0x102095510, {{20.0, 1010.0}, {177.0, 78.7}}, identifier: 'things-sold', label: '4, Sold'
+                                                      Button, 0x102081e60, {{205.0, 1010.0}, {177.0, 78.7}}, identifier: 'things-kept', label: '1, Kept, worth $70 to $95'
+                                                      StaticText, 0x102084f00, {{20.0, 1120.7}, {362.0, 24.3}}, label: 'How they’re doing'
+                                                        StaticText, 0x102085250, {{20.0, 1120.7}, {362.0, 24.3}}, label: 'How they’re doing'
+                                                      Button, 0x10202b440, {{20.0, 1161.0}, {362.0, 178.7}}, identifier: 'pulse-it_lamp', label: 'Brass desk lamp with cream shade'
+                                                      Other, 0x10208c640, {{20.0, 1339.7}, {362.0, 179.0}}
+                                                      Button, 0x1020810a0, {{20.0, 1340.0}, {362.0, 178.7}}, identifier: 'pulse-it_jacket', label: 'Carhartt Detroit Jacket J97, brown duck, L'
+                                                      Other, 0x1020924a0, {{20.0, 1518.7}, {362.0, 179.0}}
+                                                      Button, 0x102083a50, {{20.0, 1519.0}, {362.0, 178.7}}, identifier: 'pulse-it_pants', label: 'Carhartt canvas work pants, faded black, 38x36'
+                                                      Other, 0x102095c00, {{20.0, 1697.7}, {362.0, 179.0}}
+                                                      Button, 0x102081410, {{20.0, 1698.0}, {362.0, 178.7}}, identifier: 'pulse-it_fleece', label: 'Patagonia Retro-X fleece, cream, M'
+                                                      Other, 0x102091a50, {{20.0, 1900.0}, {32.0, 4.0}}
+                                                      Other, 0x10208c2e0, {{20.0, 1900.0}, {22.3, 4.0}}
+                                                      Other, 0x102086ac0, {{35.0, 1896.0}, {2.0, 12.0}}
+                                                      StaticText, 0x10208a3e0, {{60.0, 1892.7}, {157.0, 18.3}}, label: 'The tick is what’s usual for it'
+                                                        StaticText, 0x10208e610, {{60.0, 1892.7}, {157.0, 18.3}}, label: 'The tick is what’s usual for it'
+                                                      Button, 0x10208e970, {{20.0, 1943.0}, {362.0, 56.0}}, identifier: 'you-insights', label: 'By site'
+                                                      Other, 0x1020883c0, {{20.0, 1999.0}, {362.0, 56.3}}
+                                                      Button, 0x10208ecf0, {{20.0, 1999.3}, {362.0, 56.0}}, identifier: 'you-records', label: 'Records'
+                                                      Button, 0x1020836e0, {{20.0, 2087.3}, {362.0, 56.0}}, identifier: 'you-connections', label: 'Your sites, 3 of 5'
+                                                      Other, 0x102083350, {{20.0, 2143.3}, {362.0, 56.3}}
+                                                      Button, 0x10207bea0, {{20.0, 2143.7}, {362.0, 56.0}}, identifier: 'you-rules', label: 'Rules and limits, 3 on their own'
+                                                      Other, 0x102087190, {{20.0, 2199.7}, {362.0, 56.3}}
+                                                      Button, 0x102084140, {{20.0, 2200.0}, {362.0, 56.0}}, identifier: 'you-log', label: 'Activity'
+                                                      Other, 0x102086e20, {{20.0, 2256.0}, {362.0, 56.3}}
+                                                      Button, 0x1020821c0, {{20.0, 2256.3}, {362.0, 56.0}}, identifier: 'you-notifications', label: 'Notifications'
+                                                      Other, 0x10208f3d0, {{20.0, 2312.3}, {362.0, 56.3}}
+                                                      Button, 0x102085970, {{20.0, 2312.7}, {362.0, 56.0}}, identifier: 'you-settings', label: 'Settings'
+                                                  Other, 0x10208b170, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 4 pages', value: 0%
+                                                    Other, 0x102092ba0, {{396.0, 65.0}, {3.0, 233.3}}
+                                                  Other, 0x102080d40, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x102084800, {{3.0, 777.0}, {393.0, 3.0}}
+                                                  Other, 0x1020802a0, {{369.0, 62.0}, {30.0, 721.0}}, label: 'Vertical scroll bar, 4 pages', value: 0%
+                                                    Other, 0x102094710, {{396.0, 65.0}, {3.0, 233.3}}
+                                                  Other, 0x10207f740, {{0.0, 750.0}, {402.0, 30.0}}, label: 'Horizontal scroll bar, 1 page', value: 0%
+                                                    Other, 0x10207f3a0, {{3.0, 777.0}, {393.0, 3.0}}
+                                    Other, 0x1020809c0, {{0.0, 0.0}, {402.0, 783.0}}
+                                      Other, 0x10207e900, {{0.0, 0.0}, {402.0, 783.0}}
+                                Other, 0x10207ec80, {{0.0, 783.0}, {402.0, 91.0}}
+                                Other, 0x10207f010, {{16.0, 791.0}, {370.0, 62.0}}
+                                Button, 0x10207e200, {{20.0, 791.0}, {72.3, 62.0}}, identifier: 'tab-today', label: 'Today'
+                                Button, 0x10207e580, {{92.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-sell', label: 'Sell'
+                                Button, 0x10207de70, {{177.0, 798.0}, {48.0, 48.0}}, identifier: 'tab-new', label: 'New'
+                                Button, 0x10207daf0, {{237.3, 791.0}, {72.3, 62.0}}, identifier: 'tab-buy', label: 'Buy'
+                                Button, 0x10207c5c0, {{309.7, 791.0}, {72.3, 62.0}}, identifier: 'tab-you', label: 'You', Selected
+                      Other, 0x10207c230, {{0.0, 0.0}, {402.0, 874.0}}
+                        Other, 0x10207ccc0, {{0.0, 0.0}, {402.0, 874.0}}
 Path to element:
- →Application, 0x12d554500, pid: 71122, label: 'secondhand'
+ →Application, 0x1021671b0, pid: 83694, label: 'secondhand'
 Query chain:
  →Find: Application 'dev.ben.secondhand'
   Output: {
-    Application, 0x12d567340, pid: 71122, label: 'secondhand'
+    Application, 0x10211c790, pid: 83694, label: 'secondhand'
   }

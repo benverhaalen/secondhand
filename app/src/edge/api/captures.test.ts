@@ -726,7 +726,7 @@ test('F4: a failed item write leaves the capture judged', async t => {
   const tx=t.mock.method(runtime.store,'tx');
   const put=t.mock.method(runtime.store,'put',()=>{throw new Error('item write failed');});
   const response=await requestCapture(finishEndpoint,{version:c.version});
-  assert.equal(response.status,503);assert.equal((await response.json()).code,'waking');
+  assert.equal(response.status,503);assert.equal((await response.json()).code,'unavailable');
   assert.equal(tx.mock.callCount(),1,'item write runs inside the store transaction');
   assert.equal(put.mock.callCount(),1);
   assert.deepEqual(capturesApi.captureRows.get(c.id),before,'failed item write preserves capture status and version');

@@ -12,7 +12,8 @@
 //   SHUTTER 76   the phone camera's shutter; its fill is 76 less two rings of 4, so 60.
 //   HOLD 1500    how long the found pop-up holds: Art. 11, on-screen words hold 0.3 s a word plus 1 s, at least 1.5 s.
 import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react';
-import { Platform, ScrollView, View, useWindowDimensions, type ImageSourcePropType, type ViewStyle } from 'react-native';
+import { Platform, ScrollView, View, type ImageSourcePropType, type ViewStyle } from 'react-native';
+import { useWindow } from '../window';
 import { Image } from 'expo-image';
 import Animated, { Easing, FadeIn, FadeOut, ReduceMotion, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -77,7 +78,7 @@ export const haptic = {
 // ---- where things sit, so the pop knows where its bubble is ----
 
 export function useCameraLayout() {
-  const { width, height } = useWindowDimensions(), insets = useSafeAreaInsets();
+  const { width, height } = useWindow(), insets = useSafeAreaInsets();
   const barTop = insets.top + space.s2;
   const askTop = barTop + size.controlMin + space.s3;
   // The top bar ends 16 under the instruction's 24 line; the pop drops in 16 under that, over the feed.
@@ -309,7 +310,7 @@ export function PointCloud({ outline, features, phase, spread }: {
   // How long the clusters take to arrive, in ms: the still's real judging time.
   spread: number;
 }) {
-  const screen = useWindowDimensions();
+  const screen = useWindow();
   const per = features.length ? Math.max(motion.feedback, spread / features.length) : 0;
   return (
     <View {...mark('point-cloud', { phase })} pointerEvents="none" style={fill}>

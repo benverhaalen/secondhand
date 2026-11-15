@@ -64,3 +64,9 @@ SELECT r.source, count(c.row_id) AS rows,
 FROM secondhand.governance.source_rights r
 LEFT JOIN secondhand.market.comp c ON c.source = r.source
 GROUP BY r.source, r.may_model, r.may_model_scope, r.clause, r.clause_url;
+
+-- Genie cannot read a view over system information schema, so it reads this snapshot,
+-- refreshed on every governance run from the live view.
+CREATE OR REPLACE TABLE secondhand.measures.locks_in_force
+COMMENT 'Snapshot of measures.policies_in_force taken at each governance run: core tables, owner tag, masked columns, retention.'
+AS SELECT *, current_timestamp() AS read_at FROM secondhand.measures.policies_in_force;

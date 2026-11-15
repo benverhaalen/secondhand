@@ -707,7 +707,8 @@ Assist has one event set (*agent proposal*, [assist](features/assist.md#contract
 | 422 | `outside_limits` | an action the policy check refused |
 | 429 | `rate_limited` | ours or a site's; `after_s` set |
 | 502 | `site_failed` | the site refused or did not read back |
-| 503 | `waking` | Lakebase or a job is starting; retry by auto |
+| 503 | `waking` | before this process has served its first request: Lakebase or a job is starting; retry by auto |
+| 503 | `unavailable` | after the first request: a dependency or the handler failed; retry by auto |
 
 ## 8. Cross-cutting requirements
 

@@ -9,7 +9,7 @@ const store = memoryStore();
 declareTrust(store);
 const p = (n: string) => store.read(n, {}).value as number;
 const ctx = (over: Partial<Ctx> = {}): Ctx => ({
-  buyer: { age_days: 9, ratings: 0, good_purchases: 0 }, banner: false, urgent: true, price_usd: 300,
+  buyer: { age_days: 9, ratings: 0, good_purchases: 0 }, banner: false, urgent: true, price_cents: 30000,
   printHits: { sellers: 0, buyers: 0 }, sameTextListings10m: 0, p, ...over,
 });
 const msg = (text: string, n = 1): Msg => ({ id: 'm1', thread_id: 't1', site: 'facebook', n, text, at: '2026-11-14T10:00:00Z' });
@@ -47,14 +47,14 @@ test('blocked: a scam script (the overpay message) is blocked and no draft is al
 });
 
 test('a good buyer sees no friction: none, no reason, commit does not wait', async () => {
-  const d = await decideThread(deps(model()), thread({ msg: msg('Does it come with the case? I can pick up Saturday.', 3), ctx: ctx({ buyer: { age_days: 900, ratings: 60, good_purchases: 12 }, urgent: false, price_usd: 80 }), keep_q50_cents: 8000 }));
+  const d = await decideThread(deps(model()), thread({ msg: msg('Does it come with the case? I can pick up Saturday.', 3), ctx: ctx({ buyer: { age_days: 900, ratings: 60, good_purchases: 12 }, urgent: false, price_cents: 8000 }), keep_q50_cents: 8000 }));
   assert.equal(d.action, 'none');
   assert.equal(d.commitWaits, false);
   assert.deepEqual(d.reasons, []);
 });
 
 test('a high-loss buyer over the line never passes: ask at $300 where $30 would not be asked', async () => {
-  const c = ctx({ buyer: { age_days: 9, ratings: 0, good_purchases: 0 }, urgent: false, price_usd: 100 });
+  const c = ctx({ buyer: { age_days: 9, ratings: 0, good_purchases: 0 }, urgent: false, price_cents: 10000 });
   const hi = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50_cents: 30000 }));
   const lo = await decideThread(deps(model('off_platform')), thread({ ctx: c, msg: msg('ok i will pay zelle'), keep_q50_cents: 2500 }));
   assert.equal(hi.action, 'ask');
