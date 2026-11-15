@@ -2031,3 +2031,9 @@ Nate, buying-conversation lead's session, 2026-11-15, about 05:05 Central.
 > Lets get the next.js site looked at if it hasnt been started yet. And we can begin testing the website hosted buy side which is a dedicated page, and on our homepage top hero as a fun visitable demonstration of its power, responsive and built for mobile and web view. Built on next.js and hosted with vercel
 
 Used in: `features/buy/README.md` (the web page and the hero, when specced), `web/` (the site, when built).
+
+## 2026-11-15 nate the conversation drops widgets into its answer: the model writes a tag and the page draws it
+Nate, buying-conversation lead's session, 2026-11-15, about 05:10 Central.
+> With this, we shouid practice the intelligent dynamic ui, dropping widgets and populating fields with text, generated graphs, obviously working on a framework we design like graphs just require the model in its output to out put like "the pricing was [price graph:iphone16-678l iphone17-999] etc
+
+Used in: `features/assist/README.md` (the widget tags, when specced), `web/` (the renderer, when built).
