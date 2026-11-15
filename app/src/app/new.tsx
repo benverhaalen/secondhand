@@ -86,9 +86,9 @@ export default function New() {
         </CircleStage>
       ) : null}
       <Sheet open={!!sheet} title={job?.label ?? ''} onClose={() => setSheet(null)}>
-        <Blank id="type-field" name="What it is, or a link" value={what} onChange={v => { setWhat(v); setAsked(false); }} />
+        <Blank id="type-field" live name="What it is, or a link" value={what} onChange={v => { setWhat(v); setAsked(false); }} />
         {match ? <Txt role="caption">{`${match.brand} ${match.model}`}</Txt> : null}
-        {sheet === 'sell' && !link ? <Blank id="type-price" name="Your price" numeric value={price} onChange={v => { setPrice(v); setAsked(false); }} /> : null}
+        {sheet === 'sell' && !link ? <Blank id="type-price" live name="Your price" numeric value={price} onChange={v => { setPrice(v); setAsked(false); }} /> : null}
         {asked && ask ? <Txt role="body">{ask}</Txt> : null}
         <FootButton id={`${sheet ?? 'sell'}-go`} label={goLabel} state={what.trim() ? 'idle' : 'disabled'} onPress={go} />
       </Sheet>

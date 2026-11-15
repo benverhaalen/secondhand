@@ -217,7 +217,7 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
         </Row>
         <Row>
           <Txt role="caption">Always accept</Txt>
-          <Line><Blank id="plan-always" name="Always accept at" value={always} numeric look="body" onChange={t => { setAlways(t); edit(); }} /></Line>
+          <Line><Blank id="plan-always" live name="Always accept at" value={always} numeric look="body" onChange={t => { setAlways(t); edit(); }} /></Line>
           <Txt role="caption">{askEvery ? 'Off while every offer asks you' : 'Offers at or over it sell without asking'}</Txt>
         </Row>
         <Row trail={<Switch id="accept-mode" label="Ask me before every offer" on={askEvery} onChange={o => { setAskEvery(o); edit(); }} />}>

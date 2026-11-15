@@ -237,7 +237,7 @@ function PickupSheet({ w, itemId, orderId, mode, q, offline, soonCase = false }:
 
       <Sheet open={open === 'address'} title="Share your address" onClose={() => setOpen(null)}>
         <Txt role="body" tone="ink-2">{`${buyer} gets your address in the chat on the site`}</Txt>
-        <Blank id="pickup-address" name="Your address" value={address} onChange={setAddress} />
+        <Blank id="pickup-address" live name="Your address" value={address} onChange={setAddress} />
         <Approve id="pickup-send-address" does={`Send my address to ${short(buyer)}`} status={busy ? 'working' : 'ready'} step="Sending"
           onApprove={() => { if (address.trim()) tell(`Sent your address to ${buyer}`, () => setHome('sent')); }} />
       </Sheet>

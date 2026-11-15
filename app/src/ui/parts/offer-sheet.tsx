@@ -40,7 +40,7 @@ export function OfferSheet({ id, open, amounts, notes = {}, pick, status = 'read
           <Choice key={o.id} id={`${id}-amount-${o.id}`} label={o.label} line={o.line} picked={chosen === o.id} onPress={() => setChosen(o.id)} />
         ))}
       </List>
-      {chosen === 'other' ? <Blank id={`${id}-other`} name="Amount" value={other} onChange={setOther} numeric /> : null}
+      {chosen === 'other' ? <Blank id={`${id}-other`} live name="Amount" value={other} onChange={setOther} numeric /> : null}
       <Stack gap="tight">
         {amount != null && !problem?.(amount) ? (
           <Approve id={`${id}-send`} does={`Send a ${money(amount)} offer`} status={status} step="Sending" failed="The site did not answer. Nothing was sent."
