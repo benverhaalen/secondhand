@@ -32,25 +32,27 @@ export function fieldState(row: FieldRow,state: State,processKeys: string[],para
     if(w.from==='class_weight') { const s=select(state,params); value=classFor(s.inner_class ?? s.dimension_class as Exclude<typeof s.dimension_class,'set_bundle'>).weight; }
     if(value!==undefined) {fact={value,source:'derived',confidence:w.min_conf ?? 0};break;}
   }
+  let unresolvedVariants=false;
   if(row.field==='dimensions' && (state.variants?.dimensions?.length ?? 0)>=2 &&
     !(fact && (fact.source!=='measured' || fact.confirmed) && known(row,fact,state.confirm_mode,params).known)) {
     const variants=state.variants!.dimensions!;
-    const floor=row.ways.find(way=>way.way==='lookup')?.min_conf;
+    const measuredFloor=row.ways.find(way=>way.way==='measured')?.min_conf;
+    const floor=row.ways.find(way=>way.way==='lookup')?.min_conf ?? measuredFloor;
     const confident=variants.filter(variant=>floor!==undefined && variant.p>=floor);
     let chosen=confident.length===1?confident[0]:undefined;
     let reading=false;
-    if(!chosen && state.has_lidar && fact?.source==='measured' && fact.value && typeof fact.value==='object') {
+    if(!chosen && state.has_lidar && fact?.source==='measured' && measuredFloor!==undefined && fact.confidence>=measuredFloor && fact.value && typeof fact.value==='object') {
       const values=fact.value as Record<string,unknown>;
       const matches=variants.filter(variant=>Object.entries(variant.value).every(([part,value])=>
         typeof values[part]==='number' && Math.abs(values[part]-value)<=Math.max(bound(params,'capture_dims_match_cm'),bound(params,'capture_dims_match_pct')*value)));
       if(matches.length===1) {chosen=matches[0];reading=true;}
     }
-    if(chosen)fact={value:chosen.value,source:'lookup',confidence:reading?1:chosen.p,...(reading?{note:'The reading chose this variant.'}:{})};
-    else return {state:'missing',reason:'variants'};
+    if(chosen)return {state:'known',reason:'accepted',fact:{value:chosen.value,source:'lookup',confidence:reading?fact!.confidence:chosen.p,...(reading?{note:'The reading chose this variant.'}:{})}};
+    unresolvedVariants=true;
   }
   const availableWays = row.ways.filter(way => way.way !== 'measured' || state.has_lidar);
   const k=known({...row,ways:availableWays},fact,state.confirm_mode,params,state.suggestion);
-  if(k.known)return {state:'known',reason:'accepted',fact,...(k.auto_accepted ? {auto_accepted:true as const} : {})};
+  if(!unresolvedVariants && k.known)return {state:'known',reason:'accepted',fact,...(k.auto_accepted ? {auto_accepted:true as const} : {})};
   const hasAsked=row.ways.some(w=>w.way==='asked');
   for(const w of row.ways) {
     if(w.way==='measured' && !state.has_lidar)continue;
@@ -62,12 +64,13 @@ export function fieldState(row: FieldRow,state: State,processKeys: string[],para
           continue;
         }
         if(!state.kept.includes(view))return {state:'waiting',reason:'view',fact};
-        if(fact?.unknown_reason==='not_read' && (!fact.step || fact.step===view) && (state.retakes[view]??0)<bound(params,'capture_max_retakes'))
+        if(!unresolvedVariants && fact?.unknown_reason==='not_read' && (!fact.step || fact.step===view) && (state.retakes[view]??0)<bound(params,'capture_max_retakes'))
           return {state:'missing',reason:'retake',fact,shot:{step:view,reason:'retake'}};
       }
     }
     if(w.way==='lookup' && state.lookups==='running')return {state:'waiting',reason:'lookup',fact};
   }
+  if(unresolvedVariants)return {state:'missing',reason:'variants',fact};
   if(fact && fact.value!==null && fact.value!==undefined) return {state:row.confirm!=='auto'||hasAsked ? 'proposed':'unobtainable',reason:'unconfirmed',fact};
   return {state:hasAsked || row.field==='type' ? 'missing':'unobtainable',reason:hasAsked?'ask':'no_way',fact};
 }

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { usd } from '../demo/index.ts';
-import { autoList, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, siteRows } from './model.ts';
+import { youKeep } from '../demo/index.ts';
+import { autoList, clocks, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, priceModes, scanned, siteRows, soldTicks, spreadOf, why } from './model.ts';
 
 const get = (id: string, world?: string) => { const f = find(id, world); assert.ok(f, id); return f; };
 
@@ -143,4 +144,63 @@ test('each site gets its own title in the listing, written for its buyers', () =
   const rows = siteRows(w, item);
   assert.ok(rows.find(r => r.site === 'ebay')!.title.includes('HEG-001'));
   assert.ok(!rows.find(r => r.site === 'facebook')!.title.includes('HEG-001'));
+});
+
+// Ben, 06:51 to 07:00 (product/words.md): cross-listing prices are a choice, Same take-home for a new seller.
+test('a draft takes Same take-home: the set price on the site that takes least, the others priced to pay about the same', () => {
+  const { w, item } = get('it_switch');
+  assert.equal(spreadOf(item), 'same_keep');
+  const on = planSites(w, item, 23500).filter(s => s.on);
+  const fb = on.find(s => s.site === 'facebook')!, eb = on.find(s => s.site === 'ebay')!;
+  assert.equal(fb.price, 23500);
+  assert.ok(eb.price > fb.price && eb.price % 100 === 0, `eBay at ${eb.price}`);
+  assert.ok(eb.keep! >= fb.keep! && eb.keep! - fb.keep! < 100, `${eb.keep} vs ${fb.keep}`);
+  assert.ok(planSites(w, item, 23500, [], 'same_price').filter(s => s.on).every(s => s.price === 23500));
+});
+
+test('an item posted before the rule was a choice keeps one price on every site', () => {
+  const { w, item } = get('it_jacket');
+  assert.equal(spreadOf(item), 'same_price');
+  assert.deepEqual(planSites(w, item, 9500).filter(s => s.on).map(s => s.keep), [youKeep('ebay', 9500), youKeep('depop', 9500)]);
+});
+
+test('Why gives the reason in words, then the sales and each fee behind it', () => {
+  const { w, item } = get('it_jacket');
+  const y = why(w, item)!;
+  assert.match(y.says, /^41 like it sold lately on 2 sites/);
+  assert.equal(y.fees.find(f => f.site === 'depop')!.get, youKeep('depop', 9500));
+  assert.ok(y.sales.length === 2 && y.events.length === 1);
+  assert.equal(soldTicks(item).length, 42);
+});
+
+test('a sold item that ships says when the money arrives, without a date nobody gave', () => {
+  const { w, item } = get('it_kindle');
+  const paid = clocks(w, item).find(c => c.id === 'paid')!;
+  assert.deepEqual([paid.label, paid.at], ['Money arrives', 'When the site pays out']);
+  assert.equal(get('it_505').item.state, 'unsold');
+  assert.equal(momentOf(get('it_505').w, get('it_505').item), 'unsold');
+});
+
+test('only a LiDAR measurement lets the AI redraw run: a typed or published size does not', () => {
+  const it = find('it_stage', 'stage')!.item;
+  assert.equal(scanned(it), true);
+  const typed = { ...it, attributes: it.attributes.map(a => (a.source === 'measured' ? { ...a, source: 'you_said' as const } : a)) };
+  assert.equal(scanned(typed), false);
+  const published = { ...it, attributes: it.attributes.map(a => (a.source === 'measured' ? { ...a, source: 'spec' as const } : a)) };
+  assert.equal(scanned(published), false);
+});
+
+test('the three ways to price side by side: price rises from Gone fast to Best price, with what you get, and days only from a curve', () => {
+  const { w, item } = find('it_stage', 'stage')!;
+  const rows = priceModes(w, item);
+  assert.deepEqual(rows.map(r => r.label), ['Gone fast', 'Sell it', 'Best price']);
+  assert.ok(rows[0].price < rows[1].price && rows[1].price < rows[2].price);
+  assert.ok(rows.every(r => r.get !== null && r.get < r.price && r.line.startsWith('You get')));
+  assert.ok(rows.every(r => r.days === null), 'no sale curve, no days');
+  const point = (list: number, days: number | null, p: number | null) => ({ site: 'ebay' as const, ask_cents: list, list_cents: list, keep_cents: list - 1000, p_sale_30: p, days_t50: days, held_by: null });
+  const checked = { ...item, valuation: { ...item.valuation!, modes: { fast: point(4200, 3.6, 0.91), sell: point(5200, null, null), best: point(6400, 20, 0.4) } } };
+  const engine = priceModes(w, checked);
+  assert.deepEqual(engine.map(r => [r.price, r.get]), [[4200, 3200], [5200, 4200], [6400, 5400]], 'the engine\'s mode prices and take-home win');
+  assert.equal(engine[0].line, 'You get $32. Sells in about 4 days. 9 in 10 sell within 30 days');
+  assert.equal(engine[1].line, 'You get $42', 'no curve, no days');
 });

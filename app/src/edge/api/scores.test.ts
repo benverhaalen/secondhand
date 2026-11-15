@@ -39,7 +39,7 @@ for (const e of examples.filter(e => e.status < 400)) test(e.name + ': response 
     assert.equal(body.data.length, data.length + 1);
     assert.equal(body.data.at(-1).axis, 'success');
     assert.equal(body.data.at(-1).state, 'hidden');
-    assert.equal(body.data.at(-1).hide_reason, 'axis_hidden');
+    assert.equal(body.data.at(-1).hide_reason, 'source_gap');
   } else assert.deepEqual(await r.json(), e.response);
 });
 for (const e of examples.filter(e => e.status < 400 && e.auth !== 'visitor')) test(e.name + ': wrong user cannot read or act on example data', async () => {

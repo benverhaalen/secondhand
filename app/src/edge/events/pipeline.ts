@@ -16,6 +16,7 @@
 // `next_run_at` on job is added there, here it rides as an extra field), hp-1 (the real Harness replaces HarnessLike;
 // the read-back `data.landed === true` shape is assumed and settles with hp-1). Never log message text or tokens:
 // this file logs ids, kinds, codes and counts only.
+import { confirmedOrder } from '../delist/delist.ts';
 import { check } from './policy.ts';
 import type { PolicyInput, PolicyResult } from './policy.ts';
 import type { EventRow } from './event.ts';
@@ -28,6 +29,15 @@ export interface PipelineLog {
   error(where: string, e: unknown, fields?: Record<string, unknown>): unknown;
   event(name: string, fields?: Record<string, unknown>, level?: string): unknown;
 }
+export type EngineSettlement =
+  | { settle: 'pause'; err: { code: string; message: string } }
+  | { settle: 'later'; after_s: number; err?: { code: string; message: string } }
+  | { settle: 'fail'; err: { code: string; message: string } };
+
+function engineSettlement(value: unknown): value is EngineSettlement {
+  return !!value && typeof value === 'object' && 'settle' in value && ['pause', 'later', 'fail'].includes(String(value.settle));
+}
+
 export type Engine = (job: JobRow) => unknown | Promise<unknown>;
 export interface PipelineDeps {
   store: Store; harness: HarnessLike; leases: Leases; params: Params; log: PipelineLog;
@@ -158,6 +168,8 @@ export function createPipeline(d: PipelineDeps) {
       return data;
     },
     async act(j, verb, decision_kind, extra = {}) {
+      const saleDelist = verb === 'end' && j.args.decision_kind === 'delist_after_sale';
+      if (saleDelist && !confirmedOrder(store, j)) throw new Stop({ k: 'refused', kind: 'failed_delist' });
       const st = stageOf(j.id, verb);
       if (st?.state === 'arrived') return st.result;
       const op = `${j.id}:${verb}`;
@@ -169,7 +181,7 @@ export function createPipeline(d: PipelineDeps) {
       }
       const num = (v: unknown) => (typeof v === 'number' ? v : undefined);
       const r = policy({
-        action: verb, decision_kind, actor: eventOf(j)?.actor ?? 'auto', price_cents: num(j.args.price_cents), floor_cents: num(j.args.floor_cents),
+        action: verb, decision_kind, actor: eventOf(j)?.actor ?? 'auto', price_cents: saleDelist ? undefined : num(j.args.price_cents), floor_cents: saleDelist ? undefined : num(j.args.floor_cents),
         always_accept_cents: num(j.args.always_accept_cents), promoted: (d.promoted ?? (() => new Set<string>()))(j.user_id), site: j.site ?? '',
       });
       if (!r.allow) {
@@ -218,6 +230,12 @@ export function createPipeline(d: PipelineDeps) {
       const h = HANDLERS[j.kind];
       if (!h) throw new Stop({ k: 'fail', err: { code: 'no_handler', message: `no_handler: ${j.kind}` } });
       const result = await h(ctx, store.getJob(j.id)!);
+      if (engineSettlement(result)) {
+        if (result.settle === 'later' && result.err) store.updateJob(j.id, { error: result.err });
+        if (result.settle === 'later') settle(store.getJob(j.id)!, { k: 'later', after_s: result.after_s });
+        else settle(store.getJob(j.id)!, { k: result.settle, err: result.err });
+        return;
+      }
       store.updateJob(j.id, { state: 'done', result });
       log.job(j.id, j.kind, 'done');
     } catch (e) {

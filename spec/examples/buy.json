@@ -214,12 +214,8 @@
           "Idempotency-Key": "idk_sr_01"
         },
         "body": {
-          "text": "carhartt j97 xl",
+          "text": "levi 501",
           "filters": {
-            "condition": [
-              "used_good",
-              "used_like_new"
-            ],
             "max_delivered_cents": {
               "amount_cents": 9000,
               "currency": "USD"
@@ -234,22 +230,55 @@
         "state": "running",
         "stages": [
           {
-            "name": "identify",
-            "state": "arrived",
+            "name": "site:dupe",
+            "state": "running",
             "started_at": "2026-11-15T05:06:00Z",
-            "ended_at": "2026-11-15T05:06:01Z",
+            "ended_at": null,
             "found": {
-              "results_found": 1
+              "sources_searched": 0,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {}
             }
           },
           {
-            "name": "fanout",
+            "name": "site:depop",
             "state": "running",
-            "started_at": "2026-11-15T05:06:01Z",
+            "started_at": "2026-11-15T05:06:00Z",
             "ended_at": null,
             "found": {
-              "sources_searched": 3,
-              "results_found": 18
+              "sources_searched": 0,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {}
+            }
+          },
+          {
+            "name": "site:poshmark",
+            "state": "running",
+            "started_at": "2026-11-15T05:06:00Z",
+            "ended_at": null,
+            "found": {
+              "sources_searched": 0,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {}
+            }
+          },
+          {
+            "name": "site:mercari",
+            "state": "running",
+            "started_at": "2026-11-15T05:06:00Z",
+            "ended_at": null,
+            "found": {
+              "sources_searched": 0,
+              "results_found": 0,
+              "results_used": 0,
+              "dropped_by_reason": {},
+              "sites": {}
             }
           }
         ],

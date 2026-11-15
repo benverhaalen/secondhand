@@ -8,7 +8,7 @@ Ben asked for proof that a redrawn photo keeps the item's real size, using the i
 
 ## Affected interfaces (backend)
 
-- **Rule (Ben, 09:00): the re-lay is for LiDAR phones only.** `plan.relay_measured` allows a redraw of the cover and back only when the item has measured `pit_to_pit` and `length` (tops). Otherwise the whole photo is touched up where it lies. Pants are touch-up only until the ruler reads them.
+- **Rule (Ben, 09:00 and 09:09): the re-lay runs only from the LiDAR flow.** `plan.relay_measured` allows a redraw of the cover and back only when the item has `pit_to_pit` and `length` (tops) and `measured_by == "lidar"`; a tape photo or typed number does not open it. Testing waits until LiDAR capture works. Otherwise the whole photo is touched up where it lies. Pants are touch-up only until the ruler reads them.
 - **New modules.** `jobs/studio/measure.py` reads pit to pit and length off a flat top's outline the way a tape does, and tests them against the measurements (`against_tape`). `jobs/studio/proof.py <run> <items> <out>` writes the proof pictures and numbers.
 - **Measured numbers.** In the app they come from the capture's LiDAR frame. In test runs an item folder's `tape.json` (`{"length": 27.0, "pit_to_pit": 21.25}`) stands in, else what the vision read off tape photos. The job reads them as `look["measured"]`.
 - **Manifest additions.** `tape` (inches and source), `measure_audit` (phone photo, redraw as drawn, published slide: inches read and error against the tape), per candidate `pass` (1, or 2 for a second pressing), `from`, and `numbers.wrinkle` (`left` is the share of the photo's fold shading still there). The slide records `cand`, `pass` and `from`.

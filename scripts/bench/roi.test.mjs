@@ -54,3 +54,11 @@ test('at scale the fixed platform cost spreads out', () => {
   const small = atScale(SCENARIOS.base, 10_000), big = atScale(SCENARIOS.base, 1_000_000);
   assert.ok(big.margin_per_mau > small.margin_per_mau);
 });
+
+test('programmes with no verified rate count as zero unless a scenario opts in', async () => {
+  const { perPurchase } = await import('./roi.mjs');
+  const m = INPUTS.mix.value;
+  const extra = m.network_resale * commission(33, 'network_resale') + m.etsy * commission(33, 'etsy');
+  assert.ok(Math.abs(perPurchase(33, { unverified: true }) - perPurchase(33) - extra) < 1e-9);
+  assert.equal(SCENARIOS.base.unverified, false);
+});

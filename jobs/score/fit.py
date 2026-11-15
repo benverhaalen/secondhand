@@ -10,6 +10,7 @@ from itertools import combinations
 import math
 
 import numpy as np
+from .params import resolve
 
 
 def validate(rows):
@@ -24,9 +25,12 @@ def validate(rows):
         raise ValueError('duplicate outcome')
 
 
-def fit_bands(rows, min_band=20):
+def fit_bands(rows, min_band=None, params=None):
     validate(rows)
-    if min_band < 1:
+    params = params if params is not None else resolve()['values']
+    min_band = params['score_min_band'] if min_band is None else min_band
+    rows = [{**row, 'value': math.floor(row['value'] + .5)} for row in rows]  # Fixed: same integer half-up score as TypeScript.
+    if not isinstance(min_band, (int, float)) or not math.isfinite(min_band) or min_band < 1 or int(min_band) != min_band:
         raise ValueError('min_band must be positive')
     values = sorted({r['value'] for r in rows})
     if len(values) < 4 or len(rows) < 4 * min_band:
@@ -56,10 +60,15 @@ def errors(model, rows):
     cuts, rates = model['cuts'], model['rates']
     if len(cuts) != 3 or len(rates) != 4 or not all(0 <= c <= 100 for c in cuts) or not all(a < b for a, b in zip(cuts, cuts[1:])) or not all(0 <= p <= 1 for p in rates):
         raise ValueError('invalid score band model')
-    return np.array([(rates[sum(r['value'] >= c for c in cuts)] - r['sold']) ** 2 for r in rows])
+    return np.array([(rates[sum(math.floor(r['value'] + .5) >= c for c in cuts)] - r['sold']) ** 2 for r in rows])
 
 
-def nightly(training, held_out, prior, store, scope, at, min_band=20, seed=0, log=None):
+def nightly(training, held_out, prior, store, scope, at, min_band=None, seed=0, log=None, read=None):
+    resolved = resolve(read, scope)
+    values, versions = resolved['values'], resolved['versions']
+    min_band = values['score_min_band'] if min_band is None else min_band
+    if not isinstance(min_band, (int, float)) or not math.isfinite(min_band) or min_band < 1 or int(min_band) != min_band:
+        raise ValueError('min_band must be a positive integer')
     if scope.get('person') is not None and any(r.get('person') != scope['person'] for r in [*training, *held_out]):
         raise ValueError('outcome outside person scope')
     current = store.champion('score_bands', scope)
@@ -73,15 +82,15 @@ def nightly(training, held_out, prior, store, scope, at, min_band=20, seed=0, lo
     if log:
         log.note('score.fit input', training_n=len(training), held_out_n=len(held_out), seed=seed)
     if len(training) < 4 * min_band:
-        return {'state': 'prior', 'model': champion}
-    candidate = fit_bands(training, min_band)
+        return {'state': 'prior', 'model': champion, 'param_versions': versions}
+    candidate = fit_bands(training, min_band, values)
     if candidate is None:
-        return {'state': 'kept', 'model': champion, 'reason': 'no separated bands'}
+        return {'state': 'kept', 'model': champion, 'reason': 'no separated bands', 'param_versions': versions}
     gains = errors(champion, held_out) - errors(candidate, held_out)
     rng = np.random.default_rng(seed)
-    lower_bound = float(np.quantile(np.mean(rng.choice(gains, (2000, len(gains))), axis=1), .025))
+    lower_bound = float(np.quantile(np.mean(rng.choice(gains, (int(values['score_bootstrap_n']), len(gains))), axis=1), values['score_bootstrap_alpha']))
     if lower_bound <= 0:
-        return {'state': 'kept', 'model': champion, 'reason': 'lost held-out'}
+        return {'state': 'kept', 'model': champion, 'reason': 'lost held-out', 'param_versions': versions}
     score = -float(np.mean(errors(candidate, held_out)))
     fitted_hash = hashlib.sha256('\n'.join(sorted(r['outcome_id'] for r in training)).encode()).hexdigest()
     def publish(name, family, value, initial):
@@ -103,4 +112,4 @@ def nightly(training, held_out, prior, store, scope, at, min_band=20, seed=0, lo
             current['held_out_score'] = saved_score
     if log:
         log.change('param', 'score_bands', 'champion' if promoted else 'challenger', reason=reason)
-    return {'state': 'promoted' if promoted else 'kept', 'model': candidate if promoted else champion, 'gain_lb': lower_bound}
+    return {'state': 'promoted' if promoted else 'kept', 'model': candidate if promoted else champion, 'gain_lb': lower_bound, 'param_versions': versions}

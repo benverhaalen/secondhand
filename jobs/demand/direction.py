@@ -11,15 +11,15 @@ proxy is `hidden`. Arithmetic only; Benjamini-Hochberg runs across all items of 
 from __future__ import annotations
 
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, replace, field
+from demand.publication import publication
 
 from scipy.stats import binom
 
-D_RISE = 0.15  # M8, *t*: a param prior
-RATIO_RISE = 1.5  # M15 step 4, *t*
-ALPHA = 0.05
-MIN_SOLD = 5
-UNIFORM_SHARE = 28 / 112
+from demand.params import resolved, signal_weights
+from demand.validation import number, finite, probability
+
+UNIFORM_SHARE = 28 / 112  # Fixed M15 observation windows, in days.
 
 
 @dataclass(frozen=True)
@@ -33,12 +33,28 @@ class Read:
     state: str  # rising, falling, steady, more_for_sale, too_few, hidden
     D: float | None
     p: float | None
+    week: str | None = None
+    guarded: dict = field(default_factory=lambda: {'state': 'hidden', 'hide_reason': 'source_gap', 'basis_count': 0})
+    citation: dict | None = None
 
 
-def demand_index(proxies: dict[str, Proxy], weights: dict[str, float]) -> float:
+@dataclass(frozen=True)
+class _CategoryP:
+    value: float
+
+
+def demand_index(proxies: dict[str, Proxy], weights: dict[str, float] | None = None, *, params=None) -> float:
+    weights = signal_weights(params) if weights is None else weights
+    for k, proxy in proxies.items():
+        number(proxy.recent, k + '.recent')
+        number(proxy.base, k + '.base')
+    for k, weight in weights.items():
+        number(weight, k + '.weight')
     present = {k: v for k, v in proxies.items() if k in weights}
     num = sum(weights[k] * math.log((v.recent + 1) / (v.base + 1)) for k, v in present.items())
-    return num / sum(weights[k] for k in present)
+    total = sum(weights[k] for k in present)
+    number(total, 'total_weight', positive=True)
+    return finite(num / total, 'D')
 
 
 def _bh(ps: list[float]) -> list[float]:
@@ -56,37 +72,83 @@ def _bh(ps: list[float]) -> list[float]:
 
 def m15_test(items: list[tuple[int, int]], category: tuple[int, int] | None = None, rising: bool = True) -> list[float]:
     """items: (a sales in last 28 days, b sales in prior 84). Returns BH-adjusted one-sided p per item."""
+    for a, b in items + ([category] if category is not None else []):
+        number(a, 'sold_recent', integer=True)
+        number(b, 'sold_prior', integer=True)
     p0 = category[0] / (category[0] + category[1]) if category and sum(category) else UNIFORM_SHARE
     raw = [float(binom.sf(a - 1, a + b, p0)) if rising else float(binom.cdf(a, a + b, p0)) for a, b in items]
     return _bh(raw)
 
 
-def direction(proxies: dict[str, Proxy], weights: dict[str, float], *, sold_recent: int, sold_prior: int,
+def direction(proxies: dict[str, Proxy], weights: dict[str, float] | None = None, *, sold_recent: int, sold_prior: int,
               listed_recent: int | None = None, listed_base: float | None = None,
-              category: tuple[int, int] | None = None) -> Read:
-    if sold_recent < MIN_SOLD or sold_prior < MIN_SOLD:
-        return Read("too_few", None, None)
+              category: tuple[int, int] | None = None, adjusted_p: _CategoryP | None = None,
+              week: str | None = None, params=None) -> Read:
+    v = resolved(params)['values']
+    weights = signal_weights(params) if weights is None else weights
+    number(sold_recent, 'sold_recent', integer=True)
+    number(sold_prior, 'sold_prior', integer=True)
+    demand_index(proxies, weights)
+    if listed_recent is not None:
+        number(listed_recent, 'listed_recent', integer=True)
+    if listed_base is not None:
+        number(listed_base, 'listed_base')
+    if adjusted_p is not None:
+        if not isinstance(adjusted_p, _CategoryP):
+            raise ValueError('adjusted_p: category batch evidence required')
+        probability(adjusted_p.value, 'adjusted_p')
+    if sold_recent < v['demand_min_sold'] or sold_prior < v['demand_min_sold']:
+        return Read("too_few", None, None, week)
     if sum(1 for k in proxies if k in weights) < 2:
-        return Read("hidden", None, None)
+        return Read("hidden", None, None, week)
+    if adjusted_p is None:
+        return Read('hidden', None, None, week)
     d = demand_index(proxies, weights)
     ratio = (sold_recent / 28) / (sold_prior / 84)
-    if d >= D_RISE and ratio >= RATIO_RISE:
-        p = m15_test([(sold_recent, sold_prior)], category)[0]
-        if p >= ALPHA:
-            return Read("steady", d, p)
+    if d >= v['demand_D_rise'] and ratio >= v['demand_ratio_rise']:
+        p = adjusted_p.value
+        if p >= v['demand_alpha']:
+            return Read("steady", d, p, week)
         if listed_recent is not None and listed_base is not None:
             supply = math.log((listed_recent + 1) / (listed_base + 1))
             if supply > math.log((sold_recent + 1) / (sold_prior / 3 + 1)):
-                return Read("more_for_sale", d, p)
-        return Read("rising", d, p)
-    if d <= -D_RISE and ratio <= 1 / RATIO_RISE:
-        p = m15_test([(sold_recent, sold_prior)], category, rising=False)[0]
-        return Read("falling" if p < ALPHA else "steady", d, p)
-    return Read("steady", d, None)
+                return Read("more_for_sale", d, p, week)
+        return Read("rising", d, p, week)
+    if d <= -v['demand_D_rise'] and ratio <= 1 / v['demand_ratio_rise']:
+        p = adjusted_p.value
+        return Read("falling" if p < v['demand_alpha'] else "steady", d, p, week)
+    return Read("steady", d, None, week)
 
 
 def trending(reads: list[Read]) -> str | None:
     """The notice M8's 2-read rule allows, from the newest reads."""
-    if len(reads) >= 2 and all(r.state == "rising" for r in reads[-2:]):
+    from datetime import date
+    if len(reads) < 2 or not reads[-1].week or not reads[-2].week:
+        return None
+    if (date.fromisoformat(reads[-1].week) - date.fromisoformat(reads[-2].week)).days != 7:
+        return None
+    if all(r.state == "rising" for r in reads[-2:]):
         return "demand_rose"
     return None
+
+
+def category_directions(candidates: list[dict], weights: dict | None = None, *, category=None, week=None, params=None, basis=None, as_of=None):
+    """One BH family across every candidate, using its preselected one-sided alternative."""
+    items = [(c['sold_recent'], c['sold_prior']) for c in candidates]
+    for a, b in items + ([category] if category is not None else []):
+        number(a, 'sold_recent', integer=True)
+        number(b, 'sold_prior', integer=True)
+    p0 = category[0] / sum(category) if category and sum(category) else UNIFORM_SHARE
+    raw = [float(binom.sf(a - 1, a + b, p0) if a * 3 >= b else binom.cdf(a, a + b, p0))
+           for a, b in items]
+    adjusted = _bh(raw)
+    if basis is not None and len(basis) != len(candidates):
+        raise ValueError('basis: one list per category candidate required')
+    out = []
+    for i, (candidate, p) in enumerate(zip(candidates, adjusted)):
+        read = direction(**candidate, weights=weights, adjusted_p=_CategoryP(p), week=week, params=params)
+        proof = publication(read.D, metric='demand_direction', basis=basis[i] if basis else None,
+                            as_of=as_of or week, params=params,
+                            filters={'sold_recent': candidate['sold_recent'], 'sold_prior': candidate['sold_prior'], 'adjusted_p': p})
+        out.append(replace(read, **proof))
+    return out

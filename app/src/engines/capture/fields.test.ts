@@ -49,7 +49,7 @@ test('failed Object Capture ring waits and retakes the substituted view', () => 
 test('dimension variant tolerance uses max of cm and percent and reads tuned params', () => {
  const s=state({type:'furniture',kept:['scan'],lookups:'done',variants:{dimensions:[{label:'Small',value:{width:20,height:200},p:.5},{label:'Large',value:{width:40,height:300},p:.5}]},facts:{dimensions:{value:{width:22,height:205},source:'measured',confidence:.9}}});
  const row=select(s,params).rows.find(row=>row.field==='dimensions')!;
- const result=fieldState(row,s,['scan'],params);assert.equal(result.state,'known');assert.equal(result.fact!.confidence,1);assert.deepEqual(result.fact!.value,{width:20,height:200});
+ const result=fieldState(row,s,['scan'],params);assert.equal(result.state,'known');assert.equal(result.fact!.confidence,s.facts.dimensions.confidence);assert.deepEqual(result.fact!.value,{width:20,height:200});
  const tuned={...params,read:(name:string,scope:Parameters<typeof params.read>[1])=>({...params.read(name,scope),...(['capture_dims_match_cm','capture_dims_match_pct'].includes(name)?{value:0}:{})})};
  assert.equal(fieldState(row,s,['scan'],tuned).reason,'variants');
 });
@@ -57,4 +57,39 @@ test('known lookup dimensions survive variants with their original confidence', 
  const s=state({type:'furniture',kept:['scan'],variants:{dimensions:[{label:'Small',value:{width:120},p:.55},{label:'Large',value:{width:140},p:.45}]},facts:{dimensions:{value:{width:130},source:'lookup',confidence:.96}}});
  const row=select(s,params).rows.find(row=>row.field==='dimensions')!;
  const result=fieldState(row,s,['scan'],params);assert.equal(result.state,'known');assert.deepEqual(result.fact,s.facts.dimensions);
+});
+const bagVariants = [
+ {label:'Small',value:{width:30,height:22,depth:12},p:.6},
+ {label:'Large',value:{width:40,height:30,depth:20},p:.6},
+];
+test('unsettled variants wait for their view or lookup and preserve unmatched readings', () => {
+ const reading={value:{width:60,height:50,depth:30},source:'measured' as const,confidence:.9};
+ for(const patch of [{kept:['inside_tab'],lookups:'done' as const},{kept:['scan','inside_tab'],lookups:'running' as const},{kept:['scan','inside_tab'],lookups:'done' as const}]) {
+  const factsList: State['facts'][]=[{},{dimensions:reading}];
+  for(const facts of factsList) {
+   const s=state({type:'bags',variants:{dimensions:bagVariants},...patch,facts});
+   const selected=select(s,params),row=selected.rows.find(row=>row.field==='dimensions')!;
+   const result=fieldState(row,s,selected.process.map(step=>step.key),params);
+   assert.equal(result.state,patch.lookups==='running'||!patch.kept.includes('scan')?'waiting':'missing');
+   assert.deepEqual(result.fact,s.facts.dimensions,'unsettled variants retain the measured fact');
+  }
+ }
+});
+test('only readings at the measured confidence floor settle a variant and retain confidence', () => {
+ for(const confidence of [.5,.8,.85]) {
+  const s=state({type:'bags',kept:['scan','inside_tab'],lookups:'done',variants:{dimensions:bagVariants},facts:{dimensions:{value:bagVariants[0].value,source:'measured',confidence}}});
+  const row=select(s,params).rows.find(row=>row.field==='dimensions')!;
+  const result=fieldState(row,s,s.kept,params);
+  assert.equal(result.state,confidence>=.8?'known':'missing',`reading confidence ${confidence}`);
+  assert.equal(result.fact!.confidence,confidence,'variant selection must retain reading confidence');
+ }
+});
+test('flat garment variants can settle without a lookup way', () => {
+ const value={pit_to_pit:52,length:71};
+ const s=state({type:'apparel',kept:['front','back','tag'],lookups:'done',variants:{dimensions:[{label:'M',value,p:.6},{label:'L',value:{pit_to_pit:60,length:80},p:.6}]},facts:{dimensions:{value,source:'measured',confidence:.9}}});
+ const row=select(s,params).rows.find(row=>row.field==='dimensions')!;
+ assert.deepEqual(row.ways.map(way=>way.way),['measured','asked']);
+ const result=fieldState(row,s,s.kept,params);
+ assert.equal(result.state,'known');
+ assert.deepEqual(result.fact!.value,value);
 });

@@ -1,0 +1,341 @@
+{
+  "typescript": [
+    {
+      "name": "negotiation_bootstrap_n",
+      "family": "scalar",
+      "prior": 2000,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_bootstrap_tail",
+      "family": "scalar",
+      "prior": 0.025,
+      "guard_lo": 0,
+      "guard_hi": 0.5
+    },
+    {
+      "name": "negotiation_buy_min_probability",
+      "family": "scalar",
+      "prior": 0.7,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buy_risk_share",
+      "family": "scalar",
+      "prior": 0.03,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_calibration_error",
+      "family": "scalar",
+      "prior": 0.05,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_calibration_n",
+      "family": "scalar",
+      "prior": 30,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_half_life_days",
+      "family": "scalar",
+      "prior": 30,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_max_rounds",
+      "family": "scalar",
+      "prior": 4,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_p_hi",
+      "family": "scalar",
+      "prior": 0.98,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_p_lo",
+      "family": "scalar",
+      "prior": 0.02,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_policy",
+      "family": "model_ref",
+      "prior": "champion",
+      "guard_lo": null,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_pooling",
+      "family": "scalar",
+      "prior": 1.0,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_prior_guard_share",
+      "family": "scalar",
+      "prior": 0.5,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_proof_max_age_days",
+      "family": "scalar",
+      "prior": 14,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_proof_min_n",
+      "family": "scalar",
+      "prior": 6,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_q_return",
+      "family": "scalar",
+      "prior": 0.2,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_rollback_days",
+      "family": "scalar",
+      "prior": 7,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_rollback_se",
+      "family": "scalar",
+      "prior": 2,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_switch_n",
+      "family": "scalar",
+      "prior": 50,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_wait_lead_hours",
+      "family": "scalar",
+      "prior": 2,
+      "guard_lo": 0,
+      "guard_hi": null
+    }
+  ],
+  "python": [
+    {
+      "name": "money_ending",
+      "family": "model_ref",
+      "prior": {
+        "above_cents": 2000,
+        "digits": [
+          5,
+          8
+        ]
+      },
+      "guard_lo": null,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_bootstrap_n",
+      "family": "scalar",
+      "prior": 2000,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_bootstrap_tail",
+      "family": "scalar",
+      "prior": 0.025,
+      "guard_lo": 0,
+      "guard_hi": 0.5
+    },
+    {
+      "name": "negotiation_buyer_committed_concede_share",
+      "family": "scalar",
+      "prior": 0.3,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_committed_open_share",
+      "family": "scalar",
+      "prior": 0.9,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_committed_shade",
+      "family": "scalar",
+      "prior": 1.02,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_buyer_fair_concede_share",
+      "family": "scalar",
+      "prior": 0.3,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_fair_open_share",
+      "family": "scalar",
+      "prior": 0.85,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_fair_shade",
+      "family": "scalar",
+      "prior": 1.0,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_buyer_ghost_concede_share",
+      "family": "scalar",
+      "prior": 0.3,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_ghost_open_share",
+      "family": "scalar",
+      "prior": 0.8,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_ghost_shade",
+      "family": "scalar",
+      "prior": 1.0,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_buyer_haggler_concede_share",
+      "family": "scalar",
+      "prior": 0.5,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_haggler_open_share",
+      "family": "scalar",
+      "prior": 0.7,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_haggler_shade",
+      "family": "scalar",
+      "prior": 0.97,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_buyer_lowballer_concede_share",
+      "family": "scalar",
+      "prior": 0.3,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_lowballer_open_share",
+      "family": "scalar",
+      "prior": 0.5,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_buyer_lowballer_shade",
+      "family": "scalar",
+      "prior": 0.85,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_calibration_error",
+      "family": "scalar",
+      "prior": 0.05,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_calibration_n",
+      "family": "scalar",
+      "prior": 30,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_half_life_days",
+      "family": "scalar",
+      "prior": 30,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_max_rounds",
+      "family": "scalar",
+      "prior": 4,
+      "guard_lo": 1,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_p_hi",
+      "family": "scalar",
+      "prior": 0.98,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_p_lo",
+      "family": "scalar",
+      "prior": 0.02,
+      "guard_lo": 0,
+      "guard_hi": 1
+    },
+    {
+      "name": "negotiation_pooling",
+      "family": "scalar",
+      "prior": 1.0,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_prior_guard_share",
+      "family": "scalar",
+      "prior": 0.5,
+      "guard_lo": 0,
+      "guard_hi": null
+    },
+    {
+      "name": "negotiation_q_return",
+      "family": "scalar",
+      "prior": 0.2,
+      "guard_lo": 0,
+      "guard_hi": 1
+    }
+  ]
+}

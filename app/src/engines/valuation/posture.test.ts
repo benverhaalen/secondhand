@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { Curve } from './path.ts';
-import { ceiling, MARKS, OPENS_AT, slider, stance, ticks, type PostureInput, type SiteInput } from './posture.ts';
+import { ceiling, pointOnSite, MARKS, OPENS_AT, slider, stance, ticks, type PostureInput, type SiteInput } from './posture.ts';
 
 const curve: Curve = {
   p: (price, days) => Math.min(0.95, (days / (days + 10)) * Math.min(1.5, 4000 / price)),
@@ -25,7 +25,8 @@ test('the ask rises with the posture; at 0 the price is the ask, with no offer r
   assert.ok(at(0).ask_cents <= at(0.5).ask_cents && at(0.5).ask_cents <= at(1).ask_cents);
   assert.equal(at(0).list_cents, at(0).ask_cents);
   assert.ok(at(1).list_cents > at(1).ask_cents);
-  assert.ok(at(0).p_sale_30 >= at(1).p_sale_30);
+  const low = at(0).p_sale_30, high = at(1).p_sale_30;
+  assert.ok(low !== null && high !== null && low >= high);
 });
 
 test('each point gives the ask per site, the keep, the chance of sale and the days', () => {
@@ -90,4 +91,11 @@ test('signal rows: top listings, official listings and credible discounts only',
   assert.equal(s.signals.top_listings.length, 1);
   assert.equal(s.signals.retail_offers.length, 1);
   assert.equal(s.signals.discounts.length, 0);
+});
+
+test('a site without a curve prices the point without inventing sale speed', () => {
+  const p = pointOnSite(site({ curve: undefined }), MARKS.balanced, 0, null)!;
+  assert.equal(p.p_sale_30, null); assert.equal(p.days_t50, null);
+  const fitted = pointOnSite(site(), MARKS.balanced, 0, null)!;
+  assert.equal(typeof fitted.p_sale_30, 'number'); assert.equal(typeof fitted.days_t50, 'number');
 });

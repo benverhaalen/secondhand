@@ -31,6 +31,22 @@ def test_every_committed_typescript_case_matches_python():
     assert all(r['equal'] for r in results), [r for r in results if not r['equal']]
 
 
+def test_public_citation_id_matches_every_typescript_fixture():
+    from proof import citationId
+
+    fixtures, ts = inputs()
+    expected = {row['case']: row['value'] for row in ts}
+    checked = 0
+    for fixture in fixtures:
+        value = expected[fixture['case']]
+        answer = value.get('answer', {}) if isinstance(value, dict) else {}
+        citation = answer.get('citation') if isinstance(answer, dict) else None
+        if citation:
+            assert citationId(citation, citation['basis_hash']) == citation['id'], fixture['case']
+            checked += 1
+    assert checked > 0
+
+
 def test_changed_typescript_string_and_integer_are_unequal():
     fixtures, ts = inputs()
     changed = copy.deepcopy(ts)
@@ -58,3 +74,59 @@ def test_workspace_job_reads_committed_fixtures_and_serializes_table_values():
     assert all(r['checked_at'] == checked_at and r['code_sha'] == 'fixture_build' for r in rows)
     assert json.loads(rows[0]['ts_value']) == results[0]['ts_value']
     assert json.loads(rows[0]['py_value']) == results[0]['py_value']
+
+
+def test_every_fixture_table_row_is_utf8_and_preserves_values():
+    from datetime import datetime, timezone
+    from parity.parity import table_rows
+
+    fixtures, ts = inputs()
+    results = compare(fixtures, ts, proof_case)
+    rows = table_rows(results, 'fixture_build', datetime.now(timezone.utc))
+    for fixture, result, row in zip(fixtures, results, rows):
+        for value in row.values():
+            if isinstance(value, str):
+                value.encode('utf-8')
+        assert json.loads(row['case']) == fixture
+        assert json.loads(row['ts_value']) == result['ts_value']
+        assert json.loads(row['py_value']) == result['py_value']
+        assert row['equal'] == result['equal']
+
+
+def test_identity_variants_share_basis_but_have_distinct_citation_ids():
+    fixtures, _ = inputs()
+    cases = {c['case']: c for c in fixtures}
+    values = [proof_case(cases[name]) for name in ['ordinary', 'citation_metric', 'citation_filters', 'citation_param_version']]
+    assert len({v['hash'] for v in values}) == 1
+    assert len({v['answer']['citation']['id'] for v in values}) == 4
+
+
+def test_refusals_are_compared_as_errors_and_old_cases_remain():
+    fixtures, ts = inputs()
+    original = {'ordinary', 'unsorted_ids', 'missing_price', 'weights', 'astral_utf16', 'bad_date', 'empty',
+                'too_few', 'stale', 'too_wide', 'shown', 'guard_precedence', 'zero_weights', 'iso_offsets',
+                'missing_source', 'empty_id', 'guard_boundary', 'submillisecond_truncation',
+                'end_of_day_iso', 'short_month_normalization'}
+    assert original <= {c['case'] for c in fixtures}
+    results = {r['case']: r['value'] for r in ts}
+    assert results['duplicate_ids_basisHash']['error'] == {'name': 'RangeError', 'message': 'duplicate basis id obs_0'}
+    assert results['bad_now_answer'] == {'ok': False, 'refused': 'no_basis'}
+    assert results['future_date_answer'] == {'ok': False, 'refused': 'no_basis'}
+
+
+def test_binary64_numbers_can_be_printed_as_integers_without_losing_parity():
+    assert compare([{'case': 'binary64'}], [{'case': 'binary64', 'value': 1000000000000000100}],
+                   lambda _: 1.0000000000000001e18)[0]['equal']
+    assert not compare([{'case': 'cents'}], [{'case': 'cents', 'value': 9007199254740991}],
+                       lambda _: 9007199254740990)[0]['equal']
+
+
+def test_declared_fixture_errors_match_typescript_and_python():
+    fixtures, ts = inputs()
+    expected = {row['case']: row['value'] for row in ts}
+    for case in fixtures:
+        if 'expect_error' in case:
+            error = {'error': {'name': 'RangeError', 'message': case['expect_error']}}
+            assert expected[case['case']] == error, case['case']
+            assert proof_case(case) == error, case['case']
+    assert expected['undefined_dropped'] == expected['undefined_absent']

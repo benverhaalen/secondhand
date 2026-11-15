@@ -57,8 +57,9 @@ def bounds(prior, params=None):
     params = resolve() if params is None else params
     validate_params(params)
     pv = params['values']
-    # negotiation.md §4 clamps probabilities to [.02,.98]; zero terms use the corresponding finite log-odds.
-    width = abs(prior) * pv['negotiation_prior_guard_share'] if prior else math.log(pv['negotiation_p_hi'] / pv['negotiation_p_lo'])
+    p_lo, p_hi = pv['negotiation_p_lo'], pv['negotiation_p_hi']
+    logit_width = (math.log(p_hi / (1 - p_hi)) - math.log(p_lo / (1 - p_lo))) / 2
+    width = max(abs(prior) * pv['negotiation_prior_guard_share'], logit_width)
     return prior - width, prior + width
 
 

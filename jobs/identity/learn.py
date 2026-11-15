@@ -7,7 +7,9 @@ cap_per_person is supplied by the caller, not a guessed product-wide limit.
 Training, calibration and held-out rows carry stable item_ids for leakage checks.
 """
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime
+from statistics import NormalDist
+from identity.params import use
 from hashlib import sha256
 import json
 import math
@@ -19,13 +21,14 @@ POSITIVE = {"confirm", "merge_items"}
 NEGATIVE = {"Not it", "Not the same"}
 
 
-def param_row(name, scope, family, value, prior, version, *, status="champion", ids=()):
+def param_row(name, scope, family, value, prior, version, *, status="champion", ids=(), resolved=None):
+    v = use(resolved)["values"]
     return {"name": name, "scope": dict(scope), "family": family,
             "value_or_hyperparams": deepcopy(value), "prior": deepcopy(prior),
             "version": version, "fitted_on_ids_hash": sha256(json.dumps(sorted(ids)).encode()).hexdigest(),
             "n_eff": len(ids), "metric": "f1" if family == "model_ref" else "beta_mean",
-            "held_out_score": None, "guard_lo": .02 if family == "beta" else None,
-            "guard_hi": .98 if family == "beta" else None,
+            "held_out_score": None, "guard_lo": v["identity_beta_lo"] if family == "beta" else None,
+            "guard_hi": v["identity_beta_hi"] if family == "beta" else None,
             "status": status, "frozen": False, "promoted_at": None}
 
 
@@ -38,12 +41,12 @@ def _next_version(rows, name, scope):
     return 1 + max((r["version"] for r in rows if r["name"] == name and r["scope"] == scope), default=0)
 
 
-def _prior(field, population):
-    a, b = (4., 1.) if field in {"text_sim", "image_sim"} else (9., 1.)
-    return {"a": a, "b": b} if population == "m" else {"a": b, "b": a}
+def _prior(field, population, resolved=None):
+    return deepcopy(use(resolved)['values'][f'identity_{population}_{field}'])
 
 
-def apply_label(store, event, *, cap_per_person, scope=None, log=None):
+def apply_label(store, event, *, cap_per_person, scope=None, log=None, resolved=None):
+    resolved = use(resolved, store.rows, scope or {"kind": event["kind"]})
     if cap_per_person < 1:
         raise ValueError("cap_per_person must be positive")
     if event["value"] not in POSITIVE | NEGATIVE:
@@ -73,75 +76,81 @@ def apply_label(store, event, *, cap_per_person, scope=None, log=None):
                 old = _champion(store.rows, name, scope)
                 if old and old["frozen"]:
                     continue
-                prior = _prior(field, population)
+                prior = _prior(field, population, resolved)
                 value = deepcopy(read_param(store.rows, name, scope, prior))
-                before = beta_mean(value)
-                total = value["a"] + value["b"]
+                before = beta_mean(value, resolved=resolved)
+                total = value["alpha"] + value["beta"]
                 se = math.sqrt(before * (1 - before) / (total + 1))
-                value["a" if agrees else "b"] += 1
-                mean = beta_mean(value)
+                value["alpha" if agrees else "beta"] += 1
+                mean = beta_mean(value, resolved=resolved)
                 # Preserve concentration while enforcing the spec's mean guard.
-                total = value["a"] + value["b"]
-                value = {"a": mean * total, "b": (1 - mean) * total}
+                total = value["alpha"] + value["beta"]
+                value = {"alpha": mean * total, "beta": (1 - mean) * total}
                 row = param_row(name, scope, "beta", value, prior,
-                                _next_version(store.rows, name, scope), ids=[event["id"]])
+                                _next_version(store.rows, name, scope), ids=[event["id"]], resolved=resolved)
                 row["n_eff"] = (old["n_eff"] if old else 0) + 1
                 if old:
                     old["status"] = "retired"
                 store.rows.append(row)
-                if log and abs(mean - before) > 2 * se:
+                if log and abs(mean - before) > resolved["values"]["identity_anomaly_se"] * se:
                     log.note("identity.anomaly", name=name, version=row["version"])
         if log:
             log.note("identity.label", learned=learned, field_count=len(event["fields"]))
     return learned
 
 
-def fit_em(rows, initial, *, iterations=50, tolerance=1e-8):
+def fit_em(rows, initial, *, iterations=None, tolerance=None, resolved=None):
     """Bernoulli Fellegi-Sunter EM. Labels never enter the E or M steps."""
+    resolved = use(resolved)
+    v = resolved['values']
+    iterations = int(v['identity_em_iterations']) if iterations is None else iterations
+    tolerance = v['identity_em_tolerance'] if tolerance is None else tolerance
     fields = sorted({f for r in rows for f, v in r["fields"].items() if v is not None})
-    weights = {f: deepcopy(initial.get(f, {p: _prior(f, p) for p in ("m", "u")})) for f in fields}
-    match_prior = .5
+    weights = {f: deepcopy(initial.get(f, {p: _prior(f, p, resolved) for p in ("m", "u")})) for f in fields}
+    match_prior = v["identity_match_prior"]
     for _ in range(iterations):
-        counts = {f: {p: _prior(f, p) for p in ("m", "u")} for f in fields}
+        counts = {f: {p: _prior(f, p, resolved) for p in ("m", "u")} for f in fields}
         probabilities = []
         for row in rows:
             odds = math.log(match_prior / (1 - match_prior))
             for field, agrees in row["fields"].items():
                 if agrees is None:
                     continue
-                m, u = (beta_mean(weights[field][p]) for p in ("m", "u"))
+                m, u = (beta_mean(weights[field][p], resolved=resolved) for p in ("m", "u"))
                 odds += math.log(m / u if agrees else (1 - m) / (1 - u))
-            probability = 1 / (1 + math.exp(-max(-700, min(700, odds))))
+            # Stable logistic identity; no clipping or tunable saturation threshold.
+            e = math.exp(-abs(odds))
+            probability = 1 / (1 + e) if odds >= 0 else e / (1 + e)
             probabilities.append(probability)
             for field, agrees in row["fields"].items():
                 if agrees is not None:
-                    key = "a" if agrees else "b"
+                    key = "alpha" if agrees else "beta"
                     counts[field]["m"][key] += probability
                     counts[field]["u"][key] += 1 - probability
         change = 0.
         for field in fields:
             for p in ("m", "u"):
-                mean = beta_mean(counts[field][p])
-                change = max(change, abs(mean - beta_mean(weights[field][p])))
+                mean = beta_mean(counts[field][p], resolved=resolved)
+                change = max(change, abs(mean - beta_mean(weights[field][p], resolved=resolved)))
                 n = sum(counts[field][p].values())
-                counts[field][p] = {"a": mean * n, "b": (1 - mean) * n}
+                counts[field][p] = {"alpha": mean * n, "beta": (1 - mean) * n}
         weights = counts
         if probabilities:
-            match_prior = min(.98, max(.02, sum(probabilities) / len(probabilities)))
+            match_prior = min(v["identity_beta_hi"], max(v["identity_beta_lo"], sum(probabilities) / len(probabilities)))
         if change < tolerance:
             break
     return weights
 
 
-def predict(row, model):
+def predict(row, model, *, resolved=None):
     return score_signals(row["fields"], row.get("text_sim"), row.get("image_sim"),
                          same_kind=row.get("same_kind", True), same_purpose=row.get("same_purpose", 0),
                          stock_photo=row.get("stock_photo", False), weights=model.get("weights"),
-                         thresholds=model.get("thresholds"))["label"] == "exact"
+                         thresholds=model.get("thresholds"), resolved=resolved)["label"] == "exact"
 
 
-def evaluate(rows, model):
-    outcomes = [(bool(r["match"]), predict(r, model)) for r in rows]
+def evaluate(rows, model, *, resolved=None):
+    outcomes = [(bool(r["match"]), predict(r, model, resolved=resolved)) for r in rows]
     return metrics(outcomes), outcomes
 
 
@@ -155,7 +164,9 @@ def metrics(outcomes):
             "f1": 2 * tp / (2 * tp + fp + fn) if 2 * tp + fp + fn else 0.}
 
 
-def bootstrap_noise(champion, challenger, *, seed=0, resamples=1000):
+def bootstrap_noise(champion, challenger, *, seed=0, resamples=None, resolved=None):
+    v = use(resolved)["values"]
+    resamples = int(v["identity_bootstrap_resamples"]) if resamples is None else resamples
     if not champion or len(champion) != len(challenger):
         raise ValueError("held-out pairs required for paired bootstrap")
     rng = random.Random(seed)
@@ -165,7 +176,7 @@ def bootstrap_noise(champion, challenger, *, seed=0, resamples=1000):
         indices = [rng.randrange(len(champion)) for _ in champion]
         sample_delta = metrics([challenger[i] for i in indices])["f1"] - metrics([champion[i] for i in indices])["f1"]
         differences.append(abs(sample_delta - delta))
-    return sorted(differences)[math.ceil(.95 * resamples) - 1]
+    return sorted(differences)[math.ceil(v["identity_confidence_level"] * resamples) - 1]
 
 
 def assert_disjoint(training, heldout):
@@ -181,57 +192,85 @@ def assert_disjoint(training, heldout):
         raise ValueError("training leak: held-out pair or item appeared in training")
 
 
-def _wilson_lower(successes, n):
+def _wilson_lower(successes, n, confidence):
     if not n:
         return 0.
-    z, p = 1.959963984540054, successes / n
+    z, p = NormalDist().inv_cdf((1 + confidence) / 2), successes / n
     return (p + z*z/(2*n) - z*math.sqrt(p*(1-p)/n + z*z/(4*n*n))) / (1+z*z/n)
 
 
-def calibrate_exact(rows, weights):
-    scored = [(score_signals(r["fields"], r.get("text_sim"), r.get("image_sim"), weights=weights)["score"], r)
-              for r in rows if "match" in r]
+def calibrate_exact(rows, weights, *, resolved=None):
+    resolved = use(resolved)
+    scored = [(score_signals(r['fields'], r.get('text_sim'), r.get('image_sim'), weights=weights, resolved=resolved)['score'], r)
+              for r in rows if 'match' in r]
     for threshold in sorted({score for score, _ in scored}):
-        model = {"weights": weights, "thresholds": {"identity_t_exact": threshold}}
-        accepted = [r for _, r in scored if predict(r, model)]
-        if _wilson_lower(sum(bool(r["match"]) for r in accepted), len(accepted)) >= .95:
+        model = {'weights': weights, 'thresholds': {'identity_t_exact': threshold}}
+        accepted = [r for _, r in scored if predict(r, model, resolved=resolved)]
+        if _wilson_lower(sum(bool(r['match']) for r in accepted), len(accepted), resolved['values']['identity_confidence_level']) >= resolved['values']['identity_exact_precision']:
             return threshold
-    # No supported threshold: exact is disabled rather than using held-out labels to fit it.
     return None
 
 
-def nightly_fold(store, kind, training, heldout, *, seed=0, log=None):
+def calibrate_thresholds(rows, weights, *, resolved=None):
+    """Fit all label thresholds on the learned W, using training labels only."""
+    resolved = use(resolved)
+    exact = calibrate_exact(rows, weights, resolved=resolved)
+    scored = [(score_signals(r['fields'], r.get('text_sim'), r.get('image_sim'), weights=weights, resolved=resolved)['score'], r)
+              for r in rows if 'match' in r]
+    choices = sorted({score for score, _ in scored})
+
+    def fitted(target):
+        return max(choices, key=lambda t: (metrics([(target(row), score >= t) for score, row in scored])['f1'], t)) if choices else None
+
+    model = fitted(lambda r: bool(r['match']))
+    comparable = fitted(lambda r: bool(r['match']) or
+                        (r.get('same_kind', True) and r.get('same_purpose', 0) >= resolved['values']['identity_purpose_min']))
+    return {'identity_t_exact': exact, 'identity_t_model': model, 'identity_t_comparable': comparable}
+
+
+def _timestamp(at):
+    if at is None:
+        raise ValueError('at timestamp must be explicit')
+    parsed = datetime.fromisoformat(at.replace('Z', '+00:00'))
+    if parsed.tzinfo is None:
+        raise ValueError('at timestamp must include timezone')
+    return at
+
+
+def nightly_fold(store, kind, training, heldout, *, seed=0, log=None, at=None, resolved=None):
     if not training or not heldout:
         raise ValueError("training and held-out pairs required")
     assert_disjoint(training, heldout)
     if any(r["kind"] != kind for r in list(training) + list(heldout)):
         raise ValueError("fold kind mismatch")
+    resolved = use(resolved, store.rows, {"kind": kind})
     scope, name = {"kind": kind}, "identity_weights"
     with store.transaction():
         old = _champion(store.rows, name, scope)
         champion = deepcopy(old["value_or_hyperparams"]) if old else {"weights": None, "thresholds": {}}
-        weights = fit_em(training, champion.get("weights") or {})
-        challenger = {"weights": weights, "thresholds": {"identity_t_exact": calibrate_exact(training, weights)}}
-        score, outcomes = evaluate(heldout, challenger)
-        old_score, old_outcomes = evaluate(heldout, champion)
-        noise = bootstrap_noise(old_outcomes, outcomes, seed=seed)
+        weights = fit_em(training, champion.get("weights") or {}, resolved=resolved)
+        challenger = {"weights": weights, "thresholds": calibrate_thresholds(training, weights, resolved=resolved)}
+        score, outcomes = evaluate(heldout, challenger, resolved=resolved)
+        old_score, old_outcomes = evaluate(heldout, champion, resolved=resolved)
+        noise = bootstrap_noise(old_outcomes, outcomes, seed=seed, resolved=resolved)
         row = param_row(name, scope, "model_ref", challenger, champion,
-                        _next_version(store.rows, name, scope), status="challenger", ids=[r["id"] for r in training])
+                        _next_version(store.rows, name, scope), status="challenger", ids=[r["id"] for r in training], resolved=resolved)
         row["held_out_score"] = {**score, "champion_f1": old_score["f1"], "bootstrap_noise": noise,
                                  "held_out_ids_hash": sha256(json.dumps(sorted(r["id"] for r in heldout)).encode()).hexdigest()}
-        if (not (old and old["frozen"]) and score["precision"] >= .95
+        if (not (old and old["frozen"]) and score["precision"] >= resolved["values"]["identity_exact_precision"]
                 and score["f1"] - old_score["f1"] > noise):
             if old:
                 old["status"] = "retired"
             row["status"] = "champion"
-            row["promoted_at"] = datetime.now(timezone.utc).isoformat()
+            row["promoted_at"] = _timestamp(at)
         store.rows.append(row)
         if log:
             log.note("identity.param_fold", version=row["version"], status=row["status"], **score)
         return row
 
 
-def rollback(store, kind, version, *, log=None):
+def rollback(store, kind, version, *, log=None, at=None):
+    _timestamp(at)
     scope, name = {"kind": kind}, "identity_weights"
     with store.transaction():
         target = next((r for r in store.rows if r["name"] == name and r["scope"] == scope and r["version"] == version), None)
@@ -241,7 +280,7 @@ def rollback(store, kind, version, *, log=None):
             if row["name"] == name and row["scope"] == scope and row["status"] == "champion":
                 row["status"] = "retired"
         target["status"] = "champion"
-        target["promoted_at"] = datetime.now(timezone.utc).isoformat()
+        target["promoted_at"] = _timestamp(at)
         if log:
             log.note("identity.rollback", version=version)
         return target

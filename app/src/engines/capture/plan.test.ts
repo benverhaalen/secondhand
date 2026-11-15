@@ -78,20 +78,22 @@ test('unique measured match chooses published dimensions and explains the choice
   assert.ok(!p.questions.some(q=>q.field==='dimensions'));
 });
 test('ambiguous or unavailable readings ask once with labelled variants and typed other', () => {
-  for (const patch of [
+  const patches: Partial<State>[] = [
     {has_lidar:false,kept:['ring'],facts:{}},
     {facts:{dimensions:measured},variants:{dimensions:[variants[0],{...variants[1],value:{width:121,depth:76,height:75}}]}},
     {has_lidar:false,kept:['ring'],facts:{dimensions:measured}},
-  ]) {
+  ];
+  for (const patch of patches) {
     const s={...furniture,...patch};const p=run(s);
     const questions=p.questions.filter(q=>q.field==='dimensions');assert.equal(questions.length,1);
     const q=questions[0];assert.equal(q.kind,'pick_one');assert.equal(q.other,true);assert.equal(q.why,'required');
-    assert.deepEqual(q.options,s.variants.dimensions.map(v=>({value:v.value,label:v.label,proposed:false})));
+    assert.deepEqual(q.options,s.variants!.dimensions!.map(v=>({value:v.value,label:v.label,proposed:false})));
     assert.deepEqual(q.parts,['width','depth','height']);assert.deepEqual(q.units,['cm','in']);
   }
 });
 test('confident variant needs no question; confirmed answers override variants', () => {
-  for (const facts of [{},{dimensions:{value:variants[1].value,source:'you_said' as const,confidence:1}}]) {
+  const factsList: State['facts'][]=[{},{dimensions:{value:variants[1].value,source:'you_said',confidence:1}}];
+  for (const facts of factsList) {
     const p=run({...furniture,has_lidar:false,kept:['ring'],variants:{dimensions:[{...variants[0],p:.93},variants[1]]},facts});
     assert.ok(!p.questions.some(q=>q.field==='dimensions'));
     assert.deepEqual(p.fields.find(f=>f.field==='dimensions')!.value,'dimensions' in facts?variants[1].value:variants[0].value);
@@ -213,4 +215,34 @@ test('plan fields preserve only known auto-accept markers', () => {
 test('plan always carries inner_class, null for a single item', () => {
   assert.equal(run({type:'apparel'}).inner_class,null,'non-bundle inner_class must be null');
   assert.equal(run({type:'apparel',pieces:2}).inner_class,'flat_garment');
+});
+test('unsettled variants keep the reading visible and hold the question until shooting ends', () => {
+ const reading={value:{width:60,height:50,depth:30},source:'measured' as const,confidence:.9};
+ const initial={type:'bags' as const,lookups:'done' as const,variants:{dimensions:[{label:'Small',value:{width:30,height:22,depth:12},p:.6},{label:'Large',value:{width:40,height:30,depth:20},p:.6}]},facts:{dimensions:reading}};
+ for(const kept of [['inside_tab'],['scan','inside_tab']]) {
+  const p=run({...initial,kept}),field=p.fields.find(field=>field.field==='dimensions')!;
+  assert.equal(field.state,kept.includes('scan')?'missing':'waiting');
+  assert.deepEqual(field.value,reading.value);assert.equal(field.source,'measured');
+  assert.equal(p.questions.filter(q=>q.field==='dimensions').length,kept.includes('scan')?1:0);
+ }
+});
+test('weak matching reading leaves a variant question without a proposed option', () => {
+ const p=run({...furniture,facts:{dimensions:{...measured,confidence:.5}}});
+ const q=p.questions.find(q=>q.field==='dimensions');
+ assert.ok(q,'weak measurement must leave the variant question');
+ assert.ok(q.options.every(option=>!option.proposed));
+});
+test('zone-less graphic and flaw asks each collapse into one shot by type', () => {
+ for(const type of ['graphic','flaw'] as const) {
+  const asks=[{type,text:'Take a close photo.'},{type,text:'Take another close photo.'}];
+  const p=run({...tee,studio:{requested:true,measurements:['pit_to_pit','length'],asks}});
+  const shots=p.questions.filter(q=>q.kind==='shot');
+  assert.equal(shots.length,1,'duplicate studio steps require one shot');
+  assert.equal(shots[0].shot!.step,type);
+  assert.equal(shots[0].words,asks[0].text);
+  assert.ok(!shots[0].shot!.step.includes('undefined'));
+  const settled=run({...tee,kept:[...tee.kept,type],studio:{requested:true,measurements:['pit_to_pit','length'],asks}});
+  assert.equal(settled.complete.studio!.ready,true);
+  assert.ok(!settled.questions.some(q=>q.kind==='shot'));
+ }
 });
