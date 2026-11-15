@@ -38,6 +38,7 @@ export interface JobRow {
 
 export interface DecisionRow {
   id: string;
+  version?: number;
   data?: 'synthetic' | 'example' | `dataset:${string}` | `live:${string}` | 'captured';
   user_id: string;
   kind: string; // product.md §5 decision kinds
