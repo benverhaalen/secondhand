@@ -76,7 +76,11 @@ export function TopSlot({ news, setup }: {
         <View {...mark('top-slot', { kind: 'news' })} style={{ gap: space.s1 }}>
           <Txt role="caption" tone="ink-2">{news.since}</Txt>
           <Txt role="amount">{money(news.kept)}</Txt>
-          <Txt role="body" tone="ink-2">{news.line}</Txt>
+          {/* The chevron says the slot opens You (U1: what opens a screen says so). */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.s1 }}>
+            <Txt role="body" tone="ink-2">{news.line}</Txt>
+            <Icon name="arrow-right-01" size={20} tone="ink-2" />
+          </View>
         </View>
       </Press>
     );

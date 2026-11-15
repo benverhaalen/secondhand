@@ -4,20 +4,10 @@
   "states": [
     "typical"
   ],
+  "skip": "",
+  "catalog": false,
   "status": "fail",
   "findings": [
-    {
-      "level": "error",
-      "id": "B34",
-      "where": "screen 1 \"$163.63\"",
-      "msg": "spills out of [amount]: a thing holds what is in it (ledger L37)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "screen 1 <div>",
-      "msg": "has a fill of rgb(242, 242, 242), which is not a color in tokens.css: use var(--token)"
-    },
     {
       "level": "error",
       "id": "U1",
@@ -25,16 +15,16 @@
       "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
     },
     {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"you\"",
-      "msg": "is not drawn in the states new, empty, one, dense, loading, failed, offline: draw each, or say why it can't happen with data-skip=\"new: why\""
-    },
-    {
       "level": "warn",
       "id": "B3",
       "where": "app",
       "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "error",
+      "id": "B35",
+      "where": "screen \"you\"",
+      "msg": "is not drawn in the states new, empty, one, dense, loading, failed, offline, at /you?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
     }
   ]
 }

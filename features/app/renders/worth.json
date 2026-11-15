@@ -4,6 +4,8 @@
   "states": [
     "check"
   ],
+  "skip": "",
+  "catalog": false,
   "status": "fail",
   "findings": [
     {
@@ -11,36 +13,6 @@
       "id": "B16",
       "where": "screen 1 \"Nike Dunk Low, Grey Fog, men’s 10\"",
       "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
-    },
-    {
-      "level": "error",
-      "id": "B34",
-      "where": "screen 1 \"$65 to $95\"",
-      "msg": "spills out of [range]: a thing holds what is in it (ledger L37)"
-    },
-    {
-      "level": "error",
-      "id": "B7",
-      "where": "screen 1 <div>",
-      "msg": "has a fill of rgb(242, 242, 242), which is not a color in tokens.css: use var(--token)"
-    },
-    {
-      "level": "error",
-      "id": "B9",
-      "where": "screen 1 <img>",
-      "msg": "is an image with no alt text: say what the photo shows, or name the logo (C3, C5)"
-    },
-    {
-      "level": "error",
-      "id": "U1",
-      "where": "screen 1 <button>",
-      "msg": "is a button with no fill and no outline: a button is a pill or a filled shape"
-    },
-    {
-      "level": "error",
-      "id": "B35",
-      "where": "screen \"worth\"",
-      "msg": "is not drawn in the states new, empty, one, typical, dense, loading, failed, offline: draw each, or say why it can't happen with data-skip=\"new: why\""
     },
     {
       "level": "warn",
@@ -53,6 +25,12 @@
       "id": "L2",
       "where": "dark screen 2",
       "msg": "is only black, white and gray, with no color ground and no photo: it will read as no brand (ledger L2)"
+    },
+    {
+      "level": "error",
+      "id": "B35",
+      "where": "screen \"worth\"",
+      "msg": "is not drawn in the states new, empty, one, typical, dense, loading, failed, offline, at /worth?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
     }
   ]
 }
