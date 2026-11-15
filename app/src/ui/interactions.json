@@ -1403,11 +1403,11 @@
     },
     "want-cut-{o.id}": {
       "screen": "/want",
-      "intent": "Cut",
+      "intent": "Fit",
       "result": {
         "kind": "in-place",
         "to": null,
-        "back": "Set cut; Any clears it. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist."
+        "back": "Set fit; Any clears it. Back first dismisses keyboard or temporary picker, then follows the screen stack. Edge swipe follows the same rule. Committed changes persist."
       },
       "press": {
         "feedback": "scale",
