@@ -58,7 +58,7 @@ export const PROMOTE_AT = 3;
 // The pages under You, in the order the tab lists them.
 export const PAGES = {
   payouts: { title: 'Payouts', icon: 'money-03' },
-  insights: { title: 'By site', icon: 'store-01' },
+  insights: { title: 'Insights', icon: 'store-01' },
   records: { title: 'Records', icon: 'calendar-03' },
   connections: { title: 'Your sites', icon: 'link-01' },
   rules: { title: 'Rules and limits', icon: 'settings-01' },

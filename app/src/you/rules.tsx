@@ -63,6 +63,8 @@ export function Rules() {
       <List>
         <ListRow id="rules-permissions" label="Permissions" detail="What it does with Undo, what always asks, and what it never does"
           onPress={() => go.to('/you/permissions')} />
+        {/* What it did on its own, with Undo, beside the rules that let it (moved from You, Ben 10:27). */}
+        <ListRow id="rules-activity" label={PAGES.log.title} detail="Every step it took, with Undo" onPress={() => go.to('/you/log')} />
       </List>
 
       {live.length ? (

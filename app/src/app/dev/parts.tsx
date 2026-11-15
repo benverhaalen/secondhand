@@ -10,7 +10,9 @@ import {
   Feed, QueueView, MoneyNews, Pile, type SoldThing,
 } from '@/ui';
 import { ChoiceChips, ColourSwatches, Gallery, MatchCard, OfferSheet, PriceChart, PriceRange, RangeSlider, SearchField, SiteStrip, SizePicker } from '@/ui';
+import { CardGroup } from '@/ui/parts/card-group';
 import { ConvoRow } from '@/ui/parts/convo-row';
+import { Glance } from '@/ui/parts/glance';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
@@ -207,6 +209,8 @@ function Sheetful() {
 
       <Section title="Amount">
         <Amount value={46.95} what="You get, after fees" />
+        <Glance value={163.63} what="You got from 4 sales, after fees" stats={[{ value: '$132.33', word: 'On its way' }, { value: '4', word: 'Live' }]} />
+        <CardGroup label="Looking for"><ItemCard id="cg-want" title="Standing desk" photo={null} state="working" word="2 of 3 sites" fact={{ label: 'Nothing yet under', amount: '$150' }} /></CardGroup>
       </Section>
 
       <Section title="Grid tile, shelf, filter row (Sell)">

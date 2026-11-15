@@ -13,8 +13,8 @@ after(async () => { await app?.stop(); });
 const STATES = {
   'payouts typical': { shows: ['Payouts', '$132.33', 'On its way, after fees', 'On its way', 'Paid out', 'On its way after you ship', 'In your hand at pickup', 'In your bank Nov 4'] },
   'payouts new': { shows: ['Payouts', 'No payouts yet'] },
-  'insights typical': { shows: ['By site', '2 sales', 'Sells in about 11 days', 'What your things are worth', '$85 to $115', 'November goal', 'Kept so far', '$300 a month'] },
-  'insights new': { shows: ['By site', 'Each site you sell on shows here once it has a sale.', 'Amount'] },
+  'insights typical': { shows: ['Insights', 'Sales each week', 'Your things', 'Kept, worth $70 to $95', 'How they’re doing', 'Brass desk lamp with cream shade', 'The tick is what’s usual for it', 'By site', '2 sales', 'Sells in about 11 days', 'What your things are worth', '$85 to $115', 'November goal', 'Kept so far', '$300 a month'] },
+  'insights new': { shows: ['Insights', 'By site', 'Each site you sell on shows here once it has a sale.', 'Amount'] },
   'records typical': { shows: ['Records', '2026', 'Sold, 4 sales', 'Fees and labels', '$25.37', 'Kept', '$163.63', 'Download CSV'] },
   'records new': { shows: ['Records', 'No sales this year'], hidden: ['Download CSV'] },
   'connections mismatch': { shows: ['Doesn’t match', 'Brass desk lamp with cream shade', 'Open on the site'] },
