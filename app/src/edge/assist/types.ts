@@ -43,12 +43,12 @@ export interface Answer {
   calls: ToolCallInfo[];
   gate: { checked: number; cut: number; cut_sentences: string[]; tags_removed: number };
   model: string;
-  effort: 'low' | 'medium' | 'high';
+  effort: 'low' | 'medium';
   usage: Usage;
   ms: { first_text: number | null; done: number };
 }
 
 export type AssistEvent =
-  | { event: 'assist.tool'; data: ToolCallInfo & { phase: 'start' | 'end' } }
+  | { event: 'assist.tool'; data: Omit<ToolCallInfo, 'input'> & { phase: 'start' | 'end' } }
   | { event: 'assist.text'; data: { delta: string } }
-  | { event: 'assist.settled'; data: Answer };
+  | { event: 'assist.settled'; data: Omit<Answer, 'calls'> & { calls: Omit<ToolCallInfo, 'input'>[] } };
