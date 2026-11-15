@@ -15,7 +15,9 @@ export function ui(root, { files }) {
     const code = text.replace(/var\(--[\w-]+\)/g, '');
     for (const m of code.matchAll(/#[0-9a-fA-F]{3,8}\b(?![\w-])|\b(?:rgba?|hsla?|oklch)\(/g))
       if (!/^#\d+$/.test(m[0]) || m[0].length > 4) out.push(err(`${f}:${lineOf(code, m.index)}`, `raw color ${m[0]}: use var(--token) from brand/tokens.css`));
-    for (const m of code.matchAll(/font-?[Ff]amily["']?\s*[:=]\s*["']?([^;"'\n,}]+)/g))
+    // A font-face block defines a family, it does not set one: its name is not a use of a literal font.
+    const used = code.replace(/@font-face\s*\{[^}]*\}/g, m => m.replace(/[^\n]/g, ' '));
+    for (const m of used.matchAll(/font-?[Ff]amily["']?\s*[:=]\s*["']?([^;"'\n,}]+)/g))
       if (!/^\s*(var\(|inherit|`?\$\{)/.test(m[1]) && m[1].trim()) out.push(err(`${f}:${lineOf(code, m.index)}`, `font ${m[1].trim()}: use the font token from brand/tokens.css`));
     // The server's code (edge, engines) holds no words a person reads in the app; its strings are code.
     if (!/^app\/src\/(edge|engines)\//.test(f)) for (const { s, i } of strings(text)) for (const h of scan(s)) {

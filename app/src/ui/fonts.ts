@@ -59,7 +59,7 @@ function useWebFaces(): boolean {
   const [ready, setReady] = useState(!web);
   useEffect(() => {
     if (ready || typeof document === 'undefined') return;
-    const rule = (f: { name: string; file: unknown; weight: number }, extra = '') => `@font-face{font-family:"${f.name}";src:url("${Asset.fromModule(f.file as number).uri}");font-weight:${f.weight};font-style:normal;font-display:block${extra}}`;
+    const rule = (f: { name: string; file: unknown; weight: string | number }, extra = '') => `@font-face{font-family:"${f.name}";src:url("${Asset.fromModule(f.file as number).uri}");font-weight:${f.weight};font-style:normal;font-display:block${extra}}`;
     const brand = FACES.filter(on);
     const el = document.createElement('style');
     el.textContent = [...brand.map(f => rule(f)), ...OPENS.map(f => rule(f, `;${f.css}`))].join('\n');
