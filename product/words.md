@@ -714,3 +714,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate build seats work out how the agent operates before they build
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after the agent wrote observed runs into the build plan.
 > Well before observing real runs, Im telling you the subagents can be intelligent enough and prompted, you should remind them, that they can understand before building it, how the subagent will actually be able to operate on the page, the pipelines for actions, the ways to build it to be efficient, intelligent, and capable of every needed feature to truly deliver a working and useful today product
+
+## 2026-11-14 nate understand and finalise how it is built, and tests that expect what breaks
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, about how build seats should work.
+> Do you think this is worse? Im not stating you should lock in our subagents to a few specific behaviors, but like dont just guess and check, really understand and finalize the spec with how things should be built before we finish building. Then when testing in parallel the features that are finished building, the tests should already anticipate the things that likely break it, so in the case of an error its quickly identified
