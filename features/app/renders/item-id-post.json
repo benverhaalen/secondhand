@@ -1,0 +1,152 @@
+{
+  "route": "item/[id]/post",
+  "screen": "item",
+  "states": [
+    "one"
+  ],
+  "skip": "empty: an item page always has an item, and with nothing known yet it is new; new: an item still being researched, /item/it_hoodie; typical: two sites and one photo, /item/it_jacket; dense: many photos or sites, /item/it_tee; loading: under a sheet the page is its ground, /item/it_switch?state=loading; failed: under a sheet the page is its ground, /item/it_switch?state=failed; offline: under a sheet the page is its ground, /item/it_switch?state=offline",
+  "catalog": false,
+  "wash": true,
+  "top": true,
+  "status": "fail",
+  "findings": [
+    {
+      "level": "error",
+      "id": "B20",
+      "where": "screen 1 <div>",
+      "msg": "has a 4px corner: corners on a app are 20, 36 or a pill (Art. 9.1)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "warn",
+      "id": "B15",
+      "where": "app",
+      "msg": "the brand faces are not on this machine, so line counts, widths and margins were measured in a fallback face. Put the files in fonts/ (gitignored) or set BRAND_FONTS"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"You get $200.40\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"Searched by model: specs in the title\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"1 photo, square\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"Joy-Con drift\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"You get $200.92\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"Nearby, picks up today: pickup price\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 \"When\"",
+      "msg": "is colored rgba(10, 10, 10, 0.65), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B5",
+      "where": "dark screen 1 [wash]",
+      "msg": "is a gradient built by hand: a gradient is a token used as it stands (var(--wash), var(--field)), never rebuilt (C2)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [photo]",
+      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 <div>",
+      "msg": "has a line of rgba(10, 10, 10, 0.08), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [question-card]",
+      "msg": "has a line of rgba(10, 10, 10, 0.08), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [chip]",
+      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 <div>",
+      "msg": "has a fill of rgba(10, 10, 10, 0.4), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [grabber]",
+      "msg": "has a fill of rgba(10, 10, 10, 0.3), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [listing-preview]",
+      "msg": "has a line of rgba(10, 10, 10, 0.08), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [photo-card]",
+      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "B7",
+      "where": "dark screen 1 [pill-card]",
+      "msg": "has a fill of rgb(239, 241, 242), which is not a color in tokens.css: use var(--token)"
+    },
+    {
+      "level": "error",
+      "id": "U9",
+      "where": "screen",
+      "msg": "the nav starts at 0, under the status bar (59 on an iPhone): the screen keeps the top safe area, and only the wash runs under it"
+    },
+    {
+      "level": "error",
+      "id": "U19",
+      "where": "screen",
+      "msg": "\"$235\" is shown twice on the first screen (in [screen] and [listing-preview]): say a fact once, where it is acted on"
+    },
+    {
+      "level": "error",
+      "id": "U19",
+      "where": "screen",
+      "msg": "\"Nintendo Switch OLED, white, with dock\" is shown twice on the first screen (in [guess] and [listing-preview]): say a fact once, where it is acted on"
+    }
+  ]
+}
