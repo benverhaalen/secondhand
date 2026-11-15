@@ -131,7 +131,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
       const profileRoot = join(process.env.SECONDHAND_DATA_DIR ?? tmpdir(), 'secondhand-linked-browsers');
       const pw = createRequire(join(process.cwd(), 'app/package.json'))('playwright-core') as CdpPw;
       const launcher = cdpLauncher(pw, localChrome({ executablePath, scratch: join(profileRoot, 'anonymous') })) as Launcher<BrowserPage>;
-      mercariPool = createPool({ launcher, profileRoot, accounts, vault, leases: memoryLeases(), log });
+      mercariPool = createPool({ launcher, profileRoot, accounts: scopedAccounts, vault, leases: memoryLeases(), log });
     }
     const result = await mercariPool.dispatch({ account_id, user_id: personScope.getStore(), job_id: crypto.randomUUID(), run: page => readSearchPage(page, url, signal, log) });
     if (!result.ok) throw new Error(result.message);
