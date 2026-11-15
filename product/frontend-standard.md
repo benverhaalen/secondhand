@@ -174,6 +174,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: color appears only as state fills, one field and the brick alert (brand constitution Art. 5, C2, C6).
 - [ ] Flag: more than three actions visible on a card. Choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)), so justify it rather than ban it.
 - [ ] Block: nothing sits in a corner's curve. In a box with radius r and padding p, content in a corner keeps p from the arc only at an inset x ≥ r − (r − p)/√2, measured on the ink, not the line box. On a decision card a top-right countdown sits 24 from the right edge. Shapes concentric with the box (the photo, radius r − p) already hold ([Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready), [note §1](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#1-where-content-sits-in-a-rounded-corner)).
+- [ ] Block: the tab you are on is marked by a pill behind its icon and an ink label, never by a darker ink alone ([Ben, 03:22](words.md#2026-11-15-faded-stacks-with-depth-connect-every-site-the-tab-you-are-on-the-wash-as-an-accent-above-the-first-card), [note §6](../research/today/ben/today-feed-and-card-states.md#6-the-tab-you-are-on)).
 - [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 
 ### Honesty
@@ -201,7 +202,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: no loading flash (show delay and minimum time); skeletons match the final layout.
 
 ### Access
-- [ ] Block: text contrast is at least 4.5:1 (WCAG 2.2 AA), and 3:1 for large text and UI parts. Field, state and category colors are never text on white (brand Art. 5.1).
+- [ ] Block: text contrast is at least 4.5:1 (WCAG 2.2 AA), and 3:1 for large text and UI parts. Field, state and category colors are never text on white (brand Art. 5.1). Over a gradient, the wash or a photo, contrast is measured on the rendered pixels under the text at its worst point, and text on a photo sits on a shade ([Ben, 03:22](words.md#2026-11-15-faded-stacks-with-depth-connect-every-site-the-tab-you-are-on-the-wash-as-an-accent-above-the-first-card), [note §7](../research/today/ben/today-feed-and-card-states.md#7-is-a-layered-color-readable)).
 - [ ] Block: a button's size follows its kind, never its words. A pill is 40 tall and hugs its label with 20 a side, at least 88 wide; the copy limit is its ceiling. A full-width primary is the content width by 48, one per screen. An icon button is a 40 circle; New is 56. Every target's hit area is at least 44 by 44: it grows into free space around a small control, and between two close targets the gap is split down the middle so no point belongs to both (Apple HIG; [Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready); [note §2 and §3](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#2-button-sizes)).
 - [ ] Block: inputs are at least 16 px, which prevents iOS zoom.
 - [ ] Block: VoiceOver labels exist on icon-only controls and state pills, and a pill reads as "Live on eBay", not "green dot".

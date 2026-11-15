@@ -20,6 +20,8 @@ Status: the one place progress is tracked for the build that ends at 03:00 Centr
 
 ## 0 Orchestrator
 
+Session: the orchestrator; fixtures, the reporter and run traces are with three seats, building since 21:45. The Python scaffold and the event catalogue are pushed and wait for review.
+
 - [ ] T0-2 contract examples for every `/v1` endpoint: `node --test spec/examples.test.mjs`
 - [ ] T0-3 real items with known answers and the scorer: `node --test spec/items.test.mjs`
 - [ ] S-1 Python scaffold: `python -m pytest jobs -q`
@@ -30,6 +32,8 @@ Status: the one place progress is tracked for the build that ends at 03:00 Centr
 - [ ] every new name a stream asks for is in `spec/product.md` before its code merges
 
 ## 1 Platform kernel
+
+Session: s1-kernel, building since 21:40.
 
 - [ ] interface first: `harness.call(site, verb, args)`, the envelope, error codes, hints, with a fake site behind it
 - [ ] sessions: lease, pace, keep-alive, `needs_session` per verb and field
@@ -45,6 +49,8 @@ Status: the one place progress is tracked for the build that ends at 03:00 Centr
 
 ## 2 Events and pipeline
 
+Session: s2-events, building since 21:40.
+
 - [ ] interface first: the `event` row and the snapshot shape, with a fake source
 - [ ] event intake with dedupe and one job per event
 - [ ] the outbox on every `/v1` write
@@ -57,6 +63,8 @@ Status: the one place progress is tracked for the build that ends at 03:00 Centr
 - [ ] all of it: `node --test app/src/edge/events/`
 
 ## 3 to 7 Platform teams
+
+Not started: the five teams launch when stream 1 pushes the envelope.
 
 One block per site. Every line is that site's own adapter, proved on a fixture and then on a test account on Nate's go.
 
@@ -118,6 +126,8 @@ One block per site. Every line is that site's own adapter, proved on a fixture a
 
 ## 10 Swarm intelligence
 
+Session: s10-intel, building since 21:40.
+
 - [ ] interface first: the `answer` object and the question kinds, with a fake behind it
 - [ ] question protocols as data: per kind, every target and its deadline
 - [ ] the parallel source runner: all targets at once, first answer from the fastest
@@ -136,6 +146,8 @@ One block per site. Every line is that site's own adapter, proved on a fixture a
 
 ## 11 Scoring: money
 
+Session: s11-money, building since 21:40.
+
 - [ ] valuation 1: comps arithmetic
 - [ ] valuation 2: keep in cents, and the path
 - [ ] valuation 3: the backtest harness with the leakage fixtures
@@ -152,6 +164,8 @@ One block per site. Every line is that site's own adapter, proved on a fixture a
 
 ## 12 Scoring: knowledge
 
+Session: s12-knowledge, building since 21:40.
+
 - [ ] identity id-1 to id-6
 - [ ] demand and trend dt-1 to dt-6
 - [ ] platform analytics pa-1 to pa-7, reading Ben's levers data
@@ -161,6 +175,8 @@ One block per site. Every line is that site's own adapter, proved on a fixture a
 - [ ] all of it: `python -m pytest jobs` and `node --test app/src/engines/trust/`
 
 ## 13 Databricks
+
+Session: s13-databricks, building since 21:40.
 
 - [ ] T0-1 the workspace checks on the event workspace, including whether a headless browser runs on its compute
 - [ ] interface first: the `param`, `observation`, `evidence`, `citation` shapes with an in-memory fake
@@ -175,6 +191,8 @@ One block per site. Every line is that site's own adapter, proved on a fixture a
 
 ## 14 Capture and photo
 
+Session: s14-capture, building since 21:40.
+
 - [ ] the type suggestion contract and both ways of confirming it (tap, and skip when confident)
 - [ ] the per-type process table as data: instant, series, scan
 - [ ] the follow-up inputs as data, one input per field a type needs
@@ -184,6 +202,8 @@ One block per site. Every line is that site's own adapter, proved on a fixture a
 
 ## 15 API and contract
 
+Session: s15-api (owns T0-2 and app sign-in), building since 21:40.
+
 - [ ] interface first: `spec/examples/` for every endpoint, pushed for Ben's screens
 - [ ] `/v1` routes over each engine as it lands
 - [ ] jobs with stage frames and found counts over SSE
@@ -192,6 +212,8 @@ One block per site. Every line is that site's own adapter, proved on a fixture a
 - [ ] `npm run check` in `app/`
 
 ## 16 Review, test and fix
+
+Not started: launches with the first merges. Each stream lead runs its own engines' expert sessions (X-1 to X-11).
 
 - [ ] X-1 to X-11 expert session per engine, findings folded into its tasks
 - [ ] a fresh review of every stream's merges, with `node scripts/evidence.mjs brief`
