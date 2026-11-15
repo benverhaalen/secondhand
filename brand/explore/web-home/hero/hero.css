@@ -1,41 +1,44 @@
-/* The hero: the line over a wall of things, dark by default (Ben, 05:49 and 07:07). Values are tokens. */
+/* The hero: the line over a wall of things, dark by default (Ben, 05:49 and 07:07), with no gradient (09:21). Values are tokens. */
 body { overflow-x: hidden; }
 header { color: var(--ink); }
 .lockup { display: inline-flex; align-items: center; text-decoration: none; }
-/* The hands: four-finger-03, the right one turned so both thumbs point out, as in the dap sprite. Each carries one ring color, so the
+/* The hands: four-finger-03, the right one turned so both thumbs point out. Each carries one ring color, so the
    wordmark keeps its ink (C1) and the color sits beside it (Ben, 08:31: "make the wordmark text use color"). hands-fit.js
    sizes them to the wordmark's ink. */
 .hand { flex: none; color: var(--sky); overflow: visible; }
 .hand:last-of-type { color: var(--mint); }
-.lockup .hand, .dap .hand { width: 24px; height: 24px; }
-.lockup .hand:last-child, .dap .hand:last-child, .hl-lock .hand:last-child { transform: scaleX(-1); }
+.lockup .hand, .arrive .hand { width: 24px; height: 24px; }
+.lockup .hand:last-child, .arrive .hand:last-child, .hl-lock .hand:last-child { scale: -1 1; }
 .hl-lock { white-space: nowrap; }
 
-.hero { position: relative; isolation: isolate; min-height: max(100svh, 560px); display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: 72px var(--mx) var(--s-9); overflow: hidden; background: var(--page); }
+:root { --bar: 72px; }  /* the header's height: its 56 controls and 8 above and below */
+.hero { position: relative; isolation: isolate; min-height: max(100svh, 560px); display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; padding: var(--bar) var(--mx) var(--s-9); overflow: hidden; background: var(--page); }
 .copy { position: relative; z-index: 2; will-change: transform, opacity; justify-self: stretch; min-width: 0; }  /* the column's width, so the line with its hands is measured against the room it really has */
 .hero .lead { color: var(--ink); margin-top: var(--s-6); }  /* ink, not ink-2: the lead sits on the moving wall, and 4.5:1 holds only in ink */
-.hero .act { margin-top: var(--s-7); display: flex; gap: var(--s-6); justify-content: center; align-items: center; flex-wrap: wrap; }
-/* "secondhand" in the wordmark face (Ben, 07:07: the second one, not "second hand") */
+/* No gradient on the first screen (L56; Ben, 09:21: "no gradient and just a very tasteful shadow underneath the text"). The
+   shadow is the page's own color, so in dark it is a dark shadow under light text: a tight one that keeps each letter's
+   edge, and a wide faint one that quiets the photos behind the words. It never reads as a glow, because it is the ground's
+   color and not light. The hero check holds the text at 4.5:1 over every moment of the wall. */
+.copy .hero-t, .copy .lead { text-shadow: 0 1px 2px color-mix(in srgb, var(--page) 72%, transparent), 0 2px 28px color-mix(in srgb, var(--page) 88%, transparent); }
+/* The act, then the stores right under it, centered (L59; Ben, 09:21: "larger and centered right below the see how it works thing") */
+.hero .act { margin-top: var(--s-7); display: grid; justify-items: center; gap: var(--s-4); }
+/* "secondhand" in the wordmark face (Ben, 07:07: the second one, not "second hand"; kept at 09:24, L54) */
 .hl { font-family: var(--font-display); font-weight: var(--w-display); letter-spacing: -0.01em; white-space: nowrap; font-size: calc(1em * var(--hl-fit, 1)); }
 /* --hl-fit is set by hero.js from the two faces' measured x-heights, so the lowercase letters of both stand the same
    height on one baseline (Ben, 07:09: "aligned differently. and fits a little differently") */
 .hero-t { text-wrap: balance; }
 
-/* the wall: columns of tiles, softened, under the field. No dark patch behind the words (Ben, 08:31): the field lies over
-   the whole wall as one see-through layer. The wall starts under the header and fades in, so the wordmark sits on the
-   field and never on a photo (C1). */
-.wall { position: absolute; inset: 72px 0 0; z-index: 0; pointer-events: none; overflow: hidden; }
-/* the columns start 8% above the wall, which is 6.9% of their own height, so the fade starts at the wall's top edge */
+/* the wall (L55): columns of tiles, softened and dimmed, straight on the page. It starts under the header and fades in,
+   so the wordmark sits on the page and never on a photo (C1). */
+.wall { position: absolute; inset: var(--bar) 0 0; z-index: 0; pointer-events: none; overflow: hidden; }
+/* the columns start 8% above the wall, which is 6.9% of their own height, so the fade starts at the wall's top edge (L55) */
 .cols { position: absolute; inset: -8% -4%; display: flex; gap: var(--s-3); justify-content: center;
   -webkit-mask-image: linear-gradient(transparent 6.9%, #000 calc(6.9% + 96px)); mask-image: linear-gradient(transparent 6.9%, #000 calc(6.9% + 96px)); }
 .col { flex: none; width: var(--tile); position: relative; will-change: transform; }
 .tile { position: absolute; left: 0; width: var(--tile); height: var(--tile); border-radius: 20px; overflow: hidden; background: var(--surface); }
+/* softened and dimmed, so the line reads over it (L55) */
 .tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(var(--soft)) saturate(.9) brightness(var(--dim)); transform: scale(1.06); transition: opacity 1.2s var(--ease-out); }
-/* the field over the wall: see-through, drifting, and turning into the next field one color at a time (hero.js) */
-/* Whole under the header, where it is the ground of the mark and the pills, and see-through over the photos. */
-.tint { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: var(--field); background-size: 220% 220%;
-  -webkit-mask-image: linear-gradient(#000 72px, rgb(0 0 0 / var(--veil)) 168px); mask-image: linear-gradient(#000 72px, rgb(0 0 0 / var(--veil)) 168px); }
-:root { --tile: 168px; --soft: 3px; --dim: .62; --veil: .62; }
+:root { --tile: 168px; --soft: 4px; --dim: .4; }
 @media (max-width: 760px) { :root { --tile: 104px; --soft: 2px; } }
 
 /* the photo proof (.tape, as .proof is the numbers grid in site.css): the tape against three pictures of one tee, the number on top of each, no field near the photos (C2) */
@@ -49,37 +52,31 @@ header { color: var(--ink); }
 @media (max-width: 760px) { .tape-row { grid-template-columns: minmax(0, 1fr); gap: var(--s-7); } }
 .how { min-height: 100svh; display: grid; place-items: center; background: var(--page); }
 
-/* the open: the hands meet, part, and the wordmark is between them */
+/* the open: the wordmark with its hands in the middle, the hands stepping in beside it, then it settles in the header (hero.js; L58) */
 .intro { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: var(--page); color: var(--ink); }
-.dap { display: flex; align-items: center; transform-origin: 0 0; }
-.dap .hand { width: 48px; height: 48px; }
-/* the dap sprite: Codex's eight frames, stepped through as a mask, the left half in sky and the right in mint */
-.intro > * { grid-area: 1 / 1; }
-.sprite { position: relative; visibility: hidden; }
-.sprite i { position: absolute; inset: 0; background: var(--sky); clip-path: inset(0 50% 0 0);
-  -webkit-mask: url(../sprites/dap.svg) 0 0 / 800% 100% no-repeat; mask: url(../sprites/dap.svg) 0 0 / 800% 100% no-repeat; }
-.sprite i + i { background: var(--mint); clip-path: inset(0 0 0 50%); }
-.intro.playing .sprite { visibility: visible; } .intro.playing .dap .hand { visibility: hidden; }
-.intro-word { font: var(--w-display) 42px/1 var(--font-display); letter-spacing: var(--tr-21); white-space: nowrap; overflow: hidden; display: inline-block; }
+.arrive { display: flex; align-items: center; transform-origin: 0 0; }
+.intro-word { font: var(--w-display) var(--t-36)/1 var(--font-display); letter-spacing: var(--tr-36); white-space: nowrap; }
 html.no-intro .intro { display: none; }
 @media (prefers-reduced-motion: reduce) { .intro { display: none; } }
 
-/* the stores, round as in the app: the site's square icon in a circle, on a 2 ring of the ground (C5, SiteBadge) */
-.logos { display: flex; gap: var(--s-1); }
-.logos .site { width: 20px; height: 20px; display: block; }
-.logos .site img { width: 20px; height: 20px; border-radius: 50%; display: block; }
+/* the stores, round as in the app: the site's square icon in a circle (C5, SiteBadge), scaled up from the app's 24 (L59) */
+.logos { display: flex; gap: var(--s-3); --site: 32px; }
+.logos .site, .logos .site img { width: var(--site); height: var(--site); display: block; }
+.logos .site img { border-radius: var(--r-pill); }
+@media (max-width: 760px) { .logos { --site: 28px; } }
 
 /* the header, laid out as Ben's reference (08:31): the mark on the left, the pages in one pill in the middle, Sign in on
    the right. The pills are solid, never glass (Art. 9). Content decides the break: the pages fit from 900 up */
 header .wrap { display: grid; grid-template-columns: 1fr auto 1fr; gap: var(--s-6); }
 header .lockup { grid-column: 1; justify-self: start; }
-header nav.pages { grid-column: 2; display: flex; margin: 0; gap: 0; padding: var(--s-1); border-radius: var(--r-pill); background: var(--sec-on-field); }
-header nav.pages a { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); color: var(--on-field); transition: background var(--t-feedback); }
-header nav.pages a:hover { color: var(--on-field); background: var(--sec-on-field); }
+/* On the plain page the pages pill and Sign in take the app's second-button fill, gray (L5), so the one black pill in view
+   is "See how it works" (C4, L50). */
+header nav.pages { grid-column: 2; display: flex; margin: 0; gap: 0; padding: var(--s-1); border-radius: var(--r-pill); background: var(--gray); }
+header nav.pages a { display: inline-flex; align-items: center; height: 40px; padding: 0 var(--s-5); border-radius: var(--r-pill); color: var(--ink); }
 header .signin, .menu-btn { grid-row: 1; grid-column: 3; justify-self: end; }
-header .signin:hover { color: var(--page); }
-.menu-btn { display: none; width: 44px; height: 44px; border: 0; border-radius: var(--r-pill); background: var(--sec-on-field); color: var(--ink); cursor: pointer; position: relative; padding: 0; }
-.menu-btn span { position: absolute; left: 13px; right: 13px; height: 1.5px; background: currentColor; border-radius: 1px; transition: transform var(--t-select) var(--ease-out); }
+.pill.second { background: var(--gray); color: var(--ink); }
+.menu-btn { display: none; width: 44px; height: 44px; border: 0; border-radius: var(--r-pill); background: var(--gray); color: var(--ink); cursor: pointer; position: relative; padding: 0; }
+.menu-btn span { position: absolute; left: 13px; right: 13px; height: 1.5px; background: currentColor; border-radius: 0; transition: transform var(--t-select) var(--ease-out); }
 .menu-btn span:first-child { top: 18px; } .menu-btn span:last-child { top: 25px; }
 .menu-btn[aria-expanded="true"] span:first-child { transform: translateY(3.5px) rotate(45deg); }
 .menu-btn[aria-expanded="true"] span:last-child { transform: translateY(-3.5px) rotate(-45deg); }
@@ -95,3 +92,30 @@ header { z-index: 11; }
 /* a phone on its side, or any short screen: the line still fits above the fold */
 @media (max-height: 520px) and (orientation: landscape) { .hero { min-height: 100svh; padding-top: 64px; padding-bottom: var(--s-4); } .hero-t { font-size: min(var(--t-hero), 8.5vh); } .hero .lead { margin-top: var(--s-3); } .hero .act { margin-top: var(--s-4); } }
 @media (max-width: 360px) { .hero-t { font-size: 36px; } }
+
+/* Hover (L57; Ben, 09:21: "when all buttons are hovered, the gradient that moves around and changes slowly should ... change
+   the button color"). The field grows as a circle from where the pointer came in, over 240 ms, and drains back toward where
+   it left in 160 ms: the color follows the hand, so it reads as the pointer's doing, and leaving is quicker than arriving, as
+   the app's press is. Inside, the field keeps its slow drift (L27). The label turns to the ink on the field with it. Only a
+   scale and a fade move, so it stays on the compositor. With Reduce Motion it is a 120 ms fade; on touch it never shows,
+   and pressing scales to .97 as in the app. */
+.pill, header nav.pages a, .menu-btn { position: relative; isolation: isolate; overflow: hidden; transition: color var(--t-select) var(--ease-out), transform var(--t-feedback) var(--ease-out); }
+.pill::before, header nav.pages a::before, .menu-btn::before { content: ''; position: absolute; z-index: -1; left: var(--px, 50%); top: var(--py, 50%); width: var(--reach, 400px); aspect-ratio: 1; border-radius: var(--r-pill); pointer-events: none;
+  background: var(--field); background-size: 220% 220%; translate: -50% -50%; scale: 0; transition: scale 160ms var(--ease-out);
+  animation: drift var(--drift) ease-in-out infinite alternate; /* L57, L27 */ }
+@media (hover: hover) {
+  .pill:hover, header nav.pages a:hover, .menu-btn:hover { color: var(--on-field); }
+  .pill:hover::before, header nav.pages a:hover::before, .menu-btn:hover::before { scale: 1; transition-duration: 240ms; }
+}
+header nav.pages a:active, .menu-btn:active { transform: scale(.97); }
+@media (prefers-reduced-motion: reduce) {
+  .pill::before, header nav.pages a::before, .menu-btn::before { scale: 1; opacity: 0; transition: opacity 120ms linear; animation: none; }
+  .pill:hover::before, header nav.pages a:hover::before, .menu-btn:hover::before { opacity: 1; }
+}
+
+/* The hands move in code (L58; Ben, 09:21: "just use the icons given to create animations and you move them on your own").
+   Hovering the header's mark makes the right hand wave twice, in three held poses a step apart, like stop motion. */
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  header .lockup:hover .hand:last-child { transform-origin: 50% 90%; animation: wave 480ms steps(3, jump-none) 2; /* L58 */ }
+}
+/* L58 */ @keyframes wave { 0%, 100% { rotate: 0deg; } 50% { rotate: -14deg; } }

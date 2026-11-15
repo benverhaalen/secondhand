@@ -34,7 +34,8 @@
 
   /* 1 hero: the field where Cleo has its sky */
   .hero { position: relative; padding: 0; }
-  .field { position: relative; overflow: hidden; padding: var(--s-9) var(--mx); min-height: 100svh; background: var(--field); background-size: 160% 160%; animation: drift var(--drift) ease-in-out infinite alternate; display: grid; place-content: center; justify-items: center; color: var(--on-field); isolation: isolate; }
+  .field { position: relative; overflow: hidden; padding: var(--s-9) var(--mx); min-height: 100svh; background: var(--field); background-size: 160% 160%; animation: drift var(--drift) ease-in-out infinite alternate; display: grid; place-content: center; justify-items: center; color: var(--on-field); isolation: isolate; /* L27 */ }
+  /* the field drifts, never static (L27; Art. 11, Website) */
   @keyframes drift { from { background-position: 0% 100%; } to { background-position: 100% 0%; } }
   .switch { display: inline-flex; gap: var(--s-1); margin-bottom: var(--s-7); }
   .switch button { height: 36px; padding: 0 var(--s-5); border: 0; border-radius: var(--r-pill); background: var(--sec-on-field); font: var(--w-medium) var(--t-15)/1 var(--font-text); color: var(--on-field); cursor: pointer; transition: background var(--t-select) var(--ease-out); }
@@ -123,6 +124,6 @@
   /* sections arrive once as they scroll in (Art. 11, Website) */
   @supports (animation-timeline: view()) {
     .reveal { animation: arrive linear both; animation-timeline: view(); animation-range: entry 10% entry 60%; }
-    @keyframes arrive { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+    /* Art. 11 */ @keyframes arrive { from { opacity: 0; transform: translateY(16px) scale(.98); } }
   }
   @media (prefers-reduced-motion: reduce) { .field, .reveal { animation: none; } html { scroll-behavior: auto; } }

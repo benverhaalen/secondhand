@@ -58,18 +58,22 @@ jobs:
             echo "::warning::BRAND_FONTS is not set, so the boards are drawn in a fallback face"
           fi
       - name: Draw the boards this push touched
+        id: boards
         if: steps.changed.outputs.boards != ''
+        continue-on-error: true
         env: { RECORD: "${{ inputs.record && '1' || '0' }}" }
         run: node brand/explore/web-home/boards/render.mjs ${{ steps.changed.outputs.boards }}
       - name: Draw every hand position in each pack
         if: steps.changed.outputs.hands == 'yes'
         run: node brand/explore/web-home/boards/03-hands/poses.mjs
       - name: Check the hero on every screen
+        id: hero
         if: steps.changed.outputs.hero == 'yes'
+        continue-on-error: true
         env: { RECORD: "${{ inputs.record && '1' || '0' }}" }
         run: |
           node brand/explore/web-home/hero/photos.mjs
-          node brand/explore/web-home/hero/check.mjs || echo "::warning::the hero check found a screen that breaks; see hero/out/audit.json"
+          node brand/explore/web-home/hero/check.mjs
       - name: Commit the renders
         run: |
           git config user.name "github-actions"
@@ -79,3 +83,9 @@ jobs:
           # Two runs can overlap: the newer run's renders win any clash over the same out/ files, since they are drawn
           # from the newer code.
           git pull --no-rebase -X ours origin "$GITHUB_REF_NAME" && git push origin "HEAD:$GITHUB_REF_NAME"
+      # The renders are committed either way, so the failure can be seen; then the run fails (web.md W14).
+      - name: Fail when a board or the hero broke a brand rule or drew in a fallback face
+        if: steps.boards.outcome == 'failure' || steps.hero.outcome == 'failure'
+        run: |
+          echo "::error::a board or the hero failed: see its out/audit.json"
+          exit 1

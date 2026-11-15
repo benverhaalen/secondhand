@@ -240,7 +240,8 @@ function checkView(view, ctx) {
   const rows = []; for (const el of view.els.filter(e => e.logo).sort((a, b) => cy(a) - cy(b))) { const row = rows.at(-1); if (row && Math.min(row[0].rect[3], el.rect[3]) - Math.max(row[0].rect[1], el.rect[1]) >= Math.min(size(row[0])[1], size(el)[1]) / 2) row.push(el); else rows.push([el]); }
   for (const logos of rows) { const hs = logos.map(l => Math.round(l.rect[3] - l.rect[1])), cap = markSizes[0];
     if (Math.max(...hs) - Math.min(...hs) > 1) E('B33', '', `logos in one row are ${[...new Set(hs)].sort((a, b) => a - b).join(', ')} px tall: logos in a row share one height (C5)`);
-    if (cap && logos.length > 1 && Math.max(...hs) > cap + 1) E('B33', '', `a logo is ${Math.max(...hs)} px tall: none is taller than the wordmark's type, ${cap} px on a ${medium} (C5)`);
+    // A Locked row that waives B33 lets the logos it marks stand taller than the wordmark's type; one height and one gap still hold.
+    if (cap && logos.length > 1 && Math.max(...hs) > cap + 1 && !logos.every(l => waives(l, 'B33'))) E('B33', '', `a logo is ${Math.max(...hs)} px tall: none is taller than the wordmark's type, ${cap} px on a ${medium} (C5)`);
     // The gap is read inside one box: logos on one line in two different cards are not spaced against each other,
     // and a logo whose box was not measured has no row to be spaced in.
     for (const p of new Set(logos.map(l => l.parent).filter(p => p >= 0))) { const line = logos.filter(l => l.parent === p).sort((a, b) => a.rect[0] - b.rect[0]), gaps = line.slice(1).map((l, i) => Math.round(l.rect[0] - line[i].rect[2]));

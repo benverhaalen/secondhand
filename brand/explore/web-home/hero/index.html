@@ -7,17 +7,18 @@
 <link rel="stylesheet" href="../../../tokens.css">
 <link rel="stylesheet" href="../site.css">
 <link rel="stylesheet" href="hero.css">
-<!-- The hero: a blurred wall of real things under the field, which drifts and turns slowly from one field into the next;
+<!-- fonts.local.css is not in git (brand/README.md): it names the brand font files on this machine. Without it the faces fall back. -->
+<link rel="stylesheet" href="../fonts.local.css">
+<!-- The hero: a blurred wall of real things on the page, with no gradient and a soft shadow under the words (L55, L56);
      items swap out at random; scrolling or "See how it works" speeds the wall up and moves it out; the site opens with
-     the hands meeting, then parting into the wordmark. The header is laid out as Ben's reference: the mark on the left,
+     the wordmark and its hands stepping in beside it (L58). The header is laid out as Ben's reference: the mark on the left,
      the pages in one pill in the middle, Sign in on the right (Ben, 07:07 and 08:31). Photos: photos/wall (credited). -->
 </head>
 <body>
 <!-- The hand: Hugeicons four-finger-03, stroke rounded (MIT), drawn once and used by every hand on the page (Ben, 08:31). -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><path id="hand" d="M7.89205 9.35707L5.4741 11.9595C5.15171 12.2914 4.57635 13.1576 4.50692 13.951C4.4339 14.7853 5.18562 15.9822 5.4741 16.4404C6.22604 17.6346 6.52881 18.2973 7.40846 19.4276C7.88617 20.0414 9.17658 21.2649 11.2772 21.4191C12.8453 21.5341 14.4062 21.5234 15.1459 21.4191C15.6538 21.3474 16.8868 21.1203 18.0474 19.9254C19.2081 18.7306 19.4982 16.7723 19.4982 15.9425V7.97657C19.4982 7.4787 19.2081 6.48296 18.0474 6.48296C16.8868 6.48296 16.5967 7.4787 16.5967 7.97657V11.4617M7.89205 13.951V5.98509C7.89205 5.48722 8.1822 4.49148 9.34282 4.49148C10.5034 4.49148 10.7936 5.48722 10.7936 5.98509M10.7936 5.98509V10.4659M10.7936 5.98509V3.99361C10.7936 3.49574 11.0837 2.5 12.2444 2.5C13.405 2.5 13.6951 3.49574 13.6951 3.99361V5.98509M13.6951 5.98509V10.4659M13.6951 5.98509C13.6951 5.48722 13.9853 4.49148 15.1459 4.49148C16.3065 4.49148 16.5967 5.48722 16.5967 5.98509V8.47444"/></defs></svg>
 <div class="intro" aria-hidden="true">
-  <div class="sprite"><i></i><i></i></div>
-  <div class="dap"><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg><span class="intro-word">secondhand</span><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg></div>
+  <div class="arrive"><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg><span class="intro-word">secondhand</span><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg></div>
 </div>
 <main>
   <section class="hero" id="top">
@@ -25,19 +26,19 @@
       <div class="wrap">
         <a class="lockup" href="#top" aria-label="secondhand"><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg><span class="wordmark">secondhand</span><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg></a>
         <nav class="pages" aria-label="Pages"><a href="#how">How it works</a><a href="#">Sites and fees</a><a href="#">The data</a><a href="#">FAQ</a></nav>
-        <a class="pill signin" href="#">Sign in</a>
+        <a class="pill second signin" href="#">Sign in</a>
         <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Menu"><span></span><span></span></button>
       </div>
       <div class="menu" id="menu" hidden>
         <nav aria-label="Pages"><a href="#how">How it works</a><a href="#">Sites and fees</a><a href="#">The data</a><a href="#">FAQ</a></nav>
-        <a class="pill" href="#">Sign in</a>
+        <a class="pill second" href="#">Sign in</a>
       </div>
     </header>
-    <div class="wall" aria-hidden="true"><div class="cols"></div></div><div class="tint" data-field aria-hidden="true"></div>
-    <div class="copy center">
-      <h1 class="hero-t">Your second hand,<br> for everything <span class="hl-lock"><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg><span class="hl">secondhand</span><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg></span></h1>
-      <p class="lead">Take one photo. It's priced, posted on five sites and sold for you.</p>
-      <div class="act"><a class="pill" href="#how" data-go>See how it works</a><div class="logos" role="list" aria-label="Posts to">
+    <div class="wall" aria-hidden="true"><div class="cols"></div></div>
+    <div class="copy center" data-ledger="L56">
+      <h1 class="hero-t">Your second hand,<br> for everything <span class="hl-lock"><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg><span class="hl" data-ledger="L54">secondhand</span><svg class="hand" data-part="hand" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><use href="#hand"/></svg></span></h1>
+      <p class="lead">Take one photo. It's priced from real sales, listed on five sites and taken down everywhere once it sells.</p>
+      <div class="act"><a class="pill" href="#how" data-go>See how it works</a><div class="logos" role="list" aria-label="Lists on" data-ledger="L59">
         <span class="site" role="listitem"><img src="../../../../assets/platforms/square/ebay.png" alt="eBay"></span>
         <span class="site" role="listitem"><img src="../../../../assets/platforms/square/depop.png" alt="Depop"></span>
         <span class="site" role="listitem"><img src="../../../../assets/platforms/square/poshmark.png" alt="Poshmark"></span>

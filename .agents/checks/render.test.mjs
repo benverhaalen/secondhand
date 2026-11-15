@@ -229,6 +229,9 @@ browserTest('render: a Locked ledger row waives the checks it names, only where 
   const two = led => deck(`<p class="b"${led}>Your second hand, for everything <span class="m">secondhand</span></p>`);
   assert.deepEqual((await ids(two(' data-ledger="L54"'))).filter(f => /^B32 .*times|^B3 /.test(f)), []);
   assert.ok((await ids(two(' data-ledger="L1"'))).some(f => /^B32 .*2 times/.test(f)));
+  const row = led => deck(`<div style="display:flex;gap:12px"${led}>${['ebay', 'depop', 'mercari'].map(n => `<img alt="${n}" src="${pathToFileURL(join(root, `assets/platforms/square/${n}.png`)).href}" style="width:72px;height:72px">`).join('')}</div>`);
+  assert.deepEqual((await ids(row(' data-ledger="L59"'))).filter(f => /^B33 .*taller/.test(f)), []);
+  assert.ok((await ids(row(''))).some(f => /^B33 .*taller/.test(f)));
   const over = led => deck(`<div style="position:relative"${led}><img alt="A jacket" src="${PX}" style="width:800px;height:400px;display:block"><p class="b" style="position:absolute;top:32px;left:32px">Carhartt jacket</p></div>`);
   assert.deepEqual((await ids(over(' data-ledger="L56"'))).filter(f => /sits on a photo/.test(f)), []);
   assert.ok((await ids(over(' data-ledger="A1"'))).some(f => /sits on a photo/.test(f)));

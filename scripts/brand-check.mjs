@@ -30,6 +30,17 @@ export function brandFaces(tokensCss, dir = fontDir()) {
   return rules.length ? rules.join('\n') : null;
 }
 
+// The faces brandFaces() names are served from that folder to a page or a whole browser context, never from the repo.
+export async function routeFaces(target, dir = fontDir()) {
+  await target.route('https://secondhand-fonts.invalid/**', route => { const name = decodeURIComponent(new URL(route.request().url()).pathname.slice(1));
+    return readdirSync(dir).includes(name) ? route.fulfill({ path: join(dir, name), headers: { 'access-control-allow-origin': '*' } }) : route.abort(); });
+}
+// Whether the page draws in the brand faces: text set in each measures differently from the same text in two generic
+// fallbacks. document.fonts.check() says yes to a face it has never heard of.
+export const facesDrawn = (page, tokensCss) => { const family = v => tokensCss.match(new RegExp(`--font-${v}:\\s*"([^"]+)"`))?.[1];
+  return page.evaluate(f => { const g = document.createElement('canvas').getContext('2d'), w = font => { g.font = font; return g.measureText('secondhand $46.95 Wag').width; };
+    return f.every(face => face && ['monospace', 'serif'].some(fb => w(`40px "${face}", ${fb}`) !== w(`40px ${fb}`))); }, [family('text'), family('display')]); };
+
 export function playwright() {
   for (const from of [import.meta.url, pathToFileURL(join(process.env.NODE_PATH?.split(':')[0] ?? '/nonexistent', 'x.js')).href, pathToFileURL('/opt/node-tools/x.js').href])
     try { return createRequire(from)('playwright'); } catch { /* try the next place */ }
@@ -73,7 +84,7 @@ function measure({ index, rect, faces, medium, kinds = [] }) {
       colors: [...new Set([...(bi.match(/(?:rgba?|hsla?|oklch|oklab|lch|lab|color|color-mix)\((?:[^()]|\([^()]*\))*\)/g) ?? []), cs.backgroundColor].filter(c => !clear(c)))] } : null;
     ids.set(el, els.length);
     const logo = tag === 'img' && !photo;
-    els.push({ tag, part: el.dataset.part ?? null, current: el.hasAttribute('aria-current') && el.getAttribute('aria-current') !== 'false', item: el.hasAttribute('data-item'), link: el.matches('a[href], [role=link]'), button: el.matches('button, [role=button]'), pointer: cs.cursor === 'pointer', block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), seen: seen.right - seen.left > 0 && seen.bottom - seen.top > 0 ? rel(seen) : null, parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
+    els.push({ tag, part: el.dataset.part ?? null, ledger: (() => { const l = []; for (let a = el; a && a !== document.documentElement; a = a.parentElement) if (a.dataset?.ledger) l.push(...a.dataset.ledger.trim().split(/\s+/)); return l; })(), current: el.hasAttribute('aria-current') && el.getAttribute('aria-current') !== 'false', item: el.hasAttribute('data-item'), link: el.matches('a[href], [role=link]'), button: el.matches('button, [role=button]'), pointer: cs.cursor === 'pointer', block: !/^inline/.test(cs.display) && cs.display !== 'contents', fit: el.dataset.fit ?? null, fill: el.dataset.fill ?? null, marks: marksOf(el), rect: rel(r), seen: seen.right - seen.left > 0 && seen.bottom - seen.top > 0 ? rel(seen) : null, parent: ids.get(el.parentElement) ?? -1, photo, logo, gradient, paints: tag === 'img' || tag === 'svg' || photo || !!gradient,
       alt: tag === 'img' ? el.getAttribute('alt') : el.getAttribute('aria-label'), src: tag === 'img' ? decodeURI(el.currentSrc || el.src || '') : /url\(/.test(bi) ? decodeURI(bi.match(/url\(["']?([^"')]+)/)?.[1] ?? '') : null, noAlt: tag === 'img' && !el.hasAttribute('alt'), hasText: /\S/.test(el.innerText ?? ''),
       bg: clear(cs.backgroundColor) ? null : cs.backgroundColor,
       borders: [...new Set(['Top', 'Right', 'Bottom', 'Left'].filter(s => parseFloat(cs[`border${s}Width`]) > 0 && cs[`border${s}Style`] !== 'none' && !clear(cs[`border${s}Color`])).map(s => cs[`border${s}Color`]))],
