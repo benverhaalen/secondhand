@@ -694,3 +694,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate our own intelligence api from four repos
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > https://github.com/firecrawl/firecrawlhttps://github.com/unclecode/crawl4aihttps://github.com/browser-use/jev-ultrafasthttps://github.com/browser-use/browser-use understand all these repos and how they can effectively serve when analyzed for us to build a working intelligence api of our own, able to source and find any price, figure, detail, industry insight, sales data, using searches
+
+## 2026-11-14 nate our own gathering solves not finding enough to weigh a claim
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14. The message ends mid-sentence as sent.
+> This method solves alot of the issues like the open cli showing you did, where again the idea of our system not being able to find anything or enough to weigh a claim can be
