@@ -227,12 +227,15 @@ def test_mlflow_input_records_exact_integer_delta_version():
     def log_input(dataset, **kwargs):
         assert dataset is ds
         calls.append(('input', kwargs))
+    def set_tags(tags):
+        calls.append(('tags', tags))
     class Log:
         def call(self, kind, name, fields, fn):
             return fn()
-    b.log_training_input(NS(data=NS(load_delta=load_delta), log_input=log_input), Log(), 7)
-    assert calls == [('load', {'table_name': 'secondhand.market.comp_for_model', 'version': 7}),
-                     ('input', {'context': 'training'})]
+    b.log_training_input(NS(data=NS(load_delta=load_delta), log_input=log_input, set_tags=set_tags), Log(), '7')
+    assert calls == [('load', {'table_name': 'secondhand.market.comp', 'version': 7, 'name': 'comp_for_model'}),
+                     ('input', {'context': 'training'}),
+                     ('tags', {'input_filter': 'may_model = true', 'input_view': 'secondhand.market.comp_for_model'})]
 
 
 def test_learning_setup_maps_backtest_owner_idempotently():
