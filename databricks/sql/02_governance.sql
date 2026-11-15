@@ -6,7 +6,8 @@
 
 CREATE TABLE IF NOT EXISTS secondhand.governance.principal_map (
   principal STRING NOT NULL COMMENT 'A workspace user (current_user()).',
-  user_id STRING NOT NULL COMMENT 'The secondhand user whose rows that principal may read.'
+  user_id STRING NOT NULL COMMENT 'The secondhand user whose rows that principal may read.',
+  grant_id STRING COMMENT 'The break_glass.id this wildcard row belongs to.'
 ) COMMENT 'Which secondhand person a workspace principal is. The row filter reads it; nobody else is mapped, so nobody else sees a row.';
 
 -- Agent proposal: maintenance alone writes a temporary user_id = '*' mapping, paired with this audit window.
