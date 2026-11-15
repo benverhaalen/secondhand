@@ -14,6 +14,7 @@ Opened by tapping a tile in **Sell** ([decision](../../product/decisions.md#2026
 6. "Why?" on any field opens its history: the crop or tag it came from, who changed it, when.
 7. Where it is, what you paid, how many you have: one tap each, never required.
 8. Copy stays minimal ([decision](../../product/decisions.md#2026-11-14-in-app-copy-is-minimal-and-the-ui-shows-rather-than-says)).
+9. A kept item (`owned`, from "Just value it" in [appraise](appraise.md)) has the same full card, its value and a draft listing ready; nothing is posted until the person picks Sell this ([Nate](../../product/words.md#2026-11-14-nate-value-from-similar-listings-and-demand-and-worth-knowing-even-if-you-never-sell); *agent proposal*).
 
 ## Design choices
 *agent proposal* for the picked column.

@@ -110,7 +110,7 @@ flowchart LR
 
 | Call | Body | Returns |
 |---|---|---|
-| `POST /v1/valuations` | `{item_id}` | `202 {job_id}`; stage events stream |
+| `POST /v1/valuations` | `{item_id}` | `202 {job_id}`; stage events stream, each with real counts in `found{}` ([product.md §7](../product.md#7-contract-conventions)): sources searched, sales found, sales used after filtering, from `route_call` and `citation` records ([Nate](../../product/words.md#2026-11-14-nate-the-ui-shows-the-work-animation-and-findings-as-they-arrive)); the answer keeps them one tap away as what we considered |
 | `GET /v1/items/:id` | | `valuation`, `strategy` per site, each number a guarded number |
 | `GET /v1/citations/:id` | | the citation and its basis listings |
 | `POST /v1/items/:id/strategy` | `{version, objective, per_site[] edits, floor_cents, always_accept_cents}` | `200 strategy`; `409 stale`; `422 outside_limits` |

@@ -19,7 +19,7 @@ The Buy tab mirrors Sell: a search box with a camera and a link field, then the 
 | 6 | Taps Offer or Ask | The agent drafts the offer or the question. The person approves each one (`buy_offer`). Replies land in the chat icon ([messages.md](messages.md)). |
 | 7 | Taps Buy | The site opens to pay. We never take payment ([Nate](../../product/words.md#2026-11-14-nate-store-and-buying)). |
 | 8 | Comes back | "Did you buy it?" once. Yes creates a purchase order and an `owned` item with its cost. "Sell this" is one tap from Bought. |
-| 9 | Opens For you (opt in) | A shelf built from their sizes, brands, wants and past purchases. It never shows their own items. Each card says what it inferred ("your size M, from 6 items"), and one tap resets it. |
+| 9 | Opens For you (opt in) | A shelf built from their [style profile](#your-style-profile): sizes, brands, wants and past purchases. It never shows their own items. Each card says what it inferred ("your size M, from 6 items"), and one tap resets it. |
 | 10 | Sells something they still use (a desk, a phone) | A `replace_after_sale` card with matches under the sale price. |
 
 Match labels are the canon set defined in [product §3](../product.md#3-the-data-model) (`match label`), with thresholds owned by [seeing-the-item card 9](../determinations/seeing-the-item.md#9-which-product-it-is-and-when-identity-is-confirmed), shown on every card: `exact`, `likely_same_model`, `same_family_other_variant`, `comparable`, `unresolved`. Following the certainty principle, identity, variant and size are stated as confirmed once settled. Price is a range, and authenticity and hidden condition are stated as not known. "Similar for less" shows only `comparable` items whose material and condition are known ([M17](../determinations/market-insight.md#m17-a-cheaper-equivalent-of-similar-quality-and-material)).
@@ -62,6 +62,10 @@ Above the rows, one sentence: the verdict of M29 (used, official or a close call
 
 Referral rule: a referral, commission or placement payment never enters the order or the verdict; M29's check runs it with and without referral fields and requires the same result. A link that earns a referral carries "We may earn a referral fee. It never changes the order or the verdict." beside it, visible without a tap, because the FTC requires a material connection to be disclosed where it cannot be missed and treats a ranking set by payment as deceptive even when disclosed (*observed*, [buy-side note 6](../../research/watch/nate/buy-side-products-and-search-experience.md#6-referral-and-affiliate-programmes)). A link with no programme (Facebook, Vinted) carries no line.
 
+## Your style profile
+
+A `style profile` per person, learned from what they sell, keep, save, follow and buy ([Nate](../../product/words.md#2026-11-14-nate-sale-emails-the-expo-account-where-routes-are-hosted-and-a-buy-page-shaped-by-your-style); *agent proposal*). It feeds the For you shelf, the recommendations on every shelf and the order of results within the same delivered-total band. Each trait shows its reason and count ("your size M, from 6 items"); the person can edit, remove or reset any trait, and a trait they remove is never relearned without a new signal they can see. It never changes order by referral: M29's check runs with and without referral fields. Insights shows the same profile ([insights](insights.md)). Which screen holds it is open, as Ben's layout is ([Nate](../../product/words.md#2026-11-14-nate-bens-design-is-not-finished-or-decided-how-the-system-drives-every-feature)).
+
 ## Design choices
 
 | Choice | Options considered | Picked | Why | What would change it |
@@ -96,7 +100,7 @@ Referral rule: a referral, commission or placement payment never enters the orde
 | match | saved, asked, offered, bought, gone | save_match answered; buy_offer approved and sent; bought; the site read-back |
 | order | `paid` onward for kind purchase | Bought it, a did_you_buy yes, or `import` |
 | item | (new) to `owned`, then `capturing` on Sell this | as in [§4](../product.md#4-states) |
-| `search` job | stages `identify`, `fanout`, `rank`, each `started, running, arrived, failed` | the search call |
+| `search` job | stages `identify`, `fanout`, `rank`, each `started, running, arrived, failed`; each stage carries real counts in `found{}` ([product.md §7](../product.md#7-contract-conventions)): sites searched, listings found, listings kept after filtering, from `route_call` and `citation` records ([Nate](../../product/words.md#2026-11-14-nate-the-ui-shows-the-work-animation-and-findings-as-they-arrive)) | the search call |
 
 ## Data flow
 
