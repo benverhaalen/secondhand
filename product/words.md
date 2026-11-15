@@ -2291,3 +2291,9 @@ Nate, engines lead's session, 2026-11-15, about 06:50 Central, after the lead sa
 > if it complicates things for a certain area, look like google shopping pages reveal the price of ebay products, im sure treg has something
 
 Used in: the engines lead's answer (engine outputs feed the conversation and our own sales calibrate the engine; the rights limit is only on fitting from rows a source's terms bar, [data use](../spec/data-use.md)); routed to the search lead as a source and to the data lead for the fits.
+
+## 2026-11-15 nate apify rows never fit a model
+Nate, engines lead's session, 2026-11-15, about 07:00 Central, answering "May Apify rows also be used to fit the nightly models?" (buttons "Yes, Apify too" and "Keep fits clean").
+> no keep fits clean
+
+Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1.
