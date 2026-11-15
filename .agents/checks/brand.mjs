@@ -2,7 +2,8 @@
 import { read, err, lineOf } from './util.mjs';
 
 const UI = /\.(tsx|jsx|ts|js|css|scss|html|vue|svelte)$/;
-const NOT_APP = /^(brand|research|assets|scripts|spec|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\./;
+// The server's code (edge, engines) draws nothing: a margin there is a price margin, not spacing.
+const NOT_APP = /^(brand|research|assets|scripts|spec|\.agents|node_modules)\/|^app\/src\/(edge|engines)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\./;
 
 export function scales(constitution) {
   const row = id => (constitution.match(new RegExp(`^\\|\\s*${id}\\s*\\|.*$`, 'm')) ?? [''])[0];
@@ -28,7 +29,8 @@ export function brand(root, { files }) {
     for (const v of bad(set, px(m[2]))) out.push(err(`brand/tokens.css:${lineOf(tokens, m.index)}`, `--${m[1]}: ${v}px is not in the constitution's ${kind} scale (${id}); change both in one commit`));
   }
   for (const f of files.filter(f => UI.test(f) && !NOT_APP.test(f))) {
-    const t = read(root, f) ?? '';
+    // A font-face block's metric overrides (line-gap-override: 0%) are not spacing.
+    const t = (read(root, f) ?? '').replace(/@font-face\s*\{[^}]*\}/g, m => m.replace(/[^\n]/g, ' '));
     const rules = [
       [/font-?[Ww]eight["']?\s*[:=]\s*["']?(\d{3})/g, v => [Number(v)], s.weight, 'B13 weight'],
       [/\b(?:margin|padding|gap|row-gap|column-gap)(?:-?[A-Za-z]*)?["']?\s*[:=]\s*["']?([^;,"'\n}]+)/g, px, s.space, 'B17 spacing'],

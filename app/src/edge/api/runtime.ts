@@ -1,3 +1,4 @@
+import { withProfileRead } from '../connect/adapters.ts';
 // Rests-on: spec/product.md §3, §5, §6 Harnesses, §7; spec/examples/{items,sell,you}.json.
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
@@ -10,10 +11,11 @@ import { createLog, consoleSink, type Log } from '../../../../log/index.js';
 import { store } from './store.ts';
 import { runtimePorts as searchRuntime } from '../intel/public/search.ts';
 import { createApify } from '../harness/sites/apify/adapter.ts';
-import { example } from './examples.ts';
+import { example, examplesServed } from './examples.ts';
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { fromEngine, pagination, object, integer, invalid } from './captures.ts';
-import { memoryVault, type Accounts, type LinkedAccount } from '../browser/auth.ts';
+import type { AuthVault, Accounts, LinkedAccount } from '../browser/auth.ts';
+import { vault as defaultVault } from '../store/vault.ts';
 import { createHarness, fail, isWrite, type Adapter, type Harness } from '../harness/protocol.ts';
 import { createSiteService } from '../harness/service.ts';
 import { composeSources } from '../harness/compose.ts';
@@ -66,18 +68,19 @@ export function seedExamples(st: Store) {
 }
 
 export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runtime', build: process.env.npm_package_version ?? 'dev', sink: consoleSink }), options: {
-  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number;
+  adapters?: Adapter[]; ebayPageClient?: PageClient; now?: () => number; vault?: AuthVault;
   publicClients?: { ebay: PageClient; depop: Client; close(): Promise<void> }; apifyToken?: string;
 } = {}) {
   const now = options.now ?? Date.now;
-  seedExamples(st);
-  // shortcut: session state is process-local until the Databricks secret-scope AuthVault joins.
-  const vault = memoryVault();
+  if (examplesServed()) seedExamples(st);
+  const vault = options.vault ?? defaultVault();
   const accounts: Accounts & { byId(id: string, person_id?: string): Promise<LinkedAccount | undefined> } = {
     async linked(person_id) {
       const rows = person_id ? st.rows('account', { user_id: person_id }) : st.systemRows('account');
       const linked = await Promise.all(rows.map(async row => {
-        if (row.deleted || typeof row.token_ref !== 'string' || !(SITES as readonly unknown[]).includes(row.site) || !await vault.get(row.token_ref)) return undefined;
+        if (row.deleted || !(SITES as readonly unknown[]).includes(row.site)) return undefined;
+        if (row.profile_id && row.state === 'linked') return { account_id: row.id, person_id: row.user_id, site: row.site, token_ref: `profile:${row.id}` } as LinkedAccount;
+        if (typeof row.token_ref !== 'string' || !await vault.get(row.token_ref)) return undefined;
         return { account_id: row.id, person_id: row.user_id, site: row.site, token_ref: row.token_ref } as LinkedAccount;
       }));
       return linked.filter((row): row is LinkedAccount => row !== undefined);
@@ -101,7 +104,7 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
     ...ebayPageAdapters(options.publicClients?.ebay ?? { signed_in: false, page: unavailable }),
   ].map(adapter => ((adapter.manifest.site === 'depop' || adapter.manifest.site === 'ebay') && !!options.publicClients) || isWrite(adapter.manifest.verb) ? adapter : {
     ...adapter, async run() { return fail('no_route', `${adapter.manifest.site} live reads are unavailable`, { do: 'handoff', url: '' }); },
-  });
+  }).map(adapter => withProfileRead(adapter, st));
   const liveMercari = (process.env.SECONDHAND_LIVE_SITES ?? '').split(/[ ,]+/).includes('mercari');
   let mercariPool: ReturnType<typeof createPool<BrowserPage>> | undefined;
   const mercari = linkedSearch({ accounts: scopedAccounts, async read(account_id, url, signal) {
@@ -250,7 +253,11 @@ export function createRuntime(st: Store, log: Log = createLog({ src: 'edge.runti
             const source = st.get('listing', job.user_id, id);
             if (!source || source.account_id !== job.account_id) throw new Error('import listing is outside this account');
             const item_id = typeof source.matches_item_id === 'string' ? source.matches_item_id : `it_${crypto.randomUUID().replaceAll('-', '')}`;
-            if (!st.get('item', job.user_id, item_id)) st.put('item', { id: item_id, user_id: job.user_id, title: source.title ?? '', state: 'live', origin: 'import', data: source.data, quantity: 1, attributes: [], photos: [], created_at: source.read_at, updated_at: source.read_at });
+            const photos = (Array.isArray(source.photos) ? source.photos : source.photo_url ? [source.photo_url] : []).flatMap(photo => {
+              const url = typeof photo === 'string' ? photo : object(photo) && typeof photo.url === 'string' ? photo.url : undefined;
+              return url ? [{ id: `ph_${crypto.randomUUID().replaceAll('-', '')}`, url, file_ref: url, role: 'source', use: 'real', ai_marked: false }] : [];
+            });
+            if (!st.get('item', job.user_id, item_id)) st.put('item', { id: item_id, user_id: job.user_id, title: source.title ?? '', description: source.description, state: source.state === 'sold' ? 'sold' : 'live', origin: 'import', data: source.data, quantity: 1, attributes: Array.isArray(source.attributes) ? source.attributes : [], photos, created_at: source.read_at, updated_at: source.read_at });
             const prior = st.rows('listing', { user_id: job.user_id, account_id: job.account_id, external_id: source.external_id }).find(row => !row.import_preview);
             const listing_id = prior?.id ?? `ls_${crypto.randomUUID().replaceAll('-', '')}`;
             if (!prior) st.put('listing', { ...source, version: undefined, id: listing_id, item_id, import_preview: false });

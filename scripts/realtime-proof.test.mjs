@@ -14,13 +14,18 @@ const gap = (n, state, reason) => {
   assert.equal(row(n).reason, reason, `link ${n} needs its reason reviewed`);
 };
 
-test('1: the Check retains the thin-basis level and note', () => {
+test('1: the real stored-item route retains the thin-basis level and note', () => {
   assert.equal(row(1).state, 'works');
   assert.equal(row(1).reason, null);
   const { before, thin } = report.observed;
   assert.equal(thin.state, 'too_few');
   assert.equal(thin.level, 'product'); // the blended fallback names the level its one product comp supports (valuation.md §3)
   assert.equal(before.n_eff, 1);
+  assert.equal(before.product_id, 'pr_realtime');
+  assert.equal(before.as_of, report.as_of);
+  assert.equal(before.range_state, before.range.state);
+  assert.notEqual(before.range_state, 'checked');
+  assert.equal(before.gather.reason, 'too_few');
   assert.equal(before.basis_level, 'product');
   assert.deepEqual(before.notes, ['too_few']);
   assert.deepEqual(before.range.notes, ['too_few']);
@@ -90,15 +95,15 @@ test('4: the real reconciler refuses to invent a product relation without identi
 });
 
 test('5: no gathered observation or evidence is persisted', () => {
-  gap(5, 'built, not called', 'valuate writes new source rows through ObservationPort; the route does not call it and the shared Store has no observation table.');
-  assert.ok(!report.observed.tables.includes('observation'));
+  gap(5, 'built, not called', 'The route calls valuate and its ObservationPort.write, but the default port logs not_composed; the Store has an observation table and writer (SV7, events/observations.ts) that the port does not call yet.');
+  assert.ok(report.observed.tables.includes('observation'));
   assert.deepEqual(report.observed.observations, []);
   assert.equal(report.observed.observation_writes, 0);
   assert.equal(report.observed.observation_import_in_search, false);
 });
 
 test('6: D1 arithmetic works on hand-fed sold comps, but no store read supplies gathered comps', () => {
-  gap(6, 'built, not called', 'valuate reads ObservationPort and shares Kish with gather.measure; the route does not call valuate. The wider sold set is a separate direct diagnostic.');
+  gap(6, 'built, not called', 'The route calls valuate and reads ObservationPort, but the default port returns no stored rows. The wider sold set is a separate direct diagnostic.');
   const d = report.observed.direct_basis;
   assert.ok(d.wider.n_eff > d.thin.n_eff);
   const w = d.wider.comps.map(c => c.w);
@@ -140,28 +145,21 @@ test('9: the route still ignores contribution learning but cites resolved valuat
   assert.equal(p.mean_after, 0.4);
   assert.equal(p.second.version, 2);
   assert.deepEqual(report.observed.after_learning, report.observed.before);
-  assert.equal(report.observed.after_learning.param_version, 1);
+  assert.equal(report.observed.after_learning.param_version, 0);
   assert.equal(report.observed.after_learning.citation.param_versions.valuation, undefined);
   const { DECLARED } = await import('../app/src/engines/valuation/params.ts');
   assert.deepEqual(report.observed.after_learning.citation.param_versions, Object.fromEntries(DECLARED.map(p => [p.name, 0])));
 });
 
-test('the overridden valuation input port must be reviewed when its real wiring changes', () => {
-  assert.equal(report.observed.input_port.source_sha256,
-    '41ff876f6c66aee5c2fd9f46490c884633fec01bf3de8d082512d9fa3a07c79d',
-    'valuation.ports.read changed: inspect new store/param joins before updating links 1, 2, 6, 7 and 9');
-  assert.match(report.observed.input_port.source, /warm_comps: \[\]/);
-  assert.match(report.observed.input_port.source, /param_version: 1/);
-  assert.match(report.observed.input_port.source, /soldSources\(soldSearch\(/);
-  assert.match(report.observed.input_port.source, /example\('items.get'\)/);
-  const offline = report.observed.input_port.offline;
-  assert.equal(offline.product_id, 'pr_4hd1');
-  assert.equal(offline.condition, 'good');
-  assert.equal(offline.param_version, 1);
-  assert.deepEqual(offline.warm_comps, []);
-  assert.deepEqual(offline.sites, [{ site: 'mercari' }, { site: 'poshmark' }]);
-  assert.deepEqual(offline.source_rows, [[], []]);
-  assert.deepEqual(offline.sold_search, [
+test('the proof prices a stored item through the route and leaves the default observation port uncomposed', () => {
+  const port = report.observed.input_port;
+  assert.equal(port.item.id, 'it_realtime');
+  assert.equal(port.item.product_id, report.observed.before.product_id);
+  assert.equal(port.item.title, 'Levi 501');
+  assert.equal(port.route, 'POST /v1/valuations');
+  assert.equal(port.source_fixture, 'poshmark-sold');
+  assert.equal(port.observations, 'default uncomposed port');
+  assert.deepEqual(port.sold_search, [
     { rows: [], outcome: 'blocked', reason: 'live reads are disabled' },
     { rows: [], outcome: 'blocked', reason: 'live reads are disabled' },
   ]);

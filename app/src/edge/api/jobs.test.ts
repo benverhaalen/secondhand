@@ -7,7 +7,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { createLog, memorySink } from '../../../../log/index.js';
 import { checkLog } from '../../../../spec/log.mjs';
 import type { JobRow } from '../events/ports.ts';
-import { ApiError, deps, route } from './http.ts';
+import { ApiError, deps, resetRequestState, route, visitorId } from './http.ts';
 import { EXAMPLES, STREAMS, example, examplesServed } from './examples.ts';
 import { getJob, jobEvents, jobsOn, memoryJobs, seedExamples, streamOpts, userStream, type JobStore, type SseFrame } from './jobs.ts';
 import { sqliteStore } from '../events/sqlite-store.ts';
@@ -57,7 +57,7 @@ test('prune drops ordinary search frames but never running search frames', () =>
 beforeEach(() => {
   deps.log = createLog({ src: 'test', build: 'test', sink: memorySink() });
   deps.verify = async (t) => (t === 'good' ? 'usr_8f2k' : t === 'other' ? 'usr_other' : null);
-  deps.idem.clear(); deps.visits.clear(); deps.now = () => Date.now();
+  resetRequestState(); deps.now = () => Date.now();
 });
 
 const seeded = () => { const s = memoryJobs(); seedExamples(s); return s; };
@@ -95,14 +95,15 @@ test('seeded example jobs answer their examples, and the stream formats frames a
 
 test('the wrong user gets 404, a visitor sees only its own vis_ jobs', async () => {
   const s = seeded(); const h = handlers(s);
-  s.put(job('job_mine'), 'usr_8f2k'); s.put(job('job_vis'), 'vis_abcdefgh1');
+  const visitor = visitorId(), otherVisitor = visitorId();
+  s.put(job('job_mine'), 'usr_8f2k'); s.put(job('job_vis'), visitor);
   assert.equal((await call(h.get, '/v1/jobs/job_mine')).status, 200);
   const other = await call(h.get, '/v1/jobs/job_mine', {}, 'other');
   assert.equal(other.status, 404); assert.equal((await other.json()).code, 'not_found');
   assert.equal((await call(h.events, '/v1/jobs/job_mine/events', {}, 'other')).status, 404);
-  const own = await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': 'vis_abcdefgh1' }, null);
+  const own = await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': visitor }, null);
   assert.equal(own.status, 200); await own.body!.cancel();
-  assert.equal((await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': 'vis_zzzzzzzz2' }, null)).status, 404);
+  assert.equal((await call(h.events, '/v1/jobs/job_vis/events', { 'X-Visitor-Id': otherVisitor }, null)).status, 404);
   assert.equal((await call(h.events, '/v1/jobs/job_vis/events', {}, 'good')).status, 404); // a signed-in user does not see a visitor's job
 });
 
@@ -242,6 +243,15 @@ test('restart preserves search stages, found counts and frame ids on a fresh dat
   assert.deepEqual(restarted.framesAfter('job_restart', 0).map(f => f.id), [1, 2, 3]);
 });
 
+test('an answer frame whose root names its site reads back from SQLite after a restart with its storable rows', t => {
+  const open = disk(t), { s } = open();
+  const kept = { site: 'ebay', may_store: true, keep_until: null, url: 'https://example.test/kept' };
+  s.put({ id: 'job_frame_root', kind: 'search', state: 'running' }, 'usr_8f2k');
+  s.append('job_frame_root', 'answer.partial', { site: 'ebay', product: null, results: [kept, { site: 'dupe', may_store: false }] });
+  const { s: restarted } = open();
+  assert.deepEqual(restarted.framesAfter('job_frame_root', 0)[0].data, { site: 'ebay', product: null, results: [kept] });
+});
+
 test('rights filtering removes forbidden URLs from job and frame SQL while live GET and frames retain every row', async t => {
   const open = disk(t), { db, s } = open(), result = searchResult();
   s.put({ id: 'job_rights', kind: 'search', state: 'running' }, 'usr_8f2k');
@@ -338,7 +348,16 @@ test('examples disabled prevents seeding, visitor sharing and seed-id takeover',
   assert.equal(examplesServed({ NODE_ENV: 'production' }), false);
   assert.equal(examplesServed({ NODE_ENV: 'production', SECONDHAND_EXAMPLES: '1' }), true);
   assert.equal(examplesServed({ SECONDHAND_EXAMPLES: '0' }), false);
-  assert.equal(examplesServed({}), true);
+  assert.equal(examplesServed({}), false, 'an unset environment must not serve examples');
+  assert.equal(examplesServed({ NODE_ENV: 'development' }), true);
+  assert.equal(examplesServed({ NODE_ENV: 'test' }), false);
+  assert.equal(examplesServed({ NODE_ENV: 'staging' }), false);
+  assert.equal(examplesServed({ SECONDHAND_EXAMPLES: 'invalid' }), false);
+  assert.equal(examplesServed({ NODE_TEST_CONTEXT: 'child-v8' }), true);
+  assert.equal(examplesServed({ NODE_TEST_CONTEXT: '' }), true);
+  assert.equal(examplesServed({ NODE_TEST_CONTEXT: 'child-v8', SECONDHAND_EXAMPLES: '0' }), false);
+  assert.equal(examplesServed({ NODE_ENV: 'development', SECONDHAND_EXAMPLES: '0' }), false);
+  assert.equal(examplesServed({ SECONDHAND_EXAMPLES: '1' }), true);
   const { s } = disk(t)(); seedExamples(s);
   assert.equal(s.get('job_sr1', 'vis_other123'), undefined);
   assert.deepEqual(s.framesAfter('job_sr1', 0), []);

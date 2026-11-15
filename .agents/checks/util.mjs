@@ -9,7 +9,8 @@ export const lineOf = (text, i) => text.slice(0, i).split('\n').length;
 
 // Product code is what ships and runs: the app, the server, jobs, agent loops. Tooling, research, tests and config are not.
 const CODE = /\.(tsx?|jsx?|mjs|cjs|py|swift)$/;
-const NOT_PRODUCT = /^(\.agents|scripts|spec|research|assets|brand|log)\/|(^|\/)(node_modules|Pods|\.expo)\/|\.config\.[a-z]+$|\.d\.ts$|(^|\/)\.[^/]+$|(^|\/)(jest\.setup\.[a-z]+|setup\.py)$/;
+// bench/ and a site's live.ts are run by hand and print their result: tooling, like scripts/.
+const NOT_PRODUCT = /^(\.agents|scripts|spec|research|assets|brand|log|bench)\/|(^|\/)(web\/scripts|harness\/sites\/[^/]+)\/live\.ts$|^web\/scripts\/|(^|\/)(node_modules|Pods|\.expo)\/|\.config\.[a-z]+$|\.d\.ts$|(^|\/)\.[^/]+$|(^|\/)(jest\.setup\.[a-z]+|setup\.py)$/;
 export const isTest = f => CODE.test(f) && /\.(test|spec|e2e)\.[a-z]+$|(^|\/)(__tests__|tests?|e2e|\w*Tests)\/|(^|\/)(test_[^/]+|conftest)\.py$|_test\.py$|Tests?\.swift$/.test(f);
 export const isProductCode = f => CODE.test(f) && !NOT_PRODUCT.test(f) && !isTest(f);
 

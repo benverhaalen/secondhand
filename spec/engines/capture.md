@@ -267,6 +267,22 @@ This is the whole contract, in order. Each response returns the capture with `pl
 
 The screen never decides what to ask or when to stop. Layout, motion and the words around a question are Ben's.
 
+**What the questions read: `intent`.** Packet 92 asked whether the questions read `purpose` or `intent`. They read `intent` (`sell`, `worth`, `track`, `find`; Ben's four jobs, packet 80), and `purpose` becomes the engine's own input derived from it: `sell` gives `sell`, `worth` gives `appraise`, `find` gives `find`, and `track` gives `find`, since tracking an item needs what identifies it (brand, model, size) and never its condition or listing fields, which is the question set `find` already asks. A capture opened with `intent` alone is valid; one that sends both and they disagree is 400; `purpose` alone keeps working until the app stops sending it. *agent proposal*; built in the route join.
+
+**The question block, shared with the buying chat.** Nate ([via the orchestrator](../../.agents/team/packets/team/92-reply-to-80-four-jobs-storage.md)): "I think we can add those clarifying question widgest to the intelligent ui too." So a clarifying question has one shape and one drawn part wherever it appears. The shape is `Ask`, exported from `app/src/engines/capture/plan.ts`:
+
+`{id, field, kind ('pick_one'|'pick_many'|'number_with_unit'|'yes_no'|'text'), words, options: [{value, label?, proposed, rests_on?, cites?}], other, max_length?, unit?, units?, parts?, why, replaces?, answer: {method, path}}`
+
+Agreed with the engines lead (2026-11-15), with their three additions for the chat:
+- `id` is stable per question within its capture or conversation (capture's is `q_<capture_id>_<field>`), and the answer carries it as `ask_id`.
+- `replaces?` is the id of an earlier `Ask` this one supersedes (the chat narrows as rows arrive); the app hides the replaced one, and an answer to a superseded `Ask` is refused with 409.
+- `rests_on` stays short reasons in words everywhere; `cites?` is the result ids a proposed option rests on, which the chat's number gate checks. Labels and words pass the same number gate as the chat's text: no figure in a label unless a cited row backs it.
+
+- Capture's `Question` is `Ask` plus what only capture has: `shot`, `fields`, `required_by`, `unlocks`. A chat answer emits `Ask` with no capture field.
+- `proposed: true` on at most one option of a `pick_one` (any number of a `pick_many`) means the system is fairly sure: the drawn part preselects it, and `rests_on` says why in a few words ("RN 14806 on the tag").
+- The answer is `{answer: {ask_id, field, value}}` sent with `answer.method` to `answer.path`. Capture: `PATCH /v1/captures/:id` with `version` (`ask_id` optional there). The chat: `POST /v1/assist` as a new turn, `{surface, text, history, answer: {ask_id, field, value}}`, where `text` is the chosen option's label so the history reads naturally. The value is what the person picked: an option's `value`, an array of them, a boolean, a trimmed string, or for `number_with_unit` a bare number, or an object of `parts` when `parts` is set.
+- The drawn part is one part in `app/src/ui/parts/` (Ben's), taking an `Ask` and `onAnswer(value)`; capture's sheet and the chat both use it. Its first version is the `Answer` in Ben's `app/src/capture/live.tsx`, which already draws every kind.
+
 **What ends the demo.** The first TestFlight build is the demo. The capture screen stops being the demo when it calls steps 1 to 5 against the live API instead of rendering `spec/examples/captures.json`. It also needs the phone to send real `device` flags and `reads[]` (section 7). Until then every capture in the build is the example capture.
 
 ## 5. Results from the jobs
@@ -312,7 +328,7 @@ The plan then needs no change: `candidates.brand` and `candidates.model` become 
 2. **What it may spend.** Every paid call goes through one spend port that logs `{tool, capture_id, cost_micro}` from the `X-Treg-Cost-Micro` response header and refuses a call past `identify_spend_cap_capture_micro` (prior 3,000, one Lens call) per capture or `identify_spend_cap_day_micro` (prior 100,000, $0.10) per day for the whole team. No loop calls a paid tool without a stated total. Tests replay recorded answers; a live call is one at a time and only on Nate's yes. The team balance was $1.00 on 2026-11-15.
 3. **What we keep.** Only our own candidate (`brand:<slug>`, `c`, `rests_on` such as "3 of 5 similar pages name Carhartt"). The answer's titles, links and thumbnails are used inside the run and dropped. Serper's and DataForSEO's terms were not read; until they are, nothing more is kept.
 
-**Nate's decisions for this rung**: whether a person's photo may be sent to Google through treg and Serper at all; whether the per-capture and per-day caps are right; and whether to top up the balance before the fixed-set run (20 items at one Lens call each is $0.06).
+**Decided by Nate** ([words](../../product/words.md#2026-11-15-nate-yes-to-google-lens-through-treg-as-designed)), asked "May a seller's photo go to Google Lens through treg, as designed?": "yes". The three rules above are the design he said yes to. Still his: whether to top up the balance before the fixed-set run (20 items at one Lens call each is $0.06).
 
 **Where results may not go.** eBay's terms keep its content to eBay listings ([platform access](../../research/connect/nate/platform-access.md)): a visual hit's title and image are used inside the run and never stored; only our own candidate (`brand:<slug>`, `c`, `rests_on`) is kept. Photos sent to a route are crops of the item ([identify, facts to know](../features/identify.md#facts-to-know)).
 
@@ -372,6 +388,15 @@ The phone also sends the first frame's suggestion `{family, p, second_p, kind?}`
 **Per scan.** `{scan_ok, extent_cm {width, depth, height}, extent_conf, frames}`. Apple's bounds page states no unit, so `extent_conf` stays under `min_conf` until the known-size box check passes.
 
 **Confidences** are the phone's calibrated values. A module version that has not passed the fixed set sends 0, so every read is a proposal.
+
+## 7a. The shot guide
+
+Nate ([words](../../product/words.md#2026-11-15-nate-capture-onboarding-is-line-art-on-glass-one-guide-per-shot)): line art on a glass background that still shows the camera, like Apple's Measure telling people to move closer or further; set by the item's type to the photo to take; one press dismisses it, the shutter takes the photo and moves to the next step. The look is Ben's (`app/src/ui/`); what follows is what the guide shows and when, *agent proposal* where not quoted.
+
+- **Which guide.** The plan's next shot: the first `shot` question, else the first process step still `pending` or `retake`. So the type, and the steps its process row lists (`jobs/capture/process.json` `types`), set the guide with no screen logic. The art is chosen by `<family>.<step>` with `<step>` as the fallback (an apparel `front` is a laid-flat garment; a furniture `front` is a chair seen from the front). There are 19 step keys today: front, back, tag, scan, size_label, soles, inside_tab, back_or_stamp, model_plate, about_screenshot, front_screen_on, base, front_cover, back_barcode, box_or_set_front, rating_plate, serial, model_date_label, group.
+- **What it shows.** The step's line art and the plan's words for it (the shot question's `words`, else the step's name) on a glass panel over the live feed, so the item stays visible through it. A retake shows the same art with the retake's reason.
+- **When it goes.** It appears by itself when a step becomes the next one. One press anywhere on it dismisses it, leaving the frame. The shutter takes the photo; once the photo is kept, the next step's guide appears. A step the person refuses (a `read` offer) shows no guide again.
+- **Closer or further.** Only on a phone with LiDAR, from the depth module's distance to the item at the frame's centre (`distance_m` on its `onExtent` event, added in the module's next round). Outside the step's range the guide shows a move-closer or move-back mark and the words, like Measure. Ranges are two param rows: `capture_guide_distance_close_m` (prior 0.10 to 0.35) for the reading steps (tag, size_label, inside_tab, model_plate, rating_plate, serial, model_date_label, back_barcode, back_or_stamp), `capture_guide_distance_m` (prior 0.30 to 1.20) for the rest. Without LiDAR no distance mark is drawn: the guide never guesses one.
 
 ## 8. What is wrong: named fixes and their tests
 

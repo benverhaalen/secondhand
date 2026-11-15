@@ -2329,3 +2329,91 @@ Nate, orchestrator's session, 2026-11-15, about 08:40 Central, answering "May a 
 > yes
 
 Used in: [the capture design](../spec/engines/capture.md), [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate floating logos that burst into the site, and confirm every harness does every job
+Nate, the app-wiring lead's session, 2026-11-15, about 07:55 Central (machine clock), on the shop takeover with Depop and eBay reading.
+> This view sucks, it should be like floating logos around it, that click to expand into the browser session that links. Like the bubble fills the page white, blue, red, purple, and light blue. then the link loads on the platform , dont wait to fill it, like try to open the browser as soon as majority of screen is filled. Confirm the harnesses work for each of those sites to both search, engine and calculate on, and also monitor and manage and deliver analytics
+
+And, to "Wire the signed-in screens next?": "yes".
+
+Used in: the shop takeover's source bubbles (packet 81), the harness check (packet 83).
+
+## 2026-11-15 nate fix everything, fast
+Nate, server-core lead's session, 2026-11-15, about 08:30 Central, after the lead reported a commit that had overwritten the server's request-state fix.
+> LEts fix everything to be fast
+
+Read by the server-core lead as: land the fixes now and run the remaining queued ones at once rather than one after another. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md) (the restore ff56bbda and three workers started in parallel).
+
+## 2026-11-15 nate capture onboarding is line art on glass, one guide per shot
+Nate, the capture lead's session, 2026-11-15, about 13:30 UTC.
+> Ensure the capture onboarding is svg indicating what to do, line art with glass like shaded blurry background so you can still transparently see whats in the camera, similar to how apple measure places graphics telling people to move closer or further. For each product type selected, the onboarding then automatically is set to indicate the photo to take, they press once to dismiss the photo, and cpature the image to move on to the next of several or few more needed steps.
+
+Used in: [the capture design §7a](../spec/engines/capture.md#7a-the-shot-guide), [packet 90](../.agents/team/packets/team/90-capture-shot-guide-for-ben.md).
+
+## 2026-11-15 nate ensure these mistakes dont happen again
+Nate, the orchestrator's session, 2026-11-15, about 13:10 UTC, pasting the server-core lead's note that commit 8560d836 had put stale copies of 18 files over its request-state work.
+> ensure these mistakes dont happen again
+
+Used in: [the hooks](../.agents/hooks/stale-copy.mjs), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md) (a worker's branch lands by merge and no other way), [the git rules](../.agents/coordination.md#when-use-git-often).
+
+## 2026-11-15 nate the goal: finalize all systems, test, fix, get them realized
+Nate, the orchestrator's session, 2026-11-15, about 13:12 UTC, set as the session's goal.
+> is to finalize all systems, test, fix, get them realized
+
+Used in: [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate simulate full user experiences, verify by eye, natively too, and get the benchmarks perfect
+Nate, the orchestrator's session, 2026-11-15, about 13:30 UTC.
+> with the server getting hosted, begin simulating full user experiences, checking and visually verifying the features. Both natively with xcode, sending codex reviewers to drive the tests, and however you can audit and such to confirm and benchmark everything working. fixing yourself quickly and ingeniously to get benchmarks perfect\
+
+Used in: [the finalization spec, section 12](../spec/plans/finalization.md).
+
+## 2026-11-15 nate why do photos not show up, all data to the server, the app built to handle it
+Nate, the orchestrator's session, 2026-11-15, about 13:35 UTC, while the orchestrator walked `/shop` in the browser and no listing showed a photo. Two messages.
+> Why do photos not show up? ensure all data is sent to the server
+
+> ensure the app is built to handle the data, everything sends in, the behavior works correctly
+
+Used in: [the harness-to-row map](../app/src/edge/intel/public/search.ts) and [its test](../app/src/edge/intel/public/search-fields.test.ts).
+
+## 2026-11-15 nate visitor photos may reach the conversation, benchmarks good enough for the site, three free requests, open source with a companion MCP server
+Nate, the engines lead's session, 2026-11-15, about 13:37 UTC, answering the engines handoff's open questions (a visitor's photo reaching the conversation model before identify strips it; any market score or backtest figure on a public page).
+> thats ok for photos to reach, seeing any market score? yeah i want benchmarks great enough to put on the site. and lets put 3 requests free for every user just for the hackathon, with it free to download on github, open source, alongside with a companion mcp server to give everyones agent access to the secondhand search engine
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate three free requests in total for the hackathon, then a referral-link partner
+Nate, the engines lead's session, 2026-11-15, about 13:39 UTC, answering what counts as one of the three free requests and over what period (options were three searches a day, three in total, or three conversation turns a day).
+> 3 total for hackathon, with plans to parenter with a link referrel service or however best to say that
+
+Used in: [packet 70](../.agents/team/packets/team/70-engines-handoff.md).
+
+## 2026-11-15 nate ben handles the sign-in proof, we validate the full backend
+Nate, the search lead's session, 2026-11-15, about 13:40 UTC, after the harness coverage table showed every monitor, manage and analytics verb waiting on a linked account.
+> ben will handle sign in proof, we are focusing on validating the full backend, chekcing and ensuring everything works,
+
+Used in: [harness coverage](../research/cross-cutting/nate/runs/harness-coverage-2026-11-15.md), [packet 88](../.agents/team/packets/team/88-search-handoff.md).
+
+## 2026-11-15 nate apify for facebook marketplace only; ebay through treg and our own pages
+Nate, the Databricks lead's session, 2026-11-15, about 13:40 UTC, while the lead was writing the rights rows for every live source (row DB11), which had allowed rows from any site read through an Apify actor.
+> apify for fb marketpalce only
+
+> we have treg for ebay and our own slow pages
+
+Read by the Databricks lead: an Apify row is a Facebook Marketplace row; a line from any other site through Apify has no rights row and is refused. eBay rows come through treg and our own page reads; eBay content still never fits a model, by any route ([data use](../spec/data-use.md)).
+
+Used in: [finalization.md DB11](../spec/plans/finalization.md), the rights brief `brief-dbx-rights-1`.
+
+## 2026-11-15 nate the clarifying question widgets belong in the intelligent ui too
+Nate, the orchestrator's session, 2026-11-15, about 13:50 UTC.
+> I think we can add those clarifying question widgest to the intelligent ui too
+
+Read by the orchestrator as: the generative clarifying-question widgets built for capture (prepopulated selects when the system is fairly sure) also appear in the buying chat's answers; one block shape and one drawn part for both. Sent to the capture lead and the engines lead.
+
+## 2026-11-15 nate fix the server to be up so photos work
+Nate, the server-core lead's session, 2026-11-15, about 13:45 UTC.
+> Fix the server to be up, so photos work, be efficient, fast, get things working and stop models if it means you can fix this so we can have capture, searching all features working and pushed to main
+
+Then, on sign-in: "are we using vercel auth? i can add sign in with google", and "whatever is the way to set up auth do it, i made a new cloud project".
+
+Read by the server-core lead as: redeploy main to the Fly app now, compose the photo store and the capture upload targets, and set up Google sign-in in the new Cloud project. Used in: [packet 86](../.agents/team/packets/team/86-server-core-handoff.md).
