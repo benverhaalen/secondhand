@@ -5,6 +5,8 @@
 // basis, saturation, a last step that gained under 0.1 of n_eff, every source tried, the deadline, or the cents ceiling.
 // Steps are injected (the real ones sit on public/ and fetch.ts); step 6, a signed-in read, is never run here.
 import { GATHER_REASONS, type Answer, type Fact, type OnAnswer, type Searched } from './answer.ts';
+import { nEff, weigh, canonical, DEFAULTS, type Comp as ValuationComp } from '../../engines/valuation/comps.ts';
+import { basisOf } from '../../engines/valuation/valuate.ts';
 import { PROTOCOLS } from './protocols.ts';
 import type { Arrival, Plan } from './run.ts';
 
@@ -25,30 +27,43 @@ export interface GatherParams {
 export const GATHER_PARAMS: GatherParams = { deadline_ms: 120_000, basis_n_eff: 6, basis_sold_90d: 2, half_life_d: 90, cut_d: 365, sat_k: 3, sat_share: 0.02, min_gain: 0.1 };
 
 const DAY = 86_400_000;
-interface Comp { price_cents: number; sold_at?: string }
+type Comp = Partial<ValuationComp> & { price_cents: number; w?: number };
+const valuationComp = (c: Comp): c is ValuationComp =>
+  typeof c.comp_id === 'string' && typeof c.sold_at === 'string' && typeof c.condition === 'string' &&
+  typeof c.site === 'string' && typeof c.kind === 'string' && typeof c.level === 'string' &&
+  typeof c.w_match === 'number' && typeof c.w_extract === 'number';
 const comps = (arrivals: Arrival[]): Comp[] => arrivals.flatMap(a => a.rows).filter((r): r is Comp =>
   typeof r === 'object' && r !== null && typeof (r as Comp).price_cents === 'number' && Number.isFinite((r as Comp).price_cents));
 
 const median = (xs: number[]) => { const s = [...xs].sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m]! : (s[m - 1]! + s[m]!) / 2; };
 
-// n_eff = sum of w_age = 0.5^(age / half-life); a row older than the cut is dropped; no date counts as 1.
+// Kish n_eff uses final valuation weights when supplied; price-only rows use age weights.
 // Saturation (price form, not crawl4ai's new-term rate): the median moved under sat_share across the last sat_k added comps.
 // Blocked and timed-out steps add no rows, so they never reduce or raise any of this.
 export function measure(arrivals: Arrival[], now: number, p: GatherParams = GATHER_PARAMS): Measure {
   const kept = comps(arrivals).filter(c => !c.sold_at || (now - Date.parse(c.sold_at)) / DAY <= p.cut_d);
-  const w = (c: Comp) => (c.sold_at ? 0.5 ** (Math.max(0, now - Date.parse(c.sold_at)) / DAY / p.half_life_d) : 1);
-  const sold_90d = kept.filter(c => c.sold_at && (now - Date.parse(c.sold_at)) / DAY <= 90).length;
+  const params = { ...DEFAULTS, max_age_days: p.cut_d, half_life_days: { default: p.half_life_d, fast: p.half_life_d } };
+  const as_of = new Date(now).toISOString();
+  const complete = canonical(kept.filter(valuationComp), as_of, params);
+  const partial = kept.filter(c => !valuationComp(c));
+  const weights = new Map(weigh(complete, as_of, params).map(c => [c.comp_id, c.w]));
+  const w = (c: Comp) => c.w ?? (valuationComp(c) ? weights.get(c.comp_id) ?? 0 : c.sold_at ? 0.5 ** (Math.max(0, now - Date.parse(c.sold_at)) / DAY / p.half_life_d) : 1);
+  const measured = [...complete, ...partial].filter(c => w(c) > 0);
+  const sold_90d = measured.filter(c => c.sold_at && (now - Date.parse(c.sold_at)) / DAY <= 90).length;
   const prices = kept.map(c => c.price_cents);
   let saturated = false;
   if (prices.length > p.sat_k) {
     const before = median(prices.slice(0, prices.length - p.sat_k)), after = median(prices);
     saturated = before > 0 && Math.abs(after - before) / before < p.sat_share;
   }
-  return { n_eff: kept.reduce((n, c) => n + w(c), 0), sold_90d, median: prices.length ? median(prices) : null, saturated };
+  const basis = partial.length === 0 ? basisOf(complete, as_of, params) : null;
+  return { n_eff: basis?.n_eff ?? nEff(measured.map(w)), sold_90d: basis?.sold_90d ?? sold_90d, median: prices.length ? median(prices) : null, saturated };
 }
 
 export const basisMet = (m: Measure, p: GatherParams = GATHER_PARAMS) => m.n_eff >= p.basis_n_eff && m.sold_90d >= p.basis_sold_90d;
-const wantsGather = (f: Fact) => f.guarded.state === 'hidden' && !!f.guarded.hide_reason && GATHER_REASONS.includes(f.guarded.hide_reason);
+const wantsGather = (f: Fact) => f.guarded.state === 'shown'
+  ? 'notes' in f.guarded && Array.isArray(f.guarded.notes) && f.guarded.notes.some((note: unknown) => note === 'too_few' || note === 'stale')
+  : !!f.guarded.hide_reason && GATHER_REASONS.includes(f.guarded.hide_reason);
 const needsReconcile = (f: Fact) => f.guarded.state === 'hidden' && (f.guarded.hide_reason === 'conflict' || f.guarded.hide_reason === 'mixed_types');
 
 export interface GatherOpts {

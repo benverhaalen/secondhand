@@ -12,6 +12,8 @@ import { sameProduct, type Judged, type Result } from '../intel/reconcile.ts';
 import { jevAsk } from '../intel/jev.ts';
 import { searchAll as rankOffers, type BuyOffer, type BuyRow } from '../buy/buy.ts';
 import { jobs, type ApiJobRow } from './jobs.ts';
+// The dev server bundles each route alone: loading the runtime here gives search its harness and composed browser clients.
+import './runtime.ts';
 
 const protocol = PROTOCOLS.listings_matching;
 export const ports = Object.assign(searchRuntime, {

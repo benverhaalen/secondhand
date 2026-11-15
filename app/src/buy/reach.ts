@@ -37,7 +37,7 @@ type Answer = Pick<SearchAnswer, 'slots' | 'found' | 'ms'> & { searched: Searche
 type Stage = Pick<SearchStage, 'state' | 'found' | 'error'> & { stage: string; at: string };
 type Partial = { site: string; results: OfferView[]; sites_pending: string[]; answer: Answer };
 type Settled = Omit<Partial, 'site'> & { found: Found; searched: Searched[] };
-type Event = { event: 'job.stage'; data: Stage } | { event: 'answer.partial'; data: Partial }
+type Event = { event: 'job.stage'; data: Stage } | { event: 'answer.partial'; data: Partial } | { event: 'answer.late'; data: Partial }
   | { event: 'answer.settled'; data: Settled }
   | { event: 'job.state'; data: { state: Reach['state']; error?: NonNullable<Reach['error']> } };
 
@@ -105,12 +105,13 @@ function parse(raw: unknown, asked: Set<string> | null): Event | null {
     if (d.state === 'failed' && !error(d.error)) return null;
     return { event: 'job.state', data: { state: d.state, ...(d.state === 'failed' ? { error: d.error as NonNullable<Reach['error']> } : {}) } };
   }
-  if (frame.event !== 'answer.partial' && frame.event !== 'answer.settled') return null;
+  if (frame.event !== 'answer.partial' && frame.event !== 'answer.late' && frame.event !== 'answer.settled') return null;
   if (!answer(d.answer) || !d.answer.searched.every(s => known(s.site))
     || !Array.isArray(d.results) || !Array.from(d.results).every(offer) || !strings(d.sites_pending) || !d.sites_pending.every(known)) return null;
-  if (frame.event === 'answer.partial') {
+  // answer.late: a person's Facebook rows after answer.settled, in a partial's shape (search lead, 2026-11-15).
+  if (frame.event === 'answer.partial' || frame.event === 'answer.late') {
     if (typeof d.site !== 'string' || !known(d.site)) return null;
-    return { event: 'answer.partial', data: d as Partial };
+    return frame.event === 'answer.late' ? { event: 'answer.late', data: d as Partial } : { event: 'answer.partial', data: d as Partial };
   }
   // Cache retention is on result.searched, not answer.searched (search.ts result()/answer()).
   if (!found(d.found) || !Array.isArray(d.searched) || !Array.from(d.searched).every(searched) || !d.searched.every(s => known(s.site))) return null;
@@ -126,7 +127,7 @@ const copyOffers = (rows: OfferView[]): OfferView[] => rows.map(o => ({ ...o, al
 export function reach(start: unknown, frames: unknown[]): Reach {
   const sources = new Map<string, SourceReach>(), stages = new Map<string, Found>();
   const stageErrors = new Map<string, SourceReach['error']>(), partials = new Map<string, OfferView[]>();
-  const searchedErrors = new Map<string, SourceReach['error']>();
+  const searchedErrors = new Map<string, SourceReach['error']>(), late = new Map<string, OfferView[]>();
   const asked = object(start) && Array.isArray(start.stages) ? new Set<string>() : null;
   if (asked && object(start) && Array.isArray(start.stages)) {
     for (const s of start.stages) {
@@ -176,7 +177,10 @@ export function reach(start: unknown, frames: unknown[]): Reach {
       const e = entry.error_code !== undefined && entry.reason !== undefined ? { code: entry.error_code, reason: entry.reason } : null;
       searchedErrors.set(s.id, e); s.error = stageErrors.get(s.id) ?? e;
     }
-    if (frame.event === 'answer.partial') {
+    if (frame.event === 'answer.late') {
+      land(get(frame.data.site).id);
+      late.set(frame.data.site, frame.data.results);
+    } else if (frame.event === 'answer.partial') {
       const s = get(frame.data.site);
       land(s.id);
       partials.set(s.id, frame.data.results);
@@ -189,7 +193,7 @@ export function reach(start: unknown, frames: unknown[]): Reach {
   if (final) {
     out.found = { sources_searched: final.found.sources_searched, results_found: final.found.results_found,
       results_used: final.found.results_used, sites: { ...final.found.sites }, dropped_by_reason: { ...final.found.dropped_by_reason } };
-    out.results = copyOffers(final.results);
+    out.results = copyOffers([...final.results, ...[...late.values()].flat()]);
   }
   else {
     for (const f of stages.values()) {

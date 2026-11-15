@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { memoryStore } from '../param/param.ts';
 import { onOurSale, qg, resolve, calibrationForCheck } from './aci.ts';
+import { resolve as resolveValuation } from './params.ts';
 
 const at = '2026-08-01T00:00:00Z', group = { kind: 'apparel' };
 const issued = { q10: 4000, q90: 5000 };
@@ -50,14 +51,31 @@ test('invalid money names its boundary field and never changes the calibration',
   assert.equal(qg(store, group), 0);
 });
 
-test('legacy Check adapter names its cents conversion and never claims measured coverage', () => {
+test('Check calibration carries log units and measures the stored hit history', () => {
   const store = memoryStore();
   onOurSale(store, group, issued, 6000, at);
   const calibration = calibrationForCheck(store, group, issued);
   assert.equal(calibration.passes, false);
   assert.equal(calibration.coverage, 0);
-  assert.ok(Number.isSafeInteger(calibration.Q_g));
-  assert.equal(calibration.Q_g, Math.round(issued.q90 * Math.expm1(qg(store, group))));
+  assert.equal(calibration.n, 1);
+  assert.equal(calibration.hits, 0);
+  assert.equal(calibration.Q_g, qg(store, group));
+});
+
+test('40 calibration scores with 32 hits report coverage .8 and read the checked minimum from the registry', () => {
+  const store = memoryStore();
+  resolve(store, group);
+  store.apply('valuation_conformal_scores', group, () => ({ value: {
+    scores: Array.from({ length: 40 }, (_, i) => ({ score: i < 32 ? -.1 : .3, at, err: i < 32 ? 0 : 1 })),
+  }, weight: 40 }), at);
+  const calibration = calibrationForCheck(store, group, issued);
+  assert.equal(calibration.n, 40); assert.equal(calibration.hits, 32);
+  assert.equal(calibration.coverage, .8); assert.equal(calibration.passes, true);
+  resolveValuation(store, group);
+  store.apply('valuation_checked_min_n', group, () => ({ value: 41, weight: 1 }), at);
+  assert.equal(calibrationForCheck(store, group, issued).passes, false);
+  const empty = calibrationForCheck(memoryStore(), group, issued);
+  assert.equal(empty.n, 0); assert.equal(empty.hits, 0); assert.equal(empty.coverage, 0);
 });
 
 test('a child stores only its own scores and remains pooled below the declared cell minimum', () => {
@@ -92,6 +110,16 @@ function seedScores(store: ReturnType<typeof memoryStore>, scope: typeof group, 
     value: { scores: values.map(score => ({ score, at, err: 1 })) }, weight: values.length,
   }), at);
 }
+
+test('decayed scores use 24.5 total mass for the finite-sample rank and stay below the maximum', () => {
+  const store = memoryStore(); resolve(store, group);
+  const later = '2026-10-30T00:00:00Z';
+  store.apply('valuation_conformal_scores', group, () => ({ value: {
+    scores: Array.from({ length: 40 }, (_, i) => ({ score: (i + 1) / 100, at: i < 31 ? at : later, err: 1 })),
+  }, weight: 40 }), later);
+  assert.equal(qg(store, group), .37, 'ceil((24.5 + 1) * .8) = 21 units of decayed weight');
+  assert.ok(qg(store, group) < .4);
+});
 
 test('200 group scores determine their own quantile even when the parent has only three', () => {
   const store = memoryStore(), child = { ...group, site: 'ebay' };

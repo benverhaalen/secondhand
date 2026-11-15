@@ -2296,4 +2296,36 @@ Used in: the engines lead's answer (engine outputs feed the conversation and our
 Nate, engines lead's session, 2026-11-15, about 07:00 Central, answering "May Apify rows also be used to fit the nightly models?" (buttons "Yes, Apify too" and "Keep fits clean").
 > no keep fits clean
 
-Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1.
+Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1. Changed by Nate minutes later: [Apify rows may fit the models](#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate).
+
+## 2026-11-15 nate apify rows may fit the models; real-time scores per market on each platform, extremely accurate
+Nate, engines lead's session, 2026-11-15, about 07:05 Central. He changes the answer of a few minutes earlier ([apify rows never fit a model](#2026-11-15-nate-apify-rows-never-fit-a-model)), answering the same question, "May Apify rows also be used to fit the nightly models?".
+> Yes, Apify too
+
+> Make it extremly accurate we are benchmarking and showing depth and credibility with our realtime score metrics generated and assigned to each market within a specific platfrom
+
+Read by the engines lead: Apify rows may fit the nightly models. eBay content stays out of fits under eBay's terms ([data use](../spec/data-use.md)), including eBay rows that came through an Apify actor, until Nate says otherwise. The second line asks for real-time accuracy scores for each market (a platform and a kind of item), built in [valuation.md §9](../spec/engines/valuation.md#real-time-market-scores).
+
+## 2026-11-15 nate our own page read; is a website's read driven by the visitor's browser?
+Nate, orchestrator's session, 2026-11-15, about 08:05 Central, after the cross-source benchmark (our eBay page read against the paid actor).
+> lets do our page read, and for websites its driven with something using their browser of some sort?
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the search lead's rows.
+
+## 2026-11-15 nate understand how Databricks shapes dynamic pricing
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Understand how databricks shapes dynamic pricing https://www.databricks.com/blog/dynamic-pricing-airlines-how-ai-can-reshape-revenue-strategy
+
+Used in: [the retail mapping](../research/data/nate/databricks-retail-solutions.md).
+
+## 2026-11-15 nate check Ben's packets, address them, and prepare a wrap-up and fresh sessions
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central.
+> check packets too for any ben incoming messages, then launch a subagent to address it, prepare rest for a wrapup and fresh new sessions
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate yes to Google Lens through treg, as designed
+Nate, orchestrator's session, 2026-11-15, about 08:40 Central, answering "May a seller's photo go to Google Lens through treg, as designed?" (the design: only when the tag, label and barcode reads abstain, one crop of the item, pixels only, through a single-use address that expires in 120 s, capped at $0.003 a capture and $0.10 a day, nothing of the answer kept but our own candidate line).
+> yes
+
+Used in: [the capture design](../spec/engines/capture.md), [the finalization spec](../spec/plans/finalization.md).
