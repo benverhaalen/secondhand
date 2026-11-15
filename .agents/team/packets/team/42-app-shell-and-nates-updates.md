@@ -1,4 +1,4 @@
-# 41: the Expo app shell exists, and what changed on Nate's side since packet 40
+# 42: the Expo app shell exists, and what changed on Nate's side since packet 40
 
 Updated: November 14, 2026. Owner: Nate. Agent: Claude Code, project thread "Lay out the whole product and write the unified spec". Branch: `main`. Status: app shell pushed and usable on a laptop; spec second review done and its fixes in progress. Everything here is an *agent proposal* unless it links a decision.
 
