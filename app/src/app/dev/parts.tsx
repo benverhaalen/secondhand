@@ -4,18 +4,27 @@
 import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import {
-  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
-  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type TabKey, type TagState,
+  Amount, Approve, Blank, Count, DecisionCard, EmptyState, FootButton, Grid, Guess, IconButton, ItemCard, Line, List, Nav, Notice, Pill,
+  Screen, Section, Sheet, SiteBadge, Skeleton, Stack, Tag, TabBar, Theme, TopSlot, Txt, UndoToast, type PhotoSrc, type TabKey, type TagState,
+  Feed, QueueView,
 } from '@/ui';
 import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { Switch } from '@/ui/parts/switch';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { WeekBars } from '@/ui/parts/week-bars';
+import { Chip, Choice, FilterRow } from '@/ui/parts/chip';
+import { Shelf, Tile } from '@/ui/parts/tile';
+import { KeepRow, Range } from '@/ui/parts/worth';
+import { photo } from '@/demo/photos';
 
 const HOUR = 3600000;
 // Deadlines are fixed offsets from the moment the sheet opens, so each strength of a state gradient shows.
 const at = (h: number) => Date.now() + h * HOUR;
+const QUEUE: Record<string, { title: string; photo: 'brass-lamp' | 'kindle' | 'ikea-chair' }> = {
+  q1: { title: 'Brass desk lamp', photo: 'brass-lamp' }, q2: { title: 'Kindle Paperwhite', photo: 'kindle' }, q3: { title: 'IKEA Stefan chair', photo: 'ikea-chair' },
+};
+const QUEUE_SITES: ('ebay' | 'depop')[] = ['ebay', 'depop'];
 const STATES: TagState[] = ['need', 'live', 'hot', 'stuck', 'sold', 'ship', 'paid', 'failed', 'draft', 'ended', 'working'];
 
 export default function Parts() {
@@ -33,6 +42,8 @@ function Sheetful() {
   const [sheet, setSheet] = useState(false);
   const [size, setSize] = useState('');
   const [on, setOn] = useState(true);
+  const [fed, setFed] = useState(['f-a', 'f-b']);
+  const [queued, setQueued] = useState<string[] | null>(null);
   return (
     <Screen name="parts" state="all" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
@@ -66,6 +77,23 @@ function Sheetful() {
           due={at(22)} form="batch" status="working" step="2 of 3" primary={{ id: 'd-batch-run-print', label: 'Print 3 labels' }} second={{ id: 'd-batch-run-each', label: 'One by one' }} />
         <DecisionCard id="d-queue" kind="need" word="Offer" title="Kindle Paperwhite" photo="kindle" site="ebay" fact={{ label: 'You keep', amount: 51 }}
           due={at(6)} form="queue" waiting={4} primary={{ id: 'd-queue-accept', label: 'Accept $58' }} second={{ id: 'd-queue-counter', label: 'Counter' }} />
+      </Section>
+
+      <Section title="Feed: an answered card leaves and the gap closes">
+        <Feed>
+          {fed.map(k => (
+            <DecisionCard key={k} id={k} kind="need" word="Offer" title={k === 'f-a' ? 'Brass desk lamp' : 'Kindle Paperwhite'} photo={k === 'f-a' ? 'brass-lamp' : 'kindle'} site="ebay"
+              fact={{ label: 'You keep', amount: 28.9 }} primary={{ id: `${k}-accept`, label: 'Accept $32', onPress: () => setFed(f => f.filter(x => x !== k)) }} />
+          ))}
+        </Feed>
+        <Line><Pill id="f-reset" kind="second" label="Bring them back" onPress={() => setFed(['f-a', 'f-b'])} /></Line>
+      </Section>
+
+      <Section title="Queue view: one of many, full screen">
+        <Line><Pill id="q-open" kind="second" label="Open a queue of 3" onPress={() => setQueued(['q1', 'q2', 'q3'])} /></Line>
+        <QueueView id="q" open={!!queued} title="Ready to post" total={3} does="Post at $45 on 2 sites" onClose={() => setQueued(null)}
+          entries={(queued ?? []).map(k => ({ id: k, title: QUEUE[k].title, photo: QUEUE[k].photo, price: '$45', sites: QUEUE_SITES }))}
+          onApprove={e => setQueued(q => (q && q.length > 1 ? q.filter(x => x !== e.id) : null))} onSkip={e => setQueued(q => (q && q.length > 1 ? q.filter(x => x !== e.id) : null))} onEdit={() => setQueued(null)} />
       </Section>
 
       <Section title="Item card">
@@ -126,6 +154,37 @@ function Sheetful() {
 
       <Section title="Amount">
         <Amount value={46.95} what="You keep, after fees" />
+      </Section>
+
+      <Section title="Grid tile, shelf, filter row (Sell)">
+        <FilterRow>
+          <Chip id="c-sort" icon="sorting-01" label="Latest" onPress={() => {}} />
+          <Chip id="c-all" label="All" picked onPress={() => {}} />
+          <Chip id="c-need" label="Needs you" count={8} onPress={() => {}} />
+          <Chip id="c-ebay" site="ebay" onPress={() => {}} />
+        </FilterRow>
+        <Shelf id="p-need" title="Needs you" count={8} onAll={() => {}}>
+          <Grid columns={2}>
+            <Tile id="p-t-idle" title="Carhartt Detroit jacket" photo={photo('carhartt-jacket') as PhotoSrc} state="need" word="Offer" sites={['ebay', 'depop']} fact={{ label: 'Offered', amount: '$85' }} onPress={() => {}} />
+            <Tile id="p-t-faded" title="Nike Dunk Low, 10.5" photo={photo('nike-dunks') as PhotoSrc} state="ended" word="Unsold" faded fact={{ label: 'Worth', amount: '$60 to $80' }} onPress={() => {}} />
+            <Tile id="p-t-on" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} state="live" sites={['poshmark']} select="on" fact={{ label: 'Listed at', amount: '$58' }} onPress={() => {}} />
+            <Tile id="p-t-picked" title="Patagonia Synchilla, L" photo={photo('patagonia-fleece') as PhotoSrc} state="paid" word="Paid" select="picked" fact={{ label: 'In your bank' }} onPress={() => {}} />
+          </Grid>
+        </Shelf>
+        <Shelf id="p-kept" title="Kept" count={3} folded onOpen={() => {}} />
+      </Section>
+
+      <Section title="Range, keep rows, choices (What's it worth)">
+        <Range low="$60" high="$80" what="What similar ones sold for lately" />
+        <List>
+          <KeepRow site="ebay" keep="$52 to $70" line="Sells in about 6 days" />
+          <KeepRow site="poshmark" line="Too few sales here" note="Not linked" />
+        </List>
+        <List>
+          <Choice id="p-c-pick" label="Price, high" picked onPress={() => {}} />
+          <Choice id="p-c-leads" icon="store-01" label="See the sales" leads onPress={() => {}} />
+          <Choice id="p-c-off" icon="search-01" label="Looking deeper" line="It lands on Today when it’s done." disabled onPress={() => {}} />
+        </List>
       </Section>
 
       <Section title="Sheet, toast">

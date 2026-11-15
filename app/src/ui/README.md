@@ -53,6 +53,12 @@ See every part in every state at **`/dev/parts`** (light) and **`/dev/parts?sche
 | `TopSlot` | | `news?: { since, kept, line, onPress? }` or `setup?: { id, step, line, onPress? }`. Nothing new: no slot. Never $0.00 |
 | `TabBar` | 390 x 84 | `current: TabKey`, `badges?`, `onTab`. Already in `(tabs)/_layout.tsx`; a screen never draws it |
 | `Wash` | 390 x 236 | Drawn by `Screen wash`; never by hand |
+| `Tile` (parts/tile) | a grid column | `id`, `title`, `photo`, `state`, `word?`, `sites?`, `fact: { label, amount? }`, `faded?`, `select?: 'off' \| 'on' \| 'picked'`, `price?`, `onPress`. A thing in a photo grid: the tag on the photo's top left, site badges on its bottom right corner 4 apart |
+| `Shelf` (parts/tile) | header 24 | `id`, `title`, `count`, `onAll?` (See all), `folded?`, `onOpen?`, `children`. A section of a grid with its count |
+| `FilterRow`, `Chip` (parts/chip) | 40 tall | `FilterRow` scrolls sideways past the gutter. `Chip`: `id`, `label?`, `count?`, `icon?`, `site?` (the logo alone), `picked?`, `onPress`. One row of filters |
+| `Choice` (parts/chip) | 56 | `id`, `label`, `line?`, `icon?`, `picked?`, `leads?` (a chevron), `disabled?`, `onPress`. A row in a `List` that does one thing: a pick in a sheet, or a way out at a page's end |
+| `Range` (parts/worth) | 50 + its line | `low`, `high`, `what`. A value as a range, one piece of text that breaks at a space |
+| `KeepRow` (parts/worth) | 56 | `site`, `keep?`, `line`, `note?`. What the person keeps on one site; no `keep` when there are too few sales |
 
 Helpers: `money(amount)`, `timeLeft(due, now)`, `useMinute()` (a clock that ticks once a minute), `log` and `tap` (the app log), `MOTIONS` (every motion and its reason).
 

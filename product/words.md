@@ -1087,6 +1087,19 @@ Ben, project chat, 2026-11-15 05:20 UTC.
 Ben, thread "Map every feature and page so the build can start", 05:24 UTC.
 > i dont want the user's calendar to be in the app at all. you can select days of the upcoming week that are fine and approve a time if they send. like the agent could respond im free at these times this week in like a humanized sounding way. like Mon 6-8 or Fri 3-4p or something. like not mechanical or engineeringly. but then the user can add it to the calendar too. it also should allow them to see who is coming to buy. set a location. the local pickup stuff could be super useful too. but adding to google or ical could be really cool once its planned. ensuring agents dont mess up too is good. so using actual images of the messages from the site
 
+## 2026-11-15 hill-climb what the logs found slow
+
+Ben, project chat, 05:05:
+> try to speed up what logging found slowed things down hiilclimb it using the hillclimbing skills from either poteto or like the claude hillclimb skill or docs type thing
+
+Used in: [log/README.md](../log/README.md#hill-climb), the render and image-gen speedups of 2026-11-15.
 ## 2026-11-15 notifications reasoned from business, ux, psychology and personas
 Ben, project chat, 2026-11-15 05:23 UTC.
 > also i hope youve thought about notifications and all that. what info needs to be in them. whats useful. everything from a business entrepreneur ui ux psychology and persona type thing.
+
+## 2026-11-15 a skill i name that is not in the repo gets fetched
+
+Ben, project chat, 05:37:
+> if i tell you about a skill and its not in the repo i probably want you to fetch it
+
+Used in: [AGENTS.md](../AGENTS.md#how-to-work-here), [.agents/vendor/poteto/](../.agents/vendor/poteto/SOURCE.md), [.agents/skills/hillclimb](../.agents/skills/hillclimb/SKILL.md).

@@ -17,3 +17,5 @@ export { DecisionCard, ItemCard, Notice, useMinute, type Action, type DecisionKi
 export { Nav, TabBar, RouterTabBar, TopSlot, Wash, type TabKey } from './parts/chrome';
 export { Guess, Blank, Approve } from './parts/loop';
 export { Sheet, UndoToast, EmptyState, Skeleton } from './parts/overlays';
+export { Feed } from './parts/feed';
+export { QueueView, type QueueEntry } from './parts/queue';
