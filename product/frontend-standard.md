@@ -108,7 +108,8 @@ Each moment names its borrowed pattern, its timing and its fallback.
 | Open an item from a grid or a row | Many per day | The photo grows into the item page and shrinks back on return. The page shows what the tile already knew and fills in the rest | Apple Photos, App Store cards | Crossfade |
 | Switch tabs | Constant | None; the content swaps | iOS tab bar | Same |
 | Open all messages (chat icon, top right) | Several per day | Pushes in from the right like any iOS navigation, `--t-panel`; unread count crossfades | iOS navigation push; eBay and Marketplace header icon | Instant |
-| Open ＋ (Sell this / What's it worth / Find this) | Daily | Sheet rises from the bottom, `--t-panel`, drag to dismiss | iOS sheet | Fade |
+| Open New (Sell this / What's it worth / Find this) | Daily | The 56 circle's ＋ turns to ×, a scrim fades in, and the three choices rise from the button 30 ms apart, `--t-select`. Sell this opens the camera out of the button's circle, `--t-panel` ([Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready), [note §5](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#5-new-then-the-camera)) | Floating action menus; the iOS camera opening from its button | Choices and camera fade in |
+| The camera reads the item | Once per item | Corner brackets hold the item; a line in the field colors sweeps only while the work runs; each fact lands as a chip with a check as it resolves, and a fact not found yet is a blank chip; the caption names the real comparison | ID and face scanners | No sweep; chips appear |
 | Take a shot in the guided capture | Tens per item | Shutter blink, then the thumbnail flies to its slot in the shot strip (origin-aware), ~250 ms. The next shot's outline appears. Light haptic | iOS Camera thumbnail | Thumbnail appears in place |
 | Researching | Once per item | Fields fill in as each resolves, a 30 to 80 ms stagger, one thin progress line; no spinner after the first second | Skeleton screens (Vercel rule); live build logs | Fields appear |
 | Approve a Today card | Many per day | Card collapses and the list closes the gap, `--t-select`; an Undo toast holds ~5 s | Gmail archive with Undo | Card disappears; toast stays |
@@ -164,6 +165,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 - [ ] Block: the blur test passes (focal point first, next action second).
 - [ ] Block: color appears only as state fills, one field and the brick alert (brand constitution Art. 5, C2, C6).
 - [ ] Flag: more than three actions visible on a card. Choice overload is conditional ([psychology §3](../research/cross-cutting/ben/psychology.md)), so justify it rather than ban it.
+- [ ] Block: nothing sits in a corner's curve. In a box with radius r and padding p, content in a corner keeps p from the arc only at an inset x ≥ r − (r − p)/√2, measured on the ink, not the line box. On a decision card a top-right countdown sits 24 from the right edge. Shapes concentric with the box (the photo, radius r − p) already hold ([Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready), [note §1](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#1-where-content-sits-in-a-rounded-corner)).
 - [ ] Block: the same kind of thing looks the same everywhere. An item is a photo tile, a decision is a card with buttons, a platform is its logo.
 
 ### Honesty
@@ -192,7 +194,7 @@ Run it on the rendered screen, not the code. A **Block** must be fixed before th
 
 ### Access
 - [ ] Block: text contrast is at least 4.5:1 (WCAG 2.2 AA), and 3:1 for large text and UI parts. Field, state and category colors are never text on white (brand Art. 5.1).
-- [ ] Block: touch targets are at least 44 pt, and main buttons 48.
+- [ ] Block: a button's size follows its kind, never its words. A pill is 40 tall and hugs its label with 20 a side, at least 88 wide; the copy limit is its ceiling. A full-width primary is the content width by 48, one per screen. An icon button is a 40 circle; New is 56. Every target's hit area is at least 44 by 44: it grows into free space around a small control, and between two close targets the gap is split down the middle so no point belongs to both (Apple HIG; [Ben, 02:46](words.md#2026-11-15-the-new-button-gradients-that-carry-state-seller-intents-onboarding-and-build-ready); [note §2 and §3](../research/cross-cutting/ben/buttons-taps-corners-new-camera.md#2-button-sizes)).
 - [ ] Block: inputs are at least 16 px, which prevents iOS zoom.
 - [ ] Block: VoiceOver labels exist on icon-only controls and state pills, and a pill reads as "Live on eBay", not "green dot".
 - [ ] Block: the layout holds at the largest Dynamic Type size.
