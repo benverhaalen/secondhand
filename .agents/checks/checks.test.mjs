@@ -151,6 +151,16 @@ test('a copied tokens.css holds raw colours, and the line-gap-override of a font
   assert.match(errors(run(brand, { ...scales, 'web/app/globals.css': '.a { gap: 9.7%; }' })), /B17/);
 });
 
+test('server code is not a screen and hand-run probes are tooling: no logo, spacing or print rule there', async () => {
+  const scales = { 'brand/constitution.md': '| B13 | x | {400, 500} | S |\n| B17 | x | {0, 4, 8, 16} | S |\n| B20 | x | {0, 8, 999} | S |\n' };
+  assert.equal(await pick('L6', { 'app/src/edge/harness/sites/ebay/adapter.ts': "export const why = 'Listed on eBay';" }), '');
+  assert.equal(errors(run(brand, { ...scales, 'app/src/engines/negotiation/learn.ts': 'export const o = { margin: 0.5 };' })), '');
+  assert.match(errors(run(brand, { ...scales, 'app/src/ui/a.tsx': 'export const o = { margin: 0.5 };' })), /B17/);
+  const print = 'cons' + 'ole.log("rows");\n';
+  assert.equal(errors(run(logging, { 'app/src/edge/harness/sites/depop/live.ts': print, 'bench/run.mjs': print })), '');
+  assert.match(errors(run(logging, { 'app/src/edge/harness/sites/depop/adapter.ts': print })), /no one can replay/);
+});
+
 test('brand: a reworded scale row fails closed, and rem, em or % spacing is checked', () => {
   const reworded = '| B13 | x | Regular and Medium | Script |\n| B17 | x | Art. 7 | Script |\n| B20 | x | Art. 9.1 | Script |\n';
   assert.match(errors(run(brand, { 'brand/constitution.md': reworded })), /can't read the B13[\s\S]*B17[\s\S]*B20/);

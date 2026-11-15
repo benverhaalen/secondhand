@@ -2,7 +2,8 @@
 import { read, err, lineOf } from './util.mjs';
 
 const UI = /\.(tsx|jsx|ts|js|css|scss|html|vue|svelte)$/;
-const NOT_APP = /^(brand|research|assets|scripts|spec|\.agents|node_modules)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\./;
+// The server's code (edge, engines) draws nothing: a margin there is a price margin, not spacing.
+const NOT_APP = /^(brand|research|assets|scripts|spec|\.agents|node_modules)\/|^app\/src\/(edge|engines)\/|(^|\/)\.|\.test\.|\.config\.|\.generated\./;
 
 export function scales(constitution) {
   const row = id => (constitution.match(new RegExp(`^\\|\\s*${id}\\s*\\|.*$`, 'm')) ?? [''])[0];
