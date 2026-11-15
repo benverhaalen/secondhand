@@ -242,14 +242,14 @@ class MemoryStore:
         by_version = {r["version"]: r for r in rows}
         events, prev = [], cur
         while prev:
-            if prev is not cur and prev["origin"] == "fit":
+            if prev is not cur and (cur["origin"] == "fit" or prev["origin"] == "fit"):
                 break
             if prev["origin"] == "event":
                 events.append(prev)
             prev = by_version.get(prev["previous_version"])
         if prev is None:
             raise ValueError(f"{name} has no earlier promoted fitted version")
-        if not keep_evidence:
+        if cur["origin"] == "fit" or not keep_evidence:
             cur["status"] = "retired"
             prev["status"], prev["promoted_at"] = "champion", at
             return copy.deepcopy(prev)
