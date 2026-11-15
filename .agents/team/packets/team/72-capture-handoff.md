@@ -1,8 +1,60 @@
 # 72: capture handoff
 
-Updated: November 15, 2026, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) now leads, by Nate's choice.
+Updated: November 15, 2026, night Central. Owner: Nate. Agent: Claude Code, the third capture team lead (Opus 5.5), ending at about half its context ([packet 55](55-team-leads-and-mac-workers.md#a-session-ends-before-it-fills)). Status: row 7's spec (the parts of one item, F17) is reviewed and on main (c7ea4676); its engine half is building on the Mac in worker `cap-parts-1`; its routes brief is written; the LiDAR module (row 5) leads next, by Nate's choice, and is not started; Nate called the wrap-up, so section 0 is the place to start.
 
 The design is [spec/engines/capture.md](../../../../spec/engines/capture.md). Read it first: section 1 says what exists, section 8 lists the fixed and open fixes, and section 9 is the order to build in.
+
+## 0. Where capture stands at the wrap-up (2026-11-15, Nate's word to wrap up)
+
+Nate ([words](../../../../product/words.md#2026-11-15-nate-wrap-up-the-sessions-review-the-whole-project-then-the-presentation)): "we assess what works, what doesnt, whats left".
+
+**Works on main today**
+- The plan engine: type, class, process, field ladders, questions, order, cap, done. `node --test --test-concurrency=1 app/src/engines/capture/<f>.test.ts` for table, select, fields, complete, plan, walk and process: 135 pass (Mac, b600bd23).
+- Questions to done: T-shirt 3, sneakers 4, handbag 5, phone 5, chair 2, bundle of three 9, close-variant table 1 with depth and 2 without. These are `walk.test.ts` diagnostics, and each walk runs twice with identical output.
+- The capture routes (open, photos with checked reads and scan extent, PATCH, finish writing facts to the item, GET, job results): `node --test --test-concurrency=1 app/src/edge/api/captures.test.ts` 128 pass, `spec/examples.test.mjs` 9, `routes.test.ts` 6, `items.test.ts` 69 (d521628e).
+- Every capture prior is one param row: `./.venv/bin/python -m pytest jobs/capture/test_suggest.py -q` 16 pass (b7413cc4).
+- The real-photo run on Windows: `node --test --test-concurrency=1 scripts/capture-real.test.mjs` 10 pass (a3c4a8cc).
+- The design for the parts of one item (F17), reviewed twice, and packet 77 for engines (c7ea4676).
+
+**Does not work, or is not joined**
+- The capture screen calls no route: `app/src/app/camera.tsx` plays scripted steps. This is Ben's screen.
+- The app has no LiDAR, ARKit or Object Capture code, so `device`, `reads[]` and scan extents never come from a phone.
+- Parts (F17) are not on main. The engine half is in worker `cap-parts-1` (section 2); the routes half is unbuilt (`brief-cap-parts-2.txt`). The four canon rows the orchestrator approved wait on that branch: they land in the commit that merges it (`canon-rows.md` in the notes folder, with item 3 reworded so that `custom_build` is an attribute with source, confidence and evidence).
+- Captures live in memory only (F5, waits on integration's tables), and no job runner calls `applyJobResult` (F6).
+- `suggest.py`, `judge_type.py`, `learn.py` and `note.py` have no product caller (F7), so nothing learns.
+- The item card shows every captured confidence as 0 (F16, integration's `items.ts`).
+- The first real run asked 6 and 7 questions where the walks ask 3 (F3), because the recorded reads carry no confidences.
+- A scan's size stays a proposal (`extent_conf` 0) until the box check passes.
+- `node .agents/check.mjs` flags `captures.ts:29` as a swallowed error; the fix is in brief 2.
+
+**Left, in order** (who can test it)
+1. The LiDAR module, brief below. The Mac can compile it and test its geometry; only Nate's LiDAR iPhone proves it.
+2. Land `cap-parts-1`, then brief 2 in the same worktree, then the canon rows, in one merge. The Mac tests all of it. Before merging, grep the whole repo for `phones_laptops` (`jobs/`, `spec/items/`, `spec/examples/`, `databricks/`) and leave no reader of the old id.
+3. The box check (row 6): a known 30 cm box measured within 1 cm. This needs a person and the device.
+4. F5, when integration's `capture` and `photo` tables exist. The Mac tests it.
+5. F7, the learning callers. The Mac tests it.
+6. Identity's code rung calls `gtin14`. This is engines' file.
+7. Photo fixes P1 to P12, after Nate's cover-pick answer. The Mac tests them.
+8. Ben's screen on the routes, which ends the demo capture. Ben, on a device.
+
+### The LiDAR module brief (row 5, for whoever picks capture up)
+
+Nate chose "Build the module first" ([words](../../../../product/words.md#2026-11-15-nate-build-the-lidar-module-before-a-testflight-build)). The orchestrator's three conditions hold:
+- **Self-contained.** It adds a capability and changes no existing screen, navigation or dependency version. The app builds and runs exactly as before when the module is unused, on a phone with no LiDAR and on web.
+- **Ben gets one packet before it merges.** It says what was added, what the build needs (the camera permission string, the dev client rebuild) and how a screen calls it. Ben decides when a screen uses it.
+- **No session installs anything.** No EAS build or submit and no device install. Send the orchestrator the exact steps Nate does himself: on the Mac, sign in to Xcode with his Apple ID, plug in the phone, run `npx expo run:ios --device` in the app. The Mac has Xcode 27.2 and no signing identity.
+
+Facts for the brief: `research/capture/nate/expo-module-arkit-depth-2026-11.md` (written by a retriever this session: check it is committed and read its *asserted* lines before trusting them) and `capture-tech-docs-2026-11.md`. The worker has no network, so these go into the brief with their URLs.
+
+The outcome, as one worker on `gpt-6.1-sol` at high:
+- A local Expo module, `app/modules/capture-depth/` (Swift, Expo Modules API, SDK 58), made the documented way for a local module.
+- `capabilities()` returns `{has_lidar, object_capture}`: `has_lidar` is `ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)` and `object_capture` is `ObjectCaptureSession.isSupported`.
+- A native view that runs an `ARSession` with scene depth and emits `onExtent {extent_cm {width, depth, height}, extent_conf: 0, rigid, frames}` for the framed item. The method: use the high-confidence depth pixels in the centre region, unproject them with the intrinsics scaled to the depth map, find the support plane, keep the points above it, and take the box on the plane's axes.
+- The JS side uses `requireOptionalNativeModule`. On web, on Android and without the module, it returns `{has_lidar: false, object_capture: false}` and no view, so the routes' defaults (false) hold.
+- The geometry lives in a pure Swift file with no ARKit import, so the Mac can test it with synthetic points. Tests: a 30 × 20 × 10 cm box on a plane gives those sides within 0.5 cm; noise below the confidence bar is ignored; an empty frame gives no extent; the same points twice give the same box.
+- `extent_conf` is sent as 0 until row 6 passes (capture.md §7).
+
+Done: the module's Swift tests pass on the Mac; `cd app && npx tsc --noEmit -p .` is clean for the module; `npx expo prebuild --platform ios` and an `xcodebuild` for a generic iOS device compile with no signing. The app's existing tests and screens are unchanged. A dev-only screen that opens a capture and posts the scan is Ben's call: ask him in the packet, and do not add it before he answers.
 
 ## 1. What is true on main
 
