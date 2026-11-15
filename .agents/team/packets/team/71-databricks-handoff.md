@@ -1,41 +1,51 @@
 # 71: Databricks handoff at the stop
 
-Updated: 2026-11-15, about 05:20 Central (system clock). Owner: Nate. Agent: the second Databricks lead (Claude Code), stopping as its context fills. Read with [packet 55](55-team-leads-and-mac-workers.md), [spec/databricks-build.md](../../../../spec/databricks-build.md) and [databricks/DEMO.md](../../../../databricks/DEMO.md). **Judging is at 1 PM Central today.**
+Updated: 2026-11-15, about 05:45 Central (11:45 UTC). Owner: Nate. Agent: the third Databricks lead (Claude Code), stopping as its context fills. Read with [packet 55](55-team-leads-and-mac-workers.md), [spec/databricks-build.md](../../../../spec/databricks-build.md) and [databricks/DEMO.md](../../../../databricks/DEMO.md). **Judging is at 1 PM Central today.**
 
-## What changed in this session
+## What the third lead did (commit 27c3a65c)
 
-- **The dashboard was rebuilt and deployed.** Nate rejected the first one ("So i hated the dashboard... Understand we are being judged"). The rebuild is one story page and a data page: a price opened to its sales; ours against the last sale and the 90-day median on the same sales (misses by sale price, ranges that held); prices held back; the weight that moved once; isolation; what is never automated. Every figure shows its count. It was rendered and read in a browser on a review copy (`/Shared/secondhand-review`, id `01f1e0dd560b1bfabf59977d292e05e1`) before deploy. Nate saw it: "thats a good test dashboard, but we will develop our dashboard to respond to realtime data from across sites and what we scan for our internal testing". He then said "Yes, deploy now", and, asked about the flag, "Yes, use --force". The deploy ran with `--force` and overwrote the UI edits on the old one (title "secondhand: Accuracy", `applyModeEnabled`).
-- **The metric view** `measures.valuation_metrics` ([13_metrics.sql](../../../../databricks/sql/13_metrics.sql)) holds the price measures, null under 30 shown, by who priced it, week, sale price band, kind and dataset. It was created through the Statements API.
-- **Setup chain run after the deploy.** `setup`, `erasure_setup` and `governance_setup` ran, the last twice. `parity` passed 125 of 125. `load_bench` and `load_logs` ran (559 lines, 481 decisions, 0 rejected).
-- **The guard.** The first break-glass run found 124,152 violations, every backtest number missing `basis_level`. Commit 6e798a6c backfills it with the writer's own rule. After the rerun, `measures.guard_status` shows **0 violations** (checked 10:49 UTC). 0 open break-glass windows, 0 wildcard mappings.
-- **Genie.** Run 1 got 6 of 10 right; it now answers all of them. The thin questions refuse with their count, including "too few: 0 sales" for a Yeezy on Depop. Five judge questions are the space's sample questions. Genie calls no unregistered table function and reads no view over system information schema. So the rows behind `why(id)` are the view `measures.price_basis`, and the policies are the snapshot table `measures.locks_in_force`, refreshed by `governance_setup`. Recorded answers: the side-session notes file `dbx-genie-judge-answers.md` (kept out of the repo because it holds development figures).
-- **Benchmark.** `bench_read`, cost columns on `bench_record`, and the views `bench_by_site` and `bench_cost` are live (worker dbx-bench-2). `bench_setup` migrates the columns first. The two runs loaded so far predate per-read fields, so the views fill when integration uploads today's run to `/Volumes/secondhand/raw/landing/bench/` and `load_bench` runs.
-- **DEMO.md** is the judge's walk in six steps plus a table of what Databricks gave us, what we built on it and how we worked around each limit.
-- **The build page** says free trial, not Free Edition, describes the new dashboard, and lists named fixes F1 to F7 (§10).
+- **Two engines, always named.** The workspace backtest's "ours" (98.5% within 20% of 39,707) is the nightly market model (`jobs/valuation/market.py`), which the app does not serve. It is now labelled "Market model" in the metric view `measures.valuation_metrics` (recreated through the Statements API), the dashboard and Genie. The served engine is the new table `measures.engine_ablation` ([14_engine.sql](../../../../databricks/sql/14_engine.sql), run by hand with `node databricks/run-sql.mjs`), copied from the engines lead's ablation in [valuation.md §9](../../../../spec/engines/valuation.md#9-proof): served 96.0% against last sale 97.4% and 90-day median 89.1% on 41,988 StockX 2019 test sales, paired gap −1.0 points (−1.4 to −0.7) on 41,452. Its columns carry comments; `vs_last_sale_points` is a rate gap, not a price gap.
+- **Dashboard section 2** has a second row, "The engine the app serves trails the last sale by about a point", with four tiles and their counts. The price picker and its default now say "market model $598". Headline tiles and chart series are mid grays (`#767676` and lighter) because Databricks gives custom Vega tiles no theme and the brand ink vanished on a dark console. Rendered and read in light and dark in the browser pane after deploy.
+- **Genie** says `rebuilt_exactly` means the price rebuilds exactly from the sales it cites, never "verified" or "real". `engine_ablation` is attached. Answers are recorded in the repo at [databricks/genie-answers.md](../../../../databricks/genie-answers.md), rewritten by `node databricks/genie/ask.mjs` (eight questions, the five samples among them; a test checks that).
+- **Deploys:** four `node deploy/deploy.mjs deploy --target dev --profile Nate`, none forced, each "0 created" with the dashboard or Genie space changed.
+- **Messages sent:** the engines lead (Lead 3) was asked when a newer served-engine reading should replace the 11-15 row (no reply by the stop). The buying-conversation lead was sent the list of what it could call today (`why`, `why_summary`, `shown_prices`, `price_basis`, the metric view, `source_rights`, `model_clearance`, `pipeline_funnel`, `locks_in_force`, `policies_in_force`, `guard_status`, the bench views, the Genie conversation API); its one named fix has not arrived. The orchestrator was sent the two spend questions below.
+
+## Waiting on Nate (sent through the orchestrator)
+
+1. **The hourly guard alert.** Billing (`system.billing.usage`, records to 08:00 UTC) shows a lone query wakes the idle Small warehouse for 0.9 to 2.2 DBU at the list $0.70/DBU (`system.billing.list_prices`, us-west-oregon): $0.60 to $1.54 a run, up to about $37 a day hourly, about $1.50 daily. SQL total so far 7.34 DBU, $5.14. Recommendation: hourly until judging, then daily. The alert evaluated OK at 11:00 UTC (811 ms).
+2. **MI4's Vector Search endpoint.** Standard is 4 DBU/hour (vendor pricing page) at $0.07/DBU, $0.28 an hour, about $6.70 a day while it exists; MI1 and MI3 have no rows, so it would index nothing. Recommendation: not before judging.
 
 ## What is true on the workspace (`--profile Nate`)
 
-Trial workspace, $392 of $400 credit at the morning read. Warehouse `a2d6ba8cc4538aca` is **Small** (not 2X-Small), serverless, auto-stop 10 minutes. Dashboard "secondhand: proof" `01f1e0d8d8a413f7a6bfae4c54d93c5a`; Genie space `01f1e0d8d8d3161fa9590e55702c1b46`. All merged safety fixes are deployed.
+Trial workspace, $392 of $400 credit at the morning read. Warehouse `a2d6ba8cc4538aca` is **Small** (not 2X-Small), serverless, auto-stop 10 minutes; stopped by hand at 11:40 UTC. Dashboard "secondhand: proof" `01f1e0d8d8a413f7a6bfae4c54d93c5a`; Genie space `01f1e0d8d8d3161fa9590e55702c1b46`. All merged safety fixes are deployed.
 
 **Two schedules spend credit:**
-- The hourly guard alert. Each run wakes the Small warehouse for at least its 10-minute auto-stop window, about 2 DBU, $1.40 at an assumed $0.70 per DBU, so about $34 a day (an estimate, not read from the bill). Recommendation: keep it hourly until judging, then daily. That is Nate's call.
+- The hourly guard alert: measured cost and the question to Nate are above.
 - The daily vacuum at 4 AM. It is small.
 
 nightly-fits stays PAUSED.
 
 ## Open, in order
 
-1. **The live page** (Nate, above). The workspace holds no `live:` or `captured` rows yet. The design is in spec §8. It needs the logs to land on a cadence, and the cadence spends credit, so it is Nate's call.
-2. **The benchmark on the dashboard** once integration's run lands: a section over `bench_by_site` and `bench_cost`.
-3. **MI4** (the product index on the lakehouse, `spec/engines/market-index.md`). It depends on MI1 (stored rows with rights) and MI3 (the attribute record), and neither has rows yet. Its Delta Sync index needs a **Vector Search endpoint, a paid resource: ask Nate first.** If it is not rendered and checked by noon, it is not shown and not listed.
-4. Named fixes F1 to F7 in spec §10. F1 now carries engines' four-column param contract and waits for their commit id.
-5. The design-critic pass on the deployed page never ran: Nate stopped the browser capture and saw the page himself.
+1. **Genie's prose still varies run to run.** In the last recorded run the weight answer gives no dataset or month count, the earliest-10 answer omits the dataset, and question 2 left out the market model's figure (an earlier run gave it). The example SQL already returns `months_tested`, `priced_by` and both readings. Next: make each judge question's SQL return one summary row whose columns say dataset and count, then rerun `ask.mjs` and read every answer.
+2. **The benchmark on the dashboard** once integration's run lands in `/Volumes/secondhand/raw/landing/bench/` (only the 09:24 and 09:26 UTC runs are there, which predate per-read fields): run `load_bench`, check `bench_by_site` and `bench_cost` against the run (no Dupe rows), add a section with counts.
+3. **The buying conversation's named fix**, when it arrives from "Lead: the buying conversation and its tools": build exactly that.
+4. **The served engine's newer reading**, when the engines lead names its commit: rerun the same command, replace the rows in `14_engine.sql`, rerun it, rerun `ask.mjs`.
+5. **The live page** (Nate): no `live:` or `captured` rows yet; design in spec §8; the cadence spends credit, so it is his call.
+6. **MI4**, only on Nate's yes (above). If it is not rendered and checked by noon, it is not shown and not listed.
+7. Named fixes F1 to F7 in spec §10. F1 waits for engines' commit id.
+8. `rebuilt` reads 42,399 of 42,405: six numbers do not rebuild. Not looked into.
 
 ## Branches and worktrees on the Mac
 
 dbx-bench-2 and dbx-guard-3 are merged into main, with nothing outstanding. The older `dbx-*` worktrees can go.
 
 ## Learned the hard way
+
+- **Git Bash turns `/api/...` into a Windows path.** `databricks api post /api/2.0/sql/statements` answers "Not Found" from Git Bash; prefix `MSYS_NO_PATHCONV=1`.
+- **Custom Vega tiles are not themed.** No color renders black on the dark console; a fixed mid gray is the one value readable on both.
+- **Genie follows "Start the answer with …" in usage guidance and a self-describing column** (`priced_by`) far better than a rule in the text instructions.
+- **`node .agents/check.mjs` fails on Windows for reasons outside this area** (image-gen temp folders inside the home tree, the ui raw-colors check, `console.log` in older databricks scripts, a stale anchor in `spec/plans/sweep/databricks.md`). `databricks/test_bundle.mjs` "bronze CSV schema" fails on the working copy too; not from this change.
 
 - **AI/BI counters truncate a format template** ("122.51K of…"). A headline figure with its count is a small Vega-Lite widget over a `stats` dataset with `value_label` and `sub_label` (see the generator pattern in `proof.lvdash.json`).
 - **A chart scaled 0 to 100% hides a 98 against 97 difference.** Plot misses (1 minus the rate) so the axis still starts at zero.
