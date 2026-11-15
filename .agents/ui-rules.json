@@ -92,6 +92,8 @@
   { "id": "B31", "kind": "check", "by": "render:B31", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B32", "kind": "check", "by": "render:B32", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B33", "kind": "check", "by": "render:B33", "media": ["app", "web", "post", "story", "deck"] },
+  { "id": "B34", "kind": "check", "by": "render:B34", "media": ["app", "web", "post", "story", "deck"] },
+  { "id": "B35", "kind": "check", "by": "render:B35", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B1", "kind": "judge", "fail": "Fail if a shape, line, icon, image or block of color carries no item, amount, state, word or action. Name it.", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B2", "kind": "judge", "fail": "Fail if the first thing you see with your eyes half shut is not an item photo, an amount of money or the app's own screen, unless the view is a title, an end card or an icon.", "media": ["app", "web", "post", "story", "deck"] },
   { "id": "B24", "kind": "judge", "fail": "Fail if a number appears that a stranger could not explain from the words beside it.", "media": ["app", "web", "post", "story", "deck"] },

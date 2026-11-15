@@ -112,6 +112,10 @@ function checkView(view, ctx) {
     if (MONEY.test(t.text)) { const own = view.els[t.el], up = own && view.els[own.parent], th = t.rect[3] - t.rect[1];
       const band = [own, up && size(up)[1] <= 2 * th ? up : null].find(e => e && !act(e, pal) && (e.gradient || hueOf(pal.name(e.bg))));
       if (band) E('B12', q, 'has a band of color behind it: an amount stands out by size alone, with no highlight (C6)'); }
+    // B34 text a box cuts off ends in an ellipsis, and text stays inside the part that holds it
+    if (t.cut && !t.dots) E('B34', q, 'is cut off by its box with no ellipsis: text that can run long ends in an ellipsis or wraps (ledger L37)');
+    const home = (() => { for (let i = t.el; i >= 0; i = view.els[i].parent) if (view.els[i].part) return view.els[i]; return null; })();
+    if (home && !t.cut && (t.full[0] < home.rect[0] - 1 || t.full[2] > home.rect[2] + 1 || t.full[1] < home.rect[1] - 1 || t.full[3] > home.rect[3] + 1)) E('B34', q, `spills out of [${home.part}]: a thing holds what is in it (ledger L37)`);
     // margins: text stays inside them
     const m = sheet.margin, mx = typeof m.x === 'object' ? m.x[String(view.canvas?.[0])] ?? 0 : m.x ?? 0, x0 = mx;
     const [l, tp, r, b] = t.rect, off = [!t.scroller && (l < x0 - 1 || r > view.w - x0 + 1), m.top != null && tp < m.top - 1, m.bottom != null && b > view.h - m.bottom + 1];
@@ -217,9 +221,34 @@ function checkView(view, ctx) {
   return out;
 }
 
-// facts: { views: [...], fontsLoaded }, as scripts/brand-check.mjs collects them. Returns the findings.
-export function judge(facts, { medium, sheet, scales, colors }) {
-  const pal = palette(colors), ctx = { medium, sheet, scales, pal }, out = facts.views.flatMap(v => checkView(v, ctx)), n = facts.views.length;
+// B34 the same view with extreme content in its marked slots (.agents/ui-states.json): every part keeps its size, and nothing new breaks.
+function underStress(view, base, baseOut, ctx) {
+  const c = view.stress, at = `view ${view.index + 1} with ${c.id}`, out = [], seen = new Set(baseOut.map(o => o.msg));
+  const parts = v => v.els.filter(e => e.part && e.part !== 'hand'), a = parts(base), b = parts(view);
+  a.forEach((el, i) => { const now = b[i]; if (!now || now.part !== el.part) return; const [w0, h0] = size(el).map(Math.round), [w1, h1] = size(now).map(Math.round);
+    if (Math.abs(h1 - h0) > 1 || el.fit !== 'content' && Math.abs(w1 - w0) > 1) out.push(err('B34', `${at} [${el.part}]`, `goes from ${w0} by ${h0} to ${w1} by ${h1} px: a thing keeps its size whatever is in it (ledger L37)`)); });
+  const filled = view.texts.filter(t => t.fill === c.fill), hits = (p, q) => Math.min(p[2], q[2]) - Math.max(p[0], q[0]) > 1 && Math.min(p[3], q[3]) - Math.max(p[1], q[1]) > 1;
+  for (const t of filled) for (const o of view.texts) if (o !== t && !filled.includes(o) && hits(t.rect, o.rect)) out.push(err('B34', `${at} ${short(t.text)}`, `runs over ${short(o.text)}: long content wraps, shrinks to an ellipsis or pushes, and never covers what is beside it (ledger L37)`));
+  // The rules that depend on how much room content takes, run again. What was already wrong before the content changed is not said twice.
+  for (const o of checkView(view, ctx)) if (['B34', 'B17', 'B32', 'A7'].includes(o.id) && o.level === 'error' && !seen.has(o.msg)) out.push({ ...o, where: o.where.replace(/^view \d+/, at) });
+  return out;
+}
+
+// facts: { views: [...], stressed: [...], fontsLoaded }, as scripts/brand-check.mjs collects them. Returns the findings.
+export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
+  const pal = palette(colors), ctx = { medium, sheet, scales, pal }, per = facts.views.map(v => checkView(v, ctx)), out = per.flat(), n = facts.views.length;
+  const byIndex = new Map(facts.views.map((v, i) => [v.index, i])), stress = (facts.stressed ?? []).flatMap(v => underStress(v, facts.views[byIndex.get(v.index)], per[byIndex.get(v.index)], ctx));
+  const once = new Set(); for (const o of stress) { const k = `${o.where} ${o.msg}`; if (!once.has(k)) { once.add(k); out.push(o); } }
+  // B35 a thing that names itself draws every state it can be in: data-screen="today" data-state="empty" on a view, data-job or data-control on a part
+  const drawn = new Map(), note = (m, at) => { if (!m) return; for (const [kind, name] of Object.entries(m.names)) { const k = `${kind} ${name}`, d = drawn.get(k) ?? { kind, name, have: new Set(), skip: new Map(), at };
+    if (m.state) d.have.add(m.state); else out.push(err('B35', at, `names the ${kind} "${name}" and no state: add data-state`));
+    for (const s of m.skip.split(';')) { const [id, why] = s.split(':').map(x => x.trim()); if (id) d.skip.set(id, why ?? ''); } drawn.set(k, d); } };
+  for (const v of facts.views) { note(v.marks, `view ${v.index + 1}`); for (const el of v.els) note(el.marks, `view ${v.index + 1} [${el.part ?? el.tag}]`); }
+  for (const d of drawn.values()) { const list = states[d.kind]; if (!list) continue; const known = [...list.required, ...list.known];
+    for (const s of d.have) if (!known.includes(s)) out.push(err('B35', `${d.kind} "${d.name}"`, `is drawn in the state "${s}", which is not on the list: add it with node scripts/ui-states.mjs state ${d.kind} ${s} "<where it came up>", so every ${d.kind} is asked about it`));
+    for (const [s, why] of d.skip) if (!why) out.push(err('B35', `${d.kind} "${d.name}"`, `skips "${s}" with no reason: data-skip="${s}: why it can't happen"`));
+    const missing = list.required.filter(s => !d.have.has(s) && !d.skip.has(s));
+    if (missing.length) out.push(err('B35', `${d.kind} "${d.name}"`, `is not drawn ${missing.length === 1 ? 'in the state' : 'in the states'} ${missing.join(', ')}: draw each, or say why it can't happen with data-skip="${missing[0]}: why"`)); }
   const marks = facts.views.map(v => v.texts.filter(t => t.display && t.text.trim().toLowerCase() === 'secondhand'));
   // Every output carries the wordmark. An app screen may be a sheet, which has no navigation bar, so there it is a warning.
   if (!marks.some(m => m.length)) out.push((medium === 'app' ? warn : err)('B3', medium, medium === 'app' ? 'has no wordmark: a main screen carries "secondhand" in its navigation bar, and a sheet does not (C1)' : 'has no wordmark: every output carries "secondhand" in the display face (C1, Art. 14.2)'));
