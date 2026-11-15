@@ -3,8 +3,8 @@
 // (cards.test.ts) and every page that shows a decision can read the same card.
 // Sources: spec/pages.md §4, §5, §6.2; spec/features/today.md (the cards); research/today/ben/today-feed-and-card-states.md §3
 // (forms and states); .agents/ui-build/README.md (when the agent acts and when it hands off).
-import { feed as order, groups, handled, headline, itemById, unread } from '../demo/world.ts';
-import { clock, ms, usd } from '../demo/format.ts';
+import { feed as order, groups, handled, itemById, unread } from '../demo/world.ts';
+import { clock, day, ms, usd, weekStart } from '../demo/format.ts';
 import type { Decision, Feed, Item, LogEvent, Notice, Site } from '../demo/types.ts';
 import type { PhotoKey } from '../demo/photo-keys.ts';
 import type { World } from '../demo/world.ts';
@@ -332,7 +332,7 @@ export function cards(w: World): Card[] {
 
 // The three tiers, each under its header, always, as Sell's shelves are (Ben 06:19: "the sell one seems very organized and
 // it's very easy to see like needs you in progress"). The risk order holds inside each (pages §5).
-export const TIER_LABEL: Record<Feed, string> = { now: 'Needs you now', when_you_can: 'When you can', good_to_know: 'Good to know' };
+export const TIER_LABEL: Record<Feed, string> = { now: 'Needs you now', when_you_can: 'Can wait', good_to_know: 'Good to know' };
 export function tiers(list: Card[]): { tier: Feed; label: string | null; cards: Card[] }[] {
   const out: { tier: Feed; label: string | null; cards: Card[] }[] = [];
   for (const c of list) {
@@ -343,24 +343,72 @@ export function tiers(list: Card[]): { tier: Feed; label: string | null; cards: 
   return out;
 }
 
-// The top slot (decided 2026-11-15): money kept since the last open, or the next setup step, or nothing. Never $0.
-export function top(w: World) {
-  const h = headline(w);
-  if (!h) return null;
-  if (h.kind === 'kept_since_last_open') {
-    // A thing sold twice is one sale until the person picks: the later sale of an open double_sale is not news yet (edge-cases §1).
-    const since = w.user.last_open_at ? ms(w.user.last_open_at) : 0;
-    const later = w.decisions.filter(d => d.kind === 'double_sale' && d.state === 'open').flatMap(d => sales(w, d).slice(1))
-      .filter(o => ms(w.orders.find(x => x.id === o.id)?.created_at ?? w.now) > since);
-    const cents = h.value - sum(later.map(o => o.keep)), n = Number(h.sub.split(' ')[0]) - later.length;
-    // What sold, so the good news is the things themselves: each one's photo and the site it sold on (Ben 06:19: "the money
-    // sold thing ... is kind of like less"; say it "besides just text").
-    const skip = new Set(later.map(o => o.id));
-    const sold = w.orders.filter(o => o.kind === 'sale' && ms(o.created_at) > since && !skip.has(o.id)).sort((a, b) => ms(b.created_at) - ms(a.created_at))
-      .map(o => { const it = itemById(w, o.item_id); return { id: o.id, title: it?.title ?? 'Sold', photo: itemPhoto(it), site: o.site }; });
-    return cents > 0 ? { kind: 'news' as const, since: h.label, cents, line: later.length ? `${n} sold, after fees` : h.sub, sold } : null;
+// The top of Today: always the most flattering true number, by a ladder (Ben 07:12: "ensure the actual app knows the top
+// thing should be the most flattering metric ... say theres zero sales. say potential money you could earn. say people who
+// saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when
+// nothings gone on yet"). The first rung that holds is shown:
+//   a. money kept since the last open, with the photos of what sold (the decided top slot, pages §4);
+//   b. else money kept this week, else this month;
+//   c. else, never sold and something is live: what the live things could bring, before fees;
+//   d. else the views, likes and watchers since the last open;
+//   c again when nothing came in but something is live, since it is still true;
+//   e. else nothing listed: no number, one way forward, the camera.
+// Never a made-up number and never rounded up: money is to the cent, a value is the low end of its range with the high end
+// named. Every number says its window. A thing sold twice counts once until the person picks (edge-cases §1).
+export type Thing = { id: string; title: string; photo: PhotoKey | null; site: Site };
+export type Top =
+  | { rung: 'since' | 'period' | 'could' | 'interest'; caption: string; figure: string; line: string; things: Thing[]; to: string }
+  | { rung: 'start'; line: string; step: string; to: string };
+const keptOn = (o: World['orders'][number]) => o.price_cents - o.fees_cents - o.shipping_cents;
+const soldLine = (n: number) => `${n} sold, after fees`;
+export function top(w: World): Top {
+  const now = ms(w.now), since = w.user.last_open_at ? ms(w.user.last_open_at) : null;
+  const later = new Set(w.decisions.filter(d => d.kind === 'double_sale' && d.state === 'open').flatMap(d => sales(w, d).slice(1).map(o => o.id)));
+  const sold = w.orders.filter(o => o.kind === 'sale' && o.state !== 'cancelled' && o.state !== 'refunded' && !later.has(o.id))
+    .sort((a, b) => ms(b.created_at) - ms(a.created_at));
+  const thing = (o: (typeof sold)[number]): Thing => { const it = itemById(w, o.item_id); return { id: o.id, title: it?.title ?? 'Sold', photo: itemPhoto(it), site: o.site }; };
+  const money = (caption: string, rung: 'since' | 'period', os: typeof sold): Top | null => {
+    const cents = sum(os.map(keptOn));
+    return os.length && cents > 0 ? { rung, caption, figure: usd(cents), line: soldLine(os.length), things: os.map(thing), to: '/you' } : null;
+  };
+  // a. Since the last open: "Since yesterday", "Since this morning", "Since Tuesday".
+  const a = since != null ? money(sinceLabel(w), 'since', sold.filter(o => ms(o.created_at) > since)) : null;
+  if (a) return a;
+  // b. This week (from Monday), else this month.
+  const b = money('This week', 'period', sold.filter(o => ms(o.created_at) >= ms(weekStart(w.now))))
+    ?? money('This month', 'period', sold.filter(o => o.created_at.startsWith(w.now.slice(0, 7))));
+  if (b) return b;
+  const live = w.items.filter(i => i.listings.some(l => l.state === 'live'));
+  const shown = (i: Item): Thing => ({ id: i.id, title: i.title, photo: itemPhoto(i), site: i.listings.find(l => l.state === 'live')?.site ?? 'ebay' });
+  // c. What the live things could bring: the low end of their worth, the high end named, before fees.
+  const could = (): Top | null => {
+    const valued = live.filter(i => i.valuation?.range && i.valuation.range.low > 0);
+    if (!valued.length) return null;
+    const low = sum(valued.map(i => i.valuation?.range.low ?? 0)), high = sum(valued.map(i => i.valuation?.range.high ?? 0));
+    return { rung: 'could', caption: valued.length === 1 ? 'Your listing could bring' : `Your ${valued.length} listings could bring`, figure: usd(low),
+      line: high > low ? `up to ${usd(high)}, before fees` : 'before fees', things: valued.map(shown), to: '/sell' };
+  };
+  if (!sold.length) { const c = could(); if (c) return c; }
+  // d. Interest since the last open: views lead, then likes and watchers.
+  const n = (k: 'views' | 'likes' | 'watchers') => sum(live.flatMap(i => i.listings.map(l => l.interest_new?.[k] ?? 0)));
+  const views = n('views'), likes = n('likes'), watching = n('watchers');
+  if (since != null && views + likes + watching > 0) {
+    const parts = [views ? `${views} ${views === 1 ? 'view' : 'views'}` : null, likes ? `${likes} ${likes === 1 ? 'like' : 'likes'}` : null, watching ? `${watching} watching` : null]
+      .filter((x): x is string => !!x);
+    const busiest = live.map(i => ({ i, k: sum(i.listings.map(l => (l.interest_new?.views ?? 0) + (l.interest_new?.likes ?? 0) + (l.interest_new?.watchers ?? 0))) }))
+      .filter(x => x.k > 0).sort((x, y) => y.k - x.k).map(x => shown(x.i));
+    return { rung: 'interest', caption: sinceLabel(w), figure: parts[0], line: parts.slice(1).join(', ') || 'on your listings', things: busiest, to: '/sell' };
   }
-  return { kind: 'setup' as const, step: h.label, to: '/onboarding' };
+  const c = could();
+  if (c) return c;
+  // e. Nothing listed yet: a way forward, not a $0 (decided 2026-11-15: "a new user probably doesnt want to see 0.00").
+  return { rung: 'start', line: 'Start here', step: 'See what your things are worth', to: '/camera' };
+}
+// The window of "since the last open", in the words the decided top slot uses.
+function sinceLabel(w: World): string {
+  if (!w.user.last_open_at) return 'Since you joined';
+  const when = day(w.user.last_open_at, w.now);
+  return when === 'Today' ? 'Since this morning' : `Since ${when === 'Yesterday' ? 'yesterday' : when}`;
 }
 
 // The notices that ask nothing: a row each, ending in a chevron, opening the item (today.md step 9).
