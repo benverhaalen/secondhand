@@ -1,12 +1,194 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { runtime, createRuntime } from './runtime.ts';
-import { memoryStore } from '../events/ports.ts';
+import { runtime, createRuntime, publicRow } from './runtime.ts';
+import { memoryStore, type JobRow } from '../events/ports.ts';
 import { createLog, memorySink } from '../../../../log/index.js';
+import { fileStore } from '../events/file-store.ts';
+import { depopAdapters, PATHS } from '../harness/sites/depop/adapter.ts';
+import { fakeAdapter, fail, type Adapter } from '../harness/protocol.ts';
+
+test('watcher sweeps only the linked Depop account through site adapters and saves its baseline', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'secondhand-watch-runtime-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'store.json'), st = fileStore(path);
+  const calls: string[] = [];
+  const products = JSON.parse(readFileSync(new URL('../harness/sites/depop/fixtures/products.json', import.meta.url), 'utf8'));
+  const adapters = depopAdapters({ signed_in: true, async doc() { throw new Error('unexpected document read'); }, async json(path) {
+    calls.push(path);
+    return { status: 200, body: path === PATHS.products('fixture-shop') ? products : { objects: [] } };
+  } });
+  const other = fakeAdapter('ebay', 'read_listings');
+  other.run = async () => { throw new Error('unlinked eBay account must not be swept'); };
+  st.put('account', { id: 'acc_linked', user_id: 'usr_watch', site: 'depop', token_ref: 'fixture/session', shop_id: 'fixture-shop', next_check_at: '2020-01-01T00:00:00Z' });
+  st.put('account', { id: 'acc_unlinked', user_id: 'usr_watch', site: 'ebay', next_check_at: '2020-01-01T00:00:00Z' });
+  st.put('listing', { id: 'ls_watch', user_id: 'usr_watch', item_id: 'it_watch', account_id: 'acc_linked', site: 'depop', external_id: '999002396', state: 'live', data: 'live:depop' });
+  const r = createRuntime(st, log(), { adapters: [...adapters, other] });
+  await r.vault.put('fixture/session', { cookies: [], origins: [] });
+  assert.deepEqual((await r.watcher.tick()).ran, ['acc_linked']);
+  assert.deepEqual(calls, [PATHS.products('fixture-shop'), PATHS.sold('fixture-shop'), PATHS.offers, PATHS.inbox, PATHS.orders]);
+  const saved = fileStore(path).get('account', 'usr_watch', 'acc_linked')!;
+  assert.equal((saved.watch_snapshot as { listings: { external_id: string }[] }).listings[0].external_id, '999002396');
+  assert.equal(st.get('account', 'usr_watch', 'acc_unlinked')?.watch_snapshot, undefined);
+  assert.equal('watch_snapshot' in publicRow(saved), false, 'private sweep data stays out of route responses');
+  const reopened = fileStore(path);
+  reopened.put('account', { ...saved, next_check_at: '2020-01-01T00:00:00Z' });
+  products.objects[0].pricing.current_price.price_breakdown.price.amount = '80.00';
+  const restarted = createRuntime(reopened, log(), { adapters });
+  await restarted.vault.put('fixture/session', { cookies: [], origins: [] });
+  await restarted.watcher.tick();
+  assert.ok(reopened.events({ user_id: 'usr_watch' }).some(event => event.action === 'price.changed' && event.item_id === 'it_watch' && event.listing_id === 'ls_watch'), 'restart must diff against the saved baseline and resolve the stored listing');
+  await r.vault.delete('fixture/session');
+  calls.length = 0;
+  await r.watcher.tick();
+  assert.deepEqual(calls, [], 'removing vault state stops further sweeps');
+});
+
+test('runtime writes use the durable site ledger, dedupe across restart, and keep the account gate first', async t => {
+  const dir = mkdtempSync(join(tmpdir(), 'secondhand-runtime-ledger-'));
+  t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const path = join(dir, 'store.json');
+  let writes = 0;
+  const adapter: Adapter = { ...fakeAdapter('depop', 'end'), async run() { writes++; return { ok: true, data: { ended: true } }; } };
+  const r = createRuntime(fileStore(path), log(), { adapters: [adapter] });
+  const a = r.store.get('account', 'usr_8f2k', 'acc_dp1')!;
+  r.store.put('account', { ...a, token_ref: 'fixture/session' });
+  const args = { account_id: a.id, operation_id: 'op-once', slug: 'fixture-listing' };
+  assert.equal((await r.harness.call('depop', 'end', args)).ok, false);
+  assert.equal(r.store.systemRows('operation').length, 0);
+  await r.vault.put('fixture/session', { cookies: [], origins: [] });
+  assert.equal((await r.harness.call('depop', 'end', { ...args, user_id: 'usr_wrong' })).ok, false);
+  const first = await r.harness.call('depop', 'end', args);
+  assert.equal(first.ok, true);
+  await r.harness.call('depop', 'end', args);
+  const restarted = createRuntime(fileStore(path), log(), { adapters: [adapter] });
+  await restarted.vault.put('fixture/session', { cookies: [], origins: [] });
+  assert.equal((await restarted.harness.call('depop', 'end', args)).ok, true);
+  assert.equal(writes, 1, 'duplicate operation must never reach the adapter');
+  const rows = restarted.store.systemRows('operation');
+  assert.equal(rows.length, 1);
+  assert.equal(rows[0].data, 'synthetic');
+  assert.equal(rows[0].user_id, a.user_id);
+  restarted.store.beginOperation({ id: 'op-interrupted', user_id: a.user_id, site: 'depop', verb: 'end', data: 'synthetic', at: new Date().toISOString() });
+  const unknown = await restarted.harness.call('depop', 'end', { ...args, operation_id: 'op-interrupted' });
+  assert.equal(unknown.ok, false);
+  if (!unknown.ok) assert.equal(unknown.error.hint.do, 'reconcile');
+  assert.equal(writes, 1);
+});
+
+test('site services label writes live only for the enabled site', async t => {
+  const before = process.env.SECONDHAND_LIVE_SITES;
+  t.after(() => { if (before === undefined) delete process.env.SECONDHAND_LIVE_SITES; else process.env.SECONDHAND_LIVE_SITES = before; });
+  process.env.SECONDHAND_LIVE_SITES = 'depop';
+  const r = createRuntime(memoryStore(), log(), { adapters: [fakeAdapter('depop', 'end'), fakeAdapter('ebay', 'end')] });
+  for (const [site, id] of [['depop', 'acc_dp1'], ['ebay', 'acc_eb1']] as const) {
+    const a = r.store.get('account', 'usr_8f2k', id)!;
+    r.store.put('account', { ...a, token_ref: `fixture/${site}` });
+    await r.vault.put(`fixture/${site}`, { cookies: [], origins: [] });
+    await r.harness.call(site, 'end', { account_id: id, operation_id: `op-${site}` });
+    assert.equal(r.store.get('operation', a.user_id, `op-${site}`)?.data, site === 'depop' ? 'live:depop' : 'synthetic');
+  }
+});
+
+for (const setting of ['auto', 'ask_all', 'ask_every_time', 'stricter_rule']) test(`watcher respects ${setting} before a ledger write`, async () => {
+  let now = Date.parse('2026-11-15T12:00:00Z'), offers = false;
+  const products = JSON.parse(readFileSync(new URL('../harness/sites/depop/fixtures/products.json', import.meta.url), 'utf8'));
+  const offer = JSON.parse(readFileSync(new URL('../harness/sites/depop/fixtures/offers.json', import.meta.url), 'utf8')).objects[0];
+  const adapters = depopAdapters({ signed_in: true, async doc() { throw new Error('unexpected document read'); }, async json(path) {
+    const body = path === PATHS.products('fixture-shop') ? products : path === PATHS.offers && offers
+      ? { objects: [{ ...offer, product_id: 999002396, amount: { amount: '75.00' }, created_at: new Date(now).toISOString(), status: 'pending' }] } : { objects: [] };
+    return { status: 200, body };
+  } });
+  const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
+  r.store.put('account', { id: 'acc_offer', user_id: 'usr_offer', site: 'depop', token_ref: 'fixture/offer', shop_id: 'fixture-shop', next_check_at: new Date(now).toISOString() });
+  r.store.put('listing', { id: 'ls_offer', user_id: 'usr_offer', item_id: 'it_offer', account_id: 'acc_offer', site: 'depop', external_id: '999002396', state: 'live' });
+  r.store.put('limits', { id: 'it_offer', user_id: 'usr_offer', ask_cents: { amount_cents: 8000, currency: 'USD' }, floor_cents: { amount_cents: 5000, currency: 'USD' }, always_accept_cents: { amount_cents: 7000, currency: 'USD' } });
+  if (setting === 'ask_all') r.store.put('limits', { ...r.store.get('limits', 'usr_offer', 'it_offer')!, accept_mode: 'ask_all' });
+  if (setting === 'ask_every_time') r.store.put('limits', { id: 'usr_offer', user_id: 'usr_offer', ask_every_time: true });
+  if (setting === 'stricter_rule') r.store.put('rule', { id: 'ru_offer', user_id: 'usr_offer', kind: 'accept_offer', state: 'auto', scope: 'it_offer', limits: { always_accept_cents: { amount_cents: 7900, currency: 'USD' } } });
+  await r.vault.put('fixture/offer', { cookies: [], origins: [] });
+  await r.watcher.tick();
+  offers = true; now += 3600000;
+  await r.watcher.tick();
+  const job = r.store.jobs().find(job => job.kind === 'answer_offer');
+  assert.ok(job, 'an observed offer must create a job');
+  if (setting !== 'auto') {
+    assert.equal(r.store.systemRows('operation').length, 0, setting + ' must ask before writing');
+    assert.ok(r.store.decisions({ user_id: 'usr_offer', state: 'open' }).length > 0);
+    return;
+  }
+  assert.equal(job.args.decided_by, 'negotiation');
+  assert.equal(job.args.response, 'accept');
+  assert.equal(job.state, 'done');
+  const operation = r.store.get('operation', 'usr_offer', `${job.id}:answer_offer`);
+  assert.equal(operation?.state, 'done', 'watcher writes must use the runtime ledger');
+});
+
+test('watcher leaves API import jobs for the runtime worker that owns their engine', async () => {
+  const r = createRuntime(memoryStore(), log());
+  const job = r.store.insertJob({ user_id: 'usr_8f2k', event_id: 'api-import', kind: 'import' as JobRow['kind'], state: 'queued', account_id: 'acc_dp1', site: 'depop', idempotency_key: 'api-import', args: { listing_ids: [] }, stages: [], attempts: 0, trace_id: 'test', created_at: new Date().toISOString() }).row;
+  await r.watcher.tick();
+  assert.equal(r.store.getJob(job.id)?.state, 'queued');
+  assert.equal(r.store.getJob(job.id)?.attempts, 0);
+  await r.pipeline.runOnce(1);
+  assert.equal(r.store.getJob(job.id)?.state, 'done');
+});
+
+test('route worker leaves sale confirmation to the watcher and can still claim its own job', async () => {
+  const r = createRuntime(memoryStore(), log());
+  const at = new Date().toISOString();
+  const event = r.store.insertEvent({ user_id: 'usr_8f2k', source: 'watcher_signed_in', action: 'listing.sold', actor: 'site', dedupe_key: 'sale', observed_at: at, effective_at: at, trace_id: 'test' }).row;
+  const queued = { user_id: event.user_id, event_id: event.id, account_id: 'acc_dp1', site: 'depop' as const, state: 'queued' as const, args: {}, stages: [], attempts: 0, trace_id: 'test', created_at: at };
+  const sale = r.store.insertJob({ ...queued, kind: 'poll_orders', idempotency_key: 'sale' }).row;
+  const own = r.store.insertJob({ ...queued, event_id: 'api-import', kind: 'import' as JobRow['kind'], args: { listing_ids: [] }, idempotency_key: 'import' }).row;
+  assert.equal(await r.pipeline.runOnce(1), 1);
+  assert.equal(r.store.getJob(sale.id)?.state, 'queued', 'route worker must not turn confirmation into a bare read');
+  assert.equal(r.store.getJob(sale.id)?.attempts, 0);
+  assert.equal(r.store.getJob(own.id)?.state, 'done', 'watcher jobs must not starve route work');
+});
+
+test('runtime preserves the site service fallback route and observation ids', async () => {
+  const first = fakeAdapter('depop', 'search'), second = fakeAdapter('depop', 'search');
+  first.route_id = 'first'; first.run = async () => fail('page_changed', 'fixture moved', { do: 'author', missing: ['fixture'] });
+  second.route_id = 'second'; second.run = async () => ({ ok: true, data: [], observation_ids: ['obs-second'] });
+  const r = createRuntime(memoryStore(), log(), { adapters: [first, second] });
+  const result = await r.harness.call('depop', 'search');
+  assert.equal(result.meta.route_id, 'second');
+  assert.equal(result.meta.fell_back, true);
+  assert.deepEqual(result.meta.observation_ids, ['obs-second']);
+});
+
+test('composed watcher confirms a sale and ends the other stored listing through its site service', async () => {
+  let now = Date.parse('2026-11-15T12:00:00Z'), sold = false, ended = false;
+  const adapters: Adapter[] = (['depop', 'ebay'] as const).flatMap(site =>
+    (['read_listings', 'read_offers', 'read_inbox', 'read_orders', 'end'] as const).map(verb => ({
+      ...fakeAdapter(site, verb), async run() {
+        if (verb === 'end') { assert.equal(site, 'ebay'); ended = true; return { ok: true as const, data: { ended: true } }; }
+        if (verb === 'read_listings') return { ok: true as const, data: [{ external_id: 'ext_' + site, price_cents: 7500, state: site === 'depop' && sold ? 'sold' : site === 'ebay' && ended ? 'ended' : 'live' }] };
+        if (verb === 'read_orders' && site === 'depop' && sold) return { ok: true as const, data: [{ external_order_id: 'order_fixture', listing_external_id: 'ext_depop', state: 'paid', price_cents: 7500 }] };
+        return { ok: true as const, data: [] };
+      },
+    })));
+  const r = createRuntime(memoryStore(), log(), { adapters, now: () => now });
+  for (const site of ['depop', 'ebay'] as const) {
+    r.store.put('account', { id: 'sale_' + site, user_id: 'usr_sale', site, token_ref: 'fixture/' + site, next_check_at: new Date(now).toISOString() });
+    await r.vault.put('fixture/' + site, { cookies: [], origins: [] });
+    r.store.put('listing', { id: 'ls_' + site, user_id: 'usr_sale', item_id: 'it_sale', site, account_id: 'sale_' + site, external_id: 'ext_' + site, state: 'live' });
+  }
+  r.store.put('limits', { id: 'it_sale', user_id: 'usr_sale', ask_cents: 8000, floor_cents: 5000, always_accept_cents: 7000 });
+  await r.watcher.tick();
+  sold = true; now += 3600000;
+  await r.watcher.tick();
+  assert.equal(ended, true, 'confirmed sale must drain its delist fan-out in the same tick');
+  const delist = r.store.jobs({ kind: 'delist' });
+  assert.equal(delist.length, 1);
+  assert.equal(delist[0].listing_id, 'ls_ebay');
+  assert.equal(delist[0].state, 'done');
+  assert.equal(r.store.get('operation', 'usr_sale', `${delist[0].id}:end`)?.state, 'done');
+});
 
 process.env.SECONDHAND_LIVE_SITES = '';
 

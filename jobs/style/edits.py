@@ -9,8 +9,9 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from .facets import compute
+from .params import resolved
+from .evidence import publish
 
-DEFAULT_EDIT_WEIGHT = 0.5  # guess: a person adds a trait we have no events for; neither strong nor weak
 VERB = {"saved": "saved", "bought": "bought", "kept": "kept", "followed": "followed", "sold": "sold"}
 
 
@@ -37,13 +38,13 @@ def mark_stale(state: PersonState) -> None:
     state.stale = True
 
 
-def edit(state: PersonState, name, value, weight=None, recipient=None, replaces=None, now=None, log=None):
+def edit(state: PersonState, name, value, weight=None, recipient=None, replaces=None, now=None, log=None, params=None):
     """The person's own value for a trait. It is pinned: learning and folds never change its weight."""
     if replaces is not None:
         remove(state, name, replaces, now or datetime.min, recipient=recipient)
     k = _key(recipient, name, value)
     if weight is None:  # pin what the profile shows now
-        weight = next((f['weight'] for f in state.facets if _key(f['recipient'], f['name'], f['value']) == k), DEFAULT_EDIT_WEIGHT)
+        weight = next((f['weight'] for f in state.facets if _key(f['recipient'], f['name'], f['value']) == k), resolved(params)['values']['style_edit_weight'])
     state.edits[k] = weight
     state.removed.pop(k, None)
     mark_stale(state)
@@ -62,20 +63,28 @@ def remove(state: PersonState, name, value, now: datetime, recipient=None, log=N
 
 def fold(state: PersonState, events, now: datetime, log=None, **kw) -> list:
     """Recompute the facets from events (nightly, or after an action) and apply edits and removals."""
+    params=resolved(kw.get('params'))
     events = [e for e in events if state.floor is None or e.at > state.floor]
-    facets = {_key(f["recipient"], f["name"], f["value"]) + (f.get("brand"),): f for f in compute(events, now, **kw).facets}
+    facets = {_key(f["recipient"], f["name"], f["value"]) + (f.get("brand"),f.get("category")): f for f in compute(events, now, **kw).facets}
     for k, at in state.removed.items():
         facets = {fk: f for fk, f in facets.items() if fk[:3] != k}
         fresh = [f for f in compute([e for e in events if e.at > at], now, **kw).facets if _key(f["recipient"], f["name"], f["value"]) == k]
-        for f in fresh:  # only events after removed_at counted, and compute needs 3 of them
+        for f in fresh:  # Reappearance uses only new evidence and its continuous blend.
+            if not any(e.at > at and e.recipient==k[0] and e.attrs.get(k[1])==k[2] for e in events if e.at<=now):
+                continue
             f["back_because"] = f"back because you {VERB.get(f['from'], f['from'])} {f['count']} since {at.day} {at:%b}"
-            facets[k + (f.get("brand"),)] = f
+            facets[k + (f.get("brand"),f.get("category"))] = f
     for k, w in state.edits.items():
         cur = next((f for fk, f in facets.items() if fk[:3] == k), None)
         facets = {fk: f for fk, f in facets.items() if fk[:3] != k}
-        facets[k + (None,)] = {**(cur or {"count": 0, "recipient": k[0], "name": k[1], "value": k[2], "removed_at": None}),
+        facets[k + (None,None)] = {**(cur or {"count": 0, "recipient": k[0], "name": k[1], "value": k[2], "removed_at": None}),
                                "weight": w, "from": "edited", "pinned": True}
-    state.facets = sorted(facets.values(), key=lambda f: (f["recipient"] or "", f["name"], str(f["value"]), f.get("brand") or ""))
+    for f in facets.values():
+        if f.get('pinned'):
+            f.update(publish({'weight':f['weight'],'count':f.get('count',0)},
+                             [dict(id='edit:'+repr((f['recipient'],f['name'],f['value'])),weight=f['weight'])],
+                             now,params,metric='facet_edit'))
+    state.facets = sorted(facets.values(), key=lambda f: (f["recipient"] or "", f["name"], str(f["value"]), f.get("brand") or "", f.get("category") or ""))
     mark_stale(state)
     if log:
         log.change("style_profile", state.person, "folded", facets=len(state.facets))

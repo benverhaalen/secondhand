@@ -13,19 +13,377 @@
     "Approve names the price and the count of sites ('Post at $235 on 2 sites'), steps through 'Posting 1 of 2', then becomes Undo (pages.md §6.8 and the hand-off rule: posting is the first public act in the person's name).",
     "A failed site says the site's reason and offers Retry, Skip this site and Post it myself, which opens the site (ways-out §6.8 'The post keeps failing'; copying the words needs a clipboard module the app does not have yet).",
     "Each card is one height (72 row, then 20, 20, 24 lines), its lines inset to the card's corner (B31 one size per part, U5 nothing in a corner's curve).",
+    "Post waits for every field a site still needs: tapping it with one blank says which and posts nothing, so the posting states fill Joy-Con drift first (edge-cases §7 step 7; this table’s own test).",
+    "Edit on a site’s preview changes that site’s title and price only, in place, with Done; nothing else on the item changes (ways-out §6.8; agent proposal: shipping and returns per site wait for the studio block).",
     "When the studio has already run on the photos, the cover sits on top at full width with two switches, Clean up and Enhance with AI, and every site's preview changes with them, so the difference is seen live before anything posts (Ben, 08:12: \"quickly toggle on off the beautification (both the non ai and the ai one) and showing that live before going into a posting\").",
     "Enhance with AI is off and says Scan it with LiDAR first until the item has a measured attribute, which only the LiDAR scan writes: a redraw is held to its real size only by the scan (Ben, 08:09; 09:09; jobs/studio/check.py)."
   ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/item/it_switch/post",
+      "shows": "Post from $225 on 2 sites",
+      "also": [
+        "Nintendo Switch OLED, white, with dock, HEG-001, 64 GB",
+        "Searched by model: specs in the title",
+        "Nearby, picks up today: pickup price",
+        "~$200.40",
+        "Joy-Con drift"
+      ],
+      "why": "a draft, two sites, each written for its buyers; a site still needs a field"
+    },
+    {
+      "state": "one",
+      "route": "/item/it_switch/post?flip=ebay",
+      "shows": "Post at $225 on 1 site",
+      "also": [
+        "Not posting here"
+      ],
+      "why": "eBay left out in the plan; one site"
+    },
+    {
+      "state": "dense",
+      "route": "/item/it_jacket/post?flip=facebook",
+      "shows": "Post from $95 on 3 sites",
+      "also": [
+        "Carhartt Detroit Jacket J97, brown duck, size L",
+        "Young, shops a look: size up front"
+      ],
+      "why": "three sites"
+    },
+    {
+      "state": "no-site",
+      "route": "/item/it_hoodie/post",
+      "shows": "Pick a site",
+      "why": "no site picked yet; nothing can post"
+    },
+    {
+      "state": "posting",
+      "route": "/item/it_switch/post",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
+        "post"
+      ],
+      "shows": "Posting 1 of 2",
+      "why": "Approve steps through Posting 1 of 2, then becomes Undo (pages §6.8 After, and this page’s decision)"
+    },
+    {
+      "state": "posted",
+      "route": "/item/it_switch/post",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
+        "post"
+      ],
+      "shows": "Posted on 2 sites",
+      "also": [
+        "Undo"
+      ],
+      "why": "every site live; Undo"
+    },
+    {
+      "state": "site-failed",
+      "route": "/item/it_switch/post?fail=ebay",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
+        "post"
+      ],
+      "shows": "Post it myself",
+      "also": [
+        "Retry",
+        "Skip this site"
+      ],
+      "why": "a site failed: its reason, Retry, Skip and Post it myself (pages §6.8, ways-out §6.8); ?fail=ebay makes eBay fail"
+    },
+    {
+      "state": "recall-blocked",
+      "route": "/item/it_switch/post?case=recall",
+      "shows": "~recalled",
+      "why": "a failed recall check blocks the post and says why (pages §6.8); ?case=recall draws it",
+      "also": [
+        "Can’t post a recalled item"
+      ]
+    },
+    {
+      "state": "loading",
+      "route": "/item/it_switch/post?state=loading",
+      "shows": "the sheet’s skeleton under its heading",
+      "also": [
+        "Preview"
+      ],
+      "skeleton": true,
+      "absent": [
+        "Post from $225 on 2 sites"
+      ],
+      "why": "the sheet’s skeleton"
+    },
+    {
+      "state": "didnt-load",
+      "route": "/item/it_switch/post?state=failed",
+      "shows": "Can’t open this item",
+      "why": "what failed, and Try again",
+      "also": [
+        "Try again"
+      ]
+    },
+    {
+      "state": "not-found",
+      "route": "/item/nope/post",
+      "shows": "Can’t open this item",
+      "why": "the item is gone"
+    },
+    {
+      "state": "offline",
+      "route": "/item/it_switch/post?state=offline",
+      "shows": "Offline. It posts when you’re back.",
+      "also": [
+        "Post from $225 on 2 sites"
+      ],
+      "why": "the last copy; Post waits for signal"
+    },
+    {
+      "state": "needs-field",
+      "route": "/item/it_switch/post",
+      "after": [
+        "post"
+      ],
+      "shows": "Fill in Joy-Con drift first. 2 sites need it.",
+      "why": "a site still missing a field does not post until it is filled (edge-cases §7 step 7, pages §6.8)"
+    },
+    {
+      "state": "sold",
+      "route": "/item/it_kindle/post",
+      "shows": "It sold, so there is nothing to post.",
+      "also": [
+        "Sold. Nothing to post"
+      ],
+      "absent": [
+        "Post"
+      ],
+      "why": "a sold item offers no Post"
+    },
+    {
+      "state": "offline-waiting",
+      "route": "/item/it_switch/post?state=offline",
+      "after": [
+        "post"
+      ],
+      "shows": "Waiting for signal. It posts when you’re back.",
+      "why": "Post tapped with no signal waits, and nothing says it is live (ways-out Everywhere)"
     }
   ],
   "controls": [
     {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "id": "sheet-scrim",
+      "control": "the dimmed item above the sheet",
+      "on_tap": "closes the preview, back to the item",
+      "goes": "/item/it_switch",
+      "at": [
+        195,
+        40
+      ]
+    },
+    {
+      "id": "post-ebay",
+      "control": "eBay switch",
+      "on_tap": "unticks eBay; the foot counts one site",
+      "shows": "Post at $225 on 1 site"
+    },
+    {
+      "id": "post-facebook",
+      "control": "Facebook switch",
+      "on_tap": "unticks Facebook; the foot counts one site",
+      "shows": "Post at $235 on 1 site"
+    },
+    {
+      "id": "post-depop",
+      "control": "Depop switch",
+      "on_tap": "unticks Depop",
+      "route": "/item/it_jacket/post",
+      "shows": "Post at $98 on 1 site"
+    },
+    {
+      "id": "needs-ebay",
+      "control": "Joy-Con drift, the field eBay still needs",
+      "on_tap": "opens the field to fill",
+      "then": "needs-ebay-input"
+    },
+    {
+      "id": "needs-facebook",
+      "control": "Joy-Con drift, the field Facebook still needs",
+      "on_tap": "opens the field to fill",
+      "then": "needs-facebook-input"
+    },
+    {
+      "id": "when-now",
+      "control": "Now",
+      "on_tap": "posts now",
+      "after": [
+        "when-other",
+        [
+          "when-other-input",
+          "Sunday 6 pm"
+        ]
+      ],
+      "shows": "Post from $225 on 2 sites"
+    },
+    {
+      "id": "when-other",
+      "control": "Later",
+      "on_tap": "opens a time to type (Post later, ways-out §6.8)",
+      "then": "when-other-input"
+    },
+    {
+      "id": "when-typed",
+      "control": "the typed time",
+      "on_tap": "picks the typed time",
+      "after": [
+        "when-other",
+        [
+          "when-other-input",
+          "Sunday 6 pm"
+        ]
+      ],
+      "shows": "Post from $225 on 2 sites, Sunday 6 pm"
+    },
+    {
+      "id": "post",
+      "control": "Post from $225 on 2 sites",
+      "on_tap": "posts on both sites once Joy-Con drift is filled, then becomes Undo",
+      "shows": "Posted on 2 sites",
+      "then": "post-undo",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ]
+      ]
+    },
+    {
+      "id": "post-undo",
+      "control": "Undo",
+      "on_tap": "takes the posts down",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
+        "post"
+      ],
+      "gone": "Posted on 2 sites"
+    },
+    {
+      "id": "edit-ebay",
+      "control": "Edit, on eBay’s preview",
+      "on_tap": "opens eBay’s title and price to change for eBay only (ways-out §6.8 “Different words on Depop”)",
+      "shows": "Only this site changes",
+      "then": "edit-title"
+    },
+    {
+      "id": "edit-title",
+      "control": "the title, in a site’s edit",
+      "on_tap": "opens the title to type over, for that site only",
+      "after": [
+        "edit-ebay"
+      ],
+      "then": "edit-title-input"
+    },
+    {
+      "id": "edit-price",
+      "control": "the price, in a site’s edit",
+      "on_tap": "opens the price to type over, for that site only",
+      "after": [
+        "edit-ebay"
+      ],
+      "then": "edit-price-input"
+    },
+    {
+      "id": "edit-done",
+      "control": "Done, in a site’s edit",
+      "on_tap": "closes the site’s edit",
+      "after": [
+        "edit-ebay"
+      ],
+      "gone": "Only this site changes"
+    },
+    {
+      "id": "edit-facebook",
+      "control": "Edit, on Facebook’s preview",
+      "on_tap": "opens Facebook’s title and price to change for Facebook only",
+      "then": "edit-title"
+    },
+    {
+      "id": "edit-depop",
+      "control": "Edit, on Depop’s preview",
+      "on_tap": "opens Depop’s title and price to change for Depop only",
+      "route": "/item/it_jacket/post",
+      "then": "edit-title"
+    },
+    {
+      "id": "retry-ebay",
+      "control": "Retry",
+      "on_tap": "posts eBay again",
+      "route": "/item/it_switch/post?fail=ebay",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
+        "post"
+      ],
+      "shows": "Posted on 2 sites"
+    },
+    {
+      "id": "skip-ebay",
+      "control": "Skip this site",
+      "on_tap": "posts without eBay",
+      "route": "/item/it_switch/post?fail=ebay",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
+        "post"
+      ],
+      "gone": "Post it myself"
+    },
+    {
+      "id": "myself-ebay",
+      "control": "Post it myself",
+      "on_tap": "opens eBay with the words copied and the photos saved",
+      "route": "/item/it_switch/post?fail=ebay",
+      "after": [
+        "needs-ebay",
+        [
+          "needs-ebay-input",
+          "No"
+        ],
+        "post"
+      ]
+    },
+    {
+      "id": "post-retry",
+      "control": "Try again",
+      "on_tap": "loads the preview again (frontend-standard §4 Error)",
+      "route": "/item/it_switch/post?state=failed",
+      "goes": "/item/it_switch/post"
     }
-  ]
+  ],
+  "route": "/item/it_switch/post",
+  "back": "The scrim or a drag down on the grabber closes the preview, back to the item."
 }

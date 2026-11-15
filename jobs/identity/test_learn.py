@@ -28,7 +28,7 @@ def label(id="lb_1", person="me", **changes):
 
 
 def pair(id, positive, agrees=None):
-    return {"id": id, "item_ids": [id + "a", id + "b"], "match": positive,
+    return {"id": id, "item_ids": [id + "alpha", id + "beta"], "match": positive,
             "kind": "apparel", "fields": {"mpn": positive if agrees is None else agrees},
             "text_sim": 1.0 if positive else 0.0, "image_sim": 1.0 if positive else 0.0}
 
@@ -44,8 +44,8 @@ def training():
 def test_not_the_same_updates_beta_in_the_event_and_deduplicates():
     store = FakeStore()
     assert apply_label(store, label(), cap_per_person=5)
-    assert read_param(store.rows, "identity_u_brand", {"kind": "apparel"}, None) == {"a": 2., "b": 9.}
-    assert read_param(store.rows, "identity_u_model", {"kind": "apparel"}, None) == {"a": 1., "b": 10.}
+    assert read_param(store.rows, "identity_u_brand", {"kind": "apparel"}, None) == {"alpha": 2., "beta": 9.}
+    assert read_param(store.rows, "identity_u_model", {"kind": "apparel"}, None) == {"alpha": 1., "beta": 10.}
     assert frozenset(("cmp_a", "cmp_b")) in store.blocked_pairs
     assert not apply_label(store, label(), cap_per_person=5)
     assert len(store.rows) == 2
@@ -56,9 +56,9 @@ def test_poisoned_taps_are_capped_per_person_not_globally():
     for i in range(20):
         apply_label(store, label(str(i)), cap_per_person=3)
     row = read_param(store.rows, "identity_u_brand", {"kind": "apparel"}, None)
-    assert row == {"a": 4., "b": 9.}
+    assert row == {"alpha": 4., "beta": 9.}
     assert apply_label(store, label("other", "other"), cap_per_person=3)
-    assert read_param(store.rows, "identity_u_brand", {"kind": "apparel"}, None)["a"] == 5
+    assert read_param(store.rows, "identity_u_brand", {"kind": "apparel"}, None)["alpha"] == 5
 
 
 def test_param_rows_have_exact_registry_shape():
@@ -80,14 +80,14 @@ def test_worse_fold_stays_challenger_and_rollback_restores_version():
     store = FakeStore()
     prior = {"weights": None, "thresholds": {"identity_t_exact": .85}}
     store.rows.append(param_row("identity_weights", {"kind": "apparel"}, "model_ref", prior, prior, 1))
-    challenger = nightly_fold(store, "apparel", training(), heldout(), seed=9)
+    challenger = nightly_fold(store, "apparel", training(), heldout(), seed=9, at="2026-11-15T00:00:00Z")
     assert challenger["status"] == "challenger"  # champion is already perfect; ties do not promote
     assert challenger["held_out_score"]["f1"] <= 1
     assert read_param(store.rows, "identity_weights", {"kind": "apparel"}, None) == prior
     # Simulate an earlier promotion, then use the public rollback operation.
     store.rows[0]["status"] = "retired"
     challenger["status"] = "champion"
-    rollback(store, "apparel", 1)
+    rollback(store, "apparel", 1, at="2026-11-15T00:00:00Z")
     assert store.rows[0]["status"] == "champion"
     assert challenger["status"] == "retired"
 
@@ -96,7 +96,7 @@ def test_held_out_win_promotes_and_records_score():
     store = FakeStore()
     bad = {"weights": None, "thresholds": {"identity_t_exact": 2}}
     store.rows.append(param_row("identity_weights", {"kind": "apparel"}, "model_ref", bad, bad, 1))
-    challenger = nightly_fold(store, "apparel", training(), heldout(), seed=7)
+    challenger = nightly_fold(store, "apparel", training(), heldout(), seed=7, at="2026-11-15T00:00:00Z")
     assert challenger["status"] == "champion"
     assert challenger["held_out_score"]["precision"] >= .95
     assert challenger["held_out_score"]["f1"] > 0
@@ -117,18 +117,18 @@ def test_em_ignores_training_labels_and_retains_probability_guards():
     assert a == b
     for field in a.values():
         for beta in field.values():
-            mean = beta["a"] / (beta["a"] + beta["b"])
+            mean = beta["alpha"] / (beta["alpha"] + beta["beta"])
             assert .02 <= mean <= .98
 
 
 def test_frozen_beta_row_does_not_move_and_move_raises_anomaly(log_lines):
     log, lines = log_lines
     store = FakeStore()
-    row = param_row("identity_u_brand", {"kind": "apparel"}, "beta", {"a": 1., "b": 9.}, {"a": 1., "b": 9.}, 1)
+    row = param_row("identity_u_brand", {"kind": "apparel"}, "beta", {"alpha": 1., "beta": 9.}, {"alpha": 1., "beta": 9.}, 1)
     row["frozen"] = True
     store.rows.append(row)
     apply_label(store, label(), cap_per_person=3, log=log)
-    assert row["value_or_hyperparams"] == {"a": 1., "b": 9.}
+    assert row["value_or_hyperparams"] == {"alpha": 1., "beta": 9.}
     assert any(line["event"] == "note" for line in lines)
 
 

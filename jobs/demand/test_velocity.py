@@ -1,7 +1,7 @@
 """dt-1: weekly counts and the Gamma velocity (spec/engines/demand-and-trend.md §3 steps 1-2)."""
 from demand.velocity import Week, cap_engagement, velocity, weekly_counts
 
-PRIOR = {"a": 2.0, "b": 2.0}  # kind's pooled rate 1/week held at 2 weeks of weight
+PRIOR = {"shape": 2.0, "rate": 2.0}  # kind's pooled rate 1/week held at 2 weeks of weight
 
 
 def weeks(counts):
@@ -26,10 +26,10 @@ def test_gap_weeks_are_censored_not_zero_demand():
 
 
 def test_eight_week_old_data_counts_half():
-    v = velocity(weeks([4] + [0] * 8), {"a": 1e-9, "b": 1e-9})
-    old = velocity(weeks([4]), {"a": 1e-9, "b": 1e-9})
+    v = velocity(weeks([4] + [0] * 8), {"shape": 1e-9, "rate": 1e-9})
+    old = velocity(weeks([4]), {"shape": 1e-9, "rate": 1e-9})
     # the 4 sold nine weeks back weigh 0.5^(8/8)=half of a fresh week, against 8 fresher empty weeks
-    assert v.a < old.a and abs(v.a / old.a - 0.5) < 1e-6
+    assert v.shape < old.shape and abs(v.shape / old.shape - 0.5) < 1e-6
 
 
 def test_a_capped_read_is_a_lower_bound():
@@ -44,7 +44,7 @@ def test_zero_live_listings_and_an_adapter_down_are_censored():
 
 def test_no_history_is_the_prior():
     v = velocity([], PRIOR)
-    assert v.a == PRIOR["a"] and v.b == PRIOR["b"] and abs(v.mean - 1.0) < 1e-9
+    assert v.shape == PRIOR["shape"] and v.rate == PRIOR["rate"] and abs(v.mean - 1.0) < 1e-9
 
 
 def test_season_scales_exposure():

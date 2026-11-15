@@ -80,7 +80,9 @@ test('invalid net or reversed band thresholds name the cause', () => {
 test('F7: an invalid floor cannot authorize a markdown to zero', () => {
   for (const floor_cents of [-1, NaN, Infinity, .5, Number.MAX_SAFE_INTEGER + 1, undefined]) {
     const x = { ...fixture(), floor_cents } as ScoreInput;
-    x.changes = [{ kind: 'markdown', price_cents: 0, projected: x.best }];
+    const best = x.best;
+    assert.ok(best);
+    x.changes = [{ kind: 'markdown', price_cents: 0, projected: best }];
     assert.throws(() => successScore(x), /floor_cents must be a whole number/);
   }
   assert.equal(successScore({ ...fixture(), floor_cents: 0 }).state, 'shown');

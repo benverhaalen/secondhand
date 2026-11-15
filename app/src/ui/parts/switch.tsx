@@ -30,11 +30,11 @@ export function Switch({ id, label, on, onChange, disabled = false }: {
   useEffect(() => { x.set(withTiming(on ? TRAVEL : 0, { duration: ms, easing: EASE_OUT, reduceMotion: ReduceMotion.System })); }, [on, ms, x]);
   const knob = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }] }));
   return (
-    <Press id={id} label={label} selected={on} disabled={disabled} onPress={() => onChange?.(!on)} hit={slop(W, H)}>
+    // The pressable itself is the switch a screen reader meets: its role, its label and whether it is on (ways-out
+    // Everywhere, VoiceOver), so the drawn track inside it is not announced a second time.
+    <Press id={id} label={label} role="switch" checked={on} disabled={disabled} onPress={() => onChange?.(!on)} hit={slop(W, H)}>
       <View
         {...mark('switch', { on: on ? 'true' : 'false' })}
-        accessibilityRole="switch"
-        accessibilityState={{ checked: on, disabled }}
         style={{ width: W, height: H, borderRadius: radius.pill, padding: IN, backgroundColor: on && !disabled ? c.ink : c.gray, opacity: disabled ? 0.5 : 1 }}>
         <Animated.View style={[{ width: KNOB, height: KNOB, borderRadius: radius.pill, backgroundColor: on && !disabled ? c.page : c.ink2 }, knob]} />
       </View>

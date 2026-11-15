@@ -194,10 +194,13 @@ def basisOf(rows: list[dict], now: str, passed: list[str]) -> dict:
             'age_days': math.floor((current - newest).total_seconds() / 86400), 'passed': list(passed)}
 
 
-def _citation_id(cite: dict, basis_hash: str) -> str:
+def citationId(cite: dict, basis_hash: str) -> str:
     identity = {key: cite[key] for key in ('metric', 'filters', 'table_versions', 'definition_version',
                                          'code_version', 'param_versions', 'model_version') if key in cite}
     return 'cit_' + _hash({**identity, 'basis_hash': basis_hash})
+
+
+_citation_id = citationId
 
 
 def answer(value, rows: list[dict], cite: dict, now: str, passed: list[str] | None = None) -> dict:
@@ -218,7 +221,7 @@ def answer(value, rows: list[dict], cite: dict, now: str, passed: list[str] | No
             return refused
     basis = basisOf(rows, now, passed if passed is not None else [])
     basis_hash = basisHash(rows)
-    citation = {**copy.deepcopy(cite), 'id': _citation_id(cite, basis_hash),
+    citation = {**copy.deepcopy(cite), 'id': citationId(cite, basis_hash),
                 'basis_ids': sorted(basis['ids'], key=utf16_sort_key),
                 'basis_hash': basis_hash, 'computed_at': now}
     return {'ok': True, 'value': value, 'basis': basis, 'citation': citation}
