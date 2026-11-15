@@ -95,7 +95,7 @@ export function localChrome({ executablePath, scratch, headless, spawnFn = spawn
 
 // A Browser Use Cloud browser. The key is read by presence from the caller and sent only in the X-Browser-Use-API-Key header,
 // never in a URL; profileFor maps a profile directory to a cloud profile id when one was made (cloud_profile_id in browser-use 1.0).
-export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.browser-use.com/api/v4', country = 'us', timeoutMin = 60,
+export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.browser-use.com/api/v4', country = 'us', timeoutMin = 5,
   profileFor = () => undefined }: {
   apiKey: string; fetchFn?: typeof fetch; base?: string; country?: string; timeoutMin?: number; profileFor?: (dir: string) => string | undefined;
 }): BrowserSource {
@@ -105,7 +105,8 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
     async open(profileDir) {
       const profileId = profileDir ? profileFor(profileDir) : undefined;
       const res = await fetchFn(`${base}/browsers`, { method: 'POST', headers,
-        body: JSON.stringify({ proxyCountryCode: country, timeout: timeoutMin, ...(profileId ? { profileId } : {}) }) });
+        // the whole timeout is charged up front and refunded on stop, so it is sized to the job; a challenge is never solved here, it pauses for the person
+        body: JSON.stringify({ proxyCountryCode: country, timeout: timeoutMin, solveCaptchas: false, ...(profileId ? { profileId } : {}) }) });
       if (!res.ok) throw new Error(`browser-use cloud create answered ${res.status}`);
       const body: unknown = await res.json();
       const o = (typeof body === 'object' && body !== null ? body : {}) as Record<string, unknown>;
