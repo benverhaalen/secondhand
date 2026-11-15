@@ -1,3 +1,4 @@
+import { DataStatus } from '@/data/status';
 // Messages: every conversation from every site in one list, newest first, as Mail and iOS Messages list an inbox
 // (spec/pages.md §6.3; decision "All messages live behind a chat icon with a count"; Ben, 09:56: "messages should just list
 // the messages"). A row is the conversation: who, the thing, their last words, when, and how many are new. What waits on it
@@ -5,7 +6,7 @@
 // (app/src/app/messages/[id].tsx). Behavior and the reason for each element: app/behavior/messages/index.json.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo } from 'react';
-import { EmptyState, List, Meta, Nav, Screen, Stack, Txt } from '@/ui';
+import { EmptyState, List, Meta, Nav, Screen, SiteBadge, Stack, Txt } from '@/ui';
 import { ConvoRow, type ConvoNote } from '@/ui/parts/convo-row';
 import { ListRow } from '@/ui/parts/list-row';
 import { cards, notices } from '@/today/cards';
@@ -13,13 +14,14 @@ import { ago, itemById, usd, world } from '@/demo';
 import { draftFor, inbox } from '@/demo/inbox';
 import { photo } from '@/demo/photos';
 import { shortName } from '@/demo/short-name';
+import { SITE_ORDER } from '@/you/state';
 import { useScreen } from '@/demo/screen';
 
 // The states this page cannot draw honestly yet, each with why (B35, app/src/demo/screen.ts).
 const SKIP = 'loading: a thread row has no skeleton in the kit yet, and a card skeleton would move the list when it lands; '
   + 'dense: no world holds more than five conversations, and a longer list is the same rows';
 // A photo key's image; require() gives a number, which Photo takes.
-const pic = (key: Parameters<typeof photo>[0]) => photo(key) as number;
+const pic = (key: Parameters<typeof photo>[0]) => /^https?:\/\//.test(key) ? key : photo(key) as number;
 const back = () => (router.canGoBack() ? router.back() : router.replace('/' as Href));
 
 export default function Messages() {
@@ -44,7 +46,7 @@ export default function Messages() {
         && (!want.fit.size || match.size?.toLowerCase() === want.fit.size.toLowerCase());
     }).map(match => ({ id: `found-${match.id}`, title: match.title, detail: `Found for ${usd(match.delivered_cents)}`, to: `/listing/${match.id}` })),
   ];
-  const state = asked === 'failed' || asked === 'offline' ? asked
+  const state = asked === 'loading' || asked === 'failed' || asked === 'offline' ? asked
     : all.length === 0 ? (w.name === 'new' ? 'new' : 'empty') : all.length === 1 ? 'one' : 'typical';
   const open = (id: string) => router.push((`/messages/${id}` + q) as Href);
   // The one word a row carries: a possible scam first, then a reply waiting for a tap, then what the agent sent.
@@ -52,30 +54,36 @@ export default function Messages() {
     c.state === 'blocked' ? 'blocked' : waiting?.kind === 'scam_warning' ? 'scam' : draftFor(w, c.id) ? 'draft' : last?.actor === 'auto' ? 'auto' : undefined;
 
   return (
-    <Screen name="messages" state={state} skip={SKIP} nav={<Nav back={back} />}>
+    <Screen name="messages" refreshing={s.refreshing} onRefresh={s.demo ? undefined : s.refresh} state={state} skip={SKIP} nav={<Nav back={back} />}>
       <Stack gap="tight">
         <Txt role="heading">Messages</Txt>
         {p.item ? <Txt role="body" tone="ink-2" lines={1}>{shortName(itemById(w, p.item) ?? { title: '' })}</Txt> : null}
         {asked === 'offline' ? <Meta icon="hourglass" text="Waiting for signal" /> : null}
       </Stack>
+      {asked === 'loading' ? <Txt role="body" tone="ink-2">Loading messages</Txt> : null}
       {asked === 'failed' ? (
         <EmptyState title="Messages didn’t load"
           action={{ id: 'messages-retry', label: 'Retry', onPress: () => router.replace(('/messages' + q) as Href) }} />
       ) : null}
 
+      <DataStatus demo={s.demo} resources={['account', 'conversations', 'today', 'wants', 'matches']} />
       {alerts.length ? <List>{alerts.map(alert => (
         <ListRow key={alert.id} id={`alert-${alert.id}`} label={alert.title} detail={alert.detail}
           onPress={() => router.push((alert.to + (alert.to.includes('?') ? q.replace('?', '&') : q)) as Href)} />
       ))}</List> : null}
-      {shown.length ? (
-        <List>
-          {shown.map(r => (
-            <ConvoRow key={r.c.id} id={`thread-${r.c.id}`} who={r.c.buyer} photo={r.item ? pic(r.item.photos[0].key) : null} name={r.item ? shortName(r.item) : ''}
-              site={r.c.site} note={noteOf(r)} last={r.last?.text ?? ''} time={r.last ? ago(r.last.sent_at, w.now) : ''} unread={r.c.unread} onPress={() => open(r.c.id)} />
-          ))}
-        </List>
-      ) : null}
-      {all.length === 0 && alerts.length === 0 && asked !== 'failed' ? (
+      {SITE_ORDER.map(site => {
+        const threads = shown.filter(r => r.c.site === site);
+        return threads.length ? <Stack key={site} gap="tight">
+          <SiteBadge site={site} />
+          <List>
+            {threads.map(r => (
+              <ConvoRow key={r.c.id} id={`thread-${r.c.id}`} who={r.c.buyer} photo={r.item?.photos[0] ? pic(r.item.photos[0].key) : null} name={r.item ? shortName(r.item) : ''}
+                site={r.c.site} note={noteOf(r)} last={r.last?.text ?? ''} time={r.last ? ago(r.last.sent_at, w.now) : ''} unread={r.c.unread} onPress={() => open(r.c.id)} />
+            ))}
+          </List>
+        </Stack> : null;
+      })}
+      {all.length === 0 && alerts.length === 0 && asked !== 'failed' && asked !== 'loading' && (s.demo || !s.problems.conversations) ? (
         <EmptyState title="No messages yet" line={w.name === 'new' ? 'Connect a site, and buyers on it write to you here.' : 'When a buyer writes on any site, it shows up here.'} />
       ) : null}
     </Screen>

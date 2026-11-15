@@ -13,11 +13,9 @@ export function widgetRows(block: Extract<Block, { type: 'widget' }>, results: R
   return block.widget === 'listings' || block.widget === 'alternatives' ? result.rows.slice(0, 6) : result.rows;
 }
 export function safeUrl(value: unknown): string | null {
-  if (typeof value !== 'string') return null;
-  try {
-    const url = new URL(value);
-    return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null;
-  } catch { return null; }
+  if (typeof value !== 'string' || !URL.canParse(value)) return null;
+  const url = new URL(value);
+  return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : null;
 }
 export function money(cents: unknown): string {
   return typeof cents === 'number' && Number.isFinite(cents) ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 2 }).format(cents / 100) : 'Not available';

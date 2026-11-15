@@ -1,4 +1,4 @@
--- DRAFTED 2026-11-15 by the fourth Databricks lead, NOT YET RUN (finalization.md DB9; databricks/RETAIL.md).
+-- Drafted 2026-11-15 by the fourth Databricks lead; run by the fifth at 13:27 UTC (finalization.md DB9; databricks/RETAIL.md).
 -- Additive only: a new schema with views over our existing tables. No existing table, view, job, alert,
 -- dashboard or Genie space changes. Before running: load the databricks-dbsql and databricks-ai-functions skills,
 -- confirm the ai_forecast arguments there, run each statement alone with node databricks/run-sql.mjs, read its
@@ -28,14 +28,17 @@ FROM secondhand.market.comp c
 LEFT JOIN secondhand.governance.source_rights r ON r.source = c.source
 WHERE c.price_type = 'sold';
 
--- The forecast. Read before showing anyone: the dates are historical (StockX 2017 to 2019), so the horizon is
--- weeks past that data's last day, not today. It forecasts the daily median sale price by kind on one dataset;
--- check that every forecast row is positive and inside the observed min and max before it is shown.
--- If ai_forecast refuses a subquery for horizon, read max(day) first and write that date plus 28 days as a literal.
+-- The forecast. The dates are historical (StockX sold shoes, 2017-09-01 to 2019-02-13), so the horizon is the 28 days
+-- after that data's last day (2019-02-14 to 2019-03-13; ai_forecast's horizon is exclusive), not today.
+-- Run 2026-11-15 13:26 UTC: trained on all 531 days, the forecast fell to $241 to $270, under the data's lowest day ($256)
+-- and the last four weeks ($285 to $490), with a negative lower band: the series is a product-mix median that fell from
+-- $690 (2017-09) to about $300 by late 2018, and the long trend kept falling. Trained from 2018-08-01 (chosen after
+-- seeing that run) with a floor of 0, it is $290 to $314, band $236 to $498, inside the observed $256 to $960.
+-- Each read of the view refits (about 17 s of warehouse time); materialise it before a dashboard or Genie reads it.
 CREATE OR REPLACE VIEW secondhand.retail.sales_price_forecast
-COMMENT 'ai_forecast of the daily median sale price by kind, on historical StockX 2019 public sales (dataset:stockx_2019). A development reading over past dates, never a current price or a claim about live listings.'
+COMMENT 'ai_forecast of the daily median sale price of shoes, from historical StockX public sales (dataset:stockx_2019, sold prices, 2018-08-01 to 2019-02-13), for the 28 days after that data ends (2019-02-14 to 2019-03-13). A development reading over past dates: never a current price, an asking price or a claim about live listings. Values in cents.'
 AS SELECT * FROM ai_forecast(
   TABLE(SELECT day, kind, median_cents FROM secondhand.market.comp_daily
-        WHERE source = 'stockx_2019' AND price_type = 'sold' AND day IS NOT NULL),
-  horizon => (SELECT date_add(max(day), 28) FROM secondhand.market.comp_daily WHERE source = 'stockx_2019' AND price_type = 'sold'),
-  time_col => 'day', value_col => 'median_cents', group_col => 'kind');
+        WHERE source = 'stockx_2019' AND price_type = 'sold' AND day >= '2018-08-01'),
+  horizon => '2019-03-14', time_col => 'day', value_col => 'median_cents', group_col => 'kind',
+  parameters => '{"global_floor": 0}', seed => 7);

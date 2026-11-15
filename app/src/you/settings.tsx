@@ -1,3 +1,5 @@
+import { useLocalSearchParams } from 'expo-router';
+import { AccountSettings } from '@/account/settings';
 // Settings (spec/pages.md §6.16 Account; spec/ways-out.md "I'm away for two weeks", "Get me out"). Pause selling, then a row
 // into each group of choices: Notifications (spec/notifications.md), App defaults and What the agent may do (Ben 05:47:
 // "app defaults and permission defaults"), then the account. Each group is its own page under You, so Settings stays one screen.
@@ -16,6 +18,11 @@ const OPEN_SALE = ['paid', 'pickup_booked', 'to_ship', 'shipped', 'delivered', '
 const PROVIDER = { apple: 'Apple', google: 'Google', email: 'Email' } as const;
 
 export function Settings({ embedded = false }: { embedded?: boolean } = {}) {
+  const params = useLocalSearchParams<{ world?: string; state?: string }>();
+  return params.world || params.state ? <DemoSettings embedded={embedded} /> : <AccountSettings embedded={embedded} />;
+}
+
+function DemoSettings({ embedded = false }: { embedded?: boolean } = {}) {
   const { w, asked } = usePage(), go = useGo();
   const [paused, setPaused] = useState(false);
   const [until, setUntil] = useState(day(inDays(14, w.now), w.now));

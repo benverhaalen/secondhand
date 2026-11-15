@@ -36,7 +36,8 @@ Two things to find next, both in my files:
 2. SR1's two benchmark findings (section 3), then rerun the benchmark twice; record on the bench README and the run page.
 3. SR12 (engines lead's ask, Nate's word 2ec1c3c7, "google shopping pages reveal the price of ebay products, im sure treg has something"): Google Shopping through Serper as a source, group `osint`, `source_site` kept per row, `may_model: false` until a research note on Serper's and Google's terms says otherwise; asking prices, not sold. The cross-source benchmark measured it at 16 of 16, 592 rows, p50 1.09 s, $0.032 for 16 queries (`research/cross-cutting/nate/runs/cross-source-benchmark-2026-11-15.md`; its code is `scripts/bench/roi.mjs`). Key by presence only. Send the engines lead the row shape.
 4. SR13, an agent proposal, research only (asked by the orchestrator on Nate's question): a device-side read lane, the phone loading a site's page in a web view on the person's own device and running `harness/listing-parser.ts` there. What it takes, what each site's terms say, what it changes for pace and refusals. A research note, not a build.
-5. SR8's `reads` always present once round 3 lands; the eBay in-page parse fix measured live (32 reads alone, then beside the other lanes, since eBay took 7.97 s with five lanes at once).
+5. The app-wiring lead's two asks from the phone: (a) every searched entry carries `url`, the site's own results page for the query (`searchUrl(site, query, 'search')` from `intel/public/readers.ts`, whatever the lane; Dupe's results page for Dupe), so each source's logo opens it; today it is null for Depop and eBay and the phone keeps a copy of `searchUrl` marked as a shortcut. (b) Depop rows read through the harness have the listing slug as their title and no image, so they draw as blank tiles: take the card's readable title and photo in the Depop search verb if the card has them (check `harness/sites/depop/adapter.ts` search against a saved page). Also: eBay did not land inside 8 s in one phone search ("levi 501"), which the phone shows as too slow; it fits the cold full-answer finding in section 3.
+6. SR8's `reads` always present once round 3 lands; the eBay in-page parse fix measured live (32 reads alone, then beside the other lanes, since eBay took 7.97 s with five lanes at once).
 
 ## 5. Decisions made, one line each
 
@@ -51,6 +52,8 @@ Two things to find next, both in my files:
 Waiting on Nate: one marketplace account linked through the live view; whether Apify rows may be counted in a measure.
 
 ## 6. What I got wrong
+
+- **My 8560d836 reverted 18 of the server lead's SV10 files** (http.ts, kv.ts, secrets.ts, server/main.ts, decisions.ts, today.ts, events/ports.ts and their tests). I added only my three paths, but the shared index already held stale staged copies, and `git commit` takes the whole index. Restored exactly from 125a56bb at eaa2d679. In the shared checkout, run `git diff --cached --name-only` before every commit and commit with `git commit <paths>` (only those paths), never a bare `git commit` after `git add`. `server/main.test.ts` has one failure ("one Node server shares sign-in state...") that is the same with my search files reverted; the server lead's successor has it.
 
 - I first put the runtime import inside `api/search.ts`; it replaced the tests' ports and broke 11 tests on main for about twenty minutes (fc523bcf to 8560d836). A side-effect import belongs in the route file, and a fix that touches module load order gets the whole test file rerun before the push.
 - I miscounted the eBay fallbacks in the run page's first draft (corrected in 327e47b4). Count from the summary file, not by eye.

@@ -5,16 +5,19 @@
 // cards keep 16 between them: the label belongs to what it heads (Art. 7.2). The label is marked data-head, so the
 // composition check reads it as a header.
 // States: with a label; without one (the cards alone, 16 apart).
-import type { ReactNode } from 'react';
+import { useContext, type ReactNode } from 'react';
+import Animated from 'react-native-reanimated';
+import { arrival, ContentOrder, reflow } from '../reveal';
 import { View } from 'react-native';
 import { Txt } from '../text';
 import { space } from '../tokens.generated';
 
 export function CardGroup({ label, children }: { label?: string; children: ReactNode }) {
+  const order = useContext(ContentOrder);
   return (
-    <View style={{ gap: space.s3 }}>
+    <Animated.View entering={arrival(order)} layout={reflow} style={{ gap: space.s3 }}>
       {label ? <View {...({ dataSet: { head: 'cards' } } as object)}><Txt role="body" tone="ink-2">{label}</Txt></View> : null}
       <View style={{ gap: space.s4 }}>{children}</View>
-    </View>
+    </Animated.View>
   );
 }

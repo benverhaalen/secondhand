@@ -186,11 +186,11 @@ test('searchAll queries approved public sources in parallel and maps outcomes pe
   };
   const t0 = performance.now();
   const r = await searchAll('levi 501', { fetchPage, sources: [...SOURCES.filter(s => s.id !== 'dupe'),
-    { pace: { per_minute: 20, min_gap_ms: 3000 }, rights: { may_store: true }, id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
+    { pace: { per_minute: 20, min_gap_ms: 3000 }, rights: { may_store: true }, group: 'osint', id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
   assert.equal(peak, 2);
   assert.ok(performance.now() - t0 < 40 * 3);
   const by = Object.fromEntries(r.searched.map(s => [s.site, s]));
-  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'mercari', 'offerup', 'poshmark']);
+  assert.deepEqual(Object.keys(by).sort(), ['depop', 'ebay', 'google_shopping', 'mercari', 'offerup', 'poshmark']);
   assert.deepEqual(requested.map(url => SITES.find(site => url.startsWith(BASE[site]))).sort(), ['offerup', 'poshmark']);
   assert.equal(by.facebook, undefined);
   assert.equal(by.depop!.outcome, 'failed');
@@ -261,7 +261,7 @@ test('searchAll with search+sold never fetches Depop pages and reports its unava
   const r = await searchAll('levi 501', { sites: ['depop', 'poshmark', 'ebay'], kinds: ['search', 'sold'], fetchPage: async u => { urls.push(u); return page(fx('poshmark.html')); } });
   assert.deepEqual(urls.sort(), [searchUrl('poshmark', 'levi 501', 'search'), searchUrl('poshmark', 'levi 501', 'sold')].sort());
   assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'search')!.error_code, 'no_route');
-  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'sold')!.outcome, 'needs_account');
+  assert.equal(r.searched.find(s => s.site === 'ebay' && s.kind === 'sold')!.error_code, 'no_route');
   assert.equal(r.searched.find(s => s.site === 'poshmark' && s.kind === 'sold')!.outcome, 'hit');
   const d = r.searched.find(s => s.site === 'depop' && s.kind === 'sold')!;
   assert.equal(d.outcome, 'failed');

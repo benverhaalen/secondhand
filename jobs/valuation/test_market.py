@@ -127,3 +127,21 @@ def test_the_anchored_band_scores_each_sale_only_on_its_products_sales_in_the_90
     by = {f"p{i}": ([0.0, day, 200 * day], [0.0, 1.0, 3.0]) for i in range(20)}
     a = market._anchor_fit(by, market.ALPHA)
     assert a["tau2"] == 0.0 and a["band"]["*"] == pytest.approx((1.0, 1.0, 1.0))
+
+
+@pytest.mark.parametrize('cents, expected', [(250, 300), (350, 400)])
+def test_the_two_languages_cannot_disagree_at_a_half_dollar(cents, expected):
+    assert market._dollars(cents) == expected
+
+
+def test_a_cheap_items_q10_cannot_round_to_zero():
+    rows = [{**r, 'price_cents': 400, 'price_type': 'sold'} for r in synthetic.market(n=40, seed=3)]
+    m = market.fit(rows)
+    m.band = {'*': (math.log(.1), 0, 0)}
+    m.widen = {'*': 0}
+    assert m.interval(ITEM, TODAY)[0] == pytest.approx(40)
+    out = m.estimate(ITEM, today=TODAY)
+    assert out['low_cents'] == 100
+    assert out['median_cents'] == 400
+    assert market._dollars(0) == 0
+    assert market._dollars(.001) == 100

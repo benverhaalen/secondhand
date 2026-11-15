@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { searchAll, searchSite, searchSource, memoryApifyRuns } from './search.ts';
 import { SOURCES } from './sources.ts';
+import { createHarness, fakeAdapter } from '../../harness/protocol.ts';
 import type { PageResult } from '../fetch.ts';
 import { _reset, runPlan, searchParams } from '../run.ts';
 
@@ -48,7 +49,7 @@ test('eBay active page source is on without approval; sold needs a person and th
   const source = SOURCES.find(s => s.site === 'ebay')!;
   assert.equal(source.on, true); assert.equal(source.lane, 'harness'); assert.equal(source.needs_ask, false);
   assert.ok(source.pace); assert.equal(source.pace.per_minute, 6);
-  const result = await searchSource(source, 'x', 'sold', { caller: 'background' });
+  const result = await searchSource(source, 'x', 'sold', { caller: 'background', harness: createHarness({ adapters: [fakeAdapter('ebay', 'search')] }) });
   assert.equal(result.searched.outcome, 'needs_account');
 });
 
@@ -139,7 +140,7 @@ test('Dupe is the first MCP source; Depop uses its harness and Facebook uses per
   assert.equal(SOURCES.find(s => s.id === 'depop')!.lane, 'harness');
   assert.equal(SOURCES.find(s => s.id === 'facebook')!.on, true);
   assert.equal(SOURCES.find(s => s.id === 'facebook')!.lane, 'apify');
-  const mercari = await searchSource(SOURCES.find(s => s.id === 'mercari')!, 'jeans', 'search', { caller: 'person' });
+  const mercari = await searchSource(SOURCES.find(s => s.id === 'mercari')!, 'jeans', 'search', { caller: 'person', harness: createHarness({ adapters: [fakeAdapter('mercari', 'search')] }) });
   assert.equal(mercari.searched.outcome, 'needs_account');
   assert.equal(mercari.searched.reason, 'needs your account');
 });
@@ -341,7 +342,7 @@ test('SR4 source signals reach both page and harness read boundaries', async () 
   const { createHarness, fakeAdapter } = await import('../../harness/protocol.ts');
   const harness = createHarness({ adapters: [{ ...fakeAdapter('ebay', 'search'), run: async () => ({ ok: true, data: [] }) }] });
   const call = harness.call;
-  harness.call = (site, verb, args) => { assert.equal(args?.signal, controller.signal); return call(site, verb, args); };
+  harness.call = (site, verb, args, options) => { assert.equal(options?.signal, controller.signal); assert.equal(args?.signal, undefined); return call(site, verb, args, options); };
   await searchSource(SOURCES.find(s => s.id === 'ebay')!, 'signal', 'search', { paced: true, harness, signal: controller.signal });
   await searchSource(SOURCES.find(s => s.id === 'poshmark')!, 'signal', 'search', { paced: true, signal: controller.signal,
     fetchPage: async (_url, options) => { assert.equal((options as typeof options & { signal?: AbortSignal }).signal, controller.signal); return page('No results'); } });
@@ -362,4 +363,38 @@ test('SR4 the default public-page transport actually aborts its fetch when the s
   await started; controller.abort();
   assert.equal(observed?.aborted, true, 'the source signal stopped at the fetch boundary');
   assert.equal((await reading).searched.outcome, 'timeout');
+});
+
+test('Google Shopping is a public osint source; no token means no_route before any pace wait', async () => {
+  _reset();
+  const source = SOURCES.find(s => s.id === 'google_shopping')!;
+  assert.ok(source); assert.equal(source.group, 'osint'); assert.equal(source.lane, 'treg');
+  assert.deepEqual(source.covers, ['google_shopping']); assert.deepEqual(source.rights, { may_store: false, may_model: false });
+  assert.deepEqual(source.pace, { per_minute: 30, min_gap_ms: 1000 });
+  const start = performance.now();
+  for (let i = 0; i < 3; i++) {
+    const r = await searchSource(source, 'x', 'search', { caller: 'background', fetchPage: async () => assert.fail('unrouted fetch') });
+    assert.equal(r.searched.error_code, 'no_route'); assert.equal(r.searched.ms, 0);
+  }
+  assert.ok(performance.now() - start < 100, 'unrouted Shopping used a pace slot');
+});
+
+test('Google Shopping cap failure is blocked, abort is timeout, and sold never calls the adapter', async () => {
+  const source = SOURCES.find(s => s.id === 'google_shopping')!;
+  const { createShopping } = await import('../../harness/sites/google_shopping/adapter.ts');
+  const { createLog, memorySink } = await import('../../../../../log/index.js');
+  const { memoryShoppingSpend } = await import('./search.ts');
+  const log = createLog({ src: 'test.shopping', build: 'test', sink: memorySink() });
+  const capped = createShopping({ token: 'synthetic', log, spend: { reserve: async () => ({ ok: false, cap: 'search_shopping_usd_per_day' }) }, fetch: async () => assert.fail('over cap fetched') });
+  const result = await searchSource(source, 'x', 'search', { shopping: capped, paced: true });
+  assert.equal(result.searched.outcome, 'blocked'); assert.equal(result.searched.error_code, 'rate_limited'); assert.equal(result.searched.reason, 'search_shopping_usd_per_day');
+  const controller = new AbortController(); let aborted = false;
+  const shopping = createShopping({ token: 'synthetic', log, spend: memoryShoppingSpend(), fetch: async (_url, init) => new Promise((_resolve, reject) => {
+    init.signal.addEventListener('abort', () => { aborted = true; reject(new Error('synthetic abort')); }, { once: true });
+  }) });
+  const pending = searchSource(source, 'x', 'search', { shopping, paced: true, signal: controller.signal });
+  await new Promise(resolve => setImmediate(resolve)); controller.abort();
+  const timeout = await pending; assert.equal(aborted, true); assert.equal(timeout.searched.outcome, 'timeout'); assert.equal(timeout.searched.error_code, 'timed_out');
+  const sold = await searchSource(source, 'x', 'sold', { paced: true, shopping: { search: async () => assert.fail('Shopping is not sold prices') } });
+  assert.equal(sold.searched.outcome, 'blocked');
 });

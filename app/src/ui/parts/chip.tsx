@@ -13,14 +13,15 @@
 // page, and a sheet's choice picks in place. A plain row, 56 tall whether or not it has a second line, in a List's hairlines (Art. 7.9, "plain ruled rows"),
 // with an icon, the words, an optional second line, and a tick when picked or a chevron when it leads on.
 // States: idle, pressed, picked, disabled (with its reason on the second line), leads (a chevron).
-import type { ReactNode } from 'react';
-import { ScrollView, View } from 'react-native';
+import { useEffect, type ReactNode } from 'react';
+import Animated, { FadeIn, FadeOut, ReduceMotion, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { ScrollView, View, type ViewStyle } from 'react-native';
 import { Image } from 'expo-image';
 import { Icon, type IconName } from '../icon';
 import { Press, slop } from '../press';
 import { Txt } from '../text';
 import { useColors } from '../theme';
-import { radius, size, space } from '../tokens.generated';
+import { motion, radius, size, space } from '../tokens.generated';
 import { mark, SITES, type Site } from './mark';
 
 export function FilterRow({ children }: { children: ReactNode }) {
@@ -49,11 +50,9 @@ export function Chip({ id, label, count, icon, site, picked = false, onPress }: 
   return (
     <Press id={id} label={count == null ? name : `${name}, ${count}`} selected={picked} onPress={onPress} hit={slop(size.pillCardH, size.pillCardH, { x: space.s2 })}>
       {({ pressed }) => (
-        <View
-          {...mark('chip', { picked: picked ? 'true' : 'false', fit: 'content' })}
+        <ChipBody picked={picked} pressed={pressed}
           style={{ height: size.pillCardH, minWidth: size.pillCardH, borderRadius: radius.pill, borderCurve: 'continuous', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s2,
-            paddingLeft: site ? 0 : icon ? space.s3 : space.s4, paddingRight: site ? 0 : space.s4,
-            backgroundColor: picked ? c.ink : pressed ? c.grayPress : c.gray }}>
+            paddingLeft: site ? 0 : icon ? space.s3 : space.s4, paddingRight: site ? 0 : space.s4 }}>
           {site ? (
             <View style={{ width: size.siteBadge, height: size.siteBadge, borderRadius: radius.pill, borderCurve: 'continuous', overflow: 'hidden', borderWidth: picked ? 2 : 0, borderColor: c.page }}>
               <Image source={SITES[site].logo} alt={SITES[site].name} accessibilityLabel={SITES[site].name} style={{ width: '100%', height: '100%' }} contentFit="cover" />
@@ -62,9 +61,24 @@ export function Chip({ id, label, count, icon, site, picked = false, onPress }: 
           {icon ? <Icon name={icon} size={20} tone={picked ? 'page' : 'ink'} /> : null}
           {label ? <Txt role="body" tone={picked ? 'on-ink' : 'ink'} lines={1}>{label}</Txt> : null}
           {count != null ? <Txt role="body" tone={picked ? 'on-ink' : 'ink-2'}>{String(count)}</Txt> : null}
-        </View>
+        </ChipBody>
       )}
     </Press>
+  );
+}
+
+function ChipBody({ picked, pressed, style, children }: { picked: boolean; pressed: boolean; style: ViewStyle; children: ReactNode }) {
+  const c = useColors();
+  const color = picked ? c.ink : pressed ? c.grayPress : c.gray;
+  const fill = useSharedValue(color);
+  useEffect(() => {
+    fill.set(withTiming(color, { duration: pressed ? motion.feedback : motion.select, reduceMotion: ReduceMotion.System }));
+  }, [color, pressed, fill]);
+  const selection = useAnimatedStyle(() => ({ backgroundColor: fill.get() }));
+  return (
+    <Animated.View {...mark('chip', { picked: picked ? 'true' : 'false', fit: 'content' })} style={[style, selection]}>
+      {children}
+    </Animated.View>
   );
 }
 
@@ -91,7 +105,11 @@ export function Choice({ id, label, line, icon, picked, leads, disabled = false,
             <Txt role="body" tone={disabled ? 'ink-2' : 'ink'} lines={1}>{label}</Txt>
             {line ? <Txt role="caption" lines={1}>{line}</Txt> : null}
           </View>
-          {picked ? <Icon name="tick-02" size={20} /> : leads ? <Icon name="arrow-right-01" size={20} tone="ink-2" /> : null}
+          {picked ? (
+            <Animated.View entering={FadeIn.duration(motion.select).reduceMotion(ReduceMotion.System)} exiting={FadeOut.duration(motion.feedback).reduceMotion(ReduceMotion.System)}>
+              <Icon name="tick-02" size={20} />
+            </Animated.View>
+          ) : leads ? <Icon name="arrow-right-01" size={20} tone="ink-2" /> : null}
         </View>
       )}
     </Press>

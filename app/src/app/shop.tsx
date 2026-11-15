@@ -15,13 +15,14 @@ export default function Shop() {
   const asked = useRef(false);
   useEffect(() => { if (q && !asked.current) { asked.current = true; shop.ask(q); } }, [q, shop]);
   const close = () => { shop.close(); if (router.canGoBack()) router.back(); else router.replace('/buy'); };
-  const open = (url: string, id: string) => { Linking.openURL(url).catch(e => log.error('shop.open_site', e, { result: id })); };
+  const open = (url: string, id: string) => Linking.openURL(url).then(() => undefined, e => { log.error('shop.open_site', e, { result: id }); });
   return (
     // White with black type, whatever the phone's mode (Nate, words.md 2026-11-15: "turning everything in the background white").
     <Theme scheme="light">
       <Stack.Screen options={{ animation: 'fade', headerShown: false }} />
       <ShopView skip="empty, one, dense: a search answer says itself how many it found; offline: a search that cannot reach the server is failed"
         phase={shop.phase} state={shop.failure && shop.phase !== 'chat' ? 'failed' : shop.phase} turns={shop.turns} failure={shop.failure} saved={shop.saved}
+        offer={shop.offer} onAskOffered={shop.askOffered}
         onAsk={shop.ask} onClose={close} onOpen={open} onReopen={shop.reopen} onRetry={shop.retry} />
     </Theme>
   );
