@@ -171,7 +171,8 @@ after(async () => {
     for (const [name, value] of savedEnv) {
       if (value === undefined) delete process.env[name]; else process.env[name] = value;
     }
-    if (folder) await rm(folder, { recursive: true, force: true });
+    // The store keeps its SQLite file open for the life of the process, and Windows will not unlink an open file.
+    if (folder) await rm(folder, { recursive: true, force: true }).catch(e => { if (e.code !== 'EBUSY') throw e; });
   }
 });
 
@@ -202,7 +203,7 @@ test('3. A second person signs in and has a distinct identity and tokens', async
   assert.notEqual(one.id, two.id); assert.notEqual(one.access, two.access); assert.notEqual(one.refresh, two.refresh);
 });
 
-test('4. Every list is empty for both new people', { todo: 'GET /v1/follows is still gated to the example user and returns 404' }, async t => {
+test('4. Every list is empty for both new people', async t => {
   const c = checks();
   for (const [name, person] of [['one', one], ['two', two]] as const) for (const route of lists) {
     const response = await call(t, 'GET', `/v1/${route}`, bearer(person));
@@ -297,7 +298,8 @@ test('9. The buying chat starts an assist job', { todo: 'BC3: the chat route is 
   status(reply, 202); string(reply.body.id); assert.equal(reply.body.kind, 'assist'); assert.equal(reply.body.state, 'running');
 });
 
-test('10. Refresh works, deletion revokes tokens and removes the person’s rows', { todo: 'DELETE /v1/me leaves captureRows intact and pauses workspace deletion without a configured port' }, async t => {
+let deletionPaused: unknown = 'step 10 did not run';
+test('10. Refresh works, deletion revokes tokens and removes the person’s rows', async t => {
   const c = checks();
   const original = { ...one };
   const refreshed = await call(t, 'POST', '/v1/auth/refresh', {}, { refresh_token: one.refresh }); status(refreshed, 200);
@@ -314,7 +316,7 @@ test('10. Refresh works, deletion revokes tokens and removes the person’s rows
   // Reauthenticate through the real route: revoked tokens alone cannot prove rows were deleted.
   const returned = await signIn(t, emails[0]);
   const deletionJob = await call(t, 'GET', `/v1/jobs/${string(deleted.body.id)}`, bearer(returned));
-  c.check(() => { status(deletionJob, 200); assert.equal(deletionJob.body.paused, undefined, 'deletion must have a configured path to finish'); });
+  c.check(() => status(deletionJob, 200)); deletionPaused = deletionJob.body.paused;
   for (const route of ['wants', 'lookups', 'items']) {
     const response = await call(t, 'GET', `/v1/${route}`, bearer(returned));
     c.check(() => { status(response, 200); assert.deepEqual(rows(response.body), []); });
@@ -326,6 +328,10 @@ test('10. Refresh works, deletion revokes tokens and removes the person’s rows
   const job = await call(t, 'GET', `/v1/jobs/${personJob}`, bearer(returned));
   c.check(() => typedError(job, 404, 'not_found'));
   c.finish();
+});
+
+test('10b. Account deletion finishes its workspace purge', { todo: 'no workspace port is configured on a local server, so the purge job pauses' }, () => {
+  assert.equal(deletionPaused, undefined, 'deletion must have a configured path to finish');
 });
 
 test('11. Restart on the same folder preserves person two and the visitor’s search', async t => {
