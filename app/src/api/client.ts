@@ -159,7 +159,7 @@ export function createClient(options: Options) {
           lastId = frame.id;
           logger.note('job frame', { job: jobId, frame_id: frame.id, event: frame.event });
           onFrame(frame);
-          terminal ||= jobId !== undefined && frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed');
+          terminal ||= jobId !== undefined && frame.event === 'job.state' && (frame.data.state === 'done' || frame.data.state === 'failed' || frame.data.state === 'cancelled');
           late ||= frame.event === 'answer.late';
         }
         if (parser.skipped > skipped) logger.note('invalid SSE blocks skipped', { job: jobId, count: parser.skipped - skipped });

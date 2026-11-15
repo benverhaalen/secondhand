@@ -1,0 +1,55 @@
+{
+  "screen": "item/[id]/edit",
+  "what": "Review an owned item before pricing. Existing live listings remain managed on their selling site.",
+  "frame": {
+    "who": "A seller reviewing a captured draft or correcting saved inventory details.",
+    "came_to": "Check the photos and details, then save and choose an asking price.",
+    "costly_mistake": "Losing an edit, overwriting a newer version, or assuming saved details update a live listing.",
+    "ways_out": "Back with a discard prompt when edited; save into pricing for a draft or item detail for a live listing.",
+    "in_the_loop": "Only explicit Save writes the versioned owned item."
+  },
+  "states": [
+    {
+      "state": "typical",
+      "shows": "Photos and labeled title, quantity, location and optional cost fields; one pinned save action."
+    },
+    {
+      "state": "loading",
+      "shows": "Opening your item; no editable stale values."
+    },
+    {
+      "state": "failed",
+      "shows": "Fetch retry, or save error with edits preserved. Version conflict offers reload."
+    },
+    {
+      "state": "empty",
+      "shows": "An item without photos shows Photos are not available yet; an empty title must be filled before saving."
+    }
+  ],
+  "controls": [
+    {
+      "control": "Save",
+      "id": "seller-save",
+      "on_tap": "Validate fields and PATCH the owned item with its version; refresh inventory and open price for a draft or detail for a live listing."
+    },
+    {
+      "control": "Reload saved item",
+      "id": "seller-reload",
+      "on_tap": "Fetch the latest version and replace the form; a failed fetch shows an error instead of the old version."
+    },
+    {
+      "control": "Back",
+      "on_tap": "Ask before discarding dirty fields."
+    },
+    {
+      "control": "Keep editing",
+      "id": "seller-keep-editing",
+      "on_tap": "Dismiss the discard prompt."
+    },
+    {
+      "control": "Discard changes",
+      "id": "seller-discard",
+      "on_tap": "Leave without saving."
+    }
+  ]
+}

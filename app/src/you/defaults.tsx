@@ -8,7 +8,7 @@
 // One item can still use its own rule, on its Plan.
 import { useState } from 'react';
 import { connectionState, type Site } from '@/demo';
-import { Blank, Guess, Line, List, Nav, Pill, Screen, Section, Sheet, Txt } from '@/ui';
+import { Blank, Guess, Line, List, Nav, Pill, Row, Screen, Section, Sheet, Stack, Txt } from '@/ui';
 import { ListRow } from '@/ui/parts/list-row';
 import { Choice } from '@/ui/parts/chip';
 import { Choices } from '@/ui/parts/pick';
@@ -62,9 +62,9 @@ export function Defaults() {
             <ListRow id="default-sites" label="Sites" value={linked.length ? `${onSites} of ${linked.length} linked` : 'None linked yet'} onPress={linked.length ? () => setOpen('sites') : () => go.to('/you/connections')} />
             <ListRow id="default-spread" label="Prices across sites" value={SPREADS[spread].name} onPress={() => setOpen('spread')} />
             <ListRow id="default-hand" label="Ship or pickup" value={HAND[hand]} onPress={() => setOpen('hand')} />
-            <ListRow id="default-spot-row" label="Pickup spot" trail={<Line>{spot
+            <Row><Stack gap="tight"><Txt role="body">Pickup spot</Txt><Line>{spot
               ? <Guess id="default-spot" name="Pickup spot" value={spot} look="body" onChange={v => { setSpot(v); changed('limits', 'saved_spot', 'set'); }} />
-              : <Blank id="default-spot" name="A public place" look="body" onChange={v => { setSpot(v); changed('limits', 'saved_spot', 'set'); }} />}</Line>} />
+              : <Blank id="default-spot" name="A public place" look="body" onChange={v => { setSpot(v); changed('limits', 'saved_spot', 'set'); }} />}</Line></Stack></Row>
             <ListRow id="default-floor" label="Lowest price" detail="You set it on each listing. Under it, it always asks" value={floor === 'suggest' ? 'Suggested' : 'Ask me'} onPress={() => setOpen('floor')} />
           </List>
         </Section>

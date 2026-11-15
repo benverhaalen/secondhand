@@ -1,6 +1,8 @@
 import { Stack as RouterStack, router, type Href } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
-import { Linking } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
+import { ShotGuide, shotTitle } from '@/ui/parts/shot-guide';
+import { PickType } from './pick';
 import { useCameraPermissions, type CameraView } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '@/api/client';
@@ -9,22 +11,24 @@ import {
   Blank, CamButton, CamNote, CameraAct, CameraBar, CameraFoot, CameraOff, Chips, ChoiceChips,
   FactChip, FootButton, Instruction, OVER, Screen, Nav, Section, Sheet, Shutter, ShutterRow, Stack, Txt, Viewfinder, log,
 } from '@/ui';
-import { answerCapture, captureMessage, openCapture, readCapture, requestStudio, skipQuestion, uploadStills, type Capture, type Still } from './client';
+import { answerCapture, captureMessage, openCapture, readCapture, requestStudio, setType, skipQuestion, uploadStills, type Capture, type Still } from './client';
 import { CaptureResults, type CaptureJob } from './results';
 
 const words = (value: string) => value.replaceAll('_', ' ').replaceAll('.', ' ');
 const valueText = (value: unknown) => typeof value === 'object' ? JSON.stringify(value) : String(value ?? '');
-const purposeOf = (mode: string): Capture['purpose'] => mode === 'worth' ? 'appraise' : mode === 'find' ? 'find' : 'sell';
+const COACH_MS = 4000;
+const purposeOf =(mode: string): Capture['purpose'] => mode === 'worth' ? 'appraise' : mode === 'find' ? 'find' : 'sell';
 
 function Answer({ question, busy, onAnswer }: { question: Question; busy: boolean; onAnswer: (value: unknown) => void }) {
   const [value, setValue] = useState('');
   const [parts, setParts] = useState<Record<string, string>>({});
-  const [selected, setSelected] = useState<unknown[]>([]);
+  const [selected, setSelected] = useState<string[]>(() => question.options.flatMap((option, index) => option.proposed ? [String(index)] : []));
   const options = question.options.map((option, index) => ({ id: String(index), label: option.label ?? words(valueText(option.value)) }));
   return <Stack>
-    {options.length ? <ChoiceChips id={`capture-${question.id}`} label={question.words} value="" options={options}
-      onChange={id => { const next = question.options[Number(id)].value; if (question.kind === 'pick_many') setSelected(values => values.includes(next) ? values.filter(v => v !== next) : [...values, next]); else if (!busy) onAnswer(next); }} /> : null}
-    {question.kind === 'pick_many' ? <><Txt role="caption">{selected.map(valueText).join(', ') || 'Choose any that apply'}</Txt><FootButton id="capture-list-answer" label="Use these" state={selected.length && !busy ? 'idle' : 'disabled'} onPress={() => onAnswer(selected)} /></> : null}
+    {options.length ? <ChoiceChips id={`capture-${question.id}`} label={question.words} value={question.kind === 'pick_many' ? selected : selected[0] ?? ''} options={options}
+      onChange={id => { if (busy) return; if (question.kind === 'pick_many') setSelected(values => values.includes(id) ? values.filter(v => v !== id) : [...values, id]); else { setSelected([id]); onAnswer(question.options[Number(id)].value); } }} /> : null}
+    {selected.flatMap(id => question.options[Number(id)].rests_on ?? []).map((reason, index) => <Txt key={index} role="caption" tone="ink-2">{reason}</Txt>)}
+    {question.kind === 'pick_many' ? <><Txt role="caption">{selected.map(id => options[Number(id)].label).join(', ') || 'Choose any that apply'}</Txt><FootButton id="capture-list-answer" label="Use these" state={selected.length && !busy ? 'idle' : 'disabled'} onPress={() => onAnswer(selected.map(id => question.options[Number(id)].value))} /></> : null}
     {question.parts?.length ? <>
       {question.parts.map(part => <Blank key={part} id={`capture-part-${part}`} name={`${words(part)}${question.unit ? ` (${question.unit})` : ''}`} numeric value={parts[part] ?? ''} onChange={next => setParts(old => ({ ...old, [part]: next }))} />)}
       <FootButton id="capture-dimensions" label="Use measurements" state={!busy && question.parts.every(part => Number(parts[part]) > 0) ? 'idle' : 'disabled'} onPress={() => onAnswer(Object.fromEntries(question.parts!.map(part => [part, Number(parts[part])])))}/>
@@ -51,6 +55,8 @@ export function LiveCapture({ mode }: { mode: string }) {
   const [finished, setFinished] = useState(false);
   const [jobs, setJobs] = useState<CaptureJob[]>([]);
   const [studio, setStudio] = useState(false);
+  // What the item is, asked first on its own page (Nate, words.md 2026-11-15); "Something else" leaves it to the photo.
+  const [picked, setPicked] = useState(false);
   const close = () => router.canGoBack() ? router.back() : router.replace('/' as Href);
 
   const run = async (label: string, operation: () => Promise<void>) => {
@@ -75,6 +81,11 @@ export function LiveCapture({ mode }: { mode: string }) {
   const ask = shotQuestion?.words ?? (nextStep ? `Photograph the ${words(nextStep.step)}` : capture ? 'Review what we found' : 'Show the whole front');
   const questions = capture?.plan.questions.filter(next => next.kind !== 'shot') ?? [];
   const needsPhoto = !!nextStep || !!shotQuestion || !capture;
+  // The coach for this shot shows for a few seconds, then leaves the frame to the person with the shot's name on top.
+  const guideStep = (shotQuestion?.shot?.step ?? nextStep?.step ?? 'front').split('.')[0];
+  const [coached, setCoached] = useState<string | null>(null);
+  useEffect(() => { const t = setTimeout(() => setCoached(guideStep), COACH_MS); return () => clearTimeout(t); }, [guideStep]);
+  const coaching = !!permission?.granted && needsPhoto && !busy && !error && coached !== guideStep;
 
   const send = async (photos: Still[]) => {
     const current = capture ?? await start();
@@ -112,17 +123,24 @@ export function LiveCapture({ mode }: { mode: string }) {
     setFinished(true);
   });
 
-  if (finished && capture) return <Screen name="capture-result" state="working" nav={<Nav back={close} />}>
-    <Section title={purpose === 'find' ? 'Finding matches' : purpose === 'appraise' ? 'Appraising your item' : studio ? 'Preparing your photos' : 'Preparing your listing'}>
+  const pick = (type: string) => run('Saving', async () => {
+    const current = capture ?? await start();
+    setCapture(type === 'other' ? current : await setType(current, type));
+    setPicked(true);
+  });
+  if (!picked) return <PickType mode={mode} busy={!!busy} error={error} onPick={pick} onClose={close} />;
+
+  if (finished && capture) return <Screen name="capture-result" state="typical" nav={<Nav back={close} />}>
+    <Section title={purpose === 'find' ? 'Photo matches' : purpose === 'appraise' ? 'Your appraisal' : studio ? 'Your photos' : 'Your item'}>
       <CaptureResults capture={capture} initial={jobs} photo={coverPhoto} />
-      <FootButton id="capture-messages" label="Open messages" onPress={() => router.replace('/messages' as Href)} />
+      <FootButton id="capture-messages" label={purpose === 'sell' ? 'Review item' : purpose === 'find' ? 'Back to Buy' : 'Open messages'} onPress={() => router.replace((purpose === 'sell' ? `/item/${capture.item_id}/edit` : purpose === 'find' ? '/buy' : '/messages') as Href)} />
     </Section>
   </Screen>;
 
   return <>
     <RouterStack.Screen options={OVER} />
     <Viewfinder state={busy ? 'loading' : error ? 'failed' : 'typical'} mode={mode} live={!!permission?.granted} camera={camera} blink={blink} feed={!permission?.granted && lastPhoto ? { uri: lastPhoto } : null} framed
-      top={<><CameraBar left={<CamButton id="cam-close" icon="cancel-01" label="Close" onPress={close} />}><CamNote icon="camera-01" text={purpose === 'appraise' ? 'Appraise an item' : purpose === 'find' ? 'Find an item' : 'Sell an item'} /></CameraBar><Instruction text={busy || ask} /></>}
+      top={<><CameraBar left={<CamButton id="cam-close" icon="cancel-01" label="Close" onPress={close} />}><CamNote icon="camera-01" text={purpose === 'appraise' ? 'Appraise an item' : purpose === 'find' ? 'Find an item' : 'Sell an item'} /></CameraBar><Instruction text={busy || (coaching ? '' : needsPhoto ? shotTitle(guideStep, shotQuestion?.words) : ask)} /></>}
       facts={<Chips>{capture?.plan.fields.filter(field => field.value !== null).map(field => <FactChip key={field.field} id={`fact-${field.field}`} name={words(field.field)} value={valueText(field.value)} by={field.source === 'you_said' ? 'person' : 'agent'} onChange={questions.find(q => q.field === field.field) ? () => setQuestion(questions.find(q => q.field === field.field)!) : undefined} />)}</Chips>}
       bottom={<CameraFoot>
         {busy ? <CamNote icon="clock-01" text={busy} /> : null}
@@ -134,7 +152,8 @@ export function LiveCapture({ mode }: { mode: string }) {
           <CameraAct id="cam-done" label={studio ? 'Prepare photos' : purpose === 'find' ? 'Find matches' : purpose === 'appraise' ? 'Appraise item' : 'Create draft'} onPress={finish} />
         </> : null}
       </CameraFoot>}>
-      {!permission?.granted && !error ? <CameraOff title="Use your camera" line="Take each photo when you are ready." acts={[{ id: 'camera-permission', label: 'Allow camera', onPress: () => permission?.canAskAgain === false ? void Linking.openSettings().catch(failure => setError(captureMessage(failure))) : void askPermission() }, { id: 'camera-library', label: 'Choose photos', onPress: library }]} /> : null}
+      {coaching ? <View pointerEvents="none" style={[StyleSheet.absoluteFill, { justifyContent: 'center' }]}><ShotGuide step={guideStep} words={shotQuestion?.words} /></View> : null}
+      {needsPhoto && !permission?.granted && !error ? <CameraOff title="Use your camera" line="Take each photo when you are ready." acts={[{ id: 'camera-permission', label: 'Allow camera', onPress: () => permission?.canAskAgain === false ? void Linking.openSettings().catch(failure => setError(captureMessage(failure))) : void askPermission() }, { id: 'camera-library', label: 'Choose photos', onPress: library }]} /> : null}
       {error ? <CameraOff title="Could not continue" line={error} acts={[{ id: 'capture-retry', label: 'Try again', onPress: () => pending.length ? void run('Uploading photos', () => send(pending)) : refresh() }, { id: 'capture-error-close', label: 'Close', onPress: close }]} /> : null}
     </Viewfinder>
     <Sheet open={!!question} title={question?.words} onClose={() => setQuestion(null)}>

@@ -65,7 +65,7 @@ async function ids(body, medium = 'deck', level = 'error', theme = '') {
 test('render: a browser is here when the checks run in CI', () => { if (process.env.CI) assert.ok(pw, 'Playwright is not installed, so no rule was tested on a render'); });
 
 browserTest('render: a deck that follows the brand passes', { skip: !pw }, async () => {
-  assert.deepEqual(await ids(deck('<p class="h">What you keep</p><div><p class="b">You keep</p><p style="font-size:200px">$46.95</p></div>')), []);
+  assert.deepEqual(await ids(deck('<p class="h" style="font-family:var(--font-text);font-weight:500">What you keep</p><div><p class="b">You keep</p><p style="font-size:200px">$46.95</p></div>')), []);
 });
 
 const CASES = [
@@ -75,8 +75,8 @@ const CASES = [
   ['B13', 'book weight on a slide', deck('<p class="b" style="font-weight:400">Listed in a minute</p>'), /B13 .*the text face at weight 400: text is 500 everywhere/],
   ['B14', 'a size off the set', deck('<p style="font-size:28px">Listed in a minute</p>'), /B14 .*28 px/],
   ['B14', 'two peak numbers', deck('<p class="b">You keep</p><p style="font-size:200px">$46.95</p><p style="font-size:160px">$12</p>'), /B14 .*one peak number/],
-  ['A7', 'a number in the display face', deck('<p class="h">Sold in 3 days</p>'), /A7 .*number in the display face/],
-  ['A7', 'two display headings', deck('<p class="h">What you keep</p><p class="h">Where it sold</p>'), /A7 .*2 display headings/],
+  ['A7', 'a number in the display face', deck('<p class="h">Sold in 3 days</p>'), /A7 .*uses the wordmark face/],
+  ['A7', 'two display headings', deck('<p class="h">What you keep</p><p class="h">Where it sold</p>'), /A7 .*What you keep.*uses the wordmark face[\s\S]*A7 .*Where it sold.*uses the wordmark face/],
   ['B7', 'colored text', deck('<p class="b" style="color:var(--sky-deep)">Listed in a minute</p>'), /B7 .*--sky-deep text/],
   ['B7', 'a color that is not a token', deck('<div style="background:#ff0000;height:64px"></div>'), /B7 .*rgb\(255, 0, 0\)/],
   ['B6', 'text on a photo', deck(`<div style="position:relative"><img alt="A jacket" src="${PX}" style="width:800px;height:400px;display:block"><p class="b" style="position:absolute;top:32px;left:32px">Carhartt jacket</p></div>`), /B6 .*sits on a photo/],
@@ -124,7 +124,7 @@ browserTest('render: on an app screen a button label is medium, a small icon nee
 });
 browserTest('render: a price list, a kind whose width follows its words, and the scaled variables in media.css pass on a deck', { skip: !pw }, async () => {
   const row = (a, b) => `<div style="display:flex;gap:var(--ms-7);padding:var(--ms-3) 0"><span class="b">${a}</span><span><span class="b">${b}</span></span></div>`;
-  assert.deepEqual(await ids(deck(`<p class="h" style="font-size:var(--mt-heading)">What you keep</p><div>${row('Consignment', '$3')}${row('secondhand', '$17')}</div>
+  assert.deepEqual(await ids(deck(`<p class="h" style="font-size:var(--mt-heading);font-family:var(--font-text);font-weight:500">What you keep</p><div>${row('Consignment', '$3')}${row('secondhand', '$17')}</div>
     <div style="display:flex;gap:var(--ms-4)"><span class="b" data-part="chip" data-fit="content" style="background:var(--gray);border-radius:var(--mr-card);padding:var(--ms-2) var(--ms-4)">Shoes</span><span class="b" data-part="chip" data-fit="content" style="background:var(--gray);border-radius:var(--mr-card);padding:var(--ms-2) var(--ms-4)">Jackets</span></div>`)), []);
 });
 browserTest('render: a view with no color and no photo gets a warning that it reads as no brand', { skip: !pw }, async () => {
@@ -163,12 +163,12 @@ browserTest('render: a row under a solid bar, a toast that has faded out, a labe
     <p style="font-size:15px;opacity:0;font-family:Arial;padding:0 20px">Gone</p><span style="position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;font-family:Arial">For a screen reader</span>
     <div style="padding:16px 20px"><button style="${PILL};box-shadow:var(--focus-ring);border:1px solid var(--outline)">Accept $38</button>
     <button disabled style="font:500 15px var(--font-text);background:var(--gray);color:var(--ink-disabled);border:0;border-radius:var(--r-pill);padding:16px 32px;margin-top:16px">Send</button>
-    <h1 style="font:600 36px/1.125 var(--font-display);white-space:nowrap;margin-top:16px">Today <span style="color:var(--ink-2)">here</span></h1></div>`), 'app'), []);
+    <h1 style="font:500 36px/1.125 var(--font-text);white-space:nowrap;margin-top:16px">Today <span style="color:var(--ink-2)">here</span></h1></div>`), 'app'), []);
 });
 CASES.push(['B15', 'text that taps pass through, in a face that is not ours', deck('<p class="b" style="pointer-events:none;font-family:Arial">Listed in a minute</p>'), /B15 .*Arial/],
   ['B15', 'Inter named as a fallback', deck('<p class="b" style="font-family:var(--font-text), Inter">Listed in a minute</p>'), /B15 .*names Inter/],
   ['B13', 'italic text', deck('<p class="b" style="font-style:italic">Listed in a minute</p>'), /B13 .*is italic/],
-  ['A7', 'an accent in the display face', deck('<p class="h">Vêtements</p>'), /A7 .*does not hold/],
+  ['A7', 'an accent in the display face', deck('<p class="h">Vêtements</p>'), /A7 .*uses the wordmark face/],
   ['B16', 'words capitalized by CSS', deck('<p class="b" style="text-transform:capitalize">listed in a minute</p>'), /B16 .*capitalized by CSS/],
   ['B23', 'two hyphens used as a dash', deck('<p class="b">Sold -- fast</p>'), /B23 .*"--" as a dash/],
   ['B12', 'an amount in euros with the sign after it', deck('<div><p style="font-size:200px">46,95 €</p></div>'), /B12 .*nothing beside it/],

@@ -10,6 +10,59 @@ import { keep } from './keep.ts';
 const as_of = '2026-11-15T00:00:00Z';
 const comps: Comp[] = Array.from({ length: 8 }, (_, i) => ({ comp_id: `c${i}`, site: 'ebay', sold_at: '2026-11-10T00:00:00Z', price_cents: 4000 + i * 100, kind: 'sold', level: 'variant', condition: 'good', w_match: 1, w_extract: 1, may_model: true, citation: `source:${i}` }));
 const input = (): CheckInput => ({ product_id: 'p1', condition: 'good', as_of, floor_cents: 6000, param_version: 1, objective: 'balanced', warm_comps: comps, sources: [], sites: [{ site: 'ebay', curve: { p: () => .6, t: () => 10 }, curve_evidence: { n: 100, calibration_error: .02, citation: 'held-out:curve' } }], log: { timed: (_n, fn) => fn(), error: () => {} } });
+
+test('family-only basis names its weakness and the share matching no identity word overall and per site', async () => {
+  const warm_comps = comps.map((c, i) => ({ ...c, level: 'family' as const, w_match: .25,
+    title: i < 2 ? 'PATAGONIA vest' : i < 4 ? 'Better sweater cardigan' : 'Unrelated dress size S' }));
+  const out = await check({ ...input(), title: 'Better Sweater 1/4-zip fleece', brand: 'Patagonia', warm_comps });
+  assert.equal(out.basis_level, 'family');
+  assert.ok(out.notes.includes('family_only'), 'family evidence must never have empty notes');
+  assert.equal(out.identity_unmatched_share, .5);
+  assert.ok(out.range.notes.includes('family_only')); assert.equal(out.range.identity_unmatched_share, .5);
+  assert.ok(out.per_site[0].notes.includes('family_only')); assert.equal(out.per_site[0].identity_unmatched_share, .5);
+});
+
+test('family-only warm band and missing comp titles report an unknown match share', async () => {
+  const x = input();
+  const family = await check({ ...x, warm_comps: comps.map(c => ({ ...c, level: 'family', w_match: .25 })) });
+  assert.ok(family.notes.includes('family_only')); assert.equal(family.identity_unmatched_share, null);
+  const band = await check({ ...x, warm_comps: [], fast: { low: 2000, high: 9000, n: 24, as_of, basis: 'family', state: 'rough' } });
+  assert.ok(band.notes.includes('family_only')); assert.equal(band.identity_unmatched_share, null);
+  assert.equal((await check(x)).notes.includes('family_only'), false);
+});
+
+test('a family basis blended with kind comps still carries a family note', async () => {
+  const warm_comps = comps.map((c, i) => ({ ...c, level: i < 4 ? 'family' as const : 'category' as const, w_match: .25 }));
+  const out = await check({ ...input(), warm_comps });
+  assert.equal(out.basis_level, 'family');
+  assert.ok(out.notes.length > 0, 'basis_level family must never have empty notes');
+});
+
+test('site calibration failure retains the local family note when the overall basis is variant', async () => {
+  const warm_comps = [...comps, ...comps.map(c => ({ ...c, comp_id: `family:${c.comp_id}`, site: 'facebook' as const,
+    level: 'family' as const, w_match: .25, title: 'Unrelated dress' }))];
+  const out = await check({ ...input(), title: 'Patagonia fleece', warm_comps,
+    sites: [{ site: 'ebay' }, { site: 'facebook', calibration: { Q_g: -1, group: 'invalid', coverage: .8, passes: true } }] });
+  assert.equal(out.basis_level, 'variant'); assert.deepEqual(out.notes, []);
+  const site = out.per_site.find(site => site.site === 'facebook')!;
+  assert.equal(site.basis_level, 'family'); assert.equal(site.state, 'hidden');
+  assert.ok(site.notes.includes('family_only'), 'site errors must preserve the local family basis note');
+  assert.equal(site.identity_unmatched_share, 1);
+});
+
+test('unknown identity cannot price from warm sales, a family band, a kind band or a retail prior', async () => {
+  let soldReads = 0;
+  const out = await check({ ...input(), identity_unknown: true, kind: 'apparel',
+    retail_cents: 10000, depreciation: .5, retail_citation: 'source:retail',
+    kind_band: { q10: 2000, q50: 4000, q90: 6000, n_eff: 30 },
+    fast: { low: 2000, high: 9000, n: 24, as_of, basis: 'family', state: 'rough' },
+    sources: [async () => { soldReads++; return comps; }] });
+  assert.equal(out.range.state, 'needs_identity');
+  assert.deepEqual([out.range.q10, out.range.q50, out.range.q90], [null, null, null]);
+  assert.equal(out.fast, null); assert.equal(out.last_sale, null); assert.equal(out.citation, null);
+  assert.equal(out.modes, null); assert.equal(out.price_path, null); assert.equal(soldReads, 0);
+  assert.ok(out.per_site.every(site => site.q10 === null && site.q50 === null && site.q90 === null));
+});
 test('stalled source answers from cited warm comps at the budget and aborts work', async () => {
   let aborted = false;
   const x = input(); x.budget_ms = 15;

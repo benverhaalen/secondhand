@@ -15,7 +15,7 @@ export function AccountField({ kind, value, onChange, onSubmit, disabled = false
       keyboardType={code ? 'number-pad' : 'email-address'} autoCapitalize="none" autoCorrect={false}
       autoComplete={code ? 'one-time-code' : 'email'} textContentType={code ? 'oneTimeCode' : 'emailAddress'}
       maxLength={code ? 6 : undefined} returnKeyType="go" placeholder={code ? '6-digit code' : 'you@example.com'}
-      placeholderTextColor={c.ink2} style={{ ...type.t21, fontFamily: FACE.text, fontWeight: weight.text, color: c.ink,
+      placeholderTextColor={c.ink2} style={{ ...type.t18, fontFamily: `${FACE.text}`, fontWeight: weight.text, color: c.ink,
         paddingVertical: space.s3, borderBottomWidth: 1, borderBottomColor: c.rule, minHeight: 48 }} />
   </View>;
 }

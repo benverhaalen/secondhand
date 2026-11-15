@@ -102,7 +102,7 @@ export async function scoreCli({args=process.argv.slice(2),load=()=>import('../.
     if(!args[0] || args[0].startsWith('--') || args.length>2 || (args[1] && args[1]!=='--judge')) throw Error('usage: node bench/assist/score.mjs <run_dir> [--judge]');
     let judge;
     if(args[1]) {
-      const config=await (await load()).clientFromEnv();
+      const config=await (await load()).clientFromEnv(process.env);
       if(!config){write('No model client: set ANTHROPIC_API_KEY or OPENROUTER_API_KEY.');return 2;}
       const provider=process.env.ANTHROPIC_API_KEY?'anthropic':'openrouter';
       judge=judgeWithClient(config.client??config,provider);

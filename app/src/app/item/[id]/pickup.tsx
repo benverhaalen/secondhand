@@ -1,3 +1,4 @@
+import { SellerFulfillment } from '@/selling/fulfillment';
 // Pickup: a buyer collects a sold thing in person (spec/pages.md §6.9, spec/features/sold.md, spec/edge-cases.md §16).
 // Nothing is set up ahead and no calendar is read (decision "no fixed pickup windows", Ben 05:18 to 05:24). When a buyer
 // wants to meet, the person taps the days this week that work, drags a span on each, and picks a place: the saved spot or a
@@ -44,6 +45,8 @@ export default function Pickup() {
   // ?state= draws over the clearing world, whose chair has the only pickup (app/src/demo/screen.ts): empty is a buyer asking
   // to meet with nothing planned yet, one is their single pick to approve, typical the planned pickup, offline holds each tap.
   const s = useScreen();
+  const { order: orderId } = useLocalSearchParams<{ order?: string }>();
+  if (!s.demo) return <SellerFulfillment id={String(p.id)} order={orderId} pickup />;
   const asked = s.state;
   const w = p.world ? s.w : world('clearing');
   const item = itemById(w, p.id);
