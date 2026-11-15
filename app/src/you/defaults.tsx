@@ -96,7 +96,7 @@ export function Defaults() {
         <Choice id="spread-numbers" label="See the numbers" line={`A ${cash(EXAMPLE.price_cents)} jacket on each site`} leads onPress={() => setOpen('numbers')} />
       </Sheet>
       <Sheet open={open === 'numbers'} title={SPREADS[spread].name} onClose={() => setOpen(null)}>
-        <Txt role="caption">A jacket listed on Depop at {cash(EXAMPLE.price_cents)}: what each site shows, its fees, and what you get.</Txt>
+        <Txt role="caption">One jacket at {cash(EXAMPLE.price_cents)} where it’s listed now: what each site shows, its fees, and what you get.</Txt>
         <List>
           {example(spread, linked).map(r => <KeepRow key={r.site} site={r.site} line={r.home ? `${cash(r.price_cents)} now` : `Lists at ${cash(r.price_cents)}`}
             note={`${cash(r.fee_cents)} in fees${r.too_few ? '. Too few sales here' : ''}`} keep={`You get ${cash(r.get_cents)}`} />)}
