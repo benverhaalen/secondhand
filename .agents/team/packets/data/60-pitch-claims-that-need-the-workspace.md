@@ -2,7 +2,7 @@
 
 Updated: November 15, 2026, 07:20 UTC. Owner: Ben. Agent: Claude Code, project thread "Prepare the pitch, Q&A and video". Branch: `claude/project-thread-8q3co1` (draft PR #8), base `main`. Status: docs pushed, nothing to build unless Nate wants the live reads scripted. *Agent proposal*.
 
-Ben asked that Nate get the packets he needs ([words](../../../../product/words.md#2026-11-15-ensure-the-repo-has-everything-and-nate-gets-his-packets)). The pitch now makes claims about the Databricks side. These are the ones only Nate's workspace can make true, and the ones we've told the team not to say.
+Ben asked that Nate get the packets he needs ([words](../../../../product/words.md#2026-11-15-everything-goes-into-the-repo-and-nate-gets-the-packets-he-needs)). The pitch now makes claims about the Databricks side. These are the ones only Nate's workspace can make true, and the ones we've told the team not to say.
 
 ## What the pitch says about Databricks, and its status
 

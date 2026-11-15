@@ -1273,17 +1273,12 @@ Used in: [brand/constitution.md](../brand/constitution.md) Art. 5, State gradien
 
 Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
 
-## 2026-11-15 ensure the repo has everything and nate gets his packets
-Ben, project chat (relayed), 2026-11-15 07:14 UTC.
-> ensure all information is continually added to the repo and that nate gets packets that he might need
-
-Used in: [.agents/team/packets/data/60-pitch-claims-that-need-the-workspace.md](../.agents/team/packets/data/60-pitch-claims-that-need-the-workspace.md).
-
 ## 2026-11-15 proof without sales
 Ben, project chat (relayed), 2026-11-15 07:15 UTC.
 > theres a problem of how do we show or explain why our thing works and convince someone that it would get them sales effectively if we have no proof of sales or any of this because we are in a 24hr hackthon. brainstorm. see if rdd adjacent research could be helpful at all. how do we do our best to prove logic. and use comparison too.
 
 Used in: [proof-without-sales.md](proof-without-sales.md), [pitch.md](pitch.md#proof-without-sales), [qa.md](qa.md).
+
 ## 2026-11-15 everything goes in the repo, and Nate gets the packets he needs
 
 Ben, project chat, 07:14 UTC.
