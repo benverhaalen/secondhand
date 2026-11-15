@@ -1,4 +1,4 @@
-# 54: pitch claims that need Nate's workspace, and what not to say yet
+# 60: pitch claims that need Nate's workspace, and what not to say yet
 
 Updated: November 15, 2026, 07:20 UTC. Owner: Ben. Agent: Claude Code, project thread "Prepare the pitch, Q&A and video". Branch: `claude/project-thread-8q3co1` (draft PR #8), base `main`. Status: docs pushed, nothing to build unless Nate wants the live reads scripted. *Agent proposal*.
 

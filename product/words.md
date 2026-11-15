@@ -1276,7 +1276,7 @@ Ben, 07:12, on the redone Today: "also, i think this is when you should use the 
 Ben, project chat (relayed), 2026-11-15 07:14 UTC.
 > ensure all information is continually added to the repo and that nate gets packets that he might need
 
-Used in: [.agents/team/packets/data/54-pitch-claims-that-need-the-workspace.md](../.agents/team/packets/data/54-pitch-claims-that-need-the-workspace.md).
+Used in: [.agents/team/packets/data/60-pitch-claims-that-need-the-workspace.md](../.agents/team/packets/data/60-pitch-claims-that-need-the-workspace.md).
 
 ## 2026-11-15 proof without sales
 Ben, project chat (relayed), 2026-11-15 07:15 UTC.
