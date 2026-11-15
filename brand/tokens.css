@@ -51,10 +51,10 @@
   --field-1: var(--sky); --field-2: var(--mint); --field-3: var(--lime);
   --field-mesh: radial-gradient(at 30% 100%, var(--field-2), transparent 60%), radial-gradient(at 100% 100%, var(--field-3), transparent 65%);
   --field: var(--field-mesh), var(--field-1);
-  /* the wash: the field, faint, behind the header of a screen and nowhere else, 280 tall (Ben, 2026-11-15: "a gradient fading into the white ... at the top to give some character") */
-  --wash-1: rgb(165 225 254 / .55); --wash-2: rgb(161 234 203 / .45);
+  /* the wash: the field, faint, behind the header of a screen and nowhere else, 200 tall (Ben, 2026-11-15: "a gradient fading into the white ... at the top to give some character") */
+  --wash-1: rgb(165 225 254 / .3); --wash-2: rgb(161 234 203 / .25);    /* Ben, 02:46: "a little less invasive at the top" */
   --wash: radial-gradient(120% 90% at 15% 0%, var(--wash-1), transparent 70%), radial-gradient(90% 80% at 95% 0%, var(--wash-2), transparent 70%);
-  --wash-h: 280px;
+  --wash-h: 200px;
 
   /* type (Art. 6; Ben, rounds 7, 8 and 10): PP Neue Montreal 2.6 as QOVES sets it, and Clofie SemiBold for the wordmark and the screen title */
   /* never system-ui: it can resolve to an Inter-derived face. Scripts a face lacks fall to Noto */
@@ -84,8 +84,8 @@
   /* depth (Art. 9): hairlines by default */
   --card-border: 1px solid var(--rule);
   --shadow-soft: 0 1px 2px rgb(0 0 0 / .05), 0 8px 24px rgb(0 0 0 / .06);
-  --card-edge: rgb(10 10 10 / .05); --card-shade: rgb(10 10 10 / .06); --photo-veil: rgb(0 0 0 / 0);
-  --shadow-card: 0 0 0 1px var(--card-edge), 0 1px 2px var(--card-shade), 0 6px 20px var(--card-shade);   /* a card on the page. In dark the shade is off and the edge is light */
+  --card-edge: rgb(10 10 10 / .08); --photo-veil: rgb(0 0 0 / 0);
+  --shadow-card: 0 0 0 1px var(--card-edge);   /* a card on the page: a hairline, no blur (Ben, 02:46: the shadow "looks a little weird") */
   /* size */
   --outline: var(--ink);               /* outline buttons: 1px ink, not --rule */
   --control-min: 44px; --button-h: 48px; --nav-h: 44px; --tab-h: 84px; --photo-card: 72px;
@@ -106,8 +106,8 @@
   --on-color: #0A0A0A;                  /* text on a state fill stays black in both modes */
   --on-field: #ECEFF1; --on-field-2: #CDD2D4; --sec-on-field: rgb(255 255 255 / .14);
   --field-1: #0A4C65; --field-2: #03523B; --field-3: #025050;   /* deep sky, deep mint, deep aqua. No lime in dark */
-  --wash-1: rgb(10 76 101 / .55); --wash-2: rgb(3 82 59 / .45);
-  --card-edge: rgb(255 255 255 / .08); --card-shade: transparent; --glow-1: transparent; --glow-2: transparent;
+  --wash-1: rgb(10 76 101 / .3); --wash-2: rgb(3 82 59 / .25);
+  --card-edge: rgb(255 255 255 / .08); --glow-1: transparent; --glow-2: transparent;
   --photo-veil: rgb(0 0 0 / .08);       /* painted over a photo, so it does not glare on a dark page */
 }
 @media (prefers-reduced-motion: reduce) { :root { --t-feedback: 0ms; --t-select: 0ms; --t-panel: 0ms; } }

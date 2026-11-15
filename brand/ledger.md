@@ -50,7 +50,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L42 | The sale is a snap: its sound is a finger snap | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L43 | Where Apple or an expert designer has a settled answer, use it without asking | [round 10](../product/words.md#2026-11-15-round-10-picks) |
 | L44 | Dark mode as Ben saw it: the seven lines in constitution Art. 5, Dark mode. Replaces A5 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
-| L45 | Anything about shipping a sold item is green (mint, with the parcel icon), never brown or yellow. Closes R28 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
+| L45 | A shipping state is never brown or a dark yellow, because Ben is color blind. Today it is mint with the parcel icon. Which color each state takes is open again (Ben, 2026-11-15 02:46: "im not set on any relation colors ie what color is shipping, sold, stale"), with the thread "Make gradients and colors carry meaning" | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
 | L46 | The parts and their sizes: the table in constitution Art. 7.8. Corners nest, 36 less 16 is 20. Closes R19 | [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks) |
 
 ## Decided by agents (means; Ben can veto)
@@ -78,8 +78,8 @@ Round 10 picks and notes are in [words.md](../product/words.md#2026-11-15-round-
 | R20 | Paper tags | Keep, drop, or only on photos | only on photos (agent) |
 | R23 | Which color goes where | The order of seven questions in constitution Art. 5, yes or no. Its line 5 follows R33 | yes (agent) |
 | R26 | Wording that came from building the mocks and from the thread "Build the brand system for everything": the wordmark's clear space, misuse list and deck line (C1), a frozen frame of the field (C2), logos in a row and on white (C5), a view the field fills is exempt from the one-third rule (Art. 5.2), a photo may sit on the field in the field's own card (Art. 5.4), leading and tracking off the app (Art. 6.12) | Each is marked as a proposal where it sits in the constitution. Yes, or reword | yes (agent) |
-| R29 | An item in a feed. Ben: the gray box "doesn't feel as separate". Replaces R16 | A: a row on white with a hairline between rows, so a box means "this needs you" (and L16 holds). B: the gray box. C: a darker gray box | A (agent) |
-| R30 | Failed and ended, which "kinda blend in a bit" | Failed is a brick fill with white text, the one loud tag. Ended is a darker gray with ink text, and its photo is washed to 55%. Yes or no | yes (agent) |
+| R29 | A card and the page. Ben: the gray box "doesn't feel as separate", and the shadow "looks a little weird". Replaces R16 | A: white cards with a hairline on a page tinted `#F1F3F5`. B: white cards with a hairline on a white page. C: the gray box. D: rows on white (L16) | A (agent); being drawn in the thread "Roll the UI system out everywhere" |
+| R30 | Failed and ended, which "kinda blend in a bit". Now with the thread "Make gradients and colors carry meaning" | Failed is a brick fill with white text, the one loud tag. Ended is a darker gray with ink text, and its photo is washed to 55%. Yes or no | yes (agent) |
 | R31 | The item page: the receipt is white paper with the one shadow; the page shows what you keep and the receipt opens on a tap; the things you can do to a listing are plain rows at the foot | Yes, or reword | yes (agent) |
 | R32 | The filters on Sell. Ben: "live vs needs you vs sold are all the same primitive. then things like type or marketplace" | A state chip is the state's tag at chip size, gray at rest and the state's fill when chosen. Store and type each open a list. Yes or no | yes (agent) |
 | R33 | The second button. Changes L5 | A: a light fill with no line, gray on white and white on color. B: keep the black outline | A (agent) |
@@ -87,9 +87,10 @@ Round 10 picks and notes are in [words.md](../product/words.md#2026-11-15-round-
 | R35 | The hand: a mark, and a hand-off as an animation | Sources and three directions on the picks page. Ben draws the mark himself | Ben picks a direction |
 | R36 | The snap: which sound, and which haptic | Three to hear on the picks page | Ben picks by ear |
 | R37 | The idea in one line. Changes Art. 12.3, which bans taglines | Six lines on the picks page | Ben picks or rewrites |
-| R38 | A main color | A: none; the sky to lime field is the color (L1). B: sky alone. C: lime alone | A (agent) |
-| R39 | A device beyond the drifting gradient. Ben: "a drifting gradient is a bit standard as a device" | Four on the picks page | Ben picks |
+| R38 | A main color. Now with the thread "Make gradients and colors carry meaning" | A: none; the sky to lime field is the color (L1). B: sky alone. C: lime alone | A (agent) |
+| R39 | A device beyond the drifting gradient. Ben: "a drifting gradient is a bit standard as a device". Now with the thread "Make gradients and colors carry meaning" | Four on the picks page | Ben picks |
 | R40 | What the app optimizes for. Ben: "what are we optimizing for in the long run" | A: decisions answered. B: time from photo to paid. C: money kept. For Ben and Nate | A (agent) |
+| R41 | Where the wordmark sits in the app. Changes L3 | A: centered at the top, as locked. B: left, with the inbox on the right, as the Today mock Ben liked draws it | A (agent) until Ben says |
 
 Small calls the mocks forced, each one line in [screens.css](explore/round-11/mock/screens.css): a filter chip is 36 tall, which is in no scale; buttons in a box are 44 and the bar at the foot of a sale is 48; the + in the tab bar is a gray circle with no label. The mocks run through the brand checker with `node scripts/brand-check.mjs brand/explore/round-11/mock/check.html --medium app`.
 

@@ -179,7 +179,7 @@ Every state carries its icon as well as its color (Ben, [round 6](../product/wor
 
 **Four states by color, and no fifth** (agent decision A10; Ben is color blind, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks)). The four state fills, sky, mint, marigold and lime, are each at least .05 apart in Oklab under simulated protan and deutan vision (the closest pair is marigold and lime at .056; mint and marigold are .069). No other hue on the ring clears .05 from all four: lilac is .004 from sky, pink .005 from mint, peach .022 from marigold, aqua .011 from mint. So a fifth state takes one of the four fills with its own icon and word, never a new color. `node .agents/check.mjs` fails when two state fills are closer than .05 ([brand-round-11.md](../research/cross-cutting/ben/brand-round-11.md), Color blindness).
 
-**The wash** (Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "a gradient fading into the white or dark gray/dark mode black at the top to give some character"). The field at reduced strength, `--wash`, sits behind the nav and the one summary under it, 280 tall, and fades to the page. It is not a second field (C2): it holds no card and no control, and it appears at most once on a screen. Text over it is ink and stays at 7:1 or better (15.5:1 in light and 11.7:1 in dark as built).
+**The wash** (Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "a gradient fading into the white or dark gray/dark mode black at the top to give some character"). The field at reduced strength, `--wash`, sits behind the nav and the one summary under it, 200 tall at 30% and 25% strength (Ben, 2026-11-15 02:46 UTC, thread "Roll the UI system out everywhere": "i want the gradient to be a little less invasive at the top"), and fades to the page. It is not a second field (C2): it holds no card and no control, and it appears at most once on a screen. Text over it is ink and stays at 7:1 or better (15.5:1 in light and 11.7:1 in dark as built).
 
 **Dark mode** (Ben, [dark mode approved](../product/words.md#2026-11-15-dark-mode-approved-the-size-system-everywhere-clickability-money-and-countdowns-color-blind-checks): "i like that dark mode a lot"; [round 7](../product/words.md#2026-11-15-round-7-picks): "light vs dark should be exclusively color changes"; L44). Light is standard. Dark changes color and nothing else, by these seven lines. The values are in `tokens.css`.
 
@@ -188,7 +188,7 @@ Every state carries its icon as well as its color (Ben, [round 6](../product/wor
 3. The field goes deep: `#0A4C65`, `#03523B` and `#025050` in place of sky, mint and lime. Text on it is the ink of its mode, so it is light in dark and black in light.
 4. A state tag keeps its light fill and its black text in both modes.
 5. Lime and marigold are never a dark ground, because a dark yellow is brown.
-6. A card has no shadow and the black pill no glow. A card's edge is 1 px of white at 8%.
+6. The black pill has no glow. A card's edge is 1 px of white at 8%, where light has 1 px of black at 8%.
 7. The act is a light pill, `#ECEFF1` with `#101315` text. A photo carries a veil of black at 8%.
 
 The unread dot is the one colored mark allowed on white besides logos and brick, because the blue unread dot is what people already know from Mail and Messages ([words.md: familiar](../product/words.md)).
@@ -302,7 +302,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 ### Article 9. Shape, depth and texture
 
 1. **Radius scale:** 20 (photos, sheets), 36 (cards), pill (buttons, chips, tags, notices). A photo in a card takes the card's corner less the card's padding, 36 less 16, so the two corners share a center.
-2. **Depth:** one of two, chosen per medium and kept: hairline rules (1 px black at 8%) or one soft shadow (`0 1px 2px` plus a wide faint blur). Never both on one surface, no colored glow on white except the one under the black pill (C4), never glass. The app uses hairlines between the rows of a list, and `--shadow-card` under a card that lies on the page: a 1 px edge at 5% and two blurs at 6%, in light only (Art. 5, Dark mode, line 6). A card never has a border as well. The receipt (L41) is a card of paper and takes the same shadow.
+2. **Depth:** one of two, chosen per medium and kept: hairline rules (1 px black at 8%) or one soft shadow (`0 1px 2px` plus a wide faint blur). Never both on one surface, no colored glow on white except the one under the black pill (C4), never glass. The app uses hairlines: between the rows of a list, and as the 1 px edge of a card that lies on the page, `--shadow-card`, black at 8% in light and white at 8% in dark. A card has no blur under it (Ben, 2026-11-15 02:46 UTC, thread "Roll the UI system out everywhere": "in the light mode the shadow behind some of the things looks a little weird"). Whether the receipt (L41) may be the one thing with a shadow is open as R31.
 3. **No texture.** No grain and no lines, on the field or anywhere else (Ben, rounds 6 and 7).
 
 ### Article 10. Icons and logos
