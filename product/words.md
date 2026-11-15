@@ -1481,3 +1481,9 @@ Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.
 ## 2026-11-15 nate is this the most efficient way to read a site
 Nate, build session (orchestrator), 2026-11-15 about 03:05 Central.
 > is this really the most optimized way to read the site too? like acounting for efficienny? using jev ultrafast and such?
+
+## 2026-11-15 nate the benchmark measures spec/benchmark.md
+Nate, build session (orchestrator), 2026-11-15 about 03:30 Central, after the orchestrator offered to time each site's read path.
+> Well benchmark we were thinking would measure spec\benchmark.md
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).

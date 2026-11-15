@@ -109,6 +109,17 @@ Nate: "remember to account for all documentation for relevant platforms, languag
 
 - Test what can break and what a person would see break: one test per real failure mode, the edges of money and state, each join between two parts. Do not test the same thing at three levels, do not test a constant, and do not rerun a suite that did not change. A piece is done when its own checks pass and a fresh reader has read the diff, not when every test in the repo has run again.
 - Every piece ends with a number someone can check: accuracy against real data, time to answer, cost per call, share of shown numbers with a citation, endpoints on engines against on examples. Record the number, the command that produced it and the date on the lead's rows of [the board](../../../../spec/plans/board.md) and in the spec or feature page it belongs to. A number that got better says what it was before.
+- The benchmark these numbers feed is [spec/benchmark.md](../../../../spec/benchmark.md), ten rows measured on one fixed set of real items through our public API ([Nate](../../../../product/words.md#2026-11-15-nate-the-benchmark-measures-specbenchmarkmd)). A lead's measurement is taken in that benchmark's terms wherever a row covers it, so it can go straight onto the page, not a private timing of an inner function:
+
+| Row of the benchmark | Lead |
+|---|---|
+| The runner and the scorer (`bench/run.mjs`, `bench/score.mjs`), and the first small run of ours: 20 items across five families | integration |
+| 1 coverage, 2 breadth per answer, 3 sources shown, 8 speed to first and full answer (p50 and p95, never an average), 10 sale to delist | integration, from the runner's records |
+| 7 price accuracy by family, with the range's width beside it | engines, from the backtest on real sold data |
+| 4 sold prices across sites, 6 freshness, 9 thin evidence, and the speed and cost of each site's read path behind row 8 | the orchestrator, with the harnesses |
+| The tables, the dashboard and the Genie space that show the run | databricks |
+
+  The rivals' side (two people asking each tool by hand the same day) and which rivals are named are Nate's and Ben's.
 - Docs change in the same commit as the thing they describe. A reader who opens the board should see what is proved without asking anyone.
 
 ## Problems
