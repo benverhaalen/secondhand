@@ -31,3 +31,4 @@ export function lensRoute(handler: Handler): (req: Request) => Promise<Response>
 // The route join supplies the shared KV; an unbound route fails visibly instead of serving a second store.
 export const ports: {kv: LensImageKV} = {kv: {take() {throw new Error('lens KV not composed');}}};
 export const handlers = createLensHandlers({kv: {take: (namespace, key) => ports.kv.take(namespace, key)}});
+export const manifest = [{ endpoint: 'GET /v1/lens/:token', source: 'engine' as const, auth: 'none' as const }];
