@@ -36,6 +36,8 @@ export function measure() {
     // A stack that spreads its children (space-between, a child that grows) sets no distance of its own: what is between
     // them is what is left over, so only a stack whose children sit at a set gap is measured.
     if (s.flexDirection.endsWith('reverse') || s.flexWrap === 'wrap' || /space/.test(s.justifyContent)) continue;
+    // A pager or a sideways scroller sets its pages edge to edge: that is paging, not crowding.
+    if (box.closest('[data-part="photo-pager"]') || /auto|scroll/.test(s.overflowX) || /auto|scroll/.test(getComputedStyle(box.parentElement ?? box).overflowX)) continue;
     const kids = [...box.children].filter(k => { const r = k.getBoundingClientRect(); return shown(k) && r.width > 0 && r.height > 0 && getComputedStyle(k).position !== 'absolute'; });
     if (kids.length < 2 || kids.slice(0, -1).some(k => Number(getComputedStyle(k).flexGrow) > 0)) continue;
     const rects = kids.map(k => k.getBoundingClientRect());
@@ -45,7 +47,14 @@ export function measure() {
     const gaps = rects.slice(1).map((r, i) => Math.round((row ? r.left - rects[i].right : r.top - rects[i].bottom) * 10) / 10);
     stacks.push({ in: box.closest('[data-part]')?.dataset.part ?? 'screen', row, kinds, gaps, at: Math.round(rects[0].top) });
   }
-  return { texts, stacks };
+  // What did not lay out: a screen narrower than the window, a part that holds words drawn under 4 wide, and a sheet whose
+  // top is above the screen, where no scroll reaches it (the website thread, 10:41: the camera drew 51 wide at x -2, and the
+  // plan sheet's title sat 900 above the top).
+  const screenEl = document.querySelector('[data-screen]'), sr = screenEl?.getBoundingClientRect();
+  const thin = [...document.querySelectorAll('[data-part]')].filter(e => e.textContent.trim() && shown(e) && e.getBoundingClientRect().width < 4 && !inBar(e))
+    .map(e => ({ part: e.dataset.part, w: Math.round(e.getBoundingClientRect().width), s: e.textContent.trim().slice(0, 30) }));
+  const sheets = [...document.querySelectorAll('[data-part="sheet"]')].filter(shown).map(e => ({ top: Math.round(e.getBoundingClientRect().top), s: e.textContent.trim().slice(0, 30) }));
+  return { texts, stacks, layout: { vw: innerWidth, screen: sr ? Math.round(sr.width) : null, thin: thin.slice(0, 3), sheets } };
 }
 
 const err = (id, msg) => ({ level: 'error', id, where: 'screen', msg });
@@ -105,6 +114,14 @@ export function standards(snap) {
     if (k.length < 4 || !(/\d/.test(k) || k.split(' ').length >= 2)) continue;
     if (said.has(k) && said.get(k) !== t.part) { out.push(err('U19', `"${t.s}" is shown twice on the first screen (in [${said.get(k) ?? 'screen'}] and [${t.part ?? 'screen'}]): say a fact once, where it is acted on`)); continue; }
     said.set(k, t.part);
+  }
+  // U20 everything lays out: the screen as wide as the window, and every part with words at least 4 wide.
+  const L = snap.layout;
+  if (L) {
+    if (L.screen != null && L.screen < L.vw - 1) out.push(err('U20', `the screen is ${L.screen} wide in a ${L.vw} window: a screen fills the window (read its size with useWindow(), app/src/ui/window.ts)`));
+    for (const t of L.thin) out.push(err('U20', `[${t.part}] holding "${t.s}" is ${t.w} wide: a part with words lays out to them, or its parent has no size`));
+    // U21 a sheet's top is on the screen: its title and grabber are how it is read and how it is closed.
+    for (const sh of L.sheets) if (sh.top < 0) out.push(err('U21', `the sheet ("${sh.s}") starts at ${sh.top}, above the screen, where nothing scrolls to it: a sheet is at most the screen less the top inset, and scrolls inside`));
   }
   // One finding per rule and message is enough to act on: the first three of each rule are kept.
   const n = {};

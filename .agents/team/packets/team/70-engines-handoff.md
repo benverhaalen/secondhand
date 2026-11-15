@@ -1,84 +1,48 @@
 # 70: the engines handoff
 
-Updated: November 15, 2026, about 16:00 Central. Owner: Nate. Agent: Claude Code, the engines lead, ending at a clean stop at Nate's word ([packet 55](55-team-leads-and-mac-workers.md), "A session ends before it fills"). Read this, [the queue](../../../../spec/plans/engines-queue.md), and the engines rows of [the board](../../../../spec/plans/board.md) before touching `app/src/engines/` or `jobs/` engine twins.
+Updated: November 15, 2026, morning Central (second engines lead, stopping at about half its context, [packet 55](55-team-leads-and-mac-workers.md) "A session ends before it fills"). Owner: Nate. Read this, [the queue](../../../../spec/plans/engines-queue.md), [packet 55](55-team-leads-and-mac-workers.md) and the engine's spec page before touching `app/src/engines/` or the `jobs/` engine twins. Judging is at 1 PM Central today: land, do not widen.
 
-## What is true on main, per engine
+## What is true on main, with the commit and the proof
 
-Each line names a commit on `main` and the command that proves it. Run the TypeScript one test file at a time (`node --test --test-concurrency=1 <file>`), and the Python with `./.venv/bin/python -m pytest <path> -q`.
+Run TypeScript one file at a time (`node --test --test-concurrency=1 <file>`), Python with `./.venv/bin/python -m pytest <file> -q` on the Mac (on Windows, `python`; the tests now fall back to it when `.venv` is absent).
 
-| Engine | Commit | What holds | Proof |
+| Piece | Commit | What holds | Proof |
 |---|---|---|---|
-| money and negotiation | 1d59b81, d14a7362, e90038f9 | Impossible offer states refused before a choice; no auto-accept under the posture line; a negative keep asks instead of crashing; whole cents; the ending rule's Python twin on 15 shared cases; zero and tiny priors learn | `app/src/engines/negotiation/choose.test.ts`, `money/ending.parity.test.ts`, `jobs/negotiation` |
-| param registry | 32b38de, 91df3a93 | One 30-day half-life in both stores. Forgetting decays the evidence, also at read. An explicit clock decays the whole posterior, so a route recovers. Gamma and model updates go through `apply()`. One canonical scope key. A guard clamps the read value instead of dropping the data. Rollback goes to the newest `origin: fit` row. Python twin on 17+ shared cases | `app/src/engines/param/parity.test.ts`, `jobs/param` |
-| proof and claim check | 764e1b1, f918f8ac, 2889bab8 | A citation id hashes its whole identity. A number shows through a named `basis_level` with notes and hides only with no level. The gate holds a claim that negates or contradicts the facts | `app/src/engines/proof/proof.test.ts`, `app/src/edge/gate/claims.test.ts` (20 drafts: 10 planted false, all held) |
-| trust | 610edcec, 65070b33 | Cents throughout; one clipped sigmoid in both languages; `gtin14` verifies the check digit | `app/src/engines/trust/calibration.parity.test.ts`, `gtin.parity.test.ts` |
-| marketing, listing, score | 31963596 | The likers offer keeps at least keep(floor). Poshmark share, like and repost are suggestions only. Valuation's `ladder()` is reused. Plans are made at a named basis level instead of skipping. Readiness comes from capture's `missingFor` | `app/src/engines/marketing/calc.test.ts`, `listing/build.test.ts` |
-| demand, identity, style, analytics | 8f5fe7d, 51efbcc5, e4140183, efc3759a | Each audit section fixed, R6 rows deferred. Identity reads trust's GTIN fixture. One D12 site rule shared with TypeScript | `jobs/demand`, `jobs/identity`, `jobs/style`, `jobs/analytics` |
-| valuation | 5138245 and e76bfcef (spec only) | On main: comps.ts, keep, path and check pass their own tests, and the spec states the fallback order, the blend and one hide rule. NOT on main: the Python twin `jobs/valuation/comps.py` with its 18-case parity fixture, and runner rounds two and three. They live on `w/eng-valuation-1` (below) until its one failing test is fixed | `app/src/engines/valuation/comps.test.ts` on main; the twin's proof runs on the branch |
-| NBER data | 3dd4caa5 | The reader parses `22oct2012` dates, never writes seller or buyer ids, checks the codebook, maps every eBay category, and sits on main's `freeze.py --share` | `jobs/valuation/data` |
+| Check fixes | 06897952, 5fda9dd7 | param parity B1 finds Python without `.venv`; trust `audit.test.ts` tsc error gone; `marketing/calc.ts` names `HOURS_A_DAY`, so `spec/sites.test.mjs` passes | `app/src/engines/param/parity.test.ts` 57/57; `spec/sites.test.mjs` 9/9 |
+| Negotiation learns in real time | b565ba90 (`w/eng-rt-neg-1`) | an answered offer moves `P_accept` through `store.apply` in the same transaction and the next counter uses it; the TypeScript update guards each term as `fit.py bounds()` does on main (092a987b), so a tiny prior learns; parity fixture's expected values regenerated from Python, inputs byte-identical | `negotiation/learn.test.ts` 10, `learn.parity.test.ts`, `jobs/negotiation/test_learn_parity.py` 9 |
+| Registry rollback | b565ba90 | rolling back a fitted promotion restores the champion it replaced, whatever its origin (canon "Roll back", `spec/product.md:554`), in memory, SQL and Python; SQL restores an existing version in place; an event champion still walks back to the newest fit | `param/param.test.ts` 41, `sql.test.ts` 37, `parity.test.ts` 63, `jobs/param/test_param.py` 91 |
+| Real-time sale, comp and view weights | 1f5a70da (`w/eng-rt-sale-1`) | a sold comp moves demand velocity (Gamma, quantiles equal SciPy on 15 cases); a sale on our listing moves valuation's `Q_g` by ACI (`valuation/aci.ts`, log-ratio scores, a group keeps its own scores at D6's 30 and pools below); views move the view rate; seeds and decay in the registry's evidence space (the prior counted once); reads decay without writing | `engines/realtime.test.ts` 4, `demand/velocity.test.ts` 14, `velocity.parity.test.ts` 15, `marketing/interest.test.ts` 13, `valuation/aci.test.ts` 13 |
+| Trust decides safely | 4f01e379 (`w/eng-trust-2`) | D2, D5 and its no-show sibling, D11, D13, D17 fixed ([trust.md](../../../../spec/engines/trust.md) state block); runs on code signals with no extractor; `T/action.ts` `messageAction` maps card 5 step 4 | `trust/wired.test.ts` 65 and every `trust/*.test.ts`, `jobs/trust/test_*.py` |
+| Specs | 62d9b9f4, ed5141df | the audit's open rows checked against the code and placed on each engine page (NG-, MK-, SC-, DM-, RS-, PA-, IN-, and Person and Param in `spec/engines/README.md`); trust page reviewed fresh (D1's fix and test corrected, D17 added, recall ahead of labels); valuation §9 holds the ablation | the pages |
 
-The type check: `cd app && npx tsc --noEmit -p .` shows 2 errors at the stop. One is `app/src/edge/intel/learn.test.ts`, outside the engines. The other is `app/src/engines/trust/audit.test.ts`, in the queue.
+Full `node .agents/check.mjs` on Windows at the last push: failing only outside engines (`.agents/skills/image-gen/run.test.mjs` 8 tests, the copy-lint fixture test "ui: raw colors…", and integration's HTTP log test that a0121f60 fixed).
 
-## Found at the stop, not yet fixed
+## The valuation measurement (development reading; not for a public page or the pitch until Nate and Ben have both seen it)
 
-The trust page was redrafted from the code ([spec/engines/trust.md](../../../../spec/engines/trust.md), marked as an unreviewed draft). Its two most consequential findings:
-- In the running product, trust decides nothing. The port is a stub, `trust: async () => ({ action: 'none' })` at `app/src/edge/api/conversations.ts:83`, and only `evaluateHard` and `gtin14` are reached (`app/src/edge/messages/messages.ts:79`, `:117`).
-- A malformed extractor reply throws out of `decideThread` (`app/src/engines/trust/decide.ts:96` via `signals.ts:24-28`) instead of abstaining.
+`dataset:stockx_2019`, 41,988 test sales 2018-11-01 to 2019-02-13, all basis levels pooled, same items for every contestant. All-on engine (`w/eng-valuation-2`): median error **3.89%** (was 6.25%), within 20% **96.0%** (was 87.1%), priced 100%, conformal range holds 86.0% (Wilson 85.6 to 86.3) at width 22.7%. Last sale 3.25% / 97.4%; 90-day median 5.76% / 89.1%. It beats the 90-day median (+7.4 points, 5.7 to 9.0) and trails last sale by 1.0 point (−1.4 to −0.7), so the answer carries last sale beside the range (C1). The anchor bought most of it, the per-family half-life next. Full table and named fixes V-AB1 (over-coverage) and V-AB2 (the last point): [valuation.md §9](../../../../spec/engines/valuation.md).
 
-So `product/features-proof.md` item 17's "Proof now: built" overstates what the product does. The draft lists 16 such defects (D1 to D16) with their fixes and tests.
+## Open branches on the Mac (`~/dev/projects/secondhand-wt/`)
 
-## The backtest, as measured
-
-A development reading, not for a public page or the pitch until Nate and Ben have both seen it. `dataset:stockx_2019`, new deadstock sneakers (Yeezy 350 and Off-White Nike), sales of 2018-11-01 to 2019-02-13, 41,988 test sales, every contestant on the same items, run 2026-11-15 on the Mac in 226 s, code at 4f5bf19 (on branch `w/eng-valuation-1`, not yet on main).
-
-| Contestant | Priced | Median error | Within 20% | Range holds | Width |
-|---|---|---|---|---|---|
-| engine_comps_conformal (served, calibrated) | 99.2% | 6.25% | 87.1% | 84.3% (Wilson 84.0 to 84.7) | 27.2% |
-| engine_comps (served, raw range) | 99.2% | 6.25% | 87.1% | 58.5% | 16.1% |
-| last sale | 98.7% | 3.25% | 97.4% | 5.4% | 0 |
-| product 90-day median | 98.5% | 5.76% | 89.1% | 59.2% | 16.9% |
-| market model, product-anchored (bbe0967) | 94.6% | 3.29% | 98.5% | 78.3% | 13.6% |
-
-What it says: the conformal step closed the range fault (58.5% to 84.3% against 80). The served engine's middle loses to last sale and to the 90-day median. `eng-valuation-2` is the fix, judged by an ablation on these same items.
-
-## The audit, closed over found
-
-[spec/engines/audit.md](../../../../spec/engines/audit.md) found 384 defects. By the merged workers' own reports, 208 are closed: demand 32 of 35, identity 20 of 24, marketing 18 of 21, negotiation 27 of 32, param 16 of 16, analytics 28 of 30, proof 6 of 6, recommendation and style 31 of 35, score 6 of 7, trust 19 of 28, valuation 5 of 111. Open: valuation 106 (54 of them tunables written as literals in `comps.ts` DEFAULTS), intel 19, person 20, and each engine's deferred R6 rows. These counts come from worker reports, not a row-by-row check against the code. The spec pass checks each row against the code and puts the open ones on their pages.
-
-## Open branches and worktrees on the Mac (`~/dev/projects/secondhand-wt/`)
-
-| Worktree, branch | Holds | Passed? | Waits on |
+| Worktree, branch | Holds | State | Next |
 |---|---|---|---|
-| `eng-rt-neg-1`, `w/eng-rt-neg-1` (9cf9268e) | Answered offers update `P_accept` through `store.apply`, and the next counter uses it; a twin of `fit.online_update` on 8 dated sequences | Passed on its base. After merging main, `learn.test.ts` fails: "P_accept has no earlier promoted fitted version". The registry's rollback restores only `origin: fit` rows, and the test's first champion is an event row | Queue item 4 |
-| `eng-rt-sale-1`, `w/eng-rt-sale-1` (8be27a4d) | A sold comp moves demand velocity (a gamma whose quantiles equal scipy on 14 cases); 30 misses widen the valuation's Q_g; a view rate under the band moves the stale step | `realtime.test.ts` passes after merging main. `demand/velocity.test.ts` and `marketing/interest.test.ts` fail, most likely on the registry's later forgetting rules (evidence-only decay, explicit clocks). Not diagnosed | A worker round to diagnose the two tests; do not change their fixtures to pass |
-| `eng-valuation-1`, `w/eng-valuation-1` | Round two (4f5bf19): a calibration window, scale-free conformal, `--estimates`, Ben's metric names, the family and seasonal baselines, the survivorship meter, the duel's request ids. Round three, running at the stop: `fit.py` reads `market.comp_for_model` and `core.param`, the §4 switch rule, and resolving the merge with Ben's money statistic (9fd5c2e) | Round two passed (40 tests). Round three is committed and merged with main on the branch (1684e91f). It passed its own checks against its base. After merging main, `jobs/valuation/test_fit.py` has one failure (`test_registry_records_fol…`), most likely because the registry's new `origin` column (91df3a93, `app/src/engines/param/0001_param_origin.sql`) is missing from `fit.py`'s canonical column list. `test_experiment.py`, `test_backtest.py`, `test_market.py`, the parity tests and the self-test pass | One round: add `origin: 'fit'` to the rows `fit.py` writes and to its schema, then rerun `jobs/valuation` and merge. Until then the runner and the StockX table above live on this branch, not on main |
-| `eng-valuation-2`, `w/eng-valuation-2` | The anchored middle, a per-family D3 index, fitted size ratios, the half-life per family, the fallback blend, one unit per item, and log-scale Q_g in `check.ts`, each switchable, with `jobs/valuation/ablate.py` | Running at the stop (`gpt-6-astra`, high) | Judge it by its ablation table: the all-on engine must beat last sale and the 90-day median on the same items, or say which change bought what. Merge only if it passes and `tsc` is clean for its files |
+| `eng-valuation-2`, `w/eng-valuation-2` | committed 5e1d3874: the ablated engine A to G with `params.ts`, the Python twin `jobs/valuation/comps.py`, `ablate.py`, merged with main (Ben's `modes` kept, `curve` optional), realtime-proof link 1's level now `product` with `completion.md` | all its tests, `valuations.test.ts`, `item/model.test.ts`, the proof 13/13 and tsc pass. Fresh Opus review: **merge after fixes 1 and 2**. (1) `checked` ignores `local.state`, so a `too_few` basis can read checked, and no too_few note reaches the range or per_site: this is step 6 of the seam brief now running; verify it there. (2) `Q_g` is a log ratio now: money.md D5 step 2 and D6 step 1 amended to match (this stop's last commit); confirm no producer sends cents. Lower, for the next round: the optional curve's meaning changed (p_sale and path now need `curve_evidence` n ≥ 30, which is Ben's d495553c territory: ask him or keep main's meaning for p_sale); size ratios use the family's weekly median, not same-product pairs (§4); learned params lack the ±50% guard; widened q10 and q90 are not rounded to whole dollars (D5 step 6); the NWT cap is not passed into `modes`; `w_match` rescale ignores the category param; two tests do not exercise what they name; `ablate.py:279` clamps the first test month's as_of to `test_from` | merge `5e1d3874` to main if the review passes, by commit id (the branch tip moves once the seam work is committed on it). Uncommitted in the same worktree: the `valuate` seam worker (send its merge commit to the next integration lead, or to the orchestrator if none has started; integration's trust wiring is packet 69 §3 item 5b) (gpt-6-astra, brief `/tmp/brief-eng-valuation-2-valuate.txt`), see the queue item 1 |
+| `eng-valuation-1`, `w/eng-valuation-1` | round two and three of the runner (calibration window, scale-free conformal, baselines, survivorship, duel request ids, the §4 switch rule in `fit.py`), `core.param` gains `origin`, `previous_version`, `keep`, `days_since_last` in `databricks/sql/01_tables.sql` (5262fedf; the orchestrator gave engines those four lines; send the Databricks lead the merge commit) | a fresh review found two blocking faults: the refit overwrites the champion's row (rollback lost), and `conformal_q` drops the test point's mass with a weakened test; round four (brief `/tmp/brief-eng-valuation-1-r4.txt`) fixes those plus the oracle baseline charge, ACI bounds as params, literals, integer-cent baselines | read its report, rerun `pytest jobs/valuation`, review the delta, then merge. Its `comps.py`, `comps.parity.test.ts`, `test_comps_parity.py` and `fixtures/comps-parity.json` collide with `eng-valuation-2`'s at the same paths: take `eng-valuation-2`'s (it mirrors the engine that will be on main) when merging main into this branch |
 
-Every other worktree of mine (`eng-audit-1`, `moneyfix`, `eng-param-1`, `eng-proof-1`, `eng-gate-1`, `eng-trust-1`, `eng-neg-1`, `eng-mkt-1`, `eng-demand-1`, `eng-identity-1`, `eng-style-1`, `eng-analytics-1`, `eng-data-1`) is merged and can be removed. Rows on the Mac: `~/secondhand-data/sold/stockx_2019/` and `~/secondhand-data/raw/nber/` (NBER's file: sha256 `ceda1275…a646`, 4,451,661,738 bytes). None of it is in git.
-
-## The queue
-
-In order, with the files each owns and a done check per item: [spec/plans/engines-queue.md](../../../../spec/plans/engines-queue.md). Nate's phase rule ([packet 55](55-team-leads-and-mac-workers.md), "The spec pass") means each item goes onto its spec page as a named fix before it is built.
+Merged and removable: `eng-rt-neg-1`, `eng-rt-sale-1`, `eng-trust-2`, and every older worktree listed in the previous version of this packet.
 
 ## Decisions made, and why
 
-- **The backtest is ours.** Nate: "we own backtests and such", and "lets backtest as we build to evaluate and improve". Ben's thread sends valuation changes through the orchestrator ([packet 68](../price/68-valuation-files-are-being-rebuilt.md)). Its NBER fixed-share sample with strata, the locked window, the ledger, the money bounds and the product-anchored model are kept. Nothing goes on a public page or the pitch until Nate and Ben have both seen it.
-- **Published numbers rest on released data and people's own sales.** The sites' sold pages are not harvested in bulk for a test set ([sold-datasets.md](../../../../research/price/ben/sold-datasets.md): Poshmark §4(b), eBay §3 and §10). An eBay sold row read for a person enters the duel only when frozen before the sale and tied to that person's request.
-- **The fallback order.** A price is always given, with its level named and the levels blended; a bar decides only whether the system acts without asking ([valuation §3](../../../../spec/engines/valuation.md#3-the-calculation), Nate's words linked there).
-- **The posture's accept line.** Under it, at any posture above 0, the champion counters where D16 rule 2 alone would accept. That is the slider's design. It is with Nate as a product behaviour.
-- **A vanished listing is never a sale in a price.** It enters only the D10 hazard as a fractional sale learned on sites that show sold marks, and is held at 0 on Facebook ([money.md](../../../../spec/determinations/money.md), "What its parameters learn from").
-
-## What waits on Nate
-
-- One signed-in marketplace session through the cloud browser, so valuation can price a real item from live sold comps (eBay's sold page under his own sign-in), and one dry run of negotiation, trust and marketing on one real listing.
-- Whether third-party eBay sold feeds may be used (the orchestrator has it).
-- Whether the posture-line behaviour above stays.
+- **Rollback of a fitted promotion restores the champion it replaced** (canon `spec/product.md:554`); an event champion still goes to the newest fit. Rolling back a bad nightly must not throw away the real-time evidence learned since.
+- **The negotiation guard is the Python rule on main** (max of ±50% of the prior and half the logit span), so a tiny prior learns; [negotiation.md §4](../../../../spec/engines/negotiation.md) states it.
+- **ACI and conformal scores are log ratios** (scale-free). D6's additive form is to be amended on [money.md](../../../../spec/determinations/money.md) (not done).
+- **eng-valuation-2 merges** though it trails last sale: it says which change bought what, beats the old engine on every column and the 90-day median; C1 carries last sale beside the range.
+- **Trust with no extractor runs on code signals** and logs it; it never asks on every message. Malformed money and calibration rows still throw: validation at a trust boundary.
+- **A partial fitted trust weights row is valid**: each missing name uses its prior.
+- **A worker's fixture is regenerated only from the reference language with inputs byte-checked unchanged**, when the reference itself was fixed on main; never to make a test pass.
 
 ## What this session learned the hard way
 
-- **A fixture clamped to make an invariant pass hides the bug it would have caught.** Three negotiation fixtures had keep clamped at 0, which hid a crash on every lowball offer. Every brief now says a test input is never changed to make an invariant pass.
-- **Two threads in one folder collide.** Ben's thread and this lead both rebuilt `jobs/valuation/experiment.py` and `jobs/valuation/data/` the same morning: two merges conflicted and one approach (a 30-sale cut) was thrown away for a better one. Check the folder's recent commits by other authors before briefing, and say in the packet who owns it.
-- **Never leave a merge open in the shared checkout.** One conflicted merge sat in `C:\dev\secondhand` for minutes and blocked every session's pull. Merge `origin/main` into the worker branch on the Mac, test there, and bring a clean merge to Windows.
-- **A hash taken mid-download is wrong.** The NBER pin was first recorded at 1.5 GB of 4.45. Wait for the download to finish before pinning.
-- **`node --test` does not type-check.** 31 `tsc` errors reached main before any brief asked for `tsc`. Every brief now ends with tsc clean for the worker's own files.
-- **A worker may write its report inside a subfolder.** Look for `WORKER_REPORT.md` anywhere in the worktree, not only at its root.
+- **My own brief can be wrong.** Twice a worker stopped on a conflict the brief created (rejecting partial fitted rows; a gift-card "ask" that is a hard block). Read the existing tests before writing a rule into a brief.
+- **Windows breaks Mac-only tests silently**: `./.venv/bin/python` and `/dev/stdin` hard-coded in tests. Fall back to `python`, write a temp file.
+- **Two branches creating the same new files collide later**: both valuation branches made `jobs/valuation/comps.py` and the parity files. Decide which twin survives before briefing the second.
+- **A long ablation blocks its worktree**: 40 minutes on 41,988 sales; brief follow-ups into other worktrees meanwhile.
