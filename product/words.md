@@ -690,3 +690,15 @@ Ben, thread "Make agents use our research", 01:19 UTC.
 ## 2026-11-14 nate the engine learns from the whole market, not only our users
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Our engine isnt just built and powered by the existing data we've collected by OUR users, but by the existing listings, credible information, and more from the platforms and industries themselves
+
+## 2026-11-14 nate our own intelligence api from four repos
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> https://github.com/firecrawl/firecrawlhttps://github.com/unclecode/crawl4aihttps://github.com/browser-use/jev-ultrafasthttps://github.com/browser-use/browser-use understand all these repos and how they can effectively serve when analyzed for us to build a working intelligence api of our own, able to source and find any price, figure, detail, industry insight, sales data, using searches
+
+## 2026-11-14 nate our own gathering solves not finding enough to weigh a claim
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14. The message ends mid-sentence as sent.
+> This method solves alot of the issues like the open cli showing you did, where again the idea of our system not being able to find anything or enough to weigh a claim can be
+
+## 2026-11-14 nate protocols per question type, every target in parallel
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> Consider how we can build and design this to be fast, intutivie, not stalling answers but building things and calculating things with ultra efifciency, not just a search engine, but design efficient intelligent protocols and workflows assigned to what types of questions are being asked, what information we need to find, every target to go look at, all launched searches at each target can then be parallel
