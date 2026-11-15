@@ -63,7 +63,7 @@ Nate's requirement: "It needs to be fast, credible and dynamic, yet transparent"
 | Writes | Shape |
 |---|---|
 | `score` | `{subject_type, subject_id, axis, site?, value, range, citation_id, state: shown \| hidden, hide_reason, model_version}` |
-| `citation` | `{metric, filters, table_versions[], definition_version, code_version, computed_at, basis_ids[]}` |
+| `citation` | `{metric, filters, table_versions[], definition_version, code_version, computed_at, basis_ids[], param_versions{}, model_version}` |
 | `rank_observation` | one query, one site, one time: ordered listing ids with `evidence` |
 | `ranker_model` | one site and category: factors with probability and effect size, held-out agreement, noise floor, alias |
 | `experiment`, `arm` | the variation, the listings, exposures, outcome, design label `matched_pair \| before_after` |
@@ -106,12 +106,12 @@ Each axis shares its figures with the [analytics suite](insights.md#analytics-su
 |---|---|
 | Lakeflow job `observe_rank` | runs the fixed query panel per site and category daily through the harness `search` verb, writes `rank_observation` to Delta |
 | Feature pipelines over the evidence ledger | listing features (photo count and quality, fields present, title terms, price against comps, age) |
-| Lakeflow job `fit_ranker` | refits Plackett-Luce per site and category, logs to MLflow 3, registers as Challenger; promotes to Champion only when held-out agreement beats the Champion and the floor |
+| Lakeflow job `fit_ranker` | refits Plackett-Luce per site and category, logs to MLflow 3, registers as Challenger, held as a `param` of family `model_ref`; promotes to Champion only when held-out agreement beats the Champion by more than the bootstrap noise and clears the floor ([data](data.md#real-time-weights-agent-proposal)) |
 | MLflow experiments | one run per `experiment`, arms as child runs, exposures and outcomes as metrics |
-| Bandit state | a small Unity Catalog table served from the Online Feature Store on Lakebase |
-| Data profiling | drift on features and on predictions, between windows and against a baseline |
+| Bandit state | each arm's outcome rate is a Beta `param`, updated in the transaction that records the outcome ([data](data.md#real-time-weights-agent-proposal)) |
+| Data profiling | drift on features and on predictions, between windows and against a baseline; rank drift (Kendall tau) needs a custom metric, as data profiling has no ranking metric ([settled](../../research/data/nate/open-items-settled-databricks.md) row 6) |
 | Model serving | scoring endpoint read by the Apps API |
-| Lakeflow job `requirement_reorder` (*agent proposal*) | weekly, computes each field's three importance effects (match, value, rank) per node by [fields-by-kind F2](../determinations/fields-by-kind.md); the value effect reads [money D2](../determinations/money.md#d2-condition-variant-completeness-and-size-adjustment)'s per-field adjustment, the rank effect reads `fit_ranker`'s attributions; writes a new `requirement` version a person approves |
+| `param_fold` for field importance (*agent proposal*) | nightly or weekly, computes each field's three importance effects (match, value, rank) per node by [fields-by-kind F2](../determinations/fields-by-kind.md); the value effect reads [money D2](../determinations/money.md#d2-condition-variant-completeness-and-size-adjustment)'s per-field adjustment, the rank effect reads `fit_ranker`'s attributions; writes each `importance` as a challenger `param`, promoted by backtest, with a person's approval as the guard ([data](data.md#real-time-weights-agent-proposal)); this replaces `requirement_reorder` as an update path |
 | Re-plan | after any fit, test result or notice, re-score each listing and set its `next_check_at` to now |
 
 ## Data flow

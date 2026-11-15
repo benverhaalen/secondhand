@@ -386,7 +386,7 @@ Shared rules for every card:
 3. On Poshmark, void open offers first and pace 2 to 5 s per action.
 4. Retry 5 s, 15 s, 45 s, 2 min on the chosen route, then fall back to the cloud browser.
 5. A listing counts as down only after read-back.
-6. Red: any listing not read back as down 5 min after the sale read gives a `failed_delist` card. This card owns the 5 min value (a starting value): Ben's notes give 3 min ([crosspost and delist](../../research/list/ben/crosspost-and-delist.md)) and 6 min ([build plan](../../research/cross-cutting/ben/build-plan-posting-messages-ui.md)); 5 clears a 2 min poll plus Poshmark pacing and stays under the 10 min bar ([sold](../features/sold.md#design-choices)).
+6. Red: any listing not read back as down 5 min after the sale read gives a `failed_delist` card. The 5 min value is the red line of sold's single delist bar ([sold](../features/sold.md#how-we-will-know-it-works)), which owns it; this card reads it.
 
 **Why this method**: Steps 1 to 6 follow the [sold spec](../features/sold.md) and [crosspost and delist](../../research/list/ben/crosspost-and-delist.md) (observed in the spec). Ordering by instant-buy exposure is added here (inferred). The alternative, ending in a fixed site order, leaves the riskiest copy up for no reason.
 
@@ -718,3 +718,7 @@ Weights: a strict order, not a blend; rank 2 fills only an empty field and shows
 | [connect](../features/connect.md) | capability and terms table per (site, verb), published seller metric thresholds per site |
 | [score](../features/score.md), [data](../features/data.md) | labelled thread sets, calibration fitting, split tests for the offer rule, route success records |
 | [replay](../features/replay.md) | recipe state and canary results per (site, verb) |
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).
