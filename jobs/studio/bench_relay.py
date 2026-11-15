@@ -7,6 +7,8 @@ a second net on top.
 For each kept candidate in a run (cand_<slide>_<k>.jpg with its manifest), the honest versions must pass and each lie
 must be dropped:
   honest  as drawn; 8% brighter; turned 3 degrees; 5% smaller
+A stretched lie on an item with a tape reading is not dropped but set back to the tape, which is the output the buyer
+sees; it is counted as set to the tape. A color change too small to see on that cloth is counted apart.
   lie     the print painted out; the print swapped for another item's print; the item's hue turned 30 and 60 degrees;
           the item 35% darker; stretched 12% wider; stretched 12% taller; mirrored
 """
@@ -21,7 +23,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from studio import check as C  # noqa: E402
 from studio import slides_run as R  # noqa: E402
 
-OTHER_PRINT = "assets/demo-items/real/chico-hoodie/04.jpg"
+OTHER_PRINT = {"chico-hoodie": "assets/demo-items/real/marquette-tee/03.jpg"}  # another item's print
+DEFAULT_OTHER = "assets/demo-items/real/chico-hoodie/04.jpg"
+VISIBLE = 4.5  # a color lie under this CIEDE2000 cannot be seen (black cloth turned in hue), so it is counted apart
 
 
 def print_hull(ref, ren):
@@ -78,7 +82,6 @@ def cases(ren, box, other):
 
 
 def main(run_dir, out=None):
-    other = R.rgb(OTHER_PRINT)
     rows = []
     for item in sorted(os.listdir(run_dir)):
         mf = os.path.join(run_dir, item, "manifest.json")
@@ -99,15 +102,27 @@ def main(run_dir, out=None):
             if not refs:
                 continue
             tpl = R.P.SPEC["kinds"][man["kind"]]["template"]
+            other = R.rgb(OTHER_PRINT.get(item, DEFAULT_OTHER))
+            photo = next(p for p in man["read"]["photos"] if p["index"] == names.index(s["photo"] + ".jpg"))
+            laid = bool(photo.get("laid_well"))
+            meas = {(p.get("measure") or {}).get("name"): (p.get("measure") or {}).get("value_in") for p in man["read"]["photos"] if p.get("measure")}
+            tape = meas["pit_to_pit"] / meas["length"] if tpl != "pants" and meas.get("pit_to_pit") and meas.get("length") else None
+            ms0 = C.mask_of(ren)
             box = print_hull(refs[0]["img"], ren)
             for truth, cs in cases(ren, box, other).items():
                 for name, img in cs.items():
-                    r = C.check(src, img, tpl, refs, None, laid_well=True, repair=False)
-                    rows.append({"item": item, "slide": s["type"], "case": name, "truth": truth, "dropped": not r["ok"], "reasons": r["reasons"]})
+                    r = C.check(src, img, tpl, refs, tape, laid_well=laid)
+                    seen = C.color_delta(ren, ms0, img, C.mask_of(img)) if name in ("hue +30", "hue +60", "35% darker") else None
+                    t = "invisible" if seen is not None and seen < VISIBLE else truth
+                    rows.append({"item": item, "slide": s["type"], "case": name, "truth": t, "dropped": not r["ok"], "reasons": r["reasons"],
+                                 "shape_checked": bool(tape) or laid,
+                                 "set_to_tape": any(x.startswith("width set") and "x1.00" not in x for x in r.get("repairs", []))})
                     print(json.dumps(rows[-1]), flush=True)
     honest = [r for r in rows if r["truth"] == "honest"]; lies = [r for r in rows if r["truth"] == "lie"]
-    summary = {"honest_kept": sum(not r["dropped"] for r in honest), "honest": len(honest),
-               "lies_dropped": sum(r["dropped"] for r in lies), "lies": len(lies), "rows": rows}
+    blind = [r for r in lies if not r["shape_checked"] and r["case"] in ("12% wider", "12% taller")]
+    summary = {"shape_lies_with_no_truth": len(blind), "invisible_color_changes": sum(r["truth"] == "invisible" for r in rows), "honest_kept": sum(not r["dropped"] for r in honest), "honest": len(honest),
+               "lies_dropped": sum(r["dropped"] for r in lies),
+               "shape_lies_set_to_tape": sum((not r["dropped"]) and r["set_to_tape"] and r["case"] in ("12% wider", "12% taller") for r in lies), "lies": len(lies), "rows": rows}
     print(json.dumps({k: v for k, v in summary.items() if k != "rows"}))
     if out:
         json.dump(summary, open(out, "w"), indent=1)
