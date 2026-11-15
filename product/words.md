@@ -624,3 +624,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate sale emails, the expo account, where routes are hosted, and a buy page shaped by your style
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Give me the questions for ben and we will work through it in person and Ill tell you the answers. The product may read sale emails but preferably we keep it to harness onto the platforms with the users authenticated, like treg does. Ben has my expo account and can use that to build the app. App server routes are hosted on databricks if possible, or we will host on next.js along with our site. Think as well at what information we can deliver to a user, value of what they have in total, how much they've sold, maybe helping build their buying page empowered by what the system determines is its sense of style
+
+## 2026-11-14 nate ben's design is not finished or decided; how the system drives every feature
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14, after seeing the app mock.
+> Dont consider ben's design to be finished or decided. It's not. I wanted to more so understand how we build the system to drive all the features
