@@ -1629,3 +1629,10 @@ Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the or
 > you havent worked out far enough, ebay does work in cases, I've seen it used
 
 Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+## 2026-11-15 ben ui idea images through codex, the app's photo model through the api key
+Ben, project thread on UI flows, 09:04 and 09:05 UTC, after the demo's AI cover was kept on Nano Banana. Two messages.
+> for the photo model in creating ui ideas, use codex. for using a model inside the app for improving photos, use the api key
+
+> nano banana in api key
+
+Used in: [app flows, photos](app-flows.md#photos-before-and-after-live).
