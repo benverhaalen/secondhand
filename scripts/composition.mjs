@@ -28,11 +28,11 @@ export function snapshot({ insetTop = 0 } = {}) {
     const r = el.getBoundingClientRect(), s = getComputedStyle(el), item = partOf(el, ITEM);
     const head = el.closest('[data-part="shelf-head"],[data-head]');
     return { s: el.textContent.trim().slice(0, 60), role: el.dataset.role, color: s.color, size: parseFloat(s.fontSize), y: Math.round(r.top), bottom: Math.round(r.bottom), seen: seen(r),
-      bar: inBar(el), head: !!head, shelf: el.closest('[data-shelf]')?.dataset.shelf ?? null, item: item ? item.dataset.part : null,
+      bar: inBar(el), head: !!head, frame: !!el.closest('[data-part="nav"],[data-part="page-head"]'), news: !!el.closest('[data-part="money-news"]'), shelf: el.closest('[data-shelf]')?.dataset.shelf ?? null, item: item ? item.dataset.part : null,
       cut: s.textOverflow === 'ellipsis' && el.scrollWidth > el.clientWidth + 1 || (s.webkitLineClamp !== 'none' && el.scrollHeight > el.clientHeight + 2) };
   });
   const box = el => { const r = el.getBoundingClientRect(); return { y: Math.round(r.top), bottom: Math.round(r.bottom), seen: seen(r) }; };
-  const pills = [...document.querySelectorAll('[data-part="pill-card"],[data-part="button"],[data-part="icon-button"]')].filter(e => shown(e) && !inBar(e))
+  const pills = [...document.querySelectorAll('[data-part="pill-card"],[data-part="button"],[data-part="icon-button"]')].filter(e => shown(e) && !inBar(e) && !e.closest('[data-part="nav"],[data-part="page-head"]'))
     .map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
   const items = [...document.querySelectorAll('[data-part]')].filter(e => ITEM.test(e.dataset.part) && shown(e) && !partOf(e.parentElement ?? e, ITEM)).map(e => ({ part: e.dataset.part, ...box(e) })).filter(p => p.seen);
   const shelves = [...document.querySelectorAll('[data-shelf]')].map(sh => ({ id: sh.dataset.shelf, head: !!sh.querySelector('[data-part="shelf-head"]'),
@@ -69,11 +69,17 @@ export function compose(snap, { route = '', typical = true } = {}) {
   // line, and one header. Ben's approved Today had its first card at 205 on a phone; the app's had five lines and sat at 310.
   if (tab && snap.items.length) {
     const top = snap.nav ? snap.nav.bottom : snap.insetTop, first = Math.min(...snap.items.map(i => i.y));
-    const rows = [...new Set(T.filter(t => t.seen && t.y >= top && t.bottom <= first && !t.item).map(t => Math.round(t.y / 6)))];
+    // The tab's frame (the wordmark bar and the tab's name, the same on all four, J5) is where a person is, not what they
+    // read. The top number reads as one thing with its window over it ("Since yesterday / $97.33"), as Wallet's balance does,
+    // so its caption and figure are one line: the number, its line, one header.
+    const before = T.filter(t => t.seen && t.y >= top && t.bottom <= first && !t.item && !t.frame);
+    const row = t => Math.round(t.y / 6), news = [...new Set(before.filter(t => t.news).map(row))].sort((x, y) => x - y);
+    const rows = [...new Set(before.map(t => (t.news && news.length > 2 && row(t) === news[1] ? news[0] : row(t))))];
     if (rows.length > 3) out.push(err('U11', `${rows.length} lines of text come before the first item (at ${first}): a main tab shows the number, its one line and at most one header before the first thing to do, so a person sees what needs them without reading (Art. 7.12)`));
   }
 
   // U12 a screen asks for little at once (Art. 7.13). The approved Today asked for six presses on its first screen.
+  // The frame's own controls (the inbox, the same on all four tabs) are where a person goes, not what this screen asks.
   if (typical && snap.pills.length > 7) out.push(err('U12', `${snap.pills.length} buttons on the first screen: at most 7, so the one that matters is seen. Cards below the first decision show their tag and one act, or fold into a pile (Art. 7.13)`));
 
   // U13 one fact is said once (Art. 7.14). A header that names a group, and a tag on every item in it saying the same state,
