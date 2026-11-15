@@ -1,0 +1,123 @@
+{
+  "source": "goodwill_cc0",
+  "licence": "CC0 1.0 (silentdirectivellc-hub/ebay-sold-comps); ShopGoodwill buyer API, its terms unread",
+  "may_model": false,
+  "code_commit": "b40085dc8cbd4e95937435792b156b73c7915d6a",
+  "inputs": [
+    {
+      "file": "goodwill-costume-jewelry-2026-06.csv",
+      "bytes": 80216,
+      "sha256": "62818d27418687fcbae1d9e75d462ca20e608333d500855b02c5d32dbf323dab"
+    },
+    {
+      "file": "goodwill-depression-glass-2026-06.csv",
+      "bytes": 41408,
+      "sha256": "bf97a755f987f4dbb46b5d20e6d702f06dea3efaaf972fbce26921cfa4957d4f"
+    },
+    {
+      "file": "goodwill-film-camera-2026-06.csv",
+      "bytes": 41810,
+      "sha256": "d6b138b5025ed94516a9f49ad12f4d07dd94862b951e673acc3b387f667198c5"
+    },
+    {
+      "file": "goodwill-fishing-lure-2026-08.csv",
+      "bytes": 21289,
+      "sha256": "da2b5af1f8b19715bbaf053d0f06a73313d36d86f77a05bf47d2e98eeafa5b19"
+    },
+    {
+      "file": "goodwill-fishing-reel-2026-07.csv",
+      "bytes": 16705,
+      "sha256": "c733008c6f8727d452de6701e7dcf93c602eadd5f2251d4ae1ce034ff3af434b"
+    },
+    {
+      "file": "goodwill-fishing-rod-2026-07.csv",
+      "bytes": 15163,
+      "sha256": "49947e23029dcb45a0b21d88007a21011f92c3b25dbc6f553c082f143cfecd80"
+    },
+    {
+      "file": "goodwill-fly-reel-2026-09.csv",
+      "bytes": 29147,
+      "sha256": "c629a4535ea9469cdd8dc20cc2fbcc6ca1be4f03582fffc908523415250cd5ff"
+    },
+    {
+      "file": "goodwill-heddon-vintage-tackle-2026-09.csv",
+      "bytes": 3863,
+      "sha256": "e454c94b12177f8408b16a9cf9972ecab4867b58a92fb924f341deebfbc0e81b"
+    },
+    {
+      "file": "goodwill-lego-2026-06.csv",
+      "bytes": 41432,
+      "sha256": "656e6b4da413039a37b1c4cb35547627c62ae93ed9c3d7e66309c476ce0b8c2e"
+    },
+    {
+      "file": "goodwill-pocket-watch-2026-06.csv",
+      "bytes": 26616,
+      "sha256": "258ec3d30041956fe0e447f33a88a079b53c2c53ba4aca01e159fdc359c4dc97"
+    },
+    {
+      "file": "goodwill-tackle-box-2026-08.csv",
+      "bytes": 32095,
+      "sha256": "a82e27aa010a153c745bd7ad8d72207b1313a9de4e6a682e7d62f98d8739a143"
+    },
+    {
+      "file": "goodwill-vinyl-records-2026-06.csv",
+      "bytes": 41440,
+      "sha256": "0e261cd0a82011c2522482b1b3bc48cd99c023a7ced2f3841c3a9933ac4c7f7c"
+    }
+  ],
+  "output": {
+    "file": "rows.csv.gz",
+    "sha256": "c5ab5471bdb93c8a6586b254c75268aa1332f385a28df283973de4c19f1ccd99",
+    "columns": [
+      "row_id",
+      "source",
+      "licence",
+      "site",
+      "url",
+      "kind",
+      "product_id",
+      "family_id",
+      "cluster_id",
+      "brand",
+      "category",
+      "condition",
+      "size",
+      "era",
+      "title",
+      "photo_count",
+      "seller_feedback",
+      "price_type",
+      "price_cents",
+      "buyer_shipping_cents",
+      "listed_at",
+      "at",
+      "best_offer",
+      "views",
+      "watchers",
+      "may_model",
+      "at_ask",
+      "priced_from_our_number",
+      "description",
+      "retail_cents",
+      "released_at",
+      "region"
+    ]
+  },
+  "rows": 2678,
+  "by_price_type": {
+    "sold": 2678
+  },
+  "by_kind": {
+    "bikes_sports": 727,
+    "electronics": 273,
+    "jewellery_watches": 704,
+    "lighting_home": 282,
+    "media": 254,
+    "toys_lego": 438
+  },
+  "at_range": [
+    "2026-06-20",
+    "2026-09-19"
+  ],
+  "dropped": {}
+}

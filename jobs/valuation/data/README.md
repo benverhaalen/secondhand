@@ -1,0 +1,33 @@
+# Sold rows for the backtest
+
+One command rebuilds every frozen file from its pinned public copy and checks each hash:
+
+    jobs/valuation/data/fetch.sh <out_dir>
+
+Tests: `cd jobs && python -m pytest valuation/data`. About 90 seconds and 170 MB of output on a laptop. The rows are not in git, because the repo is public and most of these licences don't allow redistribution (plan §6). The manifests are in git: `manifests/<source>.json` holds each input's sha256, the output's sha256, row counts by price type and kind, the date range and what was dropped and why. A built copy sits in project files under `secondhand-data/sold/<source>/rows.csv.gz`.
+
+What each source is, its licence, its bias and what it can prove: [research/price/ben/sold-datasets.md](../../../research/price/ben/sold-datasets.md).
+
+| File | Role |
+|---|---|
+| `rows.py` | one reader per source, into the runner's `FIELDS` plus four extras (`description`, `retail_cents`, `released_at`, `region`) |
+| `freeze.py` | one source's raw files into `rows.csv.gz` and `manifest.json`, byte-identical on rerun; refuses a raw file whose hash changed |
+| `sources.json` | where each raw file comes from (the official page, the pinned mirror commit) and its expected sha256 |
+| `fetch.sh` | clones the pinned mirrors and runs `freeze.py` for each source |
+
+## Run the backtest on one
+
+    gunzip -c <out_dir>/stockx_2019/rows.csv.gz > stockx.csv
+    python3 scripts/bench/backtest.py backtest --rows stockx.csv --test-from 2018-11-01 --out stockx-bt.json
+
+Only `stockx_2019` and `nber_ebay_bo` have sale dates, so only they can run the time-ordered test. `mercari_kaggle` and `grailed_2021` have no dates or product ids and are for the from-a-title test.
+
+## The NBER eBay data
+
+`nber_ebay_bo` is eBay's Best Offer listings for May 2012 to June 2013, released through NBER for research: https://www.nber.org/research/data/best-offer-sequential-bargaining. It is too large to rebuild on a laptop in the 90-second run, and this container cannot reach nber.org. From a machine that can:
+
+    curl -O http://data.nber.org/data/bargaining/anon_bo_lists.csv.gz
+    sha256sum anon_bo_lists.csv.gz            # record it in sources.json under nber_ebay_bo.files
+    cd jobs && PYTHONPATH=../log python3 -m valuation.data.freeze nber_ebay_bo <out_dir>/nber_ebay_bo /path/to/anon_bo_lists.csv.gz
+
+The reader's column names come from a public notebook that loaded the file. Check them against NBER's `Codebook.xlsx` on the first run; a missing column fails with a `KeyError` naming it. The Databricks route is in [packet 64](../../../.agents/team/packets/data/64-nber-ebay-sold-rows.md).
