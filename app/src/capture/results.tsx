@@ -18,7 +18,7 @@ function JobResult({ job }: { job: CaptureJob }) {
   const [linkError, setLinkError] = useState<string | null>(null);
   const open = (url: string) => { setLinkError(null); openMarketplace(url).catch(error => { log.error('capture.open_match', error); setLinkError('The listing did not open. Try again.'); }); };
   if (job.kind === 'valuate') return <Stack gap="tight">
-    {typeof range.q10 === 'number' && typeof range.q90 === 'number' ? <Txt role="heading">{`${dollars(range.q10)} to ${dollars(range.q90)}`}</Txt> : <Txt role="body">There is not enough evidence to show an appraisal yet.</Txt>}
+    {typeof range.q10 === 'number' && typeof range.q90 === 'number' ? <Txt role="headline">{`${dollars(range.q10)} to ${dollars(range.q90)}`}</Txt> : <Txt role="body">There is not enough evidence to show an appraisal yet.</Txt>}
     <Txt role="body" tone="ink-2">{typeof basis.count === 'number' && basis.count > 0
       ? `Based on ${basis.count} comparable sales${typeof result.condition === 'string' ? ` in ${words(result.condition)} condition` : ''}.`
       : 'Comparable sales have not been returned.'}</Txt>

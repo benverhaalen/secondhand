@@ -45,9 +45,9 @@ export function ListRow({ id, label, accessibilityLabel, detail, lead, site, pho
   const body = (pressed: boolean) => (
     <View
       {...mark(detail ? 'list-row-two' : 'list-row', photo === undefined ? {} : { item: '' })}
-      style={{ ...(wrap ? { minHeight: detail ? TWO : ONE, paddingVertical: space.s3 } : { height: detail ? TWO : ONE }), flexDirection: 'row', alignItems: 'center', gap: space.s3, backgroundColor: pressed ? c.gray : undefined, ...(onPress ? {} : FLAT) }}>
+      style={{ ...(wrap ? { minHeight: detail ? TWO : ONE, paddingVertical: space.s4 } : { height: detail ? TWO : ONE }), flexDirection: 'row', alignItems: 'center', gap: space.s3, backgroundColor: pressed ? c.gray : undefined, ...(onPress ? {} : FLAT) }}>
       {photo !== undefined ? <Photo src={photo} label={label} fit="row" /> : site ? <Logo site={site} /> : lead ? <Icon name={lead} tone={tone === 'brick' ? 'brick' : 'ink'} /> : null}
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, gap: wrap ? space.s1 : 0 }}>
         <Txt role="body" lines={wrap ? undefined : 1}>{label}</Txt>
         {detail ? <Txt role="caption" lines={wrap ? undefined : 2}>{detail}</Txt> : null}
         {wrap && value ? <Txt role="body" tone="ink-2" tabular={tabular}>{value}</Txt> : null}

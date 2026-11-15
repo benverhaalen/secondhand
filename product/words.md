@@ -2640,3 +2640,12 @@ Source: Ben's direct messages in the selling UI chat; recorded November 15, 2026
 > ensure you are using the right fonts in tune with the brand guidelines at certiain sizes
 
 > also ensure spacing is all up to standard with the brand
+
+
+## 2026-11-15 Large app headings and breathing room
+
+Ben, in the Secondhand UI chat, recorded 2026-11-15:
+
+> why is it not using the wordmark font for the big text??? also why is everything so squished and condensed
+
+Implementation reading: restore Clofie SemiBold for large app screen headings. Preserve text and monetary roles in PP Neue Montreal. Evaluate spacing in rendered screens; spacing-token compliance alone does not establish comfortable composition. Preserve existing controls and functionality.
