@@ -78,7 +78,7 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 1. Arithmetic: value = P(differs) times impact, on the surface's measure.
 2. Arithmetic: highlight when the value is at or over `assist_value_floor` (0.15, card 17's floor, so both sides stop on the same line).
 
-**Why this method.** Unneeded questions cut task success from 65% to 27% (asserted, arXiv 2504.16331 in [clarifying-inputs §8](../../research/identify/nate/clarifying-inputs.md#8-design-all-inferred)); measuring the effect on the result is the direct test of need. The alternative, highlighting every unresolved entity, was rejected for that cost.
+**Why this method.** On coding tasks, asking clarifying questions raised pass rate from 27% to 65% (arXiv 2504.16331, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)); that shows asking pays when it is needed, not what an unneeded question costs, and it is not tested on listings. Measuring the effect on the result is the direct test of need. The alternative, highlighting every unresolved entity, was rejected for that cost.
 
 **When it is not shown.** Under the floor, the span is assumed silently and shows no assumption chip unless the assumption narrowed the results.
 
