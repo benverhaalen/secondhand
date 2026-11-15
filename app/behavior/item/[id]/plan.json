@@ -1,6 +1,21 @@
 {
   "screen": "item/[id]/plan",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "The Plan sheet over the item page: what the person wants, the price, the lowest they take, the sites, the price drops, each with what the agent will do (spec/pages.md §6.7).",
+  "frame": [
+    "Who: Sam setting a plan once per item, or changing it when something is slow; Dana adjusting the floor or sites on many items.",
+    "Came to do: say what they want (sell, gone fast, best price, only at my price, just checking) and see what each means in days and money kept.",
+    "Costliest mistake: a price under the lowest they take applied without a tap, a site posted they did not want (friends on Facebook), or drops they did not ask for.",
+    "Ways out (ways-out.md §6.7): type my own price, the suggestion kept as one line beside it; skip a site, or add an avoided one anyway (edge-cases §11); price drops off; every adjustment open under any choice.",
+    "The person stays in the loop at: the price (a guess until typed; a typed price far outside the sold range asks once, edge-cases §3), the lowest (a guess until set; one over the price is refused in place), any price under the lowest, which always waits for a tap, and each site's returns rule in one line."
+  ],
+  "decisions": [
+    "A site switch flips the agent's pick: a picked site becomes skipped, a linked site it left out is added (ways-out §6.7 skip a site, and §11 an avoided site can be added; a switch that does nothing is a hollow control).",
+    "A blocked site's switch is disabled with 'Not allowed here' and platform-fit's reason; an avoided one is greyed with its reason and stays switchable (edge-cases §11, from platform-fit.json verdicts).",
+    "Each postable site shows its returns rule in one caption line (edge-cases §10 Returns terms: the person assumes they can refuse a return).",
+    "A typed price over 3 times the top or under a third of the bottom of the range asks once with the range; Preview and Save wait for 'Yes' (edge-cases §3 and ways-out §6.7 'Oops, $500, I meant $50').",
+    "For a draft the foot is Preview listings, which closes the sheet and opens the Post preview with the price and site flips; for a live item it is an Approve that saves (pages.md §6.7 pill: Preview listings; nothing goes public from the plan).",
+    "The sheet is a route, drawn over the item, sliding up from the foot and back down; a drag on the grabber closes it (Sheets open from their origin and close the way they came (frontend standard, Emil))."
+  ],
   "states": [
     {
       "state": "stub",

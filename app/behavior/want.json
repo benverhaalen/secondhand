@@ -1,16 +1,501 @@
 {
   "screen": "want",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "A want (spec/pages.md §6.14; spec/features/watch.md, 'Building a want by touch'): what to look for, then a price range dragged over the sales, ship or pickup with a radius, colour, size, how worn, which sites and how to be told, each set by touch; while it runs, how each site stands and what it has found so far. Pause and End.",
+  "frame": [
+    "Who: the hunter setting up or tuning a search; the person clearing out, once, for one thing they need.",
+    "Came to do: say what they want, around what price, shipped or picked up, in what colour and size, then leave it running and stop searching by hand.",
+    "Where a mistake costs most: a top price set too high or a size left wrong, so alerts bring the wrong things or cost too much.",
+    "Ways out (spec/ways-out.md §6.12): Pause the want, or End it, one tap each; any site off; quiet hours; leave the app at any point.",
+    "In the loop: a new want is guessed from the words that started it and one tap starts it, because it sets a price; on a saved want every change saves at once with Undo and looks again."
+  ],
+  "decisions": [
+    "Every value that changes which listings match is a control, not a typed field (Ben, words.md 2026-11-15: 'i can adjust my range etc. i can say shipped or pickup or both etc. color').",
+    "The price is a two-thumb range over the sales as dots (watch.md step 3): the top thumb is the most, the one ceiling for alerts; dots inside the range turn ink, so the range shows how many sales it would have caught.",
+    "'around $60' opens at $48 to $72, 20% either side (watch.md); with no price said, the most is the middle of the fair range and the low end 20% under it.",
+    "Ship, Pickup or Both is a three-way toggle drawn as equal chips, the iOS segmented control; pickup shows the radius as chips (5, 15, 25, 50 mi), Both and 15 mi by default (watch.md).",
+    "Colour is swatches with names, shown only when the colour is a choice: a Grey Fog Dunk has one colourway, so it gets no colour row (watch.md: only the chips that change which listings match appear).",
+    "Size is the system first, then the size, because a men's 10 is not a women's 10; only shoes and clothes get it.",
+    "How worn is four chips, new with tags to fair, read as 'at least'; good or better by default (watch.md).",
+    "A pick is a white chip with an ink outline, never a black one: one black button per view, and a pick is shape as well as color (Art. 5).",
+    "A new want is a hand-off: it sets a price, so the foot says exactly what it starts ('Watch for $80 or less') and nothing runs until the tap.",
+    "After the tap the sites answer one by one in the Where strip ('Just now'), with 'Found 6 so far' under it, and the foot says the person can leave and come back (watch.md, 'While the person is away').",
+    "A saved want opens on how its look stands, at the top: 'Looking on 4 sites', each logo with when it was checked, 'Behind' for a site whose check failed, and what it found so far.",
+    "A saved want saves each change at once with Undo, as iOS Settings does, and looks again at once (watch.md: a change re-runs the search).",
+    "Tell me is a two-row choice (Under the most, Any new one), the iOS list pattern, because both answers are short and exclusive.",
+    "Pause and End are gray pills, never the black one: End is the destructive act and it carries Undo.",
+    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page."
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "typical",
+      "route": "/want?id=want_dunk&world=buyer",
+      "shows": "Watching for",
+      "also": [
+        "Nike Dunk Low Grey Fog, men’s 10, under $80",
+        "Looking on 4 sites",
+        "Behind",
+        "Found 4 so far",
+        "$64 to $80",
+        "Men’s US",
+        "Pause",
+        "End"
+      ],
+      "absent": [
+        "Colour"
+      ]
+    },
+    {
+      "state": "paused",
+      "route": "/want?id=want_kin&world=buyer",
+      "shows": "Paused",
+      "also": [
+        "Resume"
+      ]
+    },
+    {
+      "state": "radius",
+      "route": "/want?id=want_oven&world=buyer",
+      "shows": "25 mi",
+      "also": [
+        "Colour",
+        "Marseille"
+      ]
+    },
+    {
+      "state": "new",
+      "route": "/want?q=nike%20dunk%20low%20grey%2010",
+      "shows": "Watch for",
+      "also": [
+        "Watch for $80 or less",
+        "Where"
+      ]
+    },
+    {
+      "state": "jersey",
+      "route": "/want?q=brewers%20jersey%20around%20%2460",
+      "shows": "Colour",
+      "also": [
+        "$48 to $72",
+        "15 mi",
+        "Navy",
+        "XL",
+        "Not enough sales yet to show",
+        "Watch for $72 or less"
+      ]
+    },
+    {
+      "state": "clearing",
+      "route": "/want?id=want_desk",
+      "shows": "10 mi",
+      "also": [
+        "Standing desk under $150 within 10 miles"
+      ],
+      "absent": [
+        "Size",
+        "Colour"
+      ]
+    },
+    {
+      "state": "empty",
+      "route": "/want",
+      "shows": "Nothing to watch yet"
+    },
+    {
+      "state": "failed",
+      "route": "/want?state=failed",
+      "shows": "Couldn’t load this want",
+      "also": [
+        "Try again"
+      ]
+    },
+    {
+      "state": "offline",
+      "route": "/want?state=offline",
+      "shows": "Waiting for signal. This is the last copy."
     }
   ],
   "controls": [
     {
       "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "on_tap": "goes back",
+      "id": "nav-back",
+      "in": "typical",
+      "does": "goes back"
+    },
+    {
+      "control": "What",
+      "on_tap": "edits what to look for in place",
+      "id": "want-what",
+      "in": "typical",
+      "does": "edits what to look for in place",
+      "then": "want-what-input"
+    },
+    {
+      "control": "Price",
+      "on_tap": "moves the nearer end of the range to where it was tapped, saves it with Undo",
+      "id": "want-price",
+      "in": "typical",
+      "does": "moves the nearer end of the range to where it was tapped, saves it with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Price",
+      "on_tap": "moves the nearer end to the middle of the track, and the foot follows",
+      "id": "want-price",
+      "in": "jersey",
+      "does": "moves the nearer end to the middle of the track, and the foot follows",
+      "shows": "Watch for $60 or less"
+    },
+    {
+      "control": "Site ebay",
+      "on_tap": "turns that site off, with Undo",
+      "id": "want-site-ebay",
+      "in": "typical",
+      "does": "turns that site off, with Undo",
+      "shows": "Site off"
+    },
+    {
+      "control": "Site mercari",
+      "on_tap": "turns that site off, with Undo",
+      "id": "want-site-mercari",
+      "in": "typical",
+      "does": "turns that site off, with Undo",
+      "shows": "Site off"
+    },
+    {
+      "control": "Site depop",
+      "on_tap": "turns that site off, with Undo",
+      "id": "want-site-depop",
+      "in": "typical",
+      "does": "turns that site off, with Undo",
+      "shows": "Site off"
+    },
+    {
+      "control": "Site facebook",
+      "on_tap": "turns that site off, with Undo",
+      "id": "want-site-facebook",
+      "in": "typical",
+      "does": "turns that site off, with Undo",
+      "shows": "Site off"
+    },
+    {
+      "control": "Site poshmark",
+      "on_tap": "turns a site on, with Undo, and looks again",
+      "id": "want-site-poshmark",
+      "in": "typical",
+      "does": "turns a site on, with Undo, and looks again",
+      "shows": "Site on"
+    },
+    {
+      "control": "How ship",
+      "on_tap": "keeps shipped ones only, with Undo",
+      "id": "want-how-ship",
+      "in": "typical",
+      "does": "keeps shipped ones only, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "How pickup",
+      "on_tap": "takes pickups only and shows the radius, with Undo",
+      "id": "want-how-pickup",
+      "in": "typical",
+      "does": "takes pickups only and shows the radius, with Undo",
+      "then": "want-radius-15"
+    },
+    {
+      "control": "How both",
+      "on_tap": "takes shipped and pickup and shows the radius, with Undo",
+      "id": "want-how-both",
+      "in": "typical",
+      "does": "takes shipped and pickup and shows the radius, with Undo",
+      "then": "want-radius-15"
+    },
+    {
+      "control": "Radius 5",
+      "on_tap": "sets the pickup radius, with Undo",
+      "id": "want-radius-5",
+      "in": "radius",
+      "does": "sets the pickup radius, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "How ship",
+      "on_tap": "keeps shipped ones only on the guess",
+      "id": "want-how-ship",
+      "in": "jersey",
+      "does": "keeps shipped ones only on the guess",
+      "shows": "Watch for $72 or less"
+    },
+    {
+      "control": "Colour navy",
+      "on_tap": "picks navy",
+      "id": "want-colour-navy",
+      "in": "jersey",
+      "does": "picks navy",
+      "then": "want-colour-navy"
+    },
+    {
+      "control": "Colour any",
+      "on_tap": "goes back to any colour, with Undo",
+      "id": "want-colour-any",
+      "in": "radius",
+      "does": "goes back to any colour, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size system mens",
+      "on_tap": "keeps men's US sizes, with Undo",
+      "id": "want-size-system-mens",
+      "in": "typical",
+      "does": "keeps men's US sizes, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size system womens",
+      "on_tap": "switches to women's US sizes, any size, with Undo",
+      "id": "want-size-system-womens",
+      "in": "typical",
+      "does": "switches to women's US sizes, any size, with Undo",
+      "then": "want-size-any"
+    },
+    {
+      "control": "Size any",
+      "on_tap": "takes any size, with Undo",
+      "id": "want-size-any",
+      "in": "typical",
+      "does": "takes any size, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 7",
+      "on_tap": "sets size 7, with Undo",
+      "id": "want-size-7",
+      "in": "typical",
+      "does": "sets size 7, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 7.5",
+      "on_tap": "sets size 7.5, with Undo",
+      "id": "want-size-7.5",
+      "in": "typical",
+      "does": "sets size 7.5, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 8",
+      "on_tap": "sets size 8, with Undo",
+      "id": "want-size-8",
+      "in": "typical",
+      "does": "sets size 8, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 8.5",
+      "on_tap": "sets size 8.5, with Undo",
+      "id": "want-size-8.5",
+      "in": "typical",
+      "does": "sets size 8.5, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 9",
+      "on_tap": "sets size 9, with Undo",
+      "id": "want-size-9",
+      "in": "typical",
+      "does": "sets size 9, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 9.5",
+      "on_tap": "sets size 9.5, with Undo",
+      "id": "want-size-9.5",
+      "in": "typical",
+      "does": "sets size 9.5, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 10",
+      "on_tap": "sets size 10, with Undo",
+      "id": "want-size-10",
+      "in": "typical",
+      "does": "sets size 10, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 11",
+      "on_tap": "sets size 11, with Undo",
+      "id": "want-size-11",
+      "in": "typical",
+      "does": "sets size 11, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 11.5",
+      "on_tap": "sets size 11.5, with Undo",
+      "id": "want-size-11.5",
+      "in": "typical",
+      "does": "sets size 11.5, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 12",
+      "on_tap": "sets size 12, with Undo",
+      "id": "want-size-12",
+      "in": "typical",
+      "does": "sets size 12, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 12.5",
+      "on_tap": "sets size 12.5, with Undo",
+      "id": "want-size-12.5",
+      "in": "typical",
+      "does": "sets size 12.5, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 13",
+      "on_tap": "sets size 13, with Undo",
+      "id": "want-size-13",
+      "in": "typical",
+      "does": "sets size 13, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Size 10.5",
+      "on_tap": "sets size 10.5, saves with Undo and looks again, site by site",
+      "id": "want-size-10.5",
+      "in": "typical",
+      "does": "sets size 10.5, saves with Undo and looks again, site by site",
+      "shows": "Just now"
+    },
+    {
+      "control": "Condition new",
+      "on_tap": "sets how worn at least, with Undo",
+      "id": "want-condition-new",
+      "in": "typical",
+      "does": "sets how worn at least, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Condition like new",
+      "on_tap": "sets how worn at least, with Undo",
+      "id": "want-condition-like-new",
+      "in": "typical",
+      "does": "sets how worn at least, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Condition good",
+      "on_tap": "sets how worn at least, with Undo",
+      "id": "want-condition-good",
+      "in": "typical",
+      "does": "sets how worn at least, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Condition fair",
+      "on_tap": "sets how worn at least, with Undo",
+      "id": "want-condition-fair",
+      "in": "typical",
+      "does": "sets how worn at least, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Alert available",
+      "on_tap": "alerts on any new one, with Undo",
+      "id": "want-alert-available",
+      "in": "typical",
+      "does": "alerts on any new one, with Undo",
+      "shows": "Saved"
+    },
+    {
+      "control": "Alert under",
+      "on_tap": "goes back to alerts under the most, with Undo",
+      "id": "want-alert-under",
+      "in": "typical",
+      "does": "goes back to alerts under the most, with Undo",
+      "after": [
+        "want-alert-available"
+      ],
+      "shows": "Saved"
+    },
+    {
+      "control": "Quiet",
+      "on_tap": "edits quiet hours in place",
+      "id": "want-quiet",
+      "in": "typical",
+      "does": "edits quiet hours in place",
+      "then": "want-quiet-input"
+    },
+    {
+      "control": "Pause",
+      "on_tap": "pauses the want, with Undo",
+      "id": "want-pause",
+      "in": "typical",
+      "does": "pauses the want, with Undo",
+      "shows": "Resume"
+    },
+    {
+      "control": "Pause",
+      "on_tap": "resumes the want, with Undo",
+      "id": "want-pause",
+      "in": "paused",
+      "does": "resumes the want, with Undo",
+      "shows": "Looking again"
+    },
+    {
+      "control": "End",
+      "on_tap": "ends the want, with Undo",
+      "id": "want-end",
+      "in": "typical",
+      "does": "ends the want, with Undo",
+      "shows": "Ended"
+    },
+    {
+      "control": "Undo",
+      "on_tap": "takes the last change back",
+      "id": "want-undo",
+      "in": "typical",
+      "does": "takes the last change back",
+      "after": [
+        "want-pause"
+      ],
+      "shows": "Pause"
+    },
+    {
+      "control": "Start",
+      "on_tap": "starts watching at the guessed range",
+      "id": "want-start",
+      "in": "new",
+      "does": "starts watching at the guessed range",
+      "shows": "Watching. You can leave and come back."
+    },
+    {
+      "control": "Start",
+      "on_tap": "the sites answer one by one, with what they found so far",
+      "id": "want-start",
+      "in": "new",
+      "does": "the sites answer one by one, with what they found so far",
+      "shows": "Found 6 so far"
+    },
+    {
+      "control": "Empty search",
+      "on_tap": "goes to Buy to search",
+      "id": "want-empty-search",
+      "in": "empty",
+      "does": "goes to Buy to search",
+      "goes": "/buy"
+    },
+    {
+      "control": "Retry",
+      "on_tap": "loads the page afresh",
+      "id": "want-retry",
+      "in": "failed",
+      "does": "loads the page afresh",
+      "goes": "/want"
     }
-  ]
+  ],
+  "back": "the screen it came from"
 }

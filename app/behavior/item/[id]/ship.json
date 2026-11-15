@@ -1,16 +1,295 @@
 {
   "screen": "item/[id]/ship",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "route": "/item/it_kindle/ship",
+  "frame": [
+    "Who: a seller with a sale to send. Carol ships one thing now and then and wants it done right; a flipper prints every label due in one go.",
+    "Came to: get the label, know where to drop it off and by when, and see when the money lands.",
+    "A mistake costs most where a deadline passes (the site cancels and marks the seller), a label is bought for a sale already cancelled, or a parcel goes without tracking and the buyer says it never came.",
+    "Ways out (spec/ways-out.md §6.9): ship it myself, with tracking or without and what going without costs; Cancel sale from here, with what it costs on that site; Undo after a label prints.",
+    "In the loop: buying a label spends money, so it waits for its own tap with the amount on it; instant payout costs money, so it is offered with its fee and never chosen for them."
+  ],
+  "decisions": [
+    {
+      "decision": "The ship-by day is on the item's tag; a countdown shows only inside the last day",
+      "why": "Calm and visible: a countdown changes what the person does only when hours are left (frontend-standard §5, Honesty)."
+    },
+    {
+      "decision": "The label's service and box are guesses, each one tap to change",
+      "why": "The agent fills what it measured; the person corrects it (spec/features/assist.md, dotted guesses)."
+    },
+    {
+      "decision": "This one or All N, as two chips, when more than one sale waits",
+      "why": "The batch print in sold.md; a flipper prints every label with one approval, Carol prints one."
+    },
+    {
+      "decision": "In a batch, each row shows its own progress, and a failed row gets its own Retry while the rest carry on",
+      "why": "The Shopify batch pattern (sold.md, \"Batch print\")."
+    },
+    {
+      "decision": "Drop-off spots with the next time each takes a parcel, the door included",
+      "why": "It is Sunday in the demo; USPS carrier pickup is free for Ground Advantage (sold.md)."
+    },
+    {
+      "decision": "Your money: Sold, On its way, Ready on the site, In your bank, each with its date or the site's rule",
+      "why": "Ben's edge cases, 05:05 (spec/edge-cases.md §2): the money moves through four words."
+    },
+    {
+      "decision": "Instant payout is a second chip with its fee, only where the site states the fee",
+      "why": "edge-cases §2: shown with its fee, never the default. Mercari $3 is observed, Poshmark $2 asserted; eBay, Depop and Facebook not found."
+    },
+    {
+      "decision": "A thing sold on two sites offers no label until a buyer is picked on Today",
+      "why": "edge-cases §1: the double sale card lives on Today, and the cancelled sale never gets a label."
+    },
+    {
+      "decision": "Cancel sale confirms in a sheet that names the refund and the site's cost",
+      "why": "ways-out §6.9 and trust-returns-disputes §3: eBay marks the record, Mercari may charge up to 5%."
+    },
+    {
+      "decision": "No parcel weight shown",
+      "why": "Not in the data; never invent a number."
+    }
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "one",
+      "route": "/item/it_kindle/ship",
+      "shows": "Buy label $6.40",
+      "why": "one sale, its label guessed"
+    },
+    {
+      "state": "typical",
+      "route": "/item/it_kindle/ship?all=1",
+      "shows": "Print 2 labels for $6.40",
+      "why": "two sales due, printed together"
+    },
+    {
+      "state": "dense",
+      "route": "/item/it_f016/ship?world=flipper&all=1",
+      "shows": "Print 6 labels for $37.65",
+      "why": "a flipper's six labels, one on a site whose sign-in is running out"
+    },
+    {
+      "state": "instant",
+      "route": "/item/it_f017/ship?world=flipper",
+      "shows": "Same day, $3",
+      "why": "a Mercari sale, where instant payout has a stated fee"
+    },
+    {
+      "state": "double",
+      "route": "/item/it_kindle/ship?case=double",
+      "shows": "Sold on two sites",
+      "why": "two buyers paid; no label until one is picked"
+    },
+    {
+      "state": "empty",
+      "route": "/item/nope/ship",
+      "shows": "Nothing to ship",
+      "why": "no sale waits for a label"
+    },
+    {
+      "state": "loading",
+      "route": "/item/it_kindle/ship?state=loading",
+      "shows": "Ship",
+      "why": "the item card's skeleton under the heading"
+    },
+    {
+      "state": "failed",
+      "route": "/item/it_kindle/ship?state=failed",
+      "shows": "This sale didn’t load",
+      "why": "the sale did not load; Try again asks again"
+    },
+    {
+      "state": "offline",
+      "route": "/item/it_kindle/ship?state=offline",
+      "shows": "Waiting for signal",
+      "why": "the last copy; Buy label holds on its pill until the signal returns"
     }
   ],
   "controls": [
     {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "id": "nav-back",
+      "does": "goes back, or to the item when opened directly",
+      "goes": "/item/it_kindle"
+    },
+    {
+      "id": "ship-item",
+      "does": "opens the item",
+      "goes": "/item/it_kindle"
+    },
+    {
+      "id": "ship-scope-one",
+      "does": "prints this sale's label only"
+    },
+    {
+      "id": "ship-scope-all",
+      "does": "prints every label due"
+    },
+    {
+      "id": "ship-service",
+      "does": "changes the label's service"
+    },
+    {
+      "id": "ship-box",
+      "does": "changes the box"
+    },
+    {
+      "id": "ship-print",
+      "does": "buys and prints the label"
+    },
+    {
+      "id": "ship-print-undo",
+      "does": "voids the label just printed",
+      "after": [
+        "ship-print"
+      ]
+    },
+    {
+      "id": "retry-ord_f1",
+      "does": "prints the label that failed again",
+      "route": "/item/it_f016/ship?world=flipper&all=1",
+      "after": [
+        "ship-print"
+      ]
+    },
+    {
+      "id": "dropoff-do_main",
+      "does": "opens the post office in maps"
+    },
+    {
+      "id": "dropoff-do_oak",
+      "does": "opens the post office in maps"
+    },
+    {
+      "id": "dropoff-do_door",
+      "does": "books a pickup at the door, with Undo"
+    },
+    {
+      "id": "pickup-undo",
+      "does": "cancels the door pickup",
+      "after": [
+        "dropoff-do_door"
+      ]
+    },
+    {
+      "id": "payout-speed-free",
+      "does": "keeps the standard free payout",
+      "route": "/item/it_f017/ship?world=flipper"
+    },
+    {
+      "id": "payout-speed-today",
+      "does": "picks same-day payout for its fee",
+      "route": "/item/it_f017/ship?world=flipper"
+    },
+    {
+      "id": "ship-myself",
+      "does": "opens Ship it myself"
+    },
+    {
+      "id": "self-tracking-with",
+      "does": "ships with tracking",
+      "after": [
+        "ship-myself"
+      ]
+    },
+    {
+      "id": "self-tracking-without",
+      "does": "ships without tracking, and says what that gives up",
+      "after": [
+        "ship-myself"
+      ]
+    },
+    {
+      "id": "self-carrier",
+      "does": "changes the carrier",
+      "after": [
+        "ship-myself"
+      ]
+    },
+    {
+      "id": "self-number",
+      "does": "types the tracking number",
+      "after": [
+        "ship-myself"
+      ]
+    },
+    {
+      "id": "self-save",
+      "does": "marks it shipped",
+      "after": [
+        "ship-myself"
+      ]
+    },
+    {
+      "id": "ship-done-undo",
+      "does": "takes back Marked shipped",
+      "after": [
+        "ship-myself",
+        "self-save"
+      ]
+    },
+    {
+      "id": "ship-cancel",
+      "does": "opens Cancel sale"
+    },
+    {
+      "id": "cancel-reason-broke",
+      "does": "gives the reason: it broke",
+      "after": [
+        "ship-cancel"
+      ]
+    },
+    {
+      "id": "cancel-reason-gone",
+      "does": "gives the reason: sold in person",
+      "after": [
+        "ship-cancel"
+      ]
+    },
+    {
+      "id": "cancel-reason-other",
+      "does": "gives another reason",
+      "after": [
+        "ship-cancel"
+      ]
+    },
+    {
+      "id": "cancel-confirm",
+      "does": "cancels the sale; the buyer gets the money back",
+      "after": [
+        "ship-cancel"
+      ]
+    },
+    {
+      "id": "ship-close",
+      "does": "goes back to the item",
+      "after": [
+        "ship-cancel",
+        "cancel-confirm"
+      ],
+      "goes": "/item/it_kindle"
+    },
+    {
+      "id": "ship-double",
+      "does": "opens Today, where the double sale card waits",
+      "route": "/item/it_kindle/ship?case=double",
+      "goes": "/"
+    },
+    {
+      "id": "ship-gone",
+      "does": "opens the item",
+      "route": "/item/nope/ship",
+      "goes": "/item/nope"
+    },
+    {
+      "id": "ship-retry",
+      "does": "loads the sale again",
+      "route": "/item/it_kindle/ship?state=failed",
+      "goes": "/item/it_kindle/ship"
     }
-  ]
+  ],
+  "back": "Back goes to the screen it came from; opened directly, to the item.",
+  "skips": {
+    "new": "Ship opens only from a sale, and a person who has done nothing has sold nothing"
+  }
 }

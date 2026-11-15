@@ -1,6 +1,23 @@
 {
   "screen": "item/[id]/index",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "what": "One item's page, whose top changes with its moment: researching, review, live, offer, sold, shipped and paid, kept (spec/pages.md §6.6).",
+  "frame": [
+    "Who: Sam, clearing out a dozen things (primary); Dana the flipper must still hold (64 items, five sites). They open it from a Sell tile, a Today card or a message, several times a day while something is live.",
+    "Came to do: see whether it is gone yet and what they keep; answer the one thing waiting (an offer, a ship-by, the facts of a draft); fix a field the agent got wrong.",
+    "Costliest mistake: a price or a sale the person did not mean (accepting, countering under the lowest, posting at a guessed price), a wrong fact going public on every site, or deleting an item with a sale still open.",
+    "Ways out (ways-out.md §6.6): fix any field in place and lock it; own photos, add or retake them on a live item, with Clean up (no model) and Enhance with AI (off, marked) as two named choices and Use original (edge-cases §6); type my own price in the Plan; Sold elsewhere; Keep it or Donated at any time; End everywhere; Delete, refused while an order is open.",
+    "The person stays in the loop at: every guessed value (dotted until touched); each stop of the auto-list tree, one question on one card, never a restart (edge-cases §7); the offer (accept, or a counter picked from three amounts or typed); a photo change on a live item (Approve names the listings); anything under the lowest they take."
+  ],
+  "decisions": [
+    "The top changes by moment and the rest of the page stays where the person left it (pages.md §6.6: one page, five moments; the person learns one layout).",
+    "One number first: the amount, then a plain row that opens the sum (Art. 7.10) (Ben round 11: the gradient box was off and sizes were too big or too small; the sum is a sheet, not a second big number).",
+    "Photos slide in a pager with dots; each site's row says where its listing differs (price, title, size spelled out, photos cut or cropped) (Ben round 11: 'if theres multiple photos i should be able to slide'; listings are written differently per site (edge-cases §5)).",
+    "Review shows where the auto-list tree stopped as one question card; an answer fills the field and the next stop takes the card's place (edge-cases §7 (agent proposal): every stop is a card with one question, so a stop costs a tap, not a restart).",
+    "Photos open a sheet with Clean up and Enhance with AI as two switches, at most one on, both off until picked; Use original resets; on a live item the change waits for an Approve naming the listings (edge-cases §6 and ways-out §6.5: the mentor's worry that AI can misstate the item; a change to live listings is public (hand-off rule)).",
+    "Lock is a switch in the field's More sheet, and the field's caption says Locked (ways-out §6.6 (attribute.locked); the kit has no lock icon, so one is requested rather than drawn).",
+    "Under the Plan or Post sheet the page's foot act is not drawn (C4, one black pill per decision: the act under the scrim cannot be reached and read as a second act).",
+    "Every guess on the page is a Guess at the body size, the title in Review too (B31, parts of one name are one size; the sheets over the page use the same size)."
+  ],
   "states": [
     {
       "state": "stub",

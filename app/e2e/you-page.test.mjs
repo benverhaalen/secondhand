@@ -17,14 +17,21 @@ const STATES = {
   'insights new': { shows: ['By site', 'Each site you sell on shows here once it has a sale.', 'Amount'] },
   'records typical': { shows: ['Records', '2026', 'Sold, 4 sales', 'Fees and labels', '$25.37', 'Kept', '$163.63', 'Download CSV'] },
   'records new': { shows: ['Records', 'No sales this year'], hidden: ['Download CSV'] },
+  'connections mismatch': { shows: ['Doesn’t match', 'Brass desk lamp with cream shade', 'Open on the site'] },
   'connections typical': { shows: ['Your sites', 'Linked', 'Needs you', 'Signed out yesterday at 9 pm', 'Try again', 'Not linked', 'Link', 'Your password goes to the site, never to secondhand.'] },
   'connections loading': { taps: ['link-mercari'], shows: ['Signing in'] },
   'connections failed': { taps: ['link-mercari'], wait: 1600, shows: ['Didn’t link', 'The code from your phone timed out'] },
-  'rules typical': { shows: ['Rules and limits', 'Runs on its own', 'Answer questions about facts', 'Asks you first. Approved 2 of 3 times without a change', 'Always asks you', 'Sharing your address', 'Lowest prices', 'Brass desk lamp with cream shade'] },
-  'rules new': { shows: ['Rules and limits', 'Approve the same kind of card 3 times without a change, and it can run on its own here.', 'Always asks you'] },
+  'rules typical': { shows: ['Rules and limits', 'Runs on its own', 'Answer questions about facts', 'Asks you first. Approved 2 of 3 times without a change', 'Permissions', 'Lowest prices', 'Brass desk lamp with cream shade'] },
+  'rules new': { shows: ['Rules and limits', 'Approve the same kind of card 3 times without a change, and it can run on its own here.', 'Permissions'] },
   'log typical': { shows: ['Activity', 'Today', 'Yesterday', 'Answered “blanket lined” from the tag photo', 'Undo'] },
   'log new': { shows: ['Activity', 'Nothing done for you yet'] },
-  'settings typical': { shows: ['Settings', 'Pause selling', 'Quiet hours', 'Never suggest photo edits', 'Notifications', 'Offers', 'Right away', 'In a batch', 'Measurements', 'Inches', 'US dollars', 'Signed in with', 'Apple', 'Export your data', 'Sign out', 'Delete account'] },
+  'notifications typical': { shows: ['Notifications', 'Right away', 'In the next summary', 'It sold', 'An offer you’d take', 'Never sent', 'Group by item', 'Quiet hours', '10 pm', '8 am', 'On the lock screen', 'Accept, Approve and Counter', 'Face ID', 'Show messages and addresses'] },
+  'defaults typical': { shows: ['App defaults', 'How it sells', 'Sell it', 'Sites', 'Ship or pickup', 'Pickup spot', 'Library parking lot, Main St', 'Lowest price', 'Suggested', 'Clean up', 'Enhance with AI', 'Off: photos are never redrawn', 'Never suggest photo edits', 'Replies sound', 'Like you', 'Measurements', 'Inches', 'US dollars'] },
+  'permissions typical': { shows: ['Permissions', 'Counter offers above your lowest', 'On its own', 'Asks first', 'Take a listing down after it sells', 'So it can’t sell twice', 'Always asks you', 'Sharing your address', 'Always asks', 'Never', 'Taking a deal off the site', 'Rules and limits'] },
+  'loading (any page)': { shows: ['Payouts'], state: 'loading' },
+  'failed (any page)': { shows: ['Couldn’t load your payouts', 'Try again'], state: 'failed' },
+  'offline (any page)': { shows: ['Waiting for signal', 'On its way'], state: 'offline' },
+  'settings typical': { shows: ['Settings', 'Pause selling', 'Notifications', 'App defaults', 'Permissions', 'Signed in with', 'Apple', 'Export your data', 'Sign out', 'Delete account'] },
   'not found': { shows: ['Not found'] },
 };
 
@@ -37,6 +44,7 @@ for (const st of table.states) test(`you/[page]: ${st.state} shows ${st.shows.sl
   for (const id of want.taps ?? []) await s.tap(id);
   if (want.wait) await s.page.waitForTimeout(want.wait);
   for (const t of want.shows) await s.shows(t);
+  if (want.state) assert.equal(await s.page.locator('[data-screen]').first().getAttribute('data-state'), want.state);
   for (const t of want.hidden ?? []) assert.equal(await s.page.getByText(t, { exact: true }).count(), 0, `${st.state} should not show "${t}"`);
 });
 
@@ -89,6 +97,47 @@ test('you/[page]: a payout shows its four words with dates, and instant payout w
   await f.tap('payout-instant');
   await f.saw({ type: 'change', entity: 'payout', id: 'ord_f6', to: 'instant_requested' });
   await f.shows('Today, with the fee');
+});
+
+// Face ID guards every lock-screen act that commits the person, and has no switch (spec/notifications.md).
+test('you/[page]: lock-screen Accept, Approve and Counter need Face ID, with no switch', async () => {
+  const s = await app.open('/you/notifications');
+  await s.shows('Accept, Approve and Counter');
+  await s.shows('Face ID');
+  assert.equal(await s.page.getByRole('switch', { name: /Accept|Face ID/ }).count(), 0, 'the Face ID row has no switch');
+  assert.ok(await s.page.getByRole('switch').count() > 5, 'the kinds do have switches');
+});
+
+// Mismatches lead Your sites, across every site (Ben 05:18), and a clean world has none.
+test('you/[page]: what doesn’t match comes before the sites', async () => {
+  const s = await app.open('/you/connections?world=edge');
+  const top = await s.page.getByText('Doesn’t match', { exact: true }).boundingBox();
+  const site = await s.page.getByTestId('site-row-ebay').boundingBox();
+  assert.ok(top && site && top.y < site.y, 'Doesn’t match sits above the site rows');
+  const c = await app.open('/you/connections');
+  await c.shows('Your sites');
+  assert.equal(await c.page.getByText('Doesn’t match', { exact: true }).count(), 0);
+});
+
+// Every page under You draws the network states from ?state= (app/src/demo/screen.ts).
+for (const page of ['payouts', 'insights', 'records', 'connections', 'rules', 'log', 'notifications', 'defaults', 'permissions', 'settings']) {
+  test(`you/[page]: ${page} draws loading, failed and offline`, async () => {
+    for (const st of ['loading', 'failed', 'offline']) {
+      const s = await app.open(`/you/${page}?state=${st}`);
+      await s.page.locator(`[data-screen="you-${page === 'connections' ? 'connections' : page}"]`).first().waitFor({ state: 'attached' });
+      assert.equal(await s.page.locator('[data-screen]').first().getAttribute('data-state'), st, `${page} at ${st}`);
+    }
+  });
+}
+
+// A kind that starts by asking is never offered On its own: running alone is earned (decisions: tiers that learn).
+test('you/[page]: a kind that asks can be made Never, but not On its own, from defaults', async () => {
+  const s = await app.open('/you/permissions');
+  await s.tap('perm-reply_other');
+  await s.shows('To let it run on its own, approve it 3 times without a change.');
+  assert.equal(await s.page.getByTestId('mode-auto').count(), 0);
+  await s.tap('mode-never');
+  await s.saw({ type: 'change', entity: 'permission', id: 'reply_other', to: 'never' });
 });
 
 // A price is saved only on Approve, and the save can be undone (README, the hand-off rule).

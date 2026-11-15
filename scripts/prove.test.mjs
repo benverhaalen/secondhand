@@ -24,7 +24,7 @@ const plan = { tasks: [
 const planPath = join(dir, 'plan.json');
 writeFileSync(planPath, JSON.stringify(plan));
 const okWalk = join(dir, 'walk-ok.mjs'); writeFileSync(okWalk, 'process.exit(0)');
-const run = (...args) => spawnSync(process.execPath, [prove, '--plan', planPath, ...args], { encoding: 'utf8' });
+const run = (...args) => spawnSync(process.execPath, [prove, '--plan', planPath, ...args], { encoding: 'utf8', env: { ...process.env, PROVE_RUNNING: '' } });
 const out = r => r.stdout + r.stderr;
 
 test('--task passing task exits 0', () => {
@@ -73,4 +73,10 @@ test('--note needs (a) (b) (c) and a diff list', () => {
 });
 test('--tune runs the walk and the engine tasks', () => {
   const r = run('--tune', 'bad', '--walk', okWalk); assert.notEqual(r.status, 0); assert.match(out(r), /bad-1/);
+});
+
+test('a run started from inside a run refuses, so a check that calls prove.mjs cannot recurse', () => {
+  const r = spawnSync(process.execPath, [prove, '--plan', planPath, '--wave', '0'], { encoding: 'utf8', env: { ...process.env, PROVE_RUNNING: '1' } });
+  assert.equal(r.status, 3);
+  assert.match(r.stderr, /refused/);
 });

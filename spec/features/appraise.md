@@ -89,7 +89,7 @@ Each P is calibrated on labelled outcomes. Below the qualified-to-price gate (id
 | Trade in | best quote among buy-back sites, read at that time, labelled with its age | about 48 h quote lock (*asserted*) | opens the site |
 | Donate | fair market value range from sold comps, for the receipt | pickup or drop-off | opens ThredUp Clean Out, Goodwill pickup |
 
-Each is a guarded number. A route with no basis is hidden with its reason, never guessed. Effort is shown as steps, not a score.
+Each is a guarded number. A route with no basis is hidden with its reason, never guessed. Effort is shown as steps, not a score. We never make a guaranteed cash offer from our own estimate: an offer attracts the items it overprices, as Zillow Offers found ("Owners with lemons are more eager to sell", $569M written down, *observed*, [risk-and-reconciliation.md](../../research/price/ben/risk-and-reconciliation.md)). A trade-in quote is always the buyer's own, and the buyer carries the risk.
 
 **Outgoing words.** A drafted offer message passes a `claim_check`; a hold raises `unbacked_claim`. A `buy_offer` asks every time. A price over `want.max_total_cents` raises `offer_over_ceiling`.
 

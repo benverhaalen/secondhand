@@ -1,0 +1,479 @@
+# The want screen (app/behavior/want.json) on a phone or simulator: the same states and controls as app/e2e/want.test.mjs.
+# Expo Go, with npx expo start running:  maestro test app/e2e/maestro/want.yaml
+# A development build:                  maestro test -e APP_ID=<bundle id> -e URL=secondhand:// app/e2e/maestro/want.yaml
+appId: ${APP_ID}
+env:
+  APP_ID: host.exp.Exponent
+  URL: exp://127.0.0.1:8081/--
+---
+- launchApp
+# State: typical
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- assertVisible: "Nike Dunk Low Grey Fog, men’s 10, under \\$80"
+- assertVisible: "Looking on 4 sites"
+- assertVisible: "Behind"
+- assertVisible: "Found 4 so far"
+- assertVisible: "\\$64 to \\$80"
+- assertVisible: "Men’s US"
+- assertVisible: "Pause"
+- assertVisible: "End"
+# nav-back: goes back
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "nav-back" }
+# want-what: edits what to look for in place
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-what" }
+- assertVisible: { id: "want-what-input" }
+# want-price: moves the nearer end of the range to where it was tapped, saves it with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-price" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-site-ebay: turns that site off, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-site-ebay" }
+- extendedWaitUntil:
+    visible: "Site off"
+    timeout: 5000
+# want-site-mercari: turns that site off, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-site-mercari" }
+- extendedWaitUntil:
+    visible: "Site off"
+    timeout: 5000
+# want-site-depop: turns that site off, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-site-depop" }
+- extendedWaitUntil:
+    visible: "Site off"
+    timeout: 5000
+# want-site-facebook: turns that site off, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-site-facebook" }
+- extendedWaitUntil:
+    visible: "Site off"
+    timeout: 5000
+# want-site-poshmark: turns a site on, with Undo, and looks again
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-site-poshmark" }
+- extendedWaitUntil:
+    visible: "Site on"
+    timeout: 5000
+# want-how-ship: keeps shipped ones only, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-how-ship" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-how-pickup: takes pickups only and shows the radius, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-how-pickup" }
+- assertVisible: { id: "want-radius-15" }
+# want-how-both: takes shipped and pickup and shows the radius, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-how-both" }
+- assertVisible: { id: "want-radius-15" }
+# want-size-system-mens: keeps men's US sizes, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-system-mens" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-system-womens: switches to women's US sizes, any size, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-system-womens" }
+- assertVisible: { id: "want-size-any" }
+# want-size-any: takes any size, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-any" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-7: sets size 7, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-7" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-7.5: sets size 7.5, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-7.5" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-8: sets size 8, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-8" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-8.5: sets size 8.5, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-8.5" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-9: sets size 9, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-9" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-9.5: sets size 9.5, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-9.5" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-10: sets size 10, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-10" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-11: sets size 11, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-11" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-11.5: sets size 11.5, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-11.5" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-12: sets size 12, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-12" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-12.5: sets size 12.5, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-12.5" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-13: sets size 13, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-13" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-size-10.5: sets size 10.5, saves with Undo and looks again, site by site
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-size-10.5" }
+- extendedWaitUntil:
+    visible: "Just now"
+    timeout: 5000
+# want-condition-new: sets how worn at least, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-condition-new" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-condition-like-new: sets how worn at least, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-condition-like-new" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-condition-good: sets how worn at least, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-condition-good" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-condition-fair: sets how worn at least, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-condition-fair" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-alert-available: alerts on any new one, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-alert-available" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-alert-under: goes back to alerts under the most, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-alert-available" }
+- tapOn: { id: "want-alert-under" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-quiet: edits quiet hours in place
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-quiet" }
+- assertVisible: { id: "want-quiet-input" }
+# want-pause: pauses the want, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-pause" }
+- extendedWaitUntil:
+    visible: "Resume"
+    timeout: 5000
+# want-end: ends the want, with Undo
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-end" }
+- extendedWaitUntil:
+    visible: "Ended"
+    timeout: 5000
+# want-undo: takes the last change back
+- openLink: ${URL}/want?id=want_dunk&world=buyer
+- extendedWaitUntil:
+    visible: "Watching for"
+    timeout: 15000
+- tapOn: { id: "want-pause" }
+- tapOn: { id: "want-undo" }
+- extendedWaitUntil:
+    visible: "Pause"
+    timeout: 5000
+# State: paused
+- openLink: ${URL}/want?id=want_kin&world=buyer
+- extendedWaitUntil:
+    visible: "Paused"
+    timeout: 15000
+- assertVisible: "Resume"
+# want-pause: resumes the want, with Undo
+- openLink: ${URL}/want?id=want_kin&world=buyer
+- extendedWaitUntil:
+    visible: "Paused"
+    timeout: 15000
+- tapOn: { id: "want-pause" }
+- extendedWaitUntil:
+    visible: "Looking again"
+    timeout: 5000
+# State: radius
+- openLink: ${URL}/want?id=want_oven&world=buyer
+- extendedWaitUntil:
+    visible: "25 mi"
+    timeout: 15000
+- assertVisible: "Colour"
+- assertVisible: "Marseille"
+# want-radius-5: sets the pickup radius, with Undo
+- openLink: ${URL}/want?id=want_oven&world=buyer
+- extendedWaitUntil:
+    visible: "25 mi"
+    timeout: 15000
+- tapOn: { id: "want-radius-5" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# want-colour-any: goes back to any colour, with Undo
+- openLink: ${URL}/want?id=want_oven&world=buyer
+- extendedWaitUntil:
+    visible: "25 mi"
+    timeout: 15000
+- tapOn: { id: "want-colour-any" }
+- extendedWaitUntil:
+    visible: "Saved"
+    timeout: 5000
+# State: new
+- openLink: ${URL}/want?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Watch for"
+    timeout: 15000
+- assertVisible: "Watch for \\$80 or less"
+- assertVisible: "Where"
+# want-start: starts watching at the guessed range
+- openLink: ${URL}/want?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Watch for"
+    timeout: 15000
+- tapOn: { id: "want-start" }
+- extendedWaitUntil:
+    visible: "Watching\\. You can leave and come back\\."
+    timeout: 5000
+# want-start: the sites answer one by one, with what they found so far
+- openLink: ${URL}/want?q=nike%20dunk%20low%20grey%2010
+- extendedWaitUntil:
+    visible: "Watch for"
+    timeout: 15000
+- tapOn: { id: "want-start" }
+- extendedWaitUntil:
+    visible: "Found 6 so far"
+    timeout: 5000
+# State: jersey
+- openLink: ${URL}/want?q=brewers%20jersey%20around%20%2460
+- extendedWaitUntil:
+    visible: "Colour"
+    timeout: 15000
+- assertVisible: "\\$48 to \\$72"
+- assertVisible: "15 mi"
+- assertVisible: "Navy"
+- assertVisible: "XL"
+- assertVisible: "Not enough sales yet to show"
+- assertVisible: "Watch for \\$72 or less"
+# want-price: moves the nearer end to the middle of the track, and the foot follows
+- openLink: ${URL}/want?q=brewers%20jersey%20around%20%2460
+- extendedWaitUntil:
+    visible: "Colour"
+    timeout: 15000
+- tapOn: { id: "want-price" }
+- extendedWaitUntil:
+    visible: "Watch for \\$60 or less"
+    timeout: 5000
+# want-how-ship: keeps shipped ones only on the guess
+- openLink: ${URL}/want?q=brewers%20jersey%20around%20%2460
+- extendedWaitUntil:
+    visible: "Colour"
+    timeout: 15000
+- tapOn: { id: "want-how-ship" }
+- extendedWaitUntil:
+    visible: "Watch for \\$72 or less"
+    timeout: 5000
+# want-colour-navy: picks navy
+- openLink: ${URL}/want?q=brewers%20jersey%20around%20%2460
+- extendedWaitUntil:
+    visible: "Colour"
+    timeout: 15000
+- tapOn: { id: "want-colour-navy" }
+- assertVisible: { id: "want-colour-navy" }
+# State: clearing
+- openLink: ${URL}/want?id=want_desk
+- extendedWaitUntil:
+    visible: "10 mi"
+    timeout: 15000
+- assertVisible: "Standing desk under \\$150 within 10 miles"
+# State: empty
+- openLink: ${URL}/want
+- extendedWaitUntil:
+    visible: "Nothing to watch yet"
+    timeout: 15000
+# want-empty-search: goes to Buy to search
+- openLink: ${URL}/want
+- extendedWaitUntil:
+    visible: "Nothing to watch yet"
+    timeout: 15000
+- tapOn: { id: "want-empty-search" }
+# State: failed
+- openLink: ${URL}/want?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this want"
+    timeout: 15000
+- assertVisible: "Try again"
+# want-retry: loads the page afresh
+- openLink: ${URL}/want?state=failed
+- extendedWaitUntil:
+    visible: "Couldn’t load this want"
+    timeout: 15000
+- tapOn: { id: "want-retry" }
+# State: offline
+- openLink: ${URL}/want?state=offline
+- extendedWaitUntil:
+    visible: "Waiting for signal\\. This is the last copy\\."
+    timeout: 15000

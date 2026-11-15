@@ -24,9 +24,9 @@ Money first, then the deadline, then the item. The title names the thing and the
 
 | Event | Level | Title | Body | Buttons |
 |---|---|---|---|---|
-| It sold | Now (*open*: today.md batches it; the research proposes immediate, recommended here) | Sold on Depop: the Carhartt jacket | You keep $31.40. Ship by Thu. | Print label |
-| An offer you'd take, under an hour left | Now, Time Sensitive | $42 offer on the Carhartt jacket | You keep $36.70. Expires in 52 min. | Accept, Counter |
-| An offer you'd take, more time left | Now | $42 offer on the Carhartt jacket | You keep $36.70. Expires tomorrow 6 pm. | Accept, Counter |
+| It sold | Now ([decided](../product/decisions.md#2026-11-15-a-sale-and-a-watched-item-under-your-price-notify-at-once)) | Sold on Depop: the Carhartt jacket | You get $31.40. Ship by Thu. | Print label |
+| An offer you'd take, under an hour left | Now, Time Sensitive | $42 offer on the Carhartt jacket | You get $36.70. Expires in 52 min. | Accept, Counter |
+| An offer you'd take, more time left | Now | $42 offer on the Carhartt jacket | You get $36.70. Expires tomorrow 6 pm. | Accept, Counter |
 | Offers under your lowest price | Silent; one line in the digest | | "5 offers under your price, answered for you" | |
 | Ship by today | Now, the morning of | Ship the lamp today | Mercari cancels it Fri 9 am if it isn't scanned. | Print label |
 | A pickup within the hour | Now, Time Sensitive | Sam is coming at 6:30 | Library parking lot. $40 cash. | On my way, Running late |
@@ -37,7 +37,7 @@ Money first, then the deadline, then the item. The title names the thing and the
 | A delist failed after a sale | Now | The lamp is still up on Poshmark | It sold on Mercari. Take it down to avoid a second sale. | Try again |
 | Two sales at once | Now | Two buyers paid for the lamp | Pick who gets it. Cancelling costs nothing on Mercari. | Open |
 | The money arrived | Later | $31.40 is in your bank | From the Carhartt jacket on Depop. | |
-| A watched item under your price | Now (*open* in the research; recommended: it may sell) | Brewers jersey, size L, $48 delivered | On eBay. Your top price is $60. | Open on eBay, Save |
+| A watched item under your price | Now ([decided](../product/decisions.md#2026-11-15-a-sale-and-a-watched-item-under-your-price-notify-at-once)) | Brewers jersey, size L, $48 delivered | On eBay. Your top price is $60. | Open on eBay, Save |
 | A watched item over your price, or a weak match | Later, in that want's digest | 4 new matches for the Brewers jersey | Cheapest $62 delivered. | |
 | A site account needs signing in again | Later (Now if a sale or offer is waiting on it) | Sign in to Depop again | Your 6 listings there are paused until you do. | Sign in |
 | A listing is slow (standing Stuck) | Silent; on the item and in the digest at most once a week | | | |
@@ -100,5 +100,4 @@ Onboarding asks once, at step 7, after the person has linked a site, and says th
 
 ## Open for Ben and Nate
 
-- A sale and a watched item under the price push at once (recommended), or wait for the digest as today.md has it.
 - The digest times, and whether a person can choose one a day.

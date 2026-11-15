@@ -103,7 +103,7 @@ Modes from [product.md §5](../product.md#decision-kinds-the-complete-list); the
 
 | Kind | Mode |
 |---|---|
-| `answer_fact` | auto, confirmed attributes only; a size answer only if every number is measured or `you_said` |
+| `answer_fact` | ask (a draft to approve), promotable per kind of question after 3 unedited sends ([decision](../../product/decisions.md#2026-11-15-replies-to-buyers-start-as-drafts-the-person-approves)); confirmed attributes only; a size answer only if every number is measured or `you_said` |
 | `counter_offer`, `decline_offer`, `offer_to_watchers` | auto inside limits; below the floor is answered with a counter at it |
 | `accept_offer` | auto at or above `always_accept_cents`, else ask; promotable per item |
 | `reply_other` | ask, promotable |
