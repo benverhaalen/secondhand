@@ -148,3 +148,14 @@ Nate ordered it ("Rewrite it", then "After judging": [words](../../product/words
 **What it cannot do.** GitHub keeps the old commits reachable through the references of 24 pull requests and by commit id. Only GitHub Support can purge them, on a request from Ben as the repository's owner. Until then the old content is not in any branch and is still fetchable by someone who has an old id.
 
 **Not in scope unless Nate says so:** the page-reading scripts and notes named "recon", and one line about studying animations in a vendored design skill that is kept as an unchanged copy.
+
+## 12. Independent reruns
+
+Proofs rerun by the orchestrator, who wrote none of these fixes. Each line is *observed* at the commit and time given.
+
+**2026-11-15, 12:55 UTC, main at 041f7ffe, Windows, `node server/main.ts` with a scratch data folder and a development code** (rows SV0, SV1, SV2, SV3, SV5, SR1):
+- Sign-in crosses routes: email start 202, verify with the development code returns a token, `GET /v1/me` through another route 200; a wrong code 401; no token 401.
+- A signed-out search for one jacket settled in about 5 s with four sources returning rows: Dupe 40 found and 17 used, Depop 24 and 19, Poshmark 48 and 23, eBay 240 and 160; Mercari arrived with none (it needs an account).
+- Another visitor reading that job got 404.
+- After the server was stopped and started: the same token still answered 200, the job read back as done with its five stages, and its event stream replayed 13 frames. The job's result rows did not come back (zero after the restart), which is the safe side of SV2 until every row carries its own `may_store`.
+- On disk: one SQLite file and its log; no Dupe result link and no listing address in either.
