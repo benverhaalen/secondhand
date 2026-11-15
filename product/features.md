@@ -23,5 +23,6 @@ Status moves: idea → researching → designing → building → demo-ready. Ch
 | [insights](../features/insights/) | You: earned, could earn, goals and seller analytics | designing | — |
 | [market](../features/market/) | Product pages, price history and trends anyone can open | designing | — |
 | [score](../features/score/) | Scoring engine: financial, quality, visibility and trend, and the best plan per site | designing | — |
+| [assist](../features/assist/) | The assistant; unclear words in a prompt become the right input under it | designing | — |
 
 Ideas that wait until the product works are on the [ideas board](../ideas/README.md).
