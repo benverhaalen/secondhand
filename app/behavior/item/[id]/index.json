@@ -409,7 +409,7 @@
       "id": "why",
       "control": "Why? on a field or a number",
       "on_tap": "opens the Why sheet: the reason in words first, See the numbers under it, then the item’s events with their sources and Undo (pages §6.6; Ben 06:53)",
-      "shows": "~like it sold lately on 2 sites",
+      "shows": "~ lately",
       "then": "why-numbers"
     },
     {
@@ -1138,7 +1138,7 @@
       "control": "Why? beside Joy-Con drift",
       "on_tap": "opens the reason it reads so, in words, with See the source under it",
       "route": "/item/it_switch",
-      "shows": "Not in the photos, so it’s yours to fill.",
+      "shows": "Not in the photos",
       "then": "field-why-numbers"
     },
     {
@@ -1189,7 +1189,7 @@
       "control": "Why? beside the description",
       "on_tap": "says what the description is written from, with See the source under it",
       "route": "/item/it_draft",
-      "shows": "Written from the details below, with the flaw named so a buyer isn’t surprised.",
+      "shows": "Written from the details below",
       "then": "field-why-numbers"
     },
     {
