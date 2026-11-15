@@ -63,14 +63,14 @@ export function useShop() {
   }, [search.reach]);
   useEffect(() => { if (search.failure) setFailure(search.failure); }, [search.failure]);
 
-  const followUp = useCallback((text: string, before: Turn[], quiet?: (failed: boolean) => void) => {
+  const followUp = useCallback((text: string, before: Turn[], quiet?: (failed: boolean) => void, answer?: { ask_id: string; field: string; value: unknown }) => {
     follow.current?.abort();
     const ctl = new AbortController(); follow.current = ctl;
     const frames: SseFrame[] = [];
     const show = (r: Reply) => setTurns(ts => { const i = ts.length - 1; return ts[i]?.kind === 'answer' ? [...ts.slice(0, i), { kind: 'answer', reply: r }] : [...ts, { kind: 'answer', reply: r }]; });
     show(reply([]));
     (async () => {
-      const start = await api.call<SearchStart>('POST /v1/assist', { body: { surface: 'buy', text, history: history(before), ...(search.jobId ? { search_job_id: search.jobId } : {}) }, signal: ctl.signal });
+      const start = await api.call<SearchStart>('POST /v1/assist', { body: { surface: 'buy', text, history: history(before), ...(search.jobId ? { search_job_id: search.jobId } : {}), ...(answer ? { answer } : {}) }, signal: ctl.signal });
       await api.jobFrames(start.id, { signal: ctl.signal, onFrame: f => { frames.push(f); show(reply(frames)); } });
       quiet?.(false);
     })().catch((e: unknown) => {
@@ -92,6 +92,14 @@ export function useShop() {
     setTurns(next);
     if (!turns.length) search.run(text, off.length ? SOURCE_IDS.filter(s => !off.includes(s)) : undefined); else followUp(text, next);
   }, [turns, search, followUp, off]);
+
+  // A tapped option answers the chat's question as the next turn; its label is what the history reads (spec/engines/capture.md section 4).
+  const answerAsk = useCallback((ask: { id: string; field: string }, value: unknown, label: string) => {
+    log.input('shop', 'shop-ask-answer', { field: ask.field, turn: turns.length });
+    const next: Turn[] = [...turns, { kind: 'ask', text: label, at: Date.now() }];
+    setTurns(next);
+    followUp(label, next, undefined, { ask_id: ask.id, field: ask.field, value });
+  }, [turns, followUp]);
 
   // Closing keeps the chat here; a chat with nothing asked is not kept.
   const close = useCallback(() => {
@@ -130,5 +138,5 @@ export function useShop() {
   }, [turns, search]);
 
   const askOffered = useCallback(() => { if (offer) { setOffer(null); ask(offer); } }, [offer, ask]);
-  return { turns, phase: phaseOf(turns), reach, failure, saved, offer, askOffered, ask, close, reopen, forget, retry, off, toggleSource };
+  return { turns, phase: phaseOf(turns), reach, failure, saved, offer, askOffered, ask, answerAsk, close, reopen, forget, retry, off, toggleSource };
 }

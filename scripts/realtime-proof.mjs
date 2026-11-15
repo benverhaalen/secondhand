@@ -42,6 +42,8 @@ async function runOnce() {
   process.env.NODE_ENV = 'development';
   process.env.SECONDHAND_DATA_DIR = mkdtempSync(join(tmpdir(), 'realtime-proof-'));
   delete process.env.SECONDHAND_LIVE_SITES;
+  // Offline means no provider either: a key in the shell would let sameProduct and the identity judge call out.
+  for (const key of ['ANTHROPIC_API_KEY', 'OPENROUTER_API_KEY', 'BROWSER_USE_API_KEY', 'TREG_TOKEN', 'APIFY_TOKEN', 'DATABRICKS_TOKEN']) delete process.env[key];
   const NativeDate = Date;
   globalThis.Date = class extends NativeDate {
     constructor(...args) { super(...(args.length ? args : [AS_OF])); }
