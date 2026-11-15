@@ -4,7 +4,7 @@ Updated: November 15, 2026. Owner: Ben. Agent: Claude Code (project thread "Fram
 
 ## Scope
 
-Ben asked for mechanisms from insurance, lending, appraisal and quant that improve pricing accuracy, quantify risk and explain a price, then said to apply them to the product's logic ([words](../../../../product/words.md#2026-11-15-adjacent-appraisal-risk-and-why-this-price)). Research: [risk-and-reconciliation.md](../../../../research/price/ben/risk-and-reconciliation.md). Market and competitor side: [market-and-competitors.md](../../../../research/cross-cutting/ben/market-and-competitors.md).
+Ben asked for mechanisms from insurance, lending, appraisal and quant that improve pricing accuracy, quantify risk and explain a price, then said to apply them to the product's logic ([words](../../../../product/words.md#2026-11-15-adjacent-appraisal-risk-and-why-this-price)). Research: [risk-and-reconciliation.md](../../../../research/price/ben/risk-and-reconciliation.md). Market and competitor side: [product/pitch/market.md](../../../../product/pitch/market.md).
 
 ## What changed (spec)
 
