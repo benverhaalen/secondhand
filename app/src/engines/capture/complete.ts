@@ -2,6 +2,7 @@ import { FAMILIES, type Family } from './process.ts';
 import { select, targets, studioStep, type State, type Fact } from './select.ts';
 import { fieldState, formValue, type FieldStatus } from './fields.ts';
 import { linked, compare, type FieldRow, type Target, type Site } from './table.ts';
+import { SITES } from '../../../../spec/sites.mjs';
 import { memoryStore, type ParamStore } from '../param/param.ts';
 export type Completeness = Partial<Record<Target,{ready:boolean;missing:{field:string;state:FieldStatus|'blocked'}[]}>>;
 export function completeness(rows: FieldRow[],state: State,params: ParamStore): Completeness {
@@ -28,15 +29,21 @@ export type Attributes = Record<string, {
   confidence?: number;
 }>;
 export type SelectionContext = Pick<State,'extent_cm'|'rigid'|'pieces'|'profile'|'recall_flag'> & {params?: ParamStore};
-export function missingFor(attrs: Attributes,kind: string,site: Site,confirm_mode: State['confirm_mode'],context: SelectionContext = {}): string[] {
+function isSite(site: string): site is Site {
+  return SITES.includes(site);
+}
+export function missingFor(attrs: Attributes,kind: string,site: string,confirm_mode: State['confirm_mode'],context: SelectionContext = {}): string[] {
   const [family,subkind]=kind.split('.');
   if(!(FAMILIES as readonly string[]).includes(family))throw new Error(`unknown kind ${kind}`);
   const sources = {spec:'lookup',marketplace:'lookup',inferred:'seen',label:'label',measured:'measured',you_said:'you_said'} as const;
   const facts:Record<string,Fact>=Object.fromEntries(Object.entries(attrs).map(([field,attr])=>[field,{value:attr.value,source:sources[attr.source],confidence:attr.confidence ?? (attr.confirmed?1:0),confirmed:attr.confirmed}]));
-  const state:State={capture_id:'',item_id:'',purpose:'sell',confirm_mode,has_lidar:true,sites:[site],type:family as Family,kind:subkind,
+  const linkedSite = isSite(site) ? site : 'ebay';
+  const state:State={capture_id:'',item_id:'',purpose:'sell',confirm_mode,has_lidar:true,sites:[linkedSite],type:family as Family,kind:subkind,
     kept:[],retakes:{},facts,lookups:'done',refused:[],recall_flag:context.recall_flag,extent_cm:context.extent_cm,rigid:context.rigid,pieces:context.pieces,profile:context.profile};
   const params=context.params ?? memoryStore();
   const selected=select(state,params);
   state.kept=selected.process.map(s=>s.key);
+  if(!isSite(site))return selected.rows.filter(row=>row.required==='all')
+    .filter(row=>fieldState(row,state,state.kept,params).state!=='known').map(row=>row.field).sort(compare);
   return completeness(selected.rows,state,params)[site]!.missing.map(f=>f.field);
 }

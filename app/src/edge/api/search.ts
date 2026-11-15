@@ -1,12 +1,11 @@
 // Rests-on: spec/product.md §7 Jobs and the event stream, §8 search budget; int-search-1 brief.
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { manifestFor, fromEngine, fields, text, bool, strings, money, object, url, invalid, pagination } from './captures.ts';
-import { searchSource, type SearchOpts, type SiteSearched } from '../intel/public/search.ts';
-import { BASE, searchUrl, type Row } from '../intel/public/readers.ts';
+import { searchSource, type SearchOpts, type SiteSearched, type SearchRow } from '../intel/public/search.ts';
+import { BASE, searchUrl } from '../intel/public/readers.ts';
 import { fetchPage } from '../intel/fetch.ts';
-import type { Site } from '../harness/protocol.ts';
-import { SOURCES, sourcesFor, routeId, type Caller, type Source } from '../intel/public/sources.ts';
-import { runPlan, normalize } from '../intel/run.ts';
+import { SOURCES, sourcesFor, routeId, type Caller, type Source, type SourceSite } from '../intel/public/sources.ts';
+import { runPlan, normalize, searchParams } from '../intel/run.ts';
 import { PROTOCOLS } from '../intel/protocols.ts';
 import { emptyFound, type Answer, type Found } from '../intel/answer.ts';
 import { sameProduct, type Judged, type Result } from '../intel/reconcile.ts';
@@ -15,7 +14,7 @@ import { searchAll as rankOffers, type BuyOffer, type BuyRow } from '../buy/buy.
 import { jobs, type ApiJobRow } from './jobs.ts';
 
 const protocol = PROTOCOLS.listings_matching;
-export const ports: Pick<SearchOpts, 'accounts' | 'harness'> & { fetchPage: typeof fetchPage; ask: typeof jevAsk; deadline_ms: number; sources: readonly Source[] } = {
+export const ports: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe'> & { fetchPage: typeof fetchPage; ask: typeof jevAsk; deadline_ms: number; sources: readonly Source[] } = {
   fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES, accounts: undefined, harness: undefined,
 };
 // The shared job store owns the promises as well as their rows; nothing is detached without a rejection handler.
@@ -23,12 +22,16 @@ export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string,
 type ActiveRead = { rows?: JudgedRow[]; searched?: SiteSearched; failure?: unknown };
 const reading = new Map<string, ActiveRead>();
 
-type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found };
-type JudgedRow = { row: Row; judged: Judged };
-type PublicOffer = BuyOffer & { match: Judged['match']; currency: string; image_url?: string; external_id: string; data: `live:${Site}` };
+type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'outcome' | 'error_code' | 'reason'>)[] };
+type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
+type JudgedRow = { row: SearchRow; judged: Judged };
+type PublicOffer = BuyOffer & { match: Judged['match']; currency: string; image_url?: string; external_id: string; data: `live:${SourceSite}`; commercial_link?: true; attribution?: 'Dupe.com'; source_site?: string; secondhand?: boolean; keep_until?: string };
 type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
 
 const matchOrder: Record<Judged['match'], number> = { exact: 0, likely_same_model: 1, same_family_other_variant: 2, comparable: 3, unresolved: 4 };
+
+const planOutcome = (outcome: SiteSearched['outcome']): Answer['searched'][number]['outcome'] =>
+  outcome === 'page_changed' || outcome === 'failed' || outcome === 'needs_account' ? 'blocked' : outcome;
 
 function rankedOffers(offers: PublicOffer[]): BuyRow[] {
   const matches = new Map(offers.map(o => [o.id, o.match]));
@@ -42,7 +45,7 @@ function identity(rows: JudgedRow[]): { by: 'model' | 'codes' | 'default'; model
   return { by: model_ok ? 'model' : 'codes', model_ok };
 }
 
-function candidates(source: Source, rows: Row[]): Result[] {
+function candidates(source: Source, rows: SearchRow[]): Result[] {
   const site = source.site;
   // readPage's required-field gate has already validated these fields.
   return rows.map(row => ({ id: `ls_${site}_${row.id}`, listing_id: `ls_${site}_${row.id}`, site,
@@ -57,6 +60,7 @@ function rank(source: Source, rows: JudgedRow[], searched: SiteSearched, filters
   for (const { row, judged } of rows) {
     if (judged.keep !== 'keep') { drop(judged.keep); continue; }
     const offer: PublicOffer = { ...candidates(source, [row])[0], external_id: row.id!, currency: row.currency!, data: `live:${site}`,
+      ...('commercial_link' in row ? { commercial_link: row.commercial_link, attribution: row.attribution, source_site: row.source_site, secondhand: row.secondhand, keep_until: row.keep_until } : {}),
       ...(row.image_url ? { image_url: row.image_url } : {}), condition: row.condition ?? 'unknown',
       match: judged.match, relation: judged.match === 'comparable' ? 'functional_equivalent' : 'same_product',
       shipping_cents: null, tax_rate: 0, source_kind: 'marketplace', sold: row.sold };
@@ -86,7 +90,8 @@ function offerView(row: BuyRow) {
     site: offer.site, route_id: offer.route_id, data: offer.data, condition: offer.condition, relation: offer.match,
     source_kind: offer.source_kind, price_cents: amount(offer.price_cents), shipping_cents: null,
     delivered_cents: amount(offer.delivered_cents), shipping_estimated: offer.shipping_estimated, also_on: offer.also_on,
-    ...(offer.image_url ? { image_url: offer.image_url } : {}) };
+    ...(offer.image_url ? { image_url: offer.image_url } : {}),
+    ...(offer.commercial_link ? { commercial_link: offer.commercial_link, attribution: offer.attribution, source_site: offer.source_site, secondhand: offer.secondhand, keep_until: offer.keep_until } : {}) };
 }
 
 async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typeof ports, caller: Caller, sources: readonly Source[]) {
@@ -113,10 +118,10 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     return { product: null, results: ranked.map(offerView), identity: identity([...batches.values()].flatMap(b => b.rows)), official: [], sites_pending: [...pending], found,
       searched: [...batches.values()].map(b => ({ ...b.searched, ...(b.cached ? { cached: true } : {}) })) };
   };
-  const answer = (settled: boolean): Answer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
+  const answer = (settled: boolean): SearchAnswer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
     protocol_version: protocol.version, facts: [], found: result().found,
     searched: [...batches.entries()].map(([id, b]) => ({ route_id: routeId(sources.find(s => s.id === id)!), query,
-      outcome: b.searched.outcome === 'page_changed' ? 'blocked' : b.searched.outcome, ms: b.searched.ms })),
+      outcome: b.searched.outcome, ms: b.searched.ms, ...(b.searched.error_code ? { error_code: b.searched.error_code } : {}), ...(b.searched.reason ? { reason: b.searched.reason } : {}) })),
     stage: settled ? 'settled' : 'first', ms: { first, settled: settled ? Math.round(performance.now() - t0) : null } });
   const emit = (event: 'answer.partial' | 'answer.settled', data: Record<string, unknown>) => {
     const a = answer(event === 'answer.settled');
@@ -129,14 +134,15 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     batches.set(source.id, batch);
     if (!refreshing) pending.delete(source.id);
     const stage = stages.find(s => s.name === `site:${source.id}`)!;
-    stage.state = batch.searched.outcome === 'timeout' ? 'late' : 'arrived';
+    stage.state = batch.searched.outcome === 'timeout' ? 'late' : batch.searched.error_code && batch.searched.outcome !== 'empty' ? 'failed' : 'arrived';
+    if (stage.state === 'failed') stage.error = { code: batch.searched.error_code!, message: batch.searched.reason ?? 'source failed' };
     stage.ended_at = new Date().toISOString(); stage.found = batch.found;
     first ??= Math.round(performance.now() - t0);
     saveStages(); jobs.update(job.id, { result: result() });
     // events.json still has the old stage enum; state.change records the brief's late state without falsifying it.
     if (stage.state === 'late') ctx.log.event('state.change', { entity: 'job.stage', id: `${job.id}:${stage.name}`, to: 'late', job: job.id, stage: stage.name, found: stage.found });
-    else ctx.log.stage(job.id, stage.name, { state: stage.state, found: stage.found });
-    jobs.append(job.id, 'job.stage', { job_id: job.id, stage: stage.name, state: stage.state, at: stage.ended_at, found: stage.found });
+    else ctx.log.stage(job.id, stage.name, { state: stage.state, found: stage.found, ...(stage.error ? { error: stage.error } : {}) });
+    jobs.append(job.id, 'job.stage', { job_id: job.id, stage: stage.name, state: stage.state, at: stage.ended_at, found: stage.found, ...(stage.error ? { error: stage.error } : {}) });
     emit('answer.partial', { site, product: null, results: batch.ranked.map(offerView), identity: identity(batch.rows), official: [], sites_pending: [...pending] });
   };
   const sitePlan = async (source: Source, freshness_s: number) => {
@@ -144,33 +150,41 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     const scopedRoute = source.lane === 'harness' ? `${routeId(source)}:${ctx.user_id ?? ctx.visitor_id}` : routeId(source);
     const key = `${scopedRoute}|${normalize(query)}`;
     let shared = reading.get(key), ran = false, rows: JudgedRow[] = [];
-    const remaining = Math.max(0, opts.deadline_ms - (performance.now() - t0));
+    // One allowance per search, charged against the same clock on the cached and live reads. The harness owns and reuses its browser.
+    const startup = source.site === 'depop' && opts.harness ? searchParams.read('search_browser_start_ms', {}).value as number : 0;
+    const remaining = Math.max(0, opts.deadline_ms + startup - (performance.now() - t0));
     // A one-target plan lets empty and blocked sites settle independently too; runPlan only emits partials for hits.
     const a = await runPlan({ kind: 'listings_matching', slots: { text: query }, protocol_version: protocol.version,
       first_ms: protocol.budget.first_ms, settled_ms: remaining,
       targets: [{ target_id: `site:${source.id}`, query, deadline_ms: remaining, freshness_s, routes: [{
-        route_id: scopedRoute, host: new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
-        async run(q) {
+        route_id: scopedRoute, cache: source.lane !== 'mcp', host: site === 'dupe' ? 'mcp.dupe.com' : new URL(BASE[site]).host, p95_ms: protocol.budget.first_ms,
+        async run(q, { signal }) {
           ran = true; shared = {}; reading.set(key, shared);
           try {
             const page = await searchSource(source, q, 'search', { caller, person_id: ctx.user_id ?? undefined,
-              accounts: opts.accounts, harness: opts.harness, fetchPage: opts.fetchPage, deadline_ms: remaining, log: ctx.log });
+              accounts: opts.accounts, harness: opts.harness, dupe: opts.dupe, signal, fetchPage: opts.fetchPage, deadline_ms: remaining, log: ctx.log });
             shared.searched = page.searched;
             const judged = await sameProduct({ title: q }, candidates(source, page.rows), (s, questions) => opts.ask(s, questions, { log: ctx.log }));
             shared.rows = page.rows.map((row, i) => ({ row, judged: judged[i] }));
-            return { outcome: page.searched.outcome === 'page_changed' ? 'blocked' as const : page.searched.outcome, rows: shared.rows, site };
-          } catch (e) { shared.failure = e; throw e; }
+            return { outcome: planOutcome(page.searched.outcome), rows: shared.rows, site };
+          } catch (e) { ctx.log.error(`search.${source.id}`, e); shared.failure = e; throw e; }
           finally { reading.delete(key); }
         },
       }] }],
       calculate(arrivals) { rows = arrivals.flatMap(a => a.rows as JudgedRow[]); return { facts: [] }; },
     });
-    if (shared?.failure) throw shared.failure;
+    if (shared && 'failure' in shared) {
+      const error = shared.failure;
+      const observed: SiteSearched = { site, kind: 'search', url: null, outcome: 'failed', count: 0,
+        ms: a.searched[0]?.ms ?? Math.round(remaining), error_code: object(error) && text(error.code) ? error.code : 'site_failed',
+        reason: error instanceof Error ? error.message : 'source failed' };
+      return { batch: rank(source, [], observed, filters), cached: false };
+    }
     const sameRead = shared?.rows && rows.length === shared.rows.length && rows.every((r, i) => r === shared!.rows![i]);
     const searched = sameRead ? shared!.searched : undefined;
     const outcome = a.searched[0]?.outcome ?? 'timeout';
     const observed: SiteSearched = searched && outcome !== 'timeout' ? searched : {
-      site, kind: 'search', url: source.lane === 'public_page' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
+      site, kind: 'search', url: source.lane === 'public_page' && site !== 'dupe' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
       count: rows.length, ms: a.searched[0]?.ms ?? Math.round(remaining),
     };
     const cached = !ran && !sameRead && (outcome === 'hit' || outcome === 'empty');
@@ -219,7 +233,7 @@ export const handlers: Record<string, Handler> = {
     ctx.log.job(job.id, 'search', 'running');
     jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'running', at: started_at });
     const opts = { ...ports };
-    const task = Promise.resolve().then(() => search(ctx, job, stages, opts, caller, sources)).finally(() => searchJobs.pendingSearches.delete(job.id));
+    const task = Promise.resolve().then(() => search(ctx, job, stages, opts, caller, sources)).catch(e => { ctx.log.error('search.background', e); }).finally(() => searchJobs.pendingSearches.delete(job.id));
     searchJobs.pendingSearches.set(job.id, task);
     return { status: 202, body: { id: job.id, kind: job.kind, state: 'running', stages: structuredClone(stages), stream: `/v1/jobs/${job.id}/events` } };
   }),

@@ -42,9 +42,9 @@ test('every kernel verb has one adapter and a manifest that names its session an
 test('search reads active and sold from the page own searchFacetQuery answer', async () => {
   const r = rows(await run('search', { q: 'carhartt hoodie' }));
   assert.equal(r.length, 5);
-  assert.deepEqual({ ...r[0], seller_ref_hash: undefined, listed_at: undefined, title: undefined, brand: undefined },
+  assert.deepEqual({ ...r[0], seller_ref_hash: undefined, listed_at: undefined, title: undefined, brand: undefined, condition: undefined, size: undefined },
     { external_id: 'm78454576562', url: 'https://www.mercari.com/us/item/m78454576562/', state: 'live', price_cents: 2200, currency: 'USD', likes: undefined,
-      seller_ref_hash: undefined, listed_at: undefined, title: undefined, brand: undefined });
+      seller_ref_hash: undefined, listed_at: undefined, title: undefined, brand: undefined, condition: undefined, size: undefined });
   assert.match(String(r[0].seller_ref_hash), /^h[0-9a-f]{8}$/);
   const sold = rows(await run('search', { q: 'carhartt hoodie', status: 'sold' }));
   assert.deepEqual([...new Set(sold.map(x => x.state))], ['sold']);

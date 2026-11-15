@@ -9,6 +9,10 @@ const SCALARS = [
   { name: 'negotiation_p_hi', family: 'scalar', prior: .98, guard_lo: 0, guard_hi: 1, scopes, source },
   { name: 'negotiation_switch_n', family: 'scalar', prior: 50, guard_lo: 1, scopes, source },
   { name: 'negotiation_calibration_error', family: 'scalar', prior: .05, guard_lo: 0, guard_hi: 1, scopes, source },
+  { name: 'negotiation_prior_guard_share', family: 'scalar', prior: .5, guard_lo: 0, scopes, source },
+  { name: 'negotiation_calibration_n', family: 'scalar', prior: 30, guard_lo: 1, scopes, source },
+  { name: 'negotiation_pooling', family: 'scalar', prior: 1, guard_lo: 0, scopes, source: 'spec/engines/negotiation.md#4-learning (agent proposal numerical budget)' },
+  { name: 'negotiation_max_rounds', family: 'scalar', prior: 4, guard_lo: 1, scopes, source: 'spec/engines/negotiation.md#4-learning (agent proposal numerical budget)' },
   { name: 'negotiation_rollback_days', family: 'scalar', prior: 7, guard_lo: 0, scopes, source },
   { name: 'negotiation_rollback_se', family: 'scalar', prior: 2, guard_lo: 0, scopes, source },
   { name: 'negotiation_bootstrap_n', family: 'scalar', prior: 2000, guard_lo: 1, scopes, source: 'spec/engines/negotiation.md#4-learning (bootstrap numerical budget; agent proposal)' },
@@ -44,5 +48,5 @@ export function validate(p: Resolved): void {
   }
   if (p.values.negotiation_p_lo <= 0 || p.values.negotiation_p_hi >= 1) throw new RangeError('negotiation probability bounds');
   if (p.values.negotiation_p_lo >= p.values.negotiation_p_hi) throw new RangeError('negotiation probability bounds');
-  for (const name of ['negotiation_switch_n', 'negotiation_bootstrap_n'] as const) if (!Number.isSafeInteger(p.values[name])) throw new RangeError(name);
+  for (const name of ['negotiation_switch_n', 'negotiation_bootstrap_n', 'negotiation_calibration_n', 'negotiation_max_rounds'] as const) if (!Number.isSafeInteger(p.values[name])) throw new RangeError(name);
 }

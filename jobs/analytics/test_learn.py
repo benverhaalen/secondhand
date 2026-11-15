@@ -22,7 +22,7 @@ def test_prior_refit_excludes_ebay_and_unconsenting():
 def test_nightly_gate_bad_challenger_and_rollback(log_lines):
     log, lines = log_lines
     store = MemoryStore()
-    train = [dict(id=str(i), site='poshmark', consent=True, O=10, E=4, u=[.1], sigma=.2) for i in range(10)]
+    train = [dict(id='train_'+str(i), at='2026-09-01', site='poshmark', consent=True, O=10, E=4, u=[.1], sigma=.2) for i in range(10)]
     held = [dict(id=str(i), at='2026-10-20', O=2, E=1, P=.4, y=1) for i in range(300)]
     kw = dict(store=store, train=train, held=held, at='2026-11-01', scope={'kind':'jackets'}, seed=7, log=log)
     assert nightly(**{**kw, 'held':held[:299]})['fallback'] == 'parent'
@@ -44,14 +44,14 @@ def test_guard_clamps_and_two_se_anomaly():
 
 
 def test_unrelated_supplied_predictions_cannot_promote_a_fit():
-    train=[dict(id='t',site='poshmark',consent=True,O=10,E=4,u=[],sigma=.2)]*10
+    train=[dict(id='t',at='2026-09-01',site='poshmark',consent=True,O=10,E=4,u=[],sigma=.2)]*10
     held=[dict(id=str(i),at='2026-10-20',O=0,E=0,P=.4,y=1,champion=.01,challenger=.99) for i in range(300)]
     assert not nightly(MemoryStore(),train,held,'2026-11-01',{},seed=1)['promoted']
 
 
 def test_training_hash_uses_training_ids():
     import hashlib
-    train=[dict(id='train_only',site='poshmark',consent=True,O=10,E=4,u=[],sigma=.2)]
+    train=[dict(id='train_only',at='2026-09-01',site='poshmark',consent=True,O=10,E=4,u=[],sigma=.2)]
     held=[dict(id=str(i),at='2026-10-20',O=2,E=1,P=.4,y=1,champion=.01,challenger=.99) for i in range(300)]
     store=MemoryStore()
     nightly(store,train,held,'2026-11-01',{},seed=1)

@@ -108,7 +108,7 @@ export const factsFor = (mode: Mode) => {
 
 // The real comparison, said once the stills are in: "Matching against 41 sold jackets" (pages §6.5, the analysis moment).
 export function matching(n = PRODUCT.used_price.basis_count): string {
-  const word = new Intl.PluralRules('en-US').select(n) === 'one' ? 'jacket' : 'jackets';
+  const word = n === 1 ? 'jacket' : 'jackets';
   return `Matching against ${new Intl.NumberFormat('en-US').format(n)} sold ${word}`;
 }
 

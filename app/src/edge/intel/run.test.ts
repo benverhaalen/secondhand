@@ -1,6 +1,6 @@
 import { test, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import { _reset, allEnded, outsideCallCount, runPlan, type Plan, type Route, type PlanTarget } from './run.ts';
+import { _reset, allEnded, outsideCallCount, runPlan, type Plan, type Route, type PlanTarget, searchParams } from './run.ts';
 import { checkAnswer, type AnswerEvent, type Fact } from './answer.ts';
 
 beforeEach(() => _reset());
@@ -74,4 +74,25 @@ test('index facts answer at once, before any target', async () => {
   assert.equal(seen[0], 'answer.partial');
   assert.ok(a.ms.first! < 10);
   assert.equal(a.facts[0]!.name, 'ask_range');
+});
+
+
+test('request-only routes are shared in flight but never enter the run cache', async () => {
+  const r = { ...route('dupe.search.api', 1), cache: false };
+  await Promise.all([runPlan(plan([target('dupe', [r])])), runPlan(plan([target('dupe', [r])]))]);
+  assert.equal(outsideCallCount(), 1);
+  await runPlan(plan([target('dupe', [r])]));
+  assert.equal(outsideCallCount(), 2, 'Dupe rows must not survive the request in the run cache');
+});
+
+test('search_cache_max evicts the oldest inserted entry, including after a cache hit', async () => {
+  const prior = searchParams.read('search_cache_max', {}).value;
+  searchParams.declare({ name: 'search_cache_max', family: 'scalar', prior: 2 });
+  try {
+    const ask = (id: string) => runPlan(plan([target(id, [route(id, 1)])]));
+    await ask('oldest'); await ask('second'); await ask('oldest'); await ask('third');
+    const calls = outsideCallCount();
+    await ask('second'); assert.equal(outsideCallCount(), calls, 'second entry is retained');
+    await ask('oldest'); assert.equal(outsideCallCount(), calls + 1, 'oldest entry was evicted');
+  } finally { searchParams.declare({ name: 'search_cache_max', family: 'scalar', prior }); }
 });

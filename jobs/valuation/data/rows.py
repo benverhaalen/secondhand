@@ -11,7 +11,7 @@ import csv
 import gzip
 import re
 import zipfile
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from xml.etree import ElementTree
 
@@ -156,15 +156,17 @@ def _grailed_kind(category: str) -> str:
     return "apparel"
 
 
-# eBay meta categories (2012-13 tree) into kind families; NBER Codebook.xlsx, bo_lists D56:D93.
+# NBER Codebook.xlsx, bo_lists D56:D93; plan decision 30 kinds (README has counts and limits).
 # https://back.nber.org/appendix/w24306/bargaining/Codebook.xlsx (read 2026-11-15).
 _EBAY_KIND = {
-    "1": "cards_collectibles", "220": "toys_lego", "237": "toys_lego", "260": "cards_collectibles", "267": "media",
-    "281": "jewellery_watches", "293": "electronics", "550": "lighting_home", "619": "other", "625": "electronics",
-    "870": "lighting_home", "888": "bikes_sports", "1249": "electronics", "11116": "cards_collectibles",
-    "11232": "media", "11233": "media", "11450": "apparel", "11700": "lighting_home", "12576": "appliances_tools",
-    "2984": "baby_gear", "15032": "electronics", "58058": "electronics", "64482": "cards_collectibles",
-    "20081": "lighting_home", "26395": "other", "45100": "other", "99": "other", "1281": "other", "14339": "other",
+    "1": "cards_collectibles", "99": "other", "220": "toys_lego", "237": "toys_lego",
+    "260": "cards_collectibles", "267": "other", "281": "other", "293": "electronics",
+    "316": "other", "550": "other", "619": "other", "625": "electronics", "870": "other",
+    "888": "other", "1249": "electronics", "1281": "other", "1305": "other", "2984": "other",
+    "3252": "other", "6000": "other", "10542": "other", "11116": "cards_collectibles",
+    "11232": "other", "11233": "other", "11450": "apparel", "11700": "other", "12576": "other",
+    "14339": "other", "15032": "electronics", "20081": "other", "26395": "other",
+    "45100": "cards_collectibles", "58058": "electronics", "64482": "cards_collectibles", "172008": "other",
 }
 _EBAY_CONDITION = {"1000": "new", "1500": "new_other", "1750": "new_with_defects", "2000": "manufacturer_refurbished",
                    "2500": "seller_refurbished", "2750": "like_new", "3000": "used", "4000": "very_good",
@@ -175,41 +177,39 @@ def _int(v: str):
     return int(float(v)) if v not in ("", None) else ""
 
 
-_MONTHS = {m: i for i, m in enumerate(("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"), 1)}
-
-
-def _nber_date(v: str) -> str:
-    """The codebook types the NBER dates str9, which fits Stata's 01jun2012 better than 2012-06-01; accept both."""
-    v = (v or "").strip()
-    m = re.fullmatch(r"(\d{1,2})([A-Za-z]{3})(\d{4})", v)
-    return date(int(m[3]), _MONTHS[m[2].lower()], int(m[1])).isoformat() if m else v[:10]
-
-
 def nber_ebay_bo(path: Path, dropped: dict):
-    """anon_bo_lists.csv(.gz): eBay Best Offer listings, May 2012 to June 2013, sold and unsold (Backus et al. 2020).
-
-    item_price is what the buyer paid, the accepted offer where one was taken; a listing with none ended unsold and
-    is kept as a censored row priced at start_price_usd (the Buy-It-Now price, not a verified last ask).
-    Column meanings: NBER Codebook.xlsx, bo_lists C3:C56; see the sold-datasets follow-up, 2026-11-15.
-    """
+    """NBER bo_lists: sold at item_price, or censored at the recorded Buy-It-Now price."""
     with _open(path) as f:
-        for r in csv.DictReader(f):
-            sold = r["item_price"] not in ("", None)
-            if not sold and not r["start_price_usd"]:
-                _drop(dropped, "no_price")
-                continue
-            end = _nber_date(r["auct_end_dt"])
-            yield _row(
-                row_id=f"nber_ebay_bo-{r['anon_item_id']}", source="nber_ebay_bo", licence=LICENCE["nber_ebay_bo"],
-                site="ebay", kind=_EBAY_KIND.get(r["meta_categ_id"], "other"), product_id=r["anon_product_id"] or "",
-                category=r["meta_categ_id"], condition=_EBAY_CONDITION.get(str(_int(r["item_cndtn_id"])), ""),
-                photo_count=_int(r["photo_count"]), seller_feedback=_int(r["fdbk_score_start"]),
-                price_type="sold" if sold else "ended_unsold",
-                price_cents=_cents(r["item_price"] if sold else r["start_price_usd"]),
-                listed_at=_nber_date(r["auct_start_dt"]), at=end,
-                best_offer=("accepted" if r["bo_ck_yn"] in ("1", "1.0") else "none") if sold else "",
-                views=_int(r["view_item_count"]), watchers=_int(r["wtchr_count"]), may_model=MAY_MODEL["nber_ebay_bo"],
-            )
+        yield from nber_rows(csv.DictReader(f), dropped)
+
+
+def nber_rows(raw, dropped: dict):
+    """Map listing records without retaining seller or buyer identities (Codebook.xlsx, bo_lists)."""
+    for r in raw:
+        sold = r["item_price"] not in ("", None)
+        if not sold and not r["start_price_usd"]:
+            _drop(dropped, "no_price")
+            continue
+        try:
+            listed = datetime.strptime(r["auct_start_dt"], "%d%b%Y").date().isoformat()
+            end = datetime.strptime(r["auct_end_dt"], "%d%b%Y").date().isoformat()
+        except ValueError:
+            _drop(dropped, "invalid_date")
+            continue
+        if not sold and end > "2013-06-30":
+            _drop(dropped, "unsold_end_after_observation")
+            continue
+        yield _row(
+            row_id=f"nber_ebay_bo-{r['anon_item_id']}", source="nber_ebay_bo", licence=LICENCE["nber_ebay_bo"],
+            site="ebay", kind=_EBAY_KIND.get(str(_int(r["meta_categ_id"])), "other"), product_id=r["anon_product_id"] or "",
+            category=r["meta_categ_id"], condition=_EBAY_CONDITION.get(str(_int(r["item_cndtn_id"])), ""),
+            photo_count=_int(r["photo_count"]), seller_feedback=_int(r["fdbk_score_start"]),
+            price_type="sold" if sold else "ended_unsold",
+            price_cents=_cents(r["item_price"] if sold else r["start_price_usd"]),
+            listed_at=listed, at=end,
+            best_offer=("accepted" if r["bo_ck_yn"] in ("1", "1.0") else "none") if sold else "",
+            views=_int(r["view_item_count"]), watchers=_int(r["wtchr_count"]), may_model=MAY_MODEL["nber_ebay_bo"],
+        )
 
 
 def ebay_comps_cc0(paths: list[Path], dropped: dict):

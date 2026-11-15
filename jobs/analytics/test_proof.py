@@ -1,5 +1,8 @@
 """pa-7: synthetic fixture replay, mix simulation, and explicit real-data gaps."""
-from analytics.proof.run import fixed_set, simulated_mix, speed
+import math
+from time import perf_counter
+from analytics.proof.run import fixed_set, simulated_mix
+from analytics.site_effect import compare
 
 
 def test_fixed_fixture_cross_listing_and_missing_flags(load_fixture):
@@ -19,6 +22,11 @@ def test_expensive_mix_raw_worse_but_adjusted_covers_planted_effect():
 
 
 def test_by_site_draws_speed():
-    result = speed(seed=21, runs=20)
-    assert result['p95_ms'] < 300
-    assert result['draws'] == 1000
+    sites = {s: dict(O=6, E=5, u=[0]*6, P=.4, fair_p50=60, market_mean=-.1, sigma=.2, ended=10, flags=[])
+             for s in ('ebay', 'poshmark', 'depop', 'mercari', 'facebook')}
+    times = []
+    for i in range(20):
+        start = perf_counter()
+        compare(sites, lambda site, price: math.floor(.8*price + .5), seed=21+i, draws=1000)
+        times.append((perf_counter()-start)*1000)
+    assert sorted(times)[math.ceil(.95*len(times))-1] < 300
