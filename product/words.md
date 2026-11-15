@@ -1765,6 +1765,13 @@ Nate, build session (orchestrator), 2026-11-15 about 12:30 Central, answering wh
 
 Used in: [packet 68](../.agents/team/packets/price/68-valuation-files-are-being-rebuilt.md).
 
+## 2026-11-15 ben research how depop and other resale apps estimate prices
+
+Ben, project chat, 2026-11-15 09:31 UTC.
+
+> i know depop does price estimates in there app, research that and similar reselling platforms that share similar features
+
+Used in: [how resale platforms suggest prices](../research/price/ben/platform-price-suggestions.md).
 ## 2026-11-15 nate backtest as we build, and the steps for testflight
 Nate, build session (orchestrator), 2026-11-15 about 13:10 Central. Two messages.
 > Please also give me the steps to set up the bundler id and everything for expo to get testflight builds and everything set up
@@ -1784,3 +1791,45 @@ Nate, build session (orchestrator), 2026-11-15 about 14:40 Central.
 > Can we get mercari data in realtime? and can we fix the search. Identify what we need to fix.  All the perecents need to be addresseed and expertly worked on to perfection
 
 Used in: [state of completion](../spec/plans/completion.md).
+
+## 2026-11-15 nate the apple account is his, and the first testflight build is the demo we improve
+Nate, build session (orchestrator), 2026-11-15 about 14:55 Central. His name is left out of this public file.
+> its [his own name] my apple account, the testflight build is the demo for us to test and improve continously before we finalize. I expect we can continously improve the ui/ux and strive to fit the perfect presentation to ensure us winning the compeition
+
+Used in: [production readiness](../spec/plans/sweep/round-2/production-readiness.md), decisions 1 and 5.
+
+## 2026-11-15 nate wrap the leads up at a good spot, then spec from what we have
+Nate, build session (orchestrator), 2026-11-15 about 15:30 Central.
+> Everything you just ascertained, lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop, meanwhile, give me the full command to put into the terminal with the path for the p8 and everything prewritten
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "The spec pass".
+
+## 2026-11-15 nate where are we not optimized, an expert lead for real-time adaptation, the bundle identifier, and sessions end before they fill
+Nate, build session (orchestrator), 2026-11-15 between about 15:45 and 16:00 Central. Three messages.
+> Where have we not optimized in speed, accuracy, all aspects to the retrieval and operations of data and such features and everything driven with our custom build pipelines and api protocols. /research and assess. Addtionally, fully focus an expert team lead to apply the relevant skills, research out and continously with codex address things to fit the realtime adapt to each specific platform product type engines, taking into account the data we can gather and calculate things against, combining things to create metrics, all researched and credibly proven
+
+> com.bnvg.secondhand
+
+> ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "A session ends before it fills"; `spec/plans/optimization-gaps.md`.
+
+## 2026-11-15 the app looks nothing like the mocks: hierarchy, spacing, what stacks and what has color
+
+Ben, thread "Roll the UI system out everywhere", 2026-11-15 09:30 UTC (relayed from another thread).
+
+> so it doesnt look like the mocks you gave me why. figure it out from logging. use some sort of way to run automations on my actual phone with the app. and fix why like fonts arent loading and why the top is cut off. spacing is weird. it feels sloppy. incohesive. look at all the mocks you gave and audit and figure out why the implementation missed the mark and how to write tests to fix it. im confused how you got really good ui to look using code in one way but then on the actual app it looks so so ai slop and bad. also audit from like an expert in context too.
+
+Ben, same thread, 09:38 UTC.
+
+> all messages in here just feed to codex. identify where the example ones differ from the example ones i approved. find the ones i really liked and why. a problem i have is there is not really a super clear hierarchy for a lot of it. finding why it just looks nothing like code stuff that i actually approved. continuously auditing for the expert principles and the design constitution and the rules for how to write great code in the language for ui design like an expert. how to actually expertly do it
+
+Ben, same thread, 09:44 UTC.
+
+> my main critique is it lacks hierarchy across generalized pages. the spacing feels off and very ai sloppy. i feel like there is no consistency. why do some things stack. why do some have color. it all feels very random and unintentional and rules need to be written to make it intentional to how an expert would fix it
+
+Ben, same thread, 09:47 UTC.
+
+> wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
+
+Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).

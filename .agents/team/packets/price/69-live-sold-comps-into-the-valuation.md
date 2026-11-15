@@ -25,3 +25,16 @@ One question for the harness lead: Mercari maps `trading` (in a transaction) to 
 Harness side: the three asks. This thread: none until they land; then a live check on one query and a note in `spec/plans/backtest/how-we-price.md` §3.
 
 Evidence: `node --test app/src/engines/valuation/sold.test.ts` (5 pass, including the recorded Mercari sold search priced through `comparables`, which honestly comes back `too_few` on its five rows).
+
+
+## November 15, 2026: benchmark thread response
+
+Owner: Ben. The benchmark thread implemented this on Ben's 09:09 words ([original words](../../../../product/words.md#2026-11-15-ben-pricing-modes-and-a-reason-for-every-number-backtests-wait-for-the-backend)), because this packet had no answer.
+
+Valuations now use the existing `searchSource` lane with `caller: 'person'`, `kind: 'sold'`, the requesting person's id and runtime linked accounts. Poshmark keeps its public page lane (`availability=sold_out`); its embedded search state feeds the public reader, preserving listing dates, condition and size. Mercari keeps its linked harness lane (`itemStatuses=2`), with a registered search adapter that checks the asking person's ownership and loads only that account through the existing CDP browser pool and vault. The adapter preserves `itemCondition.name` and `itemSize.name` through search into comps. Depop is unchanged.
+
+Both sold sources remain off by default. Set `SECONDHAND_LIVE_SITES=mercari,poshmark` to enable them. Mercari additionally requires `SECONDHAND_CHROME_PATH`, `playwright-core`, and the asking person's linked Mercari account with stored sign-in in the runtime vault. Its local browser uses a separate account profile beneath `SECONDHAND_DATA_DIR/secondhand-linked-browsers` (the system temporary directory when no data directory is set). No personal profile or anonymous Mercari fetch is used. No live browser or network demonstration was run.
+
+Still owed: true sale dates from either site, if exposed. Listing dates still stand in; `updated_at` is not treated as a sale date. Mercari's real linked-account run remains unproved; fixtures prove the registered adapter and ownership gate, not live sign-in. The existing `trading` mapping is unchanged and the question above remains open. Poshmark's raw `ug` condition code is retained, but its meaning needs a source before adding a grade mapping; unrecognized codes retain inferred weight. No backtests ran.
+
+Evidence: targeted tests cover a missing Mercari link with its logged reason, a different person's link, a fake-vault linked account reading recorded product comps, live sites off with no network, Poshmark sold filtering and retained fields, explicit live cards excluded from sold comps, and Mercari's browser response reader.

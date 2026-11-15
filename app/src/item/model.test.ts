@@ -197,6 +197,10 @@ test('the three ways to price side by side: price rises from Gone fast to Best p
   assert.ok(rows[0].price < rows[1].price && rows[1].price < rows[2].price);
   assert.ok(rows.every(r => r.get !== null && r.get < r.price && r.line.startsWith('You get')));
   assert.ok(rows.every(r => r.days === null), 'no sale curve, no days');
-  const paced = { ...item, valuation: { ...item.valuation!, pace: { fast: { days_t50: 3.6, p_sale_30: 0.91 } } } };
-  assert.match(priceModes(w, paced)[0].line, /^You get \$[\d.]+\. Sells in about 4 days\. 9 in 10 sell within 30 days$/);
+  const point = (list: number, days: number | null, p: number | null) => ({ site: 'ebay' as const, ask_cents: list, list_cents: list, keep_cents: list - 1000, p_sale_30: p, days_t50: days, held_by: null });
+  const checked = { ...item, valuation: { ...item.valuation!, modes: { fast: point(4200, 3.6, 0.91), sell: point(5200, null, null), best: point(6400, 20, 0.4) } } };
+  const engine = priceModes(w, checked);
+  assert.deepEqual(engine.map(r => [r.price, r.get]), [[4200, 3200], [5200, 4200], [6400, 5400]], 'the engine\'s mode prices and take-home win');
+  assert.equal(engine[0].line, 'You get $32. Sells in about 4 days. 9 in 10 sell within 30 days');
+  assert.equal(engine[1].line, 'You get $42', 'no curve, no days');
 });

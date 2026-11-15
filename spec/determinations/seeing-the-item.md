@@ -1,4 +1,5 @@
 # Determinations: seeing the item
+Spec pass 2026-11-15: cards marked **Built** say where the code is; the capture engine's rules live in [capture engine](../engines/capture.md).
 Status: *agent proposal* for Ben and Nate. Written 2026-11-14.
 
 Area: everything the system decides from a capture, from the first frame to the photos a listing uses. Owning features: [capture](../features/capture.md), [identify](../features/identify.md), [measure](../features/measure.md), [item card](../features/item-card.md), [studio](../features/studio.md). Value shapes (`attribute`, `evidence`, `requirement`, `claim_check`, guarded number) are the ones in [spec/product.md](../product.md); they are not repeated here.
@@ -13,6 +14,8 @@ Rules that hold on every card:
 Marks: observed = read at the source; asserted = stated by a source not checked; inferred = my reasoning.
 
 ## 1. Item kind
+
+**Built:** the phone's suggestion as the family, and the `other` fallback with the type as the first question, are built in [capture engine §2](../engines/capture.md#selection-by-type-and-size-selectts) (`select.ts` `suggestionPasses` and `select`). It uses the phone's suggestion alone, with floor `capture_preselect_floor` 0.5 and margin `assist_preselect_margin` 0.2 ([capture engine §3](../engines/capture.md#3-thresholds)). The built floor is 0.5, not this card's 0.60, because the 0.60 applies to the weighted vote of steps 1 and 2, which no code computes; the 0.5 is right for a lone phone estimate until the vote exists. The code source, `capture_judge` and the cloud vote are not built; an identify result only fills a suggestion the phone did not give (`captures.ts` `applyJobResult`).
 
 **Determines**: which family in [fields-by-kind](fields-by-kind.md#families-kinds-and-inheritance) the item is (`apparel`, `shoes`, `bags`, `jewellery_watches`, `furniture`, `lighting_home`, `electronics`, `appliances_tools`, `media`, `cards_collectibles`, `toys_lego`, `bikes_sports`, `baby_gear`, `other`), after [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md). The family chooses the fields, views, condition scale and checks.
 
@@ -29,8 +32,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 1. Model step: each source returns `p_s(k)` over the families. A code source returns 1 for its mapped kind and 0 for the rest.
 2. Arithmetic: `S(k) = sum_s w_s * p_s(k) / sum_s w_s`, over the sources present.
-3. Accept the top kind when `S(top) >= 0.60` and `S(top) - S(second) >= 0.20` (start).
-4. Otherwise raise decision `category_unsure`, showing the top 2 or 3 kinds as chips plus "Something else".
+3. Accept the top kind when `S(top) >= 0.60` and `S(top) - S(second) >= 0.20` (start). Built only for the phone's suggestion, at 0.5 and 0.2: see the line under the heading.
+4. Otherwise the family is `other`, flagged `type_unsure`, and the type is the first question ([capture engine §2](../engines/capture.md#selection-by-type-and-size-selectts)). The `category_unsure` decision with 2 or 3 chips is not raised by the capture engine.
 5. The phone value drives framing and shot prompts only. It is replaced when step 3 runs in the cloud.
 
 **Why this method**: a weighted vote with a margin rule is a calibrated way to combine sources of unequal reliability, and the margin stops near-ties from being decided silently (inferred). Mercari's engineers left the category to the user after experiments showed it balanced simplicity and accuracy, and a toy car was listed as a real car (observed (excerpt), [clarifying-inputs §1](../../research/identify/nate/clarifying-inputs.md)). The alternative is a single classifier call. It is cheaper, but it hides the cases a margin rule catches.
@@ -79,6 +82,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 3. What must still be captured, and when it is enough
 
+**Built:** the met test, the shot-or-ask split, the retake count and the stop are built in [capture engine §2](../engines/capture.md#2-the-plan) (`fields.ts` `fieldState`, `plan.ts`, `complete.ts`). The order differs: the built order is by required fields unlocked, not by `requirement_fold` priority or pose bin, so those are not built. The code is right until `requirement_fold` has data. A row that is not met is `missing`, `waiting` or `unobtainable`, with a reason, not `value: null` at confidence 0.
+
 **Determines**: which views, labels and measurements are still missing, in what order to ask for them, and when the capture can stop.
 
 **Sources and weights**
@@ -92,11 +97,10 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 **Method**
 
-1. Arithmetic. A row is met when its field has a value with `confirmed = true`, or the view it needs was accepted ([card 2](#2-whether-a-frame-is-a-usable-view)), or it has a `you_said` value.
-2. Rows with `obtained_by` of seen, label or measured are shot prompts. Rows with `obtained_by` asked go to [card 17](#17-which-question-to-ask-next-and-when-to-stop).
+1. Built: a row is met by the `known` rule, and a row's ways split into shots and questions, in [capture engine §2](../engines/capture.md#a-field-row-processjson-fields). Asked rows go to [card 17](#17-which-question-to-ask-next-and-when-to-stop).
 3. Next prompt = the unmet shot row with the highest priority. Ties go to the view the person is closest to now, using the pose bin, to save movement.
-4. A row is marked unobtainable after 2 failed attempts (`unknown_reason = not_visible` or `not_read`).
-5. The capture is enough when every shot row is met or unobtainable, or when the person taps Done. There is no shot cap.
+4. Built: 2 retakes, `capture_max_retakes` ([capture engine §3](../engines/capture.md#3-thresholds)); then the next way runs, and the row is unobtainable only when none is left. Only `not_read` triggers a retake; `not_visible` does not.
+5. Built: the capture is enough when every process step is kept and no question remains (`plan.status` `done`), or when the person taps Done ([capture engine §2](../engines/capture.md#the-questions-plants)). Required fields have no cap.
 6. Unmet rows are written as `value: null`, confidence 0, with their reason. They never become a guess.
 
 **Why this method**: a requirement checklist ordered by measured value-of-information is the standard active-acquisition shape, and it keeps the stop rule explicit instead of a shot count (inferred). Photo count raised sale odds more than photo quality did (observed, [quality-and-value-classifiers §3](../../research/price/nate/quality-and-value-classifiers.md)). That argues against stopping early on a fixed count. The alternative is a fixed shot list per kind. It is simpler, but it asks for views already settled by a read label and misses the ones a flaw makes necessary.
@@ -512,6 +516,8 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 17. Which question to ask next, and when to stop
 
+**Built:** the order, the cap of 3, the refusal rule and the effort tiebreak are built in [capture engine §2](../engines/capture.md#the-questions-plants) (`plan.ts` `orderQuestions`, `capQuestions`; `table.ts` `PRIORS`). Not built: the EIG over identity candidates, the 0.15 score floor and the singleton stop. The plan has no candidate-set entropy; the order is by required fields unlocked. Where this card differs, the code is right: a field a linked site requires is asked until known or refused, and only other questions stop at 3, because Nate wants every needed field to get its own select ([words](../../product/words.md#2026-11-14-nate-each-type-gets-its-own-select-for-every-field-its-process-needs)). The effort values built are `capture_effort_yes_no` 1, `_pick_one` 1, `_pick_many` 2, `_number_with_unit` 3, `_text` 3 and `_shot` 4, not this card's tap 1, chip 1, photo 2, type 3. The words are fixed per field, not written by a model (`ask.words`, linted).
+
 **Determines**: the next question for the person (which field, which input, which options), and when no more questions are asked. Each question goes out as one `clarify(slot, candidates[], value_of_information)` ([product §5](../product.md#decision-kinds-the-complete-list)), with this card's expected information gain as its value.
 
 **Sources and weights**
@@ -527,13 +533,13 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 1. Arithmetic, for identity aspects: `EIG(a) = H(C) - sum_v p(v) H(C | a = v)`, where `p(v)` is the share of the candidates' weight that has value v.
 2. For non-identity rows: `value(row) = reorder_weight(row)`, normalised to the same 0 to 1 scale as `EIG / log2(|C|)`.
-3. Ask the argmax. Ties go to the lowest effort.
+3. Ask the argmax. Ties go to the lowest effort. Built as a total sort in [capture engine §2](../engines/capture.md#the-questions-plants); the key is required fields unlocked, then effort, not EIG.
 4. Stop when any of these holds:
-   - the set is a singleton and the variant is settled;
-   - the best normalised score is under 0.15 (start; *agent proposal*: below it a question removes under 15% of the open choices, too little to earn a tap; tune on the 200-item check);
-   - 3 questions have been asked for this item (start; *agent proposal*: no source exists for a per-item cap, and the cited studies show that unneeded questions cut success, so the cap stays small until the 200-item check sets it);
-   - the person refused, which ends that field without a re-ask.
-5. Model step: an LLM writes the question's words only, from the chosen field and options. It cannot add or drop options.
+   - the set is a singleton and the variant is settled (not built);
+   - the best normalised score is under 0.15 (start; *agent proposal*: below it a question removes under 15% of the open choices, too little to earn a tap; tune on the 200-item check). Not built;
+   - 3 questions have been asked for this item: built as `capture_question_cap`, prior 3, for questions no linked site requires ([capture engine §3](../engines/capture.md#3-thresholds)). The reasoning for a small cap stays here;
+   - the person refused: built, the field is `refused` and never asked again.
+5. Model step: an LLM writes the question's words only. Not built: the words are fixed in the table.
 
 **Why this method**: EIG-chosen questions beat zero-shot LLM questions in arXiv 2502.04485, (observed (excerpt), [clarifying-inputs §3](../../research/identify/nate/clarifying-inputs.md)), and on coding tasks asking clarifying questions raised pass rate from 27% to 65% (arXiv 2504.16331, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)); neither is tested on listings. So the choice of whether and what to ask is arithmetic and capped. The alternative is to let a model decide when to ask. Models both over-ask and under-ask in the cited studies.
 

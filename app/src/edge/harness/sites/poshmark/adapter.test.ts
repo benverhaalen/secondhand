@@ -53,6 +53,7 @@ test('search reads active and sold rows from the page state, and checks the sort
   assert.equal(r[0].url, 'https://poshmark.com/listing/6af585a12800acd3211cf7ba');
   const sold = rows(await run('search', { q: 'levis 501', status: 'sold', sort: 'added_desc' }));
   assert.equal(sold.length, 3);
+  assert.equal(sold[0].condition, 'ug'); assert.equal(sold[0].size, '29');
   assert.ok(sold.every(x => x.state === 'sold'));
   assert.equal(code(await run('search', { q: 'x', sort: 'newest' })).code, 'policy_refused');
 });

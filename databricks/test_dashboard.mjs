@@ -12,6 +12,27 @@ const sql = (d, name) => d.datasets.find(s => s.name === name).queryLines.join('
 const encodedFields = value => !value || typeof value !== 'object' ? [] :
   Object.entries(value).flatMap(([key, v]) => key === 'fieldName' ? [v] : encodedFields(v));
 
+function checkResourceKeys(files) {
+  const keys = new Map();
+  for (const [file, content] of files) {
+    let inResources = false, type;
+    for (const line of content.split('\n')) {
+      if (/^resources:\s*(?:#.*)?$/.test(line)) { inResources = true; continue; }
+      if (!line.trim() || /^\s*#/.test(line)) continue;
+      if (/^\S/.test(line)) { inResources = false; continue; }
+      if (!inResources) continue;
+      const typeMatch = line.match(/^  ([\w-]+):\s*(?:#.*)?$/);
+      if (typeMatch) { type = typeMatch[1]; continue; }
+      const keyMatch = line.match(/^    ([\w-]+):\s*(?:#.*)?$/);
+      if (!keyMatch) continue;
+      const key = keyMatch[1], previous = keys.get(key);
+      assert.ok(!previous || previous.type === type,
+        `duplicate resource key ${key}: ${previous?.file} (${previous?.type}) and ${file} (${type})`);
+      keys.set(key, { type, file });
+    }
+  }
+}
+
 function checkWidget(widget) {
   if (widget.multilineTextboxSpec) {
     assert.equal(widget.spec, undefined, `${widget.name}: text must not have a spec`);
@@ -221,4 +242,14 @@ test('bundle declares the portable dashboard and both existing experiment paths'
   const file = yml.match(/file_path:\s*(\S+)/)?.[1];
   assert.equal(file, '../../databricks/dashboards/proof.lvdash.json');
   assert.deepEqual(JSON.parse(read(`../deploy/resources/${file}`)), dashboard());
+});
+
+test('bundle resource keys do not repeat across resource types', () => {
+  assert.throws(() => checkResourceKeys([
+    ['one.yml', 'resources:\n  jobs:\n    shared:\n'],
+    ['two.yml', 'resources:\n  experiments:\n    shared:\n'],
+  ]), /duplicate resource key shared/);
+  const files = ['../deploy/databricks.yml', ...readdirSync(new URL('../deploy/resources/', import.meta.url))
+    .filter(file => file.endsWith('.yml')).map(file => `../deploy/resources/${file}`)];
+  checkResourceKeys(files.map(file => [file, read(file)]));
 });
