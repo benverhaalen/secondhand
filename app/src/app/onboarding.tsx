@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Blank, FootButton, Line, List, Nav, Pill, Screen, Section, Stack, Txt } from '@/ui';
 import { LinkRow } from '@/you/link-row';
 import { SignIn } from '@/you/sign-in';
-import { changed, SITE_ORDER, plural, useGo, useLinks, usePage } from '@/you/state';
+import { changed, SITE_ORDER, useGo, useLinks, usePage } from '@/you/state';
 import { ListRow } from '@/ui/parts/list-row';
 
 // First launch is only ever seen by a person who has nothing yet, so empty, one and dense cannot happen on it.
@@ -54,7 +54,7 @@ function Sites() {
           <Txt role="heading">Pickup spot</Txt>
         </Stack>
         <Stack>
-          <Txt role="body" tone="ink-2">Optional. Where you’d meet a buyer. You pick days and times when one asks, never from your calendar.</Txt>
+          <Txt role="body" tone="ink-2">Pick days and times when a buyer asks.</Txt>
           <Blank id="onboarding-spot" name="A public place" value={spot} onChange={setSpot} />
           <Txt role="caption">A police station’s safe exchange zone is safest, then a busy, lit store entrance.</Txt>
         </Stack>
@@ -72,7 +72,7 @@ function Sites() {
           <Txt role="heading">First photo</Txt>
         </Stack>
         <Stack>
-          <Txt role="body" tone="ink-2">Point the camera at something you want gone. One photo is enough to start the listing.</Txt>
+          <Txt role="body" tone="ink-2">One photo starts the listing.</Txt>
           <Line>
             <Pill id="onboarding-later" kind="second" label="Not now" onPress={() => finish('/')} />
           </Line>
@@ -85,14 +85,14 @@ function Sites() {
   return (
     <Screen name="onboarding" state={state} nav={<Nav />}
       skip={ONLY_NEW}
-      foot={<FootButton id="onboarding-next" label={linked ? 'Continue' : 'Skip for now'} kind={linked ? 'primary' : 'second'} onPress={next} />}>
+      foot={<FootButton id="onboarding-next" label={linked ? 'Continue' : 'Skip'} kind={linked ? 'primary' : 'second'} onPress={next} />}>
       <Stack gap="tight">
         <Txt role="caption">1 of 3</Txt>
         <Txt role="heading">Your sites</Txt>
       </Stack>
       {state === 'offline' ? <ListRow id="onboarding-offline" lead="refresh" label="Waiting for signal" detail="Linking a site needs it. You can skip and link later" /> : null}
       <Section>
-        <Txt role="body" tone="ink-2">{linked ? `${plural(linked, 'site', 'sites')} linked. Add the rest now or later.` : 'Link the ones you sell on. Each one is optional.'}</Txt>
+        {linked ? null : <Txt role="body" tone="ink-2">Link the ones you sell on. Each one is optional.</Txt>}
         <List>
           {SITE_ORDER.map(s => <LinkRow key={s} site={s} link={links[s]} onLink={() => link(s)} />)}
         </List>

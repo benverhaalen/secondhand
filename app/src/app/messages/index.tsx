@@ -7,7 +7,9 @@ import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo } from 'react';
 import { EmptyState, List, Meta, Nav, Screen, Stack, Txt } from '@/ui';
 import { ConvoRow, type ConvoNote } from '@/ui/parts/convo-row';
-import { ago, itemById, world } from '@/demo';
+import { ListRow } from '@/ui/parts/list-row';
+import { cards, notices } from '@/today/cards';
+import { ago, itemById, usd, world } from '@/demo';
 import { draftFor, inbox } from '@/demo/inbox';
 import { photo } from '@/demo/photos';
 import { shortName } from '@/demo/short-name';
@@ -31,6 +33,17 @@ export default function Messages() {
   const all = useMemo(() => (asked === 'empty' || asked === 'failed' ? [] : asked === 'one' ? inbox(w).slice(0, 1) : inbox(w)), [w, asked]);
   // ?item= shows one thing's conversations, for a link from that thing's page.
   const shown = p.item ? all.filter(r => r.c.item_id === p.item) : all;
+  const alerts = asked === 'empty' || asked === 'failed' || p.item ? [] : [
+    ...cards(w).map(card => ({ id: card.key, title: card.title, detail: card.word, to: card.open })),
+    ...notices(w).map(notice => ({ id: notice.id, title: notice.text, detail: undefined, to: notice.to })),
+    ...w.matches.filter(match => {
+      const want = w.wants.find(want => want.id === match.want_id && want.state === 'active');
+      return want && ['found', 'alerted'].includes(match.state)
+        && ['exact', 'likely_same_model'].includes(match.label)
+        && (want.max_total_cents == null || match.delivered_cents <= want.max_total_cents)
+        && (!want.fit.size || match.size?.toLowerCase() === want.fit.size.toLowerCase());
+    }).map(match => ({ id: `found-${match.id}`, title: match.title, detail: `Found for ${usd(match.delivered_cents)}`, to: `/listing/${match.id}` })),
+  ];
   const state = asked === 'failed' || asked === 'offline' ? asked
     : all.length === 0 ? (w.name === 'new' ? 'new' : 'empty') : all.length === 1 ? 'one' : 'typical';
   const open = (id: string) => router.push((`/messages/${id}` + q) as Href);
@@ -47,9 +60,13 @@ export default function Messages() {
       </Stack>
       {asked === 'failed' ? (
         <EmptyState title="Messages didn’t load"
-          action={{ id: 'messages-retry', label: 'Try again', onPress: () => router.replace(('/messages' + q) as Href) }} />
+          action={{ id: 'messages-retry', label: 'Retry', onPress: () => router.replace(('/messages' + q) as Href) }} />
       ) : null}
 
+      {alerts.length ? <List>{alerts.map(alert => (
+        <ListRow key={alert.id} id={`alert-${alert.id}`} label={alert.title} detail={alert.detail}
+          onPress={() => router.push((alert.to + (alert.to.includes('?') ? q.replace('?', '&') : q)) as Href)} />
+      ))}</List> : null}
       {shown.length ? (
         <List>
           {shown.map(r => (
@@ -58,7 +75,7 @@ export default function Messages() {
           ))}
         </List>
       ) : null}
-      {all.length === 0 && asked !== 'failed' ? (
+      {all.length === 0 && alerts.length === 0 && asked !== 'failed' ? (
         <EmptyState title="No messages yet" line={w.name === 'new' ? 'Connect a site, and buyers on it write to you here.' : 'When a buyer writes on any site, it shows up here.'} />
       ) : null}
     </Screen>

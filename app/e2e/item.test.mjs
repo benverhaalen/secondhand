@@ -39,7 +39,7 @@ test('item: review asks one question at a time, and an answer fills the field', 
   await press(s, 'ask-fact-joy_con_drift-no');
   await s.page.getByText('Do the Joy-Cons drift?').waitFor({ state: 'hidden', timeout: 3000 });
   assert.equal(await s.page.getByTestId('field-joy_con_drift').getAttribute('aria-label'), 'Joy-Con drift: No');
-  await s.shows('Every question answered. Ready to plan');
+  await s.shows('Ready to plan');
 });
 
 // edge-cases §5: each site's listing is written for its buyers, and the item says where a site's listing differs.

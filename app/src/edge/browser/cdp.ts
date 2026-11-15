@@ -8,6 +8,7 @@ import { mkdirSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import type { Launcher, LaunchOptions, PoolContext } from './pool.ts';
 import { profileRow, type StorageState, type ProfileRegistry } from './auth.ts';
+import { consoleSink, createLog, type Log } from '../../../../log/index.js';
 
 export type CdpEndpoint = { cdpUrl: string; live_url?: string; cloudProfile?: boolean; isStopped?(): boolean; stop(): Promise<void> };
 // Where a browser comes from. profileDir is undefined for an anonymous public browser.
@@ -20,21 +21,40 @@ type CdpBrowser<P extends CdpPage = CdpPage> = { contexts(): CdpContext<P>[]; ne
   newBrowserCDPSession?(): Promise<{ send(method: 'Browser.close'): Promise<unknown> }> };
 export type CdpPw<P extends CdpPage = CdpPage> = { chromium: { connectOverCDP(url: string, o?: { timeout?: number }): Promise<CdpBrowser<P>> } };
 
+export function isCdpPw<P extends CdpPage>(value: unknown): value is CdpPw<P> {
+  if (!value || typeof value !== 'object' || !('chromium' in value)) return false;
+  const chromium = value.chromium;
+  return !!chromium && typeof chromium === 'object' && 'connectOverCDP' in chromium && typeof chromium.connectOverCDP === 'function';
+}
+
 export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState?(s: StorageState): Promise<void>; exportState?(): Promise<StorageState>; live_url?: string };
 
-export function cdpLauncher<P extends CdpPage>(pw: CdpPw<P>, source: BrowserSource): Launcher<P> {
+export function cdpLauncher<P extends CdpPage>(pw: CdpPw<P>, source: BrowserSource,
+  log: Pick<Log, 'error'> = createLog({ src: 'browser.cdp', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink })): Launcher<P> {
+  const cleanup = async (where: string, run: () => Promise<unknown>) => {
+    try { await run(); } catch (error) { log.error(where, error); }
+  };
   async function connect(profileDir: string | undefined, opts: LaunchOptions): Promise<AuthedContext<P>> {
     const ep = await source.open(profileDir, opts);
     let browser: CdpBrowser<P>;
     try { browser = await pw.chromium.connectOverCDP(ep.cdpUrl, { timeout: 30_000 }); }
-    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`); }
+    catch (e) {
+      log.error('browser.cdp.connect', e);
+      await cleanup('browser.cdp.stop', () => ep.stop());
+      const message = e instanceof Error ? e.message : String(e);
+      throw new Error(`could not connect to the ${source.kind} browser: ${message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`, { cause: e });
+    }
     let ctx: CdpContext<P>;
     try { ctx = browser.contexts()[0] ?? await browser.newContext(); }
-    catch (e) { await browser.close().catch(() => undefined); await ep.stop(); throw e; }
+    catch (e) {
+      await cleanup('browser.cdp.browser.close', () => browser.close());
+      await cleanup('browser.cdp.stop', () => ep.stop());
+      throw e;
+    }
     let closed = false;
     const closers: (() => void)[] = [];
     // A dropped connection must stop the browser too: closing CDP does not end a cloud browser or its billing.
-    browser.on('disconnected', () => { if (!closed) { closed = true; void ep.stop(); closers.forEach(f => f()); } });
+    browser.on('disconnected', () => { if (!closed) { closed = true; void cleanup('browser.cdp.stop', () => ep.stop()); closers.forEach(f => f()); } });
     return {
       newPage: () => ctx.newPage(),
       onClose: fn => { closers.push(fn); },
@@ -42,9 +62,10 @@ export function cdpLauncher<P extends CdpPage>(pw: CdpPw<P>, source: BrowserSour
       async close() {
         closed = true;
         // Browser.close lets Chrome flush its cookie store to the profile; a bare kill loses the last sign-in.
-        await browser.newBrowserCDPSession?.().then(c => c.send('Browser.close')).catch(() => undefined);
-        await browser.close().catch(() => undefined);
-        await ep.stop();
+        const newSession = browser.newBrowserCDPSession;
+        if (newSession) await cleanup('browser.cdp.flush', async () => (await newSession.call(browser)).send('Browser.close'));
+        await cleanup('browser.cdp.close', () => browser.close());
+        await cleanup('browser.cdp.stop', () => ep.stop());
         closers.forEach(f => f());
       },
       // Cloud saves sign-in on stop: research/cross-cutting/nate/browser-use-cloud.md, Stored sign-in.
@@ -91,7 +112,9 @@ export function localChrome({ executablePath, scratch, headless, spawnFn = spawn
         try {
           const [port, path] = readFileSync(join(dir, 'DevToolsActivePort'), 'utf8').split(/\r?\n/); // bundle-safe: reads the port file the Chrome it just launched wrote in its temp profile, not a repo file
           if (port && path) return { cdpUrl: `ws://127.0.0.1:${port}${path}`, stop };
-        } catch { /* not written yet */ }
+        } catch (error) {
+          if (!(error instanceof Error) || !('code' in error) || error.code !== 'ENOENT') throw error; // ENOENT: Chrome has not written the port file yet
+        }
         if (child.exitCode !== null) break;
         await new Promise(r => setTimeout(r, 50));
       }

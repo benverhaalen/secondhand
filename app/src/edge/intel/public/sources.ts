@@ -8,6 +8,7 @@ export type SourceSite = Site | 'dupe';
 export type Caller = 'person' | 'background';
 export interface Source {
   id: string; site: SourceSite; lane: 'public_page' | 'harness' | 'mcp' | 'apify'; covers: readonly string[];
+  rights: { may_store: boolean; may_model?: false; use_scope?: 'hackathon_demo' };
   needs_ask: boolean; person_only?: boolean; on: boolean; reason?: string; pace: Pace;
 }
 
@@ -32,22 +33,22 @@ const facebookPace = pace('facebook', 'apify', 20, 3000);
 searchParams.declare({ name: 'search_facebook_city', family: 'scalar', prior: 'chicago' });
 // Apify README: $0.05 maximum a run, about $0.50 a person each day.
 searchParams.declare({ name: 'search_apify_runs_per_person_day', family: 'scalar', prior: 10, guard_lo: 0 });
-// About $10 a day per process; a visitor id can be rotated.
+// About $10 a day across all people; reserved through SearchOpts.apifyRuns.
 searchParams.declare({ name: 'search_apify_runs_per_day', family: 'scalar', prior: 200, guard_lo: 0 });
 // Apify README probe: $0.05 for 10 Facebook rows.
 searchParams.declare({ name: 'search_apify_cost_per_row_usd', family: 'scalar', prior: 0.005, guard_lo: 0 });
 
 // Nate's source rulings: spec/engines/protocol-and-adapters.md §8 (int-search-1 follow-up).
 export const SOURCES: Source[] = [
-  { get pace() { return dupePace(); }, id: 'dupe', site: 'dupe', lane: 'mcp', covers: ['poshmark', 'depop', 'ebay', 'etsy', 'chairish'], needs_ask: false, on: true },
-  { get pace() { return depopPace(); }, id: 'depop', site: 'depop', lane: 'harness', covers: ['depop'], needs_ask: false, on: true },
-  { get pace() { return poshmarkPace(); }, id: 'poshmark', site: 'poshmark', lane: 'public_page', covers: ['poshmark'], needs_ask: false, on: true },
-  { get pace() { return mercariPace(); }, id: 'mercari', site: 'mercari', lane: 'harness', covers: ['mercari'], needs_ask: true, on: true },
-  { get pace() { return facebookPace(); }, id: 'facebook', site: 'facebook', lane: 'apify', covers: ['facebook'], needs_ask: false, person_only: true, on: true },
-  { get pace() { return ebayPace(); }, id: 'ebay', site: 'ebay', lane: 'harness', covers: ['ebay'], needs_ask: false, on: true },
+  { get pace() { return dupePace(); }, rights: { may_store: false }, id: 'dupe', site: 'dupe', lane: 'mcp', covers: ['poshmark', 'depop', 'ebay', 'etsy', 'chairish'], needs_ask: false, on: true },
+  { get pace() { return depopPace(); }, rights: { may_store: true }, id: 'depop', site: 'depop', lane: 'harness', covers: ['depop'], needs_ask: false, on: true },
+  { get pace() { return poshmarkPace(); }, rights: { may_store: true }, id: 'poshmark', site: 'poshmark', lane: 'public_page', covers: ['poshmark'], needs_ask: false, on: true },
+  { get pace() { return mercariPace(); }, rights: { may_store: true }, id: 'mercari', site: 'mercari', lane: 'harness', covers: ['mercari'], needs_ask: true, on: true },
+  { get pace() { return facebookPace(); }, rights: { may_store: true, may_model: false, use_scope: 'hackathon_demo' }, id: 'facebook', site: 'facebook', lane: 'apify', covers: ['facebook'], needs_ask: false, person_only: true, on: true },
+  { get pace() { return ebayPace(); }, rights: { may_store: true }, id: 'ebay', site: 'ebay', lane: 'harness', covers: ['ebay'], needs_ask: false, on: true },
 ];
 
 export const sourcesFor = (caller: Caller = 'background', sources: readonly Source[] = SOURCES) =>
-  sources.filter(source => source.on && (!(source.needs_ask || source.person_only) || caller === 'person'));
+  sources.filter(source => source.on && (!source.person_only || caller === 'person'));
 
 export const routeId = (source: Source) => source.lane === 'apify' ? `apify.${source.id}.search` : source.lane === 'mcp' ? 'dupe.search.api' : source.lane === 'public_page' ? `public.${source.id}` : `${source.id}.search.page`;

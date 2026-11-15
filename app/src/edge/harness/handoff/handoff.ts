@@ -78,7 +78,7 @@ export function createHandoff<P extends PoolPage & { goto(url: string): Promise<
   }
   async function run(i: HandoffInput, resume: boolean): Promise<HandoffResult> {
     const id = key(i), s = sessions.get(id);
-    const a = await o.accounts.byId(i.account_id);
+    const a = await o.accounts.byId(i.account_id, i.person_id);
     if (!a || a.person_id !== i.person_id || a.site !== i.site || s && a.site !== s.account.site) {
       if (s) { s.result = { state: 'not_linked' }; await close(s); }
       return { state: 'not_linked' };
@@ -136,7 +136,7 @@ export function createHandoff<P extends PoolPage & { goto(url: string): Promise<
     async liveView(person_id: string, session_id: string) {
       const s = [...sessions.values()].find(s => s.viewer_id === session_id && s.account.person_id === person_id);
       if (!s || s.closed || s.result.state !== 'paused') return undefined;
-      const a = await o.accounts.byId(s.account.account_id);
+      const a = await o.accounts.byId(s.account.account_id, s.account.person_id);
       if (!a || a.person_id !== person_id || a.site !== s.account.site) { s.result = { state: 'not_linked' }; await close(s); return undefined; }
       if (now() >= s.expires) { s.result = stale(s.account); await close(s); return undefined; }
       return s.live_url;

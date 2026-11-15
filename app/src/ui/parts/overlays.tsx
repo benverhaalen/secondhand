@@ -91,7 +91,7 @@ export function Skeleton({ of }: { of: 'card-decision' | 'card-item' | 'notice' 
     </View>
   );
   return (
-    <View {...mark(of, { skeleton: 'true' })} accessibilityLabel="Loading"
+    <View {...mark(of, { skeleton: 'true' })} accessibilityLabel={`Loading ${of === 'card-decision' ? 'decision' : 'item'}`}
       style={{ height: of === 'card-decision' ? size.cardDecisionH : size.cardItemH, padding: size.cardPad, gap: space.s3, borderRadius: radius.card, borderCurve: 'continuous', borderWidth: 1, borderColor: c.cardEdge, backgroundColor: c.surface }}>
       {row}
       {of === 'card-decision' ? <View style={{ flexDirection: 'row', gap: space.s2 }}>{bar(120, size.pillCardH)}{bar(96, size.pillCardH)}</View> : null}

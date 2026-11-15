@@ -4,22 +4,34 @@ Updated: November 15, 2026, about 10:15 UTC. Owner: Nate. Agent: Claude Code, th
 
 The orchestrator holds the whole backend for Nate: it starts and briefs the team leads, takes the problems that change what was imagined, owns the site harnesses and the cloud browser (`app/src/edge/harness/`, `app/src/edge/browser/`), and records what Nate says in [words](../../../../product/words.md). Read first: [packet 55](55-team-leads-and-mac-workers.md), [completion](../../../../spec/plans/completion.md), [where the backend is not optimized](../../../../spec/plans/optimization-gaps.md), then the lead handoffs below.
 
-## 0a. Where things stand at 12:05 UTC on 2026-11-15 (the times written as "Central" elsewhere in this packet are UTC; the machine clock read 05:30 CST at 11:30 UTC)
+## 0a. Where things stand at 13:10 UTC on 2026-11-15, and how to start the fresh sessions
 
-The audit is written and pushed: [audit of main](../../../../spec/plans/audit-2026-11-15.md), with the three evidence sweeps and five expert reviews in [its folder](../../../../spec/plans/audit-2026-11-15/). Ben's plan was read after it. Every fix, by lead, with its proof, is in [the finalization spec](../../../../spec/plans/finalization.md): read that before anything below, which is older.
+Times written as "Central" lower in this packet are UTC; the machine clock read 05:30 CST at 11:30 UTC. Judging is at 19:00 UTC.
 
-Leads running, all fresh Opus sessions started on Nate's word ("Lets address all fixes", "Get this going too"), each owning one section of the spec:
+**Read in this order:** [the finalization spec](../../../../spec/plans/finalization.md) (every fix by lead with its proof, the open list for Nate in section 9, the history rewrite in section 11, the orchestrator's independent reruns in section 12), then [the audit](../../../../spec/plans/audit-2026-11-15.md) it rests on. Everything below section 0a is older.
 
-| Lead | Spec section | Session name |
-|---|---|---|
-| Server core, one program first | 2 (SV0 to SV10) | lead-server |
-| Search and sources | 3 (SR1 to SR10) | lead-search |
-| Engines and the buying conversation | 4 (EN, BC) | lead-engines-3 |
-| Databricks and the jobs | 5 (DB0 to DB8); moves the guard alert to daily after 19:00 UTC | lead-data |
-| The app wired to the server | 6 (AP1 to AP5) | lead-app-wiring |
-| Identify, classify, clarifying questions (capture) | 7 | lead-identify |
+**Nate called a wrap-up at about 13:05 UTC** ("prepare rest for a wrapup and fresh new sessions"). Each lead was told to merge what is reviewed and green, leave the rest committed on its Mac branch, update its handoff packet and its rows in the spec, send three lines and stop. A fresh session then takes each area. A lead is started with: Opus 5.5, fresh context, no worktree, and a brief that says only: you are the lead for this area; read `AGENTS.md`, `.agents/coordination.md`, packet 55, your section of the finalization spec and your predecessor's handoff packet; continue its "left, in order" list; the standing rules in the predecessor's brief hold.
 
-The orchestrator no longer builds in the harness: the search lead owns it. Open with Nate: the nine items in the spec's section 9, the posting question with Ben first.
+| Area | Spec section | Handoff packet | First job for the fresh lead |
+|---|---|---|---|
+| Server core | 2 | [86](86-server-core-handoff.md) | the two fixture-walk tests failing on main, jobs and request state on disk, the host files, then the observation writer (SV7) and routes off examples (SV8) |
+| Search and sources | 3 | written at its stop | the four failing tests in its files, the eBay 32-read rerun, honest counts, the read-outcome counts |
+| Engines and the buying conversation | 4 | [70](70-engines-handoff.md) | the improved valuation through its review, then the loop link by link; the conversation's route |
+| Databricks and the jobs | 5 | [71](71-databricks-handoff.md) | **after 19:00 UTC, the guard alert to daily at 4 AM**; the three additive pieces for judging (DB9) if not finished; the fit and purge fixes onto the workspace |
+| The app wired to the server | 6 | [83](83-app-wiring-handoff.md) | sign-in on the phone and web against the one-program server, then the wiring map's next screens |
+| Capture: identify, classify, questions | 7 | [72](72-capture-handoff.md) | the identify job through review, the paid visual step Nate approved, real uploads, then the depth module |
+
+**What the orchestrator did this session, all on main:** the audit and five expert reviews; the finalization spec; a cross-source benchmark ([run](../../../../research/cross-cutting/nate/runs/cross-source-benchmark-2026-11-15.md)): our eBay read answered 16 of 16 against the paid actor's 4 of 5, and the product kept 510 of 1,125 listings at 0.82 on target; the map of Databricks' retail solutions and its dynamic pricing shape to our engines ([note](../../../../research/data/nate/databricks-retail-solutions.md)); open fallback fonts (Hanken Grotesk and Outfit) merged; treg set up as the user-level variable `TREG_TOKEN` on Windows; the gate's unowned findings fixed; Playwright's browser installed on both machines; the Mac's shared modules rebuilt from main's lockfile; an independent end-to-end run of the new server (section 12 of the spec).
+
+**In flight when this was written:** a subagent in its own worktree building what Ben's packet 80 asks for (`capture.intent`, `/v1/lookups`, a want that keeps `product_id` and `capture_id`) and writing reply packets to his 80 and 83; the orchestrator merges it after reading the diff.
+
+**Timed and promised:** the guard alert change after 19:00 UTC (the data lead's); the history rewrite after judging, with Ben stopped ([packet 82](82-history-rewrite-for-ben.md), spec section 11): it runs once, by the orchestrator, and needs every clone thrown away and cloned again.
+
+**Decided by Nate today since the list in section 0:** our own page read is eBay's first lane, the paid actor behind it; shown-only rows may price a shown range and never a fit; Google Lens through treg for identification, as designed; the history rewrite after judging; an open font pair for every system; build on Databricks' retail solutions and show we extend them.
+
+**Open with Nate:** section 9 of the spec. First among them: the posting question with Ben, a sender for sign-in emails, one marketplace account linked, his yes before anything is created or deployed on Fly.
+
+**Gate on the Mac at 13:00 UTC:** Python green; 18 of 3,751 tests failing, each with an owner (spec section 12); ten of them are one brand rule on rendered fixtures, which is Ben's ([packet 84](84-render-checks-for-ben.md)).
 
 ## 0. Read this first: the wrap-up of 2026-11-15, about 11:45 Central
 

@@ -96,6 +96,14 @@ test('secrets: a type-only import from edge/ ships nothing, and tests and fixtur
   assert.match(bad, /mixed\.ts.*edge/);
 });
 
+test('secrets: an open font passes only in a fonts-open folder with its licence; ui: a font-face block names a family without using one', () => {
+  assert.deepEqual(run(secrets, { 'app/assets/fonts-open/outfit/Outfit-SemiBold.ttf': 'x', 'app/assets/fonts-open/outfit/OFL.txt': 'licence' }), []);
+  assert.match(errors(run(secrets, { 'app/assets/fonts-open/outfit/Outfit-SemiBold.ttf': 'x' })), /without its licence/);
+  assert.match(errors(run(secrets, { 'app/assets/fonts/Outfit-SemiBold.ttf': 'x', 'app/assets/fonts/OFL.txt': 'licence' })), /a font file is committed/);
+  assert.deepEqual(run(ui, { 'web/app/globals.css': '@font-face { font-family: "Outfit"; src: url(/x.ttf); }\n' }), []);
+  assert.match(errors(run(ui, { 'web/app/globals.css': '@font-face { font-family: "Outfit"; src: url(/x.ttf); }\nh1 { font-family: Outfit; }\n' })), /font Outfit/);
+});
+
 test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass', () => {
   const bad = run(ui, { 'app/Today.tsx': 'const s = { color: "#E63339", fontFamily: "Inter" };\nexport const T = () => <h1>Sold — nice</h1>;\n' });
   const e = errors(bad);
@@ -106,9 +114,8 @@ test('ui: raw colors, literal fonts and em dashes in app code fail; tokens pass'
     'brand/tokens.css': ':root { --ink: #111; }' });
   assert.equal(errors(good), '');
   assert.equal(errors(run(ui, { 'app/src/ui/text.tsx': 'const s = { fontFamily: `${FACE.text}` };\n' })), '');
-  const warn = run(ui, { 'app/Hero.tsx': 'export const H = () => <p>A seamless way to sell</p>;\n' });
-  assert.equal(errors(warn), '');
-  assert.match(warn.map(o => o.msg).join(), /empty adjective/);
+  // Every copy hit is an error since Ben's 10:11 ruling (ui.mjs); it was a warning when this case was written.
+  assert.match(errors(run(ui, { 'app/Hero.tsx': 'export const H = () => <p>A seamless way to sell</p>;\n' })), /empty adjective/);
 });
 
 import { brand } from './brand.mjs';

@@ -19,11 +19,11 @@
     "A pick is a white chip with an ink outline, never a black one: one black button per view, and a pick is shape as well as color (Art. 5).",
     "A new want is a hand-off: it sets a price, so the foot says exactly what it starts ('Watch for $80 or less') and nothing runs until the tap.",
     "After the tap the sites answer one by one in the Where strip ('Just now'), with 'Found 6 so far' under it, and the foot says the person can leave and come back (watch.md, 'While the person is away').",
-    "A saved want opens on how its look stands, at the top: 'Looking on 4 sites', each logo with when it was checked, 'Behind' for a site whose check failed, and what it found so far.",
+    "A saved want opens on how its look stands, at the top: 'Looking on 4 sites', each logo with when it was checked, 'Retrying' for a site whose check failed, and what it found so far.",
     "A saved want saves each change at once with Undo, as iOS Settings does, and looks again at once (watch.md: a change re-runs the search).",
     "Tell me is a two-row choice (Under the most, Any new one), the iOS list pattern, because both answers are short and exclusive.",
     "Pause and End are gray pills, never the black one: End is the destructive act and it carries Undo.",
-    "Loading is the page's skeleton, failed says what did not load with Try again, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page.",
+    "Loading is the page's skeleton, failed says what did not load with Retry, and offline keeps the last copy under 'Waiting for signal' (app/src/buy/states.tsx), the same on every buy page.",
     "A live find (the stage beat, ?live=1) sits right under what is being watched, above the price, because it is what the person is waiting for; it is the shared MatchCard with the read 'Under your price', since a find made live has no fair range behind it on stage, and its time is how long after listing it was found, from the site's own clock (Ben chose the alert inside the app, 08:06)."
   ],
   "states": [
@@ -34,7 +34,7 @@
       "also": [
         "Nike Dunk Low Grey Fog, men’s 10, under $80",
         "Looking on 4 sites",
-        "Behind",
+        "Retrying",
         "Found 4 so far",
         "$64 to $80",
         "Men’s US",
@@ -106,13 +106,13 @@
       "route": "/want?state=failed",
       "shows": "Couldn’t load this want",
       "also": [
-        "Try again"
+        "Retry"
       ]
     },
     {
       "state": "offline",
       "route": "/want?state=offline",
-      "shows": "Waiting for signal. This is the last copy."
+      "shows": "Waiting for signal; showing saved results."
     },
     {
       "state": "found-live",
@@ -435,7 +435,7 @@
       "shows": "Saved"
     },
     {
-      "control": "Quiet",
+      "control": "Quiet hours",
       "on_tap": "edits quiet hours in place",
       "id": "want-quiet",
       "in": "typical",

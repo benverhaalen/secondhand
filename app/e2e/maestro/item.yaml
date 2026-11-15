@@ -59,7 +59,7 @@ env:
     visible: "Do the Joy-Cons drift\\?"
     timeout: 10000
 - tapOn: { id: "ask-fact-joy_con_drift-no" }
-- assertVisible: "Every question answered. Ready to plan"
+- assertVisible: "Ready to plan"
 - assertNotVisible: "Do the Joy-Cons drift\\?"
 # slow: the one change is the pill, with Undo.
 - openLink: ${URL}/--/item/it_lamp

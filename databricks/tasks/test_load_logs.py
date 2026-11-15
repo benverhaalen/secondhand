@@ -185,9 +185,9 @@ def test_reloading_logs_is_insert_only_and_preserves_external_decisions():
     db = sqlite3.connect(':memory:')
     db.execute('CREATE TABLE log_event (session, seq, user_id, data)')
     db.execute('CREATE TABLE decision (id, user_id, data)')
-    db.execute('CREATE TABLE principal_map (principal, user_id)')
+    db.execute('CREATE TABLE principal_map (principal, user_id, grant_id)')
     db.execute('CREATE TABLE break_glass (id, principal, reason, started_at, ended_at)')
-    db.execute("INSERT INTO principal_map VALUES ('runner', 'system')")
+    db.execute("INSERT INTO principal_map VALUES ('runner', 'system', NULL)")
     db.execute("INSERT INTO decision VALUES ('purge_audit', 'system', 'live:secondhand')")
 
     class Spark:

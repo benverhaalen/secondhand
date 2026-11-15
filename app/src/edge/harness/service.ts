@@ -4,10 +4,11 @@ import { createHarness, fail, isWrite, type Adapter, type CallArgs, type Envelop
 import { createHash } from 'node:crypto';
 import type { Store } from '../events/ports.ts';
 import type { Log } from '../../../../log/index.js';
+import { classOf, readLedger, type ReadLedger } from './read-ledger.ts';
 
-export function createSiteService(site: Site, adapters: Adapter[], { concurrency, warm = async () => {}, store, data, log, timeoutMs, now = Date.now }: {
+export function createSiteService(site: Site, adapters: Adapter[], { concurrency, warm = async () => {}, store, data, log, timeoutMs, now = Date.now, ledger = readLedger }: {
   concurrency: number; warm?: (a: Adapter) => Promise<void>; store: Store;
-  data: Parameters<Store['beginOperation']>[0]['data']; log: Log; timeoutMs?: number; now?: () => number;
+  data: Parameters<Store['beginOperation']>[0]['data']; log: Log; timeoutMs?: number; now?: () => number; ledger?: ReadLedger;
 }) {
   const harness: Harness = createHarness({ adapters, log, timeoutMs, now });
   const started = Promise.all(adapters.map(warm)).then(() => undefined);   // every adapter warm before the first call is served
@@ -18,12 +19,30 @@ export function createSiteService(site: Site, adapters: Adapter[], { concurrency
   const acquire = async () => { if (running >= concurrency) await new Promise<void>(r => waiting.push(r)); else running++; };
   const release = () => { const next = waiting.shift(); if (next) next(); else running--; };   // the slot passes straight to the next in line
 
+  function readPause(verb: Verb): Envelope<never> | undefined {
+    if (isWrite(verb)) return;
+    const pause = ledger.paused(site);
+    if (!pause) return;
+    return { ...fail('rate_limited', 'the site asked us to slow down', { do: 'retry_after', after_s: Math.ceil((pause.until_ms - now()) / 1000) }),
+      meta: { route_id: 'service', adapter_version: '0.0.0', ms: 0, fell_back: false, observation_ids: [] } };
+  }
+
   async function run<T>(verb: Verb, args: CallArgs): Promise<Envelope<T>> {
+    const pause = readPause(verb);
+    if (pause) return pause;
     await acquire();
-    try { return await harness.call<T>(site, verb, args); } finally { release(); }
+    try {
+      const queuedPause = readPause(verb);
+      if (queuedPause) return queuedPause;
+      const envelope = await harness.call<T>(site, verb, args);
+      if (!isWrite(verb)) ledger.record(site, verb, classOf(envelope), envelope.meta.ms);
+      return envelope;
+    } finally { release(); }
   }
 
   async function call<T = unknown>(verb: Verb, args: CallArgs = {}): Promise<Envelope<T>> {
+    const pause = readPause(verb);
+    if (pause) return pause;
     await started;
     const op = args.operation_id;
     if (!isWrite(verb) || !op) return run<T>(verb, args);

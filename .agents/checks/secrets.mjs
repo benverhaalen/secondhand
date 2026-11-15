@@ -44,7 +44,12 @@ export function secrets(root, { files }) {
   for (const f of files) {
     if (/(^|\/)\.env(\.|$)/.test(f) && !f.endsWith('.example')) out.push(err(f, '.env files are never committed; add an .env.example with names only'));
     // The brand faces are licensed and this repo is public: they live in the BRAND_FONTS secret and fonts/ (ignored) only.
-    if (/\.(woff2?|ttf|otf)$/i.test(f)) { out.push(err(f, 'a font file is committed: the brand faces are licensed, so keep them in fonts/ (ignored) or the BRAND_FONTS secret')); continue; }
+    // An open-licensed fallback face may be committed, in a fonts-open/ folder with its licence file; a brand face never is.
+    if (/\.(woff2?|ttf|otf)$/i.test(f)) {
+      if (!/(^|\/)fonts-open\//.test(f)) out.push(err(f, 'a font file is committed: the brand faces are licensed, so keep them in fonts/ (ignored) or the BRAND_FONTS secret'));
+      else if (!files.some(x => x.startsWith(f.slice(0, f.lastIndexOf('/') + 1)) && /OFL|LICEN[SC]E/i.test(x))) out.push(err(f, 'an open font is committed without its licence file beside it'));
+      continue;
+    }
     if (/\.(png|jpe?g|gif|webp|ico|pdf|m4a|mp4|zip)$/i.test(f)) continue;
     const text = read(root, f) ?? '';
     for (const [name, re] of KEYS) if (re.test(text)) out.push(err(f, `looks like a ${name}; remove it and rotate it`));

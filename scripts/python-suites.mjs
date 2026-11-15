@@ -10,7 +10,8 @@ export function pythonSuites(root, { python } = {}) {
   const results = [];
   for (const folder of ['jobs', 'databricks', 'deploy']) {
     const run = spawnSync(executable, ['-m', 'pytest', '-q', '-p', 'no:cacheprovider'], {
-      cwd: join(root, folder), encoding: 'utf8', maxBuffer: 16 * 1024 * 1024,
+      // UTF-8 mode, as on Linux and the Databricks runtime: Windows would read the repo's files as cp1252
+      cwd: join(root, folder), encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, env: { ...process.env, PYTHONUTF8: '1' },
     });
     if (run.status === 0) continue;
     const lines = `${run.stdout ?? ''}\n${run.stderr ?? ''}`.trim().split(/\r?\n/).filter(line => line.trim());

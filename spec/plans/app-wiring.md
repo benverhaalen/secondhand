@@ -72,3 +72,19 @@ After Search (visitor, engine, being wired):
 ## How each was checked
 
 `find app/src/app -name '*.tsx'` (22 screens outside `v1/`, `dev/`, `_layout.tsx`); `find app/src/app/v1 -name '*+api.ts'` plus `grep -n "route("` for each route's method and auth; read `E/http.ts:104-128`, `E/captures.ts:64-100` (the example gate), `E/runtime.ts:325`, `E/routes.ts:39-60`, `E/{today,decisions,wants,items,orders,market,buy,valuations,insights,conversations,records,scores}.ts`; `grep` for `exampleHandler(` and `fromEngine(` to split EX from real; read `app/src/edge/auth.ts:126-138,245-250` and `app/src/you/sign-in.tsx:20-60`; `grep -n "expo-apple|google|secure-store|AsyncStorage" app/package.json`; per-screen head comments plus `grep` of `useScreen|usePage|@/demo|fetch(`; `spec/redesign/README.md` §8; example names listed by reading `spec/examples/*.json`. Not run: any server, test or git command. Unchecked: the deployed server's env, `app/src/api/` (absent today), and field-level rendering of the larger screens beyond their head, imports and demo types.
+
+## The first internal build (finalization AP5)
+
+Prepared on main 2026-11-15; no build or submit runs without Nate's word.
+
+| Need | State | Where |
+|---|---|---|
+| A development client, which the `development` profile requires (`developmentClient: true`) | done: `expo-dev-client` ~58.0.20 | `app/package.json` |
+| The server's address per profile | `development`: the dev server the bundle came from (`hostUri`, `app/src/api/origin.native.ts`). `preview-sim`: `http://localhost:8081`, the Mac's dev server, which the simulator shares. `production`: **waits on Nate's host** (hosting.md proposes fly.io); set `EXPO_PUBLIC_API_ORIGIN` on the profile then | `app/eas.json` |
+| Privacy manifest, required-reason APIs | added: UserDefaults CA92.1, file timestamp C617.1, system boot time 35F9.1, disk space E174.1 (Expo's apple-privacy guide names these categories; the exact set is confirmed by Apple's email on the first upload) | `app/app.json` `ios.privacyManifests` |
+| Native modules declared | done: `expo-sqlite`, `expo-secure-store`, `expo-file-system`, `expo-dev-client`; the LiDAR module is the capture lead's | `app/package.json`, `app/app.json` plugins |
+| Development pages out of a release, a not-found page | done (AP4) | `app/src/app/dev/_layout.tsx`, `app/src/app/+not-found.tsx` |
+| Identity | `com.bnvg.secondhand`, `usesNonExemptEncryption: false`, version 1.0.0, build numbers from EAS (`appVersionSource: remote`) | `app/app.json`, `app/eas.json` |
+| The simulator check | **waits on Nate's go**: on the Mac, create a device (none exist; runtimes 18.6, 26.0 and 26.3 are installed), build `preview-sim`, open `/dev/health` (it should name Databricks' state through the dev server) and `/shop?q=levi%20501` | the Mac |
+
+What Nate decides: the production API host, his Apple team and EAS sign-in for the build, and the go for the first `preview-sim` and `development` builds.

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import { VERBS, type AdapterResult, type CallArgs, type Verb } from '../../protocol.ts';
-import { ebayAdapters, readItem, readEligible, consentUrl, promotedProposal, pushLatency, toWatchSnapshot, retryAfter, USER_SCOPES, type Client, type Reply, type Req } from './adapter.ts';
+import { appTokenSource, ebayAdapters, readItem, readEligible, consentUrl, promotedProposal, pushLatency, toWatchSnapshot, retryAfter, SCOPES, USER_SCOPES, type Client, type Reply, type Req } from './adapter.ts';
 
 const raw = (f: string) => readFileSync(new URL(`./fixtures/${f}`, import.meta.url), 'utf8');
 const fx = (f: string): unknown => JSON.parse(raw(f));
@@ -40,6 +40,11 @@ function client(o: { over?: (r: Req) => Reply | undefined; keys?: boolean; linke
 const run = (verb: Verb, a: CallArgs, c: Client) => ebayAdapters(c).find(x => x.manifest.verb === verb)!.run(a, signal);
 const rows = (r: AdapterResult) => { assert.ok(r.ok, JSON.stringify(r)); return r.data as Record<string, unknown>[]; };
 const err = (r: AdapterResult) => { assert.ok(!r.ok, 'expected a failure'); return r.error; };
+
+test('an invalid eBay token response has no token', async () => {
+  const token = appTokenSource({ client_id: 'id', client_secret: 'secret', fetchFn: async () => new Response('{') });
+  assert.equal(await token(signal, SCOPES.public), undefined);
+});
 
 test('manifest: every kernel verb, site ebay, an endpoint route, session per verb and field', () => {
   const a = ebayAdapters(client().c);

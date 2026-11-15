@@ -2084,7 +2084,7 @@ Scope: improve Secondhand's existing system. The last excerpt requests an opinio
 Nate, orchestrator's session, 2026-11-15, about 10:20 Central, asked where Ben's site and marketing work lives.
 > If its not in the repo then he hasnt worked on it. Now talk through all questions you have for me
 
-Used in: [packet 78](../.agents/team/packets/team/78-assist-handoff.md) (the site is built from what the repo holds).
+Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the site is built from what the repo holds).
 
 ## 2026-11-15 nate answers at the wrap-up: assess, archive, spec the finalizations, then new leads
 Nate, orchestrator's session, 2026-11-15, about 10:45 Central, answering the orchestrator's numbered questions.
@@ -2206,3 +2206,134 @@ Nate, orchestrator's session, 2026-11-15, about 07:40 Central, answering "Run th
 Used in: [the finalization spec](../spec/plans/finalization.md#11-the-history-rewrite-after-judging).
 
 Note, 2026-11-15, 12:20 UTC, by the orchestrator: the Central times on this session's entries from "address every fix" to "the history rewrite runs after judging" were written late by its own miscount. By the machine clock those messages arrived between about 05:52 and 06:15 Central.
+
+## 2026-11-15 tab layout, manual capture, and Messages notifications
+
+Ben, Codex, November 15, 2026. Implementing; source: current UI request.
+
+> keep the secondhand on the left at the top always, same with messages on the right. remove the labels for today, sell, buy, you.
+
+> the top should have a pill button toggle. left is listings right is sales. under the sales one there should be options to sort by all, to ship, shipped, canceled, completed. under listings is all and active and drafts as the pill buttons that filter results. pause selling deserves to be inside settings.
+
+> there is also a pill toggle. tracked, appraised, found.
+
+> then the you page has dashboard and settings as the pill toggle at the top. the dashboard has all the cool visualizations from before and insights.
+
+> each section is only one box tall. so Needs You. Can Wait. Good to Know. and Other. but as there are more going to the right side rather than down. and its scrollable.
+
+> for now put the video mode into future plans, the user should have to manually click the photo button.
+
+> all notifications for the time being live in messages.
+
+> focus on doing these using the components and the structure of the ui. do not focus on writing new tests. or test driven design for these purposes. you are allowed to merge without ci.
+
+Implementation and integration handoff: [packet 83](../.agents/team/packets/team/83-ben-tab-and-capture-ui.md). These instructions replace older page-title, stacked-tier and push-notification UI decisions for this build.
+## 2026-11-15 nate set up treg for the tools identification needs; an open font for every system
+Nate, orchestrator's session, 2026-11-15, about 06:55 and 07:05 Central. The first message carried a team token, which is left out here and kept only as a machine variable.
+> set up treg — https://treg.to/llms.txt
+>
+> with team rrenderrdev-s-team token: [left out]
+>
+> For the things it requries the tooling for like google lens and such
+
+> For the mac only font, add a google font found equivalent in style built to support all systems
+
+Used in: the identify lead's brief, [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate re-evaluate and benchmark what is working, against competitors
+Nate, orchestrator's session, 2026-11-15, about 07:15 Central.
+> revaluate and run competitive benchmarks on the areas we are considering done. All product searchs all platform harnesses to search each listing, analyze every ranking, determine every engine. whatever is working
+
+Used in: the cross-source benchmark run of 2026-11-15 under `research/cross-cutting/nate/runs/`.
+
+## 2026-11-15 nate rows that may not be modelled on may price a shown range
+Nate, engines lead's session, 2026-11-15, about 06:30 Central, answering "May a row with may_model false (eBay API rows, Apify rows) enter the comps a shown price range is computed from? (a) keep it out of the basis, as now; (b) allowed in a shown range, as valuation.md:52 says, but never in a fit; or (c) eBay yes, Apify no."
+> they can, they are verified real data
+
+Read by the engines lead as (b): such rows price a shown range and are cited, and never fit a weight, a model or a calibration score. Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals).
+
+## 2026-11-15 nate ebay shown once linked, loads last on the long searches, and sources toggled in the web chat
+Nate, search lead's session, 2026-11-15, about 06:34 Central.
+> ebay can not be a linkable platform rn, so therefore wont be shown unless they go to their store settings and link it. Then ebay will be a good way to show the responsive through animations. We will login as users when testing the app as ourselves, and we'll test first selling by me listing two items one on depop, the shirt, and then the table on ebay, but will just create the listings for both, following that, we also then demo the buying, taking a picture of something, which because its the buy search it utilizes all sources, and we can have other fast load times populate, followed then by ebays. its ok if thats fast, but ebay loads only when called, only on the long ones, for the web version, people can toggle with a drop down in the chat the sources to aggregate, with the platforms, but not all mentioned, open source intelligence we can say for anything that isnt the platforms we also link
+
+Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search) (search sources and the eBay lane).
+
+## 2026-11-15 nate ebay last in every buy search, with the conversation answering while it waits; dupe keeps its row credit
+Nate, search lead's session, 2026-11-15, about 06:40 Central, answering "On a buy search, when should the signed-out eBay read run?" (options: long searches only, only when picked, every search) and "is it OK if each Dupe row still carries a small 'via Dupe.com'?" (options: keep row credit, drop Dupe instead).
+> on app, ebay is last in buy always, with some ai responses already coming in while it waits on ebay. it can understand it almost like a tool call with multiple outputs coming in
+
+To the second: "Keep row credit" (the recommended option). Dupe sits under "open source intelligence" in the sources dropdown, and each Dupe row keeps "via Dupe.com".
+
+Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search).
+
+## 2026-11-15 nate the easiest store for the simple state
+Nate, server-core lead's session, 2026-11-15, about 07:00 Central, after the lead reported the Store moving to one SQLite file and asked nothing; said beside a search lead's message proposing a new table for Apify run caps.
+> use whatever is easiest for the simple store like chats and such.
+
+Read by the server-core lead as: simple state (conversations, follows, run counters, last-open times) goes into the generic SQLite rows table or the key-value table already on main, with no new schema per feature. Used in: [server-store.md](../spec/plans/server-store.md).
+
+## 2026-11-15 nate build on Databricks' retail solutions, to show we extend Databricks
+Nate, orchestrator's session, 2026-11-15, about 07:50 Central.
+> Very important, see how we can utilize these, or build our engines and features on top https://www.databricks.com/solutions/industries/retail-industry-solutions to show we truly extend databricks
+
+Used in: `research/data/nate/databricks-retail-solutions.md`, [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate dupe's copies of listings already read are dropped, its new ones kept
+Nate, search lead's session, 2026-11-15, about 06:55 Central, after the app-wiring lead measured Dupe returning Poshmark listings the direct Poshmark read already had ("you called poshmark twice").
+> dupes arent considered if copies, if they are new then they are read as additional info, but duplicates from dupe are dropped
+
+Used in: [finalization §3](../spec/plans/finalization.md#3-search-and-the-sources-lead-search), SR11.
+
+## 2026-11-15 nate engine valuations drive the ai; google shopping through treg for ebay prices
+Nate, engines lead's session, 2026-11-15, about 06:50 Central, after the lead said rows that may not be modelled on price a shown range and never a fit.
+> why shouldnt valuation fit into the models? I though we could drive ai utilizing engine valuations
+
+> if it complicates things for a certain area, look like google shopping pages reveal the price of ebay products, im sure treg has something
+
+Used in: the engines lead's answer (engine outputs feed the conversation and our own sales calibrate the engine; the rights limit is only on fitting from rows a source's terms bar, [data use](../spec/data-use.md)); routed to the search lead as a source and to the data lead for the fits.
+
+## 2026-11-15 nate apify rows never fit a model
+Nate, engines lead's session, 2026-11-15, about 07:00 Central, answering "May Apify rows also be used to fit the nightly models?" (buttons "Yes, Apify too" and "Keep fits clean").
+> no keep fits clean
+
+Used in: [valuation.md §2](../spec/engines/valuation.md#2-signals) (Apify and eBay rows price a shown range and never fit a weight, a model or a calibration score); the data lead's DB1. Changed by Nate minutes later: [Apify rows may fit the models](#2026-11-15-nate-apify-rows-may-fit-the-models-real-time-scores-per-market-on-each-platform-extremely-accurate).
+
+## 2026-11-15 nate apify rows may fit the models; real-time scores per market on each platform, extremely accurate
+Nate, engines lead's session, 2026-11-15, about 07:05 Central. He changes the answer of a few minutes earlier ([apify rows never fit a model](#2026-11-15-nate-apify-rows-never-fit-a-model)), answering the same question, "May Apify rows also be used to fit the nightly models?".
+> Yes, Apify too
+
+> Make it extremly accurate we are benchmarking and showing depth and credibility with our realtime score metrics generated and assigned to each market within a specific platfrom
+
+Read by the engines lead: Apify rows may fit the nightly models. eBay content stays out of fits under eBay's terms ([data use](../spec/data-use.md)), including eBay rows that came through an Apify actor, until Nate says otherwise. The second line asks for real-time accuracy scores for each market (a platform and a kind of item), built in [valuation.md §9](../spec/engines/valuation.md#real-time-market-scores).
+
+## 2026-11-15 nate our own page read; is a website's read driven by the visitor's browser?
+Nate, orchestrator's session, 2026-11-15, about 08:05 Central, after the cross-source benchmark (our eBay page read against the paid actor).
+> lets do our page read, and for websites its driven with something using their browser of some sort?
+
+Used in: [the finalization spec](../spec/plans/finalization.md), the search lead's rows.
+
+## 2026-11-15 nate understand how Databricks shapes dynamic pricing
+Nate, orchestrator's session, 2026-11-15, about 08:15 Central.
+> Understand how databricks shapes dynamic pricing https://www.databricks.com/blog/dynamic-pricing-airlines-how-ai-can-reshape-revenue-strategy
+
+Used in: [the retail mapping](../research/data/nate/databricks-retail-solutions.md).
+
+## 2026-11-15 nate check Ben's packets, address them, and prepare a wrap-up and fresh sessions
+Nate, orchestrator's session, 2026-11-15, about 08:35 Central.
+> check packets too for any ben incoming messages, then launch a subagent to address it, prepare rest for a wrapup and fresh new sessions
+
+Used in: [packet 73](../.agents/team/packets/team/73-orchestrator-handoff.md).
+
+## 2026-11-15 nate yes to Google Lens through treg, as designed
+Nate, orchestrator's session, 2026-11-15, about 08:40 Central, answering "May a seller's photo go to Google Lens through treg, as designed?" (the design: only when the tag, label and barcode reads abstain, one crop of the item, pixels only, through a single-use address that expires in 120 s, capped at $0.003 a capture and $0.10 a day, nothing of the answer kept but our own candidate line).
+> yes
+
+Used in: [the capture design](../spec/engines/capture.md), [the finalization spec](../spec/plans/finalization.md).
+
+## 2026-11-15 nate floating logos that burst into the site, and confirm every harness does every job
+Nate, the app-wiring lead's session, 2026-11-15, about 07:55 Central (machine clock), on the shop takeover with Depop and eBay reading.
+> This view sucks, it should be like floating logos around it, that click to expand into the browser session that links. Like the bubble fills the page white, blue, red, purple, and light blue. then the link loads on the platform , dont wait to fill it, like try to open the browser as soon as majority of screen is filled. Confirm the harnesses work for each of those sites to both search, engine and calculate on, and also monitor and manage and deliver analytics
+
+And, to "Wire the signed-in screens next?": "yes".
+
+Used in: the shop takeover's source bubbles (packet 81), the harness check (packet 83).

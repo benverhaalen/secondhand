@@ -14,7 +14,7 @@ pageTests(test, table, () => app);
 // What the thread promises beyond its controls (spec/ways-out.md §6.3, spec/features/assist.md).
 test('message: Take over puts the draft away and says offers still follow the Plan', async () => {
   const s = await reach(app, table, { route: '/messages/cv_pd', after: ['draft-take'] });
-  await s.shows('You answer here. Offers still follow your Plan');
+  await s.shows('Offers still follow your Plan');
   assert.equal(await s.countId('draft-send'), 0);
   await s.page.getByTestId('composer-input').waitFor({ state: 'visible' });
 });

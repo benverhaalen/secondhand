@@ -280,3 +280,14 @@ test('governance query covers direct, tagged and overlapping columns without dou
     db.close();
   }
 });
+
+test('public observation loader runs on demand with serverless version 3 and the synced root', () => {
+  const resource = read('deploy/resources/observations.yml');
+  const job = block(block(resource, 'jobs', 2), 'load_observations', 4);
+  assert.ok(job, 'load_observations job must exist');
+  assert.doesNotMatch(job, /\bschedule:|\btrigger:/);
+  assert.match(job, /environment_version: "3"/);
+  assert.match(job, /spark_python_task:/);
+  assert.match(job, /python_file: \s*\.\.\/\.\.\/databricks\/tasks\/load_observations\.py/);
+  assert.ok(job.includes('parameters: ["--root", "${workspace.file_path}", "--catalog", "${var.catalog}"]'));
+});
