@@ -106,10 +106,10 @@ params.declare({name:'capture_label_sharp_min', family:'scalar', prior:.5});
 export const captureRows = new Map<string, CaptureRow>();
 let captureNumber = 0;
 let exampleOpened = false;
-function initial(body: Record<string, unknown>, id = open.id): State {
+function initial(body: Record<string, unknown>, id: string, item_id: string): State {
   const device = body.device as {has_lidar?: boolean; object_capture?: boolean} | undefined;
   const has_lidar = device?.has_lidar ?? false;
-  return { capture_id: id, item_id: body.item_id as string ?? open.item_id,
+  return { capture_id: id, item_id,
     purpose: body.purpose as State['purpose'], confirm_mode: body.confirm_mode as State['confirm_mode'] ?? 'tap',
     has_lidar, object_capture: device?.object_capture ?? false, sites: [...linkedSites], type: null,
     ...(body.suggestion === undefined ? {} : {suggestion: structuredClone(body.suggestion) as State['suggestion']}),
@@ -119,7 +119,7 @@ function initial(body: Record<string, unknown>, id = open.id): State {
 export function resetCaptures() {
   captureRows.clear();
   captureNumber = 0; exampleOpened = false;
-  const state=initial(example('captures.open').request!.body as Record<string, unknown>);
+  const state=initial(example('captures.open').request!.body as Record<string, unknown>,open.id,open.item_id);
   captureRows.set(open.id, {id:open.id,user_id:'usr_8f2k',item_id:state.item_id,version:1,created_at:open.created_at,updated_at:open.created_at,data:'example',state,status:'framing',mode:'shots',photos:0,replacements:{},phone_suggestion:true});
 }
 resetCaptures();
@@ -284,7 +284,8 @@ export const handlers: Record<string, Handler> = {
     }
     const id=ctx.user_id==='usr_8f2k' && !exampleOpened ? open.id : `cap_${++captureNumber}`;
     if (id===open.id) exampleOpened=true;
-    const state=initial(ctx.body,id), created_at=new Date(deps.now()).toISOString();
+    const item_id=ctx.body.item_id as string ?? (id===open.id ? open.item_id : `it_${captureNumber}`);
+    const state=initial(ctx.body,id,item_id), created_at=new Date(deps.now()).toISOString();
     const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
     captureRows.set(id,row);
     ctx.log.event('state.change',{entity:'capture',id,to:row.status});
