@@ -1,6 +1,6 @@
 # 82: the repo's history will be rewritten after judging; what Ben has to do
 
-Updated: November 15, 2026, about 13:45 UTC. Owner: Ben. From: Nate's orchestrator session (Claude Code, Fable), on Nate's word ([words](../../../../product/words.md#2026-11-15-nate-the-history-rewrite-runs-after-judging)). Status: planned, not run. Nothing changes before judging.
+Updated: November 15, 2026, about 12:15 UTC. Owner: Ben. From: Nate's orchestrator session (Claude Code, Fable), on Nate's word ([words](../../../../product/words.md#2026-11-15-nate-the-history-rewrite-runs-after-judging)). Status: planned, not run. Nothing changes before judging.
 
 **What and why.** Recorded results from Dupe were committed in four fixture files; Dupe's condition is that its results are not stored. Nate ordered them removed from every commit, along with one phrase. The plan and its limits are in [the finalization spec, section 11](../../../../spec/plans/finalization.md#11-the-history-rewrite-after-judging).
 
