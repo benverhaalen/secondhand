@@ -87,7 +87,7 @@ So the only fields any site gives are size and condition (Poshmark and Mercari),
 | small goods | kind (stand mixer, dutch oven, stick vacuum), material or power where it sets quality (enamelled cast iron; cordless), capacity class, condition grade |
 | electronics | none: a phone, console or e-reader is brand-locked, and it says so |
 
-**The measure.** For a kind `k`, a brand `b`, and a cell `c` (one site and one condition grade, so used is compared only with used of the same grade):
+**The measure.** For a kind `k`, a brand `b`, and a cell `c` (one channel, official retail or secondhand, one site and one condition grade, so used is compared only with used of the same grade and a retailer's new price never with a person's ask; [market-index.md §1](market-index.md#1-what-may-be-kept-per-source)):
 
 - `B` = rows of brand `b` (after the alias normaliser) for the item's model, matched at `exact` or `likely_same_model`;
 - `O` = rows whose required attributes all agree with the item's record, whose normalised brand is not `b`, labelled `similar_other_brand`. `B` is one model; `O` is an attribute set across models and brands, so the figure is **the model against its attribute set**, and it is named that way;

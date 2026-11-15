@@ -38,7 +38,9 @@ Data outside git, on the Mac: `~/secondhand-data/measures/wide-rows-2026-11-15.j
 - Proofs rest on current data only; the eBay 2012–13 figures are starting values, labelled ([Nate](../../../../product/words.md#2026-11-15-nate-not-focused-on-old-data-unless-it-holds-relevance)).
 - Every site is read; the Poshmark rule covers only share, like and repost ([Nate](../../../../product/words.md#2026-11-15-nate-we-read-everything-the-poshmark-rule-is-only-about-share-like-and-repost)). The live panel re-reads every site at its pace.
 - The attribute record and the groups are decided by code; a model only where code abstains or to rank within a group ([Nate](../../../../product/words.md#2026-11-15-nate-parsing-and-decisions-driven-by-code-not-a-model-reading-each-one)).
-- Dupe rows are read and shown, never kept (J1, Dupe's licence). Apify rows are shown and not counted in any measure until the orchestrator or Nate says otherwise.
+- Dupe rows are read and shown, never kept (J1, Dupe's licence). Apify rows stay `may_model: false`: shown, never counted in A11 or any fit, until Nate says otherwise about modelling (the orchestrator, 2026-11-15).
+- Every row carries `channel` (official retail or secondhand) and the two are never pooled ([Nate](../../../../product/words.md#2026-11-15-nate-show-how-the-engine-weighs-what-it-learned-with-genie-answering-and-every-way-databricks-helped), "official and second hand retailers").
+- Depop and eBay answer through `publicClients` on main (556e6b64); the composed search gets them when integration swaps it into the runtime. Until then the orchestrator runs queries through that module on request, since a Mac worker cannot read them.
 - Waiting on Nate: whether people are invited to opt in to the randomised comparison (C6); how a day of waiting and an hour are costed (`c_u`, `w_u`).
 
 ## What this session got wrong, so the next one does not
