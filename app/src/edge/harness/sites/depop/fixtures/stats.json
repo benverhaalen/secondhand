@@ -1,0 +1,7 @@
+{
+ "_fixture": "synthetic, not recorded: no account is linked, the signed-in path and shape are unobserved",
+ "objects": [
+  { "product_id": 999002396, "views": 140, "likes": 12, "bag_adds": 3 }
+ ],
+ "page_info": { "has_more": false }
+}

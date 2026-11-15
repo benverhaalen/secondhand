@@ -1,0 +1,7 @@
+{
+ "_fixture": "synthetic, not recorded: no account is linked, the signed-in path and shape are unobserved",
+ "objects": [
+  { "id": "r1", "product_id": 983505687, "status": "paid", "total": { "amount": "22.00", "currency": "USD" }, "created_at": "2026-11-11T22:55:50Z" }
+ ],
+ "page_info": { "has_more": false }
+}
