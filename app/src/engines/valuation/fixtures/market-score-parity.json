@@ -1,5 +1,5 @@
 {
-  "description": "40 handwritten cases; ratios, inclusive bounds, unpriced rows, missing baselines and a zero-width range. Expected values are experiment.py metrics rounded to four decimals; paired intervals use event differences (online contract).",
+  "description": "42 handwritten events; narrow accurate additions separate coverage from within_20 and make each median-90d gap nonzero. Expected summary uses experiment.py independently; three arithmetic anchors are written out in parity tests.",
   "events": [
     {
       "frozen": {
@@ -7,7 +7,8 @@
         "q50": 10000,
         "q90": 12000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:0"
+        "citation": "fixture:ebay:0",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-0",
@@ -27,7 +28,8 @@
         "q50": 12000,
         "q90": 13000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:1"
+        "citation": "fixture:ebay:1",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-1",
@@ -47,7 +49,8 @@
         "q50": 8000,
         "q90": 10000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:2"
+        "citation": "fixture:ebay:2",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-2",
@@ -66,7 +69,8 @@
         "q50": 10000,
         "q90": 10000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:3"
+        "citation": "fixture:ebay:3",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-3",
@@ -85,7 +89,8 @@
         "q50": null,
         "q90": null,
         "basis_level": "variant",
-        "citation": "fixture:ebay:4"
+        "citation": "fixture:ebay:4",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-4",
@@ -105,7 +110,8 @@
         "q50": 15000,
         "q90": 17000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:5"
+        "citation": "fixture:ebay:5",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-5",
@@ -125,7 +131,8 @@
         "q50": 7000,
         "q90": 9000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:6"
+        "citation": "fixture:ebay:6",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-6",
@@ -145,7 +152,8 @@
         "q50": 11000,
         "q90": 13000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:7"
+        "citation": "fixture:ebay:7",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-7",
@@ -162,7 +170,8 @@
         "q50": 10000,
         "q90": 10500,
         "basis_level": "variant",
-        "citation": "fixture:ebay:8"
+        "citation": "fixture:ebay:8",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-8",
@@ -182,7 +191,8 @@
         "q50": 13000,
         "q90": 14000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:9"
+        "citation": "fixture:ebay:9",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-9",
@@ -202,7 +212,8 @@
         "q50": 9000,
         "q90": 11000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:10"
+        "citation": "fixture:ebay:10",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-10",
@@ -222,7 +233,8 @@
         "q50": 10500,
         "q90": 11500,
         "basis_level": "variant",
-        "citation": "fixture:ebay:11"
+        "citation": "fixture:ebay:11",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-11",
@@ -241,7 +253,8 @@
         "q50": null,
         "q90": null,
         "basis_level": "variant",
-        "citation": "fixture:ebay:12"
+        "citation": "fixture:ebay:12",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-12",
@@ -260,7 +273,8 @@
         "q50": 10000,
         "q90": 11000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:13"
+        "citation": "fixture:ebay:13",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-13",
@@ -280,7 +294,8 @@
         "q50": 12000,
         "q90": 14000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:14"
+        "citation": "fixture:ebay:14",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-14",
@@ -299,7 +314,8 @@
         "q50": 10000,
         "q90": 15000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:15"
+        "citation": "fixture:ebay:15",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-15",
@@ -319,7 +335,8 @@
         "q50": 9500,
         "q90": 10500,
         "basis_level": "variant",
-        "citation": "fixture:ebay:16"
+        "citation": "fixture:ebay:16",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-16",
@@ -338,7 +355,8 @@
         "q50": 10000,
         "q90": 11000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:17"
+        "citation": "fixture:ebay:17",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-17",
@@ -358,7 +376,8 @@
         "q50": null,
         "q90": null,
         "basis_level": "variant",
-        "citation": "fixture:ebay:18"
+        "citation": "fixture:ebay:18",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-18",
@@ -377,7 +396,8 @@
         "q50": 10000,
         "q90": 12000,
         "basis_level": "variant",
-        "citation": "fixture:ebay:19"
+        "citation": "fixture:ebay:19",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "ebay-19",
@@ -397,7 +417,8 @@
         "q50": 20000,
         "q90": 22000,
         "basis_level": "variant",
-        "citation": "fixture:depop:0"
+        "citation": "fixture:depop:0",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-0",
@@ -417,7 +438,8 @@
         "q50": 24000,
         "q90": 26000,
         "basis_level": "variant",
-        "citation": "fixture:depop:1"
+        "citation": "fixture:depop:1",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-1",
@@ -437,7 +459,8 @@
         "q50": 16000,
         "q90": 20000,
         "basis_level": "variant",
-        "citation": "fixture:depop:2"
+        "citation": "fixture:depop:2",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-2",
@@ -456,7 +479,8 @@
         "q50": 20000,
         "q90": 20000,
         "basis_level": "variant",
-        "citation": "fixture:depop:3"
+        "citation": "fixture:depop:3",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-3",
@@ -475,7 +499,8 @@
         "q50": null,
         "q90": null,
         "basis_level": "variant",
-        "citation": "fixture:depop:4"
+        "citation": "fixture:depop:4",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-4",
@@ -495,7 +520,8 @@
         "q50": 30000,
         "q90": 34000,
         "basis_level": "variant",
-        "citation": "fixture:depop:5"
+        "citation": "fixture:depop:5",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-5",
@@ -515,7 +541,8 @@
         "q50": 14000,
         "q90": 18000,
         "basis_level": "variant",
-        "citation": "fixture:depop:6"
+        "citation": "fixture:depop:6",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-6",
@@ -535,7 +562,8 @@
         "q50": 22000,
         "q90": 26000,
         "basis_level": "variant",
-        "citation": "fixture:depop:7"
+        "citation": "fixture:depop:7",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-7",
@@ -552,7 +580,8 @@
         "q50": 20000,
         "q90": 21000,
         "basis_level": "variant",
-        "citation": "fixture:depop:8"
+        "citation": "fixture:depop:8",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-8",
@@ -572,7 +601,8 @@
         "q50": 26000,
         "q90": 28000,
         "basis_level": "variant",
-        "citation": "fixture:depop:9"
+        "citation": "fixture:depop:9",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-9",
@@ -592,7 +622,8 @@
         "q50": 18000,
         "q90": 22000,
         "basis_level": "variant",
-        "citation": "fixture:depop:10"
+        "citation": "fixture:depop:10",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-10",
@@ -612,7 +643,8 @@
         "q50": 21000,
         "q90": 23000,
         "basis_level": "variant",
-        "citation": "fixture:depop:11"
+        "citation": "fixture:depop:11",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-11",
@@ -631,7 +663,8 @@
         "q50": null,
         "q90": null,
         "basis_level": "variant",
-        "citation": "fixture:depop:12"
+        "citation": "fixture:depop:12",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-12",
@@ -650,7 +683,8 @@
         "q50": 20000,
         "q90": 22000,
         "basis_level": "variant",
-        "citation": "fixture:depop:13"
+        "citation": "fixture:depop:13",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-13",
@@ -670,7 +704,8 @@
         "q50": 24000,
         "q90": 28000,
         "basis_level": "variant",
-        "citation": "fixture:depop:14"
+        "citation": "fixture:depop:14",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-14",
@@ -689,7 +724,8 @@
         "q50": 20000,
         "q90": 30000,
         "basis_level": "variant",
-        "citation": "fixture:depop:15"
+        "citation": "fixture:depop:15",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-15",
@@ -709,7 +745,8 @@
         "q50": 19000,
         "q90": 21000,
         "basis_level": "variant",
-        "citation": "fixture:depop:16"
+        "citation": "fixture:depop:16",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-16",
@@ -728,7 +765,8 @@
         "q50": 20000,
         "q90": 22000,
         "basis_level": "variant",
-        "citation": "fixture:depop:17"
+        "citation": "fixture:depop:17",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-17",
@@ -748,7 +786,8 @@
         "q50": 23000,
         "q90": 24000,
         "basis_level": "variant",
-        "citation": "fixture:depop:18"
+        "citation": "fixture:depop:18",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-18",
@@ -767,7 +806,8 @@
         "q50": 20000,
         "q90": 24000,
         "basis_level": "variant",
-        "citation": "fixture:depop:19"
+        "citation": "fixture:depop:19",
+        "as_of": "2026-10-31T00:00:00Z"
       },
       "sale": {
         "comp_id": "depop-19",
@@ -780,24 +820,64 @@
         "last_sale_cents": 20000,
         "median_90d_cents": 20000
       }
+    },
+    {
+      "frozen": {
+        "q10": 11000,
+        "q50": 11000,
+        "q90": 11000,
+        "basis_level": "variant",
+        "citation": "fixture:ebay:narrow",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "ebay-narrow",
+        "site": "ebay",
+        "kind": "shoes",
+        "sold_at": "2026-11-01T00:00:00Z",
+        "price_cents": 10000
+      },
+      "baselines": {
+        "median_90d_cents": 20000
+      }
+    },
+    {
+      "frozen": {
+        "q10": 22000,
+        "q50": 22000,
+        "q90": 22000,
+        "basis_level": "variant",
+        "citation": "fixture:depop:narrow",
+        "as_of": "2026-10-31T00:00:00Z"
+      },
+      "sale": {
+        "comp_id": "depop-narrow",
+        "site": "depop",
+        "kind": "jacket",
+        "sold_at": "2026-11-01T00:00:00Z",
+        "price_cents": 20000
+      },
+      "baselines": {
+        "median_90d_cents": 40000
+      }
     }
   ],
   "expected": {
     "overall": {
-      "n": 40,
-      "priced": 35,
-      "hit_rate": 0.875,
-      "within_20": 0.8286,
-      "median_pct_off": 0.05,
-      "coverage": 0.8286,
+      "n": 42,
+      "priced": 37,
+      "hit_rate": 0.881,
+      "within_20": 0.8378,
+      "median_pct_off": 0.1,
+      "coverage": 0.7838,
       "coverage_wilson_95": [
-        0.6732,
-        0.919
+        0.628,
+        0.8861
       ],
-      "median_range_width": 0.3158,
+      "median_range_width": 0.3077,
       "within_20_wilson_95": [
-        0.6732,
-        0.919
+        0.6886,
+        0.9235
       ],
       "vs_last_sale": {
         "n": 29,
@@ -808,29 +888,29 @@
         ]
       },
       "vs_median_90d": {
-        "n": 26,
-        "diff": 0.0,
+        "n": 28,
+        "diff": 0.0714,
         "interval_95": [
-          -0.2174,
-          0.2174
+          -0.1524,
+          0.2952
         ]
       }
     },
     "{\"site\":\"ebay\",\"kind\":\"shoes\"}": {
-      "n": 20,
-      "priced": 17,
-      "hit_rate": 0.85,
-      "within_20": 0.8235,
-      "median_pct_off": 0.05,
-      "coverage": 0.8235,
+      "n": 21,
+      "priced": 18,
+      "hit_rate": 0.8571,
+      "within_20": 0.8333,
+      "median_pct_off": 0.075,
+      "coverage": 0.7778,
       "coverage_wilson_95": [
-        0.5897,
-        0.9381
+        0.5478,
+        0.91
       ],
-      "median_range_width": 0.3333,
+      "median_range_width": 0.3246,
       "within_20_wilson_95": [
-        0.5897,
-        0.9381
+        0.6078,
+        0.9416
       ],
       "vs_last_sale": {
         "n": 14,
@@ -841,29 +921,29 @@
         ]
       },
       "vs_median_90d": {
-        "n": 13,
-        "diff": 0.0,
+        "n": 14,
+        "diff": 0.0714,
         "interval_95": [
-          -0.3139,
-          0.3139
+          -0.2511,
+          0.394
         ]
       }
     },
     "{\"site\":\"depop\",\"kind\":\"jacket\"}": {
-      "n": 20,
-      "priced": 18,
-      "hit_rate": 0.9,
-      "within_20": 0.8333,
-      "median_pct_off": 0.075,
-      "coverage": 0.8333,
+      "n": 21,
+      "priced": 19,
+      "hit_rate": 0.9048,
+      "within_20": 0.8421,
+      "median_pct_off": 0.1,
+      "coverage": 0.7895,
       "coverage_wilson_95": [
-        0.6078,
-        0.9416
+        0.5667,
+        0.9149
       ],
-      "median_range_width": 0.2967,
+      "median_range_width": 0.2857,
       "within_20_wilson_95": [
-        0.6078,
-        0.9416
+        0.6243,
+        0.9448
       ],
       "vs_last_sale": {
         "n": 15,
@@ -874,11 +954,11 @@
         ]
       },
       "vs_median_90d": {
-        "n": 13,
-        "diff": 0.0,
+        "n": 14,
+        "diff": 0.0714,
         "interval_95": [
-          -0.3139,
-          0.3139
+          -0.2511,
+          0.394
         ]
       }
     }
