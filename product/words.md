@@ -1708,3 +1708,10 @@ Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting t
 > No it shows that ebay.com doesnt work but ebay.co.uk , ebay.de, ebay.ie , and ebay.be work, which we can still probably use to access us listings and such, even sign in
 
 Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).
+
+## 2026-11-15 ben pricing modes and a reason for every number; backtests wait for the backend
+
+Ben, project chat, 2026-11-15 09:09 UTC. Full message; the earlier studio block records an excerpt.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too. also understand why companies pay for affiliate links. also consider pricing the different ways of pricing. our algorithm can price to sell. it can price to the market. can price other ways. shouldnt it end up showing what each of these toggles is meant to show? let nate do the nber stuff. so there is no public way to access mercari data? if its there lets use it its for a hackathon demo
+
+Used in: [pricing modes](../spec/plans/backtest/pricing-modes.md), [backtest plan](../spec/plans/backtest/plan.md#10-why-each-number-and-the-runs-that-wait-for-the-backend).

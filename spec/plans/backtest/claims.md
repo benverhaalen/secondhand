@@ -49,6 +49,8 @@ The fix was found by looking at November 2018 to February 2019. March to October
 
 ## What would make the claims bigger, in order
 
+*Observed:* [Pricing modes](pricing-modes.md) records what each policy must prove, including the unsold outcomes needed for money and speed claims; [the waiting runs](plan.md#10-why-each-number-and-the-runs-that-wait-for-the-backend) follow Ben's backend pause.
+
 1. Score the comps engine the app serves, on the same StockX windows, as one more contestant [agent-proposal — unratified].
 2. Lock one kind or one later window before anyone looks, and score it once: the ledger now enforces this.
 3. NBER May 2013, locked: the first used-goods claim.
