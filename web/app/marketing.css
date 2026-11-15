@@ -1,6 +1,6 @@
 @layer ui-sdk;
 
-.marketing-home, .marketing-header, .account-dialog {
+.marketing-home, .marketing-header, .marketing-footer {
   --marketing-content: 1200px;
   --marketing-gutter: 64px;
   --marketing-scene-height: 56.25vw;
@@ -14,10 +14,10 @@
 }
 .marketing-home { -webkit-font-smoothing: antialiased; font-synthesis: none; width: 100%; max-width: none; overflow: clip; }
 .marketing-wrap { width: min(var(--marketing-content), calc(100% - var(--marketing-gutter) * 2)); margin-inline: auto; }
-.marketing-home h1, .marketing-home h2, .account-dialog h2 { font-family: var(--font-text); font-weight: var(--w-text); }
+.marketing-home h1, .marketing-home h2 { font-family: var(--font-text); font-weight: var(--w-text); }
 .marketing-home h2 { font-size: var(--marketing-heading); line-height: 1.12; letter-spacing: -.025em; text-wrap: balance; }
 .marketing-home a, .marketing-header a { text-decoration: none; }
-.marketing-home button, .marketing-header button, .account-dialog button { font-weight: var(--w-text); }
+.marketing-home button, .marketing-header button { font-weight: var(--w-text); }
 .marketing-header { position: absolute; top: 0; inset-inline: 0; z-index: 5; }
 .marketing-header-row { height: 72px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--s-6); }
 .marketing-lockup { display: inline-flex; align-items: center; gap: var(--s-2); justify-self: start; font: var(--w-display) var(--t-21)/var(--lh-21) var(--font-display); letter-spacing: var(--tr-21); white-space: nowrap; }
@@ -134,7 +134,7 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
 .marketing-footer nav a { display: inline-flex; align-items: center; min-height: var(--control-min); font-size: var(--t-15); }
 .marketing-footer nav a:last-child { margin-left: auto; }
 @media (max-width: 1100px) {
-  .marketing-home, .marketing-header { --marketing-gutter: 32px; --marketing-heading: 36px; --marketing-phone: 200px; }
+  .marketing-home, .marketing-header, .marketing-footer { --marketing-gutter: 32px; --marketing-heading: 36px; --marketing-phone: 200px; }
   .marketing-header-row { gap: var(--s-4); }
   .marketing-header-actions { gap: var(--s-4); }
   .marketing-nav a { padding-inline: var(--s-3); }
@@ -150,7 +150,7 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
   .proof-row { grid-template-columns: 104px 1fr 38px; gap: var(--s-2); }
 }
 @media (max-width: 760px) {
-  .marketing-home, .marketing-header { --marketing-gutter: 24px; --marketing-heading: 36px; --marketing-phone: 230px; }
+  .marketing-home, .marketing-header, .marketing-footer { --marketing-gutter: 24px; --marketing-heading: 36px; --marketing-phone: 230px; }
   .marketing-header-row { grid-template-columns: 1fr auto; height: auto; min-height: 72px; row-gap: var(--s-3); padding-block: var(--s-3); }
   .marketing-lockup { font-size: var(--t-21); }
   .marketing-header-actions { grid-column: 2; grid-row: 1; gap: var(--s-3); }
@@ -196,7 +196,7 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
   .marketing-footer nav a:last-child { margin-left: 0; }
 }
 @media (max-width: 359px) {
-  .marketing-home, .marketing-header { --marketing-gutter: 20px; --marketing-heading: 32px; }
+  .marketing-home, .marketing-header, .marketing-footer { --marketing-gutter: 20px; --marketing-heading: 32px; }
   .marketing-lockup { font-size: var(--t-18); gap: var(--s-1); }
   .marketing-header-actions { gap: var(--s-2); }
   .marketing-nav a { padding-inline: 10px; }
@@ -211,3 +211,8 @@ button.faq-trigger:not(:disabled):hover { background: transparent; color: var(--
 @media (max-width: 1100px) { .proof-axis { margin-inline: 112px 46px; } }
 
 .external-arrow { display: inline-block; vertical-align: -.12em; flex-shrink: 0; }
+
+.marketing-avatar { display: grid; place-items: center; width: var(--control-min); height: var(--control-min); border-radius: var(--r-pill); background: var(--surface); overflow: hidden; }
+.marketing-avatar > img { width: 100%; height: 100%; object-fit: cover; }
+.marketing-avatar span { display: grid; place-items: center; }
+.marketing-avatar span img { width: 20px; height: 24px; }
