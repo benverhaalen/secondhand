@@ -93,11 +93,13 @@ The Databricks backend's test loop, *agent proposal* from Nate's tooling sweep (
 | Layer | Proves | Tool |
 |---|---|---|
 | Seconds, laptop | transform logic | `chispa` (DataFrame compare), `pysparkdt` (local Unity Catalog metastore) |
-| Seconds, laptop | whole flows offline | `dmux/minilake` (REST API on localhost, SQL on DuckDB, jobs in Docker; young, unbuilt endpoints return 501) |
+| Seconds, CI on Linux | SQL and job logic offline, nothing else | `dmux/minilake` (REST API on localhost, SQL on DuckDB, jobs in Docker). It returns 501 for Apps, model serving, Lakebase, vector search, pipelines and MLflow, and its CI runs on Linux only, so it cannot stand in for those; they are tested on the workspace (*observed* in its code, `research/data/nate/databricks-dev-tooling.md`) |
 | Minutes, dev workspace | it works on real resources | `databrickslabs/pytester` (fixtures that create and clean up resources, serverless too), bundle validate and deploy |
 | Data | marketplace data is fit as it arrives | `databrickslabs/dqx` rules |
 | AI | answers on the fixed real-item set | MLflow 3 evaluation; `mlflow/skills` and the official Databricks skills for agents |
 | Scaffolding | a known-good start | `databricks/appkit` with its Lakebase package, `databricks/app-templates`, `databrickslabs/sdp-meta`, sqlfluff's Databricks dialect |
+
+`pytester` and `dqx` are under the Databricks License, not an open-source licence: free to use with Databricks, recorded as a fact. The app shell and its first check exist: `npm run check` in [app/](../../app/README.md).
 
 Not used: `ai-dev-kit` (deprecated skills, an MCP server with no read-only mode); the `unity-gateway` tool (rewrites agent config, turns on trace export); `consort` (sends telemetry to an outside host).
 
@@ -131,7 +133,7 @@ T0-1 Check the workspace before anything is built on it
     - Lakebase: wakes from zero with a pool; with one service principal, row security returns nothing for another user_id
     - Agent Bricks: one agent on non-Legacy pieces runs end to end with an MLflow trace
     - gateway: which models in product.md §6 answer on our workspace
-    - edition and what it excludes are recorded (seen 2026-11-14: no apps, no Lakebase, only open-model endpoints, which looks like Free Edition)
+    - edition and what it excludes are recorded (seen 2026-11-14 on Nate's own workspace: no apps, no Lakebase, only open-model endpoints, which looks like Free Edition; Nate says the event provides a full workspace, so run this on that one first)
     - each chosen tool in §5's backend loop has run once, with its result in the note
     - the script exits 0 when every probe recorded pass or fail, not only when all pass
     - not: a token, cookie or secret value appears in the note or the output
