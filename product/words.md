@@ -1227,3 +1227,10 @@ Ben, project chat, 07:14:
 > ensure all information is continually added to the repo and that nate gets packets that he might need
 
 Used in: [AGENTS.md](../AGENTS.md#how-to-work-here).
+
+Note, 07:18 UTC: the market research named in the 07:14 "Used in" line moved to [product/pitch/market.md](pitch/market.md); the old path keeps a pointer.
+
+## 2026-11-15 a backtest that flatters truthfully, seasons and waves, and merge to main
+
+Ben, project chat, 07:18 UTC.
+> whenever i have a decision to make bring it here essentially. also considering a backtest, how would you set this up in a flattering but truthful way. like average price changes over season. we could potentially look up general trends and possible spikes in either buying or sales on the resale market. i feel like it goes in waves. and we can explain super well and intuitively to the user when these things happen. some could be dates too. see if theres any rdd for this. for our market we are trying to predict. things that are predictable as humans are relatively predictable. merge all prs get them onto main why havent you been doing this
