@@ -6,7 +6,7 @@ import {
   type AnyWorld, type Attribute, type Cents, type Decision, type Item, type Listing, type Offer, type Order, type Site, type World,
 } from '../demo/index.ts';
 import { MORE_SHOTS } from '../demo/item-shots.ts';
-import { LISTING_FORMS, RETURNS, fitOf, listingTitle, titleOn } from '../demo/listing-forms.ts';
+import { LISTING_FORMS, RETURNS, VERDICT_RANK, fitOf, listingTitle, titleOn, type Verdict } from '../demo/listing-forms.ts';
 import { DEFAULT_SPREAD, SPREADS, sitePrice, type Spread } from '../engines/listing/spreads.ts';
 import { FEES, keep } from '../engines/valuation/keep.ts';
 
@@ -16,7 +16,7 @@ export type Moment = 'researching' | 'review' | 'live' | 'offer' | 'sold' | 'don
 
 // The item and the world it lives in. A named world wins; otherwise the first world that holds the id, the person we
 // build for first, so /item/it_f003 opens the flipper's item without a ?world.
-const ORDER: AnyWorld[] = ['clearing', 'flipper', 'buyer', 'new', 'edge', 'one'];
+const ORDER: AnyWorld[] = ['clearing', 'flipper', 'buyer', 'new', 'edge', 'one', 'stage'];
 export function find(id: string, world?: string): { w: World; item: Item } | null {
   const names = world && world in WORLDS ? [world as AnyWorld, ...ORDER] : ORDER;
   for (const n of names) { const w = WORLDS[n]; const item = w.items.find(i => i.id === id); if (item) return { w, item }; }
@@ -116,6 +116,12 @@ function mode(xs: number[]): number {
   const n = new Map<number, number>(); for (const x of xs) n.set(x, (n.get(x) ?? 0) + 1);
   return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0]?.[0] ?? 0;
 }
+
+// Whether the LiDAR scan measured the item, which is what lets the AI redraw run: a redraw is held to the item's real
+// size, and only the scan is trusted for it (Ben, 09:09: "only allow this from lidar flow too"; jobs/studio/plan.py relays
+// only when measured_by is "lidar"). In the app only the scan writes source 'measured' (engines/capture/fields.ts: the
+// measured way needs has_lidar); a size the person typed is 'you_said', one off a label 'label', a published one 'spec'.
+export const scanned = (it: Item) => it.attributes.some(a => a.source === 'measured' && a.value !== null);
 
 // How many photos the item has: its own, plus the shots after the cover that Ben's real items carry.
 export const photoCount = (it: Item) => it.photos.length + (it.photos[0] ? MORE_SHOTS[it.photos[0].key]?.length ?? 0 : 0);
@@ -296,7 +302,29 @@ export function sitePrices(it: Item, price: Cents, sites: Site[], spread: Spread
   return Object.fromEntries(sites.map(x => [x, x === home ? price : Math.ceil(sitePrice(spread, home, x, target, price, siteMarket(it, x)).price / 100) * 100]));
 }
 
-// What a listing at the plan's price would pay on each site the plan uses, and what a site that is left out says. `flipped`
+// The three ways to price (Ben, 09:09: "our algorithm can price to sell. it can price to the market ... shouldnt it end up
+// showing what each of these toggles is meant to show?"). Each is a mark on the price slider (valuation.md, The price
+// slider; posture.ts MARKS): Gone fast is quick (0.15), Sell it is balanced (0.5), Best price is max_return (0.85).
+// For each, what the person would see on the Plan: the price, what they get on the best site the plan posts to, and how
+// fast it sells when the engine has a sale curve for the item (valuation.pace). No curve, no days: none is made up.
+export const PRICE_MODES = ['fast', 'sell', 'best'] as const;
+export type PriceMode = typeof PRICE_MODES[number];
+export type ModeRow = { choice: PriceMode; label: string; price: Cents; get: Cents | null; days: number | null; p30: number | null; line: string };
+export function priceModes(w: World, it: Item, flipped: Site[] = []): ModeRow[] {
+  return PRICE_MODES.flatMap(choice => {
+    const price = priceFor(it, choice);
+    if (price === null) return [];
+    const on = planSites(w, it, price, flipped).filter(s => s.on && s.keep !== null);
+    const get = on.length ? Math.max(...on.map(s => s.keep ?? 0)) : null;
+    const pace = it.valuation?.pace?.[choice] ?? null;
+    const days = pace?.days_t50 != null ? Math.max(1, Math.round(pace.days_t50)) : null;
+    const line = [get !== null ? `You get ${usd(get)}` : null, days !== null ? `Sells in about ${days} ${days === 1 ? 'day' : 'days'}` : null,
+      pace ? `${Math.round(pace.p_sale_30 * 10)} in 10 sell within 30 days` : null].filter(Boolean).join('. ');
+    return [{ choice, label: CHOICES.find(c => c.id === choice)?.label ?? choice, price, get, days, p30: pace?.p_sale_30 ?? null, line }];
+  });
+}
+
+// What a listing at this price would keep on each site the plan uses, and what a site that is left out says. `flipped`
 // holds the sites the person switched from the agent's pick: a site it picked, skipped; a linked one it left out, added.
 // Which sites this kind of thing fits (edge-cases §11): a blocked site can't be added and says why; an avoided one is
 // greyed with its reason and a tap still adds it. Each site also carries its returns rule in one line (edge-cases §10).
@@ -305,7 +333,7 @@ export function planSites(w: World, it: Item, price: Cents, flipped: Site[] = []
   const listed = new Set(it.listings.map(l => l.site));
   const rows = w.connections.map(c => {
     const linked = !!c.account && c.account.health !== 'broken' && !c.error;
-    const fit = fitOf(it.category, c.site);
+    const fit = fitOf(it, c.site);
     const blocked = fit?.verdict === 'blocked', avoid = fit?.verdict === 'avoid';
     const can = linked && !blocked;
     return { c, fit, blocked, avoid, can, linked, on: can && listed.has(c.site) !== flipped.includes(c.site) };
@@ -315,11 +343,13 @@ export function planSites(w: World, it: Item, price: Cents, flipped: Site[] = []
   const prices = { ...sitePrices(it, price, rows.filter(r => r.can).map(r => r.c.site), spread), ...sitePrices(it, price, on, spread) };
   return rows.map(({ c, fit, blocked, avoid, can, linked, on }) => {
     const p = prices[c.site] ?? price;
+    const get = `You get ${usd(youKeep(c.site, p))}`;
+    // A site that posts says why it was picked for this kind of thing, then what lands in the account there.
     const why = blocked ? `Not allowed here. ${fit!.why}` : !c.account ? 'Not linked' : !linked ? 'Signed out'
-      : on ? `Posts at ${usd(p)}. You get ${usd(youKeep(c.site, p))}`
+      : on ? (fit ? `${PICKED[fit.verdict]}: ${lower(fit.why)}. Posts at ${usd(p)}. ${get}` : `Posts at ${usd(p)}. ${get}`)
       : listed.has(c.site) ? 'You skipped it' : avoid ? fit!.why : 'Not posting here';
-    return { site: c.site, on, can, why, price: p, keep: can ? youKeep(c.site, p) : null, avoid: avoid && !on, returns: RETURNS[c.site] };
-  });
+    return { site: c.site, on, can, why, price: p, keep: can ? youKeep(c.site, p) : null, avoid: avoid && !on, returns: RETURNS[c.site], rank: fit ? VERDICT_RANK[fit.verdict] : 2 };
+  }).sort((a, b) => a.rank - b.rank).map(({ rank: _, ...r }) => r);
 }
 
 // The numbers under one site's price (Ben, 06:53: the reason first, "then see numbers if need be"): the price, the fee,
@@ -353,6 +383,10 @@ export function why(w: World, it: Item): Why | null {
     events: w.events.filter(e => e.item_id === it.id).map(e => ({ id: e.event_id, why: e.why, site: e.site, at: day(e.at, w.now), undo: e.undo.allowed })),
   };
 }
+
+// The verdict a posting site was picked on, as the plan says it (platform-fit.json, verdicts).
+const PICKED: Record<Verdict, string> = { best: 'Best for this', good: 'Sells well', ok: 'Reach', avoid: 'Added by you', blocked: '' };
+const lower = (s: string) => s.charAt(0).toLowerCase() + s.slice(1);
 
 // The price drops the plan will make (money.md D15, its age table): the next rung at the plan's median days, the one
 // after at twice that, then it asks. Never under the lowest; a step that would cross it asks instead (decision 11-14).

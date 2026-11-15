@@ -41,8 +41,8 @@ from valuation.backtest import BANDS, LeakageError, _band, _wilson, check_leakag
 FIELDS = ("row_id", "source", "licence", "site", "url", "kind", "product_id", "family_id", "cluster_id", "brand",
           "category", "condition", "size", "era", "title", "photo_count", "seller_feedback", "price_type", "price_cents",
           "buyer_shipping_cents", "listed_at", "at", "best_offer", "views", "watchers", "may_model", "at_ask",
-          "priced_from_our_number")
-INTS = ("price_cents", "buyer_shipping_cents", "photo_count", "seller_feedback", "views", "watchers")
+          "priced_from_our_number", "retail_cents", "released_at")   # retail and release: the depreciation proxies (how-we-price.md §4)
+INTS = ("price_cents", "buyer_shipping_cents", "photo_count", "seller_feedback", "views", "watchers", "retail_cents")
 FLAGS = {"may_model": True, "at_ask": False, "priced_from_our_number": False}   # default when a source has no column
 GAP = timedelta(days=7)          # money D6 step 1
 WINDOW = timedelta(days=90)      # money D6 step 6: the 90-day sold median a seller looks up
@@ -321,6 +321,11 @@ def _metrics(pairs, min_n=1):
         "off_by_over_30": round(float(np.mean(abs(err) > 0.30)), 4),
         "coverage": round(hits / len(shown), 4), "coverage_wilson_95": [round(v, 4) for v in _wilson(hits, len(shown))],
         "median_range_width": round(float(np.median(width)), 4),
+        # Money on sold-only data (money-statistic.md): a sale shows what one buyer paid, so a price at or under it
+        # would have sold and one over it might not have. These bound the money; they do not measure it.
+        "priced_above_the_sale": round(float(np.mean(q50 > y)), 4),
+        "left_on_table_per_sale_dollars": round(float(np.mean(np.maximum(0.0, y - q50))) / 100, 4),
+        "sell_now_floor_share": round(float(np.sum(np.where(q50 <= y, q50, 0.0)) / np.sum(y)), 4),
     }
 
 

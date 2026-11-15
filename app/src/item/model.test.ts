@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { usd } from '../demo/index.ts';
 import { youKeep } from '../demo/index.ts';
-import { autoList, clocks, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, siteRows, soldTicks, spreadOf, why } from './model.ts';
+import { autoList, clocks, counters, deleteBlocked, drops, fields, find, headline, momentOf, photoCount, planSites, postWords, priceFor, priceModes, scanned, siteRows, soldTicks, spreadOf, why } from './model.ts';
 
 const get = (id: string, world?: string) => { const f = find(id, world); assert.ok(f, id); return f; };
 
@@ -96,6 +96,20 @@ test('a site the thing does not fit: blocked can’t be added and says why; avoi
   assert.equal(added.avoid, false);
 });
 
+test('the plan says why each site is picked, and lists them from where the thing sells best', () => {
+  // Ben, 08:09: "suggesting platform by type or tailoring to each platform ... depop is different from ebay".
+  const { w, item } = get('it_stage', 'stage');
+  const s = planSites(w, item, 4000);
+  assert.deepEqual(s.map(x => x.site), ['ebay', 'depop', 'poshmark', 'mercari', 'facebook'], 'best, good, then ok in the order the sites were linked');
+  assert.ok(s[0].why.startsWith('Best for this: sports memorabilia and fan gear is core here'), s[0].why);
+  assert.ok(s[1].why.startsWith('Sells well: jerseys are named under tops'), s[1].why);
+  assert.match(s[0].why, /\. You get \$\d+(\.\d\d)?$/);
+  assert.deepEqual(s.filter(x => x.on).map(x => x.site), ['ebay', 'depop'], 'best and good post by default; ok waits to be asked');
+  const reach = planSites(w, item, 4000, ['facebook', 'poshmark', 'mercari']);
+  assert.equal(reach.filter(x => x.on).length, 5, 'one draft can go to all five');
+  assert.ok(reach.find(x => x.site === 'mercari')!.why.startsWith('Reach: seasonal'), reach.find(x => x.site === 'mercari')!.why);
+});
+
 test('Approve says exactly what it will do', () => {
   assert.equal(postWords([23500, 23500]), 'Post at $235 on 2 sites');
   assert.equal(postWords([23500, 22500]), 'Post from $225 on 2 sites');
@@ -165,4 +179,24 @@ test('a sold item that ships says when the money arrives, without a date nobody 
   assert.deepEqual([paid.label, paid.at], ['Money arrives', 'When the site pays out']);
   assert.equal(get('it_505').item.state, 'unsold');
   assert.equal(momentOf(get('it_505').w, get('it_505').item), 'unsold');
+});
+
+test('only a LiDAR measurement lets the AI redraw run: a typed or published size does not', () => {
+  const it = find('it_stage', 'stage')!.item;
+  assert.equal(scanned(it), true);
+  const typed = { ...it, attributes: it.attributes.map(a => (a.source === 'measured' ? { ...a, source: 'you_said' as const } : a)) };
+  assert.equal(scanned(typed), false);
+  const published = { ...it, attributes: it.attributes.map(a => (a.source === 'measured' ? { ...a, source: 'spec' as const } : a)) };
+  assert.equal(scanned(published), false);
+});
+
+test('the three ways to price side by side: price rises from Gone fast to Best price, with what you get, and days only from a curve', () => {
+  const { w, item } = find('it_stage', 'stage')!;
+  const rows = priceModes(w, item);
+  assert.deepEqual(rows.map(r => r.label), ['Gone fast', 'Sell it', 'Best price']);
+  assert.ok(rows[0].price < rows[1].price && rows[1].price < rows[2].price);
+  assert.ok(rows.every(r => r.get !== null && r.get < r.price && r.line.startsWith('You get')));
+  assert.ok(rows.every(r => r.days === null), 'no sale curve, no days');
+  const paced = { ...item, valuation: { ...item.valuation!, pace: { fast: { days_t50: 3.6, p_sale_30: 0.91 } } } };
+  assert.match(priceModes(w, paced)[0].line, /^You get \$[\d.]+\. Sells in about 4 days\. 9 in 10 sell within 30 days$/);
 });

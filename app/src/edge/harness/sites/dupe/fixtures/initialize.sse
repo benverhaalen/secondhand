@@ -1,0 +1,3 @@
+event: message
+data: {"result":{"protocolVersion":"2025-06-18","capabilities":{"tools":{"listChanged":true},"logging":{}},"serverInfo":{"name":"dupe-mcp","version":"1.0.0"},"instructions":"Dupe.com is an AI shopping assistant that helps people choose the right product and buy it with confidence. These tools search by text, image or product URL and return close matches from legitimate st [trimmed]"},"jsonrpc":"2.0","id":1}
+

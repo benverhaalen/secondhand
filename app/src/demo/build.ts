@@ -44,7 +44,7 @@ export function listings(itemId: string, rows: ListingIn[]): Listing[] {
 }
 
 type ItemIn = {
-  id: string; title: string; key: PhotoKey; state: ItemState; category: KindFamily; days: number; where?: string;
+  id: string; title: string; key: PhotoKey; state: ItemState; category: KindFamily; kind?: string; days: number; where?: string;
   attrs?: [string, string | number | null, Attribute['source']?, boolean?][]; floor?: Cents; always?: Cents | null;
   plan?: NonNullable<Item['limits']>['plan_choice']; value?: Valuation; sell?: ListingIn[]; cost?: Cents; note?: string;
   origin?: Item['origin']; group?: string; kept?: string; spread?: NonNullable<Item['limits']>['spread'];
@@ -52,7 +52,7 @@ type ItemIn = {
 // One item. `days` is how long ago it came in.
 export function item(i: ItemIn): Item {
   return {
-    id: i.id, state: i.state, title: i.title, category: i.category, origin: i.origin ?? 'capture', location: { label: i.where ?? 'Hall closet' },
+    id: i.id, state: i.state, title: i.title, category: i.category, kind: i.kind, origin: i.origin ?? 'capture', location: { label: i.where ?? 'Hall closet' },
     quantity: 1, group_id: i.group, note: i.note, kept_reason: i.kept,
     cost: i.cost === undefined ? undefined : { amount_cents: i.cost, date: inDays(-i.days - 30).slice(0, 10), source: 'you_said' },
     photos: photos(i.key, i.id),

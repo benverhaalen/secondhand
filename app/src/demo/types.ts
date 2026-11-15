@@ -38,10 +38,15 @@ export type Spread = 'same_keep' | 'same_price' | 'site_market' | 'home_first';
 export type ItemLimits = { floor_cents: Cents; always_accept_cents: Cents | null; plan_choice: PlanChoice; gone_by: Iso | null; fallback: 'ask' | 'donate' | 'keep' | 'trade_in' | 'relist'; markdown_on: boolean;
   spread?: Spread; accept_mode?: 'ask' | 'rules' };
 
-export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cents | null; high: Cents | null; basis_count: number }[]; level: 1 | 2 | 3 };
+export type Valuation = Guard & { range: Range; per_site: { site: Site; low: Cents | null; high: Cents | null; basis_count: number }[]; level: 1 | 2 | 3;
+  // How fast it sells at each way of pricing: the engine's slider point at that mode's mark (engines/valuation/posture.ts,
+  // pointOnSite: days_t50 and p_sale_30 from the site's sale curve). Absent until a curve is fitted for the item.
+  pace?: Partial<Record<'fast' | 'sell' | 'best', { days_t50: number | null; p_sale_30: number }>> };
 
 export type Item = {
   id: string; state: ItemState; title: string; category: KindFamily; product_id?: string;
+  // The kind of thing as platform-fit.json types it (fan_apparel, sneakers), when it is narrower than the family.
+  kind?: string;
   cost?: { amount_cents: Cents; date: string; source: 'purchase' | 'bought_it' | 'you_said' };
   origin: 'capture' | 'purchase' | 'import' | 'folder'; location: { label: string }; quantity: number; group_id?: string;
   note?: string; kept_reason?: string; photos: Photo[]; attributes: Attribute[]; valuation?: Valuation; limits?: ItemLimits;

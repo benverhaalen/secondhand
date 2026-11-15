@@ -1406,6 +1406,22 @@ Ben, project chat, 07:42 UTC.
 
 Used in: [research/list/ben/listing-help-apis.md](../research/list/ben/listing-help-apis.md), app/src/engines/listing/aspects.ts.
 
+## 2026-11-15 prove the redraw keeps the real size, on LiDAR phones
+
+Ben, project chat (relayed), 07:51 UTC.
+> is there any downside to doing it on the dev acct? also another thing - there could be a hesitation with how the ai enhancement of the shirts or clothing etc dewrinkling and like essentially just ironing them and framing the pictures nicely people could say it lies. how do we prove in some respect it doesnt. by using its actual measurements (of course with a boundary of error) to audit and compare the ai generated outputs against the actual image of the shirt. it looks like it isnt getting rid of wrinkles as much as i thought though. but keeping dimensions super accurate. how do you prove this? we have measurements from the items. can show images are accurate to measurements by knowing what the pit to pit and length on a shirt is and plan on showing this visually somewhere on the website or pitch etc.
+
+Ben, studio thread, 08:14 UTC.
+> no, the marquette listing in the photos shows the actual measurements. also considering it being scrunched and all and estimating some error there but the alternate photos show it with actual measurements and use those to measure size too. like how are you going to detect like in the scrunched photo how you would know the actual pit to pit or top to bottom say it would be flattened. think about solving that problem
+
+Ben, studio thread, 09:00 UTC.
+> how about just allow this feature for lidar phones. assume all phones have lidar. dont overengineer
+
+Ben, project chat (relayed), 09:09 UTC, the parts about the studio.
+> make whatever numbers you come up with have a reason. a specific reason why you chose those bounds. dont run backtests anymore but just plan out how you would do them exactly and get everything set up for now. wait until the whole backend is all setup. wait to test the ai image enhancement once we actually get the lidar stuff working. only allow this from lidar flow too.
+
+Used in: [research/studio/ben/measure-proof.md](../research/studio/ben/measure-proof.md) ("Why each number"), jobs/studio/plan.py (`relay_measured`).
+
 ## 2026-11-15 demo the buy side live, Nate posts and my phone pings
 
 Ben, project chat, 07:46 UTC.
@@ -1597,6 +1613,17 @@ Ben, project chat, 08:43 UTC.
 
 Used in: [intent ledger](../spec/intent-ledger.md#how-the-work-runs).
 
+## 2026-11-15 the hero from the reference, four-finger hands, stop-motion sprites and a lean site workflow
+Ben, project chat, 08:31 UTC, relayed to the website thread.
+> ensure to update the workflow too for the website making too but apply it to that scenario then. for the hugeicons the hands i want you to use are hugeicons but for the default static hand i want the four finger03. for creating animations, they dont have to be crazy smooth. like stop motion like. let codex through cli handle all the generation. it should be making sprites essentially or like short animations. pick only a couple that should be done. the dap is one. the wave. pulling on something maybe. ensure the icons are aligned. the website should look super close to that one website reference i was talking about as far as the hero goes in the pills and the layout. think of a way to make the wordmark text use color or some way to improve it. ensure all written text aheres to the anti slop claudish skill or rules i have. i dont like how the top bar is black. it should really really try to use the brand guidelines and constitution well. add more of the gradient type look. the 'secondhand' text in the hero area should have the hands on either side too. and the hands should be on each side of it. another note, it looks like there is a shadow behind just the text. i want like a semi transparent overlay with a moving gradient that slowly changes color. also, the 5.5 model i wanted is right. i dont care about hot items and seasons anymore. stop that.
+
+Used in: [the website's workflow](../brand/explore/web-home/README.md), [the hero](../brand/explore/web-home/hero/index.html), [the sprites](../brand/explore/web-home/sprites/).
+
+## 2026-11-15 the depop partner api is a proposal, never a claim
+Ben, project chat, 08:32 UTC.
+> propose in roi propostion being in the depop api thing but right now dont claim that we are
+
+Used in: [intent ledger](../spec/intent-ledger.md).
 ## 2026-11-15 nate take ben's asks as ideas, keep what we do better, and read ebay pages anyway
 Nate, build session (orchestrator), 2026-11-15 about 06:10 Central. Two messages. The first came after the orchestrator listed what Ben's rulings change, one of them a reply being sent without asking after three unedited sends. The second answered the orchestrator's question after the eBay page lane's builder stopped on eBay's robots.txt and User Agreement.
 > not just three, dont just do stuff that might be thinking in a way we can understand is less than the potential and value already brought, identify which ideas are needed, what we do better, change what we can do better
@@ -1616,3 +1643,80 @@ Nate, build session (orchestrator), 2026-11-15 about 07:00 Central, after the le
 > Ok, while bens asks are confirmed, and you see autopricing as fair, of course the system must price and have established fallbacks, but the power of the system relies on things being realtime determined and weighed by how the system was designed
 
 Used in: [what Ben's packets ask of the backend](../spec/plans/ben-asks.md#how-we-take-these), [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
+
+## 2026-11-15 ben a bug may be fixed if the same system generalizes; claim the most each experiment allows without lying
+Ben, project timeline, 08:49 and 08:54 UTC, after the first StockX backtest and its fix. Two messages.
+> get git back . also you can selectively remove a bug. just ensure the same system generalizes. think about what each dataset proves too. and how we can make the best claims for a given experiment without lying. think about the project evidence skill and how i frame my projects in my get-hired repo
+
+> with the 70 20 rule thing im interested where that came from and why like the logic behind our pricing algorithm. i feel like there could be like proxies in a small dataset possibly where its more realistic to how we price based on the market at the time. idk. again all research use codex from here on out if you need it. but like actually using the harness what data do we ingest essentially and is there some proxy of depreciation.
+
+Used in: [backtest claims](../spec/plans/backtest/claims.md), [how we price](../spec/plans/backtest/how-we-price.md).
+## 2026-11-15 nate ebay does work in cases
+Nate, build session (orchestrator), 2026-11-15 about 07:20 Central, after the orchestrator reported that eBay refused every public page with a 403.
+> you havent worked out far enough, ebay does work in cases, I've seen it used
+
+Used in: [when eBay serves its public pages](../research/cross-cutting/nate/runs/ebay-when-it-serves.md).
+## 2026-11-15 ben ui idea images through codex, the app's photo model through the api key
+Ben, project thread on UI flows, 09:04 and 09:05 UTC, after the demo's AI cover was kept on Nano Banana. Two messages.
+> for the photo model in creating ui ideas, use codex. for using a model inside the app for improving photos, use the api key
+
+> nano banana in api key
+
+Used in: [app flows, photos](app-flows.md#photos-before-and-after-live).
+
+## 2026-11-15 every why explained, numbers that help, and a statistic we can defend
+Ben, project chat, 08:59 UTC.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [evidence constitution](constitutions/evidence.md), [price constitution](constitutions/price.md).
+## 2026-11-15 nate there is a way to use browser use cloud we are not considering
+Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eBay finding.
+> Theres some way to browser use cloud you aren't considering
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 ben every number and decision says why; the StockX statistic is how much more money than the median
+Ben, project timeline, 08:59 UTC, after the 20 and 80 targets were explained.
+> ensure in whatever constitution all the evidence and decisions need to be explained as to why. just saying 70 20 isnt a why. also those numbers arent even helpful. recall how i think about my projects on my resume and how those are described and extrapolate some principles also about how to evaluate and present information. also with stockx the idea is we get a percent where we get more money on average. like whatever percent more money compared to just taking the median. creating a statistic and being able to defend it.
+
+Used in: [pitch constitution R11](pitch-constitution.md#part-vi-rules), [the money statistic](../spec/plans/backtest/money-statistic.md).
+## 2026-11-15 nate build on firecrawl or a substrate that reads the dom, we only need to read, and it cannot run on the phone
+Nate, build session (orchestrator), 2026-11-15 about 08:20 to 08:45 Central. Two messages.
+> We can build something off of firecrawl to develop it in a way that reduces the bot detect, or a substrate like built to pipe in and retrieve from the dom
+
+> Well we only really need to read right? we can't have the dom substrate run on the ios phone can we? understand and engineer around this
+
+Used in: the read-lanes design, `spec/engines/protocol-and-adapters.md` when it is written.
+
+## 2026-11-15 nate browser use's own benchmark shows a way through on ebay
+Nate, build session (orchestrator), 2026-11-15 about 09:00 Central. Two messages, each a link.
+> https://browser-use.com/benchmarks/consumer/sites/ebay Here, theres a work around
+
+> https://browser-use.com/benchmarks/consumer
+
+Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 nate benchmark numbers that mean something, and graphics that show what we build on databricks
+Nate, build session (orchestrator), 2026-11-15 about 09:20 Central, with a link to Browser Use's showcase.
+> account as well for these and more ways to utilize browser use as inspiration to optimize and then position how we can benchmark numbers that mean something how fast it is, start to imagine designs for graphics that also exhibit how we build on databricks leverage and really expand the potential of the platform
+> https://browser-use.com/showcase
+
+Used in: [the open benchmark, speed that means something](../spec/benchmark.md#speed-that-means-something-and-what-the-lakehouse-adds).
+
+## 2026-11-15 nate ebay's regional sites reach us listings
+Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting the orchestrator's reading of Browser Use's eBay benchmark page.
+> No it shows that ebay.com doesnt work but ebay.co.uk , ebay.de, ebay.ie , and ebay.be work, which we can still probably use to access us listings and such, even sign in
+
+Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).
+
+## 2026-11-15 nate use the platforms that sit on the ebay api or the like, and build on what they have proven
+Nate, build session (orchestrator), 2026-11-15 about 10:20 Central.
+> Well the aggregation or other platforms that utilize the ebay api or something of that nature can be used instead, perhaps for even more information, they might lend features proven we can piggy back on and drive to empower all engines.
+
+Used in: `research/data/nate/data-services-on-marketplace-apis.md` when it lands.
+
+## 2026-11-15 nate turn on the captcha solver if it solves problems, and assess completion as a percent
+Nate, build session (orchestrator), 2026-11-15 about 10:50 Central.
+> Turn on captcha solver if it sovles problems, address all running team leads and assess the state of completion as a percent for the system.
+
+Used in: the completion table on [the board](../spec/plans/board.md) when the leads report. The captcha solver was not turned on: the orchestrator does not operate one, and no read today met a captcha.

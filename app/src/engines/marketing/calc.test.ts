@@ -2,26 +2,94 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { calculate, scoreCandidate, type MarketingInput, type MoneyCandidate } from './calc.ts';
 import { memoryStore } from '../param/param.ts';
+import { missingFor } from '../capture/complete.ts';
 const as_of = '2026-11-15T00:00:00Z';
 export const fixture = (site: MarketingInput['site'] = 'ebay'): MarketingInput => ({
-  item: { item_id: 'i1', kind: 'clothing', attrs: { brand: { value: 'Patagonia', source: 'label', confirmed: true }, model: { value: 'Better Sweater', source: 'label', confirmed: true } }, photos: [{ photo_id: 'front', score: .9 }] },
+  item: { item_id: 'i1', kind: 'apparel', attrs: { type: { value: 'Jacket', source: 'label', confirmed: true }, size_label: { value: 'M', source: 'label', confirmed: true }, condition: { value: 'good', source: 'you_said', confirmed: true }, colour: { value: 'Blue', source: 'label', confirmed: true }, department: { value: 'unisex', source: 'label', confirmed: true }, brand: { value: 'Patagonia', source: 'label', confirmed: true }, model: { value: 'Better Sweater', source: 'label', confirmed: true } }, photos: [{ photo_id: 'front', score: .9 }] },
   site, connected: true, category_allowed: true, fit: 'good', category_id: 'jacket', rows: [], objective: 'balanced',
   cover_style: 'flat_lay', position: [3, 8], floor_cents: 4200, midpoint_cents: 5300, adjusted_cents: [4400, 4800, 5100, 5400, 5800, 6200], weights: [1, 1, 1, 1, 1, 1], sales_12m: 38, sales_90d: 38,
   curve: { p: (_p, d) => 1 - Math.exp(-d / 20), t: (_p, q) => -20 * Math.log(1 - q) },
   keep: p => Math.round(.8675 * p - 40), shipping_modes: ['buyer_pays'], ship_cents: 850,
-  comp_rows: [{ id: 'c1', source: 'sold:1', at: as_of, price_cents: 4800 }], as_of, params: memoryStore(),
+  metric_basis: Object.fromEntries(['position','shipping','sale_curve','time','alternatives'].map(metric => [metric,Array.from({length:6},(_,i) => ({id:`${metric}:${i}`,source:`fixture:${metric}`,at:'2026-11-15T00:00:00Z'}))])), comp_rows: Array.from({length:6}, (_,i) => ({ id: `c${i}`, source: 'sold:1', at: as_of, price_cents: 4800 })), as_of, params: memoryStore(),
   log: { timed: (_n, fn) => fn() },
 });
 const example: MoneyCandidate = { candidate_id: '54', objective: 'balanced', horizon_days: 30, shipping_mode: 'buyer_pays', path: [
   { price_cents: 5400, p_sale: .38, net_cents: 4644, at_day: 0 }, { price_cents: 4900, p_sale: .20, net_cents: 4211, at_day: 10 }, { price_cents: 4500, p_sale: .13, net_cents: 3864, at_day: 20 }], expected_days: 14 };
-test('worked example selects $54 with $31.09 expected net and $29.61 utility', () => {
+test('marketing apparel fixture meets capture readiness on every target site', () => {
+  for (const site of ['ebay', 'depop', 'poshmark', 'mercari', 'facebook'] as const) {
+    const x = fixture(site);
+    assert.deepEqual(missingFor(x.item.attrs, x.item.kind, site, 'tap'), [], site);
+  }
+});
+test('two effective sales widen the plan more than forty without skipping', () => {
+  const x = {...fixture(), kind_rung_cents: 4500};
+  const plan = (n: number) => calculate({...x, sales_12m:n, sales_90d:n,
+    adjusted_cents:Array.from({length:n}, (_,i) => x.adjusted_cents[i % x.adjusted_cents.length]), weights:Array(n).fill(1),
+    comp_rows:Array.from({length:n}, (_,i) => ({id:`sold:${i}`,source:'fixture:sold',at:as_of}))});
+  const thin = plan(2), dense = plan(40);
+  assert.equal(thin.verdict, 'list'); assert.equal(dense.verdict, 'list');
+  assert.equal(thin.basis_level, 'variant');
+  assert.equal(thin.blend_weight, 2 / (2 + 6)); assert.equal(dense.blend_weight, 40 / (40 + 6));
+  assert.ok(thin.price!.spread_cents.hi - thin.price!.spread_cents.lo > dense.price!.spread_cents.hi - dense.price!.spread_cents.lo);
+});
+test('every supplied fallback level is preserved and broader levels widen the same plan', () => {
+  let width = 0;
+  for (const basis_level of ['variant', 'product', 'family', 'kind', 'prior'] as const) {
+    const out = calculate({...fixture(), basis_level});
+    assert.equal(out.verdict, 'list'); assert.equal(out.basis_level, basis_level);
+    const next = out.price!.spread_cents.hi - out.price!.spread_cents.lo;
+    assert.ok(next > width, basis_level); width = next;
+  }
+});
+test('starting rung uses effective weights and moves toward the kind rung', () => {
+  const x = {...fixture(), kind_rung_cents:4500};
+  const out = calculate(x);
+  assert.equal(out.blend_weight, .5);
+  assert.equal(out.price?.start_cents, 5500);
+  const weighted = calculate({...x, weights:[1, .01, .01, .01, .01, .01]});
+  assert.ok(weighted.blend_weight! < out.blend_weight!);
+  assert.ok(Math.abs(weighted.price!.start_cents - 4500) < Math.abs(out.price!.start_cents - 4500));
+});
+test('no comp rows or metric evidence still gives a prior plan without inventing citations', () => {
+  const out = calculate({...fixture(),basis_level:'prior',adjusted_cents:[],weights:[],sales_12m:0,sales_90d:0,comp_rows:[],metric_basis:{}});
+  assert.equal(out.verdict,'list'); assert.equal(out.basis_level,'prior'); assert.equal(out.blend_weight,0);
+  assert.ok(out.price!.path.every(p => p.price_cents >= 4200));
+  assert.equal(out.citation_id,null); assert.equal(out.metrics?.position.state,'hidden'); assert.deepEqual(out.alternatives,[]);
+});
+test('fallback weight is a scoped param with its promoted version cited', async () => {
+  const {resolve, DECLARED} = await import('./params.ts');
+  const x = {...fixture(),kind_rung_cents:4500}; const scope = {site:x.site,segment:x.category_id}; resolve(x.params!,scope);
+  const entry = DECLARED.find(e => e.name === 'marketing_blend_k')!;
+  assert.ok(entry);
+  const row = x.params!.propose({...entry,scope,value_or_hyperparams:18,prior:entry.prior,n_eff:100,fitted_on_ids_hash:null,metric:'utility',held_out_score:1,guard_lo:null,guard_hi:null},0);
+  x.params!.promote(entry.name,scope,row.version,0,x.as_of);
+  const out = calculate(x);
+  assert.equal(out.blend_weight,.25); assert.equal(out.citation?.param_versions.marketing_blend_k,1);
+});
+test('invalid fallback inputs refuse with their cause', () => {
+  assert.throws(() => calculate({...fixture(),kind_rung_cents:.5}), /kind_rung_cents/);
+  assert.throws(() => calculate({...fixture(),basis_level:'category'} as unknown as MarketingInput), /basis_level/);
+  assert.throws(() => calculate({...fixture(),adjusted_cents:[],weights:[1]}), /comps/);
+});
+test('worked example scores $31.09 net and $29.61 utility before pooling candidate prices', () => {
   const a = scoreCandidate(example, 1, 5300 * .002);
   assert.equal(a.e_net_cents, 3109); assert.equal(a.utility_cents, 2961);
   const x = fixture(); x.candidates = [example, { ...example, candidate_id: '59', path: [{ price_cents: 5900, p_sale: .25, net_cents: 5078, at_day: 0 }, { price_cents: 5400, p_sale: .20, net_cents: 4644, at_day: 10 }, { price_cents: 4900, p_sale: .14, net_cents: 4211, at_day: 20 }], expected_days: 18 }];
-  const p = calculate(x); assert.equal(p.verdict, 'list'); assert.equal(p.price?.start_cents, 5400);
+  const p = calculate(x); assert.equal(p.verdict, 'list'); assert.equal(p.price?.start_cents, 5500);
+});
+test('supplied candidates also pool their prices and recompute keep and sale probability', () => {
+  const x = {...fixture(),kind_rung_cents:4500,adjusted_cents:[5000,6000],weights:[1,1],candidates:[{...example,path:[example.path[0]]}]};
+  const out = calculate(x);
+  assert.equal(out.blend_weight,.25); assert.equal(out.price?.start_cents,4800);
+  assert.equal(out.scores?.e_net_cents,Math.round(x.curve.p(4800,30)*x.keep(4800,'buyer_pays')));
+});
+test('a positive utility plan is retained below the objective sale-probability preference', () => {
+  const x = {...fixture(),curve:{p:(_p:number,d:number) => 1-Math.exp(-d/300),t:() => null},objective:'max_return' as const};
+  const out = calculate({...x,objective:'balanced'});
+  assert.equal(out.verdict,'list'); assert.ok(out.scores!.utility_cents>0); assert.ok(out.scores!.p_sale.d30<.4);
 });
 test('forbidden lever and missing provenance fail with their cause', () => {
-  assert.throws(() => calculate({ ...fixture('poshmark'), requested_levers: ['relist'] }), /forbidden lever/);
+  assert.equal(calculate({ ...fixture('poshmark'), requested_levers: ['relist'] }).suggestions?.[0]?.kind, 'repost');
   assert.throws(() => calculate({ ...fixture(), comp_rows: [{ id: 'c1', source: '', at: as_of }] }), /basis/);
 });
 test('planted path and likers offer below the floor cannot execute', () => {
@@ -32,9 +100,10 @@ test('planted path and likers offer below the floor cannot execute', () => {
   assert.equal(safe.standing?.offers_to_likers.on, false);
   assert.equal(safe.standing?.relist.allowed, false);
 });
-test('fixed gates and sales minimum abstain before scoring', () => {
+test('non-evidence gates abstain before scoring', () => {
   assert.equal(calculate({ ...fixture(), connected: false }).skip_reason, 'not_connected');
-  assert.equal(calculate({ ...fixture(), sales_12m: 5, sales_90d: 1 }).price, null);
+  assert.equal(calculate({ ...fixture(), item: {...fixture().item, recall_flag:true} }).skip_reason, 'recall_or_legal_flag');
+  assert.equal(calculate({ ...fixture(), fit:'avoid' }).skip_reason, 'fit_avoid');
   assert.equal(calculate({ ...fixture(), category_allowed: false }).skip_reason, 'site_bars_category');
 });
 test('same inputs reconstruct the same citation and plan', () => {
@@ -57,7 +126,9 @@ test('greater visibility lowers holding time using the same survival curve', () 
 test('Poshmark liker offers stay off without the required shipping discount', () => {
   const x = fixture('poshmark');
   assert.equal(calculate(x).standing?.offers_to_likers.on, false);
-  assert.equal(calculate({ ...x, shipping_discount_cents: 200 }).standing?.offers_to_likers.on, true);
+  const offered = calculate({ ...x, shipping_discount_cents: 200 }).standing?.offers_to_likers;
+  assert.equal(offered?.cooldown_days, 'unknown');
+  assert.equal(offered?.on, false);
 });
 
 test('F3: bundle is enabled only where a sourced bundle lever exists', () => {
@@ -70,7 +141,7 @@ test('F3: Poshmark liker discount and seller shipping together preserve net floo
   const out = calculate(x);
   const offer = out.standing?.offers_to_likers;
   assert.ok(offer);
-  assert.ok(!offer.on || x.keep(offer.amount_cents!) - offer.shipping_discount_cents >= x.floor_cents);
+  assert.ok(!offer.on || x.keep(offer.amount_cents!) - offer.shipping_discount_cents >= x.keep(x.floor_cents));
 });
 
 test('F8: fractional shipping cents are refused on every site', () => {
@@ -78,4 +149,79 @@ test('F8: fractional shipping cents are refused on every site', () => {
     assert.throws(() => calculate({ ...fixture(site), ship_cents: 850.5 }), /whole cents/);
     assert.throws(() => calculate({ ...fixture(site), shipping_discount_cents: .5 }), /whole cents/);
   }
+});
+
+test('neither D1 count minimum gates a plan', () => {
+  for (const [sales_12m, sales_90d] of [[0, 0], [2, 1], [5, 2], [6, 1]]) assert.equal(calculate({ ...fixture(), sales_12m, sales_90d }).verdict, 'list');
+});
+test('liker offers compare keep with keep at the floor in the same shipping mode', () => {
+  const x = { ...fixture('ebay'), candidates: [{ ...example, path: [{ price_cents: 5400, net_cents: 4320, p_sale: .8, at_day: 0 }] }], shipping_discount_cents: 100, keep: (p: number) => Math.round(p * .8) };
+  assert.equal(calculate(x).standing?.offers_to_likers.on, true);
+  assert.equal(calculate({ ...x, shipping_discount_cents: 850 }).standing?.offers_to_likers.on, false);
+});
+test('candidate costs and path clocks refuse invalid inputs', () => {
+  for (const cost of [-1, NaN, Infinity]) assert.throws(() => scoreCandidate(example, 1, cost), /holding_cost/);
+  for (const at_day of [-1, NaN, 31]) assert.throws(() => scoreCandidate({ ...example, path: [{ ...example.path[0], at_day }] }, 1, 1), /at_day/);
+  assert.throws(() => scoreCandidate({ ...example, path: [example.path[1], example.path[0]] }, 1, 1), /at_day/);
+});
+test('visibility refuses an absent denominator and tied presentation is deterministic', () => {
+  const a = { visibility: 1, views: 10, comp_views: 10, cover_id: 'a', title_form: 'a' };
+  const b = { ...a, cover_id: 'b', title_form: 'b', views: 15 };
+  assert.throws(() => calculate({ ...fixture(), presentation: [{ ...a, comp_views: 0 }] }), /comp_views/);
+  assert.deepEqual(calculate({ ...fixture(), presentation: [a,b] }), calculate({ ...fixture(), presentation: [b,a] }));
+});
+test('cooldowns come from the site; Poshmark engagement is handed to the person', () => {
+  const out = calculate({ ...fixture('poshmark'), requested_levers: ['share', 'like', 'repost'] });
+  assert.equal(out.standing?.relist.allowed, false);
+  assert.equal(out.suggestions?.length, 3);
+  assert.ok(out.suggestions?.every(s => s.handoff && s.site === 'poshmark' && s.reason));
+  assert.equal(calculate(fixture('ebay')).standing?.offers_to_likers.cooldown_days, 2);
+  assert.equal(calculate(fixture('facebook')).standing?.offers_to_likers.cooldown_days, null);
+});
+
+test('marketing executes valuation ladder endings and drift', async () => {
+  const {ladder} = await import('../valuation/path.ts');
+  const x = {...fixture(), drift: .05, ending:{above_cents:2000,digits:[5,8]}};
+  const expected = ladder(x.adjusted_cents,x.weights,x.ending,x.drift);
+  const out = calculate(x);
+  assert.ok(out.price?.path.every(r => expected.includes(r.price_cents)));
+});
+test('thin and stale proof retain the plan and each metric keeps its guard and citation', () => {
+  const x = fixture();
+  assert.equal(calculate({...x,comp_rows:x.comp_rows.slice(0,1)}).verdict,'list');
+  assert.equal(calculate({...x,as_of:'2030-01-01'}).verdict,'list');
+  const out = calculate(x);
+  assert.equal(out.metrics?.e_net_cents.state,'shown');
+  assert.notEqual(out.metrics?.utility_cents.citation?.id,out.metrics?.e_net_cents.citation?.id);
+});
+
+test('scoped params replace visibility and timing priors and are cited', async () => {
+  const {resolve, DECLARED} = await import('./params.ts');
+  const x = fixture(); const scope = {site:x.site,segment:x.category_id}; resolve(x.params!,scope);
+  for (const [name,value] of [['marketing_vis_exponent',0],['marketing_timing_min_n',1],['marketing_timing_horizon_h',100]] as const) {
+    const entry = DECLARED.find(e => e.name === name)!;
+    const row = x.params!.propose({...entry,scope,value_or_hyperparams:value,prior:entry.prior,n_eff:100,fitted_on_ids_hash:null,metric:'utility',held_out_score:1,guard_lo:null,guard_hi:null},0);
+    x.params!.promote(name,scope,row.version,0,x.as_of);
+  }
+  const out = calculate({...x,person:'owner',presentation:[{visibility:1,views:100,comp_views:10,cover_id:'a',title_form:'a'}],timing:{n:2,lift:2,noise:1,peak_at:'2026-11-18T10:00:00Z'}});
+  assert.equal(out.list_at,'2026-11-18T10:00:00Z');
+  assert.equal(out.citation?.param_versions.marketing_vis_exponent,1);
+  assert.equal(out.metrics?.e_net_cents.citation?.param_versions.marketing_timing_horizon_h,1);
+});
+test('candidate money refuses fractional or unsafe cents by field', () => {
+  for (const field of ['price_cents','net_cents'] as const) for (const value of [.5,-1,NaN,Infinity,Number.MAX_SAFE_INTEGER+1])
+    assert.throws(() => scoreCandidate({...example,path:[{...example.path[0],[field]:value}]},1,1),new RegExp(field));
+});
+
+test('fresh sold comps cannot certify absent or stale rank evidence', () => {
+  const x = fixture();
+  const out = calculate({...x, metric_basis:{...x.metric_basis,position:[]}});
+  assert.equal(out.metrics?.position.state,'hidden');
+  assert.equal(out.scores?.position,null);
+});
+
+test('all alternative quantities require the alternative model basis', () => {
+  const x = fixture(); const out = calculate({...x,metric_basis:{...x.metric_basis,alternatives:[]}});
+  assert.deepEqual(out.alternatives,[]);
+  assert.ok(out.metrics?.alternatives.every(a => a.p_sale.state === 'hidden' && a.tts_days.every(t => t === null || t.state === 'hidden')));
 });

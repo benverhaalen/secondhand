@@ -8,8 +8,12 @@
 // Prices across sites (Ben, 06:51 and 06:53, product/words.md "cross-listing prices are a choice, the reason in words
 // first"; decisions.md 2026-11-15, Same take-home for a new seller): the rule this item uses, the account's unless the
 // person picks another for this item, in its name and one plain reason; each site's numbers a tap under it.
+// Under the choice, the three ways to price side by side, each with its price, what you get and how fast it sells
+// when that is known (Ben, 09:09: "shouldnt it end up showing what each of these toggles is meant to show?";
+// M.priceModes), so the trade is seen before picking, not after. The picked one is in ink with a tick.
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useRef, useState } from 'react';
+import { View } from 'react-native';
 import { Approve, Blank, EmptyState, FootButton, Guess, Icon, IconButton, Line, List, Pill, Row, SiteBadge, Skeleton, Stack, Txt, log } from '@/ui';
 import { Chips } from '@/ui/parts/chips';
 import { GuessPick } from '@/ui/parts/pick';
@@ -110,7 +114,6 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
   const sites = price !== null ? M.planSites(w, item, price, flipped, spread) : [];
   const on = sites.filter(s => s.on);
   const steps = dropsOn && price !== null ? M.drops(item, price, choice, w.now) : [];
-  const best = on.length ? Math.max(...on.map(s => s.keep ?? 0)) : null;
   const outlook = item.listings.map(l => l.market_standing?.outlook).find(o => o);
   const changed = touched || choice !== start || typed !== null || floorTyped !== null || flipped.length > 0 || dropsOn !== (item.limits?.markdown_on ?? true)
     || fallback !== startFallback || handover !== startHandover || askEvery !== startAsk || spread !== M.spreadOf(item);
@@ -123,7 +126,8 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
 
   const consequence = choice === 'check' ? 'Lists only where an offer doesn’t bind you. Every offer asks you.'
     : choice === 'reserve' ? 'Waits for your price. No drops, never marked slow.'
-    : [choice === start && outlook ? `About ${outlook.days_lo} to ${outlook.days_hi} days` : null, best !== null ? `You get up to ${usd(best)}` : null].filter(Boolean).join('. ');
+    : choice === start && outlook && price !== null ? `At ${usd(price)}, about ${outlook.days_lo} to ${outlook.days_hi} days` : '';
+  const modes = M.priceModes(w, item, flipped);
 
   // Offline, Save waits for signal and says so; nothing claims it is saved (ways-out Everywhere, "I'm on bad signal").
   const save = () => {
@@ -150,6 +154,17 @@ function Plan({ w, item, flip, offline, onClosed, toPost }: {
       <Stack>
         <Txt role="caption">What do you want?</Txt>
         <Chips id="choice" name="What do you want" value={choice} options={M.CHOICES} onChange={c => { setChoice(c as M.Choice); setTyped(null); edit(); }} />
+        {modes.length ? (
+          <List>
+            {modes.map(r => (
+              <Row key={r.choice} lead={r.choice === choice ? <Icon name="tick-02" size={12} /> : <View style={{ width: 12 }} />}
+                trail={<Txt role="body" tabular tone={r.choice === choice ? 'ink' : 'ink-2'}>{usd(r.price)}</Txt>}>
+                <Txt role="body" tone={r.choice === choice ? 'ink' : 'ink-2'}>{r.label}</Txt>
+                {r.line ? <Txt role="caption">{r.line}</Txt> : null}
+              </Row>
+            ))}
+          </List>
+        ) : null}
         {consequence ? <Txt role="body">{consequence}</Txt> : null}
         {/* Gone fast asks by when (pages.md §6.7 row 4): the date is a guess the person can change. */}
         {choice === 'fast' ? (
