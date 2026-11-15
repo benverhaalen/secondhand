@@ -1128,6 +1128,24 @@ Ben, same thread, 06:21 UTC.
 Ben, thread "Map every feature and page so the build can start", 06:40 UTC, answering "Should a sale, and a watched item under your price, notify you right away?" and "Replies starting as drafts changes Nate's rule".
 > 1. yes. 2. yes do that. ensure the ui building completely understands all this and the ui system. and overall across all agents when they think theres a better way to do things for our purposes and constitution then do it. anything i have edit wise gets applied too.
 
+## 2026-11-15 adjacent appraisal, risk and why this price
+
+Ben, thread "Frame the problems and beat competitors", 06:10 UTC.
+> i want you to help me work through the difference between actual problems. we can tell the value of the brand itself. say the nike brand adds x value. we can then tell those brands unique insights. also rarity. collect things for the brands. get the user the cheapest items. track earnings. maximize for the user's goals. also think about how we can benchmark against things like semrush serp where companies like salesforce (going and using things that these companies pay for - so find how much all these companies where the sponsors are possibly spending money) dupe.com vs thriftx. we compare to each of these. we say how we are different. the competitors. what we do. quantify it. show why our data is better. show how - not just say how - at scale we can provide insane value to businesses and consumers. also can talk about and quantify how this helps the earth. encouraging secondhand marketplace and everything happens. break all this down into like a few separate problems or find how our competitors pitch. can pitch both to consumers and to value to businesses. researching and using rdd and iae about finding all our consumers. across all ranges of products. its not just a secondhand site for consumers. can really expand our pitch over time. for example start small and really just keep wowing and wowing and wowing over time. use evidence cite it. be honest but confident about the possibility of scaling over time. how at a large scale we might be able to partner with these selling sites too? im not really sure to be honest. ok use rdd to seeded looped research our competitors. or other similar things. these are ideas. i want your opinion. you know the goals. we need to be humble and honest too. i think ive given you an alright idea on the problem. how consumers find value. can we go through all the problems and see whether or not someone would ask them. the ones you came up with.
+
+Ben, same thread, 06:32 UTC.
+> nate told me about it idk its fine if you cant get it. is there anything from this research where we can find the underlying mechanisms for how these all work and then possibly use them to improve our product? we can say our data collection is better using examples when we start to test
+
+Ben, same thread, 06:43 UTC.
+> what about what we do that we know competitors dont. how we engineered it better and can do more things and its all in one. maybe use rdd and iae and adjacent research think about insurance and other adjacent fields about how they appraise and see if based on our information there are any mechanisms to improve accuracy
+
+Ben, project chat, 06:46 UTC.
+> also see if insurance or quant or other appraisal and market type adjacent fields have any good mechanisms for evaluating certain things that we could take into account here. ways to quantify the risk of everything we are doing. or like reasons why we make decisions to price at whatever based on similar products and whats sold etc.
+
+Ben, thread "Frame the problems and beat competitors", 06:54 UTC, on the proposals in [risk-and-reconciliation.md](../research/price/ben/risk-and-reconciliation.md).
+> i like these apply them to the logic or the plans of logic of how the entire product should work
+
+Used in: [money D1, D2, D5, D6, D12, D13](../spec/determinations/money.md), [managing-and-buyers cards 17 and 18](../spec/determinations/managing-and-buyers.md#17-whether-an-account-is-healthy-or-at-risk), [market-insight M10](../spec/determinations/market-insight.md#m10-depreciation-by-category-and-brand), [appraise](../spec/features/appraise.md), [capture-shots](../spec/determinations/capture-shots.md).
 ## 2026-11-15 cross-listing prices are a choice, the reason in words first
 
 Ben, thread "Cross-list Depop listings and price with quant", 06:51 UTC.
@@ -1187,6 +1205,25 @@ Nate, build session (orchestrator), 2026-11-15 between about 00:10 and 01:30 Cen
 
 > Now that we fixed the crash, ensure it doesnt happen again and perhaps push further now to handle more, not of course so much that it crashes either this computer or the mac but you understand how to effectively dispatch.
 
+## 2026-11-15 deep teal lead card in dark
+
+Ben, thread "Roll the UI system out everywhere", 07:10 UTC, tapped on a decision card after pointing back to his dark Today reference (research/today/ben/today-v3-light-dark.png). The question: "Make the lead card deep teal in dark mode, like your dark reference?" The option he chose:
+> Deep teal in dark: The lead card in dark goes deep teal with light text, as in the render. I change the brand rule and its check to match.
+
+Used in: [brand/constitution.md](../brand/constitution.md) Art. 5, State gradients rule 3; ledger A13; `stateGradient` in app/src/ui/paint.ts; `stateOf` in .agents/checks/render.mjs.
 ## 2026-11-15 the lower tiers pile and fan out, and the top of Today always shows a flattering number
 
 Ben, 07:12, on the redone Today: "also, i think this is when you should use the collapsable pile where they are layered and an animation expands them. also ensure the actual app knows the top thing should be the most flattering metric. or a flattering metric. say theres zero sales. say potential money you could earn. say people who saw your listing. likes. updates from last time are definitely best but you dont always have updates. what do you say when nothings gone on yet."
+
+## 2026-11-15 everything goes in the repo, and Nate gets the packets he needs
+
+Ben, project chat, 07:14 UTC.
+> ensure all information is continually added to the repo and that nate gets packets that he might need
+
+Used in: [research/cross-cutting/ben/market-and-competitors.md](../research/cross-cutting/ben/market-and-competitors.md), [packet 54](../.agents/team/packets/price/54-least-adjusted-comps-and-risk.md).
+## 2026-11-15 everything goes into the repo, and nate gets the packets he needs
+
+Ben, project chat, 07:14:
+> ensure all information is continually added to the repo and that nate gets packets that he might need
+
+Used in: [AGENTS.md](../AGENTS.md#how-to-work-here).

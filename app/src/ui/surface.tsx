@@ -1,6 +1,6 @@
 // What a thing lies on, drawn once. The parts use it; a screen never needs it (it composes parts).
-// card: white, the 36 corner, 1 px edge and no blur (Art. 9.2). gray: a control's ground. field: a state gradient, drawn
-// in the light palette in both modes (Art. 5, State gradients rule 3). sheet: white at the 20 corner, top only.
+// card: white, the 36 corner, 1 px edge and no blur (Art. 9.2). gray: a control's ground. field: a state gradient, light
+// in light and deep in dark (Art. 5, State gradients rule 3). sheet: white at the 20 corner, top only.
 import type { ReactNode } from 'react';
 import { View, type ViewStyle } from 'react-native';
 import { stateGradient, type Gradient } from './paint';
@@ -22,10 +22,11 @@ export function Surface({ kind, gradient = 'need', hours = null, box, part, chil
   const c = useColors(), scheme = useScheme();
   const mark = part ? ({ dataSet: { part } } as object) : {};
   if (kind === 'field') {
+    // Light: the light palette with black text. Dark: the deep field with the dark theme's light text (paint.ts DEEP).
     return (
-      <Theme scheme="light">
+      <Theme scheme={scheme}>
         <OnGround ground="field">
-          <View {...mark} style={[{ borderRadius: radius.card, overflow: 'hidden' }, stateGradient(gradient, hours) as ViewStyle, box]}>{children}</View>
+          <View {...mark} style={[{ borderRadius: radius.card, overflow: 'hidden' }, stateGradient(gradient, hours, scheme) as ViewStyle, box]}>{children}</View>
         </OnGround>
       </Theme>
     );

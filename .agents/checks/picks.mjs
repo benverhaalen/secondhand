@@ -168,7 +168,7 @@ export const PICKS = {
       const i = RING.indexOf(fill), near = new Set([RING[(i + 1) % RING.length], RING[(i + RING.length - 1) % RING.length]]);
       if (a !== fill) out.push(err(TOKENS, `--field-${state}-1 is ${a ? `--${a}` : 'not a token'}: a state's gradient is led by its own fill, --${fill} (ledger L47)`));
       if (!near.has(b) || !near.has(c) || b === c) out.push(err(TOKENS, `--field-${state}-2 and -3 are --${b} and --${c}: they are --${fill}'s two neighbors on the ring, --${[...near].join(' and --')} (ledger L47)`));
-      if (t.dark[`field-${state}-1`]) out.push(err(TOKENS, `--field-${state}-1 changes in dark mode: a state gradient stays light, because a deep yellow or lime is brown (ledger A13)`)); }
+      if (t.dark[`field-${state}-1`]) out.push(err(TOKENS, `--field-${state}-1 changes in dark mode: the state colors are light only, and in dark a state gradient is the deep --field-1 to -3 instead, because a deep yellow or lime is brown (ledger A13)`)); }
     return out; },
 
   // Hot is fire, light enough for black text and never as dark as failed; and nothing glows in a state's color.

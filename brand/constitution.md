@@ -121,7 +121,7 @@ The few signature assets that make secondhand recognizable (E4). Each has an exa
 2. `ask`: a decision card with its options. The black pill follows the rule above.
 3. `locked` and the kinds never promoted (a price below your floor, a trade): the same card, which never offers "Always do this".
 4. A promotion is shown once, when it is offered, with the three approvals it rests on one tap away.
-- Boundary: never red, never on the field in anything but black, never two black pills side by side.
+- Boundary: never red, never on the field in anything but black (in dark, the light pill of Dark mode rule 7, which the deep field needs), never two black pills side by side.
 
 **C5. Platform logos, not names.** Where a marketplace is meant, its real logo is shown, from [assets/platforms/](../assets/platforms/). Ben, 19:59.
 - Boundary: unaltered logos only, brand color or black, never redrawn letterforms. VoiceOver and alt text carry the name.
@@ -197,9 +197,9 @@ Every state carries its icon as well as its color (Ben, [round 6](../product/wor
 | Live | sky, with lilac and aqua |
 | Paid | lime, with mint and marigold |
 
-1. **Strength follows the deadline.** With `t` hours left, `u = ln(48 / t) / ln(96)`, held between 0 and 1, and each color is mixed toward white by `(1 − u) × 58%`: palest two days out, full color in the last half hour, and full color when there is no deadline. It repaints at most once a minute, so nobody sees it move. It never pulses, and the countdown words still say the time.
+1. **Strength follows the deadline.** With `t` hours left, `u = ln(48 / t) / ln(96)`, held between 0 and 1, and each color is mixed toward white by `(1 − u) × 58%` (toward `--surface` in dark, rule 3): palest two days out, full color in the last half hour, and full color when there is no deadline. It repaints at most once a minute, so nobody sees it move. It never pulses, and the countdown words still say the time.
 2. **Which card gets it,** first match wins: a decision with a clock (an offer, a pickup, a ship-by date), nearest deadline first and, on a tie, the most money kept; then a decision without a clock (a question, a price move for a stuck listing). Failed takes its brick tag and never the gradient; news (hot, sold, paid) is shown, never given the gradient.
-3. **Dark mode keeps it light,** with black text, as tags do (A13): a deep yellow or lime is brown.
+3. **Dark mode takes the deep field** (Ben picked "Deep teal in dark", [07:10](../product/words.md#2026-11-15-deep-teal-lead-card-in-dark); A13). In dark every state's gradient is the dark field, `--field-1` to `-3`, laid out as `--field-mesh` and mixed toward `--surface` by rule 1's amount, with the ink of the mode. No state takes its own hue in dark, because a deep yellow or lime is brown: the field says "this one first", and the tag says which state, keeping its light fill (Dark mode 4).
 4. **No glow.** Color is a fill or a gradient, never light leaking out of a thing: no colored shadow under a photo, a tag or a card (L48: "too ai slop like"). The black pill's own glow is C4's.
 5. **Hot never reads as failed.** Hot is a light, warm gradient with black text; failed is one flat dark brick with white text. Their lightness stays .1 apart in OKLCH.
 
@@ -213,7 +213,7 @@ Every state carries its icon as well as its color (Ben, [round 6](../product/wor
 
 1. The page is `#101315`, a card `#1A1D20` (1.10:1 on the page, the same step as light), a control on a card `#2A2F32`.
 2. Text is `#ECEFF1`, never pure white. Secondary text is `#B4BABD`, and `#CDD2D4` on the field (6.1:1).
-3. The field goes deep: `#0A4C65`, `#03523B` and `#025050` in place of sky, mint and lime. Text on it is the ink of its mode, so it is light in dark and black in light.
+3. The field goes deep: `#0A4C65`, `#03523B` and `#025050` in place of sky, mint and lime. Text on it is the ink of its mode, so it is light in dark and black in light. A state gradient is this field too (State gradients 3).
 4. A state tag keeps its light fill and its black text in both modes.
 5. Lime and marigold are never a dark ground, because a dark yellow is brown.
 6. The black pill has no glow. A card's edge is 1 px of white at 8%, where light has 1 px of black at 8%.

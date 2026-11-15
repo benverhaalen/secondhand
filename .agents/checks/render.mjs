@@ -61,7 +61,7 @@ function gradientKind(el, pal) {
   const g = el.gradient, tokens = Object.entries(pal.grads).filter(([n]) => !n.endsWith('-mesh'));
   const held = tokens.find(([n, t]) => t.raw === g.raw && (n.startsWith('wash') || t.base === g.base))?.[0] ?? tokens.find(([n, t]) => alike(g.raw, t.raw) && (n.startsWith('wash') || same(rgba(g.base), rgba(t.base))))?.[0];
   if (held) return held.startsWith('wash') ? 'wash' : held.startsWith('field') ? 'field' : 'token';
-  if (stateOf(g, pal)) return 'state';
+  const st = stateOf(g, pal); if (st) return st.startsWith('light:') ? 'pale' : 'state';
   const names = g.colors.map(c => pal.name(c) ?? pal.light?.name(c) ?? null), hues = new Set(names.map(n => n && hueOf(n)));
   if (names.length && names.every(n => /^hot-[12]$/.test(n ?? '')) && new Set(names).size === 2) return 'tag';
   return hues.size === 1 && !hues.has(undefined) && !hues.has(null) && names.some(n => n.endsWith('-tint')) ? 'tag' : 'built';
@@ -75,18 +75,22 @@ const stops = raw => (layers(raw).match(STOP) ?? []).map(c => c === 'transparent
 const same = (a, b) => !!a && !!b && (a[3] < .01 && b[3] < .01 || [0, 1, 2].every(i => Math.abs(a[i] - b[i]) <= 1.5) && Math.abs(a[3] - b[3]) <= .01);
 const alike = (raw, token) => { const a = stops(raw), b = stops(token); return layers(raw).replace(STOP, 'C') === layers(token).replace(STOP, 'C') && a.length === b.length && a.every((c, i) => same(c, b[i])); };
 
-// A state gradient (Art. 5, State gradients): the field's mesh, with field-1 under it, drawn in one state's three colors, each
-// mixed toward white by one amount between none and --field-calm-max. The amount follows the deadline, so any one amount passes.
+// A state gradient (Art. 5, State gradients): the field's mesh, with its first color under it, every stop mixed toward the
+// ground by one amount between none and --field-calm-max. The amount follows the deadline, so any one amount passes.
+// In light the three colors are the state's own, mixed toward white. In dark they are the dark --field-1 to -3 for every
+// state, mixed toward --surface, and the tag carries the state (Ben, 07:10). Returns the state, 'deep', or 'light:<state>'
+// for a light state gradient drawn in dark.
 export const STATES = ['need', 'sold', 'live', 'paid'];
+const mixedFrom = (seen, ref, to, most) => { const j = [0, 1, 2].reduce((a, b) => Math.abs(to[b] - ref[0][b]) > Math.abs(to[a] - ref[0][a]) ? b : a), span = to[j] - ref[0][j], t = Math.abs(span) < 8 ? 0 : (seen[0][j] - ref[0][j]) / span;
+  return t >= -.01 && t <= most + .01 && seen.every((c, i) => c[3] > .99 && [0, 1, 2].every(k => Math.abs(c[k] - (ref[i][k] + (to[k] - ref[i][k]) * t)) <= 1.5)); };
 export function stateOf(g, pal) {
   const mesh = pal.grads['field-mesh'], L = pal.light ?? pal; if (!mesh || layers(g.raw).replace(STOP, 'C') !== layers(mesh.raw).replace(STOP, 'C')) return null;
   const got = stops(g.raw), want = stops(mesh.raw), base = rgba(g.base);
   if (!base || got.length !== want.length || got.some((c, i) => !c || (c[3] < .01) !== (want[i][3] < .01))) return null;
-  const seen = [base, ...got.filter(c => c[3] >= .01)], most = pal.calmMax ?? .58;
-  for (const s of STATES) { const ref = [1, 2, 3].map(k => L.of(`field-${s}-${k}`)); if (ref.some(r => !r) || seen.length !== 3) continue;
-    const j = [0, 1, 2].reduce((a, b) => ref[0][b] < ref[0][a] ? b : a), t = 255 - ref[0][j] < 8 ? 0 : (seen[0][j] - ref[0][j]) / (255 - ref[0][j]);
-    if (t < -.01 || t > most + .01) continue;
-    if (seen.every((c, i) => c[3] > .99 && [0, 1, 2].every(k => Math.abs(c[k] - (ref[i][k] + (255 - ref[i][k]) * t)) <= 1.5))) return s; }
+  const seen = [base, ...got.filter(c => c[3] >= .01)], most = pal.calmMax ?? .58, dark = (pal.of('page')?.[0] ?? 255) < 128; if (seen.length !== 3) return null;
+  if (dark) { const ref = [1, 2, 3].map(k => pal.of(`field-${k}`)), to = pal.of('surface'); if (to && ref.every(Boolean) && mixedFrom(seen, ref, to, most)) return 'deep'; }
+  for (const s of STATES) { const ref = [1, 2, 3].map(k => L.of(`field-${s}-${k}`)); if (ref.some(r => !r)) continue;
+    if (mixedFrom(seen, ref, [255, 255, 255], most)) return dark ? `light:${s}` : s; }
   return null;
 }
 
@@ -109,9 +113,9 @@ function checkView(view, ctx) {
   const E = (id, where, msg) => out.push(err(id, `${at} ${where}`.trim(), msg)), W = (id, where, msg) => out.push(warn(id, `${at} ${where}`.trim(), msg));
   const text = view.texts, sizes = sheet.sizes[String(view.canvas?.[0])] ?? Object.values(sheet.sizes)[0], top = Math.max(...sizes);
   const isMark = t => t.display && t.text.trim().toLowerCase() === 'secondhand';
-  // A state gradient and a state tag stay light in dark, with black text (Art. 5, State gradients 3 and Dark mode 4),
-  // so they and everything on them are read in the light palette. In light mode that is the same palette.
-  const lit = new Set(); view.els.forEach((el, i) => { if (lit.has(el.parent) || el.part === 'tag' || el.gradient && gradientKind(el, pal) === 'state') lit.add(i); });
+  // A state tag keeps its light fill and black text in dark (Art. 5, Dark mode 4), so it and what is on it are read in the
+  // light palette first. In light mode that is the same palette.
+  const lit = new Set(); view.els.forEach((el, i) => { if (lit.has(el.parent) || el.part === 'tag') lit.add(i); });
   const both = pal.light ? { ...pal.light, name: v => pal.light.name(v) ?? pal.name(v) } : pal, P = i => lit.has(i) ? both : pal;
   const sizesOf = w => Array.isArray(w?.sizes) ? w.sizes : w?.sizes?.[String(view.canvas?.[0])] ?? Object.values(w?.sizes ?? {})[0] ?? [], markSizes = sizesOf(sheet.wordmark);
 
@@ -153,12 +157,12 @@ function checkView(view, ctx) {
       const worst = inside ? 1 : Math.min(...ends.map(p => ratio(lum(over([color[0], color[1], color[2], a], p)), lum(p)))), need = g.wash ? 7 : t.size >= 24 ? 3 : 4.5;
       if (worst < need) E('B6', q, `has ${worst.toFixed(1)}:1 contrast at its worst point over ${g.wash ? 'the wash' : g.kind === 'field' ? 'the field' : 'the gradient'}; it needs ${need}:1 (Art. 5.1${g.wash ? ', Art. 5 The wash' : ''})`); }
     if (g.kind === 'photo') E('B6', q, 'sits on a photo: text over a photo goes on the field or a white bar, in black (Art. 5.1)');
-    else if (g.kind === 'state') { const ok = ['on-field', 'on-field-2', 'on-color'].map((pal.light ?? pal).raw).filter(Boolean);
-      if (!ok.includes(t.color)) E('B6', q, `is ${name ? `--${name}` : t.color} on a state gradient: it stays light in dark, so its text is --on-field or --on-field-2 of the light mode, black in both (Art. 5, State gradients 3)`); }
+    else if (g.kind === 'state' || g.kind === 'pale') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
+      if (g.kind === 'state' && !ok.includes(t.color)) E('B6', q, `is ${name ? `--${name}` : t.color} on a state gradient: text on it is --on-field or --on-field-2, the ink of its mode, light in dark and black in light (Art. 5, State gradients 3)`); }
     else if (g.kind === 'field' || g.kind === 'built') { const ok = ['on-field', 'on-field-2'].map(pal.raw).filter(Boolean);
       if (ok.length ? !ok.includes(t.color) : !['ink', 'on-color'].includes(name)) E('B6', q, `is --${name ?? 'a raw color'} on the field: text on the field is --on-field or --on-field-2, the ink of its mode (Art. 5.1)`); }
     else if (g.kind !== 'fill' || g.name && hueOf(g.name)) { if (name && !['ink', 'on-color'].includes(name) || name === 'ink' && inks.of('ink')?.[0] > 128) E('B6', q, `is --${name ?? 'a raw color'} on ${g.kind === 'fill' ? `--${g.name}` : g.kind === 'tag' ? 'a state tag' : 'a gradient'}: text on a color is --on-color, black in light and dark (Art. 5.1)`); }
-    if (name?.startsWith('on-field') && !['field', 'built', 'state'].includes(g.kind)) E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
+    if (name?.startsWith('on-field') && !['field', 'built', 'state', 'pale'].includes(g.kind)) E('B7', q, `is --${name} off the field: that ink is for text on the field (Art. 5.1)`);
     else if (g.kind === 'fill' && color && !sampled && !(t.disabled && name === 'ink-disabled')) { const c = contrast(hex(over([color[0], color[1], color[2], color[3] * (t.opacity ?? 1)], g.color)), hex(g.color)), need = t.size >= 24 ? 3 : 4.5;
       if (c < need) E('B6', q, `has ${c.toFixed(1)}:1 contrast with what is behind it; it needs ${need}:1 (Art. 5.1)`); }
     // B17 on the web, text that wraps sits in a column of about 75 characters, 36 times its size (Part III)
@@ -240,8 +244,8 @@ function checkView(view, ctx) {
   for (const el of view.els) {
     const q = el.part ? `[${el.part}]` : `<${el.tag}>`;
     // B7 every color is a token
-    const k = view.els.indexOf(el), state = el.gradient && gradientKind(el, pal) === 'state';
-    // A state gradient's base is its first color mixed toward white, which stateOf() has already read against the tokens.
+    const k = view.els.indexOf(el), state = el.gradient && ['state', 'pale'].includes(gradientKind(el, pal));
+    // A state gradient's base is its first color mixed toward its ground, which stateOf() has already read against the tokens.
     for (const [what, c, inks] of [['fill', state ? null : el.bg, null], ...el.borders.map(c => ['line', c, LINE_INK])]) { if (!c) continue; const n = P(k).name(c);
       if (!n) E('B7', q, `has a ${what} of ${c}, which is not a color in tokens.css: use var(--token)`);
       else if (inks && !inks.has(n)) E('B7', q, `has a --${n} line: color is a ground, never a line. Lines are the hairline, ink or brick (Art. 5.1)`); }
@@ -267,10 +271,11 @@ function checkView(view, ctx) {
     if (act(el, pal) && !sheet.act) E('B10', q, `is a black pill: a ${medium} has no buttons, so the act is a plain line (Part III)`);
     // gradients
     if (el.gradient) { const kind = gradientKind(el, pal), held = Object.keys(pal.grads).filter(n => !n.endsWith('-mesh')).map(n => `var(--${n})`).join(', ');
+      if (kind === 'pale') E('B5', q, 'is a light state gradient in dark: in dark a state gradient is the deep field, --field-1 to -3 mixed toward --surface, and its tag carries the state (Art. 5, State gradients 3)');
       if (kind === 'built') E('B5', q, `is a gradient built by hand: a gradient is a token used as it stands${held ? ` (${held})` : ''}, never rebuilt (C2)`);
       // A tag is a chip, not a ground, so its gradient is not a field (B4 counts grounds); B5 still holds it to its tokens.
       let chip = false; for (let j = view.els.indexOf(el); j >= 0 && !chip; j = view.els[j].parent) chip = view.els[j].part === 'tag';
-      if ((kind === 'field' || kind === 'built' || kind === 'state') && !chip) fields.push(el);
+      if (['field', 'built', 'state', 'pale'].includes(kind) && !chip) fields.push(el);
       if (kind === 'wash') washes.push(el);
     }
   }
