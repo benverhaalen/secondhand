@@ -45,7 +45,7 @@ function Sheetful() {
   const [fed, setFed] = useState(['f-a', 'f-b']);
   const [queued, setQueued] = useState<string[] | null>(null);
   return (
-    <Screen name="parts" state="all" wash nav={<Nav inbox={{ count: 2 }} />}>
+    <Screen name="parts" state="all" sheet="parts" wash nav={<Nav inbox={{ count: 2 }} />}>
       <TopSlot news={{ since: 'Since yesterday', kept: 96.2, line: '2 sold, after fees' }} />
 
       <Section title="Decision card, the lead (state gradients, by time left)">
