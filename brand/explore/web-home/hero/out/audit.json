@@ -51,11 +51,11 @@
       "hl_fit": "1.000",
       "logos_round": true,
       "problems": [],
-      "contrast_floor": 5.07,
+      "contrast_floor": 4.73,
       "photos_in_a_minute": {
-        "shown": 8,
-        "pool": 8,
-        "kinds": 1
+        "shown": 103,
+        "pool": 381,
+        "kinds": 7
       }
     },
     {
@@ -176,7 +176,7 @@
       "hl_fit": "1.000",
       "logos_round": true,
       "problems": [],
-      "contrast_floor": 5.01
+      "contrast_floor": 4.2
     },
     {
       "w": 1920,
