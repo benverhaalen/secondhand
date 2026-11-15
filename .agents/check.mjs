@@ -12,12 +12,14 @@ import { research } from './checks/research.mjs';
 import { secrets } from './checks/secrets.mjs';
 import { ui } from './checks/ui.mjs';
 import { brand } from './checks/brand.mjs';
+import { vague } from './checks/vague.mjs';
 import { logging } from './checks/logging.mjs';
 import { code } from './checks/code.mjs';
 import { parts } from './checks/parts.mjs';
 import { picks } from './checks/picks.mjs';
 import { rules, tally } from './checks/rules.mjs';
 import { rests, commitsSince } from './checks/rests.mjs';
+import { states } from './checks/states.mjs';
 import { unreached } from './checks/evidence.mjs';
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '..');
@@ -38,8 +40,8 @@ const results = [
   ...(touched.length ? [{ level: 'warn', where: `${touched.slice(0, 3).join(', ')}${touched.length > 3 ? ` and ${touched.length - 3} more` : ''}`, msg: 'Tier 1 (.agents/thinking.md): full decide, research behind it, owner\'s words for taste, fresh review, dependents updated' }] : []),
   ...layout(root).map(msg => ({ level: 'error', where: 'layout', msg })),
   ...links(root, { files, awaited: JSON.parse(read('.agents/awaited.json') || '[]') }), ...provenance(root, { wordsBase }), ...research(root, { files }),
-  ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }), ...logging(root, { files }), ...code(root, { files, changed }), ...parts(root, { files }), ...picks(root, { files }), ...rules(root),
-  ...rests(root, { commits: commitsSince(root, base) }),
+  ...secrets(root, { files }), ...ui(root, { files }), ...brand(root, { files }), ...vague(root), ...logging(root, { files }), ...code(root, { files, changed }), ...parts(root, { files }), ...picks(root, { files }), ...rules(root),
+  ...rests(root, { commits: commitsSince(root, base) }), ...states(root, { commits: commitsSince(root, base) }),
 ];
 // Keep each human in the loop on the other's work: research and packets that landed in the last day.
 const news = (git('log', '--since=24 hours ago', '--name-only', '--format=@%h %an %ar', '--', 'research/*/nate', 'research/*/ben', '.agents/team/packets') ?? '')
