@@ -1,6 +1,6 @@
 # 43 — Each site's pricing levers and seller signals, defaults from the two lines, and relative signals
 
-Updated: November 15, 2026, 01:20 UTC. Owner: Ben. Agent: Claude Code, project thread "Map each platform's pricing levers and analytics". Branch: `main`. Status: research and two small scripts pushed; everything is an *agent proposal* unless it links a decision.
+Updated: November 15, 2026, 01:45 UTC. Owner: Ben. Agent: Claude Code, project thread "Map each platform's pricing levers and analytics". Branch: `main`. Status: research and two small scripts pushed; everything is an *agent proposal* unless it links a decision.
 
 Ben's ask, 00:12 UTC: [words](../../../../product/words.md#2026-11-15-pricing-levers-signals-and-hot-items).
 
@@ -30,7 +30,8 @@ Ben's ask, 00:12 UTC: [words](../../../../product/words.md#2026-11-15-pricing-le
 | Mercari "views" are impressions in search and feeds, updated daily; clicks are listing opens | observed | listing D15, insights funnel |
 | Facebook reports views, clicks, message threads (Seller app) and saves and shares (web Insights) | observed (app), asserted (web) | insights "Facts to know" says Facebook none |
 | Depop partner API insights: likes, bag adds, pending offers, organic and boosted clicks and impressions, up to 60 min late | observed | read_stats for Depop |
-| Depop buyer offers last 24 h (Make Offer page, API docs) | observed | corrects platform-levers.md's 14 days; Send Offer expiry still open |
+| Depop buyer and seller offers last 24 h (Make Offer page, newsroom 2024-01-09, API docs) | observed | corrects platform-levers.md's 14 days |
+| eBay tells watchers of a price drop; own watcher counts and received offers are readable by Trading API without App Check | observed | read_stats for eBay, listing D20 |
 
 ## Proposals for your cards
 
@@ -42,4 +43,4 @@ Ben's ask, 00:12 UTC: [words](../../../../product/words.md#2026-11-15-pricing-le
 
 ## Open
 
-Not settled by the reads so far: whether eBay watchers or Facebook savers are told of a drop, Depop Send Offer expiry, Mercari like display, Smart Sell availability. A second round is running; the note will be updated in place.
+Still open after the second round: whether Facebook savers are told of a drop, Mercari like display and Smart Pricing pace, Smart Sell availability (still a test), Terapeak's sell-through formula.

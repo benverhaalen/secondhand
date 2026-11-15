@@ -467,7 +467,7 @@ They differ because the formula follows each site's fee rows (D9) and the learne
 | m | step 5: relist or the next rung, plus the site's own levers ([listing-and-marketing.md D26](listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)) | `relist` or `markdown` |
 | 1.5 m | an offer to watchers or likers at or above `always_accept_s` where the site has one | `offer_to_watchers` |
 | 2 m | add the next site in D12's set that the item is not on | `first_post` |
-| 3 m, or the path reached the floor | ask: end, bundle, trade in or donate, with D19's keep for each route | `price_below_floor` when the best route is a sale under the floor; otherwise an end the person confirms, a kind product.md does not have yet (`end_unsold`, asked of the lead) |
+| 3 m, or the path reached the floor | ask: end, bundle, trade in or donate, with D19's keep for each route | `price_below_floor` when the best route is a sale under the floor; otherwise an end the person confirms, `end_unsold` ([product §5](../product.md)) |
 
 Poshmark relist is never promotable ([price.md](../features/price.md)), so on Poshmark the age m step always asks.
 

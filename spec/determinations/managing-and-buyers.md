@@ -203,20 +203,18 @@ Shared rules for every card:
 | Floor (lowest price) | hard lower bound | rank 1 | the person's limit; below it is locked |
 | Always-accept amount | auto accept bound | rank 1 | the person's own rule ([decision](../../product/decisions.md#2026-11-14-always-accept-is-offered-at-listing-and-only-unedited-approvals-count)) |
 | You-keep after fees and shipping, from [price](../features/price.md) | compares like with like | rank 2 | the person cares what lands, not the headline |
-| Price path and days listed, from [price](../features/price.md) | how much give remains | rank 3 | a stale listing should concede more |
-| Competing interest: other open offers, watchers, likes in the last 72 h | less give when high | rank 4 | more buyers mean a better outside option |
+| Price path and days listed, from [price](../features/price.md) | feeds the continuation value `V` and the current price | rank 3 | the counter starts from the current price, and a stale plan lowers it |
+| Competing interest: other open offers, watchers, likes in the last 72 h | raises `V` when high | rank 4 | more buyers mean a better outside option |
 | Round number | counter at a precise amount | rule | round numbers signal eagerness and draw lower offers (observed, Backus, Blake and Tadelis, in [psychology](../../research/cross-cutting/ben/psychology.md)) |
 
 **Method** (all code; the model only words the reply)
 1. `keep(x) = x - fees(x, site) - ship_cost`.
 2. If `keep(offer) >= keep(always_accept)`: accept.
-3. If `offer < floor`: counter at the counter amount below (never accept); a counter at or above the floor is not a below-floor action.
-4. Concession by round `r` (1, 2, 3): `c_r = 0.35, 0.65, 1.0` (start). Interest factor `m = 0.7` if another open offer or 3 or more new watchers or likes in 72 h, else `1.0`; stale factor `d = 1.2` if days listed exceed the price path's next markdown day, else `1.0`.
-5. `counter = list - (list - floor) * min(1, c_r * m * d)`, rounded up to a precise amount ending in 5 or 8 dollars over $20, whole dollars under.
-6. If `offer >= counter`: accept. If round 3 already reached and `offer >= floor`: accept. Else counter.
-7. A higher open offer on the same item is answered first; one accept per item.
+3. If `keep(floor) <= keep(offer) < keep(always_accept)`: accept if `keep(offer)` is at least the continuation value `V` of [money D16](money.md#d16-offer-response); else counter at `round_to_ending(max(floor, (offer + current price) / 2))`, rounded to a precise amount ending in 5 or 8 dollars over $20, whole dollars under. This is the one counter rule, the same as money D16: the midpoint between the offer and the current price, never below the floor (*agent proposal*).
+4. If `keep(offer) < keep(floor)`: never accepted. It becomes an ask (`price_below_floor`) that proposes the counter of step 3; the person decides.
+5. A higher open offer on the same item is answered first; one accept per item.
 
-**Why this method**: Decreasing concessions keep room for later rounds; Magentic Marketplace agents accepted the first offer 80 to 100% of the time (asserted, [messages and offers](../../research/messages/ben/messages-and-offers.md)), so the decision must sit in code with the person's limits. The precise counter follows the round-number finding (observed in the study). The alternative, split the difference each time, concedes half the gap at once and gives no handle for competing interest.
+**Why this method**: One shared rule with money D16 keeps the offer answer and the plan's expected keep from disagreeing; Magentic Marketplace agents accepted the first offer 80 to 100% of the time (asserted, [messages and offers](../../research/messages/ben/messages-and-offers.md)), so the decision must sit in code with the person's limits. The precise counter follows the round-number finding (observed in the study). The alternative, a concession that shrinks each round with factors for interest and staleness, was dropped for one rule with no tuned factors until we have accept rates per counter level.
 
 **When it is not shown**: auto accepts and counters show in the done log only. An offer below the floor shows as an ask card.
 
@@ -680,7 +678,7 @@ Weights: a strict order, not a blend; rank 2 fills only an empty field and shows
 | 4 | Reply send gate | messages | item facts, decision, entailment | typed claims, exact then entailment | pass not shown |
 | 5 | Scam risk | messages | named scam signals | hard signals plus additive score | no percentage ever |
 | 6 | No-show risk | sold | past no-shows, paid in-app, commitment | additive score triggers confirm message | never a number |
-| 7 | Offer answer | messages | floor, you-keep, price path, interest | decreasing concession, precise counter amount | auto in log only |
+| 7 | Offer answer | messages | floor, you-keep, price path, interest | midpoint counter never below the floor, precise amount | auto in log only |
 | 8 | Pickup slot and booking | messages | hours, spot, calendar, buyer times | score slots inside allowed set | no hours, ask once |
 | 9 | Ship or meet | sold | order, setting, site, size | first match ordered list | shown when both possible |
 | 10 | Label, box, insurance, batch | sold | measure, dim rule, site caps, sale price | round up, smallest box, batch print | no measure, weigh first |

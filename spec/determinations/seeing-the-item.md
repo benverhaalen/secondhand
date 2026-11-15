@@ -305,10 +305,10 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 | source | what it contributes | weight or rank | why that weight |
 |---|---|---|---|
-| card or marker of known size in the plane | scale | path 1 | 4.10 to 4.20% error (Kowaleczko 2022 in [garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) |
+| card or marker of known size in the plane | scale | fallback: used only when the size chart and the plane disagree or no size chart exists, because it is extra input | 4.10 to 4.20% error (Kowaleczko 2022 in [garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) |
 | LiDAR depth plus keypoints | metric points | path 1 for items 20 cm to 2 m on matte surfaces | 1.59 to 2.08% (Kim 2022, same note) |
-| published length of the confirmed product ([card 9](#9-which-product-it-is-and-when-identity-is-confirmed)) | scale from one known span | path 2 | maker's spec, but sizes vary by production run (inferred) |
-| ARKit plane | scale | path 3 | no published accuracy figure |
+| published size chart of the confirmed product ([card 9](#9-which-product-it-is-and-when-identity-is-confirmed)) | scale from one known span | path 1 without LiDAR | maker's spec, but sizes vary by production run (inferred) |
+| ARKit plane | scale | cross-check for the size chart | no published accuracy figure |
 | monocular depth (UniDepthV2, MoGe-2) | cross-check only | never sets a value | ARel 6.8% and Rel 15.7, too loose ([measure](../features/measure.md)) |
 | person's tape | value | overrides | owner statement |
 | weight | not measured | none | weight is never read from photos |
@@ -724,7 +724,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 | 7 | [Size](#7-size) | item card | size tag, variant, person | tag read, then convert | no tag: ask |
 | 8 | [Colour](#8-colour) | item card | colourway, CIELAB measure, reference | k-means, nearest name, CIEDE2000 | names within 5: chips |
 | 9 | [Product and confirmation](#9-which-product-it-is-and-when-identity-is-confirmed) | identify | code, catalogue, specialists, image search | ladder plus conformal set, cross-check | empty set: question |
-| 10 | [Each measurement](#10-each-measurement) | measure | card, LiDAR, spec length, plane | two paths agree or drag | no scale: no value |
+| 10 | [Each measurement](#10-each-measurement) | measure | LiDAR, size chart, plane, card as fallback | two paths agree or drag | no scale: no value |
 | 11 | [Measurement uncertainty](#11-uncertainty-of-each-measurement) | measure | our tape checks | 90th percentile of error | under 30 checks: tolerance hidden |
 | 12 | [Each flaw](#12-each-flaw) | item card | vision proposals, scale, zones | propose, grade, person confirms | under 16 px: dropped |
 | 13 | [Condition per axis](#13-condition-on-each-axis) | item card | confirmed flaws, tags, person | start grade minus deductions | flaws unconfirmed: waiting |

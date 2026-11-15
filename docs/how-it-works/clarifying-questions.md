@@ -57,7 +57,7 @@ From there the rules are plain.
 | Which option is picked in advance? | The top candidate, when it leads the second by the margin and has at least half the weight. A thing the person said always wins. With no clear lead, nothing is picked and the assumption is the broadest reading ("Any") ([cards 7 and 8](../../spec/determinations/asking-and-intent.md#7-which-option-is-preselected-and-when-none-is)). | margin 0.2 |
 | When does it stop? | After 3 spans answered in one prompt, when nothing is above the floor, when the person moves on, or after a refusal. A refused slot is not raised again that session ([card 9](../../spec/determinations/asking-and-intent.md#9-when-inputs-leave-and-when-to-stop)). | 3 |
 
-The cap of 3 has no source in research. A test decides it. A weekly job refits the other three numbers on real answers, and a person approves each change.
+The cap of 3 has no source in research. A test decides it, and in capture it is 2 live prompts, from the study of shipping capture apps. A weekly job refits the other three numbers on real answers, and a person approves each change.
 
 Two reasons for arithmetic rather than a model. The research behind the design ([assist.md](../../spec/features/assist.md#design-choices)) reports that unneeded questions cut task success from 65% to 27%, and that models ask about three times less often than they should. A rule that can be read and tested avoids both failures.
 
@@ -85,7 +85,7 @@ Each control has the full set of actions: the picked option as the main one, the
 
 ## How the app infers why the person wants it
 
-Before it marks anything, the app tries to know the purpose behind the words. The buyer's purpose is a set of slots ([card 10](../../spec/determinations/asking-and-intent.md#10-the-buyers-purpose-slots-and-what-is-inferred-before-asking)): what it is for, for whom, budget, size, compatibility, deadline and condition tolerance. Each slot takes a weighted vote across what the app knows.
+Before it marks anything, the app tries to know the purpose behind the words. The buyer's purpose is a set of slots ([card 10](../../spec/determinations/asking-and-intent.md#10-the-buyers-purpose-slots-and-what-is-inferred-before-asking)): what it is for, for whom, budget, size, compatibility, deadline, condition tolerance, and how long they mean to keep it (`keep_for`, only ever assumed, never marked). Each slot takes a weighted vote across what the app knows.
 
 | Source | Weight (starting value) |
 |---|---|
@@ -125,8 +125,8 @@ A visitor gets the same marks, but nothing is stored. The spans travel on the se
 - **Inline marks or chips below the input.** No shipped product was found that marks unclear words inline inside the search box. Google's retail guide keeps the free-text bar always active and shows refinements beneath it. Marking words in place is therefore a bet, and a test will decide between it and chips under the input, by comparing how many reformulations each causes.
 - **Ben's reaction.** The design depends on a pending open question for Ben ([assist.md](../../spec/features/assist.md#open-for-ben-and-nate)), and the controls are a proposal until his catalog takes them.
 - **The cap of 3** and every threshold above are starting values.
-- **Old text still around.** [assist.md](../../spec/features/assist.md#design-choices) still lists "one question at a time" among the options, and [watch.md](../../spec/features/watch.md) still says Watch asks "up to 3 tap questions". Both predate this design.
-- **Slot names.** The comparison cards on the buy side read `keep_for` and `must_have[]`, which the purpose slots do not include (see [search and shopping](search-and-shopping.md#what-is-not-settled)).
+- **Old text still around.** [assist.md](../../spec/features/assist.md#design-choices) still lists "one question at a time" among the options. It predates this design.
+- **Slot names.** `keep_for` is now one of the purpose slots. The comparison cards on the buy side also read `must_have[]`, which the slots do not include (see [search and shopping](search-and-shopping.md#what-is-not-settled)).
 - **Cannot be known.** What the person means by "barely worn" or "for travel" is not in the words. The design never claims to know it. It shows what it assumed, and the person decides.
 
 ## Where to read more

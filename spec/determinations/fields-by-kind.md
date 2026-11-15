@@ -60,7 +60,7 @@ Any Shopify leaf resolves to the nearest ancestor that has a row. So all 14,606 
 
 ## 2. The field registry is the requirement row
 
-Field importance and the capture `requirement` rows are one registry. Today a `requirement` row has item_kind, field, obtained_by, views_needed, a learned priority and a version ([product §3](../product.md)). This proposal widens that row so the same row also says what the field is, where it goes and how it is filled. Capture reads `views_needed` from it, identify reads `fill_ladder`, list reads `site_names`, and `requirement_reorder` ([score](../features/score.md)) learns `importance` on it.
+Field importance and the capture `requirement` rows are one registry. The `requirement` row in [product §3](../product.md) already carries item_kind, field, type, values_or_unit, role, site_names, importance, fill_ladder, views_needed, seconds, effort, priority and a version; this section says what each column means. Capture reads `views_needed` from it, identify reads `fill_ladder`, list reads `site_names`, and `requirement_reorder` ([score](../features/score.md)) learns `importance` on it.
 
 | Column | Values | Meaning |
 |---|---|---|
@@ -149,7 +149,7 @@ A site that requires a field the item cannot have (a size on a lamp) takes the s
 | From the first words | carry | parse of the prompt and profile | `you_said` values |
 | `POST /v1/captures/:id/finish` | kind vote; the five identify routes; measure; flaw pass; colour and material | `capture_judge`; [identify](../features/identify.md); [measure](../features/measure.md) | `kind`, candidates, `measured`, `flaw.<n>`, `condition` axes |
 | Kind accepted | row set | root, family and kind rows, plus the mapped eBay category's aspects (cached per category) | the item's field list |
-| Identity `exact` or `likely_same_model` | lookup rung | the matched `product.spec`; `official_offer`; specialists; each through the router | `spec` and `marketplace` values |
+| Identity `exact` or `likely_same_model` | lookup rung | the matched `product.spec`; `retail_offer`; specialists; each through the router | `spec` and `marketplace` values |
 | Comparables fetched for price | inference rung | the same comps valuate uses ([money D1](money.md#d1-comparable-set-and-weights)) | `inferred` values |
 | Gaps remain on `high` fields | rung 5 | [seeing 17](seeing-the-item.md#17-which-question-to-ask-next-and-when-to-stop) picks the next input; at most 3 per item | `you_said` values |
 | Card complete | five listings | [listing D4 to D7](listing-and-marketing.md#d4-title-per-site) map fields to each site; `claim_check` on every claim | `listing` drafts |

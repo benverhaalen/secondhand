@@ -40,8 +40,8 @@ Every number on a card is a guarded number with a `citation_id`; a hidden one sh
 | list | `relist` | site, days live | Relist, Not now (never Poshmark) |
 | list | `failed_post`, `failed_delist` | site, failed step | Retry, Do it myself |
 | list | `site_changed_listing` | field, before and after | Keep site's, Put mine back |
-| list | `bulk_action` (asked of product.md) | the action, each listing's before and after and keep, the ones left out and why ([list.md](list.md#changing-many-listings-at-once)) | Do all, Untick some, Cancel |
-| price | `end_unsold` (asked of product.md) | days live, the floor reached, the other routes ([money D15](../determinations/money.md#d15-markdown-path-stale-and-relist), [D19](../determinations/money.md#d19-sell-trade-in-donate-or-keep)) | End it, Bundle, Trade in or donate, Keep it up |
+| list | `bulk_action` | the action, each listing's before and after and keep, the ones left out and why ([list.md](list.md#changing-many-listings-at-once)) | Do all, Untick some, Cancel |
+| price | `end_unsold` | days live, the floor reached, the other routes ([money D15](../determinations/money.md#d15-markdown-path-stale-and-relist), [D19](../determinations/money.md#d19-sell-trade-in-donate-or-keep)) | End it, Bundle, Trade in or donate, Keep it up |
 | messages | `reply_other` | question, draft | Send, Edit, Not now, Always do this |
 | messages | `accept_offer` | offers, asking, you keep, expires | Accept, Counter $X, Decline, Always accept $X or more |
 | messages | `scam_warning` | reason | Block buyer, Reply with safety line, Ignore |
@@ -179,5 +179,5 @@ For Ben and Nate to mark.
 - `unbacked_claim` in [product.md §5](../product.md#decision-kinds-the-complete-list).
 - A notification rule beside `user.notification_pref`: which kinds push, which batch.
 - A log line for `message.new` in [events.json](../events.json).
-- `bulk_action` and `end_unsold` in [product.md §5](../product.md#decision-kinds-the-complete-list).
+- `bulk_action` and `end_unsold` are in [product.md §5](../product.md#decision-kinds-the-complete-list).
 - Creating a rule without a past decision: `POST /v1/rules {kind, scope, limits}` beside `{from_decision_id}`, and the trigger and condition text on `GET /v1/rules`.

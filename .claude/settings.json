@@ -1,0 +1,15 @@
+{
+  "enabledPlugins": {
+    "databricks@claude-plugins-official": true,
+    "expo@expo-plugins": true,
+    "exa@claude-plugins-official": true
+  },
+  "extraKnownMarketplaces": {
+    "expo-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "expo/skills"
+      }
+    }
+  }
+}

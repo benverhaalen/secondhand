@@ -13,7 +13,7 @@ This file decides which shots capture asks for, per item kind, in what order, an
 
 Seconds are start values for one shot once the item is laid out or in place. Laying a garment out is counted once per item (about 20 s, start). "Settles" names the item-card fields and the determination that reads them. "Becomes" is the listing photo position under [card 21](seeing-the-item.md#21-which-frames-become-listing-photos-and-in-what-order). Every site takes the same frame through its own crop ([card 8](#8-the-one-frame-and-each-sites-crop)); per-site order and photo caps are list's. Each "Asked only when" line is applied through [card 3](#3-whether-an-extra-shot-is-asked); the shot is never part of the default.
 
-### Clothing: tops and dresses, trousers, outerwear
+### apparel: tops and dresses, trousers, outerwear
 
 Default: front, back, tag. No side photos (Nate). The tag is in the default, on evidence:
 - It settles brand and size in one shot of about 8 s. Depop requires brand and size, Poshmark requires size, and eBay's clothing aspects are size, brand, colour and material (*observed*, [listing-fields §6](../../research/list/nate/listing-fields-by-platform.md)).
@@ -39,7 +39,7 @@ Asked only when:
 - **Lining, zip pull, hardware** (outerwear): brand or material is unsettled and the hardware carries a mark.
 - **Tape on a seam**: [card 11](seeing-the-item.md#11-uncertainty-of-each-measurement) leaves a primary measurement outside its budget.
 
-### Shoes
+### shoes
 
 Default: one move-around scan, then the size label and the soles.
 
@@ -51,7 +51,7 @@ Default: one move-around scan, then the size label and the soles.
 
 Shoe size is mandatory on the sites (*observed*, listing-fields §6), so the label is default. Asked only when: the insole (insole wear unsettled), the box label (the person said there is a box), a flaw close-up (card 12).
 
-### Bags
+### bags
 
 Default: scan, then the inside tab.
 
@@ -62,7 +62,7 @@ Default: scan, then the inside tab.
 
 The serial or date code sits on an interior tab (*observed*, identity-schema §3). Asked only when: the hardware engraving (brand unsettled), corners and handles close (card 12 candidate), strap drop (no scan).
 
-### Watches and jewellery
+### jewellery_watches: watches and jewellery
 
 Under 10 cm and reflective: no scan. Depth is outside its bound and confident but wrong on metal ([adaptive-capture §9](../../research/capture/nate/adaptive-capture.md)).
 
@@ -73,7 +73,7 @@ Under 10 cm and reflective: no scan. Depth is outside its bound and confident bu
 
 Reference and serial sit on the case back or between the lugs (*observed*, identity-schema §4). Asked only when: the side with the crown, the clasp, a stamp macro (metal unsettled), a coin in frame for size (no reference to look up the case size).
 
-### Phones and laptops
+### electronics: phones and laptops
 
 Screens act as mirrors, so depth is wrong and no scan is used ([adaptive-capture §9](../../research/capture/nate/adaptive-capture.md)). Dimensions come from the identified model by lookup.
 
@@ -85,7 +85,7 @@ Screens act as mirrors, so depth is wrong and no scan is used ([adaptive-capture
 
 Asked only when: the edges and ports (a card 12 candidate), the charger and box (the person said they come with it), a laptop's keyboard (laptops: keyboard wear is a condition field).
 
-### Small electronics: headphones, cameras, consoles, audio
+### electronics: headphones, cameras, consoles, audio
 
 Default: scan, then the model plate. Glossy plastic weakens depth, so dimensions fall back to lookup when depth confidence is low.
 
@@ -96,7 +96,7 @@ Default: scan, then the model plate. Glossy plastic weakens depth, so dimensions
 
 Asked only when: the screen on (function unsettled), the ports, the accessories laid out ([card 15](seeing-the-item.md#15-completeness)), a short video powering on ([card 6](#6-when-a-scan-or-a-video-replaces-photos)).
 
-### Furniture
+### furniture
 
 Default: one scan, the shot Nate named.
 
@@ -106,7 +106,7 @@ Default: one scan, the shot Nate named.
 
 Asked only when: the maker's label (under the seat or inside a drawer; brand unsettled), a flaw close-up (card 12), a drawer open (condition of the inside unsettled).
 
-### Home goods, decor and lighting
+### lighting_home: home goods, decor and lighting
 
 Default: scan, then the base or maker's mark. Glass, mirrors and chrome give wrong depth, so for those the plan is the still ring with a reference object ([card 7 below](#7-when-depth-gives-a-measurement-without-a-tape)).
 
@@ -117,7 +117,7 @@ Default: scan, then the base or maker's mark. Glass, mirrors and chrome give wro
 
 Asked only when: chips and cracks close (card 12), the lamp lit (function unsettled).
 
-### Books and media
+### media: books and media
 
 No scan. The barcode does most of the work: an ISBN match fills the listing from the catalogue (*observed*, listing-fields §6).
 
@@ -128,7 +128,7 @@ No scan. The barcode does most of the work: an ISBN match fills the listing from
 
 Asked only when: the copyright page (edition unsettled among the candidates, *observed* source, identity-schema §9), the spine (wear unsettled), the disc or record surface (media condition), the inner sleeve or booklet (completeness).
 
-### Trading cards
+### cards_collectibles: trading cards
 
 No scan, no measurements (identity-schema §10).
 
@@ -139,7 +139,7 @@ No scan, no measurements (identity-schema §10).
 
 Asked only when: the four corners and edges, when the price gap between condition grades for this card is wide enough that the close-up earns its seconds under card 3 below.
 
-### Toys and sets
+### toys_lego: toys and sets
 
 | # | Shot | How | s | Settles | Becomes |
 |---|---|---|---|---|---|
@@ -147,7 +147,7 @@ Asked only when: the four corners and edges, when the price gap between conditio
 
 Asked only when: the contents laid out (completeness unsettled, [card 15](seeing-the-item.md#15-completeness)), the figures, a function video, the battery bay.
 
-### Tools
+### appliances_tools: tools
 
 | # | Shot | How | s | Settles | Becomes |
 |---|---|---|---|---|---|
@@ -359,7 +359,7 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 1. Rule. No tape is asked when card 11 puts every primary field inside its budget ([capture bars](../features/capture.md#how-we-will-know-it-works)).
 2. That holds for rigid items over 10 cm, within 20 cm to 2 m, not mostly reflective, with LiDAR.
 3. For garments, card 10 measures from the front and back flat lay once the flat-enough check passes; the tape is an extra shot under card 3 when it does not.
-4. Without LiDAR, the order is a lookup of the model's dimensions, then a coin or card laid beside the item.
+4. Without LiDAR, the order is the identified product's published size chart with the floor plane as the cross-check; a coin, card or printed marker laid beside the item is asked only when the two disagree or no size chart exists, because it is extra input.
 
 **Why this method**: the default plans already contain the views card 10 measures from, so a tape shot is only worth its seconds when card 11 says the number is out of budget. The alternative, a tape on every garment (Ben, §7.3), adds a shot and a handling step to every item.
 
