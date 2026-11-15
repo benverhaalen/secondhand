@@ -19,6 +19,21 @@ Ben asked to import his existing Depop listings and cross-list them automaticall
 - It appends to a new table `valuation_fit` (role `challenger`, coverage, median_ape, premiums). It never promotes.
 - It reuses `conformal_q` from `jobs/valuation/backtest.py` and does not change that file.
 
+## After the fresh review (same day)
+
+Fixed:
+- The model trains on sold rows only, and asks only cap the range.
+- Comps are moved to today.
+- `too_few` follows §4.5, `too_wide` and whole-dollar rounding follow D5, and the backtest checks 75 to 85%.
+- The floor comes from the person (Depop `auto_negotiate_offer_price`) at the same keep on every site.
+- A listing not in US dollars is skipped, a site where the item is already live is skipped, and `outcome_unknown` reconciles.
+
+Still open:
+- The Mondrian fallback is the whole market, not the parent category, because `comp` rows carry no parent.
+- The site premiums the model fits are not used. Platform-fit's one-target-payout rule sets each price instead, and pricing-in-context §6 says that may be wrong. This is a decision for Ben and Nate.
+- Nothing plans the delist when one copy sells (crosspost-and-delist.md).
+- The guessed constants are listed in the commit messages.
+
 ## Next action
 
 - Ben: whether cross-listing keeps the person's own price as the payout (the default here) or reprices to the market median (`--market`).
