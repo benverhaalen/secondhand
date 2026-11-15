@@ -14,7 +14,7 @@ import { createDupe, type DupeRow } from '../../harness/sites/dupe/adapter.ts';
 import { MAX_ITEMS, ROUTE_IDS, type ApifyRow, type Lane, type createApify } from '../../harness/sites/apify/adapter.ts';
 
 const dupe = createDupe({ log: createLog({ src: 'intel.dupe', build: process.env.BUILD_SHA ?? 'dev', sink: consoleSink }) });
-export type SearchRow = Row & { host?: string; converted?: boolean } & Partial<Omit<DupeRow, keyof Row>> & Partial<Pick<ApifyRow, 'via' | 'actor' | 'may_model' | 'use_scope'>>;
+export type SearchRow = Row & { host?: string; converted?: boolean; may_store?: boolean; stock?: 'in_stock' | 'out_of_stock' | 'unknown' } & Partial<Omit<DupeRow, keyof Row>> & Partial<Pick<ApifyRow, 'via' | 'actor' | 'may_model' | 'use_scope'>>;
 
 export type SiteOutcome = 'hit' | 'empty' | 'blocked' | 'timeout' | 'page_changed' | 'needs_account' | 'failed' | 'unknown';
 export interface SiteSearched { site: SourceSite; kind: Kind; url: string | null; outcome: SiteOutcome; ms: number; count: number; missing?: string[]; reason?: string; error_code?: string; pace?: Pace; dropped?: number; route_id?: string; fallback?: 'apify'; cost_usd_est?: number }
@@ -27,7 +27,7 @@ export interface SearchOpts {
   // null pins a public read; undefined selects the person's current linked account.
   account?: LinkedAccount | null;
   sites?: readonly Site[]; kinds?: readonly Kind[]; deadline_ms?: number;
-  fetchPage?: (url: string, o: FetchOpts) => Promise<PageResult>; log?: FetchOpts['log']; now?: () => number;
+  fetchPage?: (url: string, o: FetchOpts & { signal?: AbortSignal }) => Promise<PageResult>; log?: FetchOpts['log']; now?: () => number;
 }
 export const runtimePorts: Pick<SearchOpts, 'accounts' | 'harness' | 'dupe' | 'apify' | 'apifyRuns'> & { routed: NonNullable<SearchOpts['routed']> } = {
   accounts: undefined, harness: undefined, apify: undefined, apifyRuns: undefined, routed: () => !!runtimePorts.harness,
@@ -116,8 +116,8 @@ export async function searchSource(source: Source, query: string, kind: Kind = '
   const read = () => source.lane === 'apify'
     ? kind === 'search' && source.site === 'facebook' ? readApify(source, 'facebook', query, o) : Promise.resolve(noRoute(source, kind))
     : readSource(source, query, kind, o);
-  const result = unavailable ?? await (o.paced || source.lane === 'apify' ? read() : atPace(source.site, source.lane, source.pace, read));
-  return { ...result, searched: { ...result.searched, ...(source.pace && source.lane !== 'apify' ? { pace: source.pace } : {}) } };
+  const result = unavailable ?? await (o.paced || source.lane === 'apify' ? read() : atPace(source.site, source.lane, source.pace, read, o.signal));
+  return { ...result, rows: result.rows.map(row => ({ ...row, ...source.rights })), searched: { ...result.searched, ...(source.pace && source.lane !== 'apify' ? { pace: source.pace } : {}) } };
 }
 
 async function readSource(source: Source, query: string, kind: Kind, o: SearchOpts): Promise<SiteResult> {
@@ -131,13 +131,13 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
     if (!result.ok) return { rows: [], searched: { site: 'dupe', kind, url: null, outcome: result.error.code === 'not_found' ? 'empty' : 'failed',
       error_code: result.error.code, reason: result.error.message, ms: Math.round(now() - t0), count: 0 } };
     // Dupe's secondhand flag misses some eBay rows; preserve it as given, including false.
-    return { rows: result.data.rows, searched: { site: 'dupe', kind, url: null, outcome: result.data.rows.length ? 'hit' : 'empty', ms: Math.round(now() - t0), count: result.data.rows.length } };
+    return { rows: result.data.rows, searched: { site: 'dupe', kind, url: null, outcome: result.data.rows.length ? 'hit' : 'empty', ms: Math.round(now() - t0), count: result.data.rows.length, ...(result.data.dropped ? { dropped: result.data.dropped } : {}) } };
   }
   if (source.lane === 'public_page') return searchSite(source.site, query, kind, o);
   const account = await sourceAccount(source, o);
   const site = source.site;
   const run = () => o.harness!.call<(SnapListing & { title?: string; slug?: string; condition?: string; size?: string; listed_at?: string; sold_at?: string; currency: string; url: string; host?: string; converted?: boolean })[]>(site, 'search', {
-    q: query, status: kind === 'sold' ? 'sold' : 'active', ...(account ? { account_id: account.account_id, person_id: o.person_id } : {}),
+    signal: o.signal, q: query, status: kind === 'sold' ? 'sold' : 'active', ...(account ? { account_id: account.account_id, person_id: o.person_id } : {}),
   });
   const result = o.log ? await o.log.call('tool', `${source.id}.search`, { account_id: account?.account_id }, run) : await run();
   if (!result.ok) {
@@ -153,10 +153,10 @@ async function readSource(source: Source, query: string, kind: Kind, o: SearchOp
   // Depop's public search payload has no title; its listing slug is the adapter's only item text.
   const rows = result.data.map(row => ({ id: row.external_id, title: row.title ?? (site === 'depop' ? row.slug : undefined), price_cents: row.price_cents,
     currency: row.currency, url: row.url, condition: row.condition, size: row.size, listed_at: row.listed_at, sold_date: row.sold_at,
-    ...(row.host ? { host: row.host } : {}), ...(row.converted ? { converted: true } : {}), ...(row.state === 'sold' ? { sold: true as const } : {}) }));
+    ...(row.host ? { host: row.host } : {}), ...(row.converted ? { converted: true } : {}), ...('stock' in row ? { stock: row.stock as SearchRow['stock'] } : {}), ...(row.state === 'sold' ? { sold: true as const } : {}) }));
   const read = classifyRead({ challenge: false, rows }, { site: source.site, fields });
-  if (!read.ok && noListingCard(read.error)) return { rows: [], searched: { ...blocked('no listing card').searched, outcome: 'unknown', ms: result.meta.ms } };
-  if (!read.ok) return { rows: [], searched: { ...blocked(read.error.message).searched, outcome: 'page_changed', error_code: 'page_changed', ms: result.meta.ms } };
+  if (!read.ok && noListingCard(read.error)) return { rows: [], searched: { ...blocked('no listing card').searched, outcome: 'unknown', ms: result.meta.ms, dropped: rows.length } };
+  if (!read.ok) return { rows: [], searched: { ...blocked(read.error.message).searched, outcome: 'page_changed', error_code: 'page_changed', ms: result.meta.ms, dropped: rows.length } };
   return { rows: read.data, searched: { site: source.site, kind, url: null, outcome: rows.length ? 'hit' : 'empty', ms: result.meta.ms, count: rows.length } };
 }
 
@@ -167,14 +167,18 @@ export async function searchSite(site: Site, query: string, kind: Kind = 'search
   const done = (outcome: SiteOutcome, rows: Row[] = [], extra: Partial<SiteSearched> = {}): SiteResult =>
     ({ searched: { site, kind, url, outcome, ms: Math.round(now() - t0), count: rows.length, ...extra }, rows });
   if (url === null) return done('empty', [], { reason: 'no sold results signed out' });
+  const signal = o.signal;
+  const fetchImpl: typeof fetch | undefined = signal ? (input, init) => fetch(input, { ...init,
+    signal: AbortSignal.any([signal, ...(init?.signal ? [init.signal] : [])]),
+  }) : undefined;
   let p: PageResult;
-  try { p = await fetchPage(url, { deadline_ms, log: o.log }); }
+  try { p = await fetchPage(url, { deadline_ms, log: o.log, signal, ...(fetchImpl ? { fetchImpl } : {}) }); }
   catch (e) { o.log?.error('search.fetch', e); return done('timeout', [], { reason: e instanceof Error ? e.message : 'fetch threw' }); }
   if (!p.ok) return done(p.kind === 'not_found' ? 'empty' : p.kind, [], { reason: p.reason, ...(p.kind === 'blocked' ? { error_code: 'blocked' } : {}) });
   if (detectBlock(p.status, p.html)) return done('blocked', [], { error_code: 'blocked' });
   const r = readPage(site, p.html, kind);
-  if (!r.ok && noListingCard(r.error)) return done('unknown', [], { reason: 'no listing card' });
-  if (!r.ok) return r.error.code === 'page_changed' ? done('page_changed', [], { error_code: 'page_changed', missing: r.error.hint.do === 'author' ? r.error.hint.missing : [] }) : done('blocked', [], { error_code: r.error.code });
+  if (!r.ok && noListingCard(r.error)) return done('unknown', [], { reason: 'no listing card', ...(r.yield?.dropped ? { dropped: r.yield.dropped } : {}) });
+  if (!r.ok) return r.error.code === 'page_changed' ? done('page_changed', [], { error_code: 'page_changed', missing: r.error.hint.do === 'author' ? r.error.hint.missing : [], ...(r.yield?.dropped ? { dropped: r.yield.dropped } : {}) }) : done('blocked', [], { error_code: r.error.code });
   // A login wall carries no cards and no error: say blocked, not empty.
   const loginWall = /<form\b[^>]*(?:action=["'][^"']*(?:login|signin)|id=["']login)|(?:log in|sign in) to (?:continue|see|view|search|use|facebook)/i;
   if (!r.data.length && loginWall.test(p.html)) return done('blocked', [], { reason: 'login required', error_code: 'blocked' });

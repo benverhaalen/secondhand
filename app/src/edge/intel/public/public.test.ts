@@ -186,7 +186,7 @@ test('searchAll queries approved public sources in parallel and maps outcomes pe
   };
   const t0 = performance.now();
   const r = await searchAll('levi 501', { fetchPage, sources: [...SOURCES.filter(s => s.id !== 'dupe'),
-    { pace: { per_minute: 20, min_gap_ms: 3000 }, id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
+    { pace: { per_minute: 20, min_gap_ms: 3000 }, rights: { may_store: true }, id: 'offerup', site: 'offerup', lane: 'public_page', covers: ['offerup'], needs_ask: false, on: true }] });
   assert.equal(peak, 2);
   assert.ok(performance.now() - t0 < 40 * 3);
   const by = Object.fromEntries(r.searched.map(s => [s.site, s]));

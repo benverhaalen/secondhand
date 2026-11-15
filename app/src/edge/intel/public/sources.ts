@@ -8,6 +8,7 @@ export type SourceSite = Site | 'dupe';
 export type Caller = 'person' | 'background';
 export interface Source {
   id: string; site: SourceSite; lane: 'public_page' | 'harness' | 'mcp' | 'apify'; covers: readonly string[];
+  rights: { may_store: boolean; may_model?: false; use_scope?: 'hackathon_demo' };
   needs_ask: boolean; person_only?: boolean; on: boolean; reason?: string; pace: Pace;
 }
 
@@ -39,12 +40,12 @@ searchParams.declare({ name: 'search_apify_cost_per_row_usd', family: 'scalar', 
 
 // Nate's source rulings: spec/engines/protocol-and-adapters.md §8 (int-search-1 follow-up).
 export const SOURCES: Source[] = [
-  { get pace() { return dupePace(); }, id: 'dupe', site: 'dupe', lane: 'mcp', covers: ['poshmark', 'depop', 'ebay', 'etsy', 'chairish'], needs_ask: false, on: true },
-  { get pace() { return depopPace(); }, id: 'depop', site: 'depop', lane: 'harness', covers: ['depop'], needs_ask: false, on: true },
-  { get pace() { return poshmarkPace(); }, id: 'poshmark', site: 'poshmark', lane: 'public_page', covers: ['poshmark'], needs_ask: false, on: true },
-  { get pace() { return mercariPace(); }, id: 'mercari', site: 'mercari', lane: 'harness', covers: ['mercari'], needs_ask: true, on: true },
-  { get pace() { return facebookPace(); }, id: 'facebook', site: 'facebook', lane: 'apify', covers: ['facebook'], needs_ask: false, person_only: true, on: true },
-  { get pace() { return ebayPace(); }, id: 'ebay', site: 'ebay', lane: 'harness', covers: ['ebay'], needs_ask: false, on: true },
+  { get pace() { return dupePace(); }, rights: { may_store: false }, id: 'dupe', site: 'dupe', lane: 'mcp', covers: ['poshmark', 'depop', 'ebay', 'etsy', 'chairish'], needs_ask: false, on: true },
+  { get pace() { return depopPace(); }, rights: { may_store: true }, id: 'depop', site: 'depop', lane: 'harness', covers: ['depop'], needs_ask: false, on: true },
+  { get pace() { return poshmarkPace(); }, rights: { may_store: true }, id: 'poshmark', site: 'poshmark', lane: 'public_page', covers: ['poshmark'], needs_ask: false, on: true },
+  { get pace() { return mercariPace(); }, rights: { may_store: true }, id: 'mercari', site: 'mercari', lane: 'harness', covers: ['mercari'], needs_ask: true, on: true },
+  { get pace() { return facebookPace(); }, rights: { may_store: true, may_model: false, use_scope: 'hackathon_demo' }, id: 'facebook', site: 'facebook', lane: 'apify', covers: ['facebook'], needs_ask: false, person_only: true, on: true },
+  { get pace() { return ebayPace(); }, rights: { may_store: true }, id: 'ebay', site: 'ebay', lane: 'harness', covers: ['ebay'], needs_ask: false, on: true },
 ];
 
 export const sourcesFor = (caller: Caller = 'background', sources: readonly Source[] = SOURCES) =>
