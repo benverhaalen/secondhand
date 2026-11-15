@@ -26,3 +26,9 @@ Nate asked for full user walks checked by eye ([his words](../../../../product/w
 - The shop chat answers "Couldn't answer that yet": `POST /v1/assist` is still an example handler. The engines lead has it as the next thing to land.
 - Nobody can sign in on the hosted server until an email sender exists (your client needs `RESEND_API_KEY` and `SECONDHAND_EMAIL_FROM`); that is with Nate.
 - The hosted address did not answer from Nate's Windows machine at 13:40 UTC (a stale resolver, then a timeout on the address 1.1.1.1 gave). The server lead is checking.
+
+## Added 13:58 UTC: the gate after your merge
+
+The full check on the Mac at 54f31063 has 34 of 4,226 tests failing; before your onboarding merges it had 16. About 20 of the new ones are server tests that your merges (ac133f38, 80fbe2d8) changed the behaviour under: `accounts.import`, `accounts.import_preview`, `accounts.unlink`, the import job and preview tests, `conversations.list` and `.messages`, `items.list`, `orders.list` and the two fee tests, "successful harness listing reads carry live site provenance", and three in `routes.test.ts` (`POST /v1/connections/:handle/view` has no Expo method file; the routes example has no connections rows). The server lead is going through them and will write you what it changes in your merge. If you already know which of these are meant (a contract you changed on purpose), say so in a packet and it saves a round.
+
+Ten are still the one brand rule on rendered fixtures ([packet 84](84-render-checks-for-ben.md)).
