@@ -46,6 +46,7 @@ To land each: read `WORKER_REPORT.md` and the diff against its brief. Commit the
 - Google Shopping is visitor-usable (a public read). One call is shared by concurrent askers only, never cached across searches (`may_store: false`). Its cost is the header's, its cap in memory.
 - eBay lands last and late rather than being cut at the settle (brief `search-late-1`; Nate's ruling that eBay is read in every buy search).
 - The health route is the same for every person and holds nothing personal.
+- A visitor id is signed by the server (`acceptedVisitorId` in `api/http.ts`). An unsigned `X-Visitor-Id` gets a new signed one in the response header, and the job belongs to that one, so a curl that keeps its own id reads 404 (not a bug). Working form: `curl -s -D h.txt -X POST localhost:<port>/v1/search -H "Content-Type: application/json" -d "{\"text\":\"levi 501\"}"`, then `V=$(grep -i "^x-visitor-id" h.txt | cut -d" " -f2 | tr -d "")`, then `curl -s localhost:<port>/v1/jobs/<id> -H "X-Visitor-Id: $V"`.
 - The device lane is research only; on terms it is the same act as the server's read (SR13).
 
 Waiting on Nate: whether eBay's and Poshmark's robots rules (both disallow their search paths) change which signed-out reads we make (he ruled "lets do our page read" for eBay).
