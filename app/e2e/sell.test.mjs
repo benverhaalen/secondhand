@@ -2,7 +2,7 @@
 // the demo world in the URL; the flows walk the table's flows by testID and read the event log and the screen.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { behavior, controlTests, start } from './behavior.mjs';
+import { behavior, controlTests, start, WAIT } from './behavior.mjs';
 
 const table = behavior('(tabs)/sell');
 let app;
@@ -72,7 +72,7 @@ test('sell: every shelf folds and opens from its header, the count still showing
   await screen.tap('shelf-needs_you-fold');
   await screen.page.waitForFunction(() => document.querySelector('[data-shelf="needs_you"]')?.getAttribute('data-folded') === 'true');
   // The tiles fade out in the feedback time, then leave.
-  await screen.page.waitForFunction(() => document.querySelectorAll('[data-shelf="needs_you"] [data-part="tile"]').length === 0, null, { timeout: 2000 });
+  await screen.page.waitForFunction(() => document.querySelectorAll('[data-shelf="needs_you"] [data-part="tile"]').length === 0, null, { timeout: WAIT });
   assert.match(await screen.page.locator('[data-shelf="needs_you"] [data-part="shelf-head"]').innerText(), /Needs you\s*\d+/);
   assert.deepEqual(await head(), before, 'the header stays where it was');
   await screen.tap('shelf-needs_you-fold');
@@ -91,7 +91,7 @@ test('sell: a fold is remembered for the person, after leaving and after a reloa
   await screen.tap('shelf-in_progress-fold');
   await screen.tap('shelf-kept-fold');
   await screen.tap('tile-it_jacket');
-  await screen.page.waitForURL(u => new URL(u).pathname === '/item/it_jacket', { timeout: 3000 });
+  await screen.page.waitForURL(u => new URL(u).pathname === '/item/it_jacket', { timeout: WAIT });
   await screen.page.goBack();
   const read = () => screen.page.locator('[data-shelf]').evaluateAll(els => Object.fromEntries(els.map(e => [e.getAttribute('data-shelf'), e.getAttribute('data-folded')])));
   await screen.page.waitForFunction(() => document.querySelector('[data-shelf="in_progress"]')?.getAttribute('data-folded') === 'true');
@@ -135,7 +135,7 @@ test('sell: select, keep, then undo', async () => {
   await screen.tap('bulk-keep');
   await screen.tap('bulk-approve');
   await screen.saw({ type: 'tap', id: 'bulk-approve' });
-  await screen.page.locator('[data-part="toast"]', { hasText: 'Kept' }).waitFor({ state: 'visible', timeout: 3000 });
+  await screen.page.locator('[data-part="toast"]', { hasText: 'Kept' }).waitFor({ state: 'visible', timeout: WAIT });
   assert.equal(await screen.page.locator('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]').count(), 0, 'the lamp left Needs you');
   await screen.tap('bulk-undo');
   await screen.page.waitForFunction(() => !!document.querySelector('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]'));
@@ -150,7 +150,7 @@ test('sell: offline, a change waits for the signal', async () => {
   await screen.tap('select-act');
   await screen.tap('bulk-keep');
   await screen.tap('bulk-approve');
-  await screen.page.getByTestId('bulk-approve').filter({ hasText: 'Waiting for signal' }).waitFor({ state: 'visible', timeout: 3000 });
+  await screen.page.getByTestId('bulk-approve').filter({ hasText: 'Waiting for signal' }).waitFor({ state: 'visible', timeout: WAIT });
   assert.equal(await screen.page.locator('[data-shelf="needs_you"] [data-testid="tile-it_lamp"]').count(), 1, 'the lamp stays until the change is sent');
 });
 
@@ -176,7 +176,7 @@ test('sell: Done leaves select, and a tile opens its item again', async () => {
   await screen.tap('sell-select');
   await screen.tap('select-done');
   await screen.tap('tile-it_jacket');
-  await screen.page.waitForURL(u => new URL(u).pathname === '/item/it_jacket', { timeout: 3000 });
+  await screen.page.waitForURL(u => new URL(u).pathname === '/item/it_jacket', { timeout: WAIT });
 });
 
 test('sell: the break content holds: no tile is wider than its column and nothing runs off the screen', async () => {

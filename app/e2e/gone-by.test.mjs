@@ -2,7 +2,7 @@
 // states and controls only, before the behavior exists: one test per state, one per control.
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { behavior, start } from './behavior.mjs';
+import { behavior, start, WAIT } from './behavior.mjs';
 
 const table = behavior('gone-by');
 let app;
@@ -12,7 +12,7 @@ after(async () => { await app?.stop(); });
 // ---- helpers (this file only) ----
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const has = words => new RegExp(words.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));   // the table's quoted words, anywhere in a line
-async function until(fn, what, timeout = 3000) {
+async function until(fn, what, timeout = WAIT) {
   const end = Date.now() + timeout;
   for (;;) { if (await fn()) return; if (Date.now() > end) assert.fail(what); await sleep(50); }
 }
@@ -25,7 +25,7 @@ async function open(name, { wait = true } = {}) {
   const st = table.state(name), s = await app.open(st.open);
   if (name === 'posting') {
     // Posting lasts only until the site answers, so the page is watched from before the tap and the text may already be gone again.
-    await s.shows(table.state('plan').shows, { timeout: 5000 });
+    await s.shows(table.state('plan').shows, { timeout: WAIT });
     await s.page.evaluate(words => {
       const look = () => { if (document.body.innerText.includes(words)) globalThis.__sawWords = true; };
       new MutationObserver(look).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true });
@@ -36,7 +36,7 @@ async function open(name, { wait = true } = {}) {
     if (wait) await until(() => s.page.evaluate(() => !!globalThis.__sawWords), `"${st.shows}" never showed after the tap`, 5000);
     return s;
   }
-  if (wait) await s.shows(st.shows, { timeout: 5000 });
+  if (wait) await s.shows(st.shows, { timeout: WAIT });
   return s;
 }
 
@@ -84,7 +84,7 @@ const under = (s, tile, heading, others) => s.page.waitForFunction(([tile, headi
   const leaves = words => [...document.querySelectorAll('*')].filter(e => !e.children.length && e.textContent.trim() === words);
   const h = leaves(heading).filter(e => before(e, t)).pop(); if (!h) return false;
   return !others.some(o => leaves(o).some(e => before(h, e) && before(e, t)));
-}, [tile, heading, others], { timeout: 3000 }).catch(() => assert.fail(`${tile} is not under "${heading}"`));
+}, [tile, heading, others], { timeout: WAIT }).catch(() => assert.fail(`${tile} is not under "${heading}"`));
 // A part that can no longer be pressed: it is gone, or tapping it opens no sheet.
 async function inert(s, id) {
   const el = s.page.getByTestId(id).first();
@@ -96,11 +96,11 @@ async function inert(s, id) {
 // A tap that must do nothing: pressed even if the button is disabled.
 async function press(s, id) {
   const el = s.page.getByTestId(id);
-  await el.waitFor({ state: 'visible', timeout: 3000 });
+  await el.waitFor({ state: 'visible', timeout: WAIT });
   await el.tap({ force: true, timeout: 1000 }).catch(() => {});
   await sleep(1500);
 }
-const goes = (s, path) => s.page.waitForURL(u => new URL(u).pathname === path, { timeout: 3000 });
+const goes = (s, path) => s.page.waitForURL(u => new URL(u).pathname === path, { timeout: WAIT });
 
 const SWITCH = 'Nintendo Switch OLED, white, with dock', DUNKS = 'Nike Dunk Low, Grey Fog, men’s 10', JACKET = 'Carhartt Detroit Jacket J97, brown duck, L';
 const KEEP = 'You get about $498 if all 5 sell', POST = 'Post 2 and lower 1', POSTED = 'Posted 2, lowered 1';
@@ -138,7 +138,7 @@ const CHECKS = {
   // The pattern itself: whichever tile comes first opens a sheet of its own rows.
   'thing-<item id> on plan': async s => {
     const tile = s.page.locator('[data-testid^="thing-"]').first();
-    await tile.waitFor({ state: 'visible', timeout: 3000 });
+    await tile.waitFor({ state: 'visible', timeout: WAIT });
     await sheet(s, await tile.getAttribute('data-testid'));
   },
   'thing-it_switch on plan': async s => {
@@ -170,7 +170,7 @@ const CHECKS = {
 
   'price-<item id> on plan': async s => {
     const price = s.page.locator('[data-testid^="price-"]').first();
-    await price.waitFor({ state: 'visible', timeout: 3000 });
+    await price.waitFor({ state: 'visible', timeout: WAIT });
     await sheet(s, await price.getAttribute('data-testid'));
   },
   'price-it_switch on plan': async s => { const r = await sheet(s, 'price-it_switch'); assert.ok(await count(r.filter({ hasText: /\$225\b/ })) > 0, `the price sheet has $225 in it; its rows: ${JSON.stringify(await texts(r))}`); },
@@ -205,8 +205,8 @@ const CHECKS = {
     await tagged(s, 'thing-it_switch', 'New');
     await s.shows(has('2 go up, 1 gets cheaper'));
     await s.tap('approve'); await s.saw({ type: 'tap', id: 'approve' });
-    await s.shows(POSTED, { timeout: 8000 });
-    await s.page.getByTestId('approve-undo').waitFor({ state: 'visible', timeout: 3000 });
+    await s.shows(POSTED, { timeout: WAIT });
+    await s.page.getByTestId('approve-undo').waitFor({ state: 'visible', timeout: WAIT });
     await tagged(s, 'thing-it_switch', 'Live');
     await gone(s, has('2 go up, 1 gets cheaper'));
     for (const id of ['moving', 'price-it_switch']) await inert(s, id);
@@ -214,7 +214,7 @@ const CHECKS = {
   'approve on sweeping': async s => { await press(s, 'approve'); await s.shows(table.state('sweeping').shows); await absent(s, POSTED); await absent(s, 'Posting'); },
   'approve on failed': async s => {
     await s.tap('approve'); await s.saw({ type: 'tap', id: 'approve' });
-    await s.shows(POSTED, { timeout: 8000 });
+    await s.shows(POSTED, { timeout: WAIT });
     await gone(s, has(ERROR));
   },
   'approve on offline': async s => { await press(s, 'approve'); await s.shows(table.state('offline').shows); await absent(s, POSTED); await absent(s, 'Posting'); },
@@ -251,7 +251,7 @@ const CHECKS = {
   'open-site-<site> on plan': async s => {
     await s.tap('thing-it_jacket'); await s.saw({ type: 'tap', id: 'thing-it_jacket' });
     const row = s.page.locator('[data-testid^="open-site-"]').first();
-    await row.waitFor({ state: 'visible', timeout: 3000 });
+    await row.waitFor({ state: 'visible', timeout: WAIT });
     const id = await row.getAttribute('data-testid');
     await row.tap(); await s.saw({ type: 'tap', id });
   },

@@ -1,6 +1,7 @@
 // Sell: everything the person sells, as photo tiles in shelves by state (pages §6.10; decision: the Sell tab is a photo
 // grid with state pills), filtered by one row (Ben, round 11). Every number and word about a thing comes from the demo
 // world; the page only chooses what to show. Why each element is here is in app/behavior/(tabs)/sell.json, "decisions".
+// one at a time: bulk-approve (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Approve, EmptyState, FootButton, Grid, List, log, Nav, Pill, Row, Screen, Sheet, Stack, Txt, UndoToast, type PhotoSrc, type TagState } from '@/ui';

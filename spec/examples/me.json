@@ -192,13 +192,13 @@
       "response": {
         "id": "job_ex41",
         "kind": "export_user",
-        "state": "queued",
+        "state": "done",
         "stages": [
           {
             "name": "gather",
-            "state": "started",
+            "state": "arrived",
             "started_at": "2026-11-15T03:30:00Z",
-            "ended_at": null,
+            "ended_at": "2026-11-15T03:30:00Z",
             "found": {}
           }
         ]
@@ -213,9 +213,10 @@
         "id": "job_dl07",
         "kind": "delete_user",
         "state": "queued",
+        "reason": "workspace port not configured",
         "stages": [
           {
-            "name": "unlink_accounts",
+            "name": "purge_workspace",
             "state": "started",
             "started_at": "2026-11-15T03:31:00Z",
             "ended_at": null,

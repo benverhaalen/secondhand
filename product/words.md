@@ -1833,3 +1833,9 @@ Ben, same thread, 09:47 UTC.
 > wait stop on this just focus on deslopping and improving the ai. through this note down where things break and where things need to change and use effective logging
 
 Used in: [brand/constitution.md Art. 7.11 to 7.16](../brand/constitution.md#article-7-space-and-layout), `scripts/composition.mjs` (U9 to U14), [the audit](../research/cross-cutting/ben/why-the-app-missed-the-mocks.md), [the breaks log](../features/app/breaks.md).
+
+## 2026-11-15 nate how credible and research-proven are our scorers, real time against 2012 to 2013, and proving we beat the other tools
+Nate, adaptation lead's session, 2026-11-15, evening Central.
+> So with this prompt, I was focused on you establishing how our engines are credible and accurate. Theres value to realtime vs 2012 to 2013. We research current market data, so I wanted you to assess how credible and research proven our scorers and such deterministic system we had in place were. What are the ways we can. /research  to understand what would make it such. What would help us easily prove or exhibit outperfroming competitors and other tools in our depth of research, and how we aid people.
+
+Used in: `spec/engines/credibility.md`.

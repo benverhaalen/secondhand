@@ -4,6 +4,7 @@
 // the data is app/src/demo/rooms.ts. The agent fills in every guess and the person approves once (ui-build README,
 // the hand-off rule): posting is public in their name and sets prices, so it waits for the tap.
 // Open a moment with ?at= (sweeping, plan, failed, offline, started, wednesday, done) and a world with ?world=.
+// one at a time: approve (alternatives of one state each; .agents/checks/screens.mjs S2)
 import { router, useLocalSearchParams, type Href } from 'expo-router';
 import { Linking } from 'react-native';
 import { useEffect, useMemo, useRef, useState } from 'react';
