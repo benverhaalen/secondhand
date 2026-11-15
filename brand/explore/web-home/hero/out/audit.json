@@ -72,9 +72,10 @@
       "header_fade": 0,
       "off_center": 0,
       "problems": [],
+      "how_heading_gap": 64,
       "contrast_floor": 8.05,
       "photos_in_a_minute": {
-        "shown": 103,
+        "shown": 380,
         "pool": 380,
         "kinds": 7
       }
@@ -111,7 +112,7 @@
       "sideways": 0,
       "headline_lines": 3,
       "headline_px": 33.15,
-      "button_bottom": 353,
+      "button_bottom": 354,
       "first_screen": 390,
       "menu": true,
       "links": false,
@@ -247,7 +248,8 @@
       "off_center": 0,
       "problems": [],
       "header_fade_scrolled": 1,
-      "contrast_floor": 7.92
+      "how_heading_gap": 64,
+      "contrast_floor": 8.05
     },
     {
       "w": 1920,
