@@ -1,0 +1,75 @@
+{
+ "fixture": "snapshot",
+ "version": 1,
+ "mode": "synthetic",
+ "note": "Hand-built, no real account. Shape is the Snapshot type in app/src/edge/events/event.ts. Change payloads are an agent proposal for the differ (sn-1).",
+ "status_words": {
+  "ebay": {
+   "live": "ACTIVE",
+   "sold": "SOLD",
+   "ended": "ENDED",
+   "draft": "DRAFT"
+  },
+  "facebook": {
+   "live": "in_stock",
+   "sold": "sold",
+   "ended": "unavailable",
+   "draft": "draft"
+  },
+  "depop": {
+   "live": "on_sale",
+   "sold": "sold",
+   "ended": "removed",
+   "draft": "draft"
+  },
+  "poshmark": {
+   "live": "available",
+   "sold": "sold_out",
+   "ended": "not_for_sale",
+   "draft": "draft"
+  },
+  "mercari": {
+   "live": "on_sale",
+   "sold": "trading",
+   "ended": "stop",
+   "draft": "draft"
+  }
+ },
+ "sha256": {
+  "ebay/base.json": "515c7f624f51eadeb0ba346d19c296d0848c9a7c1afcbbdadc5afbf44045261f",
+  "ebay/reordered.json": "4f939ab0621f8a8cf424d3840e8937bb6ba1334817ed07c6ec860c174565d928",
+  "ebay/changed.json": "592e1bb2b5c1a33078494787ed5c8d36ac680ee1276c74088c2bea60a48d83f3",
+  "ebay/public.json": "828fd04335cb066262cb2196fcaf87fd34db026800f1770aaaa2b3afeb12cb82",
+  "ebay/listings.page.html": "f6681007bc0435c985c1c61d9e2e4173ebaa9f5568aa687355c2e2c27387357c",
+  "ebay/listings.raw.json": "cd02b2dacaf6f7282f40a099a72ea1001d8741dbd504e8fe2b321ce065203cd9",
+  "ebay/expected.json": "9708c93c0cbeef2478b7085fbd6fb43077fcfd6c4ab4c685998df9abdf5a6a26",
+  "facebook/base.json": "3653629a0d3331007e382a3a3d0a34c8b5554971aed34baa7cbc939319de4c53",
+  "facebook/reordered.json": "5c624eb33ae894422377600af7b810a6d0685da4412fc17b0e9bd6bc7bc3876c",
+  "facebook/changed.json": "e1a6316164a2c500b7e1c906c614e2a756b9783927e6bc0febcb6b7126c7ebb6",
+  "facebook/public.json": "aeb13bd8c6503ca99e423e651dc05bbc09c91299426537088594d5c4066b7d3d",
+  "facebook/listings.page.html": "6ff8c44a4aa2872bf38978120f174b28810c862bba49bd60af672878fa2c7813",
+  "facebook/listings.raw.json": "fbe92d61e31e7a857a5171596a823f8dee878a87a086c766d47ca9e2ae7bf842",
+  "facebook/expected.json": "72b1be5ff56df93b1076f5d5ec5b14af25a7c86ee342c8bb8104a8de1a620469",
+  "depop/base.json": "9ef03dccae90cd8c559e730be1a80f5d2434e8c74a9b23dbee5cbb7c2ae655f4",
+  "depop/reordered.json": "4965895ea3258be4c7066a5298bc5e51de8c0b395b8571858a912aa1477aa0a8",
+  "depop/changed.json": "c4261a7d6576e476cd531482ebcf2f4b87b4b29e2b1d5061b5de0fbe44d23bb4",
+  "depop/public.json": "573c5d7a6afceb013e3f349873b8570698ca6c04cc13d8ccfe29a23f250f80a2",
+  "depop/listings.page.html": "ea552c8ccfaa97f71155efe7733861f6aeca109bdd0885467921afe548b6f5ba",
+  "depop/listings.raw.json": "5844077045fae7c769ccfbe838c93487621296f7023938039b8699c69d11a695",
+  "depop/expected.json": "fa3d3d956388276989002db6cd681fb4e31764ae8de1de190ab551280763c01e",
+  "poshmark/base.json": "93135d58a9c3d716128743360c1ed6e2cca2bb23373b244d356a62e4f269ae38",
+  "poshmark/reordered.json": "e2d1dfcdc06af5d85f1a6c74f8f200b91c25a45e7f96cf47dff33b7e90b780b1",
+  "poshmark/changed.json": "8d5a0842568121983c2564ef672f8c4e32ea42d7ccc98ad30512571cbd874b19",
+  "poshmark/public.json": "5cdc7e61ec5a430fce5f6808ea98668443a1d99a320759d302933505dc88fad2",
+  "poshmark/listings.page.html": "9c17366ef985092c640204af8844e95ce4f0dc63ffaa11c8980c0e98fe7e2086",
+  "poshmark/listings.raw.json": "96b34c85810a043da6cc8816dc1ecc986388e0b8f496d0353c5084a6a3d94825",
+  "poshmark/expected.json": "9530f46168f664ba05ce4fe1e0d5c0e1d4e23d046b8e3939e6aac378435193b9",
+  "mercari/base.json": "d4a0d3d67bee189108602b9cb651fd24f14b54ad6821d9368df1932fe33faa91",
+  "mercari/reordered.json": "e4206922a295b8a8153e50b488779db0668bdc1780f7ca582dda405652d34f7d",
+  "mercari/changed.json": "206b5213b7cfc23c58560d5a82718be550d7567b2f8ebc652cc1ae4687d0af7a",
+  "mercari/public.json": "4741e3bd82a0216852cac78333938ae64ec69a692e2bad06b85f1c48036f5afd",
+  "mercari/listings.page.html": "af284b5b13dbdb8fb347e8db6c33eb304b2ddd41bdebef90c0dfaa92ff9c87cc",
+  "mercari/listings.raw.json": "dceca74e9e2133c9c0a939e8c6fa7b52bfc681d7ef0fe5e0f59f1d13410a780b",
+  "mercari/expected.json": "d54c1ffdd595c18598b656f01412453a17989a3b84d0a6edc4dd71654626b52a"
+ }
+}

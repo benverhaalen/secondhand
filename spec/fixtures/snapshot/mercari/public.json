@@ -1,0 +1,41 @@
+{
+ "site": "mercari",
+ "account_id": "acc_fx5",
+ "user_id": "u_fx1",
+ "taken_at": "2026-11-10T09:45:00Z",
+ "route": "public",
+ "listings": [
+  {
+   "external_id": "me5-100237",
+   "state": "live",
+   "price_cents": 4000,
+   "likes": 3,
+   "watchers": 1,
+   "views": 40
+  },
+  {
+   "external_id": "me5-100274",
+   "state": "live",
+   "price_cents": 2500,
+   "likes": 3,
+   "watchers": 0,
+   "views": 22
+  },
+  {
+   "external_id": "me5-100311",
+   "state": "live",
+   "price_cents": 6000,
+   "likes": 1,
+   "watchers": 2,
+   "views": 75
+  },
+  {
+   "external_id": "me5-100348",
+   "state": "live",
+   "price_cents": 1800,
+   "likes": 0,
+   "watchers": 0,
+   "views": 9
+  }
+ ]
+}

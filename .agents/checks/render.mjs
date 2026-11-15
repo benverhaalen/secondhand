@@ -100,6 +100,9 @@ function checkView(view, ctx) {
     if (mark) { if (markSizes.length && !markSizes.some(s => near(t.size, s))) E('B3', '', `the wordmark is ${t.size} px: on a ${medium}${Array.isArray(sheet.wordmark.sizes) ? '' : ` ${view.canvas[0]} wide`} it is ${markSizes.join(' or ')} px (Part III)`); }
     else if (t.size > top + .5) { if (!sheet.peak || t.size > sheet.peak + .5) E('B14', q, `is ${t.size} px: the largest size on a ${medium} is ${sheet.peak ?? top} (Part III)`); }
     else if (!sizes.some(s => near(t.size, s))) E('B14', q, `is ${t.size} px: the sizes on a ${medium} are ${sizes.join(', ')} (Part III)`);
+    // B14 off the app, a size of 32 and up is set at leading 1.1 and tracking -0.02em; the wordmark is -0.01em (Art. 6.4, 6.12)
+    if (u > 1 && t.size >= 32 && t.lh !== undefined) { const want = mark ? -.01 : -.02;
+      if (t.lh == null || Math.abs(t.lh - 1.1) > .02 || Math.abs(t.tr - want) > .003) E('B14', q, `is set at leading ${t.lh ?? 'normal'} and tracking ${t.tr}em: on a ${medium}${mark ? ' the wordmark' : ' a size of 32 and up'} is leading 1.1 and tracking ${want}em (Art. 6.12)`); }
     // A7 where the display face goes
     if (t.display && /[^\x20-\x7E‘’“”…]/.test(t.text)) E('A7', q, 'has letters the display face does not hold (it has no accents and one script): the text face takes this line (Art. 6)');
     if (t.display && !mark) {

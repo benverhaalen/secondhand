@@ -1,0 +1,56 @@
+{
+ "items": [
+  {
+   "id": "fa2-100237",
+   "status": "in_stock",
+   "price": {
+    "amount": 4000,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 3,
+    "watchers": 1,
+    "views": 40
+   }
+  },
+  {
+   "id": "fa2-100274",
+   "status": "in_stock",
+   "price": {
+    "amount": 2500,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 3,
+    "watchers": 0,
+    "views": 22
+   }
+  },
+  {
+   "id": "fa2-100311",
+   "status": "in_stock",
+   "price": {
+    "amount": 6000,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 1,
+    "watchers": 2,
+    "views": 75
+   }
+  },
+  {
+   "id": "fa2-100348",
+   "status": "in_stock",
+   "price": {
+    "amount": 1800,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 0,
+    "watchers": 0,
+    "views": 9
+   }
+  }
+ ]
+}

@@ -1,0 +1,56 @@
+{
+ "items": [
+  {
+   "id": "po4-100237",
+   "status": "available",
+   "price": {
+    "amount": 4000,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 3,
+    "watchers": 1,
+    "views": 40
+   }
+  },
+  {
+   "id": "po4-100274",
+   "status": "available",
+   "price": {
+    "amount": 2500,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 3,
+    "watchers": 0,
+    "views": 22
+   }
+  },
+  {
+   "id": "po4-100311",
+   "status": "available",
+   "price": {
+    "amount": 6000,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 1,
+    "watchers": 2,
+    "views": 75
+   }
+  },
+  {
+   "id": "po4-100348",
+   "status": "available",
+   "price": {
+    "amount": 1800,
+    "currency": "USD"
+   },
+   "stats": {
+    "likes": 0,
+    "watchers": 0,
+    "views": 9
+   }
+  }
+ ]
+}

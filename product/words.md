@@ -901,3 +901,18 @@ Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:23 UTC, after a s
 ## 2026-11-15 text at 500, and a pill behind the current tab
 Ben, thread "Roll the UI system out everywhere", 2026-11-15 03:45 UTC. Just before it he picked "A pill behind the icon" on the decision card "Pick how the tab bar shows which tab you're on", over keeping round 10's filled icon with dimmer others, and a filled icon with a dot. At 03:23 he had written "i think with font weights i like 500 unless you have a researched back reason to choose 450".
 > also ensure font goes 500
+
+## 2026-11-14 nate the computer crashed under stale node processes; every stream keeps working without overloading it
+Nate, build session (orchestrator), 2026-11-14 about 21:50 to 22:00 Central, three messages after a restart.
+> Everything crashed, but I restarted the computer and started it backc up, we had alot of stale node processes just stiing not running, and then a whole load of them all at once crashing it
+
+> plus now my gpu is on
+
+> Well no dont limit so we have any streams waiting, ensure all streams are working and the most we can develop we are, just account to ensure that we dont super overload it with both our sessions and massive codex orchestrators also dispatching
+
+## 2026-11-15 writing changes by medium, the right fonts, showing not telling, and general rules first
+Ben, thread "Build the brand system for everything", 03:43 UTC.
+> also writing should change based on medium. what i want from each medium. research should back. ensure research is done by smaller subagents btw
+
+Ben, same thread, 03:44 UTC.
+> also ensure the right fonts are used. showing not telling. communication is key in all situations. understanding communication effectively and creating interesting rather than bland presentations is one thing. but right now dont focus on presentations or videos exactly or social media posts. just think about creating generalizable rules that fit all this. im making not an app but a presentation
