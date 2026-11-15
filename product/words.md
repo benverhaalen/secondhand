@@ -986,3 +986,6 @@ Nate, build session (orchestrator), 2026-11-14 about 22:20 Central, after a seco
 ## 2026-11-14 nate the kernel covers platform specifics and storefront analytics, and runs only what each person linked
 Nate, build session (orchestrator), 2026-11-14 about 22:35 Central.
 > I think our kernel needs to account for more beyond that. platform specifics, analytics we can retrieve and store about each users store front on each linked platform. Per user, we only run the systems for what they link and store auth for
+## 2026-11-15 human in the loop is a decision, not a line
+Ben, thread "Set the secondhand brand identity", 2026-11-15 04:12 UTC, after the brand thread planned to add "a human always decides" to the brand's idea and voice. Before it, at 04:04 in the project chat: "also we should ensure to design around human in the loop to show it off as central to our product in the end".
+> dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
