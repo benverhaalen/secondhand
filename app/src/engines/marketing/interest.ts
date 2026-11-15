@@ -1,5 +1,5 @@
 import { evidence, memoryStore, type Declared, type ParamStore, type Scope } from '../param/param.ts';
-import { gammaPosterior, gammaValue, timestamp, recorded, type EventLog, type Gamma } from '../demand/velocity.ts';
+import { gammaPosterior, gammaValue, timestamp, recorded, type EventLog } from '../demand/velocity.ts';
 
 export type Listing = { kind: string; site?: string; listing_id?: string };
 type Entry = Declared & { scopes: (keyof Scope)[]; source: string };
@@ -25,19 +25,6 @@ function scopeOf(listing: Listing): Scope {
   if (listing.listing_id !== undefined && !listing.listing_id.trim()) throw new RangeError('listing_id is required');
   return { kind: listing.kind, ...(listing.site === undefined ? {} : { site: listing.site }),
     ...(listing.listing_id === undefined ? {} : { segment: listing.listing_id }) };
-}
-
-function advance(store: ParamStore, scope: Scope, at: string): void {
-  const time = timestamp(at, 'as_of');
-  const row = store.rows('view_rate', scope).find(r => r.status === 'champion');
-  if (!row) return;
-  const previous = timestamp(row.promoted_at!, 'promoted_at');
-  if (time < previous) throw new RangeError('out-of-order stats observation');
-  if (time === previous || row.frozen) return;
-  store.apply('view_rate', scope, (value, keep) => {
-    const v = value as Gamma;
-    return { value: { shape: v.shape * keep, rate: v.rate * keep }, weight: 0 };
-  }, at);
 }
 
 export function onStats(store: ParamStore, listing: Listing, views: number, hours: number, at: string, log?: EventLog) {
@@ -69,8 +56,8 @@ function stats(store: ParamStore, listing: Listing, views: number, hours: number
   return store.apply('view_rate', scope, value => ({ value, weight: hours - 1 }), at);
 }
 
-function posterior(store: ParamStore, scope: Scope) {
-  const raw = store.read('view_rate', scope), pooled = store.readPooled('view_rate', scope);
+function posterior(store: ParamStore, scope: Scope, as_of: string) {
+  const raw = store.read('view_rate', scope, as_of), pooled = store.readPooled('view_rate', scope, as_of);
   const gamma = gammaValue(raw.value);
   const mean = 'mean' in pooled ? pooled.mean : gammaValue(pooled.value).shape / gammaValue(pooled.value).rate;
   return { ...gammaPosterior(mean * gamma.rate, gamma.rate), version: raw.version,
@@ -80,10 +67,8 @@ function posterior(store: ParamStore, scope: Scope) {
 export function interest(store: ParamStore, listing: Listing, as_of: string) {
   const scope = scopeOf(listing), { segment: _segment, ...parent } = scope;
   resolve(store, scope);
-  // Age the entire supplied lineage, never a sibling listing.
-  for (const shared of [{ kind: scope.kind }, parent, scope].filter((s, i, all) => all.findIndex(other => JSON.stringify(other) === JSON.stringify(s)) === i))
-    advance(store, shared, as_of);
-  const local = posterior(store, scope), band = posterior(store, parent);
+  timestamp(as_of, 'as_of');
+  const local = posterior(store, scope, as_of), band = posterior(store, parent, as_of);
   const standing = local.mean < band.p10 ? 'behind' as const : local.mean > band.p90 ? 'ahead' as const : 'on_plan' as const;
   return { mean: local.mean, p10: local.p10, p90: local.p90, interest_median: band.mean,
     standing, band: { p10: band.p10, p90: band.p90 }, as_of,

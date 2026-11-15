@@ -23,9 +23,18 @@ test('sold comps change the next velocity; eight-week-old evidence loses half it
   const after = velocity(store, product, day(12));
   assert.ok(after.mean > before.mean);
   assert.ok(after.p90 - after.p10 < before.p90 - before.p10, 'observed exposure narrows the posterior');
+  const row = store.rows('demand_velocity', { kind: product.kind, segment: product.product_id }).find(r => r.status === 'champion')!;
   const faded = velocity(store, product, day(68));
+  const raw = row.value_or_hyperparams as { shape: number; rate: number };
+  const rate = 2 + (raw.rate - 2) * .5;
+  const shape = 4 + (raw.shape - 4) * .5;
+  const expected = (row.n_eff * .5 * shape / rate + 20 * before.mean) / (row.n_eff * .5 + 20);
+  assert.ok(Math.abs(faded.mean - expected) <= 1e-12);
   assert.ok(faded.mean > before.mean && faded.mean < after.mean, 'quiet time decays the rise toward the kind');
   assert.deepEqual(velocity(store, product, day(68)), faded, 'repeating a read must not forget twice');
+  onExposure(store, product, 0, day(68));
+  const retained = store.read('demand_velocity', { kind: product.kind, segment: product.product_id }).n_eff / row.n_eff;
+  assert.ok(Math.abs(retained - .5) <= 1e-12, `one eight-week half-life retains ${retained}`);
 });
 
 function checkInput(): CheckInput {

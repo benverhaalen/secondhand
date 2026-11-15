@@ -50,11 +50,11 @@ test('kind pooling is read from the registry, and unrelated products never donat
 test('demand applies the declared eight-week half-life to excess counts, preserving the kind prior', () => {
   const store = memoryStore();
   onSoldComp(store, product, at);
-  velocity(store, product, '2026-09-26T00:00:00Z');
+  onExposure(store, product, 0, '2026-09-26T00:00:00Z');
   const raw = store.read('demand_velocity', { kind: 'apparel', segment: 'p1' }).value;
   assert.deepEqual(raw, { shape: 4.5, rate: 2 });
   const history = store.rows('demand_velocity', { kind: 'apparel', segment: 'p1' }).length;
-  velocity(store, product, '2026-09-26T00:00:00Z');
+  onExposure(store, product, 0, '2026-09-26T00:00:00Z');
   assert.equal(store.rows('demand_velocity', { kind: 'apparel', segment: 'p1' }).length, history);
 });
 
@@ -103,7 +103,7 @@ test('idle demand decays signed evidence toward the current kind baseline at the
   const prior = row.prior as { shape: number; rate: number };
   const target = { shape: baseline.mean * 2 - prior.shape, rate: 2 - prior.rate };
   const evidence = { shape: parent.mean * 2 + 1 - prior.shape, rate: 6 - prior.rate };
-  velocity(store, product, '2026-09-26T00:00:00Z');
+  onExposure(store, product, 0, '2026-09-26T00:00:00Z');
   const posterior = store.read('demand_velocity', scope).value as { shape: number; rate: number };
   assert.ok(Math.abs(posterior.shape - (prior.shape + target.shape + (evidence.shape - target.shape) * .5)) < 1e-12);
   assert.ok(Math.abs(posterior.rate - (prior.rate + target.rate + (evidence.rate - target.rate) * .5)) < 1e-12);
@@ -127,4 +127,47 @@ test('a product seed subtracts the raw inherited prior when its kind read is cla
   onExposure(store, product, 0, at);
   assert.deepEqual(store.read('demand_velocity', scope).value, { shape: 4, rate: 2 });
   assert.deepEqual(store.rows('demand_velocity', scope)[0].prior, { shape: 24, rate: 3 });
+});
+
+const scope = { kind: product.kind, segment: product.product_id };
+const later = '2026-09-26T00:00:00Z';
+
+test('velocity reads decay and pool without changing rows, even before the latest event', () => {
+  const store = memoryStore();
+  onSoldComp(store, product, at);
+  onExposure(store, product, 2, at);
+  const rows = store.rows('demand_velocity', scope);
+  const first = velocity(store, product, later);
+  const raw = { shape: 4 + .5, rate: 2 + 2 * .5 }, n = 3 * .5;
+  const pooledMean = (n * raw.shape / raw.rate + 20 * 2) / (n + 20);
+  const expected = gammaPosterior(pooledMean * raw.rate, raw.rate);
+  for (const field of ['mean', 'p10', 'p90'] as const) assert.equal(first[field], expected[field], field);
+  assert.notEqual(first.mean, raw.shape / raw.rate, 'velocity returns the kappa-pooled posterior');
+  assert.deepEqual(velocity(store, product, later), first);
+  assert.equal(store.rows('demand_velocity', scope).length, rows.length);
+  assert.deepEqual(store.rows('demand_velocity', scope), rows);
+  const old = velocity(store, product, '2026-07-01T00:00:00Z');
+  const current = velocity(store, product, at);
+  for (const field of ['mean', 'p10', 'p90'] as const) assert.equal(old[field], current[field]);
+});
+
+test('a future velocity read cannot change later events or their posterior', () => {
+  const one = memoryStore(), two = memoryStore();
+  for (const store of [one, two]) { onSoldComp(store, product, at); onExposure(store, product, 2, at); }
+  const first = velocity(one, product, later);
+  assert.deepEqual(velocity(two, product, later), first);
+  assert.deepEqual(velocity(two, product, later), first);
+  for (const store of [one, two]) onSoldComp(store, product, '2026-08-02T00:00:00Z');
+  assert.deepEqual(velocity(one, product, later), velocity(two, product, later));
+  assert.deepEqual(one.rows('demand_velocity', scope), two.rows('demand_velocity', scope));
+});
+
+test('listing_weeks rejects nonfinite and negative exposure before any write', () => {
+  const store = memoryStore();
+  onSoldComp(store, product, at);
+  const before = store.rows('demand_velocity', scope);
+  for (const bad of [-1, NaN, Infinity, -Infinity]) {
+    assert.throws(() => onExposure(store, product, bad, later), RangeError);
+    assert.deepEqual(store.rows('demand_velocity', scope), before);
+  }
 });

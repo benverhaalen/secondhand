@@ -15,5 +15,5 @@ test('shared SciPy fixture covers small, unit, and large shapes', () => {
 for (const c of fixture.cases) test(`Gamma inversion agrees with Python velocity: ${c.id}`, () => {
   const actual = gammaPosterior(c.expected.shape, c.expected.rate);
   for (const field of ['mean', 'p10', 'p90'] as const)
-    assert.ok(Math.abs(actual[field] - c.expected[field]) <= 1e-6, `${c.id}.${field}: ${actual[field]} versus SciPy ${c.expected[field]}`);
+    assert.ok(Math.abs(actual[field] - c.expected[field]) <= 1e-9, `${c.id}.${field}: ${actual[field]} versus SciPy ${c.expected[field]}`);
 });

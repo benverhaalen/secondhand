@@ -1,4 +1,4 @@
-import { evidence, FORGET_DAYS, memoryStore, type Declared, type ParamStore, type Scope } from '../param/param.ts';
+import { decay, evidence, FORGET_DAYS, lineage, pool, rowRead, memoryStore, type Declared, type ParamStore, type Scope } from '../param/param.ts';
 import type { Log } from '../../../../log/index.js';
 
 export type EventLog = Pick<Log, 'note' | 'error' | 'timed'>;
@@ -117,16 +117,32 @@ export function onExposure(store: ParamStore, product: Product, listing_weeks: n
 }
 
 export function velocity(store: ParamStore, product: Product, as_of: string) {
-  const scope = scopeOf(product);
-  advance(store, scope, as_of);
-  const params = resolve(store, scope), local = store.read('demand_velocity', scope), pooled = store.readPooled('demand_velocity', scope);
-  const rate = local.from === 'row' ? gammaValue(local.value).rate : positive(params.values.demand_prior_weeks, 'demand_prior_weeks');
-  const mean = 'mean' in pooled ? pooled.mean : gammaValue(pooled.value).shape / gammaValue(pooled.value).rate;
-  const posterior = gammaPosterior(mean * rate, rate);
+  const scope = scopeOf(product), time = timestamp(as_of, 'as_of');
+  const params = resolve(store, scope);
+  const halfLife = positive(params.values.demand_half_life_weeks, 'demand_half_life_weeks') * 7;
+  const priorWeeks = positive(params.values.demand_prior_weeks, 'demand_prior_weeks');
+  const parent = store.readPooled('demand_velocity', { kind: scope.kind });
+  const parentMean = 'mean' in parent ? parent.mean : gammaValue(parent.value).shape / gammaValue(parent.value).rate;
+  const rows = lineage(scope).map((s, i) => {
+    const row = store.rows('demand_velocity', s).find(r => r.status === 'champion');
+    if (!row) return undefined;
+    const previous = timestamp(row.promoted_at!, 'promoted_at');
+    if (time <= previous) return row;
+    // Reuse registry read-time decay on the demand clock; no versions are written.
+    const clock = new Date(previous + (time - previous) * FORGET_DAYS / halfLife).toISOString();
+    return decay(i === 0 ? { ...row, prior: { shape: parentMean * priorWeeks, rate: priorWeeks } } : row, clock);
+  });
+  const index = rows.findIndex(row => row !== undefined);
+  const local = index < 0 ? store.read('demand_velocity', scope)
+    : rowRead(rows[index]!, index === 0 ? 'row' : 'parent', rows[index]!.scope);
   const kappa = store.read('param_pool_kappa', {});
+  const pooled = pool(DECLARED[0], rows, positive(kappa.value, 'param_pool_kappa'));
+  const rate = local.from === 'row' ? gammaValue(local.value).rate : priorWeeks;
+  // velocity() returns the kappa-pooled posterior, rather than the stored Gamma row.
+  const posterior = gammaPosterior(pooled.mean * rate, rate);
   return { ...posterior, basis_level: local.from === 'row' ? 'product' as const : local.from === 'parent' ? 'kind' as const : 'prior' as const,
     param_versions: { ...params.versions, demand_velocity: local.version, param_pool_kappa: kappa.version },
-    pooled_versions: 'versions' in pooled ? pooled.versions : [pooled.version], as_of };
+    pooled_versions: pooled.versions, as_of };
 }
 
 // Lanczos coefficients and convergence limits are fixed numerical constants, not fitted weights.
