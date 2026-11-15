@@ -1,0 +1,24 @@
+{
+ "run": "research/studio/ben/slides/runs/20261115-0836-43695226533",
+ "band": 0.05,
+ "items": 2,
+ "tested": 1,
+ "untested": {
+  "chico-hoodie": "the gap under the sleeve starts 49% of the way down, so a sleeve lies along the body"
+ },
+ "photo": {
+  "n": 0,
+  "within_band": 0,
+  "max_off": null
+ },
+ "drawn": {
+  "n": 1,
+  "within_band": 0,
+  "max_off": 0.1255
+ },
+ "final": {
+  "n": 1,
+  "within_band": 1,
+  "max_off": 0.0065
+ }
+}

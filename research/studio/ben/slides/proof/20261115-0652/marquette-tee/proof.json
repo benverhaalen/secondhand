@@ -1,0 +1,109 @@
+{
+ "item": "marquette-tee",
+ "kind": "tee",
+ "tape": {
+  "length": 27.0,
+  "pit_to_pit": 21.25
+ },
+ "band": 0.05,
+ "tape_read_in": 0.25,
+ "pictures": {
+  "photo": {
+   "tested": false,
+   "note": "the gap under the sleeve starts 48% of the way down, so a sleeve lies along the body",
+   "length_px": 889.5,
+   "pit_px": null,
+   "file": "assets/demo-items/real/marquette-tee/01_cover.jpg"
+  },
+  "drawn": {
+   "tested": true,
+   "px_per_in": 29.7,
+   "length_in": 27.0,
+   "pit_in": 19.22,
+   "pit_tape": 21.25,
+   "off_in": -2.03,
+   "off": -0.0954,
+   "note": null,
+   "length_px": 802.0,
+   "pit_px": 571.0,
+   "file": "research/studio/ben/slides/runs/20261115-0652-43687372523/marquette-tee/cand_cover_1.jpg"
+  },
+  "final": {
+   "tested": true,
+   "px_per_in": 28.33,
+   "length_in": 27.0,
+   "pit_in": 21.25,
+   "pit_tape": 21.25,
+   "off_in": -0.0,
+   "off": -0.0001,
+   "note": null,
+   "length_px": 765.0,
+   "pit_px": 602.0,
+   "file": "research/studio/ben/slides/runs/20261115-0652-43687372523/marquette-tee/slide_01_cover.jpg"
+  }
+ },
+ "redraw": {
+  "model": "google/gemini-nano-banana-2.1",
+  "seed": 2,
+  "pass": null,
+  "from": null
+ },
+ "bench": [
+  {
+   "stretch": 0.88,
+   "pit_in": 18.62,
+   "off": -0.1238,
+   "reading_moved": -0.1238,
+   "outside_band": true
+  },
+  {
+   "stretch": 0.92,
+   "pit_in": 19.45,
+   "off": -0.0848,
+   "reading_moved": -0.0817,
+   "outside_band": true
+  },
+  {
+   "stretch": 0.95,
+   "pit_in": 20.05,
+   "off": -0.0566,
+   "reading_moved": -0.0565,
+   "outside_band": true
+  },
+  {
+   "stretch": 0.97,
+   "pit_in": 20.51,
+   "off": -0.0346,
+   "reading_moved": -0.0348,
+   "outside_band": false
+  },
+  {
+   "stretch": 1.03,
+   "pit_in": 21.81,
+   "off": 0.0264,
+   "reading_moved": 0.0264,
+   "outside_band": false
+  },
+  {
+   "stretch": 1.05,
+   "pit_in": 22.37,
+   "off": 0.0527,
+   "reading_moved": 0.0527,
+   "outside_band": true
+  },
+  {
+   "stretch": 1.08,
+   "pit_in": 22.94,
+   "off": 0.0795,
+   "reading_moved": 0.0867,
+   "outside_band": true
+  },
+  {
+   "stretch": 1.12,
+   "pit_in": 23.79,
+   "off": 0.1197,
+   "reading_moved": 0.1248,
+   "outside_band": true
+  }
+ ]
+}
