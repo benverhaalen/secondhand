@@ -18,6 +18,7 @@ PORT = "8080"
 SECONDHAND_PUBLIC_ORIGIN = "https://secondhand-api.fly.dev"
 APPLE_CLIENT_IDS = "com.bnvg.secondhand"
 GOOGLE_CLIENT_IDS = "599008877776-7t6d8jiuipqovrpejs5dvvpfnu8ji8lh.apps.googleusercontent.com"
+SECONDHAND_WEB_ORIGINS = "https://asecondhand.app,https://www.asecondhand.app,https://secondhand-eight.vercel.app"
 
 [http_service]
 internal_port = 8080
