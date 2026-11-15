@@ -1635,3 +1635,11 @@ Nate, build session (orchestrator), 2026-11-15 about 08:00 Central, after the eB
 > Theres some way to browser use cloud you aren't considering
 
 Used in: the agent-run trial, `research/cross-cutting/nate/runs/bu-agent-runs.md` when it lands.
+
+## 2026-11-15 nate build on firecrawl or a substrate that reads the dom, we only need to read, and it cannot run on the phone
+Nate, build session (orchestrator), 2026-11-15 about 08:20 to 08:45 Central. Two messages.
+> We can build something off of firecrawl to develop it in a way that reduces the bot detect, or a substrate like built to pipe in and retrieve from the dom
+
+> Well we only really need to read right? we can't have the dom substrate run on the ios phone can we? understand and engineer around this
+
+Used in: the read-lanes design, `spec/engines/protocol-and-adapters.md` when it is written.
