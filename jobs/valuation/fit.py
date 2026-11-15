@@ -2,7 +2,7 @@
 
 On Databricks: reads sold and asking rows from `comp` joined to `product` (spec/product.md data model), fits the market
 model (market.py), backtests it on the newest sales, and appends one challenger row to `valuation_fit` with its held-out
-scores and fitted premiums. It never promotes: promotion is the param fold's call on a held-out win (jobs/param).
+scores and fitted premiums. The D6 per-cell gate promotes held-out wins through jobs/param and persists the registry.
 With no `comp` table yet it is skipped, not failed, and nothing is invented.
 
 Locally: python jobs/valuation/fit.py --comps rows.json [--items items.json] --out result.json writes the backtest,
@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "log"))
 
 from secondhand_log import create_log, file_sink  # noqa: E402
 from valuation import market  # noqa: E402
+from param.registry import MemoryStore, FIELDS, scope_key  # noqa: E402
 
 CATALOG = os.environ.get("SECONDHAND_CATALOG", "workspace")
 SCHEMA = os.environ.get("SECONDHAND_SCHEMA", "secondhand")
@@ -30,7 +31,7 @@ SCHEMA = os.environ.get("SECONDHAND_SCHEMA", "secondhand")
 # comp + product to the flat row market.py reads. size and era live in product.spec (json) where identify found them.
 ROWS_SQL = """
 SELECT c.comp_id, c.site, c.price_cents, c.price_type, coalesce(c.sold_at, c.observed_at) AS at, c.condition,
-       p.brand, p.category, get_json_object(p.spec, '$.size') AS size, get_json_object(p.spec, '$.era') AS era, c.url_ref AS url
+       p.brand, p.category, p.family_id, get_json_object(p.spec, '$.size') AS size, get_json_object(p.spec, '$.era') AS era, c.url_ref AS url
 FROM {cat}.{sch}.comp c LEFT JOIN {cat}.{sch}.product p ON c.product_id = p.product_id
 WHERE c.price_type IN ('sold', 'asking') AND c.price_cents > 0 AND size(coalesce(c.lot_parts, array())) = 0
 """
@@ -73,13 +74,104 @@ def main() -> dict:
         log.job(job, "fit", "done", skipped=f"{len(rows)} comp rows, too few sold")
         return {"state": "skipped", "why": f"{len(rows)} comp rows, too few sold to fit and backtest"}
     out = run(rows)
+    registry_table = f"{CATALOG}.{SCHEMA}.param"
+    store = MemoryStore()
+    exists = log.call("db", "param_exists", {"table": registry_table}, lambda: spark.catalog.tableExists(registry_table))
+    if exists:
+        history = log.call("db", "read_valuation_param", {"table": registry_table},
+                           lambda: [r.asDict() for r in spark.sql(f"SELECT * FROM {registry_table} WHERE name = 'valuation'").collect()],
+                           describe=lambda rs: {"rows": len(rs)})
+        for r in history:
+            for key in ("scope", "value_or_hyperparams", "prior"):
+                if isinstance(r[key], str):
+                    r[key] = json.loads(r[key])
+            store.rows.setdefault((r["name"], scope_key(r["scope"])), []).append(r)
+    promotion = log.timed("valuation.switch", lambda: nightly(rows, store, {}, datetime.now(timezone.utc).isoformat()))
+    if promotion["promoted"]:
+        records = store.history("valuation", {})
+        encoded = [{k: json.dumps(r[k]) if k in ("scope", "value_or_hyperparams", "prior") else r[k] for k in FIELDS} for r in records]
+        schema = ", ".join(f"{k} " + ("INT" if k == "version" else "BOOLEAN" if k == "frozen" else "DOUBLE" if k in ("n_eff", "held_out_score", "guard_lo", "guard_hi") else "STRING") for k in FIELDS)
+        def save_registry():
+            frame = spark.createDataFrame(encoded, schema=schema)
+            if not exists:
+                frame.write.mode("append").saveAsTable(registry_table)
+            else:
+                frame.createOrReplaceTempView("valuation_param_update")
+                spark.sql(f"""MERGE INTO {registry_table} t USING valuation_param_update s
+                    ON t.name = s.name AND t.scope = s.scope AND t.version = s.version
+                    WHEN MATCHED THEN UPDATE SET * WHEN NOT MATCHED THEN INSERT *""")
+        log.call("db", "write_valuation_param", {"table": registry_table}, save_registry)
+        log.change("param", "valuation", "champion", reason=promotion["reason"])
     fit_row = {"fitted_at": datetime.now(timezone.utc).isoformat(), "role": "challenger", "n_rows": out["n_rows"],
                "coverage": out["backtest"]["coverage"], "median_ape": out["backtest"]["median_ape"],
                "median_ape_baseline": out["backtest"]["median_ape_category_median"], "premiums": json.dumps(out["premiums"])}
     log.call("db", "append_valuation_fit", {"table": f"{CATALOG}.{SCHEMA}.valuation_fit"},
              lambda: spark.createDataFrame([fit_row]).write.mode("append").saveAsTable(f"{CATALOG}.{SCHEMA}.valuation_fit"))
     log.job(job, "fit", "done", **out["backtest"])
-    return {"state": "ran", "backtest": out["backtest"], "n_rows": out["n_rows"]}
+    return {"state": "ran", "backtest": out["backtest"], "n_rows": out["n_rows"], "promotion": promotion}
+
+
+def model_payload(model):
+    h = model.hedonic
+    return {"design": {"levels": h.design.levels, "t0": h.design.t0, "columns": h.design.columns},
+            "beta": h.beta.tolist(), "se": h.se.tolist(), "resid": h.resid.tolist(), "groups": h.groups,
+            "band": model.band, "widen": model.widen, "sold": model.sold, "asks": model.asks}
+
+
+def load_model(payload):
+    import numpy as np
+    design = market.Design(**payload["design"])
+    h = market.Hedonic(design, np.array(payload["beta"]), np.array(payload["se"]), np.array(payload["resid"]), payload["groups"])
+    return market.Model(h, payload["band"], payload["widen"], payload["sold"], payload["asks"])
+
+
+def held_out_report(model, training, held_out):
+    import numpy as np
+    from valuation.backtest import run_backtest
+    pool = [{**r, "sold_at": r["at"], "family_id": r.get("family_id") or r["category"]}
+            for r in training + held_out if r["price_type"] == "sold"]
+    estimates = []
+    for r in held_out:
+        if model:
+            lo, mid, hi = model.interval(r, r["at"])
+            comps = market.adjusted_comps(model.hedonic, r, model.sold, today=r["at"], k=20)
+            ids = [c["comp_id"] for c in comps]
+            fits = [c["comp_id"] for c in model.sold]
+        else:
+            comps = [c for c in training if c["price_type"] == "sold" and c["category"] == r["category"]]
+            if not comps:
+                comps = [c for c in training if c["price_type"] == "sold"]
+            lo = mid = hi = float(np.median([c["price_cents"] for c in comps]))
+            ids, fits = [c["comp_id"] for c in comps], []
+        estimates.append({"item_id": r["comp_id"], "as_of": r["at"], "group": r["category"],
+                          "q10": lo, "q50": mid, "q90": hi, "comp_ids": ids, "fit_row_ids": fits})
+    return run_backtest(estimates, pool)
+
+
+def nightly(rows, store, scope, at):
+    if scope.get("person") is not None and any(r.get("person") != scope["person"] for r in rows):
+        raise ValueError("comp outside person scope")
+    if any(not r.get("may_model", True) for r in rows):
+        raise ValueError("may_model false")
+    if len({r["comp_id"] for r in rows}) != len(rows):
+        raise ValueError("duplicate comp")
+    # Keep the last three months independent of both the fit and its internal conformal calibration.
+    end = min(market._t(at), max(market._t(r["at"]) for r in rows))
+    cutoff = end - 90 * market.DAY
+    training = [r for r in rows if market._t(r["at"]) < cutoff]
+    held = [r for r in rows if r["price_type"] == "sold" and cutoff <= market._t(r["at"]) <= end]
+    if not held or sum(r["price_type"] == "sold" for r in training) < 2 * market.MIN_GROUP:
+        return {"promoted": False, "reason": "kept: insufficient held-out basis"}
+    model = market.fit(training)
+    current = store.champion("valuation", scope)
+    champion = load_model(current["value_or_hyperparams"]) if current else None
+    if champion and any(market._t(r["at"]) >= cutoff for r in champion.sold + champion.asks):
+        raise ValueError("champion training/held-out overlap")
+    old = held_out_report(champion, training, held)
+    fresh = held_out_report(model, training, held)
+    promoted, reason = publish(store, scope, model_payload(model), old, fresh, at)
+    return {"promoted": promoted, "reason": reason, "report": fresh,
+            "held_out_from": datetime.fromtimestamp(cutoff, timezone.utc).isoformat()}
 
 
 def switch_rule(champion: dict, challenger: dict) -> tuple[bool, str]:
@@ -105,7 +197,17 @@ def publish(store, scope, model_ref, champion, challenger, at):
                          "value_or_hyperparams": model_ref, "prior": None,
                          "held_out_score": -challenger["overall"]["q50_median_error"],
                          "metric": "negative_q50_median_error"}, max((r["version"] for r in history), default=0))
-    return store.promote("valuation", scope, row["version"], 0, at)
+    current = store.champion("valuation", scope)
+    saved_score = current["held_out_score"] if current else None
+    promoted = False
+    try:
+        if current:
+            current["held_out_score"] = -champion["overall"]["q50_median_error"]
+        promoted, reason = store.promote("valuation", scope, row["version"], 0, at)
+        return promoted, reason
+    finally:
+        if current and not promoted:
+            current["held_out_score"] = saved_score
 
 
 def fit_quantiles(rows):

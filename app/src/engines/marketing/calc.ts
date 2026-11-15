@@ -104,6 +104,10 @@ function candidates(x: MarketingInput): MoneyCandidate[] {
 
 export function calculate(x: MarketingInput) {
   return x.log.timed('marketing.calculate', () => {
+    for (const name of ['ship_cents', 'shipping_discount_cents'] as const) {
+      const value = x[name];
+      if (value !== undefined && (!Number.isSafeInteger(value) || value < 0)) throw new RangeError(`${name} must be whole cents, zero or more`);
+    }
     if (!Number.isSafeInteger(x.floor_cents) || x.floor_cents < 0) throw new RangeError('invalid floor');
     if (!x.cover_style?.trim() || x.position.length !== 2 || !x.position.every(p => Number.isFinite(p) && p > 0) || x.position[0] > x.position[1]) throw new Error('presentation missing basis');
     for (const id of x.requested_levers ?? []) sourcedLever(x.site, id);
@@ -142,7 +146,7 @@ export function calculate(x: MarketingInput) {
     const offer = minDiscount === null ? null : Math.min(winner.path[1]?.price_cents ?? start, Math.floor(start * (1 - Number(minDiscount) / 100)));
     const likersRule = levers.sites[x.site].rules.likers_offer as { min_discount: number; shipping_discount_required?: boolean } | null;
     const shippingReady = !likersRule?.shipping_discount_required || (Number.isSafeInteger(x.shipping_discount_cents) && x.shipping_discount_cents! > 0 && x.shipping_discount_cents! <= x.ship_cents);
-    const offerOn = offer !== null && offer >= x.floor_cents && shippingReady;
+    const offerOn = offer !== null && offer >= x.floor_cents && shippingReady && x.keep(offer, winner.shipping_mode) - (x.shipping_discount_cents ?? 0) >= x.floor_cents;
     const promotion = x.promotion;
     const net = winner.path[0].net_cents;
     const promoOn = !!promotion?.approved && net > 0 && promotion.lift_lb > 1 / (1 - promotion.rate * start / net) && promotion.rate * start < net;
@@ -159,7 +163,7 @@ export function calculate(x: MarketingInput) {
       photos: { order: draft.photo_ids, cover_id: presentation?.cover_id ?? draft.photo_ids[0] ?? null, cover_style: presentation?.cover_style ?? x.cover_style },
       shipping: { mode: winner.shipping_mode, ship_cents: x.ship_cents, price_includes_ship: winner.shipping_mode === 'free' }, list_at,
       promotion: { on: promoOn, ...(promotion && { rate: promotion.rate, lift_lb: promotion.lift_lb }), ask: !!promotion && !promotion.approved },
-      standing: { offers_to_likers: { on: offerOn, amount_cents: offerOn ? offer : null, shipping_discount_cents: offerOn ? x.shipping_discount_cents ?? 0 : 0, discount: minDiscount === null ? 0 : Number(minDiscount) / 100, cooldown_days: 7 }, price_steps: 'path' as const, refresh: { on: false }, relist: { allowed: !fact('relist.penalized', x.site) }, bundle: { on: true, max_discount: 1 - x.floor_cents / start } },
+      standing: { offers_to_likers: { on: offerOn, amount_cents: offerOn ? offer : null, shipping_discount_cents: offerOn ? x.shipping_discount_cents ?? 0 : 0, discount: minDiscount === null ? 0 : Number(minDiscount) / 100, cooldown_days: 7 }, price_steps: 'path' as const, refresh: { on: false }, relist: { allowed: !fact('relist.penalized', x.site) }, bundle: { on: levers.sites[x.site].levers.some(l => l.id === 'bundle'), max_discount: 1 - x.floor_cents / start } },
       scores: { position: x.position, e_net_cents: winner.e_net_cents, utility_cents: winner.utility_cents, p_sale: { d7: winner.horizon_days === 7 ? winner.p_sale : 1 - survivalAt(winner, x.curve, 7) ** multiplier, d30: winner.horizon_days === 30 ? winner.p_sale : 1 - survivalAt(winner, x.curve, 30) ** multiplier, d90: winner.horizon_days === 90 ? winner.p_sale : 1 - survivalAt(winner, x.curve, 90) ** multiplier }, tts_days: [daysAt(winner, x.curve, .25, multiplier), daysAt(winner, x.curve, .75, multiplier)] },
       alternatives: (Object.keys(costs) as Objective[]).filter(o => o !== x.objective).flatMap(o => sorted(o).slice(0, 1)).map(k => ({ candidate_id: k.candidate_id, objective: k.objective, e_net_cents: k.e_net_cents, p_sale_d30: k.horizon_days === 30 ? k.p_sale : 1 - survivalAt(k, x.curve, 30) ** multiplier, tts_days: [daysAt(k, x.curve, .25, multiplier), daysAt(k, x.curve, .75, multiplier)] })),
       comp_set: { ids: proof.basis.ids, as_of: x.as_of, fingerprint: proof.citation.basis_hash }, citation_id: proof.citation.id, citation: proof.citation, param_versions: versions, preselected: true };
