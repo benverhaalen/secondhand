@@ -206,6 +206,8 @@ A question is data the UI renders with no logic of its own:
 
 **The stop.** `status` is `shooting` while a process step is not kept, `asking` while a question remains, and `done` when none does. At `done` every field not known keeps its state as the reason the item card shows.
 
+**Where a fact came from.** Every `evidence` row the plan's facts rest on carries `data` ([product §3](../product.md#3-the-data-model)): `captured` for the person's own camera, the phone's reads of those frames and what they said in this capture; `live:<site>` only for a value read from a marketplace; `dataset:<name>` for a catalogue or released set behind a `lookup`; `example` for the seeded walks. A `captured` fact is real and is never counted as a site observation.
+
 ### Ready per site
 
 `completeness(rows, facts, sites, confirm_mode)` returns, for each linked site, `{ready, missing: [{field, state}]}` over the fields that site requires, using `known` and `formValue`. The planner computes `unlocks` with it, and the listing step must use the same function in place of its own check in `buildListing`, so capture and listing cannot disagree. A recalled item is never ready, whatever its fields.
