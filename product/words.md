@@ -670,3 +670,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-14 nate what other engines are needed and what is not strong enough
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Beyond marketing, what other engines are needed, what are things not strong enough as it stands
+
+## 2026-11-15 agents use the research we did
+Ben, thread "Make agents use our research", 01:19 UTC.
+> is there any instructions in the repo that do their best to ensure that agents implementing things actually end up utilizing the research we did effectively - if not try your best to improve that. use principles from my harness i created to do so or skills or whwatever
