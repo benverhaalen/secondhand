@@ -1,0 +1,63 @@
+{
+  "source": "grailed_2021",
+  "licence": "third-party scrape, no licence; Grailed's terms bar scraping and ML extraction",
+  "may_model": false,
+  "code_commit": "b40085dc8cbd4e95937435792b156b73c7915d6a",
+  "inputs": [
+    {
+      "file": "grailed_sold_data.csv",
+      "bytes": 62334250,
+      "sha256": "2ec35a2b4beff41b11888437d3e21c3593ee1b2d7e0d505f0f563c1dae666a05"
+    }
+  ],
+  "output": {
+    "file": "rows.csv.gz",
+    "sha256": "d1b8c5cbdf5caba9f0ed126ea91645badde345900884c46b05a3c429268d0fd3",
+    "columns": [
+      "row_id",
+      "source",
+      "licence",
+      "site",
+      "url",
+      "kind",
+      "product_id",
+      "family_id",
+      "cluster_id",
+      "brand",
+      "category",
+      "condition",
+      "size",
+      "era",
+      "title",
+      "photo_count",
+      "seller_feedback",
+      "price_type",
+      "price_cents",
+      "buyer_shipping_cents",
+      "listed_at",
+      "at",
+      "best_offer",
+      "views",
+      "watchers",
+      "may_model",
+      "at_ask",
+      "priced_from_our_number",
+      "description",
+      "retail_cents",
+      "released_at",
+      "region"
+    ]
+  },
+  "rows": 103537,
+  "by_price_type": {
+    "sold": 103537
+  },
+  "by_kind": {
+    "apparel": 88094,
+    "bags": 2613,
+    "jewellery_watches": 4026,
+    "shoes": 8804
+  },
+  "at_range": null,
+  "dropped": {}
+}

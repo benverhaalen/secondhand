@@ -1432,3 +1432,15 @@ Ben, project chat, 07:53 UTC.
 > where else can we prove such things across the numerous ai features we have. can you list out each feature we have for me that is ai or is a feature you think we should show off. this could include data etc. we need to also tell how we did it and be able to effectively explain it
 
 Used in: [features-proof.md](features-proof.md).
+
+## 2026-11-15 nate no one leaves our platform, and the system reaches each site in the background
+Nate, build session (orchestrator), 2026-11-15 about 01:30 Central. Separate messages.
+> no one should have to leave our platform, and the system can always access each in the background over the period of days, weeks, thats how it works for the user
+
+> So everything is working the way it should be? In terms of the platform harnesses, the engines, the realtime calculations? is there already an understanding for how everything will work, credibly proven, and presented? How it'll be fast, the information it can find, information it can determine and deliver on top of whats found?
+
+## 2026-11-15 nate opus team leads that send out to codex
+Nate, build session (orchestrator), 2026-11-15 about 02:15 Central.
+> Ensure we have focused opus 5.5 team leads covering sessions that send out to codex, covering the databricks design and development, all engines, they combine with the consideration for every feature working together, every engine, deterministic calculations, the way capture works, deterministically selecting by product type and dimensions, all needed fields and information determined and ascertained, with the intelligent ui generating any needed clarifying questions
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md).
