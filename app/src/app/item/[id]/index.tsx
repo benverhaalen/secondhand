@@ -209,7 +209,7 @@ function Page({ w, item, offline }: { w: World; item: Item; offline: boolean }) 
         <SoldElsewhere open={sheet === 'sold-elsewhere'} live={live} onClose={() => setSheet(null)}
           onDone={text => { setSheet(null); end('sold-elsewhere', text); }} />
         <DeleteSheet open={sheet === 'delete'} live={live} onClose={() => setSheet(null)} />
-        <PhotosSheet open={sheet === 'photos'} photos={photos} title={title} live={live} look={look} onLook={setLook} onClose={() => setSheet(null)} />
+        <PhotosSheet open={sheet === 'photos'} photos={photos} title={title} live={live} scanned={M.scanned(item)} look={look} onLook={setLook} onClose={() => setSheet(null)} />
     </Screen>
   );
 }
@@ -482,9 +482,10 @@ type Look = 'original' | 'clean' | 'ai';
 // Photos (ways-out §6.6 and §6.5; edge-cases §6). Two named ways to improve them, never applied without a pick: Clean up
 // adjusts the photo and never redraws the item (crop, straighten, light, white balance, background blur, no model); Enhance
 // with AI redraws light and background, stays off until picked, and is marked as AI. Use original undoes either. On a live
-// item the change goes to every listing, which is public, so it waits for an Approve that says so.
-function PhotosSheet({ open, photos, title, live, look, onLook, onClose }: {
-  open: boolean; photos: PhotoSrc[]; title: string; live: number; look: Look; onLook: (l: Look) => void; onClose: () => void;
+// item the change goes to every listing, which is public, so it waits for an Approve that says so. Enhance with AI is off
+// and says why until the LiDAR scan has measured the item, since only the scan holds a redraw to its real size (M.scanned).
+function PhotosSheet({ open, photos, title, live, scanned, look, onLook, onClose }: {
+  open: boolean; photos: PhotoSrc[]; title: string; live: number; scanned: boolean; look: Look; onLook: (l: Look) => void; onClose: () => void;
 }) {
   const [want, setWant] = useState<Look>(look);
   const [sent, setSent] = useState(false);
@@ -503,9 +504,9 @@ function PhotosSheet({ open, photos, title, live, look, onLook, onClose }: {
           <Txt role="body">Clean up</Txt>
           <Txt role="caption">Crop, straighten, light, white balance, a softer background. Never redraws it.</Txt>
         </Row>
-        <Row trail={<Switch id="enhance-ai" label="Enhance with AI" on={want === 'ai'} onChange={pick('ai')} />}>
-          <Txt role="body">Enhance with AI</Txt>
-          <Txt role="caption">Redraws light and background, then checks it against yours. Marked as AI.</Txt>
+        <Row trail={<Switch id="enhance-ai" label="Enhance with AI" on={want === 'ai' && scanned} disabled={!scanned} onChange={pick('ai')} />}>
+          <Txt role="body" tone={scanned ? 'ink' : 'ink-2'}>Enhance with AI</Txt>
+          <Txt role="caption">{scanned ? 'Redraws light and background, then checks it against yours and the scan. Marked as AI.' : 'Scan it with LiDAR first'}</Txt>
         </Row>
       </List>
       <Line>

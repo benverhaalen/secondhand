@@ -38,9 +38,11 @@ explicitly not the real-item field validation requested by section 9.
 
 import math
 import re
+from identity.codes import gtin14
+from identity.params import use
+from identity.citation import citation
+from identity.validation import unit
 
-THRESHOLDS = {"identity_t_exact": .85, "identity_t_model": .70,
-              "identity_t_comparable": .50}
 FIELDS = ("brand", "model", "variant", "gtin", "mpn", "size", "colour")
 
 
@@ -57,7 +59,7 @@ def read_param(rows, name, scope, prior):
 
 
 def tokens(value):
-    return frozenset(re.findall(r"\w+", str(value).casefold()))
+    return frozenset(re.findall(r"[a-z0-9_]+", str(value).lower()))
 
 
 def text_similarity(left, right):
@@ -69,37 +71,55 @@ def compare_fields(left, right):
     fields = {}
     for name in FIELDS:
         a, b = left.get(name), right.get(name)
-        fields[name] = None if a in (None, "") or b in (None, "") else tokens(a) == tokens(b)
+        if name == "gtin":
+            ga, gb = gtin14(a), gtin14(b)
+            fields[name] = None if a in (None, "") or b in (None, "") else bool(ga and gb and ga == gb)
+        else:
+            fields[name] = None if a in (None, "") or b in (None, "") else tokens(a) == tokens(b)
     return fields
 
 
-def beta_mean(value):
-    a, b = value["a"], value["b"]
-    if a <= 0 or b <= 0:
-        raise ValueError("Beta counts must be positive")
-    return min(.98, max(.02, a / (a + b)))
+def beta_mean(value, *, resolved=None):
+    v = use(resolved)['values']
+    a, b = value["alpha"], value["beta"]
+    if any(isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) or x <= 0 for x in (a, b)):
+        raise ValueError("Beta counts must be finite and positive")
+    # Normalize before adding: finite hyperparameters can otherwise overflow their sum.
+    scale = max(a, b)
+    mean = a / (a + b) if math.isfinite(a + b) else (a / scale) / (a / scale + b / scale)
+    return min(v['identity_beta_hi'], max(v['identity_beta_lo'], mean))
 
 
 def score_signals(fields, text_sim, image_sim, *, same_kind=True,
                   same_purpose=0.0, stock_photo=False, params=(), scope=None,
-                  weights=None, thresholds=None):
+                  weights=None, thresholds=None, resolved=None):
     scope = scope or {}
+    resolved = use(resolved, params, scope)
+    v = resolved['values']
     for value in (text_sim, image_sim, same_purpose):
-        if value is not None and (not math.isfinite(value) or not 0 <= value <= 1):
-            raise ValueError("similarity must be finite and in [0, 1]")
-    t = {name: read_param(params, name, scope, prior) for name, prior in THRESHOLDS.items()}
-    if thresholds:
+        if value is not None:
+            unit(value, 'similarity')
+    if any(x is not None and not isinstance(x, bool) for x in fields.values()):
+        raise ValueError('compared fields must be boolean or missing')
+    prefix = 'identity_t_' if weights is None else 'identity_w_t_'
+    t = {'identity_t_' + k: v[prefix + k] for k in ('exact', 'model', 'comparable')}
+    if thresholds is not None:
         t.update(thresholds)
+    for name, value in t.items():
+        if value is not None and (isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value)):
+            raise ValueError(name + ' must be finite')
     observed = [v for k, v in fields.items() if v is not None and k not in {"text_sim", "image_sim"}]
     field_agree = sum(observed) / len(observed) if observed else 0.0
     if weights is None:
-        score = .30 * field_agree + .50 * (text_sim or 0) + .20 * (image_sim or 0)
+        score = v['identity_field_weight'] * field_agree + v['identity_text_weight'] * (text_sim or 0) + v['identity_image_weight'] * (image_sim or 0)
     else:
         score = 0.0
         for name, agrees in fields.items():
-            if agrees is None or name not in weights:
+            if agrees is None:
                 continue
-            m, u = (beta_mean(weights[name][key]) for key in ("m", "u"))
+            if name not in weights:
+                raise KeyError("missing learned weight " + name)
+            m, u = (beta_mean(weights[name][key], resolved=resolved) for key in ("m", "u"))
             score += math.log2(m / u if agrees else (1 - m) / (1 - u))
     anchor = (fields.get("gtin") is True or fields.get("mpn") is True or
               (fields.get("model") is True and fields.get("variant") is True))
@@ -107,13 +127,23 @@ def score_signals(fields, text_sim, image_sim, *, same_kind=True,
         label = "same_family_other_variant"
     elif t["identity_t_exact"] is not None and score >= t["identity_t_exact"] and anchor and not stock_photo:
         label = "exact"
-    elif score >= t["identity_t_model"]:
+    elif t["identity_t_model"] is not None and score >= t["identity_t_model"]:
         label = "likely_same_model"
-    elif same_kind and same_purpose >= t["identity_t_comparable"]:
+    elif (same_kind and t["identity_t_comparable"] is not None
+          and (same_purpose if weights is None else score) >= t["identity_t_comparable"]
+          and (weights is None or same_purpose >= v['identity_purpose_min'])):
         label = "comparable"
     else:
         label = "unresolved"
-    return {"score": score, "label": label, "fields": dict(fields)}
+    # Confidence is evidence support, not a calibrated identity probability.
+    # IEEE binary64 exponent limit; this only prevents overflow, never changes a label.
+    confidence = min(1., max(0., score)) if weights is None else 1 / (1 + 2 ** (-max(-1022, min(1022, score))))
+    return {"score": score, "label": label, "fields": dict(fields),
+            "basis_level": "prior" if weights is None else "learned", "rung": "prior" if weights is None else "learned",
+            "confidence": confidence, "confidence_kind": "evidence_support",
+            "citation": citation('identity_match', {'fields': fields, 'text_sim': text_sim, 'image_sim': image_sim,
+                                                   'weights': weights, 'thresholds': t, 'same_kind': same_kind,
+                                                   'same_purpose': same_purpose, 'stock_photo': stock_photo}, resolved)}
 
 
 def score_pair(left, right, *, text_sim=None, image_sim=None, log=None, **options):
@@ -127,6 +157,7 @@ def score_pair(left, right, *, text_sim=None, image_sim=None, log=None, **option
     options.setdefault("same_kind", left.get("kind") is not None and left.get("kind") == right.get("kind"))
     options.setdefault("stock_photo", bool(left.get("stock_photo") or right.get("stock_photo")))
     result = score_signals(fields, text_sim, image_sim, **options)
+    result['invalid_gtin_count'] = sum(row.get('gtin') not in (None, '') and gtin14(row['gtin']) is None for row in (left, right))
     if log:
-        log.note("identity.pair", label=result["label"], score=result["score"], field_count=len(fields))
+        log.note("identity.pair", invalid_gtin_count=result['invalid_gtin_count'], label=result["label"], score=result["score"], field_count=len(fields))
     return result

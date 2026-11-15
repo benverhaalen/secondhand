@@ -25,13 +25,14 @@ const FIELD: Record<string, string> = {
 export function aspectRows(item_kind: string, reply: AspectsReply): AspectRow[] {
   return (reply.aspects ?? []).map(a => {
     const c = a.aspectConstraint ?? {};
+    if (c.aspectMode !== 'SELECTION_ONLY' && (!Number.isSafeInteger(c.aspectMaxLength) || c.aspectMaxLength! <= 0)) throw new RangeError(`aspectMaxLength missing for ${a.localizedAspectName}`);
     const usage = c.aspectRequired ? 'required' : c.aspectUsage === 'RECOMMENDED' ? 'recommended' : 'optional';
     const searched = (a.relevanceIndicator?.searchCount ?? 0) > 0;
     const rank = searched || usage === 'required' ? 'high' : usage === 'recommended' ? 'medium' : 'low';
     const allowed = c.aspectMode === 'SELECTION_ONLY' && a.aspectValues?.length ? a.aspectValues.map(v => v.localizedValue) : undefined;
     return {
       item_kind, field: FIELD[a.localizedAspectName] ?? `ebay:${a.localizedAspectName}`, role: searched ? 'search' : 'attribute',
-      site_names: { ebay: { name: a.localizedAspectName, max_length: c.aspectMaxLength ?? 65, required: usage === 'required' } },
+      site_names: { ebay: { name: a.localizedAspectName, max_length: c.aspectMaxLength ?? null, required: usage === 'required' } },
       importance: { rank: { ebay: rank } }, usage, ...(allowed ? { allowed } : {}),
     };
   });

@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
+from demand.validation import number
 
 MIN_SALES = 8  # per cell; below this the 1/a terms make the interval wider than any decision it could change
 Z80 = 1.2816
@@ -59,6 +60,14 @@ def _did(target: Series, control: Series, at: int, window: int):
 
 
 def estimate(target: Series, control: Series, event_week: int, window: int = 4) -> dict:
+    number(event_week, 'event_week', integer=True)
+    number(window, 'window', positive=True, integer=True)
+    for series in (target, control):
+        if event_week < window or event_week + window > len(series.weeks):
+            raise ValueError('event_week: incomplete observation window')
+        for sold, exposure in series.weeks:
+            number(sold, 'sold', integer=True)
+            number(exposure, 'exposure')
     est, counts = _did(target, control, event_week, window)
     if est is None:
         return {"verdict": "too_thin", "counts": counts, "window": window}

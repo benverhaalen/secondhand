@@ -237,6 +237,27 @@ The studio's plan ([jobs/studio/plan.py](../../jobs/studio/plan.py) `plan()`, st
 
 Every capture route returns `plan` beside the capture, and `GET /v1/captures/:id` returns it for a refresh after a background read: `{family, kind, dimension_class, inner_class (the wrapped class of a bundle, else null), fallback, process[] (each step with its state: pending, kept, retake), checks[], fields[] (field, state, value, source, auto_accepted, required_by, recommended_by), questions[], complete {site: {ready, missing[]}}, status}`. A screen shows the current step, renders `questions[0]` with the widget its `kind` names, sends `answer`, and reads the next plan; it never decides what to ask or when to stop. The layout, the words around the question, the motion and the drag grid stay Ben's.
 
+### What the phone sends (the Swift capture module's contract)
+
+The native module (Swift, in the Expo app's development build; Ben's [decision](../../product/decisions.md#2026-11-14-the-app-is-an-expo-app-with-a-native-swift-camera-module)) is not built: only a device can run it. It meets this contract, and the plan already consumes it.
+
+- **Once per capture,** on `POST /v1/captures`: `device {has_lidar, object_capture}`. `has_lidar` is `ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth)`. `object_capture` is `ObjectCaptureSession.isSupported` and turns false for the rest of the capture when a session fails. Also the first frame's suggestion `{family, p, second_p}`, and its size `{extent_cm, extent_conf, rigid}`, all from on-device signals.
+- **Per kept photo,** on `POST /v1/captures/:id/photos`: `{role, step, key, content_type, bytes, depth_ref?, pose_ref?, reads[]}`.
+  - `depth_ref` points to the frame's ARKit depth and confidence maps, uploaded beside the photo. It is never sent for a room frame.
+  - `reads[]` holds the phone's own reads of that frame, each `{field, value, source (seen, label, measured), confidence}`, or `{field, value: null, unknown_reason: not_read}` when a gate failed on a view meant to read it.
+  - Text and codes come from Vision (`RecognizeTextRequest`, `DetectBarcodesRequest`; an EAN-13 with a leading 0 is also sent as UPC-A). Gates come from sharpness, exposure, coverage, glare on the label region, `CalculateImageAestheticsScoresRequest.isUtility` and, on iOS 26, `DetectLensSmudgeRequest`.
+- **Per scan,** as the `scan` step's photo: `{scan_ok, extent_cm {width, depth, height}, extent_conf, frames}`, with `extent_conf` under `min_conf` until the known-size box check passes.
+- Confidences are the phone's calibrated values, not raw model scores. A module version that has not passed the 30-item fixed set sends 0, so every read is a proposal.
+
+### Results from the jobs
+
+Three jobs feed the plan back through one function in the capture route, `applyJobResult(user_id, capture_id, result)`. The job runner calls it when a job ends (integration's join):
+- `identify`, from [jobs/identity/ladder.py](../../jobs/identity/ladder.py): the action, and the conformal set with each candidate's family, product, brand, model, score and published dimensions. It sets the suggestion when the phone gave none, the brand and model `candidates`, the dimension `variants`, and `lookups: done`.
+- `studio_plan`, from `manifest.json` `plan`: the asks and the kind's measurements (the studio's own read stays in the manifest).
+- `photo_score`, from [jobs/photo/score.py](../../jobs/photo/score.py) `score()` per kept photo. A tag, care label or screenshot photo whose sharpness part is under `capture_label_sharp_min` (prior 0.5, a `param` row) becomes a `not_read` read on its step, so the planner asks a retake.
+
+`PATCH /v1/captures/:id {version, generate: true}` is the person's Generate tap. It sets `studio.requested`, and the studio job then returns its asks.
+
 ### Build and proof
 
 | Task | Owns | Proves with |
