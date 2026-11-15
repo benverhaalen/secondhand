@@ -1,6 +1,6 @@
 // Human in the loop, the product's signature (Ben, 04:04: "design around human in the loop to show it off as central to our product").
 // Every page shows what the agent guessed and lets the person change it, calmly, not as a warning:
-//   Guess    text the agent guessed. A dotted underline until the person changes it, then solid: theirs now.
+//   Guess    text the agent guessed. A dotted underline until the person changes or confirms it, then solid: theirs now.
 //   Blank    a field nobody knows yet. A solid underline under the name of what is missing.
 //   Approve  one tap, and the button says exactly what it will do. Price, an address and a pickup always wait for it.
 import { useState } from 'react';
@@ -33,7 +33,8 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   const t = look === 'headline' ? type.t18 : type.t15;
   const ink = ground === 'field' ? c.onField : c.ink;
   const underline = { borderBottomWidth: line === 'dotted' ? 1.5 : 1, borderStyle: line, borderColor: line === 'dotted' ? (ground === 'field' ? c.onField2 : c.ink2) : ink } as const;
-  const commit = () => { setEditing(false); if (draft !== value) onChange?.(draft); };
+  // A dotted guess the person opens and leaves as it is was still looked at: that confirms it, so it commits too.
+  const commit = () => { setEditing(false); if (draft !== value || line === 'dotted') onChange?.(draft); };
   if (editing) {
     return (
       <View style={[{ alignSelf: 'flex-start', minWidth: 88 }, { borderBottomWidth: 1.5, borderColor: ink }]}>
@@ -62,7 +63,8 @@ function Editable({ id, name, value, onChange, look = 'headline', numeric, line,
   );
 }
 
-// What the agent guessed. It stays dotted until the person changes it, then it is solid. Tapping it edits it in place.
+// What the agent guessed. It stays dotted until the person changes it or opens it and leaves it (that confirms it), then it
+// is solid. Tapping it edits it in place.
 export function Guess({ id, name, value, onChange, look, numeric, changed }: Field & {
   // True once the person has changed it: the screen keeps this, since it is the person's answer.
   changed?: boolean;

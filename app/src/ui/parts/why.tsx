@@ -14,7 +14,7 @@ import { Choice } from './chip';
 import { mark } from './mark';
 import { Sheet } from './overlays';
 
-export function WhySheet({ id, open, title, says, numbers, basis, onClose, children }: {
+export function WhySheet({ id, open, title, says, numbers, more = 'See the numbers', basis, onClose, children }: {
   id: string;
   open: boolean;
   // What is being explained: "Why $85 to $115", "Same take-home".
@@ -23,6 +23,8 @@ export function WhySheet({ id, open, title, says, numbers, basis, onClose, child
   says: string;
   // The rows behind the reason: a List of KeepRow or Row, shown only after See the numbers.
   numbers: ReactNode;
+  // The row that opens them: See the numbers, or See the source when what is under the reason is where it was read.
+  more?: string;
   // Where the numbers come from and how fresh they are: "Checked today".
   basis?: string;
   onClose: () => void;
@@ -39,7 +41,7 @@ export function WhySheet({ id, open, title, says, numbers, basis, onClose, child
             {numbers}
             {basis ? <Txt role="caption">{basis}</Txt> : null}
           </View>
-        ) : <Choice id={`${id}-numbers`} label="See the numbers" leads onPress={() => setShown(true)} />}
+        ) : <Choice id={`${id}-numbers`} label={more} leads onPress={() => setShown(true)} />}
         {children}
         <FootButton id={`${id}-done`} kind="second" label="Done" onPress={close} />
       </View>
