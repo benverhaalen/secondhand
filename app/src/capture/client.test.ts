@@ -11,6 +11,7 @@ const hooks = registerHooks({ resolve(specifier, context, nextResolve) {
   if (context.parentURL === new URL('../api/client.ts', import.meta.url).href && ['./origin', './fetch', './vault'].includes(specifier)) {
     return nextResolve(`${specifier}.ts`, context);
   }
+  if (specifier === './photo-bytes') return nextResolve('./photo-bytes.ts', context);
   return nextResolve(specifier, context);
 } });
 const { uploadStills } = await import('./client.ts');
@@ -19,9 +20,12 @@ hooks.deregister();
 
 const capture = { id: 'cap_upload', version: 1 } as Capture;
 const stills: Still[] = [
-  { uri: 'file:///front.jpg', base64: 'AP+AAX8=', type: 'image/jpeg', step: 'front', role: 'front' },
-  { uri: 'file:///back.png', base64: 'iVBORw0KGgo=', type: 'image/png', step: 'back', role: 'back' },
+  { uri: 'file:///front.jpg', type: 'image/jpeg', step: 'front', role: 'front' },
+  { uri: 'file:///back.png', type: 'image/png', step: 'back', role: 'back' },
 ];
+// The phone reads each photo's file natively; the test hands back fixed bytes per file.
+const FILES: Record<string, Uint8Array> = { 'file:///front.jpg': Uint8Array.from(atob('AP+AAX8='), c => c.charCodeAt(0)), 'file:///back.png': Uint8Array.from(atob('iVBORw0KGgo='), c => c.charCodeAt(0)) };
+const read = async (uri: string) => FILES[uri];
 const photos = [
   { id: 'ph_front', upload: { url: 'https://uploads.test/front?signed=front', method: 'PUT' } },
   { id: 'ph_back', upload: { url: 'https://uploads.test/back?signed=back', method: 'POST' } },
@@ -43,7 +47,7 @@ test('uploadStills sends each photo as Uint8Array bytes with its content type, s
   t.mock.method(api, 'call', createClient({ origin: '', fetch: service.fetch }).call);
   const uploads = fakeFetch([new Response(null, { status: 204 }), new Response(null, { status: 204 })]);
 
-  assert.deepEqual(await uploadStills(capture, stills, uploads.fetch), updated);
+  assert.deepEqual(await uploadStills(capture, stills, uploads.fetch, read), updated);
   assert.equal(uploads.requests.length, 2);
   const expected = [Uint8Array.of(0, 255, 128, 1, 127), Uint8Array.of(137, 80, 78, 71, 13, 10, 26, 10)];
   for (const [index, request] of uploads.requests.entries()) {
@@ -67,7 +71,7 @@ test('uploadStills rejects a non-ok upload response without rereading the captur
   t.mock.method(api, 'call', createClient({ origin: '', fetch: service.fetch }).call);
   const uploads = fakeFetch([new Response(null, { status: 503 })]);
 
-  await assert.rejects(uploadStills(capture, stills.slice(0, 1), uploads.fetch), {
+  await assert.rejects(uploadStills(capture, stills.slice(0, 1), uploads.fetch, read), {
     message: 'A photo did not upload. Your photos are still here; try again.',
   });
   assert.equal(uploads.requests.length, 1);
@@ -79,7 +83,7 @@ test('uploadStills rejects any .example host before uploading any photo', async 
   t.mock.method(api, 'call', createClient({ origin: '', fetch: service.fetch }).call);
   const uploads = fakeFetch([]);
 
-  await assert.rejects(uploadStills(capture, stills, uploads.fetch), {
+  await assert.rejects(uploadStills(capture, stills, uploads.fetch, read), {
     message: 'Photo uploads are not connected yet. Your photos are still here; try again when the service is ready.',
   });
   assert.equal(uploads.requests.length, 0);
@@ -91,7 +95,7 @@ test('uploadStills rejects a mismatched photo count before uploading', async t =
   t.mock.method(api, 'call', createClient({ origin: '', fetch: service.fetch }).call);
   const uploads = fakeFetch([]);
 
-  await assert.rejects(uploadStills(capture, stills, uploads.fetch), {
+  await assert.rejects(uploadStills(capture, stills, uploads.fetch, read), {
     message: 'The upload service did not accept every photo. Your photos are still here.',
   });
   assert.equal(uploads.requests.length, 0);
