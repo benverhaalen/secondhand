@@ -13,8 +13,12 @@ export class RecallDeltaRejected extends Error {}
 
 // A UPC with or without its leading zero is the same product: everything is a 14-digit GTIN.
 export function gtin14(raw: string | undefined): string | null {
-  const d = (raw ?? '').replace(/\D/g, '');
-  return d.length >= 8 && d.length <= 14 ? d.padStart(14, '0') : null; // a stripped leading zero (11 digits) still matches
+  const d = (raw ?? '').replace(/[\s-]/g, '');
+  if (!/^[0-9]{8,14}$/.test(d)) return null;
+  const gtin = d.padStart(14, '0');
+  let sum = 0;
+  for (let i = 12; i >= 0; i--) sum += Number(gtin[i]) * (i % 2 === 0 ? 3 : 1);
+  return (10 - sum % 10) % 10 === Number(gtin[13]) ? gtin : null;
 }
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
