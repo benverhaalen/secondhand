@@ -2172,9 +2172,9 @@ Nate, buying-conversation lead's session, 2026-11-15, about 06:10 Central.
 
 Used in: [packet 78](../.agents/team/packets/team/78-buying-conversation-handoff.md) (the Vercel row).
 
-## 2026-11-15 nate rewrite the history; no mention of reverse engineering; make sure Databricks works and accounts for everything planned
-Nate, orchestrator's session, 2026-11-15, about 07:05 Central. The first line answers the orchestrator's question about three Dupe rows left in git history.
+## 2026-11-15 nate rewrite the history; a phrase to remove from the repo; make sure Databricks works and accounts for everything planned
+Nate, orchestrator's session, 2026-11-15, about 07:05 Central. The first line answers the orchestrator's question about three Dupe rows left in git history. Two words of the second line are left out, marked [...], because the line itself asks that they not appear in the repo.
 > Rewrite it
-> Please also get rid of any mention of reverse engineering from the repo, rewrite history, and focus on ensuring databricks works, that we've accounted for everything fully planned and currently being built that alligns with the product
+> Please also get rid of any mention of [...] from the repo, rewrite history, and focus on ensuring databricks works, that we've accounted for everything fully planned and currently being built that alligns with the product
 
 Used in: [the finalization spec](../spec/plans/finalization.md), the data lead's brief.
