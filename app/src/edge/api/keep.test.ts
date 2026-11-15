@@ -47,3 +47,30 @@ test('a row whose keep_until is null has no time limit and is kept', () => {
   const kept = storable({ results: [{ site: 'poshmark', may_store: true, keep_until: null }, { site: 'x', may_store: false, keep_until: null }] }, Date.parse('2026-11-15T00:00:00Z'));
   assert.deepEqual(kept.results.map(row => row.site), ['poshmark']);
 });
+
+
+test('a refused listing in a single-object slot becomes null, including a root row', () => {
+  const row = { site: 'dupe', may_store: false, url: 'https://example.test/refused' };
+  const value = { result: row, allowed: { site: 'x', may_store: true }, metadata: { count: 1 } };
+  assert.deepEqual(storable(value, now), { ...value, result: null });
+  assert.equal(storable(row, now), null);
+  assert.equal(dropped(value, now), 1);
+  assert.equal(dropped(row, now), 1);
+  assert.equal(value.result, row);
+});
+
+test('source-keyed rows with rights are filtered in arrays and single-object slots', () => {
+  const refused = { source: 'dupe', may_store: false };
+  const expired = { source: 'x', may_store: true, keep_until: '2026-11-15T12:00:00Z' };
+  const ungranted = { source: 'x', keep_until: null };
+  const allowed = { source: 'x', may_store: true, keep_until: null };
+  const value = { results: [refused, expired, ungranted, allowed], by_source: { dupe: refused, x: allowed } };
+  assert.deepEqual(storable(value, now), { results: [allowed], by_source: { dupe: null, x: allowed } });
+  assert.equal(dropped(value, now), 4);
+});
+
+test('only searched entries are exempt; nested listing rows still need storage rights', () => {
+  const value = { searched: [{ site: 'x', may_store: false, result: { site: 'x' } }], result: { site: 'x' } };
+  assert.deepEqual(storable(value, now), { searched: [{ site: 'x', may_store: false, result: null }], result: null });
+  assert.equal(dropped(value, now), 2);
+});

@@ -339,7 +339,16 @@ test('examples disabled prevents seeding, visitor sharing and seed-id takeover',
   assert.equal(examplesServed({ NODE_ENV: 'production' }), false);
   assert.equal(examplesServed({ NODE_ENV: 'production', SECONDHAND_EXAMPLES: '1' }), true);
   assert.equal(examplesServed({ SECONDHAND_EXAMPLES: '0' }), false);
-  assert.equal(examplesServed({}), true);
+  assert.equal(examplesServed({}), false, 'an unset environment must not serve examples');
+  assert.equal(examplesServed({ NODE_ENV: 'development' }), true);
+  assert.equal(examplesServed({ NODE_ENV: 'test' }), false);
+  assert.equal(examplesServed({ NODE_ENV: 'staging' }), false);
+  assert.equal(examplesServed({ SECONDHAND_EXAMPLES: 'invalid' }), false);
+  assert.equal(examplesServed({ NODE_TEST_CONTEXT: 'child-v8' }), true);
+  assert.equal(examplesServed({ NODE_TEST_CONTEXT: '' }), true);
+  assert.equal(examplesServed({ NODE_TEST_CONTEXT: 'child-v8', SECONDHAND_EXAMPLES: '0' }), false);
+  assert.equal(examplesServed({ NODE_ENV: 'development', SECONDHAND_EXAMPLES: '0' }), false);
+  assert.equal(examplesServed({ SECONDHAND_EXAMPLES: '1' }), true);
   const { s } = disk(t)(); seedExamples(s);
   assert.equal(s.get('job_sr1', 'vis_other123'), undefined);
   assert.deepEqual(s.framesAfter('job_sr1', 0), []);

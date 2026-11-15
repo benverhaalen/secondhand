@@ -312,6 +312,7 @@ export function createAuth(o: AuthOpts) {
     (await store.identitiesOf(user_id)).sort((a, b) => a.linked_at.localeCompare(b.linked_at)).map((i) => ({ provider: i.provider, linked_at: i.linked_at }));
 
   return {
+    senderReady: (): boolean => o.sendCode !== undefined,
     signInApple: (p: { identity_token: string; nonce: string }) => signIn('apple', p),
     signInGoogle: (p: { id_token: string }) => signIn('google', p),
     verifyEmail: (p: { email: string; code: string }) => signIn('email', p),
@@ -323,7 +324,14 @@ export function createAuth(o: AuthOpts) {
       const code = (o.generateCode ?? code6)();
       await store.putCode(h, { hash: await sha(`${h}:${code}`), expires_at: t + CODE_MS, sent_at: t, attempts: 0 });
       changed('email_code', h.slice(0, 8), 'sent');
-      await log().call('tool', 'send_code', { email_hash: h.slice(0, 8) }, () => sendCode(p.email, code));
+      await log().call('tool', 'send_code', { email_hash: h.slice(0, 8) }, async () => {
+        try { await sendCode(p.email, code); }
+        catch (error) {
+          const failure = new Error('email code delivery failed');
+          failure.name = error instanceof Error ? error.name : typeof error;
+          throw failure;
+        }
+      });
       return { sent: true as const, expires_at: iso(t + CODE_MS), resend_after_s: RESEND_MS / 1000 };
     },
     async refresh(p: { refresh_token: string }) {
@@ -354,18 +362,24 @@ export function createAuth(o: AuthOpts) {
 
 export type Auth = ReturnType<typeof createAuth>;
 
-const developmentCode = process.env.SECONDHAND_DEV_CODE;
-if (developmentCode !== undefined && (process.env.NODE_ENV === 'production' || !/^[0-9]{6}$/.test(developmentCode))) {
+let developmentCode = process.env.SECONDHAND_DEV_CODE;
+if (developmentCode !== undefined && (process.env.NODE_ENV === 'production' ||
+  process.env.NODE_ENV === 'development' && !/^[0-9]{6}$/.test(developmentCode))) {
   throw new Error('SECONDHAND_DEV_CODE must be exactly six digits and cannot be set in production');
+}
+if (developmentCode !== undefined && process.env.NODE_ENV !== 'development') {
+  developmentCode = undefined;
+  deps.log.note('auth.dev_code_ignored');
 }
 let sender: AuthOpts['sendCode'] = developmentCode === undefined ? undefined : async (email) => {
   deps.log.note('auth.dev_code', { email_hash: (await emailHash(email)).slice(0, 8) });
 };
-export function configureSender(fn: NonNullable<AuthOpts['sendCode']>): void { sender = fn; }
+export function configureSender(fn: NonNullable<AuthOpts['sendCode']>): void { sender = fn; developmentCode = undefined; }
 
 export const store = sqliteAuthStore(db());
 export const auth = createAuth({
   store, now: () => Date.now(), verifyApple: appleVerifier(), verifyGoogle: googleVerifier(),
-  get sendCode() { return sender; }, generateCode: developmentCode === undefined ? code6 : () => developmentCode,
+  get sendCode() { return sender; }, generateCode: () => developmentCode ?? code6(),
 });
+export const senderReady = auth.senderReady;
 deps.verify = auth.verifyAccess; // every route now verifies bearer tokens
