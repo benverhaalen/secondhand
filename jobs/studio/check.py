@@ -36,7 +36,10 @@ def fit(img: np.ndarray, side: int = SIDE) -> np.ndarray:
 
 
 def mask_of(img: np.ndarray) -> np.ndarray:
-    return item_mask(img, inset=max(8, min(img.shape[:2]) // 54))
+    """The item's outline. GrabCut runs at 540 px (four times faster than full size) and the mask is scaled back."""
+    small = fit(img, 540)
+    m = item_mask(small, inset=max(6, min(small.shape[:2]) // 54))
+    return cv2.resize(m, (img.shape[1], img.shape[0]), interpolation=cv2.INTER_NEAREST)
 
 
 def _med_lab(img, m):
