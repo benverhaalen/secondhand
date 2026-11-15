@@ -156,6 +156,8 @@ test('a draft takes Same take-home: the set price on the site that takes least, 
   assert.ok(eb.price > fb.price && eb.price % 100 === 0, `eBay at ${eb.price}`);
   assert.ok(eb.keep! >= fb.keep! && eb.keep! - fb.keep! < 100, `${eb.keep} vs ${fb.keep}`);
   assert.ok(planSites(w, item, 23500, [], 'same_price').filter(s => s.on).every(s => s.price === 23500));
+  // An item with no price yet has nothing to even out, and does not throw.
+  assert.ok(planSites(w, item, 0).every(s => s.price === 0));
 });
 
 test('an item posted before the rule was a choice keeps one price on every site', () => {
