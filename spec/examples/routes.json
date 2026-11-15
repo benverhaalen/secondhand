@@ -199,6 +199,13 @@
             "needs_session": false
           },
           {
+            "endpoint": "GET /v1/lens/:token",
+            "auth": "none",
+            "source": "engine",
+            "method": "GET",
+            "needs_session": false
+          },
+          {
             "endpoint": "GET /v1/limits",
             "source": "engine",
             "auth": "user",

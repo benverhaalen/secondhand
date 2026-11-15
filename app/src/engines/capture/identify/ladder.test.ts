@@ -4,7 +4,8 @@ import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { memoryStore } from '../../param/param.ts';
-import { candidates, conformal_set, action, label, bound } from './ladder.ts';
+import { identifyParam } from '../../../edge/identify/spend.ts';
+import { DECLARED, candidates, conformal_set, action, label, bound } from './ladder.ts';
 
 const pythonPath = (exists: (path: URL) => boolean): URL|undefined => ['.venv/bin/python', '.venv/Scripts/python.exe']
   .map(path => new URL(`../../../../../${path}`, import.meta.url)).find(exists);
@@ -95,3 +96,13 @@ test('fitted scoped rung weights and the fitted pick cap replace their priors', 
   assert.equal(candidates([{rung: 3, product: 'a', s: 1}], params, {kind: 'apparel'}).a[0], 0.5);
   assert.equal(action(['a', 'b', 'c'], params), 'ask');
 });
+
+for (const [name, cap] of [['identify_spend_cap_capture_micro', 3000], ['identify_spend_cap_day_micro', 100000]] as const)
+  test(`${name} refuses a param row above Nate's approved cap of ${cap}`, () => {
+    const params = memoryStore();
+    params.declare(DECLARED.find(row => row.name === name)!);
+    assert.equal(identifyParam(params, name), cap);
+    params.apply(name, {}, () => ({value: cap + 1, weight: 1}), '2026-11-15T00:00:00Z');
+    assert.equal(params.rows(name, {})[0].value_or_hyperparams, cap + 1);
+    assert.throws(() => identifyParam(params, name), new RegExp(`${name} outside guard`));
+  });
