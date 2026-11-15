@@ -1269,3 +1269,15 @@ test('F14: each studio ask requires its fields and measure names match the known
   job({kind:'studio_plan',plan:{kind:'tee',asks:valid}});
   job({kind:'studio_plan',plan:{kind:'unrecognised',asks:[{type:'measure',text:'Measure.',name:'custom'}]}});
 });
+test('capture intent: defaults to sell, keeps a named job on read, and refuses any other', async () => {
+  const opened = await requestCapture('POST /v1/captures', openInput);
+  assert.equal(opened.status, 201); assert.equal((await opened.json()).intent, 'sell');
+  const worth = await (await requestCapture('POST /v1/captures', {...openInput, intent: 'worth'})).json();
+  assert.equal(worth.intent, 'worth');
+  const read = await route('GET /v1/captures/:id', handlers['GET /v1/captures/:id'])(new Request(`http://edge.test/v1/captures/${worth.id}`, {headers: {Authorization: 'Bearer good'}}));
+  assert.equal((await read.json()).intent, 'worth');
+  for (const intent of ['appraise', '', 7, null]) {
+    const r = await requestCapture('POST /v1/captures', {...openInput, intent});
+    assert.equal(r.status, 400); assert.equal((await r.json()).code, 'invalid');
+  }
+});
