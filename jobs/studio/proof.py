@@ -62,6 +62,11 @@ def winner_raw(run_item: str, man: dict) -> str | None:
     if k is None:  # runs before the index was recorded: the k-th cover candidate with the winner's model and seed
         covers = [c for c in man["candidates"] if c["slide"] == "cover"]
         k = next((i for i, c in enumerate(covers) if c["model"] == cover.get("model") and c["seed"] == cover.get("seed")), None)
+    covers = [c for c in man["candidates"] if c["slide"] == "cover"]
+    if k is not None and cover.get("pass", 1) == 2 and cover.get("from"):
+        # a second pressing starts from a redraw the check already repaired; "as drawn" means the model's first draw
+        k = next((i for i, c in enumerate(covers) if c.get("pass", 1) == 1
+                  and f"{c['model'].split('/')[1]} seed {c['seed']}" == cover["from"]), None)
     p = os.path.join(run_item, f"cand_cover_{k}.jpg")
     return p if k is not None and os.path.exists(p) else None
 
@@ -97,7 +102,7 @@ def item(run_item: str, item_dir: str, out: str) -> dict | None:
             rows[k] = {"tested": False, "note": "no such picture"}
             continue
         im = C.fit(rgb(path))
-        mx = M.measure(C.mask_of(im), tape.get("length"))
+        mx = M.measure(C.mask_of(im), tape.get("length"), im)
         Image.fromarray(draw_lines(im, mx)).save(os.path.join(out, f"{k}.png"))
         rows[k] = {**M.against_tape(mx, tape), "note": mx.get("note"), "length_px": mx["length_px"], "pit_px": mx.get("pit_px"),
                    "file": os.path.relpath(path)}
@@ -145,8 +150,8 @@ def bench(run_item: str, tape: dict, cover_file: str) -> list[dict]:
         else:  # narrower: the floor mirrored out to the old width
             pad = w - wide.shape[1]
             canvas = cv2.copyMakeBorder(wide, 0, 0, pad // 2, pad - pad // 2, cv2.BORDER_REFLECT)
-        r = M.against_tape(M.measure(C.mask_of(canvas), tape.get("length")), tape)
-        base = M.against_tape(M.measure(C.mask_of(im), tape.get("length")), tape)
+        r = M.against_tape(M.measure(C.mask_of(canvas), tape.get("length"), canvas), tape)
+        base = M.against_tape(M.measure(C.mask_of(im), tape.get("length"), im), tape)
         moved = (r["pit_in"] / base["pit_in"] - 1) if r.get("tested") and base.get("tested") else None
         out.append({"stretch": k, "pit_in": r.get("pit_in"), "off": r.get("off"), "reading_moved": None if moved is None else round(moved, 4),
                     "outside_band": None if r.get("off") is None else abs(r["off"]) > BAND})
@@ -178,12 +183,15 @@ def preview(res: dict, out: str) -> None:
         if r.get("tested"):
             line = f"pit to pit {r['pit_in']:.1f} in, tape {t['pit_to_pit']:g} in"
             off = f"{r['off_in'] + 0:+.1f} in ({r['off'] + 0:+.1%})".replace("-0.0 in", "0.0 in").replace("(-0.0%)", "(0.0%)")
+        elif r.get("note"):
+            line, off = "pit to pit: no line to draw", "a sleeve hides the armpit"
         else:
-            line, off = "pit to pit: no line to draw", (r.get("note") or "")[:48]
+            line, off = "no tape to test against", ""
         d.text((i * side + 16, side + 54), line, fill=(10, 10, 10), font=_font(22))
         d.text((i * side + 16, side + 86), off, fill=(10, 10, 10, 160), font=_font(22))
-    d.text((16, side + 120), f"Each picture is scaled so its length reads the taped {t.get('length', 0):g} in; then its pit to pit is read.",
-           fill=(90, 90, 90), font=_font(18))
+    if t.get("length"):
+        d.text((16, side + 120), f"Each picture is scaled so its length reads the taped {t.get('length', 0):g} in; then its pit to pit is read.",
+               fill=(90, 90, 90), font=_font(18))
     sheet.save(os.path.join(out, "preview.jpg"), quality=90)
 
 

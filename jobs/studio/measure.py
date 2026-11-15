@@ -47,9 +47,35 @@ def _clean(mask: np.ndarray) -> np.ndarray:
     return cv2.morphologyEx(m, cv2.MORPH_OPEN, np.ones((k, k), np.uint8))
 
 
-def measure(mask: np.ndarray, length_in: float | None = None) -> dict:
-    """mask: the item's outline (any size). length_in: the taped length, to place the pit line exactly one inch down."""
-    m = _clean(mask)
+def floor_holes(mask: np.ndarray, img: np.ndarray) -> np.ndarray:
+    """The outline finder can take floor showing between a sleeve and the body for cloth. Patches inside the outline
+    that are the floor's color, and nowhere near the cloth's, go back to floor. Small patches are left alone, so a
+    floor-gray print is not cut out."""
+    m = mask > 0
+    lab = cv2.cvtColor(img, cv2.COLOR_RGB2LAB).astype(np.float32)
+    ring = cv2.dilate(m.astype(np.uint8), np.ones((41, 41), np.uint8)).astype(bool) & ~m
+    if ring.sum() < 100 or m.sum() < 100:
+        return mask
+    floor, cloth = np.median(lab[ring], axis=0), np.median(lab[m], axis=0)
+    w = np.array([0.5, 1.0, 1.0], np.float32)  # lightness counts half: floor in a sleeve's shadow is darker floor
+    d_floor = np.linalg.norm((lab - floor) * w, axis=2)
+    d_cloth = np.linalg.norm((lab - cloth) * w, axis=2)
+    if np.linalg.norm((floor - cloth) * w) < 25:  # cloth the floor's color: no way to tell them apart by color
+        return mask
+    like = (m & (d_floor < 22) & (d_floor < 0.5 * d_cloth)).astype(np.uint8)
+    like = cv2.morphologyEx(like, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
+    n, lab_, st, _ = cv2.connectedComponentsWithStats(like, 8)
+    out = m.copy()
+    for i in range(1, n):
+        if st[i, cv2.CC_STAT_AREA] > 0.002 * m.size:
+            out[lab_ == i] = False
+    return out.astype(np.uint8)
+
+
+def measure(mask: np.ndarray, length_in: float | None = None, img: np.ndarray | None = None) -> dict:
+    """mask: the item's outline (any size). length_in: the taped length, to place the pit line exactly one inch down.
+    img: the picture itself, to give back floor the outline took for cloth."""
+    m = _clean(floor_holes(mask, img) if img is not None else mask)
     _, tilt = _deskew(m)
     ys, xs = np.nonzero(m)
     c = (float(xs.mean()), float(ys.mean()))
@@ -120,9 +146,10 @@ def measure(mask: np.ndarray, length_in: float | None = None) -> dict:
         out.update(pit_px=None, pit_line=None, note="no armpit on one side or both: a sleeve lies against the body, so no pit line")
         return out
     pit_y = max(pits.values())
-    if not 0.2 * length_px <= pit_y - hps_y <= 0.5 * length_px:
-        # an armpit sits a fifth to a half of the way down; lower means a sleeve lies along the body and the gap seen
-        # is under a cuff
+    if not 0.2 * length_px <= pit_y - hps_y <= 0.46 * length_px:
+        # an armpit sits a fifth to under half of the way down (0.44 on the laid-out Marquette tee); lower means a sleeve
+        # lies along the body and the gap seen starts under the sleeve, not at the armpit (0.50 on a hoodie redraw whose
+        # sleeves hang close, 0.49 on the tee photo with one sleeve folded)
         out.update(pit_px=None, pit_line=None, note=f"the gap under the sleeve starts {(pit_y - hps_y) / length_px:.0%} of the way down, so a sleeve lies along the body")
         return out
     y = int(round(pit_y + inch))

@@ -168,6 +168,9 @@ def make_whole(slide: dict, look: dict, ks: dict, photos_by_id: dict, log: list)
         if slide["route"] == "relay":
             laid = next((p.get("laid_well") for p in look["photos"] if p["id"] == slide["photo"]), True)
             r = C.check(src, ren, ks["template"], refs, look.get("tape_ratio"), laid_well=bool(laid))
+            if ks["template"] in ("shirt", "sweatshirt"):  # before the judge, so the judge sees what would post
+                r["image"] = C.press(r["image"], C.mask_of(r["image"]))
+                r.setdefault("repairs", []).append(f"fold shading pressed ({C.PRESS:.0%})")
         else:  # in place: the original gate, which aligns the render onto the photo and keeps the background
             r = in_place_check(src, ren)
         j, jinfo = (None, {})
@@ -224,7 +227,7 @@ def measure_audit(src: np.ndarray, cands: list, win: int | None, final: np.ndarr
         rows["drawn"] = C.fit(rgb(cands[win]["raw"]))
     out = {}
     for k, im in rows.items():
-        mx = M.measure(C.mask_of(im), tape.get("length"))
+        mx = M.measure(C.mask_of(im), tape.get("length"), im)
         out[k] = {**M.against_tape(mx, tape), **{a: mx.get(a) for a in ("length_px", "pit_px", "note")}}
     return out
 
