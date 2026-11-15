@@ -106,6 +106,10 @@ for (const [w, h, name] of SCREENS) {
     await page.click('a[data-go]');
     await page.evaluate(async () => { let y = -1; for (let i = 0; i < 60 && y !== scrollY; i++) { y = scrollY; await new Promise(r => setTimeout(r, 100)); } });
     f.how_heading_gap = await page.evaluate(() => Math.round(document.querySelector('#how h2').getBoundingClientRect().top - document.querySelector('header .wrap').getBoundingClientRect().bottom));
+    // A heading that wraps doesn't leave a short last line: under 40% of its longest reads as a word dropped off.
+    f.how_heading_last = await page.evaluate(() => { const r = document.createRange(); r.selectNodeContents(document.querySelector('#how h2'));
+      const ws = [...r.getClientRects()].filter(b => b.width).map(b => b.width); return ws.length > 1 ? +(ws.at(-1) / Math.max(...ws)).toFixed(2) : 1; });
+    if (f.how_heading_last < 0.4) { f.problems.push(`the section 2 heading leaves a short last line (${f.how_heading_last} of its longest)`); broken++; }
     if (f.how_heading_gap < 16) { f.problems.push(`"See how it works" leaves the section 2 heading under the header (${f.how_heading_gap}px clear)`); broken++; }
     await page.screenshot({ path: join(out, `how-${w}.jpg`), type: 'jpeg', quality: 82 });
     await page.evaluate(() => scrollTo(0, 0)); await page.waitForTimeout(400);
