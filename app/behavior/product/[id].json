@@ -58,17 +58,23 @@
   ],
   "controls": [
     {
+      "control": "Back",
+      "on_tap": "goes back",
       "id": "nav-back",
       "in": "typical",
       "does": "goes back"
     },
     {
+      "control": "Follow",
+      "on_tap": "follows its price, with Undo",
       "id": "product-follow",
       "in": "typical",
       "does": "follows its price, with Undo",
       "shows": "Following its price"
     },
     {
+      "control": "Undo",
+      "on_tap": "stops following again",
       "id": "product-undo",
       "in": "typical",
       "after": [
@@ -78,60 +84,80 @@
       "then": "product-follow"
     },
     {
+      "control": "Follow",
+      "on_tap": "asks a visitor to sign in",
       "id": "product-follow",
       "in": "visitor",
       "does": "asks a visitor to sign in",
       "goes": "/onboarding"
     },
     {
+      "control": "Chart 0",
+      "on_tap": "shows June's amount",
       "id": "product-chart-0",
       "in": "typical",
       "does": "shows June's amount",
       "shows": "Jun $98"
     },
     {
+      "control": "Chart 1",
+      "on_tap": "shows Jul's amount",
       "id": "product-chart-1",
       "in": "typical",
       "does": "shows Jul's amount",
       "shows": "Jul $94"
     },
     {
+      "control": "Chart 2",
+      "on_tap": "shows Aug's amount",
       "id": "product-chart-2",
       "in": "typical",
       "does": "shows Aug's amount",
       "shows": "Aug $90"
     },
     {
+      "control": "Chart 3",
+      "on_tap": "shows Sep's amount",
       "id": "product-chart-3",
       "in": "typical",
       "does": "shows Sep's amount",
       "shows": "Sep $86"
     },
     {
+      "control": "Chart 4",
+      "on_tap": "shows Oct's amount",
       "id": "product-chart-4",
       "in": "typical",
       "does": "shows Oct's amount",
       "shows": "Oct $82"
     },
     {
+      "control": "Chart 5",
+      "on_tap": "shows November's amount, the one shown first",
       "id": "product-chart-5",
       "in": "typical",
       "does": "shows November's amount, the one shown first",
       "shows": "Nov $79"
     },
     {
+      "control": "For sale",
+      "on_tap": "opens every listing for sale now",
       "id": "product-for-sale",
       "in": "typical",
       "does": "opens every listing for sale now",
       "goes": "/search"
     },
     {
+      "control": "Search",
+      "on_tap": "goes to Buy to search",
       "id": "product-search",
       "in": "empty",
       "does": "goes to Buy to search",
       "goes": "/buy"
     },
     {
+      "control": "Retry",
+      "on_tap": "loads the page afresh",
       "id": "product-retry",
       "in": "failed",
       "does": "loads the page afresh",

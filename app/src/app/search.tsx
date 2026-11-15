@@ -23,7 +23,7 @@ export default function Search() {
   const at = params.at ?? (state === 'loading' ? 'slow' : undefined);
   const r = searchFor(q, at);
   const p = r.product_id ? product(r.product_id) : null;
-  const rows = state === 'one' ? rank(r.rows).slice(0, 1) : rank(r.rows);
+  const rows = rank(r.rows).filter((_, i) => state !== 'one' || i === 0);
   const nav = <Nav back={() => router.back()} action={q ? { id: 'search-watch', icon: 'notification-01', label: 'Watch this search', onPress: () => watch() } : undefined} />;
   if (state === 'failed') return <Failed name="search" nav={nav} what="this search" again={href(w, `/search?q=${encodeURIComponent(q)}`)} skip={SKIP} />;
   // Nothing typed yet: the box, and what it takes.

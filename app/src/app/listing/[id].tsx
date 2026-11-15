@@ -13,7 +13,7 @@ import { href, usePage } from '@/buy/world';
 import { ago, product, SEARCH_DUNKS, usd, type Match } from '@/demo';
 import {
   Amount, Approve, EmptyState, FootButton, Gallery, Guess, Line, Nav, Notice, OfferSheet, Pill, PriceRange, PriceRead, Row, Screen,
-  Section, Sheet, SiteBadge, Stack, Txt, UndoToast,
+  Section, Sheet, SiteBadge, Stack, Txt, UndoToast, log,
 } from '@/ui';
 
 const dollars = (cents: number) => cents / 100;
@@ -62,7 +62,7 @@ export default function Listing() {
     say('watch', next ? 'Saved to Watching' : 'Removed from Watching', () => setWatching(!next));
   };
   // The listing on its own site, through the referral link (spec buy.md, Link-outs; GET /v1/out).
-  const site = () => { Linking.openURL(m.url).catch(() => {}); };
+  const site = () => { Linking.openURL(m.url).catch(e => log.error('listing.open_site', e, { site: m.site })); };
 
   // The page's one act at the foot: the waiting offer when there is one (a hand-off), else Open on site.
   const handoff = offer != null && sent == null && !visitor;

@@ -86,22 +86,30 @@
   ],
   "controls": [
     {
+      "control": "Back",
+      "on_tap": "goes back",
       "id": "nav-back",
       "in": "typical",
       "does": "goes back"
     },
     {
+      "control": "Open",
+      "on_tap": "opens the listing on its site, through the referral link",
       "id": "listing-open",
       "in": "typical",
       "does": "opens the listing on its site, through the referral link"
     },
     {
+      "control": "Offer",
+      "on_tap": "opens the offer picker",
       "id": "listing-offer",
       "in": "typical",
       "does": "opens the offer picker",
       "shows": "Something else"
     },
     {
+      "control": "Pick amount other",
+      "on_tap": "chooses Something else and shows a blank amount",
       "id": "listing-pick-amount-other",
       "in": "typical",
       "after": [
@@ -111,6 +119,8 @@
       "then": "listing-pick-other"
     },
     {
+      "control": "Pick amount 54",
+      "on_tap": "picks $54",
       "id": "listing-pick-amount-54",
       "in": "typical",
       "after": [
@@ -120,6 +130,8 @@
       "shows": "Send a $54 offer"
     },
     {
+      "control": "Pick send",
+      "on_tap": "sends the $54 offer",
       "id": "listing-pick-send",
       "in": "typical",
       "after": [
@@ -130,6 +142,8 @@
       "shows": "Offer of $54 sent. You pay on the site if they accept."
     },
     {
+      "control": "Pick amount other",
+      "on_tap": "Something else starts blank, and the send button says to pick an amount",
       "id": "listing-pick-amount-other",
       "in": "typical",
       "after": [
@@ -139,12 +153,16 @@
       "shows": "Pick an amount"
     },
     {
+      "control": "Watch",
+      "on_tap": "saves it to Watching, with Undo",
       "id": "listing-watch",
       "in": "typical",
       "does": "saves it to Watching, with Undo",
       "shows": "Saved to Watching"
     },
     {
+      "control": "Undo watch",
+      "on_tap": "takes the save back",
       "id": "listing-undo-watch",
       "in": "typical",
       "after": [
@@ -154,18 +172,24 @@
       "shows": "Watch"
     },
     {
+      "control": "Product",
+      "on_tap": "opens the product's price history",
       "id": "listing-product",
       "in": "typical",
       "does": "opens the product's price history",
       "goes": "/product/pr_dunk"
     },
     {
+      "control": "More",
+      "on_tap": "opens the rest of the acts",
       "id": "listing-more",
       "in": "typical",
       "does": "opens the rest of the acts",
       "then": "listing-ask"
     },
     {
+      "control": "Ask",
+      "on_tap": "opens the chat with the seller",
       "id": "listing-ask",
       "in": "handoff",
       "after": [
@@ -175,6 +199,8 @@
       "goes": "/messages/cv_bd"
     },
     {
+      "control": "Not size",
+      "on_tap": "hides it and teaches the want, with Undo",
       "id": "listing-not-size",
       "in": "typical",
       "after": [
@@ -184,6 +210,8 @@
       "shows": "Hidden. Your search skips this size now."
     },
     {
+      "control": "Bought",
+      "on_tap": "adds it to Bought, with Undo",
       "id": "listing-bought",
       "in": "typical",
       "after": [
@@ -193,35 +221,47 @@
       "shows": "Added to Bought"
     },
     {
+      "control": "Send",
+      "on_tap": "sends the agent's offer",
       "id": "listing-send",
       "in": "handoff",
       "does": "sends the agent's offer",
       "shows": "Offer of $65 sent. You pay on the site if they accept."
     },
     {
+      "control": "Offer amount",
+      "on_tap": "edits the guessed amount in place",
       "id": "listing-offer-amount",
       "in": "handoff",
       "does": "edits the guessed amount in place",
       "then": "listing-offer-amount-input"
     },
     {
+      "control": "Open second",
+      "on_tap": "opens the listing on its site",
       "id": "listing-open-second",
       "in": "handoff",
       "does": "opens the listing on its site"
     },
     {
+      "control": "Watch",
+      "on_tap": "asks a visitor to sign in",
       "id": "listing-watch",
       "in": "visitor",
       "does": "asks a visitor to sign in",
       "goes": "/onboarding"
     },
     {
+      "control": "Gone back",
+      "on_tap": "goes to Buy",
       "id": "listing-gone-back",
       "in": "empty",
       "does": "goes to Buy",
       "goes": "/buy"
     },
     {
+      "control": "Retry",
+      "on_tap": "loads the page afresh",
       "id": "listing-retry",
       "in": "failed",
       "does": "loads the page afresh",

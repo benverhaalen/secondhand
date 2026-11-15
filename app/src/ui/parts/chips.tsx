@@ -1,6 +1,6 @@
 // A few answers drawn as chips that wrap, picked by touch (assist's ChoiceChips (54) and MultiChips (68); watch.md, "a
-// want built by touch": ship, pickup or both; how worn; which size). Why a part: Ben asked for a want set by touch, and a
-// chip set is how shopping apps set a filter (Airbnb, Depop, eBay's refine): every answer in view, one tap each, nothing
+// want built by touch": ship, pickup or both; how worn; which size). Why a part: a want is set by touch (product/words.md,
+// 2026-11-15), and a chip set is how shopping apps set a filter (Airbnb, Depop, eBay's refine): every answer in view, one tap each, nothing
 // typed. Each answer is the kit's Chip (chip.tsx: 40 tall, gray, ink with white words when picked, Art. 5 "Chips and
 // segments"); this part only lays them out. FilterRow scrolls one row sideways, which suits Sell's filters, but a want's
 // sizes or conditions must all be in view to be compared, so here the chips wrap onto as many rows as they need.

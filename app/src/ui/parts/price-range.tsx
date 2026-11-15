@@ -31,7 +31,7 @@ export function PriceRange({ low, high, at, words = 'Sold for' }: {
         <View style={{ height: TRACK, borderRadius: radius.pill, backgroundColor: c.gray }} />
         <View style={{ position: 'absolute', left: pct(low), width: `${(share(high) - share(low)) * 100}%`, height: TRACK, borderRadius: radius.pill, backgroundColor: c.ink2, opacity: 0.5 }} />
         {at != null ? (
-          <View style={{ position: 'absolute', left: pct(at), marginLeft: -DOT / 2, width: DOT, height: DOT, borderRadius: radius.pill, backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
+          <View style={{ position: 'absolute', left: pct(at), marginLeft: -space.s2, width: DOT, height: DOT, borderRadius: radius.pill, backgroundColor: c.ink, borderWidth: 2, borderColor: c.page }} />
         ) : null}
       </View>
       <Txt role="caption" lines={1}>{`${words} ${money(low)} to ${money(high)} lately`}</Txt>

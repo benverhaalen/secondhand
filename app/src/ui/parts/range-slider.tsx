@@ -1,6 +1,6 @@
 // A price range set by dragging, over the sold prices (assist's RangeSlider (58), two thumbs, money; watch.md step 3:
-// "drags a two-thumb price range over the sold prices"). Why a part: Ben asked to say "around a price" and adjust the
-// range by touch, and a range over real sales answers "is my number sane" while it is set, the way Airbnb's price filter
+// "drags a two-thumb price range over the sold prices"). Why a part: a want says "around a price" and its range is
+// adjusted by touch (product/words.md, 2026-11-15), and a range over real sales answers "is my number sane" while it is set, the way Airbnb's price filter
 // draws its histogram under the thumbs. Each sale is a dot stacked over the track; the dots inside the range are ink, the
 // rest second ink, so the range shows how many sales it would have caught (Art. 5: shape and place, not hue). The track is
 // 8 high, the range on it in ink, two 24 ink thumbs with a page ring. One line under it says what the dots are (C6).

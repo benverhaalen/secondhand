@@ -21,7 +21,7 @@ function drawn(base: World, state: string | null): World {
   if (state === 'empty') return { ...base, wants: [], matches: [], decisions: base.decisions.filter(d => d.kind !== 'buy_offer' && d.kind !== 'offer_over_ceiling'), orders: base.orders.filter(o => o.kind !== 'purchase') };
   const full = base.wants.length ? base : world('buyer');
   if (state === 'dense') return full;
-  if (state === 'one') { const x = full.wants[0]; return { ...full, wants: [x], matches: full.matches.filter(m => m.want_id === x.id).slice(0, 1), decisions: [], orders: [] }; }
+  if (state === 'one') { const x = full.wants[0]; return { ...full, wants: [x], matches: full.matches.filter((m, i, all) => m.want_id === x.id && all.findIndex(n => n.want_id === x.id) === i), decisions: [], orders: [] }; }
   return base;
 }
 
