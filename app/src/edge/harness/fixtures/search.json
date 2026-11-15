@@ -1,0 +1,35 @@
+{
+  "args": {
+    "query": "jacket"
+  },
+  "capture": {
+    "dom": [
+      {
+        "ref": ".title",
+        "text": "Blue jacket"
+      }
+    ],
+    "embedded": {
+      "listing": {
+        "id": "listing-1",
+        "price_cents": 2500
+      }
+    },
+    "network": [
+      {
+        "url": "https://example.test/api/stats",
+        "body": {
+          "watchers": 7
+        }
+      }
+    ]
+  },
+  "expected": [
+    {
+      "id": "listing-1",
+      "title": "Blue jacket",
+      "price_cents": 2500,
+      "watchers": 7
+    }
+  ]
+}

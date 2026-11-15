@@ -58,6 +58,7 @@ What is set in stone and what is still Ben's to pick. Image rounds show options 
 | L50 | A view has one black pill, and a rule says when there is another: constitution C4. The rule's four lines are an agent proposal. Closes R34 | [round 11](../product/words.md#2026-11-15-round-11-picks) |
 | L51 | The brand's one line is "Your second hand, for everything secondhand." Closes R37 | [round 11](../product/words.md#2026-11-15-round-11-picks) |
 | L52 | A left hand and a right hand sit on either side of the wordmark at the top, as a charm, and they can move: a snap, a grab, a dap. The open hand is slimmer than round 11's. The drawing and the motion are R35 | [round 11](../product/words.md#2026-11-15-round-11-picks) |
+| L53 | Human in the loop is a decision, not a line: spec/product.md §5 decides who acts, and the brand gives `auto`, `ask` and `locked` one look each (constitution C4, Who acts) | [human in the loop is a decision](../product/words.md#2026-11-15-human-in-the-loop-is-a-decision-not-a-line) |
 
 ## Decided by agents (means; Ben can veto)
 

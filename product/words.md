@@ -967,6 +967,37 @@ Ben, on the round 11 picks page, saved 2026-11-15 03:37 UTC; he wrote "done with
 **Overall.**
 > align on ui. focus on creating the basics and examples of great and bad ui practices and all those ways of really greatly creating ui or design under one brand and defining the brand in a human and agent readable way and interpretable way. also for the ui loop, the image ideation portion should be about screen organization under the design family rules and then the agent uses the brand system to recreate it and it notices if it should or shouldn't create new ones. it thinks very intentionally across what is needed in each thing
 
+## 2026-11-14 nate each harness is built from what it understands of the site, as documented endpoints such as /write-listing
+Nate, build session (orchestrator), 2026-11-14 about 22:40 Central, two messages as the five platform teams started.
+> watch out claude, its starting to slow down and get dangerous with how much memory is being used
+
+> Theres not so much one template to follow, but each harness is intelligentlly built from what it understands about web structure, , deterministic accuracy to always assure the best page navigation and understanding, to create well documented endpoints that can even just be slash commands or endpoints whatever's best, like /write-listing with the listing then provided from the app
+
+## 2026-11-14 nate harnesses are not held back by sites limiting automation; use browser-use
+Nate, build session (orchestrator), 2026-11-14 about 22:50 Central.
+> For all harnesses, do not allow them to build even when we are limited and such by automations. That is not what we specced, not what we explained to the judges we could create and are expected to. Like I showed an orchestrator with apify, already people profit from scraping these sites that are supposed not to. Exemplifying that the technology not only is possible, but us delivering it for free is better for everyone. Utilize https://github.com/browser-use/browser-use . for built in jev ultrafast and stealth browsers already documented
+
+## 2026-11-14 nate store auth through browser-use, build fewer things at once, focus on the browser harnesses
+Nate, build session (orchestrator), 2026-11-14 about 22:20 Central, after a second crash.
+> we can store auth, with things built into the browser use protocol. I crashed again, so lets again be careful building, testing evaluating each feature, lets cut down how many we build in parallel, focus on just the browser harnesses. Push back on your subagents who are still not just pushing past the gaps they identify and give up on
+
+> lets focus on the kernel, whats the design of that
+
+## 2026-11-14 nate the kernel covers platform specifics and storefront analytics, and runs only what each person linked
+Nate, build session (orchestrator), 2026-11-14 about 22:35 Central.
+> I think our kernel needs to account for more beyond that. platform specifics, analytics we can retrieve and store about each users store front on each linked platform. Per user, we only run the systems for what they link and store auth for
+## 2026-11-15 human in the loop is a decision, not a line
+Ben, thread "Set the secondhand brand identity", 2026-11-15 04:12 UTC, after the brand thread planned to add "a human always decides" to the brand's idea and voice. Before it, at 04:04 in the project chat: "also we should ensure to design around human in the loop to show it off as central to our product in the end".
+> dont use the quote a human always decides use it as a decision when navigating when to hand off to human vs agent.
+
+## 2026-11-14 nate the harness runs on browser-use with stored auth, not the app's built-in browser
+Nate, build session (orchestrator), 2026-11-14 about 22:50 Central, with a screenshot of the kernel session loading the built-in browser skill.
+> This agent is using the wrong skill, looking at anthropic built in browser, unless it hopefully plans to account for the specced out utilization of browser use. at least inspired by the technology to utilize for ourself. Store authentication, run the stealth browser jev ultrafast sessions, optimize for efficient and accurate operations for every feature
+
+## 2026-11-14 nate browser-use on cloud, tested the way production runs, with milestones that are finalised as they are hit
+Nate, build session (orchestrator), 2026-11-14 about 23:00 Central.
+> Run browser use on cloud, testing everything the way the app will be production built so we can validate as we build. Build everything in a way that establishes and finalizes milestones being hit and our app, system, everything being fully realized
+
 ## 2026-11-15 one place makes the ui, every correction becomes a check, emil's skills vet every page, and the system designs any new page
 Ben, project chat and thread "Roll the UI system out everywhere", 2026-11-15, times UTC.
 
