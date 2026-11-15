@@ -21,7 +21,7 @@ Opened by tapping a tile in **Sell** ([decision](../../product/decisions.md#2026
 | Choice | Options considered | Picked | Why | What would change it |
 |---|---|---|---|---|
 | Shape of the record | one flat form per site; one canonical record mapped per site ([listing fields](../../research/list/nate/listing-fields-by-platform.md)) | One record of typed attributes; each site's form is a mapping computed at listing time | Depop has no title, eBay's required fields are computed per category, five condition scales: a flat form per site would hold five copies of one fact | A site whose form cannot be produced from attributes plus `listing.overrides` |
-| Which fields a kind has | one generic schema; per-kind field sets ([identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md)) | Per-kind sets for 13 kinds, read from `requirement` rows | Cards, vinyl, watches and cameras grade on different axes; box and papers set a watch's price class | A kind where the generic set fills every target site's form |
+| Which fields a kind has | one generic schema; per-kind field sets ([identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md)) | A kind is a node of Shopify's product taxonomy, grouped into 13 families; fields inherit root, family, kind, and each is one `requirement` row with its role, site names, learned importance and fill ladder ([fields by kind](../determinations/fields-by-kind.md), *agent proposal*) | Cards, vinyl, watches and cameras grade on different axes; box and papers set a watch's price class; a new kind costs a few rows | A kind where the generic set fills every target site's form |
 | Condition | one internal scale; per-kind axes mapped to each site ([identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md), [listing fields](../../research/list/nate/listing-fields-by-platform.md)) | Per-kind axes plus flaws; the site value is derived, never stored | Mapping loses detail one way only: from axes to a site scale, never back | A mapping test where two kinds collapse to the same site value with different prices |
 | Required fields | inferred list (first pass); read per site and per category ([listing fields](../../research/list/nate/listing-fields-by-platform.md)) | Static rules for Facebook, Depop, Poshmark, Mercari; eBay computed from `getItemConditionPolicies` and `getItemAspectsForCategory` per category | eBay's own docs say the required list is per category | A site changing its form, caught by the harness read-back |
 | Where every value rests | value only; value plus `evidence` ([harness](../../research/cross-cutting/ben/ai-harness-from-repos.md), [privacy](../../research/cross-cutting/nate/privacy-and-data.md)) | Every attribute carries `evidence` | `claim_check` backs a listing claim only against evidence; "Why?" needs it | none: the proof layer depends on it |
@@ -29,7 +29,7 @@ Opened by tapping a tile in **Sell** ([decision](../../product/decisions.md#2026
 | Cost and profit | always shown; hidden until set ([coverage](../coverage.md)) | Hidden until a cost is entered; then a guarded number | Someone clearing a closet has no cost basis | none open |
 
 ## The record by kind
-Fields per kind from [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md) (*observed* where it names a grading house, *inferred* elsewhere).
+The full framework (the taxonomy spine, every field with its fill ladder, how the engines fill the rest, six worked examples and an unknown kind) is [fields by kind](../determinations/fields-by-kind.md) (*agent proposal*). The table below is the identifiers, condition axes and completeness that set the price class, from [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md) (*observed* where it names a grading house, *inferred* elsewhere).
 
 | Kind | Identifiers | Condition axes | Completeness (sets price class) |
 |---|---|---|---|
@@ -61,7 +61,7 @@ Battery, function and smell are never read from photos; they are the person's st
 Each carries `ref`, `captured_at` and `extractor_version` ([product §3](../product.md)).
 
 ## Which fields each site needs before listing
-From the merged table in [listing fields](../../research/list/nate/listing-fields-by-platform.md) (*observed* unless marked).
+From the merged table in [listing fields](../../research/list/nate/listing-fields-by-platform.md) (*observed* unless marked). Each field's site names, limits and per-site importance sit on its `requirement` row ([fields by kind §2](../determinations/fields-by-kind.md#2-the-field-registry-is-the-requirement-row)).
 
 | Field | eBay | Facebook | Depop | Poshmark | Mercari |
 |---|---|---|---|---|---|
@@ -176,7 +176,7 @@ No published figure was found for how well a crosslister fills each site's form.
 | Condition | one scale, within one level ([build plan](../../research/identify/ben/build-plan.md)) | per-kind axes, mapped per site ([identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md), *observed*) |
 | Missing fields | listed per site in his missing-features note ([M10](../../research/cross-cutting/ben/missing-features.md)) | computed per category from the site ([listing fields](../../research/list/nate/listing-fields-by-platform.md)) |
 
-Where Ben's design stumbles: the Sell grid shows one pill per tile, so a tile live on three sites and failed on one hides the failure; the logo row with per-site pills shows it. What the backend makes possible that it does not use: the event log can show "what changed since you last looked" on every card, and `requirement` priorities can order the fields by what moves value.
+Where Ben's design stumbles: the Sell grid shows one pill per tile, so a tile live on three sites and failed on one hides the failure; the logo row with per-site pills shows it. What the backend makes possible that it does not use: the event log can show "what changed since you last looked" on every card, and each `requirement` row's learned importance for value, match and rank ([fields by kind F2](../determinations/fields-by-kind.md#f2-field-importance)) can order the fields by what moves value.
 
 ## Open for Ben and Nate
 | Question | Recommendation | Depends on it |
