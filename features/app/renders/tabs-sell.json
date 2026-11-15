@@ -1,0 +1,30 @@
+{
+  "route": "(tabs)/sell",
+  "screen": "sell",
+  "states": [
+    "typical"
+  ],
+  "skip": "",
+  "catalog": false,
+  "status": "fail",
+  "findings": [
+    {
+      "level": "warn",
+      "id": "B16",
+      "where": "screen 2 \"Russell Athletic Chico State hoodie, ...\"",
+      "msg": "looks like title case: sentence case everywhere, unless these are names (Art. 6.5)"
+    },
+    {
+      "level": "warn",
+      "id": "B3",
+      "where": "app",
+      "msg": "has no wordmark: a main screen carries \"secondhand\" in its navigation bar, and a sheet does not (C1)"
+    },
+    {
+      "level": "error",
+      "id": "B35",
+      "where": "screen \"sell\"",
+      "msg": "is not drawn in the states new, empty, one, dense, loading, failed, offline, at /sell?state=<state> or anywhere on its pages: draw each from useScreen() (app/src/demo/screen.ts), or say why it can't happen with <Screen skip=\"new: why\">"
+    }
+  ]
+}
