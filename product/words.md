@@ -1708,3 +1708,9 @@ Nate, build session (orchestrator), 2026-11-15 about 09:35 Central, correcting t
 > No it shows that ebay.com doesnt work but ebay.co.uk , ebay.de, ebay.ie , and ebay.be work, which we can still probably use to access us listings and such, even sign in
 
 Used in: [when eBay serves its public pages, regional sites](../research/cross-cutting/nate/runs/ebay-when-it-serves.md#ebays-regional-sites-added-2026-11-15-about-0945-central).
+
+## 2026-11-15 nate use the platforms that sit on the ebay api or the like, and build on what they have proven
+Nate, build session (orchestrator), 2026-11-15 about 10:20 Central.
+> Well the aggregation or other platforms that utilize the ebay api or something of that nature can be used instead, perhaps for even more information, they might lend features proven we can piggy back on and drive to empower all engines.
+
+Used in: `research/data/nate/data-services-on-marketplace-apis.md` when it lands.
