@@ -4,7 +4,7 @@ import { mkdtempSync, writeFileSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { words, allCaps, titleCase, sheetAgrees, seenAs } from './render.mjs';
+import { words, allCaps, titleCase, sheetAgrees, seenAs, judge } from './render.mjs';
 import { scan } from '../../scripts/copy-lint.mjs';
 import { check, playwright } from '../../scripts/brand-check.mjs';
 import { mediaCss } from '../../scripts/media-css.mjs';
@@ -31,6 +31,11 @@ test('render: brand/media.json holds the same numbers as Part III of the constit
   const worse = sheetAgrees(constitution, drift).map(o => `${o.where} ${o.msg}`).join('\n');
   assert.match(worse, /deck unit disagrees/); assert.match(worse, /story layouts disagree/); assert.match(worse, /post "act" is true/); assert.match(worse, /web wordmark \(c1\) disagrees/);
   assert.match(sheetAgrees('# no table', media)[0].msg, /can't read the Part III media table/);
+});
+
+test('render B15: faces CI was given that do not load fail; faces that are only missing on this machine warn', () => {
+  const run = fontsRequired => judge({ views: [], stressed: [], fontsLoaded: false, fontsRequired }, { medium: 'deck', sheet: media.deck, scales: { space: new Set([0]), weight: new Set([500, 600]) }, colors: {} }).filter(o => o.id === 'B15').map(o => o.level);
+  assert.deepEqual(run(true), ['error']); assert.deepEqual(run(false), ['warn']);
 });
 
 // Each rule is shown failing on the output it exists to catch, in a real browser. A machine with no browser skips these.

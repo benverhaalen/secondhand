@@ -382,7 +382,7 @@ export function judge(facts, { medium, sheet, scales, colors, states = {} }) {
   if (sheet.fields && withField > sheet.fields) out.push(err('B4', medium, `${withField} views carry the field: a ${medium} uses it on ${sheet.fields} at most (Part III)`));
   const bleeds = facts.views.filter(v => v.bleed).length, most = sheet.fields ?? 1;
   if (bleeds > most) out.push(err('B8', medium, `the field fills ${bleeds} views: it fills ${most} at most on a ${medium}, and sits on one card or band everywhere else (C2, Part III)`));
-  if (facts.fontsLoaded === false) out.push(warn('B15', medium, 'the brand faces are not installed on this machine, so line counts, widths and margins were measured in a fallback face'));
+  if (facts.fontsLoaded === false) out.push((facts.fontsRequired ? err : warn)('B15', medium, facts.fontsRequired ? 'the brand faces in BRAND_FONTS did not load, so nothing was measured in them: check the folder holds the Clofie and PP Neue Montreal files' : 'the brand faces are not on this machine, so line counts, widths and margins were measured in a fallback face. Put the files in fonts/ (gitignored) or set BRAND_FONTS'));
   return out;
 }
 
