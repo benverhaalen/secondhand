@@ -55,6 +55,33 @@ function setup(name = 'answer', overrides: Partial<ConverseOptions> = {}) {
 
 const prose = (answer: Awaited<ReturnType<typeof converse>>) => answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join(' ');
 
+test('settled blocks preserve text and widgets from every round in order', async () => {
+  const first = fixture('one-tool')[0];
+  first.content.unshift({ type: 'text', text: 'Looking now. ', citations: null });
+  const second = fixture('one-tool')[1];
+  second.stop_reason = 'pause_turn';
+  const t = setup('answer', { client: replay([first, second, textMessage('Finished.')]).client });
+  const answer = await t.run();
+  assert.equal(answer.blocks[0].type, 'text');
+  assert.equal(answer.blocks[0].type === 'text' && answer.blocks[0].text, 'Looking now.');
+  assert.deepEqual(answer.blocks.filter(b => b.type === 'widget').map(b => b.widget), ['price_range', 'table']);
+  const last = answer.blocks.at(-1);
+  assert.equal(last?.type === 'text' && last.text, 'Finished.');
+  assert.equal(answer.blocks.flatMap(b => b.type === 'text' ? [b.text] : []).join('').replace(/\s/g, ''), streamed(t.events).replace(/\s/g, ''));
+  const settled = t.events.find(e => e.event === 'assist.settled');
+  assert.ok(settled?.event === 'assist.settled');
+  assert.deepEqual(settled.data.blocks, answer.blocks);
+});
+
+test('early-stop text is gated, streamed and included in settled blocks', async () => {
+  const t = setup('answer', { client: replay([continuingRound({})]).client, max_rounds: 1 });
+  const answer = await t.run();
+  assert.equal(streamed(t.events), 'The answer stopped early.');
+  assert.equal(prose(answer), streamed(t.events));
+  assert.ok(answer.ms.first_text !== null);
+  assert.equal(t.events.at(-2)?.event, 'assist.text');
+});
+
 test('gate tokenization treats money commas, decimals, percent and years as exact tokens', async () => {
   for (const [claim, value, verdict] of [
     ['$1,299', '1299', 'pass'], ['1299', '$1,299', 'pass'], ['4.5', '4', 'hold'],

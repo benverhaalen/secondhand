@@ -493,7 +493,10 @@ ${rendered}` });
       for (const key of ['input_tokens', 'output_tokens', 'cache_read_input_tokens', 'web_searches', 'cost_usd'] as const) answer.usage[key] += usage[key];
       if (usage.cost_source === 'provider') answer.usage.cost_source = 'provider';
       await collectWeb(final, answer, o, toolEvent, pendingWeb, roundStart);
+      const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
       await checkedDraft(final, answer, o.text, o.log, o.now());
+      answer.blocks = [...previous, ...answer.blocks];
+      answer.gate.tags_removed += tags_removed;
       if (final.stop_reason === 'refusal') {
         answer.state = 'refused';
         answer.reason = final.stop_details?.category ?? 'refusal';
@@ -551,7 +554,17 @@ ${rendered}` });
       }
     }
     await closeWeb(pendingWeb, answer.reason ?? 'missing_result', o, toolEvent);
-    if (early) answer.blocks.push({ type: 'text', text: 'The answer stopped early.' });
+    if (early) {
+      const previous = answer.blocks, tags_removed = answer.gate.tags_removed;
+      const text = await checkedDraft({ content: [{ type: 'text', text: 'The answer stopped early.', citations: null }] } as Message,
+        answer, o.text, o.log, o.now());
+      answer.blocks = [...previous, ...answer.blocks];
+      answer.gate.tags_removed += tags_removed;
+      if (text) {
+        if (answer.ms.first_text === null) answer.ms.first_text = o.now() - started;
+        o.onEvent?.({ event: 'assist.text', data: { delta: stripTags(text) } });
+      }
+    }
     o.log.note('assist.gate', { ...answer.gate, cut_sentences: undefined, early_count: early ? 1 : 0 });
   } catch (error) {
     answer.state = 'failed';

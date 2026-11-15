@@ -8,6 +8,41 @@ import { assistParams } from '../../engines/param/param.ts';
 import { runTurn, type RunTurnDeps } from './run-turn.ts';
 import type { ToolResult } from './types.ts';
 import type { StreamClient } from './converse.ts';
+import { defaultDeps } from './tools.ts';
+
+test('concurrent person and visitor turns keep their own tool caller and person id', async () => {
+  const t = setup();
+  const shared = defaultDeps({}, async () => { throw new Error('network forbidden'); }, t.deps.log);
+  const seen: { caller: string; person_id?: string }[] = [];
+  const search = t.jobs.put({ kind: 'search', state: 'running' }, 'person-a');
+  t.jobs.append(search.id, 'answer.settled', { results: [], sites_pending: [] });
+  t.jobs.append(search.id, 'job.state', { state: 'done' });
+  shared.searchJob = {
+    async start(input) { seen.push({ caller: input.caller, person_id: input.person_id }); return { id: search.id }; },
+    listen: t.jobs.listen, framesAfter: t.jobs.framesAfter,
+  };
+  t.deps.toolDeps = shared;
+  t.deps.tools = undefined;
+  const entered: (() => void)[] = [];
+  t.deps.converse = async o => {
+    await new Promise<void>(resolve => { entered.push(resolve); if (entered.length === 2) entered.forEach(done => done()); });
+    await o.tools.run('search_market', { query: 'coat' }, o.signal);
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(seen.length, 2);
+    return (await import('./converse.ts')).converse({ ...o, client: { messages: { stream() {
+      return { on() {}, finalMessage: async () => fixture()[1] };
+    } } } });
+  };
+  const visitor = t.jobs.put({ kind: 'assist', state: 'running' }, 'vis_test');
+  const answers = await Promise.all([
+    runTurn(t.job.id, { surface: 'buy', text: 'coat', user_id: 'person-a' }, t.deps),
+    runTurn(visitor.id, { surface: 'buy', text: 'coat' }, t.deps),
+  ]);
+  assert.deepEqual(seen, [{ caller: 'person', person_id: 'person-a' }, { caller: 'visitor', person_id: undefined }]);
+  assert.equal(shared.caller, 'visitor', 'the injected template must not be mutated');
+  assert.equal(shared.person_id, undefined);
+  assert.ok(answers.every(answer => answer?.state === 'answered'));
+});
 
 const NOW = Date.parse('2026-11-15T12:00:00Z');
 const result: ToolResult = { tool: 'value_item', ok: true, rows: [{ id: 'price', price_cents: 4500 }],
@@ -137,15 +172,19 @@ test('default tool wiring uses the authenticated caller and the injected environ
   const d = defaultDeps({}, t.deps.fetch, t.deps.log);
   t.deps.toolDeps = d;
   t.deps.tools = undefined;
+  const callers: string[] = [];
+  d.forUser = async id => { callers.push(id); return null; };
   t.deps.converse = async o => {
-    assert.equal(d.caller, 'person');
-    assert.equal(d.person_id, 'person-a');
-    assert.equal(d.now(), NOW);
+    const result = await o.tools.run('market_store', { function: 'ask_genie', args: { question: 'counts' } }, o.signal);
+    assert.equal(result.reason, 'not_connected');
     assert.equal(o.tools.defs.length, 5);
     assert.equal(o.model, 'stand-in');
     return (await import('./converse.ts')).converse({ ...o, tools: { defs: [], run: async () => result } });
   };
   await runTurn(t.job.id, { surface: 'buy', text: 'jacket', user_id: 'person-a' }, t.deps);
+  assert.deepEqual(callers, ['person-a']);
+  assert.equal(d.caller, 'visitor');
+  assert.equal(d.person_id, undefined);
   assert.equal(fetches, 0);
 });
 
