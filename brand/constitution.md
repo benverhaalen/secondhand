@@ -252,6 +252,8 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 | **PP Neue Montreal** 2.6, Medium (500) | Everything people read or tap: item titles, amounts, buttons, tabs, messages, captions, headlines in cards | QOVES sets all of its text in it, headings included, in Book and Medium; Ben found Book light and picked Medium for all of it ([the text weight is 500](../product/words.md#2026-11-15-the-text-weight-is-500)) ([what its stylesheets say](explore/round-8/qoves-type.md)) |
 | **Clofie SemiBold**, 600 | The wordmark, and the short list below | Ben's pick. Geometric and friendly, and not the grotesk every AI app uses |
 
+Where a licensed file is missing (the Mac-only fonts), the pair draws in Hanken Grotesk Medium and Outfit SemiBold, bundled under the OFL in `app/assets/fonts-open/`: *agent proposal* on Nate's words ([an open font for every system](../product/words.md#2026-11-15-nate-set-up-treg-for-the-tools-identification-needs-an-open-font-for-every-system)), for Ben to judge by eye ([the brief](explore/open-fallback/README.md)).
+
 **Clofie is always lowercase** ([Ben’s correction](../product/words.md#2026-11-15-shared-header-icon-only-navigation-and-lowercase-display-type)). Apply this at display time without rewriting stored content.
 
 **Where Clofie goes** (agent decision; Ben asked for it in [round 8](../product/words.md#2026-11-15-round-8-picks); the reasons and sources are in [explore/round-9/clofie-use.md](explore/round-9/clofie-use.md)). A string is set in Clofie only when all five hold: we wrote it, it is 21 px or larger, it fits on one line, it has no digits, and it is the only Clofie string in the view besides the wordmark.
