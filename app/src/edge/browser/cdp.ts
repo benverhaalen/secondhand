@@ -20,14 +20,14 @@ type CdpBrowser = { contexts(): CdpContext[]; newContext(): Promise<CdpContext>;
   newBrowserCDPSession?(): Promise<{ send(method: 'Browser.close'): Promise<unknown> }> };
 export type CdpPw = { chromium: { connectOverCDP(url: string, o?: { timeout?: number }): Promise<CdpBrowser> } };
 
-export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState(s: StorageState): Promise<void>; exportState(): Promise<StorageState> };
+export type AuthedContext<P> = PoolContext<P & CdpPage> & { loadState(s: StorageState): Promise<void>; exportState(): Promise<StorageState>; live_url?: string };
 
 export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage> {
   async function connect(profileDir: string | undefined, opts: LaunchOptions): Promise<AuthedContext<CdpPage>> {
     const ep = await source.open(profileDir, opts);
     let browser: CdpBrowser;
     try { browser = await pw.chromium.connectOverCDP(ep.cdpUrl, { timeout: 30_000 }); }
-    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/wss?:\/\/\S+/g, '[cdp]')}`); }
+    catch (e) { await ep.stop(); throw new Error(`could not connect to the ${source.kind} browser: ${(e as Error).message.replace(/(wss?|https?):\/\/\S+/g, '[cdp]')}`); }
     const ctx = browser.contexts()[0] ?? await browser.newContext();
     let closed = false;
     const closers: (() => void)[] = [];
@@ -50,6 +50,7 @@ export function cdpLauncher(pw: CdpPw, source: BrowserSource): Launcher<CdpPage>
           `if (location.origin === ${JSON.stringify(o.origin)}) { for (const [k, v] of ${JSON.stringify(o.localStorage.map(i => [i.name, i.value]))}) localStorage.setItem(k, v); }` });
       },
       exportState: () => ctx.storageState(),
+      live_url: ep.live_url, // a cloud browser's live view; the server keeps it and hands the client only an opaque token
     };
   }
   return { persistent: (dir, opts) => connect(dir, opts), anonymous: opts => connect(undefined, opts) };
@@ -94,7 +95,7 @@ export function localChrome({ executablePath, scratch, headless, spawnFn = spawn
 
 // A Browser Use Cloud browser. The key is read by presence from the caller and sent only in the X-Browser-Use-API-Key header,
 // never in a URL; profileFor maps a profile directory to a cloud profile id when one was made (cloud_profile_id in browser-use 1.0).
-export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.browser-use.com/api/v4', country = 'us', timeoutMin = 60,
+export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.browser-use.com/api/v4', country = 'us', timeoutMin = 5,
   profileFor = () => undefined }: {
   apiKey: string; fetchFn?: typeof fetch; base?: string; country?: string; timeoutMin?: number; profileFor?: (dir: string) => string | undefined;
 }): BrowserSource {
@@ -104,7 +105,8 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
     async open(profileDir) {
       const profileId = profileDir ? profileFor(profileDir) : undefined;
       const res = await fetchFn(`${base}/browsers`, { method: 'POST', headers,
-        body: JSON.stringify({ proxyCountryCode: country, timeout: timeoutMin, ...(profileId ? { profileId } : {}) }) });
+        // the whole timeout is charged up front and refunded on stop, so it is sized to the job; a challenge is never solved here, it pauses for the person
+        body: JSON.stringify({ proxyCountryCode: country, timeout: timeoutMin, solveCaptchas: false, ...(profileId ? { profileId } : {}) }) });
       if (!res.ok) throw new Error(`browser-use cloud create answered ${res.status}`);
       const body: unknown = await res.json();
       const o = (typeof body === 'object' && body !== null ? body : {}) as Record<string, unknown>;
@@ -114,4 +116,11 @@ export function browserUseCloud({ apiKey, fetchFn = fetch, base = 'https://api.b
       return { cdpUrl, live_url, stop: async () => { await fetchFn(`${base}/browsers/${encodeURIComponent(id)}`, { method: 'PATCH', headers, body: JSON.stringify({ action: 'stop' }) }).catch(() => undefined); } };
     },
   };
+}
+
+// The one place the pool's browser is chosen: a Browser Use Cloud browser when BROWSER_USE_API_KEY is present (read by presence,
+// passed only to the header), else a local Chrome on this host (SECONDHAND_CHROME, or the default Windows install path).
+export function sourceFromEnv(env: Record<string, string | undefined> = process.env, scratch = join(process.cwd(), '.browser-scratch')): BrowserSource {
+  if (env.BROWSER_USE_API_KEY) return browserUseCloud({ apiKey: env.BROWSER_USE_API_KEY });
+  return localChrome({ executablePath: env.SECONDHAND_CHROME ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe', scratch });
 }

@@ -42,7 +42,7 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     const server = account_id ? address(account_id) : undefined, headless = !(site && PROFILES[site].headed);
     return server ? { headless, proxy: { server } } : { headless };
   };
-  const profileDir = (account_id: string) => join(profileRoot, encodeURIComponent(account_id));
+  const profileDir = (account_id: string) => profileDirFor(profileRoot, account_id);
 
   function slotFor(account_id: string, site?: Site): Slot<P> {
     const have = accounts.get(account_id);
@@ -103,19 +103,26 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
         const before = accounts.get(task.account_id);
         const warm = !!before && !before.dead && before.ready;
         const slot = slotFor(task.account_id, acct.site);
-        // One job drives an account's session at a time; a second job is told 409 at once, never queued into the first's steps.
-        if (slot.leasedBy && slot.leasedBy !== task.job_id) return { ok: false, status: 409, message: `account busy with ${slot.leasedBy}`, ms: now() - t0 };
+        // One task drives an account's session at a time, even two tasks of one job: the second is told 409 at once.
+        if (slot.leasedBy) return { ok: false, status: 409, message: `account busy with ${slot.leasedBy}`, ms: now() - t0 };
         slot.leasedBy = task.job_id;
+        let ran = false;
         try {
           const ctx = await slot.ctx;
           if (!slot.loaded && ctx.loadState && vault) { const st = await vault.get(acct.token_ref); if (st) await ctx.loadState(st); }
           slot.loaded = true;
           const value = await runOn(slot.ctx, task);
+          ran = true;
           return { ok: true, value, ms: now() - t0, warm };
         } finally {
-          // The sign-in goes back to the vault at the end of every lease, so a cloud browser or a host move loses nothing.
-          const ctx = slot.ready && !slot.dead ? await slot.ctx : undefined;
-          if (ctx?.exportState && vault) await ctx.exportState().then(st => vault.put(acct.token_ref, st), () => undefined);
+          // The sign-in goes back to the vault after a lease that loaded and ran cleanly, so a cloud browser or a host move loses
+          // nothing. Never after a failed load or run, and never a state with no cookies over one that has them (a logout or an
+          // expiry must not erase the stored sign-in; the adapter reports auth_expired and the person relinks).
+          const ctx = ran && slot.ready && !slot.dead ? await slot.ctx : undefined;
+          if (ctx?.exportState && vault) await ctx.exportState().then(async st => {
+            const had = await vault.get(acct.token_ref);
+            if (st.cookies.length || !had?.cookies.length) await vault.put(acct.token_ref, st);
+          }, () => undefined);
           slot.leasedBy = undefined; slot.lastUsed = now();
         }
       }
@@ -156,5 +163,8 @@ export function createPool<P extends PoolPage>({ launcher, profileRoot, accounts
     },
   };
 }
+
+// One account's profile directory: the pool and the hosted sign-in open the same one.
+export const profileDirFor = (profileRoot: string, account_id: string) => join(profileRoot, encodeURIComponent(account_id));
 
 export type Pool<P extends PoolPage = PoolPage> = ReturnType<typeof createPool<P>>;

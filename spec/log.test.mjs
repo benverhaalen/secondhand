@@ -315,3 +315,36 @@ test('the numbers include how long each tap took to show its result, slowest fir
     slowest: [{ screen: 'item', control: 'post', ms: 300 }, { screen: 'sell', control: 'tile', ms: 40 }],
   });
 });
+
+test('log.timed times work inside the process: sync stays sync, a promise is awaited, a throw is logged as an error and rethrown', async () => {
+  let t = 0; const { sink, log } = start({ now: () => new Date(Date.parse('2026-11-14T20:00:00Z') + (t += 5)) });
+  assert.equal(log.timed('check.links', () => 7, { files: 3 }), 7);
+  assert.equal(await log.timed('engine.score', async () => 8), 8);
+  assert.throws(() => log.timed('check.brand', () => { throw new Error('bad scale'); }), /bad scale/);
+  await assert.rejects(log.timed('job.pick', async () => { throw new Error('none'); }), /none/);
+  const lines = sink.lines.map(l => JSON.parse(l)).filter(e => e.event === 'timing');
+  assert.deepEqual(lines.map(e => [e.name, e.ok, e.level, typeof e.ms, e.error?.msg ?? null]), [
+    ['check.links', true, 'info', 'number', null], ['engine.score', true, 'info', 'number', null], ['check.brand', false, 'error', 'number', 'bad scale'], ['job.pick', false, 'error', 'number', 'none']]);
+  assert.equal(lines[0].files, 3);
+  assert.ok(lines.every(e => e.ms > 0));
+  assert.deepEqual(checkLog(sink.text()).problems, []);
+});
+
+test('the Python writer times work the same way', { skip: !hasPython && 'python3 is not installed' }, () => {
+  const out = python(`
+import asyncio, secondhand_log as s
+sink = s.memory_sink()
+log = s.create_log('test', '0.0.0+test', sink, seed=1, session='s_py')
+assert log.timed('photo.score', lambda: 7, shots=3) == 7
+async def ok(): return 8
+assert asyncio.run(log.atimed('capture.process', ok)) == 8
+try:
+    log.timed('photo.crop', lambda: 1 / 0)
+except ZeroDivisionError:
+    pass
+sys.stdout.write(sink.text())`);
+  const lines = out.trim().split('\n').map(l => JSON.parse(l)).filter(e => e.event === 'timing');
+  assert.deepEqual(lines.map(e => [e.name, e.ok, e.level]), [['photo.score', true, 'info'], ['capture.process', true, 'info'], ['photo.crop', false, 'error']]);
+  assert.equal(lines[0].shots, 3);
+  assert.deepEqual(checkLog(out).problems, []);
+});
