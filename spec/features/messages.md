@@ -174,7 +174,7 @@ For Ben and Nate to mark.
 
 ## Open for Ben and Nate
 
-1. **Tell buyers an assistant is answering?** Open in [product.md §9](../product.md#9-open-for-ben-and-nate); Luo 2019 found disclosure cut purchases about 80% (asserted, [handled-by-default.md](../../research/messages/nate/handled-by-default.md)), against the California and EU rules ([privacy-and-data.md](../../research/cross-cutting/nate/privacy-and-data.md)). Not decided here.
+1. **Tell buyers an assistant is answering?** Ben decided 2026-11-15 06:44: a reply the person reads and chooses to send is theirs and carries no label; if a buyer asks whether AI helped, the reply says so honestly ([words](../../product/words.md#2026-11-15-you-send-it-and-if-a-buyer-asks-it-says-so)). Background: it was open in [product.md §9](../product.md#9-open-for-ben-and-nate); Luo 2019 found disclosure cut purchases about 80% (asserted, [handled-by-default.md](../../research/messages/nate/handled-by-default.md)), against the California and EU rules ([privacy-and-data.md](../../research/cross-cutting/nate/privacy-and-data.md)). Not decided here.
 2. **What the chat count counts.** Decided as a count; recommendation: threads that need you, since handled ones are read for you. Depends: the badge query.
 3. **Ask the seller to add a mail forwarding filter at setup?** One step that makes every site event-driven without a Google review. Depends: setup copy, the gap-4 sample.
 
