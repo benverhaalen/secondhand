@@ -50,3 +50,14 @@ test('quiet hours and too many matches go to one digest', () => {
 });
 
 test('a paused want runs nothing', () => assert.equal(watchRun({ ...want, state: 'paused' }, [l({ listing_id: 'a' })], [], { now: new Date(), localHour: 12 }).push.length, 0));
+
+test('a size written as a word matches its letter: a want for L finds a listing that says Large', () => {
+  const jersey: Want = { ...want, text: 'brewers jersey', fit: { size: 'L' } };
+  const go = (size: string) => watchRun(jersey, [l({ listing_id: size, size })], [], { now: new Date('2026-11-15T03:00:00Z'), localHour: 14 }).matches.length;
+  assert.equal(go('Large'), 1);
+  assert.equal(go("Men's L"), 1);
+  assert.equal(go('48'), 1); // an MLB jersey's chest number, only because the want is a jersey
+  assert.equal(go('XL'), 0);
+  const suit: Want = { ...want, text: 'wool blazer', fit: { size: 'S' } };
+  assert.equal(watchRun(suit, [l({ listing_id: 'b', size: '40' })], [], { now: new Date('2026-11-15T03:00:00Z'), localHour: 14 }).matches.length, 0);
+});
