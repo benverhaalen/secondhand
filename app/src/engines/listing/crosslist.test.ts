@@ -43,8 +43,9 @@ test('product type routes by what the listing says', () => {
 test('a missing size is asked once across the sites that require it, and those drafts are not ready', () => {
   const plan = planItem(tee({ size: undefined }), { rows, linked: LINKED });
   const ask = plan.asks.find(a => a.field === 'size_label');
-  assert.ok(ask && ask.sites.includes('ebay'));
-  assert.equal(plan.sites.find(d => d.site === 'ebay')?.listing?.ready, false);
+  assert.deepEqual(ask?.sites, ['poshmark']);
+  assert.equal(plan.sites.find(d => d.site === 'poshmark')?.listing?.ready, false);
+  assert.equal(plan.sites.find(d => d.site === 'ebay')?.listing?.ready, true);
 });
 
 test('posting runs only for ready, approved drafts, with one operation id per listing and site', async () => {

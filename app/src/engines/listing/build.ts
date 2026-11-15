@@ -10,6 +10,7 @@
  */
 import { buildTitle, lint } from '../../../../scripts/listing-lint.mjs';
 import { money } from './money.ts';
+import { missingFor, type SelectionContext } from '../capture/complete.ts';
 import platformFit from '../../../../research/list/ben/platforms/platform-fit.json' with { type: 'json' };
 
 export type Attr = {
@@ -34,7 +35,8 @@ export type Requirement = {
   importance: { rank: Record<string, 'high' | 'medium' | 'low'> };
 };
 
-type Options = {
+type Options = SelectionContext & {
+  confirm_mode?: Parameters<typeof missingFor>[3];
   rows: Requirement[];
   price_cents: number;
   floor_cents: number;
@@ -81,13 +83,12 @@ export function buildListing(item: ItemCard, site: keyof typeof platformFit.plat
   rows.sort((a, b) => Number(search(b)) - Number(search(a)) ||
     (search(a) ? (rank[b.importance.rank[site]] ?? 0) - (rank[a.importance.rank[site]] ?? 0) : 0));
   const fields: Record<string, Attr['value']> = {};
-  const missing: string[] = [];
+  const missing = missingFor(item.attrs, item.kind, site, opts.confirm_mode ?? 'tap', opts);
   for (const row of rows) {
     const target = row.site_names[site];
     const attr = item.attrs[row.field];
     const value = attr && allowed(row.field, attr) ? shorten(attr.value, target.max_length) : undefined;
     if (value !== undefined && nonempty(value)) fields[target.name] = value;
-    else if (target.required && !missing.includes(row.field)) missing.push(row.field);
   }
 
   const title = buildTitle(site, facts, opts.searches);
