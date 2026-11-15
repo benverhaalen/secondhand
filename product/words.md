@@ -1803,3 +1803,13 @@ Nate, build session (orchestrator), 2026-11-15 about 15:30 Central.
 > Everything you just ascertained, lets wrap up the current leads at a good spot. Then fully focus on speccing based on what we currently have, and focusing to improve fix, and further develop, meanwhile, give me the full command to put into the terminal with the path for the p8 and everything prewritten
 
 Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "The spec pass".
+
+## 2026-11-15 nate where are we not optimized, an expert lead for real-time adaptation, the bundle identifier, and sessions end before they fill
+Nate, build session (orchestrator), 2026-11-15 between about 15:45 and 16:00 Central. Three messages.
+> Where have we not optimized in speed, accuracy, all aspects to the retrieval and operations of data and such features and everything driven with our custom build pipelines and api protocols. /research and assess. Addtionally, fully focus an expert team lead to apply the relevant skills, research out and continously with codex address things to fit the realtime adapt to each specific platform product type engines, taking into account the data we can gather and calculate things against, combining things to create metrics, all researched and credibly proven
+
+> com.bnvg.secondhand
+
+> ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled
+
+Used in: [packet 55](../.agents/team/packets/team/55-team-leads-and-mac-workers.md), "A session ends before it fills"; `spec/plans/optimization-gaps.md`.

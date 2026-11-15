@@ -156,6 +156,20 @@ Nate ([words](../../../../product/words.md#2026-11-15-nate-wrap-the-leads-up-at-
 
 One rule in one place: a rule stated on two pages is cut down to one, and the other links to it. Every threshold is a named param with its prior. Every number on a page says where it came from. Product choices are marked *agent proposal* and go to Nate; the backend is his to decide ([words](../../../../product/words.md#2026-11-15-nate-ben-has-given-me-the-backend)). Spec pages are written and read on Windows; a Sonnet seat may draft, an Opus seat reviews. Building resumes from the reviewed spec, piece by piece.
 
+## A session ends before it fills
+
+Nate ([words](../../../../product/words.md#2026-11-15-nate-where-are-we-not-optimized-an-expert-lead-for-real-time-adaptation-the-bundle-identifier-and-sessions-end-before-they-fill)): "ensure the sessions end, as each team lead is reaching their context load, and ideally stop at 50% to 60% filled". A lead's judgement gets worse as its context fills, so a lead hands off at about half full and stops; it does not run to the limit.
+
+To end: land what is in flight and passes; leave the rest on its branches; then write one handoff packet in `.agents/team/packets/team/` (integration 69, engines 70, Databricks 71, capture 72, the orchestrator 73, the adaptation lead 74; a later handoff of the same area replaces its own file) and stop. The packet is everything the next session needs and nothing else:
+
+1. What is true on main for the area, with the commit, and what was proved with which command.
+2. Every open branch and worktree on the Mac: its name, what it holds, whether it passed, what it waits on.
+3. The queue in order, each item with its owned files and its done check, so a brief can be written from it.
+4. Decisions made and why, in one line each, and anything waiting on Nate.
+5. What the last session got wrong or learned the hard way.
+
+A fresh session is started by the orchestrator from that packet and packet 55. It reads those two, the area's spec pages and the board, and nothing of the old transcript.
+
 ## Talking to each other
 
 Nobody waits idle, and no worker ever waits. What one seat needs from another is a row in [who is waiting on what](../../../../spec/plans/waiting.md), with one owner and what the waiter builds meanwhile; read its five rules and keep your rows true.
