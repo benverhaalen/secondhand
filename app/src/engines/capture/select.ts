@@ -13,7 +13,7 @@ export type State = {
   extent_cm?: number; rigid?: boolean; pieces?: number; kept: string[]; retakes: Record<string,number>;
   variants?: {dimensions?: {label:string;value:Record<string,number>;p:number}[]};
   studio?: {requested:boolean;measurements:string[];asks:StudioAsk[]};
-  facts: Record<string,Fact>; candidates?: Record<string,string[]>; lookups: 'none'|'running'|'done';
+  facts: Record<string,Fact>; candidates?: Record<string,string[]>; lookups: 'none'|'running'|'done'; lookups_at?: string;
   profile?: {handover?: 'pickup'|'delivery'|'either'}; refused: string[]; recall_flag?: boolean;
 };
 export function suggestionPasses(state: State, params: ParamStore): boolean {
