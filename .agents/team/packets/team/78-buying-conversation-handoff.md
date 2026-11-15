@@ -30,6 +30,45 @@ For the Databricks lead ("Lead 2: Databricks, the dashboard rebuilt"). The conve
 
 **Test:** each function, run on a table seeded with 10 rows for one term on two sites, returns the right `n` and `p50_cents` per site, and a null `p50_cents` with `n` 3 for a site holding 3 rows. Grant `EXECUTE` to the principal the API uses. Until MI1 rows land, `coverage_now()` is the honest answer: it says what the store holds.
 
+## Branches and worktrees on the Mac (started 2026-11-15 about 06:00 Central)
+
+| Worktree, branch | Holds | Model | Waits on |
+|---|---|---|---|
+| `buy-tools-1`, `w/buy-tools-1` | `app/src/edge/assist/tools.ts` and tests: the five tools over search, valuation, trend, keep per site and the store | gpt-6.1-sol, high | judging, then merge |
+| `buy-convo-1`, `w/buy-convo-1` | `converse.ts`, `widgets.ts`, `prompt.ts` and tests; `app/package.json` gains `@anthropic-ai/sdk` 1.8.0 (installed in that worktree's own `app/node_modules`, not the shared symlink) | gpt-6.1-sol, high | judging; then merge `w/buy-tools-1` into it and send the route follow-up |
+| `buy-eval-1`, `w/buy-eval-1` | `bench/assist/` questions, runner, scorer and tests | gpt-6.1-sol, medium | judging, then merge |
+| `buy-web-1`, `w/buy-web-1` | `web/`, the Next.js 16.4.6 site: `/buy`, the home hero, `/states`, recorded replays | gpt-6.1-sol, high | judging; a design-critic pass on `/states` at 375 and 1280 |
+
+The briefs are in the side-session notes folder of the orchestrator's group (`buy-brief-*.txt`), with the route follow-up (`buy-brief-route.txt`).
+
 ## Queue
 
-Filled at the stop.
+1. Judge each worker: `git status` against its owned files, the diff, rerun its checks, and look for weakened tests, stand-ins and hard-coded answers. Then commit in the worktree, merge `origin/main` there, retest, and bring it to Windows.
+2. Merge `w/buy-tools-1` into the `buy-convo-1` worktree, and send `buy-brief-route.txt` with `AGAIN=1`. Done when `node --test app/src/edge/api/assist.test.ts` passes, including the two-person test and the cap.
+3. A fresh review of the route (spend, visitors, a person's photo) before it reaches main.
+4. The first scored run, on Windows where `OPENROUTER_API_KEY` is set:
+   - `node bench/assist/run.mjs --effort low`, then `--effort medium`
+   - `node bench/assist/score.mjs <dir> --judge` on each
+   - choose `assist_effort` by the bench README's rule
+   - put both runs' numbers here and in features/assist; send the orchestrator one line
+   The sold reads need `SECONDHAND_LIVE_SITES=mercari,poshmark` in the env for the run.
+5. The web: `cd web && npx next build`, the design-critic pass, `SECONDHAND_API_ORIGIN` from the integration lead's host. A Vercel deploy is public: ask Nate first.
+
+## Waiting on others
+
+- The harness port in `app/src/edge/api/search.ts` (`ports.harness`) is undefined, so Depop, Mercari and eBay are unreachable for the tools. That wiring belongs to the orchestrator.
+- DBX-A1 (above), from the Databricks lead.
+- A11 and AD9 are Python on `w/adp-slice-1`. When they land in TypeScript or in the store, `search_market`'s `exclude_brand` switches from title words to the attribute record.
+
+## Decisions, one line each
+
+- The model writes `[widget:result_id]`, not numbers, so a chart cannot show a number no tool returned (changed from Nate's example on purpose).
+- OpenRouter's Anthropic endpoint, through the official SDK, so no new key is needed.
+- The store is called as typed SQL functions, not Genie first and not managed MCP.
+- Numbers are matched by unit-tagged tokens before the gate runs.
+
+## Waiting on Nate
+
+- The visitor spend cap `assist_daily_cents` (prior 500).
+- Whether a visitor's photo may go to the model provider.
+- Any Vercel deploy.
