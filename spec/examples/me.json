@@ -212,14 +212,13 @@
       "response": {
         "id": "job_dl07",
         "kind": "delete_user",
-        "state": "queued",
-        "reason": "workspace port not configured",
+        "state": "done",
         "stages": [
           {
             "name": "purge_workspace",
-            "state": "started",
+            "state": "arrived",
             "started_at": "2026-11-15T03:31:00Z",
-            "ended_at": null,
+            "ended_at": "2026-11-15T03:31:00Z",
             "found": {}
           }
         ]

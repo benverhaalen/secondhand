@@ -13,6 +13,7 @@ export type CaptureBlobs = {
   target(o: Target): { url: string; method: 'PUT'; expires_at: string };
   read(user_id: string, photo_id: string): Promise<{ bytes: Uint8Array; content_type: string; capture_id: string } | undefined>;
   remove(user_id: string, photo_id: string): Promise<void>;
+  removeUser(user_id: string): Promise<number>;
   onUploaded(listener: (e: Uploaded) => void): () => void;
 };
 export type Blobs = CaptureBlobs;
@@ -79,6 +80,16 @@ export function createBlobs({ kv, dir, origin, now = Date.now, random = randomBy
         kv.delete('blobs', key(user_id, photo_id));
       });
       log.event('state.change', { entity: 'photo', id: photo_id, to: 'removed' });
+    },
+    // Account deletion: every photo file and blob row the person owns; returns how many photos went.
+    async removeUser(user_id) {
+      if (!validComponent(user_id)) return 0;
+      return log.call('tool', 'blobs.removeUser', { user_id }, async () => {
+        const names = (await fs.readdir(folder(user_id)).catch(error => { if (missing(error)) return []; throw error; })).filter(name => !name.startsWith('.'));
+        for (const photo_id of names) kv.delete('blobs', key(user_id, photo_id));
+        await fs.rm(folder(user_id), { recursive: true, force: true });
+        return names.length;
+      }, count => ({ count }));
     },
     onUploaded(listener) { listeners.add(listener); return () => { listeners.delete(listener); }; },
   };

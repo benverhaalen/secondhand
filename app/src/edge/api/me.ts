@@ -3,6 +3,8 @@ import { auth as defaultAuth, iso, store as defaultStore, type Auth, type AuthSt
 import { ApiError, type Ctx, type Handler } from './http.ts';
 import { runtime as defaultRuntime } from './runtime.ts';
 import { captureRows } from './captures.ts';
+import { photos } from './uploads.ts';
+import type { Blobs } from '../store/blobs.ts';
 import type { Store, JobKind } from '../events/ports.ts';
 import type { AuthVault, StorageState } from '../browser/auth.ts';
 import { deleteUser as deleteWorkspaceUser, type Db, type Vault } from '../data/data.ts';
@@ -28,6 +30,7 @@ export function makeMeHandlers(o: {
   runtime?: { store: Store; vault: AuthVault };
   // The Db port must already be in a transaction scoped to app.user_id (data.ts).
   workspace?: { db: Db; vault: Vault };
+  blobs?: Pick<Blobs, 'removeUser'>; // the photo store; defaults to the process's own
 }) {
   const { store, auth, now } = o;
   const runtime = o.runtime ?? defaultRuntime;
@@ -41,7 +44,6 @@ export function makeMeHandlers(o: {
       args: { user_id: c.user_id! }, state: 'queued',
       stages: [{ name: stage, state: 'started', started_at: iso(now()), ended_at: null, found: {} }],
       attempts: 0, trace_id: c.request_id, created_at: iso(now()),
-      ...(kind === 'delete_user' && !o.workspace ? { paused: 'workspace_port_not_configured' as const, reason: 'workspace port not configured' } : {}),
     }).row;
     c.log.job(row.id, kind, row.state);
     return row;
@@ -105,14 +107,16 @@ export function makeMeHandlers(o: {
       for (const [id, row] of captureRows) if (row.user_id === user_id) { captureRows.delete(id); captures++; }
       c.log.event('state.change', { entity: 'user', id: user_id, to: 'deleted', ...counts, captures });
       const failures: unknown[] = [];
+      try { await call('tool', 'photos.removeUser', () => (o.blobs ?? photos()).removeUser(user_id), count => ({ count })); }
+      catch (cause) { failures.push(cause); }
       for (const ref of refs) {
         try { await call('db', 'vault.delete', () => runtime.vault.delete(ref), () => ({ count: 1 })); }
         catch (cause) { failures.push(cause); }
       }
       let row = job(c, 'delete_user', 'purge_workspace');
       if (failures.length) {
-        runtime.store.updateJob(row.id, { error: { code: 'vault_delete_failed', message: 'marketplace sign-in deletion failed' }, ...(o.workspace ? { state: 'failed' } : {}) });
-        c.log.job(row.id, row.kind, o.workspace ? 'failed' : 'queued', { failed_count: failures.length });
+        runtime.store.updateJob(row.id, { error: { code: 'vault_delete_failed', message: 'marketplace sign-in deletion failed' }, state: 'failed' });
+        c.log.job(row.id, row.kind, 'failed', { failed_count: failures.length });
         const error = new ApiError('waking', 'marketplace sign-in deletion failed', 'unlink_accounts', { by: 'none' }, { job_id: row.id });
         error.cause = new AggregateError(failures, 'marketplace sign-in deletion failed');
         throw error;
@@ -138,6 +142,9 @@ export function makeMeHandlers(o: {
           c.log.error('me.delete', new Error('workspace purge failed', { cause }), { job: row.id });
         }
         c.log.job(row.id, row.kind, row.state);
+      } else { // no workspace port: Store, vault, captures and photos are already purged above, so nothing is left to wait for
+        row = runtime.store.updateJob(row.id, { state: 'done', stages: row.stages.map(stage => ({ ...stage, state: 'arrived', ended_at: iso(now()) })) });
+        c.log.job(row.id, row.kind, 'done');
       }
       return { status: 202, body: { id: row.id, kind: row.kind, state: row.state, stages: row.stages, ...(row.reason ? { reason: row.reason } : {}) } };
     },
