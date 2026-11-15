@@ -11,9 +11,9 @@
     "in_the_loop": "Rules and limits is where the hand-off line is drawn and moved: what runs alone with a switch, what always asks without one, and each item's lowest price, saved only on Approve. Activity shows every automatic step with Undo while it can be undone where it happened."
   },
   "states": [
-    { "state": "payouts typical", "path": "/you/payouts", "shows": "Payouts; the amount on its way after fees; On its way rows with logo, title, when it lands and the amount; Paid out rows with when it landed" },
+    { "state": "payouts typical", "path": "/you/payouts", "shows": "Payouts; the amount on its way after fees; On its way rows with logo, title, the next word with its date (after the word it is at, once past Sold), and the amount; Paid out rows with the day it reached the bank or the hand" },
     { "state": "payouts new", "path": "/you/payouts?world=new", "shows": "Payouts and No payouts yet with its line" },
-    { "state": "insights typical", "path": "/you/insights", "shows": "By site; a row per site with its logo, sales count, days to sell and money kept; What your things are worth rows with ranges; the November goal bar and the goal as a field, "$300 a month"" },
+    { "state": "insights typical", "path": "/you/insights", "shows": "By site; a row per site with its logo, sales count, days to sell and money kept; What your things are worth rows with ranges; the November goal bar and the goal as a field, “$300 a month”" },
     { "state": "insights new", "path": "/you/insights?world=new", "shows": "By site with a line that sites show once they have a sale; the goal with an empty Amount field" },
     { "state": "records typical", "path": "/you/records", "shows": "Records; the year with Sold, Fees and labels, Kept; a row per sale with logo, title, day and fees, kept amount; Download CSV at the foot" },
     { "state": "records new", "path": "/you/records?world=new", "shows": "Records and No sales this year with its line; no foot button" },
@@ -29,7 +29,9 @@
   ],
   "controls": [
     { "id": "nav-back", "control": "Back", "on_tap": "goes back, or to You when opened directly", "does": "goes back", "path": "/you/settings", "goes": "/you" },
-    { "id": "payout-ord_kin", "control": "A payout row", "on_tap": "opens the item", "does": "opens the item", "path": "/you/payouts", "goes": "/item/it_kindle" },
+    { "id": "payout-ord_kin", "control": "A payout row", "on_tap": "opens a sheet with the four words, Sold, On its way, Ready on the site, In your bank, each with its date or when it happens, and See the item", "does": "opens the money's steps", "path": "/you/payouts" },
+    { "id": "money-item", "control": "See the item", "on_tap": "closes the sheet and opens the item", "does": "opens the item", "path": "/you/payouts", "before": ["payout-ord_kin"], "goes": "/item/it_kindle" },
+    { "id": "payout-instant", "control": "Get it today for $3", "on_tap": "asks the site for an instant payout at its fee; In your bank says Today, with the fee, and the button goes", "does": "asks for an instant payout", "path": "/you/payouts", "world": "flipper", "before": ["payout-ord_f6"], "logs": { "type": "change", "entity": "payout", "id": "ord_f6", "to": "instant_requested" } },
     { "id": "worth-it_lamp", "control": "A worth row", "on_tap": "opens the item", "does": "opens the item", "path": "/you/insights", "goes": "/item/it_lamp" },
     { "id": "goal-target", "control": "Goal amount", "on_tap": "edits the goal in place; on leaving the field the bar and the log follow", "does": "edits the goal", "path": "/you/insights" },
     { "id": "record-ord_kin", "control": "A sale row", "on_tap": "opens the item", "does": "opens the item", "path": "/you/records", "goes": "/item/it_kindle" },
@@ -70,6 +72,11 @@
     "Notification channels are three pills in a sheet, not a new part: a choice of three that closes on the tap.",
     "Delete account is refused while a sale is open, as deleting an item is (ways-out, Delete it); otherwise it says what ends first and waits for Approve.",
     "Pause selling picks a date two weeks out as its guess, shown as a Guess field the person can change.",
-    "Records keeps its foot button for the CSV: the one act on the page, labelled a record."
+    "Records keeps its foot button for the CSV: the one act on the page, labelled a record.",
+    "A sale's money moves through four words, Sold, On its way, Ready on the site, In your bank, each with its date (spec/edge-cases.md, Ben 05:05). A row says the word it is at and the next with its date; a date the site does not give is said in words (after you ship, when you cash out), never guessed. The per-site clocks are research/price/nate/fees-and-taxes.md and edge-cases, in app/src/you/money-steps.ts until spec/sites.mjs has payout rows.",
+    "Money stays On its way until it is in the bank or in the hand, so ready-on-the-site money is not counted as paid out; You and Payouts use the same sum.",
+    "Local pickup is paid in hand, so its money has two words: Sold, then In your hand.",
+    "Instant payout is offered only where the site has one, only once the money is ready on the site, with its fee in the label, as a second-kind button under the free date: never the default (edge-cases, Instant payout costs money).",
+    "A payout row opens the four words in a sheet rather than the item: the row is about the money; the item is one tap further, See the item."
   ]
 }

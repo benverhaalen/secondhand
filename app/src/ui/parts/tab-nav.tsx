@@ -1,7 +1,6 @@
 // The nav of a main tab that is a place of its own (You): the place's name centered where Today has the wordmark, and the
-// inbox on the right, 350 by 44 like Nav. Why a part: Nav centers only the wordmark, and Ben asked at 03:22 whether "You"
-// should be in the wordmark face. The answer (research/today/ben/today-feed-and-card-states.md §5): no. The wordmark stays the
-// one place the display face marks the brand; a tab's name is set in the text face, at 21, Medium, which gives it presence
+// inbox on the right, 350 by 44 like Nav. Why a part: Nav centers only the wordmark. The title is not in the wordmark face
+// (research/today/ben/today-feed-and-card-states.md §5): the wordmark stays the one place the display face marks the brand; a tab's name is set in the text face, at 21, Medium, which gives it presence
 // by size alone, as iOS titles its tabs. This is the one text-face string at 21, so it is drawn here and nowhere else.
 import { router, type Href } from 'expo-router';
 import { Text, View } from 'react-native';

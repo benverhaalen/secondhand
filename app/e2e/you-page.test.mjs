@@ -11,7 +11,7 @@ after(async () => { await app?.stop(); });
 
 // What each state shows, from the table. A state reached by taps lists them in "taps" and waits between them.
 const STATES = {
-  'payouts typical': { shows: ['Payouts', '$132.33', 'On its way, after fees', 'On its way', 'Paid out', 'Paid in hand at pickup', 'Landed Nov 1'] },
+  'payouts typical': { shows: ['Payouts', '$132.33', 'On its way, after fees', 'On its way', 'Paid out', 'On its way after you ship', 'In your hand at pickup', 'In your bank Nov 4'] },
   'payouts new': { shows: ['Payouts', 'No payouts yet'] },
   'insights typical': { shows: ['By site', '2 sales', 'Sells in about 11 days', 'What your things are worth', '$85 to $115', 'November goal', 'Kept so far', '$300 a month'] },
   'insights new': { shows: ['By site', 'Each site you sell on shows here once it has a sale.', 'Amount'] },
@@ -72,6 +72,23 @@ test('you/[page]: delete account waits for open sales to finish', async () => {
   await n.shows('Delete account');
   await n.tap('delete-confirm');
   await n.saw({ type: 'change', entity: 'account', to: 'delete_requested' });
+});
+
+// A sale's money moves through four words, each with its date (spec/edge-cases.md, Ben 05:05), and instant payout is offered
+// with its fee only once the money is ready on the site, never as the default.
+test('you/[page]: a payout shows its four words with dates, and instant payout with its fee', async () => {
+  const s = await app.open('/you/payouts');
+  await s.tap('payout-ord_kin');
+  for (const t of ['Sold', 'On its way', 'After you ship', 'Ready on the site', 'About Tuesday', 'In your bank', 'About Friday', 'See the item']) await s.shows(t);
+  assert.equal(await s.page.getByTestId('payout-instant').count(), 0, 'no instant payout before the money is ready on the site');
+  const f = await app.open('/you/payouts?world=flipper');
+  await f.shows('Ready on the site. In your bank about Wednesday');
+  await f.tap('payout-ord_f6');
+  await f.shows('Free if you wait: in your bank about Wednesday.');
+  await f.shows('Get it today for $3');
+  await f.tap('payout-instant');
+  await f.saw({ type: 'change', entity: 'payout', id: 'ord_f6', to: 'instant_requested' });
+  await f.shows('Today, with the fee');
 });
 
 // A price is saved only on Approve, and the save can be undone (README, the hand-off rule).

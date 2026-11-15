@@ -8,6 +8,7 @@ import { GoalBar } from '@/ui/parts/goal-bar';
 import { ListRow } from '@/ui/parts/list-row';
 import { TabNav } from '@/ui/parts/tab-nav';
 import { WeekBars } from '@/ui/parts/week-bars';
+import { moneyRows, soonest } from '@/you/money-steps';
 import { cash, drawn, PAGES, plural, span, useGo, useWorld, weeks } from '@/you/state';
 
 const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -22,7 +23,9 @@ export default function You() {
   const linked = w.connections.filter(c => connectionState(c) === 'connected').length;
   const auto = w.rules.filter(r => r.state === 'auto').length;
   const bars = weeks(w);
-  const landed = n.kept_cents - n.on_its_way_cents;
+  // Money is on its way until it is in the bank or in hand (spec/edge-cases.md, the four words), so this row and Payouts agree.
+  const money = moneyRows(w), coming = money.filter(r => !r.arrived);
+  const onItsWay = coming.reduce((a, r) => a + r.kept, 0), landed = n.kept_cents - onItsWay;
   const state = drawn(w, n.sold + live + kept.length);
 
   return (
@@ -39,8 +42,8 @@ export default function You() {
         )}
         {n.sold || live || kept.length ? (
           <List>
-            {n.on_its_way_cents > 0 ? <ListRow id="you-on-its-way" label="On its way" value={cash(n.on_its_way_cents)} onPress={() => go.to('/you/payouts')} /> : null}
-            {n.on_its_way_cents === 0 && landed > 0 ? <ListRow id="you-paid-out" label="Paid out" value={cash(landed)} onPress={() => go.to('/you/payouts')} /> : null}
+            {onItsWay > 0 ? <ListRow id="you-on-its-way" label="On its way" detail={soonest(coming) ?? undefined} value={cash(onItsWay)} onPress={() => go.to('/you/payouts')} /> : null}
+            {onItsWay === 0 && landed > 0 ? <ListRow id="you-paid-out" label="Paid out" value={cash(landed)} onPress={() => go.to('/you/payouts')} /> : null}
             {n.could_earn ? <ListRow id="you-live" label={`${live} live, could earn`} value={span(n.could_earn)} onPress={() => go.to('/sell')} /> : null}
             {kept.length ? <ListRow id="you-kept" label={`${kept.length} kept, worth`} value={keptWorth.high ? span(keptWorth) : 'Not valued yet'} onPress={() => go.to('/you/insights')} /> : null}
           </List>

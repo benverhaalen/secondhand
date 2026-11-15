@@ -11,7 +11,7 @@
     "in_the_loop": "The person stays in the loop through Rules and limits (what runs alone, what always asks) and Activity (every automatic step with Undo); this page points to both and says how many rules run on their own."
   },
   "states": [
-    { "state": "typical", "world": "clearing", "shows": "the title You in the nav with the inbox and its count; \"A site signed you out\" leading; the amount earned after fees with how many sales; rows On its way, live and could earn, kept and worth; the November goal bar; rows By site and Records; rows Your sites (3 of 5), Rules and limits (3 on their own), Activity, Settings" },
+    { "state": "typical", "world": "clearing", "shows": "the title You in the nav with the inbox and its count; \"A site signed you out\" leading; the amount earned after fees with how many sales; rows On its way with the soonest word still to come and its date (Ready on the site about Tuesday), live and could earn, kept and worth; the November goal bar; rows By site and Records; rows Your sites (3 of 5), Rules and limits (3 on their own), Activity, Settings" },
     { "state": "dense", "world": "flipper", "shows": "the same as typical with the flipper's numbers; no signed-out notice; the goal bar far from its target" },
     { "state": "one", "world": "one", "shows": "Nothing sold yet with its line and no button, then one row: 1 live, could earn; the goal bar at nothing kept; rows Your sites, Rules and limits, Settings" },
     { "state": "new", "world": "new", "shows": "Nothing sold yet, its line and Sell something; rows Your sites (0 of 5), Rules and limits, Settings; no money rows, no goal" }
@@ -35,6 +35,7 @@
     "The title is You in the text face at 21, Medium, centered where Today has the wordmark: the wordmark stays the one brand mark, and iOS titles its tabs in the text face (research/today/ben/today-feed-and-card-states.md §5). Brand-check warns B3 (no wordmark) on purpose.",
     "The peak amount is earned after fees across every sale, with on its way as the first row under it: the person wants to see it worked, and the row keeps money that can still be clawed back apart, as insights.md asks.",
     "Live and kept are rows with their range, not more big numbers: one peak amount per view (C6).",
+    "On its way counts a sale's money until it is in the bank or in the hand (the four words, spec/edge-cases.md, Ben 05:05), the same sum as Payouts, and its line names the soonest word still to come with its date, so the person sees when, not only how much.",
     "The weekly bars show only once 3 weeks have a sale (top-of-today-and-stacking.md §1). No demo world has 3 such weeks, so the parts sheet shows the bars; the rule stays.",
     "Rows into pages are a settings list with hairlines, the pattern every phone's Settings uses, in three groups: money, how the agent runs, the app.",
     "A signed-out site leads the page as a need notice: it stops selling there, so it is the one thing to fix first.",
