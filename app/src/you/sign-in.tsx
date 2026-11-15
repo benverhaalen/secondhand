@@ -17,8 +17,8 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
   const [address, setAddress] = useState(''), [code, setCode] = useState('');
   const [emailBusy, setBusy] = useState(false), [error, setError] = useState<string | null>(null);
   const [resendAt, setResendAt] = useState(0), [now, setNow] = useState(() => Date.now());
-  const [googleBusy, setGoogleBusy] = useState(false);
-  const busy = emailBusy || googleBusy;
+  const [googleBusy, setGoogleBusy] = useState(false), [appleBusy, setAppleBusy] = useState(false);
+  const busy = emailBusy || googleBusy || appleBusy;
   const offline = asked === 'offline';
   // On the iPhone sign-in is Apple or Google only (Nate); email stays on the web.
   const ios = Platform.OS === 'ios';
@@ -31,10 +31,10 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
   }, [resendAt]);
   const signInWithApple = async () => {
     if (busy) return;
-    setGoogleBusy(true); setError(null);
+    setAppleBusy(true); setError(null);
     try { if (await appleSignIn(requestAppleToken)) await onDone(); }
     catch (failure) { log.error('sign-in.apple', failure instanceof ApiFailure ? new Error(`Apple sign-in failed (${failure.status})`) : new Error('Apple sign-in failed')); setError(accountError(failure)); }
-    finally { setGoogleBusy(false); }
+    finally { setAppleBusy(false); }
   };
   const signInWithGoogle = async () => {
     if (busy || offline) return;
@@ -74,7 +74,7 @@ export function SignIn({ asked, onDone, requestGoogleToken }: { asked: ScreenSta
     </Stack>
     {phase === 'email' ? <>
       {Platform.OS === 'ios' ? <AppleAuthentication.AppleAuthenticationButton buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN} buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.WHITE_OUTLINE} cornerRadius={22} style={{ width: 188, height: 44, alignSelf: 'center' }} onPress={() => void signInWithApple()} /> : null}
-      <GoogleSignInButton busy={googleBusy} disabled={emailBusy || offline} onPress={signInWithGoogle} />
+      <GoogleSignInButton busy={googleBusy} disabled={emailBusy || appleBusy || offline} onPress={signInWithGoogle} />
       {ios ? null : <Txt center tone="ink-2">or use your email</Txt>}
       {ios && error ? <Txt role="body">{error}</Txt> : null}
     </> : null}
