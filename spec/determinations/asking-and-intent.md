@@ -78,7 +78,7 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 1. Arithmetic: value = P(differs) times impact, on the surface's measure.
 2. Arithmetic: highlight when the value is at or over `assist_value_floor` (0.15, card 17's floor, so both sides stop on the same line).
 
-**Why this method.** Unneeded questions cut task success from 65% to 27% (asserted, arXiv 2504.16331 in [clarifying-inputs §8](../../research/identify/nate/clarifying-inputs.md#8-design-all-inferred)); measuring the effect on the result is the direct test of need. The alternative, highlighting every unresolved entity, was rejected for that cost.
+**Why this method.** On coding tasks, asking clarifying questions raised pass rate from 27% to 65% (arXiv 2504.16331, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)); that shows asking pays when it is needed, not what an unneeded question costs, and it is not tested on listings. Measuring the effect on the result is the direct test of need. The alternative, highlighting every unresolved entity, was rejected for that cost.
 
 **When it is not shown.** Under the floor, the span is assumed silently and shows no assumption chip unless the assumption narrowed the results.
 
@@ -251,6 +251,8 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 **Check later.** Spans still open when the session ends with a purchase: each one is a candidate for a lower floor.
 
 ## 10. The buyer's purpose slots, and what is inferred before asking
+
+Filled slots also feed buy's `style_profile` ([buy](../features/buy.md#your-style-profile)), which owns it. Every question this file asks is emitted as one `clarify(slot, candidates[], value_of_information)` ([product §5](../product.md#decision-kinds-the-complete-list)).
 
 **Determines** the `intent` slots: use, for whom, budget, size, compatibility, deadline, condition tolerance, and `keep_for` (how long the person means to keep the thing, in months; read by [M27, M28 and M29](market-insight.md#m28-net-cost-of-ownership), *agent proposal*). `keep_for` follows the same sources, weights and provenance as the other slots, and is only assumed, never raised as a span, unless the prompt mentions it. Buy, Watch and Market read them; their comparison is theirs ([buy](../features/buy.md), [watch](../features/watch.md), [market](../features/market.md)).
 
@@ -738,3 +740,7 @@ Thresholds named here live in the `thresholds` row ([product.md §3](../product.
 - From Ben: catalog rows 54 to 77 ([assist](../features/assist.md#widget-vocabulary)).
 - From [list](../features/list.md) and [messages](../features/messages.md): drafts written as text with `<blank>` records where `claim_check` finds no backing, and a resume when a blank is filled (card 23).
 - From [today](../features/today.md) and the shared model: `unbacked_claim` raised from a blank with the action's own deadline, and its expiry going ahead without the claim (card 25); promotion counting only approvals whose money and claim marks were seen (card 21).
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).

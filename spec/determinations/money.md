@@ -125,7 +125,7 @@ Starting condition priors relative to Good. These are *asserted* placeholders, t
 2. For each attribute a with a difference: `beta_a = (n_a x beta_cat + k x beta_parent) / (n_a + k)`, with k = 50 sold rows (shrinkage). Below 30 rows in the parent too, use the prior.
 3. `factor = exp(sum over differing a of (beta_a(item value) - beta_a(comp value)))`.
 4. `adjusted = sold x factor x time_factor` (D3). Each step is written out: "+10% for better condition".
-5. Exposed per field (*agent proposal*): for every `requirement` field of the item's kind, D2 publishes its `beta_a` per value with `n_a` and the rank it came from (paired, category, parent, prior), versioned with the nightly fit. Score's `requirement_reorder` reads these as the value effect of each field ([fields-by-kind](fields-by-kind.md)); D2 does not rank fields itself.
+5. Exposed per field (*agent proposal*): for every `requirement` field of the item's kind, D2 publishes its `beta_a` per value with `n_a` and the rank it came from (paired, category, parent, prior), versioned with the nightly fit. The `requirement_fold` challenger reads these as the value effect of each field ([fields-by-kind](fields-by-kind.md)); D2 does not rank fields itself.
 
 **Why this method**: shrinking a category estimate toward its parent is the empirical-Bayes answer to thin categories (*inferred*). It keeps one sparse category from producing a wild factor. The alternative is a fixed condition table for everything. It is simpler, but condition premiums differ by category (new-with-tags matters more in fashion than in tools), so a learned factor with a shrinkage fallback is better (*inferred*). The 25% total cap in D1 limits damage from a wrong factor (*asserted* real-estate heuristic in [valuation-engine.md](../../research/price/ben/valuation-engine.md)).
 
@@ -639,6 +639,22 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 
 **Check later**: realised 30-day keep should fall inside the range 8 times in 10 across months and people. It is wrong if it falls under 7 in 10.
 
+## D22a Worth of what you own
+
+**Determines**: the range the person's owned and live items are worth together, and its change over 7 days ([insights](../features/insights.md)).
+
+**Sources and weights**: per item, the [D5](#d5-fair-value-range-overall-and-per-site) `valuation` range; items below [D1](#d1-comparable-set-and-weights)'s basis are left out and counted.
+
+**Method** (arithmetic, fixed seed, *agent proposal*): the D22 simulation with every item counted as held (no sale chance): the p10 to p90 of the summed fair values, and the same sum on the valuations of 7 days before. The change is the difference of the two midpoints.
+
+**When it is not shown**: with no item that has a shown range. "3 not valued yet" is stated when some are left out.
+
+**How it is explained**: "Your things are worth $A to $B, up $C this week." Tap: the items and each one's change.
+
+**Speed**: nightly, and when a valuation changes.
+
+**Check later**: the realised keep of items sold within 30 days should fall inside their summed range 8 times in 10. It is wrong if under 7 in 10.
+
 ## D23 Sell-through and share of asking
 
 **Determines**: how readily a kind of item sells, and how close sales land to asks, as market facts.
@@ -895,3 +911,7 @@ For resellers, the verdict is Buy when `a <= max_pay` (D17).
 
 - Trading-card pricing: graded cards price by grade and population, which D2's condition factors do not model; whether they get their own card is for Ben and Nate.
 - Ben's multipliers against the D9 solve (step 7): which one wins where they differ.
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).

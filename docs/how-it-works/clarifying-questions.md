@@ -59,7 +59,7 @@ From there the rules are plain.
 
 The cap of 3 has no source in research. A test decides it, and in capture it is 2 live prompts, from the study of shipping capture apps. A weekly job refits the other three numbers on real answers, and a person approves each change.
 
-Two reasons for arithmetic rather than a model. The research behind the design ([assist.md](../../spec/features/assist.md#design-choices)) reports that unneeded questions cut task success from 65% to 27%, and that models ask about three times less often than they should. A rule that can be read and tested avoids both failures.
+Two reasons for arithmetic rather than a model. The research behind the design ([assist.md](../../spec/features/assist.md#design-choices)) reports that on coding tasks, asking clarifying questions raised the pass rate from 27% to 65% (we have not tested it on listings), and that models ask about three times less often than they should. A rule that can be read and tested avoids both failures.
 
 ## Which control opens
 

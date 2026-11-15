@@ -86,7 +86,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 | source | what it contributes | weight or rank | why that weight |
 |---|---|---|---|
 | per-kind `requirement` rows (from [identity-schema-by-kind](../../research/item-card/nate/identity-schema-by-kind.md)) | the list of fields, views and `obtained_by` | defines the set | the kind's buyer-relevant fields are researched per kind |
-| `requirement_reorder` in [score](../features/score.md) | priority = how often the field changed the value or the sale | rank order once learned | the fields that move the outcome go first |
+| `requirement_fold` in `param_fold` ([product §6](../product.md#real-time-weights-agent-proposal)) | priority = how often the field changed the value or the sale | rank order once learned | the fields that move the outcome go first |
 | starting priority before learning | identifier label > size label > front > back > flaw close-ups > completeness parts > secondary views | rank (start) | an identifier settles the most fields per shot ([identify](../features/identify.md) evidence ladder) |
 | current attribute state | which rows are met | filter | do not ask for what is already settled |
 
@@ -305,11 +305,11 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 | source | what it contributes | weight or rank | why that weight |
 |---|---|---|---|
-| card or marker of known size in the plane | scale | fallback: used only when the size chart and the plane disagree or no size chart exists, because it is extra input | 4.10 to 4.20% error (Kowaleczko 2022 in [garment-measurement-accuracy](../../research/measure/nate/garment-measurement-accuracy.md)) |
+| card or marker of known size in the plane | scale | fallback: used only when the size chart and the plane disagree or no size chart exists, because it is extra input | 6.45% mean percentage error (up to 7.13% for pants); 4.10% for tops and 4.20% for skirts only after a trained correction network, so this path is stated at about 6.5% without one (Kowaleczko 2022, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)) |
 | LiDAR depth plus keypoints | metric points | path 1 for items 20 cm to 2 m on matte surfaces | 1.59 to 2.08% (Kim 2022, same note) |
 | published size chart of the confirmed product ([card 9](#9-which-product-it-is-and-when-identity-is-confirmed)) | scale from one known span | path 1 without LiDAR | maker's spec, but sizes vary by production run (inferred) |
 | ARKit plane | scale | cross-check for the size chart | no published accuracy figure |
-| monocular depth (UniDepthV2, MoGe-2) | cross-check only | never sets a value | ARel 6.8% and Rel 15.7, too loose ([measure](../features/measure.md)) |
+| monocular depth (UniDepthV2, MoGe-2) | cross-check only | never sets a value | ARel 6.8%, and MoGe-2's relative metric-depth error of 15.7 averaged over seven mixed datasets ([claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)), too loose ([measure](../features/measure.md)) |
 | person's tape | value | overrides | owner statement |
 | weight | not measured | none | weight is never read from photos |
 
@@ -512,7 +512,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 ## 17. Which question to ask next, and when to stop
 
-**Determines**: the next question for the person (which field, which input, which options), and when no more questions are asked.
+**Determines**: the next question for the person (which field, which input, which options), and when no more questions are asked. Each question goes out as one `clarify(slot, candidates[], value_of_information)` ([product §5](../product.md#decision-kinds-the-complete-list)), with this card's expected information gain as its value.
 
 **Sources and weights**
 
@@ -520,7 +520,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 |---|---|---|---|
 | candidate set ([card 9](#9-which-product-it-is-and-when-identity-is-confirmed)) and variant set ([card 6](#6-variant)) | the hypotheses | defines entropy | what is still open |
 | eBay Catalog `ASPECT_REFINEMENTS` counts | how each aspect value splits the hypotheses | arithmetic input | counts give EIG with no model (inferred, [clarifying-inputs §3](../../research/identify/nate/clarifying-inputs.md)) |
-| unmet asked rows ([card 3](#3-what-must-still-be-captured-and-when-it-is-enough)), weighted by `requirement_reorder` | non-identity questions (function, smell, worn count) | value of the field | fields that move price first |
+| unmet asked rows ([card 3](#3-what-must-still-be-captured-and-when-it-is-enough)), weighted by `requirement_fold` | non-identity questions (function, smell, worn count) | value of the field | fields that move price first |
 | effort per input | tap 1, chip 1, photo 2, type 3 | tiebreak | lower effort first |
 
 **Method**
@@ -535,7 +535,7 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
    - the person refused, which ends that field without a re-ask.
 5. Model step: an LLM writes the question's words only, from the chosen field and options. It cannot add or drop options.
 
-**Why this method**: EIG-chosen questions beat zero-shot LLM questions in arXiv 2502.04485, and unneeded questions cut success from 65% to 27% in arXiv 2504.16331 (both observed (excerpt), [clarifying-inputs §3 and §4](../../research/identify/nate/clarifying-inputs.md)). So the choice of whether and what to ask is arithmetic and capped. The alternative is to let a model decide when to ask. Models both over-ask and under-ask in the cited studies.
+**Why this method**: EIG-chosen questions beat zero-shot LLM questions in arXiv 2502.04485, (observed (excerpt), [clarifying-inputs §3](../../research/identify/nate/clarifying-inputs.md)), and on coding tasks asking clarifying questions raised pass rate from 27% to 65% (arXiv 2504.16331, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)); neither is tested on listings. So the choice of whether and what to ask is arithmetic and capped. The alternative is to let a model decide when to ask. Models both over-ask and under-ask in the cited studies.
 
 **When it is not shown**: nothing passes the stop rule. No question appears, and the open fields show their unknown reason.
 
@@ -757,9 +757,13 @@ Marks: observed = read at the source; asserted = stated by a source not checked;
 
 | from | what | used by |
 |---|---|---|
-| [score](../features/score.md) and price | `requirement_reorder` weights: how often each field changed the value or the sale | [card 3](#3-what-must-still-be-captured-and-when-it-is-enough), [card 17](#17-which-question-to-ask-next-and-when-to-stop) |
+| [data](../features/data.md) and price | `requirement_fold` weights: how often each field changed the value or the sale | [card 3](#3-what-must-still-be-captured-and-when-it-is-enough), [card 17](#17-which-question-to-ask-next-and-when-to-stop) |
 | [list](../features/list.md) | each site's condition definitions as predicates, colour lists, size systems, photo caps and photo rules, especially for Poshmark, Depop, Mercari and Facebook | [card 8](#8-colour), [card 14](#14-condition-on-each-markets-own-scale), [card 21](#21-which-frames-become-listing-photos-and-in-what-order) |
 | [data](../features/data.md) | the `thresholds` table with calibration splits; the nightly tape-error percentiles; a daily mirror of the CPSC recall data with the named source and endpoint | cards 1, 2, 9, 11, 20 |
 | [sold](../features/sold.md) | return reasons and "not as described" claims linked back to the field and flaw they cite, as labels | cards 12, 13, 14, 18 |
 | identify research | an OCR benchmark on labels and serial plates; eBay's own catalogue-match documentation; whether a GTIN is always per variant | cards 4, 6, 9 |
 | [studio](../features/studio.md) | the photo-score values per frame, and a statement of which edits are paste-back and which are generated | cards 21, 22 |
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).

@@ -34,7 +34,7 @@
     <div class="ln"><button class="pill">Accept $38</button>${H(8)}<button class="pill out">Counter</button>${H(8)}<button class="pill dot" aria-label="More">${ic('more')}</button></div>`);
   // A thing that needs the person is one kind of box, whatever is in it: the 72 slot, two or three lines, then its actions (L37). 152 tall.
   const notice = () => box('need', `<div class="ln mid"><span class="slot">${logo('ebay')}</span>${H(12)}<div class="fx"><div class="t18">Signed out</div>${V(4)}<div class="t13">Sign in to keep 3 listings live</div></div></div>${V(12)}
-    <div class="ln"><button class="pill">Sign in</button>${H(8)}<button class="pill out">Not now</button></div>`);
+    <div class="ln"><button class="pill">Sign in</button>${H(8)}<button class="pill out">Not now</button>${H(8)}<button class="pill dot" aria-label="More">${ic('more')}</button></div>`);
   const item = (pic, name, sub, state, sites) => box('gray', `<div class="ln mid">${ph(pic, 'p72', name)}${H(12)}<div class="fx">
       <div class="ln mid"><div class="t15 one fx">${name}</div>${H(8)}${tag(state)}</div>${V(4)}<div class="t13 i2">${sub}</div>${V(8)}${logos(sites)}</div></div>`);
 

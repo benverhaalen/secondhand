@@ -118,13 +118,13 @@ Step 1, the determinations:
 | Listing form from [D4](#d4-title-per-site), [D6](#d6-attributes-per-site), [D8](#d8-photo-choice-and-order) | Title form, attributes, photo order | Rank 2, chosen per element | Reversible edits; each is chosen by its own card |
 | [D9](#d9-shipping-offer) | Shipping option and the price shift it implies | Inside the objective | Changes both price and sale chance |
 | [D14](#d14-when-to-post), [D17](#d17-offer-to-likers-or-watchers) to [D20](#d20-price-drop-route) | Time and lever schedule | Rank 3 | Applied on top of the path |
-| Person's goal (balanced, sell this week, get the most) | Horizon `T` = 30, 7 or 90 days | Sets the objective | The person's choice |
+| Person's objective `balanced`, `quick` or `max_return` (the canon names, [product §3](../product.md) `strategy`) | Horizon `T` = 30, 7 or 90 days | Sets the objective | The person's choice |
 
 **Method**
 1. Candidates: for each horizon `T` in {7, 30, 90}, each start rung on the ladder (10th to 90th percentile in 5-point steps), each shipping option from D9. Arithmetic.
-2. Objective per candidate (from [price.md](../features/price.md)): `E_k = Σ_steps P(sale in step) × net(step price)`, with net from fees, shipping and processing, minus holding cost `h × expected days listed` (h = 0 by default; tuneable per person).
+2. Objective per candidate (from [price.md](../features/price.md)): `E_k = Σ_steps P(sale in step) × net(step price)`, with net from fees, shipping and processing, minus holding cost `c_o × expected days listed`, with `c_o` the `holding_cost_<objective>` param ([marketing-engine §3.3](../marketing-engine.md#33-the-objective)).
 3. Constraint: every price on the path `>= floor`, with the floor from [money D14](money.md#d14-floor-and-always-accept), which holds the formula.
-4. Best = `argmax E_k` at the person's `T` (default 30). Ties: higher `P(sold within T)`, then lower start price.
+4. Best = `argmax U_k` at the person's `T` (default 30) among candidates with `P(sold within T) >= p_min_o` (the `p_min_<objective>` param). Ties: higher `P(sold within T)`, then lower start price.
 5. Form: each element set by its card; form does not change `P` unless [D12](#d12-stand-in-ranker-factors) holds a factor at probability 0.8 or more with a measured effect, in which case `P` is multiplied by that effect's lower bound. This keeps the number honest when form evidence is weak.
 6. Alternatives shown: the best plan for each other horizon, and the next best start rung for the chosen one.
 7. Recompute when `C_s`'s fingerprint, the fee table or the person's goal changes.
@@ -183,7 +183,7 @@ Step 1, the determinations:
 | Source | What it contributes | Weight or rank | Why that weight |
 |---|---|---|---|
 | Must-state facts: identity, size and measurements, condition grade, every recorded flaw with its photo, what is included, what was not checked (works, authenticity) | Required content | Rank 1, always present | A buyer's main risks; stating flaws and limits is honest and is what the claim check can back |
-| Site rules: Depop 1,000 characters, 5 hashtags, no title; eBay condition detail up to 1,000; Poshmark brand in the text | Limits and form | Hard limit | Site forms ([listing-fields §9](../../research/list/nate/listing-fields-by-platform.md), *observed*) |
+| Site rules: Depop 5 hashtags and no title, with no published description limit, so 1,000 characters is our own soft budget (*agent proposal*, [claims validated](../../research/cross-cutting/nate/claims-validated-determinations.md)); eBay condition detail up to 1,000; Poshmark brand in the text | Limits and form | Hard limit | Site forms ([listing-fields §9](../../research/list/nate/listing-fields-by-platform.md), *observed*) |
 | Site search statements: "the more descriptive you are, the more likely a shopper will see your listing" (Poshmark), Depop matches complete listings to searches | Add the remaining backed attributes in words | Rank 2 | Tier 3 evidence |
 | `W_s` description patterns (measurements given, flaw line present) | Order of sections | Rank 3 | Winner pattern only |
 
@@ -364,7 +364,7 @@ Step 1, the determinations:
 
 **Determines**: per site, the list of factors its ranking is believed to reward, each with the strength of evidence behind it.
 
-**Sources and weights**: evidence tier as defined above, plus the stand-in ranker's probability once fitted.
+**Sources and weights**: evidence tier as defined above, plus the stand-in ranker's probability once fitted. Each belief's strength is a `param` row (family `beta`), its prior set by the tier below, updated by `fit_ranker` from `rank_observation` rows ([product §6](../product.md#real-time-weights-agent-proposal)); the table holds the priors.
 
 | Site | Belief (strongest first) | Tier | Source |
 |---|---|---|---|
@@ -726,7 +726,7 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 
 | Site | Lever | Runs on its own when | Pace limit (starting value) | Account risk |
 |---|---|---|---|---|
-| Poshmark | share own listings to followers | the person turned it on; a session counts as engagement | 1 share per live listing a day, spread over the day, never bursts | high: Poshmark's policy against unauthorised automation and its Excessive Listing Removal policy (*observed*, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)) |
+| Poshmark | share own listings to followers | the person turned it on; a session counts as engagement | 1 share per live listing a day, spread over the day, never bursts | high: Poshmark retired its Excessive Listing Removal policy on 2026-07-23; its policy against unauthorised automation and the Seller Cancellation Policy (3% of orders in a rolling 90 days, secondary source) remain (*observed*, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)) |
 | Poshmark, Mercari, eBay | offer to likers or watchers | [D17](#d17-offer-to-likers-or-watchers) passes and the offer is at or above `always_accept_cents` | D17's 7-day cooldown | low: a site-provided button |
 | Depop | refresh (edit to move up) | interest is behind plan per [D15](#d15-interest-against-plan) | once a week per listing | medium: no stated rule found |
 | Grailed | bump | the site's interval has passed; with a drop, D20 rounds it to 10% | the site's own interval | low: a site-provided button |
@@ -801,3 +801,7 @@ All rows from [ranking-algorithms.md](../../research/list/nate/ranking-algorithm
 | measure | Parcel weight and size for label quotes (D9, D19) |
 | data | The claim-check stage's claim types and the attribute `source` order agreed with D6 (D25) |
 | product.md | A decision kind for promotion spend; none exists today (D18) |
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).

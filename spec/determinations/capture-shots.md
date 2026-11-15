@@ -214,7 +214,7 @@ The easiest capture for a garment is the flat lay: front, back, tag. The answer 
 | current confidence of each field | how unsettled it is: 1 minus confidence | multiplier | do not pay for what is known |
 | a target site requires the field ([listing-fields §6](../../research/list/nate/listing-fields-by-platform.md)) | field value 1.0 | start | a missing required field blocks the listing |
 | a site names the field as a search driver (listing-fields §7) | field value 0.6 | start | Nate's value: listings written for each site's search |
-| `requirement_reorder` weight from [score](../features/score.md) | field value once learned | replaces the start values | measured effect on the sale beats a guess |
+| `requirement_fold` weight from `param_fold` ([product §6](../product.md#real-time-weights-agent-proposal)) | field value once learned | replaces the start values | measured effect on the sale beats a guess |
 | any other field | 0.2 | start | a description detail |
 
 **Method**
@@ -445,13 +445,17 @@ So for the tee above: the tag (1.9 / 2) is in the default anyway; the care label
 
 - Seconds per shot: no source times single shots; every value above is a start until the shot logs exist.
 - Whether the guided default beats an adaptive session on time and errors: no head-to-head was found ([adaptive-capture §6](../../research/capture/nate/adaptive-capture.md), not found).
-- Field values for search weight per site: the sites say which fields help, not by how much (listing-fields §7); 1.0 and 0.6 are starts until `requirement_reorder` learns them.
+- Field values for search weight per site: the sites say which fields help, not by how much (listing-fields §7); 1.0 and 0.6 are priors that `requirement_fold` updates.
 - Depth accuracy on black or glossy shoes and leather: the sources call it weak without a number.
 
 ## What this area needs from other areas
 
 - **List**: the per-site photo order and caps that take card 21's order, and the listing-creation step where studio's choice sits.
-- **Score**: `requirement_reorder` weights per field, which replace card 2's start values.
+- **Data**: `requirement_fold` weights per field, which replace card 2's start values.
 - **Measure**: card 11's budgets per field for the no-tape rule.
 - **Identify**: model dimensions by lookup for phones, reflective items and phones without LiDAR.
 - **Shared model** ([product.md](../product.md)): photo roles `care_label`, `detail`, `side`, `inside`, `sole`, `screenshot`; `requirement.seconds` and the effort unit per row.
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).

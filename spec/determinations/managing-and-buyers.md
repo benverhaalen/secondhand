@@ -386,7 +386,7 @@ Shared rules for every card:
 3. On Poshmark, void open offers first and pace 2 to 5 s per action.
 4. Retry 5 s, 15 s, 45 s, 2 min on the chosen route, then fall back to the cloud browser.
 5. A listing counts as down only after read-back.
-6. Red: any listing not read back as down 5 min after the sale read gives a `failed_delist` card. This card owns the 5 min value (a starting value): Ben's notes give 3 min ([crosspost and delist](../../research/list/ben/crosspost-and-delist.md)) and 6 min ([build plan](../../research/cross-cutting/ben/build-plan-posting-messages-ui.md)); 5 clears a 2 min poll plus Poshmark pacing and stays under the 10 min bar ([sold](../features/sold.md#design-choices)).
+6. Red: any listing not read back as down 5 min after the sale read gives a `failed_delist` card. The 5 min value is the red line of sold's single delist bar ([sold](../features/sold.md#how-we-will-know-it-works)), which owns it; this card reads it.
 
 **Why this method**: Steps 1 to 6 follow the [sold spec](../features/sold.md) and [crosspost and delist](../../research/list/ben/crosspost-and-delist.md) (observed in the spec). Ordering by instant-buy exposure is added here (inferred). The alternative, ending in a fixed site order, leaves the riskiest copy up for no reason.
 
@@ -499,7 +499,7 @@ Tiers (*agent proposal*, starting values; they merge the earlier connect and mes
 | Token or saved session expiry within 7 days (start) | `expiring` | rank 3, hard | a relink before it breaks keeps jobs running (inferred) |
 | Probe result every 30 min | `ok`, or `broken` when a read fails twice running (start) | rank 4 | read works or not ([connect](../features/connect.md)) |
 | Error rate on actions in the last hour | risk flag above 20% (start) | rank 5 | inferred |
-| Our own engagement volume per site (shares, offers to likers, relists, ends) against the site's policy and our pace limit ([listing and marketing D26](listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)) | risk flag at 80% of our limit | rank 6 | Poshmark has an Excessive Listing Removal policy (May 2025) and a policy against unauthorised automation (observed, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)) |
+| Our own engagement volume per site (shares, offers to likers, relists, ends) against the site's policy and our pace limit ([listing and marketing D26](listing-and-marketing.md#d26-engagement-levers-the-agent-runs-on-its-own)) | risk flag at 80% of our limit | rank 6 | Poshmark retired its Excessive Listing Removal policy on 2026-07-23; its policy against unauthorised automation and the Seller Cancellation Policy (3% of orders in a rolling 90 days, secondary source) remain (*observed*, [claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)) |
 | Seller metrics against the site's published thresholds (cancel rate, late shipment, response time) | risk flag at 80% of a threshold | rank 7 | warns before the site acts; Poshmark: 3% rolling 90-day seller cancellations, a 24 hour restriction then a 14 day suspension (observed, [crosslister teardown](../../research/cross-cutting/nate/crosslister-teardown.md)) |
 | Our action rate against the site's pacing | slows the queue | rank 8 | Poshmark about one action per 2 to 5 s (inferred) |
 
@@ -718,3 +718,7 @@ Weights: a strict order, not a blend; rank 2 fills only an empty field and shows
 | [connect](../features/connect.md) | capability and terms table per (site, verb), published seller metric thresholds per site |
 | [score](../features/score.md), [data](../features/data.md) | labelled thread sets, calibration fitting, split tests for the offer rule, route success records |
 | [replay](../features/replay.md) | recipe state and canary results per (site, verb) |
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).

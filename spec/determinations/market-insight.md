@@ -53,7 +53,7 @@ Model steps (text or image to comparable facts) are named in each Method; everyt
 
 ## M2. Retail price and release date
 
-**Determines**: what the product cost new at launch, what it costs new now, and the day it first went on sale.
+**Determines**: what the product cost new at launch, what it costs new now, and the day it first went on sale. Money reads these as `launch_retail` and `price_new_today` in [D7](money.md#d7-original-retail-price), which links here.
 
 **Sources and weights**
 
@@ -84,7 +84,7 @@ Model steps (text or image to comparable facts) are named in each Method; everyt
 
 ## M3. Used price per site over time
 
-**Determines**: for each product, site, condition band and week, the range of prices people actually paid, as a series.
+**Determines**: for each product, site, condition band and week, the range of prices people actually paid, as a series. The comp set, weights and minimum basis are [money D1](money.md#d1-comparable-set-and-weights)'s.
 
 **Sources and weights** (per comp, multiplied)
 
@@ -699,7 +699,7 @@ A referral never enters any of M24 to M29: the inputs below list every source, a
 
 **When it is not shown**: no official option (M24 hidden); either NCO hidden (the rows still show, without a verdict); `functional_equivalent` with the purpose slots unset; the person has not said they are buying for themselves when the verdict would turn on `keep_for` (the default horizon is then named in the sentence).
 
-**How it is explained**: "The new one is the better buy for you: about $40 more now, but a year of warranty and it keeps more of its value". Tap opens the rows. A link that earns a referral carries, next to it and visible without a tap, "We may earn a referral fee. It never changes the order or the verdict." The FTC Endorsement Guides require a material connection to be disclosed clearly and conspicuously, which online means unavoidable, not behind a "more" link, and a ranking set by payments is deceptive even with a disclosure (16 CFR 255.0(f), 255.1 Example 3, 255.5, *observed*, [buy-side note 6](../../research/watch/nate/buy-side-products-and-search-experience.md#6-referral-and-affiliate-programmes)).
+**How it is explained**: "The new one is the better buy for you: about $40 more now, but a year of warranty and it keeps more of its value". Tap opens the rows. A link that earns a referral carries, next to it and visible without a tap, "We may earn a referral fee. It never changes the order or the verdict." That a referral never changes the order is our own design choice (*agent proposal*), not an FTC rule. The FTC Endorsement Guides require a material connection to be disclosed clearly and conspicuously, which online means unavoidable, not behind a "more" link (16 CFR 255.0(f), 255.5, *observed*, [claims validated](../../research/cross-cutting/nate/claims-validated-determinations.md); [buy-side note 6](../../research/watch/nate/buy-side-products-and-search-experience.md#6-referral-and-affiliate-programmes)).
 
 **Speed**: on demand from ready parts and the streamed offers, under 200 ms after the last part.
 
@@ -749,7 +749,7 @@ A referral never enters any of M24 to M29: the inputs below list every source, a
 | The accepted price behind a sold-tag, outside eBay with a seller session | the site shows the last ask; weighted per money.md D1, never corrected to a guessed value (M3 step 6) |
 | StockX and GOAT prices and premiums on our pages | the terms bar commercial use and display (*observed*, [market-intelligence](../../research/data/nate/market-intelligence.md#5-rights-and-limits)); recorded as a fact, used nowhere person-facing |
 | Seasonality and depreciation from our own data before 2 years | too short; M10 and M12 lean on Keepa and Trends until then, labelled |
-| A hype forecast for an unreleased product | no sales exist; a thesis-level model at 65 to 70% accuracy on profit or not ([market-intelligence](../../research/data/nate/market-intelligence.md#25-academic-work), *observed*) is not a number to show |
+| A hype forecast for an unreleased product | no sales exist; a thesis-level model with an R-squared of about 0.65 on resale premium ([claims validated](../../research/cross-cutting/nate/claims-validated-papers-and-docs.md)) ([market-intelligence](../../research/data/nate/market-intelligence.md#25-academic-work), *observed*) is not a number to show |
 | Why a trend happened | the counts say that, not why; no source ties a rise to a cause |
 | Authenticity and hidden condition in any market number | not known from a listing; the condition band is what the seller showed |
 
@@ -769,3 +769,7 @@ A referral never enters any of M24 to M29: the inputs below list every source, a
 | identify, studio | material composition and build specs as typed attributes with evidence, for M17 |
 | watch | the measured fit reference used by M18 |
 | everyone | the Trends and Keepa read budgets (calls per day) the jobs above may spend |
+
+## What its parameters learn from (*agent proposal*)
+
+Every learned number on this page is a `param` row whose written value is the prior. It updates from three sources, each written as an `observation` with evidence and a weight for how sure the outcome is: every listing the protocol reads on a site and what changed when it was read again (a price or rank change, a sold mark, a disappearance counted as a probable sale by age and the site's sell-through); what platforms and industries publish, gathered by the information engines; and our own users' outcomes, the most exact rows, which calibrate the rest. Learning does not wait for our users. How rows update, promote, guard and roll back is in [product §6](../product.md#real-time-weights-agent-proposal).
