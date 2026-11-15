@@ -373,6 +373,15 @@ The phone also sends the first frame's suggestion `{family, p, second_p, kind?}`
 
 **Confidences** are the phone's calibrated values. A module version that has not passed the fixed set sends 0, so every read is a proposal.
 
+## 7a. The shot guide
+
+Nate ([words](../../product/words.md#2026-11-15-nate-capture-onboarding-is-line-art-on-glass-one-guide-per-shot)): line art on a glass background that still shows the camera, like Apple's Measure telling people to move closer or further; set by the item's type to the photo to take; one press dismisses it, the shutter takes the photo and moves to the next step. The look is Ben's (`app/src/ui/`); what follows is what the guide shows and when, *agent proposal* where not quoted.
+
+- **Which guide.** The plan's next shot: the first `shot` question, else the first process step still `pending` or `retake`. So the type, and the steps its process row lists (`jobs/capture/process.json` `types`), set the guide with no screen logic. The art is chosen by `<family>.<step>` with `<step>` as the fallback (an apparel `front` is a laid-flat garment; a furniture `front` is a chair seen from the front). There are 19 step keys today: front, back, tag, scan, size_label, soles, inside_tab, back_or_stamp, model_plate, about_screenshot, front_screen_on, base, front_cover, back_barcode, box_or_set_front, rating_plate, serial, model_date_label, group.
+- **What it shows.** The step's line art and the plan's words for it (the shot question's `words`, else the step's name) on a glass panel over the live feed, so the item stays visible through it. A retake shows the same art with the retake's reason.
+- **When it goes.** It appears by itself when a step becomes the next one. One press anywhere on it dismisses it, leaving the frame. The shutter takes the photo; once the photo is kept, the next step's guide appears. A step the person refuses (a `read` offer) shows no guide again.
+- **Closer or further.** Only on a phone with LiDAR, from the depth module's distance to the item at the frame's centre (`distance_m` on its `onExtent` event, added in the module's next round). Outside the step's range the guide shows a move-closer or move-back mark and the words, like Measure. Ranges are two param rows: `capture_guide_distance_close_m` (prior 0.10 to 0.35) for the reading steps (tag, size_label, inside_tab, model_plate, rating_plate, serial, model_date_label, back_barcode, back_or_stamp), `capture_guide_distance_m` (prior 0.30 to 1.20) for the rest. Without LiDAR no distance mark is drawn: the guide never guesses one.
+
 ## 8. What is wrong: named fixes and their tests
 
 Fixed. Each was found by a fresh review and has a regression test:

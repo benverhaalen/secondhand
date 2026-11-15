@@ -65,7 +65,7 @@ test('SV0, SV1, SV3: sign in through the routes on the built server, write throu
   function launch(): RunningServer {
     const env = { ...process.env };
     delete env.NODE_TEST_CONTEXT;
-    delete env.NODE_ENV;
+    env.NODE_ENV = 'development';
     const child = spawn(process.execPath, ['server/main.ts'], {
       cwd: root,
       env: { ...env, SECONDHAND_DATA_DIR: folder, PORT: String(port), SECONDHAND_DEV_CODE: code, SECONDHAND_TICK_S: '30' },

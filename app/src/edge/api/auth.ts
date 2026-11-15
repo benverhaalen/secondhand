@@ -46,6 +46,7 @@ export function makeAuthHandlers(auth: Auth, store: AuthStore, limits = kv(db())
       const address = email.trim().toLowerCase();
       const email_hash = createHash('sha256').update(address).digest('hex');
       c.log.input('api', 'email_start', { email_hash: email_hash.slice(0, 12) });
+      if (!auth.senderReady()) throw new ApiError('unavailable', 'no email sender is configured', 'send_code', { by: 'none' });
       limitEmail(email_hash, deps.connectingAddress(req));
       return { status: 202, body: await auth.startEmail({ email: address }) };
     }) as Handler,

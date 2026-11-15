@@ -12,7 +12,7 @@ import type { User } from '../app/src/edge/auth.ts';
 
 test('production start names every missing variable before discovery or listening', async () => {
   const { start } = await import('./main.ts');
-  const names = ['NODE_ENV', 'SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY'] as const;
+  const names = ['NODE_ENV', 'SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY', 'SECONDHAND_VAULT_KEY'] as const;
   const previous = names.map(name => process.env[name]);
   try {
     process.env.NODE_ENV = 'production';
@@ -21,7 +21,7 @@ test('production start names every missing variable before discovery or listenin
       message: `Missing production variables: ${names.slice(1).join(', ')}`,
     });
     const value = randomBytes(32).toString('hex');
-    process.env.DECISION_SIGNING_KEY = value;
+    process.env.SECONDHAND_VAULT_KEY = value;
     await assert.rejects(start({ port: -1, ticks: false }), {
       message: `Missing production variables: ${names.slice(1, -1).join(', ')}`,
     });
@@ -34,7 +34,7 @@ test('production start names every missing variable before discovery or listenin
 
 test('a fresh production entry reports all missing variables before database initialization', () => {
   const env = { ...process.env, NODE_ENV: 'production' };
-  const names = ['SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY'];
+  const names = ['SECONDHAND_DATA_DIR', 'SECONDHAND_PEER_HEADER', 'SECONDHAND_VISITOR_KEY', 'DECISION_SIGNING_KEY', 'SECONDHAND_VAULT_KEY'];
   delete env.NODE_TEST_CONTEXT;
   for (const name of names) delete env[name];
   const result = spawnSync(process.execPath, [fileURLToPath(new URL('./main.ts', import.meta.url))], { env, encoding: 'utf8' });

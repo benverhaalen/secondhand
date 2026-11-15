@@ -15,10 +15,16 @@ const handles = shared.__secondhandDb ??= new Map<string, DatabaseSync>();
 const depths = shared.__secondhandTxDepth ??= new WeakMap<DatabaseSync, number>();
 const log = shared.__secondhandDbLog ??= createLog({ src: 'edge.store', build: process.env.npm_package_version ?? 'dev', sink: consoleSink });
 
+// Development is stated, never assumed: a host that forgets NODE_ENV gets production's refusals.
+// The test runner counts as development unless the test itself states production.
+export function development(env: Record<string, string | undefined> = process.env): boolean {
+  return env.NODE_ENV === 'development' || env.NODE_ENV !== 'production' && env.NODE_TEST_CONTEXT !== undefined;
+}
+
 export function dataPath(env: Record<string, string | undefined> = process.env): string {
   if (env.SECONDHAND_DATA_DIR) return join(env.SECONDHAND_DATA_DIR, 'secondhand.db');
   if (env.NODE_TEST_CONTEXT !== undefined) return ':memory:';
-  if (env.NODE_ENV === 'production') throw new Error('SECONDHAND_DATA_DIR is required in production');
+  if (env.NODE_ENV !== 'development') throw new Error('SECONDHAND_DATA_DIR is required unless NODE_ENV=development');
   return join(tmpdir(), 'secondhand-dev', 'secondhand.db');
 }
 

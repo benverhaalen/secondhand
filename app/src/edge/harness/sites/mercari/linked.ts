@@ -5,7 +5,7 @@ import { mercariAdapters, type Page } from './adapter.ts';
 export function linkedSearch({ accounts, read }: { accounts: Accounts; read(account_id: string, url: string, signal: AbortSignal): Promise<Page> }): Adapter {
   const search = mercariAdapters({ signed_in: true, page: async () => { throw new Error('account context required'); } }).find(a => a.manifest.verb === 'search')!;
   return { ...search, manifest: { ...search.manifest, session: 'signed_in' }, async run(args, signal) {
-    const account = typeof args.account_id === 'string' ? await accounts.byId(args.account_id) : undefined;
+    const account = typeof args.account_id === 'string' && typeof args.person_id === 'string' ? await accounts.byId(args.account_id, args.person_id) : undefined;
     if (!account || account.site !== 'mercari' || account.person_id !== args.person_id) {
       return fail('policy_refused', 'Mercari requires the asking person linked account', { do: 'raise_decision', kind: 'link_account' });
     }

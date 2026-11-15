@@ -1,0 +1,15 @@
+#!/bin/sh
+# Refuses a commit that puts back an older copy of a file. See .agents/hooks/stale-copy.mjs.
+# In a checkout several sessions share (git config secondhand.sharedIndex true) it also refuses a commit that names
+# no paths: the index holds other sessions' staged files, and a bare `git commit` takes them all (3f569d92 did).
+if [ "$(git config --bool secondhand.sharedIndex)" = true ] && [ -z "$WHOLE_INDEX" ]; then
+  case "$GIT_INDEX_FILE" in *next-index-*) ;; *)
+    echo "shared index: name the paths (git commit -m '...' -- <paths>). Staged now, by any session:" >&2
+    git diff --cached --name-only >&2
+    echo "Finishing your own merge by hand: WHOLE_INDEX=1 git commit" >&2; exit 1;;
+  esac
+fi
+# A shell that is not a login shell on the Mac has no node on its PATH; with none found the guard is skipped, out loud.
+PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+command -v node >/dev/null 2>&1 || { echo "stale-copy guard skipped: node is not on PATH" >&2; exit 0; }
+exec node "$(git rev-parse --show-toplevel)/.agents/hooks/stale-copy.mjs"

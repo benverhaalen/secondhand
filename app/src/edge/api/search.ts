@@ -15,6 +15,8 @@ import { jobs, type ApiJobRow } from './jobs.ts';
 import { storable } from './keep.ts';
 
 const protocol = PROTOCOLS.listings_matching;
+// The Apify adapter keeps DEADLINE_MS private; search.test.ts checks this clock against that source.
+const APIFY_READ_DEADLINE_MS = 75_000;
 export const ports = Object.assign(searchRuntime, {
   fetchPage, ask: jevAsk, deadline_ms: protocol.budget.settled_ms, sources: SOURCES as readonly Source[],
 });
@@ -22,8 +24,8 @@ export const ports = Object.assign(searchRuntime, {
 export const searchJobs = Object.assign(jobs, { pendingSearches: new Map<string, Promise<void>>() });
 
 // Exported for the app's search screen (app/src/api), which imports these instead of copying them.
-export type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'site' | 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped' | 'fallback' | 'cost_usd_est'>)[] };
-export type SearchStage = { name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
+export type SearchAnswer = Omit<Answer, 'searched'> & { searched: (Pick<Source, 'group'> & Omit<Answer['searched'][number], 'outcome'> & Pick<SiteSearched, 'site' | 'outcome' | 'error_code' | 'reason' | 'pace' | 'dropped' | 'fallback' | 'cost_usd_est'>)[] };
+export type SearchStage = { group: Source['group']; name: string; state: 'running' | 'arrived' | 'late' | 'failed'; started_at: string; ended_at: string | null; found: Found; error?: { code: string; message: string } };
 type JudgedRow = { row: SearchRow; judged: Judged };
 type PublicOffer = BuyOffer & Pick<SearchRow, 'via' | 'actor' | 'may_model' | 'use_scope'> & { converted?: boolean; host?: string; match: Judged['match']; currency?: string; image_url?: string; external_id: string; data: `live:${SourceSite}`; commercial_link?: true; attribution?: 'Dupe.com'; source_site?: string; secondhand?: boolean; keep_until?: string; may_store: boolean };
 type Batch = { searched: SiteSearched; rows: JudgedRow[]; offers: PublicOffer[]; ranked: BuyRow[]; found: Found; cached?: boolean };
@@ -34,7 +36,7 @@ const planOutcome = (outcome: SiteSearched['outcome']): Answer['searched'][numbe
   outcome === 'unknown' || outcome === 'page_changed' || outcome === 'failed' || outcome === 'needs_account' ? 'blocked' : outcome;
 
 const inDollars = (offer: PublicOffer) => offer.currency === 'USD' && !offer.converted;
-function listingKey(offer: PublicOffer): string {
+function listingKey(offer: Pick<PublicOffer, 'url' | 'site' | 'source_site'>): string {
   const url = new URL(offer.url);
   url.search = ''; url.hash = ''; url.pathname = url.pathname.replace(/\/+$/, '');
   return `${(offer.source_site ?? offer.site).toLowerCase()}:${url.host.toLowerCase()}${url.pathname}`;
@@ -161,7 +163,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
   };
   const answer = (settled: boolean): SearchAnswer => ({ id: job.id, kind: 'listings_matching', slots: { text: query },
     protocol_version: protocol.version, facts: [], found: result().found,
-    searched: [...batches.entries()].map(([id, b]) => ({ site: b.searched.site, route_id: b.searched.route_id ?? routeId(sources.find(s => s.id === id)!), query,
+    searched: [...batches.entries()].map(([id, b]) => ({ site: b.searched.site, group: b.searched.group, route_id: b.searched.route_id ?? routeId(sources.find(s => s.id === id)!), query,
       outcome: b.searched.outcome, ms: b.searched.ms, ...(b.searched.pace ? { pace: b.searched.pace } : {}), ...(b.searched.dropped ? { dropped: b.searched.dropped } : {}), ...(b.searched.error_code ? { error_code: b.searched.error_code } : {}), ...(b.searched.reason ? { reason: b.searched.reason } : {}), ...(b.searched.fallback ? { fallback: b.searched.fallback } : {}), ...(b.searched.cost_usd_est !== undefined ? { cost_usd_est: b.searched.cost_usd_est } : {}) })),
     stage: settled ? 'settled' : 'first', ms: { first, settled: settled ? settledAt : null } });
   const auditCounts = (source: string, found: Found) => {
@@ -184,6 +186,23 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
       return;
     }
     batches.set(source.id, batch);
+    const direct = new Set([...batches.values()].filter(b => b.searched.site !== 'dupe').flatMap(b =>
+      b.rows.map(({ row }) => listingKey({ site: b.searched.site, url: row.url! }))));
+    const dupe = batches.get('dupe');
+    if (dupe) {
+      const added = dupe.offers.filter(offer => !direct.has(listingKey(offer)));
+      const copies = dupe.offers.length - added.length;
+      if (copies) {
+        const dropped = new Set(dupe.offers.filter(offer => direct.has(listingKey(offer))).map(offer => offer.id));
+        dupe.rows = dupe.rows.filter(({ judged }) => !dropped.has(judged.id));
+        dupe.offers = added;
+        const kept = new Set(added.map(offer => offer.id));
+        dupe.ranked = dupe.ranked.filter(offer => kept.has(offer.id));
+        dupe.found.results_used -= copies;
+        dupe.found.sites.dupe -= copies;
+        dupe.found.dropped_by_reason.read_directly = (dupe.found.dropped_by_reason.read_directly ?? 0) + copies;
+      }
+    }
     pending.delete(source.id);
     const stage = stages.find(s => s.name === `site:${source.id}`)!;
     stage.state = batch.searched.outcome === 'timeout' ? 'late' : batch.searched.error_code && batch.searched.outcome !== 'empty' ? 'failed' : 'arrived';
@@ -192,12 +211,12 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     first ??= Math.round(performance.now() - t0);
     saveStages(); if (!late) jobs.update(job.id, { result: result() });
     // events.json still has the old stage enum; state.change records the brief's late state without falsifying it.
-    if (stage.state === 'late') ctx.log.event('state.change', { entity: 'job.stage', id: `${job.id}:${stage.name}`, to: 'late', job: job.id, stage: stage.name, found: stage.found });
-    else ctx.log.stage(job.id, stage.name, { state: stage.state, found: stage.found, ...(stage.error ? { error: stage.error } : {}) });
-    jobs.append(job.id, 'job.stage', { job_id: job.id, stage: stage.name, state: stage.state, at: stage.ended_at, found: stage.found, ...(stage.error ? { error: stage.error } : {}) });
+    if (stage.state === 'late') ctx.log.event('state.change', { entity: 'job.stage', id: `${job.id}:${stage.name}`, to: 'late', job: job.id, stage: stage.name, group: source.group, found: stage.found });
+    else ctx.log.stage(job.id, stage.name, { group: source.group, state: stage.state, found: stage.found, ...(stage.error ? { error: stage.error } : {}) });
+    jobs.append(job.id, 'job.stage', { job_id: job.id, stage: stage.name, group: source.group, state: stage.state, at: stage.ended_at, found: stage.found, ...(stage.error ? { error: stage.error } : {}) });
     emit(late ? 'answer.late' : 'answer.partial', { site, product: null, results: batch.ranked.map(offerView), identity: identity(batch.rows), official: [], sites_pending: [...pending] });
   };
-  const timeout = (source: Source): Batch => ({ searched: { site: source.site, kind: 'search', url: null, outcome: 'timeout', count: 0,
+  const timeout = (source: Source): Batch => ({ searched: { site: source.site, group: source.group, kind: 'search', url: null, outcome: 'timeout', count: 0,
     ms: Math.round(performance.now() - t0), pace: source.pace }, rows: [], offers: [], ranked: [], found: { ...emptyFound(), sources_searched: 1 } });
   const sitePlan = async (source: Source, freshness_s: number) => {
     const site = source.site;
@@ -235,7 +254,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
             return { outcome: planOutcome(page.searched.outcome), rows, site, detail: page.searched };
           } catch (e) {
             ctx.log.error(`search.${source.id}`, e);
-            const detail: SiteSearched = { site, kind: 'search', url: null, outcome: 'failed', count, ...(dropped ? { dropped } : {}),
+            const detail: SiteSearched = { site, group: source.group, kind: 'search', url: null, outcome: 'failed', count, ...(dropped ? { dropped } : {}),
               ms: Math.round(performance.now() - readAt), error_code: 'site_failed',
               reason: e instanceof Error ? e.message : 'source failed', ...(source.pace ? { pace: source.pace } : {}) };
             if (!pending.has(source.id)) land(source, rank(source, [], detail, filters), true);
@@ -248,7 +267,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     const searched = a.searched[0]?.detail as SiteSearched | undefined;
     const outcome = a.searched[0]?.outcome ?? 'timeout';
     const observed: SiteSearched = searched && outcome !== 'timeout' ? searched : {
-      site, kind: 'search', url: source.lane === 'public_page' && site !== 'dupe' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
+      site, group: source.group, kind: 'search', url: source.lane === 'public_page' && site !== 'dupe' ? searchUrl(site, query, 'search') : null, outcome: outcome === 'over_budget' ? 'timeout' : outcome,
       count: rows.length, ms: a.searched[0]?.ms ?? Math.round(remaining), ...(source.pace ? { pace: source.pace } : {}),
     };
     sourceCounts.set(source.id, { count: observed.count, dropped: observed.dropped });
@@ -259,7 +278,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
       try { const batch = await sitePlan(source, protocol.freshness.listings); if (pending.has(source.id)) land(source, batch); }
       catch (e) {
         ctx.log.error(`search.${source.id}`, e);
-        const searched: SiteSearched = { site: source.site, kind: 'search', url: null, outcome: 'failed', count: sourceCounts.get(source.id)?.count ?? 0, dropped: sourceCounts.get(source.id)?.dropped,
+        const searched: SiteSearched = { site: source.site, group: source.group, kind: 'search', url: null, outcome: 'failed', count: sourceCounts.get(source.id)?.count ?? 0, dropped: sourceCounts.get(source.id)?.dropped,
           ms: Math.round(performance.now() - t0), error_code: 'site_failed', reason: e instanceof Error ? e.message : 'source failed', pace: source.pace };
         land(source, rank(source, [], searched, filters));
       }
@@ -278,13 +297,38 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
     settledAt = Math.round(performance.now() - t0); first ??= settledAt;
     emit('answer.settled', final);
     settled = true;
+    const facebook = opts.sources.find(source => source.on && source.site === 'facebook' && source.lane === 'apify');
+    const fillStarted = Promise.withResolvers<void>();
+    const fillController = new AbortController();
+    const apify = opts.apify;
+    const fill = ctx.user_id && apify && opts.apifyRuns && facebook
+      ? searchSource(facebook, query, 'search', { caller: 'person', person_id: ctx.user_id, apifyRuns: opts.apifyRuns, log: ctx.log, signal: fillController.signal,
+        apify: { search(...args) {
+          fillController.signal.throwIfAborted();
+          const patch: Partial<ApiJobRow> & { fill_until: string } = { fill_until: new Date(Date.now() + APIFY_READ_DEADLINE_MS).toISOString() };
+          jobs.update(job.id, patch);
+          ctx.log.note('Facebook fill started', { job: job.id, fill_until: patch.fill_until });
+          fillStarted.resolve();
+          return apify.search(...args);
+        } },
+      }).catch(e => { ctx.log.error('search.facebook.fill', e); return null; }) : undefined;
+    if (fill) {
+      let admissionCut: ReturnType<typeof setTimeout> | undefined;
+      try {
+        await Promise.race([fillStarted.promise, fill, new Promise<void>(resolve => { admissionCut = setTimeout(() => {
+          fillController.abort();
+          ctx.log.note('Facebook fill admission expired', { job: job.id });
+          resolve();
+        }, Math.max(0, opts.deadline_ms + allowance - (performance.now() - t0))); })]);
+      } finally { clearTimeout(admissionCut); }
+    }
     // finish() would overwrite late stages as arrived; retain each site's actual ending.
     ctx.log.job(job.id, 'search', 'done');
     jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'done', at: new Date().toISOString(), result: final });
-    const facebook = opts.sources.find(source => source.on && source.site === 'facebook' && source.lane === 'apify');
-    if (ctx.user_id && opts.apify && facebook) {
-      void searchSource(facebook, query, 'search', { caller: 'person', person_id: ctx.user_id, apify: opts.apify, apifyRuns: opts.apifyRuns, log: ctx.log })
+    if (fill && facebook) {
+      void fill
         .then(page => {
+          if (!page) return;
           if (page.searched.outcome !== 'hit' && page.searched.outcome !== 'empty') {
             ctx.log.error('search.facebook.fill', new Error(page.searched.reason ?? page.searched.outcome));
             return;
@@ -292,7 +336,7 @@ async function search(ctx: Ctx, job: ApiJobRow, stages: SearchStage[], opts: typ
           const batch = rank(facebook, page.rows.map(row => shownOnly(facebook, row)), page.searched, filters);
           const late = { job_id: job.id, site: facebook.site, results: batch.ranked.map(offerView), identity: identity(batch.rows),
             found: batch.found, searched: [page.searched], answer: { ...answer(true), stage: 'late' as const, found: batch.found,
-              searched: [{ site: facebook.site, route_id: routeId(facebook), query, outcome: page.searched.outcome, ms: page.searched.ms }] } };
+              searched: [{ site: facebook.site, group: facebook.group, route_id: routeId(facebook), query, outcome: page.searched.outcome, ms: page.searched.ms }] } };
           auditCounts(facebook.id, batch.found);
           ctx.log.event('answer.late', { job: job.id, ...storable(late, Date.now()) });
           jobs.append(job.id, 'answer.late', late);
@@ -317,18 +361,22 @@ export const handlers: Record<string, Handler> = {
     if (!words && !link) throw invalid('a search needs words or a link; turn a photo, like or assist job into words first');
     if (typeof ctx.body.text === 'string') { if (words) ctx.body.text = words; else delete ctx.body.text; }
     if (typeof ctx.body.url === 'string') { if (link) ctx.body.url = link; else delete ctx.body.url; }
-    fields(ctx.body, {}, { text, photo_id: text, url, filters: object, like: text, assist_job_id: text, answers: v => Array.isArray(v) && v.every(a => object(a) && text(a.span_id) && text(a.option_id) && text(a.signature)) });
+    fields(ctx.body, {}, { text, photo_id: text, url, filters: object, like: text, assist_job_id: text, sources: strings, answers: v => Array.isArray(v) && v.every(a => object(a) && text(a.span_id) && text(a.option_id) && text(a.signature)) });
     if (object(ctx.body.filters)) fields(ctx.body.filters, {}, { condition: strings, seller_kind: strings, ships_to: text, ships_from: text, max_delivered_cents: money, in_stock_only: bool });
+    const selection = ctx.body.sources as string[] | undefined;
+    for (const id of selection ?? []) if (id !== 'osint' && !ports.sources.some(source => source.id === id))
+      throw invalid(`unknown source: ${id}`);
     // jobsOn exposes this fixture owner to every visitor; it cannot own a real search.
     if (ctx.visitor_id === 'vis_example01') throw invalid('use a new visitor session');
     const started_at = new Date().toISOString();
     const caller: Caller = ctx.user_id ? 'person' : 'background';
-    const sources = sourcesFor(caller, ports.sources).filter(source => source.lane !== 'apify');
-    const stages: SearchStage[] = sources.map(source => ({ name: `site:${source.id}`, state: 'running', started_at, ended_at: null, found: emptyFound() }));
+    const selected = sourcesFor(caller, ports.sources).filter(source => !selection || selection.includes(source.id) || source.group === 'osint' && selection.includes('osint'));
+    const sources = selected.filter(source => source.lane !== 'apify');
+    const stages: SearchStage[] = sources.map(source => ({ name: `site:${source.id}`, group: source.group, state: 'running', started_at, ended_at: null, found: emptyFound() }));
     const job = jobs.put({ kind: 'search', state: 'running', stages: structuredClone(stages) as ApiJobRow['stages'] }, ctx.user_id ?? ctx.visitor_id!);
     ctx.log.job(job.id, 'search', 'running');
     jobs.append(job.id, 'job.state', { job_id: job.id, kind: 'search', state: 'running', at: started_at });
-    const opts = { ...ports };
+    const opts = { ...ports, sources: selected };
     const task = Promise.resolve().then(() => search(ctx, job, stages, opts, caller, sources)).catch(e => { ctx.log.error('search.background', e); }).finally(() => searchJobs.pendingSearches.delete(job.id));
     searchJobs.pendingSearches.set(job.id, task);
     return { status: 202, body: { id: job.id, kind: job.kind, state: 'running', stages: structuredClone(stages), stream: `/v1/jobs/${job.id}/events` } };
