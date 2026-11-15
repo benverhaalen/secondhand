@@ -1,7 +1,7 @@
 # How should the signed-in website change when the input is a mouse, a trackpad or a keyboard instead of a finger?
 Researched 2026-11-15 by Ben (Claude Code). Feature: web (the signed-in website; no features/web page yet).
 
-The decision it feeds: the web-scoped rules and checks for the signed-in site (one Expo codebase with the app), and the four web-only parts agreed with the "Roll the UI system out everywhere" thread (side rail, right pane, drop zone, QR handoff). Ben, [05:23](../../../product/words.md): "consider the dynamic ui and intelligent ui and everything and consider app vs desktop and how mouse vs touch changes things and maybe research it".
+The decision it feeds: the web-scoped rules and checks for the signed-in site (one Expo codebase with the app), and the four web-only parts agreed with the "Roll the UI system out everywhere" thread (side rail, right pane, drop zone, QR handoff). Ben, [05:23](../../../../product/words.md): "consider the dynamic ui and intelligent ui and everything and consider app vs desktop and how mouse vs touch changes things and maybe research it".
 
 ## Draft from memory, before searching
 
