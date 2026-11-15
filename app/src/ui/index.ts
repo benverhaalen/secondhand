@@ -37,3 +37,4 @@ export { BarPill, ChoiceCapsule, ChoiceColumn, CircleStage, PlusClose, TakeoverP
 export { FixChip } from './parts/camera-fix';
 export { Feed } from './parts/feed';
 export { QueueView, type QueueEntry } from './parts/queue';
+export { MoneyNews, type SoldThing } from './parts/money-news';
