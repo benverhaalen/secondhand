@@ -11,12 +11,13 @@ export type Extent = {
   frames: number;
 };
 export type CaptureDepthError = { code: string };
+export type CaptureDepthStatus = { state: string };
 export type CaptureDepthViewProps = ViewProps & {
   onExtent?: (event: NativeSyntheticEvent<Extent>) => void;
   onError?: (event: NativeSyntheticEvent<CaptureDepthError>) => void;
+  onStatus?: (event: NativeSyntheticEvent<CaptureDepthStatus>) => void;
 };
-type Status = { state: string };
-type NativeProps = CaptureDepthViewProps & { onStatus: (event: NativeSyntheticEvent<Status>) => void };
+type NativeProps = CaptureDepthViewProps & { onStatus: (event: NativeSyntheticEvent<CaptureDepthStatus>) => void };
 type CaptureDepthModule = { capabilities(): Promise<DeviceCapabilities> };
 
 const native = requireOptionalNativeModule<CaptureDepthModule>('CaptureDepth');
@@ -31,8 +32,9 @@ export function CaptureDepthView(props: CaptureDepthViewProps) {
   if (!NativeView) return null;
   return createElement(NativeView, {
     ...props,
-    onStatus: ({ nativeEvent }: NativeSyntheticEvent<Status>) => {
-      log.note('capture depth session', { state: nativeEvent.state });
+    onStatus: (event: NativeSyntheticEvent<CaptureDepthStatus>) => {
+      log.note('capture depth session', { state: event.nativeEvent.state });
+      props.onStatus?.(event);
     },
     onExtent: (event: NativeSyntheticEvent<Extent>) => {
       log.note('capture depth frame measured', { frames: event.nativeEvent.frames, extent_conf: 0 });

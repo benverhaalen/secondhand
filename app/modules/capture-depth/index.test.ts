@@ -51,7 +51,12 @@ test('present module preserves capabilities, forwards extent and error events, a
     const { capabilities, CaptureDepthView }: typeof import('./index.ts') = await import(path);
     assert.deepEqual(await capabilities(), { has_lidar: true, object_capture: false });
     let received: Extent | undefined, failure: CaptureDepthError | undefined;
-    const view = CaptureDepthView({ onExtent: event => { received = event.nativeEvent; }, onError: event => { failure = event.nativeEvent; } });
+    const statuses: string[] = [];
+    const view = CaptureDepthView({
+      onExtent: event => { received = event.nativeEvent; },
+      onError: event => { failure = event.nativeEvent; },
+      onStatus: event => { statuses.push(event.nativeEvent.state); },
+    });
     assert.ok(view);
     const extent: Extent = { extent_cm: { width: 30, depth: 20, height: 10 }, extent_conf: 0, rigid: true, frames: 12 };
     view.props.onExtent?.({ nativeEvent: extent } as NativeSyntheticEvent<Extent>);
@@ -61,6 +66,9 @@ test('present module preserves capabilities, forwards extent and error events, a
     assert.deepEqual(failure, { code: 'camera_permission_denied' });
     assert.ok(globalThis.__log?.some(line => line.includes('capture depth frame measured')));
     assert.ok(globalThis.__log?.some(line => line.includes('camera_permission_denied')));
+    view.props.onStatus({ nativeEvent: { state: 'item_clipped' } } as NativeSyntheticEvent<{ state: string }>);
+    assert.deepEqual(statuses, ['running', 'item_clipped']);
+    assert.ok(globalThis.__log?.some(line => line.includes('item_clipped')));
   } finally {
     hooks.deregister();
   }

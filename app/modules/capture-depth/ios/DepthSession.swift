@@ -1,13 +1,16 @@
 import ARKit
 import CoreVideo
 
-/// All session and delegate work is serialized off the UI thread.
+/// Session state belongs to the delegate queue; fitting uses a separate serial queue.
 final class DepthSession: NSObject, ARSessionDelegate {
     let session: ARSession
     private let queue = DispatchQueue(label: "secondhand.capture-depth")
+    private lazy var measurements = DepthMeasurementQueue(callbackQueue: queue)
     private var running = false
+    private var interrupted = false
     private var frames = 0
     private var lastMeasurement = -Double.infinity
+    private let measurementInterval = 0.5 // Limit copied frames and extent events to twice per second.
     private var generation = 0
     private let deliver: (Int, String, [String: Any]) -> Void
 
@@ -26,10 +29,12 @@ final class DepthSession: NSObject, ARSessionDelegate {
     func start(generation: Int) {
         queue.async { [self] in
             self.generation = generation
+            measurements.invalidate()
             guard !running else { return }
             let configuration = ARWorldTrackingConfiguration()
             configuration.frameSemantics = [.sceneDepth]
             running = true
+            interrupted = false
             lastMeasurement = -Double.infinity
             session.run(configuration)
             emit("onStatus", ["state": "running"])
@@ -40,6 +45,7 @@ final class DepthSession: NSObject, ARSessionDelegate {
         queue.async { [self] in
             guard running else { return }
             running = false
+            measurements.invalidate()
             session.pause()
             emit("onStatus", ["state": "paused"])
         }
@@ -48,36 +54,53 @@ final class DepthSession: NSObject, ARSessionDelegate {
     deinit { session.pause() }
 
     func session(_ session: ARSession, didUpdate frame: ARFrame) {
-        guard running else { return }
+        guard running, !interrupted else { return }
         frames += 1
-        guard frame.timestamp - lastMeasurement >= 0.5 else { return }
+        guard !measurements.isBusy, frame.timestamp - lastMeasurement >= measurementInterval else { return }
         lastMeasurement = frame.timestamp
-        guard let depth = frame.sceneDepth, let confidence = depth.confidenceMap else {
+        guard frame.sceneDepth?.confidenceMap != nil else {
             emit("onStatus", ["state": "waiting_for_depth"])
             return
         }
-        guard let samples = readDepth(depth.depthMap, confidence: confidence) else {
+        guard let input = copyFrame(frame) else {
             emit("onError", ["code": "invalid_depth_buffer"])
             return
         }
+        let measuredGeneration = generation, measuredFrames = frames
+        measurements.submit(copy: { input }) { [weak self] result in
+            guard let self, let result, self.running, !self.interrupted, self.generation == measuredGeneration else { return }
+            switch result {
+            case .insufficientGeometry:
+                self.emit("onStatus", ["state": "insufficient_geometry"])
+            case .clipped:
+                self.emit("onStatus", ["state": "item_clipped"])
+            case let .extent(extent):
+                self.emit("onStatus", ["state": "running"])
+                self.emit("onExtent", [
+                    "extent_cm": ["width": extent.width, "depth": extent.depth, "height": extent.height],
+                    "extent_conf": 0, "rigid": true, "frames": measuredFrames
+                ])
+            }
+        }
+    }
+
+    // This function returns only value types. Its frame and both locked buffers
+    // leave scope before the measurement closure is created.
+    private func copyFrame(_ frame: ARFrame) -> DepthMeasurementInput? {
+        guard let depth = frame.sceneDepth, let confidence = depth.confidenceMap,
+              let samples = readDepth(depth.depthMap, confidence: confidence) else { return nil }
         let k = frame.camera.intrinsics
         let width = CVPixelBufferGetWidth(depth.depthMap), height = CVPixelBufferGetHeight(depth.depthMap)
         let scaled = scaleIntrinsics(
             DepthIntrinsics(fx: Double(k[0][0]), fy: Double(k[1][1]), ox: Double(k[2][0]), oy: Double(k[2][1])),
             imageWidth: Double(frame.camera.imageResolution.width),
             imageHeight: Double(frame.camera.imageResolution.height), depthWidth: width, depthHeight: height)
-        guard let extent = DepthGeometry.measure(samples: samples, intrinsics: scaled, width: width, height: height) else {
-            emit("onStatus", ["state": "insufficient_geometry"])
-            return
-        }
-        emit("onExtent", [
-            "extent_cm": ["width": extent.width, "depth": extent.depth, "height": extent.height],
-            "extent_conf": 0, "rigid": true, "frames": frames
-        ])
+        return DepthMeasurementInput(samples: samples, intrinsics: scaled, width: width, height: height)
     }
 
     func session(_ session: ARSession, didFailWithError error: Error) {
         running = false
+        measurements.invalidate()
         session.pause()
         // Only a domain/code reaches JS; localized errors can contain capture details.
         let nativeError = error as NSError
@@ -85,10 +108,13 @@ final class DepthSession: NSObject, ARSessionDelegate {
     }
 
     func sessionWasInterrupted(_ session: ARSession) {
+        interrupted = true
+        measurements.invalidate()
         emit("onStatus", ["state": "interrupted"])
     }
 
     func sessionInterruptionEnded(_ session: ARSession) {
+        interrupted = false
         lastMeasurement = -Double.infinity
         emit("onStatus", ["state": "interruption_ended"])
     }
@@ -105,15 +131,9 @@ final class DepthSession: NSObject, ARSessionDelegate {
         guard let depths = CVPixelBufferGetBaseAddress(depth),
               let flags = CVPixelBufferGetBaseAddress(confidence) else { return nil }
         let depthStride = CVPixelBufferGetBytesPerRow(depth), flagStride = CVPixelBufferGetBytesPerRow(confidence)
-        var samples: [DepthSample] = []
-        for y in Int(Double(height)*0.15)..<Int(Double(height)*0.85) {
-            let row = depths.advanced(by: y*depthStride).assumingMemoryBound(to: Float.self)
-            let confidenceRow = flags.advanced(by: y*flagStride).assumingMemoryBound(to: UInt8.self)
-            for x in Int(Double(width)*0.15)..<Int(Double(width)*0.85) {
-                guard ARConfidenceLevel(rawValue: Int(confidenceRow[x])) == .high else { continue }
-                samples.append(DepthSample(u: Double(x), v: Double(y), depth: Double(row[x]), highConfidence: true))
-            }
-        }
-        return samples
+        return samples(depth: UnsafeRawPointer(depths), depthStride: depthStride,
+                       confidence: UnsafeRawPointer(flags), confidenceStride: flagStride,
+                       width: width, height: height,
+                       isHigh: { ARConfidenceLevel(rawValue: Int($0)) == .high })
     }
 }

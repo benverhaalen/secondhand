@@ -10,6 +10,7 @@ final class CaptureDepthView: ExpoView {
     private var preview: ARSCNView?
     private var permissionPending = false
     private var generation = 0
+    private var status = DepthStatus()
 
     required init(appContext: AppContext? = nil) {
         super.init(appContext: appContext)
@@ -33,13 +34,13 @@ final class CaptureDepthView: ExpoView {
     @objc private func pauseCapture() {
         generation += 1
         capture?.pause()
-        if capture != nil { onStatus(["state": "paused"]) }
+        if capture != nil { emitStatus("paused") }
     }
 
     @objc private func resumeCapture() {
         guard window != nil, UIApplication.shared.applicationState == .active else { return }
         guard ARWorldTrackingConfiguration.supportsFrameSemantics(.sceneDepth) else {
-            onStatus(["state": "unsupported"])
+            emitStatus("unsupported")
             return
         }
         guard let description = Bundle.main.object(forInfoDictionaryKey: "NSCameraUsageDescription") as? String,
@@ -53,7 +54,7 @@ final class CaptureDepthView: ExpoView {
         case .notDetermined:
             guard !permissionPending else { return }
             permissionPending = true
-            onStatus(["state": "requesting_camera_permission"])
+            emitStatus("requesting_camera_permission")
             AVCaptureDevice.requestAccess(for: .video) { [weak self] _ in
                 DispatchQueue.main.async {
                     self?.permissionPending = false
@@ -67,6 +68,11 @@ final class CaptureDepthView: ExpoView {
         }
     }
 
+    private func emitStatus(_ state: String) {
+        guard status.changed(to: state) else { return }
+        onStatus(["state": state])
+    }
+
     private func startCapture() {
         generation += 1
         if capture == nil {
@@ -78,7 +84,7 @@ final class CaptureDepthView: ExpoView {
                         guard UIApplication.shared.applicationState == .active else { return }
                         self.onExtent(payload)
                     } else if event == "onError" { self.onError(payload) }
-                    else { self.onStatus(payload) }
+                    else { self.emitStatus(payload["state"] as! String) }
                 }
             }
             capture = helper

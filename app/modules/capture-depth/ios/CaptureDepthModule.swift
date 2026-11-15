@@ -1,7 +1,6 @@
 import ARKit
 import ExpoModulesCore
 import RealityKit
-import SwiftUI
 
 public final class CaptureDepthModule: Module {
     public func definition() -> ModuleDefinition {

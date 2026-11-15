@@ -6,16 +6,17 @@ final class DepthGeometryTests: XCTestCase {
 
     // Independent fixture: rotate a table and its box into a tilted camera's frame,
     // then project to pixels. Production must recover the box from these depths.
-    func scene(rotation: Double = 0, denseTop: Bool = false) -> [DepthSample] {
+    func scene(rotation: Double = 0, denseTop: Bool = false, tilt: Double = .pi / 5,
+               noise: Double = 0) -> [DepthSample] {
+        var random = DepthFrameFixture()
         func sample(_ x: Double, _ y: Double, _ height: Double) -> DepthSample {
             let a = x * cos(rotation) - y * sin(rotation)
             let b = x * sin(rotation) + y * cos(rotation)
-            let tilt = Double.pi / 5
             let cx = a
             let cy = b * cos(tilt) - height * sin(tilt)
             let cz = 1.2 - b * sin(tilt) - height * cos(tilt)
             return DepthSample(u: 400 * cx / cz + 320, v: 420 * cy / cz + 240,
-                               depth: cz, highConfidence: true)
+                               depth: cz + noise * random.gaussian(), highConfidence: true)
         }
         var samples: [DepthSample] = []
         for x in -20...20 {
@@ -24,7 +25,8 @@ final class DepthGeometryTests: XCTestCase {
                 if abs(px) > 0.15 || abs(py) > 0.10 { samples.append(sample(px, py, 0)) }
             }
         }
-        let steps = denseTop ? 70 : 20
+        // At most 7.5 mm spacing keeps the box connected in a 1 cm occupancy grid.
+        let steps = denseTop ? 70 : 40
         for x in 0...steps {
             for y in 0...steps {
                 samples.append(sample(-0.15 + 0.30 * Double(x) / Double(steps),
