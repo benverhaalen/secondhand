@@ -1,16 +1,342 @@
 {
   "screen": "item/[id]/pickup",
-  "what": "A stub from the parts kit, so the route exists. The page's builder replaces this table with the page's own, before the code.",
+  "route": "/item/it_chair/pickup",
+  "frame": [
+    "Who: a seller whose buyer collects in person, mostly Facebook and furniture. Carol meets a stranger rarely and worries about where; a flipper does it weekly.",
+    "Came to: say when they are free and where, see who is coming before saying yes, and tell the buyer if plans change.",
+    "A mistake costs most where a home address goes out without the person meaning it, a time gets confirmed they never approved, or they meet a stranger after dark somewhere quiet.",
+    "Ways out (spec/ways-out.md §6.9, spec/edge-cases.md §16): Suggest another or Decline the buyer's pick; running late, another time, share my plan, cancel with Undo; share an address only on its own tap, with the public spot first.",
+    "In the loop: nothing is set up ahead and no calendar is read. The person taps the days and drags the times; the agent's message waits for Send; the buyer's pick waits for Approve; an address waits for its own tap (share_address locked)."
+  ],
+  "decisions": [
+    {
+      "decision": "No pickup windows: the next seven days as chips, and a span to drag under each day picked",
+      "why": "Ben decided it, 05:18 to 05:24 (product/decisions.md, \"no fixed pickup windows\"): \"some intuitive touch way to interact\"."
+    },
+    {
+      "decision": "No day is picked for the person",
+      "why": "The agent never guesses when someone is free; the decision says the person taps the days."
+    },
+    {
+      "decision": "A day's first span is 2 to 4 pm and it snaps to half hours",
+      "why": "Daylight by default (edge-cases §16, When); half hours is how people say times."
+    },
+    {
+      "decision": "A span that ends after dark holds Send until \"After dark is fine\"",
+      "why": "edge-cases §16: a time after dark asks first."
+    },
+    {
+      "decision": "The place is the saved spot or a safe spot: a police station's safe exchange zone, then a busy lit store",
+      "why": "edge-cases §16, Where. A list, not a map, because the kit has no map part yet."
+    },
+    {
+      "decision": "The agent writes one sentence of times, one of place and a question, as a draft with Send, Edit, Take over",
+      "why": "edge-cases §16 step 2: \"Never a list of slots, never a form\"; replies start as drafts (ways-out §6.3)."
+    },
+    {
+      "decision": "The buyer's pick shows who is coming: name, rating, reviews, time on the site, their messages; Approve is the foot",
+      "why": "edge-cases §16 step 3. The worlds hold no buyer photos, so none is drawn."
+    },
+    {
+      "decision": "Once planned: Add to Google Calendar and Add to Apple Calendar",
+      "why": "edge-cases §16 step 4: writing an event needs no reading of the calendar."
+    },
+    {
+      "decision": "When the buyer asks for the home, keeping the saved spot is the black pill and the address opens its own sheet",
+      "why": "ways-out §6.9 and share_address locked: the safer public spot first."
+    },
+    {
+      "decision": "The two cases no world holds are reached with ?case=ask and ?case=pick",
+      "why": "As Ship asks for case=double."
+    }
+  ],
   "states": [
     {
-      "state": "stub",
-      "shows": "the nav and the screen title"
+      "state": "booked",
+      "route": "/item/it_chair/pickup",
+      "shows": "Add to Google Calendar",
+      "why": "a meetup approved, and the buyer asking for the home"
+    },
+    {
+      "state": "ask",
+      "route": "/item/it_chair/pickup?case=ask",
+      "shows": "Days that work",
+      "why": "a buyer wants to meet; nothing is planned"
+    },
+    {
+      "state": "pick",
+      "route": "/item/it_chair/pickup?case=pick",
+      "shows": "Who’s coming",
+      "why": "the buyer picked a time and place"
+    },
+    {
+      "state": "failed",
+      "route": "/item/nope/pickup",
+      "shows": "No pickup here",
+      "why": "no buyer is coming for this item"
+    },
+    {
+      "state": "loading",
+      "route": "/item/it_chair/pickup?state=loading",
+      "shows": "Pickup",
+      "why": "the item card's skeleton under the heading"
+    },
+    {
+      "state": "didnt-load",
+      "route": "/item/it_chair/pickup?state=failed",
+      "shows": "This pickup didn’t load",
+      "why": "the pickup did not load; Try again asks again"
+    },
+    {
+      "state": "offline",
+      "route": "/item/it_chair/pickup?state=offline",
+      "shows": "Waiting for signal",
+      "why": "the last copy; each tap holds on its pill until the signal returns"
     }
   ],
   "controls": [
     {
-      "control": "Back",
-      "on_tap": "goes back to the screen it came from"
+      "id": "nav-back",
+      "does": "goes back, or to the item when opened directly",
+      "goes": "/item/it_chair"
+    },
+    {
+      "id": "pickup-item",
+      "does": "opens the item",
+      "goes": "/item/it_chair"
+    },
+    {
+      "id": "cal-google",
+      "does": "adds the meetup to Google Calendar"
+    },
+    {
+      "id": "cal-apple",
+      "does": "adds the meetup to Apple Calendar"
+    },
+    {
+      "id": "pickup-keep-spot",
+      "does": "tells the buyer it stays at the saved spot"
+    },
+    {
+      "id": "pickup-share",
+      "does": "opens Share your address"
+    },
+    {
+      "id": "pickup-address",
+      "does": "types the address",
+      "after": [
+        "pickup-share"
+      ]
+    },
+    {
+      "id": "pickup-send-address",
+      "does": "sends the address the person typed",
+      "after": [
+        "pickup-share"
+      ]
+    },
+    {
+      "id": "pickup-running-late",
+      "does": "opens Running late"
+    },
+    {
+      "id": "late-by-10",
+      "does": "picks 10 minutes late",
+      "after": [
+        "pickup-running-late"
+      ]
+    },
+    {
+      "id": "late-by-20",
+      "does": "picks 20 minutes late",
+      "after": [
+        "pickup-running-late"
+      ]
+    },
+    {
+      "id": "late-by-30",
+      "does": "picks 30 minutes late",
+      "after": [
+        "pickup-running-late"
+      ]
+    },
+    {
+      "id": "late-send",
+      "does": "tells the buyer",
+      "after": [
+        "pickup-running-late"
+      ]
+    },
+    {
+      "id": "pickup-another",
+      "does": "opens Suggest another time: the days, spans and place"
+    },
+    {
+      "id": "pickup-share-plan",
+      "does": "shares the place, time and buyer with a contact the person picks"
+    },
+    {
+      "id": "pickup-cancel",
+      "does": "opens Cancel pickup"
+    },
+    {
+      "id": "cancel-pickup-confirm",
+      "does": "cancels the pickup; the buyer gets a message and the item goes back on sale",
+      "after": [
+        "pickup-cancel"
+      ]
+    },
+    {
+      "id": "cancel-undo",
+      "does": "takes the cancel back",
+      "after": [
+        "pickup-cancel",
+        "cancel-pickup-confirm"
+      ]
+    },
+    {
+      "id": "pickup-close",
+      "does": "goes back to the item",
+      "after": [
+        "pickup-cancel",
+        "cancel-pickup-confirm"
+      ],
+      "goes": "/item/it_chair"
+    },
+    {
+      "id": "meet-day-2026-11-15",
+      "does": "picks today",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "meet-day-2026-11-16",
+      "does": "picks Monday",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "meet-day-2026-11-17",
+      "does": "picks Tuesday",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "meet-day-2026-11-18",
+      "does": "picks Wednesday",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "meet-day-2026-11-19",
+      "does": "picks Thursday",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "meet-day-2026-11-20",
+      "does": "picks Friday",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "meet-day-2026-11-21",
+      "does": "picks Saturday",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "place-saved",
+      "does": "meets at the saved spot",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "place-sp_police",
+      "does": "meets at the police station's safe exchange zone",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "place-sp_store",
+      "does": "meets at the store entrance",
+      "route": "/item/it_chair/pickup?case=ask"
+    },
+    {
+      "id": "meet-draft-send",
+      "does": "sends the message to the buyer",
+      "route": "/item/it_chair/pickup?case=ask",
+      "after": [
+        "meet-day-2026-11-16"
+      ]
+    },
+    {
+      "id": "meet-draft-text",
+      "does": "edits the message",
+      "route": "/item/it_chair/pickup?case=ask",
+      "after": [
+        "meet-day-2026-11-16"
+      ]
+    },
+    {
+      "id": "meet-draft-edit",
+      "does": "edits the message",
+      "route": "/item/it_chair/pickup?case=ask",
+      "after": [
+        "meet-day-2026-11-16"
+      ]
+    },
+    {
+      "id": "meet-draft-take",
+      "does": "opens the thread to write it myself",
+      "route": "/item/it_chair/pickup?case=ask",
+      "after": [
+        "meet-day-2026-11-16"
+      ],
+      "goes": "/messages/cv_cf"
+    },
+    {
+      "id": "meet-dark-ok",
+      "does": "says a time after dark is fine, so Send can go",
+      "route": "/item/it_chair/pickup?case=ask",
+      "after": [
+        "meet-day-2026-11-16"
+      ],
+      "drag": [
+        "span-2026-11-16-end",
+        120
+      ]
+    },
+    {
+      "id": "meet-approve",
+      "does": "approves the buyer's pick and tells them",
+      "route": "/item/it_chair/pickup?case=pick"
+    },
+    {
+      "id": "meet-another",
+      "does": "opens Suggest another time",
+      "route": "/item/it_chair/pickup?case=pick"
+    },
+    {
+      "id": "meet-decline",
+      "does": "declines the buyer's pick, with Undo",
+      "route": "/item/it_chair/pickup?case=pick"
+    },
+    {
+      "id": "decline-undo",
+      "does": "takes the decline back",
+      "route": "/item/it_chair/pickup?case=pick",
+      "after": [
+        "meet-decline"
+      ]
+    },
+    {
+      "id": "pickup-gone",
+      "does": "opens the item",
+      "route": "/item/nope/pickup",
+      "goes": "/item/nope"
+    },
+    {
+      "id": "pickup-retry",
+      "does": "loads the pickup again",
+      "route": "/item/it_chair/pickup?state=failed",
+      "goes": "/item/it_chair/pickup"
     }
-  ]
+  ],
+  "back": "Back goes to the screen it came from; opened directly, to the item.",
+  "skips": {
+    "new": "Pickup opens only from a sale, and a person who has done nothing has sold nothing",
+    "dense": "a pickup is one buyer collecting one item, so there is never a long list here"
+  }
 }
