@@ -18,32 +18,207 @@
         "room": 0.09,
         "auto_accept": "accept_and_decline",
         "decline_below_share": 0.5,
-        "likers_offer": { "min_discount": 0.05, "auto_field": null },
-        "markdown": { "route": "edit", "tool": "revise the price; sale events and strikethrough need an eBay Store", "min_step": 0 },
+        "likers_offer": {
+          "min_discount": 0.05,
+          "auto_field": null
+        },
+        "markdown": {
+          "route": "edit",
+          "tool": "revise the price; sale events and strikethrough need an eBay Store",
+          "min_step": 0
+        },
         "keep_off": [
-          { "setting": "auto_send_offers_to_future_interested_buyers", "why": "sends one fixed discount forever; our offers follow the plan" },
-          { "setting": "promoted_listings", "why": "spending asks first (listing D18)" }
+          {
+            "setting": "auto_send_offers_to_future_interested_buyers",
+            "why": "sends one fixed discount forever; our offers follow the plan"
+          },
+          {
+            "setting": "promoted_listings",
+            "why": "spending asks first (listing D18)"
+          }
         ]
       },
       "levers": [
-        { "id": "best_offer_auto", "name": "Best Offer auto-accept and auto-decline", "where": "listing form, Seller Hub; Trading and Inventory APIs", "params": "accept line must be under Buy It Now; offers between the lines wait for the seller; no auto-counter; not during a Discounts Manager sale event or on offers with extra terms", "notifies": "auto-declined buyers get an email and may offer again, 3 offers per buyer per item", "visibility": "none stated", "mark": "observed", "source": "https://www.ebay.com/help/selling/listings/selling-buy-now/adding-best-offer-listing?id=4144 (undated, read 2026-11-15)" },
-        { "id": "buyer_offer", "name": "Buyer offer", "where": "buyer side", "params": "lasts 24 h or until the listing ends; counteroffers last 96 h, up to 5 each side; accepting ends the listing and in most cases the buyer must pay at once", "notifies": "seller", "visibility": "none", "mark": "observed", "source": "help id=4144" },
-        { "id": "offer_interested", "name": "Send offers to interested buyers", "where": "Seller Hub; Negotiation API findEligibleItems and sendOfferToInterestedBuyers", "params": "at least 5% off; the 30 most recent watchers or buyers with it in their cart for 2 days or more; valid 96 h; eBay's automated mode sends up to 30 every 48 h; API offers cannot allow counters and use the default duration", "notifies": "those buyers", "visibility": "private; the public price is unchanged", "mark": "observed", "source": "help id=4144; developer.ebay.com Negotiation API overview (undated)" },
-        { "id": "price_revise", "name": "Lower the price", "where": "revise listing; Inventory API", "params": "any amount", "notifies": "watchers: not confirmed (community posts say yes)", "visibility": "not stated", "mark": "asserted", "source": "community thread titles only" },
-        { "id": "sale_event", "name": "Sale event or markdown with a struck-through price", "where": "Seller Hub Marketing > Discounts Manager; Marketing API item_price_markdown", "params": "eBay Store subscribers only; fixed price only; percent or amount off; values cannot change after launch; auto-accept and auto-decline stop during it", "notifies": "not stated", "visibility": "sale price shown in search and on the listing", "mark": "observed", "source": "https://www.ebay.com/help/selling/selling-tools/discounts-manager?id=4094 (undated); developer.ebay.com promotions manager guide" },
-        { "id": "volume_coupon", "name": "Volume pricing, coupons, order discounts", "where": "Discounts Manager", "params": "Store only; an accepted offer wins over a coupon", "notifies": "buyers at the cart", "visibility": "none stated", "mark": "observed", "source": "help id=4094" },
-        { "id": "promoted_general", "name": "Promoted Listings General (cost per sale)", "where": "Seller Hub Advertising; Marketing API", "params": "ad rate from 2%; fee if the buyer clicked the ad in the last 30 days", "notifies": "none", "visibility": "placed inside the same ranker with the rate as an input", "mark": "asserted", "source": "../platforms/ebay.md section 10" }
+        {
+          "id": "best_offer_auto",
+          "name": "Best Offer auto-accept and auto-decline",
+          "where": "listing form, Seller Hub; Trading and Inventory APIs",
+          "params": "accept line must be under Buy It Now; offers between the lines wait for the seller; no auto-counter; not during a Discounts Manager sale event or on offers with extra terms",
+          "notifies": "auto-declined buyers get an email and may offer again, 3 offers per buyer per item",
+          "visibility": "none stated",
+          "mark": "observed",
+          "source": "https://www.ebay.com/help/selling/listings/selling-buy-now/adding-best-offer-listing?id=4144 (undated, read 2026-11-15)"
+        },
+        {
+          "id": "buyer_offer",
+          "name": "Buyer offer",
+          "where": "buyer side",
+          "params": "lasts 24 h or until the listing ends; counteroffers last 96 h, up to 5 each side; accepting ends the listing and in most cases the buyer must pay at once",
+          "notifies": "seller",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "help id=4144"
+        },
+        {
+          "id": "offer_interested",
+          "name": "Send offers to interested buyers",
+          "where": "Seller Hub; Negotiation API findEligibleItems and sendOfferToInterestedBuyers",
+          "params": "at least 5% off; the 30 most recent watchers or buyers with it in their cart for 2 days or more; valid 96 h; eBay's automated mode sends up to 30 every 48 h; API offers cannot allow counters and use the default duration",
+          "notifies": "those buyers",
+          "visibility": "private; the public price is unchanged",
+          "mark": "observed",
+          "source": "help id=4144; developer.ebay.com Negotiation API overview (undated)"
+        },
+        {
+          "id": "price_revise",
+          "name": "Lower the price",
+          "where": "revise listing; Inventory API",
+          "params": "any amount",
+          "notifies": "watchers: eBay says watchers are notified when the price drops; no threshold or timing given",
+          "visibility": "not stated",
+          "mark": "observed",
+          "source": "https://pages.ebay.com/watchlist (undated, read 2026-11-15)"
+        },
+        {
+          "id": "sale_event",
+          "name": "Sale event or markdown with a struck-through price",
+          "where": "Seller Hub Marketing > Discounts Manager; Marketing API item_price_markdown",
+          "params": "eBay Store subscribers only; fixed price only; percent or amount off; values cannot change after launch; auto-accept and auto-decline stop during it; 5% to 80% off, 1 to 45 days, scheduled up to 180 days ahead, one sale per listing at a time; the struck-through price must be the recent non-sale price, no older than 6 months; raising the price or changing shipping removes the item",
+          "notifies": "not stated",
+          "visibility": "sale price shown in search and on the listing",
+          "mark": "observed",
+          "source": "https://www.ebay.com/help/selling/selling-tools/discounts-manager?id=4094 (undated); developer.ebay.com promotions manager guide; https://pages.ebay.com/specialoffers/sellerterms.html (updated 2024-07-08)"
+        },
+        {
+          "id": "volume_coupon",
+          "name": "Volume pricing, coupons, order discounts",
+          "where": "Discounts Manager",
+          "params": "Store only; an accepted offer wins over a coupon",
+          "notifies": "buyers at the cart",
+          "visibility": "none stated",
+          "mark": "observed",
+          "source": "help id=4094"
+        },
+        {
+          "id": "promoted_general",
+          "name": "Promoted Listings General (cost per sale)",
+          "where": "Seller Hub Advertising; Marketing API",
+          "params": "ad rate from 2%; fee if the buyer clicked the ad in the last 30 days",
+          "notifies": "none",
+          "visibility": "placed inside the same ranker with the rate as an input",
+          "mark": "asserted",
+          "source": "../platforms/ebay.md section 10"
+        }
       ],
       "signals": [
-        { "id": "impressions_search", "name": "Search impressions", "stage": "exposure", "definition": "times shown on search results (LISTING_IMPRESSION_SEARCH_RESULTS_PAGE); may not have been in view", "scope": "seller", "where": "Seller Hub Traffic", "read": "Sell Analytics getTrafficReport, dimension LISTING, up to 200 listings and 90 days per call, 730 days back", "latency": "lastUpdatedDate in the response", "mark": "observed", "source": "https://developer.ebay.com/api-docs/sell/static/performance/traffic-report.html (undated)" },
-        { "id": "impressions_total", "name": "All impressions", "stage": "exposure", "definition": "TOTAL_IMPRESSION_TOTAL, every page and flow; matches Seller Hub", "scope": "seller", "where": "Seller Hub", "read": "getTrafficReport", "latency": "same", "mark": "observed", "source": "Sell Analytics release 1.3.1 (2023-12-04)" },
-        { "id": "views", "name": "Listing views", "stage": "attention", "definition": "View Item page visits; split by source: search, store, other eBay, off eBay, direct (LISTING_VIEWS_*)", "scope": "seller", "where": "Seller Hub", "read": "getTrafficReport", "latency": "same", "mark": "observed", "source": "traffic-report.html" },
-        { "id": "ctr", "name": "Click-through rate", "stage": "attention", "definition": "clicks over search impressions (the doc's wording is inverted)", "scope": "seller", "where": "Seller Hub", "read": "getTrafficReport CLICK_THROUGH_RATE", "latency": "same", "mark": "observed", "source": "traffic-report.html; inversion inferred" },
-        { "id": "conversion", "name": "Sales conversion rate", "stage": "outcome", "definition": "transactions over views", "scope": "seller", "where": "Seller Hub", "read": "getTrafficReport SALES_CONVERSION_RATE, TRANSACTION", "latency": "same", "mark": "observed", "source": "traffic-report.html" },
-        { "id": "top20", "name": "Top 20 search slot and promoted or organic split", "stage": "exposure", "definition": "share of impressions in the first 20 results; promoted versus organic views", "scope": "seller", "where": "Seller Hub listing traffic report and its CSV only since Nov 2024", "read": "harness: download the CSV", "latency": "not stated", "mark": "asserted", "source": "valueaddedresource.net ebay-traffic-report-update (2024-11-07)" },
-        { "id": "watchers", "name": "Watchers", "stage": "interest", "definition": "buyers who added it to their watchlist", "scope": "seller count; buyers see a watcher label", "where": "Seller Hub, listing", "read": "Trading GetMyeBaySelling WatchCount (asserted); Browse watchCount needs App Check", "latency": "live", "mark": "asserted", "source": "../../../price/ben/comps-sources-live.md; memory" },
-        { "id": "carts", "name": "In carts", "stage": "intent", "definition": "buyers with it in their cart; feeds 'interested buyers' after 2 days", "scope": "public label on the listing", "where": "listing page", "read": "harness: read the listing", "latency": "live", "mark": "asserted", "source": "community thread titles; help id=4144 for the 2-day rule (observed)" },
-        { "id": "offers", "name": "Offers received", "stage": "intent", "definition": "Best Offers with amount", "scope": "seller", "where": "Seller Hub", "read": "Trading GetBestOffers (asserted)", "latency": "live", "mark": "asserted", "source": "memory; not opened" }
+        {
+          "id": "impressions_search",
+          "name": "Search impressions",
+          "stage": "exposure",
+          "definition": "times shown on search results (LISTING_IMPRESSION_SEARCH_RESULTS_PAGE); may not have been in view",
+          "scope": "seller",
+          "where": "Seller Hub Traffic",
+          "read": "Sell Analytics getTrafficReport, dimension LISTING, up to 200 listings and 90 days per call, 730 days back",
+          "latency": "lastUpdatedDate in the response",
+          "mark": "observed",
+          "source": "https://developer.ebay.com/api-docs/sell/static/performance/traffic-report.html (undated)"
+        },
+        {
+          "id": "impressions_total",
+          "name": "All impressions",
+          "stage": "exposure",
+          "definition": "TOTAL_IMPRESSION_TOTAL, every page and flow; matches Seller Hub",
+          "scope": "seller",
+          "where": "Seller Hub",
+          "read": "getTrafficReport",
+          "latency": "same",
+          "mark": "observed",
+          "source": "Sell Analytics release 1.3.1 (2023-12-04)"
+        },
+        {
+          "id": "views",
+          "name": "Listing views",
+          "stage": "attention",
+          "definition": "View Item page visits; split by source: search, store, other eBay, off eBay, direct (LISTING_VIEWS_*)",
+          "scope": "seller",
+          "where": "Seller Hub",
+          "read": "getTrafficReport",
+          "latency": "same",
+          "mark": "observed",
+          "source": "traffic-report.html"
+        },
+        {
+          "id": "ctr",
+          "name": "Click-through rate",
+          "stage": "attention",
+          "definition": "clicks over search impressions (the doc's wording is inverted)",
+          "scope": "seller",
+          "where": "Seller Hub",
+          "read": "getTrafficReport CLICK_THROUGH_RATE",
+          "latency": "same",
+          "mark": "observed",
+          "source": "traffic-report.html; inversion inferred"
+        },
+        {
+          "id": "conversion",
+          "name": "Sales conversion rate",
+          "stage": "outcome",
+          "definition": "transactions over views",
+          "scope": "seller",
+          "where": "Seller Hub",
+          "read": "getTrafficReport SALES_CONVERSION_RATE, TRANSACTION",
+          "latency": "same",
+          "mark": "observed",
+          "source": "traffic-report.html"
+        },
+        {
+          "id": "top20",
+          "name": "Top 20 search slot and promoted or organic split",
+          "stage": "exposure",
+          "definition": "share of impressions in the first 20 results; promoted versus organic views",
+          "scope": "seller",
+          "where": "Seller Hub listing traffic report and its CSV only since Nov 2024",
+          "read": "harness: download the CSV",
+          "latency": "not stated",
+          "mark": "asserted",
+          "source": "valueaddedresource.net ebay-traffic-report-update (2024-11-07)"
+        },
+        {
+          "id": "watchers",
+          "name": "Watchers",
+          "stage": "interest",
+          "definition": "buyers who added it to their watchlist",
+          "scope": "seller count; buyers see a watcher label",
+          "where": "Seller Hub, listing",
+          "read": "Trading GetItem with IncludeWatchCount, or GetMyeBaySelling; Browse watchCount needs App Check",
+          "latency": "live",
+          "mark": "observed",
+          "source": "eBay developer knowledge base 2084 (updated 2022-08-23)"
+        },
+        {
+          "id": "carts",
+          "name": "In carts",
+          "stage": "intent",
+          "definition": "buyers with it in their cart; feeds 'interested buyers' after 2 days",
+          "scope": "public label on the listing",
+          "where": "listing page",
+          "read": "harness: read the listing",
+          "latency": "live",
+          "mark": "asserted",
+          "source": "community thread titles; help id=4144 for the 2-day rule (observed)"
+        },
+        {
+          "id": "offers",
+          "name": "Offers received",
+          "stage": "intent",
+          "definition": "Best Offers with amount",
+          "scope": "seller",
+          "where": "Seller Hub",
+          "read": "Trading GetBestOffers: amount of each offer, active or ended listings",
+          "latency": "live",
+          "mark": "observed",
+          "source": "developer.ebay.com Trading GetBestOffers (version 1477)"
+        }
       ]
     },
     "depop": {
@@ -52,27 +227,178 @@
         "auto_accept": "accept_and_counter_at_line",
         "auto_accept_field": "auto_negotiate_offer_price",
         "offer_min_discount": 0.05,
-        "likers_offer": { "min_discount": 0.05, "auto_field": "auto_send_offer_price" },
-        "markdown": { "route": "discount_tool", "tool": "discount_price (struck-through original, tag on the photo, icon in search)", "min_step": 0.05, "why": "Depop discounts run from 5% to 95%" },
-        "keep_off": [ { "setting": "is_boosted", "why": "12% fee; spending asks first (listing D18)" } ]
+        "likers_offer": {
+          "min_discount": 0.05,
+          "auto_field": "auto_send_offer_price"
+        },
+        "markdown": {
+          "route": "discount_tool",
+          "tool": "discount_price (struck-through original, tag on the photo, icon in search)",
+          "min_step": 0.05,
+          "why": "Depop discounts run from 5% to 95%"
+        },
+        "keep_off": [
+          {
+            "setting": "is_boosted",
+            "why": "12% fee; spending asks first (listing D18)"
+          }
+        ]
       },
       "levers": [
-        { "id": "buyer_offer", "name": "Buyer offer (Make Offer)", "where": "buyer side; seller answers in Inbox > Offers", "params": "seller has 24 h; after acceptance the buyer has 24 h to pay; one active offer per buyer per item; not binding; seller can accept several, first to pay wins", "notifies": "seller; on acceptance all accepted buyers", "visibility": "none", "mark": "observed", "source": "https://depophelp.zendesk.com/hc/en-gb/articles/4412315779345-Make-Offer (undated, read 2026-11-15); partnerapi.depop.com concepts/offers" },
-        { "id": "send_offer", "name": "Send offer to likers, bag-adders and people who messaged", "where": "app; API POST /api/v1/products/by-sku/{sku}/offer/", "params": "at least 5% under the price; expiry 24 h in the API docs, 14 days on the help page read 2026-11-14 (unresolved)", "notifies": "the recipient", "visibility": "private", "mark": "observed", "source": "partnerapi.depop.com how-to-guides/managing-offers (undated)" },
-        { "id": "auto_send", "name": "Auto-send offers to new likers and bag-adders", "where": "API field auto_send_offer_price", "params": "sent one hour after a like or bag, delay fixed; at least 5% under the price or the discount price", "notifies": "the liker", "visibility": "private", "mark": "observed", "source": "managing-offers; changelog May 2025" },
-        { "id": "auto_respond", "name": "Auto-respond to offers", "where": "app: Manage your listing > Auto-respond; API auto_negotiate_offer_price", "params": "at or above the line: accepted; below: countered at exactly the line, every time; within about 60 s; at least 5% under the price", "notifies": "buyer", "visibility": "none", "mark": "observed", "source": "https://depophelp.zendesk.com/hc/en-gb/articles/42789384303761 (undated); managing-offers" },
-        { "id": "discount", "name": "Discount", "where": "app bulk action; API discount_price", "params": "5% to 95%; a new discount replaces the old", "notifies": "price-drop notice to likers not found", "visibility": "original price crossed out, tag on the photo, icon in search results", "mark": "observed", "source": "https://depophelp.zendesk.com/hc/en-gb/articles/360033415634-Discounts; Depop blog 2026-04-01" },
-        { "id": "shipping_discount", "name": "Shipping discount", "where": "iOS app, US Depop Shipping", "params": "$2, $3, $4 off or free", "notifies": "none", "visibility": "not found", "mark": "observed", "source": "Discounts help page" },
-        { "id": "bundle", "name": "Bundle discount", "where": "shop settings", "params": "percent off 2 or more items", "notifies": "none", "visibility": "shop banner", "mark": "observed", "source": "help 360017585774 (earlier run)" },
-        { "id": "boost", "name": "Boost a listing or the whole shop", "where": "app; API is_boosted", "params": "12% fee only if the buyer saw the boosted tile and bought within 28 days", "notifies": "none", "visibility": "an extra placement labelled boosted; the organic listing stays", "mark": "observed", "source": "partnerapi.depop.com concepts/boosting (undated)" }
+        {
+          "id": "buyer_offer",
+          "name": "Buyer offer (Make Offer)",
+          "where": "buyer side; seller answers in Inbox > Offers",
+          "params": "seller has 24 h; after acceptance the buyer has 24 h to pay; one active offer per buyer per item; not binding; seller can accept several, first to pay wins",
+          "notifies": "seller; on acceptance all accepted buyers",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "https://depophelp.zendesk.com/hc/en-gb/articles/4412315779345-Make-Offer (undated, read 2026-11-15); partnerapi.depop.com concepts/offers"
+        },
+        {
+          "id": "send_offer",
+          "name": "Send offer to likers, bag-adders and people who messaged",
+          "where": "app; API POST /api/v1/products/by-sku/{sku}/offer/",
+          "params": "at least 5% under the price; the buyer has 24 h to buy or counter (a help page read on 2026-11-14 said 14 days; no other source has it); not binding (a binding-offer test, Lock It In, was rolled back in May 2025 after sales dropped)",
+          "notifies": "the recipient",
+          "visibility": "private",
+          "mark": "observed",
+          "source": "https://news.depop.com/depop-community-embraces-offers-as-suite-of-negotiation-tools-expands/ (2024-01-09); partnerapi.depop.com concepts/offers; valueaddedresource.net Lock It In (updated 2025-05-25)"
+        },
+        {
+          "id": "auto_send",
+          "name": "Auto-send offers to new likers and bag-adders",
+          "where": "API field auto_send_offer_price",
+          "params": "sent one hour after a like or bag, delay fixed; at least 5% under the price or the discount price",
+          "notifies": "the liker",
+          "visibility": "private",
+          "mark": "observed",
+          "source": "managing-offers; changelog May 2025"
+        },
+        {
+          "id": "auto_respond",
+          "name": "Auto-respond to offers",
+          "where": "app: Manage your listing > Auto-respond; API auto_negotiate_offer_price",
+          "params": "at or above the line: accepted; below: countered at exactly the line, every time; within about 60 s; at least 5% under the price",
+          "notifies": "buyer",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "https://depophelp.zendesk.com/hc/en-gb/articles/42789384303761 (undated); managing-offers"
+        },
+        {
+          "id": "discount",
+          "name": "Discount",
+          "where": "app bulk action; API discount_price",
+          "params": "5% to 95%; a new discount replaces the old",
+          "notifies": "price-drop notice to likers not found",
+          "visibility": "original price crossed out, tag on the photo, icon in search results",
+          "mark": "observed",
+          "source": "https://depophelp.zendesk.com/hc/en-gb/articles/360033415634-Discounts; Depop blog 2026-04-01"
+        },
+        {
+          "id": "shipping_discount",
+          "name": "Shipping discount",
+          "where": "iOS app, US Depop Shipping",
+          "params": "$2, $3, $4 off or free",
+          "notifies": "none",
+          "visibility": "not found",
+          "mark": "observed",
+          "source": "Discounts help page"
+        },
+        {
+          "id": "bundle",
+          "name": "Bundle discount",
+          "where": "shop settings",
+          "params": "percent off 2 or more items",
+          "notifies": "none",
+          "visibility": "shop banner",
+          "mark": "observed",
+          "source": "help 360017585774 (earlier run)"
+        },
+        {
+          "id": "boost",
+          "name": "Boost a listing or the whole shop",
+          "where": "app; API is_boosted",
+          "params": "12% fee only if the buyer saw the boosted tile and bought within 28 days",
+          "notifies": "none",
+          "visibility": "an extra placement labelled boosted; the organic listing stays",
+          "mark": "observed",
+          "source": "partnerapi.depop.com concepts/boosting (undated)"
+        }
       ],
       "signals": [
-        { "id": "impressions_clicks", "name": "Impressions and clicks, organic and boosted", "stage": "exposure", "definition": "ad performance for the product: organic and boosted clicks and impressions", "scope": "seller", "where": "insights", "read": "partner API GET /api/v1/insights/products/by-sku/{sku}/live/, boost section", "latency": "up to 60 min", "mark": "observed", "source": "partner API changelog Jul 2026; field names not seen" },
-        { "id": "views", "name": "Views", "stage": "attention", "definition": "Shop Stats in the app and Selling Hub", "scope": "seller", "where": "app and web", "read": "harness only; no views field in the API", "latency": "not stated", "mark": "asserted", "source": "help 360019016817 not reached" },
-        { "id": "likes", "name": "Likes", "stage": "interest", "definition": "users who liked the listing", "scope": "public", "where": "listing", "read": "insights likes_count; webhooks v1:product.like and unlike; public webapi like_count", "latency": "webhook near live; insights up to 60 min", "mark": "observed", "source": "partner API changelog Jul 2026" },
-        { "id": "bag", "name": "Bag adds", "stage": "intent", "definition": "users with the product in their bag now", "scope": "seller", "where": "insights", "read": "insights bag_count", "latency": "up to 60 min", "mark": "observed", "source": "partner API insights" },
-        { "id": "offers", "name": "Pending offers", "stage": "intent", "definition": "offers awaiting seller or buyer review", "scope": "seller", "where": "insights", "read": "insights offers section; no list-offers endpoint", "latency": "up to 60 min", "mark": "observed", "source": "partner API insights" },
-        { "id": "sales", "name": "Sales and earnings", "stage": "outcome", "definition": "orders with fees", "scope": "seller", "where": "Selling Hub > Stats", "read": "orders API and webhooks; CSV up to 3 months per file", "latency": "live; Earnings a day late", "mark": "observed", "source": "help 360039263713" }
+        {
+          "id": "impressions_clicks",
+          "name": "Impressions and clicks, organic and boosted",
+          "stage": "exposure",
+          "definition": "ad performance for the product: organic and boosted clicks and impressions",
+          "scope": "seller",
+          "where": "insights",
+          "read": "partner API GET /api/v1/insights/products/by-sku/{sku}/live/, boost section",
+          "latency": "up to 60 min",
+          "mark": "observed",
+          "source": "partner API changelog Jul 2026; field names not seen"
+        },
+        {
+          "id": "views",
+          "name": "Views",
+          "stage": "attention",
+          "definition": "Shop Stats in the app and Selling Hub",
+          "scope": "seller",
+          "where": "app and web",
+          "read": "harness only; no views field in the API",
+          "latency": "not stated",
+          "mark": "asserted",
+          "source": "help 360019016817 not reached"
+        },
+        {
+          "id": "likes",
+          "name": "Likes",
+          "stage": "interest",
+          "definition": "users who liked the listing",
+          "scope": "public",
+          "where": "listing",
+          "read": "insights likes_count; webhooks v1:product.like and unlike; public webapi like_count",
+          "latency": "webhook near live; insights up to 60 min",
+          "mark": "observed",
+          "source": "partner API changelog Jul 2026"
+        },
+        {
+          "id": "bag",
+          "name": "Bag adds",
+          "stage": "intent",
+          "definition": "users with the product in their bag now",
+          "scope": "seller",
+          "where": "insights",
+          "read": "insights bag_count",
+          "latency": "up to 60 min",
+          "mark": "observed",
+          "source": "partner API insights"
+        },
+        {
+          "id": "offers",
+          "name": "Pending offers",
+          "stage": "intent",
+          "definition": "offers awaiting seller or buyer review",
+          "scope": "seller",
+          "where": "insights",
+          "read": "insights offers section; no list-offers endpoint",
+          "latency": "up to 60 min",
+          "mark": "observed",
+          "source": "partner API insights"
+        },
+        {
+          "id": "sales",
+          "name": "Sales and earnings",
+          "stage": "outcome",
+          "definition": "orders with fees",
+          "scope": "seller",
+          "where": "Selling Hub > Stats",
+          "read": "orders API and webhooks; CSV up to 3 months per file",
+          "latency": "live; Earnings a day late",
+          "mark": "observed",
+          "source": "help 360039263713"
+        }
       ]
     },
     "poshmark": {
@@ -82,50 +408,313 @@
         "auto_accept_field": "smart_sell_min",
         "offer_min_discount": 0,
         "note": "Smart Sell may still counter an offer above its minimum, aiming for the list price; it is a test, not on every account",
-        "likers_offer": { "min_discount": 0.1, "auto_field": null, "shipping_discount_required": true },
-        "markdown": { "route": "edit", "tool": "edit the price", "min_step": 0.1, "why": "a drop of 10% or more below the lowest-ever price, ending at $10 or more, notifies likers" },
-        "keep_off": [ { "setting": "promoted_closet", "why": "pay per click; spending asks first" } ]
+        "likers_offer": {
+          "min_discount": 0.1,
+          "auto_field": null,
+          "shipping_discount_required": true
+        },
+        "markdown": {
+          "route": "edit",
+          "tool": "edit the price",
+          "min_step": 0.1,
+          "why": "a drop of 10% or more below the lowest-ever price, ending at $10 or more, notifies likers"
+        },
+        "keep_off": [
+          {
+            "setting": "promoted_closet",
+            "why": "pay per click; spending asks first"
+          }
+        ]
       },
       "levers": [
-        { "id": "buyer_offer", "name": "Buyer offer", "where": "buyer side", "params": "expires in 24 h; binding, payment taken on acceptance; first accepted wins; minimum offer about 40% of list (asserted)", "notifies": "seller", "visibility": "none", "mark": "observed", "source": "blog.poshmark.com 2014-10-09 FAQ; 2026-06-16 offer test post; minimum from valueaddedresource 2025-09-14" },
-        { "id": "offer_to_likers", "name": "Offer to Likers", "where": "listing or share page", "params": "at least 10% off and 10% below the lowest offer in 90 days; shipping discount none, $4.99 or free; expires in 24 h", "notifies": "every liker", "visibility": "none stated", "mark": "observed", "source": "blog.poshmark.com 2026-01-25 features guide; 2026-11-06 holiday tips" },
-        { "id": "price_drop", "name": "Price drop", "where": "edit price", "params": "likers notified when the drop is 10% or more below the lowest-ever price and the new price is $10 or more; some drops get a random 6-hour shipping promotion", "notifies": "likers, in their feed", "visibility": "random shipping promotion", "mark": "observed", "source": "https://poshmark.com/price_drop_policy (undated)" },
-        { "id": "smart_sell", "name": "Smart Sell", "where": "share page toggle; testing in the listing flow", "params": "one minimum; below it counters; at or above an algorithm accepts or counters toward list", "notifies": "buyer", "visibility": "Poshmark claims 60% more likely to sell in 7 days", "mark": "observed", "source": "blog.poshmark.com/smart-sell (modified 2025-08-20: not yet for all); 2026-04-29, 2026-07-30 posts" },
-        { "id": "closet_clear_out", "name": "Closet Clear Out", "where": "event days", "params": "drop of 10% or more; Poshmark pays discounted shipping", "notifies": "likers", "visibility": "none stated", "mark": "observed", "source": "2026-01-25 guide" },
-        { "id": "bundle", "name": "Bundle discount", "where": "My Seller Discount", "params": "percent off and a minimum item count", "notifies": "buyer", "visibility": "none", "mark": "observed", "source": "2026-01-25 guide" },
-        { "id": "promoted_closet", "name": "Promoted Closet", "where": "Seller Tools", "params": "pay per click, weekly budget", "notifies": "none", "visibility": "paid placement", "mark": "observed", "source": "blog.poshmark.com how-budgets-work (2023); 2026-08-31 post" },
-        { "id": "inactive_rule", "name": "Inactive listings", "where": "automatic", "params": "no bundling, commenting, offering or editing for 60 days", "notifies": "seller", "visibility": "active listings are prioritized in search and browsing", "mark": "observed", "source": "blog.poshmark.com 2026-04-06" }
+        {
+          "id": "buyer_offer",
+          "name": "Buyer offer",
+          "where": "buyer side",
+          "params": "expires in 24 h; binding, payment taken on acceptance; first accepted wins; minimum offer about 40% of list (asserted)",
+          "notifies": "seller",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "blog.poshmark.com 2014-10-09 FAQ; 2026-06-16 offer test post; minimum from valueaddedresource 2025-09-14"
+        },
+        {
+          "id": "offer_to_likers",
+          "name": "Offer to Likers",
+          "where": "listing or share page",
+          "params": "at least 10% off and 10% below the lowest offer in 90 days; shipping discount none, $4.99 or free; expires in 24 h",
+          "notifies": "every liker",
+          "visibility": "none stated",
+          "mark": "observed",
+          "source": "blog.poshmark.com 2026-01-25 features guide; 2026-11-06 holiday tips"
+        },
+        {
+          "id": "price_drop",
+          "name": "Price drop",
+          "where": "edit price",
+          "params": "likers notified when the drop is 10% or more below the lowest-ever price and the new price is $10 or more; some drops get a random 6-hour shipping promotion",
+          "notifies": "likers, in their feed",
+          "visibility": "random shipping promotion",
+          "mark": "observed",
+          "source": "https://poshmark.com/price_drop_policy (undated)"
+        },
+        {
+          "id": "smart_sell",
+          "name": "Smart Sell",
+          "where": "share page toggle; testing in the listing flow",
+          "params": "one minimum; below it counters; at or above an algorithm accepts or counters toward list",
+          "notifies": "buyer",
+          "visibility": "Poshmark claims 60% more likely to sell in 7 days",
+          "mark": "observed",
+          "source": "blog.poshmark.com/smart-sell (modified 2025-08-20: not yet for all); 2026-04-29, 2026-07-30 posts"
+        },
+        {
+          "id": "closet_clear_out",
+          "name": "Closet Clear Out",
+          "where": "event days",
+          "params": "drop of 10% or more; Poshmark pays discounted shipping",
+          "notifies": "likers",
+          "visibility": "none stated",
+          "mark": "observed",
+          "source": "2026-01-25 guide"
+        },
+        {
+          "id": "bundle",
+          "name": "Bundle discount",
+          "where": "My Seller Discount",
+          "params": "percent off and a minimum item count",
+          "notifies": "buyer",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "2026-01-25 guide"
+        },
+        {
+          "id": "promoted_closet",
+          "name": "Promoted Closet",
+          "where": "Seller Tools",
+          "params": "pay per click, weekly budget",
+          "notifies": "none",
+          "visibility": "paid placement",
+          "mark": "observed",
+          "source": "blog.poshmark.com how-budgets-work (2023); 2026-08-31 post"
+        },
+        {
+          "id": "inactive_rule",
+          "name": "Inactive listings",
+          "where": "automatic",
+          "params": "no bundling, commenting, offering or editing for 60 days",
+          "notifies": "seller",
+          "visibility": "active listings are prioritized in search and browsing",
+          "mark": "observed",
+          "source": "blog.poshmark.com 2026-04-06"
+        }
       ],
       "signals": [
-        { "id": "impressions", "name": "Impressions", "stage": "exposure", "definition": "not defined by Poshmark", "scope": "seller", "where": "listing details > Listing Metrics", "read": "harness only; no API or export", "latency": "not stated", "mark": "observed", "source": "blog.poshmark.com 2026-04-06" },
-        { "id": "clicks", "name": "Clicks", "stage": "attention", "definition": "not defined", "scope": "seller", "where": "Listing Metrics", "read": "harness only", "latency": "not stated", "mark": "observed", "source": "2026-04-06" },
-        { "id": "likes", "name": "Likes", "stage": "interest", "definition": "shoppers who liked it; the audience for Offer to Likers and price-drop notices", "scope": "public", "where": "listing page; Inventory Report", "read": "public listing page; harness", "latency": "live", "mark": "observed", "source": "listing page read 2026-11-15; 2026-01-25 guide" },
-        { "id": "offers", "name": "Seller offers and buyer offers", "stage": "intent", "definition": "counts on the listing", "scope": "seller", "where": "Listing Metrics", "read": "harness only", "latency": "not stated", "mark": "observed", "source": "2026-04-06" },
-        { "id": "posh_stats", "name": "Posh Stats", "stage": "outcome", "definition": "ship time over 90 days, cancellations, approved returns, sales", "scope": "seller", "where": "Seller Tools", "read": "harness only", "latency": "not stated", "mark": "observed", "source": "2026-04-06" }
+        {
+          "id": "impressions",
+          "name": "Impressions",
+          "stage": "exposure",
+          "definition": "not defined by Poshmark",
+          "scope": "seller",
+          "where": "listing details > Listing Metrics",
+          "read": "harness only; no API or export",
+          "latency": "not stated",
+          "mark": "observed",
+          "source": "blog.poshmark.com 2026-04-06"
+        },
+        {
+          "id": "clicks",
+          "name": "Clicks",
+          "stage": "attention",
+          "definition": "not defined",
+          "scope": "seller",
+          "where": "Listing Metrics",
+          "read": "harness only",
+          "latency": "not stated",
+          "mark": "observed",
+          "source": "2026-04-06"
+        },
+        {
+          "id": "likes",
+          "name": "Likes",
+          "stage": "interest",
+          "definition": "shoppers who liked it; the audience for Offer to Likers and price-drop notices",
+          "scope": "public",
+          "where": "listing page; Inventory Report",
+          "read": "public listing page; harness",
+          "latency": "live",
+          "mark": "observed",
+          "source": "listing page read 2026-11-15; 2026-01-25 guide"
+        },
+        {
+          "id": "offers",
+          "name": "Seller offers and buyer offers",
+          "stage": "intent",
+          "definition": "counts on the listing",
+          "scope": "seller",
+          "where": "Listing Metrics",
+          "read": "harness only",
+          "latency": "not stated",
+          "mark": "observed",
+          "source": "2026-04-06"
+        },
+        {
+          "id": "posh_stats",
+          "name": "Posh Stats",
+          "stage": "outcome",
+          "definition": "ship time over 90 days, cancellations, approved returns, sales",
+          "scope": "seller",
+          "where": "Seller Tools",
+          "read": "harness only",
+          "latency": "not stated",
+          "mark": "observed",
+          "source": "2026-04-06"
+        }
       ]
     },
     "mercari": {
       "rules": {
         "room": 0.15,
         "auto_accept": "none",
-        "likers_offer": { "min_discount": 0.1, "auto_field": "auto_offer_to_likers" },
-        "markdown": { "route": "promote", "tool": "Promote: a permanent drop of 5% or more under the lowest price so far, once a day", "min_step": 0.05, "why": "Promote notifies every liker and boosts the listing in search" },
-        "keep_off": [ { "setting": "smart_pricing", "why": "its drops lower the lowest-price-so far that every later Promote or offer must undercut" } ]
+        "likers_offer": {
+          "min_discount": 0.1,
+          "auto_field": "auto_offer_to_likers"
+        },
+        "markdown": {
+          "route": "promote",
+          "tool": "Promote: a permanent drop of 5% or more under the lowest price so far, once a day",
+          "min_step": 0.05,
+          "why": "Promote notifies every liker and boosts the listing in search"
+        },
+        "keep_off": [
+          {
+            "setting": "smart_pricing",
+            "why": "its drops lower the lowest-price-so far that every later Promote or offer must undercut"
+          }
+        ]
       },
       "levers": [
-        { "id": "buyer_offer", "name": "Buyer offer", "where": "buyer side", "params": "24 h each way; accepting a counter charges the buyer", "notifies": "seller", "visibility": "none", "mark": "observed", "source": "https://www.mercari.com/us/help_center/article/330/ (read by Ben 2026-11-14)" },
-        { "id": "promote", "name": "Promote", "where": "per listing", "params": "permanent drop of 5% or more under the lowest price so far; not under $1; once per 24 h per item", "notifies": "all likers", "visibility": "boosted in search results", "mark": "observed", "source": "https://www.mercari.com/us/help_center/article/347/ (undated, read 2026-11-15)" },
-        { "id": "offer_to_likers", "name": "Offer to Likers", "where": "per listing", "params": "10% or more under the lowest price so far; 50 newest likers; 24 h; binding; once per 72 h; the form pre-fills a larger discount (asserted)", "notifies": "those likers", "visibility": "none", "mark": "observed", "source": "article 347" },
-        { "id": "auto_offer_to_likers", "name": "Auto Offer to Likers", "where": "Profile > Promotion settings", "params": "sends your latest offer to each new liker after the delay you pick; only below the item price", "notifies": "new likers", "visibility": "none", "mark": "observed", "source": "article 347" },
-        { "id": "time_limited_sale", "name": "Time-limited Sale", "where": "per listing", "params": "listed 7 days or more; 10% or more under the lowest price so far; 3 days, then the price returns", "notifies": "interested buyers", "visibility": "search boost and the Deals section", "mark": "observed", "source": "article 347" },
-        { "id": "smart_pricing", "name": "Smart Pricing", "where": "listing form", "params": "start and floor; lowered gradually on demand; cadence not stated", "notifies": "not stated", "visibility": "not stated", "mark": "observed", "source": "mercari.com how-it-works guide (undated)" }
+        {
+          "id": "buyer_offer",
+          "name": "Buyer offer",
+          "where": "buyer side",
+          "params": "no minimum offer stated; 24 h each way; accepting a counter charges the buyer",
+          "notifies": "seller",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "https://www.mercari.com/us/help_center/article/330/ (undated, read 2026-11-15)"
+        },
+        {
+          "id": "promote",
+          "name": "Promote",
+          "where": "per listing",
+          "params": "permanent drop of 5% or more under the lowest price so far; not under $1; once per 24 h per item",
+          "notifies": "all likers",
+          "visibility": "boosted in search results",
+          "mark": "observed",
+          "source": "https://www.mercari.com/us/help_center/article/347/ (undated, read 2026-11-15)"
+        },
+        {
+          "id": "offer_to_likers",
+          "name": "Offer to Likers",
+          "where": "per listing",
+          "params": "10% or more under the lowest price so far; 50 newest likers; 24 h; binding; once per 72 h; the form pre-fills a larger discount (asserted)",
+          "notifies": "those likers",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "article 347"
+        },
+        {
+          "id": "auto_offer_to_likers",
+          "name": "Auto Offer to Likers",
+          "where": "Profile > Promotion settings",
+          "params": "sends your latest offer to each new liker after the delay you pick; only below the item price",
+          "notifies": "new likers",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "article 347"
+        },
+        {
+          "id": "time_limited_sale",
+          "name": "Time-limited Sale",
+          "where": "per listing",
+          "params": "listed 7 days or more; 10% or more under the lowest price so far; 3 days, then the price returns",
+          "notifies": "interested buyers",
+          "visibility": "search boost and the Deals section",
+          "mark": "observed",
+          "source": "article 347"
+        },
+        {
+          "id": "smart_pricing",
+          "name": "Smart Pricing",
+          "where": "listing form",
+          "params": "start and floor; lowered gradually on demand; cadence not stated",
+          "notifies": "not stated",
+          "visibility": "not stated",
+          "mark": "observed",
+          "source": "mercari.com how-it-works guide (undated)"
+        }
       ],
       "signals": [
-        { "id": "views", "name": "Item views", "stage": "exposure", "definition": "times the item was shown across search and buyer feeds: an impression count, not page views", "scope": "seller", "where": "Selling > My Listings; Seller Dashboard", "read": "harness only", "latency": "updated once a day", "mark": "observed", "source": "https://www.mercari.com/us/help_center/article/5001/ (undated)" },
-        { "id": "clicks", "name": "Item clicks", "stage": "attention", "definition": "times shoppers opened the item", "scope": "seller", "where": "same", "read": "harness only", "latency": "daily (inferred)", "mark": "observed", "source": "article 5001" },
-        { "id": "likes", "name": "Likes", "stage": "interest", "definition": "buyers who liked it; the audience for Promote and Offer to Likers", "scope": "public count not confirmed", "where": "listing", "read": "harness", "latency": "live (inferred)", "mark": "asserted", "source": "article 347 for the audience; count display not checked" },
-        { "id": "offers", "name": "Offers", "stage": "intent", "definition": "buyer offers with amount", "scope": "seller", "where": "inbox", "read": "harness", "latency": "live", "mark": "inferred", "source": "article 330" },
-        { "id": "sales", "name": "Gross Sales Report", "stage": "outcome", "definition": "per sale: price, fees, net, dates", "scope": "seller", "where": "website", "read": "report download", "latency": "custom dates", "mark": "observed", "source": "https://www.mercari.com/us/help_center/article/541/" }
+        {
+          "id": "views",
+          "name": "Item views",
+          "stage": "exposure",
+          "definition": "times the item was shown across search and buyer feeds: an impression count, not page views",
+          "scope": "seller",
+          "where": "Selling > My Listings; Seller Dashboard",
+          "read": "harness only",
+          "latency": "updated once a day",
+          "mark": "observed",
+          "source": "https://www.mercari.com/us/help_center/article/5001/ (undated)"
+        },
+        {
+          "id": "clicks",
+          "name": "Item clicks",
+          "stage": "attention",
+          "definition": "times shoppers opened the item",
+          "scope": "seller",
+          "where": "same",
+          "read": "harness only",
+          "latency": "daily (inferred)",
+          "mark": "observed",
+          "source": "article 5001"
+        },
+        {
+          "id": "likes",
+          "name": "Likes",
+          "stage": "interest",
+          "definition": "buyers who liked it; the audience for Promote and Offer to Likers",
+          "scope": "public count not confirmed",
+          "where": "listing",
+          "read": "harness",
+          "latency": "live (inferred)",
+          "mark": "asserted",
+          "source": "article 347 for the audience; count display not checked"
+        },
+        {
+          "id": "offers",
+          "name": "Offers",
+          "stage": "intent",
+          "definition": "buyer offers with amount",
+          "scope": "seller",
+          "where": "inbox",
+          "read": "harness",
+          "latency": "live",
+          "mark": "inferred",
+          "source": "article 330"
+        },
+        {
+          "id": "sales",
+          "name": "Gross Sales Report",
+          "stage": "outcome",
+          "definition": "per sale: price, fees, net, dates",
+          "scope": "seller",
+          "where": "website",
+          "read": "report download",
+          "latency": "custom dates",
+          "mark": "observed",
+          "source": "https://www.mercari.com/us/help_center/article/541/"
+        }
       ]
     },
     "facebook": {
@@ -134,23 +723,137 @@
         "room_min_cents": 2000,
         "auto_accept": "none",
         "likers_offer": null,
-        "markdown": { "route": "edit", "tool": "edit the price (savers may be told; no Meta source)", "min_step": 0 },
-        "turn_on": [ { "setting": "availability_auto_reply", "why": "Meta drafts it; the seller enables and edits it at listing" } ],
-        "keep_off": [ { "setting": "boost", "why": "billed whether or not it sells; spending asks first" } ]
+        "markdown": {
+          "route": "edit",
+          "tool": "edit the price (savers may be told; no Meta source)",
+          "min_step": 0
+        },
+        "turn_on": [
+          {
+            "setting": "availability_auto_reply",
+            "why": "Meta drafts it; the seller enables and edits it at listing"
+          }
+        ],
+        "keep_off": [
+          {
+            "setting": "boost",
+            "why": "billed whether or not it sells; spending asks first"
+          }
+        ]
       },
       "levers": [
-        { "id": "chat_offer", "name": "Offer in chat", "where": "Messenger thread", "params": "a typed number; nothing binds until the handover", "notifies": "seller", "visibility": "none", "mark": "asserted", "source": "../platforms/facebook-marketplace.md section 9" },
-        { "id": "price_drop", "name": "Lower the price", "where": "edit listing", "params": "any amount", "notifies": "savers, by several third parties; unreliable per CarSnipe; no Meta source", "visibility": "price is a ranking signal", "mark": "asserted", "source": "carsnipe.com 2026-02-18; crawlbench.com 2026-11-03; Meta ranking card 2026-09-30 for price as a signal (observed by Nate)" },
-        { "id": "renew", "name": "Renew", "where": "Your listings, when offered", "params": "no published timing or limit", "notifies": "none (asserted)", "visibility": "unknown", "mark": "asserted", "source": "autobook.io 2026-08-19" },
-        { "id": "auto_reply", "name": "Availability auto-reply", "where": "listing creation", "params": "Meta AI drafts from description, availability, pickup place and price; seller enables, previews, edits", "notifies": "buyer", "visibility": "none", "mark": "observed", "source": "about.fb.com 2026-03-12" },
-        { "id": "boost", "name": "Boost (fixed budget or cost per sale)", "where": "listing > Boost", "params": "fixed budget billed on impressions; cost per sale 15 to 30% for shipped listings, 7-day click window", "notifies": "none", "visibility": "an ad, outside the ranking AI", "mark": "observed", "source": "valueaddedresource.net 2026-10-12 (screenshots); transparency.meta.com ranking card" }
+        {
+          "id": "chat_offer",
+          "name": "Offer in chat",
+          "where": "Messenger thread",
+          "params": "a typed number; nothing binds until the handover",
+          "notifies": "seller",
+          "visibility": "none",
+          "mark": "asserted",
+          "source": "../platforms/facebook-marketplace.md section 9"
+        },
+        {
+          "id": "price_drop",
+          "name": "Lower the price",
+          "where": "edit listing",
+          "params": "any amount",
+          "notifies": "savers, by several third parties; unreliable per CarSnipe; no Meta source",
+          "visibility": "price is a ranking signal",
+          "mark": "asserted",
+          "source": "carsnipe.com 2026-02-18; crawlbench.com 2026-11-03; Meta ranking card 2026-09-30 for price as a signal (observed by Nate)"
+        },
+        {
+          "id": "renew",
+          "name": "Renew",
+          "where": "Your listings, when offered",
+          "params": "no published timing or limit",
+          "notifies": "none (asserted)",
+          "visibility": "unknown",
+          "mark": "asserted",
+          "source": "autobook.io 2026-08-19"
+        },
+        {
+          "id": "auto_reply",
+          "name": "Availability auto-reply",
+          "where": "listing creation",
+          "params": "Meta AI drafts from description, availability, pickup place and price; seller enables, previews, edits",
+          "notifies": "buyer",
+          "visibility": "none",
+          "mark": "observed",
+          "source": "about.fb.com 2026-03-12"
+        },
+        {
+          "id": "boost",
+          "name": "Boost (fixed budget or cost per sale)",
+          "where": "listing > Boost",
+          "params": "fixed budget billed on impressions; cost per sale 15 to 30% for shipped listings, 7-day click window",
+          "notifies": "none",
+          "visibility": "an ad, outside the ranking AI",
+          "mark": "observed",
+          "source": "valueaddedresource.net 2026-10-12 (screenshots); transparency.meta.com ranking card"
+        }
       ],
       "signals": [
-        { "id": "views_clicks", "name": "Views and clicks", "stage": "attention", "definition": "performance data like views, clicks, message threads and sold listings; per listing or total not stated", "scope": "seller", "where": "Marketplace Seller app, Performance insights (iOS, US)", "read": "harness only; no API", "latency": "not stated", "mark": "observed", "source": "about.fb.com 2026-07-24" },
-        { "id": "saves", "name": "Saves", "stage": "interest", "definition": "people who saved the listing; how many times listings were saved", "scope": "seller", "where": "web Marketplace > Selling > Insights", "read": "harness only", "latency": "not stated", "mark": "asserted", "source": "techcult.com 2023-07-08" },
-        { "id": "shares", "name": "Shares", "stage": "interest", "definition": "times listings were shared to Feed, Messenger or WhatsApp", "scope": "seller", "where": "Insights", "read": "harness only", "latency": "not stated", "mark": "asserted", "source": "techcult.com 2023-07-08" },
-        { "id": "messages", "name": "Message threads", "stage": "intent", "definition": "one Messenger thread per buyer", "scope": "seller", "where": "inbox", "read": "harness read_inbox", "latency": "live", "mark": "inferred", "source": "Meta Seller app post 2026-07-24 names message threads" },
-        { "id": "boost_results", "name": "Boost results", "stage": "exposure", "definition": "reach, link clicks, messaging conversations, cost per conversation", "scope": "seller", "where": "View Insights; Ads Manager", "read": "Marketing API Ads Insights on the seller's ad account (inferred)", "latency": "not checked", "mark": "asserted", "source": "valueaddedresource.net 2026-10-12" }
+        {
+          "id": "views_clicks",
+          "name": "Views and clicks",
+          "stage": "attention",
+          "definition": "views, clicks, message threads and sold listings for 'which listings', with listing activity charts: per listing (inferred); saves not listed",
+          "scope": "seller",
+          "where": "Marketplace Seller app, Performance insights (iOS, US)",
+          "read": "harness only; no API",
+          "latency": "not stated",
+          "mark": "observed",
+          "source": "about.fb.com 2026-07-24; App Store 'Seller, a Facebook app' v14.0 (read 2026-11-15)"
+        },
+        {
+          "id": "saves",
+          "name": "Saves",
+          "stage": "interest",
+          "definition": "people who saved the listing; how many times listings were saved",
+          "scope": "seller",
+          "where": "web Marketplace > Selling > Insights",
+          "read": "harness only",
+          "latency": "not stated",
+          "mark": "asserted",
+          "source": "techcult.com 2023-07-08"
+        },
+        {
+          "id": "shares",
+          "name": "Shares",
+          "stage": "interest",
+          "definition": "times listings were shared to Feed, Messenger or WhatsApp",
+          "scope": "seller",
+          "where": "Insights",
+          "read": "harness only",
+          "latency": "not stated",
+          "mark": "asserted",
+          "source": "techcult.com 2023-07-08"
+        },
+        {
+          "id": "messages",
+          "name": "Message threads",
+          "stage": "intent",
+          "definition": "one Messenger thread per buyer",
+          "scope": "seller",
+          "where": "inbox",
+          "read": "harness read_inbox",
+          "latency": "live",
+          "mark": "inferred",
+          "source": "Meta Seller app post 2026-07-24 names message threads"
+        },
+        {
+          "id": "boost_results",
+          "name": "Boost results",
+          "stage": "exposure",
+          "definition": "reach, link clicks, messaging conversations, cost per conversation",
+          "scope": "seller",
+          "where": "View Insights; Ads Manager",
+          "read": "Marketing API Ads Insights on the seller's ad account (inferred)",
+          "latency": "not checked",
+          "mark": "asserted",
+          "source": "valueaddedresource.net 2026-10-12"
+        }
       ]
     }
   }

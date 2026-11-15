@@ -21,7 +21,7 @@ The Clofie zip has nine weights, each with an italic (observed). We use SemiBold
 
 - Clofie cannot set an item title, a name or a message. A real listing title has accents and signs it lacks, so half a title would fall back to another face (inferred from the glyph list).
 - Clofie cannot set an amount. Its digits differ by 307 units, so "$31.40" changing to "$38.00" moves everything after it (inferred from the widths). Ben had already ruled the sale amount out of the display face in round 6.
-- Neue Montreal has the same problem with digits, less strongly. The setting `tabular-nums` did nothing on the round 8 and round 9 sheets (observed). The constitution's rule 7 covers it.
+- Neue Montreal has the same problem with digits, less strongly. The setting `tabular-nums` did nothing on the round 8 and round 9 sheets (observed). [scripts/font-tnum.py](../../../scripts/font-tnum.py) fixes the file: it adds the missing figures, and then the setting works (constitution Art. 6, rule 7).
 
 ## What the sources say
 

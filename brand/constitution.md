@@ -202,7 +202,7 @@ Ben, 20:17: "im still not set on the fonts. i think you need to justify all text
 4. **Tracking follows QOVES.** 0 up to 18 px; −0.015em at 36; −0.02em at 50 and up. The wordmark is −0.01em. None in Chinese, Japanese or Korean.
 5. **Sentence case everywhere.** No title case, no all caps except the platform's own logos.
 6. **Second phrase, not bold.** A heading may have a second phrase at black 65%, on white or gray. 21 px and up only.
-7. **Numbers that line up or change keep their width.** The Neue Montreal file we have has no tabular figures: its digits are 346 to 620 units wide (read from the file on Ben's Mac, 2026-11-15). Until a file that has them replaces it, an amount that changes in place or sits in a column is set with each digit in a cell of equal width (agent proposal).
+7. **Numbers that line up or change keep their width.** Set `tabular-nums` on an amount that changes in place or sits in a column, and nowhere else. The Neue Montreal file we have has no tabular figures: its digits are 346 to 620 units wide (read from the file on Ben's Mac, 2026-11-15). So [scripts/font-tnum.py](../scripts/font-tnum.py) adds them when the font is put in place: each digit gets a copy centered in a cell as wide as the zero, behind the `tnum` feature. Digits without the setting stay as drawn.
 8. **Sizes follow the person's text setting.** The sizes are the default-size values; on iOS they map to Dynamic Type (13 footnote, 15 subheadline, 18 body, 21 title2, 36 largeTitle) and grow with it. Line heights are ratios, so they grow too.
 
 **Roles** (agent proposal; tokens in [tokens.css](tokens.css)):
