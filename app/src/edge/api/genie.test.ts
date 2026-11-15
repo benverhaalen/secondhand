@@ -137,7 +137,7 @@ test('genie: an answer without a replayable table snapshot is refused', async ()
     fetch: async input => Response.json(String(input).endsWith('start-conversation') ? { conversation_id: 'conversation', message_id: 'message' } : String(input).endsWith('query-result') ? { statement_response: { manifest: { schema: { columns: [{ name: 'site' }] } }, result: { data_array: [['depop']] } } } : { status: 'COMPLETED', attachments: [{ attachment_id: 'query', query: { query: 'select site from user_sales' } }] }),
   }) });
   const response = await route('POST /v1/genie', handler)(new Request('http://edge.test/v1/genie', { method: 'POST', headers: { Authorization: 'Bearer good' }, body: JSON.stringify({ question: 'Which site?' }) }));
-  assert.equal(response.status, 503); const error = await response.json(); assert.equal(error.code, 'waking'); assert.equal(error.failed_step, 'citation');
+  assert.equal(response.status, 503); const error = await response.json(); assert.equal(error.code, 'unavailable'); assert.equal(error.failed_step, 'citation');
 });
 
 test('default Genie runs the engine transport and stores the example citation', async () => {
