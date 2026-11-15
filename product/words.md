@@ -690,3 +690,7 @@ Ben, thread "Make agents use our research", 01:19 UTC.
 ## 2026-11-14 nate the engine learns from the whole market, not only our users
 Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
 > Our engine isnt just built and powered by the existing data we've collected by OUR users, but by the existing listings, credible information, and more from the platforms and industries themselves
+
+## 2026-11-14 nate our own intelligence api from four repos
+Nate, in the session "Lay out the whole product and write the unified spec", 2026-11-14.
+> https://github.com/firecrawl/firecrawlhttps://github.com/unclecode/crawl4aihttps://github.com/browser-use/jev-ultrafasthttps://github.com/browser-use/browser-use understand all these repos and how they can effectively serve when analyzed for us to build a working intelligence api of our own, able to source and find any price, figure, detail, industry insight, sales data, using searches
