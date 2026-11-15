@@ -3,6 +3,8 @@ Researched 2026-11-14 by Ben (Claude Code). Feature: list.
 
 Ben asked for "adequate seo for this usecase, platform specific" and "a base rule set for everything, or plan it to happen once the brand is ratified" ([words](../../../product/words.md#2026-11-14-fresh-image-agents-how-references-are-used-and-a-reference-set)). This note is the rule set. The numbers are data in [platform-fit.json](platforms/platform-fit.json) (`title`, `tags`, `search`, `description` per site) and the check is [scripts/listing-lint.mjs](../../../scripts/listing-lint.mjs). How each site ranks is already in Nate's [ranking-algorithms.md](../nate/ranking-algorithms.md), and how a title's words are chosen is [D4 to D7](../../../spec/determinations/listing-and-marketing.md#d4-title-per-site); this note does not repeat either.
 
+The strategy behind these rules, and what would overturn it, is in [listing-seo-strategy.md](listing-seo-strategy.md).
+
 ## Short answer
 
 1. Search on these sites does three things in order: it finds listings that contain the buyer's words, it removes listings that fail the buyer's filters, and it ranks what is left. A seller controls the first two almost fully and the third barely. So the work is vocabulary and filled fields, and no clever wording is needed *inferred*.
@@ -25,7 +27,7 @@ Each rule is checked by code where a script can find every instance. The rest is
 | B5 | No other brand as bait ("like", "similar to", "dupe for") | Depop: an unrelated brand "can hurt your listing's exposure" *observed*. Poshmark now weighs down "overly broad or misused keywords in listing descriptions" *observed* | K2, and K1 in titles and tags |
 | B6 | Fill every filter field we can back. Ask the person for a blank one. Never guess | Point 2 above. A wrong value causes a return *inferred* | F1, asks |
 | B7 | Stay inside the site's length, word and tag limits | The form rejects or cuts the rest | T1, T2, G1, D1 |
-| B8 | Spare room in a title goes to more backed words (era, material, a synonym), never to filler | eBay: "Remember to use all 80 characters and focus on relevant keywords" *observed* | `buildTitle` fill step |
+| B8 | A word is added to a title only when it completes a buyer search the listing would otherwise miss, and only on a site that searches nothing but the title and fields (eBay). Elsewhere the description carries it. Length alone earns nothing | eBay advises "use all 80 characters" *observed*, but in 33,638 eBay listings long titles sold no better ([strategy](listing-seo-strategy.md#what-the-evidence-says)) | `buildTitle` with searches, `coverage` |
 | B9 | No contact details, links or other payment apps | Against every site's rules ([section 13 of each note](platforms/)) | C1, blocks |
 | B10 | Deepest correct category | It sets the browse page and which fields exist. Mercari: "Many shoppers on Mercari like to browse product categories instead of typing in a specific search" *observed* | [D7](../../../spec/determinations/listing-and-marketing.md#d7-category-placement) |
 | B11 | The description states size, measurements, condition and every flaw, in plain sentences | Poshmark: "the more descriptive you are, the more likely a shopper will see your listing" *observed by Nate*. It also answers the buyer's first question | writer's brief, [D5](../../../spec/determinations/listing-and-marketing.md#d5-description-and-the-facts-it-must-state) |
@@ -35,10 +37,10 @@ Each rule is checked by code where a script can find every instance. The rest is
 
 | Site | Search reads | Words go | Title | Tags | Filter fields that must be filled | Named penalty | Outside search |
 |---|---|---|---|---|---|---|---|
-| eBay | title and item specifics *observed*; description only if the buyer asks *asserted* | title, then item specifics | 80 max, use 55 to 80 | none | category, condition, brand, size, color, plus the category's own aspects from the API | search manipulation *asserted* | Google Shopping, free. For clothing "Google won't display your listings, unless you provide the item specifics for Color, Size, Age Group & Gender" *observed* (eBay community post, undated) |
+| eBay | title and item specifics *observed*; description only if the buyer asks *asserted* | title, then item specifics | 80 max | none | category, condition, brand, size, color, plus the category's own aspects from the API | search manipulation *asserted* | Google Shopping, free. For clothing "Google won't display your listings, unless you provide the item specifics for Color, Size, Age Group & Gender" *observed* (eBay community post, undated) |
 | Facebook | keyword match, category, condition, price, distance *observed by Nate* (Meta system card) | title, then up to 20 tags | 99 max *asserted*, aim under 60 | 8 to 12 words the title lacks | category, condition | integrity suppression *observed by Nate* | none found |
 | Depop | description and listing fields *observed* | first line of the description, then fields | no title field. Line 1 is the headline: "Start with a headline that summarises your item" *observed*. Aim 30 to 65 | 0 to 5 hashtags, none repeating line 1 | category, brand, size, color, condition (style, age and source when known) | lower exposure for irrelevant brands and tags *observed* | none found |
-| Poshmark | title, description and the photo ("enhanced keyword and image matching") *observed* | title, then brand and size fields | 80 max *asserted*, use 40 to 80 | up to 3 style tags *asserted*; no hashtags | category, brand, size, color, condition | misused description keywords weigh less *observed* | none found |
+| Poshmark | title, description and the photo ("enhanced keyword and image matching") *observed* | title, then brand and size fields | 80 max *asserted* | up to 3 style tags *asserted*; no hashtags | category, brand, size, color, condition | misused description keywords weigh less *observed* | none found |
 | Mercari | keywords *observed*; which field, not stated | title, then 3 hashtags | 80 max *observed* (Mercari blog, 2022), brand first | 3 hashtags that "supplement rather than repeat what you've already written" *observed* | category, brand, condition | "Listing an excessive amount of search keywords" is banned *observed* | none found |
 | OfferUp | title and description *inferred*; photos through multimodal search *observed by Nate* | title | 50 max *asserted* | none | category, condition | keywords "to manipulate search" are banned *observed* | none found |
 | Grailed | title, designer, description, hashtags *asserted* | designer field, then title | 60 max *asserted*, 7 words or fewer *observed* | 3 to 6 hashtags | category, designer, size, condition, department | none stated | none found |
@@ -47,11 +49,11 @@ The same jacket, built by `node scripts/listing-lint.mjs title <site> facts.json
 
 | Site | Title | Length |
 |---|---|---|
-| eBay | `Carhartt Detroit Jacket Men's L Brown Vintage 90s Duck Canvas` | 61 |
+| eBay | `Carhartt Detroit Jacket Men's L Brown` | 37 |
 | Facebook | `Carhartt Detroit Jacket Men's L Brown` | 37 |
 | Depop (line 1) | `Vintage 90s Carhartt Detroit Jacket Brown Size L` | 48 |
-| Poshmark | `Carhartt Detroit Jacket Brown Size L Vintage 90s` | 48 |
-| Mercari | `Carhartt Detroit Jacket Size L Brown Vintage 90s` | 48 |
+| Poshmark | `Carhartt Detroit Jacket Brown Size L` | 36 |
+| Mercari | `Carhartt Detroit Jacket Size L Brown` | 36 |
 | OfferUp | `Carhartt Detroit Jacket L Brown` | 31 |
 | Grailed | `Carhartt Detroit Vintage 90s Brown L` | 36 |
 
@@ -74,7 +76,7 @@ A word from 3 or 4 that no attribute backs is dropped. "Rare", "authentic" and "
 
 When does a rule become code? When a script can find every instance and the rule has a source. Everything else stays one line in the writer's brief, and a rule nobody can check or source is cut. That keeps the brief to rules B10 to B12.
 
-State: *usable*. Proof: `node --test scripts/listing-lint.test.mjs` (15 tests), and it runs inside `node .agents/check.mjs`. Unfinished: eBay's per-category aspects are not read from the API yet, the facts file is hand-written until item-card settles attribute names, the synonym table does not exist, and nothing logs through `log/` because no adapter calls it yet.
+State: *usable*. Proof: `node --test scripts/listing-lint.test.mjs` (17 tests), and it runs inside `node .agents/check.mjs`. Unfinished: eBay's per-category aspects are not read from the API yet, the facts file is hand-written until item-card settles attribute names, the synonym table does not exist, and nothing logs through `log/` because no adapter calls it yet.
 
 ## After it is live
 

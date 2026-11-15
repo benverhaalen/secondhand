@@ -525,3 +525,7 @@ Nate, in the session "Lay out the whole product and write the unified spec", 202
 ## 2026-11-15 pricing levers, signals and hot items
 Ben, project chat, 2026-11-15 00:12 UTC, starting the thread "Map each platform's pricing levers and analytics".
 > secondhand should be able to tell when something is ‘hot’ like monitor when it got things wrong and dynamically manage supply demand of the business. and we collect that data and can better manage business with ai from such signals. also everything is relative. views correlate differently from likes, shares, offers, etc. maybe use rdd with x algorithm and have this as a potential future feature maybe out of scope. but training a model to know what to move price by, how, etc. also there are other things that you should psychologically research that could be useful in the product we are building now. for the pricing thing, each platform has specific levers. this should also be a feature selling point. like depop you can discount. set defaults in the app for auto accepting. and you should have thorough enough looped research to be able to identify this all in each of these platforms. knowing exactly what information and analytics that say depop or ebay or facebook gives and then being able to integrate and display that well in our platform and aggregate that data.
+
+## 2026-11-15 strategize deeply on listing seo
+Ben, project chat, 00:11 UTC.
+> use strategize deeply to figure out how to optimize for seo. my harness skill
