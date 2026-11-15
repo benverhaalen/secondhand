@@ -1,4 +1,4 @@
-// Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §11; spec/examples/captures.json.
+// Rests-on: spec/product.md §7 Resources; spec/engines/capture.md §§2,5,6,8,11; spec/examples/captures.json.
 // Upload signing and realtime credentials remain contract examples.
 // The shared example boundary stays here until the contract layer's owner can move it to http.ts.
 import { ApiError, deps, paramsOf, served, type Ctx, type Handler, type Reply } from './http.ts';
@@ -7,8 +7,10 @@ import { FAMILIES, type Family } from '../../engines/capture/process.ts';
 import { plan, type State, type Fact } from '../../engines/capture/plan.ts';
 import { select } from '../../engines/capture/select.ts';
 import type { StudioAsk } from '../../engines/capture/select.ts';
-import { viewsFor } from '../../engines/capture/fields.ts';
-import type { FieldRow, Site } from '../../engines/capture/table.ts';
+import { fieldState, viewsFor } from '../../engines/capture/fields.ts';
+import { table, type FieldRow, type Site } from '../../engines/capture/table.ts';
+import { mergeAttribute, type Attribute } from '../card/card.ts';
+import type { AttributeEvidence } from '../../engines/proof/proof.ts';
 import { memoryStore } from '../../engines/param/param.ts';
 import { SITES } from '../../../../spec/sites.mjs';
 import slides from '../../../../jobs/studio/slides.json' with { type: 'json' };
@@ -139,8 +141,9 @@ function view(row: CaptureRow) {
     created_at: row.created_at, version: row.version, plan: next};
 }
 function write(ctx: Pick<Ctx,'log'>, row: CaptureRow, status: CaptureRow['status'], detail: Record<string,unknown> = {}) {
+  const was=row.status;
   row.status = status; row.version++; row.updated_at = new Date(deps.now()).toISOString();
-  ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, to: status, ...detail});
+  if (was!==status) ctx.log.event('state.change', {entity: 'capture', id: row.state.capture_id, was, to: status, ...detail});
 }
 function writable(row: CaptureRow) {
   if (row.status === 'judged') throw new ApiError('stale', 'capture is finished', 'state_check', {by:'none'}, {current:{version:row.version}});
@@ -229,7 +232,10 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
   const log=deps.log.child({user:user_id,capture:capture_id});
   log.input('api','capture.job_result',{kind:object(result)?result.kind:undefined});
   try {
+    writable(current);
     validateJobResult(result);
+    if (result.kind==='photo_score') for (const photo of result.photos)
+      if (!current.state.kept.includes(photo.key)) throw invalid(`${photo.key} was not kept`,[photo.key]);
     const row=structuredClone(current);
     const state=row.state;
     if (result.kind==='identify') {
@@ -261,7 +267,7 @@ export function applyJobResult(user_id:string, capture_id:string, result:unknown
     row.version++; row.updated_at=new Date(deps.now()).toISOString();
     const body=view(row);
     captureRows.set(capture_id,row);
-    log.event('state.change',{entity:'capture',id:capture_id,to:row.status,kind:result.kind});
+    if (current.status!==row.status) log.event('state.change',{entity:'capture',id:capture_id,was:current.status,to:row.status,kind:result.kind});
     return body;
   } catch (error) {
     log.error('capture.job_result',error);
@@ -288,7 +294,7 @@ export const handlers: Record<string, Handler> = {
     const state=initial(ctx.body,id,item_id), created_at=new Date(deps.now()).toISOString();
     const row:CaptureRow={id,user_id:ctx.user_id!,item_id:state.item_id,version:1,created_at,updated_at:created_at,data:'captured',state,status:'framing',mode:ctx.body.mode as string,photos:0,replacements:{},phone_suggestion:ctx.body.suggestion!==undefined};
     captureRows.set(id,row);
-    ctx.log.event('state.change',{entity:'capture',id,to:row.status});
+    ctx.log.event('state.change',{entity:'capture',id,was:null,to:row.status});
     return {status:201,body:view(row)};
   }),
   'GET /v1/captures/:id': captureHandler('GET /v1/captures/:id', ctx=>({status:200,body:view(read(ctx))})),
@@ -341,12 +347,37 @@ export const handlers: Record<string, Handler> = {
         if (field==='type') row.state.type=answer.value as Family;
       } else row.state.refused.push(field);
     }
+    if (field) ctx.log.note('capture field updated',{field});
     write(ctx,row,plan(row.state,params).status==='shooting'?'shooting':row.status,field?{field}:{});
     return {status:200,body:{...view(row),item:{id:row.state.item_id,category:row.state.type}}};
   }),
-  'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', ctx=> {
+  'POST /v1/captures/:id/finish': captureHandler('POST /v1/captures/:id/finish', async ctx=> {
+    const {runtime}=await import('./runtime.ts');
     const row=read(ctx); writable(row); fields(ctx.body,{version},{note:text}); checkVersion(ctx,row);
-    write(ctx,row,'judged');
+    const at=new Date(deps.now()).toISOString();
+    const selected=select(row.state,params), keys=selected.process.map(step=>step.key);
+    const sources:Record<Fact['source'],Attribute['source']>={label:'label',measured:'measured',lookup:'spec',you_said:'you_said',seen:'inferred',derived:'inferred'};
+    const kinds:Record<Fact['source'],AttributeEvidence['kind']>={you_said:'owner',label:'label_text',measured:'depth',lookup:'lookup',seen:'image_region',derived:'image_region'};
+    await ctx.log.call('db','capture.finish_item',{item_id:row.item_id},()=> {
+      runtime.store.tx(st=> {
+        const current=st.get('item',row.user_id,row.item_id);
+        const attributes=[...(current?.attributes as Attribute[] ?? [])];
+        for (const field of selected.rows) {
+          if (field.field==='type' || field.field==='lot_count') continue;
+          const resolution=fieldState(field,row.state,keys,params);
+          if (resolution.state!=='known') continue;
+          const fact=resolution.fact!;
+          const next:Attribute={name:field.field,value:structuredClone(fact.value),source:sources[fact.source],confidence:fact.confidence,
+            confirmed:fact.confirmed===true || fact.source==='you_said',method:fact.source,at,
+            evidence:[{kind:kinds[fact.source],ref:`${row.id}/${fact.step ?? field.field}`,captured_at:at,extractor_version:`capture.v${table.version}`}]};
+          const index=attributes.findIndex(attribute=>attribute.name===next.name);
+          const merged=mergeAttribute(index<0?next:attributes[index],next,next.source==='you_said'?'user':'auto');
+          if (index<0) attributes.push(merged); else attributes[index]=merged;
+        }
+        st.put('item',current?{...current,attributes,updated_at:at}:{id:row.item_id,user_id:row.user_id,title:'',state:'researching',origin:'capture',data:'captured',quantity:row.state.pieces ?? 1,attributes,photos:[],created_at:at,updated_at:at});
+      });
+      write(ctx,row,'judged');
+    },()=>({item_id:row.item_id}));
     return {status:202,body:{...structuredClone(example('captures.finish').response as Record<string,unknown>),capture:view(row),item:{id:row.state.item_id,state:'researching'}}};
   }),
   'POST /v1/captures/:id/talk': exampleHandler('POST /v1/captures/:id/talk', c=>fields(c.body,{voice:bool})),
