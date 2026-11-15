@@ -59,8 +59,8 @@ def main():
             if not first:
                 time.sleep(plan["pause_seconds"])
             first = False
-            prompt = " ".join([plan["job"].format(scene=shot["scene"]), line, plan["fail"]])
-            paths = [os.path.join(HERE, shot["item"]), os.path.join(HERE, shot["closeup"])]
+            prompt = " ".join([plan["job"].format(scene=shot["scene"], refs_line=shot["refs_line"]), line, plan["fail"]])
+            paths = [os.path.join(HERE, r) for r in shot["refs"]]
             raw, info, secs = None, {}, 0
             for extra in ({"image_config": {"aspect_ratio": plan["aspect_ratio"]}}, {}):
                 raw, info, secs = call(key, plan["model"], prompt, paths, extra)
